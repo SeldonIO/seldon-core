@@ -1,0 +1,12 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: choice-is-two
+spec:
+  storageUri: "gs://seldon-models/scv2/examples/pandasquery"
+  requirements:
+  - mlserver
+  - python
+  parameters:
+  - name: query
+    value: "choice == 2"

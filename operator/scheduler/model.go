@@ -124,11 +124,6 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 		return err
 	}
 
-	// on new reconnects check if we have models that are stuck in deletion and therefore we need to reconcile their states
-	go handlePendingDeleteModels(ctx, namespace, s, grpcClient)
-	// on new reconnects we reload the models that are marked as loaded in k8s as the scheduler might have lost the state
-	go handleLoadedModels(ctx, namespace, s, grpcClient)
-
 	for {
 		event, err := stream.Recv()
 		if err != nil {

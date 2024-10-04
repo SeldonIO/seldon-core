@@ -21,6 +21,8 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 	logger := s.logger.WithField("func", "SubscribeModelStatus")
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
+	s.synchroniser.WaitReady()
+
 	err := s.sendCurrentModelStatuses(stream)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to send current model statuses to %s", req.GetSubscriberName())
@@ -128,7 +130,6 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 	logger := s.logger.WithField("func", "SubscribeServerStatus")
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
-	// on reconnect we send the current state of the servers to the subscriber (controller) as we may have missed events
 	err := s.sendCurrentServerStatuses(stream)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to send current server statuses to %s", req.GetSubscriberName())

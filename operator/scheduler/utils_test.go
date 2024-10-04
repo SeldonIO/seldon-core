@@ -106,6 +106,27 @@ func (s *mockSchedulerServerSubscribeGrpcClient) Recv() (*scheduler.ServerStatus
 	return nil, io.EOF
 }
 
+// Control Plane subscribe mock grpc client
+
+type mockControlPlaneSubscribeGrpcClient struct {
+	sent bool
+	grpc.ClientStream
+}
+
+var _ scheduler.Scheduler_SubscribeControlPlaneClient = (*mockControlPlaneSubscribeGrpcClient)(nil)
+
+func newMockControlPlaneSubscribeGrpcClient() *mockControlPlaneSubscribeGrpcClient {
+	return &mockControlPlaneSubscribeGrpcClient{}
+}
+
+func (s *mockControlPlaneSubscribeGrpcClient) Recv() (*scheduler.ControlPlaneResponse, error) {
+	if !s.sent {
+		s.sent = true
+		return &scheduler.ControlPlaneResponse{}, nil
+	}
+	return nil, io.EOF
+}
+
 // Pipeline mock grpc client
 
 type mockSchedulerPipelineGrpcClient struct {
@@ -156,6 +177,31 @@ func (s *mockSchedulerExperimentSubscribeGrpcClient) Recv() (*scheduler.Experime
 	return nil, io.EOF
 }
 
+// Model subscribe mock grpc client
+
+type mockSchedulerModelSubscribeGrpcClient struct {
+	counter int
+	results []*scheduler.ModelStatusResponse
+	grpc.ClientStream
+}
+
+var _ scheduler.Scheduler_SubscribeModelStatusClient = (*mockSchedulerModelSubscribeGrpcClient)(nil)
+
+func newMockSchedulerModelSubscribeGrpcClient(results []*scheduler.ModelStatusResponse) *mockSchedulerModelSubscribeGrpcClient {
+	return &mockSchedulerModelSubscribeGrpcClient{
+		results: results,
+		counter: 0,
+	}
+}
+
+func (s *mockSchedulerModelSubscribeGrpcClient) Recv() (*scheduler.ModelStatusResponse, error) {
+	if s.counter < len(s.results) {
+		s.counter++
+		return s.results[s.counter-1], nil
+	}
+	return nil, io.EOF
+}
+
 // Scheduler mock grpc client
 
 type mockSchedulerGrpcClient struct {
@@ -165,9 +211,14 @@ type mockSchedulerGrpcClient struct {
 	responses_subscribe_pipelines   []*scheduler.PipelineStatusResponse
 	responses_servers               []*scheduler.ServerStatusResponse
 	responses_subscribe_servers     []*scheduler.ServerStatusResponse
+	responses_models                []*scheduler.ModelStatusResponse
+	responses_subscribe_models      []*scheduler.ModelStatusResponse
 	requests_experiments            []*scheduler.StartExperimentRequest
+	requests_experiments_unload     []*scheduler.StopExperimentRequest
 	requests_pipelines              []*scheduler.LoadPipelineRequest
+	requests_pipelines_unload       []*scheduler.UnloadPipelineRequest
 	requests_models                 []*scheduler.LoadModelRequest
+	requests_models_unload          []*scheduler.UnloadModelRequest
 	requests_servers                []*scheduler.ServerNotify
 	errors                          map[string]error
 }
@@ -192,6 +243,7 @@ func (s *mockSchedulerGrpcClient) UnloadModel(ctx context.Context, in *scheduler
 	if ok {
 		return nil, err
 	} else {
+		s.requests_models_unload = append(s.requests_models_unload, in)
 		return nil, nil
 	}
 }
@@ -200,6 +252,7 @@ func (s *mockSchedulerGrpcClient) LoadPipeline(ctx context.Context, in *schedule
 	return nil, nil
 }
 func (s *mockSchedulerGrpcClient) UnloadPipeline(ctx context.Context, in *scheduler.UnloadPipelineRequest, opts ...grpc.CallOption) (*scheduler.UnloadPipelineResponse, error) {
+	s.requests_pipelines_unload = append(s.requests_pipelines_unload, in)
 	return nil, nil
 }
 func (s *mockSchedulerGrpcClient) StartExperiment(ctx context.Context, in *scheduler.StartExperimentRequest, opts ...grpc.CallOption) (*scheduler.StartExperimentResponse, error) {
@@ -207,6 +260,7 @@ func (s *mockSchedulerGrpcClient) StartExperiment(ctx context.Context, in *sched
 	return nil, nil
 }
 func (s *mockSchedulerGrpcClient) StopExperiment(ctx context.Context, in *scheduler.StopExperimentRequest, opts ...grpc.CallOption) (*scheduler.StopExperimentResponse, error) {
+	s.requests_experiments_unload = append(s.requests_experiments_unload, in)
 	return nil, nil
 }
 func (s *mockSchedulerGrpcClient) ServerStatus(ctx context.Context, in *scheduler.ServerStatusRequest, opts ...grpc.CallOption) (scheduler.Scheduler_ServerStatusClient, error) {
@@ -226,13 +280,16 @@ func (s *mockSchedulerGrpcClient) SubscribeServerStatus(ctx context.Context, in 
 	return newMockSchedulerServerSubscribeGrpcClient(s.responses_subscribe_servers), nil
 }
 func (s *mockSchedulerGrpcClient) SubscribeModelStatus(ctx context.Context, in *scheduler.ModelSubscriptionRequest, opts ...grpc.CallOption) (scheduler.Scheduler_SubscribeModelStatusClient, error) {
-	return nil, nil
+	return newMockSchedulerModelSubscribeGrpcClient(s.responses_subscribe_models), nil
 }
 func (s *mockSchedulerGrpcClient) SubscribeExperimentStatus(ctx context.Context, in *scheduler.ExperimentSubscriptionRequest, opts ...grpc.CallOption) (scheduler.Scheduler_SubscribeExperimentStatusClient, error) {
 	return newMockSchedulerExperimentSubscribeGrpcClient(s.responses_subscribe_experiments), nil
 }
 func (s *mockSchedulerGrpcClient) SubscribePipelineStatus(ctx context.Context, in *scheduler.PipelineSubscriptionRequest, opts ...grpc.CallOption) (scheduler.Scheduler_SubscribePipelineStatusClient, error) {
 	return newMockSchedulerPipelineSubscribeGrpcClient(s.responses_subscribe_pipelines), nil
+}
+func (s *mockSchedulerGrpcClient) SubscribeControlPlane(ctx context.Context, in *scheduler.ControlPlaneSubscriptionRequest, opts ...grpc.CallOption) (scheduler.Scheduler_SubscribeControlPlaneClient, error) {
+	return newMockControlPlaneSubscribeGrpcClient(), nil
 }
 
 // new mockSchedulerClient (not grpc)
@@ -305,7 +362,8 @@ func TestHandleLoadedExperiments(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			grpcClient := mockSchedulerGrpcClient{}
 			client := newMockControllerClient(test.resources...)
-			handleLoadedExperiments(context.Background(), "", client, &grpcClient)
+			err := client.handleLoadedExperiments(context.Background(), &grpcClient, "")
+			g.Expect(err).To(BeNil())
 			activeResources := 0
 			// TODO check the entire object
 			for idx, req := range test.resources {
@@ -375,7 +433,8 @@ func TestHandleLoadedModels(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			grpcClient := mockSchedulerGrpcClient{}
 			client := newMockControllerClient(test.resources...)
-			handleLoadedModels(context.Background(), "", client, &grpcClient)
+			err := client.handleLoadedModels(context.Background(), &grpcClient, "")
+			g.Expect(err).To(BeNil())
 			activeResources := 0
 			// TODO check the entire object
 			for idx, req := range test.resources {
@@ -445,7 +504,8 @@ func TestHandleLoadedPipelines(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			grpcClient := mockSchedulerGrpcClient{}
 			client := newMockControllerClient(test.resources...)
-			handleLoadedPipelines(context.Background(), "", client, &grpcClient)
+			err := client.handleLoadedPipelines(context.Background(), &grpcClient, "")
+			g.Expect(err).To(BeNil())
 			activeResources := 0
 			// TODO check the entire object
 			for idx, req := range test.resources {
@@ -514,11 +574,12 @@ func TestHandleDeletedExperiments(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			s := newMockControllerClient(test.resources...)
-			handlePendingDeleteExperiments(context.Background(), "", s)
+			err := s.handlePendingDeleteExperiments(context.Background(), "")
+			g.Expect(err).To(BeNil())
 
 			actualResourcesList := &mlopsv1alpha1.ExperimentList{}
 			// Get all experiments in the namespace
-			err := s.List(
+			err = s.List(
 				context.Background(),
 				actualResourcesList,
 				client.InNamespace(""),
@@ -592,11 +653,12 @@ func TestHandleDeletedPipelines(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			s := newMockControllerClient(test.resources...)
-			handlePendingDeletePipelines(context.Background(), "", s)
+			err := s.handlePendingDeletePipelines(context.Background(), "")
+			g.Expect(err).To(BeNil())
 
 			actualResourcesList := &mlopsv1alpha1.PipelineList{}
 			// Get all pipelines in the namespace
-			err := s.List(
+			err = s.List(
 				context.Background(),
 				actualResourcesList,
 				client.InNamespace(""),
@@ -675,11 +737,12 @@ func TestHandleDeletedModels(t *testing.T) {
 				},
 			}
 			s := newMockControllerClient(test.resources...)
-			handlePendingDeleteModels(context.Background(), "", s, &grpcClient)
+			err := s.handlePendingDeleteModels(context.Background(), &grpcClient, "")
+			g.Expect(err).To(BeNil())
 
 			actualResourcesList := &mlopsv1alpha1.ModelList{}
 			// Get all models in the namespace
-			err := s.List(
+			err = s.List(
 				context.Background(),
 				actualResourcesList,
 				client.InNamespace(""),
@@ -777,7 +840,8 @@ func TestHandleRegisteredServers(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			grpcClient := mockSchedulerGrpcClient{}
 			client := newMockControllerClient(test.resources...)
-			handleRegisteredServers(context.Background(), "", client, &grpcClient)
+			err := client.handleRegisteredServers(context.Background(), &grpcClient, "")
+			g.Expect(err).To(BeNil())
 			g.Expect(grpcClient.requests_servers).To(Equal(test.expected))
 		})
 	}

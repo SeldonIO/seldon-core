@@ -24,7 +24,7 @@ GID ?= $(shell id -g)
 
 KIND_NAME=seldon
 
-GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
+GO_LDFLAGS := -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 
 #####################################
 # Build
@@ -32,31 +32,31 @@ GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 
 .PHONY: build-scheduler
 build-scheduler: test-go
-	go build -buildvcs=false -o bin/scheduler ./cmd/scheduler
+	go build -trimpath -ldflags="-w" -buildvcs=false -o bin/scheduler ./cmd/scheduler
 
 .PHONY: build-proxy
 build-proxy: test-go
-	CGO_ENABLED=0 go build -o bin/proxy ./cmd/proxy
+	CGO_ENABLED=0 go build -trimpath -ldflags="-w" -o bin/proxy ./cmd/proxy
 
 .PHONY: build-agent
 build-agent: test-go
-	CGO_ENABLED=0 go build -buildvcs=false -o bin/agent ./cmd/agent
+	CGO_ENABLED=0 go build -trimpath -ldflags="-w" -buildvcs=false -o bin/agent ./cmd/agent
 
 .PHONY: build-modelgateway
 build-modelgateway: test-go
-	go build -o bin/modelgateway -v ./cmd/modelgateway
+	go build -trimpath -ldflags="-w" -o bin/modelgateway -v ./cmd/modelgateway
 
 .PHONY: build-pipelinegateway
 build-pipelinegateway: test-go
-	go build -o bin/pipelinegateway -v ./cmd/pipelinegateway
+	go build -trimpath -ldflags="-w" -o bin/pipelinegateway -v ./cmd/pipelinegateway
 
 .PHONY: build-dataflow-producer
 build-dataflow-producer: test-jvm
-	go build -o data-flow/scripts/bin/producer ./data-flow/scripts/producer.go ./data-flow/scripts/common.go
+	go build -trimpath -ldflags="-w" -o data-flow/scripts/bin/producer ./data-flow/scripts/producer.go ./data-flow/scripts/common.go
 
 .PHONY: build-dataflow-consumer
 build-dataflow-consumer:
-	go build -o data-flow/scripts/bin/consumer ./data-flow/scripts/consumer.go ./data-flow/scripts/common.go
+	go build -trimpath -ldflags="-w" -o data-flow/scripts/bin/consumer ./data-flow/scripts/consumer.go ./data-flow/scripts/common.go
 
 .PHONY: build-dataflow-engine
 build-dataflow-engine:

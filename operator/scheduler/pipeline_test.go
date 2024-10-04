@@ -34,7 +34,7 @@ func TestSubscribePipelineEvents(t *testing.T) {
 	}
 	now := metav1.Now()
 
-	// note expected state is derived in the test, maybe we should be explictl about it in the future
+	// note expected state is derived in the test, maybe we should be explicitly about it in the future
 	tests := []test{
 		{
 			name: "model and pipeline ready - no scheduler state",
@@ -376,7 +376,9 @@ func TestSubscribePipelineEvents(t *testing.T) {
 				}
 			}
 			controller := newMockControllerClient(test.existing_resources...)
-			err := controller.SubscribePipelineEvents(context.Background(), &grpcClient, "")
+			err := controller.handlePipelines(context.Background(), &grpcClient, "")
+			g.Expect(err).To(BeNil())
+			err = controller.SubscribePipelineEvents(context.Background(), &grpcClient, "")
 			g.Expect(err).To(BeNil())
 
 			isBeingDeleted := map[string]bool{}
