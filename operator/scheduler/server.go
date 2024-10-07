@@ -28,7 +28,6 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 	if len(servers) == 0 {
 		return nil
 	}
-
 	if grpcClient == nil {
 		// we assume that all servers are in the same namespace
 		namespace := servers[0].Namespace
@@ -37,6 +36,20 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 			return err
 		}
 		grpcClient = scheduler.NewSchedulerClient(conn)
+	}
+
+	var scalingSpec *v1alpha1.ValidatedScalingSpec
+	if !server.ObjectMeta.DeletionTimestamp.IsZero() {
+		scalingSpec = &v1alpha1.ValidatedScalingSpec{
+			Replicas:    0,
+			MinReplicas: 0,
+			MaxReplicas: 0,
+		}
+	} else {
+		scalingSpec, err = v1alpha1.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
+		if err != nil {
+			return err
+		}
 	}
 
 	var requests []*scheduler.ServerNotify
@@ -54,6 +67,8 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 		requests = append(requests, &scheduler.ServerNotify{
 			Name:             server.GetName(),
 			ExpectedReplicas: replicas,
+			MinReplicas:			scalingSpec.MinReplicas,
+			MaxReplicas:			scalingSpec.MaxReplicas,
 			KubernetesMeta: &scheduler.KubernetesMeta{
 				Namespace:  server.GetNamespace(),
 				Generation: server.GetGeneration(),
@@ -127,9 +142,29 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 				logger.Info("Ignoring event for old generation", "currentGeneration", server.Generation, "eventGeneration", event.GetKubernetesMeta().Generation, "server", event.ServerName)
 				return nil
 			}
-			// Handle status update
-			server.Status.LoadedModelReplicas = event.NumLoadedModelReplicas
-			return s.updateServerStatus(server)
+
+			// The types of updates we may get from the scheduler are:
+			// 1. Status updates
+			// 2. Requests for changing the number of server replicas
+			// 3. Updates containing non-authoritative replica info, because the scheduler is in a
+			// discovery phase (just starting up, after a restart)
+			//
+			// At the moment, the scheduler doesn't send multiple types of updates in a single event;
+			switch event.GetType()	{
+			case scheduler.ServerStatusResponse_StatusUpdate:
+				return s.applyStatusUpdates(ctx, server, event)
+			case scheduler.ServerStatusResponse_ScalingRequest:
+				if event.ExpectedReplicas != event.AvailableReplicas {
+					return s.applyReplicaUpdates(ctx, server, event)
+				} else {
+					return nil
+				}
+			case scheduler.ServerStatusResponse_NonAuthoritativeReplicaInfo:
+				// skip updating replica info, only update status
+				return s.updateServerStatus(server)
+			default: // we ignore unknown event types
+				return nil
+			}
 		})
 		if retryErr != nil {
 			logger.Error(err, "Failed to update status", "model", event.ServerName)
@@ -146,4 +181,33 @@ func (s *SchedulerClient) updateServerStatus(server *v1alpha1.Server) error {
 		return err
 	}
 	return nil
+}
+
+// when need to notify the scheduler about existing Server configuration
+func handleRegisteredServers(
+	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) {
+	serverList := &v1alpha1.ServerList{}
+	// Get all servers in the namespace
+	err := s.List(
+		ctx,
+		serverList,
+		client.InNamespace(namespace),
+	)
+	if err != nil {
+		return
+	}
+
+	for _, server := range serverList.Items {
+		// servers that are not in the process of being deleted has DeletionTimestamp as zero
+		if server.ObjectMeta.DeletionTimestamp.IsZero() {
+			s.logger.V(1).Info("Calling NotifyServer (on reconnect)", "server", server.Name)
+			if err := s.ServerNotify(ctx, &server); err != nil {
+				s.logger.Error(err, "Failed to notify scheduler about initial Server parameters", "server", server.Name)
+			} else {
+				s.logger.V(1).Info("Load model called successfully", "server", server.Name)
+			}
+		} else {
+			s.logger.V(1).Info("Server being deleted, not notifying", "server", server.Name)
+		}
+	}
 }

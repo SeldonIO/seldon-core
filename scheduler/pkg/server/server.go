@@ -35,18 +35,27 @@ import (
 )
 
 const (
-	grpcMaxConcurrentStreams       = 1_000_000
-	pendingEventsQueueSize     int = 1000
-	modelEventHandlerName          = "scheduler.server.models"
-	serverEventHandlerName         = "scheduler.server.servers"
-	experimentEventHandlerName     = "scheduler.server.experiments"
-	pipelineEventHandlerName       = "scheduler.server.pipelines"
-	defaultBatchWait               = 250 * time.Millisecond
-	sendTimeout                    = 30 * time.Second // Timeout for sending events to subscribers via grpc `sendMsg`
+	grpcMaxConcurrentStreams        = 1_000_000
+	pendingEventsQueueSize      int = 1000
+	modelEventHandlerName           = "scheduler.server.models"
+	serverEventHandlerName          = "scheduler.server.servers"
+	serverModelEventHandlerName     = "scheduler.server.servers.models"
+	experimentEventHandlerName      = "scheduler.server.experiments"
+	pipelineEventHandlerName        = "scheduler.server.pipelines"
+	defaultBatchWait                = 250 * time.Millisecond
+	sendTimeout                     = 30 * time.Second // Timeout for sending events to subscribers via grpc `sendMsg`
 )
 
 var (
 	ErrAddServerEmptyServerName = status.Errorf(codes.FailedPrecondition, "Empty server name passed")
+)
+
+type SchedulerSyncPhase uint8
+
+const (
+	SCHEDULER_SYNC_INIT SchedulerSyncPhase = iota
+	SCHEDULER_SYNC_PARTIAL
+	SCHEDULER_SYNC_ONLINE
 )
 
 type SchedulerServer struct {
@@ -77,6 +86,7 @@ type ServerEventStream struct {
 	trigger       *time.Timer
 	pendingEvents map[string]struct{}
 	pendingLock   sync.Mutex
+	syncPhase			SchedulerSyncPhase
 }
 
 type ExperimentEventStream struct {
@@ -191,6 +201,7 @@ func NewSchedulerServer(
 			batchWait:     defaultBatchWait,
 			trigger:       nil,
 			pendingEvents: map[string]struct{}{},
+			syncPhase:		 SCHEDULER_SYNC_INIT,
 		},
 		pipelineEventStream: PipelineEventStream{
 			streams: make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription),
@@ -208,12 +219,21 @@ func NewSchedulerServer(
 		s.logger,
 		s.handleModelEvent,
 	)
-	eventHub.RegisterModelEventHandler(
+
+	eventHub.RegisterServerEventHandler(
 		serverEventHandlerName,
 		pendingEventsQueueSize,
 		s.logger,
 		s.handleServerEvent,
 	)
+
+	eventHub.RegisterModelEventHandler(
+		serverModelEventHandlerName,
+		pendingEventsQueueSize,
+		s.logger,
+		s.handleServerModelEvent,
+	)
+
 	eventHub.RegisterExperimentEventHandler(
 		experimentEventHandlerName,
 		pendingEventsQueueSize,
@@ -446,6 +466,7 @@ func createServerStatusResponse(s *store.ServerSnapshot) *pb.ServerStatusRespons
 	// note we dont count draining replicas in available replicas
 
 	resp := &pb.ServerStatusResponse{
+		Type:             pb.ServerStatusResponse_StatusUpdate,
 		ServerName:       s.Name,
 		ExpectedReplicas: int32(s.ExpectedReplicas),
 		KubernetesMeta:   s.KubernetesMeta,

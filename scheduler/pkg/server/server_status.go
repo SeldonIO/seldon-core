@@ -87,6 +87,63 @@ func (s *SchedulerServer) handleModelEvent(event coordinator.ModelEventMsg) {
 	}
 }
 
+<<<<<<< Updated upstream
+=======
+func (s *SchedulerServer) handleFailedModelScalingEvent(event coordinator.ModelEventMsg) {
+	logger := s.logger.WithField("func", "handleFailedModelScalingEvent")
+	logger.Debugf("can not scale model %s using available server resources; triggering server scaling", event.String())
+
+	err := s.triggerServerScaling(event)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to send failed scaling event for model %s", event.String())
+	}
+}
+
+func (s *SchedulerServer) triggerServerScaling(evt coordinator.ModelEventMsg) error {
+	logger := s.logger.WithField("func", "sendModelStatusEvent")
+	model, err := s.modelStore.GetModel(evt.ModelName)
+	if err != nil {
+		return err
+	}
+	latestModel := model.GetLatest()
+	if latestModel != nil && latestModel.GetVersion() == evt.ModelVersion {
+		if latestModel.DesiredReplicas() > int(latestModel.ModelState().AvailableReplicas) {
+			serverName := latestModel.Server()
+
+			server, err := s.modelStore.GetServer(serverName, true, false)
+			if err != nil {
+				logger.WithError(err).Errorf("Failed to get server details for model %s", evt.String())
+				return err
+			}
+			newExpectedReplicas := server.ExpectedReplicas + 1
+			if newExpectedReplicas < latestModel.DesiredReplicas() {
+				newExpectedReplicas = latestModel.DesiredReplicas()
+			}
+			serverScalingUpdate := &pb.ServerStatusResponse{
+				Type:             pb.ServerStatusResponse_ScalingRequest,
+				ServerName:       serverName,
+				ExpectedReplicas: int32(newExpectedReplicas),
+				KubernetesMeta:   server.KubernetesMeta,
+			}
+			s.serverEventStream.mu.Lock()
+			defer s.serverEventStream.mu.Unlock()
+			for stream, subscription := range s.serverEventStream.streams {
+				hasExpired, err := sendWithTimeout(func() error { return stream.Send(serverScalingUpdate) }, s.timeout)
+				if hasExpired {
+					// this should trigger a reconnect from the client
+					close(subscription.fin)
+					delete(s.serverEventStream.streams, stream)
+				}
+				if err != nil {
+					logger.WithError(err).Errorf("Failed to send server scaling event to %s", subscription.name)
+				}
+			}
+		}
+	}
+	return nil
+}
+
+>>>>>>> Stashed changes
 func (s *SchedulerServer) StopSendModelEvents() {
 	s.modelEventStream.mu.Lock()
 	defer s.modelEventStream.mu.Unlock()
@@ -162,15 +219,19 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 	}
 }
 
-// TODO - Create a ServerStatusMsg type to disambiguate?
-func (s *SchedulerServer) handleServerEvent(event coordinator.ModelEventMsg) {
+func (s *SchedulerServer) handleServerModelEvent(event coordinator.ModelEventMsg) {
 	logger := s.logger.WithField("func", "handleServerEvent")
 	logger.Debugf("Got server state change for %s", event.String())
 
-	err := s.updateServerStatus(event)
+	err := s.updateServerModelsStatus(event)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to update server status for model event %s", event.String())
 	}
+}
+
+func (s *SchedulerServer) handleServerEvent(event coordinator.ServerEventMsg) {
+	logger := s.logger.WithField("func", "handleServerEvent")
+	logger.Debugf("Got server event for %s", event.String())
 }
 
 func (s *SchedulerServer) StopSendServerEvents() {
@@ -181,7 +242,7 @@ func (s *SchedulerServer) StopSendServerEvents() {
 	}
 }
 
-func (s *SchedulerServer) updateServerStatus(evt coordinator.ModelEventMsg) error {
+func (s *SchedulerServer) updateServerModelsStatus(evt coordinator.ModelEventMsg) error {
 	logger := s.logger.WithField("func", "sendServerStatusEvent")
 
 	model, err := s.modelStore.GetModel(evt.ModelName)

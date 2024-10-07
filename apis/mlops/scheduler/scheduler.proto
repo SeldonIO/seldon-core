@@ -158,6 +158,18 @@ message ServerStatusRequest {
 /* ServerStatusResponse provides details of current server status
 */
 message ServerStatusResponse {
+  /* Type of SterverStatus update. At the moment the scheduler doesn't combine multiple types of
+   * updates in the same response. However, the Type enum is forward-compatible with this
+   * possibility, by setting members to power-of-two values. This means enum values can be used
+   * as flags and combined with bitwise OR, with the exception of StatusResponseTypeUnknown.
+   */
+  enum Type {
+    StatusResponseTypeUnknown = 0;
+    StatusUpdate = 1;
+    NonAuthoritativeReplicaInfo = 2;
+    ScalingRequest = 4;
+  }
+  Type type = 7;
   string serverName = 1;
   repeated ServerReplicaResources resources = 2;
   int32 expectedReplicas = 3;
@@ -191,7 +203,9 @@ message ServerNotifyRequest {
 
 message ServerNotify {
   string name = 1;
-  int32 expectedReplicas = 2;
+  uint32 expectedReplicas = 2;
+  uint32 minReplicas = 5;
+  uint32 maxReplicas = 6;
   bool shared = 3;
   optional KubernetesMeta kubernetesMeta = 4;
 }
