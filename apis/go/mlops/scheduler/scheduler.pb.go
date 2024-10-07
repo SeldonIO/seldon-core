@@ -219,6 +219,62 @@ func (ModelReplicaStatus_ModelReplicaState) EnumDescriptor() ([]byte, []int) {
 	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{21, 0}
 }
 
+// Type of SterverStatus update. At the moment the scheduler doesn't combine multiple types of
+// updates in the same response. However, the Type enum is forward-compatible with this
+// possibility, by setting members to power-of-two values. This means enum values can be used
+// as flags and combined with bitwise OR, with the exception of StatusResponseTypeUnknown.
+type ServerStatusResponse_Type int32
+
+const (
+	ServerStatusResponse_StatusResponseTypeUnknown   ServerStatusResponse_Type = 0
+	ServerStatusResponse_StatusUpdate                ServerStatusResponse_Type = 1
+	ServerStatusResponse_NonAuthoritativeReplicaInfo ServerStatusResponse_Type = 2
+	ServerStatusResponse_ScalingRequest              ServerStatusResponse_Type = 4
+)
+
+// Enum value maps for ServerStatusResponse_Type.
+var (
+	ServerStatusResponse_Type_name = map[int32]string{
+		0: "StatusResponseTypeUnknown",
+		1: "StatusUpdate",
+		2: "NonAuthoritativeReplicaInfo",
+		4: "ScalingRequest",
+	}
+	ServerStatusResponse_Type_value = map[string]int32{
+		"StatusResponseTypeUnknown":   0,
+		"StatusUpdate":                1,
+		"NonAuthoritativeReplicaInfo": 2,
+		"ScalingRequest":              4,
+	}
+)
+
+func (x ServerStatusResponse_Type) Enum() *ServerStatusResponse_Type {
+	p := new(ServerStatusResponse_Type)
+	*p = x
+	return p
+}
+
+func (x ServerStatusResponse_Type) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ServerStatusResponse_Type) Descriptor() protoreflect.EnumDescriptor {
+	return file_mlops_scheduler_scheduler_proto_enumTypes[3].Descriptor()
+}
+
+func (ServerStatusResponse_Type) Type() protoreflect.EnumType {
+	return &file_mlops_scheduler_scheduler_proto_enumTypes[3]
+}
+
+func (x ServerStatusResponse_Type) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ServerStatusResponse_Type.Descriptor instead.
+func (ServerStatusResponse_Type) EnumDescriptor() ([]byte, []int) {
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{19, 0}
+}
+
 type PipelineStep_JoinOp int32
 
 const (
@@ -252,11 +308,11 @@ func (x PipelineStep_JoinOp) String() string {
 }
 
 func (PipelineStep_JoinOp) Descriptor() protoreflect.EnumDescriptor {
-	return file_mlops_scheduler_scheduler_proto_enumTypes[3].Descriptor()
+	return file_mlops_scheduler_scheduler_proto_enumTypes[4].Descriptor()
 }
 
 func (PipelineStep_JoinOp) Type() protoreflect.EnumType {
-	return &file_mlops_scheduler_scheduler_proto_enumTypes[3]
+	return &file_mlops_scheduler_scheduler_proto_enumTypes[4]
 }
 
 func (x PipelineStep_JoinOp) Number() protoreflect.EnumNumber {
@@ -301,11 +357,11 @@ func (x PipelineInput_JoinOp) String() string {
 }
 
 func (PipelineInput_JoinOp) Descriptor() protoreflect.EnumDescriptor {
-	return file_mlops_scheduler_scheduler_proto_enumTypes[4].Descriptor()
+	return file_mlops_scheduler_scheduler_proto_enumTypes[5].Descriptor()
 }
 
 func (PipelineInput_JoinOp) Type() protoreflect.EnumType {
-	return &file_mlops_scheduler_scheduler_proto_enumTypes[4]
+	return &file_mlops_scheduler_scheduler_proto_enumTypes[5]
 }
 
 func (x PipelineInput_JoinOp) Number() protoreflect.EnumNumber {
@@ -350,11 +406,11 @@ func (x PipelineOutput_JoinOp) String() string {
 }
 
 func (PipelineOutput_JoinOp) Descriptor() protoreflect.EnumDescriptor {
-	return file_mlops_scheduler_scheduler_proto_enumTypes[5].Descriptor()
+	return file_mlops_scheduler_scheduler_proto_enumTypes[6].Descriptor()
 }
 
 func (PipelineOutput_JoinOp) Type() protoreflect.EnumType {
-	return &file_mlops_scheduler_scheduler_proto_enumTypes[5]
+	return &file_mlops_scheduler_scheduler_proto_enumTypes[6]
 }
 
 func (x PipelineOutput_JoinOp) Number() protoreflect.EnumNumber {
@@ -414,11 +470,11 @@ func (x PipelineVersionState_PipelineStatus) String() string {
 }
 
 func (PipelineVersionState_PipelineStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_mlops_scheduler_scheduler_proto_enumTypes[6].Descriptor()
+	return file_mlops_scheduler_scheduler_proto_enumTypes[7].Descriptor()
 }
 
 func (PipelineVersionState_PipelineStatus) Type() protoreflect.EnumType {
-	return &file_mlops_scheduler_scheduler_proto_enumTypes[6]
+	return &file_mlops_scheduler_scheduler_proto_enumTypes[7]
 }
 
 func (x PipelineVersionState_PipelineStatus) Number() protoreflect.EnumNumber {
@@ -1924,6 +1980,7 @@ type ServerStatusResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	Type                   ServerStatusResponse_Type `protobuf:"varint,7,opt,name=type,proto3,enum=seldon.mlops.scheduler.ServerStatusResponse_Type" json:"type,omitempty"`
 	ServerName             string                    `protobuf:"bytes,1,opt,name=serverName,proto3" json:"serverName,omitempty"`
 	Resources              []*ServerReplicaResources `protobuf:"bytes,2,rep,name=resources,proto3" json:"resources,omitempty"`
 	ExpectedReplicas       int32                     `protobuf:"varint,3,opt,name=expectedReplicas,proto3" json:"expectedReplicas,omitempty"`
@@ -1962,6 +2019,13 @@ func (x *ServerStatusResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ServerStatusResponse.ProtoReflect.Descriptor instead.
 func (*ServerStatusResponse) Descriptor() ([]byte, []int) {
 	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *ServerStatusResponse) GetType() ServerStatusResponse_Type {
+	if x != nil {
+		return x.Type
+	}
+	return ServerStatusResponse_StatusResponseTypeUnknown
 }
 
 func (x *ServerStatusResponse) GetServerName() string {
@@ -2256,7 +2320,9 @@ type ServerNotify struct {
 	unknownFields protoimpl.UnknownFields
 
 	Name             string          `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	ExpectedReplicas int32           `protobuf:"varint,2,opt,name=expectedReplicas,proto3" json:"expectedReplicas,omitempty"`
+	ExpectedReplicas uint32          `protobuf:"varint,2,opt,name=expectedReplicas,proto3" json:"expectedReplicas,omitempty"`
+	MinReplicas      uint32          `protobuf:"varint,5,opt,name=minReplicas,proto3" json:"minReplicas,omitempty"`
+	MaxReplicas      uint32          `protobuf:"varint,6,opt,name=maxReplicas,proto3" json:"maxReplicas,omitempty"`
 	Shared           bool            `protobuf:"varint,3,opt,name=shared,proto3" json:"shared,omitempty"`
 	KubernetesMeta   *KubernetesMeta `protobuf:"bytes,4,opt,name=kubernetesMeta,proto3,oneof" json:"kubernetesMeta,omitempty"`
 }
@@ -2300,9 +2366,23 @@ func (x *ServerNotify) GetName() string {
 	return ""
 }
 
-func (x *ServerNotify) GetExpectedReplicas() int32 {
+func (x *ServerNotify) GetExpectedReplicas() uint32 {
 	if x != nil {
 		return x.ExpectedReplicas
+	}
+	return 0
+}
+
+func (x *ServerNotify) GetMinReplicas() uint32 {
+	if x != nil {
+		return x.MinReplicas
+	}
+	return 0
+}
+
+func (x *ServerNotify) GetMaxReplicas() uint32 {
+	if x != nil {
+		return x.MaxReplicas
 	}
 	return 0
 }
@@ -4892,11 +4972,11 @@ var file_mlops_scheduler_scheduler_proto_goTypes = []any{
 	(ResourceType)(0),                         // 0: seldon.mlops.scheduler.ResourceType
 	(ModelStatus_ModelState)(0),               // 1: seldon.mlops.scheduler.ModelStatus.ModelState
 	(ModelReplicaStatus_ModelReplicaState)(0), // 2: seldon.mlops.scheduler.ModelReplicaStatus.ModelReplicaState
-	(PipelineStep_JoinOp)(0),                  // 3: seldon.mlops.scheduler.PipelineStep.JoinOp
-	(PipelineInput_JoinOp)(0),                 // 4: seldon.mlops.scheduler.PipelineInput.JoinOp
-	(PipelineOutput_JoinOp)(0),                // 5: seldon.mlops.scheduler.PipelineOutput.JoinOp
-	(PipelineVersionState_PipelineStatus)(0),  // 6: seldon.mlops.scheduler.PipelineVersionState.PipelineStatus
-	(ControlPlaneResponse_Event)(0),           // 7: seldon.mlops.scheduler.ControlPlaneResponse.Event
+	(ServerStatusResponse_Type)(0),            // 3: seldon.mlops.scheduler.ServerStatusResponse.Type
+	(PipelineStep_JoinOp)(0),                  // 4: seldon.mlops.scheduler.PipelineStep.JoinOp
+	(PipelineInput_JoinOp)(0),                 // 5: seldon.mlops.scheduler.PipelineInput.JoinOp
+	(PipelineOutput_JoinOp)(0),                // 6: seldon.mlops.scheduler.PipelineOutput.JoinOp
+	(PipelineVersionState_PipelineStatus)(0),  // 7: seldon.mlops.scheduler.PipelineVersionState.PipelineStatus
 	(*LoadModelRequest)(nil),                  // 8: seldon.mlops.scheduler.LoadModelRequest
 	(*Model)(nil),                             // 9: seldon.mlops.scheduler.Model
 	(*MetaData)(nil),                          // 10: seldon.mlops.scheduler.MetaData

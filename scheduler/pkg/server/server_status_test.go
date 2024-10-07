@@ -392,7 +392,7 @@ func TestServersStatusEvents(t *testing.T) {
 				fin:    make(chan bool),
 			}
 			g.Expect(s.serverEventStream.streams[stream]).ToNot(BeNil())
-			hub.PublishModelEvent(serverEventHandlerName, coordinator.ModelEventMsg{
+			hub.PublishModelEvent(serverModelEventHandlerName, coordinator.ModelEventMsg{
 				ModelName: "foo", ModelVersion: 1})
 
 			// to allow events to propagate

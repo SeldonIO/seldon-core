@@ -11,7 +11,18 @@ package coordinator
 
 import "fmt"
 
+type ModelEventUpdateContext int
 type ServerEventUpdateContext int
+
+const (
+	SERVER_STATUS_UPDATE ServerEventUpdateContext = iota
+	SERVER_REPLICA_CONNECTED
+)
+
+const (
+	SERVER_STATUS_UPDATE ServerEventUpdateContext = iota
+	SERVER_REPLICA_CONNECTED
+)
 
 const (
 	SERVER_STATUS_UPDATE ServerEventUpdateContext = iota
