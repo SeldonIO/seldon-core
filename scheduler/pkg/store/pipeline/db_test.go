@@ -201,7 +201,7 @@ func TestSaveAndRestoreDeletedPipelines(t *testing.T) {
 
 	createdDeletedPipeline := func(name string) Pipeline {
 		return Pipeline{
-			Name:        "test-with",
+			Name:        name,
 			LastVersion: 0,
 			Versions: []*PipelineVersion{
 				{
@@ -228,12 +228,12 @@ func TestSaveAndRestoreDeletedPipelines(t *testing.T) {
 
 	tests := []test{
 		{
-			name:     "test deleted pipeline with TTL",
+			name:     "test deleted pipeline with TTL should not exist after restore",
 			pipeline: createdDeletedPipeline("with-ttl"),
 			withTTL:  true,
 		},
 		{
-			name:     "test deleted pipeline without TTL",
+			name:     "test deleted pipeline without TTL should exist after restore",
 			pipeline: createdDeletedPipeline("without-ttl"),
 			withTTL:  false,
 		},

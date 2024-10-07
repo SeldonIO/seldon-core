@@ -357,12 +357,12 @@ func TestSaveAndRestoreDeletedExperiments(t *testing.T) {
 
 	tests := []test{
 		{
-			name:       "deleted experiment with ttl",
+			name:       "deleted experiment with ttl does not exist after restore",
 			experiment: createDeletedExperiment("with-ttl"),
 			withTTL:    true,
 		},
 		{
-			name:       "deleted experiment without ttl",
+			name:       "deleted experiment without ttl does exist after restore",
 			experiment: createDeletedExperiment("without-ttl"),
 			withTTL:    false,
 		},
