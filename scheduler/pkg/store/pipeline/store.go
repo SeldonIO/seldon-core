@@ -105,8 +105,8 @@ func (ps *PipelineStore) InitialiseOrRestoreDB(path string) error {
 func (ps *PipelineStore) restorePipeline(pipeline *Pipeline) {
 	logger := ps.logger.WithField("func", "restorePipeline")
 
-	// ensure a resonable ttl is set for deleted pipelines
-	if pipeline.Deleted && time.Now().After(pipeline.DeletedAt) {
+	// ensure a ttl is set for deleted pipelines
+	if pipeline.Deleted && pipeline.DeletedAt.IsZero() {
 		logger.Infof("updating ttl for pipeline %s", pipeline.Name)
 		pipeline.DeletedAt = time.Now()
 		err := ps.db.save(pipeline)

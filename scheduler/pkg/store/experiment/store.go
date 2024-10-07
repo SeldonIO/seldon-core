@@ -100,8 +100,8 @@ func (es *ExperimentStore) addExperimentInMap(experiment *Experiment) error {
 	logger := es.logger.WithField("func", "AddExperimentInMap")
 	es.mu.Lock()
 	defer es.mu.Unlock()
-	// ensure a reasonable ttl is set for deleted experiments
-	if experiment.Deleted && time.Now().After(experiment.DeletedAt) {
+	// ensure a ttl is set for deleted experiments
+	if experiment.Deleted && experiment.DeletedAt.IsZero() {
 		logger.Infof("updating ttl for experiment %s", experiment.Name)
 		experiment.DeletedAt = time.Now()
 		err := es.db.save(experiment)
