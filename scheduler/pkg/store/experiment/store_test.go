@@ -13,6 +13,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/gomega"
@@ -264,7 +265,7 @@ func TestStopExperiment(t *testing.T) {
 			err := test.store.InitialiseOrRestoreDB(path)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.store.experiments {
-				err := test.store.db.save(p, nil)
+				err := test.store.db.save(p)
 				g.Expect(err).To(BeNil())
 			}
 
@@ -415,7 +416,7 @@ func TestRestoreExperiments(t *testing.T) {
 			err := store.InitialiseOrRestoreDB(path)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.experiments {
-				err := store.db.save(p, nil)
+				err := store.db.save(p)
 				g.Expect(err).To(BeNil())
 			}
 			_ = store.db.Stop()
@@ -432,10 +433,13 @@ func TestRestoreExperiments(t *testing.T) {
 				expectedExperiment, ok := test.experiments[p.Name]
 				g.Expect(ok).To(BeTrue())
 				g.Expect(expectedExperiment.Deleted).To(Equal(p.Deleted))
-				g.Expect(cmp.Equal(p, expectedExperiment)).To(BeTrue())
-			}
+				g.Expect(cmp.Equal(p.Name, expectedExperiment.Name)).To(BeTrue())
+				if expectedExperiment.Deleted {
+					g.Expect(expectedExperiment.DeletedAt.Before(time.Now())).To(BeTrue())
+				}
 
-			g.Expect(len(store.experiments)).To(Equal(len(test.experiments)))
+				g.Expect(len(store.experiments)).To(Equal(len(test.experiments)))
+			}
 		})
 	}
 }

@@ -96,9 +96,20 @@ func getExperimentDbFolder(basePath string) string {
 // we just add a reference to the experiment in the memory store
 // so that we can keep track of it in case we need to replay the event (to the controller)
 // we do not trigger an event though as envoy has a clean state when the scheduler restarts
-func (es *ExperimentStore) AddExperimentInMap(experiment *Experiment) error {
+func (es *ExperimentStore) addExperimentInMap(experiment *Experiment) error {
+	logger := es.logger.WithField("func", "AddExperimentInMap")
 	es.mu.Lock()
 	defer es.mu.Unlock()
+	// ensure a reasonable ttl is set for deleted experiments
+	if experiment.Deleted && time.Now().After(experiment.DeletedAt) {
+		logger.Infof("updating ttl for experiment %s", experiment.Name)
+		experiment.DeletedAt = time.Now()
+		err := es.db.save(experiment)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to update ttl for deleted experiment %s", experiment.Name)
+		}
+	}
+
 	if _, ok := es.experiments[experiment.Name]; !ok {
 		es.experiments[experiment.Name] = experiment
 		return nil
@@ -121,7 +132,7 @@ func (es *ExperimentStore) InitialiseOrRestoreDB(path string) error {
 	}
 	es.db = db
 	// If database already existed we can restore else this is a noop
-	err = es.db.restore(es.StartExperiment, es.AddExperimentInMap)
+	err = es.db.restore(es.StartExperiment, es.addExperimentInMap)
 	if err != nil {
 		return err
 	}
@@ -322,7 +333,7 @@ func (es *ExperimentStore) StartExperiment(experiment *Experiment) error {
 	}
 	if es.eventHub != nil {
 		if modelEvt != nil {
-			es.eventHub.PublishModelEvent(experimentStateEventSource, *modelEvt)
+			es.eventHub.PublishModelEvent(experimentStartEventSource, *modelEvt)
 		}
 		if pipelineEvt != nil {
 			es.eventHub.PublishPipelineEvent(experimentStartEventSource, *pipelineEvt)
@@ -362,7 +373,7 @@ func (es *ExperimentStore) startExperimentImpl(experiment *Experiment) (*coordin
 	}
 	es.updateExperimentState(experiment)
 	if es.db != nil {
-		err := es.db.save(experiment, nil)
+		err := es.db.save(experiment)
 		if err != nil {
 			return nil, nil, nil, err
 		}
@@ -399,6 +410,7 @@ func (es *ExperimentStore) stopExperimentImpl(experimentName string) (*coordinat
 		var modelEvt *coordinator.ModelEventMsg
 		var pipelineEvt *coordinator.PipelineEventMsg
 		experiment.Deleted = true
+		experiment.DeletedAt = time.Now()
 		experiment.Active = false
 		es.cleanExperimentState(experiment)
 		if experiment.Default != nil {
@@ -417,8 +429,7 @@ func (es *ExperimentStore) stopExperimentImpl(experimentName string) (*coordinat
 			}
 		}
 		if es.db != nil {
-			ttl := deletedExperimentTTL
-			err := es.db.save(experiment, &ttl)
+			err := es.db.save(experiment)
 			if err != nil {
 				return nil, nil, nil, err
 			}

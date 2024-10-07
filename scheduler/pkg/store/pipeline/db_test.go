@@ -50,7 +50,7 @@ func TestSaveWithTTL(t *testing.T) {
 		Deleted: true,
 	}
 	ttl := time.Duration(time.Second)
-	pipeline.DeletesAt = time.Now().Add(ttl)
+	pipeline.DeletedAt = time.Now().Add(-utils.DeletedResourceTTL).Add(ttl)
 
 	path := fmt.Sprintf("%s/db", t.TempDir())
 	logger := log.New()
@@ -248,8 +248,7 @@ func TestSaveAndRestoreDeletedPipelines(t *testing.T) {
 			if !test.withTTL {
 				err = pdb.save(&test.pipeline)
 			} else {
-				ttl := time.Duration(time.Microsecond * 10)
-				test.pipeline.DeletesAt = time.Now().Add(-ttl)
+				test.pipeline.DeletedAt = time.Now().Add(-utils.DeletedResourceTTL)
 				err = pdb.save(&test.pipeline)
 			}
 			g.Expect(err).To(BeNil())

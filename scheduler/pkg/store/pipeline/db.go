@@ -71,7 +71,8 @@ func save(pipeline *Pipeline, db *badger.DB) error {
 			return err
 		})
 	} else {
-		ttl := time.Until(pipeline.DeletesAt)
+		// useful for testing
+		ttl := time.Until(pipeline.DeletedAt.Add(utils.DeletedResourceTTL))
 		return db.Update(func(txn *badger.Txn) error {
 			e := badger.NewEntry([]byte(pipeline.Name), pipelineBytes).WithTTL(ttl)
 			err = txn.SetEntry(e)
@@ -126,7 +127,7 @@ func (pdb *PipelineDBManager) restore(createPipelineCb func(pipeline *Pipeline))
 				}
 
 				if pipeline.Deleted {
-					pipeline.DeletesAt = utils.GetDeletesAt(item)
+					pipeline.DeletedAt = utils.GetDeletedAt(item)
 				}
 
 				createPipelineCb(pipeline)

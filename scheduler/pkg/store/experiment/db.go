@@ -62,22 +62,23 @@ func (edb *ExperimentDBManager) Stop() error {
 	return utils.Stop(edb.db)
 }
 
-// a nil ttl will save the experiment indefinitely
-func (edb *ExperimentDBManager) save(experiment *Experiment, ttl *time.Duration) error {
+func (edb *ExperimentDBManager) save(experiment *Experiment) error {
 	experimentProto := CreateExperimentSnapshotProto(experiment)
 	experimentBytes, err := proto.Marshal(experimentProto)
 	if err != nil {
 		return err
 	}
 
-	if ttl == nil {
+	if !experiment.Deleted {
 		return edb.db.Update(func(txn *badger.Txn) error {
 			err = txn.Set([]byte(experiment.Name), experimentBytes)
 			return err
 		})
 	} else {
+		// useful for testing
+		ttl := time.Until(experiment.DeletedAt.Add(utils.DeletedResourceTTL))
 		return edb.db.Update(func(txn *badger.Txn) error {
-			e := badger.NewEntry([]byte(experiment.Name), experimentBytes).WithTTL(*ttl)
+			e := badger.NewEntry([]byte(experiment.Name), experimentBytes).WithTTL(ttl)
 			err = txn.SetEntry(e)
 			return err
 		})
@@ -120,14 +121,8 @@ func (edb *ExperimentDBManager) restore(
 					return err
 				}
 				experiment := CreateExperimentFromSnapshot(&snapshot)
-				if experiment.Deleted && item.ExpiresAt() == 0 {
-					ttl := deletedExperimentTTL
-					err = edb.save(experiment, &ttl)
-					if err != nil {
-						edb.logger.WithError(err).Warnf("failed to set ttl for experiment %s", experiment.Name)
-					}
-				}
 				if experiment.Deleted {
+					experiment.DeletedAt = utils.GetDeletedAt(item)
 					err = stopExperimentCb(experiment)
 				} else {
 					// otherwise attempt to start the experiment

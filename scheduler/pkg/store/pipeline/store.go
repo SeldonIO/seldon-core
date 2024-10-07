@@ -22,7 +22,6 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
 )
 
 const (
@@ -106,12 +105,14 @@ func (ps *PipelineStore) InitialiseOrRestoreDB(path string) error {
 func (ps *PipelineStore) restorePipeline(pipeline *Pipeline) {
 	logger := ps.logger.WithField("func", "restorePipeline")
 
-	// ensure a ttl is set for deleted pipelines
-	if pipeline.Deleted && time.Now().After(pipeline.DeletesAt) {
+	// ensure a resonable ttl is set for deleted pipelines
+	if pipeline.Deleted && time.Now().After(pipeline.DeletedAt) {
 		logger.Infof("updating ttl for pipeline %s", pipeline.Name)
-		ttl := utils.DeletedResourceTTL
-		pipeline.DeletesAt = time.Now().Add(ttl)
-		ps.db.save(pipeline)
+		pipeline.DeletedAt = time.Now()
+		err := ps.db.save(pipeline)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to update ttl for deleted pipeline %s", pipeline.Name)
+		}
 	}
 
 	logger.Infof("Adding pipeline %s with state %s", pipeline.GetLatestPipelineVersion().String(), pipeline.GetLatestPipelineVersion().State.Status.String())
@@ -160,7 +161,6 @@ func (ps *PipelineStore) AddPipeline(req *scheduler.Pipeline) error {
 }
 
 func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.PipelineEventMsg, error) {
-	logger := ps.logger.WithField("func", "AddPipeline")
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
 	var pipeline *Pipeline
@@ -171,9 +171,9 @@ func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.
 			LastVersion: 0,
 		}
 	} else {
-		lastPipeline := pipeline.GetLatestPipelineVersion()
+		latestPipeline := pipeline.GetLatestPipelineVersion()
 
-		switch lastPipeline.State.Status {
+		switch latestPipeline.State.Status {
 		case PipelineTerminate, PipelineTerminating, PipelineTerminated:
 			pipeline = &Pipeline{
 				Name:        req.Name,
@@ -181,14 +181,8 @@ func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.
 			}
 		default:
 			// Handle repeat Kubernetes resource calls for same generation
-			if req.GetKubernetesMeta() != nil &&
-				lastPipeline.KubernetesMeta != nil &&
-				req.GetKubernetesMeta().Generation > 0 &&
-				lastPipeline.KubernetesMeta.Generation > 0 {
-				if req.GetKubernetesMeta().Generation == lastPipeline.KubernetesMeta.Generation {
-					logger.Infof("Pipeline %s kubernetes meta generation matches %d so will ignore", req.Name, req.KubernetesMeta.Generation)
-					return nil, nil
-				}
+			if ps.generationMatches(req, latestPipeline) {
+				return nil, nil
 			}
 		}
 	}
@@ -213,6 +207,20 @@ func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.
 		PipelineVersion: pv.Version,
 		UID:             pv.UID,
 	}, nil
+}
+
+func (ps *PipelineStore) generationMatches(req *scheduler.Pipeline, lastPipeline *PipelineVersion) bool {
+	logger := ps.logger.WithField("func", "generationMatches")
+	if req.GetKubernetesMeta() != nil &&
+		lastPipeline.KubernetesMeta != nil &&
+		req.GetKubernetesMeta().Generation > 0 &&
+		lastPipeline.KubernetesMeta.Generation > 0 {
+		if req.GetKubernetesMeta().Generation == lastPipeline.KubernetesMeta.Generation {
+			logger.Infof("Pipeline %s kubernetes meta generation matches %d so will ignore", req.Name, req.KubernetesMeta.Generation)
+			return true
+		}
+	}
+	return false
 }
 
 func (ps *PipelineStore) RemovePipeline(name string) error {
@@ -244,7 +252,7 @@ func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineE
 			return nil, &PipelineAlreadyTerminatedErr{pipeline: name}
 		default:
 			pipeline.Deleted = true
-			pipeline.DeletesAt = time.Now().Add(utils.DeletedResourceTTL)
+			pipeline.DeletedAt = time.Now()
 			lastPipelineVersion.State.setState(PipelineTerminate, "pipeline removed")
 			if err := ps.db.save(pipeline); err != nil {
 				ps.logger.WithError(err).Errorf("Failed to save pipeline %s", name)

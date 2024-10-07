@@ -107,7 +107,8 @@ func TestSaveWithTTL(t *testing.T) {
 	logger := log.New()
 	db, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
 	g.Expect(err).To(BeNil())
-	err = db.save(experiment, &ttl)
+	experiment.DeletedAt = time.Now().Add(ttl - utils.DeletedResourceTTL)
+	err = db.save(experiment)
 	g.Expect(err).To(BeNil())
 
 	persistedExp, err := db.get(experiment.Name)
@@ -303,7 +304,7 @@ func TestSaveAndRestore(t *testing.T) {
 			db, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.experiments {
-				err := db.save(p, nil)
+				err := db.save(p)
 				g.Expect(err).To(BeNil())
 			}
 			err = db.Stop()
@@ -375,12 +376,11 @@ func TestSaveAndRestoreDeletedExperiments(t *testing.T) {
 			edb, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
 			if !test.withTTL {
-				err := edb.save(&test.experiment, nil)
+				err := edb.save(&test.experiment)
 				g.Expect(err).To(BeNil())
 			} else {
-				ttl := time.Duration(time.Microsecond * 2)
-				err := edb.save(&test.experiment, &ttl)
-				time.Sleep(ttl * 2)
+				test.experiment.DeletedAt = time.Now().Add(-utils.DeletedResourceTTL)
+				err := edb.save(&test.experiment)
 				g.Expect(err).To(BeNil())
 			}
 			err = edb.Stop()
@@ -523,7 +523,7 @@ func TestGetExperimentFromDB(t *testing.T) {
 			db, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.experiments {
-				err := db.save(p, nil)
+				err := db.save(p)
 				g.Expect(err).To(BeNil())
 			}
 
@@ -663,7 +663,7 @@ func TestDeleteExperimentFromDB(t *testing.T) {
 			db, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.experiments {
-				err := db.save(p, nil)
+				err := db.save(p)
 				g.Expect(err).To(BeNil())
 			}
 
