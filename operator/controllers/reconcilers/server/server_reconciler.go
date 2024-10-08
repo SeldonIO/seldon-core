@@ -137,6 +137,7 @@ func (s *ServerReconciler) createStatefulSetReconciler(server *mlopsv1alpha1.Ser
 		podSpec,
 		serverConfig.Spec.VolumeClaimTemplates,
 		&server.Spec.ScalingSpec,
+		server.Spec.StatefulSetPersistentVolumeClaimRetentionPolicy,
 		serverConfig.ObjectMeta,
 		annotator)
 	return statefulSetReconciler, nil

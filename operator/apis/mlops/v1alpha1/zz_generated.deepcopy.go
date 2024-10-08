@@ -15,6 +15,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package v1alpha1
 
 import (
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -1410,6 +1411,11 @@ func (in *ServerSpec) DeepCopyInto(out *ServerSpec) {
 		in, out := &in.PodSpec, &out.PodSpec
 		*out = new(PodSpec)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.StatefulSetPersistentVolumeClaimRetentionPolicy != nil {
+		in, out := &in.StatefulSetPersistentVolumeClaimRetentionPolicy, &out.StatefulSetPersistentVolumeClaimRetentionPolicy
+		*out = new(appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy)
+		**out = **in
 	}
 	in.ScalingSpec.DeepCopyInto(&out.ScalingSpec)
 }
