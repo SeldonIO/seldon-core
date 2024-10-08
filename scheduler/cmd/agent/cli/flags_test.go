@@ -64,6 +64,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 		expectedMaxUnloadElapsedTimeMinute                      int
 		expectedMaxLoadRetryCount                               int
 		expectedMaxUnloadRetryCount                             int
+		expectedUnloadGraceSeconds                              int
 	}
 	tests := []test{
 		{
@@ -107,6 +108,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 			expectedMaxUnloadElapsedTimeMinute:                      defaultMaxUnloadElapsedTimeMinute,
 			expectedMaxLoadRetryCount:                               defaultMaxLoadRetryCount,
 			expectedMaxUnloadRetryCount:                             defaultMaxUnloadRetryCount,
+			expectedUnloadGraceSeconds:                              defautUnloadGraceSeconds,
 		},
 		{
 			name: "good args",
@@ -148,6 +150,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 				"--max-unload-elapsed-time-minutes=15",
 				"--max-load-retry-count=5",
 				"--max-unload-retry-count=1",
+				"--unload-grace-seconds=10",
 			},
 			envs:                                  []string{},
 			expectedAgentHost:                     "1.1.1.1",
@@ -187,6 +190,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 			expectedMaxUnloadElapsedTimeMinute:                      15,
 			expectedMaxLoadRetryCount:                               5,
 			expectedMaxUnloadRetryCount:                             1,
+			expectedUnloadGraceSeconds: 							10,
 		},
 		{
 			name: "good envs",
@@ -220,6 +224,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 				"SELDON_MAX_UNLOAD_ELAPSED_TIME_MINUTES=15",
 				"SELDON_MAX_LOAD_RETRY_COUNT=5",
 				"SELDON_MAX_UNLOAD_RETRY_COUNT=1",
+				"SELDON_UNLOAD_GRACE_SECONDS=5",
 			},
 			expectedAgentHost:                     "0.0.0.0",
 			expectedServerName:                    "mlserver",
@@ -258,6 +263,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 			expectedMaxUnloadElapsedTimeMinute:                      15,
 			expectedMaxLoadRetryCount:                               5,
 			expectedMaxUnloadRetryCount:                             1,
+			expectedUnloadGraceSeconds:                              5,
 		},
 	}
 
@@ -313,6 +319,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 			g.Expect(MaxUnloadElapsedTimeMinute).To(Equal(test.expectedMaxUnloadElapsedTimeMinute))
 			g.Expect(MaxLoadRetryCount).To(Equal(test.expectedMaxLoadRetryCount))
 			g.Expect(MaxUnloadRetryCount).To(Equal(test.expectedMaxUnloadRetryCount))
+			g.Expect(UnloadGraceSeconds).To(Equal(test.expectedUnloadGraceSeconds))
 			// reset
 			flag.CommandLine = flag.NewFlagSet("cmd", flag.ExitOnError)
 			os.Clearenv()
