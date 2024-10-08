@@ -266,6 +266,7 @@ func main() {
 			time.Duration(cli.MaxUnloadElapsedTimeMinute)*time.Minute,
 			uint8(cli.MaxLoadRetryCount),
 			uint8(cli.MaxUnloadRetryCount),
+			time.Duration(cli.PeriodReadySubServiceSeconds)*time.Second,
 		),
 		logger,
 		modelRepository,

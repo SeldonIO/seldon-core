@@ -49,6 +49,7 @@ const (
 	envMaxUnloadElapsedTimeMinutes                     = "SELDON_MAX_UNLOAD_ELAPSED_TIME_MINUTES"
 	envMaxLoadRetryCount                               = "SELDON_MAX_LOAD_RETRY_COUNT"
 	envMaxUnloadRetryCount                             = "SELDON_MAX_UNLOAD_RETRY_COUNT"
+	envUnloadGraceSeconds                              = "SELDON_UNLOAD_GRACE_SECONDS"
 
 	flagSchedulerHost                                   = "scheduler-host"
 	flagSchedulerPlaintxtPort                           = "scheduler-port"
@@ -81,6 +82,7 @@ const (
 	flagMaxUnloadElapsedTimeMinutes                     = "max-unload-elapsed-time-minutes"
 	flagMaxLoadRetryCount                               = "max-load-retry-count"
 	flagMaxUnloadRetryCount                             = "max-unload-retry-count"
+	flagUnloadGraceSeconds                              = "unload-grace-seconds"
 )
 
 const (
@@ -103,6 +105,7 @@ const (
 	defaultMaxUnloadElapsedTimeMinute                      = 15
 	defaultMaxLoadRetryCount                               = 5
 	defaultMaxUnloadRetryCount                             = 1
+	defautUnloadGraceSeconds                               = 2
 )
 
 var (
@@ -148,6 +151,7 @@ var (
 	MaxUnloadElapsedTimeMinute                      int
 	MaxLoadRetryCount                               int
 	MaxUnloadRetryCount                             int
+	UnloadGraceSeconds                              int
 )
 
 func init() {
@@ -191,6 +195,7 @@ func updateFlagsFromEnv() {
 	maybeMaxUnloadElapsedTimeMinute()
 	maybeMaxLoadRetryCount()
 	maybeMaxUnloadRetryCount()
+	maybeUpdateUnloadGraceSeconds()
 }
 
 func maybeUpdateModelInferenceLagThreshold() {
@@ -433,6 +438,15 @@ func maybeMaxUnloadRetryCount() {
 		envMaxUnloadRetryCount,
 		&MaxUnloadRetryCount,
 		"max unload retry count",
+	)
+}
+
+func maybeUpdateUnloadGraceSeconds() {
+	maybeUpdateFromIntEnv(
+		flagUnloadGraceSeconds,
+		envUnloadGraceSeconds,
+		&UnloadGraceSeconds,
+		"unload grace seconds",
 	)
 }
 
