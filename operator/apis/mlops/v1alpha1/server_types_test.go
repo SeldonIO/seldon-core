@@ -13,12 +13,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	. "github.com/onsi/gomega"
+	"github.com/tidwall/gjson"
 	v1 "k8s.io/api/core/v1"
 	"knative.dev/pkg/apis"
 	"knative.dev/pkg/ptr"
-
-	. "github.com/onsi/gomega"
-	"github.com/tidwall/gjson"
 )
 
 /* WARNING: Read this first if test below fails (either at compile-time or while running the
