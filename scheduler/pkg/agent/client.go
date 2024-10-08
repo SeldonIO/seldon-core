@@ -92,6 +92,7 @@ type ClientSettings struct {
 	maxUnloadElapsedTime                     time.Duration
 	maxLoadRetryCount                        uint8
 	maxUnloadRetryCount                      uint8
+	unloadGraceTime                          time.Duration
 }
 
 func NewClientSettings(
@@ -107,6 +108,7 @@ func NewClientSettings(
 	maxUnloadElapsedTime time.Duration,
 	maxLoadRetryCount,
 	maxUnloadRetryCount uint8,
+	unloadGraceTime time.Duration,
 ) *ClientSettings {
 	return &ClientSettings{
 		serverName:                               serverName,
@@ -121,6 +123,7 @@ func NewClientSettings(
 		maxUnloadElapsedTime:                     maxUnloadElapsedTime,
 		maxLoadRetryCount:                        maxLoadRetryCount,
 		maxUnloadRetryCount:                      maxUnloadRetryCount,
+		unloadGraceTime:                          unloadGraceTime,
 	}
 }
 
@@ -630,6 +633,11 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	}
 
 	logger := c.logger.WithField("func", "UnloadModel")
+
+	// As envoy is eventually consistent, we need to wait for a grace period before unloading the model
+	// to give envoy time to drain the connections and reflect the cluster changes
+	// this should be ~500ms
+	time.Sleep(c.settings.unloadGraceTime)
 
 	modelName := request.GetModelVersion().GetModel().GetMeta().GetName()
 	modelVersion := request.GetModelVersion().GetVersion()
