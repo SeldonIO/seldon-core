@@ -10,8 +10,6 @@ the Change License after the Change Date as each is defined in accordance with t
 package experiment
 
 import (
-	"time"
-
 	"github.com/dgraph-io/badger/v3"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
@@ -75,8 +73,7 @@ func (edb *ExperimentDBManager) save(experiment *Experiment) error {
 			return err
 		})
 	} else {
-		// useful for testing
-		ttl := time.Until(experiment.DeletedAt.Add(utils.DeletedResourceTTL))
+		ttl := utils.DeletedResourceTTL
 		return edb.db.Update(func(txn *badger.Txn) error {
 			e := badger.NewEntry([]byte(experiment.Name), experimentBytes).WithTTL(ttl)
 			err = txn.SetEntry(e)

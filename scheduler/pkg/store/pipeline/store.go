@@ -22,6 +22,7 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
 )
 
 const (
@@ -98,23 +99,21 @@ func (ps *PipelineStore) InitialiseOrRestoreDB(path string) error {
 	if err != nil {
 		return err
 	}
+
+	go func() {
+		ticker := time.NewTicker(utils.DeletedResourceCleanupFrequency)
+		defer ticker.Stop()
+		for range ticker.C {
+			ps.cleanupDeletedPipelines()
+		}
+	}()
+
 	return nil
 }
 
 // note: we do not validate the pipeline when we restore it from the db as we assume it was validated when it was added
 func (ps *PipelineStore) restorePipeline(pipeline *Pipeline) {
 	logger := ps.logger.WithField("func", "restorePipeline")
-
-	// ensure a ttl is set for deleted pipelines
-	if pipeline.Deleted && pipeline.DeletedAt.IsZero() {
-		logger.Infof("updating ttl for pipeline %s", pipeline.Name)
-		pipeline.DeletedAt = time.Now()
-		err := ps.db.save(pipeline)
-		if err != nil {
-			logger.WithError(err).Errorf("Failed to update ttl for deleted pipeline %s", pipeline.Name)
-		}
-	}
-
 	logger.Infof("Adding pipeline %s with state %s", pipeline.GetLatestPipelineVersion().String(), pipeline.GetLatestPipelineVersion().State.Status.String())
 	ps.mu.Lock()
 	err := ps.modelStatusHandler.addPipelineModelStatus(pipeline)
@@ -445,4 +444,20 @@ func (ps *PipelineStore) handleModelEvents(event coordinator.ModelEventMsg) {
 			logger.Debugf("No references in pipelines for model %s", event.ModelName)
 		}
 	}()
+}
+
+func (ps *PipelineStore) cleanupDeletedPipelines() {
+	ps.logger.Info("cleaning up deleted pipelines")
+	for _, pipeline := range ps.pipelines {
+		if pipeline.Deleted {
+			ps.mu.Lock()
+			defer ps.mu.Unlock()
+			if pipeline.DeletedAt.IsZero() {
+				pipeline.DeletedAt = time.Now()
+				ps.db.save(pipeline)
+			} else if pipeline.DeletedAt.Add(utils.DeletedResourceTTL).Before(time.Now()) {
+				ps.pipelines[pipeline.Name] = nil
+			}
+		}
+	}
 }

@@ -101,25 +101,21 @@ func TestSaveWithTTL(t *testing.T) {
 		Deleted: true,
 	}
 
-	ttl := time.Duration(time.Second)
-
 	path := fmt.Sprintf("%s/db", t.TempDir())
 	logger := log.New()
 	db, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
 	g.Expect(err).To(BeNil())
-	experiment.DeletedAt = time.Now().Add(ttl - utils.DeletedResourceTTL)
+	experiment.DeletedAt = time.Now()
 	err = db.save(experiment)
 	g.Expect(err).To(BeNil())
 
-	persistedExp, err := db.get(experiment.Name)
+	var item *badger.Item
+	err = db.db.View(func(txn *badger.Txn) error {
+		item, err = txn.Get(([]byte(experiment.Name)))
+		return err
+	})
 	g.Expect(err).To(BeNil())
-	g.Expect(persistedExp).NotTo(BeNil())
-
-	time.Sleep(ttl * 2)
-
-	persistedExp, err = db.get(experiment.Name)
-	g.Expect(err).ToNot(BeNil())
-	g.Expect(persistedExp).To(BeNil())
+	g.Expect(item.ExpiresAt()).ToNot(BeZero())
 
 	err = db.Stop()
 	g.Expect(err).To(BeNil())
@@ -357,12 +353,12 @@ func TestSaveAndRestoreDeletedExperiments(t *testing.T) {
 
 	tests := []test{
 		{
-			name:       "deleted experiment with ttl does not exist after restore",
+			name:       "deleted experiment with ttl has deletedAt set",
 			experiment: createDeletedExperiment("with-ttl"),
 			withTTL:    true,
 		},
 		{
-			name:       "deleted experiment without ttl does exist after restore",
+			name:       "deleted experiment without ttl has deletedAt set after cleanup",
 			experiment: createDeletedExperiment("without-ttl"),
 			withTTL:    false,
 		},
@@ -376,10 +372,9 @@ func TestSaveAndRestoreDeletedExperiments(t *testing.T) {
 			edb, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
 			g.Expect(err).To(BeNil())
 			if !test.withTTL {
-				err := edb.save(&test.experiment)
+				err = saveWithOutTTL(&test.experiment, edb.db)
 				g.Expect(err).To(BeNil())
 			} else {
-				test.experiment.DeletedAt = time.Now().Add(-utils.DeletedResourceTTL)
 				err := edb.save(&test.experiment)
 				g.Expect(err).To(BeNil())
 			}
@@ -391,16 +386,29 @@ func TestSaveAndRestoreDeletedExperiments(t *testing.T) {
 			g.Expect(err).To(BeNil())
 
 			if !test.withTTL {
+				// check state before cleanup
 				var item *badger.Item
 				err = es.db.db.View(func(txn *badger.Txn) error {
 					item, err = txn.Get(([]byte(test.experiment.Name)))
 					return err
 				})
 				g.Expect(err).To(BeNil())
-				g.Expect(item.ExpiresAt()).ToNot(BeZero())
+				g.Expect(item.ExpiresAt()).To(BeZero())
 				g.Expect(es.experiments[test.experiment.Name]).ToNot(BeNil())
+				g.Expect(es.experiments[test.experiment.Name].DeletedAt.IsZero()).To(BeTrue())
+
+				// check state after cleanup
+				es.cleanupDeletedExperiments()
+				g.Expect(es.experiments[test.experiment.Name].DeletedAt.IsZero()).ToNot(BeTrue())
+				err = es.db.db.View(func(txn *badger.Txn) error {
+					item, err = txn.Get(([]byte(test.experiment.Name)))
+					return err
+				})
+				g.Expect(err).To(BeNil())
+				g.Expect(item.ExpiresAt()).ToNot(BeZero())
+
 			} else {
-				g.Expect(es.experiments[test.experiment.Name]).To(BeNil())
+				g.Expect(es.experiments[test.experiment.Name].DeletedAt.IsZero()).ToNot(BeTrue())
 			}
 		})
 	}
@@ -843,4 +851,16 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 			g.Expect(len(es.experiments)).To(Equal(0))
 		})
 	}
+}
+
+func saveWithOutTTL(experiment *Experiment, db *badger.DB) error {
+	experimentProto := CreateExperimentSnapshotProto(experiment)
+	experimentBytes, err := proto.Marshal(experimentProto)
+	if err != nil {
+		return err
+	}
+	return db.Update(func(txn *badger.Txn) error {
+		err = txn.Set([]byte(experiment.Name), experimentBytes)
+		return err
+	})
 }

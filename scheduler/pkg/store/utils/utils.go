@@ -17,8 +17,9 @@ import (
 )
 
 const (
-	VersionKey                       = "__version_key__"
-	DeletedResourceTTL time.Duration = time.Duration(24 * time.Hour)
+	VersionKey                                    = "__version_key__"
+	DeletedResourceTTL              time.Duration = time.Duration(24 * time.Hour)
+	DeletedResourceCleanupFrequency time.Duration = time.Duration(10 * time.Minute)
 )
 
 func Open(path string, logger logrus.FieldLogger, source string) (*badger.DB, error) {

@@ -22,6 +22,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
 )
 
 const (
@@ -97,19 +98,8 @@ func getExperimentDbFolder(basePath string) string {
 // so that we can keep track of it in case we need to replay the event (to the controller)
 // we do not trigger an event though as envoy has a clean state when the scheduler restarts
 func (es *ExperimentStore) addExperimentInMap(experiment *Experiment) error {
-	logger := es.logger.WithField("func", "AddExperimentInMap")
 	es.mu.Lock()
 	defer es.mu.Unlock()
-	// ensure a ttl is set for deleted experiments
-	if experiment.Deleted && experiment.DeletedAt.IsZero() {
-		logger.Infof("updating ttl for experiment %s", experiment.Name)
-		experiment.DeletedAt = time.Now()
-		err := es.db.save(experiment)
-		if err != nil {
-			logger.WithError(err).Errorf("Failed to update ttl for deleted experiment %s", experiment.Name)
-		}
-	}
-
 	if _, ok := es.experiments[experiment.Name]; !ok {
 		es.experiments[experiment.Name] = experiment
 		return nil
@@ -136,6 +126,14 @@ func (es *ExperimentStore) InitialiseOrRestoreDB(path string) error {
 	if err != nil {
 		return err
 	}
+	go func() {
+		ticker := time.NewTicker(utils.DeletedResourceCleanupFrequency)
+		defer ticker.Stop()
+		for range ticker.C {
+			es.cleanupDeletedExperiments()
+		}
+	}()
+
 	return nil
 }
 
@@ -472,4 +470,20 @@ func (es *ExperimentStore) GetExperiments() ([]*Experiment, error) {
 		foundExperiments = append(foundExperiments, copied.(*Experiment))
 	}
 	return foundExperiments, nil
+}
+
+func (es *ExperimentStore) cleanupDeletedExperiments() {
+	es.logger.Info("cleaning up deleted experiments")
+	for _, experiment := range es.experiments {
+		if experiment.Deleted {
+			es.mu.Lock()
+			defer es.mu.Unlock()
+			if experiment.DeletedAt.IsZero() {
+				experiment.DeletedAt = time.Now()
+				es.db.save(experiment)
+			} else if experiment.DeletedAt.Add(utils.DeletedResourceTTL).Before(time.Now()) {
+				es.experiments[experiment.Name] = nil
+			}
+		}
+	}
 }
