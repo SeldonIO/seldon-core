@@ -82,7 +82,7 @@ const (
 	flagMaxUnloadElapsedTimeMinutes                     = "max-unload-elapsed-time-minutes"
 	flagMaxLoadRetryCount                               = "max-load-retry-count"
 	flagMaxUnloadRetryCount                             = "max-unload-retry-count"
-	flagUnloadGraceSeconds                              = "unload-grace-seconds"
+	flagUnloadGraceSeconds                              = "unload-grace-period-seconds"
 )
 
 const (

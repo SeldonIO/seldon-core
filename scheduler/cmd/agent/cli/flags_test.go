@@ -150,7 +150,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 				"--max-unload-elapsed-time-minutes=15",
 				"--max-load-retry-count=5",
 				"--max-unload-retry-count=1",
-				"--unload-grace-seconds=10",
+				"--unload-grace-period-seconds=10",
 			},
 			envs:                                  []string{},
 			expectedAgentHost:                     "1.1.1.1",
