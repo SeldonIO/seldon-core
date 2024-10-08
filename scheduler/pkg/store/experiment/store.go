@@ -480,9 +480,11 @@ func (es *ExperimentStore) cleanupDeletedExperiments() {
 			defer es.mu.Unlock()
 			if experiment.DeletedAt.IsZero() {
 				experiment.DeletedAt = time.Now()
-				err := es.db.save(experiment)
-				if err != nil {
-					es.logger.Warnf("could not update DB TTL for experiment: %s", experiment.Name)
+				if es.db != nil {
+					err := es.db.save(experiment)
+					if err != nil {
+						es.logger.Warnf("could not update DB TTL for experiment: %s", experiment.Name)
+					}
 				}
 			} else if experiment.DeletedAt.Add(utils.DeletedResourceTTL).Before(time.Now()) {
 				es.experiments[experiment.Name] = nil
