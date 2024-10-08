@@ -224,7 +224,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 				"SELDON_MAX_UNLOAD_ELAPSED_TIME_MINUTES=15",
 				"SELDON_MAX_LOAD_RETRY_COUNT=5",
 				"SELDON_MAX_UNLOAD_RETRY_COUNT=1",
-				"SELDON_UNLOAD_GRACE_SECONDS=5",
+				"SELDON_UNLOAD_GRACE_PERIOD_SECONDS=5",
 			},
 			expectedAgentHost:                     "0.0.0.0",
 			expectedServerName:                    "mlserver",
