@@ -454,7 +454,10 @@ func (ps *PipelineStore) cleanupDeletedPipelines() {
 			defer ps.mu.Unlock()
 			if pipeline.DeletedAt.IsZero() {
 				pipeline.DeletedAt = time.Now()
-				ps.db.save(pipeline)
+				err := ps.db.save(pipeline)
+				if err != nil {
+					ps.logger.Warnf("could not update DB TTL for pipeline: %s", pipeline.Name)
+				}
 			} else if pipeline.DeletedAt.Add(utils.DeletedResourceTTL).Before(time.Now()) {
 				ps.pipelines[pipeline.Name] = nil
 			}

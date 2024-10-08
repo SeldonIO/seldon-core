@@ -10,8 +10,6 @@ the Change License after the Change Date as each is defined in accordance with t
 package pipeline
 
 import (
-	"time"
-
 	"github.com/dgraph-io/badger/v3"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
@@ -72,7 +70,7 @@ func save(pipeline *Pipeline, db *badger.DB) error {
 		})
 	} else {
 		// useful for testing
-		ttl := time.Until(pipeline.DeletedAt.Add(utils.DeletedResourceTTL))
+		ttl := utils.DeletedResourceTTL
 		return db.Update(func(txn *badger.Txn) error {
 			e := badger.NewEntry([]byte(pipeline.Name), pipelineBytes).WithTTL(ttl)
 			err = txn.SetEntry(e)
