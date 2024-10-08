@@ -190,7 +190,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 			expectedMaxUnloadElapsedTimeMinute:                      15,
 			expectedMaxLoadRetryCount:                               5,
 			expectedMaxUnloadRetryCount:                             1,
-			expectedUnloadGraceSeconds: 							10,
+			expectedUnloadGraceSeconds:                              10,
 		},
 		{
 			name: "good envs",
