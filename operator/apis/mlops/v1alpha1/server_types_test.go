@@ -11,10 +11,11 @@ package v1alpha1
 
 import (
 	"encoding/json"
+	"testing"
+
 	v1 "k8s.io/api/core/v1"
 	"knative.dev/pkg/apis"
 	"knative.dev/pkg/ptr"
-	"testing"
 
 	. "github.com/onsi/gomega"
 	"github.com/tidwall/gjson"

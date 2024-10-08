@@ -10,8 +10,9 @@ the Change License after the Change Date as each is defined in accordance with t
 package v1alpha1
 
 import (
-	"knative.dev/pkg/ptr"
 	"testing"
+
+	"knative.dev/pkg/ptr"
 
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/api/core/v1"
