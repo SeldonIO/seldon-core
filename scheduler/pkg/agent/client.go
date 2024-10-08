@@ -634,6 +634,9 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 
 	logger := c.logger.WithField("func", "UnloadModel")
 
+	// As envoy is eventually consistent, we need to wait for a grace period before unloading the model
+	// to give envoy time to drain the connections and reflect the cluster changes
+	// this should be ~500ms
 	time.Sleep(c.settings.unloadGraceTime)
 
 	modelName := request.GetModelVersion().GetModel().GetMeta().GetName()
