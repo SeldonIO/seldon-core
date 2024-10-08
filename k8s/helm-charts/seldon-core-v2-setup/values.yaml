@@ -255,6 +255,7 @@ serverConfig:
     maxUnloadElapsedTimeMinutes: "15"
     maxLoadRetryCount: "5"
     maxUnloadRetryCount: "1"
+    unloadGracePeriodSeconds: "2"
     resources:
       cpu: 200m
       memory: 1Gi

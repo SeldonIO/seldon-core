@@ -2,12 +2,8 @@
 
 ## Prerequisites
 
-* Ensure that the version of the Kubernetes cluster is v1.27 or later. You can create a [KinD](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) cluster on your local computer for testing with [Ansible](ansible.md). 
-
-### Install Ecosystem Components
-
-You will also need to install our ecosystem components. For this we provide directions for [Ansible](ansible.md) to install these.
-
+* Ensure that the version of the Kubernetes cluster is v1.27 or later. Seldon Core 2 supports Kubernetes versions 1.27, 1.28, 1.29, 1.30, and 1.31. You can create a [KinD](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) cluster on your local computer for testing with [Ansible](ansible.md). 
+* Install the ecosystem components using [Ansible](ansible.md).
 
 ## Table
 
@@ -22,20 +18,17 @@ You will also need to install our ecosystem components. For this we provide dire
 
 ### Install
 
-To install Seldon Core V2 itself you can choose from the following. At present, all require a
-clone of the source repository.
+To install Seldon Core 2 from the [source repository](https://github.com/SeldonIO/seldon-core), you can choose one of the following methods:
 
-* [Helm Installation](helm.md)(recommended for production systems)
-* [Ansible](ansible.md)(recommended for test / dev / trial purposes)
+* [Helm](helm.md)(recommended for production systems)
+* [Ansible](ansible.md)(recommended for testing, development, or trial)
 
 The Kubernetes operator that is installed runs in namespaced mode so any resources you create
 need to be in the same namespace as you installed into.
 
 ### Kustomize
 
-Our recommended and supported way to install is via Helm or Ansible. If you wish to use Kustomize
-then you can base your configuration on the raw yaml we create in the folder `k8s/yaml` or follow
-the steps in `k8s/Makefile` which illustrate how we build this yaml from our own Kustomize bases.
+Seldon recommends installing Seldon Core 2 using Helm or Ansible. If you prefer to use Kustomize, you can base your configuration on the raw YAML files you generate in the k8s/yaml folder. Alternatively, you can follow the steps in the k8s/Makefile, which demonstrates how to build the YAML files from the Kustomize bases.
 
 ## Operations
 

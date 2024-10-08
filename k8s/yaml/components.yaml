@@ -1198,6 +1198,8 @@ spec:
         value: '5'
       - name: SELDON_MAX_UNLOAD_RETRY_COUNT
         value: '1'
+      - name: SELDON_UNLOAD_GRACE_PERIOD_SECONDS
+        value: '2'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: '10'
       - name: CONTROL_PLANE_SECURITY_PROTOCOL
@@ -1452,6 +1454,8 @@ spec:
         value: '5'
       - name: SELDON_MAX_UNLOAD_RETRY_COUNT
         value: '1'
+      - name: SELDON_UNLOAD_GRACE_PERIOD_SECONDS
+        value: '2'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: '10'
       - name: CONTROL_PLANE_SECURITY_PROTOCOL
