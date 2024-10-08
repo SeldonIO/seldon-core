@@ -11,6 +11,9 @@ package v1alpha1
 
 import (
 	"encoding/json"
+	v1 "k8s.io/api/core/v1"
+	"knative.dev/pkg/apis"
+	"knative.dev/pkg/ptr"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -67,6 +70,69 @@ func TestServerStatusPrintColumns(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			for _, key := range test.expectedJsonSerializationKeys {
 				g.Expect(gjson.GetBytes(jsonBytes, key).Exists()).To(BeTrueBecause(json_fail_reason, key))
+			}
+		})
+	}
+}
+
+func TestServerStatusSetCondition(t *testing.T) {
+	type args struct {
+		condition *apis.Condition
+	}
+	tests := []struct {
+		name string
+		args args
+		want *v1.ConditionStatus
+	}{
+		{
+			name: "should not panic if condition is nil",
+			args: args{
+				condition: nil,
+			},
+			want: nil,
+		},
+		{
+			name: "ConditionUnknown",
+			args: args{
+				condition: &apis.Condition{
+					Status: "Unknown",
+				},
+			},
+			want: (*v1.ConditionStatus)(ptr.String("Unknown")),
+		},
+		{
+			name: "ConditionTrue",
+			args: args{
+				condition: &apis.Condition{
+					Status: "True",
+				},
+			},
+			want: (*v1.ConditionStatus)(ptr.String("True")),
+		},
+		{
+			name: "ConditionFalse",
+			args: args{
+				condition: &apis.Condition{
+					Status: "False",
+				},
+			},
+			want: (*v1.ConditionStatus)(ptr.String("False")),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ss := &ServerStatus{}
+			ss.SetCondition(tt.args.condition)
+			if tt.want == nil {
+				if ss.GetCondition("") != nil {
+					t.Errorf("want %v : got %v", tt.want, ss.GetCondition(""))
+				}
+			}
+			if tt.want != nil {
+				got := ss.GetCondition("").Status
+				if *tt.want != got {
+					t.Errorf("want %v : got %v", *tt.want, got)
+				}
 			}
 		})
 	}

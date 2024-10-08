@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package v1alpha1
 
 import (
+	"knative.dev/pkg/ptr"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -205,6 +206,74 @@ func TestExperimentStatusPrintColumns(t *testing.T) {
 				for conditionKey, printColumnString := range expectedPrintColumnString {
 					_, found := searchMap[string(conditionKey)]
 					g.Expect(found).To(BeTrueBecause(fail_reason, printColumnString, string(conditionKey)))
+				}
+			}
+		})
+	}
+}
+
+func TestExperimentStatusSetCondition(t *testing.T) {
+	type args struct {
+		conditionType apis.ConditionType
+		condition     *apis.Condition
+	}
+	tests := []struct {
+		name string
+		args args
+		want *v1.ConditionStatus
+	}{
+		{
+			name: "should not panic if condition is nil",
+			args: args{
+				conditionType: ExperimentReady,
+				condition:     nil,
+			},
+			want: nil,
+		},
+		{
+			name: "ConditionUnknown",
+			args: args{
+				conditionType: ExperimentReady,
+				condition: &apis.Condition{
+					Status: "Unknown",
+				},
+			},
+			want: (*v1.ConditionStatus)(ptr.String("Unknown")),
+		},
+		{
+			name: "ConditionTrue",
+			args: args{
+				conditionType: ExperimentReady,
+				condition: &apis.Condition{
+					Status: "True",
+				},
+			},
+			want: (*v1.ConditionStatus)(ptr.String("True")),
+		},
+		{
+			name: "ConditionFalse",
+			args: args{
+				conditionType: ExperimentReady,
+				condition: &apis.Condition{
+					Status: "False",
+				},
+			},
+			want: (*v1.ConditionStatus)(ptr.String("False")),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			es := &ExperimentStatus{}
+			es.SetCondition(tt.args.conditionType, tt.args.condition)
+			if tt.want == nil {
+				if es.GetCondition(tt.args.conditionType) != nil {
+					t.Errorf("want %v : got %v", tt.want, es.GetCondition(tt.args.conditionType))
+				}
+			}
+			if tt.want != nil {
+				got := es.GetCondition(tt.args.conditionType).Status
+				if *tt.want != got {
+					t.Errorf("want %v : got %v", *tt.want, got)
 				}
 			}
 		})
