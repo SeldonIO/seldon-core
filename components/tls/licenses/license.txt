@@ -4,7 +4,7 @@ seldonio/seldon-core  Business Source License 1.1  https://github.com/SeldonIO/s
 Parameters
 
 Licensor:		Seldon Technologies Limited
-Licensed Work:	Seldon Core v2
+Licensed Work:	Seldon Core 2
                       		The Licensed Work is (c) January 2024 Seldon Technologies Limited
 
 Additional Use Grant:	Non-profit educational institutions may use the Licensed Work for production use; provided, that such use does not include commercializing the Licensed Work or incorporating or including the Licensed Work into any models, products or services sold, licensed, marketed, or offered for sale to third-parties

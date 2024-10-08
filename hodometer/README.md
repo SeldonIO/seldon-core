@@ -1,6 +1,6 @@
 # Hodometer
 
-Hodometer collects and publishes anonymous usage metrics for Seldon Core v2.
+Hodometer collects and publishes anonymous usage metrics for Seldon Core 2.
 
 ## Usage
 
@@ -25,7 +25,7 @@ _TODO_
 
 There are three levels of metrics that can be enabled:
 * Cluster-level -- basic information about the installation
-* Resource-level -- high-level details about which Seldon Core v2 resources are used
+* Resource-level -- high-level details about which Seldon Core 2 resources are used
 * Feature-level -- more detailed information about how resources are used
 
 The set of metrics available at each level is:

@@ -44,7 +44,7 @@ the secret created by Strimzi for the user created above (`seldon`) and targets 
 certificate authority secret from the name of the cluster created on install of the Kafka
 cluster (`seldon-cluster-ca-cert`).
 
-Configure Seldon Core v2 by setting following Helm values:
+Configure Seldon Core 2 by setting following Helm values:
 
 ```yaml
 # k8s/samples/values-strimzi-kafka-mtls.yaml

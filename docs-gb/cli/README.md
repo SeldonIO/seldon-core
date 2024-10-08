@@ -19,11 +19,11 @@ Seldon provides a CLI for easy management and testing of model, experiment, and 
 
 The CLI talks to 3 backend services on default endpoints:
 
-1. The Seldon Core V2 Scheduler: default `0.0.0.0:9004`
+1. The Seldon Core 2 Scheduler: default `0.0.0.0:9004`
 2. The Seldon Core inference endpoint: default `0.0.0.0:9000`
 3. The Seldon Kafka broker: default: `0.0.0.0:9092`
 
-These defaults will be correct when Seldon Core v2 is installed locally as per the docs. For Kubernetes, you will need to change these by defining environment variables.
+These defaults will be correct when Seldon Core 2 is installed locally as per the docs. For Kubernetes, you will need to change these by defining environment variables.
 
 ```go
 const (
@@ -73,7 +73,7 @@ export SELDON_KAFKA_BROKER=<ip>:<port>
 
 ## Config file
 
-You can create a config file to manage connections to running seldon core v2 installs. The settings will override any environment variable settings.
+You can create a config file to manage connections to running Seldon Core 2 installs. The settings will override any environment variable settings.
 
 The definition is shown below:
 

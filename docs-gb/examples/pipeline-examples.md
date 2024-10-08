@@ -1,7 +1,7 @@
 # Seldon V2 Pipeline Examples
 
 This notebook illustrates a series of Pipelines showing of different ways of combining flows of
-data and conditional logic. We assume you have Seldon Core V2 running locally.
+data and conditional logic. We assume you have Seldon Core 2 running locally.
 
 ### Models Used
 

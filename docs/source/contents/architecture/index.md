@@ -1,6 +1,6 @@
 # Architecture
 
-The current set of components used in Seldon Core V2 is shown below:
+The current set of components used in Seldon Core 2 is shown below:
 
 ![architecture](architecture.png)
 

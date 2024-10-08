@@ -10,7 +10,7 @@ To install `tritonclient`
 pip install tritonclient[all]
 ```
 
-## Tritonclient Examples with Seldon Core V2
+## Tritonclient Examples with Seldon Core 2
 
 * Note: for compatibility of Tritonclient check [this issue](https://github.com/SeldonIO/seldon-core-v2/issues/471).
 

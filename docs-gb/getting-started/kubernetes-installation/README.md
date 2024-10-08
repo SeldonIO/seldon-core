@@ -22,7 +22,7 @@ You will also need to install our ecosystem components. For this we provide dire
 
 ### Install
 
-To install Seldon Core V2 itself you can choose from the following. At present, all require a
+To install Seldon Core 2 itself you can choose from the following. At present, all require a
 clone of the source repository.
 
 * [Helm Installation](helm.md)(recommended for production systems)

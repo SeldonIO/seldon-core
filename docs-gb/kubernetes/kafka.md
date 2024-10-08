@@ -1,12 +1,12 @@
 # Kafka
 
-Seldon Core v2 requires [Kafka](https://kafka.apache.org/) to implement data-centric inference Pipelines.
-See our [architecture](../architecture/README.md) documentation to learn more on how Seldon Core v2 uses Kafka.
+Seldon Core 2 requires [Kafka](https://kafka.apache.org/) to implement data-centric inference Pipelines.
+See our [architecture](../architecture/README.md) documentation to learn more on how Seldon Core 2 uses Kafka.
 
 
 {% hint style="info" %}
 Kafka integration is required to enable data-centric inference pipelines feature.
-It is highly advice to configure Kafka integration to take full advantage of Seldon Core v2 features.
+It is highly advice to configure Kafka integration to take full advantage of Seldon Core 2 features.
 {% endhint %}
 
 We list alternatives below.
@@ -30,7 +30,7 @@ section for configuration examples.
 
 ### Strimzi Kafka
 
-Seldon Core v2 requires Kafka to implement data-centric inference Pipelines.
+Seldon Core 2 requires Kafka to implement data-centric inference Pipelines.
 To install Kafka for testing purposed in your k8s cluster, we recommend to use [Strimzi Operator](https://github.com/strimzi/strimzi-kafka-operator).
 
 {% hint style="info" %}
@@ -75,7 +75,7 @@ Note that a specific strimzi operator version is associated with a subset of sup
 
 ## Ansible
 
-We provide automation around the installation of a Kafka cluster for Seldon Core v2 to help with
+We provide automation around the installation of a Kafka cluster for Seldon Core 2 to help with
 development and testing use cases.
 You can follow the steps defined [here](../getting-started/kubernetes-installation/ansible.md) to
 install Kafka via ansible.
