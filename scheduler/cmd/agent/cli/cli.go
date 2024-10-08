@@ -49,7 +49,7 @@ const (
 	envMaxUnloadElapsedTimeMinutes                     = "SELDON_MAX_UNLOAD_ELAPSED_TIME_MINUTES"
 	envMaxLoadRetryCount                               = "SELDON_MAX_LOAD_RETRY_COUNT"
 	envMaxUnloadRetryCount                             = "SELDON_MAX_UNLOAD_RETRY_COUNT"
-	envUnloadGraceSeconds                              = "SELDON_UNLOAD_GRACE_SECONDS"
+	envUnloadGraceSeconds                              = "SELDON_UNLOAD_GRACE_PERIOD_SECONDS"
 
 	flagSchedulerHost                                   = "scheduler-host"
 	flagSchedulerPlaintxtPort                           = "scheduler-port"
