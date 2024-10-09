@@ -58,6 +58,7 @@ func makeArgs() {
 	flag.IntVar(&MaxUnloadElapsedTimeMinute, flagMaxUnloadElapsedTimeMinutes, defaultMaxUnloadElapsedTimeMinute, "Max time in minutes to wait for a model server to unload a model, including retries")
 	flag.IntVar(&MaxLoadRetryCount, flagMaxLoadRetryCount, defaultMaxLoadRetryCount, "Number of retries for loading a model onto a server")
 	flag.IntVar(&MaxUnloadRetryCount, flagMaxUnloadRetryCount, defaultMaxUnloadRetryCount, "Number of retries for unloading a model onto a server")
+	flag.IntVar(&UnloadGraceSeconds, flagUnloadGraceSeconds, defautUnloadGraceSeconds, "Grace period in seconds before unloading a model")
 }
 
 func parseFlags() {
