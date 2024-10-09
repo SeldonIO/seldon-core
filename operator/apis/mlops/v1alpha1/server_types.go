@@ -138,7 +138,7 @@ func (ss *ServerStatus) IsConditionReady(t apis.ConditionType) bool {
 func (ss *ServerStatus) SetCondition(condition *apis.Condition) {
 	switch {
 	case condition == nil:
-		serverConditionSet.Manage(ss).MarkUnknown(condition.Type, "", "")
+		return
 	case condition.Status == v1.ConditionUnknown:
 		serverConditionSet.Manage(ss).MarkUnknown(condition.Type, condition.Reason, condition.Message)
 	case condition.Status == v1.ConditionTrue:

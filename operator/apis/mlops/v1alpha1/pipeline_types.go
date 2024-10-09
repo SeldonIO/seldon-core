@@ -280,7 +280,7 @@ func (ps *PipelineStatus) IsConditionReady(t apis.ConditionType) bool {
 func (ps *PipelineStatus) SetCondition(conditionType apis.ConditionType, condition *apis.Condition) {
 	switch {
 	case condition == nil:
-		pipelineConditionSet.Manage(ps).MarkUnknown(conditionType, "", "")
+		return
 	case condition.Status == v1.ConditionUnknown:
 		pipelineConditionSet.Manage(ps).MarkUnknown(conditionType, condition.Reason, condition.Message)
 	case condition.Status == v1.ConditionTrue:

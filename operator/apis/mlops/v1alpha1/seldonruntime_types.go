@@ -116,7 +116,7 @@ func (ss *SeldonRuntimeStatus) IsConditionReady(t apis.ConditionType) bool {
 func (ss *SeldonRuntimeStatus) SetCondition(condition *apis.Condition) {
 	switch {
 	case condition == nil:
-		seldonRuntimeConditionSet.Manage(ss).MarkUnknown(condition.Type, "", "")
+		return
 	case condition.Status == v1.ConditionUnknown:
 		seldonRuntimeConditionSet.Manage(ss).MarkUnknown(condition.Type, condition.Reason, condition.Message)
 	case condition.Status == v1.ConditionTrue:

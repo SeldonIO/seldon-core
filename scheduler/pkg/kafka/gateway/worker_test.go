@@ -154,11 +154,7 @@ type mockGRPCMLServer struct {
 }
 
 func (m *mockGRPCMLServer) setup() error {
-	var err error
 	m.listener = bufconn.Listen(bufSize)
-	if err != nil {
-		return err
-	}
 	opts := []grpc.ServerOption{}
 	m.server = grpc.NewServer(opts...)
 	v2.RegisterGRPCInferenceServiceServer(m.server, m)

@@ -595,9 +595,6 @@ func (sc *SchedulerClient) LoadPipeline(data []byte) (*scheduler.LoadPipelineRes
 		return nil, err
 	}
 	schPipeline := pipeline.AsSchedulerPipeline()
-	if err != nil {
-		return nil, err
-	}
 	req := &scheduler.LoadPipelineRequest{Pipeline: schPipeline}
 	if sc.verbose {
 		printProto(req)
