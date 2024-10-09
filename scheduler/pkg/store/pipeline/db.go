@@ -25,7 +25,8 @@ const (
 )
 
 type PipelineDBManager struct {
-	db *badger.DB
+	db     *badger.DB
+	logger logrus.FieldLogger
 }
 
 func newPipelineDbManager(path string, logger logrus.FieldLogger) (*PipelineDBManager, error) {
@@ -35,7 +36,8 @@ func newPipelineDbManager(path string, logger logrus.FieldLogger) (*PipelineDBMa
 	}
 
 	pdb := &PipelineDBManager{
-		db: db,
+		db:     db,
+		logger: logger,
 	}
 
 	version, err := pdb.getVersion()
@@ -54,16 +56,27 @@ func newPipelineDbManager(path string, logger logrus.FieldLogger) (*PipelineDBMa
 	return pdb, nil
 }
 
+// a nil ttl will save the pipeline indefinitely
 func save(pipeline *Pipeline, db *badger.DB) error {
 	pipelineProto := CreatePipelineSnapshotFromPipeline(pipeline)
 	pipelineBytes, err := proto.Marshal(pipelineProto)
 	if err != nil {
 		return err
 	}
-	return db.Update(func(txn *badger.Txn) error {
-		err = txn.Set([]byte(pipeline.Name), pipelineBytes)
-		return err
-	})
+	if !pipeline.Deleted {
+		return db.Update(func(txn *badger.Txn) error {
+			err = txn.Set([]byte(pipeline.Name), pipelineBytes)
+			return err
+		})
+	} else {
+		// useful for testing
+		ttl := utils.DeletedResourceTTL
+		return db.Update(func(txn *badger.Txn) error {
+			e := badger.NewEntry([]byte(pipeline.Name), pipelineBytes).WithTTL(ttl)
+			err = txn.SetEntry(e)
+			return err
+		})
+	}
 }
 
 func (pdb *PipelineDBManager) Stop() error {
@@ -105,10 +118,16 @@ func (pdb *PipelineDBManager) restore(createPipelineCb func(pipeline *Pipeline))
 				if err != nil {
 					return err
 				}
+
 				pipeline, err := CreatePipelineFromSnapshot(&snapshot)
 				if err != nil {
 					return err
 				}
+
+				if pipeline.Deleted {
+					pipeline.DeletedAt = utils.GetDeletedAt(item)
+				}
+
 				createPipelineCb(pipeline)
 				return nil
 			})
