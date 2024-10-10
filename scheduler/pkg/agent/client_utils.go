@@ -11,6 +11,7 @@ package agent
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	backoff "github.com/cenkalti/backoff/v4"
@@ -117,4 +118,16 @@ func (b *backOffWithMaxCount) NextBackOff() time.Duration {
 		b.currentCount++
 		return b.backoffPolicy.NextBackOff()
 	}
+}
+
+func ignoreIfOutOfOrder(key string, timestamp int64, timestamps *sync.Map) bool {
+	tick, ok := timestamps.Load(key)
+	if !ok {
+		timestamps.Store(key, timestamp)
+	} else {
+		if timestamp > tick.(int64) {
+			return true
+		}
+	}
+	return false
 }

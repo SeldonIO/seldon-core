@@ -13,6 +13,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -54,6 +55,7 @@ type Client struct {
 	stop                     atomic.Bool
 	modelScalingClientStream agent.AgentService_ModelScalingTriggerClient
 	settings                 *ClientSettings
+	modelTimestamps          sync.Map
 	ClientServices
 	SchedulerGrpcClientOptions
 	KubernetesOptions
@@ -189,9 +191,10 @@ func NewClient(
 		KubernetesOptions: KubernetesOptions{
 			namespace: namespace,
 		},
-		isDraining: atomic.Bool{},
-		stop:       atomic.Bool{},
-		settings:   settings,
+		isDraining:      atomic.Bool{},
+		stop:            atomic.Bool{},
+		settings:        settings,
+		modelTimestamps: sync.Map{},
 	}
 }
 
@@ -474,12 +477,13 @@ func (c *Client) StartService() error {
 
 		c.logger.Infof("Received operation")
 
+		timestamp := time.Now().Unix()
 		switch operation.Operation {
 		case agent.ModelOperationMessage_LOAD_MODEL:
 			c.logger.Infof("calling load model")
 
 			go func() {
-				err := c.LoadModel(operation)
+				err := c.LoadModel(operation, timestamp)
 				if err != nil {
 					c.logger.WithError(err).Errorf(
 						"Failed to handle load model %s:%d",
@@ -493,7 +497,7 @@ func (c *Client) StartService() error {
 			c.logger.Infof("calling unload model")
 
 			go func() {
-				err := c.UnloadModel(operation)
+				err := c.UnloadModel(operation, timestamp)
 				if err != nil {
 					c.logger.WithError(err).Errorf(
 						"Failed to handle unload model %s:%d",
@@ -560,7 +564,7 @@ func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte
 	return nil, nil
 }
 
-func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
+func (c *Client) LoadModel(request *agent.ModelOperationMessage, timestamp int64) error {
 	if request == nil || request.ModelVersion == nil {
 		return fmt.Errorf("empty request received for load model")
 	}
@@ -576,6 +580,13 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	defer c.stateManager.cache.Unlock(modelWithVersion)
 
 	logger.Infof("Load model %s:%d", modelName, modelVersion)
+	// if it is out of order message, ignore it
+	ignore := ignoreIfOutOfOrder(modelWithVersion, timestamp, &c.modelTimestamps)
+	if ignore {
+		logger.Warnf("Ignoring out of order message for model %s:%d", modelName, modelVersion)
+		return nil
+	}
+	defer c.modelTimestamps.Store(modelWithVersion, timestamp)
 
 	// Get Rclone configuration
 	config, err := c.getArtifactConfig(request)
@@ -627,7 +638,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	return c.sendAgentEvent(modelName, modelVersion, agent.ModelEventMessage_LOADED)
 }
 
-func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
+func (c *Client) UnloadModel(request *agent.ModelOperationMessage, timestamp int64) error {
 	if request == nil || request.GetModelVersion() == nil {
 		return fmt.Errorf("Empty request received for unload model")
 	}
@@ -648,6 +659,13 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	defer c.stateManager.cache.Unlock(modelWithVersion)
 
 	logger.Infof("Unload model %s:%d", modelName, modelVersion)
+	// if it is out of order message, ignore it
+	ignore := ignoreIfOutOfOrder(modelWithVersion, timestamp, &c.modelTimestamps)
+	if ignore {
+		logger.Warnf("Ignoring out of order message for model %s:%d", modelName, modelVersion)
+		return nil
+	}
+	defer c.modelTimestamps.Store(modelWithVersion, timestamp)
 
 	// we do not care about model versions here
 	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, request.GetModelVersion())
@@ -677,7 +695,7 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 		return err
 	}
 
-	logger.Infof("Unload model %s:%d success", modelName, modelVersion)
+	c.logger.Infof("Unload model %s:%d success", modelName, modelVersion)
 	return c.sendAgentEvent(modelName, modelVersion, agent.ModelEventMessage_UNLOADED)
 }
 
