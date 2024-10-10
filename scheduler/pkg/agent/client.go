@@ -695,7 +695,7 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage, timestamp int
 		return err
 	}
 
-	c.logger.Infof("Unload model %s:%d success", modelName, modelVersion)
+	logger.Infof("Unload model %s:%d success", modelName, modelVersion)
 	return c.sendAgentEvent(modelName, modelVersion, agent.ModelEventMessage_UNLOADED)
 }
 
