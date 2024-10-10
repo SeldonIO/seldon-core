@@ -1,6 +1,6 @@
 # About
 
-Seldon V2 APIs provide a state of the art solution for machine learning inference which
+Seldon Core 2 APIs provide a state of the art solution for machine learning inference which
 can be run locally on a laptop as well as on Kubernetes for production.
 
 {% embed url="https://www.youtube.com/watch?v=ar5lSG_idh4" %}
