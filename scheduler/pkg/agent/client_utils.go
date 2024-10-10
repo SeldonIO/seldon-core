@@ -125,7 +125,7 @@ func ignoreIfOutOfOrder(key string, timestamp int64, timestamps *sync.Map) bool 
 	if !ok {
 		timestamps.Store(key, timestamp)
 	} else {
-		if timestamp > tick.(int64) {
+		if timestamp < tick.(int64) {
 			return true
 		}
 	}
