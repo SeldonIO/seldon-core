@@ -393,7 +393,7 @@ func TestLoadModel(t *testing.T) {
 			time.Sleep(50 * time.Millisecond)
 
 			// Do the actual function call that is being tested
-			err := client.LoadModel(test.op)
+			err := client.LoadModel(test.op, time.Now().Unix())
 
 			if test.success {
 				g.Expect(err).To(BeNil())
@@ -543,8 +543,10 @@ parameters:
 			go func() {
 				_ = client.Start()
 			}()
+			// Give the client time to start (?)
 			time.Sleep(50 * time.Millisecond)
-			err := client.LoadModel(test.op)
+
+			err := client.LoadModel(test.op, time.Now().Unix())
 			if test.success {
 				g.Expect(err).To(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
@@ -680,10 +682,12 @@ func TestUnloadModel(t *testing.T) {
 			go func() {
 				_ = client.Start()
 			}()
+			// Give the client time to start (?)
 			time.Sleep(50 * time.Millisecond)
-			err := client.LoadModel(test.loadOp)
+
+			err := client.LoadModel(test.loadOp, time.Now().Unix())
 			g.Expect(err).To(BeNil())
-			err = client.UnloadModel(test.unloadOp)
+			err = client.UnloadModel(test.unloadOp, time.Now().Unix())
 			if test.success {
 				g.Expect(err).To(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
