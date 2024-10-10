@@ -1369,12 +1369,12 @@ spec:
         - containerPort: 9000
           name: http
         - containerPort: 9003
-          name: envoy-admin
+          name: envoy-stats
         readinessProbe:
           failureThreshold: 3
           httpGet:
             path: /ready
-            port: envoy-admin
+            port: envoy-stats
           initialDelaySeconds: 10
           periodSeconds: 5
         resources:
