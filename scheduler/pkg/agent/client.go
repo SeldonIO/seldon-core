@@ -583,7 +583,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage, timestamp int64
 	// if it is out of order message, ignore it
 	ignore := ignoreIfOutOfOrder(modelWithVersion, timestamp, &c.modelTimestamps)
 	if ignore {
-		logger.Warnf("Ignoring out of order message for model %s:%d", modelName, modelVersion)
+		logger.Warnf("Ignoring out of order message for model %s:%d at %s", modelName, modelVersion, time.UnixMilli(timestamp).String())
 		return nil
 	}
 	defer c.modelTimestamps.Store(modelWithVersion, timestamp)
@@ -662,7 +662,7 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage, timestamp int
 	// if it is out of order message, ignore it
 	ignore := ignoreIfOutOfOrder(modelWithVersion, timestamp, &c.modelTimestamps)
 	if ignore {
-		logger.Warnf("Ignoring out of order message for model %s:%d", modelName, modelVersion)
+		logger.Warnf("Ignoring out of order message for model %s:%d at %s", modelName, modelVersion, time.UnixMilli(timestamp).String())
 		return nil
 	}
 	defer c.modelTimestamps.Store(modelWithVersion, timestamp)
