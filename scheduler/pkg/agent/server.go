@@ -39,7 +39,7 @@ const (
 	pendingSyncsQueueSize          int = 1000
 	modelEventHandlerName              = "agent.server.models"
 	modelScalingCoolingDownSeconds     = 60 // this is currently used in scale down events
-	serverDrainingExtraWaitMillis      = 2000
+	serverDrainingExtraWaitMillis      = 3000
 )
 
 type modelRelocatedWaiter struct {

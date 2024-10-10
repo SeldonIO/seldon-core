@@ -11,6 +11,7 @@ package agent
 
 import (
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -111,6 +112,50 @@ func TestFnWrapperWithMax(t *testing.T) {
 			_ = backoffWithMaxNumRetry(fn, test.count, test.maxElapsedTime, logger)
 			// if we are here we are done
 			g.Expect(retries).To(Equal(test.expectedCount))
+		})
+	}
+}
+
+func TestOutOfOrderUtil(t *testing.T) {
+	ticks := sync.Map{}
+	ticks.Store("key", time.Now().Unix())
+
+	type test struct {
+		name         string
+		ticks        *sync.Map
+		key          string
+		timestamp    int64
+		isOutOfOrder bool
+	}
+	tests := []test{
+		{
+			name:         "empty",
+			ticks:        &sync.Map{},
+			key:          "key",
+			timestamp:    time.Now().Unix(), // dummy
+			isOutOfOrder: false,
+		},
+		{
+			name:         "in order",
+			ticks:        &ticks,
+			key:          "key",
+			timestamp:    time.Now().Unix() + 10,
+			isOutOfOrder: false,
+		},
+		{
+			name:         "out of order",
+			ticks:        &ticks,
+			key:          "key",
+			timestamp:    time.Now().Unix() - 10,
+			isOutOfOrder: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			g := NewGomegaWithT(t)
+			outOfOrder := ignoreIfOutOfOrder(test.key, test.timestamp, test.ticks)
+			g.Expect(outOfOrder).To(Equal(test.isOutOfOrder))
 		})
 	}
 }
