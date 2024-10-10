@@ -914,7 +914,7 @@ func TestUnloadModelOutOfOrder(t *testing.T) {
 			},
 			unloadTicks: time.Now().Unix() + 10,
 			success:     true,
-		}, // Success
+		},
 		{
 			name:   "out-of-order",
 			models: []string{"iris"},
