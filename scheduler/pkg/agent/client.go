@@ -477,7 +477,7 @@ func (c *Client) StartService() error {
 
 		c.logger.Infof("Received operation")
 
-		timestamp := time.Now().Unix()
+		timestamp := time.Now().UnixMilli()
 		switch operation.Operation {
 		case agent.ModelOperationMessage_LOAD_MODEL:
 			c.logger.Infof("calling load model")
