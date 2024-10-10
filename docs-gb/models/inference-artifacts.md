@@ -26,8 +26,7 @@ on one of MLServer or Triton inference servers. We list artifacts below by alpha
 
 ## Saving Model artifacts
 
-For many machine learning artifacts you can simply save them to a folder and load them into seldon
-core v2. Details are given below as well as a link to creating a custom model settings file if needed.
+For many machine learning artifacts you can simply save them to a folder and load them into Seldon Core 2. Details are given below as well as a link to creating a custom model settings file if needed.
 
 
 | Type | Notes | Custom Model Settings |

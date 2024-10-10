@@ -1,12 +1,12 @@
 # Kafka
 
-Seldon Core v2 requires [Kafka](https://kafka.apache.org/) to implement data-centric inference Pipelines.
-See our [architecture](../../architecture/index.md) documentation to learn more on how Seldon Core v2 uses Kafka.
+Seldon Core 2 requires [Kafka](https://kafka.apache.org/) to implement data-centric inference Pipelines.
+See our [architecture](../../architecture/index.md) documentation to learn more on how Seldon Core 2 uses Kafka.
 
 
 ```{note}
 Kafka integration is required to enable data-centric inference pipelines feature.
-It is highly advice to configure Kafka integration to take full advantage of Seldon Core v2 features.
+It is highly advice to configure Kafka integration to take full advantage of Seldon Core 2 features.
 ```
 
 We list alternatives below.

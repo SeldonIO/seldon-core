@@ -10,7 +10,7 @@ The content of your request should be an [inference v2 protocol payload](../apis
 ## Synchronous Requests
 
 For making synchronous requests, the process will generally be:
-1. Find the appropriate service endpoint (IP address and port) for accessing the installation of Seldon Core v2.
+1. Find the appropriate service endpoint (IP address and port) for accessing the installation of Seldon Core 2.
 2. Determine the appropriate headers/metadata for the request.
 3. Make requests via REST or gRPC.
 
@@ -288,7 +288,7 @@ Some gRPC implementations permit manipulating paths when sending requests, but t
 
 If you want to expose your inference endpoints via gRPC and REST in a consistent way, you should use virtual hosts, subdomains, or headers.
 
-The downside of using only paths is that you cannot differentiate between different installations of Seldon Core v2 or between traffic to Seldon and any other inference endpoints you may have exposed via the same ingress.
+The downside of using only paths is that you cannot differentiate between different installations of Seldon Core 2 or between traffic to Seldon and any other inference endpoints you may have exposed via the same ingress.
 
 You might want to use a mixture of these methods; the choice is yours.
 

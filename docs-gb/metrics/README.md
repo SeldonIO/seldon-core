@@ -1,6 +1,6 @@
 # Metrics
 
-There are two kinds of metrics present in Seldon Core v2:
+There are two kinds of metrics present in Seldon Core 2:
 * [operational metrics](./operational.md)
 * [usage metrics](./usage.md)
 

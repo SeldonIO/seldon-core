@@ -1,5 +1,5 @@
 ---
-- name: Create Kind Cluster for Seldon Core v2
+- name: Create Kind Cluster for Seldon Core 2
   hosts: localhost
   roles:
     - kind

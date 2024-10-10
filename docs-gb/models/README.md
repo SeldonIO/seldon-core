@@ -58,11 +58,11 @@ at the same time. It is a feature provided out of the box by Nvidia Triton and S
 Multi-model serving reduces infrastructure hardware requirements (e.g. expensive GPUs) which enables
 the deployment of a large number of models while making it efficient to operate the system at scale.
 
-Seldon Core v2 leverages multi-model serving by design and it is the default option for deploying
+Seldon Core 2 leverages multi-model serving by design and it is the default option for deploying
 models. The system will find an appropriate server to load the model onto based on requirements that
 the user defines in the `Model` deployment definition.
 
-Moreover, in many cases demand patterns allow for further Overcommit of resources. Seldon Core v2
+Moreover, in many cases demand patterns allow for further Overcommit of resources. Seldon Core 2
 is able to register more models than what can be served by the provisioned (memory) infrastructure
 and will swap models dynamically according to least used without adding significant latency overheads
 to inference workload.
