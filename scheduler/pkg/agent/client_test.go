@@ -597,7 +597,7 @@ func TestUnloadModel(t *testing.T) {
 				},
 			},
 			unloadOp: &pb.ModelOperationMessage{
-				Operation: pb.ModelOperationMessage_LOAD_MODEL,
+				Operation: pb.ModelOperationMessage_UNLOAD_MODEL,
 				ModelVersion: &pb.ModelVersion{
 					Model: &pbs.Model{
 						Meta: &pbs.MetaData{
@@ -627,7 +627,7 @@ func TestUnloadModel(t *testing.T) {
 				},
 			},
 			unloadOp: &pb.ModelOperationMessage{
-				Operation: pb.ModelOperationMessage_LOAD_MODEL,
+				Operation: pb.ModelOperationMessage_UNLOAD_MODEL,
 				ModelVersion: &pb.ModelVersion{
 					Model: &pbs.Model{
 						Meta: &pbs.MetaData{
@@ -865,6 +865,141 @@ func TestAgentStopOnSubServicesFailure(t *testing.T) {
 			}
 
 			go mockMLServer.Stop()
+		})
+	}
+}
+
+func TestUnloadModelOutOfOrder(t *testing.T) {
+	t.Logf("Started")
+	logger := log.New()
+	log.SetLevel(log.DebugLevel)
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name        string
+		models      []string
+		loadOp      *pb.ModelOperationMessage
+		loadTicks   int64
+		unloadOp    *pb.ModelOperationMessage
+		unloadTicks int64
+		success     bool
+	}
+	smallMemory := uint64(500)
+	tests := []test{
+		{
+			name:   "in-order",
+			models: []string{"iris"},
+			loadOp: &pb.ModelOperationMessage{
+				Operation: pb.ModelOperationMessage_LOAD_MODEL,
+				ModelVersion: &pb.ModelVersion{
+					Model: &pbs.Model{
+						Meta: &pbs.MetaData{
+							Name: "iris",
+						},
+						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
+					},
+				},
+			},
+			loadTicks: time.Now().Unix(),
+			unloadOp: &pb.ModelOperationMessage{
+				Operation: pb.ModelOperationMessage_UNLOAD_MODEL,
+				ModelVersion: &pb.ModelVersion{
+					Model: &pbs.Model{
+						Meta: &pbs.MetaData{
+							Name: "iris",
+						},
+						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
+					},
+				},
+			},
+			unloadTicks: time.Now().Unix() + 10,
+			success:     true,
+		}, // Success
+		{
+			name:   "out-of-order",
+			models: []string{"iris"},
+			loadOp: &pb.ModelOperationMessage{
+				Operation: pb.ModelOperationMessage_LOAD_MODEL,
+				ModelVersion: &pb.ModelVersion{
+					Model: &pbs.Model{
+						Meta: &pbs.MetaData{
+							Name: "iris",
+						},
+						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
+					},
+				},
+			},
+			loadTicks: time.Now().Unix(),
+			unloadOp: &pb.ModelOperationMessage{
+				Operation: pb.ModelOperationMessage_LOAD_MODEL,
+				ModelVersion: &pb.ModelVersion{
+					Model: &pbs.Model{
+						Meta: &pbs.MetaData{
+							Name: "iris",
+						},
+						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
+					},
+				},
+			},
+			unloadTicks: time.Now().Unix() - 10,
+			success:     false,
+		},
+	}
+
+	for tidx, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Logf("Test #%d", tidx)
+			v2Client := createTestV2Client(addVerionToModels(test.models, 0), 200)
+			httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
+			modelRepository := &FakeModelRepository{}
+			rpHTTP := FakeDependencyService{err: nil}
+			rpGRPC := FakeDependencyService{err: nil}
+			agentDebug := FakeDependencyService{err: nil}
+			lags := modelscaling.ModelScalingStatsWrapper{
+				Stats:     modelscaling.NewModelReplicaLagsKeeper(),
+				Operator:  interfaces.Gte,
+				Threshold: 10,
+				Reset:     true,
+				EventType: modelscaling.ScaleUpEvent,
+			}
+			lastUsed := modelscaling.ModelScalingStatsWrapper{
+				Stats:     modelscaling.NewModelReplicaLastUsedKeeper(),
+				Operator:  interfaces.Gte,
+				Threshold: 10,
+				Reset:     false,
+				EventType: modelscaling.ScaleDownEvent,
+			}
+			modelScalingService := modelscaling.NewStatsAnalyserService(
+				[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
+			drainerServicePort, _ := testing_utils2.GetFreePortForTest()
+			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
+			client := NewClient(
+				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1),
+				logger, modelRepository, v2Client, &pb.ReplicaConfig{MemoryBytes: 1000}, "default",
+				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
+			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
+			conn, cerr := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
+			g.Expect(cerr).To(BeNil())
+			client.conn = conn
+			go func() {
+				_ = client.Start()
+			}()
+			// Give the client time to start (?)
+			time.Sleep(50 * time.Millisecond)
+
+			err := client.LoadModel(test.loadOp, test.loadTicks)
+			g.Expect(err).To(BeNil())
+			err = client.UnloadModel(test.unloadOp, test.unloadTicks)
+			g.Expect(err).To(BeNil())
+			if test.success {
+				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
+				g.Expect(mockAgentV2Server.unloadedEvents).To(Equal(1))
+			} else {
+				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
+				g.Expect(mockAgentV2Server.unloadedEvents).To(Equal(0))
+			}
+			client.Stop()
+			httpmock.DeactivateAndReset()
 		})
 	}
 }
