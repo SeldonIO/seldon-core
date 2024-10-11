@@ -393,7 +393,7 @@ func TestLoadModel(t *testing.T) {
 			time.Sleep(50 * time.Millisecond)
 
 			// Do the actual function call that is being tested
-			err := client.LoadModel(test.op, time.Now().Unix())
+			err := client.LoadModel(test.op, 1)
 
 			if test.success {
 				g.Expect(err).To(BeNil())
@@ -546,7 +546,7 @@ parameters:
 			// Give the client time to start (?)
 			time.Sleep(50 * time.Millisecond)
 
-			err := client.LoadModel(test.op, time.Now().Unix())
+			err := client.LoadModel(test.op, 1)
 			if test.success {
 				g.Expect(err).To(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
@@ -685,9 +685,9 @@ func TestUnloadModel(t *testing.T) {
 			// Give the client time to start (?)
 			time.Sleep(50 * time.Millisecond)
 
-			err := client.LoadModel(test.loadOp, time.Now().Unix())
+			err := client.LoadModel(test.loadOp, 1)
 			g.Expect(err).To(BeNil())
-			err = client.UnloadModel(test.unloadOp, time.Now().Unix())
+			err = client.UnloadModel(test.unloadOp, 2)
 			if test.success {
 				g.Expect(err).To(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
@@ -900,7 +900,7 @@ func TestUnloadModelOutOfOrder(t *testing.T) {
 					},
 				},
 			},
-			loadTicks: time.Now().Unix(),
+			loadTicks: 1,
 			unloadOp: &pb.ModelOperationMessage{
 				Operation: pb.ModelOperationMessage_UNLOAD_MODEL,
 				ModelVersion: &pb.ModelVersion{
@@ -912,7 +912,7 @@ func TestUnloadModelOutOfOrder(t *testing.T) {
 					},
 				},
 			},
-			unloadTicks: time.Now().Unix() + 10,
+			unloadTicks: 2,
 			success:     true,
 		},
 		{
@@ -929,7 +929,7 @@ func TestUnloadModelOutOfOrder(t *testing.T) {
 					},
 				},
 			},
-			loadTicks: time.Now().Unix(),
+			loadTicks: 2,
 			unloadOp: &pb.ModelOperationMessage{
 				Operation: pb.ModelOperationMessage_LOAD_MODEL,
 				ModelVersion: &pb.ModelVersion{
@@ -941,7 +941,7 @@ func TestUnloadModelOutOfOrder(t *testing.T) {
 					},
 				},
 			},
-			unloadTicks: time.Now().Unix() - 10,
+			unloadTicks: 1,
 			success:     false,
 		},
 	}

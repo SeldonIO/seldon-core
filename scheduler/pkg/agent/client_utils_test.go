@@ -118,7 +118,7 @@ func TestFnWrapperWithMax(t *testing.T) {
 
 func TestOutOfOrderUtil(t *testing.T) {
 	ticks := sync.Map{}
-	ticks.Store("key", time.Now().Unix())
+	ticks.Store("key", int64(1))
 
 	type test struct {
 		name         string
@@ -132,21 +132,21 @@ func TestOutOfOrderUtil(t *testing.T) {
 			name:         "empty",
 			ticks:        &sync.Map{},
 			key:          "key",
-			timestamp:    time.Now().Unix(), // dummy
+			timestamp:    2, // dummy
 			isOutOfOrder: false,
 		},
 		{
 			name:         "in order",
 			ticks:        &ticks,
 			key:          "key",
-			timestamp:    time.Now().Unix() + 10,
+			timestamp:    3,
 			isOutOfOrder: false,
 		},
 		{
 			name:         "out of order",
 			ticks:        &ticks,
 			key:          "key",
-			timestamp:    time.Now().Unix() - 10,
+			timestamp:    0,
 			isOutOfOrder: true,
 		},
 	}
