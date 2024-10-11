@@ -479,7 +479,9 @@ func (c *Client) StartService() error {
 
 		c.logger.Infof("Received operation")
 
+		// Get the time since the start of the agent, this is monotonic as time.Now contains a monotonic clock
 		ticksSinceStart := time.Since(c.startTime).Milliseconds()
+
 		switch operation.Operation {
 		case agent.ModelOperationMessage_LOAD_MODEL:
 			c.logger.Infof("calling load model")
