@@ -56,6 +56,7 @@ type Client struct {
 	modelScalingClientStream agent.AgentService_ModelScalingTriggerClient
 	settings                 *ClientSettings
 	modelTimestamps          sync.Map
+	startTime                time.Time
 	ClientServices
 	SchedulerGrpcClientOptions
 	KubernetesOptions
@@ -195,6 +196,7 @@ func NewClient(
 		stop:            atomic.Bool{},
 		settings:        settings,
 		modelTimestamps: sync.Map{},
+		startTime:       time.Now(),
 	}
 }
 
@@ -477,13 +479,13 @@ func (c *Client) StartService() error {
 
 		c.logger.Infof("Received operation")
 
-		timestamp := time.Now().UnixMilli()
+		ticksSinceStart := time.Since(c.startTime).Milliseconds()
 		switch operation.Operation {
 		case agent.ModelOperationMessage_LOAD_MODEL:
 			c.logger.Infof("calling load model")
 
 			go func() {
-				err := c.LoadModel(operation, timestamp)
+				err := c.LoadModel(operation, ticksSinceStart)
 				if err != nil {
 					c.logger.WithError(err).Errorf(
 						"Failed to handle load model %s:%d",
@@ -497,7 +499,7 @@ func (c *Client) StartService() error {
 			c.logger.Infof("calling unload model")
 
 			go func() {
-				err := c.UnloadModel(operation, timestamp)
+				err := c.UnloadModel(operation, ticksSinceStart)
 				if err != nil {
 					c.logger.WithError(err).Errorf(
 						"Failed to handle unload model %s:%d",
@@ -583,7 +585,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage, timestamp int64
 	// if it is out of order message, ignore it
 	ignore := ignoreIfOutOfOrder(modelWithVersion, timestamp, &c.modelTimestamps)
 	if ignore {
-		logger.Warnf("Ignoring out of order message for model %s:%d at %s", modelName, modelVersion, time.UnixMilli(timestamp).String())
+		logger.Warnf("Ignoring out of order message for model %s:%d", modelName, modelVersion)
 		return nil
 	}
 	defer c.modelTimestamps.Store(modelWithVersion, timestamp)
@@ -662,7 +664,7 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage, timestamp int
 	// if it is out of order message, ignore it
 	ignore := ignoreIfOutOfOrder(modelWithVersion, timestamp, &c.modelTimestamps)
 	if ignore {
-		logger.Warnf("Ignoring out of order message for model %s:%d at %s", modelName, modelVersion, time.UnixMilli(timestamp).String())
+		logger.Warnf("Ignoring out of order message for model %s:%d", modelName, modelVersion)
 		return nil
 	}
 	defer c.modelTimestamps.Store(modelWithVersion, timestamp)
