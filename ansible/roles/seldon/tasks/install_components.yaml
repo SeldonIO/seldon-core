@@ -1,5 +1,5 @@
 ---
-- name: "Install Seldon Core v2 components"
+- name: "Install Seldon Core 2 components"
   kubernetes.core.helm:
     state: present
     name: "seldon-core-v2-components"

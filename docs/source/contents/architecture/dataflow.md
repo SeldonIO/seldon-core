@@ -1,6 +1,6 @@
 # Data flow design paradigm in Seldon Core
 
-Seldon Core v2 is designed around data flow paradigm. Here we will explain what that means and some of the rationals behind this choice.
+Seldon Core 2 is designed around data flow paradigm. Here we will explain what that means and some of the rationals behind this choice.
 
 ## Seldon Core v1
 
@@ -20,13 +20,13 @@ The realisation of this disparity led to a new approach towards inference graph 
 
 Data flow design makes data in software the top priority. That is one of the key messages of the so called "data-centric AI" idea, which is becoming increasingly popular within the ML community. Data is a key component of a successful ML project. Data needs to be discovered, described, cleaned, understood, monitored and verified. Consequently, there is a growing demand for data-centric platforms and solutions. Making Seldon Core data-centric was one of the key goals of the v2 design.
 
-## Seldon Core v2
+## Seldon Core 2
 
 In the context of Seldon Core application of FBP design approach means that the evaluation implementation is done the same way inferece graph. So instead of routing everything through a centralized orchestrator the evaluation happens in the same graph-like manner:
 
 ![dataflow](dataflow-inference-graph.png)
 
-As far as implementation goes, Seldon Core v2 runs on Kafka. Inference request is put onto a pipeline input topic, which triggers an evaluation. Each part of the inference graph is a service running in its own container fronted by a model gateway. Model gateway listens to a corresponding input Kafka topic, reads data from it, calls the service and puts the received response to an output Kafka topic. There is also a pipeline gateway that allows to interact with Seldon Core in synchronous manner.
+As far as implementation goes, Seldon Core 2 runs on Kafka. Inference request is put onto a pipeline input topic, which triggers an evaluation. Each part of the inference graph is a service running in its own container fronted by a model gateway. Model gateway listens to a corresponding input Kafka topic, reads data from it, calls the service and puts the received response to an output Kafka topic. There is also a pipeline gateway that allows to interact with Seldon Core in synchronous manner.
 
 This approach gives SCv2 several important features. Firstly, Seldon Core natively supports both synchronous and asynchronous modes of operation. Asynchronicity is achieved via streaming: input data can be sent to an input topic in Kafka, and after the evaluation the output topic will contain the inference result. For those looking to use it in the v1 style, a service API is provided.
 

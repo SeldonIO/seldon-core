@@ -5,7 +5,7 @@
 Multi-model serving is an architecture pattern where one ML inference server hosts multiple models
 at the same time. This means that, within a single instance of the server, you can serve multiple
 models under different paths. This is a feature provided out of the box by Nvidia Triton and Seldon
-MLServer, currently the two inference servers that are integrated in Seldon Core v2.
+MLServer, currently the two inference servers that are integrated in Seldon Core 2.
 
 This deployment pattern allows the system to handle a large number of deployed models letting them
 share hardware resources allocated to inference servers (e.g GPUs). For example if a single model
@@ -16,7 +16,7 @@ server deployment pattern where only one model can use the allocated GPU.
 
 ![Multi-model vs Single-model serving](../images/mms.png)
 
-Multi-model serving is enabled by design in Seldon Core v2. Based on requirements that are specified
+Multi-model serving is enabled by design in Seldon Core 2. Based on requirements that are specified
 by the user on a given `Model`, the Scheduler will find an appropriate model inference server instance
 to load the model onto.
 

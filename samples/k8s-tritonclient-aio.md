@@ -1,4 +1,4 @@
-## Tritonclient Examples with Seldon Core V2 (Asyncio)
+## Tritonclient Examples with Seldon Core 2 (Asyncio)
 
 - Note: for compatibility of Tritonclient check this issue https://github.com/SeldonIO/seldon-core-v2/issues/471
 

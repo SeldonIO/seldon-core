@@ -40,8 +40,8 @@ func TestSimpleSynchroniser(t *testing.T) {
 			signal:  true,
 		},
 		{
-			name:    "No timer",
-			timeout: 0 * time.Millisecond,
+			name:    "Small timer",
+			timeout: 1 * time.Millisecond,
 			signal:  true,
 		},
 		{

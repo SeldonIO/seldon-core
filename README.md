@@ -60,7 +60,7 @@ ansible-playbook playbooks/kind-cluster.yaml
 ansible-playbook playbooks/setup-ecosystem.yaml
 ```
 
-Deploy Seldon Core v2
+Deploy Seldon Core 2
 
 ```
 cd ..
@@ -69,7 +69,7 @@ make deploy-k8s
 
 Run [k8s-examples.ipynb](samples/k8s-examples.ipynb)
 
-Undeploy Seldon Core v2
+Undeploy Seldon Core 2
 
 ```
 make undeploy-k8s
@@ -78,7 +78,7 @@ make undeploy-k8s
 
 ## Documentation
 
-[Seldon Core v2 docs](https://docs.seldon.io/projects/seldon-core/en/v2/)
+[Seldon Core 2 docs](https://docs.seldon.io/projects/seldon-core/en/v2/)
 
 ## License
 

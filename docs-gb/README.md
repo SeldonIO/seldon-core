@@ -1,6 +1,6 @@
 # About
 
-Seldon V2 APIs provide a state of the art solution for machine learning inference which
+Seldon Core 2 APIs provide a state of the art solution for machine learning inference which
 can be run locally on a laptop as well as on Kubernetes for production.
 
 {% embed url="https://www.youtube.com/watch?v=ar5lSG_idh4" %}
@@ -50,7 +50,7 @@ Seldon V2 supports any V2 protocol inference server. At present we include Seldo
 
 ## Service Mesh Agnostic
 
-Seldon core v2 can be integrated with any Kubernetes service mesh. There are current examples with istio, Ambassador and Traefic.
+Seldon Core 2 can be integrated with any Kubernetes service mesh. There are current examples with istio, Ambassador and Traefic.
 
 ![mesh](images/mesh.png)
 
