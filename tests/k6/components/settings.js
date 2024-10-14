@@ -362,7 +362,7 @@ export function getConfig() {
         "checkStateEverySec": checkStateEverySec(),
         "maxCheckTimeSec": maxCheckTimeSec(),
         "stopOnCheckFailure": stopOnCheckFailure(),
-        "enableModeReplicaChange": enableModeReplicaChange(),
+        "enableModelReplicaChange": enableModeReplicaChange(),
         "sleepBetweenModelReplicaChange": sleepBetweenModelReplicaChange(),
     }
 }

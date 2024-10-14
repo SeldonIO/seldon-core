@@ -61,9 +61,9 @@ export default function (config) {
     }
 
     // for simplicity we only change model replicas in the first VU
-    if (vu.idInTest === 1 && config.enableModelReplicaChange) {
+    if ((vu.idInTest == 1) && config.enableModelReplicaChange) {
         kubeClient = k8s.init()
-        let replicas =  Math.round(Math.random() * config.maxModelReplicas[idx])
+        let replicas =  Math.floor(Math.random() * config.maxModelReplicas[idx]) + 1
         const model = generateModel(config.modelType[idx], modelName, 1, replicas, config.isSchedulerProxy, config.modelMemoryBytes[idx], config.inferBatchSize[idx])
         let opOk = k8s.loadModel(modelName, model.modelCRYaml, true)
         console.log("Model load operation status:", opOk)
