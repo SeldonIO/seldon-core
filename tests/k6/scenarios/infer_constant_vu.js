@@ -1,9 +1,6 @@
 import { getConfig } from '../components/settings.js'
-import { doInfer, setupBase, teardownBase, getVersionSuffix } from '../components/utils.js'
-import { generateModel } from '../components/model.js';
-import * as k8s from '../components/k8s.js';
+import { doInfer, setupBase, teardownBase, getVersionSuffix, applyModelReplicaChange } from '../components/utils.js'
 import { vu } from 'k6/execution';
-import { sleep } from 'k6';
 
 var kubeClient = null
 
@@ -61,13 +58,8 @@ export default function (config) {
     }
 
     // for simplicity we only change model replicas in the first VU
-    if ((vu.idInTest == 1) && config.enableModelReplicaChange) {
-        kubeClient = k8s.init()
-        let replicas =  Math.floor(Math.random() * config.maxModelReplicas[idx]) + 1
-        const model = generateModel(config.modelType[idx], modelName, 1, replicas, config.isSchedulerProxy, config.modelMemoryBytes[idx], config.inferBatchSize[idx])
-        let opOk = k8s.loadModel(modelName, model.modelCRYaml, true)
-        console.log("Model load operation status:", opOk)
-        sleep(config.sleepBetweenModelReplicaChange)
+    if (vu.idInTest == 1 && config.enableModelReplicaChange) {
+        applyModelReplicaChange(config)
     }
 }
 
