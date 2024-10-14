@@ -1,5 +1,11 @@
 import { getConfig } from '../components/settings.js'
 import { doInfer, setupBase, teardownBase, getVersionSuffix } from '../components/utils.js'
+import { generateModel } from '../components/model.js';
+import * as k8s from '../components/k8s.js';
+import { vu } from 'k6/execution';
+import { sleep } from 'k6';
+
+var kubeClient = null
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
 export let options = {
@@ -52,6 +58,16 @@ export default function (config) {
         doInfer(modelName, modelNameWithVersion, config, false, idx)
     } else {
         throw new Error('Both REST and GRPC protocols are disabled!')
+    }
+
+    // for simplicity we only change model replicas in the first VU
+    if (vu.idInTest === 1 && config.enableModelReplicaChange) {
+        kubeClient = k8s.init()
+        let replicas =  Math.round(Math.random() * config.maxModelReplicas[idx])
+        const model = generateModel(config.modelType[idx], modelName, 1, replicas, config.isSchedulerProxy, config.modelMemoryBytes[idx], config.inferBatchSize[idx])
+        let opOk = k8s.loadModel(modelName, model.modelCRYaml, true)
+        console.log("Model load operation status:", opOk)
+        sleep(config.sleepBetweenModelReplicaChange)
     }
 }
 

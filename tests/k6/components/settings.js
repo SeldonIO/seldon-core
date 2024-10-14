@@ -306,6 +306,20 @@ function enableStateCheck() {
     return true
 }
 
+function enableModeReplicaChange() {
+    if (__ENV.ENABLE_MODEL_REPLICA_CHANGE) {
+        return (__ENV.ENABLE_MODEL_REPLICA_CHANGE === "true")
+    }
+    return false
+}
+
+function sleepBetweenModelReplicaChange() {
+    if (__ENV.SLEEP_BETWEEN_REPLICA_CHANGE) {
+        return Number(__ENV.SLEEP_BETWEEN_REPLICA_CHANGE)
+    }
+    return 10
+}
+
 export function getConfig() {
     return {
         "useKubeControlPlane": useKubeControlPlane(),
@@ -348,5 +362,7 @@ export function getConfig() {
         "checkStateEverySec": checkStateEverySec(),
         "maxCheckTimeSec": maxCheckTimeSec(),
         "stopOnCheckFailure": stopOnCheckFailure(),
+        "enableModeReplicaChange": enableModeReplicaChange(),
+        "sleepBetweenModelReplicaChange": sleepBetweenModelReplicaChange(),
     }
 }
