@@ -11,9 +11,5 @@ spec:
     port: 80
     targetPort: http
     protocol: TCP
-  - name: admin
-    port: 9003
-    targetPort: envoy-admin
-    protocol: TCP
   selector:
     app: seldon-envoy
