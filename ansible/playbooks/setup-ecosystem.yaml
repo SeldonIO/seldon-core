@@ -1,5 +1,5 @@
 ---
-- name: Setup Seldon Core v2 Ecosystem
+- name: Setup Seldon Core 2 Ecosystem
   hosts: localhost
   roles:
   - ecosystem

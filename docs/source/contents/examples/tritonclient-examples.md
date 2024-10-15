@@ -1,4 +1,4 @@
-# Tritonclient Examples with Seldon Core V2
+# Tritonclient Examples with Seldon Core 2
 
 To install `tritonclient`
 ```bash

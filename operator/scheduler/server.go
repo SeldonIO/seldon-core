@@ -91,9 +91,6 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 		return err
 	}
 
-	// on new reconnects we send a list of servers to the schedule
-	go handleRegisteredServers(ctx, namespace, s, grpcClient)
-
 	for {
 		event, err := stream.Recv()
 		if err != nil {
@@ -105,6 +102,7 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 		}
 
 		logger.Info("Received event", "server", event.ServerName)
+
 		if event.GetKubernetesMeta() == nil {
 			logger.Info("Received server event with no k8s metadata so ignoring", "server", event.ServerName)
 			continue

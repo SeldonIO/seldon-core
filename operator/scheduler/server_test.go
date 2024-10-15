@@ -185,7 +185,7 @@ func TestSubscribeServerEvents(t *testing.T) {
 		noSchedulerState   bool
 	}
 
-	// note expected state is derived in the test, maybe we should be explictl about it in the future
+	// note expected state is derived in the test, maybe we should be explicit about it in the future
 	tests := []test{
 		{
 			// no scheduler state means lost servers metadata

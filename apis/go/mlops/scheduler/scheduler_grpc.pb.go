@@ -44,6 +44,7 @@ const (
 	Scheduler_SubscribeModelStatus_FullMethodName      = "/seldon.mlops.scheduler.Scheduler/SubscribeModelStatus"
 	Scheduler_SubscribeExperimentStatus_FullMethodName = "/seldon.mlops.scheduler.Scheduler/SubscribeExperimentStatus"
 	Scheduler_SubscribePipelineStatus_FullMethodName   = "/seldon.mlops.scheduler.Scheduler/SubscribePipelineStatus"
+	Scheduler_SubscribeControlPlane_FullMethodName     = "/seldon.mlops.scheduler.Scheduler/SubscribeControlPlane"
 )
 
 // SchedulerClient is the client API for Scheduler service.
@@ -66,6 +67,8 @@ type SchedulerClient interface {
 	SubscribeModelStatus(ctx context.Context, in *ModelSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeModelStatusClient, error)
 	SubscribeExperimentStatus(ctx context.Context, in *ExperimentSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeExperimentStatusClient, error)
 	SubscribePipelineStatus(ctx context.Context, in *PipelineSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribePipelineStatusClient, error)
+	// control plane stream with controller
+	SubscribeControlPlane(ctx context.Context, in *ControlPlaneSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeControlPlaneClient, error)
 }
 
 type schedulerClient struct {
@@ -420,6 +423,39 @@ func (x *schedulerSubscribePipelineStatusClient) Recv() (*PipelineStatusResponse
 	return m, nil
 }
 
+func (c *schedulerClient) SubscribeControlPlane(ctx context.Context, in *ControlPlaneSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeControlPlaneClient, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Scheduler_ServiceDesc.Streams[8], Scheduler_SubscribeControlPlane_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &schedulerSubscribeControlPlaneClient{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Scheduler_SubscribeControlPlaneClient interface {
+	Recv() (*ControlPlaneResponse, error)
+	grpc.ClientStream
+}
+
+type schedulerSubscribeControlPlaneClient struct {
+	grpc.ClientStream
+}
+
+func (x *schedulerSubscribeControlPlaneClient) Recv() (*ControlPlaneResponse, error) {
+	m := new(ControlPlaneResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // SchedulerServer is the server API for Scheduler service.
 // All implementations must embed UnimplementedSchedulerServer
 // for forward compatibility
@@ -440,6 +476,8 @@ type SchedulerServer interface {
 	SubscribeModelStatus(*ModelSubscriptionRequest, Scheduler_SubscribeModelStatusServer) error
 	SubscribeExperimentStatus(*ExperimentSubscriptionRequest, Scheduler_SubscribeExperimentStatusServer) error
 	SubscribePipelineStatus(*PipelineSubscriptionRequest, Scheduler_SubscribePipelineStatusServer) error
+	// control plane stream with controller
+	SubscribeControlPlane(*ControlPlaneSubscriptionRequest, Scheduler_SubscribeControlPlaneServer) error
 	mustEmbedUnimplementedSchedulerServer()
 }
 
@@ -494,6 +532,9 @@ func (UnimplementedSchedulerServer) SubscribeExperimentStatus(*ExperimentSubscri
 }
 func (UnimplementedSchedulerServer) SubscribePipelineStatus(*PipelineSubscriptionRequest, Scheduler_SubscribePipelineStatusServer) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribePipelineStatus not implemented")
+}
+func (UnimplementedSchedulerServer) SubscribeControlPlane(*ControlPlaneSubscriptionRequest, Scheduler_SubscribeControlPlaneServer) error {
+	return status.Errorf(codes.Unimplemented, "method SubscribeControlPlane not implemented")
 }
 func (UnimplementedSchedulerServer) mustEmbedUnimplementedSchedulerServer() {}
 
@@ -820,6 +861,27 @@ func (x *schedulerSubscribePipelineStatusServer) Send(m *PipelineStatusResponse)
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Scheduler_SubscribeControlPlane_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ControlPlaneSubscriptionRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(SchedulerServer).SubscribeControlPlane(m, &schedulerSubscribeControlPlaneServer{ServerStream: stream})
+}
+
+type Scheduler_SubscribeControlPlaneServer interface {
+	Send(*ControlPlaneResponse) error
+	grpc.ServerStream
+}
+
+type schedulerSubscribeControlPlaneServer struct {
+	grpc.ServerStream
+}
+
+func (x *schedulerSubscribeControlPlaneServer) Send(m *ControlPlaneResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Scheduler_ServiceDesc is the grpc.ServiceDesc for Scheduler service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -899,6 +961,11 @@ var Scheduler_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "SubscribePipelineStatus",
 			Handler:       _Scheduler_SubscribePipelineStatus_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "SubscribeControlPlane",
+			Handler:       _Scheduler_SubscribeControlPlane_Handler,
 			ServerStreams: true,
 		},
 	},

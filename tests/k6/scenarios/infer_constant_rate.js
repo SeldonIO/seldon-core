@@ -1,5 +1,8 @@
 import { getConfig } from '../components/settings.js'
-import { doInfer, setupBase, teardownBase, getVersionSuffix } from '../components/utils.js'
+import { doInfer, setupBase, teardownBase, getVersionSuffix, applyModelReplicaChange } from '../components/utils.js'
+import { vu } from 'k6/execution';
+
+var kubeClient = null
 
 export const options = {
     thresholds: {
@@ -46,6 +49,11 @@ export default function (config) {
         doInfer(modelName, modelNameWithVersion, config, true, idx)
     } else {
         doInfer(modelName, modelNameWithVersion, config, false, idx)
+    }
+
+    // for simplicity we only change model replicas in the first VU
+    if (vu.idInTest == 1 && config.enableModelReplicaChange) {
+        applyModelReplicaChange(config)
     }
 }
 

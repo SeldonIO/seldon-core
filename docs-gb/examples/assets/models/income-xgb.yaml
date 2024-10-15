@@ -1,0 +1,8 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: income-xgb
+spec:
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.5.0/income-xgb"
+  requirements:
+  - xgboost

@@ -37,9 +37,6 @@ func NewModelRestStatusCaller(logger logrus.FieldLogger, envoyHost string, envoy
 		return nil, err
 	}
 	httpClient := util.GetHttpClientFromTLSOptions(tlsOptions)
-	if err != nil {
-		return nil, err
-	}
 	return &ModelRestCaller{
 		envoyHost:  envoyHost,
 		envoyPort:  envoyPort,

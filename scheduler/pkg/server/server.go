@@ -60,6 +60,7 @@ type SchedulerServer struct {
 	serverEventStream     ServerEventStream
 	experimentEventStream ExperimentEventStream
 	pipelineEventStream   PipelineEventStream
+	controlPlaneStream    ControlPlaneStream
 	certificateStore      *seldontls.CertificateStore
 	timeout               time.Duration
 	synchroniser          synchroniser.Synchroniser
@@ -89,6 +90,11 @@ type PipelineEventStream struct {
 	streams map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription
 }
 
+type ControlPlaneStream struct {
+	mu      sync.Mutex
+	streams map[pb.Scheduler_SubscribeControlPlaneServer]*ControlPlaneSubsription
+}
+
 type ModelSubscription struct {
 	name   string
 	stream pb.Scheduler_SubscribeModelStatusServer
@@ -110,6 +116,12 @@ type ExperimentSubscription struct {
 type PipelineSubscription struct {
 	name   string
 	stream pb.Scheduler_SubscribePipelineStatusServer
+	fin    chan bool
+}
+
+type ControlPlaneSubsription struct {
+	name   string
+	stream pb.Scheduler_SubscribeControlPlaneServer
 	fin    chan bool
 }
 
@@ -198,6 +210,9 @@ func NewSchedulerServer(
 		experimentEventStream: ExperimentEventStream{
 			streams: make(map[pb.Scheduler_SubscribeExperimentStatusServer]*ExperimentSubscription),
 		},
+		controlPlaneStream: ControlPlaneStream{
+			streams: make(map[pb.Scheduler_SubscribeControlPlaneServer]*ControlPlaneSubsription),
+		},
 		timeout:      sendTimeout,
 		synchroniser: synchroniser,
 	}
@@ -245,7 +260,7 @@ func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotify
 		}
 		numExpectedReplicas += uint(server.ExpectedReplicas)
 	}
-	if req.IsFirstSync {
+	if req.IsFirstSync && !s.synchroniser.IsReady() {
 		s.synchroniser.Signals(numExpectedReplicas)
 		logger.Infof("Signalling synchroniser with %d expected server agents to connect", numExpectedReplicas)
 	}
@@ -280,10 +295,12 @@ func (s *SchedulerServer) LoadModel(ctx context.Context, req *pb.LoadModelReques
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
-	err = s.scheduler.Schedule(req.GetModel().GetMeta().GetName())
-	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-	}
+	go func() {
+		err := s.scheduler.Schedule(req.GetModel().GetMeta().GetName())
+		if err != nil {
+			logger.WithError(err).Warnf("Failed to schedule model %s", req.GetModel().GetMeta().GetName())
+		}
+	}()
 	return &pb.LoadModelResponse{}, nil
 }
 
@@ -294,10 +311,12 @@ func (s *SchedulerServer) UnloadModel(ctx context.Context, req *pb.UnloadModelRe
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
 	}
-	err = s.scheduler.Schedule(req.GetModel().Name)
-	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-	}
+	go func() {
+		err := s.scheduler.Schedule(req.GetModel().Name)
+		if err != nil {
+			logger.WithError(err).Warnf("Failed to schedule model %s (for unload)", req.GetModel().GetName())
+		}
+	}()
 	return &pb.UnloadModelResponse{}, nil
 }
 

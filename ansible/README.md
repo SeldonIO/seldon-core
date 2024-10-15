@@ -29,12 +29,12 @@ We have tested provided instructions on Python 3.8 - 3.11 with following version
 and `kubernetes.core` collection in version `2.4.0`.
 
 
-Once installed you can use the following Playbooks that you will find in [Ansible](https://github.com/SeldonIO/seldon-core/tree/v2/ansible) folder of Seldon Core V2 repository.
+Once installed you can use the following Playbooks that you will find in [Ansible](https://github.com/SeldonIO/seldon-core/tree/v2/ansible) folder of Seldon Core 2 repository.
 
 You also need to have installed [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/) CLI.
 
 
-## Installing Seldon Core v2 using Ansible
+## Installing Seldon Core 2 using Ansible
 
 ### One-liner local kind install (from scratch)
 
@@ -72,7 +72,7 @@ existing k8s cluster).
 
 ### Create Kind Cluster
 
-It is recommended to first install Seldon Core v2 inside Kind cluster.
+It is recommended to first install Seldon  inside Kind cluster.
 This allow to test and trial the installation in isolated environment that is easy to remove.
 
 ```bash
@@ -93,7 +93,7 @@ The most common change will be to install in another namespace with:
 ansible-playbook playbooks/setup-ecosystem.yaml -e seldon_mesh_namespace=<mynamespace>
 ```
 
-### Install Seldon Core v2
+### Install Seldon Core 2
 
 Run the following from the `ansible/` folder:
 
@@ -122,8 +122,8 @@ will only install Kafka when setting up the ecosystem.
 
 |                         | type   | default                       | comment                                                  |
 |-------------------------|--------|-------------------------------|----------------------------------------------------------|
-| seldon_mesh_namespace   | string | seldon-mesh                   | namespace to install Seldon Core v2                      |
-| seldon_kafka_namespace  | string | seldon-mesh                   | namespace to install Kafka Cluster for Core v2           |
+| seldon_mesh_namespace   | string | seldon-mesh                   | namespace to install Seldon Core 2                      |
+| seldon_kafka_namespace  | string | seldon-mesh                   | namespace to install Kafka Cluster for Seldon Core 2           |
 | full_install            | bool   | yes                           | enables full ecosystem installation                      |
 | install_kafka           | bool   | `{{ full_install }}`          | installs Strimzi Kafka Operator                          |
 | install_prometheus      | bool   | `{{ full_install }}`          | installs Prometheus Operator                             |
@@ -131,14 +131,14 @@ will only install Kafka when setting up the ecosystem.
 | install_certmanager     | bool   | `{{ full_install }}`          | installs Cert Manager                                    |
 | install_jaeger          | bool   | `{{ full_install }}`          | installs Jaeger                                          |
 | install_opentelemetry   | bool   | `{{ full_install }}`          | installs OpenTelemetry                                   |
-| configure_kafka         | bool   | `{{ install_kafka }}`         | configures Kafka Cluster for Core v2                     |
-| configure_prometheus    | bool   | `{{ install_prometheus }}`    | configure Prometheus using Core v2 specific resources    |
-| configure_jaeger        | bool   | `{{ install_jaeger }}`        | configure Jaeger using Core v2 specific resources        |
-| configure_opentelemetry | bool   | `{{ install_opentelemetry }}` | configure OpenTelemetry using Core v2 specific resources |
+| configure_kafka         | bool   | `{{ install_kafka }}`         | configures Kafka Cluster for Seldon Core 2                     |
+| configure_prometheus    | bool   | `{{ install_prometheus }}`    | configure Prometheus using Seldon Core 2 specific resources    |
+| configure_jaeger        | bool   | `{{ install_jaeger }}`        | configure Jaeger using Seldon Core 2 specific resources        |
+| configure_opentelemetry | bool   | `{{ install_opentelemetry }}` | configure OpenTelemetry using Seldon Core 2 specific resources |
 
 
 
-### Seldon Core v2 configuration options
+### Seldon Core 2 configuration options
 
 |                         | type   | default                       | comment                                                 |
 |-------------------------|--------|-------------------------------|---------------------------------------------------------|
@@ -237,6 +237,6 @@ rm -rf ~/.cache/seldon/
 ```
 
 ```{note}
-If you used Ansible to install Seldon Core v2 and its ecosystem into K8s cluster other than Kind you need to manually remove all the components.
-Notes on how to remove Seldon Core v2 Helm installation itself you can find [here](https://docs.seldon.io/projects/seldon-core/en/v2/contents/getting-started/kubernetes-installation/helm.html#uninstall).
+If you used Ansible to install Seldon Core 2 and its ecosystem into K8s cluster other than Kind you need to manually remove all the components.
+Notes on how to remove Seldon Core 2 Helm installation itself you can find [here](https://docs.seldon.io/projects/seldon-core/en/v2/contents/getting-started/kubernetes-installation/helm.html#uninstall).
 ```

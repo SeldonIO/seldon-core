@@ -1,6 +1,6 @@
 ## Seldon Model Zoo
 
-Examples of various model artifact types from various frameworks running under Seldon Core V2.
+Examples of various model artifact types from various frameworks running under Seldon Core 2.
 
  * SKlearn
  * Tensorflow

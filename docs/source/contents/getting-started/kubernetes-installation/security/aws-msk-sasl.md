@@ -2,7 +2,7 @@
 
 > New in Seldon Core 2.5.0
 
-Seldon Core v2 can integrate with Amazon managed Apache Kafka (MSK). You can control access to your Amazon MSK clusters using sign-in credentials that are stored and secured using AWS Secrets Manager. Storing user credentials in Secrets Manager reduces the overhead of cluster authentication such as auditing, updating, and rotating credentials. Secrets Manager also lets you share user credentials across clusters.
+Seldon Core 2 can integrate with Amazon managed Apache Kafka (MSK). You can control access to your Amazon MSK clusters using sign-in credentials that are stored and secured using AWS Secrets Manager. Storing user credentials in Secrets Manager reduces the overhead of cluster authentication such as auditing, updating, and rotating credentials. Secrets Manager also lets you share user credentials across clusters.
 
 ```{Note}
 Configuration of the AWS MSK instance itself is out of scope for this example.
@@ -17,14 +17,14 @@ Do not forget to also copy the `bootstrap.servers` which we will use it in our c
 
 ## Create Kubernetes Secret
 
-Seldon Core v2 expects password to be in form of K8s secret
+Seldon Core 2 expects password to be in form of K8s secret
 ```bash
 kubectl create secret generic aws-msk-kafka-secret -n seldon-mesh --from-literal password="<MSK SASL Password>"
 ```
 
-## Configure Seldon Core v2
+## Configure Seldon Core 2
 
-Configure Seldon Core v2 by setting following Helm values:
+Configure Seldon Core 2 by setting following Helm values:
 
 ```{literalinclude} ../../../../../../k8s/samples/values-aws-msk-kafka-sasl-scram.yaml.tmpl
 :language: yaml

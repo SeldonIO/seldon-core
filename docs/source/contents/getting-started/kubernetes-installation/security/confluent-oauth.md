@@ -2,7 +2,7 @@
 
 > New in Seldon Core 2.7.0
 
-Seldon Core v2 can integrate with Confluent Cloud managed Kafka.
+Seldon Core 2 can integrate with Confluent Cloud managed Kafka.
 In this example we use [Oauth 2.0 security mechanism](https://docs.confluent.io/cloud/current/access-management/authenticate/oauth/overview.html).
 
 
@@ -22,7 +22,7 @@ See Confluent Cloud [documentation](https://docs.confluent.io/cloud/current/acce
 
 ## Create Kubernetes Secret
 
-Seldon Core v2 expects oauth credentials to be in form of K8s secret
+Seldon Core 2 expects oauth credentials to be in form of K8s secret
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -46,9 +46,9 @@ You will need following information from Confluent Cloud:
 Client ID, client secret and token endpoint url should come from identity provider, e.g. Keycloak or Azure AD.
 
 
-## Configure Seldon Core v2
+## Configure Seldon Core 2
 
-Configure Seldon Core v2 by setting following Helm values:
+Configure Seldon Core 2 by setting following Helm values:
 
 ```{literalinclude} ../../../../../../k8s/samples/values-confluent-kafka-oauth.yaml.tmpl
 :language: yaml

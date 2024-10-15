@@ -38,6 +38,8 @@ spec:
         value: '{{ .Values.serverConfig.agent.maxLoadRetryCount }}'
       - name: SELDON_MAX_UNLOAD_RETRY_COUNT
         value: '{{ .Values.serverConfig.agent.maxUnloadRetryCount }}'
+      - name: SELDON_UNLOAD_GRACE_PERIOD_SECONDS
+        value: '{{ .Values.serverConfig.agent.unloadGracePeriodSeconds }}'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: '{{ .Values.serverConfig.agent.overcommitPercentage }}'
       - name: CONTROL_PLANE_SECURITY_PROTOCOL

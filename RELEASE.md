@@ -1,6 +1,6 @@
 # Release Process
 
-This document summarizes the release process for Seldon Core v2.
+This document summarizes the release process for Seldon Core 2.
 It is aimed mainly at the maintainers.
 
 > :warning: **NOTE:** This is a work in progress.
