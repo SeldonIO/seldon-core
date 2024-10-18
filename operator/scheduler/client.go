@@ -36,7 +36,7 @@ const (
 	SchedulerConnectMaxRetries    = 12
 	SchedulerConnectBackoffScalar = 200 * time.Millisecond
 	ClientKeapAliveTime           = 10 * time.Second
-	ClientKeapAliveTimeout        = time.Second
+	ClientKeapAliveTimeout        = 2 * time.Second
 	ClientKeapAlivePermit         = true
 )
 
