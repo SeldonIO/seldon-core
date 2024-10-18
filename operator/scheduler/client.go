@@ -228,7 +228,7 @@ func (s *SchedulerClient) connectToScheduler(host string, namespace string, plai
 			return nil, err
 		}
 	}
-	var kacp = keepalive.ClientParameters{
+	kacp := keepalive.ClientParameters{
 		Time:                ClientKeapAliveTime,
 		Timeout:             ClientKeapAliveTimeout,
 		PermitWithoutStream: ClientKeapAlivePermit,

@@ -80,7 +80,7 @@ func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int
 		port = tlsPort
 	}
 
-	var kacp = keepalive.ClientParameters{
+	kacp := keepalive.ClientParameters{
 		Time:                util.ClientKeapAliveTime,
 		Timeout:             util.ClientKeapAliveTimeout,
 		PermitWithoutStream: util.ClientKeapAlivePermit,

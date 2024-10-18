@@ -51,7 +51,7 @@ func CreateV2GrpcConnection(v2Config V2Config) (*grpc.ClientConn, error) {
 		grpc_retry.WithMax(v2Config.GRPRetryMaxCount),
 	}
 
-	var kacp = keepalive.ClientParameters{
+	kacp := keepalive.ClientParameters{
 		Time:                util.ClientKeapAliveTime,
 		Timeout:             util.ClientKeapAliveTimeout,
 		PermitWithoutStream: util.ClientKeapAlivePermit,
