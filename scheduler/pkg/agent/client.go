@@ -24,6 +24,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
@@ -416,9 +417,16 @@ func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grp
 
 	logger.Infof("Connecting (non-blocking) to scheduler at %s:%d", host, port)
 
+	kacp := keepalive.ClientParameters{
+		Time:                util.ClientKeapAliveTime,
+		Timeout:             util.ClientKeapAliveTimeout,
+		PermitWithoutStream: util.ClientKeapAlivePermit,
+	}
+
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(transCreds),
 		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
+		grpc.WithKeepaliveParams(kacp),
 	}
 	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
