@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/mitchellh/copystructure"
 	"github.com/sirupsen/logrus"
@@ -21,15 +22,17 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
 )
 
 const (
-	pendingSyncsQueueSize      int = 1000
-	experimentStartEventSource     = "experiment.store.start"
-	experimentStopEventSource      = "experiment.store.stop"
-	modelEventHandlerName          = "experiment.store.models"
-	pipelineEventHandlerName       = "experiment.store.pipelines"
-	experimentDbFolder             = "experimentdb"
+	deletedExperimentTTL       time.Duration = time.Duration(time.Hour * 24)
+	pendingSyncsQueueSize      int           = 1000
+	experimentStartEventSource               = "experiment.store.start"
+	experimentStopEventSource                = "experiment.store.stop"
+	modelEventHandlerName                    = "experiment.store.models"
+	pipelineEventHandlerName                 = "experiment.store.pipelines"
+	experimentDbFolder                       = "experimentdb"
 )
 
 type ExperimentServer interface {
@@ -57,7 +60,6 @@ type ExperimentStore struct {
 }
 
 func NewExperimentServer(logger logrus.FieldLogger, eventHub *coordinator.EventHub, store store.ModelStore, pipelineStore pipeline.PipelineHandler) *ExperimentStore {
-
 	es := &ExperimentStore{
 		logger:             logger.WithField("source", "experimentServer"),
 		experiments:        make(map[string]*Experiment),
@@ -95,7 +97,7 @@ func getExperimentDbFolder(basePath string) string {
 // we just add a reference to the experiment in the memory store
 // so that we can keep track of it in case we need to replay the event (to the controller)
 // we do not trigger an event though as envoy has a clean state when the scheduler restarts
-func (es *ExperimentStore) AddExperimentInMap(experiment *Experiment) error {
+func (es *ExperimentStore) addExperimentInMap(experiment *Experiment) error {
 	es.mu.Lock()
 	defer es.mu.Unlock()
 	if _, ok := es.experiments[experiment.Name]; !ok {
@@ -120,10 +122,18 @@ func (es *ExperimentStore) InitialiseOrRestoreDB(path string) error {
 	}
 	es.db = db
 	// If database already existed we can restore else this is a noop
-	err = es.db.restore(es.StartExperiment, es.AddExperimentInMap)
+	err = es.db.restore(es.StartExperiment, es.addExperimentInMap)
 	if err != nil {
 		return err
 	}
+	go func() {
+		ticker := time.NewTicker(utils.DeletedResourceCleanupFrequency)
+		defer ticker.Stop()
+		for range ticker.C {
+			es.cleanupDeletedExperiments()
+		}
+	}()
+
 	return nil
 }
 
@@ -302,7 +312,7 @@ func (es *ExperimentStore) setStatusImpl(experimentName string, active bool, rea
 	if experiment, ok := es.experiments[experimentName]; !ok {
 		return nil, &ExperimentNotFound{experimentName: experimentName}
 	} else {
-		if !experiment.Deleted || !active { //can't reactivate a deleted experiment
+		if !experiment.Deleted || !active { // can't reactivate a deleted experiment
 			currentActive := experiment.Active
 			experiment.Active = active
 			experiment.StatusDescription = reason
@@ -321,7 +331,7 @@ func (es *ExperimentStore) StartExperiment(experiment *Experiment) error {
 	}
 	if es.eventHub != nil {
 		if modelEvt != nil {
-			es.eventHub.PublishModelEvent(experimentStateEventSource, *modelEvt)
+			es.eventHub.PublishModelEvent(experimentStartEventSource, *modelEvt)
 		}
 		if pipelineEvt != nil {
 			es.eventHub.PublishPipelineEvent(experimentStartEventSource, *pipelineEvt)
@@ -356,9 +366,8 @@ func (es *ExperimentStore) startExperimentImpl(experiment *Experiment) (*coordin
 				ModelName: *resourceName,
 			}
 		default:
-			return nil, nil, nil, fmt.Errorf("Unknown resource type %v", experiment.ResourceType)
+			return nil, nil, nil, fmt.Errorf("unknown resource type %v", experiment.ResourceType)
 		}
-
 	}
 	es.updateExperimentState(experiment)
 	if es.db != nil {
@@ -381,7 +390,7 @@ func (es *ExperimentStore) StopExperiment(experimentName string) error {
 			es.eventHub.PublishModelEvent(experimentStopEventSource, *modelEvt)
 		}
 		if pipelineEvt != nil {
-			es.eventHub.PublishPipelineEvent(experimentStartEventSource, *pipelineEvt)
+			es.eventHub.PublishPipelineEvent(experimentStopEventSource, *pipelineEvt)
 		}
 		if expEvt != nil {
 			es.eventHub.PublishExperimentEvent(experimentStopEventSource, *expEvt)
@@ -399,6 +408,7 @@ func (es *ExperimentStore) stopExperimentImpl(experimentName string) (*coordinat
 		var modelEvt *coordinator.ModelEventMsg
 		var pipelineEvt *coordinator.PipelineEventMsg
 		experiment.Deleted = true
+		experiment.DeletedAt = time.Now()
 		experiment.Active = false
 		es.cleanExperimentState(experiment)
 		if experiment.Default != nil {
@@ -413,7 +423,7 @@ func (es *ExperimentStore) stopExperimentImpl(experimentName string) (*coordinat
 					ModelName: *experiment.Default,
 				}
 			default:
-				return nil, nil, nil, fmt.Errorf("Unknown resource type %v", experiment.ResourceType)
+				return nil, nil, nil, fmt.Errorf("unknown resource type %v", experiment.ResourceType)
 			}
 		}
 		if es.db != nil {
@@ -460,4 +470,25 @@ func (es *ExperimentStore) GetExperiments() ([]*Experiment, error) {
 		foundExperiments = append(foundExperiments, copied.(*Experiment))
 	}
 	return foundExperiments, nil
+}
+
+func (es *ExperimentStore) cleanupDeletedExperiments() {
+	es.logger.Info("cleaning up deleted experiments")
+	for _, experiment := range es.experiments {
+		if experiment.Deleted {
+			es.mu.Lock()
+			defer es.mu.Unlock()
+			if experiment.DeletedAt.IsZero() {
+				experiment.DeletedAt = time.Now()
+				if es.db != nil {
+					err := es.db.save(experiment)
+					if err != nil {
+						es.logger.Warnf("could not update DB TTL for experiment: %s", experiment.Name)
+					}
+				}
+			} else if experiment.DeletedAt.Add(utils.DeletedResourceTTL).Before(time.Now()) {
+				es.experiments[experiment.Name] = nil
+			}
+		}
+	}
 }

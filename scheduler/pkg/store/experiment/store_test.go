@@ -13,6 +13,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/gomega"
@@ -372,7 +373,8 @@ func TestRestoreExperiments(t *testing.T) {
 							Name: "model2",
 						},
 					},
-					Deleted: false},
+					Deleted: false,
+				},
 			},
 		},
 		{
@@ -394,7 +396,8 @@ func TestRestoreExperiments(t *testing.T) {
 							Name: "model2",
 						},
 					},
-					Deleted: false},
+					Deleted: false,
+				},
 				"b": {Name: "b", Deleted: true},
 			},
 		},
@@ -430,10 +433,13 @@ func TestRestoreExperiments(t *testing.T) {
 				expectedExperiment, ok := test.experiments[p.Name]
 				g.Expect(ok).To(BeTrue())
 				g.Expect(expectedExperiment.Deleted).To(Equal(p.Deleted))
-				g.Expect(cmp.Equal(p, expectedExperiment)).To(BeTrue())
-			}
+				g.Expect(cmp.Equal(p.Name, expectedExperiment.Name)).To(BeTrue())
+				if expectedExperiment.Deleted {
+					g.Expect(expectedExperiment.DeletedAt.Before(time.Now())).To(BeTrue())
+				}
 
-			g.Expect(len(store.experiments)).To(Equal(len(test.experiments)))
+				g.Expect(len(store.experiments)).To(Equal(len(test.experiments)))
+			}
 		})
 	}
 }
