@@ -35,7 +35,7 @@ const (
 	// these 2 constants in combination with the backoff exponential function will give us a max backoff of 13.5 minutes
 	SchedulerConnectMaxRetries    = 12
 	SchedulerConnectBackoffScalar = 200 * time.Millisecond
-	ClientKeapAliveTime           = 10 * time.Second
+	ClientKeapAliveTime           = 30 * time.Second
 	ClientKeapAliveTimeout        = 2 * time.Second
 	ClientKeapAlivePermit         = true
 )
