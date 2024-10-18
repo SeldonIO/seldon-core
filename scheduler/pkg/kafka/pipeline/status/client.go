@@ -22,12 +22,14 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 const (
@@ -84,9 +86,17 @@ func (pc *PipelineSchedulerClient) connectToScheduler(host string, plainTxtPort 
 		transCreds = pc.certificateStore.CreateClientTransportCredentials()
 		port = tlsPort
 	}
+
+	var kacp = keepalive.ClientParameters{
+		Time:                util.ClientKeapAliveTime,
+		Timeout:             util.ClientKeapAliveTimeout,
+		PermitWithoutStream: util.ClientKeapAlivePermit,
+	}
+
 	// note: retry is done in the caller
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(transCreds),
+		grpc.WithKeepaliveParams(kacp),
 	}
 	logger.Infof("Connecting to scheduler at %s:%d", host, port)
 	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d", host, port), opts...)
