@@ -22,6 +22,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,6 +35,9 @@ const (
 	// these 2 constants in combination with the backoff exponential function will give us a max backoff of 13.5 minutes
 	SchedulerConnectMaxRetries    = 12
 	SchedulerConnectBackoffScalar = 200 * time.Millisecond
+	ClientKeapAliveTime           = 10 * time.Second
+	ClientKeapAliveTimeout        = time.Second
+	ClientKeapAlivePermit         = true
 )
 
 type SchedulerClient struct {
@@ -224,6 +228,12 @@ func (s *SchedulerClient) connectToScheduler(host string, namespace string, plai
 			return nil, err
 		}
 	}
+	var kacp = keepalive.ClientParameters{
+		Time:                ClientKeapAliveTime,
+		Timeout:             ClientKeapAliveTimeout,
+		PermitWithoutStream: ClientKeapAlivePermit,
+	}
+
 	retryOpts := []grpc_retry.CallOption{
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
 	}
@@ -241,6 +251,7 @@ func (s *SchedulerClient) connectToScheduler(host string, namespace string, plai
 	}
 	opts = append(opts, grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)))
 	opts = append(opts, grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)))
+	opts = append(opts, grpc.WithKeepaliveParams(kacp))
 	s.logger.Info("Dialing scheduler", "host", host, "port", port)
 	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
