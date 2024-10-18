@@ -36,7 +36,7 @@ const (
 
 const (
 	EnvoyUpdateDefaultBatchWait = 250 * time.Millisecond
-	ClientKeapAliveTime         = 30 * time.Second
+	ClientKeapAliveTime         = 60 * time.Second
 	ClientKeapAliveTimeout      = 2 * time.Second
 	ClientKeapAlivePermit       = true
 )
