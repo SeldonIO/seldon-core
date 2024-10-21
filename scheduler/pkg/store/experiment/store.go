@@ -128,7 +128,6 @@ func (es *ExperimentStore) InitialiseOrRestoreDB(path string) error {
 	}
 	go func() {
 		ticker := time.NewTicker(utils.DeletedResourceCleanupFrequency)
-		defer ticker.Stop()
 		for range ticker.C {
 			es.cleanupDeletedExperiments()
 		}
@@ -473,11 +472,11 @@ func (es *ExperimentStore) GetExperiments() ([]*Experiment, error) {
 }
 
 func (es *ExperimentStore) cleanupDeletedExperiments() {
+	es.mu.Lock()
+	defer es.mu.Unlock()
 	es.logger.Info("cleaning up deleted experiments")
 	for _, experiment := range es.experiments {
 		if experiment.Deleted {
-			es.mu.Lock()
-			defer es.mu.Unlock()
 			if experiment.DeletedAt.IsZero() {
 				experiment.DeletedAt = time.Now()
 				if es.db != nil {

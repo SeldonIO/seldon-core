@@ -102,7 +102,6 @@ func (ps *PipelineStore) InitialiseOrRestoreDB(path string) error {
 
 	go func() {
 		ticker := time.NewTicker(utils.DeletedResourceCleanupFrequency)
-		defer ticker.Stop()
 		for range ticker.C {
 			ps.cleanupDeletedPipelines()
 		}
@@ -447,11 +446,11 @@ func (ps *PipelineStore) handleModelEvents(event coordinator.ModelEventMsg) {
 }
 
 func (ps *PipelineStore) cleanupDeletedPipelines() {
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
 	ps.logger.Info("cleaning up deleted pipelines")
 	for _, pipeline := range ps.pipelines {
 		if pipeline.Deleted {
-			ps.mu.Lock()
-			defer ps.mu.Unlock()
 			if pipeline.DeletedAt.IsZero() {
 				pipeline.DeletedAt = time.Now()
 				if ps.db != nil {
