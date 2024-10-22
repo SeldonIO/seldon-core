@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/mitchellh/copystructure"
 	"github.com/sirupsen/logrus"
@@ -21,6 +22,7 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
 )
 
 const (
@@ -97,6 +99,14 @@ func (ps *PipelineStore) InitialiseOrRestoreDB(path string) error {
 	if err != nil {
 		return err
 	}
+
+	go func() {
+		ticker := time.NewTicker(utils.DeletedResourceCleanupFrequency)
+		for range ticker.C {
+			ps.cleanupDeletedPipelines()
+		}
+	}()
+
 	return nil
 }
 
@@ -149,7 +159,6 @@ func (ps *PipelineStore) AddPipeline(req *scheduler.Pipeline) error {
 }
 
 func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.PipelineEventMsg, error) {
-	logger := ps.logger.WithField("func", "AddPipeline")
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
 	var pipeline *Pipeline
@@ -160,9 +169,9 @@ func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.
 			LastVersion: 0,
 		}
 	} else {
-		lastPipeline := pipeline.GetLatestPipelineVersion()
+		latestPipeline := pipeline.GetLatestPipelineVersion()
 
-		switch lastPipeline.State.Status {
+		switch latestPipeline.State.Status {
 		case PipelineTerminate, PipelineTerminating, PipelineTerminated:
 			pipeline = &Pipeline{
 				Name:        req.Name,
@@ -170,14 +179,8 @@ func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.
 			}
 		default:
 			// Handle repeat Kubernetes resource calls for same generation
-			if req.GetKubernetesMeta() != nil &&
-				lastPipeline.KubernetesMeta != nil &&
-				req.GetKubernetesMeta().Generation > 0 &&
-				lastPipeline.KubernetesMeta.Generation > 0 {
-				if req.GetKubernetesMeta().Generation == lastPipeline.KubernetesMeta.Generation {
-					logger.Infof("Pipeline %s kubernetes meta generation matches %d so will ignore", req.Name, req.KubernetesMeta.Generation)
-					return nil, nil
-				}
+			if ps.generationMatches(req, latestPipeline) {
+				return nil, nil
 			}
 		}
 	}
@@ -202,6 +205,20 @@ func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.
 		PipelineVersion: pv.Version,
 		UID:             pv.UID,
 	}, nil
+}
+
+func (ps *PipelineStore) generationMatches(req *scheduler.Pipeline, lastPipeline *PipelineVersion) bool {
+	logger := ps.logger.WithField("func", "generationMatches")
+	if req.GetKubernetesMeta() != nil &&
+		lastPipeline.KubernetesMeta != nil &&
+		req.GetKubernetesMeta().Generation > 0 &&
+		lastPipeline.KubernetesMeta.Generation > 0 {
+		if req.GetKubernetesMeta().Generation == lastPipeline.KubernetesMeta.Generation {
+			logger.Infof("Pipeline %s kubernetes meta generation matches %d so will ignore", req.Name, req.KubernetesMeta.Generation)
+			return true
+		}
+	}
+	return false
 }
 
 func (ps *PipelineStore) RemovePipeline(name string) error {
@@ -233,6 +250,7 @@ func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineE
 			return nil, &PipelineAlreadyTerminatedErr{pipeline: name}
 		default:
 			pipeline.Deleted = true
+			pipeline.DeletedAt = time.Now()
 			lastPipelineVersion.State.setState(PipelineTerminate, "pipeline removed")
 			if err := ps.db.save(pipeline); err != nil {
 				ps.logger.WithError(err).Errorf("Failed to save pipeline %s", name)
@@ -425,4 +443,25 @@ func (ps *PipelineStore) handleModelEvents(event coordinator.ModelEventMsg) {
 			logger.Debugf("No references in pipelines for model %s", event.ModelName)
 		}
 	}()
+}
+
+func (ps *PipelineStore) cleanupDeletedPipelines() {
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
+	ps.logger.Info("cleaning up deleted pipelines")
+	for _, pipeline := range ps.pipelines {
+		if pipeline.Deleted {
+			if pipeline.DeletedAt.IsZero() {
+				pipeline.DeletedAt = time.Now()
+				if ps.db != nil {
+					err := ps.db.save(pipeline)
+					if err != nil {
+						ps.logger.Warnf("could not update DB TTL for pipeline: %s", pipeline.Name)
+					}
+				}
+			} else if pipeline.DeletedAt.Add(utils.DeletedResourceTTL).Before(time.Now()) {
+				delete(ps.pipelines, pipeline.Name)
+			}
+		}
+	}
 }
