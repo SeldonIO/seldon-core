@@ -486,7 +486,7 @@ func (es *ExperimentStore) cleanupDeletedExperiments() {
 					}
 				}
 			} else if experiment.DeletedAt.Add(utils.DeletedResourceTTL).Before(time.Now()) {
-				es.experiments[experiment.Name] = nil
+				delete(es.experiments, experiment.Name)
 			}
 		}
 	}

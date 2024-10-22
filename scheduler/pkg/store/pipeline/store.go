@@ -460,7 +460,7 @@ func (ps *PipelineStore) cleanupDeletedPipelines() {
 					}
 				}
 			} else if pipeline.DeletedAt.Add(utils.DeletedResourceTTL).Before(time.Now()) {
-				ps.pipelines[pipeline.Name] = nil
+				delete(ps.pipelines, pipeline.Name)
 			}
 		}
 	}
