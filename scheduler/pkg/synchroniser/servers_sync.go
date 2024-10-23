@@ -111,6 +111,10 @@ func (s *ServerBasedSynchroniser) Signals(numSignals uint) {
 		if swapped {
 			atomic.AddUint64(&s.maxEvents, uint64(numSignals))
 			s.signalWg.Done()
+			// in the case where we have no servers to connect, we should trigger the doneFn
+			if numSignals == 0 {
+				s.doneFn()
+			}
 		}
 	}
 }
