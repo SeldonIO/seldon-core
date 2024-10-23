@@ -107,7 +107,7 @@ type InferenceArtifactSpec struct {
 type ModelStatus struct {
 	// Total number of replicas targeted by this model
 	Replicas      int32  `json:"replicas,omitempty"`
-	Selector      string `json:"selector"`
+	Selector      string `json:"selector,omitempty"`
 	duckv1.Status `json:",inline"`
 }
 
