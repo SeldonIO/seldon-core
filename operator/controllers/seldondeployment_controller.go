@@ -57,6 +57,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	policy "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	projectcontour "github.com/projectcontour/contour/apis/projectcontour/v1"
 )
 
 const (
@@ -229,6 +231,42 @@ func createPdb(podSpec *machinelearningv1.SeldonPodSpec, deploymentName string, 
 		},
 	}
 	return &pdb
+}
+
+func createContourHTTPProxy(mlDep *machinelearningv1.SeldonDeployment, namespace string, ports []httpGrpcPorts) (*projectcontour.HTTPProxy, error) {
+	firstPredictor := &mlDep.Spec.Predictors[0]
+	sdepSvcName := machinelearningv1.GetPredictorKey(mlDep, firstPredictor)
+	addressableHost := createFqdn(sdepSvcName, namespace) + ":" + strconv.Itoa(externalPorts[0].httpPort)
+	addressablePath := utils.GetPredictionPath(mlDep)
+
+	httpProxy := &projectcontour.HTTPProxy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      sdepSvcName,
+			Namespace: namespace,
+		},
+		Spec: projectcontour.HTTPProxySpec{
+			VirtualHost: &projectcontour.VirtualHost{
+				Fqdn: addressableHost,
+			},
+			Routes: []projectcontour.Route{
+				{
+					Conditions: []projectcontour.MatchCondition{
+						{
+							Prefix: addressablePath,
+						},
+					},
+					Services: []projectcontour.Service{
+						{
+							Name: sdepSvcName,
+							Port: externalPorts[0].httpPort,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	return httpProxy, nil
 }
 
 // Create istio virtual service and destination rule.
@@ -434,6 +472,28 @@ func getEngineGrpcPort() (engine_grpc_port int, err error) {
 		}
 	}
 	return engine_grpc_port, nil
+}
+
+func (r *SeldonDeploymentReconciler) createContourHTTPProxies(components *components, instance *machinelearningv1.SeldonDeployment, log logr.Logger) (bool, error) {
+	ready := true
+	for _, httpProxy := range components.httpProxies {
+		if err := ctrl.SetControllerReference(instance, httpProxy, r.Scheme); err != nil {
+			return false, err
+		}
+
+		found := &projectcontour.HTTPProxy{}
+		err := r.Get(context.TODO(), types.NamespacedName{Name: httpProxy.Name, Namespace: httpProxy.Namespace}, found)
+		if err != nil && errors.IsNotFound(err) {
+			log.Info("Creating a new HTTPProxy", "HTTPProxy.Namespace", httpProxy.Namespace, "HTTPProxy.Name", httpProxy.Name)
+			err = r.Create(context.TODO(), httpProxy)
+			if err != nil {
+				return false, err
+			}
+		} else if err != nil {
+			return false, err
+		}
+	}
+	return ready, nil
 }
 
 // Create all the components (Deployments, Services etc)
@@ -670,6 +730,14 @@ func (r *SeldonDeploymentReconciler) createComponents(ctx context.Context, mlDep
 		}
 		c.virtualServices = append(c.virtualServices, vsvcs...)
 		c.destinationRules = append(c.destinationRules, dstRule...)
+	}
+
+	if utils.GetEnv(ENV_CONTOUR_ENABLED, "false") == "true" {
+		httpProxy, err := createContourHTTPProxy(mlDep, namespace, externalPorts)
+		if err != nil {
+			return nil, err
+		}
+		c.httpProxies = append(c.httpProxies, httpProxy)
 	}
 	return &c, nil
 }
@@ -2128,9 +2196,16 @@ func (r *SeldonDeploymentReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		}
 	}
 
+	contourHTTPProxiesReady, err := r.createContourHTTPProxies(components, instance, log)
+	if err != nil {
+		r.Recorder.Eventf(instance, corev1.EventTypeWarning, constants.EventsInternalError, err.Error())
+		r.updateStatusForError(instance, err, log)
+		return ctrl.Result{}, err
+	}
+
 	switch {
 	// Everything is available - happy case.
-	case deploymentsReady && servicesReady && hpasReady && pdbsReady && (!withKedaSupport || kedaScaledObjectsReady):
+	case deploymentsReady && servicesReady && hpasReady && pdbsReady && (!withKedaSupport || kedaScaledObjectsReady) && contourHTTPProxiesReady:
 		instance.Status.State = machinelearningv1.StatusStateAvailable
 		instance.Status.Description = ""
 	// Deployment is not ready and no longer progressing - set status to failed.
@@ -2307,6 +2382,23 @@ func (r *SeldonDeploymentReconciler) SetupWithManager(ctx context.Context, mgr c
 		builder.
 			Owns(&v2.Mapping{}).
 			Owns(&v2.TLSContext{})
+	}
+
+	if utils.GetEnv(ENV_CONTOUR_ENABLED, "false") == "true" {
+		if err := mgr.GetFieldIndexer().IndexField(ctx, &projectcontour.HTTPProxy{}, ownerKey, func(rawObj client.Object) []string {
+			httpProxy := rawObj.(*projectcontour.HTTPProxy)
+			owner := metav1.GetControllerOf(httpProxy)
+			if owner == nil {
+				return nil
+			}
+			if owner.APIVersion != apiGVStr || owner.Kind != "SeldonDeployment" {
+				return nil
+			}
+			return []string{owner.Name}
+		}); err != nil {
+			return err
+		}
+		builder.Owns(&projectcontour.HTTPProxy{})
 	}
 	return builder.Complete(r)
 }
