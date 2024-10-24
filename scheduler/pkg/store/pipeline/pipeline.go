@@ -19,6 +19,7 @@ type Pipeline struct {
 	LastVersion uint32
 	Versions    []*PipelineVersion
 	Deleted     bool
+	DeletedAt   time.Time
 }
 
 func (p *Pipeline) GetPipelineVersion(versionNumber uint32) *PipelineVersion {

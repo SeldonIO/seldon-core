@@ -58,7 +58,7 @@ spec:
         - containerPort: 9000
           name: http
         - containerPort: 9003
-          name: envoy-admin
+          name: envoy-stats
         resources:
           limits:
             memory: 128Mi
@@ -68,7 +68,7 @@ spec:
         readinessProbe:
           httpGet:
             path: /ready
-            port: envoy-admin
+            port: envoy-stats
           initialDelaySeconds: 10
           periodSeconds: 5
           failureThreshold: 3

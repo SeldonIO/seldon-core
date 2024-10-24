@@ -111,6 +111,14 @@ spec:
         # times more likely than the Create.
         # - name: MODEL_CREATE_UPDATE_DELETE_BIAS
         #   value: "1,3,1"
+        # The following two variables are used to change the model replicas while doing 
+        # data plane tests. The ENABLE_MODEL_REPLICA_CHANGE variable should be set to true
+        # to enable the model replica change. The SLEEP_BETWEEN_REPLICA_CHANGE variable
+        # should be set to the number of seconds to wait between changing the model replicas.
+        # - name: ENABLE_MODEL_REPLICA_CHANGE
+        #   value: "true"
+        # - name: SLEEP_BETWEEN_REPLICA_CHANGE
+        #   value: "10"
         - name: WARMUP
           value: "false"
         - name: GOOGLE_APPLICATION_CREDENTIALS

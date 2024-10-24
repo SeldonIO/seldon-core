@@ -617,3 +617,21 @@ export function checkPipelinesStateIsConsistent(k8sPipelines, schedPipelines) {
 export function checkExperimentsStateIsConsistent(k8sExperiments, schedExperiments) {
   return true // to implement
 }
+
+export function applyModelReplicaChange(config) {
+  if (config.enableModelReplicaChange) {
+    k8s.init()
+    for (let j = 0; j < config.maxNumModels.length; j++) {
+      if (config.maxNumModels[j] > 0) {
+        const modelId = Math.floor(Math.random() * config.maxNumModels[j])
+        const modelName = config.modelNamePrefix[j] + modelId.toString()
+
+        let replicas =  Math.floor(Math.random() * config.maxModelReplicas[j]) + 1
+        const model = generateModel(config.modelType[j], modelName, 1, replicas, config.isSchedulerProxy, config.modelMemoryBytes[j], config.inferBatchSize[j])
+        let opOk = k8s.loadModel(modelName, model.modelCRYaml, true)
+        console.log("Model load %s with replicas %d operation status:",modelName, replicas, opOk)
+      }
+    }
+    sleep(config.sleepBetweenModelReplicaChange)
+  }
+}
