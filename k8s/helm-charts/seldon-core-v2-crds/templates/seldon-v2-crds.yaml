@@ -343,8 +343,6 @@ spec:
                 type: integer
               selector:
                 type: string
-            required:
-            - selector
             type: object
         type: object
     served: true
