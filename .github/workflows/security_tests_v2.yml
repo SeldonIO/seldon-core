@@ -13,7 +13,7 @@ on:
 jobs:
   security-operator:
     runs-on: ubuntu-latest
-    container: snyk/snyk:golang-1.21
+    container: snyk/snyk:golang-1.22
     steps:
     - uses: actions/checkout@v4
     - name: security-golang
@@ -25,7 +25,7 @@ jobs:
 
   security-scheduler:
     runs-on: ubuntu-latest
-    container: snyk/snyk:golang-1.21
+    container: snyk/snyk:golang-1.22
     steps:
     - uses: actions/checkout@v4
     - name: security-golang
