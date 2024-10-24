@@ -744,6 +744,15 @@ func TestServerNotify(t *testing.T) {
 			signalTriggered: true,
 		},
 		{
+			name: "Initial sync - no servers",
+			req: &pb.ServerNotifyRequest{
+				Servers:     []*pb.ServerNotify{},
+				IsFirstSync: true,
+			},
+			expectedServerStates: nil,
+			signalTriggered:      true,
+		},
+		{
 			// this should not trigger sync.Signal()
 			name: "normal sync",
 			req: &pb.ServerNotifyRequest{

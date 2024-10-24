@@ -25,9 +25,6 @@ import (
 
 func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler.SchedulerClient, servers []v1alpha1.Server, isFirstSync bool) error {
 	logger := s.logger.WithName("NotifyServer")
-	if len(servers) == 0 {
-		return nil
-	}
 
 	if grpcClient == nil {
 		// we assume that all servers are in the same namespace
@@ -74,6 +71,7 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 		logger.Error(err, "Failed to send notify server to scheduler")
 		return err
 	}
+	logger.V(1).Info("Sent notify server to scheduler", "servers", len(servers), "isFirstSync", isFirstSync)
 	return nil
 }
 
