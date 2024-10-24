@@ -8,9 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.1
         with:
-          go-version: '1.21'
+          go-version: "1.22"
           cache: false
       - name: test-operator
         run: make -C operator test
