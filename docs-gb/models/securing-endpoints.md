@@ -7,6 +7,9 @@ You can secure the endpoints of a model that you deployed in a Kubernetes cluste
 * [Configure a gateway](/kubernetes/service-meshes/istio.md)
 * [Create a virtual service to expose the REST and gRPC endpoints](/kubernetes/service-meshes/istio.md)
 * Configure a OIDC provider to authenticate. Obtain the `issuer` url, `jwksUri`, and the `Access token` from the OIDC provider.
+{% hint style="info" %}
+**Note** There are many types of authorization policies that you can configure to enable access control on workloads in the mesh. 
+{% endhint %}
 
 In the following example, you can secure the endpoint such that any requests to the end point without the access token are denied.
 
@@ -27,7 +30,7 @@ To secure the endpoints of a model, you need to:
         jwksUri: <OIDC_TOKEN_ISSUER_JWKS>
     ```    
 
-2. Create Authetication policy `deny-empty-jwt` in the namespace `istio-system`.
+2. Create an authorization policy `deny-empty-jwt` in the namespace `istio-system`.
    ```yaml
    apiVersion: security.istio.io/v1beta1
     kind: AuthorizationPolicy
