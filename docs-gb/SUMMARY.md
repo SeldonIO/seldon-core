@@ -78,6 +78,7 @@
   * [rClone](models/rclone.md)
   * [Parameterized Models](models/parameterized-models/README.md)
   * [Pandas Query](models/parameterized-models/pandasquery.md)
+  * [Securing Endpoints](models/securing-endpoints.md)
 * [Metrics](metrics/README.md)
   * [Usage](metrics/usage.md)
   * [Operational](metrics/operational.md)
