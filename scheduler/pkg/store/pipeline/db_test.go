@@ -55,7 +55,7 @@ func TestSaveWithTTL(t *testing.T) {
 
 	path := fmt.Sprintf("%s/db", t.TempDir())
 	logger := log.New()
-	db, err := newPipelineDbManager(getPipelineDbFolder(path), logger)
+	db, err := newPipelineDbManager(getPipelineDbFolder(path), logger, 10)
 	g.Expect(err).To(BeNil())
 	err = db.save(pipeline)
 	g.Expect(err).To(BeNil())
@@ -171,7 +171,7 @@ func TestSaveAndRestore(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			path := fmt.Sprintf("%s/db", t.TempDir())
 			logger := log.New()
-			db, err := newPipelineDbManager(getPipelineDbFolder(path), logger)
+			db, err := newPipelineDbManager(getPipelineDbFolder(path), logger, 10)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
 				err := db.save(p)
@@ -181,7 +181,7 @@ func TestSaveAndRestore(t *testing.T) {
 			g.Expect(err).To(BeNil())
 
 			ps := NewPipelineStore(log.New(), nil, fakeModelStore{status: map[string]store.ModelState{}})
-			err = ps.InitialiseOrRestoreDB(path)
+			err = ps.InitialiseOrRestoreDB(path, 10)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
 				g.Expect(cmp.Equal(p, ps.pipelines[p.Name])).To(BeTrue())
@@ -242,7 +242,7 @@ func TestSaveAndRestoreDeletedPipelines(t *testing.T) {
 			g.Expect(test.pipeline.Deleted).To(BeTrue(), "this is a test for deleted pipelines")
 			path := fmt.Sprintf("%s/db", t.TempDir())
 			logger := log.New()
-			pdb, err := newPipelineDbManager(getPipelineDbFolder(path), logger)
+			pdb, err := newPipelineDbManager(getPipelineDbFolder(path), logger, 10)
 			g.Expect(err).To(BeNil())
 			if !test.withTTL {
 				err = saveWithOutTTL(&test.pipeline, pdb.db)
@@ -255,7 +255,7 @@ func TestSaveAndRestoreDeletedPipelines(t *testing.T) {
 			g.Expect(err).To(BeNil())
 
 			ps := NewPipelineStore(log.New(), nil, fakeModelStore{status: map[string]store.ModelState{}})
-			err = ps.InitialiseOrRestoreDB(path)
+			err = ps.InitialiseOrRestoreDB(path, 10)
 			g.Expect(err).To(BeNil())
 
 			if !test.withTTL {
@@ -334,7 +334,7 @@ func TestGetPipelineFromDB(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			path := fmt.Sprintf("%s/db", t.TempDir())
 			logger := log.New()
-			db, err := newPipelineDbManager(getPipelineDbFolder(path), logger)
+			db, err := newPipelineDbManager(getPipelineDbFolder(path), logger, 10)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
 				err := db.save(p)
@@ -409,7 +409,7 @@ func TestDeletePipelineFromDB(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			path := fmt.Sprintf("%s/db", t.TempDir())
 			logger := log.New()
-			db, err := newPipelineDbManager(getPipelineDbFolder(path), logger)
+			db, err := newPipelineDbManager(getPipelineDbFolder(path), logger, 10)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
 				err := db.save(p)
@@ -527,18 +527,17 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			path := fmt.Sprintf("%s/db", t.TempDir())
-			logger := log.New()
-			db, err := utils.Open(getPipelineDbFolder(path), logger, "pipelineDb")
+			ps := NewPipelineStore(log.New(), nil, fakeModelStore{status: map[string]store.ModelState{}})
+			err := ps.InitialiseOrRestoreDB(path, 10)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
-				err := save(p, db)
+				err := ps.db.save(p)
 				g.Expect(err).To(BeNil())
 			}
-			err = db.Close()
+			err = ps.db.db.Close()
 			g.Expect(err).To(BeNil())
 
-			ps := NewPipelineStore(log.New(), nil, fakeModelStore{status: map[string]store.ModelState{}})
-			err = ps.InitialiseOrRestoreDB(path)
+			err = ps.InitialiseOrRestoreDB(path, 10)
 			g.Expect(err).To(BeNil())
 
 			// make sure we still have the pipelines

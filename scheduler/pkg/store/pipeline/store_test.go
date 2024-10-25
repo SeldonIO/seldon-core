@@ -234,7 +234,7 @@ func TestAddPipeline(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			logger := logrus.New()
 			path := fmt.Sprintf("%s/db", t.TempDir())
-			db, _ := newPipelineDbManager(getPipelineDbFolder(path), logger)
+			db, _ := newPipelineDbManager(getPipelineDbFolder(path), logger, 10)
 			test.store.db = db
 			err := test.store.AddPipeline(test.proto)
 			if test.err == nil {
@@ -385,7 +385,7 @@ func TestRemovePipeline(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			logger := logrus.New()
 			path := fmt.Sprintf("%s/db", t.TempDir())
-			db, _ := newPipelineDbManager(getPipelineDbFolder(path), logger)
+			db, _ := newPipelineDbManager(getPipelineDbFolder(path), logger, 10)
 			test.store.db = db
 			err := test.store.RemovePipeline(test.pipelineName)
 			if test.err == nil {

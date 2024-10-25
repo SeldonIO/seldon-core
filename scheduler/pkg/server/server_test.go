@@ -127,7 +127,8 @@ func TestLoadModel(t *testing.T) {
 					},
 				},
 			},
-			model: &pb.Model{Meta: &pb.MetaData{Name: "model1"},
+			model: &pb.Model{
+				Meta: &pb.MetaData{Name: "model1"},
 				ModelSpec: &pb.ModelSpec{
 					Uri:          "gs://model",
 					Requirements: []string{"sklearn"},
@@ -384,8 +385,11 @@ func TestUnloadModel(t *testing.T) {
 		{
 			name: "Simple",
 			req: []*pba.AgentSubscribeRequest{
-				{ServerName: "server1", ReplicaIdx: 0, Shared: true, AvailableMemoryBytes: 1000,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}}}},
+				{
+					ServerName: "server1", ReplicaIdx: 0, Shared: true, AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}},
+				},
+			},
 			model:      &pb.Model{Meta: &pb.MetaData{Name: "model1"}, ModelSpec: &pb.ModelSpec{Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
 			code:       codes.OK,
 			modelState: store.ModelTerminated,
@@ -393,8 +397,11 @@ func TestUnloadModel(t *testing.T) {
 		{
 			name: "Multiple",
 			req: []*pba.AgentSubscribeRequest{
-				{ServerName: "server1", ReplicaIdx: 0, Shared: true, AvailableMemoryBytes: 1000,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn", "xgboost"}}}},
+				{
+					ServerName: "server1", ReplicaIdx: 0, Shared: true, AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn", "xgboost"}},
+				},
+			},
 			model:      &pb.Model{Meta: &pb.MetaData{Name: "model1"}, ModelSpec: &pb.ModelSpec{Uri: "gs://model", Requirements: []string{"sklearn", "xgboost"}, MemoryBytes: &smallMemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
 			code:       codes.OK,
 			modelState: store.ModelTerminated,
@@ -402,10 +409,15 @@ func TestUnloadModel(t *testing.T) {
 		{
 			name: "TwoReplicas",
 			req: []*pba.AgentSubscribeRequest{
-				{ServerName: "server1", ReplicaIdx: 0, Shared: true, AvailableMemoryBytes: 1000,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}}},
-				{ServerName: "server1", ReplicaIdx: 1, Shared: true, AvailableMemoryBytes: 1000,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}}}},
+				{
+					ServerName: "server1", ReplicaIdx: 0, Shared: true, AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}},
+				},
+				{
+					ServerName: "server1", ReplicaIdx: 1, Shared: true, AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}},
+				},
+			},
 			model:      &pb.Model{Meta: &pb.MetaData{Name: "model1"}, ModelSpec: &pb.ModelSpec{Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
 			code:       codes.OK,
 			modelState: store.ModelTerminated,
@@ -413,10 +425,14 @@ func TestUnloadModel(t *testing.T) {
 		{
 			name: "NotExist",
 			req: []*pba.AgentSubscribeRequest{
-				{ServerName: "server1", ReplicaIdx: 0, Shared: true, AvailableMemoryBytes: 1000,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}}}},
+				{
+					ServerName: "server1", ReplicaIdx: 0, Shared: true, AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}},
+				},
+			},
 			model: nil,
-			code:  codes.FailedPrecondition},
+			code:  codes.FailedPrecondition,
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -518,7 +534,6 @@ func TestLoadPipeline(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestUnloadPipeline(t *testing.T) {
@@ -562,7 +577,7 @@ func TestUnloadPipeline(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			path := fmt.Sprintf("%s/db", t.TempDir())
-			_ = test.server.pipelineHandler.(*pipeline.PipelineStore).InitialiseOrRestoreDB(path)
+			_ = test.server.pipelineHandler.(*pipeline.PipelineStore).InitialiseOrRestoreDB(path, 10)
 			if test.loadReq != nil {
 				err := test.server.pipelineHandler.AddPipeline(test.loadReq.Pipeline)
 				g.Expect(err).To(BeNil())
@@ -575,7 +590,6 @@ func TestUnloadPipeline(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestPipelineStatus(t *testing.T) {

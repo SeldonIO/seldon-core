@@ -48,11 +48,11 @@ func SaveVersion(db *badger.DB, version string) error {
 	})
 }
 
-func GetDeletedAt(item *badger.Item) time.Time {
+func GetDeletedAt(item *badger.Item, ttl time.Duration) time.Time {
 	if item.ExpiresAt() == 0 {
 		return time.Time{}
 	} else {
-		return time.Unix(int64(item.ExpiresAt()), 0).Add(-DeletedResourceTTL)
+		return time.Unix(int64(item.ExpiresAt()), 0).Add(-ttl)
 	}
 }
 

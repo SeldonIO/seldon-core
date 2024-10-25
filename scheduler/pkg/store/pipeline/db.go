@@ -10,6 +10,8 @@ the Change License after the Change Date as each is defined in accordance with t
 package pipeline
 
 import (
+	"time"
+
 	"github.com/dgraph-io/badger/v3"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
@@ -25,19 +27,21 @@ const (
 )
 
 type PipelineDBManager struct {
-	db     *badger.DB
-	logger logrus.FieldLogger
+	db                 *badger.DB
+	logger             logrus.FieldLogger
+	deletedResourceTTL time.Duration
 }
 
-func newPipelineDbManager(path string, logger logrus.FieldLogger) (*PipelineDBManager, error) {
+func newPipelineDbManager(path string, logger logrus.FieldLogger, deletedResourceTTL uint) (*PipelineDBManager, error) {
 	db, err := utils.Open(path, logger, "pipelineDb")
 	if err != nil {
 		return nil, err
 	}
 
 	pdb := &PipelineDBManager{
-		db:     db,
-		logger: logger,
+		db:                 db,
+		logger:             logger,
+		deletedResourceTTL: time.Duration(deletedResourceTTL * uint(time.Minute)),
 	}
 
 	version, err := pdb.getVersion()
@@ -57,22 +61,20 @@ func newPipelineDbManager(path string, logger logrus.FieldLogger) (*PipelineDBMa
 }
 
 // a nil ttl will save the pipeline indefinitely
-func save(pipeline *Pipeline, db *badger.DB) error {
+func (pdb *PipelineDBManager) save(pipeline *Pipeline) error {
 	pipelineProto := CreatePipelineSnapshotFromPipeline(pipeline)
 	pipelineBytes, err := proto.Marshal(pipelineProto)
 	if err != nil {
 		return err
 	}
 	if !pipeline.Deleted {
-		return db.Update(func(txn *badger.Txn) error {
+		return pdb.db.Update(func(txn *badger.Txn) error {
 			err = txn.Set([]byte(pipeline.Name), pipelineBytes)
 			return err
 		})
 	} else {
-		// useful for testing
-		ttl := utils.DeletedResourceTTL
-		return db.Update(func(txn *badger.Txn) error {
-			e := badger.NewEntry([]byte(pipeline.Name), pipelineBytes).WithTTL(ttl)
+		return pdb.db.Update(func(txn *badger.Txn) error {
+			e := badger.NewEntry([]byte(pipeline.Name), pipelineBytes).WithTTL(pdb.deletedResourceTTL)
 			err = txn.SetEntry(e)
 			return err
 		})
@@ -81,10 +83,6 @@ func save(pipeline *Pipeline, db *badger.DB) error {
 
 func (pdb *PipelineDBManager) Stop() error {
 	return utils.Stop(pdb.db)
-}
-
-func (pdb *PipelineDBManager) save(pipeline *Pipeline) error {
-	return save(pipeline, pdb.db)
 }
 
 // TODO: delete unused pipelines from the store as for now it increases indefinitely
@@ -125,7 +123,7 @@ func (pdb *PipelineDBManager) restore(createPipelineCb func(pipeline *Pipeline))
 				}
 
 				if pipeline.Deleted {
-					pipeline.DeletedAt = utils.GetDeletedAt(item)
+					pipeline.DeletedAt = utils.GetDeletedAt(item, pdb.deletedResourceTTL)
 				}
 
 				createPipelineCb(pipeline)

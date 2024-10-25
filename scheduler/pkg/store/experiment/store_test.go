@@ -195,7 +195,7 @@ func TestStartExperiment(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			server := NewExperimentServer(logger, eventHub, fakeModelStore{}, fakePipelineStore{})
 			// init db
-			_ = server.InitialiseOrRestoreDB(path)
+			_ = server.InitialiseOrRestoreDB(path, 10)
 			for _, ea := range test.experiments {
 				err := server.StartExperiment(ea.experiment)
 				if ea.fail {
@@ -262,7 +262,7 @@ func TestStopExperiment(t *testing.T) {
 			path := fmt.Sprintf("%s/db", t.TempDir())
 
 			// init db
-			err := test.store.InitialiseOrRestoreDB(path)
+			err := test.store.InitialiseOrRestoreDB(path, 10)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.store.experiments {
 				err := test.store.db.save(p)
@@ -413,7 +413,7 @@ func TestRestoreExperiments(t *testing.T) {
 				experiments:     make(map[string]*Experiment),
 			}
 			// init db
-			err := store.InitialiseOrRestoreDB(path)
+			err := store.InitialiseOrRestoreDB(path, 10)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.experiments {
 				err := store.db.save(p)
@@ -422,7 +422,7 @@ func TestRestoreExperiments(t *testing.T) {
 			_ = store.db.Stop()
 
 			// restore from db now that we have state on disk
-			_ = store.InitialiseOrRestoreDB(path)
+			_ = store.InitialiseOrRestoreDB(path, 10)
 
 			for _, p := range test.experiments {
 				experimentFromDB, _ := store.db.get(p.Name)

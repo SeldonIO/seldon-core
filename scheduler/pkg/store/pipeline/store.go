@@ -81,7 +81,7 @@ func getPipelineDbFolder(basePath string) string {
 	return filepath.Join(basePath, pipelineDbFolder)
 }
 
-func (ps *PipelineStore) InitialiseOrRestoreDB(path string) error {
+func (ps *PipelineStore) InitialiseOrRestoreDB(path string, deletedResourceTTL uint) error {
 	logger := ps.logger.WithField("func", "initialiseDB")
 	pipelineDbPath := getPipelineDbFolder(path)
 	logger.Infof("Initialise DB at %s", pipelineDbPath)
@@ -89,7 +89,7 @@ func (ps *PipelineStore) InitialiseOrRestoreDB(path string) error {
 	if err != nil {
 		return err
 	}
-	db, err := newPipelineDbManager(pipelineDbPath, ps.logger)
+	db, err := newPipelineDbManager(pipelineDbPath, ps.logger, deletedResourceTTL)
 	if err != nil {
 		return err
 	}

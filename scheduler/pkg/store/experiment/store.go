@@ -108,7 +108,7 @@ func (es *ExperimentStore) addExperimentInMap(experiment *Experiment) error {
 	}
 }
 
-func (es *ExperimentStore) InitialiseOrRestoreDB(path string) error {
+func (es *ExperimentStore) InitialiseOrRestoreDB(path string, deletedResourceTTL uint) error {
 	logger := es.logger.WithField("func", "initialiseDB")
 	experimentDbPath := getExperimentDbFolder(path)
 	logger.Infof("Initialise DB at %s", experimentDbPath)
@@ -116,7 +116,7 @@ func (es *ExperimentStore) InitialiseOrRestoreDB(path string) error {
 	if err != nil {
 		return err
 	}
-	db, err := newExperimentDbManager(experimentDbPath, es.logger)
+	db, err := newExperimentDbManager(experimentDbPath, es.logger, deletedResourceTTL)
 	if err != nil {
 		return err
 	}
@@ -485,7 +485,7 @@ func (es *ExperimentStore) cleanupDeletedExperiments() {
 						es.logger.Warnf("could not update DB TTL for experiment: %s", experiment.Name)
 					}
 				}
-			} else if experiment.DeletedAt.Add(utils.DeletedResourceTTL).Before(time.Now()) {
+			} else if experiment.DeletedAt.Add(es.db.deletedResourceTTL).Before(time.Now()) {
 				delete(es.experiments, experiment.Name)
 			}
 		}
