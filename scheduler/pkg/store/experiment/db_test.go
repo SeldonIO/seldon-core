@@ -12,7 +12,6 @@ package experiment
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/google/go-cmp/cmp"
@@ -105,7 +104,6 @@ func TestSaveWithTTL(t *testing.T) {
 	logger := log.New()
 	db, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
 	g.Expect(err).To(BeNil())
-	experiment.DeletedAt = time.Now()
 	err = db.save(experiment)
 	g.Expect(err).To(BeNil())
 
@@ -116,6 +114,17 @@ func TestSaveWithTTL(t *testing.T) {
 	})
 	g.Expect(err).To(BeNil())
 	g.Expect(item.ExpiresAt()).ToNot(BeZero())
+
+	experiment.Deleted = false
+	err = db.save(experiment)
+	g.Expect(err).To(BeNil())
+
+	err = db.db.View(func(txn *badger.Txn) error {
+		item, err = txn.Get(([]byte(experiment.Name)))
+		return err
+	})
+	g.Expect(err).To(BeNil())
+	g.Expect(item.ExpiresAt()).To(BeZero())
 
 	err = db.Stop()
 	g.Expect(err).To(BeNil())
