@@ -32,7 +32,7 @@ To secure the endpoints of a model, you need to:
    apiVersion: security.istio.io/v1beta1
     kind: AuthorizationPolicy
     metadata:
-      name: core-v2-ingress
+      name: deny-empty-jwt
       namespace: istio-system
     spec:
       action: DENY
