@@ -115,6 +115,7 @@ func TestSaveWithTTL(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	g.Expect(item.ExpiresAt()).ToNot(BeZero())
 
+	// check that the resource can be "undeleted"
 	experiment.Deleted = false
 	err = db.save(experiment)
 	g.Expect(err).To(BeNil())
