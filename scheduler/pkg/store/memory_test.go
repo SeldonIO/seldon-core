@@ -684,9 +684,10 @@ func TestUpdateLoadedModels(t *testing.T) {
 				test.store.models[test.modelKey].SetDeleted()
 			}
 			ms := NewMemoryStore(logger, test.store, eventHub)
-			err = ms.UpdateLoadedModels(test.modelKey, test.version, test.serverKey, test.replicas)
+			msg, err := ms.updateLoadedModelsImpl(test.modelKey, test.version, test.serverKey, test.replicas)
 			if !test.err {
 				g.Expect(err).To(BeNil())
+				g.Expect(msg).ToNot(BeNil())
 				for replicaIdx, state := range test.expectedStates {
 					mv := test.store.models[test.modelKey].Latest()
 					g.Expect(mv).ToNot(BeNil())
@@ -700,6 +701,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 				}
 			} else {
 				g.Expect(err).ToNot(BeNil())
+				g.Expect(msg).To(BeNil())
 			}
 		})
 	}

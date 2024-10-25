@@ -69,6 +69,8 @@ func calcModelVersionStatistics(modelVersion *ModelVersion, deleted bool) *model
 }
 
 func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersion *ModelVersion, stats *modelVersionStateStatistics, deleted bool) {
+	modelVersion.mu.Lock()
+	defer modelVersion.mu.Unlock()
 	var modelState ModelState
 	var modelReason string
 	modelTimestamp := stats.latestTime
@@ -88,7 +90,7 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 			modelReason = stats.lastFailedReason
 			modelTimestamp = stats.lastFailedStateTime
 		} else if (modelVersion.GetDeploymentSpec() != nil && stats.replicasAvailable == modelVersion.GetDeploymentSpec().Replicas) || // equal to desired replicas
-			(stats.replicasAvailable > 0 && prevModelVersion != nil && modelVersion != prevModelVersion && prevModelVersion.state.State == ModelAvailable) { //TODO In future check if available replicas is > minReplicas
+			(stats.replicasAvailable > 0 && prevModelVersion != nil && modelVersion != prevModelVersion && prevModelVersion.state.State == ModelAvailable) { // TODO In future check if available replicas is > minReplicas
 			modelState = ModelAvailable
 		} else {
 			modelState = ModelProgressing
@@ -105,6 +107,8 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 }
 
 func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string, reset bool) {
+	modelVersion.mu.Lock()
+	defer modelVersion.mu.Unlock()
 	modelVersion.state = ModelStatus{
 		State:               ScheduleFailed,
 		Reason:              reason,
