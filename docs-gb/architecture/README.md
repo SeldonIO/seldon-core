@@ -27,21 +27,21 @@ The current set of components used in Seldon Core 2 is shown below:
 The core components are:
 
 ### Scheduler (control plane)
-This service manages the load and unload of Models, Pipelines and Experiments on the relevant micro services. It is also responsible for matching Models with available Servers in a way that optimises infrastructure use. In the current design we can only have **one** instance of the Scheduler as its internal state is persisted on disk.
+This service manages the load and unload of Models, Pipelines and Experiments on the relevant micro services. It is also responsible for matching Models with available Servers in a way that optimises infrastructure use. In the current design we can only have _one_ instance of the Scheduler as its internal state is persisted on disk.
 
 When Scheduler (re)starts there is a synchronisation flow to coordinate the startup process and especially to attempt to wait for expected Model Servers to connect before proceeding with any control plane operations. This is important so that we do no interrupt ongoing data plane operations that should be valid to be served. However this then introduces a delay on any control plane operations until such process has finished (including control plan resources statuses). This synchronisation process has a timeout, which a default of 10 minutes. It can be changed by setting helm seldon-core-v2-components value `scheduler.schedulerReadyTimeoutSeconds`.
 
 ### Agent (control plane)
-This service manages the load and unload of models on a server and access to the server over REST/gRPC.
+This service manages the load and unload of models on a server and access to the server over REST/gRPC. It acts as a reverse proxy to connect end users with the actual Model Servers. In this way the system collects stats and metrics about data plane inferences that helps with observability and scaling. 
 
 ### Pipeline Gateway (data plane)
-This service handles REST/gRPC calls to pipelines.
-
-### Dataflow Engine (data plane)
-This service handles the flow of data between components in a pipeline, using Kafka Streams.
+This service handles REST/gRPC calls to Pipelines. It translates between synchronous requests to Kafka operations, producing a message on the relevant input topic for a Pipeline and consuming from the output topic to return inference results back to the users.
 
 ### Model Gateway (data plane)
-This service handles the flow of data from models to inference requests on servers and passes on the responses.
+This service handles the flow of data from models to inference requests on servers and passes on the responses via Kafka.
+
+### Dataflow Engine (data plane)
+This service handles the flow of data between components in a pipeline, using Kafka Streams. It enables Core 2 to chain and joint Models together to provide complex Pipelines.
 
 ### Envoy (data plane)
 This service manages the proxying of requests to the correct servers including load balancing.
@@ -51,7 +51,7 @@ This service manages the proxying of requests to the correct servers including l
 {% endhint %}
 
 ### Controller (control plane)
-We also provide a Kubernetes Operator to allow Kubernetes usage. This is implemented in Controller Manager micro service, which manages CRDs reconciliation with Scheduler.
+We also provide a Kubernetes Operator to allow Kubernetes usage. This is implemented in Controller Manager micro service, which manages CRDs reconciliation with Scheduler. Currently Core 2 supports _one_ instance of Controller.
 
 
 ## Dataflow Architecture (Pipelines)
