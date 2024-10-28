@@ -1,6 +1,6 @@
 # Securing model endpoints
 
-Often, in enterprise use-cases, users will want to define who is able to hit the endpoints exposed for deployed models or pipelines. Seldon Core itself does not provide that functionality, but it does integrate easily with various service meshes that support this requirement. Seldon Core 2 is service mesh agnostic, but the example below will demonstrate an approach to setting up authentication and authorization in order to secure a model endpoint using Istio.
+In enterprise use cases, you may need to control who can access the endpoints for deployed models or pipelines. While Seldon Core 2 doesn’t natively provide this functionality, it integrates with various service meshes that support these requirements. Though Seldon Core 2 is service-mesh agnostic, the example on this page demonstrates how to set up authentication and authorization to secure a model endpoint using the Istio service mesh.
 
 ## Securing Endpoints with Istio
 
