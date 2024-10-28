@@ -26,15 +26,29 @@ The current set of components used in Seldon Core 2 is shown below:
 
 The core components are:
 
-* Scheduler (control plane): manages the load and unload of Models, Pipelines and Experiments.
-* Agent (control plane): manages the load and unload of models on a server and access to the server over REST/gRPC.
-* Pipeline gateway (data plane): handles REST/gRPC calls to pipelines.
-* Dataflow engine (data plane): handles the flow of data between components in a pipeline, using Kafka Streams.
-* Model gateway (data plane): handles the flow of data from models to inference requests on servers and passes on the responses.
-* Envoy (data plane): manages the proxying of requests to the correct servers including load balancing.
+### Scheduler (control plane)
+This service manages the load and unload of Models, Pipelines and Experiments.
 
-All the above are Kubernetes agnostic and can run locally, e.g. on Docker Compose.
+### Agent (control plane)
+This service manages the load and unload of models on a server and access to the server over REST/gRPC.
 
+### Pipeline Gateway (data plane)
+This service handles REST/gRPC calls to pipelines.
+
+### Dataflow Engine (data plane)
+This service handles the flow of data between components in a pipeline, using Kafka Streams.
+
+### Model Gateway (data plane)
+This service handles the flow of data from models to inference requests on servers and passes on the responses.
+
+### Envoy (data plane)
+This service manages the proxying of requests to the correct servers including load balancing.
+
+{% hint style="info" %}
+**Note**: All the above are Kubernetes agnostic and can run locally, e.g. on Docker Compose.
+{% endhint %}
+
+### Controller (control plane)
 We also provide a Kubernetes Operator to allow Kubernetes usage. This is implemented in Controller Manager micro service, which manages CRDs reconciliation with Scheduler.
 
 
