@@ -1,0 +1,87 @@
+{
+    "replacementPatterns": [
+      {
+        "pattern": ":currentVersion:",
+        "replacement": "latest"
+      },
+      {
+        "pattern": "^/",
+        "replacement": "https://docs.seldon.ai/seldon-core-2"
+      }
+    ],
+    "ignorePatterns": [
+      {
+        "pattern": "^getting-started/"
+      },
+      {
+        "pattern": "^production-environment/"
+      },
+      {
+        "pattern": "^product-tour/"
+      },
+      {
+        "pattern": "^demos/"
+      },
+      {
+        "pattern": "^architecture/"
+      },
+      {
+        "pattern": "^operations/"
+      },
+      {
+        "pattern": "^upgrading/"
+      },
+      {
+        "pattern": "^README.md"
+      },
+      {
+        "pattern": "^multi-tentant-environment.md"
+      },
+      {
+        "pattern": "^openshift-environment.md"
+      },
+      {
+        "pattern": "^help-and-support/"
+      },
+      {
+        "pattern": "^https?://localhost"
+      },
+      {
+        "pattern": "^https://mvnrepository.com"
+      },
+      {
+        "pattern": "^https://platform.openai.com/docs"
+      },
+      {
+        "pattern": "^http://default-broker.seldon-logs"
+      },
+      {
+        "pattern": "^https://www.tensorflow.org/tfx/serving/api_rest#request_format_2"
+      },
+      {
+        "pattern": "^https://otexts.org/fpp2/holt-winters.html"
+      },
+      {
+        "pattern": "^https://www.pcmag.com/encyclopedia"
+      },
+      {
+        "pattern": "^https://www.microsoft.com/en-us/download/details.aspx?"
+      },
+      {
+        "pattern": "^https://opensea.io/"
+      },
+      {
+        "pattern": "^https://www.techopedia.com/definition/31996/hash-partitioning"
+      },
+      {
+        "pattern": "^https://docs.github.com/"
+      },
+      {
+        "pattern": "_template"
+      },
+      {
+        "pattern": "^[#._]"
+      },
+    ]
+  }
+  
