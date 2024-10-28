@@ -16,7 +16,7 @@ Data plane services respond to inferences from users for resources that are curr
 {% hint style="info" %}
 **Note**: Core 2 architecture does not overlap control plane with data plane services. This means that when control plane services are down (e.g. Scheduler), data plane inference can still be served. In this manner the system is more resilient to failures and especially outage of control plane services does not impact the ability of the system to respond to end user traffic.
 
-Currently Core 2 can be provisioned to be highly available on data plane services. Control plane on the other hand can be out and in this case any control plane operations could be delayed.
+Core 2 can be provisioned to be **highly available** on data plane path. Control plane on the other hand can be out and in this case any control plane operations could be delayed.
 {% endhint %}
 
 
@@ -27,7 +27,9 @@ The current set of components used in Seldon Core 2 is shown below:
 The core components are:
 
 ### Scheduler (control plane)
-This service manages the load and unload of Models, Pipelines and Experiments.
+This service manages the load and unload of Models, Pipelines and Experiments on the relevant micro services. It is also responsible for matching Models with available Servers in a way that optimises infrastructure use. In the current design we can only have **one** instance of the Scheduler as its internal state is persisted on disk.
+
+When Scheduler (re)starts there is a synchronisation flow to coordinate the startup process and especially to attempt to wait for expected Model Servers to connect before proceeding with any control plane operations. This is important so that we do no interrupt ongoing data plane operations that should be valid to be served. However this then introduces a delay on any control plane operations until such process has finished (including control plan resources statuses). This synchronisation process has a timeout, which a default of 10 minutes. It can be changed by setting helm seldon-core-v2-components value `scheduler.schedulerReadyTimeoutSeconds`.
 
 ### Agent (control plane)
 This service manages the load and unload of models on a server and access to the server over REST/gRPC.
