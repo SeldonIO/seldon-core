@@ -14,9 +14,9 @@ Control plane services provide features to the users such as the ability to inst
 Data plane services respond to inferences from users for resources that are currently loaded. Core 2 supports REST and gRPC payloads that follow the Open Inference Protocol (OIP). The main component is **Envoy**, which acts as a single ingress for all data plane load and routes them to the relevant servers internally (e.g. Seldon MLServer or NVidia Triton pods). 
 
 {% hint style="info" %}
-**Note**: Core 2 architecture does not overlap control plane with data plane services. This means that when control plane services are down (e.g. Scheduler), data plane inference can still be served. In this manner the system is more resilient to failures and especially outage of control plane services does not impact availability to respond to end user traffic.
+**Note**: Core 2 architecture does not overlap control plane with data plane services. This means that when control plane services are down (e.g. Scheduler), data plane inference can still be served. In this manner the system is more resilient to failures and especially outage of control plane services does not impact the ability of the system to respond to end user traffic.
 
-Currently Core 2 can be provisioned to be highly available on data plane services. Control plane services on the other hand can be out and in these cases any control plane operations could be delayed.
+Currently Core 2 can be provisioned to be highly available on data plane services. Control plane on the other hand can be out and in this case any control plane operations could be delayed.
 {% endhint %}
 
 
@@ -35,7 +35,7 @@ The core components are:
 
 All the above are Kubernetes agnostic and can run locally, e.g. on Docker Compose.
 
-We also provide a Kubernetes Operator to allow Kubernetes usage.
+We also provide a Kubernetes Operator to allow Kubernetes usage. This is implemented in Controller Manager micro service, which manages CRDs reconciliation with Scheduler.
 
 
 ## Dataflow Architecture (Pipelines)
