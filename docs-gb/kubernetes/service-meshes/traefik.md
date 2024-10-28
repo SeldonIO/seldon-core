@@ -67,9 +67,9 @@ spec:
 
 ## Traffic Split
 
-```{warning}
-Traffic splitting does not presently work due to this [issue](https://github.com/emissary-ingress/emissary/issues/4062). We recommend you use a Seldon Experiment instead.
-```
+{% hint style="warning" %}
+**Warning** Traffic splitting does not presently work due to this [issue](https://github.com/emissary-ingress/emissary/issues/4062). We recommend you use a Seldon Experiment instead.
+{% endhint %}
 
 ## Traefik Examples
 
