@@ -6,7 +6,7 @@
       },
       {
         "pattern": "^/",
-        "replacement": "https://docs.seldon.ai/seldon-core-2"
+        "replacement": "https://docs.seldon.ai/seldon-core-2/"
       }
     ],
     "ignorePatterns": [
