@@ -38,5 +38,5 @@ const (
 	EnvoyUpdateDefaultBatchWait = 250 * time.Millisecond
 	GRPCKeepAliveTime           = 60 * time.Second
 	ClientKeepAliveTimeout      = 2 * time.Second
-	GRPCKeepAlivePermit         = true
+	GRPCKeepAlivePermit         = false
 )
