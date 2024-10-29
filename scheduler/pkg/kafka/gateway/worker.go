@@ -312,7 +312,7 @@ func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeCon
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, restUrl.String(), bytes.NewBuffer(data))
 	if err != nil {
-		return err
+		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), []byte(err.Error()), true, nil)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -323,17 +323,17 @@ func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeCon
 
 	response, err := iw.httpClient.Do(req)
 	if err != nil {
-		return err
+		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), []byte(err.Error()), true, nil)
 	}
 
 	b, err := io.ReadAll(response.Body)
 	if err != nil {
-		return err
+		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), []byte(err.Error()), true, nil)
 	}
 
 	err = response.Body.Close()
 	if err != nil {
-		return err
+		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), []byte(err.Error()), true, nil)
 	}
 
 	iw.logger.Infof("v2 server response: %s", b)
@@ -343,7 +343,7 @@ func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeCon
 		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), b, true, nil)
 	}
 
-	return iw.produce(
+	err = iw.produce(
 		ctx,
 		job,
 		iw.topicNamer.GetModelTopicOutputs(job.modelName),
@@ -351,6 +351,11 @@ func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeCon
 		false,
 		extractHeadersHttp(response.Header),
 	)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed infer request iw.produce")
+		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), []byte(err.Error()), true, nil)
+	}
+	return nil
 }
 
 // Add all external headers to request metadata
@@ -385,9 +390,11 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 	}
 	b, err := proto.Marshal(resp)
 	if err != nil {
-		return err
+		logger.WithError(err).Errorf("Failed to proto.Marshal")
+		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), []byte(err.Error()), true, nil)
 	}
-	return iw.produce(
+
+	err = iw.produce(
 		ctx,
 		job,
 		iw.topicNamer.GetModelTopicOutputs(job.modelName),
@@ -395,4 +402,9 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 		false,
 		extractHeadersGrpc(header, trailer),
 	)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed infer request iw.produce")
+		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), []byte(err.Error()), true, nil)
+	}
+	return nil
 }
