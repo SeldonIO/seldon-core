@@ -88,9 +88,9 @@ func (pc *PipelineSchedulerClient) connectToScheduler(host string, plainTxtPort 
 	}
 
 	kacp := keepalive.ClientParameters{
-		Time:                util.ClientKeepAliveTime,
+		Time:                util.GRPCKeepAliveTime,
 		Timeout:             util.ClientKeepAliveTimeout,
-		PermitWithoutStream: util.ClientKeepAlivePermit,
+		PermitWithoutStream: util.GRPCKeepAlivePermit,
 	}
 
 	// note: retry is done in the caller

@@ -125,9 +125,9 @@ func (iw *InferWorker) getGrpcClient(host string, port int) (v2.GRPCInferenceSer
 	}
 
 	kacp := keepalive.ClientParameters{
-		Time:                util.ClientKeepAliveTime,
+		Time:                util.GRPCKeepAliveTime,
 		Timeout:             util.ClientKeepAliveTimeout,
-		PermitWithoutStream: util.ClientKeepAlivePermit,
+		PermitWithoutStream: util.GRPCKeepAlivePermit,
 	}
 
 	opts := []grpc.DialOption{

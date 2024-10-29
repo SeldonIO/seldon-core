@@ -134,9 +134,9 @@ func (s *SchedulerServer) startServer(port uint, secure bool) error {
 		return err
 	}
 
-	var kaep = keepalive.EnforcementPolicy{
-		MinTime:             util.ServerKeepAliveMinTime,
-		PermitWithoutStream: util.ServerKeepAlivePermit,
+	kaep := keepalive.EnforcementPolicy{
+		MinTime:             util.GRPCKeepAliveTime,
+		PermitWithoutStream: util.GRPCKeepAlivePermit,
 	}
 
 	opts := []grpc.ServerOption{}
