@@ -40,3 +40,8 @@ const (
 	ClientKeapAliveTimeout      = 2 * time.Second
 	ClientKeapAlivePermit       = true
 )
+
+const (
+	ServerKeepAliveMinTime = 60 * time.Second
+	ServerKeepAlivePermit  = true
+)
