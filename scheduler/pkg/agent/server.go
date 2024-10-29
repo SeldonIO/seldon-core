@@ -22,6 +22,7 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
@@ -165,12 +166,19 @@ func (s *Server) startServer(port uint, secure bool) error {
 	if err != nil {
 		return err
 	}
+
+	kaep := keepalive.EnforcementPolicy{
+		MinTime:             util.GRPCKeepAliveTime,
+		PermitWithoutStream: util.GRPCKeepAlivePermit,
+	}
+
 	opts := []grpc.ServerOption{}
 	if secure {
 		opts = append(opts, grpc.Creds(s.certificateStore.CreateServerTransportCredentials()))
 	}
 	opts = append(opts, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
 	opts = append(opts, grpc.StatsHandler(otelgrpc.NewServerHandler()))
+	opts = append(opts, grpc.KeepaliveEnforcementPolicy(kaep))
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterAgentServiceServer(grpcServer, s)
 	s.logger.Printf("Agent server running on %d mtls:%v", port, secure)
