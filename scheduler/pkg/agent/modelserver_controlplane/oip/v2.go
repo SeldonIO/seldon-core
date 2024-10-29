@@ -52,9 +52,9 @@ func CreateV2GrpcConnection(v2Config V2Config) (*grpc.ClientConn, error) {
 	}
 
 	kacp := keepalive.ClientParameters{
-		Time:                util.ClientKeapAliveTime,
-		Timeout:             util.ClientKeapAliveTimeout,
-		PermitWithoutStream: util.ClientKeapAlivePermit,
+		Time:                util.ClientKeepAliveTime,
+		Timeout:             util.ClientKeepAliveTimeout,
+		PermitWithoutStream: util.ClientKeepAlivePermit,
 	}
 
 	opts := []grpc.DialOption{

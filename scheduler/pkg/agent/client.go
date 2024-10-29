@@ -418,9 +418,9 @@ func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grp
 	logger.Infof("Connecting (non-blocking) to scheduler at %s:%d", host, port)
 
 	kacp := keepalive.ClientParameters{
-		Time:                util.ClientKeapAliveTime,
-		Timeout:             util.ClientKeapAliveTimeout,
-		PermitWithoutStream: util.ClientKeapAlivePermit,
+		Time:                util.ClientKeepAliveTime,
+		Timeout:             util.ClientKeepAliveTimeout,
+		PermitWithoutStream: util.ClientKeepAlivePermit,
 	}
 
 	opts := []grpc.DialOption{

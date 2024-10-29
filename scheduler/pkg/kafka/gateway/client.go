@@ -82,9 +82,9 @@ func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int
 	}
 
 	kacp := keepalive.ClientParameters{
-		Time:                util.ClientKeapAliveTime,
-		Timeout:             util.ClientKeapAliveTimeout,
-		PermitWithoutStream: util.ClientKeapAlivePermit,
+		Time:                util.ClientKeepAliveTime,
+		Timeout:             util.ClientKeepAliveTimeout,
+		PermitWithoutStream: util.ClientKeepAlivePermit,
 	}
 
 	// note: retry is done in the caller
