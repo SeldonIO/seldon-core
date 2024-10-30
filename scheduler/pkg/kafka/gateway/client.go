@@ -22,7 +22,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/keepalive"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
@@ -81,11 +80,7 @@ func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int
 		port = tlsPort
 	}
 
-	kacp := keepalive.ClientParameters{
-		Time:                util.ClientKeapAliveTime,
-		Timeout:             util.ClientKeapAliveTimeout,
-		PermitWithoutStream: util.ClientKeapAlivePermit,
-	}
+	kacp := util.GetClientKeepAliveParameters()
 
 	// note: retry is done in the caller
 	opts := []grpc.DialOption{
@@ -123,11 +118,7 @@ func (kc *KafkaSchedulerClient) Start() error {
 		logFailure := func(err error, delay time.Duration) {
 			kc.logger.WithError(err).Errorf("Scheduler not ready")
 		}
-		backOffExp := backoff.NewExponentialBackOff()
-		// Set some reasonable settings for trying to reconnect to scheduler
-		backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
-		backOffExp.MaxInterval = time.Second * 15
-		backOffExp.InitialInterval = time.Second
+		backOffExp := util.GetClientExponentialBackoff()
 		err := backoff.RetryNotify(kc.SubscribeModelEvents, backOffExp, logFailure)
 		if err != nil {
 			kc.logger.WithError(err).Fatal("Failed to start modelgateway client")
@@ -141,7 +132,11 @@ func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
 	logger := kc.logger.WithField("func", "SubscribeModelEvents")
 	grpcClient := scheduler.NewSchedulerClient(kc.conn)
 	logger.Info("Subscribing to model status events")
-	stream, errSub := grpcClient.SubscribeModelStatus(context.Background(), &scheduler.ModelSubscriptionRequest{SubscriberName: SubscriberName}, grpc_retry.WithMax(100))
+	stream, errSub := grpcClient.SubscribeModelStatus(
+		context.Background(),
+		&scheduler.ModelSubscriptionRequest{SubscriberName: SubscriberName},
+		grpc_retry.WithMax(util.MaxGRPCRetriesOnStream),
+	)
 	if errSub != nil {
 		return errSub
 	}
