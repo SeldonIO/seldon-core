@@ -447,7 +447,7 @@ func (c *Client) StartService() error {
 			Shared:               true,
 			AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
 		},
-		grpc_retry.WithMax(1),
+		grpc_retry.WithMax(util.MaxGRPCRetriesOnStream),
 	) // TODO make configurable
 	if err != nil {
 		return err

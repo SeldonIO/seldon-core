@@ -42,4 +42,5 @@ const (
 	gRPCKeepAliveTime      = 60 * time.Second
 	clientKeepAliveTimeout = 2 * time.Second
 	gRPCKeepAlivePermit    = false
+	MaxGRPCRetriesOnStream = 100 // this is at the grpc library level
 )

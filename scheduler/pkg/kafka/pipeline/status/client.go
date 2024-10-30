@@ -138,7 +138,11 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 	logger := pc.logger.WithField("func", "SubscribePipelineEvents")
 	grpcClient := scheduler.NewSchedulerClient(pc.conn)
 	logger.Info("Subscribing to pipeline status events")
-	stream, errSub := grpcClient.SubscribePipelineStatus(context.Background(), &scheduler.PipelineSubscriptionRequest{SubscriberName: SubscriberName}, grpc_retry.WithMax(100))
+	stream, errSub := grpcClient.SubscribePipelineStatus(
+		context.Background(),
+		&scheduler.PipelineSubscriptionRequest{SubscriberName: SubscriberName},
+		grpc_retry.WithMax(util.MaxGRPCRetriesOnStream),
+	)
 	if errSub != nil {
 		return errSub
 	}
