@@ -162,7 +162,7 @@ func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
 		// if the model is in a failed state and the consumer exists then we skip the removal
 		// this is to prevent the consumer from being removed during transient failures of the control plane
 		// in this way data plane can potentially continue to serve requests
-		if latestVersionStatus.GetState().GetState() == scheduler.ModelStatus_ScheduleFailed {
+		if latestVersionStatus.GetState().GetState() == scheduler.ModelStatus_ScheduleFailed || latestVersionStatus.GetState().GetState() == scheduler.ModelStatus_ModelProgressing {
 			if kc.consumerManager.Exists(event.ModelName) {
 				logger.Warnf("Model %s schedule failed and consumer exists, skipping from removal", event.ModelName)
 				continue
