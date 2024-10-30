@@ -236,8 +236,7 @@ func (c *Client) Start() error {
 		logFailure := func(err error, delay time.Duration) {
 			c.logger.WithError(err).Errorf("Scheduler not ready")
 		}
-		backOffExp := backoff.NewExponentialBackOff()
-		backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
+		backOffExp := util.GetClientExponentialBackoff()
 		err := backoff.RetryNotify(c.StartService, backOffExp, logFailure)
 		if err != nil {
 			c.logger.WithError(err).Fatal("Failed to start client")

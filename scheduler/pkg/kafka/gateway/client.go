@@ -118,11 +118,7 @@ func (kc *KafkaSchedulerClient) Start() error {
 		logFailure := func(err error, delay time.Duration) {
 			kc.logger.WithError(err).Errorf("Scheduler not ready")
 		}
-		backOffExp := backoff.NewExponentialBackOff()
-		// Set some reasonable settings for trying to reconnect to scheduler
-		backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
-		backOffExp.MaxInterval = time.Second * 15
-		backOffExp.InitialInterval = time.Second
+		backOffExp := util.GetClientExponentialBackoff()
 		err := backoff.RetryNotify(kc.SubscribeModelEvents, backOffExp, logFailure)
 		if err != nil {
 			kc.logger.WithError(err).Fatal("Failed to start modelgateway client")

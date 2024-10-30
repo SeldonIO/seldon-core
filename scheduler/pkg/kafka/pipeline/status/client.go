@@ -124,11 +124,7 @@ func (pc *PipelineSchedulerClient) Start(host string, plainTxtPort int, tlsPort 
 		logFailure := func(err error, delay time.Duration) {
 			logger.WithError(err).Errorf("Scheduler not ready")
 		}
-		backOffExp := backoff.NewExponentialBackOff()
-		// Set some reasonable settings for trying to reconnect to scheduler
-		backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
-		backOffExp.MaxInterval = time.Second * 15
-		backOffExp.InitialInterval = time.Second
+		backOffExp := util.GetClientExponentialBackoff()
 		err = backoff.RetryNotify(pc.SubscribePipelineEvents, backOffExp, logFailure)
 		if err != nil {
 			logger.WithError(err).Fatal("Failed to start pipeline gateway client")
