@@ -69,8 +69,6 @@ func calcModelVersionStatistics(modelVersion *ModelVersion, deleted bool) *model
 }
 
 func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersion *ModelVersion, stats *modelVersionStateStatistics, deleted bool) {
-	modelVersion.mu.Lock()
-	defer modelVersion.mu.Unlock()
 	var modelState ModelState
 	var modelReason string
 	modelTimestamp := stats.latestTime
@@ -107,8 +105,6 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 }
 
 func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string, reset bool) {
-	modelVersion.mu.Lock()
-	defer modelVersion.mu.Unlock()
 	modelVersion.state = ModelStatus{
 		State:               ScheduleFailed,
 		Reason:              reason,

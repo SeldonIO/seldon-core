@@ -310,9 +310,9 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 	if !ok {
 		return nil, fmt.Errorf("failed to find server %s", serverKey)
 	}
+
 	for _, replica := range replicas {
-		_, ok := server.replicas[replica.replicaIdx]
-		if !ok {
+		if _, ok := server.replicas[replica.replicaIdx]; !ok {
 			return nil, fmt.Errorf(
 				"failed to reserve replica %d as it does not exist on server %s",
 				replica.GetReplicaIdx(), serverKey,
@@ -327,7 +327,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 	}
 
 	//  resevere memory for existing replicas that are not already loading or loaded
-	updatedReplicas := make(map[int]bool)
+	replicaStateUpdated := false
 	for _, replica := range replicas {
 		existingState := modelVersion.replicas[replica.replicaIdx]
 		if !existingState.State.AlreadyLoadingOrLoaded() {
@@ -337,20 +337,20 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 			)
 			modelVersion.SetReplicaState(replica.replicaIdx, LoadRequested, "")
 			m.updateReservedMemory(LoadRequested, serverKey, replica.replicaIdx, modelVersion.GetRequiredMemory())
+			replicaStateUpdated = true
 		}
-		updatedReplicas[replica.replicaIdx] = true
 	}
 
-	// Unload any existing model replicas assignments no longer needed
+	// Unload any existing model replicas assignments that are no longer part of the replica set
 	for replicaIdx, existingState := range modelVersion.ReplicaState() {
-		if _, ok := updatedReplicas[replicaIdx]; !ok {
+		if _, ok := server.replicas[replicaIdx]; !ok {
 			if !existingState.State.UnloadingOrUnloaded() && existingState.State != Draining {
 				logger.Debugf(
 					"Setting model %s version %d on server %s replica %d to UnloadEnvoyRequested",
 					modelKey, modelVersion.version, serverKey, replicaIdx,
 				)
 				modelVersion.SetReplicaState(replicaIdx, UnloadEnvoyRequested, "")
-				updatedReplicas[replicaIdx] = true
+				replicaStateUpdated = true
 			}
 		}
 	}
@@ -358,7 +358,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 	// in cases where we did have a previous ScheduleFailed, we need to reflect the change here
 	// this could be in the cases where we are scaling down a model and the new replica count can be all deployed
 	// and always send an update for deleted models, so the operator will remove them from k8s
-	if len(updatedReplicas) > 0 || modelVersion.state.State == ScheduleFailed || model.IsDeleted() {
+	if replicaStateUpdated || modelVersion.state.State == ScheduleFailed || model.IsDeleted() {
 		logger.Debugf("Updating model status for model %s server %s", modelKey, serverKey)
 		modelVersion.server = serverKey
 		m.updateModelStatus(true, model.IsDeleted(), modelVersion, model.GetLastAvailableModelVersion())
