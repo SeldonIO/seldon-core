@@ -14,7 +14,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/cenkalti/backoff/v4"
+	backoff "github.com/cenkalti/backoff/v4"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
