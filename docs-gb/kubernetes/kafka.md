@@ -5,7 +5,7 @@ See our [architecture](../architecture/README.md) documentation to learn more on
 
 
 {% hint style="info" %}
-Kafka integration is required to enable data-centric inference pipelines feature.
+**Note**: Kafka integration is required to enable data-centric inference pipelines feature.
 It is highly advice to configure Kafka integration to take full advantage of Seldon Core 2 features.
 {% endhint %}
 
@@ -34,7 +34,7 @@ Seldon Core 2 requires Kafka to implement data-centric inference Pipelines.
 To install Kafka for testing purposed in your k8s cluster, we recommend to use [Strimzi Operator](https://github.com/strimzi/strimzi-kafka-operator).
 
 {% hint style="info" %}
-This page discuss how to install Strimzi Operator and create Kafka cluster for trial, dev, or testing purposes.
+**Note**: This page discuss how to install Strimzi Operator and create Kafka cluster for trial, dev, or testing purposes.
 For production grade installation consult [Strimzi documentation](https://strimzi.io/documentation/) or use one of managed solutions mentioned [here](./index.md).
 {% endhint %}
 
@@ -57,7 +57,7 @@ helm upgrade --install strimzi-kafka-operator \
 ```
 
 {% hint style="warning" %}
-Use with caution!
+**Warning**:
 Currently Kraft installation of Strimzi is not production ready.
 See Strimzi [documentation](https://strimzi.io/docs/operators/0.35.0/deploying.html#ref-operator-use-kraft-feature-gate-str)
 and related GitHub [issue](https://github.com/strimzi/strimzi-kafka-operator/issues/5615) for further details.

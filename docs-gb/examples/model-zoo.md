@@ -197,10 +197,8 @@ seldon model status cifar10 -w ModelAvailable | jq -M .
 infer("cifar10",4)
 ```
 
-```
 ![png](model-zoo_files/model-zoo_14_0.png)
 
-```
 
 ```
 car
@@ -377,10 +375,8 @@ seldon model status mnist-onnx -w ModelAvailable | jq -M .
 infer_mnist()
 ```
 
-```
 ![png](model-zoo_files/model-zoo_28_0.png)
 
-```
 
 ```
 7
@@ -687,10 +683,8 @@ seldon model status mnist-pytorch -w ModelAvailable | jq -M .
 infer_mnist()
 ```
 
-```
 ![png](../images/model-zoo_48_0.png)
 
-```
 
 ```
 7

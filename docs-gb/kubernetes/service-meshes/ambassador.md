@@ -80,7 +80,7 @@ spec:
 ## Traffic Split
 
 {% hint style="warning" %}
-Traffic splitting does not presently work due to this [issue](https://github.com/emissary-ingress/emissary/issues/4062). We recommend you use a Seldon Experiment instead.
+**Note**: Traffic splitting does not presently work due to this [issue](https://github.com/emissary-ingress/emissary/issues/4062). We recommend you use a Seldon Experiment instead.
 {% endhint %}
 
 Seldon provides an Experiment resource for service mesh agnostic traffic splitting but if you wish to control this via Ambassador and example is shown below to split traffic between two models.
@@ -393,7 +393,7 @@ INGRESS_IP
 ```python
 !kustomize build config/traffic-split
 ```
-
+```yaml
     apiVersion: getambassador.io/v3alpha1
     kind: Host
     metadata:

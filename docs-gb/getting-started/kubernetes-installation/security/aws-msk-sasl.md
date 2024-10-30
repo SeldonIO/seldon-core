@@ -5,7 +5,7 @@
 Seldon Core 2 can integrate with Amazon managed Apache Kafka (MSK). You can control access to your Amazon MSK clusters using sign-in credentials that are stored and secured using AWS Secrets Manager. Storing user credentials in Secrets Manager reduces the overhead of cluster authentication such as auditing, updating, and rotating credentials. Secrets Manager also lets you share user credentials across clusters.
 
 {% hint style="info" %}
-Configuration of the AWS MSK instance itself is out of scope for this example.
+**Note**: Configuration of the AWS MSK instance itself is out of scope for this example.
 Please follow the official [AWS documentation](https://docs.aws.amazon.com/msk/latest/developerguide/what-is-msk.html) on how to enable SASL and public access to the Kafka cluster (if required).
 {% endhint %}
 
@@ -50,7 +50,7 @@ security:
           brokerValidationSecret:
 ```
 
-Note you may need to tweak `replicationFactor` and `numPartitions` to your cluster configuration.
+You may need to tweak `replicationFactor` and `numPartitions` to your cluster configuration.
 
 ## Troubleshooting
 

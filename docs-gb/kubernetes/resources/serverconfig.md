@@ -1,7 +1,7 @@
 # Server Config
 
 {% hint style="info" %}
-This section is for advanced usage where you want to define new types of inference servers.
+**Note**: This section is for advanced usage where you want to define new types of inference servers.
 {% endhint %}
 
 Server configurations define how to create an inference server. By default one is provided
@@ -13,5 +13,205 @@ MlServer is shown below:
 
 ```yaml
 # operator/config/serverconfigs/mlserver.yaml
-
+---
+apiVersion: mlops.seldon.io/v1alpha1
+kind: ServerConfig
+metadata:
+  name: mlserver
+spec:
+  podSpec:
+    terminationGracePeriodSeconds: 120
+    serviceAccountName: seldon-server
+    containers:
+    - image: rclone:latest
+      imagePullPolicy: IfNotPresent
+      name: rclone
+      ports:
+      - containerPort: 5572
+        name: rclone
+        protocol: TCP
+      lifecycle:
+        preStop:
+          httpGet:
+            port: 9007
+            path: terminate
+      resources:
+        requests:
+          cpu: "200m"
+          memory: '100M'
+      readinessProbe:
+        failureThreshold: 3
+        initialDelaySeconds: 5
+        periodSeconds: 5
+        successThreshold: 1
+        tcpSocket:
+          port: 5572
+        timeoutSeconds: 1
+      volumeMounts:
+      - mountPath: /mnt/agent
+        name: mlserver-models
+    - image: agent:latest
+      imagePullPolicy: IfNotPresent
+      command:
+        - /bin/agent
+      args:
+        - --tracing-config-path=/mnt/tracing/tracing.json
+      name: agent
+      env:
+      - name: SELDON_SERVER_CAPABILITIES
+        value: "mlserver,alibi-detect,alibi-explain,huggingface,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
+      - name: SELDON_OVERCOMMIT_PERCENTAGE
+        value: "10"
+      - name: SELDON_MODEL_INFERENCE_LAG_THRESHOLD
+        value: "30"
+      - name: SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD
+        value: "600"
+      - name: SELDON_SCALING_STATS_PERIOD_SECONDS
+        value: "20"
+      - name: SELDON_SERVER_HTTP_PORT
+        value: "9000"
+      - name: SELDON_SERVER_GRPC_PORT
+        value: "9500"
+      - name: SELDON_REVERSE_PROXY_HTTP_PORT
+        value: "9001"
+      - name: SELDON_REVERSE_PROXY_GRPC_PORT
+        value: "9501"
+      - name: SELDON_SCHEDULER_HOST
+        value: "seldon-scheduler"
+      - name: SELDON_SCHEDULER_PORT
+        value: "9005"
+      - name: SELDON_SCHEDULER_TLS_PORT
+        value: "9055"
+      - name: SELDON_METRICS_PORT
+        value: "9006"
+      - name: SELDON_DRAINER_PORT
+        value: "9007"
+      - name: AGENT_TLS_SECRET_NAME
+        value: ""
+      - name: AGENT_TLS_FOLDER_PATH
+        value: ""
+      - name: SELDON_SERVER_TYPE
+        value: "mlserver"
+      - name: SELDON_ENVOY_HOST
+        value: "seldon-mesh"
+      - name: SELDON_ENVOY_PORT
+        value: "80"
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
+      - name: MEMORY_REQUEST
+        valueFrom:
+          resourceFieldRef:
+            containerName: mlserver
+            resource: requests.memory
+      ports:
+      - containerPort: 9501
+        name: grpc
+        protocol: TCP
+      - containerPort: 9001
+        name: http
+        protocol: TCP
+      - containerPort: 9006
+        name: metrics
+        protocol: TCP
+      lifecycle:
+        preStop:
+          httpGet:
+            port: 9007
+            path: terminate
+      resources:
+        requests:
+          cpu: "500m"
+          memory: '500M'
+      volumeMounts:
+      - mountPath: /mnt/agent
+        name: mlserver-models
+      - name: config-volume
+        mountPath: /mnt/config
+      - name: tracing-config-volume
+        mountPath: /mnt/tracing
+    - image: mlserver:latest
+      imagePullPolicy: IfNotPresent
+      env:
+      - name: MLSERVER_HTTP_PORT
+        value: "9000"
+      - name: MLSERVER_GRPC_PORT
+        value: "9500"
+      - name: MLSERVER_MODELS_DIR
+        value: "/mnt/agent/models"
+      - name: MLSERVER_MODEL_PARALLEL_WORKERS
+        value: "1"
+      - name: MLSERVER_LOAD_MODELS_AT_STARTUP
+        value: "false"
+      - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH
+        value: "1048576000" # 100MB (100 * 1024 * 1024)
+      resources:
+        requests:
+          cpu: 1
+          memory: '1G'
+      lifecycle:
+        preStop:
+          httpGet:
+            port: 9007
+            path: terminate
+      livenessProbe:
+        httpGet:
+          path: /v2/health/live
+          port: server-http
+      readinessProbe:
+        httpGet:
+          path: /v2/health/live
+          port: server-http
+        initialDelaySeconds: 5
+        periodSeconds: 5
+      startupProbe:
+        httpGet:
+          path: /v2/health/live
+          port: server-http
+        failureThreshold: 10
+        periodSeconds: 10
+      name: mlserver
+      ports:
+      - containerPort: 9500
+        name: server-grpc
+        protocol: TCP
+      - containerPort: 9000
+        name: server-http
+        protocol: TCP
+      - containerPort: 8082
+        name: server-metrics
+      volumeMounts:
+      - mountPath: /mnt/agent
+        name: mlserver-models
+        readOnly: true
+      - mountPath: /mnt/certs
+        name: downstream-ca-certs
+        readOnly: true
+    securityContext:
+      fsGroup: 2000
+      runAsUser: 1000
+      runAsNonRoot: true
+    volumes:
+    - name: config-volume
+      configMap:
+        name: seldon-agent
+    - name: tracing-config-volume
+      configMap:
+        name: seldon-tracing
+    - name: downstream-ca-certs
+      secret:
+        secretName: seldon-downstream-server
+        optional: true
+  volumeClaimTemplates:
+  - name: mlserver-models
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
 ```

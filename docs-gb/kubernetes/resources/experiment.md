@@ -69,7 +69,18 @@ shown below:
 
 ```yaml
 # samples/experiments/addmul10.yaml
-
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Experiment
+metadata:
+  name: addmul10
+spec:
+  default: pipeline-add10
+  resourceType: pipeline
+  candidates:
+  - name: pipeline-add10
+    weight: 50
+  - name: pipeline-mul10
+    weight: 50
 ```
 For an example see the [local experiments notebook](../../examples/local-experiments.md).
 

@@ -56,7 +56,7 @@ model.mlops.seldon.io/iris created
 kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
 ```
 
-```
+```bash
 model.mlops.seldon.io/iris condition met
 
 ```
@@ -179,7 +179,7 @@ kubectl get server mlserver -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
 kubectl delete -f ./models/sklearn-iris-gs.yaml -n ${NAMESPACE}
 ```
 
-```
+```bash
 model.mlops.seldon.io "iris" deleted
 
 ```
@@ -223,7 +223,7 @@ kubectl create -f ./models/sklearn1.yaml -n ${NAMESPACE}
 kubectl create -f ./models/sklearn2.yaml -n ${NAMESPACE}
 ```
 
-```
+```bash
 model.mlops.seldon.io/iris created
 model.mlops.seldon.io/iris2 created
 
@@ -233,7 +233,7 @@ model.mlops.seldon.io/iris2 created
 kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
 ```
 
-```
+```bash
 model.mlops.seldon.io/iris condition met
 model.mlops.seldon.io/iris2 condition met
 
@@ -262,7 +262,7 @@ spec:
 kubectl create -f ./experiments/ab-default-model.yaml -n ${NAMESPACE}
 ```
 
-```
+```bash
 experiment.mlops.seldon.io/experiment-sample created
 
 ```
@@ -271,7 +271,7 @@ experiment.mlops.seldon.io/experiment-sample created
 kubectl wait --for condition=ready --timeout=300s experiment --all -n ${NAMESPACE}
 ```
 
-```
+```bash
 experiment.mlops.seldon.io/experiment-sample condition met
 
 ```
@@ -281,7 +281,7 @@ seldon model infer --inference-host ${MESH_IP}:80 -i 50 iris \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```
+```bash
 Success: map[:iris2_1::29 :iris_1::21]
 
 ```
@@ -292,7 +292,7 @@ kubectl delete -f ./models/sklearn1.yaml -n ${NAMESPACE}
 kubectl delete -f ./models/sklearn2.yaml -n ${NAMESPACE}
 ```
 
-```
+```bash
 experiment.mlops.seldon.io "experiment-sample" deleted
 model.mlops.seldon.io "iris" deleted
 model.mlops.seldon.io "iris2" deleted
@@ -333,7 +333,7 @@ kubectl create -f ./models/tfsimple1.yaml -n ${NAMESPACE}
 kubectl create -f ./models/tfsimple2.yaml -n ${NAMESPACE}
 ```
 
-```
+```bash
 model.mlops.seldon.io/tfsimple1 created
 model.mlops.seldon.io/tfsimple2 created
 
@@ -343,7 +343,7 @@ model.mlops.seldon.io/tfsimple2 created
 kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
 ```
 
-```
+```bash
 model.mlops.seldon.io/tfsimple1 condition met
 model.mlops.seldon.io/tfsimple2 condition met
 
@@ -377,7 +377,7 @@ spec:
 kubectl create -f ./pipelines/tfsimples.yaml -n ${NAMESPACE}
 ```
 
-```
+```bash
 pipeline.mlops.seldon.io/tfsimples created
 
 ```
@@ -386,7 +386,7 @@ pipeline.mlops.seldon.io/tfsimples created
 kubectl wait --for condition=ready --timeout=300s pipeline --all -n ${NAMESPACE}
 ```
 
-```
+```bash
 pipeline.mlops.seldon.io/tfsimples condition met
 
 ```
@@ -464,7 +464,7 @@ seldon pipeline infer tfsimples --inference-mode grpc --inference-host ${MESH_IP
 kubectl delete -f ./pipelines/tfsimples.yaml -n ${NAMESPACE}
 ```
 
-```
+```bash
 pipeline.mlops.seldon.io "tfsimples" deleted
 
 ```
@@ -474,7 +474,7 @@ kubectl delete -f ./models/tfsimple1.yaml -n ${NAMESPACE}
 kubectl delete -f ./models/tfsimple2.yaml -n ${NAMESPACE}
 ```
 
-```
+```bash
 model.mlops.seldon.io "tfsimple1" deleted
 model.mlops.seldon.io "tfsimple2" deleted
 
@@ -525,7 +525,7 @@ kubectl create -f ./models/tfsimple2.yaml -n ${NAMESPACE}
 kubectl create -f ./models/tfsimple3.yaml -n ${NAMESPACE}
 ```
 
-```
+```bash
 model.mlops.seldon.io/tfsimple1 created
 model.mlops.seldon.io/tfsimple2 created
 model.mlops.seldon.io/tfsimple3 created
@@ -536,7 +536,7 @@ model.mlops.seldon.io/tfsimple3 created
 kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
 ```
 
-```
+```bash
 model.mlops.seldon.io/tfsimple1 condition met
 model.mlops.seldon.io/tfsimple2 condition met
 model.mlops.seldon.io/tfsimple3 condition met
@@ -582,7 +582,7 @@ pipeline.mlops.seldon.io/join created
 kubectl wait --for condition=ready --timeout=300s pipeline --all -n ${NAMESPACE}
 ```
 
-```
+```bash
 pipeline.mlops.seldon.io/join condition met
 
 ```
@@ -660,7 +660,7 @@ seldon pipeline infer join --inference-mode grpc --inference-host ${MESH_IP}:80 
 kubectl delete -f ./pipelines/tfsimples-join.yaml -n ${NAMESPACE}
 ```
 
-```
+```bash
 pipeline.mlops.seldon.io "join" deleted
 
 ```
@@ -671,7 +671,7 @@ kubectl delete -f ./models/tfsimple2.yaml -n ${NAMESPACE}
 kubectl delete -f ./models/tfsimple3.yaml -n ${NAMESPACE}
 ```
 
-```
+```bash
 model.mlops.seldon.io "tfsimple1" deleted
 model.mlops.seldon.io "tfsimple2" deleted
 model.mlops.seldon.io "tfsimple3" deleted
@@ -700,7 +700,7 @@ spec:
 kubectl create -f ./models/income.yaml -n ${NAMESPACE}
 ```
 
-```
+```bash
 model.mlops.seldon.io/income created
 
 ```
@@ -790,7 +790,7 @@ spec:
 kubectl create -f ./models/income-explainer.yaml -n ${NAMESPACE}
 ```
 
-```
+```bash
 model.mlops.seldon.io/income-explainer created
 
 ```
@@ -799,7 +799,7 @@ model.mlops.seldon.io/income-explainer created
 kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
 ```
 
-```
+```bash
 model.mlops.seldon.io/income condition met
 model.mlops.seldon.io/income-explainer condition met
 
@@ -865,7 +865,7 @@ kubectl delete -f ./models/income.yaml -n ${NAMESPACE}
 kubectl delete -f ./models/income-explainer.yaml -n ${NAMESPACE}
 ```
 
-```
+```bash
 model.mlops.seldon.io "income" deleted
 model.mlops.seldon.io "income-explainer" deleted
 

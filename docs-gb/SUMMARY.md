@@ -49,7 +49,6 @@
   * [Production income classifier with drift, outlier and explanations](examples/income.md)
   * [Conditional pipeline with pandas query model](examples/pandasquery.md)
   * [Kubernetes Server with PVC](examples/k8s-pvc.md)
-  * [Local Overcommit](examples/k8s-pvc.md)
 * [Kubernetes](kubernetes/README.md)
   * [Scaling](kubernetes/scaling.md)
   * [Autoscaling](kubernetes/autoscaling.md)
