@@ -10,8 +10,6 @@ the Change License after the Change Date as each is defined in accordance with t
 package util
 
 import (
-	"time"
-
 	"github.com/cenkalti/backoff/v4"
 	"google.golang.org/grpc/keepalive"
 )
@@ -33,8 +31,8 @@ func GetServerKeepAliveEnforcementPolicy() keepalive.EnforcementPolicy {
 
 func GetClientExponentialBackoff() *backoff.ExponentialBackOff {
 	backOffExp := backoff.NewExponentialBackOff()
-	backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
-	backOffExp.MaxInterval = time.Second * 15
-	backOffExp.InitialInterval = time.Second
+	backOffExp.MaxElapsedTime = backOffExpMaxElapsedTime
+	backOffExp.MaxInterval = backOffExpMaxInterval
+	backOffExp.InitialInterval = backOffExpInitialInterval
 	return backOffExp
 }
