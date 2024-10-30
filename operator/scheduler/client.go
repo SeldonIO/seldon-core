@@ -39,6 +39,10 @@ const (
 	clientKeepAliveTime    = 60 * time.Second
 	clientKeepAliveTimeout = 2 * time.Second
 	clientKeepAlivePermit  = false
+	// backoff
+	backoffMaxElapsedTime  = 0 // Never stop due to large time between calls
+	backOffMaxInterval     = time.Second * 15
+	backOffInitialInterval = time.Second
 )
 
 type SchedulerClient struct {
@@ -325,4 +329,12 @@ func retryFn(
 		return err
 	}
 	return nil
+}
+
+func getClientExponentialBackoff() *backoff.ExponentialBackOff {
+	backOffExp := backoff.NewExponentialBackOff()
+	backOffExp.MaxElapsedTime = backoffMaxElapsedTime
+	backOffExp.MaxInterval = backOffMaxInterval
+	backOffExp.InitialInterval = backOffInitialInterval
+	return backOffExp
 }

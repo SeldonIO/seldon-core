@@ -12,9 +12,7 @@ package scheduler
 import (
 	"context"
 	"io"
-	"time"
 
-	backoff "github.com/cenkalti/backoff/v4"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -392,12 +390,4 @@ func (s *SchedulerClient) handleModels(
 	}
 
 	return nil
-}
-
-func getClientExponentialBackoff() *backoff.ExponentialBackOff {
-	backOffExp := backoff.NewExponentialBackOff()
-	backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
-	backOffExp.MaxInterval = time.Second * 15
-	backOffExp.InitialInterval = time.Second
-	return backOffExp
 }
