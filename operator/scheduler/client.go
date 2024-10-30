@@ -33,12 +33,12 @@ import (
 
 const (
 	// these 2 constants in combination with the backoff exponential function will give us a max backoff of 13.5 minutes
-	SchedulerConnectMaxRetries    = 12
-	SchedulerConnectBackoffScalar = 200 * time.Millisecond
+	schedulerConnectMaxRetries    = 12
+	schedulerConnectBackoffScalar = 200 * time.Millisecond
 	// these keep alive settings need to match the scheduler counterpart in scheduler/pkg/util/constants.go
-	ClientKeepAliveTime    = 60 * time.Second
-	ClientKeepAliveTimeout = 2 * time.Second
-	ClientKeepAlivePermit  = false
+	clientKeepAliveTime    = 60 * time.Second
+	clientKeepAliveTimeout = 2 * time.Second
+	clientKeepAlivePermit  = false
 )
 
 type SchedulerClient struct {
@@ -230,9 +230,9 @@ func (s *SchedulerClient) connectToScheduler(host string, namespace string, plai
 		}
 	}
 	kacp := keepalive.ClientParameters{
-		Time:                ClientKeepAliveTime,
-		Timeout:             ClientKeepAliveTimeout,
-		PermitWithoutStream: ClientKeepAlivePermit,
+		Time:                clientKeepAliveTime,
+		Timeout:             clientKeepAliveTimeout,
+		PermitWithoutStream: clientKeepAlivePermit,
 	}
 
 	retryOpts := []grpc_retry.CallOption{
