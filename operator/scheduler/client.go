@@ -33,7 +33,7 @@ import (
 
 const (
 	// these 2 constants in combination with the backoff exponential function will give us a max backoff of 13.5 minutes
-	schedulerConnectMaxRetries    = 12
+	schedulerConnectMaxRetries    = 100
 	schedulerConnectBackoffScalar = 200 * time.Millisecond
 	// these keep alive settings need to match the scheduler counterpart in scheduler/pkg/util/constants.go
 	clientKeepAliveTime    = 60 * time.Second
