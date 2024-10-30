@@ -24,6 +24,7 @@ import (
 	"google.golang.org/grpc"
 
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
