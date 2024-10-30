@@ -331,7 +331,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 
 	//  resevere memory for existing replicas that are not already loading or loaded
 	replicaStateUpdated := false
-	for replicaIdx, _ := range assignedReplicaIds {
+	for replicaIdx := range assignedReplicaIds {
 		existingState := modelVersion.replicas[replicaIdx]
 		if !existingState.State.AlreadyLoadingOrLoaded() {
 			logger.Debugf(
