@@ -14,10 +14,10 @@ import (
 	"io"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/cenkalti/backoff/v4"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
