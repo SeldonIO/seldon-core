@@ -18,7 +18,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
@@ -84,10 +83,7 @@ func (c *ChainerServer) StartGrpcServer(agentPort uint) error {
 		log.Fatalf("failed to create listener: %v", err)
 	}
 
-	kaep := keepalive.EnforcementPolicy{
-		MinTime:             util.GRPCKeepAliveTime,
-		PermitWithoutStream: util.GRPCKeepAlivePermit,
-	}
+	kaep := util.GetServerKeepAliveEnforcementPolicy()
 
 	var grpcOptions []grpc.ServerOption
 	grpcOptions = append(grpcOptions, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))

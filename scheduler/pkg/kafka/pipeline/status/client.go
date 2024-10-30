@@ -22,7 +22,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/keepalive"
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
@@ -87,11 +86,7 @@ func (pc *PipelineSchedulerClient) connectToScheduler(host string, plainTxtPort 
 		port = tlsPort
 	}
 
-	kacp := keepalive.ClientParameters{
-		Time:                util.GRPCKeepAliveTime,
-		Timeout:             util.ClientKeepAliveTimeout,
-		PermitWithoutStream: util.GRPCKeepAlivePermit,
-	}
+	kacp := util.GetClientKeepAliveParameters()
 
 	// note: retry is done in the caller
 	opts := []grpc.DialOption{
