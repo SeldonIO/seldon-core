@@ -24,7 +24,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/keepalive"
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
@@ -237,8 +236,7 @@ func (c *Client) Start() error {
 		logFailure := func(err error, delay time.Duration) {
 			c.logger.WithError(err).Errorf("Scheduler not ready")
 		}
-		backOffExp := backoff.NewExponentialBackOff()
-		backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
+		backOffExp := util.GetClientExponentialBackoff()
 		err := backoff.RetryNotify(c.StartService, backOffExp, logFailure)
 		if err != nil {
 			c.logger.WithError(err).Fatal("Failed to start client")
@@ -417,11 +415,7 @@ func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grp
 
 	logger.Infof("Connecting (non-blocking) to scheduler at %s:%d", host, port)
 
-	kacp := keepalive.ClientParameters{
-		Time:                util.ClientKeapAliveTime,
-		Timeout:             util.ClientKeapAliveTimeout,
-		PermitWithoutStream: util.ClientKeapAlivePermit,
-	}
+	kacp := util.GetClientKeepAliveParameters()
 
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(transCreds),
@@ -453,7 +447,7 @@ func (c *Client) StartService() error {
 			Shared:               true,
 			AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
 		},
-		grpc_retry.WithMax(1),
+		grpc_retry.WithMax(util.MaxGRPCRetriesOnStream),
 	) // TODO make configurable
 	if err != nil {
 		return err

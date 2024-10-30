@@ -474,7 +474,6 @@ func (es *ExperimentStore) GetExperiments() ([]*Experiment, error) {
 func (es *ExperimentStore) cleanupDeletedExperiments() {
 	es.mu.Lock()
 	defer es.mu.Unlock()
-	es.logger.Info("cleaning up deleted experiments")
 	for _, experiment := range es.experiments {
 		if experiment.Deleted {
 			if experiment.DeletedAt.IsZero() {
@@ -487,6 +486,7 @@ func (es *ExperimentStore) cleanupDeletedExperiments() {
 				}
 			} else if experiment.DeletedAt.Add(utils.DeletedResourceTTL).Before(time.Now()) {
 				delete(es.experiments, experiment.Name)
+				es.logger.Info("cleaning up deleted experiment: %s", experiment.Name)
 			}
 		}
 	}

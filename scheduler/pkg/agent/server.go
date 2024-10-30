@@ -165,12 +165,16 @@ func (s *Server) startServer(port uint, secure bool) error {
 	if err != nil {
 		return err
 	}
+
+	kaep := util.GetServerKeepAliveEnforcementPolicy()
+
 	opts := []grpc.ServerOption{}
 	if secure {
 		opts = append(opts, grpc.Creds(s.certificateStore.CreateServerTransportCredentials()))
 	}
 	opts = append(opts, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
 	opts = append(opts, grpc.StatsHandler(otelgrpc.NewServerHandler()))
+	opts = append(opts, grpc.KeepaliveEnforcementPolicy(kaep))
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterAgentServiceServer(grpcServer, s)
 	s.logger.Printf("Agent server running on %d mtls:%v", port, secure)

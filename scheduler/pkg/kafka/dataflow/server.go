@@ -82,8 +82,12 @@ func (c *ChainerServer) StartGrpcServer(agentPort uint) error {
 	if err != nil {
 		log.Fatalf("failed to create listener: %v", err)
 	}
+
+	kaep := util.GetServerKeepAliveEnforcementPolicy()
+
 	var grpcOptions []grpc.ServerOption
 	grpcOptions = append(grpcOptions, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
+	grpcOptions = append(grpcOptions, grpc.KeepaliveEnforcementPolicy(kaep))
 	grpcServer := grpc.NewServer(grpcOptions...)
 	chainer.RegisterChainerServer(grpcServer, c)
 	c.logger.Printf("Chainer server running on %d", agentPort)
