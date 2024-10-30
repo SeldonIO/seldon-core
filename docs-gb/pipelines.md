@@ -157,7 +157,8 @@ flowchart LR
     end
     TF3 --> OUTPUT0
     TF3 --> OUTPUT1
-```
+```    
+
 Caption: "*Joining the outputs of two models into a third model. The dashed lines signify model outputs that are not captured in the output of the pipeline.*"
 
 Here we pass the pipeline inputs to two models and then take one output tensor from each and pass to the
