@@ -323,7 +323,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 		assignedReplicaIds[replica.replicaIdx] = struct{}{}
 	}
 
-	if modelVersion.HasServer() && modelVersion.Server() != serverKey {
+	for modelVersion.HasServer() && modelVersion.Server() != serverKey {
 		logger.Debugf("Adding new version as server changed to %s from %s", modelVersion.Server(), serverKey)
 		m.addNextModelVersion(model, model.Latest().modelDefn)
 		modelVersion = model.Latest()
