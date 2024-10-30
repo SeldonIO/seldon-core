@@ -314,7 +314,7 @@ func retryFn(
 	logFailure := func(err error, delay time.Duration) {
 		logger.Error(err, "Scheduler not ready")
 	}
-	backOffExp := backoff.NewExponentialBackOff()
+	backOffExp := getClientExponentialBackoff()
 	fnWithArgs := func() error {
 		grpcClient := scheduler.NewSchedulerClient(conn)
 		return fn(context.Background(), grpcClient, namespace)

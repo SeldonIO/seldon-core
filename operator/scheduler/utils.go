@@ -12,10 +12,12 @@ package scheduler
 import (
 	"context"
 	"io"
+	"time"
 
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
@@ -390,4 +392,12 @@ func (s *SchedulerClient) handleModels(
 	}
 
 	return nil
+}
+
+func getClientExponentialBackoff() *backoff.ExponentialBackOff {
+	backOffExp := backoff.NewExponentialBackOff()
+	backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
+	backOffExp.MaxInterval = time.Second * 15
+	backOffExp.InitialInterval = time.Second
+	return backOffExp
 }
