@@ -254,7 +254,7 @@ func (s *SchedulerClient) connectToScheduler(host string, namespace string, plai
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		s.logger.Info("Running scheduler client in plain text mode", "port", port)
 	}
-	opts = append(opts, grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)))
+	// we dont have backoff retry on the grpc streams as we handle this in the event handlers
 	opts = append(opts, grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)))
 	opts = append(opts, grpc.WithKeepaliveParams(kacp))
 	s.logger.Info("Dialing scheduler", "host", host, "port", port)
