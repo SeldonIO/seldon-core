@@ -127,7 +127,6 @@ func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chaine
 
 func (c *ChainerServer) SubscribePipelineUpdates(req *chainer.PipelineSubscriptionRequest, stream chainer.Chainer_SubscribePipelineUpdatesServer) error {
 	logger := c.logger.WithField("func", "SubscribePipelineStatus")
-	logger.Infof("Received subscribe request from %s", req.GetName())
 
 	key := req.GetName()
 	// this is forcing a serial order per dataflow-engine
@@ -135,6 +134,8 @@ func (c *ChainerServer) SubscribePipelineUpdates(req *chainer.PipelineSubscripti
 	mu, _ := c.chainerMutex.LoadOrStore(key, &sync.Mutex{})
 	mu.(*sync.Mutex).Lock()
 	defer mu.(*sync.Mutex).Unlock()
+
+	logger.Infof("Received subscribe request from %s", req.GetName())
 
 	fin := make(chan bool)
 

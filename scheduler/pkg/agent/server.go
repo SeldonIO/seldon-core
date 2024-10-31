@@ -385,7 +385,6 @@ func (s *Server) ModelScalingTrigger(stream pb.AgentService_ModelScalingTriggerS
 
 func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentService_SubscribeServer) error {
 	logger := s.logger.WithField("func", "Subscribe")
-	logger.Infof("Received subscribe request from %s:%d", request.ServerName, request.ReplicaIdx)
 	key := ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx}
 
 	// this is forcing a serial order per agent (serverName, replicaIdx)
@@ -394,6 +393,8 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 	mu.(*sync.Mutex).Lock()
 	defer mu.(*sync.Mutex).Unlock()
 
+	logger.Infof("Received subscribe request from %s:%d", request.ServerName, request.ReplicaIdx)
+	
 	fin := make(chan bool)
 
 	s.mutex.Lock()
