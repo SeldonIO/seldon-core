@@ -417,6 +417,7 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 			server, ok := s.agents[ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx}]
 			skip := true
 			// we skip orphan streams, in the cases where we have a new stream for the same server replica
+			// the assumption here is that the last stream for a given replica is the one that is valid
 			if ok && server.stream == stream {
 				delete(s.agents, ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx})
 				skip = false
