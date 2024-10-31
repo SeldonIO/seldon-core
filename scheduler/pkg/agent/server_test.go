@@ -1036,7 +1036,10 @@ func TestSubscribe(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			server.startServer(uint(port), false)
+			err = server.startServer(uint(port), false)
+			if err != nil {
+				t.Fatal(err)
+			}
 			time.Sleep(100 * time.Millisecond)
 
 			streams := make([]*grpc.ClientConn, 0)
