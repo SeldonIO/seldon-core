@@ -414,9 +414,19 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 		case <-ctx.Done():
 			logger.Infof("Client replica %s:%d has disconnected", request.ServerName, request.ReplicaIdx)
 			s.mutex.Lock()
-			delete(s.agents, ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx})
+			server, ok := s.agents[ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx}]
+			skip := true
+			// we skip orphan streams, in the cases where we have a new stream for the same server replica
+			if ok && server.stream == stream {
+				delete(s.agents, ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx})
+				skip = false
+			}
 			s.mutex.Unlock()
-			s.removeServerReplicaImpl(request.GetServerName(), int(request.GetReplicaIdx())) // this is non-blocking beyond rescheduling models on removed server
+			if !skip {
+				s.removeServerReplicaImpl(request.GetServerName(), int(request.GetReplicaIdx())) // this is non-blocking beyond rescheduling models on removed server
+			} else {
+				logger.Infof("Skipping removal of (old) server replica %s:%d", request.ServerName, request.ReplicaIdx)
+			}
 			return nil
 		}
 	}
