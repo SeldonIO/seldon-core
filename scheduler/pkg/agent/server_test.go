@@ -1002,9 +1002,9 @@ func TestSubscribe(t *testing.T) {
 			expectedAgentsCountAfterClose: 1,
 		},
 		{
-			name: "duplicates with both close",
+			name: "duplicates with all close",
 			agents: []ag{
-				{1, true}, {1, true},
+				{1, true}, {1, true}, {1, true},
 			},
 			expectedAgentsCount:           1,
 			expectedAgentsCountAfterClose: 0,
@@ -1043,22 +1043,26 @@ func TestSubscribe(t *testing.T) {
 			time.Sleep(100 * time.Millisecond)
 
 			streams := make([]*grpc.ClientConn, 0)
-			for _, id := range test.agents {
-				conn := getStream(id.id, context.Background(), port)
-				streams = append(streams, conn)
+			for _, a := range test.agents {
+				go func(id uint32) {
+					conn := getStream(id, context.Background(), port)
+					streams = append(streams, conn)
+				}(a.id)
 			}
 
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(200 * time.Millisecond)
 
 			g.Expect(len(server.agents)).To(Equal(test.expectedAgentsCount))
 
 			for idx, s := range streams {
-				if test.agents[idx].doClose {
-					s.Close()
-				}
+				go func(idx int, s *grpc.ClientConn) {
+					if test.agents[idx].doClose {
+						s.Close()
+					}
+				}(idx, s)
 			}
 
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(300 * time.Millisecond)
 
 			g.Expect(len(server.agents)).To(Equal(test.expectedAgentsCountAfterClose))
 
