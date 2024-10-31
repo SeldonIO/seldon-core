@@ -423,7 +423,7 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 				skip = false
 			}
 			s.mutex.Unlock()
-			if !skip {
+			if !skip && ok {
 				s.removeServerReplicaImpl(request.GetServerName(), int(request.GetReplicaIdx())) // this is non-blocking beyond rescheduling models on removed server
 			} else {
 				logger.Infof("Skipping removal of (old) server replica %s:%d", request.ServerName, request.ReplicaIdx)
