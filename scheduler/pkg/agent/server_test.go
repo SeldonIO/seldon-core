@@ -986,6 +986,14 @@ func TestSubscribe(t *testing.T) {
 			expectedAgentsCountAfterClose: 0,
 		},
 		{
+			name: "simple - no close",
+			agents: []ag{
+				{1, true}, {2, false},
+			},
+			expectedAgentsCount:           2,
+			expectedAgentsCountAfterClose: 1,
+		},
+		{
 			name: "duplicates",
 			agents: []ag{
 				{1, true}, {1, false},
