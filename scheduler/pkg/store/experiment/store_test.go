@@ -262,7 +262,7 @@ func TestStopExperiment(t *testing.T) {
 			path := fmt.Sprintf("%s/db", t.TempDir())
 
 			// init db
-			err := test.store.InitialiseOrRestoreDB(path, 10)
+			err := test.store.InitialiseOrRestoreDB(path, 1)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.store.experiments {
 				err := test.store.db.save(p)
@@ -288,6 +288,10 @@ func TestStopExperiment(t *testing.T) {
 				// check db
 				experimentFromDB, _ := test.store.db.get(test.experimentName)
 				g.Expect(experimentFromDB.Deleted).To(BeTrue())
+
+				time.Sleep(1 * time.Second)
+				test.store.cleanupDeletedExperiments()
+				g.Expect(test.store.experiments[test.experimentName]).To(BeNil())
 			}
 		})
 	}

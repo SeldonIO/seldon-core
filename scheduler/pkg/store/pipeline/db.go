@@ -41,7 +41,7 @@ func newPipelineDbManager(path string, logger logrus.FieldLogger, deletedResourc
 	pdb := &PipelineDBManager{
 		db:                 db,
 		logger:             logger,
-		deletedResourceTTL: time.Duration(deletedResourceTTL * uint(time.Minute)),
+		deletedResourceTTL: time.Duration(deletedResourceTTL * uint(time.Second)),
 	}
 
 	version, err := pdb.getVersion()

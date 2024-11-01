@@ -21,7 +21,6 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
 )
 
 func TestSaveWithTTL(t *testing.T) {
@@ -51,7 +50,7 @@ func TestSaveWithTTL(t *testing.T) {
 		Deleted: true,
 	}
 	ttl := time.Duration(time.Second)
-	pipeline.DeletedAt = time.Now().Add(-utils.DeletedResourceTTL).Add(ttl)
+	pipeline.DeletedAt = time.Now().Add(ttl)
 
 	path := fmt.Sprintf("%s/db", t.TempDir())
 	logger := log.New()
@@ -247,7 +246,7 @@ func TestSaveAndRestoreDeletedPipelines(t *testing.T) {
 			if !test.withTTL {
 				err = saveWithOutTTL(&test.pipeline, pdb.db)
 			} else {
-				test.pipeline.DeletedAt = time.Now().Add(-utils.DeletedResourceTTL)
+				test.pipeline.DeletedAt = time.Now()
 				err = pdb.save(&test.pipeline)
 			}
 			g.Expect(err).To(BeNil())

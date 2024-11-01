@@ -459,7 +459,7 @@ func (ps *PipelineStore) cleanupDeletedPipelines() {
 						ps.logger.Warnf("could not update DB TTL for pipeline: %s", pipeline.Name)
 					}
 				}
-			} else if pipeline.DeletedAt.Add(utils.DeletedResourceTTL).Before(time.Now()) {
+			} else if pipeline.DeletedAt.Add(ps.db.deletedResourceTTL).Before(time.Now()) {
 				delete(ps.pipelines, pipeline.Name)
 			}
 		}

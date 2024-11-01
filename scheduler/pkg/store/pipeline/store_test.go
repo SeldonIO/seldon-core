@@ -12,6 +12,7 @@ package pipeline
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -385,7 +386,7 @@ func TestRemovePipeline(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			logger := logrus.New()
 			path := fmt.Sprintf("%s/db", t.TempDir())
-			db, _ := newPipelineDbManager(getPipelineDbFolder(path), logger, 10)
+			db, _ := newPipelineDbManager(getPipelineDbFolder(path), logger, 1)
 			test.store.db = db
 			err := test.store.RemovePipeline(test.pipelineName)
 			if test.err == nil {
@@ -408,6 +409,9 @@ func TestRemovePipeline(t *testing.T) {
 				g.Expect(actualPipeline.LastVersion).To(Equal(expectedPipeline.LastVersion))
 				g.Expect(len(actualPipeline.Versions)).To(Equal(len(expectedPipeline.Versions)))
 				g.Expect(len(actualPipeline.Versions)).To(Equal(len(expectedPipeline.Versions)))
+				time.Sleep(1 * time.Second)
+				test.store.cleanupDeletedPipelines()
+				g.Expect(test.store.pipelines[test.pipelineName]).To(BeNil())
 			} else {
 				g.Expect(err.Error()).To(Equal(test.err.Error()))
 			}

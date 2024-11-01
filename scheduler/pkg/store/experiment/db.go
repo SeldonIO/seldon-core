@@ -41,7 +41,7 @@ func newExperimentDbManager(path string, logger logrus.FieldLogger, deletedResou
 	edb := &ExperimentDBManager{
 		db:                 db,
 		logger:             logger,
-		deletedResourceTTL: time.Duration(deletedResourceTTL * uint(time.Minute)),
+		deletedResourceTTL: time.Duration(deletedResourceTTL * uint(time.Second)),
 	}
 
 	version, err := edb.getVersion()
