@@ -44,6 +44,7 @@ type ChainerServer struct {
 	pipelineHandler pipeline.PipelineHandler
 	topicNamer      *kafka.TopicNamer
 	loadBalancer    util.LoadBalancer
+	chainerMutex    sync.Map
 	chainer.UnimplementedChainerServer
 }
 
@@ -66,6 +67,7 @@ func NewChainerServer(logger log.FieldLogger, eventHub *coordinator.EventHub, pi
 		pipelineHandler: pipelineHandler,
 		topicNamer:      topicNamer,
 		loadBalancer:    loadBalancer,
+		chainerMutex:    sync.Map{},
 	}
 
 	eventHub.RegisterPipelineEventHandler(
@@ -125,17 +127,25 @@ func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chaine
 
 func (c *ChainerServer) SubscribePipelineUpdates(req *chainer.PipelineSubscriptionRequest, stream chainer.Chainer_SubscribePipelineUpdatesServer) error {
 	logger := c.logger.WithField("func", "SubscribePipelineStatus")
+
+	key := req.GetName()
+	// this is forcing a serial order per dataflow-engine
+	// in general this will make sure that a given dataflow-engine disconnects fully before another dataflow-engine is allowed to connect
+	mu, _ := c.chainerMutex.LoadOrStore(key, &sync.Mutex{})
+	mu.(*sync.Mutex).Lock()
+	defer mu.(*sync.Mutex).Unlock()
+
 	logger.Infof("Received subscribe request from %s", req.GetName())
 
 	fin := make(chan bool)
 
 	c.mu.Lock()
-	c.streams[req.Name] = &ChainerSubscription{
-		name:   req.Name,
+	c.streams[key] = &ChainerSubscription{
+		name:   key,
 		stream: stream,
 		fin:    fin,
 	}
-	c.loadBalancer.AddServer(req.Name)
+	c.loadBalancer.AddServer(key)
 	c.mu.Unlock()
 
 	// Handle addition of new server
@@ -148,13 +158,13 @@ func (c *ChainerServer) SubscribePipelineUpdates(req *chainer.PipelineSubscripti
 	for {
 		select {
 		case <-fin:
-			logger.Infof("Closing stream for %s", req.GetName())
+			logger.Infof("Closing stream for %s", key)
 			return nil
 		case <-ctx.Done():
-			logger.Infof("Stream disconnected %s", req.GetName())
+			logger.Infof("Stream disconnected %s", key)
 			c.mu.Lock()
-			c.loadBalancer.RemoveServer(req.Name)
-			delete(c.streams, req.Name)
+			c.loadBalancer.RemoveServer(key)
+			delete(c.streams, key)
 			c.mu.Unlock()
 			// Handle removal of server
 			c.rebalance()
