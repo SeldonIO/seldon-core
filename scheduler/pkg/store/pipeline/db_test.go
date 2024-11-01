@@ -67,6 +67,18 @@ func TestSaveWithTTL(t *testing.T) {
 	g.Expect(err).To(BeNil())
 	g.Expect(item.ExpiresAt()).ToNot(BeZero())
 
+	// check that the resource can be "undeleted"
+	pipeline.Deleted = false
+	err = db.save(pipeline)
+	g.Expect(err).To(BeNil())
+
+	err = db.db.View(func(txn *badger.Txn) error {
+		item, err = txn.Get(([]byte(pipeline.Name)))
+		return err
+	})
+	g.Expect(err).To(BeNil())
+	g.Expect(item.ExpiresAt()).To(BeZero())
+
 	err = db.Stop()
 	g.Expect(err).To(BeNil())
 }

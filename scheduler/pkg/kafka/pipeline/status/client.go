@@ -22,7 +22,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/keepalive"
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
@@ -87,11 +86,7 @@ func (pc *PipelineSchedulerClient) connectToScheduler(host string, plainTxtPort 
 		port = tlsPort
 	}
 
-	kacp := keepalive.ClientParameters{
-		Time:                util.ClientKeapAliveTime,
-		Timeout:             util.ClientKeapAliveTimeout,
-		PermitWithoutStream: util.ClientKeapAlivePermit,
-	}
+	kacp := util.GetClientKeepAliveParameters()
 
 	// note: retry is done in the caller
 	opts := []grpc.DialOption{
@@ -129,11 +124,7 @@ func (pc *PipelineSchedulerClient) Start(host string, plainTxtPort int, tlsPort 
 		logFailure := func(err error, delay time.Duration) {
 			logger.WithError(err).Errorf("Scheduler not ready")
 		}
-		backOffExp := backoff.NewExponentialBackOff()
-		// Set some reasonable settings for trying to reconnect to scheduler
-		backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
-		backOffExp.MaxInterval = time.Second * 15
-		backOffExp.InitialInterval = time.Second
+		backOffExp := util.GetClientExponentialBackoff()
 		err = backoff.RetryNotify(pc.SubscribePipelineEvents, backOffExp, logFailure)
 		if err != nil {
 			logger.WithError(err).Fatal("Failed to start pipeline gateway client")
@@ -147,7 +138,11 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 	logger := pc.logger.WithField("func", "SubscribePipelineEvents")
 	grpcClient := scheduler.NewSchedulerClient(pc.conn)
 	logger.Info("Subscribing to pipeline status events")
-	stream, errSub := grpcClient.SubscribePipelineStatus(context.Background(), &scheduler.PipelineSubscriptionRequest{SubscriberName: SubscriberName}, grpc_retry.WithMax(100))
+	stream, errSub := grpcClient.SubscribePipelineStatus(
+		context.Background(),
+		&scheduler.PipelineSubscriptionRequest{SubscriberName: SubscriberName},
+		grpc_retry.WithMax(util.MaxGRPCRetriesOnStream),
+	)
 	if errSub != nil {
 		return errSub
 	}
