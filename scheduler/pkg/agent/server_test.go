@@ -25,7 +25,7 @@ import (
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
-	testing_utils2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
+	testing_utils "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
@@ -1032,7 +1032,7 @@ func TestSubscribe(t *testing.T) {
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
 			server := NewAgentServer(logger, &mockStore{}, mockScheduler{}, eventHub, false)
-			port, err := testing_utils2.GetFreePortForTest()
+			port, err := testing_utils.GetFreePortForTest()
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1050,7 +1050,7 @@ func TestSubscribe(t *testing.T) {
 				}(a.id)
 			}
 
-			time.Sleep(200 * time.Millisecond)
+			time.Sleep(500 * time.Millisecond)
 
 			g.Expect(len(server.agents)).To(Equal(test.expectedAgentsCount))
 
@@ -1062,7 +1062,7 @@ func TestSubscribe(t *testing.T) {
 				}(idx, s)
 			}
 
-			time.Sleep(300 * time.Millisecond)
+			time.Sleep(500 * time.Millisecond)
 
 			g.Expect(len(server.agents)).To(Equal(test.expectedAgentsCountAfterClose))
 
