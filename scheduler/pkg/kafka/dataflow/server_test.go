@@ -10,19 +10,23 @@ the Change License after the Change Date as each is defined in accordance with t
 package dataflow
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"sync"
 	"testing"
 	"time"
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	testing_utils "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
@@ -321,7 +325,7 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 			}
 
 			// to allow events to propagate
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(700 * time.Millisecond)
 
 			if test.connection {
 				if test.loadReqV2 != nil {
@@ -630,6 +634,136 @@ func TestPipelineRebalance(t *testing.T) {
 			}
 			g.Expect(actualPipelineVersion.State.Status).To(Equal(test.expectedStatus))
 
+		})
+	}
+}
+
+func TestPipelineSubscribe(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type ag struct {
+		id      uint32
+		doClose bool
+	}
+
+	type test struct {
+		name                          string
+		agents                        []ag
+		expectedAgentsCount           int
+		expectedAgentsCountAfterClose int
+	}
+
+	tests := []test{
+		{
+			name: "single connection",
+			agents: []ag{
+				{id: 1, doClose: true},
+			},
+			expectedAgentsCount:           1,
+			expectedAgentsCountAfterClose: 0,
+		},
+		{
+			name: "multiple connection - one not closed",
+			agents: []ag{
+				{id: 1, doClose: false}, {id: 2, doClose: true},
+			},
+			expectedAgentsCount:           2,
+			expectedAgentsCountAfterClose: 1,
+		},
+		{
+			name: "multiple connection - not closed",
+			agents: []ag{
+				{id: 1, doClose: false}, {id: 2, doClose: false},
+			},
+			expectedAgentsCount:           2,
+			expectedAgentsCountAfterClose: 2,
+		},
+		{
+			name: "multiple connection - closed",
+			agents: []ag{
+				{id: 1, doClose: true}, {id: 2, doClose: true},
+			},
+			expectedAgentsCount:           2,
+			expectedAgentsCountAfterClose: 0,
+		},
+		{
+			name: "multiple connection - duplicate",
+			agents: []ag{
+				{id: 1, doClose: true}, {id: 1, doClose: true}, {id: 1, doClose: true},
+			},
+			expectedAgentsCount:           1,
+			expectedAgentsCountAfterClose: 0,
+		},
+		{
+			name: "multiple connection - duplicate not closed",
+			agents: []ag{
+				{id: 1, doClose: true}, {id: 1, doClose: false}, {id: 1, doClose: true},
+			},
+			expectedAgentsCount:           1,
+			expectedAgentsCountAfterClose: 1,
+		},
+	}
+
+	getStream := func(id uint32, context context.Context, port int) *grpc.ClientConn {
+		conn, _ := grpc.NewClient(fmt.Sprintf(":%d", port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+		grpcClient := chainer.NewChainerClient(conn)
+		_, _ = grpcClient.SubscribePipelineUpdates(
+			context,
+			&chainer.PipelineSubscriptionRequest{
+				Name: fmt.Sprintf("agent-%d", id),
+			},
+		)
+		return conn
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			serverName := "dummy"
+			s, _ := createTestScheduler(t, serverName)
+			port, err := testing_utils.GetFreePortForTest()
+			if err != nil {
+				t.Fatal(err)
+			}
+			go func() {
+				_ = s.StartGrpcServer(uint(port))
+			}()
+
+			time.Sleep(100 * time.Millisecond)
+
+			mu := sync.Mutex{}
+			streams := make([]*grpc.ClientConn, 0)
+			for _, a := range test.agents {
+				go func(id uint32) {
+					conn := getStream(id, context.Background(), port)
+					mu.Lock()
+					streams = append(streams, conn)
+					mu.Unlock()
+				}(a.id)
+			}
+
+			maxCount := 10
+			count := 0
+			for len(s.streams) != test.expectedAgentsCount && count < maxCount {
+				time.Sleep(100 * time.Millisecond)
+				count++
+			}
+			g.Expect(len(s.streams)).To(Equal(test.expectedAgentsCount))
+
+			for idx, s := range streams {
+				go func(idx int, s *grpc.ClientConn) {
+					if test.agents[idx].doClose {
+						s.Close()
+					}
+				}(idx, s)
+			}
+
+			count = 0
+			for len(s.streams) != test.expectedAgentsCountAfterClose && count < maxCount {
+				time.Sleep(100 * time.Millisecond)
+				count++
+			}
+			g.Expect(len(s.streams)).To(Equal(test.expectedAgentsCountAfterClose))
+
+			s.StopSendPipelineEvents()
 		})
 	}
 }

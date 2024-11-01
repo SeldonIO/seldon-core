@@ -31,8 +31,8 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 	stream, err := grpcClient.SubscribeControlPlane(
 		ctx,
 		&scheduler.ControlPlaneSubscriptionRequest{SubscriberName: "seldon manager"},
-		grpc_retry.WithMax(SchedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
+		grpc_retry.WithMax(schedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
 	)
 	if err != nil {
 		return err

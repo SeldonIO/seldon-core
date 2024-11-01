@@ -32,7 +32,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 
@@ -124,12 +123,6 @@ func (iw *InferWorker) getGrpcClient(host string, port int) (v2.GRPCInferenceSer
 		creds = insecure.NewCredentials()
 	}
 
-	kacp := keepalive.ClientParameters{
-		Time:                util.ClientKeapAliveTime,
-		Timeout:             util.ClientKeapAliveTimeout,
-		PermitWithoutStream: util.ClientKeapAlivePermit,
-	}
-
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(creds),
 		grpc.WithDefaultCallOptions(
@@ -142,7 +135,6 @@ func (iw *InferWorker) getGrpcClient(host string, port int) (v2.GRPCInferenceSer
 		grpc.WithUnaryInterceptor(
 			grpc_retry.UnaryClientInterceptor(retryOpts...),
 		),
-		grpc.WithKeepaliveParams(kacp),
 	}
 
 	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d", host, port), opts...)
