@@ -102,8 +102,8 @@ The rule definition can be broken down in four parts:
     metric can be attached to or aggregated over.
 
   The resources key defines an association between certain labels from the Prometheus metric and
-  k8s resources. For example, on line 17, `"model": {group: "mlops.seldon.io", resource: "model"}
-  ` lets `prometheus-adapter` know that, for the selected Prometheus metrics, the value of the
+  k8s resources. For example, on line 17, `"model": {group: "mlops.seldon.io", resource: "model"}`
+  lets `prometheus-adapter` know that, for the selected Prometheus metrics, the value of the
   "model" label represents the name of a k8s `model.mlops.seldon.io` CR.
 
   One k8s custom metric is generated for each k8s resource associated with a prometheus metric.
@@ -147,7 +147,7 @@ For a complete reference for how `prometheus-adapter` can be configured via the 
 consult the docs [here](https://github.com/kubernetes-sigs/prometheus-adapter/blob/master/docs/config.md).
 
 
-Once you have applied any necessary customisations, replace the default prometheus-adapter config
+Once you have applied any necessary customizations, replace the default prometheus-adapter config
 with the new one, and restart the deployment (this restart is required so that prometheus-adapter
 picks up the new config):
 
@@ -202,11 +202,11 @@ For example:
     kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/seldon-mesh/pods/mlserver-0/infer_rps
     ```
 
-Fetching the same metric aggregated at `namespace` level `(seldon-mesh)`:
+* Fetching the same metric aggregated at `namespace` level `(seldon-mesh)`:
 
-```sh
-kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/*/metrics/infer_rps
-```
+    ```sh
+    kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/*/metrics/infer_rps
+    ```
 
 ## Configuring HPA manifests
 
@@ -297,7 +297,7 @@ spec:
 {% endcode %}
 
 In the preceding HPA manifests, the scaling metric is exactly the same, and uses the exact same
-parameters: this is to ensure that both the Models and the Servers are scaled up/down at
+parameters. This is to ensure that both the Models and the Servers are scaled up/down at
 approximately the same time. Small variations in the scale-up time are expected because each HPA
 samples the metrics independently, at regular intervals.
 
@@ -400,9 +400,9 @@ Some versions of k8s will display `[per pod metric value]` instead of `[per repl
 with the number of pods being computed based on a label selector present in the target resource
 CR (the `status.selector` value for the Model or Server in the Core 2 case).
 
-HPA is designed so that multiple HPA CRs can not target the same underlying pod with this selector
+HPA is designed so that multiple HPA CRs cannot target the same underlying pod with this selector
 (with HPA stopping when such a condition is detected). This means that in Core 2, the Model and
-Server selector can not be the same. A design choice was made to assign the Model a unique
+Server selector cannot be the same. A design choice was made to assign the Model a unique
 selector that does not match any pods.
 
 As a result, for the k8s versions displaying `[per pod metric value]`, the information shown for
@@ -414,7 +414,7 @@ inspecting the corresponding Server HPA CR, or by fetching the metric directly v
 
 ### Advanced settings
 
-*   Filtering metrics by additional labels on the prometheus metric
+*   Filtering metrics by additional labels on the prometheus metric:
 
     The prometheus metric from which the model RPS is computed has the following labels:
 
@@ -456,7 +456,7 @@ inspecting the corresponding Server HPA CR, or by fetching the metric directly v
     	    type: AverageValue
             averageValue: "3"
     ```
-*   Customise scale-up / scale-down rate & properties by using scaling policies as described in
+*   Customize scale-up / scale-down rate & properties by using scaling policies as described in
     the [HPA scaling policies docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#configurable-scaling-behavior)
 
 *   For more resources, please consult the [HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
@@ -476,7 +476,7 @@ to increases in load), with a maximum replicas increase of either 4 every 15 sec
 existing replicas within the same period (**whichever is highest**). In contrast, scaling-down
 is more gradual, with HPA only scaling down to the maximum number of recommended replicas in the
 most recent 5 minute rolling window, in order to avoid flapping. Those parameters can be
-customised via [scaling policies](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#configurable-scaling-behavior).
+customized via [scaling policies](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#configurable-scaling-behavior).
 
 When using custom metrics such as RPS, the actual number of replicas added during scale-up or
 reduced during scale-down will entirely depend, alongside the maximums imposed by the policy, on
@@ -497,7 +497,7 @@ determine the RPS (inference request throughput) when latency SLAs are breached 
 the desired operation point) when latency starts increasing. You would then set the HPA
 `target.averageValue` taking some margin below this saturation RPS, and compute
 `spec.maxReplicas` as `peak_infer_RPS`/`target.averageValue`. The margin taken below the
-saturation point is very important, because scaling-up can not be instant (it requires spinning
+saturation point is very important, because scaling-up cannot be instant (it requires spinning
 up new pods, downloading model artifacts, etc.). In the period until the new replicas become
 available, any load increases will still need to be absorbed by the existing replicas.
 
@@ -530,7 +530,7 @@ Each `spec.replica` value change for a model or server triggers a rescheduling e
 Core 2 scheduler, which will consider any updates that are required to assign and load
 new Model replicas onto existing server replicas or to unload Model replicas where needed.
 
-Two important characteristics in the current implementation are important in terms of
+Two characteristics in the current implementation are important in terms of
 autoscaling and configuring the HPA scale-up policy:
 
 - The scheduler will not create new Server replicas when the existing replicas are not
@@ -563,7 +563,7 @@ scale-up policy and a continuously increasing RPS may lead to the following path
 - Based on RPS, HPA decides to increase both the Model and Server replicas from 2 (an example
 start stable state) to 8. While the 6 new Server pods get scheduled and get the Model loaded
 onto them, the scheduler will transition the Model into the `ScheduleFailed` state, because it
-can not fulfill the requested replicas requirement. During this period, the initial 2 Model
+cannot fulfill the requested replicas requirement. During this period, the initial 2 Model
 replicas continue to serve load, but are using their RPS margins and getting closer to the
 saturation point.
 - At the same time, load continues to increase, so HPA further increases the number of
@@ -571,7 +571,7 @@ required Model and Server replicas from 8 to 12, before all of the 6 new Server 
 to become available. The new replica target for the scheduler also becomes 12, and this would
 not be satisfied until all the 12 Server replicas are available. The 2 Model replicas that are
 available may by now be saturated and the infer latency spikes up, breaching set SLAs.
-- The process may continue until load stabilises.
+- The process may continue until load stabilizes.
 - If at any point the number of requested replicas (<=`maxReplicas`) exceeds the resource
 capacity of the cluster, all requested servers will never be created and thus the Model will
 remain permanently in the `ScheduleFailed` state.
@@ -588,7 +588,7 @@ into account when setting the HPA policies.
       scale-up config, that also adds a percentage based policy (double the existing replicas
       within the set `periodSeconds`) is not recommended because of this.
     - Perhaps more importantly, there is no reason to scale faster than the time it takes for
-      replicas to become available: this is the true maximum rate with which scaling up can
+      replicas to become available - this is the true maximum rate with which scaling up can
       happen anyway. Because the underlying Server replica pods are part of a stateful set, they
       are created sequentially by k8s.
 
