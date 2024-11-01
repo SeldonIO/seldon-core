@@ -90,7 +90,7 @@ metric, with aggregations at model, server, inference server pod and namespace l
 
 The rule definition can be broken down in four parts:
 
-* _Discovery_ (the `seriesQuery` and `seriesFilters` keys): this controls what Prometheus
+* _Discovery_ (the `seriesQuery` and `seriesFilters` keys) controls what Prometheus
     metrics are considered for exposure via the k8s custom metrics API.
 
   In the example, all the Seldon Prometheus metrics of the form `seldon_model_*_total` are
@@ -98,8 +98,8 @@ The rule definition can be broken down in four parts:
   the cummulative infer time per model (`.*_seconds_total`). For RPS, we are only interested in
   the model inference count (`seldon_model_infer_total`)
 
-* _Association_ (the `resources` key): controls the Kubernetes resources that a particular
-    metric can be attached to or aggregated over
+* _Association_ (the `resources` key) controls the Kubernetes resources that a particular
+    metric can be attached to or aggregated over.
 
   The resources key defines an association between certain labels from the Prometheus metric and
   k8s resources. For example, on line 17, `"model": {group: "mlops.seldon.io", resource: "model"}
@@ -116,7 +116,7 @@ The rule definition can be broken down in four parts:
   understanding how certain Prometheus query template placeholders are replaced.
 
 
-* _Naming_ (the `name` key): configures the naming of the k8s custom metric
+* _Naming_ (the `name` key) configures the naming of the k8s custom metric.
 
   In the example ConfigMap, this is configured to take the Prometheus metric named
   `seldon_model_infer_total` and expose custom metric endpoints named `infer_rps`, which when
@@ -125,7 +125,7 @@ The rule definition can be broken down in four parts:
   The matching over the Prometheus metric name uses regex group capture expressions (line 22),
   which are then be referenced in the custom metric name (line 23).
 
-* _Querying_ (the `metricsQuery` key): defines how a request for a specific k8s custom metric gets
+* _Querying_ (the `metricsQuery` key) defines how a request for a specific k8s custom metric gets
     converted into a Prometheus query.
 
   The query can make use of the following placeholders:
