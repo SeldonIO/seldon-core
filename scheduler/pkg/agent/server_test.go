@@ -12,6 +12,7 @@ package agent
 import (
 	"context"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -1042,16 +1043,23 @@ func TestSubscribe(t *testing.T) {
 			}
 			time.Sleep(100 * time.Millisecond)
 
+			mu := sync.Mutex{}
 			streams := make([]*grpc.ClientConn, 0)
 			for _, a := range test.agents {
 				go func(id uint32) {
 					conn := getStream(id, context.Background(), port)
+					mu.Lock()
 					streams = append(streams, conn)
+					mu.Unlock()
 				}(a.id)
 			}
 
-			time.Sleep(500 * time.Millisecond)
-
+			maxCount := 10
+			count := 0
+			for len(server.agents) != test.expectedAgentsCount && count < maxCount {
+				time.Sleep(100 * time.Millisecond)
+				count++
+			}
 			g.Expect(len(server.agents)).To(Equal(test.expectedAgentsCount))
 
 			for idx, s := range streams {
@@ -1062,8 +1070,11 @@ func TestSubscribe(t *testing.T) {
 				}(idx, s)
 			}
 
-			time.Sleep(10 * time.Second)
-
+			count = 0
+			for len(server.agents) != test.expectedAgentsCountAfterClose && count < maxCount {
+				time.Sleep(100 * time.Millisecond)
+				count++
+			}
 			g.Expect(len(server.agents)).To(Equal(test.expectedAgentsCountAfterClose))
 
 			server.StopAgentStreams()
