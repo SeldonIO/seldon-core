@@ -86,7 +86,10 @@ In our example, a single rule is defined to fetch the `seldon_model_infer_total`
 from Prometheus, compute its rate over a 1 minute window, and expose this to k8s as the `infer_rps`
 metric, with aggregations at model, server, inference server pod and namespace level.
 
-### Understanding rule definitions
+A list of all the Prometheus metrics exposed by Core 2 is available [here](../metrics/operational.md),
+and those may be used when customizing the example above.
+
+### Understanding prometheus-adapter rule definitions
 
 The rule definition can be broken down in four parts:
 
@@ -145,6 +148,7 @@ The rule definition can be broken down in four parts:
 
 For a complete reference for how `prometheus-adapter` can be configured via the `ConfigMap`, please
 consult the docs [here](https://github.com/kubernetes-sigs/prometheus-adapter/blob/master/docs/config.md).
+
 
 
 Once you have applied any necessary customizations, replace the default prometheus-adapter config
@@ -469,8 +473,6 @@ When deploying HPA-based scaling for Core 2 models and servers as part of a prod
 it is important to understand the exact interactions between HPA-triggered actions and Core 2
 scheduling, as well as potential pitfalls in choosing particular HPA configurations.
 
-### HPA scaling policies
-
 Using the default scaling policy, HPA is relatively aggressive on scale-up (responding quickly
 to increases in load), with a maximum replicas increase of either 4 every 15 seconds or 100% of
 existing replicas within the same period (**whichever is highest**). In contrast, scaling-down
@@ -484,7 +486,7 @@ the configured target (`averageValue` RPS per replica) and on how quickly the in
 varies in your cluster. All three need to be considered jointly in order to deliver both an
 efficient use of resources and meeting SLAs.
 
-### Setting the HPA configuration for minReplicas, maxReplicas and target.averageValue
+### Customizing per-replica RPS targets and replica limits
 
 Naturally, the first thing to consider is an estimated peak inference load (including some
 margins) for each of the models in the cluster. If the minimum number of model
@@ -524,11 +526,11 @@ in RPS when moving out of the low-load regime, it might be worth to set the `min
 higher in order to ensure SLAs are met at all times.
 
 
-### Seldon Core 2 scheduler interactions with HPA-based scaling
+### Customizing HPA policy settings for ensuring correct scaling behaviour
 
-Each `spec.replica` value change for a model or server triggers a rescheduling event for the
-Core 2 scheduler, which will consider any updates that are required to assign and load
-new Model replicas onto existing server replicas or to unload Model replicas where needed.
+Each `spec.replica` value change for a Model or Server triggers a rescheduling event for the
+Core 2 scheduler, which will consider any updates that are needed in mapping Model replicas to
+Server replicas (i.e rescheduling failed Model replicas, loading new ones, unloading).
 
 Two characteristics in the current implementation are important in terms of
 autoscaling and configuring the HPA scale-up policy:
@@ -573,8 +575,8 @@ not be satisfied until all the 12 Server replicas are available. The 2 Model rep
 available may by now be saturated and the infer latency spikes up, breaching set SLAs.
 - The process may continue until load stabilizes.
 - If at any point the number of requested replicas (<=`maxReplicas`) exceeds the resource
-capacity of the cluster, all requested servers will never be created and thus the Model will
-remain permanently in the `ScheduleFailed` state.
+capacity of the cluster, the requested server replica count will never be reached and thus the
+Model will remain permanently in the `ScheduleFailed` state.
 
 While most likely encountered during continuous ramp-up RPS load tests with autoscaling enabled,
 the pathological case example is a good showcase for the elements that need to be taken
