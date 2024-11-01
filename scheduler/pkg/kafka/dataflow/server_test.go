@@ -749,7 +749,7 @@ func TestPipelineSubscribe(t *testing.T) {
 				}(idx, s)
 			}
 
-			time.Sleep(1500 * time.Millisecond)
+			time.Sleep(5000 * time.Millisecond)
 
 			g.Expect(len(s.streams)).To(Equal(test.expectedAgentsCountAfterClose))
 

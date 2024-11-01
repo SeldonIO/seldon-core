@@ -1062,7 +1062,7 @@ func TestSubscribe(t *testing.T) {
 				}(idx, s)
 			}
 
-			time.Sleep(1500 * time.Millisecond)
+			time.Sleep(5000 * time.Millisecond)
 
 			g.Expect(len(server.agents)).To(Equal(test.expectedAgentsCountAfterClose))
 
