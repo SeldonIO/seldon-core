@@ -448,6 +448,7 @@ func (ps *PipelineStore) handleModelEvents(event coordinator.ModelEventMsg) {
 func (ps *PipelineStore) cleanupDeletedPipelines() {
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
+	ps.logger.Info("cleaning up deleted pipelines")
 	for _, pipeline := range ps.pipelines {
 		if pipeline.Deleted {
 			if pipeline.DeletedAt.IsZero() {
@@ -460,7 +461,6 @@ func (ps *PipelineStore) cleanupDeletedPipelines() {
 				}
 			} else if pipeline.DeletedAt.Add(ps.db.deletedResourceTTL).Before(time.Now()) {
 				delete(ps.pipelines, pipeline.Name)
-				ps.logger.Info("cleaning up deleted pipeline: %s", pipeline.Name)
 			}
 		}
 	}

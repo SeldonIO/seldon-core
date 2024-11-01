@@ -64,8 +64,8 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 	_, err := grpcClient.ServerNotify(
 		ctx,
 		request,
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
 	if err != nil {
 		logger.Error(err, "Failed to send notify server to scheduler")
@@ -82,8 +82,8 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 	stream, err := grpcClient.SubscribeServerStatus(
 		ctx,
 		&scheduler.ServerSubscriptionRequest{SubscriberName: "seldon manager"},
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
 	if err != nil {
 		return err

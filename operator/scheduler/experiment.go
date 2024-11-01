@@ -43,8 +43,8 @@ func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alp
 	_, err = grpcClient.StartExperiment(
 		ctx,
 		req,
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
 	return s.checkErrorRetryable(experiment.Kind, experiment.Name, err), err
 }
@@ -66,8 +66,8 @@ func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alph
 	_, err = grpcClient.StopExperiment(
 		ctx,
 		req,
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
 	return s.checkErrorRetryable(experiment.Kind, experiment.Name, err), err
 }
@@ -79,8 +79,8 @@ func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, grpcCli
 	stream, err := grpcClient.SubscribeExperimentStatus(
 		ctx,
 		&scheduler.ExperimentSubscriptionRequest{SubscriberName: "seldon manager"},
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
 	if err != nil {
 		return err

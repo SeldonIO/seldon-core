@@ -60,8 +60,8 @@ func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model, 
 	_, err = grpcClient.LoadModel(
 		ctx,
 		&loadModelRequest,
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
 	if err != nil {
 		return s.checkErrorRetryable(model.Kind, model.Name, err), err
@@ -102,8 +102,8 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 	_, err = grpcClient.UnloadModel(
 		ctx,
 		modelRef,
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
 	if err != nil {
 		return s.checkErrorRetryable(model.Kind, model.Name, err), err
@@ -117,8 +117,8 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 	stream, err := grpcClient.SubscribeModelStatus(
 		ctx,
 		&scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager"},
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
 	if err != nil {
 		return err

@@ -33,16 +33,11 @@ import (
 
 const (
 	// these 2 constants in combination with the backoff exponential function will give us a max backoff of 13.5 minutes
-	schedulerConnectMaxRetries    = 100
-	schedulerConnectBackoffScalar = 200 * time.Millisecond
-	// these keep alive settings need to match the scheduler counterpart in scheduler/pkg/util/constants.go
-	clientKeepAliveTime    = 60 * time.Second
-	clientKeepAliveTimeout = 2 * time.Second
-	clientKeepAlivePermit  = false
-	// backoff
-	backoffMaxElapsedTime  = 0 // Never stop due to large time between calls
-	backOffMaxInterval     = time.Second * 15
-	backOffInitialInterval = time.Second
+	SchedulerConnectMaxRetries    = 12
+	SchedulerConnectBackoffScalar = 200 * time.Millisecond
+	ClientKeapAliveTime           = 60 * time.Second
+	ClientKeapAliveTimeout        = 2 * time.Second
+	ClientKeapAlivePermit         = true
 )
 
 type SchedulerClient struct {
@@ -234,9 +229,9 @@ func (s *SchedulerClient) connectToScheduler(host string, namespace string, plai
 		}
 	}
 	kacp := keepalive.ClientParameters{
-		Time:                clientKeepAliveTime,
-		Timeout:             clientKeepAliveTimeout,
-		PermitWithoutStream: clientKeepAlivePermit,
+		Time:                ClientKeapAliveTime,
+		Timeout:             ClientKeapAliveTimeout,
+		PermitWithoutStream: ClientKeapAlivePermit,
 	}
 
 	retryOpts := []grpc_retry.CallOption{
@@ -254,7 +249,7 @@ func (s *SchedulerClient) connectToScheduler(host string, namespace string, plai
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		s.logger.Info("Running scheduler client in plain text mode", "port", port)
 	}
-	// we dont have backoff retry on the grpc streams as we handle this in the event handlers
+	opts = append(opts, grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)))
 	opts = append(opts, grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)))
 	opts = append(opts, grpc.WithKeepaliveParams(kacp))
 	s.logger.Info("Dialing scheduler", "host", host, "port", port)
@@ -318,7 +313,7 @@ func retryFn(
 	logFailure := func(err error, delay time.Duration) {
 		logger.Error(err, "Scheduler not ready")
 	}
-	backOffExp := getClientExponentialBackoff()
+	backOffExp := backoff.NewExponentialBackOff()
 	fnWithArgs := func() error {
 		grpcClient := scheduler.NewSchedulerClient(conn)
 		return fn(context.Background(), grpcClient, namespace)
@@ -329,12 +324,4 @@ func retryFn(
 		return err
 	}
 	return nil
-}
-
-func getClientExponentialBackoff() *backoff.ExponentialBackOff {
-	backOffExp := backoff.NewExponentialBackOff()
-	backOffExp.MaxElapsedTime = backoffMaxElapsedTime
-	backOffExp.MaxInterval = backOffMaxInterval
-	backOffExp.InitialInterval = backOffInitialInterval
-	return backOffExp
 }

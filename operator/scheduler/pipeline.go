@@ -42,8 +42,8 @@ func (s *SchedulerClient) LoadPipeline(ctx context.Context, pipeline *v1alpha1.P
 	_, err = grpcClient.LoadPipeline(
 		ctx,
 		&req,
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
 	return s.checkErrorRetryable(pipeline.Kind, pipeline.Name, err), err
 }
@@ -62,8 +62,8 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 	_, err = grpcClient.UnloadPipeline(
 		ctx,
 		&req,
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
 	if err != nil {
 		return err, s.checkErrorRetryable(pipeline.Kind, pipeline.Name, err)
@@ -85,8 +85,8 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 	stream, err := grpcClient.SubscribePipelineStatus(
 		ctx,
 		&scheduler.PipelineSubscriptionRequest{SubscriberName: "seldon manager"},
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
+		grpc_retry.WithMax(SchedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
 	)
 	if err != nil {
 		return err

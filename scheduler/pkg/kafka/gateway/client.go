@@ -22,6 +22,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/keepalive"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
@@ -80,7 +81,11 @@ func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int
 		port = tlsPort
 	}
 
-	kacp := util.GetClientKeepAliveParameters()
+	kacp := keepalive.ClientParameters{
+		Time:                util.ClientKeapAliveTime,
+		Timeout:             util.ClientKeapAliveTimeout,
+		PermitWithoutStream: util.ClientKeapAlivePermit,
+	}
 
 	// note: retry is done in the caller
 	opts := []grpc.DialOption{
@@ -118,7 +123,11 @@ func (kc *KafkaSchedulerClient) Start() error {
 		logFailure := func(err error, delay time.Duration) {
 			kc.logger.WithError(err).Errorf("Scheduler not ready")
 		}
-		backOffExp := util.GetClientExponentialBackoff()
+		backOffExp := backoff.NewExponentialBackOff()
+		// Set some reasonable settings for trying to reconnect to scheduler
+		backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
+		backOffExp.MaxInterval = time.Second * 15
+		backOffExp.InitialInterval = time.Second
 		err := backoff.RetryNotify(kc.SubscribeModelEvents, backOffExp, logFailure)
 		if err != nil {
 			kc.logger.WithError(err).Fatal("Failed to start modelgateway client")
@@ -132,11 +141,7 @@ func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
 	logger := kc.logger.WithField("func", "SubscribeModelEvents")
 	grpcClient := scheduler.NewSchedulerClient(kc.conn)
 	logger.Info("Subscribing to model status events")
-	stream, errSub := grpcClient.SubscribeModelStatus(
-		context.Background(),
-		&scheduler.ModelSubscriptionRequest{SubscriberName: SubscriberName},
-		grpc_retry.WithMax(util.MaxGRPCRetriesOnStream),
-	)
+	stream, errSub := grpcClient.SubscribeModelStatus(context.Background(), &scheduler.ModelSubscriptionRequest{SubscriberName: SubscriberName}, grpc_retry.WithMax(100))
 	if errSub != nil {
 		return errSub
 	}
@@ -158,16 +163,6 @@ func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
 		latestVersionStatus := event.Versions[0]
 
 		logger.Infof("Received event name %s version %d state %s", event.ModelName, latestVersionStatus.Version, latestVersionStatus.State.State.String())
-
-		// if the model is in a failed state and the consumer exists then we skip the removal
-		// this is to prevent the consumer from being removed during transient failures of the control plane
-		// in this way data plane can potentially continue to serve requests
-		if latestVersionStatus.GetState().GetState() == scheduler.ModelStatus_ScheduleFailed || latestVersionStatus.GetState().GetState() == scheduler.ModelStatus_ModelProgressing {
-			if kc.consumerManager.Exists(event.ModelName) {
-				logger.Warnf("Model %s schedule failed / progressing and consumer exists, skipping from removal", event.ModelName)
-				continue
-			}
-		}
 
 		// if there are available replicas then we add the consumer for the model
 		// note that this will also get triggered if the model is already added but there is a status change (e.g. due to scale up)

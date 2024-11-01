@@ -36,14 +36,7 @@ const (
 
 const (
 	EnvoyUpdateDefaultBatchWait = 250 * time.Millisecond
-	// note that we keep client and server keepalive times the same
-	// they need to match counterparts in controller client: operator/scheduler/client.go
-	// and dataflow-engine: data-flow/src/main/kotlin/io/seldon/dataflow/PipelineSubscriber.kt
-	gRPCKeepAliveTime         = 60 * time.Second
-	clientKeepAliveTimeout    = 2 * time.Second
-	gRPCKeepAlivePermit       = false
-	MaxGRPCRetriesOnStream    = 100 // this is at the grpc library level
-	backOffExpMaxElapsedTime  = 0   // Never stop due to large time between calls
-	backOffExpMaxInterval     = time.Second * 15
-	backOffExpInitialInterval = time.Second
+	ClientKeapAliveTime         = 60 * time.Second
+	ClientKeapAliveTimeout      = 2 * time.Second
+	ClientKeapAlivePermit       = true
 )

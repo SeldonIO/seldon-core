@@ -31,7 +31,6 @@ spec:
   requirements:
   - tensorflow
   memory: 100Ki
----  
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Model
 metadata:

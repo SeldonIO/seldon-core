@@ -37,7 +37,6 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.TimeUnit
 import io.klogging.logger as coLogger
 
 @OptIn(FlowPreview::class)
@@ -61,9 +60,6 @@ class PipelineSubscriber(
             .defaultServiceConfig(grpcServiceConfig)
             .usePlaintext() // Use TLS
             .enableRetry()
-            // these keep alive settings need to match the go counterpart in scheduler/pkg/util/constants.go
-            .keepAliveTime(60L, TimeUnit.SECONDS)
-            .keepAliveTimeout(2L, TimeUnit.SECONDS)
             .build()
     private val client = ChainerGrpcKt.ChainerCoroutineStub(channel)
 

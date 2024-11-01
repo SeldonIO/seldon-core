@@ -112,7 +112,6 @@ type Server struct {
 	certificateStore          *seldontls.CertificateStore
 	waiter                    *modelRelocatedWaiter // waiter for when we want to drain a particular server replica
 	autoscalingServiceEnabled bool
-	agentMutex                sync.Map // to force a serial order per agent (serverName, replicaIdx)
 }
 
 type SchedulerAgent interface {
@@ -139,7 +138,6 @@ func NewAgentServer(
 		scheduler:                 scheduler,
 		waiter:                    newModelRelocatedWaiter(),
 		autoscalingServiceEnabled: autoscalingServiceEnabled,
-		agentMutex:                sync.Map{},
 	}
 
 	hub.RegisterModelEventHandler(
@@ -167,16 +165,12 @@ func (s *Server) startServer(port uint, secure bool) error {
 	if err != nil {
 		return err
 	}
-
-	kaep := util.GetServerKeepAliveEnforcementPolicy()
-
 	opts := []grpc.ServerOption{}
 	if secure {
 		opts = append(opts, grpc.Creds(s.certificateStore.CreateServerTransportCredentials()))
 	}
 	opts = append(opts, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
 	opts = append(opts, grpc.StatsHandler(otelgrpc.NewServerHandler()))
-	opts = append(opts, grpc.KeepaliveEnforcementPolicy(kaep))
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterAgentServiceServer(grpcServer, s)
 	s.logger.Printf("Agent server running on %d mtls:%v", port, secure)
@@ -385,20 +379,12 @@ func (s *Server) ModelScalingTrigger(stream pb.AgentService_ModelScalingTriggerS
 
 func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentService_SubscribeServer) error {
 	logger := s.logger.WithField("func", "Subscribe")
-	key := ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx}
-
-	// this is forcing a serial order per agent (serverName, replicaIdx)
-	// in general this will make sure that a given agent disconnects fully before another agent is allowed to connect
-	mu, _ := s.agentMutex.LoadOrStore(key, &sync.Mutex{})
-	mu.(*sync.Mutex).Lock()
-	defer mu.(*sync.Mutex).Unlock()
-
 	logger.Infof("Received subscribe request from %s:%d", request.ServerName, request.ReplicaIdx)
 
 	fin := make(chan bool)
 
 	s.mutex.Lock()
-	s.agents[key] = &AgentSubscriber{
+	s.agents[ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx}] = &AgentSubscriber{
 		finished: fin,
 		stream:   stream,
 	}
@@ -424,7 +410,7 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 		case <-ctx.Done():
 			logger.Infof("Client replica %s:%d has disconnected", request.ServerName, request.ReplicaIdx)
 			s.mutex.Lock()
-			delete(s.agents, key)
+			delete(s.agents, ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx})
 			s.mutex.Unlock()
 			s.removeServerReplicaImpl(request.GetServerName(), int(request.GetReplicaIdx())) // this is non-blocking beyond rescheduling models on removed server
 			return nil

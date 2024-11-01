@@ -16,15 +16,9 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.arguments
 import org.junit.jupiter.params.provider.MethodSource
 import strikt.api.expectCatching
-import strikt.api.expectThat
-import strikt.assertions.hasLength
 import strikt.assertions.isEqualTo
-import strikt.assertions.isNotEqualTo
 import strikt.assertions.isSuccess
-import strikt.assertions.startsWith
-import java.util.UUID
 import java.util.stream.Stream
-import kotlin.test.Test
 
 internal class CliTest {
     @DisplayName("Passing auth mechanism via cli argument")
@@ -40,31 +34,6 @@ internal class CliTest {
         expectCatching { cli[Cli.saslMechanism] }
             .isSuccess()
             .isEqualTo(expectedMechanism)
-    }
-
-    @Test
-    fun `should handle dataflow replica id`() {
-        val cliDefault = Cli.configWith(arrayOf<String>())
-        val testReplicaId = "dataflow-id-1"
-        val cli = Cli.configWith(arrayOf("--dataflow-replica-id", testReplicaId))
-
-        expectThat(cliDefault[Cli.dataflowReplicaId]) {
-            isNotEqualTo("seldon-dataflow-engine")
-        }
-        expectThat(cli[Cli.dataflowReplicaId]) {
-            isEqualTo(testReplicaId)
-        }
-
-        // test random Uuid (v4)
-        val expectedReplicaIdPrefix = "seldon-dataflow-engine-"
-        val uuidStringLength = 36
-        val randomReplicaUuid = Cli.getNewDataflowId(true)
-        expectThat(randomReplicaUuid) {
-            startsWith(expectedReplicaIdPrefix)
-            hasLength(expectedReplicaIdPrefix.length + uuidStringLength)
-        }
-        expectCatching { UUID.fromString(randomReplicaUuid.removePrefix(expectedReplicaIdPrefix)) }
-            .isSuccess()
     }
 
     companion object {

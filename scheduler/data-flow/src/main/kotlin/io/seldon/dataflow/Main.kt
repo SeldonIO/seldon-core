@@ -102,11 +102,9 @@ object Main {
                 describeRetries = config[Cli.topicDescribeRetries],
                 describeRetryDelayMillis = config[Cli.topicDescribeRetryDelayMillis],
             )
-        val subscriberId = config[Cli.dataflowReplicaId]
-
         val subscriber =
             PipelineSubscriber(
-                subscriberId,
+                "seldon-dataflow-engine",
                 kafkaProperties,
                 kafkaAdminProperties,
                 kafkaStreamsParams,
