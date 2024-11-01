@@ -27,6 +27,7 @@ import io.klogging.noCoLogger
 import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms
 import io.seldon.dataflow.kafka.security.KafkaSecurityProtocols
 import java.net.InetAddress
+import java.util.UUID
 
 object Cli {
     private const val ENV_VAR_PREFIX = "SELDON_"
@@ -117,18 +118,18 @@ object Cli {
     }
 
     private fun getSystemConfig(): Configuration {
-        val dataflowIdPair = this.dataflowReplicaId to getDataflowId()
+        val dataflowIdPair = this.dataflowReplicaId to getNewDataflowId()
         return ConfigurationMap(dataflowIdPair)
     }
 
-    private fun getDataflowId(): String {
-        return try {
-            InetAddress.getLocalHost().hostName
-        } catch (e: Exception) {
-            val hexCharPool: List<Char> = ('a'..'f') + ('0'..'9')
-            val randomIdLength = 50
-            return "seldon-dataflow-engine-" + List(randomIdLength) { hexCharPool.random() }.joinToString("")
+    fun getNewDataflowId(assignRandomUuid: Boolean = false): String {
+        if (!assignRandomUuid) {
+            try {
+                return InetAddress.getLocalHost().hostName
+            } catch (_: Exception) {
+            }
         }
+        return "seldon-dataflow-engine-" + UUID.randomUUID().toString()
     }
 
     private fun parseArguments(rawArgs: Array<String>): Configuration {

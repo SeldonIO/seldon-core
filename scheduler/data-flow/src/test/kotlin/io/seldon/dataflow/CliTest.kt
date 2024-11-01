@@ -17,9 +17,12 @@ import org.junit.jupiter.params.provider.Arguments.arguments
 import org.junit.jupiter.params.provider.MethodSource
 import strikt.api.expectCatching
 import strikt.api.expectThat
+import strikt.assertions.hasLength
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotEqualTo
 import strikt.assertions.isSuccess
+import strikt.assertions.startsWith
+import java.util.UUID
 import java.util.stream.Stream
 import kotlin.test.Test
 
@@ -51,6 +54,17 @@ internal class CliTest {
         expectThat(cli[Cli.dataflowReplicaId]) {
             isEqualTo(testReplicaId)
         }
+
+        // test random Uuid (v4)
+        val expectedReplicaIdPrefix = "seldon-dataflow-engine-"
+        val uuidStringLength = 36
+        val randomReplicaUuid = Cli.getNewDataflowId(true)
+        expectThat(randomReplicaUuid) {
+            startsWith(expectedReplicaIdPrefix)
+            hasLength(expectedReplicaIdPrefix.length + uuidStringLength)
+        }
+        expectCatching { UUID.fromString(randomReplicaUuid.removePrefix(expectedReplicaIdPrefix)) }
+            .isSuccess()
     }
 
     companion object {
