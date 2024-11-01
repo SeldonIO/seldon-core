@@ -639,6 +639,7 @@ func TestPipelineRebalance(t *testing.T) {
 }
 
 func TestPipelineSubscribe(t *testing.T) {
+	g := NewGomegaWithT(t)
 	type ag struct {
 		id      uint32
 		doClose bool
@@ -739,9 +740,13 @@ func TestPipelineSubscribe(t *testing.T) {
 				}(a.id)
 			}
 
-			for len(s.streams) != test.expectedAgentsCount {
+			maxCount := 10
+			count := 0
+			for len(s.streams) != test.expectedAgentsCount && count < maxCount {
 				time.Sleep(100 * time.Millisecond)
+				count++
 			}
+			g.Expect(len(s.streams)).To(Equal(test.expectedAgentsCount))
 
 			for idx, s := range streams {
 				go func(idx int, s *grpc.ClientConn) {
@@ -751,9 +756,12 @@ func TestPipelineSubscribe(t *testing.T) {
 				}(idx, s)
 			}
 
-			for len(s.streams) != test.expectedAgentsCountAfterClose {
+			count = 0
+			for len(s.streams) != test.expectedAgentsCountAfterClose && count < maxCount {
 				time.Sleep(100 * time.Millisecond)
+				count++
 			}
+			g.Expect(len(s.streams)).To(Equal(test.expectedAgentsCountAfterClose))
 
 			s.StopSendPipelineEvents()
 		})

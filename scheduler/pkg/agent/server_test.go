@@ -1054,9 +1054,13 @@ func TestSubscribe(t *testing.T) {
 				}(a.id)
 			}
 
-			for len(server.agents) != test.expectedAgentsCount {
+			maxCount := 10
+			count := 0
+			for len(server.agents) != test.expectedAgentsCount && count < maxCount {
 				time.Sleep(100 * time.Millisecond)
+				count++
 			}
+			g.Expect(len(server.agents)).To(Equal(test.expectedAgentsCount))
 
 			for idx, s := range streams {
 				go func(idx int, s *grpc.ClientConn) {
@@ -1066,9 +1070,12 @@ func TestSubscribe(t *testing.T) {
 				}(idx, s)
 			}
 
-			for len(server.agents) != test.expectedAgentsCountAfterClose {
+			count = 0
+			for len(server.agents) != test.expectedAgentsCountAfterClose && count < maxCount {
 				time.Sleep(100 * time.Millisecond)
+				count++
 			}
+			g.Expect(len(server.agents)).To(Equal(test.expectedAgentsCountAfterClose))
 
 			server.StopAgentStreams()
 		})
