@@ -112,6 +112,7 @@ type Server struct {
 	certificateStore          *seldontls.CertificateStore
 	waiter                    *modelRelocatedWaiter // waiter for when we want to drain a particular server replica
 	autoscalingServiceEnabled bool
+	agentMutex                sync.Map // to force a serial order per agent (serverName, replicaIdx)
 }
 
 type SchedulerAgent interface {
@@ -138,6 +139,7 @@ func NewAgentServer(
 		scheduler:                 scheduler,
 		waiter:                    newModelRelocatedWaiter(),
 		autoscalingServiceEnabled: autoscalingServiceEnabled,
+		agentMutex:                sync.Map{},
 	}
 
 	hub.RegisterModelEventHandler(
@@ -383,12 +385,20 @@ func (s *Server) ModelScalingTrigger(stream pb.AgentService_ModelScalingTriggerS
 
 func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentService_SubscribeServer) error {
 	logger := s.logger.WithField("func", "Subscribe")
+	key := ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx}
+
+	// this is forcing a serial order per agent (serverName, replicaIdx)
+	// in general this will make sure that a given agent disconnects fully before another agent is allowed to connect
+	mu, _ := s.agentMutex.LoadOrStore(key, &sync.Mutex{})
+	mu.(*sync.Mutex).Lock()
+	defer mu.(*sync.Mutex).Unlock()
+
 	logger.Infof("Received subscribe request from %s:%d", request.ServerName, request.ReplicaIdx)
 
 	fin := make(chan bool)
 
 	s.mutex.Lock()
-	s.agents[ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx}] = &AgentSubscriber{
+	s.agents[key] = &AgentSubscriber{
 		finished: fin,
 		stream:   stream,
 	}
@@ -414,7 +424,7 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 		case <-ctx.Done():
 			logger.Infof("Client replica %s:%d has disconnected", request.ServerName, request.ReplicaIdx)
 			s.mutex.Lock()
-			delete(s.agents, ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx})
+			delete(s.agents, key)
 			s.mutex.Unlock()
 			s.removeServerReplicaImpl(request.GetServerName(), int(request.GetReplicaIdx())) // this is non-blocking beyond rescheduling models on removed server
 			return nil
