@@ -394,7 +394,7 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 	defer mu.(*sync.Mutex).Unlock()
 
 	logger.Infof("Received subscribe request from %s:%d", request.ServerName, request.ReplicaIdx)
-	
+
 	fin := make(chan bool)
 
 	s.mutex.Lock()
