@@ -102,7 +102,7 @@ func TestSaveWithTTL(t *testing.T) {
 
 	path := fmt.Sprintf("%s/db", t.TempDir())
 	logger := log.New()
-	db, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
+	db, err := newExperimentDbManager(getExperimentDbFolder(path), logger, 10)
 	g.Expect(err).To(BeNil())
 	err = db.save(experiment)
 	g.Expect(err).To(BeNil())
@@ -307,7 +307,7 @@ func TestSaveAndRestore(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			path := fmt.Sprintf("%s/db", t.TempDir())
 			logger := log.New()
-			db, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
+			db, err := newExperimentDbManager(getExperimentDbFolder(path), logger, 10)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.experiments {
 				err := db.save(p)
@@ -317,7 +317,7 @@ func TestSaveAndRestore(t *testing.T) {
 			g.Expect(err).To(BeNil())
 
 			es := NewExperimentServer(log.New(), nil, nil, nil)
-			err = es.InitialiseOrRestoreDB(path)
+			err = es.InitialiseOrRestoreDB(path, 10)
 			g.Expect(err).To(BeNil())
 			for idx, p := range test.experiments {
 				if !test.errors[idx] {
@@ -379,7 +379,7 @@ func TestSaveAndRestoreDeletedExperiments(t *testing.T) {
 			g.Expect(test.experiment.Deleted).To(BeTrue(), "this is a test for deleted experiments")
 			path := fmt.Sprintf("%s/db", t.TempDir())
 			logger := log.New()
-			edb, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
+			edb, err := newExperimentDbManager(getExperimentDbFolder(path), logger, 10)
 			g.Expect(err).To(BeNil())
 			if !test.withTTL {
 				err = saveWithOutTTL(&test.experiment, edb.db)
@@ -392,7 +392,7 @@ func TestSaveAndRestoreDeletedExperiments(t *testing.T) {
 			g.Expect(err).To(BeNil())
 
 			es := NewExperimentServer(log.New(), nil, nil, nil)
-			err = es.InitialiseOrRestoreDB(path)
+			err = es.InitialiseOrRestoreDB(path, 10)
 			g.Expect(err).To(BeNil())
 
 			if !test.withTTL {
@@ -538,7 +538,7 @@ func TestGetExperimentFromDB(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			path := fmt.Sprintf("%s/db", t.TempDir())
 			logger := log.New()
-			db, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
+			db, err := newExperimentDbManager(getExperimentDbFolder(path), logger, 10)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.experiments {
 				err := db.save(p)
@@ -678,7 +678,7 @@ func TestDeleteExperimentFromDB(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			path := fmt.Sprintf("%s/db", t.TempDir())
 			logger := log.New()
-			db, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
+			db, err := newExperimentDbManager(getExperimentDbFolder(path), logger, 10)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.experiments {
 				err := db.save(p)
@@ -844,7 +844,7 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 			_ = db.Close()
 
 			// migrate
-			edb, err := newExperimentDbManager(getExperimentDbFolder(path), logger)
+			edb, err := newExperimentDbManager(getExperimentDbFolder(path), logger, 10)
 			g.Expect(err).To(BeNil())
 
 			g.Expect(err).To(BeNil())
@@ -856,7 +856,7 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 
 			// check that we have no experiments in the db format
 			es := NewExperimentServer(log.New(), nil, nil, nil)
-			err = es.InitialiseOrRestoreDB(path)
+			err = es.InitialiseOrRestoreDB(path, 10)
 			g.Expect(err).To(BeNil())
 			g.Expect(len(es.experiments)).To(Equal(0))
 		})

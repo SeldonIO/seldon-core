@@ -55,10 +55,11 @@ var (
 	tracingConfigPath            string
 	dbPath                       string
 	nodeID                       string
-	allowPlaintxt                bool //scheduler server
+	allowPlaintxt                bool // scheduler server
 	autoscalingDisabled          bool
 	kafkaConfigPath              string
 	schedulerReadyTimeoutSeconds uint
+	deletedResourceTTLSeconds    uint
 )
 
 const (
@@ -115,6 +116,9 @@ func init() {
 
 	// Timeout for scheduler to be ready
 	flag.UintVar(&schedulerReadyTimeoutSeconds, "scheduler-ready-timeout-seconds", 300, "Timeout for scheduler to be ready")
+
+	// This TTL is set in badger DB
+	flag.UintVar(&deletedResourceTTLSeconds, "deleted-resource-ttl-seconds", 86400, "TTL for deleted experiments and pipelines (in seconds)")
 }
 
 func getNamespace() string {
@@ -211,11 +215,11 @@ func main() {
 	// Do here after other services created so eventHub events will be handled on pipeline/experiment load
 	// If we start earlier events will be sent but not received by services that start listening "late" to eventHub
 	if dbPath != "" {
-		err := ps.InitialiseOrRestoreDB(dbPath)
+		err := ps.InitialiseOrRestoreDB(dbPath, deletedResourceTTLSeconds)
 		if err != nil {
 			log.WithError(err).Fatalf("Failed to initialise pipeline db at %s", dbPath)
 		}
-		err = es.InitialiseOrRestoreDB(dbPath)
+		err = es.InitialiseOrRestoreDB(dbPath, deletedResourceTTLSeconds)
 		if err != nil {
 			log.WithError(err).Fatalf("Failed to initialise experiment db at %s", dbPath)
 		}
