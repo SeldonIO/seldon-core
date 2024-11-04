@@ -1279,7 +1279,29 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 			latest:   1,
 		},
 		{
-			name: "AddSecondVersion",
+			name: "AddSameVersion - same generation",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"foo": {
+					versions: []*ModelVersion{
+						{
+							version:   1,
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 1}}},
+							replicas:  map[int]ReplicaStatus{},
+						},
+					},
+				}},
+			},
+			modelVersion: &agent.ModelVersion{
+				Version: 1,
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 1}},
+				},
+			},
+			expected: []uint32{1},
+			latest:   1,
+		},
+		{
+			name: "AddSecondVersion - no kubernetes generation",
 			store: &LocalSchedulerStore{
 				models: map[string]*Model{"foo": {
 					versions: []*ModelVersion{
@@ -1295,6 +1317,28 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 				Version: 2,
 				Model: &pb.Model{
 					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			expected: []uint32{1, 2},
+			latest:   2,
+		},
+		{
+			name: "AddSecondVersion",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"foo": {
+					versions: []*ModelVersion{
+						{
+							version:   1,
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 1}}},
+							replicas:  map[int]ReplicaStatus{},
+						},
+					},
+				}},
+			},
+			modelVersion: &agent.ModelVersion{
+				Version: 2,
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 2}},
 				},
 			},
 			expected: []uint32{1, 2},
@@ -1329,12 +1373,12 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 					versions: []*ModelVersion{
 						{
 							version:   1,
-							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 1}}},
 							replicas:  map[int]ReplicaStatus{},
 						},
 						{
 							version:   2,
-							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 2}}},
 							replicas:  map[int]ReplicaStatus{},
 						},
 					},
@@ -1343,7 +1387,7 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 			modelVersion: &agent.ModelVersion{
 				Version: 3,
 				Model: &pb.Model{
-					Meta: &pb.MetaData{Name: "foo"},
+					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 3}},
 				},
 			},
 			expected: []uint32{1, 2, 3},
@@ -1356,12 +1400,12 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 					versions: []*ModelVersion{
 						{
 							version:   1,
-							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 1}}},
 							replicas:  map[int]ReplicaStatus{},
 						},
 						{
 							version:   3,
-							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 3}}},
 							replicas:  map[int]ReplicaStatus{},
 						},
 					},
@@ -1370,11 +1414,170 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 			modelVersion: &agent.ModelVersion{
 				Version: 2,
 				Model: &pb.Model{
-					Meta: &pb.MetaData{Name: "foo"},
+					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 2}},
 				},
 			},
 			expected: []uint32{1, 2, 3},
 			latest:   3,
+		},
+		{
+			name: "Add existing version - old generation - same spec",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"foo": {
+					versions: []*ModelVersion{
+						{
+							version:   1,
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 2}}},
+							replicas:  map[int]ReplicaStatus{},
+						},
+					},
+				}},
+			},
+			modelVersion: &agent.ModelVersion{
+				Version: 1,
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 1}},
+				},
+			},
+			expected: []uint32{1},
+			latest:   1,
+		},
+		{
+			name: "Add existing version - old generation - new spec",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"foo": {
+					versions: []*ModelVersion{
+						{
+							version:   1,
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 2}}, ModelSpec: &pb.ModelSpec{Uri: "dummy"}},
+							replicas:  map[int]ReplicaStatus{},
+						},
+					},
+				}},
+			},
+			modelVersion: &agent.ModelVersion{
+				Version: 1,
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 1}},
+				},
+			},
+			expected: []uint32{1, 2, 3},
+			latest:   3,
+		},
+		{
+			name: "Add existing version - old generation - new spec - 2 versions",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"foo": {
+					versions: []*ModelVersion{
+						{
+							version:   1,
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 2}}, ModelSpec: &pb.ModelSpec{Uri: "dummy"}},
+							replicas:  map[int]ReplicaStatus{},
+						},
+						{
+							version:   2,
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 3}}, ModelSpec: &pb.ModelSpec{Uri: "dummy"}},
+							replicas:  map[int]ReplicaStatus{},
+						},
+					},
+				}},
+			},
+			modelVersion: &agent.ModelVersion{
+				Version: 1,
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 1}},
+				},
+			},
+			expected: []uint32{1, 2, 3, 4}, // create version 3 (incoming model) and 4 (promote max generation)
+			latest:   4,
+		},
+		{
+			name: "Add new version - new generation",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"foo": {
+					versions: []*ModelVersion{
+						{
+							version:   2,
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 2}}, ModelSpec: &pb.ModelSpec{Uri: "dummy"}},
+							replicas:  map[int]ReplicaStatus{},
+						},
+					},
+				}},
+			},
+			modelVersion: &agent.ModelVersion{
+				Version: 3,
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 3}},
+				},
+			},
+			expected: []uint32{2, 3}, // create version 3 (incoming model)
+			latest:   3,
+		},
+		{
+			name: "Add new version - old generation",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"foo": {
+					versions: []*ModelVersion{
+						{
+							version:   2,
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 2}}, ModelSpec: &pb.ModelSpec{Uri: "dummy"}},
+							replicas:  map[int]ReplicaStatus{},
+						},
+					},
+				}},
+			},
+			modelVersion: &agent.ModelVersion{
+				Version: 30,
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 1}},
+				},
+			},
+			expected: []uint32{2, 30, 31}, // create version 3 (incoming model)
+			latest:   31,
+		},
+		{
+			name: "Add new version - same spec",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"foo": {
+					versions: []*ModelVersion{
+						{
+							version:   2,
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 2}}},
+							replicas:  map[int]ReplicaStatus{},
+						},
+					},
+				}},
+			},
+			modelVersion: &agent.ModelVersion{
+				Version: 30,
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 1}},
+				},
+			},
+			expected: []uint32{2, 30, 31}, // create version 3 (new generation)
+			latest:   31,
+		},
+		{
+			name: "Add new version - same spec - new generation",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"foo": {
+					versions: []*ModelVersion{
+						{
+							version:   2,
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 2}}},
+							replicas:  map[int]ReplicaStatus{},
+						},
+					},
+				}},
+			},
+			modelVersion: &agent.ModelVersion{
+				Version: 30,
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 30}},
+				},
+			},
+			expected: []uint32{2, 30},
+			latest:   30,
 		},
 	}
 

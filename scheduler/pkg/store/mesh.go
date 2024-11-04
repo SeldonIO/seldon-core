@@ -336,7 +336,11 @@ func (m *Model) LatestGeneration() *ModelVersion {
 				latest = m.versions[i]
 			}
 		}
-		return latest
+		if maxGeneration > 0 {
+			return latest
+		} else { // in cases where generation is not set just dont return anything
+			return nil
+		}
 	} else {
 		return nil
 	}
@@ -423,7 +427,7 @@ func (m *ModelVersion) GetMeta() *pb.MetaData {
 }
 
 func (m *ModelVersion) GetGeneration() int64 {
-	return m.modelDefn.GetMeta().KubernetesMeta.Generation
+	return m.modelDefn.GetMeta().GetKubernetesMeta().GetGeneration()
 }
 
 func (m *ModelVersion) GetModelSpec() *pb.ModelSpec {

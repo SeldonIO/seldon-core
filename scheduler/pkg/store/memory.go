@@ -69,7 +69,7 @@ func (m *MemoryStore) GetModels() ([]*ModelSnapshot, error) {
 	return foundModels, nil
 }
 
-// this will additional versions if required, specifically if the model versions clash then 
+// this will additional versions if required, specifically if the model versions clash then
 // we will need to find the latest generation of a model then add it as the latest version
 func (m *MemoryStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*Model, *ModelVersion) {
 	modelName := req.GetModel().GetMeta().GetName()
@@ -80,14 +80,14 @@ func (m *MemoryStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*Mode
 	}
 	if existingModelVersion := model.GetVersion(req.GetVersion()); existingModelVersion == nil {
 		modelVersion := NewDefaultModelVersion(req.GetModel(), req.GetVersion())
-		updateModelVersions(model.versions, modelVersion)
+		model.versions = updateModelVersions(model.versions, modelVersion)
 
 		latest := model.Latest()
 		latestGeneration := model.LatestGeneration()
-		if latestGeneration != latest {
+		if latestGeneration != nil && latestGeneration != latest {
 			// we need to add a new version with the latest generation
 			additionalModelVersion := NewDefaultModelVersion(latestGeneration.GetModel(), latest.GetVersion()+1)
-			updateModelVersions(model.versions, additionalModelVersion)
+			model.versions = updateModelVersions(model.versions, additionalModelVersion)
 		}
 		return model, modelVersion
 	} else {
@@ -96,17 +96,17 @@ func (m *MemoryStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*Mode
 		meq := ModelEqualityCheck(existingModelVersion.modelDefn, req.GetModel())
 		if meq.ModelSpecDiffers {
 			latest := model.Latest()
-
 			newModelVersionIdx := max(latest.GetVersion()+1, req.GetVersion())
 			modelVersion := NewMismatchedModelVersion(req.GetModel(), newModelVersionIdx, req.GetVersion())
-			updateModelVersions(model.versions, modelVersion)
+			model.versions = updateModelVersions(model.versions, modelVersion)
 
 			// now we need to make sure that the latest model has the max generation
+			latest = model.Latest()
 			latestGeneration := model.LatestGeneration()
-			if latestGeneration != latest {
+			if latestGeneration != nil && latestGeneration != latest {
 				// we need to add a new version with the latest generation
 				additionalModelVersion := NewDefaultModelVersion(latestGeneration.GetModel(), latest.GetVersion()+1)
-				updateModelVersions(model.versions, additionalModelVersion)
+				model.versions = updateModelVersions(model.versions, additionalModelVersion)
 			}
 			return model, modelVersion
 		}
@@ -120,14 +120,15 @@ func (m *MemoryStore) addNextModelVersion(model *Model, pbmodel *pb.Model) {
 		version = model.Latest().GetVersion() + 1
 	}
 	modelVersion := NewDefaultModelVersion(pbmodel, version)
-	updateModelVersions(model.versions, modelVersion)
+	model.versions = updateModelVersions(model.versions, modelVersion)
 }
 
-func updateModelVersions(versions []*ModelVersion, m *ModelVersion) {
+func updateModelVersions(versions []*ModelVersion, m *ModelVersion) []*ModelVersion {
 	versions = append(versions, m)
 	sort.SliceStable(versions, func(i, j int) bool { // resort model versions based on version number
 		return versions[i].GetVersion() < versions[j].GetVersion()
 	})
+	return versions
 }
 
 func (m *MemoryStore) UpdateModel(req *pb.LoadModelRequest) error {
