@@ -626,7 +626,7 @@ spec:
       will be applied.
     - Such stabilization windows should be set depending on typical load patterns in your
         cluster: not being too aggressive in reacting to increased load will allow you to
-        achieve cost savings, but has the disadvantage of a delayed reaction load spike turns
+        achieve cost savings, but has the disadvantage of a delayed reaction if the load spike turns
         out to be sustained.
 
 - The duration of any typical/expected sustained ramp-up period, and the RPS increase rate
