@@ -84,6 +84,18 @@ func (m *MemoryStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*Mode
 		})
 		return model, modelVersion
 	} else {
+		// if the model version exists, we should return the existing model version if the generation is the same
+		// if the generation is not the same then we need to induce a new model version
+		meq := ModelEqualityCheck(existingModelVersion.modelDefn, req.GetModel())
+		if meq.ModelSpecDiffers {
+			newModelVersionIdx := max(model.Latest().GetVersion()+1, req.GetVersion())
+			modelVersion := NewMismatchedModelVersion(req.GetModel(), newModelVersionIdx, req.GetVersion())
+			model.versions = append(model.versions, modelVersion)
+			sort.SliceStable(model.versions, func(i, j int) bool { // resort model versions based on version number
+				return model.versions[i].GetVersion() < model.versions[j].GetVersion()
+			})
+			return model, modelVersion
+		}
 		return model, existingModelVersion
 	}
 }
