@@ -15,7 +15,7 @@ and servers (single-model serving). This will require:
 
 ## Installing and configuring the Prometheus Adapter
 
-The role of the Prometheus Adapter is to expose queries on metrics in prometheus as k8s custom
+The role of the Prometheus Adapter is to expose queries on metrics in Prometheus as k8s custom
 or external metrics. Those can then be accessed by HPA in order to take scaling decisions.
 
 To install through helm:
@@ -26,13 +26,13 @@ helm repo update
 helm install --set prometheus.url='http://seldon-monitoring-prometheus' hpa-metrics prometheus-community/prometheus-adapter -n seldon-monitoring
 ```
 
-In the commands above, we install `prometheus-adapter` as a helm release named `hpa-metrics` in
-the same namespace as our prometheus install, and point to its service URL (without the port).
+These commands install `prometheus-adapter` as a helm release named `hpa-metrics` in
+the same namespace where Prometheus is installed, and point to its service URL (without the port).
 
-The URL is not fully qualified as we are referencing prometheus from within the same namespace.
-If you are using a separately-managed prometheus instance, please update the URL accordingly.
+The URL is not fully qualified as it references a Prometheus instance running in the same namespace.
+If you are using a separately-managed Prometheus instance, please update the URL accordingly.
 
-If running prometheus on a different port than the default 9090, you can also pass `--set
+If you are running Prometheus on a different port than the default 9090, you can also pass `--set
 prometheus.port=[custom_port]` You may inspect all the options available as helm values by
 running `helm show values prometheus-community/prometheus-adapter`
 
@@ -41,11 +41,11 @@ per-model RPS values. On install, the adapter has created a `ConfigMap` in the s
 itself, named `[helm_release_name]-prometheus-adapter`. In our case, it will be
 `hpa-metrics-prometheus-adapter`.
 
-We want to overwrite this ConfigMap as shown in the following example.
+Overwrite the ConfigMap as shown in the following manifest, after applying any required customizations.
 
 {% hint style="warning" %}
-Please change the `name` if you've chosen a different value for the `prometheus-adapter` helm release name.
-Please change the `namespace` to match the namespace where `prometheus-adapter` is installed.
+Change the `name` if you've chosen a different value for the `prometheus-adapter` helm release name.
+Change the `namespace` to match the namespace where `prometheus-adapter` is installed.
 {% endhint %}
 
 {% code title="prometheus-adapter.config.yaml" lineNumbers="true" %}
@@ -82,12 +82,12 @@ data:
 ````
 {% endcode %}
 
-In our example, a single rule is defined to fetch the `seldon_model_infer_total` metric
+In this example, a single rule is defined to fetch the `seldon_model_infer_total` metric
 from Prometheus, compute its rate over a 1 minute window, and expose this to k8s as the `infer_rps`
 metric, with aggregations at model, server, inference server pod and namespace level.
 
-A list of all the Prometheus metrics exposed by Core 2 is available [here](../metrics/operational.md),
-and those may be used when customizing the example above.
+A list of all the Prometheus metrics exposed by Seldon Core 2 is available [here](../metrics/operational.md),
+and those may be used when customizing the configuration.
 
 ### Understanding prometheus-adapter rule definitions
 
@@ -469,8 +469,8 @@ inspecting the corresponding Server HPA CR, or by fetching the metric directly v
 
 ## Cluster operation guidelines when using HPA-based scaling
 
-When deploying HPA-based scaling for Core 2 models and servers as part of a production deployment,
-it is important to understand the exact interactions between HPA-triggered actions and Core 2
+When deploying HPA-based scaling for Seldon Core 2 models and servers as part of a production deployment,
+it is important to understand the exact interactions between HPA-triggered actions and Seldon Core 2
 scheduling, as well as potential pitfalls in choosing particular HPA configurations.
 
 Using the default scaling policy, HPA is relatively aggressive on scale-up (responding quickly
@@ -529,13 +529,13 @@ higher in order to ensure SLAs are met at all times.
 ### Customizing HPA policy settings for ensuring correct scaling behaviour
 
 Each `spec.replica` value change for a Model or Server triggers a rescheduling event for the
-Core 2 scheduler, which will consider any updates that are needed in mapping Model replicas to
-Server replicas (i.e rescheduling failed Model replicas, loading new ones, unloading).
+Seldon Core 2 scheduler, which considers any updates that are needed in mapping Model replicas to
+Server replicas  such as rescheduling failed Model replicas, loading new ones, unloading in the case of the number of replicas going down, etc.
 
 Two characteristics in the current implementation are important in terms of
 autoscaling and configuring the HPA scale-up policy:
 
-- The scheduler will not create new Server replicas when the existing replicas are not
+- The scheduler does not create new Server replicas when the existing replicas are not
     sufficient for loading a Model's replicas (one Model replica per Server replica). Whenever
     a Model requests more replicas than available on any of the available Servers, its `ModelReady`
     condition transitions to `Status: False` with a `ScheduleFailed` message. However, any
@@ -549,8 +549,8 @@ autoscaling and configuring the HPA scale-up policy:
     The existing 2 model replicas will continue to serve traffic, *but a third replica will
     not be loaded* onto the remaining server replica.
 
-    In other words, the scheduler will either be able to schedule all the requested replicas, or,
-    if unable to do so, will leave the state of the cluster unchanged.
+    In other words, the scheduler either schedules all the requested replicas, or,
+    if unable to do so, leaves the state of the cluster unchanged.
 
     Introducing partial scheduling would make the overall results of assigning models to servers
     significantly less predictable and ephemeral. This is because models may end up moved
