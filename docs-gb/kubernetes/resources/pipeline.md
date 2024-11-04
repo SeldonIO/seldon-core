@@ -2,26 +2,7 @@
 
 Pipelines allow one to connect flows of inference data transformed by `Model` components. A directed acyclic graph (DAG) of steps can be defined to join Models together. Each Model will need to be capable of receiving a V2 inference request and respond with a V2 inference response. An example Pipeline is shown below:
 
-```yaml
-apiVersion: mlops.seldon.io/v1alpha1
-kind: Pipeline
-metadata:
-  name: join
-spec:
-  steps:
-    - name: tfsimple1
-    - name: tfsimple2
-    - name: tfsimple3      
-      inputs:
-      - tfsimple1.outputs.OUTPUT0
-      - tfsimple2.outputs.OUTPUT1
-      tensorMap:
-        tfsimple1.outputs.OUTPUT0: INPUT0
-        tfsimple2.outputs.OUTPUT1: INPUT1
-  output:
-    steps:
-    - tfsimple3
-```
+{% @github-files/github-code-block url="https://github.com/SeldonIO/seldon-core/blob/v2/samples/pipelines/tfsimples-join.yaml" %}
 
 The `steps` list shows three models: `tfsimple1`, `tfsimple2` and `tfsimple3`. These three models each take two tensors called `INPUT0` and `INPUT1` of integers. The models produce two outputs `OUTPUT0` (the sum of the inputs) and `OUTPUT1` (subtraction of the second input from the first).
 
