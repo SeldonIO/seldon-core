@@ -27,8 +27,21 @@ The `consumerGroupIdPrefix` will ensure that all consumer groups created have a 
 ### Kubernetes
 
 For Kubernetes this is controlled via a ConfigMap called `seldon-kafka` whose default values are defined in the `SeldonConfig` custom resource.
-
-{% @github-files/github-code-block url="[https://github.com/SeldonIO/seldon-core/blob/v2/k8s/samples/values-runtime-kafka-compression.yaml](https://github.com/SeldonIO/seldon-core/blob/v2/k8s/yaml/components.yaml#L1115-L1127)" %}
+For more details see the `componets.yaml` [file](https://github.com/SeldonIO/seldon-core/blob/v2/k8s/yaml/components.yaml#L1115)
+```yaml
+      bootstrap.servers: 'seldon-kafka-bootstrap.seldon-mesh:9092'
+      consumer:
+        auto.offset.reset: 'earliest'
+        message.max.bytes: '1000000000'
+        session.timeout.ms: '6000'
+        topic.metadata.propagation.max.ms: '300000'
+      consumerGroupIdPrefix: ''
+      debug: ''
+      producer:
+        linger.ms: '0'
+        message.max.bytes: '1000000000'
+      topicPrefix: 'seldon'
+```
 
 
 When the `SeldonRuntime` is installed in a namespace a configMap will be created with these
