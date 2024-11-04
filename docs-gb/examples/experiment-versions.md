@@ -41,7 +41,7 @@ seldon model infer iris -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```bash
+```outputs
 Success: map[:iris_1::50]
 
 ```
@@ -51,7 +51,7 @@ seldon model infer iris2 -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```bash
+```outputs
 Success: map[:iris2_1::50]
 
 ```
@@ -61,7 +61,7 @@ seldon model infer iris3 -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```bash
+```outputs
 Success: map[:iris3_1::50]
 
 ```
@@ -119,7 +119,7 @@ seldon model infer iris -i 100 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```bash
+```outputs
 Success: map[:iris2_1::48 :iris_1::52]
 
 ```
@@ -177,7 +177,7 @@ seldon model infer iris -i 100 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```bash
+```outputs
 Success: map[:iris3_1::42 :iris_1::58]
 
 ```
@@ -198,7 +198,7 @@ seldon model infer iris -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```bash
+```outputs
 Success: map[:iris_1::50]
 
 ```
@@ -208,7 +208,7 @@ seldon model infer iris2 -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```bash
+```outputs
 Success: map[:iris2_1::50]
 
 ```
@@ -218,7 +218,7 @@ seldon model infer iris3 -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```bash
+```outputs
 Success: map[:iris3_1::50]
 
 ```
@@ -273,7 +273,7 @@ seldon model infer iris -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```bash
+```outputs
 Success: map[:iris_1::50]
 
 ```
@@ -283,7 +283,7 @@ seldon model infer iris2 -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```bash
+```outputs
 Success: map[:iris2_1::50]
 
 ```
@@ -293,7 +293,7 @@ seldon model infer iris3 -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```bash
+```outputs
 Success: map[:iris3_1::50]
 
 ```
@@ -351,7 +351,7 @@ seldon model infer iris -i 100 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```bash
+```outputs
 Success: map[:iris2_1::51 :iris_1::49]
 
 ```
@@ -409,7 +409,7 @@ seldon model infer iris -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```bash
+```outputs
 Success: map[:iris_1::50]
 
 ```
@@ -419,7 +419,7 @@ seldon model infer iris3 -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```bash
+```outputs
 Success: map[:iris2_1::25 :iris3_1::25]
 
 ```
@@ -429,7 +429,7 @@ seldon model infer iris2 -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```bash
+```outputs
 Success: map[:iris2_1::50]
 
 ```
@@ -450,7 +450,7 @@ seldon model infer iris -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```bash
+```outputs
 Success: map[:iris_1::50]
 
 ```
@@ -460,7 +460,7 @@ seldon model infer iris2 -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```bash
+```outputs
 Success: map[:iris2_1::50]
 
 ```
@@ -470,7 +470,7 @@ seldon model infer iris3 -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```bash
+```outputs
 Success: map[:iris3_1::50]
 
 ```
