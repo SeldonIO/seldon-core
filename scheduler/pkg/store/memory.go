@@ -69,6 +69,8 @@ func (m *MemoryStore) GetModels() ([]*ModelSnapshot, error) {
 	return foundModels, nil
 }
 
+// this will additional versions if required, specifically if the model versions clash then 
+// we will need to find the latest generation of a model then add it as the latest version
 func (m *MemoryStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*Model, *ModelVersion) {
 	modelName := req.GetModel().GetMeta().GetName()
 	model, ok := m.store.models[modelName]
@@ -79,15 +81,33 @@ func (m *MemoryStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*Mode
 	if existingModelVersion := model.GetVersion(req.GetVersion()); existingModelVersion == nil {
 		modelVersion := NewDefaultModelVersion(req.GetModel(), req.GetVersion())
 		updateModelVersions(model.versions, modelVersion)
+
+		latest := model.Latest()
+		latestGeneration := model.LatestGeneration()
+		if latestGeneration != latest {
+			// we need to add a new version with the latest generation
+			additionalModelVersion := NewDefaultModelVersion(latestGeneration.GetModel(), latest.GetVersion()+1)
+			updateModelVersions(model.versions, additionalModelVersion)
+		}
 		return model, modelVersion
 	} else {
 		// if the model version exists, we should return the existing model version if the generation is the same
 		// if the generation is not the same then we need to induce a new model version
 		meq := ModelEqualityCheck(existingModelVersion.modelDefn, req.GetModel())
 		if meq.ModelSpecDiffers {
-			newModelVersionIdx := max(model.Latest().GetVersion()+1, req.GetVersion())
+			latest := model.Latest()
+
+			newModelVersionIdx := max(latest.GetVersion()+1, req.GetVersion())
 			modelVersion := NewMismatchedModelVersion(req.GetModel(), newModelVersionIdx, req.GetVersion())
 			updateModelVersions(model.versions, modelVersion)
+
+			// now we need to make sure that the latest model has the max generation
+			latestGeneration := model.LatestGeneration()
+			if latestGeneration != latest {
+				// we need to add a new version with the latest generation
+				additionalModelVersion := NewDefaultModelVersion(latestGeneration.GetModel(), latest.GetVersion()+1)
+				updateModelVersions(model.versions, additionalModelVersion)
+			}
 			return model, modelVersion
 		}
 		return model, existingModelVersion

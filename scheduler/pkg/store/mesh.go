@@ -326,6 +326,22 @@ func (m *Model) Latest() *ModelVersion {
 	}
 }
 
+func (m *Model) LatestGeneration() *ModelVersion {
+	if len(m.versions) > 0 {
+		maxGeneration := m.versions[0].GetGeneration()
+		latest := m.versions[0]
+		for i := 1; i < len(m.versions); i++ {
+			if m.versions[i].GetGeneration() > maxGeneration {
+				maxGeneration = m.versions[i].GetGeneration()
+				latest = m.versions[i]
+			}
+		}
+		return latest
+	} else {
+		return nil
+	}
+}
+
 func (m *Model) GetVersion(version uint32) *ModelVersion {
 	for _, mv := range m.versions {
 		if mv.GetVersion() == version {
@@ -404,6 +420,10 @@ func (m *ModelVersion) GetModel() *pb.Model {
 
 func (m *ModelVersion) GetMeta() *pb.MetaData {
 	return proto.Clone(m.modelDefn.GetMeta()).(*pb.MetaData)
+}
+
+func (m *ModelVersion) GetGeneration() int64 {
+	return m.modelDefn.GetMeta().KubernetesMeta.Generation
 }
 
 func (m *ModelVersion) GetModelSpec() *pb.ModelSpec {
