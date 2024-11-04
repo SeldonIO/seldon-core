@@ -5,7 +5,7 @@
 * Ensure that the version of the Kubernetes cluster is v1.27 or later. Seldon Core 2 supports Kubernetes versions 1.27, 1.28, 1.29, 1.30, and 1.31. You can create a [KinD](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) cluster on your local computer for testing with [Ansible](ansible.md). 
 * Install the ecosystem components using [Ansible](ansible.md).
 
-## Install Ecosystem Components¶
+## Install Ecosystem Components
 
 You also need to install our ecosystem components. For this we provide directions for [Ansible](ansible.md) to install these.
 
