@@ -12,20 +12,8 @@ will not be returned to the caller.
 
 An example experiment with a `defaultModel` is shown below:
 
-```yaml
-# samples/experiments/ab-default-model.yaml
-apiVersion: mlops.seldon.io/v1alpha1
-kind: Experiment
-metadata:
-  name: experiment-sample
-spec:
-  default: iris
-  candidates:
-  - name: iris
-    weight: 50
-  - name: iris2
-    weight: 50
-```
+{% @github-files/github-code-block url="https://github.com/SeldonIO/seldon-core/blob/v2/samples/experiments/ab-default-model.yaml" %}
+
 
 This defines a split of 50% traffic between two models `iris` and `iris2`. In this case we want to
 expose this traffic split on the existing endpoint created for the `iris` model. This allows us to
@@ -35,19 +23,7 @@ active when both underplying models are in Ready status.
 
 An experiment over two separate models which exposes a new API endpoint is shown below:
 
-```yaml
-# samples/experiments/ab.yaml
-apiVersion: mlops.seldon.io/v1alpha1
-kind: Experiment
-metadata:
-  name: experiment-iris
-spec:
-  candidates:
-  - name: iris
-    weight: 50
-  - name: iris2
-    weight: 50
-```
+{% @github-files/github-code-block url="https://github.com/SeldonIO/seldon-core/blob/v2/samples/experiments/ab.yaml" %}
 
 To call the endpoint add the header `seldon-model: <experiment-name>.experiment` in this case:
 `seldon-model: experiment-iris.experiment`. For example with curl:
@@ -67,21 +43,9 @@ Running an experiment between some pipelines is very similar. The difference is 
 needs to be defined and in this case the candidates or mirrors will refer to pipelines. An example is
 shown below:
 
-```yaml
-# samples/experiments/addmul10.yaml
-apiVersion: mlops.seldon.io/v1alpha1
-kind: Experiment
-metadata:
-  name: addmul10
-spec:
-  default: pipeline-add10
-  resourceType: pipeline
-  candidates:
-  - name: pipeline-add10
-    weight: 50
-  - name: pipeline-mul10
-    weight: 50
-```
+{% @github-files/github-code-block url="https://github.com/SeldonIO/seldon-core/blob/v2/samples/experiments/addmul10.yaml" %}
+
+
 For an example see the [local experiments notebook](../../examples/local-experiments.md).
 
 ## Mirror Experiments
@@ -89,41 +53,14 @@ For an example see the [local experiments notebook](../../examples/local-experim
 A mirror can be added easily for model or pipeline experiments. An example model mirror experiment is
 shown below:
 
-```yaml
-# samples/experiments/sklearn-mirror.yaml
-apiVersion: mlops.seldon.io/v1alpha1
-kind: Experiment
-metadata:
-  name: sklearn-mirror
-spec:
-  default: iris
-  candidates:
-  - name: iris
-    weight: 100
-  mirror:
-    name: iris2
-    percent: 100
-```
+{% @github-files/github-code-block url="https://github.com/SeldonIO/seldon-core/blob/v2/samples/experiments/sklearn-mirror.yaml" %}
+
 For an example see the [local experiments notebook](../../examples/local-experiments.md).
 
 An example pipeline mirror experiment is shown below:
 
-```yaml
-# samples/experiments/addmul10-mirror.yaml
-apiVersion: mlops.seldon.io/v1alpha1
-kind: Experiment
-metadata:
-  name: addmul10-mirror
-spec:
-  default: pipeline-add10
-  resourceType: pipeline
-  candidates:
-  - name: pipeline-add10
-    weight: 100
-  mirror:
-    name: pipeline-mul10
-    percent: 100
-```
+{% @github-files/github-code-block url="https://github.com/SeldonIO/seldon-core/blob/v2/samples/experiments/addmul10-mirror.yaml" %}
+
 For an example see the [local experiments notebook](../../examples/local-experiments.md).
 
 
