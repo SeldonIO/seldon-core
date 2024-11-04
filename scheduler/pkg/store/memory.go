@@ -317,7 +317,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 		if _, ok := server.replicas[replica.replicaIdx]; !ok {
 			return nil, fmt.Errorf(
 				"failed to reserve replica %d as it does not exist on server %s",
-				replica.GetReplicaIdx(), serverKey,
+				replica.replicaIdx, serverKey,
 			)
 		}
 		assignedReplicaIds[replica.replicaIdx] = struct{}{}
@@ -332,26 +332,35 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 	//  resevere memory for existing replicas that are not already loading or loaded
 	replicaStateUpdated := false
 	for replicaIdx := range assignedReplicaIds {
-		existingState := modelVersion.replicas[replicaIdx]
-		if !existingState.State.AlreadyLoadingOrLoaded() {
+		if existingState, ok := modelVersion.replicas[replicaIdx]; !ok {
 			logger.Debugf(
-				"Setting model %s version %d on server %s replica %d to LoadRequested",
-				modelKey, modelVersion.version, serverKey, replicaIdx,
+				"Model %s version %d state %s on server %s replica %d does not exist yet and should be loaded",
+				modelKey, modelVersion.version, existingState.State.String(), serverKey, replicaIdx,
 			)
 			modelVersion.SetReplicaState(replicaIdx, LoadRequested, "")
 			m.updateReservedMemory(LoadRequested, serverKey, replicaIdx, modelVersion.GetRequiredMemory())
 			replicaStateUpdated = true
+		} else {
+			logger.Debugf(
+				"Checking if model %s version %d state %s on server %s replica %d should be loaded",
+				modelKey, modelVersion.version, existingState.State.String(), serverKey, replicaIdx,
+			)
+			if !existingState.State.AlreadyLoadingOrLoaded() {
+				modelVersion.SetReplicaState(replicaIdx, LoadRequested, "")
+				m.updateReservedMemory(LoadRequested, serverKey, replicaIdx, modelVersion.GetRequiredMemory())
+				replicaStateUpdated = true
+			}
 		}
 	}
 
 	// Unload any existing model replicas assignments that are no longer part of the replica set
 	for replicaIdx, existingState := range modelVersion.ReplicaState() {
 		if _, ok := assignedReplicaIds[replicaIdx]; !ok {
+			logger.Debugf(
+				"Checking if replicaidx %d with state %s should be unloaded",
+				replicaIdx, existingState.State.String(),
+			)
 			if !existingState.State.UnloadingOrUnloaded() && existingState.State != Draining {
-				logger.Debugf(
-					"Setting model %s version %d on server %s replica %d to UnloadEnvoyRequested",
-					modelKey, modelVersion.version, serverKey, replicaIdx,
-				)
 				modelVersion.SetReplicaState(replicaIdx, UnloadEnvoyRequested, "")
 				replicaStateUpdated = true
 			}
