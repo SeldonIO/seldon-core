@@ -9,6 +9,8 @@ A Model is the core atomic building block. It specifies a machine learning artif
 
 An example is shown below for a SKLearn model for iris classification:
 
+{% @github-files/github-code-block url="https://github.com/SeldonIO/seldon-core/blob/v2/samples/models/sklearn-iris-gs.yaml" %}
+
 ```yaml
 # samples/models/sklearn-iris-gs.yaml
 apiVersion: mlops.seldon.io/v1alpha1
