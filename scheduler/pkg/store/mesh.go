@@ -51,12 +51,13 @@ func (mv *ModelVersionID) String() string {
 }
 
 type ModelVersion struct {
-	modelDefn *pb.Model
-	version   uint32
-	server    string
-	replicas  map[int]ReplicaStatus
-	state     ModelStatus
-	mu        sync.RWMutex
+	modelDefn    *pb.Model
+	version      uint32
+	agentVersion uint32 // agent version is set when there is a clash of model version
+	server       string
+	replicas     map[int]ReplicaStatus
+	state        ModelStatus
+	mu           sync.RWMutex
 }
 
 type ModelStatus struct {
@@ -81,6 +82,17 @@ func NewDefaultModelVersion(model *pb.Model, version uint32) *ModelVersion {
 		replicas:  make(map[int]ReplicaStatus),
 		state:     ModelStatus{State: ModelStateUnknown},
 		mu:        sync.RWMutex{},
+	}
+}
+
+func NewMismatchedModelVersion(model *pb.Model, version, agentVersion uint32) *ModelVersion {
+	return &ModelVersion{
+		version:      version,
+		agentVersion: agentVersion,
+		modelDefn:    model,
+		replicas:     make(map[int]ReplicaStatus),
+		state:        ModelStatus{State: ModelStateUnknown},
+		mu:           sync.RWMutex{},
 	}
 }
 

@@ -78,10 +78,7 @@ func (m *MemoryStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*Mode
 	}
 	if existingModelVersion := model.GetVersion(req.GetVersion()); existingModelVersion == nil {
 		modelVersion := NewDefaultModelVersion(req.GetModel(), req.GetVersion())
-		model.versions = append(model.versions, modelVersion)
-		sort.SliceStable(model.versions, func(i, j int) bool { // resort model versions based on version number
-			return model.versions[i].GetVersion() < model.versions[j].GetVersion()
-		})
+		updateModelVersions(model.versions, modelVersion)
 		return model, modelVersion
 	} else {
 		// if the model version exists, we should return the existing model version if the generation is the same
@@ -90,10 +87,7 @@ func (m *MemoryStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*Mode
 		if meq.ModelSpecDiffers {
 			newModelVersionIdx := max(model.Latest().GetVersion()+1, req.GetVersion())
 			modelVersion := NewMismatchedModelVersion(req.GetModel(), newModelVersionIdx, req.GetVersion())
-			model.versions = append(model.versions, modelVersion)
-			sort.SliceStable(model.versions, func(i, j int) bool { // resort model versions based on version number
-				return model.versions[i].GetVersion() < model.versions[j].GetVersion()
-			})
+			updateModelVersions(model.versions, modelVersion)
 			return model, modelVersion
 		}
 		return model, existingModelVersion
@@ -106,10 +100,13 @@ func (m *MemoryStore) addNextModelVersion(model *Model, pbmodel *pb.Model) {
 		version = model.Latest().GetVersion() + 1
 	}
 	modelVersion := NewDefaultModelVersion(pbmodel, version)
+	updateModelVersions(model.versions, modelVersion)
+}
 
-	model.versions = append(model.versions, modelVersion)
-	sort.SliceStable(model.versions, func(i, j int) bool { // resort model versions based on version number
-		return model.versions[i].GetVersion() < model.versions[j].GetVersion()
+func updateModelVersions(versions []*ModelVersion, m *ModelVersion) {
+	versions = append(versions, m)
+	sort.SliceStable(versions, func(i, j int) bool { // resort model versions based on version number
+		return versions[i].GetVersion() < versions[j].GetVersion()
 	})
 }
 
