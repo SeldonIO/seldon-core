@@ -707,8 +707,9 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage, timestamp int
 		return err
 	}
 
-	logger.Infof("Unload model %s:%d success", modelName, modelVersion)
-	return c.sendAgentEvent(modelName, modelVersion, agent.ModelEventMessage_UNLOADED)
+	logger.Infof("Unload model %s:%d (scheduler version %d) success", modelName, modelVersion, request.GetModelVersion().GetVersion())
+	// note that we use here the scheduler version
+	return c.sendAgentEvent(modelName, request.GetModelVersion().GetVersion(), agent.ModelEventMessage_UNLOADED)
 }
 
 func (c *Client) cleanup(modelWithVersion string) {

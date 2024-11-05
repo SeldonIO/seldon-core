@@ -45,12 +45,13 @@ import (
 type mockAgentV2Server struct {
 	models []string
 	pb.UnimplementedAgentServiceServer
-	loadedEvents       int
-	loadFailedEvents   int
-	unloadedEvents     int
-	unloadFailedEvents int
-	otherEvents        int
-	errors             int
+	loadedEvents                 int
+	loadFailedEvents             int
+	unloadedEvents               int
+	unloadFailedEvents           int
+	otherEvents                  int
+	errors                       int
+	unloadedEventPerModelVersion map[string]int
 }
 
 type FakeModelRepository struct {
@@ -140,6 +141,13 @@ func (m *mockAgentV2Server) AgentEvent(ctx context.Context, message *pb.ModelEve
 		m.loadedEvents++
 	case pb.ModelEventMessage_UNLOADED:
 		m.unloadedEvents++
+		modelWithVersion := util.GetVersionedModelName(message.ModelName, message.ModelVersion)
+		v, ok := m.unloadedEventPerModelVersion[modelWithVersion]
+		if !ok {
+			m.unloadedEventPerModelVersion[modelWithVersion] = 1
+		} else {
+			m.unloadedEventPerModelVersion[modelWithVersion] = v + 1
+		}
 	case pb.ModelEventMessage_LOAD_FAILED:
 		m.loadFailedEvents++
 	case pb.ModelEventMessage_UNLOAD_FAILED:
@@ -613,6 +621,39 @@ func TestUnloadModel(t *testing.T) {
 			success:                 true,
 		}, // Success
 		{
+			name:   "agent / scheduler version mismatch",
+			models: []string{"iris"},
+			loadOp: &pb.ModelOperationMessage{
+				Operation: pb.ModelOperationMessage_LOAD_MODEL,
+				ModelVersion: &pb.ModelVersion{
+					Model: &pbs.Model{
+						Meta: &pbs.MetaData{
+							Name: "iris",
+						},
+						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
+					},
+					Version: 0,
+				},
+			},
+			unloadOp: &pb.ModelOperationMessage{
+				Operation: pb.ModelOperationMessage_UNLOAD_MODEL,
+				ModelVersion: &pb.ModelVersion{
+					Model: &pbs.Model{
+						Meta: &pbs.MetaData{
+							Name: "iris",
+						},
+						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
+					},
+					Version:           2,
+					AgentModelVersion: 0,
+				},
+			},
+			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
+			expectedAvailableMemory: 1000,
+			v2Status:                200,
+			success:                 true,
+		}, // Success
+		{
 			name:   "UnknownModel - unload ok",
 			models: []string{"iris"},
 			loadOp: &pb.ModelOperationMessage{
@@ -675,7 +716,7 @@ func TestUnloadModel(t *testing.T) {
 				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
 				logger, modelRepository, v2Client, test.replicaConfig, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
-			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
+			mockAgentV2Server := &mockAgentV2Server{models: []string{}, unloadedEventPerModelVersion: map[string]int{}}
 			conn, cerr := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 			client.conn = conn
@@ -692,6 +733,9 @@ func TestUnloadModel(t *testing.T) {
 				g.Expect(err).To(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
 				g.Expect(mockAgentV2Server.unloadedEvents).To(Equal(1))
+				// specifically not agent version
+				modelWithVersion := util.GetVersionedModelName(test.unloadOp.GetModelVersion().Model.Meta.Name, test.unloadOp.GetModelVersion().GetVersion())
+				g.Expect(mockAgentV2Server.unloadedEventPerModelVersion[modelWithVersion]).To(Equal(1))
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
 				g.Expect(mockAgentV2Server.unloadFailedEvents).To(Equal(0))
 				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
