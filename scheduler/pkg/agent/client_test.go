@@ -222,7 +222,7 @@ func TestClientCreate(t *testing.T) {
 				logger, modelRepository, v2Client,
 				test.replicaConfig, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
-			mockAgentV2Server := &mockAgentV2Server{models: test.models}
+			mockAgentV2Server := &mockAgentV2Server{models: test.models, unloadedEventPerModelVersion: map[string]int{}}
 			conn, err := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(err).To(BeNil())
@@ -1021,7 +1021,7 @@ func TestUnloadModelOutOfOrder(t *testing.T) {
 				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
 				logger, modelRepository, v2Client, &pb.ReplicaConfig{MemoryBytes: 1000}, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
-			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
+			mockAgentV2Server := &mockAgentV2Server{models: []string{}, unloadedEventPerModelVersion: map[string]int{}}
 			conn, cerr := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 			client.conn = conn
