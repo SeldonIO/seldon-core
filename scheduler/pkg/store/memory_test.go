@@ -1487,6 +1487,54 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 			expectedAgentVersion: 1, // this is a mismatch because the incoming model is the same as the existing model and it has different spec
 		},
 		{
+			name: "Add existing version - new generation - new spec",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"foo": {
+					versions: []*ModelVersion{
+						{
+							version:   1,
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 2}}, ModelSpec: &pb.ModelSpec{Uri: "dummy"}},
+							replicas:  map[int]ReplicaStatus{},
+						},
+					},
+				}},
+			},
+			modelVersion: &agent.ModelVersion{
+				Version: 1,
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 3}},
+				},
+			},
+			expected:             []uint32{1, 2, 3}, // we still create version 3 because the incoming model has a different spec
+			latest:               3,
+			expectedVersion:      2,
+			expectedAgentVersion: 1, // this is a mismatch because the incoming model is the same as the existing model and it has different spec
+		},
+		{
+			name: "Add existing version - new generation - same spec",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"foo": {
+					versions: []*ModelVersion{
+						{
+							version:   1,
+							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 2}}},
+							replicas:  map[int]ReplicaStatus{},
+						},
+					},
+				}},
+			},
+			modelVersion: &agent.ModelVersion{
+				Version: 1,
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 3}},
+				},
+			},
+			expected:             []uint32{1},
+			latest:               1,
+			expectedVersion:      1,
+			expectedAgentVersion: 1,
+		},
+		{
 			name: "Add existing version - old generation - new spec - 2 versions",
 			store: &LocalSchedulerStore{
 				models: map[string]*Model{"foo": {

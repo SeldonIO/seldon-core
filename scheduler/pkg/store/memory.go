@@ -103,8 +103,8 @@ func (m *MemoryStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*Mode
 			// now we need to make sure that the latest model has the max generation
 			latest = model.Latest()
 			latestGeneration := model.LatestGeneration()
-			if latestGeneration != nil && latestGeneration != latest {
-				// we need to add a new version with the latest generation
+			if latestGeneration != nil {
+				// we need to add a new version with the latest generation, note that latest generation is not necessarily the same as latest
 				additionalModelVersion := NewDefaultModelVersion(latestGeneration.GetModel(), latest.GetVersion()+1)
 				model.versions = updateModelVersions(model.versions, additionalModelVersion)
 			}
