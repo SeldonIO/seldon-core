@@ -238,9 +238,32 @@ function doWarmup() {
 
 function requestRate() {
     if (__ENV.REQUEST_RATE) {
-        return __ENV.REQUEST_RATE
+        return parseInt(__ENV.REQUEST_RATE)
     }
     return 10
+}
+
+function requestRates() {
+    if (__ENV.REQUEST_RATES) {
+        return __ENV.REQUEST_RATES.split(",").map( s => parseInt(s))
+    }
+    return [requestRate()]
+}
+
+function rateStages() {
+    if (__ENV.REQUEST_RATES) {
+        var stages = []
+        var durations = constantRateDurationsSeconds()
+        var rates = requestRates()
+        for (var i = 0; i < rates.length; i++) {
+            // ramp up (1/3 rd of the duration)
+            stages.push({target: rates[i], duration: Math.ceil(durations[i]/3).toString()+'s'})
+            // hold
+            stages.push({target: rates[i], duration: durations[i].toString()+'s'})
+        }
+        return stages
+    }
+    return [{target: requestRate(), duration: constantRateDurationSeconds().toString()+'s'}]
 }
 
 function constantRateDurationSeconds() {
@@ -248,6 +271,25 @@ function constantRateDurationSeconds() {
         return __ENV.CONSTANT_RATE_DURATION_SECONDS
     }
     return 30
+}
+
+function constantRateDurationsSeconds() {
+    if (__ENV.CONSTANT_RATE_DURATIONS_SECONDS) {
+        var durations = __ENV.CONSTANT_RATE_DURATIONS_SECONDS.split(",").map( s => parseInt(s))
+        if (durations.length > requestRates().length) {
+            return durations.slice(0, requestRates().length)
+        } else if (durations.length < requestRates().length) {
+            // pad with the last value
+            const last = durations[durations.length - 1]
+            for (var i = durations.length; i < requestRates().length; i++) {
+                durations.push(last)
+            }
+        } else {
+            return durations
+        }
+    }
+    const reqNumberOfStages = requestRates().length
+    return new Array(reqNumberOfStages).fill(constantRateDurationSeconds()/reqNumberOfStages)
 }
 
 function podNamespace() {
@@ -349,7 +391,10 @@ export function getConfig() {
         "inferType" : inferType(),
         "doWarmup": doWarmup(),
         "requestRate": requestRate(),
+        "requestRates": requestRates(),
         "constantRateDurationSeconds": constantRateDurationSeconds(),
+        "constantRateDurationsSeconds": constantRateDurationsSeconds(),
+        "rateStages": rateStages(),
         "modelReplicas": modelReplicas(),
         "maxModelReplicas": maxModelReplicas(),
         "namespace":  podNamespace(),
