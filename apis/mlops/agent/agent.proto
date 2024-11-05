@@ -27,6 +27,7 @@ message ModelEventMessage {
   Event event = 5;
   string message = 6;
   uint64 availableMemoryBytes = 7;
+  uint32 agentModelVersion = 8;  // in the case of a mismatch between modelVersion
 }
 
 message ModelEventResponse {
@@ -92,6 +93,7 @@ message ModelOperationMessage {
 message ModelVersion {
   scheduler.Model model = 1;
   uint32 version = 2;
+  uint32 agentModelVersion = 3;  // in the case of a mismatch between modelVersion
 }
 
 // [END Messages]
