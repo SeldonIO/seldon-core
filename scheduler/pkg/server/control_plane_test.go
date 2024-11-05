@@ -67,6 +67,25 @@ func TestStartServerStream(t *testing.T) {
 				}
 
 				g.Expect(msr).ToNot(BeNil())
+				g.Expect(msr.Event).To(Equal(pb.ControlPlaneResponse_SEND_SERVERS))
+			}
+
+			err = test.server.sendResourcesMarker(stream)
+			if test.err {
+				g.Expect(err).ToNot(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+
+				var msr *pb.ControlPlaneResponse
+				select {
+				case next := <-stream.msgs:
+					msr = next
+				default:
+					t.Fail()
+				}
+
+				g.Expect(msr).ToNot(BeNil())
+				g.Expect(msr.Event).To(Equal(pb.ControlPlaneResponse_SEND_RESOURCES))
 			}
 		})
 	}
