@@ -1240,11 +1240,13 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name         string
-		store        *LocalSchedulerStore
-		modelVersion *agent.ModelVersion
-		expected     []uint32
-		latest       uint32
+		name                 string
+		store                *LocalSchedulerStore
+		modelVersion         *agent.ModelVersion
+		expected             []uint32
+		latest               uint32
+		expectedVersion      uint32
+		expectedAgentVersion uint32
 	}
 
 	tests := []test{
@@ -1259,8 +1261,10 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 					Meta: &pb.MetaData{Name: "foo"},
 				},
 			},
-			expected: []uint32{1},
-			latest:   1,
+			expected:             []uint32{1},
+			latest:               1,
+			expectedVersion:      1,
+			expectedAgentVersion: 1,
 		},
 		{
 			name: "AddNewVersion",
@@ -1275,8 +1279,10 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 					Meta: &pb.MetaData{Name: "foo"},
 				},
 			},
-			expected: []uint32{1},
-			latest:   1,
+			expected:             []uint32{1},
+			latest:               1,
+			expectedVersion:      1,
+			expectedAgentVersion: 1,
 		},
 		{
 			name: "AddSameVersion - same generation",
@@ -1297,8 +1303,10 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 1}},
 				},
 			},
-			expected: []uint32{1},
-			latest:   1,
+			expected:             []uint32{1},
+			latest:               1,
+			expectedVersion:      1,
+			expectedAgentVersion: 1,
 		},
 		{
 			name: "AddSecondVersion - no kubernetes generation",
@@ -1319,8 +1327,10 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 					Meta: &pb.MetaData{Name: "foo"},
 				},
 			},
-			expected: []uint32{1, 2},
-			latest:   2,
+			expected:             []uint32{1, 2},
+			latest:               2,
+			expectedVersion:      2,
+			expectedAgentVersion: 2,
 		},
 		{
 			name: "AddSecondVersion",
@@ -1341,8 +1351,10 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 2}},
 				},
 			},
-			expected: []uint32{1, 2},
-			latest:   2,
+			expected:             []uint32{1, 2},
+			latest:               2,
+			expectedVersion:      2,
+			expectedAgentVersion: 2,
 		},
 		{
 			name: "Existing",
@@ -1363,8 +1375,10 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 					Meta: &pb.MetaData{Name: "foo"},
 				},
 			},
-			expected: []uint32{1},
-			latest:   1,
+			expected:             []uint32{1},
+			latest:               1,
+			expectedVersion:      1,
+			expectedAgentVersion: 1,
 		},
 		{
 			name: "AddThirdVersion",
@@ -1390,8 +1404,10 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 3}},
 				},
 			},
-			expected: []uint32{1, 2, 3},
-			latest:   3,
+			expected:             []uint32{1, 2, 3},
+			latest:               3,
+			expectedVersion:      3,
+			expectedAgentVersion: 3,
 		},
 		{
 			name: "AddThirdVersionInMiddle",
@@ -1417,8 +1433,10 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 2}},
 				},
 			},
-			expected: []uint32{1, 2, 3},
-			latest:   3,
+			expected:             []uint32{1, 2, 3},
+			latest:               3,
+			expectedVersion:      2,
+			expectedAgentVersion: 2,
 		},
 		{
 			name: "Add existing version - old generation - same spec",
@@ -1439,8 +1457,10 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 1}},
 				},
 			},
-			expected: []uint32{1},
-			latest:   1,
+			expected:             []uint32{1},
+			latest:               1,
+			expectedVersion:      1,
+			expectedAgentVersion: 1,
 		},
 		{
 			name: "Add existing version - old generation - new spec",
@@ -1461,8 +1481,10 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 1}},
 				},
 			},
-			expected: []uint32{1, 2, 3},
-			latest:   3,
+			expected:             []uint32{1, 2, 3},
+			latest:               3,
+			expectedVersion:      2,
+			expectedAgentVersion: 1, // this is a mismatch because the incoming model is the same as the existing model and it has different spec
 		},
 		{
 			name: "Add existing version - old generation - new spec - 2 versions",
@@ -1488,8 +1510,10 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 1}},
 				},
 			},
-			expected: []uint32{1, 2, 3, 4}, // create version 3 (incoming model) and 4 (promote max generation)
-			latest:   4,
+			expected:             []uint32{1, 2, 3, 4}, // create version 3 (incoming model) and 4 (promote max generation)
+			latest:               4,
+			expectedVersion:      3,
+			expectedAgentVersion: 1, // this is a mismatch because the incoming model is the same as the existing model and it has different spec
 		},
 		{
 			name: "Add new version - new generation",
@@ -1510,8 +1534,10 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 3}},
 				},
 			},
-			expected: []uint32{2, 3}, // create version 3 (incoming model)
-			latest:   3,
+			expected:             []uint32{2, 3}, // create version 3 (incoming model)
+			latest:               3,
+			expectedVersion:      3,
+			expectedAgentVersion: 3,
 		},
 		{
 			name: "Add new version - old generation",
@@ -1532,8 +1558,10 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 1}},
 				},
 			},
-			expected: []uint32{2, 30, 31}, // create version 3 (incoming model)
-			latest:   31,
+			expected:             []uint32{2, 30, 31}, // create version 3 (incoming model)
+			latest:               31,
+			expectedVersion:      30,
+			expectedAgentVersion: 30,
 		},
 		{
 			name: "Add new version - same spec",
@@ -1554,8 +1582,10 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 1}},
 				},
 			},
-			expected: []uint32{2, 30, 31}, // create version 3 (new generation)
-			latest:   31,
+			expected:             []uint32{2, 30, 31}, // create version 31 (new generation)
+			latest:               31,
+			expectedVersion:      30,
+			expectedAgentVersion: 30,
 		},
 		{
 			name: "Add new version - same spec - new generation",
@@ -1576,8 +1606,10 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 					Meta: &pb.MetaData{Name: "foo", KubernetesMeta: &pb.KubernetesMeta{Generation: 30}},
 				},
 			},
-			expected: []uint32{2, 30},
-			latest:   30,
+			expected:             []uint32{2, 30},
+			latest:               30,
+			expectedVersion:      30,
+			expectedAgentVersion: 30,
 		},
 	}
 
@@ -1587,10 +1619,12 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
 			ms := NewMemoryStore(logger, test.store, eventHub)
-			ms.addModelVersionIfNotExists(test.modelVersion)
+			_, mv := ms.addModelVersionIfNotExists(test.modelVersion)
 			modelName := test.modelVersion.GetModel().GetMeta().GetName()
 			g.Expect(test.store.models[modelName].GetVersions()).To(Equal(test.expected))
 			g.Expect(test.store.models[modelName].Latest().version).To(Equal(test.latest))
+			g.Expect(mv.GetVersion()).To(Equal(test.expectedVersion))
+			g.Expect(mv.GetAgentVersion()).To(Equal(test.expectedAgentVersion))
 		})
 	}
 }

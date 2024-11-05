@@ -406,6 +406,13 @@ func (m *ModelVersion) GetVersion() uint32 {
 	return m.version
 }
 
+func (m *ModelVersion) GetAgentVersion() uint32 {
+	if m.agentVersion == 0 {
+		return m.version
+	}
+	return m.agentVersion
+}
+
 func (m *ModelVersion) GetRequiredMemory() uint64 {
 	return m.modelDefn.GetModelSpec().GetMemoryBytes()
 }
