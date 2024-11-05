@@ -49,6 +49,21 @@ func TestUpdateModel(t *testing.T) {
 			expectedVersion: 1,
 		},
 		{
+			name:  "simple with generation",
+			store: NewLocalSchedulerStore(),
+			loadModelReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{
+						Name: "model",
+						KubernetesMeta: &pb.KubernetesMeta{
+							Generation: 100,
+						},
+					},
+				},
+			},
+			expectedVersion: 100,
+		},
+		{
 			name: "VersionAlreadyExists",
 			store: &LocalSchedulerStore{
 				models: map[string]*Model{
