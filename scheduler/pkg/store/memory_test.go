@@ -337,15 +337,16 @@ func TestUpdateLoadedModels(t *testing.T) {
 	memBytes := uint64(1)
 
 	type test struct {
-		name           string
-		store          *LocalSchedulerStore
-		modelKey       string
-		version        uint32
-		serverKey      string
-		replicas       []*ServerReplica
-		expectedStates map[int]ReplicaStatus
-		err            bool
-		isModelDeleted bool
+		name               string
+		store              *LocalSchedulerStore
+		modelKey           string
+		version            uint32
+		serverKey          string
+		replicas           []*ServerReplica
+		expectedStates     map[int]ReplicaStatus
+		err                bool
+		isModelDeleted     bool
+		expectedModelState *ModelStatus
 	}
 
 	tests := []test{
@@ -673,6 +674,42 @@ func TestUpdateLoadedModels(t *testing.T) {
 			isModelDeleted: true,
 			expectedStates: map[int]ReplicaStatus{},
 		},
+		{
+			name: "ProgressModelLoading",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"model": {
+					versions: []*ModelVersion{
+						{
+							modelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
+							server:    "server",
+							version:   1,
+							replicas: map[int]ReplicaStatus{
+								0: {State: Available},
+								1: {State: Unloaded},
+							},
+							state: ModelStatus{State: ModelProgressing},
+						},
+					},
+				}},
+				servers: map[string]*Server{
+					"server": {
+						name: "server",
+						replicas: map[int]*ServerReplica{
+							0: {},
+							1: {},
+						},
+					},
+				},
+			},
+			modelKey:  "model",
+			version:   1,
+			serverKey: "server",
+			replicas: []*ServerReplica{
+				{replicaIdx: 0},
+			},
+			expectedStates:     map[int]ReplicaStatus{0: {State: Available}, 1: {State: Unloaded}},
+			expectedModelState: &ModelStatus{State: ModelAvailable},
+		},
 	}
 
 	for _, test := range tests {
@@ -688,8 +725,8 @@ func TestUpdateLoadedModels(t *testing.T) {
 			if !test.err {
 				g.Expect(err).To(BeNil())
 				g.Expect(msg).ToNot(BeNil())
+				mv := test.store.models[test.modelKey].Latest()
 				for replicaIdx, state := range test.expectedStates {
-					mv := test.store.models[test.modelKey].Latest()
 					g.Expect(mv).ToNot(BeNil())
 					g.Expect(mv.GetModelReplicaState(replicaIdx)).To(Equal(state.State))
 					ss, _ := ms.GetServer(test.serverKey, false, true)
@@ -698,6 +735,9 @@ func TestUpdateLoadedModels(t *testing.T) {
 					} else {
 						g.Expect(ss.Replicas[replicaIdx].GetReservedMemory()).To(Equal(uint64(0)))
 					}
+				}
+				if test.expectedModelState != nil {
+					g.Expect(mv.state.State).To(Equal(test.expectedModelState.State))
 				}
 			} else {
 				g.Expect(err).ToNot(BeNil())

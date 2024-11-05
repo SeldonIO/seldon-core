@@ -359,7 +359,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 		modelVersion = model.Latest()
 	}
 
-	//  resevere memory for existing replicas that are not already loading or loaded
+	//  revere memory for existing replicas that are not already loading or loaded
 	replicaStateUpdated := false
 	for replicaIdx := range assignedReplicaIds {
 		if existingState, ok := modelVersion.replicas[replicaIdx]; !ok {
@@ -400,7 +400,8 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 	// in cases where we did have a previous ScheduleFailed, we need to reflect the change here
 	// this could be in the cases where we are scaling down a model and the new replica count can be all deployed
 	// and always send an update for deleted models, so the operator will remove them from k8s
-	if replicaStateUpdated || modelVersion.state.State == ScheduleFailed || model.IsDeleted() {
+	// also send an update for progressing models so the operator can update the status in the case of a network glitch where the model generation has been updated
+	if replicaStateUpdated || modelVersion.state.State == ScheduleFailed || model.IsDeleted() || modelVersion.state.State == ModelProgressing {
 		logger.Debugf("Updating model status for model %s server %s", modelKey, serverKey)
 		modelVersion.server = serverKey
 		m.updateModelStatus(true, model.IsDeleted(), modelVersion, model.GetLastAvailableModelVersion())
