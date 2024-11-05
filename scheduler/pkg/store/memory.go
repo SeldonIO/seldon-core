@@ -89,7 +89,11 @@ func (m *MemoryStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*Mode
 }
 
 func (m *MemoryStore) addNextModelVersion(model *Model, pbmodel *pb.Model) {
-	version := uint32(1)
+	// if we start from a clean state, lets use the generation id as the starting version
+	// this is to ensure that we have monotonic increasing version numbers
+	// and we never reset back to 1
+	generation := pbmodel.GetMeta().GetKubernetesMeta().GetGeneration()
+	version := max(uint32(1), uint32(generation))
 	if model.Latest() != nil {
 		version = model.Latest().GetVersion() + 1
 	}
