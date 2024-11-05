@@ -86,7 +86,7 @@ In this example, a single rule is defined to fetch the `seldon_model_infer_total
 from Prometheus, compute its rate over a 1 minute window, and expose this to k8s as the `infer_rps`
 metric, with aggregations at model, server, inference server pod and namespace level.
 
-A list of all the Prometheus metrics exposed by Seldon Core 2 is available [here](../metrics/operational.md),
+A list of all the Prometheus metrics exposed by Seldon Core 2 in relation to Models, Servers and Pipelines is available [here](../metrics/operational.md),
 and those may be used when customizing the configuration.
 
 ### Understanding prometheus-adapter rule definitions
