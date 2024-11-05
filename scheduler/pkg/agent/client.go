@@ -657,7 +657,13 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage, timestamp int
 	time.Sleep(c.settings.unloadGraceTime)
 
 	modelName := request.GetModelVersion().GetModel().GetMeta().GetName()
-	modelVersion := request.GetModelVersion().GetVersion()
+	// if there is a match between scheduler and agent model version, we use the scheduler model version, which is set by the scheduler
+	modelVersion := request.GetModelVersion().GetAgentModelVersion()
+	if request.GetModelVersion().GetAgentModelVersion() != request.GetModelVersion().GetVersion() {
+		logger.Warnf(
+			"Model version mismatch between scheduler (%d) and agent, using agent version %d",
+			request.GetModelVersion().GetVersion(), request.GetModelVersion().GetAgentModelVersion())
+	}
 	modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
 	pinnedModelVersion := util.GetPinnedModelVersion()
 

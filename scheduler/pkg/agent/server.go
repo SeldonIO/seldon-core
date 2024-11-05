@@ -264,9 +264,15 @@ func (s *Server) Sync(modelName string) {
 				continue
 			}
 
+			if latestModel.GetVersion() != latestModel.GetAgentVersion() {
+				logger.Errorf("Agent version mismatch for model %s:%d (agent version: %d)", modelName, latestModel.GetVersion(), latestModel.GetAgentVersion())
+				continue
+			}
+
 			as.mutex.Lock()
 			err = as.stream.Send(&pb.ModelOperationMessage{
-				Operation:          pb.ModelOperationMessage_LOAD_MODEL,
+				Operation: pb.ModelOperationMessage_LOAD_MODEL,
+				// note that for new models we are guaranteed to not to have a mismatch between agent and scheduler versions
 				ModelVersion:       &pb.ModelVersion{Model: latestModel.GetModel(), Version: latestModel.GetVersion()},
 				AutoscalingEnabled: AutoscalingEnabled(latestModel.GetModel()) && s.autoscalingServiceEnabled,
 			})
@@ -297,10 +303,16 @@ func (s *Server) Sync(modelName string) {
 				logger.Errorf("Failed to find server replica for %s:%d", modelVersion.Server(), replicaIdx)
 				continue
 			}
+			if latestModel.GetVersion() != latestModel.GetAgentVersion() {
+				logger.Warnf("Agent version mismatch for model %s:%d (agent version: %d)", modelName, latestModel.GetVersion(), latestModel.GetAgentVersion())
+			}
 			as.mutex.Lock()
 			err = as.stream.Send(&pb.ModelOperationMessage{
-				Operation:    pb.ModelOperationMessage_UNLOAD_MODEL,
-				ModelVersion: &pb.ModelVersion{Model: modelVersion.GetModel(), Version: modelVersion.GetVersion()},
+				Operation: pb.ModelOperationMessage_UNLOAD_MODEL,
+				// this is a special case if agent version is different from scheduler version, just used for unloading models and all other operations
+				// assumes that the agent and scheduler are the same
+				// this is a workaround for the time being
+				ModelVersion: &pb.ModelVersion{Model: modelVersion.GetModel(), Version: modelVersion.GetAgentVersion(), AgentModelVersion: modelVersion.GetAgentVersion()},
 			})
 			as.mutex.Unlock()
 			if err != nil {
