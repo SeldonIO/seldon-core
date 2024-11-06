@@ -50,7 +50,7 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 		logger.Info("Received event to handle state", "event", event)
 
 		fn := func() error {
-			return s.handleStateOnReconnect(ctx, grpcClient, namespace)
+			return s.handleStateOnReconnect(ctx, grpcClient, namespace, event.GetEvent())
 		}
 		_, err = execWithTimeout(fn, execTimeOut)
 		if err != nil {

@@ -109,7 +109,7 @@ func (s *mockSchedulerServerSubscribeGrpcClient) Recv() (*scheduler.ServerStatus
 // Control Plane subscribe mock grpc client
 
 type mockControlPlaneSubscribeGrpcClient struct {
-	sent bool
+	sent int
 	grpc.ClientStream
 }
 
@@ -120,9 +120,13 @@ func newMockControlPlaneSubscribeGrpcClient() *mockControlPlaneSubscribeGrpcClie
 }
 
 func (s *mockControlPlaneSubscribeGrpcClient) Recv() (*scheduler.ControlPlaneResponse, error) {
-	if !s.sent {
-		s.sent = true
-		return &scheduler.ControlPlaneResponse{}, nil
+	if s.sent == 0 {
+		s.sent++
+		return &scheduler.ControlPlaneResponse{Event: scheduler.ControlPlaneResponse_SEND_SERVERS}, nil
+	}
+	if s.sent == 1 {
+		s.sent++
+		return &scheduler.ControlPlaneResponse{Event: scheduler.ControlPlaneResponse_SEND_RESOURCES}, nil
 	}
 	return nil, io.EOF
 }

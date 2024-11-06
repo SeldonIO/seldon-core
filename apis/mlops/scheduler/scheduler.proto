@@ -390,7 +390,12 @@ message ControlPlaneSubscriptionRequest {
 }
 
 message ControlPlaneResponse {
-
+  enum Event {
+    UNKNOWN_EVENT = 0;
+    SEND_SERVERS = 1;  // initial sync for the servers
+    SEND_RESOURCES = 2;  // send models / pipelines / experiments
+  }
+  Event event = 1;
 }
 
 // [END Messages]
