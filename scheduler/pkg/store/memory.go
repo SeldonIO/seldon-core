@@ -333,7 +333,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 		modelVersion = model.Latest()
 	}
 
-	//  revere memory for existing replicas that are not already loading or loaded
+	//  reserve memory for existing replicas that are not already loading or loaded
 	replicaStateUpdated := false
 	for replicaIdx := range assignedReplicaIds {
 		if existingState, ok := modelVersion.replicas[replicaIdx]; !ok {
