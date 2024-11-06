@@ -17,7 +17,7 @@ At present, we support the following protocols:
 | --- | --- | --- | --- |
 | Seldon | `seldon` | [OpenAPI spec for Seldon](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/openapi.html) |
 | Tensorflow | `tensorflow` | [REST API](https://www.tensorflow.org/tfx/serving/api_rest) and [gRPC API](https://github.com/tensorflow/serving/blob/master/tensorflow_serving/apis/prediction_service.proto) reference |
-| V2 | `v2` | [V2 Protocol Reference](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/v2-protocol.html) |
+| V2 | `v2` | [Open Inference Protocol Reference](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/v2-protocol.html) |
 
 These protocols are supported by some of our pre-packaged servers out of the
 box.

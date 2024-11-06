@@ -80,8 +80,8 @@ This will also help remove any ambiguity around what component we refer to when 
 
 * Seldon Operator now runs as non-root by default (with Security context override available)
 * Resolved PyYAML CVE from Python base image
-* Added support for V2 Protocol in outlier and drift detectors
-* Handling V2 Protocol in request logger
+* Added support for Open Inference Protocol (or V2 protocol) in outlier and drift detectors
+* Handling Open Inference Protocol in request logger
 
 
 

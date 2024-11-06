@@ -82,13 +82,13 @@ Acceptable values for the `method` parameter are `predict`, `predict_proba`,
 `decision_function`.
 
 
-## V2 protocol
+## Open Inference Protocol (or V2 protocol)
 
-The SKLearn server can also be used to expose an API compatible with the [V2 Protocol](../graph/protocols.md#v2-protocol).
+The SKLearn server can also be used to expose an API compatible with the [Open Inference Protocol](../graph/protocols.md#v2-protocol).
 Note that, under the hood, it will use the [Seldon
 MLServer](https://github.com/SeldonIO/MLServer) runtime.
 
-In order to enable support for the V2 protocol, it's enough to
+In order to enable support for the Open Inference Protocol it's enough to
 specify the `protocol` of the `SeldonDeployment` to use `v2`.
 For example,
 
@@ -99,7 +99,7 @@ metadata:
   name: sklearn
 spec:
   name: iris-predict
-  protocol: v2 # Activate the V2 protocol
+  protocol: v2 # Activate the Open Inference Protocol
   predictors:
   - graph:
       children: []
