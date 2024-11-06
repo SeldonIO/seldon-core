@@ -142,34 +142,37 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 	}()
 }
 
-func (s *SchedulerClient) handleStateOnReconnect(context context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
-	// on new reconnects we send a list of servers to the schedule
-	err := s.handleRegisteredServers(context, grpcClient, namespace)
-	if err != nil {
-		s.logger.Error(err, "Failed to send registered server to scheduler")
-	}
-
-	if err == nil {
-		err = s.handleExperiments(context, grpcClient, namespace)
+func (s *SchedulerClient) handleStateOnReconnect(context context.Context, grpcClient scheduler.SchedulerClient, namespace string, operation scheduler.ControlPlaneResponse_Event) error {
+	switch operation {
+	case scheduler.ControlPlaneResponse_SEND_SERVERS:
+		// on new reconnects we send a list of servers to the schedule
+		err := s.handleRegisteredServers(context, grpcClient, namespace)
+		if err != nil {
+			s.logger.Error(err, "Failed to send registered server to scheduler")
+		}
+		return err
+	case scheduler.ControlPlaneResponse_SEND_RESOURCES:
+		err := s.handleExperiments(context, grpcClient, namespace)
 		if err != nil {
 			s.logger.Error(err, "Failed to send experiments to scheduler")
 		}
-	}
-
-	if err == nil {
-		err = s.handlePipelines(context, grpcClient, namespace)
-		if err != nil {
-			s.logger.Error(err, "Failed to send pipelines to scheduler")
+		if err == nil {
+			err = s.handlePipelines(context, grpcClient, namespace)
+			if err != nil {
+				s.logger.Error(err, "Failed to send pipelines to scheduler")
+			}
 		}
-	}
-
-	if err == nil {
-		err = s.handleModels(context, grpcClient, namespace)
-		if err != nil {
-			s.logger.Error(err, "Failed to send models to scheduler")
+		if err == nil {
+			err = s.handleModels(context, grpcClient, namespace)
+			if err != nil {
+				s.logger.Error(err, "Failed to send models to scheduler")
+			}
 		}
+		return err
+	default:
+		s.logger.Info("Unknown operation", "operation", operation)
+		return fmt.Errorf("Unknown operation %v", operation)
 	}
-	return err
 }
 
 func (s *SchedulerClient) RemoveConnection(namespace string) {
