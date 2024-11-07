@@ -11,7 +11,12 @@ static_resources:
                     socket_address:
                       address: scheduler
                       port_value: 9002
-      http2_protocol_options: {}
+      http2_protocol_options: {
+        connection_keepalive: {
+          interval: 60s,
+          timeout: 2s,
+        }
+      }
       name: xds_cluster
     - connect_timeout: 0.250s
       type: LOGICAL_DNS
