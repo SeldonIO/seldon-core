@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version for new draft (e.g. v0.1.0)'
+        description: "Version for new draft (e.g. v0.1.0)"
         required: true
 
 env:
@@ -69,9 +69,9 @@ jobs:
           node-version: 14
 
       - name: Setup Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: "1.22"
           cache: false
 
       - name: Setup Helm

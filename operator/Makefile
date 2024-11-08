@@ -176,7 +176,7 @@ build-push-deploy: build docker-build docker-push deploy-all
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
-	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.9.2)
+	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.16.2)
 
 KUSTOMIZE = $(shell pwd)/bin/kustomize
 .PHONY: kustomize
