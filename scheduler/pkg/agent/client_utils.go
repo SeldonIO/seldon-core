@@ -54,10 +54,11 @@ func isReady(service interfaces.DependencyServiceInterface, logger *log.Entry, m
 	return backoff.RetryNotify(readyToError, backoffWithMax, logFailure)
 }
 
-func getModifiedModelVersion(modelId string, version uint32, originalModelVersion *agent.ModelVersion) *agent.ModelVersion {
+func getModifiedModelVersion(modelId string, version uint32, originalModelVersion *agent.ModelVersion, modelConfig *agent.ModelConfig) *agent.ModelVersion {
 	mv := proto.Clone(originalModelVersion)
 	mv.(*agent.ModelVersion).Model.Meta.Name = modelId
 	mv.(*agent.ModelVersion).Version = version
+	mv.(*agent.ModelVersion).ModelConfig = modelConfig
 	return mv.(*agent.ModelVersion)
 }
 

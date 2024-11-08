@@ -18,6 +18,7 @@ import (
 	copy2 "github.com/otiai10/copy"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/rclone"
@@ -29,11 +30,13 @@ type ModelRepositoryHandler interface {
 	UpdateModelRepository(modelName string, path string, isVersionFolder bool, modelRepoPath string) error
 	SetExplainer(modelRepoPath string, explainerSpec *scheduler.ExplainerSpec, envoyHost string, envoyPort int) error
 	SetExtraParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error
+	GetModelConfig(path string) (*agent.ModelConfig, error)
 }
 
 type ModelRepository interface {
 	DownloadModelVersion(modelName string, version uint32, modelSpec *scheduler.ModelSpec, config []byte) (*string, error)
 	RemoveModelVersion(modelName string) error
+	GetModelConfig(modelName string) (*agent.ModelConfig, error)
 	Ready() error
 }
 
@@ -41,7 +44,7 @@ type V2ModelRepository struct {
 	logger                 log.FieldLogger
 	rcloneClient           *rclone.RCloneClient
 	repoPath               string
-	modelrepositoryHandler ModelRepositoryHandler
+	modelRepositoryHandler ModelRepositoryHandler
 	envoyHost              string
 	envoyPort              int
 }
@@ -51,15 +54,21 @@ func NewModelRepository(logger log.FieldLogger,
 	repoPath string,
 	modelRepositoryHandler ModelRepositoryHandler,
 	envoyHost string,
-	envoyPort int) *V2ModelRepository {
+	envoyPort int,
+) *V2ModelRepository {
 	return &V2ModelRepository{
 		logger:                 logger.WithField("Name", "V2ModelRepository"),
 		rcloneClient:           rcloneClient,
 		repoPath:               repoPath,
-		modelrepositoryHandler: modelRepositoryHandler,
+		modelRepositoryHandler: modelRepositoryHandler,
 		envoyHost:              envoyHost,
 		envoyPort:              envoyPort,
 	}
+}
+
+func (r *V2ModelRepository) GetModelConfig(modelName string) (*agent.ModelConfig, error) {
+	modelPathInRepo := filepath.Join(r.repoPath, modelName)
+	return r.modelRepositoryHandler.GetModelConfig(modelPathInRepo)
 }
 
 func (r *V2ModelRepository) DownloadModelVersion(
@@ -94,7 +103,7 @@ func (r *V2ModelRepository) DownloadModelVersion(
 	}()
 
 	// Find the version folder we want
-	modelVersionFolder, foundVersionFolder, err := r.modelrepositoryHandler.FindModelVersionFolder(
+	modelVersionFolder, foundVersionFolder, err := r.modelRepositoryHandler.FindModelVersionFolder(
 		modelName,
 		artifactVersion,
 		rclonePath,
@@ -134,7 +143,7 @@ func (r *V2ModelRepository) DownloadModelVersion(
 	}
 
 	// Update model version in repo
-	err = r.modelrepositoryHandler.UpdateModelVersion(
+	err = r.modelRepositoryHandler.UpdateModelVersion(
 		modelName,
 		version,
 		modelVersionPathInRepo,
@@ -146,7 +155,7 @@ func (r *V2ModelRepository) DownloadModelVersion(
 
 	// Update details for blackbox explainer
 	if explainerSpec != nil {
-		err = r.modelrepositoryHandler.SetExplainer(
+		err = r.modelRepositoryHandler.SetExplainer(
 			modelVersionPathInRepo,
 			explainerSpec,
 			r.envoyHost,
@@ -158,13 +167,13 @@ func (r *V2ModelRepository) DownloadModelVersion(
 	}
 
 	// Set init parameters inside model
-	err = r.modelrepositoryHandler.SetExtraParameters(modelVersionPathInRepo, parameters)
+	err = r.modelRepositoryHandler.SetExtraParameters(modelVersionPathInRepo, parameters)
 	if err != nil {
 		return nil, err
 	}
 
 	// Update global model configuration
-	err = r.modelrepositoryHandler.UpdateModelRepository(
+	err = r.modelRepositoryHandler.UpdateModelRepository(
 		modelName,
 		modelVersionFolder,
 		foundVersionFolder,

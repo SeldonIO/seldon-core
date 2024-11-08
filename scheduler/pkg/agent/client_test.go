@@ -64,6 +64,10 @@ func (f *FakeModelRepository) RemoveModelVersion(modelName string) error {
 	return nil
 }
 
+func (f *FakeModelRepository) GetModelConfig(modelName string) (*pb.ModelConfig, error) {
+	return &pb.ModelConfig{InstanceCount: 1, Resource: pb.ModelConfig_MEMORY}, nil
+}
+
 func (f *FakeModelRepository) DownloadModelVersion(modelName string, version uint32, modelSpec *pbs.ModelSpec, config []byte) (*string, error) {
 	f.modelDownloads++
 	if f.err != nil {
@@ -270,6 +274,7 @@ func TestLoadModel(t *testing.T) {
 						},
 						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
 					},
+					ModelConfig: defaultModelConfig,
 				},
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
@@ -289,6 +294,7 @@ func TestLoadModel(t *testing.T) {
 						},
 						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
 					},
+					ModelConfig: defaultModelConfig,
 				},
 				AutoscalingEnabled: true,
 			},
@@ -310,6 +316,7 @@ func TestLoadModel(t *testing.T) {
 						},
 						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
 					},
+					ModelConfig: defaultModelConfig,
 				},
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
@@ -329,6 +336,7 @@ func TestLoadModel(t *testing.T) {
 						},
 						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &largeMemory},
 					},
+					ModelConfig: defaultModelConfig,
 				},
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},

@@ -27,6 +27,17 @@ message ModelEventMessage {
   Event event = 5;
   string message = 6;
   uint64 availableMemoryBytes = 7;
+  ModelConfig modelConfig = 8;
+}
+
+message ModelConfig {
+  uint32 instanceCount = 1; // The number of instances of the model on a replica
+  enum Resource {
+      UNKNOWN_RESOURCE = 0;
+      MEMORY = 1;
+      GPU_MEMORY = 2;
+      }
+  Resource resource = 2; // The resource consumed
 }
 
 message ModelEventResponse {
@@ -92,6 +103,7 @@ message ModelOperationMessage {
 message ModelVersion {
   scheduler.Model model = 1;
   uint32 version = 2;
+  ModelConfig modelConfig = 3;
 }
 
 // [END Messages]

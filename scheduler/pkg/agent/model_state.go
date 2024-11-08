@@ -59,7 +59,6 @@ func (modelState *ModelState) addModelVersionImpl(modelVersionDetails *agent.Mod
 				modelName, versionId, exsistingVersion.getVersion())
 		}
 	}
-
 }
 
 // Remove model version and return true if no versions left (in which case we remove from map)
@@ -70,7 +69,6 @@ func (modelState *ModelState) removeModelVersion(modelVersionDetails *agent.Mode
 }
 
 func (modelState *ModelState) removeModelVersionImpl(modelVersionDetails *agent.ModelVersion) (bool, error) {
-
 	modelName := modelVersionDetails.GetModel().GetMeta().GetName()
 	versionId := modelVersionDetails.GetVersion()
 
@@ -143,7 +141,8 @@ func (modelState *ModelState) getVersionsForAllModels() []*agent.ModelVersion {
 		mv := version.get()
 		versionedModelName := mv.Model.GetMeta().Name
 		originalModelName, originalModelVersion, _ := util.GetOrignalModelNameAndVersion(versionedModelName)
-		loadedModels = append(loadedModels, getModifiedModelVersion(originalModelName, originalModelVersion, mv))
+		modelConfig := mv.ModelConfig
+		loadedModels = append(loadedModels, getModifiedModelVersion(originalModelName, originalModelVersion, mv, modelConfig))
 	}
 	return loadedModels
 }
@@ -153,7 +152,7 @@ type modelVersion struct {
 }
 
 func (version *modelVersion) getVersionMemory() uint64 {
-	return version.versionInfo.GetModel().GetModelSpec().GetMemoryBytes()
+	return version.versionInfo.GetModel().GetModelSpec().GetMemoryBytes() * uint64(version.versionInfo.ModelConfig.GetInstanceCount())
 }
 
 func (version *modelVersion) getVersion() uint32 {

@@ -20,6 +20,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/encoding/prototext"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	pb "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton/config"
@@ -42,7 +43,7 @@ func copyNonConfigFilesToModelRepo(src string, dst string) error {
 		if err != nil {
 			return err
 		}
-		if info.IsDir() && src != path { //Don't descend into directories
+		if info.IsDir() && src != path { // Don't descend into directories
 			return filepath.SkipDir
 		}
 		// Copy non- config.pbtxt files to dst folder
@@ -216,4 +217,24 @@ func (t *TritonRepositoryHandler) SetExplainer(modelRepoPath string, explainerSp
 
 func (t *TritonRepositoryHandler) SetExtraParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error {
 	return nil
+}
+
+func (t *TritonRepositoryHandler) GetModelConfig(path string) (*agent.ModelConfig, error) {
+	configPath := filepath.Join(path, TritonConfigFile)
+	tritonConfig, err := t.loadConfigFromFile(configPath)
+	if err != nil {
+		instanceGroup := tritonConfig.InstanceGroup
+		if instanceGroup == nil || len(instanceGroup) < 1 {
+			backend := tritonConfig.Backend
+			if backend == "tensorflow" || backend == "onnx" {
+				return &agent.ModelConfig{InstanceCount: 1, Resource: agent.ModelConfig_MEMORY}, nil
+			} else {
+				return &agent.ModelConfig{InstanceCount: 2, Resource: agent.ModelConfig_MEMORY}, nil
+			}
+		} else {
+			return &agent.ModelConfig{InstanceCount: uint32(instanceGroup[0].Count), Resource: agent.ModelConfig_MEMORY}, nil
+		}
+
+	}
+	return nil, err
 }
