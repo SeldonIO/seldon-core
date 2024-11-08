@@ -49,7 +49,7 @@ spec:
       privateKey: /etc/istio/ingressgateway-certs/tls.key
       serverCertificate: /etc/istio/ingressgateway-certs/tls.crt
 ---
-apiVersion: networking.istio.io/v1beta1
+apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: iris-route
@@ -82,6 +82,98 @@ spec:
         request:
           set:
             seldon-model: iris
+```
+
+### Create a Virtual Service for all models
+
+You can create a virtual service for all models in the `seldon-mesh` namespace. For example, you can set HTTP routes for `model-a`, `model-b`, and `model-c` with a unique route based on its URI prefix (/model-a), directing HTTP traffic to the appropriate service.
+You can also set the gRPC routes for each model with uri prefixes for `inference.GRPCInferenceService`, directing gRPC traffic to different ports such as 50051, 50052, 50053 for each model.
+
+```yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: seldon-models-route
+  namespace: seldon-mesh
+spec:
+  gateways:
+  - istio-system/seldon-gateway
+  hosts:
+  - '*'
+  http:
+  - match:
+    - uri:
+        prefix: /model-a
+      name: model-a-http
+    route:
+    - destination:
+        host: model-a.seldon-mesh.svc.cluster.local
+      headers:
+        request:
+          set:
+            seldon-model: model-a
+  - match:
+    - uri:
+        prefix: /model-b
+      name: model-b-http
+    route:
+    - destination:
+        host: model-b.seldon-mesh.svc.cluster.local
+      headers:
+        request:
+          set:
+            seldon-model: model-b
+  - match:
+    - uri:
+        prefix: /model-c
+      name: model-c-http
+    route:
+    - destination:
+        host: model-c.seldon-mesh.svc.cluster.local
+      headers:
+        request:
+          set:
+            seldon-model: model-c
+  - match:
+    - uri:
+        prefix: /inference.GRPCInferenceService/model-a
+      name: model-a-grpc
+    route:
+    - destination:
+        host: model-a.seldon-mesh.svc.cluster.local
+        port:
+          number: 50051
+      headers:
+        request:
+          set:
+            seldon-model: model-a
+  - match:
+    - uri:
+        prefix: /inference.GRPCInferenceService/model-b
+      name: model-b-grpc
+    route:
+    - destination:
+        host: model-b.seldon-mesh.svc.cluster.local
+        port:
+          number: 50052
+      headers:
+        request:
+          set:
+            seldon-model: model-b
+  - match:
+    - uri:
+        prefix: /inference.GRPCInferenceService/model-c
+      name: model-c-grpc
+    route:
+    - destination:
+        host: model-c.seldon-mesh.svc.cluster.local
+        port:
+          number: 50053
+      headers:
+        request:
+          set:
+            seldon-model: model-c
+
 ```
 
 ## Traffic Split
