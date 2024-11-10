@@ -36,7 +36,7 @@ For Alibi explainers that need to be trained you should
 
 The runtime environment in our [Alibi Explain Server](https://github.com/SeldonIO/seldon-core/tree/master/components/alibi-explain-server) is locked using [Poetry](https://python-poetry.org/). See our e2e example [here](../examples/iris_explainer_poetry.html) on how to use that definition to train your explainers.
 
-### Open Inference Protocol for explainer using [MLServer](https://github.com/SeldonIO/MLServer) (incubating)
+### Open Inference Protocol for explainer using [MLServer](https://github.com/SeldonIO/MLServer)
 
 The support for Open Inference Protocol is now handled with MLServer moving forward. This is experimental
 and only works for black-box explainers.
