@@ -31,8 +31,8 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 	stream, err := grpcClient.SubscribeControlPlane(
 		ctx,
 		&scheduler.ControlPlaneSubscriptionRequest{SubscriberName: "seldon manager"},
-		grpc_retry.WithMax(SchedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
+		grpc_retry.WithMax(schedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
 	)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 		logger.Info("Received event to handle state", "event", event)
 
 		fn := func() error {
-			return s.handleStateOnReconnect(ctx, grpcClient, namespace)
+			return s.handleStateOnReconnect(ctx, grpcClient, namespace, event.GetEvent())
 		}
 		_, err = execWithTimeout(fn, execTimeOut)
 		if err != nil {

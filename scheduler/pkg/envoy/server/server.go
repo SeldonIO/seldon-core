@@ -24,6 +24,8 @@ import (
 	"google.golang.org/grpc"
 
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 const (
@@ -66,12 +68,14 @@ func (x *XDSServer) StartXDSServer(port uint) error {
 			return err
 		}
 	}
+	kaep := util.GetServerKeepAliveEnforcementPolicy()
 	secure := x.certificateStore != nil
 	var grpcOptions []grpc.ServerOption
 	if secure {
 		grpcOptions = append(grpcOptions, grpc.Creds(x.certificateStore.CreateServerTransportCredentials()))
 	}
 	grpcOptions = append(grpcOptions, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
+	grpcOptions = append(grpcOptions, grpc.KeepaliveEnforcementPolicy(kaep))
 	grpcServer := grpc.NewServer(grpcOptions...)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))

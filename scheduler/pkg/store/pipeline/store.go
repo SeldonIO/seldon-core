@@ -81,7 +81,7 @@ func getPipelineDbFolder(basePath string) string {
 	return filepath.Join(basePath, pipelineDbFolder)
 }
 
-func (ps *PipelineStore) InitialiseOrRestoreDB(path string) error {
+func (ps *PipelineStore) InitialiseOrRestoreDB(path string, deletedResourceTTL uint) error {
 	logger := ps.logger.WithField("func", "initialiseDB")
 	pipelineDbPath := getPipelineDbFolder(path)
 	logger.Infof("Initialise DB at %s", pipelineDbPath)
@@ -89,7 +89,7 @@ func (ps *PipelineStore) InitialiseOrRestoreDB(path string) error {
 	if err != nil {
 		return err
 	}
-	db, err := newPipelineDbManager(pipelineDbPath, ps.logger)
+	db, err := newPipelineDbManager(pipelineDbPath, ps.logger, deletedResourceTTL)
 	if err != nil {
 		return err
 	}
@@ -448,7 +448,6 @@ func (ps *PipelineStore) handleModelEvents(event coordinator.ModelEventMsg) {
 func (ps *PipelineStore) cleanupDeletedPipelines() {
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
-	ps.logger.Info("cleaning up deleted pipelines")
 	for _, pipeline := range ps.pipelines {
 		if pipeline.Deleted {
 			if pipeline.DeletedAt.IsZero() {
@@ -459,8 +458,9 @@ func (ps *PipelineStore) cleanupDeletedPipelines() {
 						ps.logger.Warnf("could not update DB TTL for pipeline: %s", pipeline.Name)
 					}
 				}
-			} else if pipeline.DeletedAt.Add(utils.DeletedResourceTTL).Before(time.Now()) {
+			} else if pipeline.DeletedAt.Add(ps.db.deletedResourceTTL).Before(time.Now()) {
 				delete(ps.pipelines, pipeline.Name)
+				ps.logger.Info("cleaning up deleted pipeline: %s", pipeline.Name)
 			}
 		}
 	}

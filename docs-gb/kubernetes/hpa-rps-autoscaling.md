@@ -1,7 +1,7 @@
 
 # HPA Autoscaling in single-model serving
 
-Learn about how to jointly autoscale model and server replicas based on a metric of inference
+Learn how to jointly autoscale model and server replicas based on a metric of inference
 requests per second (RPS) using HPA, when there is a one-to-one correspondence between models
 and servers (single-model serving). This will require:
 
@@ -13,9 +13,9 @@ and servers (single-model serving). This will require:
 * Configuring HPA manifests to scale Models and the corresponding Server replicas based on the
   custom metrics
 
-### Installing and configuring the Prometheus Adapter
+## Installing and configuring the Prometheus Adapter
 
-The role of the Prometheus Adapter is to expose queries on metrics in prometheus as k8s custom
+The role of the Prometheus Adapter is to expose queries on metrics in Prometheus as k8s custom
 or external metrics. Those can then be accessed by HPA in order to take scaling decisions.
 
 To install through helm:
@@ -26,10 +26,13 @@ helm repo update
 helm install --set prometheus.url='http://seldon-monitoring-prometheus' hpa-metrics prometheus-community/prometheus-adapter -n seldon-monitoring
 ```
 
-In the commands above, we install `prometheus-adapter` as a helm release named `hpa-metrics` in
-the same namespace as our prometheus install, and point to its service URL (without the port).
+These commands install `prometheus-adapter` as a helm release named `hpa-metrics` in
+the same namespace where Prometheus is installed, and point to its service URL (without the port).
 
-If running prometheus on a different port than the default 9090, you can also pass `--set
+The URL is not fully qualified as it references a Prometheus instance running in the same namespace.
+If you are using a separately-managed Prometheus instance, please update the URL accordingly.
+
+If you are running Prometheus on a different port than the default 9090, you can also pass `--set
 prometheus.port=[custom_port]` You may inspect all the options available as helm values by
 running `helm show values prometheus-community/prometheus-adapter`
 
@@ -38,18 +41,14 @@ per-model RPS values. On install, the adapter has created a `ConfigMap` in the s
 itself, named `[helm_release_name]-prometheus-adapter`. In our case, it will be
 `hpa-metrics-prometheus-adapter`.
 
-We want to overwrite this ConfigMap with the content below (please change the name if your helm
-release has a different one). The manifest contains embedded documentation, highlighting how we
-match the `seldon_model_infer_total` metric in Prometheus, compute a rate via a `metricsQuery`
-and expose this to k8s as the `infer_rps` metric, on a per (model, namespace) basis.
+Overwrite the ConfigMap as shown in the following manifest, after applying any required customizations.
 
-Other aggregations on per (server, namespace) and (pod, namespace) are also exposed and may be
-used in HPA, but we will focus on the (model, namespace) aggregation in the examples below.
+{% hint style="warning" %}
+Change the `name` if you've chosen a different value for the `prometheus-adapter` helm release name.
+Change the `namespace` to match the namespace where `prometheus-adapter` is installed.
+{% endhint %}
 
-You may want to modify some of the settings to match the prometheus query that you typically use
-for RPS metrics. For example, the `metricsQuery` below computes the RPS by calling [`rate()`]
-(https://prometheus.io/docs/prometheus/latest/querying/functions/#rate) with a 1 minute window.
-
+{% code title="prometheus-adapter.config.yaml" lineNumbers="true" %}
 ````yaml
 apiVersion: v1
 kind: ConfigMap
@@ -59,83 +58,21 @@ metadata:
 data:
   config.yaml: |-
     "rules":
-    # Rule matching Seldon inference requests-per-second metrics and exposing aggregations for
-    # specific k8s models, servers, pods and namespaces
-    #
-    # Uses the prometheus-side `seldon_model_(.*)_total` inference request count metrics to
-    # compute and expose k8s custom metrics on inference RPS `${1}_rps`. A prometheus metric named
-    # `seldon_model_infer_total` will be exposed as multiple `[group-by-k8s-resource]/infer_rps`
-    # k8s metrics, for consumption by HPA.
-    #
-    # One k8s metric is generated for each k8s resource associated with a prometheus metric, as
-    # defined in the "Association" section below. Because this association is defined based on
-    # labels present in the prometheus metric, the number of generated k8s metrics will vary
-    # depending on what labels are available in each discovered prometheus metric.
-    #
-    # The resources associated through this rule (when available as labels for each of the
-    # discovered prometheus metrics) are:
-    # - models
-    # - servers
-    # - pods (inference server pods)
-    # - namespaces
-    #
-    # For example, you will get aggregated metrics for `models.mlops.seldon.io/iris0/infer_rps`,
-    # `servers.mlops.seldon.io/mlserver/infer_rps`, `pods/mlserver-0/infer_rps`,
-    # `namespaces/seldon-mesh/infer_rps`
-    #
-    # Metrics associated with any resource except the namespace one (models, servers and pods)
-    # need to be requested in the context of a particular namespace.
-    #
-    # To fetch those k8s metrics manually once the prometheus-adapter is running, you can run:
-    #
-    # For "namespaced" resources, i.e. models, servers and pods (replace values in brackets):
-    # ```
-    # kubectl get --raw
-    # "/apis/custom.metrics.k8s.io/v1beta1/namespaces/[NAMESPACE]/[RESOURCE_NAME]/[CR_NAME]/infer_rps"
-    # ```
-    #
-    # For example:
-    # ```
-    # kubectl get --raw
-    # "/apis/custom.metrics.k8s.io/v1beta1/namespaces/seldon-mesh/models.mlops.seldon.io/iris0/infer_rps"
-    # ```
-    #
-    # For the namespace resource, you can get the namespace-level aggregation of the metric with:
-    # ```
-    # kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/*/metrics/infer_rps"
-    # ```
     -
-      # Metric discovery: selects subset of metrics exposed in Prometheus, based on name and
-      # filters
       "seriesQuery": |
          {__name__=~"^seldon_model.*_total",namespace!=""}
       "seriesFilters":
         - "isNot": "^seldon_.*_seconds_total"
         - "isNot": "^seldon_.*_aggregate_.*"
-      # Association: maps label values in the Prometheus metric to K8s resources (native or CRs)
-      # Below, we associate the "model" prometheus metric label to the corresponding Seldon Model
-      # CR, the "server" label to the Seldon Server CR, etc.
       "resources":
         "overrides":
           "model": {group: "mlops.seldon.io", resource: "model"}
           "server": {group: "mlops.seldon.io", resource: "server"}
           "pod": {resource: "pod"}
           "namespace": {resource: "namespace"}
-      # Rename prometheus metrics to get k8s metric names that reflect the processing done via
-      # the query applied to those metrics (actual query below under the "metricsQuery" key)
       "name":
         "matches": "^seldon_model_(.*)_total"
         "as": "${1}_rps"
-      # The actual query to be executed against Prometheus to retrieve the metric value
-      # Here:
-      #   - .Series is replaced by the discovered prometheus metric name (e.g.
-      #     `seldon_model_infer_total`)
-      #   - .LabelMatchers, when requesting a metric for a namespaced resource X with name x in
-      #     namespace n, is replaced by `X=~"x",namespace="n"`. For example, `model=~"iris0",
-      #     namespace="seldon-mesh"`. When requesting the namespace resource itself, only the
-      #     `namespace="n"` is kept.
-      #   - .GroupBy is replaced by the resource type of the requested metric (e.g. `model`,
-      #     `server`, `pod` or `namespace`).
       "metricsQuery": |
         sum by (<<.GroupBy>>) (
           rate (
@@ -143,19 +80,92 @@ data:
           )
         )
 ````
+{% endcode %}
 
-Apply the config, and restart the prometheus adapter deployment (this restart is required so
-that prometheus-adapter picks up the new config):
+In this example, a single rule is defined to fetch the `seldon_model_infer_total` metric
+from Prometheus, compute its rate over a 1 minute window, and expose this to k8s as the `infer_rps`
+metric, with aggregations at model, server, inference server pod and namespace level.
+
+A list of all the Prometheus metrics exposed by Seldon Core 2 in relation to Models, Servers and Pipelines is available [here](../metrics/operational.md),
+and those may be used when customizing the configuration.
+
+### Understanding prometheus-adapter rule definitions
+
+The rule definition can be broken down in four parts:
+
+* _Discovery_ (the `seriesQuery` and `seriesFilters` keys) controls what Prometheus
+    metrics are considered for exposure via the k8s custom metrics API.
+
+  In the example, all the Seldon Prometheus metrics of the form `seldon_model_*_total` are
+  considered, excluding metrics pre-aggregated across all models (`.*_aggregate_.*`) as well as
+  the cummulative infer time per model (`.*_seconds_total`). For RPS, we are only interested in
+  the model inference count (`seldon_model_infer_total`)
+
+* _Association_ (the `resources` key) controls the Kubernetes resources that a particular
+    metric can be attached to or aggregated over.
+
+  The resources key defines an association between certain labels from the Prometheus metric and
+  k8s resources. For example, on line 17, `"model": {group: "mlops.seldon.io", resource: "model"}`
+  lets `prometheus-adapter` know that, for the selected Prometheus metrics, the value of the
+  "model" label represents the name of a k8s `model.mlops.seldon.io` CR.
+
+  One k8s custom metric is generated for each k8s resource associated with a prometheus metric.
+  In this way, it becomes possible to request the k8s custom metric values for
+  `models.mlops.seldon.io/iris` or for `servers.mlops.seldon.io/mlserver`.
+
+  The labels that *do not* refer to a `namespace` resource generate "namespaced" custom
+  metrics (the label values refer to resources which are part of a namespace) -- this
+  distinction becomes important when needing to fetch the metrics via kubectl, and in
+  understanding how certain Prometheus query template placeholders are replaced.
+
+
+* _Naming_ (the `name` key) configures the naming of the k8s custom metric.
+
+  In the example ConfigMap, this is configured to take the Prometheus metric named
+  `seldon_model_infer_total` and expose custom metric endpoints named `infer_rps`, which when
+  called return the result of a query over the Prometheus metric.
+
+  The matching over the Prometheus metric name uses regex group capture expressions (line 22),
+  which are then be referenced in the custom metric name (line 23).
+
+* _Querying_ (the `metricsQuery` key) defines how a request for a specific k8s custom metric gets
+    converted into a Prometheus query.
+
+  The query can make use of the following placeholders:
+
+    - .Series is replaced by the discovered prometheus metric name (e.g. `seldon_model_infer_total`)
+    - .LabelMatchers, when requesting a namespaced metric for resource `X` with name `x` in
+    namespace `n`, is replaced by `X=~"x",namespace="n"`. For example, `model=~"iris0",
+    namespace="seldon-mesh"`. When requesting the namespace resource itself, only the
+    `namespace="n"` is kept.
+    - .GroupBy is replaced by the resource type of the requested metric (e.g. `model`,
+    `server`, `pod` or `namespace`).
+
+  You may want to modify the query in the example to match the one that you typically use in
+  your monitoring setup for RPS metrics. The example calls [`rate()`](https://prometheus.io/docs/prometheus/latest/querying/functions/#rate)
+  with a 1 minute window.
+
+
+For a complete reference for how `prometheus-adapter` can be configured via the `ConfigMap`, please
+consult the docs [here](https://github.com/kubernetes-sigs/prometheus-adapter/blob/master/docs/config.md).
+
+
+
+Once you have applied any necessary customizations, replace the default prometheus-adapter config
+with the new one, and restart the deployment (this restart is required so that prometheus-adapter
+picks up the new config):
 
 ```sh
-# Apply prometheus adapter config
-kubectl apply -f prometheus-adapter.config.yaml
-# Restart prom-adapter pods
+# Replace default prometheus adapter config
+kubectl replace -f prometheus-adapter.config.yaml
+# Restart prometheus-adapter pods
 kubectl rollout restart deployment hpa-metrics-prometheus-adapter -n seldon-monitoring
 ```
 
+### Testing the install using the custom metrics API
+
 In order to test that the prometheus adapter config works and everything is set up correctly,
-you can issue raw kubectl requests against the custom metrics API, as described below.
+you can issue raw kubectl requests against the custom metrics API
 
 {% hint style="info" %}
 **Note**: If no inference requests were issued towards any model in the Seldon install, the metrics
@@ -165,48 +175,60 @@ sample model to ensure that the metrics are available — this is only required 
 the install.
 {% endhint %}
 
-**Testing the prometheus-adapter install using the custom metrics API**
-
-List available metrics
+Listing the available metrics:
 
 ```sh
 kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/ | jq .
 ```
 
-Fetching model RPS metric for specific (namespace, model) pair:
+For namespaced metrics, the general template for fetching is:
 
 ```sh
-kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/seldon-mesh/models.mlops.seldon.io/irisa0/infer_rps
+kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/[NAMESPACE]/[API_RESOURCE_NAME]/[CR_NAME]/[METRIC_NAME]"
 ```
 
-Fetching model RPS metric aggregated at the (namespace, server) level:
+For example:
 
-```sh
-kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/seldon-mesh/servers.mlops.seldon.io/mlserver/infer_rps
-```
+* Fetching model RPS metric for a specific `(namespace, model)` pair `(seldon-mesh, irisa0)`:
 
-Fetching model RPS metric aggregated at the (namespace, pod) level:
+    ```sh
+    kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/seldon-mesh/models.mlops.seldon.io/irisa0/infer_rps
+    ```
 
-```sh
-kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/seldon-mesh/pods/mlserver-0/infer_rps
-```
+* Fetching model RPS metric aggregated at the `(namespace, server)` level `(seldon-mesh, mlserver)`:
 
-Fetching the same metric aggregated at namespace level:
+    ```sh
+    kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/seldon-mesh/servers.mlops.seldon.io/mlserver/infer_rps
+    ```
 
-```sh
-kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/*/metrics/infer_rps
-```
+* Fetching model RPS metric aggregated at the `(namespace, pod)` level `(seldon-mesh, mlserver-0)`:
 
-### Configuring HPA manifests
+    ```sh
+    kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/seldon-mesh/pods/mlserver-0/infer_rps
+    ```
+
+* Fetching the same metric aggregated at `namespace` level `(seldon-mesh)`:
+
+    ```sh
+    kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/*/metrics/infer_rps
+    ```
+
+## Configuring HPA manifests
 
 For every (Model, Server) pair you want to autoscale, you need to apply 2 HPA manifests based on
 the same metric: one scaling the Model, the other the Server. The example below only works if
 the mapping between Models and Servers is 1-to-1 (i.e no multi-model serving).
 
 Consider a model named `irisa0` with the following manifest. Please note we don’t set
-`minReplicas/maxReplicas` this is in order to disable the seldon-specific autoscaling so that it
-doesn’t interact with HPA.
+`minReplicas/maxReplicas`. This disables the seldon lag-based autoscaling so that it
+doesn’t interact with HPA (separate `minReplicas/maxReplicas` configs will be set on the HPA
+side)
 
+You must also explicitly define a value for `spec.replicas`. This is the key modified by HPA
+to increase the number of replicas, and if not present in the manifest it will result in HPA not
+working until the Model CR is modified to have `spec.replicas` defined.
+
+{% code title="irisa0.yaml" lineNumbers="false" %}
 ```yaml
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Model
@@ -220,10 +242,12 @@ spec:
   - sklearn
   storageUri: gs://seldon-models/testing/iris1
 ```
+{% endcode %}
 
 Let’s scale this model when it is deployed on a server named `mlserver`, with a target RPS **per
 replica** of 3 RPS (higher RPS would trigger scale-up, lower would trigger scale-down):
 
+{% code title="irisa0-hpa.yaml" lineNumbers="true" %}
 ```yaml
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -275,9 +299,10 @@ spec:
         type: AverageValue
         averageValue: 3
 ```
+{% endcode %}
 
 In the preceding HPA manifests, the scaling metric is exactly the same, and uses the exact same
-parameters: this is to ensure that both the Models and the Servers are scaled up/down at
+parameters. This is to ensure that both the Models and the Servers are scaled up/down at
 approximately the same time. Small variations in the scale-up time are expected because each HPA
 samples the metrics independently, at regular intervals.
 
@@ -292,7 +317,7 @@ In order to ensure similar scaling behaviour between Models and Servers, the num
 `minReplicas` and `maxReplicas`, as well as any other configured scaling policies should be kept
 in sync across the HPA for the model and the server.
 
-#### Details on custom metrics of type Object
+### Details on custom metrics of type Object
 
 The HPA manifests use metrics of type "Object" that fetch the data used in scaling
 decisions by querying k8s metrics associated with a particular k8s object.  The endpoints that
@@ -355,13 +380,50 @@ by the Model HPA. Once a pod is owned by a given HPA it is not available for oth
 so we would no longer be able to scale the Server CRs using HPA.
 {% endhint %}
 
-#### Advanced settings
+### HPA sampling of custom metrics
 
-*   Filtering metrics by additional labels on the prometheus metric
+Each HPA CR has it's own timer on which it samples the specified custom metrics. This timer
+starts when the CR is created, with sampling of the metric being done at regular intervals (by
+default, 15 seconds).
+
+As a side effect of this, creating the Model HPA and the Server HPA (for a given model) at
+different times will mean that the scaling decisions on the two are taken at different times.
+Even when creating the two CRs together as part of the same manifest, there will usually be a
+small delay between the point where the Model and Server `spec.replicas` values are changed.
+
+Despite this delay, the two will converge to the same number when the decisions are taken based
+on the same metric (as in the previous examples).
+
+When showing the HPA CR information via `kubectl get`, a column of the output will display the
+current metric value per replica and the target average value in the format `[per replica metric value]/[target]`.
+This information is updated in accordance to the sampling rate of each HPA resource. It is
+therefore expected to sometimes see different metric values for the Model and it's corresponding
+Server.
+
+{% hint style="info" %}
+Some versions of k8s will display `[per pod metric value]` instead of `[per replica metric value]`,
+with the number of pods being computed based on a label selector present in the target resource
+CR (the `status.selector` value for the Model or Server in the Core 2 case).
+
+HPA is designed so that multiple HPA CRs cannot target the same underlying pod with this selector
+(with HPA stopping when such a condition is detected). This means that in Core 2, the Model and
+Server selector cannot be the same. A design choice was made to assign the Model a unique
+selector that does not match any pods.
+
+As a result, for the k8s versions displaying `[per pod metric value]`, the information shown for
+the Model HPA CR will be an overflow caused by division by zero. This is only a display artefact,
+with the Model HPA continuing to work normally. The actual value of the metric can be seen by
+inspecting the corresponding Server HPA CR, or by fetching the metric directly via `kubectl get
+--raw`
+{% endhint %}
+
+### Advanced settings
+
+*   Filtering metrics by additional labels on the prometheus metric:
 
     The prometheus metric from which the model RPS is computed has the following labels:
 
-    ```yaml
+    ```c-like
     seldon_model_infer_total{
         code="200", 
         container="agent", 
@@ -396,11 +458,182 @@ so we would no longer be able to scale the Server CRs using HPA.
               matchLabels:
                 method_type: rest
           target:
-    	type: AverageValue
+    	    type: AverageValue
             averageValue: "3"
     ```
-*   Customise scale-up / scale-down rate & properties by using scaling policies as described in
+*   Customize scale-up / scale-down rate & properties by using scaling policies as described in
     the [HPA scaling policies docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#configurable-scaling-behavior)
 
 *   For more resources, please consult the [HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
     and the [HPA walkthrough](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/)
+
+
+## Cluster operation guidelines when using HPA-based scaling
+
+When deploying HPA-based scaling for Seldon Core 2 models and servers as part of a production deployment,
+it is important to understand the exact interactions between HPA-triggered actions and Seldon Core 2
+scheduling, as well as potential pitfalls in choosing particular HPA configurations.
+
+Using the default scaling policy, HPA is relatively aggressive on scale-up (responding quickly
+to increases in load), with a maximum replicas increase of either 4 every 15 seconds or 100% of
+existing replicas within the same period (**whichever is highest**). In contrast, scaling-down
+is more gradual, with HPA only scaling down to the maximum number of recommended replicas in the
+most recent 5 minute rolling window, in order to avoid flapping. Those parameters can be
+customized via [scaling policies](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#configurable-scaling-behavior).
+
+When using custom metrics such as RPS, the actual number of replicas added during scale-up or
+reduced during scale-down will entirely depend, alongside the maximums imposed by the policy, on
+the configured target (`averageValue` RPS per replica) and on how quickly the inferencing load
+varies in your cluster. All three need to be considered jointly in order to deliver both an
+efficient use of resources and meeting SLAs.
+
+### Customizing per-replica RPS targets and replica limits
+
+Naturally, the first thing to consider is an estimated peak inference load (including some
+margins) for each of the models in the cluster. If the minimum number of model
+replicas needed to serve that load without breaching latency SLAs is known, it should be set as
+`spec.maxReplicas`, with the HPA `target.averageValue` set to `peak_infer_RPS`/`maxReplicas`.
+
+If `maxReplicas` is not already known, an open-loop load test with a slowly ramping up request
+rate should be done on the target model (one replica, no scaling). This would allow you to
+determine the RPS (inference request throughput) when latency SLAs are breached or (depending on
+the desired operation point) when latency starts increasing. You would then set the HPA
+`target.averageValue` taking some margin below this saturation RPS, and compute
+`spec.maxReplicas` as `peak_infer_RPS`/`target.averageValue`. The margin taken below the
+saturation point is very important, because scaling-up cannot be instant (it requires spinning
+up new pods, downloading model artifacts, etc.). In the period until the new replicas become
+available, any load increases will still need to be absorbed by the existing replicas.
+
+If there are multiple models which typically experience peak load in a correlated manner, you
+need to ensure that sufficient cluster resources are available for k8s to concurrently schedule
+the maximum number of server pods, with each pod holding one model replica. This can be ensured
+by using either [Cluster Autoscaler](https://kubernetes.io/docs/concepts/cluster-administration/cluster-autoscaling/)
+or, when running workloads in the cloud, any provider-specific cluster autoscaling services.
+
+{% hint style="warning" %}
+It is important for the cluster to have sufficient resources for creating the total number of
+desired server replicas set by the HPA CRs across all the models at a given time.
+
+Not having sufficient cluster resources to serve the number of replicas configured by HPA at a
+given moment, in particular under aggressive scale-up HPA policies, may result in breaches of
+SLAs. This is discussed in more detail in the following section.
+{% endhint %}
+
+A similar approach should be taken for setting `minReplicas`, in relation to estimated RPS in
+the low-load regime. However, it's useful to balance lower resource usage to immediate
+availability of replicas for inference rate increases from that lowest load point. If low-load
+regimes only occur for small periods of time, and especially combined with a high rate of increase
+in RPS when moving out of the low-load regime, it might be worth to set the `minReplicas` floor
+higher in order to ensure SLAs are met at all times.
+
+
+### Customizing HPA policy settings for ensuring correct scaling behaviour
+
+Each `spec.replica` value change for a Model or Server triggers a rescheduling event for the
+Seldon Core 2 scheduler, which considers any updates that are needed in mapping Model replicas to
+Server replicas  such as rescheduling failed Model replicas, loading new ones, unloading in the case of the number of replicas going down, etc.
+
+Two characteristics in the current implementation are important in terms of
+autoscaling and configuring the HPA scale-up policy:
+
+- The scheduler does not create new Server replicas when the existing replicas are not
+    sufficient for loading a Model's replicas (one Model replica per Server replica). Whenever
+    a Model requests more replicas than available on any of the available Servers, its `ModelReady`
+    condition transitions to `Status: False` with a `ScheduleFailed` message. However, any
+    replicas of that Model that are already loaded at that point remain available for servicing
+    inference load.
+
+- There is no _partial_ scheduling of replicas. For example, consider a model with 2 replicas,
+    currently loaded on a server with 3 replicas (two of those server replicas will have the
+    model loaded). If you update the model replicas to 4, the scheduler will transition the
+    model to `ScheduleFailed`, seeing that it cannot satisfy the requested number of replicas.
+    The existing 2 model replicas will continue to serve traffic, *but a third replica will
+    not be loaded* onto the remaining server replica.
+
+    In other words, the scheduler either schedules all the requested replicas, or,
+    if unable to do so, leaves the state of the cluster unchanged.
+
+    Introducing partial scheduling would make the overall results of assigning models to servers
+    significantly less predictable and ephemeral. This is because models may end up moved
+    back-and forth between servers depending on the speed with which various server replicas
+    become available. Network partitions or other transient errors may also trigger large changes
+    to the model-to-server assignments, making it challenging to sustain consistent data plane
+    load during those periods.
+
+Taken together, the two Core 2 scheduling characteristics, combined with a very aggressive HPA
+scale-up policy and a continuously increasing RPS may lead to the following pathological case:
+
+- Based on RPS, HPA decides to increase both the Model and Server replicas from 2 (an example
+start stable state) to 8. While the 6 new Server pods get scheduled and get the Model loaded
+onto them, the scheduler will transition the Model into the `ScheduleFailed` state, because it
+cannot fulfill the requested replicas requirement. During this period, the initial 2 Model
+replicas continue to serve load, but are using their RPS margins and getting closer to the
+saturation point.
+- At the same time, load continues to increase, so HPA further increases the number of
+required Model and Server replicas from 8 to 12, before all of the 6 new Server pods had a chance
+to become available. The new replica target for the scheduler also becomes 12, and this would
+not be satisfied until all the 12 Server replicas are available. The 2 Model replicas that are
+available may by now be saturated and the infer latency spikes up, breaching set SLAs.
+- The process may continue until load stabilizes.
+- If at any point the number of requested replicas (<=`maxReplicas`) exceeds the resource
+capacity of the cluster, the requested server replica count will never be reached and thus the
+Model will remain permanently in the `ScheduleFailed` state.
+
+While most likely encountered during continuous ramp-up RPS load tests with autoscaling enabled,
+the pathological case example is a good showcase for the elements that need to be taken
+into account when setting the HPA policies.
+
+- The speed with which new Server replicas can become available versus how many new replicas may
+  HPA request in a given time:
+    - The HPA scale-up policy should not be configured to request more replicas than can
+      become available in the specified time. The following example reflects a confidence that 5
+      Server pods will become available within 90 seconds, with some safety margin. The default
+      scale-up config, that also adds a percentage based policy (double the existing replicas
+      within the set `periodSeconds`) is not recommended because of this.
+    - Perhaps more importantly, there is no reason to scale faster than the time it takes for
+      replicas to become available - this is the true maximum rate with which scaling up can
+      happen anyway. Because the underlying Server replica pods are part of a stateful set, they
+      are created sequentially by k8s.
+
+{% code title="hpa-custom-policy.yaml" lineNumbers="true" %}
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: irisa0-model-hpa
+  namespace: seldon-mesh
+spec:
+  scaleTargetRef:
+    ...
+  minReplicas: 1
+  maxReplicas: 3
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Pods
+        value: 5
+        periodSeconds: 90
+  metrics:
+    ...
+```
+{% endcode %}
+
+- The duration of transient load spikes which you might want to absorb within the existing
+  per-replica RPS margins.
+    - The previous example, at line 13, configures a scale-up stabilization window of one minute.
+      It means that for all of the HPA recommended replicas in the last 60 second window (4
+      samples of the custom metric considering the default sampling rate), only the *smallest*
+      will be applied.
+    - Such stabilization windows should be set depending on typical load patterns in your
+        cluster: not being too aggressive in reacting to increased load will allow you to
+        achieve cost savings, but has the disadvantage of a delayed reaction if the load spike turns
+        out to be sustained.
+
+- The duration of any typical/expected sustained ramp-up period, and the RPS increase rate
+    during this period.
+    - It is useful to consider whether the replica scale-up rate configured via the policy (line
+        15 in the example) is able to keep-up with this RPS increase rate.
+    - Such a scenario may appear, for example, if you are planning for a smooth traffic ramp-up
+        in a blue-green deployment as you are draining the "blue" deployment and transitioning
+        to the "green" one
