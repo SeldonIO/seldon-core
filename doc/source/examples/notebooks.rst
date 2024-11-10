@@ -90,7 +90,7 @@ Advanced Machine Learning Monitoring
 
    Real Time Monitoring of Statistical Metrics <feedback_reward_custom_metrics>
    Model Explainer Example <iris_explainer_poetry>
-   Model Explainer Open Inference Protocol Example (Incubating) <iris_anchor_tabular_explainer_v2>
+   Model Explainer Open Inference Protocol Example <iris_anchor_tabular_explainer_v2>
    Outlier Detection on CIFAR10 <outlier_cifar10>
    Training Outlier Detector for CIFAR10 with Poetry <cifar10_od_poetry>
 
