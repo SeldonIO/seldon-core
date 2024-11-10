@@ -1,7 +1,7 @@
 # Getting Started
 
 {% hint style="info" %}
-Some dependencies may require that the (virtual) machines on which you deploy, support the SSE4.2
+**Note**: Some dependencies may require that the (virtual) machines on which you deploy, support the SSE4.2
 instruction set or x86-64-v2 microarchitecture. If `lscpu | grep sse4_2` does not return anything on
 your machine, your CPU is not compatible, and you may need to update the (virtual) host's CPU.
 {% endhint %}

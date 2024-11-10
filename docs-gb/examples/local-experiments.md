@@ -67,7 +67,7 @@ seldon model infer iris -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```
+```bash
 Success: map[:iris_1::50]
 
 ```
@@ -77,7 +77,7 @@ seldon model infer iris2 -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```
+```bash
 Success: map[:iris2_1::50]
 
 ```
@@ -134,7 +134,7 @@ seldon model infer iris -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```
+```bash
 Success: map[:iris2_1::27 :iris_1::23]
 
 ```
@@ -146,7 +146,7 @@ seldon model infer iris --show-headers \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```
+```bash
 > POST /v2/models/iris/infer HTTP/1.1
 > Host: localhost:9000
 > Content-Type:[application/json]
@@ -201,7 +201,7 @@ seldon model infer iris -s -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```
+```bash
 Success: map[:iris_1::50]
 
 ```
@@ -211,7 +211,7 @@ seldon model infer iris --inference-mode grpc -s -i 50\
    '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}'
 ```
 
-```
+```bash
 Success: map[:iris_1::50]
 
 ```
@@ -440,7 +440,7 @@ seldon pipeline infer pipeline-add10 -i 50 --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}'
 ```
 
-```
+```bash
 Success: map[:add10_1::28 :mul10_1::22 :pipeline-add10.pipeline::28 :pipeline-mul10.pipeline::22]
 
 ```
@@ -452,7 +452,7 @@ seldon pipeline infer pipeline-add10 --show-headers --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}'
 ```
 
-```
+```bash
 > /inference.GRPCInferenceService/ModelInfer HTTP/2
 > Host: localhost:9000
 > seldon-model:[pipeline-add10.pipeline]
@@ -475,7 +475,7 @@ seldon pipeline infer pipeline-add10 -s --show-headers --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}'
 ```
 
-```
+```bash
 > /inference.GRPCInferenceService/ModelInfer HTTP/2
 > Host: localhost:9000
 > x-seldon-route:[:add10_1: :pipeline-add10.pipeline:]
@@ -499,7 +499,7 @@ seldon pipeline infer pipeline-add10 -s -i 50 --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}'
 ```
 
-```
+```bash
 Success: map[:add10_1::50 :pipeline-add10.pipeline::150]
 
 ```
@@ -583,7 +583,7 @@ seldon model infer add10 -i 50  --inference-mode grpc \
   '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}'
 ```
 
-```
+```bash
 Success: map[:add10_1::22 :add20_1::28]
 
 ```
@@ -593,7 +593,7 @@ seldon pipeline infer pipeline-add10 -i 100 --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}'
 ```
 
-```
+```bash
 Success: map[:add10_1::24 :add20_1::32 :mul10_1::44 :pipeline-add10.pipeline::56 :pipeline-mul10.pipeline::44]
 
 ```
@@ -603,7 +603,7 @@ seldon pipeline infer pipeline-add10 --show-headers --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}'
 ```
 
-```
+```bash
 > /inference.GRPCInferenceService/ModelInfer HTTP/2
 > Host: localhost:9000
 > seldon-model:[pipeline-add10.pipeline]
@@ -626,7 +626,7 @@ seldon pipeline infer pipeline-add10 -s --show-headers --inference-mode grpc \
  '{"model_name":"add10","inputs":[{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}'
 ```
 
-```
+```bash
 > /inference.GRPCInferenceService/ModelInfer HTTP/2
 > Host: localhost:9000
 > x-seldon-route:[:add10_1: :pipeline-add10.pipeline:]
@@ -770,7 +770,7 @@ seldon model infer iris -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
-```
+```bash
 Success: map[:iris_1::50]
 
 ```
@@ -986,7 +986,7 @@ Let's check that the mul10 model was called.
 curl -s 0.0.0:9007/metrics | grep seldon_model_infer_total | grep mul10_1
 ```
 
-```
+```bash
 seldon_model_infer_total{code="OK",method_type="grpc",model="mul10",model_internal="mul10_1",server="triton",server_replica="0"} 2
 
 ```
@@ -995,7 +995,7 @@ seldon_model_infer_total{code="OK",method_type="grpc",model="mul10",model_intern
 curl -s 0.0.0:9007/metrics | grep seldon_model_infer_total | grep add10_1
 ```
 
-```
+```bash
 seldon_model_infer_total{code="OK",method_type="grpc",model="add10",model_internal="add10_1",server="triton",server_replica="0"} 2
 
 ```
@@ -1033,7 +1033,7 @@ seldon pipeline infer pipeline-add10 -i 1 \
 curl -s 0.0.0:9007/metrics | grep seldon_model_infer_total | grep mul10_1
 ```
 
-```
+```bash
 seldon_model_infer_total{code="OK",method_type="grpc",model="mul10",model_internal="mul10_1",server="triton",server_replica="0"} 3
 
 ```
@@ -1051,7 +1051,7 @@ seldon_model_infer_total{code="OK",method_type="grpc",model="add10",model_intern
 seldon pipeline inspect pipeline-mul10
 ```
 
-```
+```bash
 seldon.default.model.mul10.inputs	ciep0bofh5ss73dpdiq0	{"inputs":[{"name":"INPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[1, 2, 3, 4]}}]}
 seldon.default.model.mul10.outputs	ciep0bofh5ss73dpdiq0	{"modelName":"mul10_1", "modelVersion":"1", "outputs":[{"name":"OUTPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[10, 20, 30, 40]}}]}
 seldon.default.pipeline.pipeline-mul10.inputs	ciep0bofh5ss73dpdiq0	{"inputs":[{"name":"INPUT", "datatype":"FP32", "shape":["4"], "contents":{"fp32Contents":[1, 2, 3, 4]}}]}
@@ -1067,6 +1067,3 @@ seldon model unload add10
 seldon model unload mul10
 ```
 
-```python
-
-```

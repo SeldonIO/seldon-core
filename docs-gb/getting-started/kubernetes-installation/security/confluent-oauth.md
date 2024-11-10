@@ -38,7 +38,7 @@ stringData:
   scope: ""
 ```
 
-You will need following information from Confluent Cloud:
+You need the following information from Confluent Cloud:
 - Cluster ID: `Cluster Overview` → `Cluster Settings` → `General` → `Identification`
 - Identity Pool ID: `Accounts & access` → `Identity providers` → `<specific provider details>`
 

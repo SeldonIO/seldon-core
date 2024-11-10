@@ -2,9 +2,7 @@
 
 Pipelines allow one to connect flows of inference data transformed by `Model` components. A directed acyclic graph (DAG) of steps can be defined to join Models together. Each Model will need to be capable of receiving a V2 inference request and respond with a V2 inference response. An example Pipeline is shown below:
 
-```{literalinclude} ../../../../../../samples/pipelines/tfsimples-join.yaml
-:language: yaml
-```
+{% @github-files/github-code-block url="https://github.com/SeldonIO/seldon-core/blob/v2/samples/pipelines/tfsimples-join.yaml" %}
 
 The `steps` list shows three models: `tfsimple1`, `tfsimple2` and `tfsimple3`. These three models each take two tensors called `INPUT0` and `INPUT1` of integers. The models produce two outputs `OUTPUT0` (the sum of the inputs) and `OUTPUT1` (subtraction of the second input from the first).
 
@@ -16,9 +14,93 @@ The output of the Pipeline is the output from the `tfsimple3` model.
 
 The full GoLang specification for a Pipeline is shown below:
 
-```{literalinclude} ../../../../../../operator/apis/mlops/v1alpha1/pipeline_types.go
-:language: golang
-:start-after: // PipelineSpec
-:end-before: // PipelineStatus
+```go
+type PipelineSpec struct {
+	// External inputs to this pipeline, optional
+	Input *PipelineInput `json:"input,omitempty"`
+
+	// The steps of this inference graph pipeline
+	Steps []PipelineStep `json:"steps"`
+
+	// Synchronous output from this pipeline, optional
+	Output *PipelineOutput `json:"output,omitempty"`
+}
+
+// +kubebuilder:validation:Enum=inner;outer;any
+type JoinType string
+
+const (
+	// data must be available from all inputs
+	JoinTypeInner JoinType = "inner"
+	// data will include any data from any inputs at end of window
+	JoinTypeOuter JoinType = "outer"
+	// first data input that arrives will be forwarded
+	JoinTypeAny JoinType = "any"
+)
+
+type PipelineStep struct {
+	// Name of the step
+	Name string `json:"name"`
+
+	// Previous step to receive data from
+	Inputs []string `json:"inputs,omitempty"`
+
+	// msecs to wait for messages from multiple inputs to arrive before joining the inputs
+	JoinWindowMs *uint32 `json:"joinWindowMs,omitempty"`
+
+	// Map of tensor name conversions to use e.g. output1 -> input1
+	TensorMap map[string]string `json:"tensorMap,omitempty"`
+
+	// Triggers required to activate step
+	Triggers []string `json:"triggers,omitempty"`
+
+	// +kubebuilder:default=inner
+	InputsJoinType *JoinType `json:"inputsJoinType,omitempty"`
+
+	TriggersJoinType *JoinType `json:"triggersJoinType,omitempty"`
+
+	// Batch size of request required before data will be sent to this step
+	Batch *PipelineBatch `json:"batch,omitempty"`
+}
+
+type PipelineBatch struct {
+	Size     *uint32 `json:"size,omitempty"`
+	WindowMs *uint32 `json:"windowMs,omitempty"`
+	Rolling  bool    `json:"rolling,omitempty"`
+}
+
+type PipelineInput struct {
+	// Previous external pipeline steps to receive data from
+	ExternalInputs []string `json:"externalInputs,omitempty"`
+
+	// Triggers required to activate inputs
+	ExternalTriggers []string `json:"externalTriggers,omitempty"`
+
+	// msecs to wait for messages from multiple inputs to arrive before joining the inputs
+	JoinWindowMs *uint32 `json:"joinWindowMs,omitempty"`
+
+	// +kubebuilder:default=inner
+	JoinType *JoinType `json:"joinType,omitempty"`
+
+	// +kubebuilder:default=inner
+	TriggersJoinType *JoinType `json:"triggersJoinType,omitempty"`
+
+	// Map of tensor name conversions to use e.g. output1 -> input1
+	TensorMap map[string]string `json:"tensorMap,omitempty"`
+}
+
+type PipelineOutput struct {
+	// Previous step to receive data from
+	Steps []string `json:"steps,omitempty"`
+
+	// msecs to wait for messages from multiple inputs to arrive before joining the inputs
+	JoinWindowMs uint32 `json:"joinWindowMs,omitempty"`
+
+	// +kubebuilder:default=inner
+	StepsJoin *JoinType `json:"stepsJoin,omitempty"`
+
+	// Map of tensor name conversions to use e.g. output1 -> input1
+	TensorMap map[string]string `json:"tensorMap,omitempty"`
+}
 ```
 
