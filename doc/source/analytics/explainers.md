@@ -5,7 +5,7 @@
 
 Seldon provides model explanations using its [Alibi](https://github.com/SeldonIO/alibi) library.
 
-We support explainers saved using python 3.7 in v1 explainer server. However, for v2 protocol (using MLServer) this is not a requirement anymore.
+The v1 explainer server supports explainers saved with Python 3.7. However, for the Open Inference Protocol (or V2 protocol) using MLServer, this requirement is no longer necessary.
 
 | Package | Version |
 | ------ | ----- |
@@ -36,9 +36,9 @@ For Alibi explainers that need to be trained you should
 
 The runtime environment in our [Alibi Explain Server](https://github.com/SeldonIO/seldon-core/tree/master/components/alibi-explain-server) is locked using [Poetry](https://python-poetry.org/). See our e2e example [here](../examples/iris_explainer_poetry.html) on how to use that definition to train your explainers.
 
-### V2 protocol for explainer using [MLServer](https://github.com/SeldonIO/MLServer) (incubating)
+### Open Inference Protocol for explainer using [MLServer](https://github.com/SeldonIO/MLServer)
 
-The support for v2 protocol is now handled with MLServer moving forward. This is experimental
+The support for Open Inference Protocol is now handled with MLServer moving forward. This is experimental
 and only works for black-box explainers.
 
 For an e2e example, please check AnchorTabular notebook [here](../examples/iris_anchor_tabular_explainer_v2.html).
@@ -82,7 +82,7 @@ If you were port forwarding to Ambassador or istio on localhost:8003 then the AP
 http://localhost:8003/seldon/seldon/income-explainer/default/api/v1.0/explain
 ```
 
-The explain method is also supported for tensorflow and v2 protocols. The full list of endpoint URIs is:
+The explain method is also supported for tensorflow and Open Inference protocols. The full list of endpoint URIs is:
 
 | Protocol | URI |
 | ------ | ----- |

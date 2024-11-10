@@ -85,10 +85,9 @@ notebook](../examples/server_examples.html#Serve-MLflow-Elasticnet-Wines-Model)
 or check our [talk at the Spark + AI Summit
 2019](https://www.youtube.com/watch?v=D6eSfd9w9eA).
 
-## V2 protocol
+## Open Inference Protocol (or V2 protocol)
 
-The MLFlow server can also be used to expose an API compatible with the [V2
-Protocol](../graph/protocols.md#v2-protocol).
+The MLFlow server can also be used to expose an API compatible with the [Open Inference Protocol](../graph/protocols.md#v2-protocol).
 Note that, under the hood, it will use the [Seldon
 MLServer](https://github.com/SeldonIO/MLServer) runtime.
 
@@ -136,7 +135,7 @@ $ gsutil cp -r ../model gs://seldon-models/test/elasticnet_wine_<uuid>
 ```
 
 - deploy the model to seldon-core
-In order to enable support for the V2 protocol, it's enough to
+In order to enable support for the Open Inference Protocol, it's enough to
 specify the `protocol` of the `SeldonDeployment` to use `v2`.
 For example,
 
@@ -146,7 +145,7 @@ kind: SeldonDeployment
 metadata:
   name: mlflow
 spec:
-  protocol: v2  # Activate the v2 protocol
+  protocol: v2  # Activate the Open Inference Protocol
   name: wines
   predictors:
     - graph:

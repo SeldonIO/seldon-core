@@ -95,7 +95,7 @@ Only the v1 versions of the CRD will be supported moving forward. The v1beta1 ve
 
 We have updated the health checks done by Seldon for the model nodes in your inference graph. If `executor.fullHealthChecks` is set to true then:
  * For Seldon protocol each node will be probed with `/api/v1.0/health/status`.
- * For the v2 protocol each node will be probed with `/v2/health/ready`.
+ * For the Open Inference Protocol (or V2 protocol) each node will be probed with `/v2/health/ready`.
  * For tensorflow just TCP checks will be run on the http endpoint.
 
 By default we have set `executor.fullHealthChecks` to false for 1.14 release as users would need to rebuild their custom python models if they have not implemented the `health_status` method. In future we will default to `true`.

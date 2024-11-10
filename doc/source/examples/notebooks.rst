@@ -22,7 +22,7 @@ Prepackaged Inference Server Examples
    Deploy a Scikit-learn Model Binary <../servers/sklearn.md>
    Deploy a Tensorflow Exported Model <../servers/tensorflow.md>
    MLflow Pre-packaged Model Server A/B Test <mlflow_server_ab_test_ambassador>
-   MLflow v2 Protocol End to End Workflow (Incubating) <mlflow_v2_protocol_end_to_end>
+   MLflow Open Inference Protocol End to End Workflow <mlflow_v2_protocol_end_to_end>
    Deploy a XGBoost Model Binary <../servers/xgboost.md>
    Deploy Pre-packaged Model Server with Cluster's MinIO <minio-sklearn>
    Custom Pre-packaged LightGBM Server <custom_server>
@@ -90,7 +90,7 @@ Advanced Machine Learning Monitoring
 
    Real Time Monitoring of Statistical Metrics <feedback_reward_custom_metrics>
    Model Explainer Example <iris_explainer_poetry>
-   Model Explainer V2 protocol Example (Incubating) <iris_anchor_tabular_explainer_v2>
+   Model Explainer Open Inference Protocol Example <iris_anchor_tabular_explainer_v2>
    Outlier Detection on CIFAR10 <outlier_cifar10>
    Training Outlier Detector for CIFAR10 with Poetry <cifar10_od_poetry>
 
@@ -155,7 +155,7 @@ Complex Graph Examples
    :titlesonly:
   
    Chainer MNIST <chainer_mnist>
-   Custom pre-processors with the V2 Protocol <transformers-v2-protocol>
+   Custom pre-processors with the Open Inference Protocol <transformers-v2-protocol>
    graph-examples <graph-examples>
 
 Ingress

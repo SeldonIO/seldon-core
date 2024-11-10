@@ -6,7 +6,7 @@ Seldon Core supports the following data planes:
 
  * [REST and gRPC Seldon protocol](#rest-and-grpc-seldon-protocol)
  * [REST and gRPC Tensorflow Serving Protocol](#rest-and-grpc-tensorflow-protocol)
- * [REST and gRPC V2 Protocol](#v2-protocol)
+ * [REST and gRPC Open Inference Protocol](#v2-protocol)
 
 ## REST and gRPC Seldon Protocol
 
@@ -40,7 +40,7 @@ General considerations:
   * The name of the model in the `graph` section of the SeldonDeployment spec must match the name of the model loaded onto the Tensorflow Server.
 
 
-## V2 Protocol 
+## Open Inference Protocol (or V2 protocol) 
 
 Seldon has collaborated with the [NVIDIA Triton Server
 Project](https://github.com/triton-inference-server/server) and the [KServe
