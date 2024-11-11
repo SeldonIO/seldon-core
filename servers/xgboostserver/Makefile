@@ -11,7 +11,7 @@ docker-build:
 	s2i build \
 		-E environment \
 		./xgboostserver \
-		${DOCKER_REGISTRY}/seldon-core-s2i-python38:${VERSION} \
+		seldonio/seldon-core-s2i-python3:${VERSION} \
 		${IMAGE_NAME}:${VERSION}
 
 docker-push:

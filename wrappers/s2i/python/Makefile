@@ -3,9 +3,9 @@ VERSION ?= $(shell cat ../../../version.txt)
 
 DOCKER_REGISTRY ?= seldonio
 
-CONDA_DOWNLOAD_VERSION ?= py38_23.3.1-0
+CONDA_DOWNLOAD_VERSION ?= py310
 CONDA_VERSION ?= 23.5.0
-PYTHON_VERSION ?= 3.8.10
+PYTHON_VERSION ?= 3.10.15
 
 IMAGE_PYTHON_VERSION = $(shell echo -n $(PYTHON_VERSION) | cut -d. -f1-2 | sed 's/\.//g')
 DEFAULT_IMAGE_PYTHON_VERSION = $(shell echo -n $(PYTHON_VERSION) | cut -d. -f1)
