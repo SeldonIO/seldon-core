@@ -58,7 +58,7 @@ security:
 ```
 
 {% hint style="info" %}
-You may need to tweak `replicationFactor` and `numPartitions` to your cluster configuration.
+**Note**: You may need to tweak `replicationFactor` and `numPartitions` to your cluster configuration.
 {% endhint %}
 
 ## Troubleshooting

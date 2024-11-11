@@ -26,10 +26,11 @@ The `consumerGroupIdPrefix` will ensure that all consumer groups created have a 
 
 ### Kubernetes
 
-For Kubernetes this is controlled via a ConfigMap called `seldon-kafka` whose default values are
-defined in the `SeldonConfig` custom resource.
+For Kubernetes this is controlled via a ConfigMap called `seldon-kafka` whose default values are defined in the `SeldonConfig` custom resource.
+For more details see the `componets.yaml` [file](https://github.com/SeldonIO/seldon-core/blob/v2/k8s/yaml/components.yaml#L1115)
 
-{% @github-files/github-code-block url="https://github.com/SeldonIO/seldon-core/blob/v2/k8s/yaml/components.yaml" %}
+{% @github-files/github-code-block url="https://github.com/SeldonIO/seldon-core/blob/b52a715865e1b28bad72cabc74e73ae51d11191c/k8s/yaml/components.yaml#L1115-L1127" %}
+
 
 When the `SeldonRuntime` is installed in a namespace a configMap will be created with these
 settings for Kafka configuration.

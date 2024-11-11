@@ -9,8 +9,19 @@ A Model is the core atomic building block. It specifies a machine learning artif
 
 An example is shown below for a SKLearn model for iris classification:
 
-```{literalinclude} ../../../../../../samples/models/sklearn-iris-gs.yaml 
-:language: yaml
+{% @github-files/github-code-block url="https://github.com/SeldonIO/seldon-core/blob/v2/samples/models/sklearn-iris-gs.yaml" %}
+
+```yaml
+# samples/models/sklearn-iris-gs.yaml
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: iris
+spec:
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.5.0/iris-sklearn"
+  requirements:
+  - sklearn
+  memory: 100Ki
 ```
 
 Its Kubernetes `spec` has two core requirements

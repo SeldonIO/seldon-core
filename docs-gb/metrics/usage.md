@@ -96,7 +96,7 @@ helm install seldon-v2-runtime k8s/helm-charts/seldon-core-v2-runtime \
 ```
 
 {% hint style="info" %}
-It is a good practice to set Helm values in values file.
+**Note**: It is a good practice to set Helm values in values file.
 These can be applied by using the `-f <filename>` switch when running Helm.
 {% endhint %}
 

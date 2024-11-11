@@ -168,10 +168,11 @@ In order to test that the prometheus adapter config works and everything is set 
 you can issue raw kubectl requests against the custom metrics API
 
 {% hint style="info" %}
-If no inference requests were issued towards any model in the Core 2 install, the corresponding
-metrics will not be available in prometheus, and thus will also not appear when checking via
-kubectl. Therefore, please first run some inference requests towards a sample model to ensure
-that the metrics are available — this is only required for the testing of the install.
+**Note**: If no inference requests were issued towards any model in the Seldon install, the metrics
+configured above will not be available in prometheus, and thus will also not appear when
+checking via the commands below. Therefore, please first run some inference requests towards a
+sample model to ensure that the metrics are available — this is only required for the testing of
+the install.
 {% endhint %}
 
 Listing the available metrics:
@@ -306,7 +307,7 @@ approximately the same time. Small variations in the scale-up time are expected 
 samples the metrics independently, at regular intervals.
 
 {% hint style="info" %}
-If a Model gets scaled up slightly before its corresponding Server, the model is currently
+**Note**: If a Model gets scaled up slightly before its corresponding Server, the model is currently
 marked with the condition ModelReady "Status: False" with a "ScheduleFailed" message until new
 Server replicas become available. However, the existing replicas of that model remain available
 and will continue to serve inference load.
@@ -372,7 +373,7 @@ computed by HPA according to the following formula:
 $$\texttt{targetReplicas} = \frac{\texttt{infer\_rps}}{\texttt{thresholdPerReplicaRPS}}$$
 
 {% hint style="info" %}
-Attempting other target types does not work under the current Seldon Core 2 setup, because they
+**Note**: Attempting other target types does not work under the current Seldon Core 2 setup, because they
 use the number of active Pods associated with the Model CR (i.e. the associated Server pods) in
 the `targetReplicas` computation. However, this also means that this set of pods becomes "owned"
 by the Model HPA. Once a pod is owned by a given HPA it is not available for other HPAs to use,

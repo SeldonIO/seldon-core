@@ -5,11 +5,11 @@
 Seldon Core 2 can integrate with Azure Event Hub via Kafka protocol.
 
 {% hint style="warning" %}
-You will need at least `Standard` tier for your Event Hub Namespace as `Basic` tier does not support Kafka protocol.
+**Warning**: You need at least `Standard` tier for your Event Hub Namespace as `Basic` tier does not support Kafka protocol.
 {% endhint %}
 
 {% hint style="warning" %}
-Seldon Core 2 creates 2 Kafka topics for each pipeline and model plus one global topic for errors.
+**Warning**: Seldon Core 2 creates 2 Kafka topics for each pipeline and model plus one global topic for errors.
 This means that total number of topics will be `2 x (#models + #pipelines) + 1` which will likely exceed
 the limit of `Standard` tier in Azure Event Hub. You can find more information on quotas, like the
 number of partitions per Event Hub, [here](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-quotas#basic-vs-standard-vs-premium-vs-dedicated-tiers).
@@ -73,8 +73,7 @@ security:
         brokerValidationSecret:
 ```
 
-Note you may need to tweak `replicationFactor` and `numPartitions` to your cluster configuration. The
-username should read `$ConnectionString` and this is not a variable for you to replace.
+You may need to tweak `replicationFactor` and `numPartitions` to your cluster configuration. The username should read `$ConnectionString` and this is not a variable for you to replace.
 
 ## Troubleshooting
 

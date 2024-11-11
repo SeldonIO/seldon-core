@@ -8,7 +8,7 @@ Local example settings.
 %env SELDON_SCHEDULE_HOST=0.0.0.0:9004
 ```
 
-```
+```python
 env: INFER_REST_ENDPOINT=http://0.0.0.0:9000
 env: INFER_GRPC_ENDPOINT=0.0.0.0:9000
 env: SELDON_SCHEDULE_HOST=0.0.0.0:9004
@@ -55,9 +55,6 @@ spec:
 curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
 ```
 
-```
-```
-
 ```bash
 grpcurl -d '{"name":"tfsimples"}' \
     -plaintext \
@@ -97,8 +94,6 @@ null
 curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
 ```
 
-```
-```
 
 ```bash
 grpcurl -d '{"name":"tfsimples"}' \
@@ -129,9 +124,6 @@ seldon model status tfsimple1 -w ModelAvailable
 
 ```bash
 curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
-```
-
-```
 ```
 
 ```bash
@@ -165,9 +157,6 @@ seldon model status tfsimple2 -w ModelAvailable | jq -M .
 curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
 ```
 
-```
-```
-
 ```bash
 grpcurl -d '{"name":"tfsimples"}' \
     -plaintext \
@@ -199,9 +188,6 @@ seldon pipeline unload tfsimples
 
 ```bash
 curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
-```
-
-```
 ```
 
 ```bash
@@ -245,8 +231,6 @@ seldon pipeline status tfsimples -w PipelineReady
 curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
 ```
 
-```
-```
 
 ```bash
 grpcurl -d '{"name":"tfsimples"}' \
@@ -347,7 +331,7 @@ kubectl create -f ./models/tfsimple1.yaml -n ${NAMESPACE}
 kubectl create -f ./models/tfsimple2.yaml -n ${NAMESPACE}
 ```
 
-```
+```output
 model.mlops.seldon.io/tfsimple1 created
 model.mlops.seldon.io/tfsimple2 created
 
