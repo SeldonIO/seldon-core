@@ -72,6 +72,7 @@ github.com/aws/aws-sdk-go-v2/service/ssooidc
 github.com/aws/aws-sdk-go-v2/service/sts
 github.com/aws/smithy-go
 github.com/bahlo/generic-list-go
+github.com/bazelbuild/rules_go
 github.com/benbjohnson/clock
 github.com/beorn7/perks
 github.com/bgentry/speakeasy

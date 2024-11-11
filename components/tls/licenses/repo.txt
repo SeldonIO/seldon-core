@@ -82,6 +82,7 @@ otiai10/copy
 otiai10/mint
 peterbourgon/diskv
 pkg/errors
+planetscale/vtprotobuf
 pmezard/go-difflib
 prometheus/client_golang
 prometheus/client_model
