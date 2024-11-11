@@ -167,7 +167,7 @@ func main() {
 	go makeSignalHandler(logger, done)
 
 	// Create a cache
-	xdsCache := cache.NewSnapshotCache(false, cache.IDHash{}, logger)
+	xdsCache := cache.NewSnapshotCache(true, cache.IDHash{}, logger)
 
 	tracer, err := tracing.NewTraceProvider("seldon-scheduler", &tracingConfigPath, logger)
 	if err != nil {
