@@ -629,7 +629,6 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage, timestamp int64
 	)
 
 	loaderFn := func() error {
-		// TODO: send the replication spec here for use in calculating memory usage
 		return c.stateManager.LoadModelVersion(modifiedModelVersionRequest)
 	}
 
