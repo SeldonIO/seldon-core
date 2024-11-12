@@ -36,6 +36,7 @@ asaskevich/govalidator
 aws/aws-sdk-go-v2
 aws/smithy-go
 bahlo/generic-list-go
+bazelbuild/rules_go
 benbjohnson/clock
 beorn7/perks
 bgentry/speakeasy
