@@ -145,7 +145,7 @@ func (manager *LocalStateManager) loadModelFn(modelVersionDetails *pba.ModelVers
 
 	modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
 	pinnedModelVersion := util.GetPinnedModelVersion()
-	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, modelVersionDetails, defaultModelConfig)
+	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, modelVersionDetails, modelConfig)
 
 	manager.cache.Lock(modelWithVersion)
 	defer manager.cache.Unlock(modelWithVersion)
@@ -931,7 +931,6 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 	}
 }
 
-// TODO: update this one
 func TestAvailableMemoryWithOverCommit(t *testing.T) {
 	dummyModelPrefix := "dummy_model"
 	memBytes := uint64(1)
@@ -944,14 +943,16 @@ func TestAvailableMemoryWithOverCommit(t *testing.T) {
 		capacity                              int
 		overCommitPercentage                  int
 		expectedAvailableMemoryWithOverCommit uint64
+		modelConfig                           *agent.ModelConfig
 	}
 	tests := []test{
 		{
 			name:                                  "extra main capacity",
 			numModels:                             10,
-			capacity:                              20,
+			capacity:                              30,
 			overCommitPercentage:                  0,
 			expectedAvailableMemoryWithOverCommit: 10,
+			modelConfig:                           &agent.ModelConfig{InstanceCount: 2, Resource: agent.ModelConfig_MEMORY},
 		},
 		{
 			name:                                  "extra main capacity with overcommit",
@@ -959,6 +960,7 @@ func TestAvailableMemoryWithOverCommit(t *testing.T) {
 			capacity:                              20,
 			overCommitPercentage:                  10,
 			expectedAvailableMemoryWithOverCommit: 12,
+			modelConfig:                           defaultModelConfig,
 		},
 		{
 			name:                                  "enough main capacity",
@@ -966,6 +968,7 @@ func TestAvailableMemoryWithOverCommit(t *testing.T) {
 			capacity:                              10,
 			overCommitPercentage:                  0,
 			expectedAvailableMemoryWithOverCommit: 0,
+			modelConfig:                           defaultModelConfig,
 		},
 		{
 			name:                                  "enough main capacity with overcommit",
@@ -973,13 +976,15 @@ func TestAvailableMemoryWithOverCommit(t *testing.T) {
 			capacity:                              10,
 			overCommitPercentage:                  10,
 			expectedAvailableMemoryWithOverCommit: 1,
+			modelConfig:                           defaultModelConfig,
 		},
 		{
 			name:                                  "overcommit",
 			numModels:                             10,
-			capacity:                              8,
+			capacity:                              16,
 			overCommitPercentage:                  50,
-			expectedAvailableMemoryWithOverCommit: 2,
+			expectedAvailableMemoryWithOverCommit: 4,
+			modelConfig:                           &agent.ModelConfig{InstanceCount: 2, Resource: agent.ModelConfig_MEMORY},
 		},
 		{
 			name:                                  "overflow",
@@ -987,6 +992,7 @@ func TestAvailableMemoryWithOverCommit(t *testing.T) {
 			capacity:                              8,
 			overCommitPercentage:                  0,
 			expectedAvailableMemoryWithOverCommit: 0,
+			modelConfig:                           defaultModelConfig,
 		},
 	}
 
@@ -1002,7 +1008,7 @@ func TestAvailableMemoryWithOverCommit(t *testing.T) {
 			for i := 0; i < test.numModels; i++ {
 				modelName := getModelId(dummyModelPrefix, i)
 				modelVersion := uint32(1)
-				_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion), defaultModelConfig)
+				_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion), test.modelConfig)
 			}
 
 			g.Expect(manager.GetAvailableMemoryBytesWithOverCommit()).To(Equal(test.expectedAvailableMemoryWithOverCommit))

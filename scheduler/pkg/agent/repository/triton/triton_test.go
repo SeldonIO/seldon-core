@@ -20,6 +20,7 @@ import (
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton/config"
 )
 
@@ -333,6 +334,88 @@ func TestCopyNonConfigFilesToModelRepo(t *testing.T) {
 				_, err := os.Stat(path)
 				g.Expect(err).ToNot(BeNil())
 			}
+		})
+	}
+}
+
+func TestGetModelConfig(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name                  string
+		modelConfig           *pb.ModelConfig
+		expectedInstanceCount uint32
+	}
+
+	tests := []test{
+		{
+			name: "onnxruntime backend without a count defaults to 2",
+			modelConfig: &pb.ModelConfig{
+				Backend:       "onnxruntime",
+				InstanceGroup: []*pb.ModelInstanceGroup{{Kind: pb.ModelInstanceGroup_KIND_CPU}},
+			},
+			expectedInstanceCount: 2,
+		}, {
+			name: "tensorflow backend without a count defaults to 2",
+			modelConfig: &pb.ModelConfig{
+				Backend:       "tensorflow",
+				InstanceGroup: []*pb.ModelInstanceGroup{{Kind: pb.ModelInstanceGroup_KIND_CPU}},
+			},
+			expectedInstanceCount: 2,
+		}, {
+			name: "other backend without a count defaults to 2",
+			modelConfig: &pb.ModelConfig{
+				Backend:       "other",
+				InstanceGroup: []*pb.ModelInstanceGroup{{Kind: pb.ModelInstanceGroup_KIND_CPU}},
+			},
+			expectedInstanceCount: 1,
+		}, {
+			name: "not KIND_CPU defaults to 1",
+			modelConfig: &pb.ModelConfig{
+				Backend:       "tensorflow",
+				InstanceGroup: []*pb.ModelInstanceGroup{{Kind: pb.ModelInstanceGroup_KIND_GPU}},
+			},
+			expectedInstanceCount: 1,
+		}, {
+			name: "onnxruntime backend with count",
+			modelConfig: &pb.ModelConfig{
+				Backend:       "onnxruntime",
+				InstanceGroup: []*pb.ModelInstanceGroup{{Count: 8, Kind: pb.ModelInstanceGroup_KIND_CPU}},
+			},
+			expectedInstanceCount: 8,
+		}, {
+			name: "tensorflow backend with count",
+			modelConfig: &pb.ModelConfig{
+				Backend:       "tensorflow",
+				InstanceGroup: []*pb.ModelInstanceGroup{{Count: 5, Kind: pb.ModelInstanceGroup_KIND_CPU}},
+			},
+			expectedInstanceCount: 5,
+		}, {
+			name: "no instance group defaults to 1",
+			modelConfig: &pb.ModelConfig{
+				Backend: "tensorflow",
+			},
+			expectedInstanceCount: 1,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			rclonePath := t.TempDir()
+			// Create rclone config.pbtxt
+			configPathRclone := filepath.Join(rclonePath, TritonConfigFile)
+			data, err := prototext.Marshal(test.modelConfig)
+			g.Expect(err).To(BeNil())
+			err = os.WriteFile(configPathRclone, data, fs.ModePerm)
+			g.Expect(err).To(BeNil())
+
+			logger := log.New()
+			triton := TritonRepositoryHandler{logger: logger}
+			modelConfig, err := triton.GetModelConfig(rclonePath)
+
+			g.Expect(err).To(BeNil())
+			g.Expect(modelConfig.InstanceCount).To(Equal(test.expectedInstanceCount))
+			g.Expect(modelConfig.Resource).To(Equal(agent.ModelConfig_MEMORY))
 		})
 	}
 }

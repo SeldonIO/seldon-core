@@ -617,7 +617,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage, timestamp int64
 
 	modelConfig, err := c.ModelRepository.GetModelConfig(modelName)
 	if err != nil {
-		logger.Errorf("there was a problem get the model config for %s", modelName)
+		logger.Errorf("there was a problem getting the config for model: %s", modelName)
 	}
 
 	// TODO: consider whether we need the actual protos being sent to `LoadModelVersion`?

@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	copy2 "github.com/otiai10/copy"
 	log "github.com/sirupsen/logrus"
@@ -222,19 +223,22 @@ func (t *TritonRepositoryHandler) SetExtraParameters(modelRepoPath string, param
 func (t *TritonRepositoryHandler) GetModelConfig(path string) (*agent.ModelConfig, error) {
 	configPath := filepath.Join(path, TritonConfigFile)
 	tritonConfig, err := t.loadConfigFromFile(configPath)
-	if err != nil {
+	if err == nil {
 		instanceGroup := tritonConfig.InstanceGroup
-		if instanceGroup == nil || len(instanceGroup) < 1 {
-			backend := tritonConfig.Backend
-			if backend == "tensorflow" || backend == "onnx" {
-				return &agent.ModelConfig{InstanceCount: 1, Resource: agent.ModelConfig_MEMORY}, nil
-			} else {
-				return &agent.ModelConfig{InstanceCount: 2, Resource: agent.ModelConfig_MEMORY}, nil
+		if len(instanceGroup) > 0 {
+			if instanceGroup[0].Kind == pb.ModelInstanceGroup_KIND_CPU {
+				if instanceGroup[0].Count < 1 {
+					backend := tritonConfig.Backend
+					if strings.ToLower(backend) == "tensorflow" || strings.ToLower(backend) == "onnxruntime" {
+						return &agent.ModelConfig{InstanceCount: 2, Resource: agent.ModelConfig_MEMORY}, nil
+					} else {
+						return &agent.ModelConfig{InstanceCount: 1, Resource: agent.ModelConfig_MEMORY}, nil
+					}
+				} else {
+					return &agent.ModelConfig{InstanceCount: uint32(instanceGroup[0].Count), Resource: agent.ModelConfig_MEMORY}, nil
+				}
 			}
-		} else {
-			return &agent.ModelConfig{InstanceCount: uint32(instanceGroup[0].Count), Resource: agent.ModelConfig_MEMORY}, nil
 		}
-
 	}
-	return nil, err
+	return &agent.ModelConfig{InstanceCount: 1, Resource: agent.ModelConfig_MEMORY}, nil
 }
