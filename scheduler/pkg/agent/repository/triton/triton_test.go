@@ -21,6 +21,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+
 	pb "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton/config"
 )
 
