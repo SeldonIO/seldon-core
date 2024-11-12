@@ -34,6 +34,7 @@ asaskevich/govalidator,https://github.com/asaskevich/govalidator/blob/master/LIC
 aws/aws-sdk-go-v2,https://github.com/aws/aws-sdk-go-v2/blob/main/LICENSE.txt,Apache License 2.0,https://raw.githubusercontent.com/aws/aws-sdk-go-v2/main/LICENSE.txt
 aws/smithy-go,https://github.com/aws/smithy-go/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/aws/smithy-go/main/LICENSE
 bahlo/generic-list-go,https://github.com/bahlo/generic-list-go/blob/main/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/bahlo/generic-list-go/main/LICENSE
+bazelbuild/rules_go,https://github.com/bazel-contrib/rules_go/blob/master/LICENSE.txt,Apache License 2.0,https://raw.githubusercontent.com/bazel-contrib/rules_go/master/LICENSE.txt
 benbjohnson/clock,https://github.com/benbjohnson/clock/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/benbjohnson/clock/master/LICENSE
 beorn7/perks,https://github.com/beorn7/perks/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/beorn7/perks/master/LICENSE
 bgentry/speakeasy,https://github.com/bgentry/speakeasy/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/bgentry/speakeasy/master/LICENSE
