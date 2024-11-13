@@ -7,3 +7,6 @@ metadata:
 spec:
   replicas: HACK_REMOVE_ME{{ .Values.mlserver.replicas }}
   podSpec: HACK_REMOVE_ME{{ toJson .Values.mlserver.podSpec }}
+  statefulSetPersistentVolumeClaimRetentionPolicy:
+    whenDeleted: HACK_REMOVE_ME{{ .Values.triton.statefulSetPersistentVolumeClaimRetentionPolicy.whenDeleted }}
+    whenScaled: HACK_REMOVE_ME{{ .Values.triton.statefulSetPersistentVolumeClaimRetentionPolicy.whenScaled }}
