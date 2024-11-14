@@ -287,8 +287,13 @@ func (iw *InferWorker) produce(
 		return err
 	}
 	go func() {
-		<-deliveryChan
+		e := <-deliveryChan
 		span.End()
+		m := e.(*kafka.Message)
+		if m.TopicPartition.Error != nil {
+			iw.logger.WithError(m.TopicPartition.Error).Errorf("Failed to produce event for model %s", topic)
+		}
+		close(deliveryChan)
 	}()
 
 	return nil
