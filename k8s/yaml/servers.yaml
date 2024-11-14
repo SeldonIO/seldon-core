@@ -10,7 +10,7 @@ metadata:
   name: mlserver
 spec:
   podSpec: null
-  replicas: 1
+  replicas: 3
   serverConfig: mlserver
 ---
 # Source: seldon-core-v2-servers/templates/seldon-v2-servers.yaml
@@ -24,5 +24,5 @@ metadata:
   name: triton
 spec:
   podSpec: null
-  replicas: 1
+  replicas: 3
   serverConfig: triton

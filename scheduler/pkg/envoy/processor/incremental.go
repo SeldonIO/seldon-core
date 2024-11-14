@@ -237,7 +237,7 @@ func (p *IncrementalProcessor) updateEnvoy() error {
 // This function does not call `updateEnvoy` directly and therefore callers should make sure
 // that this is done (either in a batched update or directly)
 func (p *IncrementalProcessor) removeRouteForServerInEnvoyCache(routeName string) error {
-	logger := p.logger.WithField("func", "removeModelForServerInEnvoy")
+	logger := p.logger.WithField("func", "removeRouteForServerInEnvoyCache")
 	err := p.xdsCache.RemoveRoute(routeName)
 	if err != nil {
 		logger.Debugf("Failed to remove route for %s", routeName)
@@ -246,19 +246,17 @@ func (p *IncrementalProcessor) removeRouteForServerInEnvoyCache(routeName string
 	return nil
 }
 
-func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string, modelVersion *store.ModelVersion, server *store.ServerSnapshot, trafficPercent uint32, isMirror bool) {
+func (p *IncrementalProcessor) addEnvoyClustersForModelVersion(modelRouteName string, modelVersion *store.ModelVersion, server *store.ServerSnapshot, trafficPercent uint32, isMirror bool) {
 	logger := p.logger.WithField("func", "updateEnvoyForModelVersion")
 
-	assignment := modelVersion.GetAssignment() // Get loaded replicas for model
+	assignment := modelVersion.GetAssignment()
 	if len(assignment) == 0 {
 		logger.Debugf("No assigned replicas so returning for %s", modelRouteName)
 		return
 	}
 
-	clusterNameBase := modelVersion.GetMeta().GetName() + "_" + strconv.FormatInt(int64(modelVersion.GetVersion()), 10)
-	httpClusterName := clusterNameBase + "_http"
-	grpcClusterName := clusterNameBase + "_grpc"
-	p.xdsCache.AddCluster(httpClusterName, modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), false)
+	httpClusterName, grpcClusterName := getClusterNames(modelVersion)
+	p.xdsCache.AddCluster(httpClusterName, false)
 	for _, replicaIdx := range assignment {
 		replica, ok := server.Replicas[replicaIdx]
 		if !ok {
@@ -267,7 +265,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string,
 			p.xdsCache.AddEndpoint(httpClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceHttpPort()))
 		}
 	}
-	p.xdsCache.AddCluster(grpcClusterName, modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), true)
+	p.xdsCache.AddCluster(grpcClusterName, true)
 	for _, replicaIdx := range assignment {
 		replica, ok := server.Replicas[replicaIdx]
 		if !ok {
@@ -275,6 +273,16 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string,
 		} else {
 			p.xdsCache.AddEndpoint(grpcClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceGrpcPort()))
 		}
+	}
+}
+
+func (p *IncrementalProcessor) sendTrafficToModelVersion(modelRouteName string, modelVersion *store.ModelVersion, server *store.ServerSnapshot, trafficPercent uint32, isMirror bool) {
+	logger := p.logger.WithField("func", "sendTrafficToModelVersion")
+
+	assignment := modelVersion.GetAssignment()
+	if len(assignment) == 0 {
+		logger.Debugf("No assigned replicas so returning for %s", modelRouteName)
+		return
 	}
 
 	logPayloads := false
@@ -284,7 +292,15 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string,
 		logger.Warnf("model %s has not deployment spec", modelVersion.GetModel().GetMeta().GetName())
 	}
 
+	httpClusterName, grpcClusterName := getClusterNames(modelVersion)
 	p.xdsCache.AddRouteClusterTraffic(modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), trafficPercent, httpClusterName, grpcClusterName, logPayloads, isMirror)
+}
+
+func getClusterNames(modelVersion *store.ModelVersion) (httpClusterName, grpcClusterName string) {
+	clusterNameBase := modelVersion.GetMeta().GetName() + "_" + strconv.FormatInt(int64(modelVersion.GetVersion()), 10)
+	httpClusterName = clusterNameBase + "_http"
+	grpcClusterName = clusterNameBase + "_grpc"
+	return httpClusterName, grpcClusterName
 }
 
 func getTrafficShare(latestModel *store.ModelVersion, lastAvailableModelVersion *store.ModelVersion, weight uint32) (uint32, uint32) {
@@ -314,6 +330,7 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 	}
 
 	lastAvailableModelVersion := model.GetLastAvailableModel()
+
 	if lastAvailableModelVersion != nil && latestModel.GetVersion() != lastAvailableModelVersion.GetVersion() {
 		trafficLatestModel, trafficLastAvailableModel := getTrafficShare(latestModel, lastAvailableModelVersion, weight)
 		lastAvailableServer, err := p.modelStore.GetServer(lastAvailableModelVersion.Server(), false, false)
@@ -328,10 +345,19 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 			modelName,
 			lastAvailableModelVersion.GetVersion(),
 			trafficLastAvailableModel)
-		p.updateEnvoyForModelVersion(routeName, lastAvailableModelVersion, lastAvailableServer, trafficLastAvailableModel, isMirror)
-		p.updateEnvoyForModelVersion(routeName, latestModel, server, trafficLatestModel, isMirror)
+
+		p.addEnvoyClustersForModelVersion(routeName, lastAvailableModelVersion, lastAvailableServer, trafficLastAvailableModel, isMirror)
+		p.addEnvoyClustersForModelVersion(routeName, latestModel, server, trafficLatestModel, isMirror)
+		p.updateEnvoy()
+		p.sendTrafficToModelVersion(routeName, lastAvailableModelVersion, lastAvailableServer, trafficLastAvailableModel, isMirror)
+		p.sendTrafficToModelVersion(routeName, latestModel, server, trafficLatestModel, isMirror)
+		p.updateEnvoy()
+
 	} else {
-		p.updateEnvoyForModelVersion(routeName, latestModel, server, weight, isMirror)
+		p.addEnvoyClustersForModelVersion(routeName, latestModel, server, weight, isMirror)
+		p.updateEnvoy()
+		p.sendTrafficToModelVersion(routeName, latestModel, server, weight, isMirror)
+		p.updateEnvoy()
 	}
 	return nil
 }
@@ -368,26 +394,6 @@ func (p *IncrementalProcessor) addExperimentModelBaselineTraffic(model *store.Mo
 		if err != nil {
 			return err
 		}
-	}
-	return nil
-}
-
-func (p *IncrementalProcessor) addModel(model *store.ModelSnapshot) error {
-	logger := p.logger.WithField("func", "addTraffic")
-	exp := p.experimentServer.GetExperimentForBaselineModel(model.Name)
-	if exp != nil {
-		err := p.addExperimentModelBaselineTraffic(model, exp)
-		if err != nil {
-			logger.WithError(err).Debugf("Revert experiment traffic to just model %s", model.Name)
-			err = p.removeRouteForServerInEnvoyCache(model.Name)
-			if err != nil {
-				return err
-			}
-			return p.addModelTraffic(model.Name, model, 100, false)
-		}
-	} else {
-		logger.Infof("Handle vanilla no experiment traffic for %s", model.Name)
-		return p.addModelTraffic(model.Name, model, 100, false)
 	}
 	return nil
 }
@@ -603,13 +609,28 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 
 	if !modelRemoved {
 		// Remove routes before we recreate
-		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
-			logger.Debugf("Failed to remove route before starting update for %s", modelName)
-			p.modelStore.UnlockModel(modelName)
-			return err
+		//if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
+		//	logger.Debugf("Failed to remove route before starting update for %s", modelName)
+		//	p.modelStore.UnlockModel(modelName)
+		//	return err
+		//}
+
+		var err error
+		exp := p.experimentServer.GetExperimentForBaselineModel(model.Name)
+		if exp != nil {
+			err = p.addExperimentModelBaselineTraffic(model, exp)
+			if err != nil {
+				logger.WithError(err).Debugf("Revert experiment traffic to just model %s", model.Name)
+				err = p.removeRouteForServerInEnvoyCache(model.Name)
+				if err == nil {
+					err = p.addModelTraffic(model.Name, model, 100, false)
+				}
+			}
+		} else {
+			logger.Infof("Handle vanilla no experiment traffic for %s", model.Name)
+			err = p.addModelTraffic(model.Name, model, 100, false)
 		}
 
-		err = p.addModel(model)
 		if err != nil {
 			// note that on error for `addModel` we specifically do not return so that we can do batched
 			// delete of envoy routes

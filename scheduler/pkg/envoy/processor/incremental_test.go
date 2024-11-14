@@ -281,7 +281,7 @@ func TestUpdateEnvoyForModelVersion(t *testing.T) {
 				xdsCache: xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{}),
 			}
 			for _, mv := range test.modelVersions {
-				inc.updateEnvoyForModelVersion(mv.GetMeta().GetName(), mv, test.server, test.traffic, false)
+				inc.addEnvoyClustersForModelVersion(mv.GetMeta().GetName(), mv, test.server, test.traffic, false)
 			}
 
 			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.expectedRoutes))

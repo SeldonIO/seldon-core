@@ -517,10 +517,10 @@ spec:
           periodSeconds: 10
         resources:
           limits:
-            memory: '64Mi'
+            memory: '256Mi'
           requests:
-            cpu: '10m'
-            memory: '64Mi'
+            cpu: '1'
+            memory: '256Mi'
         securityContext:
           allowPrivilegeEscalation: false
       securityContext:
@@ -621,10 +621,10 @@ spec:
           name: dataflow
         resources:
           limits:
-            memory: '1Gi'
+            memory: '4Gi'
           requests:
-            cpu: '100m'
-            memory: '1Gi'
+            cpu: 2
+            memory: '4Gi'
         volumeMounts:
         - mountPath: /mnt/kafka
           name: kafka-config-volume
@@ -1010,10 +1010,10 @@ spec:
           periodSeconds: 5
         resources:
           limits:
-            memory: '128Mi'
+            memory: '10Gi'
           requests:
-            cpu: '100m'
-            memory: '128Mi'
+            cpu: 4
+            memory: '10Gi'
       securityContext:
         fsGroup: 1000
         runAsGroup: 1000
@@ -1346,10 +1346,10 @@ spec:
         periodSeconds: 5
       resources:
         limits:
-          memory: '1Gi'
+          memory: '5Gi'
         requests:
-          cpu: '100m'
-          memory: '1Gi'
+          cpu: 2
+          memory: '5Gi'
       startupProbe:
         failureThreshold: 10
         httpGet:
@@ -1541,10 +1541,10 @@ spec:
         protocol: TCP
       resources:
         limits:
-          memory: '1Gi'
+          memory: '5Gi'
         requests:
-          cpu: '200m'
-          memory: '1Gi'
+          cpu: 2
+          memory: '5Gi'
       volumeMounts:
       - mountPath: /mnt/agent
         name: triton-models

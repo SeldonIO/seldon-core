@@ -83,8 +83,14 @@ spec:
           value: "400k,8M,43M,200k,3M"
         - name: MAX_MEM_UPDATE_FRACTION
           value: "0.1"
+        - name: ENABLE_MODEL_REPLICA_CHANGE
+          value: "true"
+        - name: SLEEP_BETWEEN_REPLICA_CHANGE
+          value: "10"
+        - name: MAX_MODEL_REPLICAS
+          value: "3,0,0,0,3"
         - name: MAX_NUM_MODELS
-          value: "800,100,25,100,100"
+          value: "3,0,0,3,3"
           # value: "0,0,25,100,100"
         #
         # MAX_NUM_MODELS_HEADROOM is a variable used by control-plane tests.
