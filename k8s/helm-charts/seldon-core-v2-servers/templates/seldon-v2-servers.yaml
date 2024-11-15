@@ -12,9 +12,9 @@ spec:
   replicas: {{ .Values.mlserver.replicas }}
   serverConfig: mlserver
   statefulSetPersistentVolumeClaimRetentionPolicy:
-    whenDeleted: {{ .Values.triton.statefulSetPersistentVolumeClaimRetentionPolicy.whenDeleted
+    whenDeleted: {{ .Values.mlserver.statefulSetPersistentVolumeClaimRetentionPolicy.whenDeleted
       }}
-    whenScaled: {{ .Values.triton.statefulSetPersistentVolumeClaimRetentionPolicy.whenScaled
+    whenScaled: {{ .Values.mlserver.statefulSetPersistentVolumeClaimRetentionPolicy.whenScaled
       }}
 ---
 apiVersion: mlops.seldon.io/v1alpha1
