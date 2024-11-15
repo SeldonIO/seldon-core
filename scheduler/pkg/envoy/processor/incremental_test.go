@@ -283,9 +283,13 @@ func TestUpdateEnvoyForModelVersion(t *testing.T) {
 			for _, mv := range test.modelVersions {
 				inc.addEnvoyClustersForModelVersion(mv.GetMeta().GetName(), mv, test.server, test.traffic, false)
 			}
+			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.expectedClusters))
+
+			for _, mv := range test.modelVersions {
+				inc.sendTrafficToModelVersion(mv.GetMeta().GetName(), mv, test.server, test.traffic, false)
+			}
 
 			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.expectedRoutes))
-			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.expectedClusters))
 		})
 	}
 }

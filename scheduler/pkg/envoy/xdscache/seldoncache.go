@@ -292,7 +292,7 @@ func (xds *SeldonXDSCache) AddRouteClusterTraffic(
 		return
 	}
 
-	if grpcCluster, ok := xds.Clusters[httpClusterName]; ok {
+	if grpcCluster, ok := xds.Clusters[grpcClusterName]; ok {
 		grpcCluster.Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: modelName, Version: modelVersion}] = true
 	} else {
 		return
@@ -327,7 +327,6 @@ func (xds *SeldonXDSCache) AddCluster(
 		}
 	}
 
-	// TODO: move this
 	xds.Clusters[name] = cluster
 }
 

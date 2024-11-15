@@ -6,8 +6,8 @@ require (
 	github.com/docker/docker v26.1.0+incompatible
 	github.com/onsi/gomega v1.33.1
 	github.com/seldonio/seldon-core/operator/v2 v2.0.0-00010101000000-000000000000
-	k8s.io/api v0.31.2
-	k8s.io/apimachinery v0.31.2
+	k8s.io/api v0.29.2
+	k8s.io/apimachinery v0.29.2
 	k8s.io/client-go v0.29.2
 	sigs.k8s.io/controller-runtime v0.17.4
 )
