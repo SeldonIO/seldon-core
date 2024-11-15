@@ -455,6 +455,19 @@ func TestEnvoySettings(t *testing.T) {
 	getStrPtr := func(t string) *string { return &t }
 	tests := []test{
 		{
+			name: "experiment",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), nil),
+			},
+			numExpectedClusters: 4,
+			numExpectedRoutes:   3,
+			experimentActive:    true,
+			experimentExists:    true,
+		},
+		{
 			name: "One model",
 			ops: []func(inc *IncrementalProcessor, g *WithT){
 				createTestServer("server", 1),
@@ -483,19 +496,6 @@ func TestEnvoySettings(t *testing.T) {
 			},
 			numExpectedClusters: 4,
 			numExpectedRoutes:   2,
-		},
-		{
-			name: "experiment",
-			ops: []func(inc *IncrementalProcessor, g *WithT){
-				createTestServer("server", 2),
-				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
-				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), nil),
-			},
-			numExpectedClusters: 4,
-			numExpectedRoutes:   3,
-			experimentActive:    true,
-			experimentExists:    true,
 		},
 		{
 			name: "experiment - no default",

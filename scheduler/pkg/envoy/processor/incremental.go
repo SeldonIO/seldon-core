@@ -347,8 +347,8 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 			trafficLastAvailableModel)
 
 		p.addEnvoyClustersForModelVersion(routeName, lastAvailableModelVersion, lastAvailableServer, trafficLastAvailableModel, isMirror)
-
 		err = p.updateEnvoy()
+		time.Sleep(10 * time.Millisecond)
 		if err != nil {
 			return err
 		}
@@ -366,11 +366,63 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 	} else {
 		p.addEnvoyClustersForModelVersion(routeName, latestModel, server, weight, isMirror)
 		err = p.updateEnvoy()
+		time.Sleep(10 * time.Millisecond)
 		if err != nil {
 			return err
 		}
 
-		p.removeRouteForServerInEnvoyCache(routeName)
+		err = p.removeRouteForServerInEnvoyCache(routeName)
+		if err != nil {
+			return err
+		}
+		p.addEnvoyClustersForModelVersion(routeName, latestModel, server, weight, isMirror)
+		p.sendTrafficToModelVersion(routeName, latestModel, server, weight, isMirror)
+	}
+	return nil
+}
+
+func (p *IncrementalProcessor) addPipelineTraffic(routeName string, model *store.ModelSnapshot, weight uint32, isMirror bool) error {
+	logger := p.logger.WithField("func", "addModelTraffic")
+
+	modelName := model.Name
+	latestModel := model.GetLatest()
+	if latestModel == nil || !model.CanReceiveTraffic() {
+		if latestModel == nil {
+			logger.Infof("latest model is nil for model %s route %s", model.Name, routeName)
+		}
+		return fmt.Errorf("No live replica for model %s for model route %s", model.Name, routeName)
+	}
+
+	server, err := p.modelStore.GetServer(latestModel.Server(), false, false)
+	if err != nil {
+		return err
+	}
+
+	lastAvailableModelVersion := model.GetLastAvailableModel()
+
+	if lastAvailableModelVersion != nil && latestModel.GetVersion() != lastAvailableModelVersion.GetVersion() {
+		trafficLatestModel, trafficLastAvailableModel := getTrafficShare(latestModel, lastAvailableModelVersion, weight)
+		lastAvailableServer, err := p.modelStore.GetServer(lastAvailableModelVersion.Server(), false, false)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to find server %s for last available model %s", lastAvailableModelVersion.Server(), modelName)
+			return err
+		}
+		logger.Debugf("Splitting traffic between latest %s:%d %d percent and %s:%d %d percent",
+			modelName,
+			latestModel.GetVersion(),
+			trafficLatestModel,
+			modelName,
+			lastAvailableModelVersion.GetVersion(),
+			trafficLastAvailableModel)
+
+		p.addEnvoyClustersForModelVersion(routeName, lastAvailableModelVersion, lastAvailableServer, trafficLastAvailableModel, isMirror)
+		p.addEnvoyClustersForModelVersion(routeName, lastAvailableModelVersion, lastAvailableServer, trafficLastAvailableModel, isMirror)
+		p.addEnvoyClustersForModelVersion(routeName, latestModel, server, trafficLatestModel, isMirror)
+		p.sendTrafficToModelVersion(routeName, lastAvailableModelVersion, lastAvailableServer, trafficLastAvailableModel, isMirror)
+		p.sendTrafficToModelVersion(routeName, latestModel, server, trafficLatestModel, isMirror)
+
+	} else {
+		p.addEnvoyClustersForModelVersion(routeName, latestModel, server, weight, isMirror)
 		p.sendTrafficToModelVersion(routeName, latestModel, server, weight, isMirror)
 	}
 	return nil
@@ -389,6 +441,9 @@ func (p *IncrementalProcessor) addExperimentModelBaselineTraffic(model *store.Mo
 		return fmt.Errorf("Experiment on model %s, but %s is deleted", model.Name, *exp.Default)
 	}
 	for _, candidate := range exp.Candidates {
+		if candidate.Name != model.Name {
+			continue
+		}
 		candidateModel, err := p.modelStore.GetModel(candidate.Name)
 		if err != nil {
 			return err
@@ -427,7 +482,7 @@ func (p *IncrementalProcessor) addTrafficForExperiment(routeName string, exp *ex
 			if err != nil {
 				return err
 			}
-			err = p.addModelTraffic(routeName, candidateModel, candidate.Weight, false)
+			err = p.addPipelineTraffic(routeName, candidateModel, candidate.Weight, false)
 			if err != nil {
 				return err
 			}
@@ -437,7 +492,7 @@ func (p *IncrementalProcessor) addTrafficForExperiment(routeName string, exp *ex
 			if err != nil {
 				return err
 			}
-			err = p.addModelTraffic(routeName, mirrorModel, exp.Mirror.Percent, true)
+			err = p.addPipelineTraffic(routeName, mirrorModel, exp.Mirror.Percent, true)
 			if err != nil {
 				return err
 			}
