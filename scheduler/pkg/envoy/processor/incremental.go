@@ -347,7 +347,6 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 			trafficLastAvailableModel)
 
 		p.addEnvoyClustersForModelVersion(routeName, lastAvailableModelVersion, lastAvailableServer, trafficLastAvailableModel, isMirror)
-		p.addEnvoyClustersForModelVersion(routeName, latestModel, server, trafficLatestModel, isMirror)
 
 		err = p.updateEnvoy()
 		if err != nil {
@@ -359,13 +358,10 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 			return err
 		}
 
+		p.addEnvoyClustersForModelVersion(routeName, lastAvailableModelVersion, lastAvailableServer, trafficLastAvailableModel, isMirror)
+		p.addEnvoyClustersForModelVersion(routeName, latestModel, server, trafficLatestModel, isMirror)
 		p.sendTrafficToModelVersion(routeName, lastAvailableModelVersion, lastAvailableServer, trafficLastAvailableModel, isMirror)
 		p.sendTrafficToModelVersion(routeName, latestModel, server, trafficLatestModel, isMirror)
-
-		err = p.updateEnvoy()
-		if err != nil {
-			return err
-		}
 
 	} else {
 		p.addEnvoyClustersForModelVersion(routeName, latestModel, server, weight, isMirror)
@@ -376,11 +372,6 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 
 		p.removeRouteForServerInEnvoyCache(routeName)
 		p.sendTrafficToModelVersion(routeName, latestModel, server, weight, isMirror)
-		err = p.updateEnvoy()
-		if err != nil {
-			return err
-		}
-
 	}
 	return nil
 }
