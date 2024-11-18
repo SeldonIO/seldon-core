@@ -97,25 +97,3 @@ peterbourgon/diskv,https://github.com/peterbourgon/diskv/blob/master/LICENSE,MIT
 pkg/errors,https://github.com/pkg/errors/blob/master/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/pkg/errors/master/LICENSE
 planetscale/vtprotobuf,https://github.com/planetscale/vtprotobuf/blob/main/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/planetscale/vtprotobuf/main/LICENSE
 pmezard/go-difflib,https://github.com/pmezard/go-difflib/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/pmezard/go-difflib/master/LICENSE
-prometheus/client_golang,https://github.com/prometheus/client_golang/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/prometheus/client_golang/main/LICENSE
-prometheus/client_model,https://github.com/prometheus/client_model/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/prometheus/client_model/master/LICENSE
-prometheus/common,https://github.com/prometheus/common/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/prometheus/common/main/LICENSE
-prometheus/procfs,https://github.com/prometheus/procfs/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/prometheus/procfs/master/LICENSE
-prometheus/prom2json,https://github.com/prometheus/prom2json/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/prometheus/prom2json/master/LICENSE
-rogpeppe/go-internal,https://github.com/rogpeppe/go-internal/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/rogpeppe/go-internal/master/LICENSE
-russross/blackfriday,https://github.com/russross/blackfriday/blob/master/LICENSE.txt,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/russross/blackfriday/master/LICENSE.txt
-sirupsen/logrus,https://github.com/sirupsen/logrus/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/sirupsen/logrus/master/LICENSE
-soheilhy/cmux,https://github.com/soheilhy/cmux/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/soheilhy/cmux/master/LICENSE
-spaolacci/murmur3,https://github.com/spaolacci/murmur3/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/spaolacci/murmur3/master/LICENSE
-spf13/cobra,https://github.com/spf13/cobra/blob/main/LICENSE.txt,Apache License 2.0,https://raw.githubusercontent.com/spf13/cobra/main/LICENSE.txt
-spf13/pflag,https://github.com/spf13/pflag/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/spf13/pflag/master/LICENSE
-stoewer/go-strcase,https://github.com/stoewer/go-strcase/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/stoewer/go-strcase/master/LICENSE
-stretchr/objx,https://github.com/stretchr/objx/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/stretchr/objx/master/LICENSE
-stretchr/testify,https://github.com/stretchr/testify/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/stretchr/testify/master/LICENSE
-tmc/grpc-websocket-proxy,https://github.com/tmc/grpc-websocket-proxy/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/tmc/grpc-websocket-proxy/master/LICENSE
-xhit/go-str2duration,https://github.com/xhit/go-str2duration/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/xhit/go-str2duration/master/LICENSE
-xiang90/probing,https://github.com/xiang90/probing/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/xiang90/probing/master/LICENSE
-yuin/goldmark,https://github.com/yuin/goldmark/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/yuin/goldmark/master/LICENSE
-go-check/check,https://github.com/go-check/check/blob/v1/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/go-check/check/v1/LICENSE
-go-inf/inf,https://github.com/go-inf/inf/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/go-inf/inf/master/LICENSE
-go-yaml/yaml,https://github.com/go-yaml/yaml/blob/v3/LICENSE,MIT License,https://raw.githubusercontent.com/go-yaml/yaml/v3/LICENSE
