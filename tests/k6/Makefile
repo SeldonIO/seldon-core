@@ -13,7 +13,6 @@ CMD_SVC = kubectl describe svc seldon-mesh -n ${NAMESPACE} | grep IP: -m 1 | cut
 POD = seldon-scheduler
 SCHEDULER_ENDPOINT := $(shell ${CMD})
 
-POD = seldon-envoy
 ENVOY_ENDPOINT := $(shell ${CMD_SVC})
 
 POD = mlserver-0
