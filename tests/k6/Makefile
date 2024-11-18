@@ -8,12 +8,12 @@ GIT_COMMIT := $(shell git rev-parse HEAD)
 GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 
 CMD = kubectl describe pod ${POD} -n ${NAMESPACE} | grep IP: -m 1 | cut -d' ' -f2- | xargs
+CMD_SVC = kubectl describe svc seldon-mesh -n ${NAMESPACE} | grep IP: -m 1 | cut -d' ' -f2- | xargs
 
 POD = seldon-scheduler
 SCHEDULER_ENDPOINT := $(shell ${CMD})
 
-POD = seldon-envoy
-ENVOY_ENDPOINT := $(shell ${CMD})
+ENVOY_ENDPOINT := $(shell ${CMD_SVC})
 
 POD = mlserver-0
 RPROXY_MLSERVER_ENDPOINT := $(shell ${CMD})
