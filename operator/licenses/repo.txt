@@ -25,7 +25,6 @@ alecthomas/kingpin
 alecthomas/template
 alecthomas/units
 antihax/optional
-antlr/antlr4
 antlr4-go/antlr
 armon/circbuf
 armon/go-metrics
@@ -110,6 +109,7 @@ frankban/quicktest
 fsnotify/fsevents
 fsnotify/fsnotify
 fvbommel/sortorder
+fxamacker/cbor
 ghodss/yaml
 go-gl/glfw
 go-jose/go-jose
@@ -348,6 +348,7 @@ tsenart/go-tsz
 tsenart/vegeta
 urfave/cli
 wk8/go-ordered-map
+x448/float16
 xdg-go/pbkdf2
 xdg-go/scram
 xdg-go/stringprep
