@@ -50,7 +50,6 @@ github.com/alecthomas/kingpin/v2
 github.com/alecthomas/template
 github.com/alecthomas/units
 github.com/antihax/optional
-github.com/antlr/antlr4/runtime/Go/antlr/v4
 github.com/antlr4-go/antlr/v4
 github.com/armon/circbuf
 github.com/armon/go-metrics
@@ -153,6 +152,7 @@ github.com/frankban/quicktest
 github.com/fsnotify/fsevents
 github.com/fsnotify/fsnotify
 github.com/fvbommel/sortorder
+github.com/fxamacker/cbor/v2
 github.com/ghodss/yaml
 github.com/go-gl/glfw
 github.com/go-gl/glfw/v3.3/glfw
@@ -408,6 +408,7 @@ github.com/tsenart/vegeta/v12
 github.com/urfave/cli
 github.com/urfave/cli/v2
 github.com/wk8/go-ordered-map/v2
+github.com/x448/float16
 github.com/xdg-go/pbkdf2
 github.com/xdg-go/scram
 github.com/xdg-go/stringprep
@@ -480,6 +481,7 @@ gopkg.in/cenkalti/backoff.v1
 gopkg.in/check.v1
 gopkg.in/cheggaaa/pb.v1
 gopkg.in/errgo.v2
+gopkg.in/evanphx/json-patch.v4
 gopkg.in/fsnotify.v1
 gopkg.in/inf.v0
 gopkg.in/ini.v1
@@ -501,6 +503,7 @@ k8s.io/client-go
 k8s.io/code-generator
 k8s.io/component-base
 k8s.io/gengo
+k8s.io/gengo/v2
 k8s.io/klog
 k8s.io/klog/v2
 k8s.io/kms
