@@ -79,7 +79,7 @@ func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost str
 	consumerConfig := kafka.ConfigMap{
 		"bootstrap.servers": kafkaBroker,
 		"group.id":          fmt.Sprintf("seldon-cli-%d", r1.Int()),
-		"auto.offset.reset": "largest",
+		"auto.offset.reset": "earliest",
 	}
 
 	namespace := DefaultNamespace
