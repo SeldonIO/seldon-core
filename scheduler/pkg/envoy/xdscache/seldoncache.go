@@ -303,6 +303,9 @@ func (xds *SeldonXDSCache) AddRouteClusterTraffic(
 
 func (xds *SeldonXDSCache) AddCluster(
 	name string,
+	routeName string,
+	modelName string,
+	modelVersion uint32,
 	isGrpc bool,
 ) {
 	cluster, ok := xds.Clusters[name]
@@ -315,7 +318,6 @@ func (xds *SeldonXDSCache) AddCluster(
 		}
 	}
 	cluster.Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: modelName, Version: modelVersion}] = true
-
 	xds.Clusters[name] = cluster
 }
 
