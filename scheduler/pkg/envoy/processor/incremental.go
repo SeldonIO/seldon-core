@@ -258,7 +258,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string,
 	clusterNameBase := modelVersion.GetMeta().GetName() + "_" + strconv.FormatInt(int64(modelVersion.GetVersion()), 10)
 	httpClusterName := clusterNameBase + "_http"
 	grpcClusterName := clusterNameBase + "_grpc"
-	p.xdsCache.AddCluster(httpClusterName, modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), false)
+	p.xdsCache.AddCluster(httpClusterName, false)
 	for _, replicaIdx := range assignment {
 		replica, ok := server.Replicas[replicaIdx]
 		if !ok {
@@ -267,7 +267,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string,
 			p.xdsCache.AddEndpoint(httpClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceHttpPort()))
 		}
 	}
-	p.xdsCache.AddCluster(grpcClusterName, modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), true)
+	p.xdsCache.AddCluster(grpcClusterName, true)
 	for _, replicaIdx := range assignment {
 		replica, ok := server.Replicas[replicaIdx]
 		if !ok {

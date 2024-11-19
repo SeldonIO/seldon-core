@@ -75,24 +75,19 @@ static_resources:
                   route:
                     cluster: admin_interface_cluster
 dynamic_resources:
+  ads_config:
+    api_type: DELTA_GRPC
+    transport_api_version: V3
+    grpc_services:
+    - envoy_grpc:
+        cluster_name: xds_cluster
+    set_node_on_first_message_only: true
   cds_config:
     resource_api_version: V3
-    api_config_source:
-      api_type: DELTA_GRPC
-      transport_api_version: V3
-      grpc_services:
-        - envoy_grpc:
-            cluster_name: xds_cluster
-      set_node_on_first_message_only: true
+    ads: {}
   lds_config:
     resource_api_version: V3
-    api_config_source:
-      api_type: DELTA_GRPC
-      transport_api_version: V3
-      grpc_services:
-        - envoy_grpc:
-            cluster_name: xds_cluster
-      set_node_on_first_message_only: true
+    ads: {}
 node:
   cluster: test-cluster
   id: test-id
@@ -102,12 +97,7 @@ layered_runtime:
       rtds_layer:
         rtds_config:
           resource_api_version: V3
-          api_config_source:
-            transport_api_version: V3
-            api_type: DELTA_GRPC
-            grpc_services:
-              envoy_grpc:
-                cluster_name: xds_cluster
+          ads: {}
         name: runtime-0
 admin:
   access_log_path: /dev/null
