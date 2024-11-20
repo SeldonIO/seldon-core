@@ -84,9 +84,9 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 		}
 
 		go func() {
-			// watch for configs
 			resp, err := c.Fetch()
 			g.Expect(err).To(BeNil())
+			g.Expect(len(resp.Resources)).To(Equal(6))
 			for _, r := range resp.Resources {
 				cluster := &clusterv3.Cluster{}
 				err := anypb.UnmarshalTo(r, cluster, proto.UnmarshalOptions{})
@@ -105,24 +105,15 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 
 func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSClient) func(t *testing.T) {
 	expectedFirstResponse := []string{"pipelinegateway_http", "pipelinegateway_grpc", "mirror_http", "mirror_grpc", "model_1_grpc", "model_1_http"}
-	expectedSecondResponse := []string{"pipelinegateway_http", "pipelinegateway_grpc", "mirror_http", "mirror_grpc", "model_1_grpc", "model_1_http", "model_2_grpc", "model_2_http"}
 
 	return func(t *testing.T) {
 		wg := sync.WaitGroup{}
-		wg.Add(1)
-
-		ops := []func(inc *IncrementalProcessor, g *WithT){
-			createTestModel("model", "server", 1, []int{0}, 2, []store.ModelReplicaState{store.Available}),
-		}
-
-		for _, op := range ops {
-			op(inc, g)
-		}
+		wg.Add(2)
 
 		go func() {
-			// watch for configs
 			resp, err := c.Fetch()
 			g.Expect(err).To(BeNil())
+			g.Expect(len(resp.Resources)).To(Equal(6))
 			for _, r := range resp.Resources {
 				cluster := &clusterv3.Cluster{}
 				err := anypb.UnmarshalTo(r, cluster, proto.UnmarshalOptions{})
@@ -132,9 +123,22 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 
 			err = c.Ack()
 			g.Expect(err).To(BeNil())
+			wg.Done()
+		}()
 
-			resp, err = c.Fetch()
+		expectedSecondResponse := slices.Concat(expectedFirstResponse, []string{"model_2_grpc", "model_2_http"})
+
+		ops := []func(inc *IncrementalProcessor, g *WithT){
+			createTestModel("model", "server", 1, []int{0}, 2, []store.ModelReplicaState{store.Available}),
+		}
+
+		for _, op := range ops {
+			op(inc, g)
+		}
+		go func() {
+			resp, err := c.Fetch()
 			g.Expect(err).To(BeNil())
+			g.Expect(len(resp.Resources)).To(Equal(8))
 			for _, r := range resp.Resources {
 				cluster := &clusterv3.Cluster{}
 				err := anypb.UnmarshalTo(r, cluster, proto.UnmarshalOptions{})
