@@ -281,11 +281,15 @@ func TestUpdateEnvoyForModelVersion(t *testing.T) {
 				xdsCache: xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{}),
 			}
 			for _, mv := range test.modelVersions {
-				inc.updateEnvoyForModelVersion(mv.GetMeta().GetName(), mv, test.server, test.traffic, false)
+				inc.addEnvoyClustersForModelVersion(mv.GetMeta().GetName(), mv, test.server)
+			}
+			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.expectedClusters))
+
+			for _, mv := range test.modelVersions {
+				inc.sendTrafficToModelVersion(mv.GetMeta().GetName(), mv, test.server, test.traffic, false)
 			}
 
 			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.expectedRoutes))
-			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.expectedClusters))
 		})
 	}
 }
@@ -312,7 +316,8 @@ func createTestModel(modelName string,
 	desiredReplicas uint32,
 	replicas []int,
 	version uint32,
-	replicaStates []store.ModelReplicaState) func(inc *IncrementalProcessor, g *WithT) {
+	replicaStates []store.ModelReplicaState,
+) func(inc *IncrementalProcessor, g *WithT) {
 	f := func(inc *IncrementalProcessor, g *WithT) {
 		model := &scheduler.Model{
 			Meta: &scheduler.MetaData{
@@ -352,7 +357,7 @@ func createTestModel(modelName string,
 			g.Expect(err).To(BeNil())
 		}
 
-		err = inc.modelUpdate(modelName)
+		err = inc.updateModel(modelName)
 		g.Expect(err).To(BeNil())
 	}
 	return f
@@ -394,7 +399,7 @@ func createTestExperiment(experimentName string, modelNames []string, defaultMod
 		}
 		err := inc.experimentServer.StartExperiment(exp)
 		g.Expect(err).To(BeNil())
-		err = inc.experimentUpdate(exp)
+		err = inc.updateExperiment(exp)
 		g.Expect(err).To(BeNil())
 	}
 	return f
@@ -686,10 +691,8 @@ func TestEnvoySettings(t *testing.T) {
 					}
 				}
 			}
-
 		})
 	}
-
 }
 
 func TestRollingUpdate(t *testing.T) {
@@ -746,7 +749,6 @@ func TestRollingUpdate(t *testing.T) {
 			for modelName, trafficSplits := range test.numTrafficSplits {
 				g.Expect(len(inc.xdsCache.Routes[modelName].Clusters)).To(Equal(trafficSplits))
 			}
-
 		})
 	}
 }
@@ -822,7 +824,6 @@ func TestDraining(t *testing.T) {
 				g.Expect(err).To(BeNil())
 				g.Expect(model.GetLatest().ModelState().State).To(Equal(modelState))
 			}
-
 		})
 	}
 }
@@ -971,7 +972,6 @@ func TestModelSync(t *testing.T) {
 				g.Expect(err).To(BeNil())
 				g.Expect(model.GetLatest().ModelState().State).To(Equal(modelState))
 			}
-
 		})
 	}
 }

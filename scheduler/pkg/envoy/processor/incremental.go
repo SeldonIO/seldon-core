@@ -153,16 +153,12 @@ func (p *IncrementalProcessor) handleExperimentEvents(event coordinator.Experime
 				}
 			} else {
 				if event.UpdatedExperiment {
-					err := p.experimentUpdate(exp)
-					var err2 error
+					err := p.updateExperiment(exp)
 					if err != nil {
 						logger.WithError(err).Errorf("Failed to process sync for experiment %s", event.String())
-						err2 = p.experimentServer.SetStatus(event.ExperimentName, false, err.Error())
+						p.setExperimentStatus(event.ExperimentName, err.Error(), false)
 					} else {
-						err2 = p.experimentServer.SetStatus(event.ExperimentName, true, "experiment active")
-					}
-					if err2 != nil {
-						logger.WithError(err2).Errorf("Failed to set experiment activation")
+						p.setExperimentStatus(event.ExperimentName, "experiment active", true)
 					}
 				}
 			}
@@ -175,7 +171,7 @@ func (p *IncrementalProcessor) handleModelEvents(event coordinator.ModelEventMsg
 	logger.Debugf("Received sync for model %s", event.String())
 
 	go func() {
-		err := p.modelUpdate(event.ModelName)
+		err := p.updateModel(event.ModelName)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to process sync for model %s", event.String())
 		}
@@ -237,28 +233,26 @@ func (p *IncrementalProcessor) updateEnvoy() error {
 // This function does not call `updateEnvoy` directly and therefore callers should make sure
 // that this is done (either in a batched update or directly)
 func (p *IncrementalProcessor) removeRouteForServerInEnvoyCache(routeName string) error {
-	logger := p.logger.WithField("func", "removeModelForServerInEnvoy")
+	logger := p.logger.WithField("func", "removeRouteForServerInEnvoyCache")
 	err := p.xdsCache.RemoveRoute(routeName)
 	if err != nil {
-		logger.Debugf("Failed to remove route for %s", routeName)
+		logger.Errorf("Failed to remove route for %s", routeName)
 		return err
 	}
 	return nil
 }
 
-func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string, modelVersion *store.ModelVersion, server *store.ServerSnapshot, trafficPercent uint32, isMirror bool) {
+func (p *IncrementalProcessor) addEnvoyClustersForModelVersion(modelRouteName string, modelVersion *store.ModelVersion, server *store.ServerSnapshot) {
 	logger := p.logger.WithField("func", "updateEnvoyForModelVersion")
 
-	assignment := modelVersion.GetAssignment() // Get loaded replicas for model
+	assignment := modelVersion.GetAssignment()
 	if len(assignment) == 0 {
 		logger.Debugf("No assigned replicas so returning for %s", modelRouteName)
 		return
 	}
 
-	clusterNameBase := modelVersion.GetMeta().GetName() + "_" + strconv.FormatInt(int64(modelVersion.GetVersion()), 10)
-	httpClusterName := clusterNameBase + "_http"
-	grpcClusterName := clusterNameBase + "_grpc"
-	p.xdsCache.AddCluster(httpClusterName, modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), false)
+	httpClusterName, grpcClusterName := getClusterNames(modelVersion)
+	p.xdsCache.AddCluster(httpClusterName, false)
 	for _, replicaIdx := range assignment {
 		replica, ok := server.Replicas[replicaIdx]
 		if !ok {
@@ -267,7 +261,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string,
 			p.xdsCache.AddEndpoint(httpClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceHttpPort()))
 		}
 	}
-	p.xdsCache.AddCluster(grpcClusterName, modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), true)
+	p.xdsCache.AddCluster(grpcClusterName, true)
 	for _, replicaIdx := range assignment {
 		replica, ok := server.Replicas[replicaIdx]
 		if !ok {
@@ -275,6 +269,16 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string,
 		} else {
 			p.xdsCache.AddEndpoint(grpcClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceGrpcPort()))
 		}
+	}
+}
+
+func (p *IncrementalProcessor) sendTrafficToModelVersion(modelRouteName string, modelVersion *store.ModelVersion, server *store.ServerSnapshot, trafficPercent uint32, isMirror bool) {
+	logger := p.logger.WithField("func", "sendTrafficToModelVersion")
+
+	assignment := modelVersion.GetAssignment()
+	if len(assignment) == 0 {
+		logger.Debugf("No assigned replicas so returning for %s", modelRouteName)
+		return
 	}
 
 	logPayloads := false
@@ -284,7 +288,15 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string,
 		logger.Warnf("model %s has not deployment spec", modelVersion.GetModel().GetMeta().GetName())
 	}
 
+	httpClusterName, grpcClusterName := getClusterNames(modelVersion)
 	p.xdsCache.AddRouteClusterTraffic(modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), trafficPercent, httpClusterName, grpcClusterName, logPayloads, isMirror)
+}
+
+func getClusterNames(modelVersion *store.ModelVersion) (httpClusterName, grpcClusterName string) {
+	clusterNameBase := modelVersion.GetMeta().GetName() + "_" + strconv.FormatInt(int64(modelVersion.GetVersion()), 10)
+	httpClusterName = clusterNameBase + "_http"
+	grpcClusterName = clusterNameBase + "_grpc"
+	return httpClusterName, grpcClusterName
 }
 
 func getTrafficShare(latestModel *store.ModelVersion, lastAvailableModelVersion *store.ModelVersion, weight uint32) (uint32, uint32) {
@@ -296,7 +308,7 @@ func getTrafficShare(latestModel *store.ModelVersion, lastAvailableModelVersion 
 	return trafficLatestModel, trafficLastAvailableModel
 }
 
-func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.ModelSnapshot, weight uint32, isMirror bool) error {
+func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.ModelSnapshot, weight uint32, isMirror, isRouteStale bool) error {
 	logger := p.logger.WithField("func", "addModelTraffic")
 
 	modelName := model.Name
@@ -305,7 +317,7 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 		if latestModel == nil {
 			logger.Infof("latest model is nil for model %s route %s", model.Name, routeName)
 		}
-		return fmt.Errorf("No live replica for model %s for model route %s", model.Name, routeName)
+		return fmt.Errorf("no live replica for model %s for model route %s", model.Name, routeName)
 	}
 
 	server, err := p.modelStore.GetServer(latestModel.Server(), false, false)
@@ -313,12 +325,13 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 		return err
 	}
 
-	lastAvailableModelVersion := model.GetLastAvailableModel()
-	if lastAvailableModelVersion != nil && latestModel.GetVersion() != lastAvailableModelVersion.GetVersion() {
-		trafficLatestModel, trafficLastAvailableModel := getTrafficShare(latestModel, lastAvailableModelVersion, weight)
-		lastAvailableServer, err := p.modelStore.GetServer(lastAvailableModelVersion.Server(), false, false)
+	lastAvailableModel := model.GetLastAvailableModel()
+
+	if lastAvailableModel != nil && latestModel.GetVersion() != lastAvailableModel.GetVersion() {
+		trafficLatestModel, trafficLastAvailableModel := getTrafficShare(latestModel, lastAvailableModel, weight)
+		lastAvailableServer, err := p.modelStore.GetServer(lastAvailableModel.Server(), false, false)
 		if err != nil {
-			logger.WithError(err).Errorf("Failed to find server %s for last available model %s", lastAvailableModelVersion.Server(), modelName)
+			logger.WithError(err).Errorf("Failed to find server %s for last available model %s", lastAvailableModel.Server(), modelName)
 			return err
 		}
 		logger.Debugf("Splitting traffic between latest %s:%d %d percent and %s:%d %d percent",
@@ -326,34 +339,67 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 			latestModel.GetVersion(),
 			trafficLatestModel,
 			modelName,
-			lastAvailableModelVersion.GetVersion(),
+			lastAvailableModel.GetVersion(),
 			trafficLastAvailableModel)
-		p.updateEnvoyForModelVersion(routeName, lastAvailableModelVersion, lastAvailableServer, trafficLastAvailableModel, isMirror)
-		p.updateEnvoyForModelVersion(routeName, latestModel, server, trafficLatestModel, isMirror)
+
+		if isRouteStale {
+			p.addEnvoyClustersForModelVersion(routeName, lastAvailableModel, lastAvailableServer)
+			p.addEnvoyClustersForModelVersion(routeName, latestModel, server)
+			err = p.updateEnvoy()
+			if err != nil {
+				return err
+			}
+
+			err = p.removeRouteForServerInEnvoyCache(routeName)
+			if err != nil {
+				return err
+			}
+		}
+
+		p.addEnvoyClustersForModelVersion(routeName, lastAvailableModel, lastAvailableServer)
+		p.sendTrafficToModelVersion(routeName, lastAvailableModel, lastAvailableServer, trafficLastAvailableModel, isMirror)
+
+		p.addEnvoyClustersForModelVersion(routeName, latestModel, server)
+		p.sendTrafficToModelVersion(routeName, latestModel, server, trafficLatestModel, isMirror)
+
 	} else {
-		p.updateEnvoyForModelVersion(routeName, latestModel, server, weight, isMirror)
+		if isRouteStale {
+			p.addEnvoyClustersForModelVersion(routeName, latestModel, server)
+			err = p.updateEnvoy()
+			if err != nil {
+				return err
+			}
+
+			err = p.removeRouteForServerInEnvoyCache(routeName)
+			if err != nil {
+				return err
+			}
+		}
+
+		p.addEnvoyClustersForModelVersion(routeName, latestModel, server)
+		p.sendTrafficToModelVersion(routeName, latestModel, server, weight, isMirror)
 	}
 	return nil
 }
 
-func (p *IncrementalProcessor) addExperimentModelBaselineTraffic(model *store.ModelSnapshot, exp *experiment.Experiment) error {
-	logger := p.logger.WithField("func", "addExperimentModelBaselineTraffic")
-	logger.Infof("Trying to setup experiment for %s", model.Name)
+func (p *IncrementalProcessor) addBaselineModelTraffic(baselineModel *store.ModelSnapshot, exp *experiment.Experiment) error {
+	logger := p.logger.WithField("func", "addBaselineModelTraffic")
+	logger.Infof("Trying to setup experiment for %s", baselineModel.Name)
 	if exp.Default == nil {
-		return fmt.Errorf("Didn't find baseline in experiment for model %s", model.Name)
+		return fmt.Errorf("didn't find baseline in experiment for model %s", baselineModel.Name)
 	}
-	if *exp.Default != model.Name {
-		return fmt.Errorf("Didn't find expected model name baseline in experiment for model found %s but expected %s", *exp.Default, model.Name)
+	if *exp.Default != baselineModel.Name {
+		return fmt.Errorf("didn't find expected model name baseline in experiment for model found %s but expected %s", *exp.Default, baselineModel.Name)
 	}
 	if exp.Deleted {
-		return fmt.Errorf("Experiment on model %s, but %s is deleted", model.Name, *exp.Default)
+		return fmt.Errorf("experiment on model %s, but %s is deleted", baselineModel.Name, *exp.Default)
 	}
 	for _, candidate := range exp.Candidates {
 		candidateModel, err := p.modelStore.GetModel(candidate.Name)
 		if err != nil {
 			return err
 		}
-		err = p.addModelTraffic(model.Name, candidateModel, candidate.Weight, false)
+		err = p.addModelTraffic(baselineModel.Name, candidateModel, candidate.Weight, false, true)
 		if err != nil {
 			return err
 		}
@@ -363,8 +409,8 @@ func (p *IncrementalProcessor) addExperimentModelBaselineTraffic(model *store.Mo
 		if err != nil {
 			return err
 		}
-		logger.Infof("Getting mirror model %s to add to model %s", mirrorModel.Name, model.Name)
-		err = p.addModelTraffic(model.Name, mirrorModel, exp.Mirror.Percent, true)
+		logger.Infof("Getting mirror model %s to add to model %s", mirrorModel.Name, baselineModel.Name)
+		err = p.addModelTraffic(baselineModel.Name, mirrorModel, exp.Mirror.Percent, true, true)
 		if err != nil {
 			return err
 		}
@@ -372,27 +418,8 @@ func (p *IncrementalProcessor) addExperimentModelBaselineTraffic(model *store.Mo
 	return nil
 }
 
-func (p *IncrementalProcessor) addModel(model *store.ModelSnapshot) error {
-	logger := p.logger.WithField("func", "addTraffic")
-	exp := p.experimentServer.GetExperimentForBaselineModel(model.Name)
-	if exp != nil {
-		err := p.addExperimentModelBaselineTraffic(model, exp)
-		if err != nil {
-			logger.WithError(err).Debugf("Revert experiment traffic to just model %s", model.Name)
-			err = p.removeRouteForServerInEnvoyCache(model.Name)
-			if err != nil {
-				return err
-			}
-			return p.addModelTraffic(model.Name, model, 100, false)
-		}
-	} else {
-		logger.Infof("Handle vanilla no experiment traffic for %s", model.Name)
-		return p.addModelTraffic(model.Name, model, 100, false)
-	}
-	return nil
-}
-
-func (p *IncrementalProcessor) addTrafficForExperiment(routeName string, exp *experiment.Experiment) error {
+func (p *IncrementalProcessor) addExperimentTraffic(exp *experiment.Experiment) error {
+	routeName := getExperimentRouteName(exp.Name)
 	switch exp.ResourceType {
 	case experiment.PipelineResourceType:
 		for _, candidate := range exp.Candidates {
@@ -407,7 +434,7 @@ func (p *IncrementalProcessor) addTrafficForExperiment(routeName string, exp *ex
 			if err != nil {
 				return err
 			}
-			err = p.addModelTraffic(routeName, candidateModel, candidate.Weight, false)
+			err = p.addModelTraffic(routeName, candidateModel, candidate.Weight, false, false)
 			if err != nil {
 				return err
 			}
@@ -417,13 +444,13 @@ func (p *IncrementalProcessor) addTrafficForExperiment(routeName string, exp *ex
 			if err != nil {
 				return err
 			}
-			err = p.addModelTraffic(routeName, mirrorModel, exp.Mirror.Percent, true)
+			err = p.addModelTraffic(routeName, mirrorModel, exp.Mirror.Percent, true, false)
 			if err != nil {
 				return err
 			}
 		}
 	default:
-		return fmt.Errorf("Unknown resource type %v", exp.ResourceType)
+		return fmt.Errorf("unknown resource type %v", exp.ResourceType)
 	}
 	return nil
 }
@@ -433,15 +460,14 @@ func (p *IncrementalProcessor) addExperiment(exp *experiment.Experiment) error {
 	logger := p.logger.WithField("func", "addExperiment")
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	routeName := fmt.Sprintf("%s.experiment", exp.Name)
-
+	routeName := getExperimentRouteName(exp.Name)
 	// first clear any existing routes
 	if err := p.removeRouteForServerInEnvoyCache(routeName); err != nil {
 		logger.WithError(err).Errorf("Failed to remove traffic for experiment %s", routeName)
 		return err
 	}
 
-	if err := p.addTrafficForExperiment(routeName, exp); err != nil {
+	if err := p.addExperimentTraffic(exp); err != nil {
 		logger.WithError(err).Errorf("Failed to add traffic for experiment %s", routeName)
 		return err
 	}
@@ -449,16 +475,20 @@ func (p *IncrementalProcessor) addExperiment(exp *experiment.Experiment) error {
 }
 
 func (p *IncrementalProcessor) removeExperiment(exp *experiment.Experiment) error {
-	logger := p.logger.WithField("func", "addExperiment")
+	logger := p.logger.WithField("func", "removeExperiment")
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	routeName := fmt.Sprintf("%s.experiment", exp.Name)
+	routeName := getExperimentRouteName(exp.Name)
 	logger.Debugf("Remove experiment route %s", routeName)
 	if err := p.removeRouteForServerInEnvoyCache(routeName); err != nil {
 		logger.WithError(err).Errorf("Failed to remove traffic for experiment %s", routeName)
 		return err
 	}
 	return p.updateEnvoy()
+}
+
+func getExperimentRouteName(experimentName string) string {
+	return fmt.Sprintf("%s.%s", experimentName, "experiment")
 }
 
 func getPipelineRouteName(pipelineName string) string {
@@ -477,8 +507,10 @@ func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 	}
 	logger.Debugf("Handling pipeline %s deleted %v", pip.Name, pip.Deleted)
 	if pip.Deleted {
-		return p.removePipeline(pip)
+		p.xdsCache.RemovePipelineRoute(getPipelineRouteName(pip.Name))
+		return p.updateEnvoy()
 	}
+
 	routeName := getPipelineRouteName(pip.Name)
 	p.xdsCache.RemovePipelineRoute(routeName)
 	exp := p.experimentServer.GetExperimentForBaselinePipeline(pip.Name)
@@ -510,13 +542,8 @@ func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 	return p.updateEnvoy()
 }
 
-func (p *IncrementalProcessor) removePipeline(pip *pipeline.Pipeline) error {
-	p.xdsCache.RemovePipelineRoute(getPipelineRouteName(pip.Name))
-	return p.updateEnvoy()
-}
-
-func (p *IncrementalProcessor) experimentUpdate(exp *experiment.Experiment) error {
-	logger := p.logger.WithField("func", "experimentSync")
+func (p *IncrementalProcessor) updateExperiment(exp *experiment.Experiment) error {
+	logger := p.logger.WithField("func", "updateExperiment")
 	if exp.Default != nil {
 		switch exp.ResourceType {
 		case experiment.PipelineResourceType:
@@ -527,50 +554,54 @@ func (p *IncrementalProcessor) experimentUpdate(exp *experiment.Experiment) erro
 			}
 		case experiment.ModelResourceType:
 			logger.Infof("Experiment %s sync - calling for model %s", exp.Name, *exp.Default)
-			err := p.modelUpdate(*exp.Default)
+			err := p.updateModel(*exp.Default)
 			if err != nil {
 				return err
 			}
 		default:
-			return fmt.Errorf("Unknown resource type %v", exp.ResourceType)
+			return fmt.Errorf("unknown resource type %v", exp.ResourceType)
 		}
 	}
 	return p.addExperiment(exp)
 }
 
-func (p *IncrementalProcessor) modelUpdate(modelName string) error {
-	logger := p.logger.WithField("func", "modelUpdate")
+func (p *IncrementalProcessor) updateModel(modelName string) error {
+	logger := p.logger.WithField("func", "updateModel")
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	p.modelStore.LockModel(modelName)
 
 	logger.Debugf("Calling model update for %s", modelName)
 
-	model, err := p.modelStore.GetModel(modelName)
-	if err != nil {
-		logger.WithError(err).Warnf("Failed to sync model %s", modelName)
+	removeRouteAndUnlockModel := func(modelName string) error {
 		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
-			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
+			logger.WithError(err).Errorf("Failed to remove route from envoy for model: %s", modelName)
 			p.modelStore.UnlockModel(modelName)
 			return err
 		}
+		return nil
 	}
-	if model == nil {
-		logger.Debugf("sync: No model - removing for %s", modelName)
-		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
-			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
+
+	model, err := p.modelStore.GetModel(modelName)
+	if err != nil {
+		logger.WithError(err).Warnf("Failed to sync model %s", modelName)
+		if err := removeRouteAndUnlockModel(modelName); err != nil {
+			return err
 		}
-		p.modelStore.UnlockModel(modelName)
+	}
+
+	if model == nil {
+		if err := removeRouteAndUnlockModel(modelName); err == nil {
+			p.modelStore.UnlockModel(modelName)
+		}
 		return p.updateEnvoy() // in practice we should not be here
 	}
 
 	latestModel := model.GetLatest()
 	if latestModel == nil {
-		logger.Debugf("sync: No latest model - removing for %s", modelName)
-		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
-			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
+		if err := removeRouteAndUnlockModel(modelName); err == nil {
+			p.modelStore.UnlockModel(modelName)
 		}
-		p.modelStore.UnlockModel(modelName)
 		return p.updateEnvoy() // in practice we should not be here
 	}
 
@@ -579,10 +610,8 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 	// to take place for errors as well as the successful path through the methods
 	modelRemoved := false
 	if !model.CanReceiveTraffic() {
-		logger.Debugf("sync: Model can't receive traffic - removing for %s", modelName)
-		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
-			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
-			p.modelStore.UnlockModel(modelName)
+		logger.Debugf("sync: Model can't receive traffic - removing route for %s", modelName)
+		if err := removeRouteAndUnlockModel(modelName); err != nil {
 			return err
 		}
 		modelRemoved = true
@@ -591,10 +620,8 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 	if !modelRemoved {
 		_, err = p.modelStore.GetServer(latestModel.Server(), false, false)
 		if err != nil {
-			logger.Debugf("sync: No server - removing for %s", modelName)
-			if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
-				logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
-				p.modelStore.UnlockModel(modelName)
+			logger.Debugf("sync: No server - removing route for %s", modelName)
+			if err := removeRouteAndUnlockModel(modelName); err != nil {
 				return err
 			}
 			modelRemoved = true
@@ -602,21 +629,25 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 	}
 
 	if !modelRemoved {
-		// Remove routes before we recreate
-		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
-			logger.Debugf("Failed to remove route before starting update for %s", modelName)
-			p.modelStore.UnlockModel(modelName)
-			return err
+		var err error
+		exp := p.experimentServer.GetExperimentForBaselineModel(model.Name)
+		if exp != nil {
+			err = p.addBaselineModelTraffic(model, exp)
+			if err != nil {
+				logger.WithError(err).Debugf("Revert experiment traffic to just model %s", model.Name)
+				err = p.removeRouteForServerInEnvoyCache(model.Name)
+				if err == nil {
+					err = p.addModelTraffic(model.Name, model, 100, false, true)
+				}
+			}
+		} else {
+			logger.Infof("Handle vanilla no experiment traffic for %s", model.Name)
+			err = p.addModelTraffic(model.Name, model, 100, false, true)
 		}
 
-		err = p.addModel(model)
 		if err != nil {
-			// note that on error for `addModel` we specifically do not return so that we can do batched
-			// delete of envoy routes
 			logger.WithError(err).Errorf("Failed to add traffic for model %s", modelName)
-			if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
-				logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
-				p.modelStore.UnlockModel(modelName)
+			if err := removeRouteAndUnlockModel(modelName); err != nil {
 				return err
 			}
 		}
@@ -641,17 +672,6 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 	}
 
 	return nil
-}
-
-func (p *IncrementalProcessor) callVersionCleanupIfNeeded(modelName string) {
-	logger := p.logger.WithField("func", "callVersionCleanupIfNeeded")
-	if routes, ok := p.xdsCache.Routes[modelName]; ok {
-		logger.Debugf("routes for model %s %v", modelName, routes)
-		if p.versionCleaner != nil {
-			logger.Debugf("Calling cleanup for model %s", modelName)
-			p.versionCleaner.RunCleanup(modelName)
-		}
-	}
 }
 
 func (p *IncrementalProcessor) triggerModelSyncIfNeeded() bool {
@@ -766,4 +786,23 @@ func (p *IncrementalProcessor) modelSync() {
 	p.batchTrigger = nil
 	p.pendingModelVersions = nil
 	logger.Debugf("Done modelSync")
+}
+
+func (p *IncrementalProcessor) callVersionCleanupIfNeeded(modelName string) {
+	logger := p.logger.WithField("func", "callVersionCleanupIfNeeded")
+	if routes, ok := p.xdsCache.Routes[modelName]; ok {
+		logger.Debugf("routes for model %s %v", modelName, routes)
+		if p.versionCleaner != nil {
+			logger.Debugf("Calling cleanup for model %s", modelName)
+			p.versionCleaner.RunCleanup(modelName)
+		}
+	}
+}
+
+func (p *IncrementalProcessor) setExperimentStatus(name, reason string, active bool) {
+	logger := p.logger.WithField("func", "setExperimentStatus")
+	err := p.experimentServer.SetStatus(name, active, reason)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to set experiment status")
+	}
 }

@@ -23,14 +23,13 @@ type Listener struct {
 	Address                string
 	Port                   uint32
 	RouteConfigurationName string
-	//RouteNames []string
 }
 
 type Route struct {
 	RouteName   string
 	LogPayloads bool
-	Clusters    []TrafficSplits
-	Mirrors     []TrafficSplits
+	Clusters    []TrafficSplits // should be a map with a key -> model name and version
+	Mirrors     []TrafficSplits // should be a map with a key -> model name and version
 }
 
 type TrafficSplits struct {
@@ -47,7 +46,7 @@ type RouteVersionKey struct {
 	Version   uint32
 }
 
-type Cluster struct {
+type Cluster struct { // add model and version here
 	Name      string
 	Grpc      bool
 	Endpoints map[string]Endpoint
