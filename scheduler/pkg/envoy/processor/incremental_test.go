@@ -290,6 +290,7 @@ func TestUpdateEnvoyForModelVersion(t *testing.T) {
 			}
 
 			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.expectedRoutes))
+			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.expectedClusters))
 		})
 	}
 }
