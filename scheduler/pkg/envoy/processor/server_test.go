@@ -63,7 +63,8 @@ func TestFetch(t *testing.T) {
 	err = c.InitConnect(conn)
 	g.Expect(err).To(BeNil())
 
-	t.Run("Test initial fetch with model 1", testInitialFetch(g, inc, c))
+	t.Run("Test initial fetch with model version 1", testInitialFetch(g, inc, c))
+	t.Run("Test update model version to 2", testUpdateModelVersion(g, inc, c))
 }
 
 func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) func(t *testing.T) {
@@ -86,12 +87,52 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 			// watch for configs
 			resp, err := c.Fetch()
 			g.Expect(err).To(BeNil())
+			g.Expect(len(resp.Resources)).To(Equal(6))
 			for _, r := range resp.Resources {
 				cluster := &clusterv3.Cluster{}
 				err := anypb.UnmarshalTo(r, cluster, proto.UnmarshalOptions{})
 				g.Expect(err).To(BeNil())
 				g.Expect(slices.Contains(expectedClusterNames, cluster.Name)).To(BeTrue())
 			}
+
+			err = c.Ack()
+			g.Expect(err).To(BeNil())
+			wg.Done()
+		}()
+
+		wg.Wait()
+	}
+}
+
+func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSClient) func(t *testing.T) {
+	expectedClusterNames := []string{"pipelinegateway_http", "pipelinegateway_grpc", "mirror_http", "mirror_grpc", "model_2_grpc", "model_2_http"}
+
+	return func(t *testing.T) {
+		wg := sync.WaitGroup{}
+		wg.Add(1)
+
+		ops := []func(inc *IncrementalProcessor, g *WithT){
+			createTestModel("model", "server", 1, []int{0}, 2, []store.ModelReplicaState{store.Available}),
+		}
+
+		for _, op := range ops {
+			op(inc, g)
+		}
+
+		go func() {
+			// watch for configs
+			resp, err := c.Fetch()
+			g.Expect(err).To(BeNil())
+			g.Expect(len(resp.Resources)).To(Equal(6))
+			for _, r := range resp.Resources {
+				cluster := &clusterv3.Cluster{}
+				err := anypb.UnmarshalTo(r, cluster, proto.UnmarshalOptions{})
+				g.Expect(err).To(BeNil())
+				g.Expect(slices.Contains(expectedClusterNames, cluster.Name)).To(BeTrue())
+			}
+
+			err = c.Ack()
+			g.Expect(err).To(BeNil())
 
 			err = c.Ack()
 			g.Expect(err).To(BeNil())
