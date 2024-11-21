@@ -2,7 +2,9 @@ package processor
 
 import (
 	"context"
+	"reflect"
 	"slices"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -21,6 +23,7 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
@@ -34,8 +37,13 @@ func TestFetch(t *testing.T) {
 	logger := log.New()
 
 	snapCache := cache.NewSnapshotCache(true, cache.IDHash{}, logger)
+
+	port, err := testing_utils.GetFreePortForTest()
+	if err != nil {
+		t.Fatal(err)
+	}
 	go func() {
-		err := startAdsServer(ctx, snapCache, 18001)
+		err := startAdsServer(ctx, snapCache, uint(port))
 		g.Expect(err).To(BeNil())
 	}()
 
@@ -52,10 +60,10 @@ func TestFetch(t *testing.T) {
 		nodeID:           "node_1",
 	}
 
-	err := inc.setListeners()
+	err = inc.setListeners()
 	g.Expect(err).To(BeNil())
 
-	conn, err := grpc.NewClient(":18001", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(":"+strconv.Itoa(port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	g.Expect(err).To(BeNil())
 	defer conn.Close()
 
@@ -87,13 +95,16 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 			// watch for configs
 			resp, err := c.Fetch()
 			g.Expect(err).To(BeNil())
-			g.Expect(len(resp.Resources)).To(Equal(6))
+			actualClusterNames := make([]string, 0)
 			for _, r := range resp.Resources {
 				cluster := &clusterv3.Cluster{}
 				err := anypb.UnmarshalTo(r, cluster, proto.UnmarshalOptions{})
 				g.Expect(err).To(BeNil())
-				g.Expect(slices.Contains(expectedClusterNames, cluster.Name)).To(BeTrue())
+				actualClusterNames = append(actualClusterNames, cluster.Name)
 			}
+			slices.Sort(actualClusterNames)
+			slices.Sort(expectedClusterNames)
+			g.Expect(reflect.DeepEqual(actualClusterNames, expectedClusterNames)).To(BeTrue())
 
 			err = c.Ack()
 			g.Expect(err).To(BeNil())
@@ -123,13 +134,16 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 			// watch for configs
 			resp, err := c.Fetch()
 			g.Expect(err).To(BeNil())
-			g.Expect(len(resp.Resources)).To(Equal(6))
+			actualClusterNames := make([]string, 0)
 			for _, r := range resp.Resources {
 				cluster := &clusterv3.Cluster{}
 				err := anypb.UnmarshalTo(r, cluster, proto.UnmarshalOptions{})
 				g.Expect(err).To(BeNil())
-				g.Expect(slices.Contains(expectedClusterNames, cluster.Name)).To(BeTrue())
+				actualClusterNames = append(actualClusterNames, cluster.Name)
 			}
+			slices.Sort(actualClusterNames)
+			slices.Sort(expectedClusterNames)
+			g.Expect(reflect.DeepEqual(actualClusterNames, expectedClusterNames)).To(BeTrue())
 
 			err = c.Ack()
 			g.Expect(err).To(BeNil())
