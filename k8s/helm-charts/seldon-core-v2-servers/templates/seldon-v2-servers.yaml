@@ -11,6 +11,11 @@ spec:
   podSpec: {{ toJson .Values.mlserver.podSpec }}
   replicas: {{ .Values.mlserver.replicas }}
   serverConfig: mlserver
+  statefulSetPersistentVolumeClaimRetentionPolicy:
+    whenDeleted: {{ .Values.mlserver.statefulSetPersistentVolumeClaimRetentionPolicy.whenDeleted
+      }}
+    whenScaled: {{ .Values.mlserver.statefulSetPersistentVolumeClaimRetentionPolicy.whenScaled
+      }}
 ---
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
@@ -25,3 +30,8 @@ spec:
   podSpec: {{ toJson .Values.triton.podSpec }}
   replicas: {{ .Values.triton.replicas }}
   serverConfig: triton
+  statefulSetPersistentVolumeClaimRetentionPolicy:
+    whenDeleted: {{ .Values.triton.statefulSetPersistentVolumeClaimRetentionPolicy.whenDeleted
+      }}
+    whenScaled: {{ .Values.triton.statefulSetPersistentVolumeClaimRetentionPolicy.whenScaled
+      }}
