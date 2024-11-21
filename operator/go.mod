@@ -22,9 +22,9 @@ require (
 	github.com/tidwall/gjson v1.18.0
 	google.golang.org/grpc v1.68.0
 	google.golang.org/protobuf v1.35.1
-	k8s.io/api v0.31.0
-	k8s.io/apimachinery v0.31.0
-	k8s.io/client-go v0.31.0
+	k8s.io/api v0.31.3
+	k8s.io/apimachinery v0.31.3
+	k8s.io/client-go v0.31.3
 	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8
 	knative.dev/pkg v0.0.0-20211203062937-d37811b71d6a
 	sigs.k8s.io/controller-runtime v0.19.1
