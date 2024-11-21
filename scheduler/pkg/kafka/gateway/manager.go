@@ -16,6 +16,7 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	log "github.com/sirupsen/logrus"
 
+	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
@@ -78,7 +79,7 @@ func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error 
 
 	producerConfig := config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Producer)
 	producerConfig["go.delivery.reports"] = true
-	err = config.AddKafkaSSLOptions(producerConfig)
+	err = config_tls.AddKafkaSSLOptions(producerConfig)
 	if err != nil {
 		return err
 	}
@@ -92,7 +93,7 @@ func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error 
 	}
 
 	consumerConfig := config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Consumer)
-	err = config.AddKafkaSSLOptions(consumerConfig)
+	err = config_tls.AddKafkaSSLOptions(consumerConfig)
 	if err != nil {
 		return err
 	}

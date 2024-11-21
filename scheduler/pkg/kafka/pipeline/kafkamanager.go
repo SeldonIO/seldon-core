@@ -26,6 +26,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
+	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
 )
 
 const (
@@ -123,7 +124,7 @@ func (km *KafkaManager) createProducer() error {
 
 	producerConfigMap := config.CloneKafkaConfigMap(km.kafkaConfig.Producer)
 	producerConfigMap["go.delivery.reports"] = true
-	err = config.AddKafkaSSLOptions(producerConfigMap)
+	err = config_tls.AddKafkaSSLOptions(producerConfigMap)
 	if err != nil {
 		return err
 	}
@@ -202,7 +203,7 @@ func (km *KafkaManager) Infer(
 		km.mu.RUnlock()
 		return nil, err
 	}
-	// Use composite key to differentiate multiple piplines (i.e. mirror) using the same message
+	// Use composite key to differentiate multiple pipelines (i.e. mirror) using the same message
 	compositeKey := getCompositeKey(resourceName, requestId, ".")
 	request := &Request{
 		active: true,

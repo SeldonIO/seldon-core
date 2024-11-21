@@ -22,6 +22,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
+	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -61,7 +62,7 @@ func NewMultiTopicsKafkaConsumer(
 func (c *MultiTopicsKafkaConsumer) createConsumer() error {
 	consumerConfig := config.CloneKafkaConfigMap(c.config.Consumer)
 	consumerConfig["group.id"] = c.id
-	err := config.AddKafkaSSLOptions(consumerConfig)
+	err := config_tls.AddKafkaSSLOptions(consumerConfig)
 	if err != nil {
 		return err
 	}

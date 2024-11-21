@@ -14,11 +14,10 @@ import (
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/config/oauth"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/password"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/util"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config/oauth"
 )
 
 const (
