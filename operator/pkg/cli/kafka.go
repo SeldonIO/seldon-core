@@ -23,6 +23,8 @@ import (
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
+
+	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
 )
 
 const (
@@ -92,25 +94,7 @@ func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost str
 		if config.Kafka.TopicPrefix != "" {
 			topicPrefix = config.Kafka.TopicPrefix
 		}
-		switch config.Kafka.Protocol {
-		case KafkaConfigProtocolSSL:
-			consumerConfig["security.protocol"] = KafkaConfigProtocolSSL
-			consumerConfig["ssl.ca.location"] = config.Kafka.CaPath
-			consumerConfig["ssl.key.location"] = config.Kafka.KeyPath
-			consumerConfig["ssl.certificate.location"] = config.Kafka.CrtPath
-		case KafkaConfigProtocolSASLSSL:
-			consumerConfig["security.protocol"] = KafkaConfigProtocolSASLSSL
-			consumerConfig["sasl.mechanism"] = "SCRAM-SHA-512"
-			consumerConfig["ssl.ca.location"] = config.Kafka.CaPath
-			consumerConfig["sasl.username"] = config.Kafka.SaslUsername
-			consumerConfig["sasl.password"] = config.Kafka.SaslPassword
-			consumerConfig["ssl.endpoint.identification.algorithm"] = "none"
-		case KafkaConfigProtocolSASLPlaintxt:
-			consumerConfig["security.protocol"] = KafkaConfigProtocolSASLPlaintxt
-			consumerConfig["sasl.mechanism"] = "SCRAM-SHA-512"
-			consumerConfig["sasl.username"] = config.Kafka.SaslUsername
-			consumerConfig["sasl.password"] = config.Kafka.SaslPassword
-		}
+		config_tls.AddKafkaSSLOptions(consumerConfig)
 	}
 	consumerConfig["message.max.bytes"] = 1000000000
 	consumer, err := kafka.NewConsumer(&consumerConfig)

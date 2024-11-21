@@ -41,11 +41,6 @@ type ControlPlane struct {
 	CaPath        string `json:"caPath,omitempty"`
 }
 
-const (
-	KafkaConfigProtocolSSL          = "ssl"
-	KafkaConfigProtocolSASLSSL      = "sasl_ssl"
-	KafkaConfigProtocolSASLPlaintxt = "sasl_plaintxt"
-)
 
 type KafkaConfig struct {
 	Bootstrap    string `json:"bootstrap,omitempty"`
