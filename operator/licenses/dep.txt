@@ -84,7 +84,6 @@ github.com/bufbuild/protocompile
 github.com/buger/goterm
 github.com/buger/jsonparser
 github.com/c2h5oh/datasize
-github.com/cenkalti/backoff/v3
 github.com/cenkalti/backoff/v4
 github.com/census-instrumentation/opencensus-proto
 github.com/cespare/xxhash
@@ -101,7 +100,9 @@ github.com/confluentinc/confluent-kafka-go/v2
 github.com/containerd/console
 github.com/containerd/containerd
 github.com/containerd/continuity
+github.com/containerd/errdefs
 github.com/containerd/log
+github.com/containerd/platforms
 github.com/containerd/ttrpc
 github.com/containerd/typeurl/v2
 github.com/coreos/bbolt
@@ -156,7 +157,7 @@ github.com/fxamacker/cbor/v2
 github.com/ghodss/yaml
 github.com/go-gl/glfw
 github.com/go-gl/glfw/v3.3/glfw
-github.com/go-jose/go-jose/v3
+github.com/go-jose/go-jose/v4
 github.com/go-kit/kit
 github.com/go-kit/log
 github.com/go-logfmt/logfmt
@@ -171,6 +172,7 @@ github.com/go-openapi/swag
 github.com/go-stack/stack
 github.com/go-task/slim-sprig
 github.com/go-task/slim-sprig/v3
+github.com/go-viper/mapstructure/v2
 github.com/gobuffalo/flect
 github.com/goccy/go-json
 github.com/gofrs/flock
@@ -293,13 +295,11 @@ github.com/mgutz/ansi
 github.com/miekg/dns
 github.com/miekg/pkcs11
 github.com/mitchellh/cli
-github.com/mitchellh/copystructure
 github.com/mitchellh/go-homedir
 github.com/mitchellh/go-testing-interface
 github.com/mitchellh/gox
 github.com/mitchellh/iochan
 github.com/mitchellh/mapstructure
-github.com/mitchellh/reflectwalk
 github.com/moby/buildkit
 github.com/moby/docker-image-spec
 github.com/moby/locker
@@ -440,7 +440,6 @@ go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp
 go.opentelemetry.io/otel/exporters/otlp/otlptrace
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp
-go.opentelemetry.io/otel/exporters/prometheus
 go.opentelemetry.io/otel/metric
 go.opentelemetry.io/otel/sdk
 go.opentelemetry.io/otel/sdk/metric

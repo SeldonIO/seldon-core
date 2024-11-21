@@ -61,7 +61,9 @@ confluentinc/confluent-kafka-go
 containerd/console
 containerd/containerd
 containerd/continuity
+containerd/errdefs
 containerd/log
+containerd/platforms
 containerd/ttrpc
 containerd/typeurl
 coreos/bbolt
@@ -126,6 +128,7 @@ go-openapi/spec
 go-openapi/swag
 go-stack/stack
 go-task/slim-sprig
+go-viper/mapstructure
 gobuffalo/flect
 goccy/go-json
 gofrs/flock
@@ -242,13 +245,11 @@ mgutz/ansi
 miekg/dns
 miekg/pkcs11
 mitchellh/cli
-mitchellh/copystructure
 mitchellh/go-homedir
 mitchellh/go-testing-interface
 mitchellh/gox
 mitchellh/iochan
 mitchellh/mapstructure
-mitchellh/reflectwalk
 moby/buildkit
 moby/docker-image-spec
 moby/locker
