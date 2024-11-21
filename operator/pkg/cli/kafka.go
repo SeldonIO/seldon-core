@@ -147,7 +147,6 @@ func (kc *KafkaClient) subscribeAndSetOffset(pipelineStep string, offset int64) 
 			Offset: kafka.OffsetTail(kafka.Offset(offset)),
 		})
 	}
-	fmt.Printf("Assigning partitions %v\n", partitions)
 	err = kc.consumer.Assign(partitions)
 	if err != nil {
 		return err
@@ -261,6 +260,7 @@ func getPipelineNameFromHeaders(headers []kafka.Header) (string, error) {
 }
 
 func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string, format string, verbose bool, truncateData bool, namespace string) error {
+	defer kc.consumer.Close()
 	if namespace == "" {
 		namespace = kc.namespace
 	}
@@ -304,8 +304,6 @@ func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string
 		}
 	}
 
-	// Fast close requires maybe: https://github.com/confluentinc/confluent-kafka-go/pull/757
-	//_ = kc.consumer.Close()
 	return nil
 }
 
