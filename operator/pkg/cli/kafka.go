@@ -79,8 +79,9 @@ func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost str
 	consumerConfig := kafka.ConfigMap{
 		"bootstrap.servers": kafkaBroker,
 		"group.id":          fmt.Sprintf("seldon-cli-%d", r1.Int()),
-		"auto.offset.reset": "largest",
+		"auto.offset.reset": "earliest",
 	}
+	fmt.Printf("Using consumer config %v\n", consumerConfig)
 
 	namespace := DefaultNamespace
 	topicPrefix := SeldonDefaultTopicPrefix
@@ -137,18 +138,18 @@ func (kc *KafkaClient) subscribeAndSetOffset(pipelineStep string, offset int64) 
 		return err
 	}
 
+	partitions := make([]kafka.TopicPartition, 0)
 	for _, partitionMeta := range md.Topics[pipelineStep].Partitions {
-		err := kc.consumer.Assign([]kafka.TopicPartition{
-			{
-				Topic:     &pipelineStep,
-				Partition: partitionMeta.ID,
-				//Note will get more messages than requested when multiple partitions available
-				Offset: kafka.OffsetTail(kafka.Offset(offset)),
-			},
+		partitions = append(partitions, kafka.TopicPartition{
+			Topic:     &pipelineStep,
+			Partition: partitionMeta.ID,
+			//Note will get more messages than requested when multiple partitions available
+			Offset: kafka.OffsetTail(kafka.Offset(offset)),
 		})
-		if err != nil {
-			return err
-		}
+	}
+	err = kc.consumer.Assign(partitions)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -259,6 +260,7 @@ func getPipelineNameFromHeaders(headers []kafka.Header) (string, error) {
 }
 
 func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string, format string, verbose bool, truncateData bool, namespace string) error {
+	defer kc.consumer.Close()
 	if namespace == "" {
 		namespace = kc.namespace
 	}
@@ -302,8 +304,6 @@ func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string
 		}
 	}
 
-	// Fast close requires maybe: https://github.com/confluentinc/confluent-kafka-go/pull/757
-	//_ = kc.consumer.Close()
 	return nil
 }
 

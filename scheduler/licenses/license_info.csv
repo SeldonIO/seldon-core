@@ -61,7 +61,9 @@ confluentinc/confluent-kafka-go,https://github.com/confluentinc/confluent-kafka-
 containerd/console,https://github.com/containerd/console/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/containerd/console/main/LICENSE
 containerd/containerd,https://github.com/containerd/containerd/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/containerd/containerd/main/LICENSE
 containerd/continuity,https://github.com/containerd/continuity/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/containerd/continuity/main/LICENSE
+containerd/errdefs,https://github.com/containerd/errdefs/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/containerd/errdefs/main/LICENSE
 containerd/log,https://github.com/containerd/log/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/containerd/log/main/LICENSE
+containerd/platforms,https://github.com/containerd/platforms/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/containerd/platforms/main/LICENSE
 containerd/ttrpc,https://github.com/containerd/ttrpc/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/containerd/ttrpc/main/LICENSE
 containerd/typeurl,https://github.com/containerd/typeurl/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/containerd/typeurl/main/LICENSE
 coreos/bbolt,https://github.com/etcd-io/bbolt/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/etcd-io/bbolt/main/LICENSE
@@ -133,6 +135,7 @@ go-playground/universal-translator,https://github.com/go-playground/universal-tr
 go-playground/validator,https://github.com/go-playground/validator/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/go-playground/validator/master/LICENSE
 go-stack/stack,https://github.com/go-stack/stack/blob/master/LICENSE.md,MIT License,https://raw.githubusercontent.com/go-stack/stack/master/LICENSE.md
 go-task/slim-sprig,https://github.com/go-task/slim-sprig/blob/master/LICENSE.txt,MIT License,https://raw.githubusercontent.com/go-task/slim-sprig/master/LICENSE.txt
+go-viper/mapstructure,https://github.com/go-viper/mapstructure/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/go-viper/mapstructure/main/LICENSE
 gobuffalo/flect,https://github.com/gobuffalo/flect/blob/main/LICENSE,MIT License,https://raw.githubusercontent.com/gobuffalo/flect/main/LICENSE
 goccy/go-json,https://github.com/goccy/go-json/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/goccy/go-json/master/LICENSE
 gofrs/flock,https://github.com/gofrs/flock/blob/main/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gofrs/flock/main/LICENSE

@@ -7,11 +7,11 @@ toolchain go1.22.9
 require (
 	github.com/OneOfOne/xxhash v1.2.8
 	github.com/cenkalti/backoff/v4 v4.3.0
-	github.com/confluentinc/confluent-kafka-go/v2 v2.5.3
+	github.com/confluentinc/confluent-kafka-go/v2 v2.6.1
 	github.com/dgraph-io/badger/v3 v3.2103.5
-	github.com/envoyproxy/go-control-plane v0.13.0
+	github.com/envoyproxy/go-control-plane v0.13.1
 	github.com/fsnotify/fsnotify v1.7.0
-	github.com/go-playground/validator/v10 v10.22.0
+	github.com/go-playground/validator/v10 v10.23.0
 	github.com/golang/protobuf v1.5.4
 	github.com/google/go-cmp v0.6.0
 	github.com/google/uuid v1.6.0
@@ -24,7 +24,7 @@ require (
 	github.com/orcaman/concurrent-map v1.0.0
 	github.com/otiai10/copy v1.14.0
 	github.com/prometheus/client_golang v1.19.1
-	github.com/rs/xid v1.5.0
+	github.com/rs/xid v1.6.0
 	github.com/seldonio/seldon-core/apis/go/v2 v2.0.0-00010101000000-000000000000
 	github.com/seldonio/seldon-core/components/tls/v2 v2.0.0-00010101000000-000000000000
 	github.com/serialx/hashring v0.0.0-20200727003509-22c0c7ab6b1b
@@ -109,7 +109,7 @@ require (
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/term v0.25.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
-	golang.org/x/time v0.5.0 // indirect
+	golang.org/x/time v0.6.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240903143218-8af14fe29dc1 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240903143218-8af14fe29dc1 // indirect

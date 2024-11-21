@@ -63,7 +63,9 @@ confluentinc/confluent-kafka-go
 containerd/console
 containerd/containerd
 containerd/continuity
+containerd/errdefs
 containerd/log
+containerd/platforms
 containerd/ttrpc
 containerd/typeurl
 coreos/bbolt
@@ -135,6 +137,7 @@ go-playground/universal-translator
 go-playground/validator
 go-stack/stack
 go-task/slim-sprig
+go-viper/mapstructure
 gobuffalo/flect
 goccy/go-json
 gofrs/flock
