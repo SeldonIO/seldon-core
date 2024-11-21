@@ -170,7 +170,7 @@ func setupTLSAuthentication(config kafka.ConfigMap) error {
 
 	cert := cs.GetCertificate()
 	caCert := cs.GetValidationCertificate()
-	config["security.protocol"] = "SSL"
+	config["security.protocol"] = tls.SecurityProtocolSSL
 
 	// issue is that ca.pem does not work with multiple certificates defined
 	// see https://github.com/confluentinc/confluent-kafka-go/issues/827 (Fixed needs updating and test in our code)
