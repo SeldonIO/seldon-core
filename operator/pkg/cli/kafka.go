@@ -83,7 +83,6 @@ func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost str
 		"group.id":          fmt.Sprintf("seldon-cli-%d", r1.Int()),
 		"auto.offset.reset": "earliest",
 	}
-	fmt.Printf("Using consumer config %v\n", consumerConfig)
 
 	namespace := DefaultNamespace
 	topicPrefix := SeldonDefaultTopicPrefix
@@ -94,9 +93,12 @@ func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost str
 		if config.Kafka.TopicPrefix != "" {
 			topicPrefix = config.Kafka.TopicPrefix
 		}
-		config_tls.AddKafkaSSLOptions(consumerConfig)
 	}
+	config_tls.AddKafkaSSLOptions(consumerConfig)
+
 	consumerConfig["message.max.bytes"] = 1000000000
+
+	fmt.Printf("Using consumer config %v\n", consumerConfig)
 	consumer, err := kafka.NewConsumer(&consumerConfig)
 	if err != nil {
 		return nil, err
