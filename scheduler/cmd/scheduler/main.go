@@ -25,7 +25,6 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor"
-	envoyServer "github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/server"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/dataflow"
@@ -167,7 +166,7 @@ func main() {
 	go makeSignalHandler(logger, done)
 
 	// Create a cache
-	xdsCache := cache.NewSnapshotCache(false, cache.IDHash{}, logger)
+	xdsCache := cache.NewSnapshotCache(true, cache.IDHash{}, logger)
 
 	tracer, err := tracing.NewTraceProvider("seldon-scheduler", &tracingConfigPath, logger)
 	if err != nil {
@@ -270,7 +269,7 @@ func main() {
 	// so that the xDS server can start sending valid updates to envoy.
 	ctx := context.Background()
 	srv := envoyServerControlPlaneV3.NewServer(ctx, xdsCache, nil)
-	xdsServer := envoyServer.NewXDSServer(srv, logger)
+	xdsServer := processor.NewXDSServer(srv, logger)
 	err = xdsServer.StartXDSServer(envoyPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start envoy xDS server")

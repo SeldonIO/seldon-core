@@ -74,7 +74,7 @@ func (xds *SeldonXDSCache) ClusterContents() []types.Resource {
 		}
 	}
 
-	//Add pipeline gateway clusters
+	// Add pipeline gateway clusters
 	xds.logger.Infof("Add http pipeline cluster %s host:%s port:%d", resources.PipelineGatewayHttpClusterName, xds.PipelineGatewayDetails.Host, xds.PipelineGatewayDetails.HttpPort)
 	r = append(r, resources.MakeCluster(resources.PipelineGatewayHttpClusterName, []resources.Endpoint{
 		{
