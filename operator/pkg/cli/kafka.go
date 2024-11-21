@@ -81,6 +81,7 @@ func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost str
 		"group.id":          fmt.Sprintf("seldon-cli-%d", r1.Int()),
 		"auto.offset.reset": "earliest",
 	}
+	fmt.Printf("Using consumer config %v\n", consumerConfig)
 
 	namespace := DefaultNamespace
 	topicPrefix := SeldonDefaultTopicPrefix
@@ -137,18 +138,19 @@ func (kc *KafkaClient) subscribeAndSetOffset(pipelineStep string, offset int64) 
 		return err
 	}
 
+	partitions := make([]kafka.TopicPartition, 0)
 	for _, partitionMeta := range md.Topics[pipelineStep].Partitions {
-		err := kc.consumer.Assign([]kafka.TopicPartition{
-			{
-				Topic:     &pipelineStep,
-				Partition: partitionMeta.ID,
-				//Note will get more messages than requested when multiple partitions available
-				Offset: kafka.OffsetTail(kafka.Offset(offset)),
-			},
+		partitions = append(partitions, kafka.TopicPartition{
+			Topic:     &pipelineStep,
+			Partition: partitionMeta.ID,
+			//Note will get more messages than requested when multiple partitions available
+			Offset: kafka.OffsetTail(kafka.Offset(offset)),
 		})
-		if err != nil {
-			return err
-		}
+	}
+	fmt.Printf("Assigning partitions %v\n", partitions)
+	err = kc.consumer.Assign(partitions)
+	if err != nil {
+		return err
 	}
 
 	return nil
