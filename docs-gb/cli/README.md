@@ -101,21 +101,9 @@ type ControlPlane struct {
 	CaPath        string `json:"caPath,omitempty"`
 }
 
-const (
-	KafkaConfigProtocolSSL          = "ssl"
-	KafkaConfigProtocolSASLSSL      = "sasl_ssl"
-	KafkaConfigProtocolSASLPlaintxt = "sasl_plaintxt"
-)
-
 type KafkaConfig struct {
 	Bootstrap    string `json:"bootstrap,omitempty"`
 	Namespace    string `json:"namespace,omitempty"`
-	Protocol     string `json:"protocol,omitempty"`
-	KeyPath      string `json:"keyPath,omitempty"`
-	CrtPath      string `json:"crtPath,omitempty"`
-	CaPath       string `json:"caPath,omitempty"`
-	SaslUsername string `json:"saslUsername,omitempty"`
-	SaslPassword string `json:"saslPassword,omitempty"`
 	TopicPrefix  string `json:"topicPrefix,omitempty"`
 }
 ```
@@ -174,7 +162,6 @@ $ seldon config list kind-sasl
   },
   "kafka": {
     "bootstrap": "172.19.255.3:9093",
-    "caPath": "/home/work/gcp/scv2/certs/seldon-cluster-ca-cert/ca.crt"
   }
 }
 ```
