@@ -111,9 +111,10 @@ update-3rd-party-licenses:
 	make -C operator licenses
 	make -C hodometer licenses
 	make -C components/tls licenses
+	make -C components/kafka licenses
 	make -C tests/integration licenses
 	make -C scheduler/data-flow licenses
-	{ (cat scheduler/licenses/license_info.csv operator/licenses/license_info.csv hodometer/licenses/license_info.csv components/tls/licenses/license_info.csv tests/integration/licenses/license_info.csv | cut -d, -f3) ; (cat scheduler/data-flow/licenses/dependency-license.json | jq .dependencies[].licenses[0].name) } | sed 's/\"//g' | sort | uniq -c > licenses/3rd-party-summary.txt
+	{ (cat scheduler/licenses/license_info.csv operator/licenses/license_info.csv hodometer/licenses/license_info.csv components/tls/licenses/license_info.csv components/kafka/licenses/license_info.csv tests/integration/licenses/license_info.csv | cut -d, -f3) ; (cat scheduler/data-flow/licenses/dependency-license.json | jq .dependencies[].licenses[0].name) } | sed 's/\"//g' | sort | uniq -c > licenses/3rd-party-summary.txt
 
 docs-gitbook-update-code-references:
 	python hack/update_references.py
