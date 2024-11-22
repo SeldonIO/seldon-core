@@ -120,6 +120,10 @@ docker-build-cli: ## Build docker image with seldon cli.
 docker-push: ## Push docker image with the manager.
 	docker push ${IMG}
 
+.PHONY: docker-push-cli
+docker-push-cli: ## Push docker image with seldon cli.
+	docker push ${IMG_CLI}
+
 .PHONY: kind-image-load
 kind-image-load:
 	kind load -v 3 docker-image ${IMG} --name ${KIND_NAME}
