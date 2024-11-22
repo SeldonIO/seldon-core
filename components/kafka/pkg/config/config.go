@@ -120,7 +120,7 @@ func convertConfigMap(cm kafka.ConfigMap) (kafka.ConfigMap, error) {
 	return r, nil
 }
 
-// Allow us to test if we have a valid Kafka confguration. For unit tests we can have no bootstrap server
+// Allow us to test if we have a valid Kafka configuration. For unit tests we can have no bootstrap server
 // See usages of this method.
 // TODO in future allow testing to run without this check
 func (kc KafkaConfig) HasKafkaBootstrapServer() bool {
