@@ -20,7 +20,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
@@ -147,7 +147,7 @@ func main() {
 		defer tracer.Stop()
 	}
 
-	kafkaConfigMap, err := config.NewKafkaConfig(kafkaConfigPath)
+	kafkaConfigMap, err := kafka_config.NewKafkaConfig(kafkaConfigPath)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}

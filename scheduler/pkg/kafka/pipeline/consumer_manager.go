@@ -18,7 +18,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 )
 
 const (
@@ -34,7 +34,7 @@ type ConsumerManager struct {
 	mu     sync.Mutex
 	// all consumers we have
 	consumers               []*MultiTopicsKafkaConsumer
-	consumerConfig          *config.KafkaConfig
+	consumerConfig          *kafka_config.KafkaConfig
 	maxNumConsumers         int
 	maxNumTopicsPerConsumer int
 	tracer                  trace.Tracer
@@ -44,7 +44,7 @@ type ConsumerManager struct {
 func NewConsumerManager(
 	namespace string,
 	logger log.FieldLogger,
-	consumerConfig *config.KafkaConfig,
+	consumerConfig *kafka_config.KafkaConfig,
 	maxNumTopicsPerConsumer,
 	maxNumConsumers int,
 	tracer trace.Tracer,

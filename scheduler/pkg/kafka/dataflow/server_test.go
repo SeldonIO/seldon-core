@@ -25,10 +25,10 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	testing_utils "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
@@ -807,7 +807,7 @@ func createTestScheduler(t *testing.T, serverName string) (*ChainerServer, *coor
 	`
 	configFilePath := fmt.Sprintf("%s/kafka.json", t.TempDir())
 	_ = os.WriteFile(configFilePath, []byte(data), 0644)
-	kc, _ := config.NewKafkaConfig(configFilePath)
+	kc, _ := kafka_config.NewKafkaConfig(configFilePath)
 
 	b := util.NewRingLoadBalancer(1)
 	b.AddServer(serverName)

@@ -24,8 +24,8 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	pipeline "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -105,7 +105,7 @@ func (kc *InferKafkaHandler) setup(consumerConfig kafka.ConfigMap, producerConfi
 	logger := kc.logger.WithField("func", "setup")
 	var err error
 
-	producerConfigWithoutSecrets := config.WithoutSecrets(producerConfig)
+	producerConfigWithoutSecrets := kafka_config.WithoutSecrets(producerConfig)
 	kc.logger.Infof("Creating producer with config %v", producerConfigWithoutSecrets)
 	kc.producer, err = kafka.NewProducer(&producerConfig)
 	if err != nil {
@@ -118,7 +118,7 @@ func (kc *InferKafkaHandler) setup(consumerConfig kafka.ConfigMap, producerConfi
 	// for eg. hash(topic1) -> modelgateway-0
 	// this is done by the caller i.e. ConsumerManager (store.go)
 	consumerConfig["group.id"] = kc.consumerName
-	consumerConfigWithoutSecrets := config.WithoutSecrets(consumerConfig)
+	consumerConfigWithoutSecrets := kafka_config.WithoutSecrets(consumerConfig)
 	kc.logger.Infof("Creating consumer with config %v", consumerConfigWithoutSecrets)
 	kc.consumer, err = kafka.NewConsumer(&consumerConfig)
 	if err != nil {
