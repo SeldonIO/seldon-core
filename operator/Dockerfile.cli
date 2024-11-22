@@ -22,8 +22,8 @@ COPY --from=certs /etc/ssl/certs/ca-bundle.crt /tmp/certs/kafka/broker/ca.crt
 RUN chmod -R 777 /tmp/certs/
 
 WORKDIR /
-COPY --from=builder /workspace/operator/bin/seldon .
+COPY --from=builder /workspace/operator/bin/seldon bin/seldon
 
 COPY operator/licenses/ /licenses/
 
-ENTRYPOINT ["/seldon"]
+ENTRYPOINT ["/bin/seldon"]
