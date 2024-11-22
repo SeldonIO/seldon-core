@@ -17,6 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 )
 

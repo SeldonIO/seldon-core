@@ -24,8 +24,8 @@ import (
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	testing_utils "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"

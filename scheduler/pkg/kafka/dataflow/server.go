@@ -21,8 +21,8 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
-
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"

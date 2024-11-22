@@ -29,8 +29,8 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
-
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
