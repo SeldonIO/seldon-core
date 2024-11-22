@@ -13,6 +13,21 @@ and servers (single-model serving). This will require:
 * Configuring HPA manifests to scale Models and the corresponding Server replicas based on the
   custom metrics
 
+{% hint style="warning" %}
+The Core 2 HPA-based autoscaling has the following constraints/limitations:
+    * HPA-scaling only works for single-model serving (1-1 correspondence between models and servers).
+    Multi-model serving autoscaling is supported via the existing features described [here]
+    (autoscaling.md). Those continue to be improved targeting seamless autoscaling of a wider
+    set of models and workloads.
+    * **Only custom metrics** coming from Prometheus are supported; In particular, native k8s
+    resource metrics such as CPU or memory will not work. This is because of a limitation
+    introduced by HPA which does not allow scaling of both Models and Servers based on metrics
+    gathered from the same set of pods (one HPA manifest needs to "own" those pods).
+    * K8s clusters only allow for one provider of custom metrics to be installed at a time
+    (prometheus-adapter in Seldon's case). The K8s community is looking into ways of removing
+    this limitation.
+{% endhint %}
+
 ## Installing and configuring the Prometheus Adapter
 
 The role of the Prometheus Adapter is to expose queries on metrics in Prometheus as k8s custom
@@ -592,8 +607,7 @@ into account when setting the HPA policies.
       within the set `periodSeconds`) is not recommended because of this.
     - Perhaps more importantly, there is no reason to scale faster than the time it takes for
       replicas to become available - this is the true maximum rate with which scaling up can
-      happen anyway. Because the underlying Server replica pods are part of a stateful set, they
-      are created sequentially by k8s.
+      happen anyway.
 
 {% code title="hpa-custom-policy.yaml" lineNumbers="true" %}
 ```yaml
