@@ -2,6 +2,7 @@ CUSTOM_IMAGE_TAG ?= latest
 DOCKERHUB_USERNAME ?= seldonio
 # Image URL to use all building/pushing image targets
 IMG ?= ${DOCKERHUB_USERNAME}/seldonv2-controller:${CUSTOM_IMAGE_TAG}
+IMG_CLI ?= ${DOCKERHUB_USERNAME}/seldon-cli:${CUSTOM_IMAGE_TAG}
 AGENT_IMG ?= ${DOCKERHUB_USERNAME}/seldon-agent:${CUSTOM_IMAGE_TAG}
 RCLONE_IMG ?= ${DOCKERHUB_USERNAME}/seldon-rclone:${CUSTOM_IMAGE_TAG}
 MLSERVER_IMG ?= seldonio/mlserver:1.6.0
@@ -109,6 +110,10 @@ generate-cli-docs:
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
 	docker build -t ${IMG} -f Dockerfile ..
+
+.PHONY: docker-build-cli
+docker-build-cli: ## Build docker image with seldon cli.
+	docker build -t ${IMG_CLI} -f Dockerfile.cli ..
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
