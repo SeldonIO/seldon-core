@@ -13,7 +13,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"strings"
 	"time"
 
@@ -23,8 +22,6 @@ import (
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
-
-	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
 )
 
 const (
@@ -33,8 +30,9 @@ const (
 	OutputsSpecifier         = "outputs"
 	PipelineSpecifier        = "pipeline"
 	ModelSpecifier           = "model"
-	kafkaTimeoutSeconds      = 2
+	KafkaTimeoutSeconds      = 2
 	DefaultNamespace         = "default"
+	DefaultMaxMessageSize    = 1000000000
 )
 
 type KafkaClient struct {
@@ -66,26 +64,20 @@ type KafkaInspectTopicMessage struct {
 }
 
 func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost string, schedulerHostIsSet bool) (*KafkaClient, error) {
+	// Note: SeldonCliConfig (for kafka) is different from Seldon KafkaConfigMap
 	config, err := LoadSeldonCLIConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	s1 := rand.NewSource(time.Now().UnixNano())
-	r1 := rand.New(s1)
-
 	// Overwrite broker if set in config
 	if !kafkaBrokerIsSet && config.Kafka != nil && config.Kafka.Bootstrap != "" {
 		kafkaBroker = config.Kafka.Bootstrap
 	}
-	consumerConfig := kafka.ConfigMap{
-		"bootstrap.servers": kafkaBroker,
-		"group.id":          fmt.Sprintf("seldon-cli-%d", r1.Int()),
-		"auto.offset.reset": "earliest",
-	}
 
 	namespace := DefaultNamespace
 	topicPrefix := SeldonDefaultTopicPrefix
+	maxMessageSize := DefaultMaxMessageSize
 	if config.Kafka != nil {
 		if config.Kafka.Namespace != "" {
 			namespace = config.Kafka.Namespace
@@ -94,11 +86,8 @@ func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost str
 			topicPrefix = config.Kafka.TopicPrefix
 		}
 	}
-	config_tls.AddKafkaSSLOptions(consumerConfig)
 
-	consumerConfig["message.max.bytes"] = 1000000000
-
-	fmt.Printf("Using consumer config %v\n", consumerConfig)
+	consumerConfig := getKafkaConsumerConfig(kafkaBroker, maxMessageSize)
 	consumer, err := kafka.NewConsumer(&consumerConfig)
 	if err != nil {
 		return nil, err
@@ -302,7 +291,7 @@ func (kc *KafkaClient) createInspectTopic(topic string, pipeline string, tensor 
 		return nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), kafkaTimeoutSeconds*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), KafkaTimeoutSeconds*time.Second)
 	defer cancel()
 
 	run := true

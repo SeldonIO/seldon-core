@@ -13,7 +13,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"time"
 
+	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
+
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"golang.org/x/exp/rand"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
@@ -41,4 +46,25 @@ func PrintProto(msg proto.Message) {
 	} else {
 		fmt.Printf("%s\n", string(resJson))
 	}
+}
+
+func getKafkaConsumerConfig(kafkaBroker string, maxMessageSize int) kafka.ConfigMap {
+
+	s1 := rand.NewSource(uint64(time.Now().UnixNano()))
+	r1 := rand.New(s1)
+
+	consumerConfig := kafka.ConfigMap{
+		"bootstrap.servers": kafkaBroker,
+		// TODO: use ConsumerGroupIdPrefix from configMap
+		"group.id":          fmt.Sprintf("seldon-cli-%d", r1.Int()),
+		"auto.offset.reset": "earliest",
+	}
+	config_tls.AddKafkaSSLOptions(consumerConfig)
+
+	// todo: use max message size from configMap
+	consumerConfig["message.max.bytes"] = maxMessageSize
+
+	fmt.Printf("Using consumer config %v\n", consumerConfig)
+
+	return consumerConfig
 }
