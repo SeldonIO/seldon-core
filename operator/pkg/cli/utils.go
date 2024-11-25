@@ -13,6 +13,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
@@ -88,10 +89,15 @@ func getKafkaConsumerConfig(kafkaBrokerIsSet bool, kafkaBroker string, config *S
 	// message size
 	if kafkaConfigMap != nil && kafkaConfigMap.Consumer != nil {
 		var err error
-		maxMessageSizeValue, err := kafkaConfigMap.Consumer.Get("message.max.bytes", DefaultMaxMessageSize)
+		maxMessageSizeValue, err := kafkaConfigMap.Consumer.Get("message.max.bytes", strconv.Itoa(DefaultMaxMessageSize))
 		if err == nil {
-			if maxMessageSizeInt, ok := maxMessageSizeValue.(int); ok {
-				maxMessageSize = maxMessageSizeInt
+			if maxMessageSizeStr, ok := maxMessageSizeValue.(string); ok {
+				var errConv error
+				maxMessageSize, errConv = strconv.Atoi(maxMessageSizeStr)
+				if errConv != nil {
+					fmt.Printf("Failed to convert max message size to int with error: %s\n", errConv.Error())
+					return nil, "", "", errConv
+				}
 			} else {
 				fmt.Printf("Failed to assert max message size to int\n")
 				return nil, "", "", err

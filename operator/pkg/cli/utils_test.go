@@ -78,7 +78,7 @@ func TestGetConsumerConfig(t *testing.T) {
 		{
 			name:         "with config map",
 			seldonConfig: &SeldonCLIConfig{},
-			kafkaConfig:  `{"bootstrap.servers":"kafka:9092","consumer":{"message.max.bytes": 6000}, "topicPrefix": "configPrefix"}`,
+			kafkaConfig:  `{"bootstrap.servers":"kafka:9092","consumer":{"message.max.bytes": "6000"}, "topicPrefix": "configPrefix"}`,
 			expectedConsumerConfig: kafka.ConfigMap{
 				"bootstrap.servers": "kafka:9092",
 				"auto.offset.reset": "earliest",
