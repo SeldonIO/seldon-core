@@ -41,6 +41,7 @@ spec:
     # The following environment variables are used to configure the seldon-cli from the already existing environment variables
     - name: SELDON_SCHEDULE_HOST
       value: $(SELDON_SCHEDULER_SERVICE_HOST):$(SELDON_SCHEDULER_SERVICE_PORT_SCHEDULER)
+    # this envar is used for both TLS and seldon-cli
     - name: POD_NAMESPACE
       valueFrom:
         fieldRef:

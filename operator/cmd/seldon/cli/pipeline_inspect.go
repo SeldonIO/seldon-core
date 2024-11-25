@@ -90,7 +90,7 @@ func createPipelineInspect() *cobra.Command {
 	flags.String(flagRequestId, "", "request id to show, if not specified will be all messages in offset range")
 	flags.String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
 	flags.String(flagOutputFormat, cli.InspectFormatRaw, fmt.Sprintf("inspect output format: raw or json. Default %s", cli.InspectFormatRaw))
-	flags.String(flagNamespace, "", fmt.Sprintf("Kubernetes namespace. Default %s", cli.DefaultNamespace))
+	flags.String(flagNamespace, env.GetString(envNamespace, cli.DefaultNamespace), fmt.Sprintf("Kubernetes namespace. Default %s", cli.DefaultNamespace))
 	flags.BoolP(flagVerbose, "v", false, "display more details, such as headers")
 	flags.BoolP(flagTruncate, "t", false, "truncate data")
 	flags.String(flagKafkaConfigPath, env.GetString(envKafkaConfigPath, ""), "path to kafka config file")

@@ -38,6 +38,7 @@ const (
 	envKafka           = "SELDON_KAFKA_BROKER"
 	envScheduler       = "SELDON_SCHEDULE_HOST"
 	envKafkaConfigPath = "SELDON_KAFKA_CONFIG_PATH"
+	envNamespace       = "POD_NAMESPACE"
 )
 
 // Defaults
