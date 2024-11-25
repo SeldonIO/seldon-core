@@ -46,7 +46,7 @@ type IncrementalProcessor struct {
 	// snapshotVersion holds the current version of the snapshot.
 	snapshotVersion      int64
 	logger               logrus.FieldLogger
-	xdsCache             *xdscache.SeldonXDSCacheV1
+	xdsCache             xdscache.SeldonXDSCache
 	mu                   sync.RWMutex
 	modelStore           store.ModelStore
 	experimentServer     experiment.ExperimentServer
@@ -74,13 +74,14 @@ func NewIncrementalProcessor(
 	hub *coordinator.EventHub,
 	pipelineGatewayDetails *xdscache.PipelineGatewayDetails,
 	versionCleaner cleaner.ModelVersionCleaner,
+	xdsCache xdscache.SeldonXDSCache,
 ) (*IncrementalProcessor, error) {
 	ip := &IncrementalProcessor{
 		cache:                cache,
 		nodeID:               nodeID,
 		snapshotVersion:      rand.Int63n(1000),
 		logger:               log.WithField("source", "EnvoyServer"),
-		xdsCache:             xdscache.NewSeldonXDSCacheV1(log, pipelineGatewayDetails),
+		xdsCache:             xdsCache,
 		modelStore:           modelStore,
 		experimentServer:     experimentServer,
 		pipelineHandler:      pipelineHandler,
@@ -89,11 +90,6 @@ func NewIncrementalProcessor(
 		batchWait:            util.EnvoyUpdateDefaultBatchWait,
 		versionCleaner:       versionCleaner,
 		batchTriggerManual:   nil,
-	}
-
-	err := ip.setListeners()
-	if err != nil {
-		return nil, err
 	}
 
 	hub.RegisterModelEventHandler(
@@ -115,7 +111,7 @@ func NewIncrementalProcessor(
 		ip.handlePipelinesEvents,
 	)
 
-	err = ip.updateEnvoy()
+	err := ip.updateEnvoy()
 	if err != nil {
 		return nil, err
 	}
@@ -180,17 +176,6 @@ func (p *IncrementalProcessor) handleModelEvents(event coordinator.ModelEventMsg
 			logger.WithError(err).Errorf("Failed to process sync for model %s", event.String())
 		}
 	}()
-}
-
-func (p *IncrementalProcessor) setListeners() error {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	err := p.xdsCache.SetupTLS()
-	if err != nil {
-		return err
-	}
-	p.xdsCache.AddListeners()
-	return nil
 }
 
 // newSnapshotVersion increments the current snapshotVersion
@@ -645,8 +630,8 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 
 func (p *IncrementalProcessor) callVersionCleanupIfNeeded(modelName string) {
 	logger := p.logger.WithField("func", "callVersionCleanupIfNeeded")
-	if routes, ok := p.xdsCache.Routes[modelName]; ok {
-		logger.Debugf("routes for model %s %v", modelName, routes)
+	if route, ok := p.xdsCache.GetRoute(modelName); ok {
+		logger.Debugf("routes for model %s %v", modelName, route)
 		if p.versionCleaner != nil {
 			logger.Debugf("Calling cleanup for model %s", modelName)
 			p.versionCleaner.RunCleanup(modelName)

@@ -47,6 +47,17 @@ type SeldonXDSCache interface {
 	AddCluster(name string, routeName string, modelName string, modelVersion uint32, isGrpc bool)
 	RemoveRoute(routeName string) error
 	AddEndpoint(clusterName string, upstreamHost string, upstreamPort uint32, assignments []int, replicas map[int]*store.ServerReplica)
+	AddRouteClusterTraffic(
+		routeName string,
+		modelName string,
+		modelVersion uint32,
+		trafficPercent uint32,
+		httpClusterName string,
+		grpcClusterName string,
+		logPayloads bool,
+		isMirror bool,
+	)
+	GetRoute(routeName string) (resources.Route, bool)
 }
 
 var _ SeldonXDSCache = (*SeldonXDSCacheV1)(nil)
@@ -69,7 +80,8 @@ type PipelineGatewayDetails struct {
 }
 
 func NewSeldonXDSCacheV1(logger logrus.FieldLogger, pipelineGatewayDetails *PipelineGatewayDetails) *SeldonXDSCacheV1 {
-	return &SeldonXDSCacheV1{
+
+	cache := &SeldonXDSCacheV1{
 		Listeners:              make(map[string]resources.Listener),
 		Clusters:               make(map[string]resources.Cluster),
 		Routes:                 make(map[string]resources.Route),
@@ -78,6 +90,23 @@ func NewSeldonXDSCacheV1(logger logrus.FieldLogger, pipelineGatewayDetails *Pipe
 		PipelineGatewayDetails: pipelineGatewayDetails,
 		logger:                 logger.WithField("source", "XDSCache"),
 	}
+
+	err := cache.SetupTLS()
+
+	if err != nil {
+		logger.Warn("could not setup TLS")
+	}
+
+	cache.AddListeners()
+
+	return cache
+
+}
+
+func (xds *SeldonXDSCacheV1) GetRoute(routeName string) (resources.Route, bool) {
+	routes, ok := xds.Routes[routeName]
+
+	return routes, ok
 }
 
 func (xds *SeldonXDSCacheV1) ClusterContents() []types.Resource {

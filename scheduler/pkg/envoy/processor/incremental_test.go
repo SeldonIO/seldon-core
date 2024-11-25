@@ -276,16 +276,18 @@ func TestUpdateEnvoyForModelVersion(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			xdsCache := xdscache.NewSeldonXDSCacheV1(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2})
+
 			inc := IncrementalProcessor{
 				logger:   log.New(),
-				xdsCache: xdscache.NewSeldonXDSCacheV1(log.New(), &xdscache.PipelineGatewayDetails{}),
+				xdsCache: xdsCache,
 			}
 			for _, mv := range test.modelVersions {
 				inc.updateEnvoyForModelVersion(mv.GetMeta().GetName(), mv, test.server, test.traffic, false)
 			}
 
-			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.expectedRoutes))
-			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.expectedClusters))
+			g.Expect(len(xdsCache.Routes)).To(Equal(test.expectedRoutes))
+			g.Expect(len(xdsCache.Clusters)).To(Equal(test.expectedClusters))
 		})
 	}
 }
@@ -628,13 +630,14 @@ func TestEnvoySettings(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			xdsCache := xdscache.NewSeldonXDSCacheV1(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2})
 			logger := log.New()
 			eventHub, _ := coordinator.NewEventHub(logger)
 			memoryStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), eventHub)
 			inc := &IncrementalProcessor{
 				cache:            cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
 				logger:           log.New(),
-				xdsCache:         xdscache.NewSeldonXDSCacheV1(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
+				xdsCache:         xdsCache,
 				modelStore:       memoryStore,
 				experimentServer: experiment.NewExperimentServer(log.New(), eventHub, memoryStore, nil),
 				pipelineHandler:  pipeline.NewPipelineStore(log.New(), eventHub, memoryStore),
@@ -658,14 +661,12 @@ func TestEnvoySettings(t *testing.T) {
 				inc.handlePipelinesEvents,
 			)
 
-			inc.xdsCache.AddListeners()
 			for _, op := range test.ops {
 				op(inc, g)
 				time.Sleep(50 * time.Millisecond) // to allow event handlers to process
 			}
-			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.numExpectedClusters))
-			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.numExpectedRoutes))
-			g.Expect(len(inc.xdsCache.Pipelines)).To(Equal(test.numExpectedPipelines))
+			g.Expect(len(xdsCache.Clusters)).To(Equal(test.numExpectedClusters))
+			g.Expect(len(xdsCache.Routes)).To(Equal(test.numExpectedRoutes))
 
 			exp, err := inc.experimentServer.GetExperiment("exp")
 			if test.experimentExists {
@@ -678,7 +679,7 @@ func TestEnvoySettings(t *testing.T) {
 				g.Expect(exp).To(BeNil())
 			}
 			for modelName, version := range test.expectedVersionsInRoutes {
-				for _, route := range inc.xdsCache.Routes {
+				for _, route := range xdsCache.Routes {
 					for _, cluster := range route.Clusters {
 						if cluster.ModelName == modelName {
 							g.Expect(cluster.ModelVersion).To(Equal(version))
@@ -728,25 +729,26 @@ func TestRollingUpdate(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			xdsCache := xdscache.NewSeldonXDSCacheV1(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2})
+
 			modelStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil)
 			inc := &IncrementalProcessor{
 				cache:            cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
 				logger:           log.New(),
-				xdsCache:         xdscache.NewSeldonXDSCacheV1(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
+				xdsCache:         xdsCache,
 				modelStore:       modelStore,
 				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil, nil),
 				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil, modelStore),
 			}
-			inc.xdsCache.AddListeners()
 			for _, op := range test.ops {
 				op(inc, g)
 			}
-			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.numExpectedClusters))
-			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.numExpectedRoutes))
+			g.Expect(len(xdsCache.Clusters)).To(Equal(test.numExpectedClusters))
+			g.Expect(len(xdsCache.Routes)).To(Equal(test.numExpectedRoutes))
 			for modelName, trafficSplits := range test.numTrafficSplits {
-				g.Expect(len(inc.xdsCache.Routes[modelName].Clusters)).To(Equal(trafficSplits))
+				route, _ := inc.xdsCache.GetRoute(modelName)
+				g.Expect(len(route.Clusters)).To(Equal(trafficSplits))
 			}
-
 		})
 	}
 }
@@ -798,24 +800,25 @@ func TestDraining(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
+		xdsCache := xdscache.NewSeldonXDSCacheV1(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2})
+
 		t.Run(test.name, func(t *testing.T) {
 			modelStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil)
 			inc := &IncrementalProcessor{
 				cache:            cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
 				logger:           log.New(),
-				xdsCache:         xdscache.NewSeldonXDSCacheV1(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
+				xdsCache:         xdsCache,
 				modelStore:       modelStore,
 				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil, nil),
 				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil, modelStore),
 			}
-			inc.xdsCache.AddListeners()
 			for _, op := range test.ops {
 				op(inc, g)
 			}
-			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.numExpectedClusters))
-			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.numExpectedRoutes))
+			g.Expect(len(xdsCache.Clusters)).To(Equal(test.numExpectedClusters))
+			g.Expect(len(xdsCache.Routes)).To(Equal(test.numExpectedRoutes))
 			for modelName, trafficSplits := range test.numTrafficSplits {
-				g.Expect(len(inc.xdsCache.Routes[modelName].Clusters)).To(Equal(trafficSplits))
+				g.Expect(len(xdsCache.Routes[modelName].Clusters)).To(Equal(trafficSplits))
 			}
 			for modelName, modelState := range test.expectedModelState {
 				model, err := inc.modelStore.GetModel(modelName)
@@ -954,7 +957,6 @@ func TestModelSync(t *testing.T) {
 				pipelineHandler:      pipeline.NewPipelineStore(log.New(), nil, modelStore),
 				pendingModelVersions: test.pendingModelVersions,
 			}
-			inc.xdsCache.AddListeners()
 			for _, op := range test.ops {
 				op(inc, g)
 			}

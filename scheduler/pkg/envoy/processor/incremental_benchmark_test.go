@@ -122,6 +122,11 @@ func benchmarkModelUpdate(
 		eventHub, err := coordinator.NewEventHub(logger)
 		require.NoError(b, err)
 
+		pipelineGatewayDetails := &xdscache.PipelineGatewayDetails{
+			Host:     "some host",
+			HttpPort: 1,
+			GrpcPort: 2,
+		}
 		memoryStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 		pipelineStore := pipeline.NewPipelineStore(logger, eventHub, memoryStore)
 		ip, err := NewIncrementalProcessor(
@@ -132,12 +137,9 @@ func benchmarkModelUpdate(
 			experiment.NewExperimentServer(logger, nil, memoryStore, pipelineStore),
 			nil,
 			eventHub,
-			&xdscache.PipelineGatewayDetails{
-				Host:     "some host",
-				HttpPort: 1,
-				GrpcPort: 2,
-			},
+			pipelineGatewayDetails,
 			nil,
+			xdscache.NewSeldonXDSCacheV1(logger, pipelineGatewayDetails),
 		)
 		require.NoError(b, err)
 

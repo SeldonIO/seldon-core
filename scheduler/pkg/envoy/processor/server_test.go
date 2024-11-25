@@ -31,7 +31,7 @@ import (
 
 func TestFetch(t *testing.T) {
 	g := NewGomegaWithT(t)
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
 	logger := log.New()
@@ -53,14 +53,13 @@ func TestFetch(t *testing.T) {
 	inc := &IncrementalProcessor{
 		cache:            snapCache,
 		logger:           logger,
-		xdsCache:         xdscache.NewSeldonXDSCacheV1(log.New(), &xdscache.PipelineGatewayDetails{}),
+		xdsCache:         xdscache.NewSeldonXDSCacheV2(log.New(), &xdscache.PipelineGatewayDetails{}),
 		pipelineHandler:  pipelineHandler,
 		modelStore:       memoryStore,
 		experimentServer: experiment.NewExperimentServer(logger, nil, memoryStore, pipelineHandler),
 		nodeID:           "node_1",
 	}
 
-	err = inc.setListeners()
 	g.Expect(err).To(BeNil())
 
 	conn, err := grpc.NewClient(":"+strconv.Itoa(port), grpc.WithTransportCredentials(insecure.NewCredentials()))

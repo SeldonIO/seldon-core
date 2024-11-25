@@ -40,7 +40,7 @@ type SeldonXDSCacheV2 struct {
 }
 
 func NewSeldonXDSCacheV2(logger logrus.FieldLogger, pipelineGatewayDetails *PipelineGatewayDetails) *SeldonXDSCacheV2 {
-	return &SeldonXDSCacheV2{
+	cache := &SeldonXDSCacheV2{
 		Listeners:              make(map[string]types.Resource),
 		Clusters:               make(map[string]types.Resource),
 		Endpoints:              make(map[string][]types.Resource),
@@ -51,6 +51,18 @@ func NewSeldonXDSCacheV2(logger logrus.FieldLogger, pipelineGatewayDetails *Pipe
 		PipelineGatewayDetails: pipelineGatewayDetails,
 		logger:                 logger.WithField("source", "XDSCache"),
 	}
+
+	cache.SetupTLS()
+	cache.SetupListeners()
+	cache.SetupClusters()
+
+	return cache
+}
+
+func (xds *SeldonXDSCacheV2) GetRoute(routeName string) (resources.Route, bool) {
+	_, ok := xds.Routes[routeName]
+
+	return resources.Route{RouteName: routeName}, ok
 }
 
 func (xds *SeldonXDSCacheV2) ClusterContents() []types.Resource {
