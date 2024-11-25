@@ -17,6 +17,7 @@ require (
 	github.com/onsi/gomega v1.35.1
 	github.com/seldonio/seldon-core/apis/go/v2 v2.0.0-00010101000000-000000000000
 	github.com/seldonio/seldon-core/components/tls/v2 v2.0.0-00010101000000-000000000000
+	github.com/seldonio/seldon-core/components/kafka/v2 v2.0.0-00010101000000-000000000000
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/tidwall/gjson v1.18.0
@@ -98,5 +99,7 @@ require (
 )
 
 replace github.com/seldonio/seldon-core/components/tls/v2 => ../components/tls
+
+replace github.com/seldonio/seldon-core/components/kafka/v2 => ../components/kafka
 
 replace github.com/seldonio/seldon-core/apis/go/v2 => ../apis/go

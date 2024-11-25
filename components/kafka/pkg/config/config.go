@@ -13,6 +13,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"os"
+	"strings"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
@@ -141,4 +142,16 @@ func WithoutSecrets(c kafka.ConfigMap) kafka.ConfigMap {
 	}
 
 	return safe
+}
+
+func GetKafkaConsumerName(namespace, consumerGroupIdPrefix, componentPrefix, id string) string {
+	var sb strings.Builder
+	if consumerGroupIdPrefix != "" {
+		sb.WriteString(consumerGroupIdPrefix + "-")
+	}
+	if namespace != "" {
+		sb.WriteString(namespace + "-")
+	}
+	sb.WriteString(componentPrefix + "-" + id)
+	return sb.String()
 }

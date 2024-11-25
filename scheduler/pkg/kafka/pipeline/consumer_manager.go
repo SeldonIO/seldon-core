@@ -11,7 +11,6 @@ package pipeline
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 
 	"github.com/google/uuid"
@@ -72,7 +71,7 @@ func (cm *ConsumerManager) createConsumer() error {
 	c, err := NewMultiTopicsKafkaConsumer(
 		cm.logger,
 		cm.consumerConfig,
-		getKafkaConsumerName(cm.namespace, cm.consumerConfig.ConsumerGroupIdPrefix, kafkaConsumerNamePrefix, uuid.New().String()),
+		kafka_config.GetKafkaConsumerName(cm.namespace, cm.consumerConfig.ConsumerGroupIdPrefix, kafkaConsumerNamePrefix, uuid.New().String()),
 		cm.tracer,
 	)
 	if err != nil {
@@ -127,16 +126,4 @@ func (cm *ConsumerManager) Stop() {
 			cm.logger.Warnf("Consumer %s failed to close", c.id)
 		}
 	}
-}
-
-func getKafkaConsumerName(namespace, consumerGroupIdPrefix, componentPrefix, id string) string {
-	var sb strings.Builder
-	if consumerGroupIdPrefix != "" {
-		sb.WriteString(consumerGroupIdPrefix + "-")
-	}
-	if namespace != "" {
-		sb.WriteString(namespace + "-")
-	}
-	sb.WriteString(componentPrefix + "-" + id)
-	return sb.String()
 }
