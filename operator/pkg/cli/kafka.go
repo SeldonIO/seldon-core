@@ -281,8 +281,6 @@ func (kc *KafkaClient) createInspectTopic(topic string, pipeline string, tensor 
 	ctx, cancel := context.WithTimeout(context.Background(), KafkaTimeoutSeconds*time.Second)
 	defer cancel()
 
-	fmt.Printf("Inspecting topic %s\n", topic)
-
 	run := true
 	var seen int64
 	for run {
