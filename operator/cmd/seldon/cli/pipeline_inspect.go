@@ -93,6 +93,6 @@ func createPipelineInspect() *cobra.Command {
 	flags.String(flagNamespace, "", fmt.Sprintf("Kubernetes namespace. Default %s", cli.DefaultNamespace))
 	flags.BoolP(flagVerbose, "v", false, "display more details, such as headers")
 	flags.BoolP(flagTruncate, "t", false, "truncate data")
-	flags.String(flagKafkaConfigPath, "", "path to kafka config file")
+	flags.String(flagKafkaConfigPath, env.GetString(envKafkaConfigPath, ""), "path to kafka config file")
 	return cmd
 }

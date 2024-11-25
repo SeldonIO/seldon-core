@@ -34,9 +34,10 @@ const (
 
 // Env vars
 const (
-	envInfer     = "SELDON_INFER_HOST"
-	envKafka     = "SELDON_KAFKA_BROKER"
-	envScheduler = "SELDON_SCHEDULE_HOST"
+	envInfer           = "SELDON_INFER_HOST"
+	envKafka           = "SELDON_KAFKA_BROKER"
+	envScheduler       = "SELDON_SCHEDULE_HOST"
+	envKafkaConfigPath = "SELDON_KAFKA_CONFIG_PATH"
 )
 
 // Defaults

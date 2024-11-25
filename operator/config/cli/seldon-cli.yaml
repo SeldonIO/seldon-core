@@ -36,6 +36,8 @@ spec:
       value: seldon-cluster-ca-cert
     - name: KAFKA_BROKER_TLS_CA_LOCATION                        
       value: /tmp/certs/kafka/broker/ca.crt
+    - name: SELDON_KAFKA_CONFIG_PATH
+      value: /mnt/kafka/kafka.json
     # The following environment variables are used to configure the seldon-cli from the already existing environment variables
     - name: SELDON_SCHEDULE_HOST
       value: $(SELDON_SCHEDULER_SERVICE_HOST):$(SELDON_SCHEDULER_SERVICE_PORT_SCHEDULER)
@@ -43,5 +45,12 @@ spec:
       valueFrom:
         fieldRef:
           fieldPath: metadata.namespace
+    volumeMounts:
+      - mountPath: /mnt/kafka
+        name: kafka-config-volume
+  volumes:
+  - configMap:
+      name: seldon-kafka
+    name: kafka-config-volume
   restartPolicy: Always
   serviceAccountName: seldon-scheduler
