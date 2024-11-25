@@ -56,6 +56,10 @@ jobs:
         working-directory: ./operator
         run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build docker-push
 
+      - name: Push Docker Image for Seldon Cli
+        working-directory: ./operator
+        run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build-cli docker-push-cli
+
       - name: Push Docker Images for Scheduler
         working-directory: ./scheduler
         run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build-all docker-push-all
