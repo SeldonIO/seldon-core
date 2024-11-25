@@ -70,24 +70,7 @@ func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost str
 		return nil, err
 	}
 
-	// Overwrite broker if set in config
-	if !kafkaBrokerIsSet && config.Kafka != nil && config.Kafka.Bootstrap != "" {
-		kafkaBroker = config.Kafka.Bootstrap
-	}
-
-	namespace := DefaultNamespace
-	topicPrefix := SeldonDefaultTopicPrefix
-	maxMessageSize := DefaultMaxMessageSize
-	if config.Kafka != nil {
-		if config.Kafka.Namespace != "" {
-			namespace = config.Kafka.Namespace
-		}
-		if config.Kafka.TopicPrefix != "" {
-			topicPrefix = config.Kafka.TopicPrefix
-		}
-	}
-
-	consumerConfig := getKafkaConsumerConfig(kafkaBroker, maxMessageSize)
+	consumerConfig, namespace, topicPrefix := getKafkaConsumerConfig(kafkaBrokerIsSet, kafkaBroker, config)
 	consumer, err := kafka.NewConsumer(&consumerConfig)
 	if err != nil {
 		return nil, err

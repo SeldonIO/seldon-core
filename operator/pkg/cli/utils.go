@@ -48,7 +48,24 @@ func PrintProto(msg proto.Message) {
 	}
 }
 
-func getKafkaConsumerConfig(kafkaBroker string, maxMessageSize int) kafka.ConfigMap {
+func getKafkaConsumerConfig(kafkaBrokerIsSet bool, kafkaBroker string, config *SeldonCLIConfig) (kafka.ConfigMap, string, string) {
+	maxMessageSize := DefaultMaxMessageSize
+	namespace := DefaultNamespace
+	topicPrefix := SeldonDefaultTopicPrefix
+
+	// Overwrite broker if set in config
+	if !kafkaBrokerIsSet && config.Kafka != nil && config.Kafka.Bootstrap != "" {
+		kafkaBroker = config.Kafka.Bootstrap
+	}
+
+	if config.Kafka != nil {
+		if config.Kafka.Namespace != "" {
+			namespace = config.Kafka.Namespace
+		}
+		if config.Kafka.TopicPrefix != "" {
+			topicPrefix = config.Kafka.TopicPrefix
+		}
+	}
 
 	s1 := rand.NewSource(uint64(time.Now().UnixNano()))
 	r1 := rand.New(s1)
@@ -66,5 +83,5 @@ func getKafkaConsumerConfig(kafkaBroker string, maxMessageSize int) kafka.Config
 
 	fmt.Printf("Using consumer config %v\n", consumerConfig)
 
-	return consumerConfig
+	return consumerConfig, namespace, topicPrefix
 }
