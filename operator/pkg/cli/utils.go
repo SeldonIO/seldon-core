@@ -16,13 +16,13 @@ import (
 	"strconv"
 	"time"
 
-	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
-	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
-
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"golang.org/x/exp/rand"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
+
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
 )
 
 func printPrettyJson(data []byte) {
@@ -117,7 +117,11 @@ func getKafkaConsumerConfig(kafkaBrokerIsSet bool, kafkaBroker string, config *S
 		"group.id":          fmt.Sprintf("seldon-cli-%d", r1.Int()),
 		"auto.offset.reset": "earliest",
 	}
-	config_tls.AddKafkaSSLOptions(consumerConfig)
+	err := config_tls.AddKafkaSSLOptions(consumerConfig)
+	if err != nil {
+		fmt.Printf("Failed to add Kafka SSL options with error: %s\n", err.Error())
+		return nil, "", "", err
+	}
 
 	// todo: use max message size from configMap
 	consumerConfig["message.max.bytes"] = maxMessageSize
