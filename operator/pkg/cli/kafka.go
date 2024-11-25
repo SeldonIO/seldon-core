@@ -63,14 +63,18 @@ type KafkaInspectTopicMessage struct {
 	Value   json.RawMessage     `json:"value"`
 }
 
-func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost string, schedulerHostIsSet bool) (*KafkaClient, error) {
+func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost string, schedulerHostIsSet bool, kafkaConfigPath string) (*KafkaClient, error) {
 	// Note: SeldonCliConfig (for kafka) is different from Seldon KafkaConfigMap
-	config, err := LoadSeldonCLIConfig()
+	cliConfig, err := LoadSeldonCLIConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	consumerConfig, namespace, topicPrefix := getKafkaConsumerConfig(kafkaBrokerIsSet, kafkaBroker, config)
+	consumerConfig, namespace, topicPrefix, err := getKafkaConsumerConfig(kafkaBrokerIsSet, kafkaBroker, cliConfig, kafkaConfigPath)
+	if err != nil {
+		return nil, err
+	}
+
 	consumer, err := kafka.NewConsumer(&consumerConfig)
 	if err != nil {
 		return nil, err

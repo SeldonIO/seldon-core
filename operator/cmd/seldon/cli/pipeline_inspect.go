@@ -70,11 +70,15 @@ func createPipelineInspect() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			data := []byte(args[0])
-			kc, err := cli.NewKafkaClient(kafkaBroker, kafkaBrokerIsSet, schedulerHost, schedulerHostIsSet)
+			kafkaConfigPath, err := flags.GetString(flagKafkaConfigPath)
 			if err != nil {
 				return err
 			}
+			kc, err := cli.NewKafkaClient(kafkaBroker, kafkaBrokerIsSet, schedulerHost, schedulerHostIsSet, kafkaConfigPath)
+			if err != nil {
+				return err
+			}
+			data := []byte(args[0])
 			err = kc.InspectStep(string(data), offset, requestId, format, verbose, truncateData, namespace)
 			return err
 		},
@@ -89,5 +93,6 @@ func createPipelineInspect() *cobra.Command {
 	flags.String(flagNamespace, "", fmt.Sprintf("Kubernetes namespace. Default %s", cli.DefaultNamespace))
 	flags.BoolP(flagVerbose, "v", false, "display more details, such as headers")
 	flags.BoolP(flagTruncate, "t", false, "truncate data")
+	flags.String(flagKafkaConfigPath, "", "path to kafka config file")
 	return cmd
 }

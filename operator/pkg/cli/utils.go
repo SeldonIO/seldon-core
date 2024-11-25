@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"time"
 
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
@@ -48,22 +49,56 @@ func PrintProto(msg proto.Message) {
 	}
 }
 
-func getKafkaConsumerConfig(kafkaBrokerIsSet bool, kafkaBroker string, config *SeldonCLIConfig) (kafka.ConfigMap, string, string) {
+func getKafkaConsumerConfig(kafkaBrokerIsSet bool, kafkaBroker string, config *SeldonCLIConfig, kafkaConfigPath string) (kafka.ConfigMap, string, string, error) {
+	var kafkaConfigMap *kafka_config.KafkaConfig
+	if kafkaConfigPath != "" {
+		var err error
+		kafkaConfigMap, err = kafka_config.NewKafkaConfig(kafkaConfigPath)
+		if err != nil {
+			fmt.Printf("Failed to load Kafka config with error: %s\n", err.Error())
+			return nil, "", "", err
+		}
+	}
+
 	maxMessageSize := DefaultMaxMessageSize
 	namespace := DefaultNamespace
 	topicPrefix := SeldonDefaultTopicPrefix
 
 	// Overwrite broker if set in config
+	if kafkaConfigMap != nil && kafkaConfigMap.BootstrapServers != "" {
+		kafkaBroker = kafkaConfigMap.BootstrapServers
+	}
 	if !kafkaBrokerIsSet && config.Kafka != nil && config.Kafka.Bootstrap != "" {
 		kafkaBroker = config.Kafka.Bootstrap
 	}
 
+	// topic prefix
+	if kafkaConfigMap != nil && kafkaConfigMap.TopicPrefix != "" {
+		topicPrefix = kafkaConfigMap.TopicPrefix
+	}
 	if config.Kafka != nil {
 		if config.Kafka.Namespace != "" {
 			namespace = config.Kafka.Namespace
 		}
 		if config.Kafka.TopicPrefix != "" {
 			topicPrefix = config.Kafka.TopicPrefix
+		}
+	}
+
+	// message size
+	if kafkaConfigMap != nil && kafkaConfigMap.Consumer != nil {
+		var err error
+		maxMessageSizeValue, err := kafkaConfigMap.Consumer.Get("message.max.bytes", DefaultMaxMessageSize)
+		if err == nil {
+			if maxMessageSizeInt, ok := maxMessageSizeValue.(int); ok {
+				maxMessageSize = maxMessageSizeInt
+			} else {
+				fmt.Printf("Failed to assert max message size to int\n")
+				return nil, "", "", err
+			}
+		} else {
+			fmt.Printf("Failed to get max message size from config with error: %s\n", err.Error())
+			return nil, "", "", err
 		}
 	}
 
@@ -83,5 +118,5 @@ func getKafkaConsumerConfig(kafkaBrokerIsSet bool, kafkaBroker string, config *S
 
 	fmt.Printf("Using consumer config %v\n", consumerConfig)
 
-	return consumerConfig, namespace, topicPrefix
+	return consumerConfig, namespace, topicPrefix, nil
 }

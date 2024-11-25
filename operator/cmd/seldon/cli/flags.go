@@ -29,6 +29,7 @@ const (
 	flagWaitCondition       = "wait"
 	flagTimeout             = "timeout-secs"
 	flagVerbose             = "verbose"
+	flagKafkaConfigPath     = "kafka-config-path"
 )
 
 // Env vars
