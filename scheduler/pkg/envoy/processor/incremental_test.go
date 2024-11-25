@@ -278,7 +278,7 @@ func TestUpdateEnvoyForModelVersion(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			inc := IncrementalProcessor{
 				logger:   log.New(),
-				xdsCache: xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{}),
+				xdsCache: xdscache.NewSeldonXDSCacheV1(log.New(), &xdscache.PipelineGatewayDetails{}),
 			}
 			for _, mv := range test.modelVersions {
 				inc.updateEnvoyForModelVersion(mv.GetMeta().GetName(), mv, test.server, test.traffic, false)
@@ -634,7 +634,7 @@ func TestEnvoySettings(t *testing.T) {
 			inc := &IncrementalProcessor{
 				cache:            cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
 				logger:           log.New(),
-				xdsCache:         xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
+				xdsCache:         xdscache.NewSeldonXDSCacheV1(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
 				modelStore:       memoryStore,
 				experimentServer: experiment.NewExperimentServer(log.New(), eventHub, memoryStore, nil),
 				pipelineHandler:  pipeline.NewPipelineStore(log.New(), eventHub, memoryStore),
@@ -732,7 +732,7 @@ func TestRollingUpdate(t *testing.T) {
 			inc := &IncrementalProcessor{
 				cache:            cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
 				logger:           log.New(),
-				xdsCache:         xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
+				xdsCache:         xdscache.NewSeldonXDSCacheV1(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
 				modelStore:       modelStore,
 				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil, nil),
 				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil, modelStore),
@@ -803,7 +803,7 @@ func TestDraining(t *testing.T) {
 			inc := &IncrementalProcessor{
 				cache:            cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
 				logger:           log.New(),
-				xdsCache:         xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
+				xdsCache:         xdscache.NewSeldonXDSCacheV1(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
 				modelStore:       modelStore,
 				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil, nil),
 				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil, modelStore),
@@ -948,7 +948,7 @@ func TestModelSync(t *testing.T) {
 			inc := &IncrementalProcessor{
 				cache:                cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
 				logger:               log.New(),
-				xdsCache:             xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
+				xdsCache:             xdscache.NewSeldonXDSCacheV1(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
 				modelStore:           modelStore,
 				experimentServer:     experiment.NewExperimentServer(log.New(), nil, nil, nil),
 				pipelineHandler:      pipeline.NewPipelineStore(log.New(), nil, modelStore),

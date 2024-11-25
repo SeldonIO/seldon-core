@@ -53,7 +53,7 @@ func TestFetch(t *testing.T) {
 	inc := &IncrementalProcessor{
 		cache:            snapCache,
 		logger:           logger,
-		xdsCache:         xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{}),
+		xdsCache:         xdscache.NewSeldonXDSCacheV1(log.New(), &xdscache.PipelineGatewayDetails{}),
 		pipelineHandler:  pipelineHandler,
 		modelStore:       memoryStore,
 		experimentServer: experiment.NewExperimentServer(logger, nil, memoryStore, pipelineHandler),

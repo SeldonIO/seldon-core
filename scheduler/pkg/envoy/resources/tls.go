@@ -72,6 +72,43 @@ var configSource = &core.ConfigSource{
 	},
 }
 
+func createDownstreamTransportSocketV2(serverSecret *tlsv3.Secret) *core.TransportSocket {
+	var ts *core.TransportSocket
+	if serverSecret != nil {
+		tlsCtx := tlsv3.DownstreamTlsContext{
+			CommonTlsContext: &tlsv3.CommonTlsContext{
+				TlsCertificateSdsSecretConfigs: []*tlsv3.SdsSecretConfig{
+					{
+						Name:      serverSecret.Name,
+						SdsConfig: configSource,
+					},
+				},
+			},
+		}
+		if serverSecret.GetTlsCertificate() == nil {
+			tlsCtx.CommonTlsContext.ValidationContextType = &tlsv3.CommonTlsContext_ValidationContextSdsSecretConfig{
+				ValidationContextSdsSecretConfig: &tlsv3.SdsSecretConfig{
+					Name:      serverSecret.Name,
+					SdsConfig: configSource,
+				},
+			}
+		}
+
+		tlsCtxPb, err := anypb.New(&tlsCtx)
+		if err != nil {
+			panic(err)
+		}
+
+		ts = &core.TransportSocket{
+			Name: "envoy.transport_sockets.tls",
+			ConfigType: &core.TransportSocket_TypedConfig{
+				TypedConfig: tlsCtxPb,
+			},
+		}
+	}
+	return ts
+}
+
 func createDownstreamTransportSocket(serverSecret *Secret) *core.TransportSocket {
 	var ts *core.TransportSocket
 	if serverSecret != nil {
@@ -89,6 +126,43 @@ func createDownstreamTransportSocket(serverSecret *Secret) *core.TransportSocket
 			tlsCtx.CommonTlsContext.ValidationContextType = &tlsv3.CommonTlsContext_ValidationContextSdsSecretConfig{
 				ValidationContextSdsSecretConfig: &tlsv3.SdsSecretConfig{
 					Name:      serverSecret.ValidationSecretName,
+					SdsConfig: configSource,
+				},
+			}
+		}
+
+		tlsCtxPb, err := anypb.New(&tlsCtx)
+		if err != nil {
+			panic(err)
+		}
+
+		ts = &core.TransportSocket{
+			Name: "envoy.transport_sockets.tls",
+			ConfigType: &core.TransportSocket_TypedConfig{
+				TypedConfig: tlsCtxPb,
+			},
+		}
+	}
+	return ts
+}
+
+func createUpstreamTransportSocketV2(clientSecret *tlsv3.Secret) *core.TransportSocket {
+	var ts *core.TransportSocket
+	if clientSecret != nil {
+		tlsCtx := tlsv3.UpstreamTlsContext{
+			CommonTlsContext: &tlsv3.CommonTlsContext{
+				TlsCertificateSdsSecretConfigs: []*tlsv3.SdsSecretConfig{
+					{
+						Name:      clientSecret.Name,
+						SdsConfig: configSource,
+					},
+				},
+			},
+		}
+		if clientSecret.GetTlsCertificate() != nil {
+			tlsCtx.CommonTlsContext.ValidationContextType = &tlsv3.CommonTlsContext_ValidationContextSdsSecretConfig{
+				ValidationContextSdsSecretConfig: &tlsv3.SdsSecretConfig{
+					Name:      clientSecret.Name,
 					SdsConfig: configSource,
 				},
 			}

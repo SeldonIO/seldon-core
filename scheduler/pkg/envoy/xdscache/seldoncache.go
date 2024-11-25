@@ -18,6 +18,7 @@ import (
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
 const (
@@ -35,7 +36,22 @@ const (
 	EnvoyUpstreamClientCertName   = "upstream_client"
 )
 
-type SeldonXDSCache struct {
+type SeldonXDSCache interface {
+	ClusterContents() []types.Resource
+	RouteContents() []types.Resource
+	ListenerContents() []types.Resource
+	SecretContents() []types.Resource
+	AddSecret(name string, validationSecretName string, certificate *seldontls.CertificateStore)
+	AddPipelineRoute(routeName string, pipelineName string, trafficWeight uint32, isMirror bool)
+	RemovePipelineRoute(pipelineName string)
+	AddCluster(name string, routeName string, modelName string, modelVersion uint32, isGrpc bool)
+	RemoveRoute(routeName string) error
+	AddEndpoint(clusterName string, upstreamHost string, upstreamPort uint32, assignments []int, replicas map[int]*store.ServerReplica)
+}
+
+var _ SeldonXDSCache = (*SeldonXDSCacheV1)(nil)
+
+type SeldonXDSCacheV1 struct {
 	Listeners              map[string]resources.Listener
 	Routes                 map[string]resources.Route
 	Clusters               map[string]resources.Cluster
@@ -52,8 +68,8 @@ type PipelineGatewayDetails struct {
 	GrpcPort int
 }
 
-func NewSeldonXDSCache(logger logrus.FieldLogger, pipelineGatewayDetails *PipelineGatewayDetails) *SeldonXDSCache {
-	return &SeldonXDSCache{
+func NewSeldonXDSCacheV1(logger logrus.FieldLogger, pipelineGatewayDetails *PipelineGatewayDetails) *SeldonXDSCacheV1 {
+	return &SeldonXDSCacheV1{
 		Listeners:              make(map[string]resources.Listener),
 		Clusters:               make(map[string]resources.Cluster),
 		Routes:                 make(map[string]resources.Route),
@@ -64,7 +80,7 @@ func NewSeldonXDSCache(logger logrus.FieldLogger, pipelineGatewayDetails *Pipeli
 	}
 }
 
-func (xds *SeldonXDSCache) ClusterContents() []types.Resource {
+func (xds *SeldonXDSCacheV1) ClusterContents() []types.Resource {
 	var r []types.Resource
 
 	var clientSecret *resources.Secret
@@ -117,7 +133,7 @@ func (xds *SeldonXDSCache) ClusterContents() []types.Resource {
 	return r
 }
 
-func (xds *SeldonXDSCache) RouteContents() []types.Resource {
+func (xds *SeldonXDSCacheV1) RouteContents() []types.Resource {
 	routesArray := make([]*resources.Route, len(xds.Routes))
 	rIdx := 0
 	for _, r := range xds.Routes { // This could be very large as is equal to number of models (100k?)
@@ -138,7 +154,7 @@ func (xds *SeldonXDSCache) RouteContents() []types.Resource {
 	return []types.Resource{defaultRoutes, mirrorRoutes}
 }
 
-func (xds *SeldonXDSCache) ListenerContents() []types.Resource {
+func (xds *SeldonXDSCacheV1) ListenerContents() []types.Resource {
 	var r []types.Resource
 
 	var serverSecret *resources.Secret
@@ -155,7 +171,7 @@ func (xds *SeldonXDSCache) ListenerContents() []types.Resource {
 	return r
 }
 
-func (xds *SeldonXDSCache) SecretContents() []types.Resource {
+func (xds *SeldonXDSCacheV1) SecretContents() []types.Resource {
 	logger := xds.logger.WithField("func", "SecretContents")
 	var r []types.Resource
 
@@ -170,7 +186,7 @@ func (xds *SeldonXDSCache) SecretContents() []types.Resource {
 	return r
 }
 
-func (xds *SeldonXDSCache) AddPipelineRoute(routeName string, pipelineName string, trafficWeight uint32, isMirror bool) {
+func (xds *SeldonXDSCacheV1) AddPipelineRoute(routeName string, pipelineName string, trafficWeight uint32, isMirror bool) {
 	pipelineRoute, ok := xds.Pipelines[routeName]
 	if !ok {
 		if isMirror {
@@ -210,11 +226,11 @@ func (xds *SeldonXDSCache) AddPipelineRoute(routeName string, pipelineName strin
 	}
 }
 
-func (xds *SeldonXDSCache) RemovePipelineRoute(pipelineName string) {
+func (xds *SeldonXDSCacheV1) RemovePipelineRoute(pipelineName string) {
 	delete(xds.Pipelines, pipelineName)
 }
 
-func (xds *SeldonXDSCache) AddSecret(name string, validationSecretName string, certificate *seldontls.CertificateStore) {
+func (xds *SeldonXDSCacheV1) AddSecret(name string, validationSecretName string, certificate *seldontls.CertificateStore) {
 	xds.Secrets[name] = resources.Secret{
 		Name:                 name,
 		ValidationSecretName: validationSecretName,
@@ -222,7 +238,7 @@ func (xds *SeldonXDSCache) AddSecret(name string, validationSecretName string, c
 	}
 }
 
-func (xds *SeldonXDSCache) SetupTLS() error {
+func (xds *SeldonXDSCacheV1) SetupTLS() error {
 	logger := xds.logger.WithField("func", "SetupTLS")
 	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixEnvoy)
 	if protocol == seldontls.SecurityProtocolSSL {
@@ -249,7 +265,7 @@ func (xds *SeldonXDSCache) SetupTLS() error {
 	return nil
 }
 
-func (xds *SeldonXDSCache) AddListeners() {
+func (xds *SeldonXDSCacheV1) AddListeners() {
 	xds.Listeners[defaultListenerName] = resources.Listener{
 		Name:                   defaultListenerName,
 		Address:                defaultListenerAddress,
@@ -264,7 +280,7 @@ func (xds *SeldonXDSCache) AddListeners() {
 	}
 }
 
-func (xds *SeldonXDSCache) AddRouteClusterTraffic(
+func (xds *SeldonXDSCacheV1) AddRouteClusterTraffic(
 	routeName string,
 	modelName string,
 	modelVersion uint32,
@@ -301,7 +317,7 @@ func (xds *SeldonXDSCache) AddRouteClusterTraffic(
 	xds.Routes[routeName] = route
 }
 
-func (xds *SeldonXDSCache) AddCluster(
+func (xds *SeldonXDSCacheV1) AddCluster(
 	name string,
 	routeName string,
 	modelName string,
@@ -321,7 +337,7 @@ func (xds *SeldonXDSCache) AddCluster(
 	xds.Clusters[name] = cluster
 }
 
-func (xds *SeldonXDSCache) removeRouteFromCluster(routeName string, route resources.Route, cluster resources.TrafficSplits) error {
+func (xds *SeldonXDSCacheV1) removeRouteFromCluster(routeName string, route resources.Route, cluster resources.TrafficSplits) error {
 	httpCluster, ok := xds.Clusters[cluster.HttpCluster]
 	if !ok {
 		return fmt.Errorf("Can't find http cluster for route %s cluster %s route %+v", routeName, cluster.HttpCluster, route)
@@ -342,7 +358,7 @@ func (xds *SeldonXDSCache) removeRouteFromCluster(routeName string, route resour
 	return nil
 }
 
-func (xds *SeldonXDSCache) RemoveRoute(routeName string) error {
+func (xds *SeldonXDSCacheV1) RemoveRoute(routeName string) error {
 	logger := xds.logger.WithField("func", "RemoveRoute")
 	logger.Infof("Remove routes for model %s", routeName)
 	route, ok := xds.Routes[routeName]
@@ -366,7 +382,7 @@ func (xds *SeldonXDSCache) RemoveRoute(routeName string) error {
 	return nil
 }
 
-func (xds *SeldonXDSCache) AddEndpoint(clusterName, upstreamHost string, upstreamPort uint32) {
+func (xds *SeldonXDSCacheV1) AddEndpoint(clusterName, upstreamHost string, upstreamPort uint32, assignments []int, replicas map[int]*store.ServerReplica) {
 	cluster := xds.Clusters[clusterName]
 	k := fmt.Sprintf("%s:%d", upstreamHost, upstreamPort)
 	cluster.Endpoints[k] = resources.Endpoint{

@@ -258,7 +258,7 @@ func TestGetRouteName(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			routeName := getRouteName(test.routeName, test.isPipeline, test.isGrpc, test.isMirror)
+			routeName := GetRouteName(test.routeName, test.isPipeline, test.isGrpc, test.isMirror)
 			g.Expect(routeName).To(Equal(test.expected))
 		})
 	}

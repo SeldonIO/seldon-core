@@ -26,14 +26,14 @@ import (
 func TestAddRemoveHttpAndGrpcRoute(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
-	c := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c := NewSeldonXDSCacheV1(logger, &PipelineGatewayDetails{})
 
-	addVersionedRoute := func(c *SeldonXDSCache, routeName string, modelName string, httpCluster string, grpcCluster string, traffic uint32, version uint32) {
+	addVersionedRoute := func(c *SeldonXDSCacheV1, routeName string, modelName string, httpCluster string, grpcCluster string, traffic uint32, version uint32) {
 		c.AddCluster(httpCluster, routeName, modelName, version, false)
 		c.AddCluster(grpcCluster, routeName, modelName, version, true)
 		c.AddRouteClusterTraffic(routeName, modelName, version, traffic, httpCluster, grpcCluster, true, false)
-		c.AddEndpoint(httpCluster, "0.0.0.0", 9000)
-		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001)
+		c.AddEndpoint(httpCluster, "0.0.0.0", 9000, nil, nil)
+		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001, nil, nil)
 	}
 
 	httpCluster := "http1"
@@ -62,15 +62,15 @@ func TestAddRemoveHttpAndGrpcRouteVersions(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	addVersionedRoute := func(c *SeldonXDSCache, routeName string, modelName string, httpCluster string, grpcCluster string, traffic uint32, version uint32) {
+	addVersionedRoute := func(c *SeldonXDSCacheV1, routeName string, modelName string, httpCluster string, grpcCluster string, traffic uint32, version uint32) {
 		c.AddCluster(httpCluster, routeName, modelName, version, false)
 		c.AddCluster(grpcCluster, routeName, modelName, version, true)
 		c.AddRouteClusterTraffic(routeName, modelName, version, traffic, httpCluster, grpcCluster, true, false)
-		c.AddEndpoint(httpCluster, "0.0.0.0", 9000)
-		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001)
+		c.AddEndpoint(httpCluster, "0.0.0.0", 9000, nil, nil)
+		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001, nil, nil)
 	}
 
-	c := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c := NewSeldonXDSCacheV1(logger, &PipelineGatewayDetails{})
 
 	httpCluster := "http1"
 	grpcCluster := "grpc1"
@@ -123,15 +123,15 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForSameModel(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	addVersionedRoute := func(c *SeldonXDSCache, routeName string, modelName string, httpCluster string, grpcCluster string, traffic uint32, version uint32) {
+	addVersionedRoute := func(c *SeldonXDSCacheV1, routeName string, modelName string, httpCluster string, grpcCluster string, traffic uint32, version uint32) {
 		c.AddCluster(httpCluster, routeName, modelName, version, false)
 		c.AddCluster(grpcCluster, routeName, modelName, version, true)
 		c.AddRouteClusterTraffic(routeName, modelName, version, traffic, httpCluster, grpcCluster, true, false)
-		c.AddEndpoint(httpCluster, "0.0.0.0", 9000)
-		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001)
+		c.AddEndpoint(httpCluster, "0.0.0.0", 9000, nil, nil)
+		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001, nil, nil)
 	}
 
-	c := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c := NewSeldonXDSCacheV1(logger, &PipelineGatewayDetails{})
 
 	routeName := "r1"
 	httpCluster := "http1"
@@ -167,15 +167,15 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentModels(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	addVersionedRoute := func(c *SeldonXDSCache, modelRouteName string, modelName string, httpCluster string, grpcCluster string, traffic uint32, version uint32) {
+	addVersionedRoute := func(c *SeldonXDSCacheV1, modelRouteName string, modelName string, httpCluster string, grpcCluster string, traffic uint32, version uint32) {
 		c.AddCluster(httpCluster, modelRouteName, modelName, version, false)
 		c.AddCluster(grpcCluster, modelRouteName, modelName, version, true)
 		c.AddRouteClusterTraffic(modelRouteName, modelName, version, traffic, httpCluster, grpcCluster, true, false)
-		c.AddEndpoint(httpCluster, "0.0.0.0", 9000)
-		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001)
+		c.AddEndpoint(httpCluster, "0.0.0.0", 9000, nil, nil)
+		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001, nil, nil)
 	}
 
-	c := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c := NewSeldonXDSCacheV1(logger, &PipelineGatewayDetails{})
 
 	httpClusterModel1 := "model1_http1"
 	grpcClusterModel1 := "model1_grpc1"
@@ -216,15 +216,15 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentRoutesSameModel(t *testing
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	addVersionedRoute := func(c *SeldonXDSCache, modelRouteName string, modelName string, httpCluster string, grpcCluster string, traffic uint32, version uint32) {
+	addVersionedRoute := func(c *SeldonXDSCacheV1, modelRouteName string, modelName string, httpCluster string, grpcCluster string, traffic uint32, version uint32) {
 		c.AddCluster(httpCluster, modelRouteName, modelName, version, false)
 		c.AddCluster(grpcCluster, modelRouteName, modelName, version, true)
 		c.AddRouteClusterTraffic(modelRouteName, modelName, version, traffic, httpCluster, grpcCluster, true, false)
-		c.AddEndpoint(httpCluster, "0.0.0.0", 9000)
-		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001)
+		c.AddEndpoint(httpCluster, "0.0.0.0", 9000, nil, nil)
+		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001, nil, nil)
 	}
 
-	c := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c := NewSeldonXDSCacheV1(logger, &PipelineGatewayDetails{})
 
 	route1 := "r1"
 	route2 := "r2"
@@ -302,7 +302,7 @@ func TestSetupTLS(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			c := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+			c := NewSeldonXDSCacheV1(logger, &PipelineGatewayDetails{})
 			if test.setTLS {
 				t.Setenv(fmt.Sprintf("%s%s", seldontls.EnvSecurityPrefixEnvoy, seldontls.EnvSecurityProtocolSuffix), seldontls.SecurityProtocolSSL)
 			}

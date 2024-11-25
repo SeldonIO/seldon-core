@@ -46,7 +46,7 @@ type IncrementalProcessor struct {
 	// snapshotVersion holds the current version of the snapshot.
 	snapshotVersion      int64
 	logger               logrus.FieldLogger
-	xdsCache             *xdscache.SeldonXDSCache
+	xdsCache             *xdscache.SeldonXDSCacheV1
 	mu                   sync.RWMutex
 	modelStore           store.ModelStore
 	experimentServer     experiment.ExperimentServer
@@ -80,7 +80,7 @@ func NewIncrementalProcessor(
 		nodeID:               nodeID,
 		snapshotVersion:      rand.Int63n(1000),
 		logger:               log.WithField("source", "EnvoyServer"),
-		xdsCache:             xdscache.NewSeldonXDSCache(log, pipelineGatewayDetails),
+		xdsCache:             xdscache.NewSeldonXDSCacheV1(log, pipelineGatewayDetails),
 		modelStore:           modelStore,
 		experimentServer:     experimentServer,
 		pipelineHandler:      pipelineHandler,
@@ -264,7 +264,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string,
 		if !ok {
 			logger.Warnf("Invalid replica index %d for server %s", replicaIdx, server.Name)
 		} else {
-			p.xdsCache.AddEndpoint(httpClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceHttpPort()))
+			p.xdsCache.AddEndpoint(httpClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceHttpPort()), assignment, server.Replicas)
 		}
 	}
 	p.xdsCache.AddCluster(grpcClusterName, modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), true)
@@ -273,7 +273,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string,
 		if !ok {
 			logger.Warnf("Invalid replica index %d for server %s", replicaIdx, server.Name)
 		} else {
-			p.xdsCache.AddEndpoint(grpcClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceGrpcPort()))
+			p.xdsCache.AddEndpoint(grpcClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceGrpcPort()), assignment, server.Replicas)
 		}
 	}
 
