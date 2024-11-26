@@ -66,22 +66,46 @@ func (xds *SeldonXDSCacheV2) GetRoute(routeName string) (resources.Route, bool) 
 }
 
 func (xds *SeldonXDSCacheV2) ClusterContents() []types.Resource {
-	contents := make([]types.Resource, 0)
+	contents := make([]types.Resource, len(xds.Clusters))
+	i := 0
 	for _, val := range xds.Clusters {
-		contents = append(contents, val)
+		contents[i] = val
+		i++
 	}
 	return contents
 }
 
 func (xds *SeldonXDSCacheV2) RouteContents() []types.Resource {
-	contents := make([]types.Resource, 0)
+	routes := make([]*envoyRoute.Route, len(xds.Routes))
+	i := 0
 	for _, val := range xds.Routes {
-		contents = append(contents, val)
+		routes[i] = val.(*envoyRoute.Route)
+		i++
 	}
+	mirrors := make([]*envoyRoute.Route, len(xds.Mirrors))
+	i = 0
 	for _, val := range xds.Mirrors {
-		contents = append(contents, val)
+		mirrors[i] = val.(*envoyRoute.Route)
+		i++
 	}
-	return contents
+
+	return []types.Resource{&envoyRoute.RouteConfiguration{
+		Name: resources.DefaultRouteConfigurationName,
+		VirtualHosts: []*envoyRoute.VirtualHost{{
+			Name:    "seldon_service",
+			Domains: []string{"*"},
+			Routes:  routes,
+		}},
+	},
+		&envoyRoute.RouteConfiguration{
+			Name: resources.MirrorRouteConfigurationName,
+			VirtualHosts: []*envoyRoute.VirtualHost{{
+				Name:    "seldon_mirror",
+				Domains: []string{"*"},
+				Routes:  mirrors,
+			}},
+		},
+	}
 }
 
 func (xds *SeldonXDSCacheV2) ListenerContents() []types.Resource {
@@ -151,7 +175,7 @@ func (xds *SeldonXDSCacheV2) SetupClusters() {
 	}, false, clientSecret)
 
 	xds.logger.Infof("Add grpc pipeline cluster %s host:%s port:%d", resources.PipelineGatewayGrpcClusterName, xds.PipelineGatewayDetails.Host, xds.PipelineGatewayDetails.GrpcPort)
-	xds.Clusters[resources.PipelineGatewayHttpClusterName] = resources.MakeClusterV2(resources.PipelineGatewayGrpcClusterName, []resources.Endpoint{
+	xds.Clusters[resources.PipelineGatewayGrpcClusterName] = resources.MakeClusterV2(resources.PipelineGatewayGrpcClusterName, []resources.Endpoint{
 		{
 			UpstreamHost: xds.PipelineGatewayDetails.Host,
 			UpstreamPort: uint32(xds.PipelineGatewayDetails.GrpcPort),
@@ -160,14 +184,14 @@ func (xds *SeldonXDSCacheV2) SetupClusters() {
 
 	// Add Mirror clusters
 	xds.logger.Infof("Add http mirror cluster %s host:%s port:%d", resources.MirrorHttpClusterName, mirrorListenerAddress, mirrorListenerPort)
-	xds.Clusters[resources.PipelineGatewayHttpClusterName] = resources.MakeClusterV2(resources.MirrorHttpClusterName, []resources.Endpoint{
+	xds.Clusters[resources.MirrorHttpClusterName] = resources.MakeClusterV2(resources.MirrorHttpClusterName, []resources.Endpoint{
 		{
 			UpstreamHost: mirrorListenerAddress,
 			UpstreamPort: mirrorListenerPort,
 		},
 	}, false, nil)
 	xds.logger.Infof("Add grpc mirror cluster %s host:%s port:%d", resources.MirrorGrpcClusterName, mirrorListenerAddress, mirrorListenerPort)
-	xds.Clusters[resources.PipelineGatewayHttpClusterName] = resources.MakeClusterV2(resources.MirrorGrpcClusterName, []resources.Endpoint{
+	xds.Clusters[resources.MirrorGrpcClusterName] = resources.MakeClusterV2(resources.MirrorGrpcClusterName, []resources.Endpoint{
 		{
 			UpstreamHost: mirrorListenerAddress,
 			UpstreamPort: mirrorListenerPort,
@@ -195,7 +219,7 @@ func (xds *SeldonXDSCacheV2) AddPipelineRoute(routeName string, pipelineName str
 			pipelineRouteHttp := resources.MakePipelineRouteV2(routeNameHttp, pipelineName, trafficWeight, isMirror, false)
 			route := pipelineRouteHttp.GetRoute()
 			var splits []*envoyRoute.WeightedCluster_ClusterWeight
-			splits = append(splits, resources.CreateWeightedCluster(resources.PipelineGatewayHttpClusterName, pipelineName, trafficWeight))
+			splits = append(splits, resources.CreatePipelineWeightedCluster(resources.PipelineGatewayHttpClusterName, pipelineName, trafficWeight))
 			weightedClusters := &envoyRoute.RouteAction_WeightedClusters{
 				WeightedClusters: &envoyRoute.WeightedCluster{
 					Clusters: splits,
@@ -207,7 +231,7 @@ func (xds *SeldonXDSCacheV2) AddPipelineRoute(routeName string, pipelineName str
 		} else {
 			route := pipelineRouteHttp.(*envoyRoute.Route).GetRoute()
 			weightedClusters := route.ClusterSpecifier.(*envoyRoute.RouteAction_WeightedClusters).WeightedClusters.GetClusters()
-			weightedClusters = append(weightedClusters, resources.CreateWeightedCluster(resources.PipelineGatewayHttpClusterName, pipelineName, trafficWeight))
+			weightedClusters = append(weightedClusters, resources.CreatePipelineWeightedCluster(resources.PipelineGatewayHttpClusterName, pipelineName, trafficWeight))
 			route.ClusterSpecifier.(*envoyRoute.RouteAction_WeightedClusters).WeightedClusters.Clusters = weightedClusters
 		}
 
@@ -218,7 +242,7 @@ func (xds *SeldonXDSCacheV2) AddPipelineRoute(routeName string, pipelineName str
 			pipelineRouteGrpc := resources.MakePipelineRouteV2(routeNameGrpc, pipelineName, trafficWeight, isMirror, true)
 			route := pipelineRouteGrpc.GetRoute()
 			var splits []*envoyRoute.WeightedCluster_ClusterWeight
-			splits = append(splits, resources.CreateWeightedCluster(resources.PipelineGatewayGrpcClusterName, pipelineName, trafficWeight))
+			splits = append(splits, resources.CreatePipelineWeightedCluster(resources.PipelineGatewayGrpcClusterName, pipelineName, trafficWeight))
 			weightedClusters := &envoyRoute.RouteAction_WeightedClusters{
 				WeightedClusters: &envoyRoute.WeightedCluster{
 					Clusters: splits,
@@ -230,13 +254,13 @@ func (xds *SeldonXDSCacheV2) AddPipelineRoute(routeName string, pipelineName str
 		} else {
 			route := pipelineRouteGrpc.(*envoyRoute.Route).GetRoute()
 			weightedClusters := route.ClusterSpecifier.(*envoyRoute.RouteAction_WeightedClusters).WeightedClusters.GetClusters()
-			weightedClusters = append(weightedClusters, resources.CreateWeightedCluster(resources.PipelineGatewayGrpcClusterName, pipelineName, trafficWeight))
+			weightedClusters = append(weightedClusters, resources.CreatePipelineWeightedCluster(resources.PipelineGatewayGrpcClusterName, pipelineName, trafficWeight))
 			route.ClusterSpecifier.(*envoyRoute.RouteAction_WeightedClusters).WeightedClusters.Clusters = weightedClusters
 		}
 
 	} else {
 		// convert route name (http)
-		routeNameHttp := ""
+		routeNameHttp := resources.GetRouteName(routeName, true, false, isMirror)
 		pipelineRouteHttp, ok := xds.Mirrors[routeNameHttp]
 
 		if !ok {
@@ -247,11 +271,10 @@ func (xds *SeldonXDSCacheV2) AddPipelineRoute(routeName string, pipelineName str
 		} else {
 			route := pipelineRouteHttp.(*envoyRoute.Route).GetRoute()
 			route.RequestMirrorPolicies = resources.CreateMirrorRouteAction(resources.PipelineGatewayHttpClusterName, trafficWeight)
-			pipelineRouteHttp.ProtoReflect()
 		}
 
 		// convert route name (grpc)
-		routeNameGrpc := ""
+		routeNameGrpc := resources.GetRouteName(routeName, true, true, isMirror)
 		pipelineRouteGrpc, ok := xds.Mirrors[routeNameGrpc]
 
 		if !ok {
@@ -264,7 +287,6 @@ func (xds *SeldonXDSCacheV2) AddPipelineRoute(routeName string, pipelineName str
 			route := pipelineRouteGrpc.(*envoyRoute.Route).GetRoute()
 			route.RequestMirrorPolicies = resources.CreateMirrorRouteAction(resources.PipelineGatewayGrpcClusterName, trafficWeight)
 		}
-
 	}
 }
 
@@ -283,6 +305,48 @@ func (xds *SeldonXDSCacheV2) AddRouteClusterTraffic(
 	logPayloads bool,
 	isMirror bool,
 ) {
+	clusterTraffic := resources.TrafficSplits{
+		ModelName:     modelName,
+		ModelVersion:  modelVersion,
+		TrafficWeight: trafficPercent,
+		HttpCluster:   httpClusterName,
+		GrpcCluster:   grpcClusterName,
+	}
+
+	httpRouteName := resources.GetRouteName(routeName, false, false, isMirror)
+
+	httpRoute, ok := xds.Routes[httpRouteName]
+	if !ok {
+		httpRoute = resources.MakeModelRouteV2(routeName, []resources.TrafficSplits{clusterTraffic}, isMirror, false, logPayloads)
+	} else {
+		httpRouteAction := httpRoute.(*envoyRoute.Route).GetRoute()
+		weightedClusters := httpRouteAction.ClusterSpecifier.(*envoyRoute.RouteAction_WeightedClusters).WeightedClusters.GetClusters()
+		weightedClusters = append(weightedClusters, resources.CreateModelWeightedCluster(httpClusterName, clusterTraffic))
+		httpRouteAction.ClusterSpecifier.(*envoyRoute.RouteAction_WeightedClusters).WeightedClusters.Clusters = weightedClusters
+	}
+
+	grpcRouteName := resources.GetRouteName(routeName, false, true, isMirror)
+
+	grpcRoute, ok := xds.Routes[grpcRouteName]
+	if !ok {
+		grpcRoute = resources.MakeModelRouteV2(routeName, []resources.TrafficSplits{clusterTraffic}, isMirror, true, logPayloads)
+	} else {
+		grpcRouteAction := grpcRoute.(*envoyRoute.Route).GetRoute()
+		weightedClusters := grpcRouteAction.ClusterSpecifier.(*envoyRoute.RouteAction_WeightedClusters).WeightedClusters.GetClusters()
+		weightedClusters = append(weightedClusters, resources.CreateModelWeightedCluster(grpcClusterName, clusterTraffic))
+		grpcRouteAction.ClusterSpecifier.(*envoyRoute.RouteAction_WeightedClusters).WeightedClusters.Clusters = weightedClusters
+	}
+
+	if isMirror {
+		httpRouteAction := httpRoute.(*envoyRoute.Route).GetRoute()
+		httpRouteAction.RequestMirrorPolicies = resources.CreateMirrorRouteAction(resources.MirrorHttpClusterName, trafficPercent)
+
+		grpcRouteAction := grpcRoute.(*envoyRoute.Route).GetRoute()
+		grpcRouteAction.RequestMirrorPolicies = resources.CreateMirrorRouteAction(resources.MirrorGrpcClusterName, trafficPercent)
+	}
+
+	xds.Routes[httpRouteName] = httpRoute
+	xds.Routes[grpcRouteName] = grpcRoute
 }
 
 func (xds *SeldonXDSCacheV2) AddCluster(
@@ -311,19 +375,45 @@ func (xds *SeldonXDSCacheV2) AddCluster(
 func (xds *SeldonXDSCacheV2) RemoveRoute(routeName string) error {
 	logger := xds.logger.WithField("func", "RemoveRoute")
 	logger.Infof("Remove routes for model %s", routeName)
-	route, ok := xds.Routes[routeName]
+
+	httpRouteName := resources.GetRouteName(routeName, false, false, false)
+
+	httpRoute, ok := xds.Routes[httpRouteName]
 	if !ok {
-		logger.Warnf("No route named %s found", routeName)
+		logger.Warnf("No route named %s found", httpRouteName)
 	} else {
-		routePtr := route.(*envoyRoute.Route)
-		xds.removeRoute(routeName, routePtr)
+		routePtr := httpRoute.(*envoyRoute.Route)
+		xds.removeRoute(httpRouteName, routePtr)
+		delete(xds.Routes, httpRouteName)
 	}
 
-	_, ok = xds.Mirrors[routeName]
+	grpcRouteName := resources.GetRouteName(routeName, false, true, false)
+
+	grpcRoute, ok := xds.Routes[grpcRouteName]
 	if !ok {
-		logger.Warnf("No mirror named %s found", routeName)
+		logger.Warnf("No route named %s found", grpcRoute)
 	} else {
-		delete(xds.Mirrors, routeName)
+		routePtr := grpcRoute.(*envoyRoute.Route)
+		xds.removeRoute(grpcRouteName, routePtr)
+		delete(xds.Routes, grpcRouteName)
+	}
+
+	httpMirrorName := resources.GetRouteName(routeName, false, false, true)
+
+	_, ok = xds.Mirrors[httpMirrorName]
+	if !ok {
+		logger.Warnf("No mirror named %s found", httpMirrorName)
+	} else {
+		delete(xds.Mirrors, httpMirrorName)
+	}
+
+	grpcMirrorName := resources.GetRouteName(routeName, false, true, true)
+
+	_, ok = xds.Mirrors[grpcMirrorName]
+	if !ok {
+		logger.Warnf("No mirror named %s found", grpcMirrorName)
+	} else {
+		delete(xds.Mirrors, grpcMirrorName)
 	}
 	return nil
 }
@@ -338,15 +428,13 @@ func (xds *SeldonXDSCacheV2) removeRoute(routeName string, route *envoyRoute.Rou
 			delete(xds.clusterRoutes, cluster.Name)
 			delete(xds.Clusters, cluster.Name)
 		}
-
 	}
-	delete(xds.Mirrors, routeName)
 }
 
 func (xds *SeldonXDSCacheV2) AddEndpoint(clusterName string, upstreamHost string, upstreamPort uint32, assignments []int, replicas map[int]*store.ServerReplica) {
 	logger := xds.logger.WithField("func", "AddEndpoint")
 
-	cluster, ok := (xds.Clusters[clusterName])
+	cluster, ok := xds.Clusters[clusterName]
 
 	if !ok {
 		logger.Warnf("No cluster named %s found", clusterName)

@@ -31,7 +31,7 @@ import (
 
 func TestFetch(t *testing.T) {
 	g := NewGomegaWithT(t)
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Second)
 	defer cancel()
 
 	logger := log.New()

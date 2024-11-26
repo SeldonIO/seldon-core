@@ -188,7 +188,8 @@ func main() {
 	}
 
 	// Create envoy incremental processor
-	_, err = processor.NewIncrementalProcessor(xdsCache, nodeID, logger, ss, es, ps, eventHub, &pipelineGatewayDetails, cleaner)
+	seldonXdsCache := xdscache.NewSeldonXDSCacheV1(logger, &pipelineGatewayDetails)
+	_, err = processor.NewIncrementalProcessor(xdsCache, nodeID, logger, ss, es, ps, eventHub, &pipelineGatewayDetails, cleaner, seldonXdsCache)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to create incremental processor")
 	}

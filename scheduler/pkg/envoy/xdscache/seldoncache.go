@@ -361,9 +361,9 @@ func (xds *SeldonXDSCacheV1) AddCluster(
 			Routes:    make(map[resources.RouteVersionKey]bool),
 			Grpc:      isGrpc,
 		}
+		xds.Clusters[name] = cluster
 	}
 	cluster.Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: modelName, Version: modelVersion}] = true
-	xds.Clusters[name] = cluster
 }
 
 func (xds *SeldonXDSCacheV1) removeRouteFromCluster(routeName string, route resources.Route, cluster resources.TrafficSplits) error {

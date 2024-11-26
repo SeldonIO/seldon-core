@@ -233,47 +233,14 @@ func CreateMirrorRouteAction(clusterName string, trafficWeight uint32) []*route.
 // weighted clusters do not play well with session affinity see https://github.com/envoyproxy/envoy/issues/8167
 // Traffic shifting may need to be reinvesigated https://github.com/envoyproxy/envoy/pull/18207
 func createWeightedModelClusterAction(clusterTraffics []TrafficSplits, mirrorTraffics []TrafficSplits, rest bool) *route.Route_Route {
-	// Add Weighted Clusters with given traffic percentages to each internal model
 	var splits []*route.WeightedCluster_ClusterWeight
 	var mirrors []*route.RouteAction_RequestMirrorPolicy
-	var totWeight uint32
 	for _, clusterTraffic := range clusterTraffics {
 		clusterName := clusterTraffic.HttpCluster
 		if !rest {
 			clusterName = clusterTraffic.GrpcCluster
 		}
-		totWeight = totWeight + clusterTraffic.TrafficWeight
-		splits = append(splits,
-			&route.WeightedCluster_ClusterWeight{
-				Name: clusterName,
-				Weight: &wrappers.UInt32Value{
-					Value: clusterTraffic.TrafficWeight,
-				},
-				RequestHeadersToRemove: []string{SeldonInternalModelHeader},
-				RequestHeadersToAdd: []*core.HeaderValueOption{
-					{
-						Header: &core.HeaderValue{
-							Key: SeldonInternalModelHeader,
-							// note: this is implementation specific for agent and it is exposed here
-							// basically the model versions are flattened and it is loaded as
-							// <model_name>_<model_version>
-							// TODO: is there a nicer way of doing it?
-							// check client.go for how different model versions are treated internally
-							Value: util.GetVersionedModelName(
-								clusterTraffic.ModelName, clusterTraffic.ModelVersion),
-						},
-					},
-				},
-				ResponseHeadersToAdd: []*core.HeaderValueOption{
-					{
-						Header: &core.HeaderValue{
-							Key: SeldonRouteHeader,
-							Value: wrapRouteHeader(util.GetVersionedModelName(
-								clusterTraffic.ModelName, clusterTraffic.ModelVersion)),
-						},
-					},
-				},
-			})
+		splits = append(splits, CreateModelWeightedCluster(clusterName, clusterTraffic))
 
 	}
 	clusterName := MirrorHttpClusterName
@@ -321,15 +288,15 @@ func GetRouteName(routeName string, isPipeline bool, isGrpc bool, isMirror bool)
 	return fmt.Sprintf("%s%s%s%s", routeName, pipelineSuffix, httpSuffix, mirrorSuffix)
 }
 
-func makeModelHttpRoute(r *Route, rt *route.Route, isMirror bool) {
-	rt.Name = GetRouteName(r.RouteName, false, false, isMirror)
+func makeModelHttpRoute(routeName string, rt *route.Route, routeAction *route.Route_Route, isMirror, logPayloads bool) {
+	rt.Name = GetRouteName(routeName, false, false, isMirror)
 	rt.Match.PathSpecifier = modelRouteMatchPathHttp
 	rt.Match.Headers[0] = &route.HeaderMatcher{
 		Name: SeldonModelHeader, // Header name we will match on
 		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
 			StringMatch: &matcherv3.StringMatcher{
 				MatchPattern: &matcherv3.StringMatcher_Exact{
-					Exact: r.RouteName,
+					Exact: routeName,
 				},
 			},
 		},
@@ -341,23 +308,19 @@ func makeModelHttpRoute(r *Route, rt *route.Route, isMirror bool) {
 		},
 	}
 
-	if isMirror {
-		rt.Action = createWeightedModelClusterAction(r.Mirrors, []TrafficSplits{}, true)
-	} else {
-		rt.Action = createWeightedModelClusterAction(r.Clusters, r.Mirrors, true)
-	}
+	rt.Action = routeAction
 
-	if r.LogPayloads {
+	if logPayloads {
 		rt.ResponseHeadersToAdd = modelRouteHeaders
 	}
 }
 
-func makeModelStickySessionRoute(r *Route, clusterTraffic *TrafficSplits, rt *route.Route, isGrpc bool) {
+func makeModelStickySessionRoute(routeName string, clusterTraffic *TrafficSplits, rt *route.Route, isGrpc, logPayloads bool) {
 	if isGrpc {
-		rt.Name = r.RouteName + "_grpc_experiment"
+		rt.Name = routeName + "_grpc_experiment"
 		rt.Match.PathSpecifier = modelRouteMatchPathGrpc
 	} else {
-		rt.Name = r.RouteName + "_http_experiment"
+		rt.Name = routeName + "_http_experiment"
 		rt.Match.PathSpecifier = modelRouteMatchPathHttp
 	}
 
@@ -366,7 +329,7 @@ func makeModelStickySessionRoute(r *Route, clusterTraffic *TrafficSplits, rt *ro
 		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
 			StringMatch: &matcherv3.StringMatcher{
 				MatchPattern: &matcherv3.StringMatcher_Exact{
-					Exact: r.RouteName,
+					Exact: routeName,
 				},
 			},
 		},
@@ -426,20 +389,20 @@ func makeModelStickySessionRoute(r *Route, clusterTraffic *TrafficSplits, rt *ro
 			},
 		}
 	}
-	if r.LogPayloads {
+	if logPayloads {
 		rt.ResponseHeadersToAdd = append(rt.RequestHeadersToAdd, modelRouteHeaders...)
 	}
 }
 
-func makeModelGrpcRoute(r *Route, rt *route.Route, isMirror bool) {
-	rt.Name = GetRouteName(r.RouteName, false, true, isMirror)
+func makeModelGrpcRoute(routeName string, rt *route.Route, routeAction *route.Route_Route, isMirror, logPayloads bool) {
+	rt.Name = GetRouteName(routeName, false, true, isMirror)
 	rt.Match.PathSpecifier = modelRouteMatchPathGrpc
 	rt.Match.Headers[0] = &route.HeaderMatcher{
 		Name: SeldonModelHeader, // Header name we will match on
 		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
 			StringMatch: &matcherv3.StringMatcher{
 				MatchPattern: &matcherv3.StringMatcher_Exact{
-					Exact: r.RouteName,
+					Exact: routeName,
 				},
 			},
 		},
@@ -451,13 +414,9 @@ func makeModelGrpcRoute(r *Route, rt *route.Route, isMirror bool) {
 		},
 	}
 
-	if isMirror {
-		rt.Action = createWeightedModelClusterAction(r.Mirrors, []TrafficSplits{}, false)
-	} else {
-		rt.Action = createWeightedModelClusterAction(r.Clusters, r.Mirrors, false)
-	}
+	rt.Action = routeAction
 
-	if r.LogPayloads {
+	if logPayloads {
 		rt.ResponseHeadersToAdd = append(rt.RequestHeadersToAdd, modelRouteHeaders...)
 	}
 }
@@ -471,7 +430,40 @@ func getPipelineModelName(pipelineName string) string {
 	return fmt.Sprintf("%s.%s", pipelineName, SeldonPipelineHeaderSuffix)
 }
 
-func CreateWeightedCluster(clusterName, pipelineName string, trafficWeight uint32) *route.WeightedCluster_ClusterWeight {
+func CreateModelWeightedCluster(clusterName string, clusterTraffic TrafficSplits) *route.WeightedCluster_ClusterWeight {
+	return &route.WeightedCluster_ClusterWeight{
+		Name: clusterName,
+		Weight: &wrappers.UInt32Value{
+			Value: clusterTraffic.TrafficWeight,
+		},
+		RequestHeadersToRemove: []string{SeldonInternalModelHeader},
+		RequestHeadersToAdd: []*core.HeaderValueOption{
+			{
+				Header: &core.HeaderValue{
+					Key: SeldonInternalModelHeader,
+					// note: this is implementation specific for agent and it is exposed here
+					// basically the model versions are flattened and it is loaded as
+					// <model_name>_<model_version>
+					// TODO: is there a nicer way of doing it?
+					// check client.go for how different model versions are treated internally
+					Value: util.GetVersionedModelName(
+						clusterTraffic.ModelName, clusterTraffic.ModelVersion),
+				},
+			},
+		},
+		ResponseHeadersToAdd: []*core.HeaderValueOption{
+			{
+				Header: &core.HeaderValue{
+					Key: SeldonRouteHeader,
+					Value: wrapRouteHeader(util.GetVersionedModelName(
+						clusterTraffic.ModelName, clusterTraffic.ModelVersion)),
+				},
+			},
+		},
+	}
+}
+
+func CreatePipelineWeightedCluster(clusterName, pipelineName string, trafficWeight uint32) *route.WeightedCluster_ClusterWeight {
 	return &route.WeightedCluster_ClusterWeight{
 		Name: clusterName,
 		Weight: &wrappers.UInt32Value{
@@ -686,93 +678,37 @@ func MakePipelineRouteV2(routeName string, pipelineName string, trafficWeight ui
 	return route
 }
 
+func MakeModelRouteV2(routeName string, clusters []TrafficSplits, isMirror, isGrpc, logPayloads bool) *route.Route {
+	route := &route.Route{
+		Match: &route.RouteMatch{
+			Headers: make([]*route.HeaderMatcher, 2), // We always do 2 header matches
+		},
+	}
+
+	if !isMirror {
+		if isGrpc {
+			routeAction := createWeightedModelClusterAction(clusters, make([]TrafficSplits, 0), false)
+			makeModelGrpcRoute(routeName, route, routeAction, false, logPayloads)
+		} else {
+			routeAction := createWeightedModelClusterAction(clusters, make([]TrafficSplits, 0), true)
+			makeModelHttpRoute(routeName, route, routeAction, false, logPayloads)
+		}
+	} else {
+		if isGrpc {
+			routeAction := createWeightedModelClusterAction(clusters, make([]TrafficSplits, 0), false)
+			makeModelGrpcRoute(routeName, route, routeAction, true, logPayloads)
+		} else {
+			routeAction := createWeightedModelClusterAction(clusters, make([]TrafficSplits, 0), true)
+			makeModelHttpRoute(routeName, route, routeAction, true, logPayloads)
+		}
+	}
+	return route
+}
+
 func MakeRoute(modelRoutes []*Route, pipelineRoutes []*PipelineRoute) (*route.RouteConfiguration, *route.RouteConfiguration) {
-	rts := make([]*route.Route, 2*(len(modelRoutes)+
-		len(pipelineRoutes))+
-		calcNumberOfModelStickySessionsNeeded(modelRoutes)+
-		calcNumberOfPipelineStickySessionsNeeded(pipelineRoutes))
-	// Pre-allocate objects for better CPU pipelining
-	// Warning: assumes a fixes number of route-match headers
-	for i := 0; i < len(rts); i++ {
-		rts[i] = &route.Route{
-			Match: &route.RouteMatch{
-				Headers: make([]*route.HeaderMatcher, 2), // We always do 2 header matches
-			},
-		}
-	}
+	rts := createRoutes(modelRoutes, pipelineRoutes)
 
-	idx := 0
-
-	// Create Model Routes
-	for _, r := range modelRoutes {
-		for _, clusterTraffic := range r.Clusters {
-			if isModelExperiment(r) {
-				makeModelStickySessionRoute(r, &clusterTraffic, rts[idx], false)
-				idx++
-				makeModelStickySessionRoute(r, &clusterTraffic, rts[idx], true)
-				idx++
-			}
-		}
-		makeModelHttpRoute(r, rts[idx], false)
-		idx++
-		makeModelGrpcRoute(r, rts[idx], false)
-		idx++
-	}
-
-	// Create Pipeline Routes
-	for _, r := range pipelineRoutes {
-		if isPipelineExperiment(r) {
-			for _, clusterTraffic := range r.Clusters {
-				makePipelineStickySessionRoute(r, &clusterTraffic, rts[idx], false)
-				idx++
-				makePipelineStickySessionRoute(r, &clusterTraffic, rts[idx], true)
-				idx++
-			}
-		}
-
-		action := createWeightedPipelineClusterAction(r.RouteName, PipelineGatewayHttpClusterName, r.Clusters, r.Mirrors)
-		makePipelineHttpRoute(r.RouteName, rts[idx], action, false)
-		idx++
-		action = createWeightedPipelineClusterAction(r.RouteName, PipelineGatewayGrpcClusterName, r.Clusters, r.Mirrors)
-		makePipelineGrpcRoute(r.RouteName, rts[idx], action, false)
-		idx++
-	}
-
-	rtsMirrors := make([]*route.Route, calcNumberOfModelMirrorsNeeded(modelRoutes)+
-		calcNumberOfPipelineMirrorsNeeded(pipelineRoutes))
-	// Pre-allocate objects for better CPU pipelining
-	// Warning: assumes a fixes number of route-match headers
-	for i := 0; i < len(rtsMirrors); i++ {
-		rtsMirrors[i] = &route.Route{
-			Match: &route.RouteMatch{
-				Headers: make([]*route.HeaderMatcher, 2), // We always do 2 header matches
-			},
-		}
-	}
-
-	idx = 0
-
-	// Create Model Mirror Routes
-	for _, r := range modelRoutes {
-		if len(r.Mirrors) > 0 {
-			makeModelHttpRoute(r, rtsMirrors[idx], true)
-			idx++
-			makeModelGrpcRoute(r, rtsMirrors[idx], true)
-			idx++
-		}
-	}
-
-	// Create Pipeline Mirror Routes
-	for _, r := range pipelineRoutes {
-		if len(r.Mirrors) > 0 {
-			action := createWeightedPipelineClusterAction(r.RouteName, PipelineGatewayHttpClusterName, r.Mirrors, []PipelineTrafficSplits{})
-			makePipelineHttpRoute(r.RouteName, rtsMirrors[idx], action, true)
-			idx++
-			action = createWeightedPipelineClusterAction(r.RouteName, PipelineGatewayGrpcClusterName, r.Mirrors, []PipelineTrafficSplits{})
-			makePipelineGrpcRoute(r.RouteName, rtsMirrors[idx], action, true)
-			idx++
-		}
-	}
+	rtsMirrors := createMirrors(modelRoutes, pipelineRoutes)
 
 	return &route.RouteConfiguration{
 			Name: DefaultRouteConfigurationName,
@@ -792,12 +728,105 @@ func MakeRoute(modelRoutes []*Route, pipelineRoutes []*PipelineRoute) (*route.Ro
 		}
 }
 
+func createMirrors(modelRoutes []*Route, pipelineRoutes []*PipelineRoute) []*route.Route {
+	rtsMirrors := make([]*route.Route, calcNumberOfModelMirrorsNeeded(modelRoutes)+
+		calcNumberOfPipelineMirrorsNeeded(pipelineRoutes))
+
+	for i := 0; i < len(rtsMirrors); i++ {
+		rtsMirrors[i] = &route.Route{
+			Match: &route.RouteMatch{
+				Headers: make([]*route.HeaderMatcher, 2),
+			},
+		}
+	}
+
+	idx := 0
+
+	for _, r := range modelRoutes {
+		if len(r.Mirrors) > 0 {
+			routeAction := createWeightedModelClusterAction(r.Mirrors, []TrafficSplits{}, true)
+			makeModelHttpRoute(r.RouteName, rtsMirrors[idx], routeAction, true, r.LogPayloads)
+			idx++
+			routeAction = createWeightedModelClusterAction(r.Mirrors, []TrafficSplits{}, false)
+			makeModelGrpcRoute(r.RouteName, rtsMirrors[idx], routeAction, true, r.LogPayloads)
+			idx++
+		}
+	}
+
+	for _, r := range pipelineRoutes {
+		if len(r.Mirrors) > 0 {
+			action := createWeightedPipelineClusterAction(r.RouteName, PipelineGatewayHttpClusterName, r.Mirrors, []PipelineTrafficSplits{})
+			makePipelineHttpRoute(r.RouteName, rtsMirrors[idx], action, true)
+			idx++
+			action = createWeightedPipelineClusterAction(r.RouteName, PipelineGatewayGrpcClusterName, r.Mirrors, []PipelineTrafficSplits{})
+			makePipelineGrpcRoute(r.RouteName, rtsMirrors[idx], action, true)
+			idx++
+		}
+	}
+	return rtsMirrors
+}
+
+func createRoutes(modelRoutes []*Route, pipelineRoutes []*PipelineRoute) []*route.Route {
+	rts := make([]*route.Route, 2*(len(modelRoutes)+
+		len(pipelineRoutes))+
+		calcNumberOfModelStickySessionsNeeded(modelRoutes)+
+		calcNumberOfPipelineStickySessionsNeeded(pipelineRoutes))
+
+	for i := 0; i < len(rts); i++ {
+		rts[i] = &route.Route{
+			Match: &route.RouteMatch{
+				Headers: make([]*route.HeaderMatcher, 2),
+			},
+		}
+	}
+
+	idx := 0
+
+	for _, r := range modelRoutes {
+		for _, clusterTraffic := range r.Clusters {
+			if isModelExperiment(r) {
+				makeModelStickySessionRoute(r.RouteName, &clusterTraffic, rts[idx], false, r.LogPayloads)
+				idx++
+				makeModelStickySessionRoute(r.RouteName, &clusterTraffic, rts[idx], true, r.LogPayloads)
+				idx++
+			}
+		}
+
+		routeAction := createWeightedModelClusterAction(r.Clusters, r.Mirrors, true)
+		makeModelHttpRoute(r.RouteName, rts[idx], routeAction, false, r.LogPayloads)
+		idx++
+
+		routeAction = createWeightedModelClusterAction(r.Clusters, r.Mirrors, false)
+		makeModelGrpcRoute(r.RouteName, rts[idx], routeAction, false, r.LogPayloads)
+		idx++
+	}
+
+	for _, r := range pipelineRoutes {
+		if isPipelineExperiment(r) {
+			for _, clusterTraffic := range r.Clusters {
+				makePipelineStickySessionRoute(r, &clusterTraffic, rts[idx], false)
+				idx++
+				makePipelineStickySessionRoute(r, &clusterTraffic, rts[idx], true)
+				idx++
+			}
+		}
+
+		action := createWeightedPipelineClusterAction(r.RouteName, PipelineGatewayHttpClusterName, r.Clusters, r.Mirrors)
+		makePipelineHttpRoute(r.RouteName, rts[idx], action, false)
+		idx++
+		action = createWeightedPipelineClusterAction(r.RouteName, PipelineGatewayGrpcClusterName, r.Clusters, r.Mirrors)
+		makePipelineGrpcRoute(r.RouteName, rts[idx], action, false)
+		idx++
+	}
+	return rts
+}
+
 func createWeightedPipelineClusterAction(pipelineName, clusterName string, clusterTraffics []PipelineTrafficSplits, mirrorTraffics []PipelineTrafficSplits) *route.Route_Route {
 	// Add Weighted Clusters with given traffic percentages to each internal model
 	var splits []*route.WeightedCluster_ClusterWeight
 	var mirrors []*route.RouteAction_RequestMirrorPolicy
 	for _, clusterTraffic := range clusterTraffics {
-		splits = append(splits, CreateWeightedCluster(clusterName, pipelineName, clusterTraffic.TrafficWeight))
+		splits = append(splits, CreatePipelineWeightedCluster(clusterName, pipelineName, clusterTraffic.TrafficWeight))
 	}
 
 	if len(mirrorTraffics) > 0 {
