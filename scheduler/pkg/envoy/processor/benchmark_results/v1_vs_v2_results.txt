@@ -2,50 +2,230 @@ goos: linux
 goarch: amd64
 pkg: github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor
 cpu: 12th Gen Intel(R) Core(TM) i7-12800H
-BenchmarkModelUpdate_Models_10_Replicas_1_Batch_1msV2-20           	     795	   1388325 ns/op	 1534924 B/op	   18862 allocs/op
-BenchmarkModelUpdate_Models_100_Replicas_1_Batch_1msV2-20          	     260	   4833839 ns/op	 9763432 B/op	  123532 allocs/op
-BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_1msV2-20        	      34	  53822956 ns/op	162048609 B/op	 1173086 allocs/op
-BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_1msV2-20       	       3	 464123334 ns/op	1054757149 B/op	 6592939 allocs/op
 
-BenchmarkModelUpdate_Models_10_Replicas_1_Batch_10msV2-20          	     183	   6535051 ns/op	16476228 B/op	   79824 allocs/op
-BenchmarkModelUpdate_Models_100_Replicas_1_Batch_10msV2-20         	     100	  12030190 ns/op	32975044 B/op	  183248 allocs/op
-BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_10msV2-20       	      21	  72433082 ns/op	194793508 B/op	 1246114 allocs/op
-BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_10msV2-20      	       2	 621792057 ns/op	1744558548 B/op	 7674629 allocs/op
 
-BenchmarkModelUpdate_Models_10_Replicas_10_Batch_10msV2-20         	     116	   9841739 ns/op	31284034 B/op	  181429 allocs/op
-BenchmarkModelUpdate_Models_100_Replicas_10_Batch_10msV2-20        	      38	  48946820 ns/op	173576911 B/op	 1283259 allocs/op
-BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_10msV2-20      	       3	 340887714 ns/op	1018281858 B/op	 6164447 allocs/op
-BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_10msV2-20     	       1	3226881706 ns/op	7894540712 B/op	37091118 allocs/op
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_1msV2-20           	     811	   1413164 ns/op	 1530967 B/op	   18818 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_1msV2-20          	     247	   4768027 ns/op	 9729608 B/op	  123379 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_1msV2-20        	      34	  53640018 ns/op	163041272 B/op	 1169648 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_1msV2-20       	       3	 505762010 ns/op	1077725274 B/op	 6577547 allocs/op
 
-BenchmarkModelUpdate_Models_10_Replicas_1_Batch_100msV2-20         	    7894	    222664 ns/op	  781574 B/op	    3638 allocs/op
-BenchmarkModelUpdate_Models_100_Replicas_1_Batch_100msV2-20        	      10	 102396046 ns/op	271982133 B/op	 1156299 allocs/op
-BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_100msV2-20      	      10	 111520024 ns/op	349943297 B/op	 2275207 allocs/op
-BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_100msV2-20     	       2	 508554504 ns/op	1241100160 B/op	13893939 allocs/op
 
-BenchmarkModelUpdate_Models_10_Replicas_10_Batch_100msV2-20        	      10	 101811885 ns/op	144939574 B/op	 1305951 allocs/op
-BenchmarkModelUpdate_Models_100_Replicas_10_Batch_100msV2-20       	       9	 112699053 ns/op	213456668 B/op	 2118165 allocs/op
-BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_100msV2-20     	       6	 367038802 ns/op	1097415730 B/op	11711164 allocs/op
-BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_100msV2-20    	       1	2361071166 ns/op	3680688832 B/op	36044770 allocs/op
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_1msV2-20          	     210	   4964455 ns/op	17888694 B/op	  150887 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_1msV2-20         	      45	  42047332 ns/op	155841411 B/op	 1296430 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_1msV2-20       	       4	 417560228 ns/op	1256504378 B/op	 7630090 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_1msV2-20      	       1	4012653083 ns/op	12398477216 B/op	53302468 allocs/op
 
-BenchmarkModelUpdate_Models_10_Replicas_1_Batch_10ms-20            	     100	  10565460 ns/op	25546871 B/op	  266761 allocs/op
-BenchmarkModelUpdate_Models_100_Replicas_1_Batch_10ms-20           	      94	  12173847 ns/op	30591613 B/op	  287891 allocs/op
-BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_10ms-20         	      26	  76271180 ns/op	356229252 B/op	 4422595 allocs/op
-BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_10ms-20        	       3	 560005022 ns/op	2290856853 B/op	29911549 allocs/op
 
-BenchmarkModelUpdate_Models_10_Replicas_10_Batch_10ms-20           	      98	  11848602 ns/op	51341610 B/op	  666128 allocs/op
-BenchmarkModelUpdate_Models_100_Replicas_10_Batch_10ms-20          	      34	  50575585 ns/op	253258598 B/op	 3246999 allocs/op
-BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_10ms-20        	       3	 427322011 ns/op	1869500920 B/op	24989297 allocs/op
-BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_10ms-20       	       1	3449679972 ns/op	18497666480 B/op	251433010 allocs/op
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_10msV2-20          	     237	   4462589 ns/op	 9730274 B/op	   40444 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_10msV2-20         	      98	  12629903 ns/op	29428640 B/op	  164278 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_10msV2-20       	      18	  75379122 ns/op	211319269 B/op	 1295772 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_10msV2-20      	       2	 729681229 ns/op	1699414452 B/op	 7484846 allocs/op
 
-BenchmarkModelUpdate_Models_10_Replicas_1_Batch_100ms-20           	    8080	    217671 ns/op	 1243916 B/op	   14219 allocs/op
-BenchmarkModelUpdate_Models_100_Replicas_1_Batch_100ms-20          	      12	 102552996 ns/op	397842261 B/op	 5462964 allocs/op
-BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_100ms-20        	       9	 113878922 ns/op	242267317 B/op	 3163618 allocs/op
-BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_100ms-20       	       3	 703609523 ns/op	2362903413 B/op	31498759 allocs/op
 
-BenchmarkModelUpdate_Models_10_Replicas_10_Batch_100ms-20          	      10	 102329651 ns/op	354975204 B/op	 4858515 allocs/op
-BenchmarkModelUpdate_Models_100_Replicas_10_Batch_100ms-20         	       9	 113931447 ns/op	226088225 B/op	 2830644 allocs/op
-BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_100ms-20       	       6	 286772314 ns/op	963909852 B/op	11189940 allocs/op
-BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_100ms-20      	       1	1738799241 ns/op	3865484472 B/op	49811822 allocs/op
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_10msV2-20         	     122	  11322903 ns/op	27711955 B/op	  161100 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_10msV2-20        	      36	  51530249 ns/op	186207020 B/op	 1322034 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_10msV2-20      	       3	 427565600 ns/op	1053124178 B/op	 6359287 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_10msV2-20     	       1	3312993595 ns/op	6980779584 B/op	32549945 allocs/op
+
+
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_100msV2-20         	    8230	    233925 ns/op	  677285 B/op	    3700 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_100msV2-20        	      10	 101805603 ns/op	212726926 B/op	 1609376 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_100msV2-20      	      10	 110729622 ns/op	260009206 B/op	 2539026 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_100msV2-20     	       2	 510591464 ns/op	1280148012 B/op	12427673 allocs/op
+
+
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_100msV2-20        	      10	 102162298 ns/op	177473887 B/op	 1276443 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_100msV2-20       	       9	 116489774 ns/op	276688631 B/op	 2375095 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_100msV2-20     	       4	 343090025 ns/op	1084638580 B/op	10619429 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_100msV2-20    	       1	2288885861 ns/op	4161786560 B/op	29680680 allocs/op
+
+
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_1ms-20             	     710	   1646263 ns/op	 4785844 B/op	   42395 allocs/op
+
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_1ms-20            	     206	   9498205 ns/op	36560409 B/op	  441936 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_1msV2-20          	     247	   4768027 ns/op	 9729608 B/op	  123379 allocs/op
+
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_1ms-20          	      27	 160105269 ns/op	814142586 B/op	10590114 allocs/op
+
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_1ms-20         	       1	4566059558 ns/op	21514611360 B/op 286709613 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_1msV2-20       	       3	 505762010 ns/op	1077725274 B/op	 6577547 allocs/op
+
+
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_1ms-20            	     373	   3252765 ns/op	12836741 B/op	  135317 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_1ms-20           	      62	  48238209 ns/op	242143109 B/op	 3030191 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_1ms-20         	       5	 375890196 ns/op	1562408108 B/op	20065091 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_1ms-20        	       1	4046326084 ns/op	20192172456 B/op	268415234 allocs/op
+
+
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_10ms-20            	     526	   1974061 ns/op	 5887027 B/op	   75976 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_10ms-20           	      91	  17779353 ns/op	75982074 B/op	 1014437 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_10ms-20         	       7	 182000035 ns/op	515074034 B/op	 6910380 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_10ms-20        	       3	 692241325 ns/op	2911185653 B/op	38104344 allocs/op
+
+
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_10ms-20           	     124	   9593635 ns/op	40194542 B/op	  515657 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_10ms-20          	      33	  64886241 ns/op	280778210 B/op	 3549000 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_10ms-20        	       3	 361200089 ns/op	1364678208 B/op	17696961 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_10ms-20       	       1	3240614359 ns/op	12706075232 B/op	164090528 allocs/op
+
+
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_100ms-20           	    8517	    183797 ns/op	  862505 B/op	    8444 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_100ms-20          	      10	 102600670 ns/op	431490776 B/op	 5386915 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_100ms-20        	       9	 118343178 ns/op	543893394 B/op	 6757373 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_100ms-20       	       2	 566247831 ns/op	2926684964 B/op	36939787 allocs/op
+
+
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_100ms-20          	      10	 102437439 ns/op	531070120 B/op	 6881968 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_100ms-20         	       9	 117500354 ns/op	520127244 B/op	 6365363 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_100ms-20       	       4	 332223710 ns/op	1607497398 B/op	19158021 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_10msV2-20      	       3	 427565600 ns/op	1053124178 B/op	 6359287 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_1msV2-20       	       4	 417560228 ns/op	1256504378 B/op	 7630090 allocs/op
+
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_100ms-20      	       1	3027365879 ns/op	9934907328 B/op	122957707 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_100msV2-20    	       1	2288885861 ns/op	4161786560 B/op	 29680680 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_1ms-20        	       1	4046326084 ns/op   20192172456 B/op	268415234 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_1msV2-20      	       1	4012653083 ns/op   12398477216 B/op	 53302468 allocs/op
+
+
 PASS
-ok  	github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor	127.123s
+ok  	github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor	263.391s
 
+
+Batch removed
+
+goos: linux
+goarch: amd64
+pkg: github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor
+cpu: 12th Gen Intel(R) Core(TM) i7-12800H
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_1msV2-20           	    1940	    600386 ns/op	 1518059 B/op	   16246 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_1msV2-20          	     223	   5012599 ns/op	17141786 B/op	  153011 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_1msV2-20        	      32	 135399347 ns/op	482139384 B/op	 1299585 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_1msV2-20       	       3	 443420666 ns/op	1170843760 B/op	 3913150 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_1msV2-20          	     295	   4270908 ns/op	18308670 B/op	  150554 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_1msV2-20         	      51	  46755541 ns/op	200035521 B/op	 1424356 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_1msV2-20       	       4	 281568428 ns/op	839198646 B/op	 3466212 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_1msV2-20      	       1	3092571117 ns/op	9655835136 B/op	31860074 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_10msV2-20          	    1488	    952069 ns/op	 4020302 B/op	   19796 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_10msV2-20         	     152	   7165827 ns/op	26970630 B/op	  158004 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_10msV2-20       	      21	 213923490 ns/op	718724695 B/op	 1546415 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_10msV2-20      	       1	1020541305 ns/op	1790980768 B/op	 5075116 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_10msV2-20         	     459	   3792371 ns/op	18220533 B/op	  152619 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_10msV2-20        	      49	  53673059 ns/op	208260870 B/op	 1398244 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_10msV2-20      	       4	 387394072 ns/op	1145437612 B/op	 4101801 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_10msV2-20     	       1	4048390290 ns/op	11746532416 B/op	32786070 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_100msV2-20         	    5077	    411024 ns/op	 1268241 B/op	    3725 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_100msV2-20        	     204	   7717638 ns/op	31492778 B/op	  172850 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_100msV2-20      	      22	 196499763 ns/op	655463348 B/op	 1429125 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_100msV2-20     	       3	 469113665 ns/op	1842766421 B/op	 4009574 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_100msV2-20        	     422	   4578293 ns/op	19193522 B/op	  152200 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_100msV2-20       	      51	  93338981 ns/op	343706667 B/op	 1593540 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_100msV2-20     	       4	 270766090 ns/op	1350265874 B/op	 3521172 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_100msV2-20    	       1	9899365344 ns/op	23957963920 B/op	38340914 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_1ms-20             	    1328	    874579 ns/op	 5295829 B/op	   40772 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_1ms-20            	     100	  31774821 ns/op	141825927 B/op	 1548775 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_1ms-20          	      26	 507156341 ns/op	2229949158 B/op	23679735 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_1ms-20         	       1	7815600115 ns/op	32894376792 B/op	381364441 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_1ms-20            	     100	  17036462 ns/op	46578356 B/op	  571895 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_1ms-20           	       3	 979446160 ns/op	4315984021 B/op	51640798 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_1ms-20         	       1	4113190437 ns/op	16348389912 B/op	197697554 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_1ms-20        	       1	35306486108 ns/op	157330138088 B/op	1827123545 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_10ms-20            	     519	   3962625 ns/op	 9038878 B/op	  102911 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_10ms-20           	     100	  33048154 ns/op	174813737 B/op	 2087484 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_10ms-20         	      16	 570049274 ns/op	2041986165 B/op	20217009 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_10ms-20        	       1	5284677954 ns/op	18859790736 B/op	215218471 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_10ms-20           	     100	  23830947 ns/op	69524117 B/op	  819634 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_10ms-20          	      14	 668896268 ns/op	2678309665 B/op	31886915 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_10ms-20        	       1	2637790757 ns/op	8413049016 B/op	101088145 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_10ms-20       	       1	32061656414 ns/op	130476159304 B/op	1458286722 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_100ms-20           	    2124	   1860994 ns/op	 3939762 B/op	   35638 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_100ms-20          	     100	  63510085 ns/op	234050812 B/op	 2879103 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_100ms-20        	       8	 330600759 ns/op	653909000 B/op	 7480378 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_100ms-20       	       1	3054750092 ns/op	9305294344 B/op	107525030 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_100ms-20          	     100	  35073090 ns/op	125627345 B/op	 1455417 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_100ms-20         	       7	 252440975 ns/op	498954219 B/op	 5999964 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_100ms-20       	       1	5197626116 ns/op	18997464752 B/op	213467476 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_100ms-20      	       1	19137578729 ns/op	65478358184 B/op	667346846 allocs/op
+
+PASS
+ok  	github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor	646.536s
+
+
+ADS 
+
+goos: linux
+goarch: amd64
+pkg: github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor
+cpu: 12th Gen Intel(R) Core(TM) i7-12800H
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_1msV2-20           	    1772	    658418 ns/op	 1518606 B/op	   16249 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_1msV2-20          	     190	   5750723 ns/op	17072971 B/op	  152317 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_1msV2-20        	      21	  74992324 ns/op	259667523 B/op	  942573 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_1msV2-20       	       1	1113566381 ns/op	4155721240 B/op	 7872580 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_1msV2-20          	     320	   3180349 ns/op	15349576 B/op	  153679 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_1msV2-20         	      68	  33530426 ns/op	170765644 B/op	 1428325 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_1msV2-20       	       6	 230403455 ns/op	721798345 B/op	 4091208 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_1msV2-20      	       1	2901320514 ns/op	9084017096 B/op	36678457 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_10msV2-20          	    1606	   1045034 ns/op	 4003791 B/op	   21125 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_10msV2-20         	     154	   7376228 ns/op	37403766 B/op	  189045 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_10msV2-20       	      27	 203311893 ns/op	767001583 B/op	 1799274 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_10msV2-20      	       3	 449374193 ns/op	1243534474 B/op	 3949190 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_10msV2-20         	     378	   3807422 ns/op	19482231 B/op	  152193 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_10msV2-20        	      52	  54748759 ns/op	219972873 B/op	 1460581 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_10msV2-20      	       4	 284394490 ns/op	925766112 B/op	 3436667 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_10msV2-20     	       1	3081850709 ns/op	9988366888 B/op	29438561 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_100msV2-20         	    6139	    380325 ns/op	 1255796 B/op	    3586 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_100msV2-20        	     258	   8585781 ns/op	30909730 B/op	  168813 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_100msV2-20      	      18	 137446125 ns/op	420159816 B/op	 1140413 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_100msV2-20     	       3	 443717847 ns/op	1819017338 B/op	 4114612 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_100msV2-20        	     396	   4256371 ns/op	20451987 B/op	  152805 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_100msV2-20       	      46	  86635574 ns/op	320440513 B/op	 1589074 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_100msV2-20     	       4	 259760410 ns/op	1282338928 B/op	 3429043 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_100msV2-20    	       1	6072623776 ns/op	13553713696 B/op	27070165 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_1ms-20             	    1119	   2238872 ns/op	 6340189 B/op	   41228 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_1ms-20            	     100	  28949411 ns/op	163574137 B/op	 1766095 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_1ms-20          	      28	 491165817 ns/op	2242437372 B/op	23699285 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_1ms-20         	       1	9865028039 ns/op	43753051816 B/op	493348651 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_1ms-20            	     100	  32222123 ns/op	150263698 B/op	 1808150 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_1ms-20           	       2	 922887982 ns/op	2833810768 B/op	33794072 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_1ms-20         	       1	4547515728 ns/op	21544552200 B/op	258329476 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_1ms-20        	       1	36901353300 ns/op	174364681232 B/op	2008914484 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_10ms-20            	    1464	   1153849 ns/op	 5632433 B/op	   52318 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_10ms-20           	     100	  18442514 ns/op	106236128 B/op	 1344741 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_10ms-20         	       8	 297505617 ns/op	638207937 B/op	 6895024 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_10ms-20        	       1	2565731420 ns/op	5531937016 B/op	60738272 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_10ms-20           	     100	  13924547 ns/op	36636870 B/op	  430202 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_10ms-20          	       1	2474863940 ns/op	5508160472 B/op	59995702 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_10ms-20        	       2	2890997814 ns/op	10101450376 B/op	105202019 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_10ms-20       	       1	15328267442 ns/op	55792461472 B/op	550054844 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_100ms-20           	    1851	    576256 ns/op	 1496392 B/op	   14225 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_100ms-20          	      27	 106658629 ns/op	245105111 B/op	 2856383 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_100ms-20        	       3	1310479437 ns/op	3655078112 B/op	36961941 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_100ms-20       	       1	4417970344 ns/op	17345892888 B/op	181426374 allocs/op
+
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_100ms-20          	     158	  17866590 ns/op	60637943 B/op	  685778 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_100ms-20         	      15	 270826664 ns/op	1196621718 B/op	13766917 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_100ms-20       	       1	3807551354 ns/op	13963314464 B/op	160826643 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_100ms-20      	       1	13611179031 ns/op	47665970344 B/op	479638074 allocs/op
+
+PASS
+ok  	github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor	571.283s
