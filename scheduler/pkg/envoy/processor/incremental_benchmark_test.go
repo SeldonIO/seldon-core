@@ -29,6 +29,14 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
+var cacheCreatorV1 = func(logger *logrus.Logger, pipelineGatewayDetails *xdscache.PipelineGatewayDetails) xdscache.SeldonXDSCache {
+	return xdscache.NewSeldonXDSCacheV1(logger, pipelineGatewayDetails)
+}
+
+var cacheCreatorV2 = func(logger *logrus.Logger, pipelineGatewayDetails *xdscache.PipelineGatewayDetails) xdscache.SeldonXDSCache {
+	return xdscache.NewSeldonXDSCacheV2(logger, pipelineGatewayDetails)
+}
+
 func addServer(
 	ip *IncrementalProcessor,
 	serverName string,
@@ -110,6 +118,7 @@ func benchmarkModelUpdate(
 	updatesPerModel int,
 	numServerReplicas int,
 	batchWaitMillis int,
+	cacheCreator func(*logrus.Logger, *xdscache.PipelineGatewayDetails) xdscache.SeldonXDSCache,
 ) {
 	const (
 		serverName = "server1"
@@ -139,7 +148,7 @@ func benchmarkModelUpdate(
 			eventHub,
 			pipelineGatewayDetails,
 			nil,
-			xdscache.NewSeldonXDSCacheV1(logger, pipelineGatewayDetails),
+			cacheCreator(logger, pipelineGatewayDetails),
 		)
 		require.NoError(b, err)
 
@@ -161,58 +170,128 @@ func benchmarkModelUpdate(
 	}
 }
 
+// 1 replica, 1ms batch
+func BenchmarkModelUpdate_Models_10_Replicas_1_Batch_1msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 10, 1, 1, 1, cacheCreatorV2)
+}
+func BenchmarkModelUpdate_Models_100_Replicas_1_Batch_1msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 100, 1, 1, 1, cacheCreatorV2)
+}
+func BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_1msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 1_000, 1, 1, 1, cacheCreatorV2)
+}
+func BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_1msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 10_000, 1, 1, 1, cacheCreatorV2)
+}
+
+// 1 replica, 10ms batch
+func BenchmarkModelUpdate_Models_10_Replicas_1_Batch_10msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 10, 1, 1, 10, cacheCreatorV2)
+}
+func BenchmarkModelUpdate_Models_100_Replicas_1_Batch_10msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 100, 1, 1, 10, cacheCreatorV2)
+}
+func BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_10msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 1_000, 1, 1, 10, cacheCreatorV2)
+}
+func BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_10msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 10_000, 1, 1, 10, cacheCreatorV2)
+}
+
+// 10 replicas, 10ms batch
+func BenchmarkModelUpdate_Models_10_Replicas_10_Batch_10msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 10, 1, 10, 10, cacheCreatorV2)
+}
+func BenchmarkModelUpdate_Models_100_Replicas_10_Batch_10msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 100, 1, 10, 10, cacheCreatorV2)
+}
+func BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_10msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 1_000, 1, 10, 10, cacheCreatorV2)
+}
+func BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_10msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 10_000, 1, 10, 10, cacheCreatorV2)
+}
+
+// 1 replicas, 100ms batch
+func BenchmarkModelUpdate_Models_10_Replicas_1_Batch_100msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 1, 1, 1, 100, cacheCreatorV2)
+}
+func BenchmarkModelUpdate_Models_100_Replicas_1_Batch_100msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 100, 1, 1, 100, cacheCreatorV2)
+}
+func BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_100msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 1_000, 1, 1, 100, cacheCreatorV2)
+}
+func BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_100msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 10_000, 1, 1, 100, cacheCreatorV2)
+}
+
+// 10 replicas, 100ms batch
+func BenchmarkModelUpdate_Models_10_Replicas_10_Batch_100msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 10, 1, 10, 100, cacheCreatorV2)
+}
+func BenchmarkModelUpdate_Models_100_Replicas_10_Batch_100msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 100, 1, 10, 100, cacheCreatorV2)
+}
+func BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_100msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 1_000, 1, 10, 100, cacheCreatorV2)
+}
+func BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_100msV2(b *testing.B) {
+	benchmarkModelUpdate(b, 10_000, 1, 10, 100, cacheCreatorV2)
+}
+
 // 1 replica, 10ms batch
 func BenchmarkModelUpdate_Models_10_Replicas_1_Batch_10ms(b *testing.B) {
-	benchmarkModelUpdate(b, 10, 1, 1, 10)
+	benchmarkModelUpdate(b, 10, 1, 1, 10, cacheCreatorV1)
 }
 func BenchmarkModelUpdate_Models_100_Replicas_1_Batch_10ms(b *testing.B) {
-	benchmarkModelUpdate(b, 100, 1, 1, 10)
+	benchmarkModelUpdate(b, 100, 1, 1, 10, cacheCreatorV1)
 }
 func BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_10ms(b *testing.B) {
-	benchmarkModelUpdate(b, 1_000, 1, 1, 10)
+	benchmarkModelUpdate(b, 1_000, 1, 1, 10, cacheCreatorV1)
 }
 func BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_10ms(b *testing.B) {
-	benchmarkModelUpdate(b, 10_000, 1, 1, 10)
+	benchmarkModelUpdate(b, 10_000, 1, 1, 10, cacheCreatorV1)
 }
 
 // 10 replicas, 10ms batch
 func BenchmarkModelUpdate_Models_10_Replicas_10_Batch_10ms(b *testing.B) {
-	benchmarkModelUpdate(b, 10, 1, 10, 10)
+	benchmarkModelUpdate(b, 10, 1, 10, 10, cacheCreatorV1)
 }
 func BenchmarkModelUpdate_Models_100_Replicas_10_Batch_10ms(b *testing.B) {
-	benchmarkModelUpdate(b, 100, 1, 10, 10)
+	benchmarkModelUpdate(b, 100, 1, 10, 10, cacheCreatorV1)
 }
 func BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_10ms(b *testing.B) {
-	benchmarkModelUpdate(b, 1_000, 1, 10, 10)
+	benchmarkModelUpdate(b, 1_000, 1, 10, 10, cacheCreatorV1)
 }
 func BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_10ms(b *testing.B) {
-	benchmarkModelUpdate(b, 10_000, 1, 10, 10)
+	benchmarkModelUpdate(b, 10_000, 1, 10, 10, cacheCreatorV1)
 }
 
 // 1 replicas, 100ms batch
 func BenchmarkModelUpdate_Models_10_Replicas_1_Batch_100ms(b *testing.B) {
-	benchmarkModelUpdate(b, 1, 1, 1, 100)
+	benchmarkModelUpdate(b, 1, 1, 1, 100, cacheCreatorV1)
 }
 func BenchmarkModelUpdate_Models_100_Replicas_1_Batch_100ms(b *testing.B) {
-	benchmarkModelUpdate(b, 100, 1, 1, 100)
+	benchmarkModelUpdate(b, 100, 1, 1, 100, cacheCreatorV1)
 }
 func BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_100ms(b *testing.B) {
-	benchmarkModelUpdate(b, 1_000, 1, 1, 100)
+	benchmarkModelUpdate(b, 1_000, 1, 1, 100, cacheCreatorV1)
 }
 func BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_100ms(b *testing.B) {
-	benchmarkModelUpdate(b, 10_000, 1, 1, 100)
+	benchmarkModelUpdate(b, 10_000, 1, 1, 100, cacheCreatorV1)
 }
 
 // 10 replicas, 100ms batch
 func BenchmarkModelUpdate_Models_10_Replicas_10_Batch_100ms(b *testing.B) {
-	benchmarkModelUpdate(b, 10, 1, 10, 100)
+	benchmarkModelUpdate(b, 10, 1, 10, 100, cacheCreatorV1)
 }
 func BenchmarkModelUpdate_Models_100_Replicas_10_Batch_100ms(b *testing.B) {
-	benchmarkModelUpdate(b, 100, 1, 10, 100)
+	benchmarkModelUpdate(b, 100, 1, 10, 100, cacheCreatorV1)
 }
 func BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_100ms(b *testing.B) {
-	benchmarkModelUpdate(b, 1_000, 1, 10, 100)
+	benchmarkModelUpdate(b, 1_000, 1, 10, 100, cacheCreatorV1)
 }
 func BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_100ms(b *testing.B) {
-	benchmarkModelUpdate(b, 10_000, 1, 10, 100)
+	benchmarkModelUpdate(b, 10_000, 1, 10, 100, cacheCreatorV1)
 }

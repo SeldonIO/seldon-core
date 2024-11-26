@@ -46,7 +46,7 @@ type SeldonXDSCache interface {
 	RemovePipelineRoute(pipelineName string)
 	AddCluster(name string, routeName string, modelName string, modelVersion uint32, isGrpc bool)
 	RemoveRoute(routeName string) error
-	AddEndpoint(clusterName string, upstreamHost string, upstreamPort uint32, assignments []int, replicas map[int]*store.ServerReplica)
+	AddEndpoint(clusterName string, upstreamHost string, upstreamPort uint32, assignments []int, replicas map[int]*store.ServerReplica, index int)
 	AddRouteClusterTraffic(
 		routeName string,
 		modelName string,
@@ -411,7 +411,7 @@ func (xds *SeldonXDSCacheV1) RemoveRoute(routeName string) error {
 	return nil
 }
 
-func (xds *SeldonXDSCacheV1) AddEndpoint(clusterName, upstreamHost string, upstreamPort uint32, assignments []int, replicas map[int]*store.ServerReplica) {
+func (xds *SeldonXDSCacheV1) AddEndpoint(clusterName, upstreamHost string, upstreamPort uint32, assignments []int, replicas map[int]*store.ServerReplica, index int) {
 	cluster := xds.Clusters[clusterName]
 	k := fmt.Sprintf("%s:%d", upstreamHost, upstreamPort)
 	cluster.Endpoints[k] = resources.Endpoint{

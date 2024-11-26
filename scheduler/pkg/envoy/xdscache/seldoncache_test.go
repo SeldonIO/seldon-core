@@ -32,8 +32,8 @@ func TestAddRemoveHttpAndGrpcRoute(t *testing.T) {
 		c.AddCluster(httpCluster, routeName, modelName, version, false)
 		c.AddCluster(grpcCluster, routeName, modelName, version, true)
 		c.AddRouteClusterTraffic(routeName, modelName, version, traffic, httpCluster, grpcCluster, true, false)
-		c.AddEndpoint(httpCluster, "0.0.0.0", 9000, nil, nil)
-		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001, nil, nil)
+		c.AddEndpoint(httpCluster, "0.0.0.0", 9000, nil, nil, 0)
+		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001, nil, nil, 0)
 	}
 
 	httpCluster := "http1"
@@ -66,8 +66,8 @@ func TestAddRemoveHttpAndGrpcRouteVersions(t *testing.T) {
 		c.AddCluster(httpCluster, routeName, modelName, version, false)
 		c.AddCluster(grpcCluster, routeName, modelName, version, true)
 		c.AddRouteClusterTraffic(routeName, modelName, version, traffic, httpCluster, grpcCluster, true, false)
-		c.AddEndpoint(httpCluster, "0.0.0.0", 9000, nil, nil)
-		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001, nil, nil)
+		c.AddEndpoint(httpCluster, "0.0.0.0", 9000, nil, nil, 0)
+		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001, nil, nil, 0)
 	}
 
 	c := NewSeldonXDSCacheV1(logger, &PipelineGatewayDetails{})
@@ -127,8 +127,8 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForSameModel(t *testing.T) {
 		c.AddCluster(httpCluster, routeName, modelName, version, false)
 		c.AddCluster(grpcCluster, routeName, modelName, version, true)
 		c.AddRouteClusterTraffic(routeName, modelName, version, traffic, httpCluster, grpcCluster, true, false)
-		c.AddEndpoint(httpCluster, "0.0.0.0", 9000, nil, nil)
-		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001, nil, nil)
+		c.AddEndpoint(httpCluster, "0.0.0.0", 9000, nil, nil, 0)
+		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001, nil, nil, 0)
 	}
 
 	c := NewSeldonXDSCacheV1(logger, &PipelineGatewayDetails{})
@@ -171,8 +171,8 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentModels(t *testing.T) {
 		c.AddCluster(httpCluster, modelRouteName, modelName, version, false)
 		c.AddCluster(grpcCluster, modelRouteName, modelName, version, true)
 		c.AddRouteClusterTraffic(modelRouteName, modelName, version, traffic, httpCluster, grpcCluster, true, false)
-		c.AddEndpoint(httpCluster, "0.0.0.0", 9000, nil, nil)
-		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001, nil, nil)
+		c.AddEndpoint(httpCluster, "0.0.0.0", 9000, nil, nil, 0)
+		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001, nil, nil, 0)
 	}
 
 	c := NewSeldonXDSCacheV1(logger, &PipelineGatewayDetails{})
@@ -220,8 +220,8 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentRoutesSameModel(t *testing
 		c.AddCluster(httpCluster, modelRouteName, modelName, version, false)
 		c.AddCluster(grpcCluster, modelRouteName, modelName, version, true)
 		c.AddRouteClusterTraffic(modelRouteName, modelName, version, traffic, httpCluster, grpcCluster, true, false)
-		c.AddEndpoint(httpCluster, "0.0.0.0", 9000, nil, nil)
-		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001, nil, nil)
+		c.AddEndpoint(httpCluster, "0.0.0.0", 9000, nil, nil, 0)
+		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001, nil, nil, 0)
 	}
 
 	c := NewSeldonXDSCacheV1(logger, &PipelineGatewayDetails{})

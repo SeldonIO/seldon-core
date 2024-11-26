@@ -249,7 +249,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string,
 		if !ok {
 			logger.Warnf("Invalid replica index %d for server %s", replicaIdx, server.Name)
 		} else {
-			p.xdsCache.AddEndpoint(httpClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceHttpPort()), assignment, server.Replicas)
+			p.xdsCache.AddEndpoint(httpClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceHttpPort()), assignment, server.Replicas, replicaIdx)
 		}
 	}
 	p.xdsCache.AddCluster(grpcClusterName, modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), true)
@@ -258,7 +258,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string,
 		if !ok {
 			logger.Warnf("Invalid replica index %d for server %s", replicaIdx, server.Name)
 		} else {
-			p.xdsCache.AddEndpoint(grpcClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceGrpcPort()), assignment, server.Replicas)
+			p.xdsCache.AddEndpoint(grpcClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceGrpcPort()), assignment, server.Replicas, replicaIdx)
 		}
 	}
 
