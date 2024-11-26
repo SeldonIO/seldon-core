@@ -66,5 +66,5 @@ const (
 	helpShowHeaders              = "show request and response headers"
 	helpStickySession            = "use sticky session from last inference (only works with experiments)"
 	helpForceControlPlane        = "force control plane mode (load model, etc.), default is false"
-	helpForceControlPlaneWarning = "This command is likely to cause inconsistencies, enable with care."
+	helpForceControlPlaneWarning = "This command is likely to cause inconsistencies in your k8s cluster, enable with care."
 )
