@@ -21,6 +21,8 @@ COPY --from=certs /etc/ssl/certs/ca-bundle.crt /etc/pki/tls/certs/ca-bundle.crt
 COPY --from=certs /etc/ssl/certs/ca-bundle.crt /tmp/certs/kafka/broker/ca.crt
 RUN chmod -R 777 /tmp/certs/
 
+USER 1000
+
 WORKDIR /
 COPY --from=builder /workspace/operator/bin/seldon bin/seldon
 
