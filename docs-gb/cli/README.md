@@ -17,13 +17,13 @@ While Seldon CLI control plane operations (e.g. `load` and `unload`) in a Kubern
 | Data Plane Operations    | Abstracts open inference protocol to issue `infer` or `inspect` requests for testing purposes. This is useful for example when inspecting intermediate kafka messages in a multi-step pipeline.                               | Used indirectly for data plane operations by exposing Kubernetes services and interacting with them.           |
 | Visibility of Resources  | Resources created using Seldon  CLI are internal to the scheduler and not visible as Kubernetes resources.                   | All resources that are created using `kubectl` are visible and manageable within the Kubernetes environment.   |
 
-## Running Seldon CLI as Kubernetes Deployment (Experimental)
+## Running Seldon CLI as Kubernetes Pod (Experimental)
 
-Seldon CLI can be deployed in the same namespace along side a Core 2 deployment, which would allow users to have access to the different CLI commands with minimal setup (i.e. envars set appropriately). 
+Seldon CLI can be deployed as a Pod in the same namespace along side a Core 2 installation, which would allow users to have access to the different CLI commands with minimal setup (i.e. envars set appropriately). 
 
-### Deployment
+### Pod Deployment
 
-`seldonio/seldon-cli` Docker image has prepackaged Seldon CLI suitable for deployment in a Kubernetes cluster. Consider the following Kubernetes Deployment manifest: 
+`seldonio/seldon-cli` Docker image has prepackaged Seldon CLI suitable for deployment in a Kubernetes cluster. Consider the following Kubernetes Pod manifest: 
 
 ```yaml
 apiVersion: v1
