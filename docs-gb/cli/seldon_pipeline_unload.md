@@ -13,11 +13,12 @@ seldon pipeline unload <pipelineName> [flags]
 ### Options
 
 ```
-      --authority string        authority (HTTP/2) or virtual host (HTTP/1)
-  -h, --help                    help for unload
+     --authority string        authority (HTTP/2) or virtual host (HTTP/1)
+  -f, --file-path string        pipeline manifest file (YAML)
+      --force                   force control plane mode (load model, etc.)
+  -h, --help                    help for load
       --scheduler-host string   seldon scheduler host (default "0.0.0.0:9004")
-  -r, --show-request            show request
-  -o, --show-response           show response (default true)
+  -v, --verbose                 verbose output
 ```
 
 ### SEE ALSO
