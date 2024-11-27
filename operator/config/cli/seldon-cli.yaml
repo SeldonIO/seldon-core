@@ -12,42 +12,18 @@ spec:
     imagePullPolicy: IfNotPresent
     name: seldon-cli
     env:
-    # - name: KAFKA_SECURITY_PROTOCOL
-    #   value: SSL
-    # - name: KAFKA_SASL_MECHANISM
-    #   value: SCRAM-SHA-512
-    # - name: KAFKA_CLIENT_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
-    #   value: ''
-    # - name: KAFKA_CLIENT_TLS_SECRET_NAME                       
-    #   value: seldon
-    # - name: KAFKA_CLIENT_TLS_KEY_LOCATION
-    #   value: /tmp/certs/kafka/client/user.key
-    # - name: KAFKA_CLIENT_TLS_CRT_LOCATION
-    #   value: /tmp/certs/kafka/client/user.crt
-    # - name: KAFKA_CLIENT_TLS_CA_LOCATION
-    #   value: /tmp/certs/kafka/client/ca.crt
-    # - name: KAFKA_CLIENT_SASL_USERNAME
-    #   value: seldon
-    # - name: KAFKA_CLIENT_SASL_SECRET_NAME
-    #   value: ''
-    # - name: KAFKA_CLIENT_SASL_PASSWORD_LOCATION
-    #   value: password
-    # - name: KAFKA_BROKER_TLS_SECRET_NAME
-    #   value: seldon-cluster-ca-cert
-    # - name: KAFKA_BROKER_TLS_CA_LOCATION                        
-    #   value: /tmp/certs/kafka/broker/ca.crt
     - name: KAFKA_SECURITY_PROTOCOL
-      value: PLAINTEXT
+      value: SSL
     - name: KAFKA_SASL_MECHANISM
       value: SCRAM-SHA-512
     - name: KAFKA_CLIENT_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
       value: ''
-    - name: KAFKA_CLIENT_TLS_SECRET_NAME
-      value: ''
+    - name: KAFKA_CLIENT_TLS_SECRET_NAME                       
+      value: seldon
     - name: KAFKA_CLIENT_TLS_KEY_LOCATION
-      value: /tmp/certs/kafka/client/tls.key
+      value: /tmp/certs/kafka/client/user.key
     - name: KAFKA_CLIENT_TLS_CRT_LOCATION
-      value: /tmp/certs/kafka/client/tls.crt
+      value: /tmp/certs/kafka/client/user.crt
     - name: KAFKA_CLIENT_TLS_CA_LOCATION
       value: /tmp/certs/kafka/client/ca.crt
     - name: KAFKA_CLIENT_SASL_USERNAME
@@ -57,9 +33,35 @@ spec:
     - name: KAFKA_CLIENT_SASL_PASSWORD_LOCATION
       value: password
     - name: KAFKA_BROKER_TLS_SECRET_NAME
-      value: ''
-    - name: KAFKA_BROKER_TLS_CA_LOCATION
+      value: seldon-cluster-ca-cert
+    - name: KAFKA_BROKER_TLS_CA_LOCATION                        
       value: /tmp/certs/kafka/broker/ca.crt
+    # - name: KAFKA_SECURITY_PROTOCOL
+    #   value: PLAINTEXT
+    # - name: KAFKA_SASL_MECHANISM
+    #   value: SCRAM-SHA-512
+    # - name: KAFKA_CLIENT_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
+    #   value: ''
+    # - name: KAFKA_CLIENT_TLS_SECRET_NAME
+    #   value: ''
+    # - name: KAFKA_CLIENT_TLS_KEY_LOCATION
+    #   value: /tmp/certs/kafka/client/tls.key
+    # - name: KAFKA_CLIENT_TLS_CRT_LOCATION
+    #   value: /tmp/certs/kafka/client/tls.crt
+    # - name: KAFKA_CLIENT_TLS_CA_LOCATION
+    #   value: /tmp/certs/kafka/client/ca.crt
+    # - name: KAFKA_CLIENT_SASL_USERNAME
+    #   value: seldon
+    # - name: KAFKA_CLIENT_SASL_SECRET_NAME
+    #   value: ''
+    # - name: KAFKA_CLIENT_SASL_PASSWORD_LOCATION
+    #   value: password
+    # - name: KAFKA_BROKER_TLS_SECRET_NAME
+    #   value: ''
+    # - name: KAFKA_BROKER_TLS_CA_LOCATION
+    #   value: /tmp/certs/kafka/broker/ca.crt
+
+    # kafka config path
     - name: SELDON_KAFKA_CONFIG_PATH
       value: /mnt/kafka/kafka.json
     # The following environment variables are used to configure the seldon-cli from the already existing environment variables
