@@ -38,6 +38,17 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository == 'SeldonIO/seldon-core' # Do not run this on forks.
     steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          remove-dotnet: 'true'
+          remove-haskell: 'true'
+          remove-android: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+          overprovision-lvm: 'true'
+          swap-size-mb: 1024
+          
       - name: Checkout Git Commit
         uses: actions/checkout@v4
 
