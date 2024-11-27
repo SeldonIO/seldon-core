@@ -28,6 +28,10 @@ jobs:
         run: make -C scheduler test
       - name: test-hodometer
         run: make -C hodometer test-hodometer
+      - name: test-components-tls
+        run: make -C components/tls test
+      - name: test-components-kafka
+        run: make -C components/kafka test
 
   docker:
     needs: test
