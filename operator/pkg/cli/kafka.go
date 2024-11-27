@@ -138,6 +138,7 @@ func createPipelineInspectTopics(pipelineSpec string, response *scheduler.Pipeli
 		}
 		topics = append(topics, fmt.Sprintf("%s.%s.%s.%s.%s", topicPrefix, namespace, PipelineSpecifier, parts[0], InputsSpecifier))
 		topics = append(topics, fmt.Sprintf("%s.%s.%s.%s.%s", topicPrefix, namespace, PipelineSpecifier, parts[0], OutputsSpecifier))
+		topics = append(topics, fmt.Sprintf("%s.%s.errors.errors", topicPrefix, namespace)) // error topic
 		return &PipelineTopics{
 			pipeline: pipelineSpec,
 			topics:   topics,
