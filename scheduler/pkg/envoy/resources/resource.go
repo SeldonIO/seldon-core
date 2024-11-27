@@ -463,6 +463,15 @@ func CreateModelWeightedCluster(clusterName string, clusterTraffic TrafficSplits
 	}
 }
 
+func AddWeightedClusterToPipeline(pipelineRoute *route.Route, pipelineName, clusterName string, trafficWeight uint32) *route.Route {
+	routeAction := pipelineRoute.GetRoute()
+	weightedClusters := routeAction.ClusterSpecifier.(*route.RouteAction_WeightedClusters).WeightedClusters.Clusters
+	weightedCluster := CreatePipelineWeightedCluster(clusterName, pipelineName, trafficWeight)
+	weightedClusters = append(weightedClusters, weightedCluster)
+	routeAction.ClusterSpecifier.(*route.RouteAction_WeightedClusters).WeightedClusters.Clusters = weightedClusters
+	return pipelineRoute
+}
+
 func CreatePipelineWeightedCluster(clusterName, pipelineName string, trafficWeight uint32) *route.WeightedCluster_ClusterWeight {
 	return &route.WeightedCluster_ClusterWeight{
 		Name: clusterName,
@@ -660,19 +669,19 @@ func MakePipelineRouteV2(routeName string, pipelineName string, trafficWeight ui
 
 	if !isMirror {
 		if isGrpc {
-			action := createWeightedPipelineClusterAction(routeName, PipelineGatewayGrpcClusterName, clusters, make([]PipelineTrafficSplits, trafficWeight))
-			makePipelineHttpRoute(routeName, route, action, false)
-		} else {
-			action := createWeightedPipelineClusterAction(routeName, PipelineGatewayHttpClusterName, clusters, make([]PipelineTrafficSplits, trafficWeight))
+			action := createWeightedPipelineClusterAction(routeName, PipelineGatewayGrpcClusterName, clusters, make([]PipelineTrafficSplits, 0))
 			makePipelineGrpcRoute(routeName, route, action, false)
+		} else {
+			action := createWeightedPipelineClusterAction(routeName, PipelineGatewayHttpClusterName, clusters, make([]PipelineTrafficSplits, 0))
+			makePipelineHttpRoute(routeName, route, action, false)
 		}
 	} else {
 		if isGrpc {
-			action := createWeightedPipelineClusterAction(routeName, PipelineGatewayGrpcClusterName, clusters, make([]PipelineTrafficSplits, trafficWeight))
-			makePipelineHttpRoute(routeName, route, action, false)
-		} else {
-			action := createWeightedPipelineClusterAction(routeName, PipelineGatewayHttpClusterName, clusters, make([]PipelineTrafficSplits, trafficWeight))
+			action := createWeightedPipelineClusterAction(routeName, PipelineGatewayGrpcClusterName, make([]PipelineTrafficSplits, 0), clusters)
 			makePipelineGrpcRoute(routeName, route, action, false)
+		} else {
+			action := createWeightedPipelineClusterAction(routeName, PipelineGatewayHttpClusterName, make([]PipelineTrafficSplits, 0), clusters)
+			makePipelineHttpRoute(routeName, route, action, false)
 		}
 	}
 	return route
