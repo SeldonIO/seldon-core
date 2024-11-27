@@ -21,9 +21,11 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -44,7 +46,7 @@ type PipelineInferer interface {
 }
 
 type KafkaManager struct {
-	kafkaConfig     *config.KafkaConfig
+	kafkaConfig     *kafka_config.KafkaConfig
 	producer        *kafka.Producer
 	pipelines       sync.Map
 	logger          logrus.FieldLogger
@@ -75,7 +77,7 @@ type Request struct {
 func NewKafkaManager(
 	logger logrus.FieldLogger,
 	namespace string,
-	kafkaConfig *config.KafkaConfig,
+	kafkaConfig *kafka_config.KafkaConfig,
 	traceProvider *seldontracer.TracerProvider,
 	maxNumConsumers,
 	maxNumTopicsPerConsumer int,
@@ -121,14 +123,14 @@ func (km *KafkaManager) createProducer() error {
 	}
 	var err error
 
-	producerConfigMap := config.CloneKafkaConfigMap(km.kafkaConfig.Producer)
+	producerConfigMap := kafka_config.CloneKafkaConfigMap(km.kafkaConfig.Producer)
 	producerConfigMap["go.delivery.reports"] = true
-	err = config.AddKafkaSSLOptions(producerConfigMap)
+	err = config_tls.AddKafkaSSLOptions(producerConfigMap)
 	if err != nil {
 		return err
 	}
 
-	configWithoutSecrets := config.WithoutSecrets(producerConfigMap)
+	configWithoutSecrets := kafka_config.WithoutSecrets(producerConfigMap)
 	km.logger.Infof("Creating producer with config %v", configWithoutSecrets)
 
 	km.producer, err = kafka.NewProducer(&producerConfigMap)
@@ -202,7 +204,7 @@ func (km *KafkaManager) Infer(
 		km.mu.RUnlock()
 		return nil, err
 	}
-	// Use composite key to differentiate multiple piplines (i.e. mirror) using the same message
+	// Use composite key to differentiate multiple pipelines (i.e. mirror) using the same message
 	compositeKey := getCompositeKey(resourceName, requestId, ".")
 	request := &Request{
 		active: true,

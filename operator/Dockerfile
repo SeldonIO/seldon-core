@@ -2,25 +2,15 @@
 FROM golang:1.22 as builder
 
 WORKDIR /workspace
-# Copy the Go Modules manifests
-COPY operator/go.mod go.mod
-COPY operator/go.sum go.sum
-COPY components /components/
-COPY apis/ /apis/
-COPY operator/apis apis
+COPY . .
 
-# Copy the go source
-COPY operator/controllers/ controllers/
-COPY operator/scheduler/ scheduler/
-COPY operator/pkg/ pkg/
-COPY operator/main.go main.go
-
-# Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-w" -a -o manager main.go
+# Build the binary
+RUN apt-get install make
+RUN make -C operator  build
 
 FROM registry.access.redhat.com/ubi9/ubi-micro:9.5
 WORKDIR /
-COPY --from=builder /workspace/manager .
+COPY --from=builder /workspace/operator/bin/manager .
 USER 65532:65532
 
 COPY operator/licenses/ /licenses/

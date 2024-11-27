@@ -22,12 +22,14 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 type MultiTopicsKafkaConsumer struct {
-	config   *config.KafkaConfig
+	config   *kafka_config.KafkaConfig
 	logger   log.FieldLogger
 	mu       sync.RWMutex
 	topics   map[string]struct{}
@@ -41,7 +43,7 @@ type MultiTopicsKafkaConsumer struct {
 
 func NewMultiTopicsKafkaConsumer(
 	logger log.FieldLogger,
-	consumerConfig *config.KafkaConfig,
+	consumerConfig *kafka_config.KafkaConfig,
 	id string,
 	tracer trace.Tracer,
 ) (*MultiTopicsKafkaConsumer, error) {
@@ -59,14 +61,14 @@ func NewMultiTopicsKafkaConsumer(
 }
 
 func (c *MultiTopicsKafkaConsumer) createConsumer() error {
-	consumerConfig := config.CloneKafkaConfigMap(c.config.Consumer)
+	consumerConfig := kafka_config.CloneKafkaConfigMap(c.config.Consumer)
 	consumerConfig["group.id"] = c.id
-	err := config.AddKafkaSSLOptions(consumerConfig)
+	err := config_tls.AddKafkaSSLOptions(consumerConfig)
 	if err != nil {
 		return err
 	}
 
-	configWithoutSecrets := config.WithoutSecrets(consumerConfig)
+	configWithoutSecrets := kafka_config.WithoutSecrets(consumerConfig)
 	c.logger.Infof("Creating consumer with config %v", configWithoutSecrets)
 	consumer, err := kafka.NewConsumer(&consumerConfig)
 	if err != nil {

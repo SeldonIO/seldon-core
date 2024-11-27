@@ -16,6 +16,7 @@ require (
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.35.1
 	github.com/seldonio/seldon-core/apis/go/v2 v2.0.0-00010101000000-000000000000
+	github.com/seldonio/seldon-core/components/kafka/v2 v2.0.0-00010101000000-000000000000
 	github.com/seldonio/seldon-core/components/tls/v2 v2.0.0-00010101000000-000000000000
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
@@ -45,6 +46,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
@@ -98,5 +100,7 @@ require (
 )
 
 replace github.com/seldonio/seldon-core/components/tls/v2 => ../components/tls
+
+replace github.com/seldonio/seldon-core/components/kafka/v2 => ../components/kafka
 
 replace github.com/seldonio/seldon-core/apis/go/v2 => ../apis/go

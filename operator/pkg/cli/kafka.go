@@ -13,7 +13,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"strings"
 	"time"
 
@@ -31,8 +30,9 @@ const (
 	OutputsSpecifier         = "outputs"
 	PipelineSpecifier        = "pipeline"
 	ModelSpecifier           = "model"
-	kafkaTimeoutSeconds      = 2
+	KafkaTimeoutSeconds      = 2
 	DefaultNamespace         = "default"
+	DefaultMaxMessageSize    = 1000000000
 )
 
 type KafkaClient struct {
@@ -63,56 +63,18 @@ type KafkaInspectTopicMessage struct {
 	Value   json.RawMessage     `json:"value"`
 }
 
-func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost string, schedulerHostIsSet bool) (*KafkaClient, error) {
-	config, err := LoadSeldonCLIConfig()
+func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost string, schedulerHostIsSet bool, kafkaConfigPath string) (*KafkaClient, error) {
+	// Note: SeldonCliConfig (for kafka) is different from Seldon KafkaConfigMap
+	cliConfig, err := LoadSeldonCLIConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	s1 := rand.NewSource(time.Now().UnixNano())
-	r1 := rand.New(s1)
+	consumerConfig, namespace, topicPrefix, err := getKafkaConsumerConfig(kafkaBrokerIsSet, kafkaBroker, cliConfig, kafkaConfigPath)
+	if err != nil {
+		return nil, err
+	}
 
-	// Overwrite broker if set in config
-	if !kafkaBrokerIsSet && config.Kafka != nil && config.Kafka.Bootstrap != "" {
-		kafkaBroker = config.Kafka.Bootstrap
-	}
-	consumerConfig := kafka.ConfigMap{
-		"bootstrap.servers": kafkaBroker,
-		"group.id":          fmt.Sprintf("seldon-cli-%d", r1.Int()),
-		"auto.offset.reset": "earliest",
-	}
-	fmt.Printf("Using consumer config %v\n", consumerConfig)
-
-	namespace := DefaultNamespace
-	topicPrefix := SeldonDefaultTopicPrefix
-	if config.Kafka != nil {
-		if config.Kafka.Namespace != "" {
-			namespace = config.Kafka.Namespace
-		}
-		if config.Kafka.TopicPrefix != "" {
-			topicPrefix = config.Kafka.TopicPrefix
-		}
-		switch config.Kafka.Protocol {
-		case KafkaConfigProtocolSSL:
-			consumerConfig["security.protocol"] = KafkaConfigProtocolSSL
-			consumerConfig["ssl.ca.location"] = config.Kafka.CaPath
-			consumerConfig["ssl.key.location"] = config.Kafka.KeyPath
-			consumerConfig["ssl.certificate.location"] = config.Kafka.CrtPath
-		case KafkaConfigProtocolSASLSSL:
-			consumerConfig["security.protocol"] = KafkaConfigProtocolSASLSSL
-			consumerConfig["sasl.mechanism"] = "SCRAM-SHA-512"
-			consumerConfig["ssl.ca.location"] = config.Kafka.CaPath
-			consumerConfig["sasl.username"] = config.Kafka.SaslUsername
-			consumerConfig["sasl.password"] = config.Kafka.SaslPassword
-			consumerConfig["ssl.endpoint.identification.algorithm"] = "none"
-		case KafkaConfigProtocolSASLPlaintxt:
-			consumerConfig["security.protocol"] = KafkaConfigProtocolSASLPlaintxt
-			consumerConfig["sasl.mechanism"] = "SCRAM-SHA-512"
-			consumerConfig["sasl.username"] = config.Kafka.SaslUsername
-			consumerConfig["sasl.password"] = config.Kafka.SaslPassword
-		}
-	}
-	consumerConfig["message.max.bytes"] = 1000000000
 	consumer, err := kafka.NewConsumer(&consumerConfig)
 	if err != nil {
 		return nil, err
@@ -316,7 +278,7 @@ func (kc *KafkaClient) createInspectTopic(topic string, pipeline string, tensor 
 		return nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), kafkaTimeoutSeconds*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), KafkaTimeoutSeconds*time.Second)
 	defer cancel()
 
 	run := true

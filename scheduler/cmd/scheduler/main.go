@@ -22,11 +22,12 @@ import (
 	envoyServerControlPlaneV3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
 	log "github.com/sirupsen/logrus"
 
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/dataflow"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/cleaner"
@@ -195,7 +196,7 @@ func main() {
 
 	// scheduler <-> dataflow grpc
 	dataFlowLoadBalancer := util.NewRingLoadBalancer(1)
-	kafkaConfigMap, err := config.NewKafkaConfig(kafkaConfigPath)
+	kafkaConfigMap, err := kafka_config.NewKafkaConfig(kafkaConfigPath)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}

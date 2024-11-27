@@ -29,10 +29,10 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -81,7 +81,7 @@ func TestRestRequest(t *testing.T) {
 			logger := log.New()
 			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
-			config := &ManagerConfig{SeldonKafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
+			config := &ManagerConfig{SeldonKafkaConfig: &kafka_config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
 			ic, err := NewInferKafkaHandler(logger, config, kafka.ConfigMap{}, kafka.ConfigMap{}, "dummy")
 			g.Expect(err).To(BeNil())
 			tn, err := kafka2.NewTopicNamer("default", "seldon")
@@ -128,7 +128,7 @@ func TestProcessRequestRest(t *testing.T) {
 			logger := log.New()
 			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
-			config := &ManagerConfig{SeldonKafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
+			config := &ManagerConfig{SeldonKafkaConfig: &kafka_config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
 			ic, err := NewInferKafkaHandler(logger, config, kafka.ConfigMap{}, kafka.ConfigMap{}, "dummy")
 			g.Expect(err).To(BeNil())
 			tn, err := kafka2.NewTopicNamer("default", "seldon")
@@ -198,7 +198,7 @@ func createInferWorkerWithMockConn(
 	}), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 	g.Expect(err).To(BeNil())
-	config := &ManagerConfig{SeldonKafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: serverConfig, TraceProvider: tp, NumWorkers: 0}
+	config := &ManagerConfig{SeldonKafkaConfig: &kafka_config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: serverConfig, TraceProvider: tp, NumWorkers: 0}
 	ic, err := NewInferKafkaHandler(logger, config, kafka.ConfigMap{}, kafka.ConfigMap{}, "dummy")
 	g.Expect(err).To(BeNil())
 	topicNamer, err := kafka2.NewTopicNamer("default", "seldon")

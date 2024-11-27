@@ -2,6 +2,7 @@ CUSTOM_IMAGE_TAG ?= latest
 DOCKERHUB_USERNAME ?= seldonio
 # Image URL to use all building/pushing image targets
 IMG ?= ${DOCKERHUB_USERNAME}/seldonv2-controller:${CUSTOM_IMAGE_TAG}
+IMG_CLI ?= ${DOCKERHUB_USERNAME}/seldon-cli:${CUSTOM_IMAGE_TAG}
 AGENT_IMG ?= ${DOCKERHUB_USERNAME}/seldon-agent:${CUSTOM_IMAGE_TAG}
 RCLONE_IMG ?= ${DOCKERHUB_USERNAME}/seldon-rclone:${CUSTOM_IMAGE_TAG}
 MLSERVER_IMG ?= seldonio/mlserver:1.6.0
@@ -9,6 +10,7 @@ TRITON_IMG ?= nvcr.io/nvidia/tritonserver:23.03-py3
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.22
 KIND_NAME=seldon
+NAMESPACE ?= seldon-mesh
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -110,19 +112,43 @@ generate-cli-docs:
 docker-build: ## Build docker image with the manager.
 	docker build -t ${IMG} -f Dockerfile ..
 
+.PHONY: docker-build-cli
+docker-build-cli: ## Build docker image with seldon cli.
+	docker build -t ${IMG_CLI} -f Dockerfile.cli ..
+
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
 	docker push ${IMG}
 
+.PHONY: docker-push-cli
+docker-push-cli: ## Push docker image with seldon cli.
+	docker push ${IMG_CLI}
+
 .PHONY: kind-image-load
-kind-image-load: docker-build
+kind-image-load:
 	kind load -v 3 docker-image ${IMG} --name ${KIND_NAME}
+
+.PHONY: kind-image-load-cli
+kind-image-load-cli:
+	kind load -v 3 docker-image ${IMG_CLI} --name ${KIND_NAME}
+
+.PHONY: kind-image-load-all
+kind-image-load-all: kind-image-load kind-image-load-cli
 
 ##@ Deployment
 
 ifndef ignore-not-found
   ignore-not-found = true
 endif
+
+.PHONY: deploy-seldon-cli
+deploy-seldon-cli:
+	cd config/cli && kustomize edit set image seldon-cli=${IMG_CLI} && kustomize edit set namespace ${NAMESPACE}
+	kustomize build config/cli| kubectl apply -f -
+
+.PHONY: undeploy-seldon-cli
+undeploy-seldon-cli:
+	kustomize build config/cli| kubectl delete -f -
 
 # CRD is current too big for apply due to annotations size limit
 .PHONY: install

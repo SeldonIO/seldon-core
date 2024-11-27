@@ -56,6 +56,10 @@ jobs:
         working-directory: ./operator
         run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build docker-push
 
+      - name: Push Docker Image for Seldon Cli
+        working-directory: ./operator
+        run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build-cli docker-push-cli
+
       - name: Push Docker Images for Scheduler
         working-directory: ./scheduler
         run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build-all docker-push-all
@@ -63,3 +67,7 @@ jobs:
       - name: Push Docker Images for Hodometer
         working-directory: ./hodometer
         run: BUILD_VERSION=${{ steps.docker-tag.outputs.value }} IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make build-hodometer-docker push-hodometer-docker
+
+      - name: Push Docker Image for k6 Load Testing
+        working-directory: ./tests/k6
+        run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build docker-push
