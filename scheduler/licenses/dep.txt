@@ -384,6 +384,7 @@ github.com/santhosh-tekuri/jsonschema/v5
 github.com/sean-/seed
 github.com/secure-systems-lab/go-securesystemslib
 github.com/seldonio/seldon-core/apis/go/v2
+github.com/seldonio/seldon-core/components/kafka/v2
 github.com/seldonio/seldon-core/components/tls/v2
 github.com/serialx/hashring
 github.com/shibumi/go-pathspec

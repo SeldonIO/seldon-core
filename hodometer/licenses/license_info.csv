@@ -16,6 +16,7 @@ cespare/xxhash,https://github.com/cespare/xxhash/blob/main/LICENSE.txt,MIT Licen
 client9/misspell,https://github.com/client9/misspell/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/client9/misspell/master/LICENSE
 cncf/udpa,https://github.com/cncf/udpa/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/cncf/udpa/main/LICENSE
 cncf/xds,https://github.com/cncf/xds/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/cncf/xds/main/LICENSE
+confluentinc/confluent-kafka-go,https://github.com/confluentinc/confluent-kafka-go/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/confluentinc/confluent-kafka-go/master/LICENSE
 coreos/go-semver,https://github.com/coreos/go-semver/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/coreos/go-semver/main/LICENSE
 coreos/go-systemd,https://github.com/coreos/go-systemd/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/coreos/go-systemd/main/LICENSE
 cpuguy83/go-md2man,https://github.com/cpuguy83/go-md2man/blob/master/LICENSE.md,MIT License,https://raw.githubusercontent.com/cpuguy83/go-md2man/master/LICENSE.md

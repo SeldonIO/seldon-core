@@ -17,6 +17,7 @@ cespare/xxhash
 client9/misspell
 cncf/udpa
 cncf/xds
+confluentinc/confluent-kafka-go
 coreos/go-semver
 coreos/go-systemd
 cpuguy83/go-md2man
