@@ -96,11 +96,9 @@ func TestMakeRoute(t *testing.T) {
 							TrafficWeight: 50,
 						},
 					},
-					Mirrors: []PipelineTrafficSplits{
-						{
-							PipelineName:  "p3",
-							TrafficWeight: 100,
-						},
+					Mirror: &PipelineTrafficSplits{
+						PipelineName:  "p3",
+						TrafficWeight: 100,
 					},
 				},
 			},
@@ -154,14 +152,12 @@ func TestMakeRoute(t *testing.T) {
 							GrpcCluster:   "g1",
 						},
 					},
-					Mirrors: []TrafficSplits{
-						{
-							ModelName:     "m3",
-							ModelVersion:  1,
-							TrafficWeight: 100,
-							HttpCluster:   "h1",
-							GrpcCluster:   "g1",
-						},
+					Mirror: &TrafficSplits{
+						ModelName:     "m3",
+						ModelVersion:  1,
+						TrafficWeight: 100,
+						HttpCluster:   "h1",
+						GrpcCluster:   "g1",
 					},
 				},
 			},

@@ -246,45 +246,9 @@ func (p *IncrementalProcessor) removeRouteForServerInEnvoyCache(routeName string
 	return nil
 }
 
-func (p *IncrementalProcessor) updateEnvoyForModelVersion(modelRouteName string, modelVersion *store.ModelVersion, server *store.ServerSnapshot, trafficPercent uint32, isMirror bool) {
-	logger := p.logger.WithField("func", "updateEnvoyForModelVersion")
-
-	assignment := modelVersion.GetAssignment() // Get loaded replicas for model
-	if len(assignment) == 0 {
-		logger.Debugf("No assigned replicas so returning for %s", modelRouteName)
-		return
-	}
-
-	clusterNameBase := modelVersion.GetMeta().GetName() + "_" + strconv.FormatInt(int64(modelVersion.GetVersion()), 10)
-	httpClusterName := clusterNameBase + "_http"
-	grpcClusterName := clusterNameBase + "_grpc"
-	p.xdsCache.AddCluster(httpClusterName, modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), false)
-	for _, replicaIdx := range assignment {
-		replica, ok := server.Replicas[replicaIdx]
-		if !ok {
-			logger.Warnf("Invalid replica index %d for server %s", replicaIdx, server.Name)
-		} else {
-			p.xdsCache.AddEndpoint(httpClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceHttpPort()))
-		}
-	}
-	p.xdsCache.AddCluster(grpcClusterName, modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), true)
-	for _, replicaIdx := range assignment {
-		replica, ok := server.Replicas[replicaIdx]
-		if !ok {
-			logger.Warnf("Invalid replica index %d for server %s", replicaIdx, server.Name)
-		} else {
-			p.xdsCache.AddEndpoint(grpcClusterName, replica.GetInferenceSvc(), uint32(replica.GetInferenceGrpcPort()))
-		}
-	}
-
-	logPayloads := false
-	if modelVersion.GetDeploymentSpec() != nil {
-		logPayloads = modelVersion.GetDeploymentSpec().LogPayloads
-	} else {
-		logger.Warnf("model %s has not deployment spec", modelVersion.GetModel().GetMeta().GetName())
-	}
-
-	p.xdsCache.AddRouteClusterTraffic(modelRouteName, modelVersion.GetModel().GetMeta().GetName(), modelVersion.GetVersion(), trafficPercent, httpClusterName, grpcClusterName, logPayloads, isMirror)
+func (p *IncrementalProcessor) updateEnvoyForModelVersion(routeName string, modelVersion *store.ModelVersion, server *store.ServerSnapshot, trafficPercent uint32, isMirror bool) {
+	p.xdsCache.AddClustersForRoute(routeName, modelVersion, server)
+	p.xdsCache.AddRouteClusterTraffic(routeName, modelVersion, trafficPercent, isMirror)
 }
 
 func getTrafficShare(latestModel *store.ModelVersion, lastAvailableModelVersion *store.ModelVersion, weight uint32) (uint32, uint32) {
@@ -321,6 +285,7 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 			logger.WithError(err).Errorf("Failed to find server %s for last available model %s", lastAvailableModelVersion.Server(), modelName)
 			return err
 		}
+
 		logger.Debugf("Splitting traffic between latest %s:%d %d percent and %s:%d %d percent",
 			modelName,
 			latestModel.GetVersion(),
@@ -328,6 +293,7 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 			modelName,
 			lastAvailableModelVersion.GetVersion(),
 			trafficLastAvailableModel)
+
 		p.updateEnvoyForModelVersion(routeName, lastAvailableModelVersion, lastAvailableServer, trafficLastAvailableModel, isMirror)
 		p.updateEnvoyForModelVersion(routeName, latestModel, server, trafficLatestModel, isMirror)
 	} else {
@@ -395,12 +361,19 @@ func (p *IncrementalProcessor) addModel(model *store.ModelSnapshot) error {
 func (p *IncrementalProcessor) addTrafficForExperiment(routeName string, exp *experiment.Experiment) error {
 	switch exp.ResourceType {
 	case experiment.PipelineResourceType:
+
+		var mirrorSplit *resources.PipelineTrafficSplits
+		trafficSplits := make([]resources.PipelineTrafficSplits, len(exp.Candidates))
+
 		for _, candidate := range exp.Candidates {
-			p.xdsCache.AddPipelineRoute(routeName, candidate.Name, candidate.Weight, false)
+			trafficSplits = append(trafficSplits, resources.PipelineTrafficSplits{PipelineName: candidate.Name, TrafficWeight: candidate.Weight})
 		}
 		if exp.Mirror != nil {
-			p.xdsCache.AddPipelineRoute(routeName, exp.Mirror.Name, exp.Mirror.Percent, true)
+			mirrorSplit = &resources.PipelineTrafficSplits{PipelineName: exp.Mirror.Name, TrafficWeight: exp.Mirror.Percent}
 		}
+
+		p.xdsCache.AddPipelineRoute(routeName, trafficSplits, mirrorSplit)
+
 	case experiment.ModelResourceType:
 		for _, candidate := range exp.Candidates {
 			candidateModel, err := p.modelStore.GetModel(candidate.Name)
@@ -494,17 +467,20 @@ func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 		if exp.Deleted {
 			return fmt.Errorf("Experiment on pipeline %s, but %s is deleted", pip.Name, *exp.Default)
 		}
+		var mirrorSplit *resources.PipelineTrafficSplits
+		trafficSplits := make([]resources.PipelineTrafficSplits, len(exp.Candidates))
+
 		for _, candidate := range exp.Candidates {
-			logger.Infof("Adding pipeline experiment candidate %s %s %d", routeName, candidate.Name, candidate.Weight)
-			p.xdsCache.AddPipelineRoute(routeName, candidate.Name, candidate.Weight, false)
+			trafficSplits = append(trafficSplits, resources.PipelineTrafficSplits{PipelineName: candidate.Name, TrafficWeight: candidate.Weight})
 		}
 		if exp.Mirror != nil {
-			logger.Infof("Adding pipeline experiment mirror %s %s %d", routeName, exp.Mirror.Name, exp.Mirror.Percent)
-			p.xdsCache.AddPipelineRoute(routeName, exp.Mirror.Name, exp.Mirror.Percent, true)
+			mirrorSplit = &resources.PipelineTrafficSplits{PipelineName: exp.Mirror.Name, TrafficWeight: exp.Mirror.Percent}
 		}
+
+		p.xdsCache.AddPipelineRoute(routeName, trafficSplits, mirrorSplit)
 	} else {
 		logger.Infof("Adding normal pipeline route %s", routeName)
-		p.xdsCache.AddPipelineRoute(routeName, pip.Name, 100, false)
+		p.xdsCache.AddPipelineRoute(routeName, []resources.PipelineTrafficSplits{{PipelineName: pip.Name, TrafficWeight: 100}}, nil)
 	}
 
 	return p.updateEnvoy()

@@ -10,13 +10,21 @@ the Change License after the Change Date as each is defined in accordance with t
 package processor
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
+	clusterv3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
+	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
+	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/format"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
@@ -312,7 +320,8 @@ func createTestModel(modelName string,
 	desiredReplicas uint32,
 	replicas []int,
 	version uint32,
-	replicaStates []store.ModelReplicaState) func(inc *IncrementalProcessor, g *WithT) {
+	replicaStates []store.ModelReplicaState,
+) func(inc *IncrementalProcessor, g *WithT) {
 	f := func(inc *IncrementalProcessor, g *WithT) {
 		model := &scheduler.Model{
 			Meta: &scheduler.MetaData{
@@ -436,6 +445,8 @@ func createTestPipeline(pipelineName string, modelNames []string, version uint32
 
 func TestEnvoySettings(t *testing.T) {
 	g := NewGomegaWithT(t)
+	// Disable max comparison length, becuase the json output is quite large
+	format.MaxLength = 0
 	type test struct {
 		name                     string
 		ops                      []func(proc *IncrementalProcessor, g *WithT)
@@ -446,6 +457,7 @@ func TestEnvoySettings(t *testing.T) {
 		experimentExists         bool
 		experimentDeleted        bool
 		expectedVersionsInRoutes map[string]uint32
+		filename                 string
 	}
 
 	getStrPtr := func(t string) *string { return &t }
@@ -458,6 +470,7 @@ func TestEnvoySettings(t *testing.T) {
 			},
 			numExpectedClusters: 2,
 			numExpectedRoutes:   1,
+			filename:            "one-model",
 		},
 		{
 			name: "two models",
@@ -468,6 +481,7 @@ func TestEnvoySettings(t *testing.T) {
 			},
 			numExpectedClusters: 4,
 			numExpectedRoutes:   2,
+			filename:            "two-models",
 		},
 		{
 			name: "three models - 1 unloading",
@@ -479,6 +493,7 @@ func TestEnvoySettings(t *testing.T) {
 			},
 			numExpectedClusters: 4,
 			numExpectedRoutes:   2,
+			filename:            "three-models",
 		},
 		{
 			name: "experiment",
@@ -492,6 +507,7 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedRoutes:   3,
 			experimentActive:    true,
 			experimentExists:    true,
+			filename:            "experiment",
 		},
 		{
 			name: "experiment - no default",
@@ -509,6 +525,7 @@ func TestEnvoySettings(t *testing.T) {
 				"model1": 1,
 				"model2": 1,
 			},
+			filename: "experiment-no-default",
 		},
 		{
 			name: "experiment - new model version",
@@ -528,6 +545,7 @@ func TestEnvoySettings(t *testing.T) {
 				"model1": 1,
 				"model2": 2,
 			},
+			filename: "experiment-new-model-version",
 		},
 		{
 			name: "experiment with deleted model",
@@ -542,6 +560,7 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedRoutes:   2, // model2 should be removed from the routes
 			experimentActive:    false,
 			experimentExists:    true,
+			filename:            "experiment-deleted-model",
 		},
 		{
 			name: "delete experiment",
@@ -556,6 +575,7 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedRoutes:   2,
 			experimentExists:    true, // exists but not active
 			experimentDeleted:   true,
+			filename:            "delete-experiment",
 		},
 		{
 			name: "mirror",
@@ -569,6 +589,7 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedRoutes:   3,
 			experimentActive:    true,
 			experimentExists:    true,
+			filename:            "mirror",
 		},
 		{
 			name: "mirror, deleted model",
@@ -583,6 +604,7 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedRoutes:   2, // model2 should be removed from the routes
 			experimentActive:    false,
 			experimentExists:    true,
+			filename:            "mirror-deleted-model",
 		},
 		{
 			name: "experiment with candidate and mirror",
@@ -597,6 +619,7 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedRoutes:   4,
 			experimentActive:    true,
 			experimentExists:    true,
+			filename:            "experiment-candidate-mirror",
 		},
 		{
 			name: "pipeline",
@@ -610,6 +633,7 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedClusters:  6,
 			numExpectedRoutes:    3,
 			numExpectedPipelines: 1,
+			filename:             "pipeline",
 		},
 		{
 			name: "pipeline with removed model",
@@ -624,8 +648,10 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedClusters:  4,
 			numExpectedRoutes:    2, // model2 should be removed from the routes
 			numExpectedPipelines: 1, // route to pipeline is till there
+			filename:             "removed-model",
 		},
 	}
+	createSnapshotFiles := false
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			logger := log.New()
@@ -687,9 +713,121 @@ func TestEnvoySettings(t *testing.T) {
 				}
 			}
 
+			createSnapshots(inc.xdsCache.RouteContents(), g, "snapshots/"+test.filename+"-routes.json", createSnapshotFiles)
+			compareRouteContentsAndSnapshot(inc.xdsCache.RouteContents(), g, "snapshots/"+test.filename+"-routes.json", true, func() proto.Message {
+				return &routev3.RouteConfiguration{}
+			})
+
+			createSnapshots(inc.xdsCache.RouteContents(), g, "snapshots/"+test.filename+"-clusters.json", createSnapshotFiles)
+
+			compareClusterContentsAndSnapshot(inc.xdsCache.ClusterContents(), g, "snapshots/"+test.filename+"-clusters.json", true, func() proto.Message {
+				return &clusterv3.Cluster{}
+			})
 		})
 	}
+}
 
+func getResultingClusters(resources []types.Resource) map[string]*clusterv3.Cluster {
+	clusters := make(map[string]*clusterv3.Cluster)
+
+	for _, resource := range resources {
+		cluster := resource.(*clusterv3.Cluster)
+		clusters[cluster.Name] = cluster
+	}
+
+	return clusters
+}
+
+func getResultingRoutes(resources []types.Resource) map[string]*routev3.RouteConfiguration {
+	routes := make(map[string]*routev3.RouteConfiguration)
+
+	for _, resource := range resources {
+		route := resource.(*routev3.RouteConfiguration)
+		routes[route.Name] = route
+	}
+
+	return routes
+}
+
+func createSnapshots(resources []types.Resource, g Gomega, filename string, createSnapshotFiles bool) {
+	if createSnapshotFiles {
+		// Use this to regenerate the snapshot files
+		jsonData := []byte("[")
+		for i, resource := range resources {
+			data, err := protojson.Marshal(resource)
+			g.Expect(err).To(BeNil())
+			jsonData = append(jsonData, data...)
+			if i < len(resources)-1 {
+				jsonData = append(jsonData, ',')
+			}
+		}
+		jsonData = append(jsonData, ']')
+
+		// Write the JSON data to a file
+		file, err := os.Create(filename)
+		g.Expect(err).To(BeNil())
+
+		defer file.Close()
+
+		_, err = file.Write(jsonData)
+		g.Expect(err).To(BeNil())
+	}
+}
+
+func compareRouteContentsAndSnapshot(resources []types.Resource, g Gomega, filename string, compareMessages bool, newMessage func() proto.Message) {
+	if compareMessages {
+		resultingRoutes := getResultingRoutes(resources)
+
+		data, err := os.ReadFile(filename)
+		g.Expect(err).To(BeNil())
+
+		var rawMessages []json.RawMessage
+		err = json.Unmarshal(data, &rawMessages)
+		g.Expect(err).To(BeNil())
+
+		count := 0
+		for _, rawMessage := range rawMessages {
+			msg := newMessage()
+			err := protojson.Unmarshal(rawMessage, msg)
+			g.Expect(err).To(BeNil())
+			snapshotRoute := msg.(*routev3.RouteConfiguration)
+
+			resultingRoute := resultingRoutes[snapshotRoute.Name]
+			g.Expect(resultingRoute).To(Not(BeNil()))
+
+			g.Expect(len(snapshotRoute.VirtualHosts[0].Routes)).Should(Equal(len(resultingRoute.VirtualHosts[0].Routes)))
+			count++
+		}
+		g.Expect(len(resultingRoutes)).To(Equal(count))
+	}
+}
+
+func compareClusterContentsAndSnapshot(resources []types.Resource, g Gomega, filename string, compareMessages bool, newMessage func() proto.Message) {
+	if compareMessages {
+		resultingClusters := getResultingClusters(resources)
+
+		data, err := os.ReadFile(filename)
+		g.Expect(err).To(BeNil())
+
+		var rawMessages []json.RawMessage
+		err = json.Unmarshal(data, &rawMessages)
+		g.Expect(err).To(BeNil())
+
+		count := 0
+		for _, rawMessage := range rawMessages {
+			msg := newMessage()
+			err := protojson.Unmarshal(rawMessage, msg)
+			g.Expect(err).To(BeNil())
+			snapshotCluster := msg.(*clusterv3.Cluster)
+
+			resultingCluster := resultingClusters[snapshotCluster.Name]
+			g.Expect(resultingCluster).To(Not(BeNil()))
+
+			g.Expect(len(snapshotCluster.LoadAssignment.Endpoints)).Should(Equal(len(resultingCluster.LoadAssignment.Endpoints)))
+			count++
+		}
+		g.Expect(len(resultingClusters)).To(Equal(count))
+	}
 }
 
 func TestRollingUpdate(t *testing.T) {
@@ -746,7 +884,6 @@ func TestRollingUpdate(t *testing.T) {
 			for modelName, trafficSplits := range test.numTrafficSplits {
 				g.Expect(len(inc.xdsCache.Routes[modelName].Clusters)).To(Equal(trafficSplits))
 			}
-
 		})
 	}
 }
@@ -822,7 +959,6 @@ func TestDraining(t *testing.T) {
 				g.Expect(err).To(BeNil())
 				g.Expect(model.GetLatest().ModelState().State).To(Equal(modelState))
 			}
-
 		})
 	}
 }
@@ -971,7 +1107,6 @@ func TestModelSync(t *testing.T) {
 				g.Expect(err).To(BeNil())
 				g.Expect(model.GetLatest().ModelState().State).To(Equal(modelState))
 			}
-
 		})
 	}
 }

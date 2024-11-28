@@ -15,6 +15,9 @@ import (
 	"testing"
 
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/sirupsen/logrus"
 )
 
@@ -25,17 +28,9 @@ func benchmarkRouteContents(b *testing.B, numResources uint) {
 	x := NewSeldonXDSCache(logrus.New(), nil)
 
 	for n := 0; n < int(numResources); n++ {
-		x.AddPipelineRoute(strconv.Itoa(n), strconv.Itoa(n), 100, false)
-		x.AddRouteClusterTraffic(
-			fmt.Sprintf("model-%d", n),
-			fmt.Sprintf("model-%d", n),
-			1,
-			100,
-			"http",
-			"grpc",
-			false,
-			false,
-		)
+		x.AddPipelineRoute(strconv.Itoa(n), []resources.PipelineTrafficSplits{{PipelineName: strconv.Itoa(n), TrafficWeight: 100}}, nil)
+
+		x.AddRouteClusterTraffic(fmt.Sprintf("model-%d", n), store.NewDefaultModelVersion(&scheduler.Model{Meta: &scheduler.MetaData{Name: fmt.Sprintf("model-%d", n)}}, 1), 100, false)
 	}
 
 	// Prevent compiler optimising away function calls
