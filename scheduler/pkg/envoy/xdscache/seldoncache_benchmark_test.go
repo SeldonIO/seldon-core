@@ -15,10 +15,12 @@ import (
 	"testing"
 
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
+	"github.com/sirupsen/logrus"
+
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
-	"github.com/sirupsen/logrus"
 )
 
 // Prevent compiler from optimising away benchmarks

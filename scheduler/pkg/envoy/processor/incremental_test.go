@@ -580,7 +580,7 @@ func TestModelSync(t *testing.T) {
 
 func TestEnvoySettings(t *testing.T) {
 	g := NewGomegaWithT(t)
-	// Disable max comparison length, becuase the json output is quite large
+	// Disable max comparison length, because the json output is quite large
 	format.MaxLength = 0
 	type test struct {
 		name                     string
