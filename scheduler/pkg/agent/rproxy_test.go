@@ -31,6 +31,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	testing_utils2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
@@ -98,9 +99,16 @@ type loadModelSateValue struct {
 	isSoft bool
 }
 
+type inferModelSateValue struct {
+	internalModelName string
+	method            string
+	code              string
+}
+
 type fakeMetricsHandler struct {
-	modelLoadState map[string]loadModelSateValue
-	mu             *sync.Mutex
+	modelLoadState  map[string]loadModelSateValue
+	modelInferState map[string]inferModelSateValue
+	mu              *sync.Mutex
 }
 
 func (f fakeMetricsHandler) AddModelHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc {
@@ -112,6 +120,14 @@ func (f fakeMetricsHandler) HttpCodeToString(code int) string {
 }
 
 func (f fakeMetricsHandler) AddModelInferMetrics(externalModelName string, internalModelName string, method string, elapsedTime float64, code string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	f.modelInferState[externalModelName] = inferModelSateValue{
+		internalModelName: internalModelName,
+		method:            method,
+		code:              code,
+	}
 }
 
 func (f fakeMetricsHandler) AddLoadedModelMetrics(internalModelName string, memory uint64, isLoad, isSoft bool) {
@@ -130,8 +146,9 @@ func (f fakeMetricsHandler) AddServerReplicaMetrics(memory uint64, memoryWithOve
 
 func newFakeMetricsHandler() fakeMetricsHandler {
 	return fakeMetricsHandler{
-		modelLoadState: map[string]loadModelSateValue{},
-		mu:             &sync.Mutex{},
+		modelLoadState:  map[string]loadModelSateValue{},
+		modelInferState: map[string]inferModelSateValue{},
+		mu:              &sync.Mutex{},
 	}
 }
 
@@ -141,7 +158,7 @@ func (f fakeMetricsHandler) UnaryServerInterceptor() func(ctx context.Context, r
 	}
 }
 
-func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string, rpPort, serverPort int) *reverseHTTPProxy {
+func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string, rpPort, serverPort int, metricsHandler metrics.AgentMetricsHandler) *reverseHTTPProxy {
 	v2Client := testing_utils.NewV2RestClientForTest("localhost", serverPort, logger)
 	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2, 1)
 	modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
@@ -153,7 +170,7 @@ func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string
 		"localhost",
 		uint(serverPort),
 		uint(rpPort),
-		fakeMetricsHandler{},
+		metricsHandler,
 		modelScalingStatsCollector,
 	)
 	rp.SetState(localCacheManager)
@@ -166,34 +183,51 @@ func TestReverseProxySmoke(t *testing.T) {
 	logger.SetLevel(log.DebugLevel)
 
 	type test struct {
-		name             string
-		modelToLoad      string
-		modelToRequest   string
-		statusCode       int
-		isLoadedonServer bool
+		name                     string
+		modelToLoad              string
+		modelToRequest           string
+		modelExternalHeader      string
+		expectedModelExternalTag string
+		statusCode               int
+		isLoadedonServer         bool
 	}
 
 	tests := []test{
 		{
-			name:             "model exists",
-			modelToLoad:      "foo",
-			modelToRequest:   "foo",
-			statusCode:       http.StatusOK,
-			isLoadedonServer: true,
+			name:                     "model exists",
+			modelToLoad:              "foo_1",
+			modelToRequest:           "foo_1",
+			modelExternalHeader:      "foo",
+			expectedModelExternalTag: "foo",
+			statusCode:               http.StatusOK,
+			isLoadedonServer:         true,
 		},
 		{
-			name:             "model exists on agent but not loaded on server",
-			modelToLoad:      "foo",
-			modelToRequest:   "foo",
-			statusCode:       http.StatusOK,
-			isLoadedonServer: false,
+			name:                     "model exists, part of experiment",
+			modelToLoad:              "foo_1",
+			modelToRequest:           "foo_1",
+			modelExternalHeader:      "foo-experiment.experiment",
+			expectedModelExternalTag: "foo",
+			statusCode:               http.StatusOK,
+			isLoadedonServer:         true,
 		},
 		{
-			name:             "model does not exists",
-			modelToLoad:      "foo",
-			modelToRequest:   "foo2",
-			statusCode:       http.StatusNotFound,
-			isLoadedonServer: false,
+			name:                     "model exists on agent but not loaded on server",
+			modelToLoad:              "foo_1",
+			modelToRequest:           "foo_1",
+			modelExternalHeader:      "foo",
+			expectedModelExternalTag: "foo",
+			statusCode:               http.StatusOK,
+			isLoadedonServer:         false,
+		},
+		{
+			name:                     "model does not exists",
+			modelToLoad:              "foo_1",
+			modelToRequest:           "foo2_1",
+			modelExternalHeader:      "foo2",
+			expectedModelExternalTag: "foo2",
+			statusCode:               http.StatusNotFound,
+			isLoadedonServer:         false,
 		},
 	}
 
@@ -217,7 +251,8 @@ func TestReverseProxySmoke(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			rpHTTP := setupReverseProxy(logger, 3, test.modelToLoad, rpPort, serverPort)
+			fakeMetricsHandler := newFakeMetricsHandler()
+			rpHTTP := setupReverseProxy(logger, 3, test.modelToLoad, rpPort, serverPort, fakeMetricsHandler)
 			err = rpHTTP.Start()
 			g.Expect(err).To(BeNil())
 			time.Sleep(500 * time.Millisecond)
@@ -237,7 +272,7 @@ func TestReverseProxySmoke(t *testing.T) {
 			req, err := http.NewRequest(http.MethodPost, url, nil)
 			g.Expect(err).To(BeNil())
 			req.Header.Set("contentType", "application/json")
-			req.Header.Set(resources.SeldonModelHeader, test.modelToRequest)
+			req.Header.Set(resources.SeldonModelHeader, test.modelExternalHeader)
 			req.Header.Set(resources.SeldonInternalModelHeader, test.modelToRequest)
 			resp, err := http.DefaultClient.Do(req)
 			g.Expect(err).To(BeNil())
@@ -257,6 +292,14 @@ func TestReverseProxySmoke(t *testing.T) {
 
 			}
 
+			//  test infer metrics
+			g.Expect(fakeMetricsHandler.modelInferState[test.expectedModelExternalTag].internalModelName).To(Equal(test.modelToRequest))
+			g.Expect(fakeMetricsHandler.modelInferState[test.expectedModelExternalTag].method).To(Equal("rest"))
+			if test.statusCode == http.StatusOK {
+				g.Expect(fakeMetricsHandler.modelInferState[test.expectedModelExternalTag].code).To(Equal("200"))
+			} else {
+				g.Expect(fakeMetricsHandler.modelInferState[test.expectedModelExternalTag].code).To(Equal("404"))
+			}
 			g.Expect(rpHTTP.Ready()).To(BeTrue())
 			_ = rpHTTP.Stop()
 			g.Expect(rpHTTP.Ready()).To(BeFalse())
@@ -273,7 +316,8 @@ func TestReverseEarlyStop(t *testing.T) {
 	logger := log.New()
 	logger.SetLevel(log.DebugLevel)
 
-	rpHTTP := setupReverseProxy(logger, 0, "dummy", 1, 1)
+	fakeMetricsHandler := newFakeMetricsHandler()
+	rpHTTP := setupReverseProxy(logger, 0, "dummy", 1, 1, fakeMetricsHandler)
 	err := rpHTTP.Stop()
 	g.Expect(err).To(BeNil())
 	ready := rpHTTP.Ready()
