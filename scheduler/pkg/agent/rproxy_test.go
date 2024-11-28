@@ -289,7 +289,6 @@ func TestReverseProxySmoke(t *testing.T) {
 			if test.statusCode == http.StatusOK {
 				g.Expect(rpHTTP.modelScalingStatsCollector.ModelLagStats.Get(test.modelToRequest)).To(Equal(uint32(0)))
 				g.Expect(rpHTTP.modelScalingStatsCollector.ModelLastUsedStats.Get(test.modelToRequest)).Should(BeNumerically("<=", time.Now().Unix())) // only triggered when we get results back
-
 			}
 
 			//  test infer metrics

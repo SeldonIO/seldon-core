@@ -147,7 +147,7 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	g.Expect(rpGRPC.modelScalingStatsCollector.ModelLagStats.Get(dummyModelNamePrefix + "_0")).To(Equal(uint32(0)))
 	g.Expect(rpGRPC.modelScalingStatsCollector.ModelLastUsedStats.Get(dummyModelNamePrefix + "_0")).Should(BeNumerically("<=", time.Now().Unix())) // only triggered when we get results back
 
-	t.Log("Testing model infer")
+	t.Log("Testing model infer metrics")
 	g.Expect(fakeMetricsHandler.modelInferState[dummyModelNamePrefix].internalModelName).To(Equal(dummyModelNamePrefix + "_0"))
 	g.Expect(fakeMetricsHandler.modelInferState[dummyModelNamePrefix].method).To(Equal("grpc"))
 	g.Expect(fakeMetricsHandler.modelInferState[dummyModelNamePrefix].code).To(Equal("OK")) // note it is not 200 for grpc, should we change this?
