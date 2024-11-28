@@ -76,8 +76,15 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	var originalBody []byte
 	var err error
 
-	externalModelName := req.Header.Get(resources.SeldonModelHeader)
 	internalModelName := req.Header.Get(resources.SeldonInternalModelHeader)
+	// externalModelName is the name of the model as it is known to the client, we should not use
+	// resources.SeldonModelHeader though as it can contain the experiment tag (used for routing by envoy)
+	// however for the metrics we need the actual model name and this is done by using resources.SeldonInternalModelHeader
+	externalModelName, _, err := util.GetOrignalModelNameAndVersion(internalModelName)
+	if err != nil {
+		t.logger.WithError(err).Warnf("cannot extract model name from %s, revert to actual header", internalModelName)
+		externalModelName = req.Header.Get(resources.SeldonModelHeader)
+	}
 
 	// to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
 	var wg sync.WaitGroup
@@ -139,8 +146,15 @@ func (rp *reverseHTTPProxy) addHandlers(proxy http.Handler) http.Handler {
 		rp.logger.Debugf("Received request with host %s and internal header %v", r.Host, r.Header.Values(resources.SeldonInternalModelHeader))
 		rewriteHostHandler(r)
 
-		externalModelName := r.Header.Get(resources.SeldonModelHeader)
 		internalModelName := r.Header.Get(resources.SeldonInternalModelHeader)
+		// externalModelName is the name of the model as it is known to the client, we should not use
+		// resources.SeldonModelHeader though as it can contain the experiment tag (used for routing by envoy)
+		// however for the metrics we need the actual model name and this is done by using resources.SeldonInternalModelHeader
+		externalModelName, _, err := util.GetOrignalModelNameAndVersion(internalModelName)
+		if err != nil {
+			rp.logger.WithError(err).Warnf("cannot extract model name from %s, revert to actual header", internalModelName)
+			externalModelName = r.Header.Get(resources.SeldonModelHeader)
+		}
 
 		//TODO should we return a 404 if headers not found?
 		if externalModelName == "" || internalModelName == "" {
