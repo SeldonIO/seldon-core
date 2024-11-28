@@ -140,52 +140,6 @@ func (xds *SeldonXDSCache) RouteContents() []types.Resource {
 	return []types.Resource{defaultRoutes, mirrorRoutes}
 }
 
-func (xds *SeldonXDSCache) RouteContents2() []types.Resource {
-	routesArray := make([]*resources.Route, len(xds.Routes))
-	rIdx := 0
-	for _, r := range xds.Routes { // This could be very large as is equal to number of models (100k?)
-		modelRoute := r
-		routesArray[rIdx] = &modelRoute
-		rIdx++
-	}
-
-	pipelinesArray := make([]*resources.PipelineRoute, len(xds.Pipelines))
-	pIdx := 0
-	for _, r := range xds.Pipelines { // Likely to be less pipelines than models
-		pipelineRoute := r
-		pipelinesArray[pIdx] = &pipelineRoute
-		pIdx++
-	}
-
-	// rts := make([]*route.Route, 2*(len(xds.Routes)+
-	// 	len(xds.Pipelines))+
-	// 	calcNumberOfModelStickySessionsNeeded(xds.Routes)+
-	// 	calcNumberOfPipelineStickySessionsNeeded(xds.Pipelines))
-
-	defaultRoutes, mirrorRoutes := resources.MakeRoute(routesArray, pipelinesArray)
-	return []types.Resource{defaultRoutes, mirrorRoutes}
-}
-
-func calcNumberOfModelStickySessionsNeeded(modelRoutes map[string]resources.Route) int {
-	count := 0
-	for _, r := range modelRoutes {
-		if resources.IsModelExperiment(&r) {
-			count = count + (len(r.Clusters) * 2) // REST and GRPC routes for each model in an experiment
-		}
-	}
-	return count
-}
-
-func calcNumberOfPipelineStickySessionsNeeded(pipelineRoutes map[string]resources.PipelineRoute) int {
-	count := 0
-	for _, r := range pipelineRoutes {
-		if resources.IsPipelineExperiment(&r) {
-			count = count + (len(r.Clusters) * 2) // REST and GRPC routes for each model in an experiment
-		}
-	}
-	return count
-}
-
 func (xds *SeldonXDSCache) ListenerContents() []types.Resource {
 	var r []types.Resource
 
