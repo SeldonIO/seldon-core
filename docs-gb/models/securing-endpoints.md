@@ -34,6 +34,7 @@ spec:
     - issuer: <OIDC_TOKEN_ISSUER>
       jwksUri: <OIDC_TOKEN_ISSUER_JWKS>
 ```
+Create the resource using `kubectl apply -f ingress-jwt-auth.yaml`.
 
 2. Create an authorization policy `deny-empty-jwt` in the namespace `istio-system`.
  
@@ -58,6 +59,7 @@ spec:
     matchLabels:
       app: istio-ingressgateway  # Applies to Istio Ingress Gateway pods
 ```
+Create the resource using `kubectl apply -f deny-empty-jwt.yaml`.
 
 3. To verify that the requests without an access token are denied send this request:
    ```bash
