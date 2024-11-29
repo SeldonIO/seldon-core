@@ -6,7 +6,7 @@ In enterprise use cases, you may need to control who can access the endpoints fo
 
 Service meshes offer a flexible way of defining authentication and authorization rules for your models. With Istio, for example, you can configure multiple layers of security within an Istio Gateway, such as a [TLS for HTTPS at the gateway](https://istio.io/latest/docs/tasks/traffic-management/ingress/secure-ingress/#configure-a-tls-ingress-gateway-for-a-single-host) level, [mutual TLS (mTLS) for secure internal communication](https://istio.io/latest/docs/tasks/traffic-management/ingress/secure-ingress/#configure-a-mutual-tls-ingress-gateway), as well as [AuthorizationPolicies](https://istio.io/latest/docs/reference/config/security/authorization-policy/) and [RequestAuthentication](https://istio.io/latest/docs/reference/config/security/request_authentication/) policies to enforce both authentication and authorization controls.
 
-## Prerequisites
+**Prerequisites**
 * [Deploy a model](../kubernetes/service-meshes/istio.md)
 * [Configure a gateway](../kubernetes/service-meshes/istio.md)
 * [Create a virtual service to expose the REST and gRPC endpoints](../kubernetes/service-meshes/istio.md)
