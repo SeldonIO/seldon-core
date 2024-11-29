@@ -11,12 +11,14 @@ package processor
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"os"
 	"testing"
 	"time"
 
 	clusterv3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
+	endpointv3 "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
@@ -29,12 +31,17 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
+
+// Set this flag if you want to regenerate all of the snapshot files.
+// It should always default to false.
+var generateSnapshots *bool = flag.Bool("generate.envoy.snapshot.files", false, "Regenerate the snapshots of the envoy configs")
 
 func TestGetTrafficShare(t *testing.T) {
 	g := NewGomegaWithT(t)
@@ -592,7 +599,7 @@ func TestEnvoySettings(t *testing.T) {
 		experimentExists         bool
 		experimentDeleted        bool
 		expectedVersionsInRoutes map[string]uint32
-		filename                 string
+		snapshotFilename         string
 	}
 
 	getStrPtr := func(t string) *string { return &t }
@@ -605,7 +612,7 @@ func TestEnvoySettings(t *testing.T) {
 			},
 			numExpectedClusters: 2,
 			numExpectedRoutes:   1,
-			filename:            "one-model",
+			snapshotFilename:    "one-model",
 		},
 		{
 			name: "two models",
@@ -616,7 +623,7 @@ func TestEnvoySettings(t *testing.T) {
 			},
 			numExpectedClusters: 4,
 			numExpectedRoutes:   2,
-			filename:            "two-models",
+			snapshotFilename:    "two-models",
 		},
 		{
 			name: "three models - 1 unloading",
@@ -628,7 +635,7 @@ func TestEnvoySettings(t *testing.T) {
 			},
 			numExpectedClusters: 4,
 			numExpectedRoutes:   2,
-			filename:            "three-models",
+			snapshotFilename:    "three-models",
 		},
 		{
 			name: "experiment",
@@ -642,7 +649,7 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedRoutes:   3,
 			experimentActive:    true,
 			experimentExists:    true,
-			filename:            "experiment",
+			snapshotFilename:    "experiment",
 		},
 		{
 			name: "experiment - no default",
@@ -660,7 +667,7 @@ func TestEnvoySettings(t *testing.T) {
 				"model1": 1,
 				"model2": 1,
 			},
-			filename: "experiment-no-default",
+			snapshotFilename: "experiment-no-default",
 		},
 		{
 			name: "experiment - new model version",
@@ -680,7 +687,7 @@ func TestEnvoySettings(t *testing.T) {
 				"model1": 1,
 				"model2": 2,
 			},
-			filename: "experiment-new-model-version",
+			snapshotFilename: "experiment-new-model-version",
 		},
 		{
 			name: "experiment with deleted model",
@@ -695,7 +702,7 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedRoutes:   2, // model2 should be removed from the routes
 			experimentActive:    false,
 			experimentExists:    true,
-			filename:            "experiment-deleted-model",
+			snapshotFilename:    "experiment-deleted-model",
 		},
 		{
 			name: "delete experiment",
@@ -710,7 +717,7 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedRoutes:   2,
 			experimentExists:    true, // exists but not active
 			experimentDeleted:   true,
-			filename:            "delete-experiment",
+			snapshotFilename:    "delete-experiment",
 		},
 		{
 			name: "mirror",
@@ -724,7 +731,7 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedRoutes:   3,
 			experimentActive:    true,
 			experimentExists:    true,
-			filename:            "mirror",
+			snapshotFilename:    "mirror",
 		},
 		{
 			name: "mirror, deleted model",
@@ -739,7 +746,7 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedRoutes:   2, // model2 should be removed from the routes
 			experimentActive:    false,
 			experimentExists:    true,
-			filename:            "mirror-deleted-model",
+			snapshotFilename:    "mirror-deleted-model",
 		},
 		{
 			name: "experiment with candidate and mirror",
@@ -754,7 +761,7 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedRoutes:   4,
 			experimentActive:    true,
 			experimentExists:    true,
-			filename:            "experiment-candidate-mirror",
+			snapshotFilename:    "experiment-candidate-mirror",
 		},
 		{
 			name: "pipeline",
@@ -768,7 +775,7 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedClusters:  6,
 			numExpectedRoutes:    3,
 			numExpectedPipelines: 1,
-			filename:             "pipeline",
+			snapshotFilename:     "pipeline",
 		},
 		{
 			name: "pipeline with removed model",
@@ -783,11 +790,9 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedClusters:  4,
 			numExpectedRoutes:    2, // model2 should be removed from the routes
 			numExpectedPipelines: 1, // route to pipeline is till there
-			filename:             "removed-model",
+			snapshotFilename:     "removed-model",
 		},
 	}
-	// Don't change this, unless you want to regenerate all the snapshot files
-	createSnapshotFiles := false
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			logger := log.New()
@@ -825,6 +830,7 @@ func TestEnvoySettings(t *testing.T) {
 				op(inc, g)
 				time.Sleep(50 * time.Millisecond) // to allow event handlers to process
 			}
+
 			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.numExpectedClusters))
 			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.numExpectedRoutes))
 			g.Expect(len(inc.xdsCache.Pipelines)).To(Equal(test.numExpectedPipelines))
@@ -849,13 +855,64 @@ func TestEnvoySettings(t *testing.T) {
 				}
 			}
 
-			routeFilename := "snapshots/" + test.filename + "-routes.json"
-			createSnapshots(inc.xdsCache.RouteContents(), g, routeFilename, createSnapshotFiles)
-			compareRouteContentsAndSnapshot(inc.xdsCache.RouteContents(), g, routeFilename)
+			// Check snapshots
 
-			clusterFilename := "snapshots/" + test.filename + "-clusters.json"
-			createSnapshots(inc.xdsCache.RouteContents(), g, clusterFilename, createSnapshotFiles)
-			compareClusterContentsAndSnapshot(inc.xdsCache.ClusterContents(), g, clusterFilename)
+			routeFilename := test.snapshotFilename + "-routes.json"
+			if *generateSnapshots {
+				createSnapshot(g, inc.xdsCache.RouteContents(), routeFilename)
+			}
+
+			resultingRoutes := getResultingRoutes(inc.xdsCache.RouteContents())
+
+			data, err := os.ReadFile("snapshots/" + routeFilename)
+			g.Expect(err).To(BeNil())
+
+			var rawMessages []json.RawMessage
+			err = json.Unmarshal(data, &rawMessages)
+			g.Expect(err).To(BeNil())
+
+			count := 0
+			for _, rawMessage := range rawMessages {
+				snapshotRoute := &routev3.RouteConfiguration{}
+				err := protojson.Unmarshal(rawMessage, snapshotRoute)
+				g.Expect(err).To(BeNil())
+
+				resultingRoute := resultingRoutes[snapshotRoute.Name]
+				g.Expect(resultingRoute).To(Not(BeNil()))
+
+				g.Expect(len(snapshotRoute.VirtualHosts[0].Routes)).Should(Equal(len(resultingRoute.VirtualHosts[0].Routes)))
+				count++
+			}
+			g.Expect(len(resultingRoutes)).To(Equal(count))
+
+			clusterFilename := test.snapshotFilename + "-clusters.json"
+			if *generateSnapshots {
+				createSnapshot(g, inc.xdsCache.ClusterContents(), clusterFilename)
+			}
+
+			resultingClusters := getResultingClusters(inc.xdsCache.ClusterContents())
+
+			data, err = os.ReadFile("snapshots/" + clusterFilename)
+			g.Expect(err).To(BeNil())
+
+			err = json.Unmarshal(data, &rawMessages)
+			g.Expect(err).To(BeNil())
+
+			count = 0
+			for _, rawMessage := range rawMessages {
+				snapshotCluster := &clusterv3.Cluster{}
+				err := protojson.Unmarshal(rawMessage, snapshotCluster)
+				g.Expect(err).To(BeNil())
+
+				resultingCluster := resultingClusters[snapshotCluster.Name]
+				g.Expect(resultingCluster).To(Not(BeNil()))
+				snapshotEndpoints := getEndpoints(snapshotCluster.LoadAssignment)
+				resultingEndpoints := getEndpoints(resultingCluster.LoadAssignment)
+				g.Expect(len(resultingEndpoints)).Should(Equal(len(snapshotEndpoints)))
+				g.Expect(resultingEndpoints).Should(ConsistOf(snapshotEndpoints))
+				count++
+			}
+			g.Expect(len(resultingClusters)).To(Equal(count))
 		})
 	}
 }
@@ -882,79 +939,42 @@ func getResultingRoutes(resources []types.Resource) map[string]*routev3.RouteCon
 	return routes
 }
 
-func createSnapshots(resources []types.Resource, g Gomega, filename string, createSnapshotFiles bool) {
-	if createSnapshotFiles {
-		// Use this to regenerate the snapshot files
-		jsonData := []byte("[")
-		for i, resource := range resources {
-			data, err := protojson.Marshal(resource)
-			g.Expect(err).To(BeNil())
-			jsonData = append(jsonData, data...)
-			if i < len(resources)-1 {
-				jsonData = append(jsonData, ',')
-			}
+func createSnapshot(g Gomega, resources []types.Resource, filename string) {
+	// Use this to regenerate the snapshot files
+	jsonData := []byte("[")
+	for i, resource := range resources {
+		data, err := protojson.Marshal(resource)
+		g.Expect(err).To(BeNil())
+		jsonData = append(jsonData, data...)
+		if i < len(resources)-1 {
+			jsonData = append(jsonData, ',')
 		}
-		jsonData = append(jsonData, ']')
-
-		// Write the JSON data to a file
-		file, err := os.Create(filename)
-		g.Expect(err).To(BeNil())
-
-		defer file.Close()
-
-		_, err = file.Write(jsonData)
-		g.Expect(err).To(BeNil())
 	}
+	jsonData = append(jsonData, ']')
+
+	// Write the JSON data to a file
+	file, err := os.Create("snapshots/" + filename)
+	g.Expect(err).To(BeNil())
+
+	defer file.Close()
+
+	_, err = file.Write(jsonData)
+	g.Expect(err).To(BeNil())
+
 }
 
-func compareRouteContentsAndSnapshot(resources []types.Resource, g Gomega, filename string) {
-	resultingRoutes := getResultingRoutes(resources)
-
-	data, err := os.ReadFile(filename)
-	g.Expect(err).To(BeNil())
-
-	var rawMessages []json.RawMessage
-	err = json.Unmarshal(data, &rawMessages)
-	g.Expect(err).To(BeNil())
-
-	count := 0
-	for _, rawMessage := range rawMessages {
-		snapshotRoute := &routev3.RouteConfiguration{}
-		err := protojson.Unmarshal(rawMessage, snapshotRoute)
-		g.Expect(err).To(BeNil())
-
-		resultingRoute := resultingRoutes[snapshotRoute.Name]
-		g.Expect(resultingRoute).To(Not(BeNil()))
-
-		g.Expect(len(snapshotRoute.VirtualHosts[0].Routes)).Should(Equal(len(resultingRoute.VirtualHosts[0].Routes)))
-		count++
+func getEndpoints(loadAssignment *endpointv3.ClusterLoadAssignment) []resources.Endpoint {
+	endpoints := make([]resources.Endpoint, 0)
+	for _, localityLbEndpoint := range loadAssignment.Endpoints {
+		for _, lbEndpoint := range localityLbEndpoint.LbEndpoints {
+			endpointEndpoint := lbEndpoint.HostIdentifier.(*endpointv3.LbEndpoint_Endpoint)
+			endpoints = append(endpoints, resources.Endpoint{
+				UpstreamHost: endpointEndpoint.Endpoint.Address.GetSocketAddress().Address,
+				UpstreamPort: endpointEndpoint.Endpoint.Address.GetSocketAddress().GetPortValue(),
+			})
+		}
 	}
-	g.Expect(len(resultingRoutes)).To(Equal(count))
-}
-
-func compareClusterContentsAndSnapshot(resources []types.Resource, g Gomega, filename string) {
-	resultingClusters := getResultingClusters(resources)
-
-	data, err := os.ReadFile(filename)
-	g.Expect(err).To(BeNil())
-
-	var rawMessages []json.RawMessage
-	err = json.Unmarshal(data, &rawMessages)
-	g.Expect(err).To(BeNil())
-
-	count := 0
-	for _, rawMessage := range rawMessages {
-		snapshotCluster := &clusterv3.Cluster{}
-		err := protojson.Unmarshal(rawMessage, snapshotCluster)
-		g.Expect(err).To(BeNil())
-
-		resultingCluster := resultingClusters[snapshotCluster.Name]
-		g.Expect(resultingCluster).To(Not(BeNil()))
-
-		g.Expect(len(snapshotCluster.LoadAssignment.Endpoints)).Should(Equal(len(resultingCluster.LoadAssignment.Endpoints)))
-		count++
-	}
-	g.Expect(len(resultingClusters)).To(Equal(count))
+	return endpoints
 }
 
 func createTestServer(serverName string, numReplicas uint32) func(inc *IncrementalProcessor, g *WithT) {
