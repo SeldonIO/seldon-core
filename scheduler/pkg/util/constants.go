@@ -48,7 +48,7 @@ const (
 
 // inference
 const (
-	InferTimeout = 10 * time.Minute // TODO: expose this as a config (map)?
+	inferTimeoutDefault = 10 * time.Minute // TODO: expose this as a config (map)?
 )
 
 const (
