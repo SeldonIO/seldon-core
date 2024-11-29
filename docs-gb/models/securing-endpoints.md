@@ -19,43 +19,46 @@ In the following example, you can secure the endpoint such that any requests to 
 
 To secure the endpoints of a model, you need to:
 1. Create a `RequestAuthentication` resource named `ingress-jwt-auth` in the `istio-system namespace`. Replace `<OIDC_TOKEN_ISSUER>` and `<OIDC_TOKEN_ISSUER_JWKS>` with your OIDC provider’s specific issuer URL and JWKS (JSON Web Key Set) URI.
-   ```yaml
-   apiVersion: security.istio.io/v1beta1
-    kind: RequestAuthentication
-    metadata:
-      name: ingress-jwt-auth
-      namespace: istio-system  # This is the namespace where Istio Ingress Gateway usually resides
-    spec:
-      selector:
-        matchLabels:
-          istio: istio-ingressgateway  # Apply to Istio Ingress Gateway pods
-      jwtRules:
-      - issuer: <OIDC_TOKEN_ISSUER>
-        jwksUri: <OIDC_TOKEN_ISSUER_JWKS>
-    ```    
+   
+```yaml
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: ingress-jwt-auth
+  namespace: istio-system  # This is the namespace where Istio Ingress Gateway usually resides
+spec:
+  selector:
+    matchLabels:
+      istio: istio-ingressgateway  # Apply to Istio Ingress Gateway pods
+  jwtRules:
+    - issuer: <OIDC_TOKEN_ISSUER>
+      jwksUri: <OIDC_TOKEN_ISSUER_JWKS>
+```
 
 2. Create an authorization policy `deny-empty-jwt` in the namespace `istio-system`.
-   ```yaml
-   apiVersion: security.istio.io/v1beta1
-    kind: AuthorizationPolicy
-    metadata:
-      name: deny-empty-jwt
-      namespace: istio-system
-    spec:
-      action: DENY
-      rules:
-      - from:
+ 
+```yaml
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-empty-jwt
+  namespace: istio-system
+spec:
+  action: DENY
+  rules:
+    - from:
         - source:
             notRequestPrincipals:
-            - '*'
-        to:
-          - operation:
-              paths:
-                 - /v2/*    
-      selector:
-        matchLabels:
-          app: istio-ingressgateway  # Applies to Istio Ingress Gateway pods
-    ``` 
+              - '*'  # Denies requests without a valid JWT principal
+      to:
+        - operation:
+            paths:
+              - /v2/*  # Applies to requests with this path pattern
+  selector:
+    matchLabels:
+      app: istio-ingressgateway  # Applies to Istio Ingress Gateway pods
+```
+
 3. To verify that the requests without an access token are denied send this request:
    ```bash
     curl -i http://$MESH_IP/v2/models/iris/infer \
