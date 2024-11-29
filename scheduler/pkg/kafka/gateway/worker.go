@@ -159,11 +159,11 @@ func getProtoInferRequest(job *InferWork) (*v2.ModelInferRequest, error) {
 }
 
 // Extract tracing context from Kafka message
-func createContextFromKafkaMsg(job *InferWork) context.Context {
+func createContextFromKafkaMsg(job *InferWork) (context.Context, context.CancelFunc) {
 	ctx := context.Background()
 	carrierIn := splunkkafka.NewMessageCarrier(job.msg)
 	ctx = otel.GetTextMapPropagator().Extract(ctx, carrierIn)
-	return ctx
+	return context.WithTimeout(ctx, util.InferTimeout)
 }
 
 func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct{}) {
@@ -173,11 +173,12 @@ func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct
 			return
 
 		case job := <-jobChan:
-			ctx := createContextFromKafkaMsg(job)
+			ctx, cancel := createContextFromKafkaMsg(job)
 			err := iw.processRequest(ctx, job)
 			if err != nil {
 				iw.logger.WithError(err).Errorf("Failed to process request for model %s", job.modelName)
 			}
+			cancel()
 		}
 	}
 }
