@@ -55,7 +55,7 @@ const (
 	SeldonRouteSeparator          = ":" // Tried % but this seemed to break envoy matching. Maybe % is a special character or connected to regexp. A bug?
 	SeldonModelHeaderSuffix       = "model"
 	SeldonPipelineHeaderSuffix    = "pipeline"
-	DefaultRouteTimeoutSecs       = 0 //TODO allow configurable override
+	DefaultRouteTimeoutSecs       = 0 // TODO allow configurable override
 	ExternalHeaderPrefix          = "x-"
 	DefaultRouteConfigurationName = "listener_0"
 	MirrorRouteConfigurationName  = "listener_1"
@@ -218,11 +218,13 @@ func createWeightedModelClusterAction(clusterTraffics []TrafficSplits, mirrorTra
 	return action
 }
 
-var modelRouteMatchPathHttp = &route.RouteMatch_Prefix{Prefix: "/v2"}
-var modelRouteMatchPathGrpc = &route.RouteMatch_Prefix{Prefix: "/inference.GRPCInferenceService"}
-var modelRouteHeaders = []*core.HeaderValueOption{
-	{Header: &core.HeaderValue{Key: SeldonLoggingHeader, Value: "true"}},
-}
+var (
+	modelRouteMatchPathHttp = &route.RouteMatch_Prefix{Prefix: "/v2"}
+	modelRouteMatchPathGrpc = &route.RouteMatch_Prefix{Prefix: "/inference.GRPCInferenceService"}
+	modelRouteHeaders       = []*core.HeaderValueOption{
+		{Header: &core.HeaderValue{Key: SeldonLoggingHeader, Value: "true"}},
+	}
+)
 
 func getRouteName(routeName string, isPipeline bool, isGrpc bool, isMirror bool) string {
 	pipelineSuffix := ""
@@ -381,8 +383,10 @@ func makeModelGrpcRoute(r *Route, rt *route.Route, isMirror bool) {
 	}
 }
 
-var pipelineRoutePathHttp = &route.RouteMatch_Prefix{Prefix: "/v2"}
-var pipelineRoutePathGrpc = &route.RouteMatch_Prefix{Prefix: "/inference.GRPCInferenceService"}
+var (
+	pipelineRoutePathHttp = &route.RouteMatch_Prefix{Prefix: "/v2"}
+	pipelineRoutePathGrpc = &route.RouteMatch_Prefix{Prefix: "/inference.GRPCInferenceService"}
+)
 
 func getPipelineModelName(pipelineName string) string {
 	return fmt.Sprintf("%s.%s", pipelineName, SeldonPipelineHeaderSuffix)
@@ -839,7 +843,8 @@ end
 func MakeHTTPListener(listenerName, address string,
 	port uint32,
 	routeConfigurationName string,
-	serverSecret *Secret) *listener.Listener {
+	serverSecret *Secret,
+) *listener.Listener {
 	routerConfig, _ := anypb.New(&router.Router{})
 	// HTTP filter configuration
 	manager := &hcm.HttpConnectionManager{
@@ -917,17 +922,6 @@ func MakeHTTPListener(listenerName, address string,
 func makeConfigSource() *core.ConfigSource {
 	source := &core.ConfigSource{}
 	source.ResourceApiVersion = resource.DefaultAPIVersion
-	source.ConfigSourceSpecifier = &core.ConfigSource_ApiConfigSource{
-		ApiConfigSource: &core.ApiConfigSource{
-			TransportApiVersion:       resource.DefaultAPIVersion,
-			ApiType:                   core.ApiConfigSource_DELTA_GRPC,
-			SetNodeOnFirstMessageOnly: true,
-			GrpcServices: []*core.GrpcService{{
-				TargetSpecifier: &core.GrpcService_EnvoyGrpc_{
-					EnvoyGrpc: &core.GrpcService_EnvoyGrpc{ClusterName: "xds_cluster"},
-				},
-			}},
-		},
-	}
+	source.ConfigSourceSpecifier = &core.ConfigSource_Ads{}
 	return source
 }
