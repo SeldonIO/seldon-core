@@ -10,24 +10,38 @@ the Change License after the Change Date as each is defined in accordance with t
 package processor
 
 import (
+	"encoding/json"
+	"flag"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
+	clusterv3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
+	endpointv3 "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
+	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
+	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/format"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
+
+// Set this flag if you want to regenerate all of the snapshot files.
+// It should always default to false.
+var generateSnapshots *bool = flag.Bool("generate.envoy.snapshot.files", false, "Regenerate the snapshots of the envoy configs")
 
 func TestGetTrafficShare(t *testing.T) {
 	g := NewGomegaWithT(t)
@@ -290,408 +304,6 @@ func TestUpdateEnvoyForModelVersion(t *testing.T) {
 	}
 }
 
-func createTestServer(serverName string, numReplicas uint32) func(inc *IncrementalProcessor, g *WithT) {
-	f := func(inc *IncrementalProcessor, g *WithT) {
-		for i := uint32(0); i < numReplicas; i++ {
-			err := inc.modelStore.AddServerReplica(&pba.AgentSubscribeRequest{
-				ServerName: serverName,
-				ReplicaIdx: i,
-				ReplicaConfig: &pba.ReplicaConfig{
-					InferenceSvc:      fmt.Sprintf("%s.%d", serverName, i),
-					InferenceHttpPort: 1234,
-				},
-			})
-			g.Expect(err).To(BeNil())
-		}
-	}
-	return f
-}
-
-func createTestModel(modelName string,
-	serverName string,
-	desiredReplicas uint32,
-	replicas []int,
-	version uint32,
-	replicaStates []store.ModelReplicaState) func(inc *IncrementalProcessor, g *WithT) {
-	f := func(inc *IncrementalProcessor, g *WithT) {
-		model := &scheduler.Model{
-			Meta: &scheduler.MetaData{
-				Name: modelName,
-			},
-			ModelSpec: &scheduler.ModelSpec{
-				Uri: "gs://" + util.CreateRequestId(), // Create a random uri
-			},
-			DeploymentSpec: &scheduler.DeploymentSpec{
-				Replicas: desiredReplicas,
-			},
-		}
-		err := inc.modelStore.UpdateModel(&scheduler.LoadModelRequest{Model: model})
-		g.Expect(err).To(BeNil())
-		var serverReplicas []*store.ServerReplica
-		for _, replicaIdx := range replicas {
-			var serverReplica *store.ServerReplica
-			server, err := inc.modelStore.GetServer(serverName, false, true)
-			g.Expect(err).To(BeNil())
-			if server != nil {
-				if sr, ok := server.Replicas[replicaIdx]; ok {
-					serverReplica = sr
-				}
-			}
-			if serverReplica == nil {
-				serverReplica = store.NewServerReplica("", 1, 2, replicaIdx, nil, nil, 1000, 1000, 0, nil, 0)
-			}
-			serverReplicas = append(serverReplicas, serverReplica)
-		}
-
-		// this adds all model replicas as `LoadRequested`
-		err = inc.modelStore.UpdateLoadedModels(modelName, version, serverName, serverReplicas)
-		g.Expect(err).To(BeNil())
-
-		for idx, replicaIdx := range replicas {
-			err = inc.modelStore.UpdateModelState(modelName, version, serverName, replicaIdx, nil, store.LoadRequested, replicaStates[idx], "")
-			g.Expect(err).To(BeNil())
-		}
-
-		err = inc.modelUpdate(modelName)
-		g.Expect(err).To(BeNil())
-	}
-	return f
-}
-
-func removeTestModel(
-	modelName string,
-	version uint32,
-	serverName string,
-	serverIdx int,
-) func(inc *IncrementalProcessor, g *WithT) {
-	f := func(inc *IncrementalProcessor, g *WithT) {
-		err := inc.modelStore.RemoveModel(&scheduler.UnloadModelRequest{Model: &scheduler.ModelReference{Name: "model1", Version: &version}})
-		g.Expect(err).To(BeNil())
-		err = inc.modelStore.UpdateModelState(modelName, version, serverName, serverIdx, nil, store.Available, store.Unloaded, "")
-		g.Expect(err).To(BeNil())
-	}
-	return f
-}
-
-func createTestExperiment(experimentName string, modelNames []string, defaultModel *string, mirrorName *string) func(inc *IncrementalProcessor, g *WithT) {
-	f := func(inc *IncrementalProcessor, g *WithT) {
-		var candidates []*experiment.Candidate
-		var mirror *experiment.Mirror
-		for _, modelName := range modelNames {
-			candidates = append(candidates, &experiment.Candidate{Name: modelName, Weight: 1})
-		}
-		if mirrorName != nil {
-			mirror = &experiment.Mirror{
-				Name:    *mirrorName,
-				Percent: 100,
-			}
-		}
-		exp := &experiment.Experiment{
-			Name:       experimentName,
-			Default:    defaultModel,
-			Candidates: candidates,
-			Mirror:     mirror,
-		}
-		err := inc.experimentServer.StartExperiment(exp)
-		g.Expect(err).To(BeNil())
-		err = inc.experimentUpdate(exp)
-		g.Expect(err).To(BeNil())
-	}
-	return f
-}
-
-func deleteTestExperiment(experimentName string) func(inc *IncrementalProcessor, g *WithT) {
-	f := func(inc *IncrementalProcessor, g *WithT) {
-		err := inc.experimentServer.StopExperiment(experimentName)
-		g.Expect(err).To(BeNil())
-		exp, err := inc.experimentServer.GetExperiment(experimentName)
-		g.Expect(err).To(BeNil())
-		err = inc.removeExperiment(exp)
-		g.Expect(err).To(BeNil())
-	}
-	return f
-}
-
-func createTestPipeline(pipelineName string, modelNames []string, version uint32) func(inc *IncrementalProcessor, g *WithT) {
-	f := func(inc *IncrementalProcessor, g *WithT) {
-		steps := []*scheduler.PipelineStep{}
-		for _, modelName := range modelNames {
-			steps = append(steps, &scheduler.PipelineStep{
-				Name: modelName,
-			})
-		}
-		pipe := &scheduler.Pipeline{
-			Name:    pipelineName,
-			Version: version,
-			Steps:   steps,
-			Uid:     "uid",
-		}
-		err := inc.pipelineHandler.AddPipeline(pipe)
-		g.Expect(err).To(BeNil())
-		err = inc.pipelineHandler.SetPipelineState(pipelineName, version, "uid", pipeline.PipelineReady, "", "")
-		g.Expect(err).To(BeNil())
-	}
-	return f
-}
-
-func TestEnvoySettings(t *testing.T) {
-	g := NewGomegaWithT(t)
-	type test struct {
-		name                     string
-		ops                      []func(proc *IncrementalProcessor, g *WithT)
-		numExpectedClusters      int
-		numExpectedRoutes        int
-		numExpectedPipelines     int
-		experimentActive         bool
-		experimentExists         bool
-		experimentDeleted        bool
-		expectedVersionsInRoutes map[string]uint32
-	}
-
-	getStrPtr := func(t string) *string { return &t }
-	tests := []test{
-		{
-			name: "One model",
-			ops: []func(inc *IncrementalProcessor, g *WithT){
-				createTestServer("server", 1),
-				createTestModel("model", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
-			},
-			numExpectedClusters: 2,
-			numExpectedRoutes:   1,
-		},
-		{
-			name: "two models",
-			ops: []func(inc *IncrementalProcessor, g *WithT){
-				createTestServer("server", 2),
-				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
-				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-			},
-			numExpectedClusters: 4,
-			numExpectedRoutes:   2,
-		},
-		{
-			name: "three models - 1 unloading",
-			ops: []func(inc *IncrementalProcessor, g *WithT){
-				createTestServer("server", 2),
-				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
-				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-				createTestModel("model3", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Unloading}),
-			},
-			numExpectedClusters: 4,
-			numExpectedRoutes:   2,
-		},
-		{
-			name: "experiment",
-			ops: []func(inc *IncrementalProcessor, g *WithT){
-				createTestServer("server", 2),
-				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
-				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), nil),
-			},
-			numExpectedClusters: 4,
-			numExpectedRoutes:   3,
-			experimentActive:    true,
-			experimentExists:    true,
-		},
-		{
-			name: "experiment - no default",
-			ops: []func(inc *IncrementalProcessor, g *WithT){
-				createTestServer("server", 2),
-				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
-				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-				createTestExperiment("exp", []string{"model1", "model2"}, nil, nil),
-			},
-			numExpectedClusters: 4,
-			numExpectedRoutes:   3,
-			experimentActive:    true,
-			experimentExists:    true,
-			expectedVersionsInRoutes: map[string]uint32{
-				"model1": 1,
-				"model2": 1,
-			},
-		},
-		{
-			name: "experiment - new model version",
-			ops: []func(inc *IncrementalProcessor, g *WithT){
-				createTestServer("server", 2),
-				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
-				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-				createTestExperiment("exp", []string{"model1", "model2"}, nil, nil),
-				// update model2 to version 2, will trigger change in routes / experiment
-				createTestModel("model2", "server", 1, []int{1}, 2, []store.ModelReplicaState{store.Available}),
-			},
-			numExpectedClusters: 4,
-			numExpectedRoutes:   3,
-			experimentActive:    true,
-			experimentExists:    true,
-			expectedVersionsInRoutes: map[string]uint32{
-				"model1": 1,
-				"model2": 2,
-			},
-		},
-		{
-			name: "experiment with deleted model",
-			ops: []func(inc *IncrementalProcessor, g *WithT){
-				createTestServer("server", 2),
-				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
-				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), nil),
-				removeTestModel("model2", 1, "server", 1),
-			},
-			numExpectedClusters: 2, // model2 should be removed from the clusters (server 1)
-			numExpectedRoutes:   2, // model2 should be removed from the routes
-			experimentActive:    false,
-			experimentExists:    true,
-		},
-		{
-			name: "delete experiment",
-			ops: []func(inc *IncrementalProcessor, g *WithT){
-				createTestServer("server", 2),
-				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
-				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), nil),
-				deleteTestExperiment("exp"),
-			},
-			numExpectedClusters: 4,
-			numExpectedRoutes:   2,
-			experimentExists:    true, // exists but not active
-			experimentDeleted:   true,
-		},
-		{
-			name: "mirror",
-			ops: []func(inc *IncrementalProcessor, g *WithT){
-				createTestServer("server", 2),
-				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
-				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-				createTestExperiment("exp", []string{"model1"}, getStrPtr("model1"), getStrPtr("model2")),
-			},
-			numExpectedClusters: 4,
-			numExpectedRoutes:   3,
-			experimentActive:    true,
-			experimentExists:    true,
-		},
-		{
-			name: "mirror, deleted model",
-			ops: []func(inc *IncrementalProcessor, g *WithT){
-				createTestServer("server", 2),
-				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
-				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-				createTestExperiment("exp", []string{"model1"}, getStrPtr("model1"), getStrPtr("model2")),
-				removeTestModel("model2", 1, "server", 1),
-			},
-			numExpectedClusters: 2, // model2 should be removed from the clusters (server 1)
-			numExpectedRoutes:   2, // model2 should be removed from the routes
-			experimentActive:    false,
-			experimentExists:    true,
-		},
-		{
-			name: "experiment with candidate and mirror",
-			ops: []func(inc *IncrementalProcessor, g *WithT){
-				createTestServer("server", 2),
-				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
-				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-				createTestModel("model3", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), getStrPtr("model3")),
-			},
-			numExpectedClusters: 6,
-			numExpectedRoutes:   4,
-			experimentActive:    true,
-			experimentExists:    true,
-		},
-		{
-			name: "pipeline",
-			ops: []func(inc *IncrementalProcessor, g *WithT){
-				createTestServer("server", 2),
-				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
-				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-				createTestModel("model3", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-				createTestPipeline("pipe", []string{"model1", "model2", "model3"}, 1),
-			},
-			numExpectedClusters:  6,
-			numExpectedRoutes:    3,
-			numExpectedPipelines: 1,
-		},
-		{
-			name: "pipeline with removed model",
-			ops: []func(inc *IncrementalProcessor, g *WithT){
-				createTestServer("server", 2),
-				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
-				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-				createTestModel("model3", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-				createTestPipeline("pipe", []string{"model1", "model2", "model3"}, 1),
-				removeTestModel("model2", 1, "server", 1),
-			},
-			numExpectedClusters:  4,
-			numExpectedRoutes:    2, // model2 should be removed from the routes
-			numExpectedPipelines: 1, // route to pipeline is till there
-		},
-	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			logger := log.New()
-			eventHub, _ := coordinator.NewEventHub(logger)
-			memoryStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), eventHub)
-			inc := &IncrementalProcessor{
-				cache:            cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
-				logger:           log.New(),
-				xdsCache:         xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
-				modelStore:       memoryStore,
-				experimentServer: experiment.NewExperimentServer(log.New(), eventHub, memoryStore, nil),
-				pipelineHandler:  pipeline.NewPipelineStore(log.New(), eventHub, memoryStore),
-			}
-			eventHub.RegisterModelEventHandler(
-				modelEventHandlerName,
-				pendingSyncsQueueSize,
-				inc.logger,
-				inc.handleModelEvents,
-			)
-			eventHub.RegisterExperimentEventHandler(
-				experimentEventHandlerName,
-				pendingSyncsQueueSize,
-				inc.logger,
-				inc.handleExperimentEvents,
-			)
-			eventHub.RegisterPipelineEventHandler(
-				pipelineEventHandlerName,
-				pendingSyncsQueueSize,
-				inc.logger,
-				inc.handlePipelinesEvents,
-			)
-
-			inc.xdsCache.AddListeners()
-			for _, op := range test.ops {
-				op(inc, g)
-				time.Sleep(50 * time.Millisecond) // to allow event handlers to process
-			}
-			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.numExpectedClusters))
-			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.numExpectedRoutes))
-			g.Expect(len(inc.xdsCache.Pipelines)).To(Equal(test.numExpectedPipelines))
-
-			exp, err := inc.experimentServer.GetExperiment("exp")
-			if test.experimentExists {
-				g.Expect(err).To(BeNil())
-				g.Expect(exp).NotTo(BeNil())
-				g.Expect(exp.Active).To(Equal(test.experimentActive))
-				g.Expect(exp.Deleted).To(Equal(test.experimentDeleted))
-			} else {
-				g.Expect(err).NotTo(BeNil())
-				g.Expect(exp).To(BeNil())
-			}
-			for modelName, version := range test.expectedVersionsInRoutes {
-				for _, route := range inc.xdsCache.Routes {
-					for _, cluster := range route.Clusters {
-						if cluster.ModelName == modelName {
-							g.Expect(cluster.ModelVersion).To(Equal(version))
-						}
-					}
-				}
-			}
-
-		})
-	}
-
-}
-
 func TestRollingUpdate(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
@@ -746,7 +358,6 @@ func TestRollingUpdate(t *testing.T) {
 			for modelName, trafficSplits := range test.numTrafficSplits {
 				g.Expect(len(inc.xdsCache.Routes[modelName].Clusters)).To(Equal(trafficSplits))
 			}
-
 		})
 	}
 }
@@ -822,7 +433,6 @@ func TestDraining(t *testing.T) {
 				g.Expect(err).To(BeNil())
 				g.Expect(model.GetLatest().ModelState().State).To(Equal(modelState))
 			}
-
 		})
 	}
 }
@@ -971,7 +581,583 @@ func TestModelSync(t *testing.T) {
 				g.Expect(err).To(BeNil())
 				g.Expect(model.GetLatest().ModelState().State).To(Equal(modelState))
 			}
-
 		})
 	}
+}
+
+func TestEnvoySettings(t *testing.T) {
+	g := NewGomegaWithT(t)
+	// Disable max comparison length, because the json output is quite large
+	format.MaxLength = 0
+	type test struct {
+		name                     string
+		ops                      []func(proc *IncrementalProcessor, g *WithT)
+		numExpectedClusters      int
+		numExpectedRoutes        int
+		numExpectedPipelines     int
+		experimentActive         bool
+		experimentExists         bool
+		experimentDeleted        bool
+		expectedVersionsInRoutes map[string]uint32
+		snapshotFilename         string
+	}
+
+	getStrPtr := func(t string) *string { return &t }
+	tests := []test{
+		{
+			name: "One model",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 1),
+				createTestModel("model", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+			},
+			numExpectedClusters: 2,
+			numExpectedRoutes:   1,
+			snapshotFilename:    "one-model",
+		},
+		{
+			name: "two models",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+			},
+			numExpectedClusters: 4,
+			numExpectedRoutes:   2,
+			snapshotFilename:    "two-models",
+		},
+		{
+			name: "three models - 1 unloading",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model3", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Unloading}),
+			},
+			numExpectedClusters: 4,
+			numExpectedRoutes:   2,
+			snapshotFilename:    "three-models",
+		},
+		{
+			name: "experiment",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), nil),
+			},
+			numExpectedClusters: 4,
+			numExpectedRoutes:   3,
+			experimentActive:    true,
+			experimentExists:    true,
+			snapshotFilename:    "experiment",
+		},
+		{
+			name: "experiment - no default",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestExperiment("exp", []string{"model1", "model2"}, nil, nil),
+			},
+			numExpectedClusters: 4,
+			numExpectedRoutes:   3,
+			experimentActive:    true,
+			experimentExists:    true,
+			expectedVersionsInRoutes: map[string]uint32{
+				"model1": 1,
+				"model2": 1,
+			},
+			snapshotFilename: "experiment-no-default",
+		},
+		{
+			name: "experiment - new model version",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestExperiment("exp", []string{"model1", "model2"}, nil, nil),
+				// update model2 to version 2, will trigger change in routes / experiment
+				createTestModel("model2", "server", 1, []int{1}, 2, []store.ModelReplicaState{store.Available}),
+			},
+			numExpectedClusters: 4,
+			numExpectedRoutes:   3,
+			experimentActive:    true,
+			experimentExists:    true,
+			expectedVersionsInRoutes: map[string]uint32{
+				"model1": 1,
+				"model2": 2,
+			},
+			snapshotFilename: "experiment-new-model-version",
+		},
+		{
+			name: "experiment with deleted model",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), nil),
+				removeTestModel("model2", 1, "server", 1),
+			},
+			numExpectedClusters: 2, // model2 should be removed from the clusters (server 1)
+			numExpectedRoutes:   2, // model2 should be removed from the routes
+			experimentActive:    false,
+			experimentExists:    true,
+			snapshotFilename:    "experiment-deleted-model",
+		},
+		{
+			name: "delete experiment",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), nil),
+				deleteTestExperiment("exp"),
+			},
+			numExpectedClusters: 4,
+			numExpectedRoutes:   2,
+			experimentExists:    true, // exists but not active
+			experimentDeleted:   true,
+			snapshotFilename:    "delete-experiment",
+		},
+		{
+			name: "mirror",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestExperiment("exp", []string{"model1"}, getStrPtr("model1"), getStrPtr("model2")),
+			},
+			numExpectedClusters: 4,
+			numExpectedRoutes:   3,
+			experimentActive:    true,
+			experimentExists:    true,
+			snapshotFilename:    "mirror",
+		},
+		{
+			name: "mirror, deleted model",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestExperiment("exp", []string{"model1"}, getStrPtr("model1"), getStrPtr("model2")),
+				removeTestModel("model2", 1, "server", 1),
+			},
+			numExpectedClusters: 2, // model2 should be removed from the clusters (server 1)
+			numExpectedRoutes:   2, // model2 should be removed from the routes
+			experimentActive:    false,
+			experimentExists:    true,
+			snapshotFilename:    "mirror-deleted-model",
+		},
+		{
+			name: "experiment with candidate and mirror",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model3", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), getStrPtr("model3")),
+			},
+			numExpectedClusters: 6,
+			numExpectedRoutes:   4,
+			experimentActive:    true,
+			experimentExists:    true,
+			snapshotFilename:    "experiment-candidate-mirror",
+		},
+		{
+			name: "pipeline",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model3", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestPipeline("pipe", []string{"model1", "model2", "model3"}, 1),
+			},
+			numExpectedClusters:  6,
+			numExpectedRoutes:    3,
+			numExpectedPipelines: 1,
+			snapshotFilename:     "pipeline",
+		},
+		{
+			name: "pipeline with removed model",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model3", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestPipeline("pipe", []string{"model1", "model2", "model3"}, 1),
+				removeTestModel("model2", 1, "server", 1),
+			},
+			numExpectedClusters:  4,
+			numExpectedRoutes:    2, // model2 should be removed from the routes
+			numExpectedPipelines: 1, // route to pipeline is till there
+			snapshotFilename:     "removed-model",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			logger := log.New()
+			eventHub, _ := coordinator.NewEventHub(logger)
+			memoryStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), eventHub)
+			inc := &IncrementalProcessor{
+				cache:            cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
+				logger:           log.New(),
+				xdsCache:         xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
+				modelStore:       memoryStore,
+				experimentServer: experiment.NewExperimentServer(log.New(), eventHub, memoryStore, nil),
+				pipelineHandler:  pipeline.NewPipelineStore(log.New(), eventHub, memoryStore),
+			}
+			eventHub.RegisterModelEventHandler(
+				modelEventHandlerName,
+				pendingSyncsQueueSize,
+				inc.logger,
+				inc.handleModelEvents,
+			)
+			eventHub.RegisterExperimentEventHandler(
+				experimentEventHandlerName,
+				pendingSyncsQueueSize,
+				inc.logger,
+				inc.handleExperimentEvents,
+			)
+			eventHub.RegisterPipelineEventHandler(
+				pipelineEventHandlerName,
+				pendingSyncsQueueSize,
+				inc.logger,
+				inc.handlePipelinesEvents,
+			)
+
+			inc.xdsCache.AddListeners()
+			for _, op := range test.ops {
+				op(inc, g)
+				time.Sleep(50 * time.Millisecond) // to allow event handlers to process
+			}
+
+			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.numExpectedClusters))
+			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.numExpectedRoutes))
+			g.Expect(len(inc.xdsCache.Pipelines)).To(Equal(test.numExpectedPipelines))
+
+			exp, err := inc.experimentServer.GetExperiment("exp")
+			if test.experimentExists {
+				g.Expect(err).To(BeNil())
+				g.Expect(exp).NotTo(BeNil())
+				g.Expect(exp.Active).To(Equal(test.experimentActive))
+				g.Expect(exp.Deleted).To(Equal(test.experimentDeleted))
+			} else {
+				g.Expect(err).NotTo(BeNil())
+				g.Expect(exp).To(BeNil())
+			}
+			for modelName, version := range test.expectedVersionsInRoutes {
+				for _, route := range inc.xdsCache.Routes {
+					for _, cluster := range route.Clusters {
+						if cluster.ModelName == modelName {
+							g.Expect(cluster.ModelVersion).To(Equal(version))
+						}
+					}
+				}
+			}
+
+			// Check snapshots
+
+			routeFilename := test.snapshotFilename + "-routes.json"
+			if *generateSnapshots {
+				createSnapshot(g, inc.xdsCache.RouteContents(), routeFilename)
+			}
+
+			resultingRoutes := getResultingRoutes(inc.xdsCache.RouteContents())
+
+			data, err := os.ReadFile("snapshots/" + routeFilename)
+			g.Expect(err).To(BeNil())
+
+			var rawMessages []json.RawMessage
+			err = json.Unmarshal(data, &rawMessages)
+			g.Expect(err).To(BeNil())
+
+			count := 0
+			for _, rawMessage := range rawMessages {
+				snapshotRouteConfig := &routev3.RouteConfiguration{}
+				err := protojson.Unmarshal(rawMessage, snapshotRouteConfig)
+				g.Expect(err).To(BeNil())
+
+				resultingRouteConfig := resultingRoutes[snapshotRouteConfig.Name]
+				g.Expect(resultingRouteConfig).To(Not(BeNil()))
+				g.Expect(len(snapshotRouteConfig.VirtualHosts)).Should(Equal(1))
+				g.Expect(len(resultingRouteConfig.VirtualHosts)).Should(Equal(1))
+				snapshotRoutes := getTrafficSplits(snapshotRouteConfig.VirtualHosts[0])
+				resultingRoutes := getTrafficSplits(resultingRouteConfig.VirtualHosts[0])
+				g.Expect(len(resultingRoutes)).Should(Equal(len(snapshotRoutes)))
+				g.Expect(resultingRoutes).Should(ConsistOf(snapshotRoutes))
+				count++
+			}
+			g.Expect(len(resultingRoutes)).To(Equal(count))
+
+			clusterFilename := test.snapshotFilename + "-clusters.json"
+			if *generateSnapshots {
+				createSnapshot(g, inc.xdsCache.ClusterContents(), clusterFilename)
+			}
+
+			resultingClusters := getResultingClusters(inc.xdsCache.ClusterContents())
+
+			data, err = os.ReadFile("snapshots/" + clusterFilename)
+			g.Expect(err).To(BeNil())
+
+			err = json.Unmarshal(data, &rawMessages)
+			g.Expect(err).To(BeNil())
+
+			count = 0
+			for _, rawMessage := range rawMessages {
+				snapshotCluster := &clusterv3.Cluster{}
+				err := protojson.Unmarshal(rawMessage, snapshotCluster)
+				g.Expect(err).To(BeNil())
+
+				resultingCluster := resultingClusters[snapshotCluster.Name]
+				g.Expect(resultingCluster).To(Not(BeNil()))
+				snapshotEndpoints := getEndpoints(snapshotCluster.LoadAssignment)
+				resultingEndpoints := getEndpoints(resultingCluster.LoadAssignment)
+				g.Expect(len(resultingEndpoints)).Should(Equal(len(snapshotEndpoints)))
+				g.Expect(resultingEndpoints).Should(ConsistOf(snapshotEndpoints))
+				count++
+			}
+			g.Expect(len(resultingClusters)).To(Equal(count))
+		})
+	}
+}
+
+func getResultingClusters(resources []types.Resource) map[string]*clusterv3.Cluster {
+	clusters := make(map[string]*clusterv3.Cluster)
+
+	for _, resource := range resources {
+		cluster := resource.(*clusterv3.Cluster)
+		clusters[cluster.Name] = cluster
+	}
+
+	return clusters
+}
+
+func getResultingRoutes(resources []types.Resource) map[string]*routev3.RouteConfiguration {
+	routes := make(map[string]*routev3.RouteConfiguration)
+
+	for _, resource := range resources {
+		route := resource.(*routev3.RouteConfiguration)
+		routes[route.Name] = route
+	}
+
+	return routes
+}
+
+func createSnapshot(g Gomega, resources []types.Resource, filename string) {
+	// Use this to regenerate the snapshot files
+	jsonData := []byte("[")
+	for i, resource := range resources {
+		data, err := protojson.Marshal(resource)
+		g.Expect(err).To(BeNil())
+		jsonData = append(jsonData, data...)
+		if i < len(resources)-1 {
+			jsonData = append(jsonData, ',')
+		}
+	}
+	jsonData = append(jsonData, ']')
+
+	// Write the JSON data to a file
+	file, err := os.Create("snapshots/" + filename)
+	g.Expect(err).To(BeNil())
+
+	defer file.Close()
+
+	_, err = file.Write(jsonData)
+	g.Expect(err).To(BeNil())
+}
+
+func getTrafficSplits(virtualHost *routev3.VirtualHost) []resources.Route {
+	trafficSplits := make([]resources.Route, 0)
+
+	for _, route := range virtualHost.Routes {
+		trafficSplit := resources.Route{
+			RouteName: route.Name,
+			Clusters:  make([]resources.TrafficSplits, 0),
+		}
+
+		clusterSpecificer := route.GetRoute().GetClusterSpecifier()
+
+		fmt.Printf("%v", clusterSpecificer)
+
+		switch route.GetRoute().GetClusterSpecifier().(type) {
+		case *routev3.RouteAction_WeightedClusters:
+			weightedClusters := route.GetRoute().GetClusterSpecifier().(*routev3.RouteAction_WeightedClusters)
+
+			for _, weightedCluster := range weightedClusters.WeightedClusters.Clusters {
+				trafficSplit.Clusters = append(trafficSplit.Clusters, resources.TrafficSplits{
+					ModelName:     weightedCluster.Name,
+					TrafficWeight: weightedCluster.Weight.Value,
+				})
+			}
+		case *routev3.RouteAction_Cluster:
+			cluster := route.GetRoute().GetClusterSpecifier().(*routev3.RouteAction_Cluster)
+			trafficSplit.Clusters = append(trafficSplit.Clusters, resources.TrafficSplits{
+				ModelName:     cluster.Cluster,
+				TrafficWeight: 100,
+			})
+
+		}
+
+	}
+
+	return trafficSplits
+}
+
+func getEndpoints(loadAssignment *endpointv3.ClusterLoadAssignment) []resources.Endpoint {
+	endpoints := make([]resources.Endpoint, 0)
+	for _, localityLbEndpoint := range loadAssignment.Endpoints {
+		for _, lbEndpoint := range localityLbEndpoint.LbEndpoints {
+			endpointEndpoint := lbEndpoint.HostIdentifier.(*endpointv3.LbEndpoint_Endpoint)
+			endpoints = append(endpoints, resources.Endpoint{
+				UpstreamHost: endpointEndpoint.Endpoint.Address.GetSocketAddress().Address,
+				UpstreamPort: endpointEndpoint.Endpoint.Address.GetSocketAddress().GetPortValue(),
+			})
+		}
+	}
+	return endpoints
+}
+
+func createTestServer(serverName string, numReplicas uint32) func(inc *IncrementalProcessor, g *WithT) {
+	f := func(inc *IncrementalProcessor, g *WithT) {
+		for i := uint32(0); i < numReplicas; i++ {
+			err := inc.modelStore.AddServerReplica(&pba.AgentSubscribeRequest{
+				ServerName: serverName,
+				ReplicaIdx: i,
+				ReplicaConfig: &pba.ReplicaConfig{
+					InferenceSvc:      fmt.Sprintf("%s.%d", serverName, i),
+					InferenceHttpPort: 1234,
+				},
+			})
+			g.Expect(err).To(BeNil())
+		}
+	}
+	return f
+}
+
+func createTestModel(modelName string,
+	serverName string,
+	desiredReplicas uint32,
+	replicas []int,
+	version uint32,
+	replicaStates []store.ModelReplicaState,
+) func(inc *IncrementalProcessor, g *WithT) {
+	f := func(inc *IncrementalProcessor, g *WithT) {
+		model := &scheduler.Model{
+			Meta: &scheduler.MetaData{
+				Name: modelName,
+			},
+			ModelSpec: &scheduler.ModelSpec{
+				Uri: "gs://" + util.CreateRequestId(), // Create a random uri
+			},
+			DeploymentSpec: &scheduler.DeploymentSpec{
+				Replicas: desiredReplicas,
+			},
+		}
+		err := inc.modelStore.UpdateModel(&scheduler.LoadModelRequest{Model: model})
+		g.Expect(err).To(BeNil())
+		var serverReplicas []*store.ServerReplica
+		for _, replicaIdx := range replicas {
+			var serverReplica *store.ServerReplica
+			server, err := inc.modelStore.GetServer(serverName, false, true)
+			g.Expect(err).To(BeNil())
+			if server != nil {
+				if sr, ok := server.Replicas[replicaIdx]; ok {
+					serverReplica = sr
+				}
+			}
+			if serverReplica == nil {
+				serverReplica = store.NewServerReplica("", 1, 2, replicaIdx, nil, nil, 1000, 1000, 0, nil, 0)
+			}
+			serverReplicas = append(serverReplicas, serverReplica)
+		}
+
+		// this adds all model replicas as `LoadRequested`
+		err = inc.modelStore.UpdateLoadedModels(modelName, version, serverName, serverReplicas)
+		g.Expect(err).To(BeNil())
+
+		for idx, replicaIdx := range replicas {
+			err = inc.modelStore.UpdateModelState(modelName, version, serverName, replicaIdx, nil, store.LoadRequested, replicaStates[idx], "")
+			g.Expect(err).To(BeNil())
+		}
+
+		err = inc.modelUpdate(modelName)
+		g.Expect(err).To(BeNil())
+	}
+	return f
+}
+
+func removeTestModel(
+	modelName string,
+	version uint32,
+	serverName string,
+	serverIdx int,
+) func(inc *IncrementalProcessor, g *WithT) {
+	f := func(inc *IncrementalProcessor, g *WithT) {
+		err := inc.modelStore.RemoveModel(&scheduler.UnloadModelRequest{Model: &scheduler.ModelReference{Name: "model1", Version: &version}})
+		g.Expect(err).To(BeNil())
+		err = inc.modelStore.UpdateModelState(modelName, version, serverName, serverIdx, nil, store.Available, store.Unloaded, "")
+		g.Expect(err).To(BeNil())
+	}
+	return f
+}
+
+func createTestExperiment(experimentName string, modelNames []string, defaultModel *string, mirrorName *string) func(inc *IncrementalProcessor, g *WithT) {
+	f := func(inc *IncrementalProcessor, g *WithT) {
+		var candidates []*experiment.Candidate
+		var mirror *experiment.Mirror
+		for _, modelName := range modelNames {
+			candidates = append(candidates, &experiment.Candidate{Name: modelName, Weight: 1})
+		}
+		if mirrorName != nil {
+			mirror = &experiment.Mirror{
+				Name:    *mirrorName,
+				Percent: 100,
+			}
+		}
+		exp := &experiment.Experiment{
+			Name:       experimentName,
+			Default:    defaultModel,
+			Candidates: candidates,
+			Mirror:     mirror,
+		}
+		err := inc.experimentServer.StartExperiment(exp)
+		g.Expect(err).To(BeNil())
+		err = inc.experimentUpdate(exp)
+		g.Expect(err).To(BeNil())
+	}
+	return f
+}
+
+func deleteTestExperiment(experimentName string) func(inc *IncrementalProcessor, g *WithT) {
+	f := func(inc *IncrementalProcessor, g *WithT) {
+		err := inc.experimentServer.StopExperiment(experimentName)
+		g.Expect(err).To(BeNil())
+		exp, err := inc.experimentServer.GetExperiment(experimentName)
+		g.Expect(err).To(BeNil())
+		err = inc.removeExperiment(exp)
+		g.Expect(err).To(BeNil())
+	}
+	return f
+}
+
+func createTestPipeline(pipelineName string, modelNames []string, version uint32) func(inc *IncrementalProcessor, g *WithT) {
+	f := func(inc *IncrementalProcessor, g *WithT) {
+		steps := []*scheduler.PipelineStep{}
+		for _, modelName := range modelNames {
+			steps = append(steps, &scheduler.PipelineStep{
+				Name: modelName,
+			})
+		}
+		pipe := &scheduler.Pipeline{
+			Name:    pipelineName,
+			Version: version,
+			Steps:   steps,
+			Uid:     "uid",
+		}
+		err := inc.pipelineHandler.AddPipeline(pipe)
+		g.Expect(err).To(BeNil())
+		err = inc.pipelineHandler.SetPipelineState(pipelineName, version, "uid", pipeline.PipelineReady, "", "")
+		g.Expect(err).To(BeNil())
+	}
+	return f
 }
