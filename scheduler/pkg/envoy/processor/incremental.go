@@ -362,14 +362,14 @@ func (p *IncrementalProcessor) addTrafficForExperiment(routeName string, exp *ex
 	switch exp.ResourceType {
 	case experiment.PipelineResourceType:
 
-		var mirrorSplit *resources.PipelineTrafficSplits
-		trafficSplits := make([]resources.PipelineTrafficSplits, len(exp.Candidates))
+		var mirrorSplit *resources.PipelineTrafficSplit
+		trafficSplits := make([]resources.PipelineTrafficSplit, len(exp.Candidates))
 
 		for _, candidate := range exp.Candidates {
-			trafficSplits = append(trafficSplits, resources.PipelineTrafficSplits{PipelineName: candidate.Name, TrafficWeight: candidate.Weight})
+			trafficSplits = append(trafficSplits, resources.PipelineTrafficSplit{PipelineName: candidate.Name, TrafficWeight: candidate.Weight})
 		}
 		if exp.Mirror != nil {
-			mirrorSplit = &resources.PipelineTrafficSplits{PipelineName: exp.Mirror.Name, TrafficWeight: exp.Mirror.Percent}
+			mirrorSplit = &resources.PipelineTrafficSplit{PipelineName: exp.Mirror.Name, TrafficWeight: exp.Mirror.Percent}
 		}
 
 		p.xdsCache.AddPipelineRoute(routeName, trafficSplits, mirrorSplit)
@@ -467,20 +467,20 @@ func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 		if exp.Deleted {
 			return fmt.Errorf("Experiment on pipeline %s, but %s is deleted", pip.Name, *exp.Default)
 		}
-		var mirrorSplit *resources.PipelineTrafficSplits
-		trafficSplits := make([]resources.PipelineTrafficSplits, len(exp.Candidates))
+		var mirrorSplit *resources.PipelineTrafficSplit
+		trafficSplits := make([]resources.PipelineTrafficSplit, len(exp.Candidates))
 
 		for _, candidate := range exp.Candidates {
-			trafficSplits = append(trafficSplits, resources.PipelineTrafficSplits{PipelineName: candidate.Name, TrafficWeight: candidate.Weight})
+			trafficSplits = append(trafficSplits, resources.PipelineTrafficSplit{PipelineName: candidate.Name, TrafficWeight: candidate.Weight})
 		}
 		if exp.Mirror != nil {
-			mirrorSplit = &resources.PipelineTrafficSplits{PipelineName: exp.Mirror.Name, TrafficWeight: exp.Mirror.Percent}
+			mirrorSplit = &resources.PipelineTrafficSplit{PipelineName: exp.Mirror.Name, TrafficWeight: exp.Mirror.Percent}
 		}
 
 		p.xdsCache.AddPipelineRoute(routeName, trafficSplits, mirrorSplit)
 	} else {
 		logger.Infof("Adding normal pipeline route %s", routeName)
-		p.xdsCache.AddPipelineRoute(routeName, []resources.PipelineTrafficSplits{{PipelineName: pip.Name, TrafficWeight: 100}}, nil)
+		p.xdsCache.AddPipelineRoute(routeName, []resources.PipelineTrafficSplit{{PipelineName: pip.Name, TrafficWeight: 100}}, nil)
 	}
 
 	return p.updateEnvoy()

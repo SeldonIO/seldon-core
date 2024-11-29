@@ -873,14 +873,18 @@ func TestEnvoySettings(t *testing.T) {
 
 			count := 0
 			for _, rawMessage := range rawMessages {
-				snapshotRoute := &routev3.RouteConfiguration{}
-				err := protojson.Unmarshal(rawMessage, snapshotRoute)
+				snapshotRouteConfig := &routev3.RouteConfiguration{}
+				err := protojson.Unmarshal(rawMessage, snapshotRouteConfig)
 				g.Expect(err).To(BeNil())
 
-				resultingRoute := resultingRoutes[snapshotRoute.Name]
-				g.Expect(resultingRoute).To(Not(BeNil()))
-
-				g.Expect(len(snapshotRoute.VirtualHosts[0].Routes)).Should(Equal(len(resultingRoute.VirtualHosts[0].Routes)))
+				resultingRouteConfig := resultingRoutes[snapshotRouteConfig.Name]
+				g.Expect(resultingRouteConfig).To(Not(BeNil()))
+				g.Expect(len(snapshotRouteConfig.VirtualHosts)).Should(Equal(1))
+				g.Expect(len(resultingRouteConfig.VirtualHosts)).Should(Equal(1))
+				snapshotRoutes := getTrafficSplits(snapshotRouteConfig.VirtualHosts[0])
+				resultingRoutes := getTrafficSplits(resultingRouteConfig.VirtualHosts[0])
+				g.Expect(len(resultingRoutes)).Should(Equal(len(snapshotRoutes)))
+				g.Expect(resultingRoutes).Should(ConsistOf(snapshotRoutes))
 				count++
 			}
 			g.Expect(len(resultingRoutes)).To(Equal(count))
@@ -960,7 +964,43 @@ func createSnapshot(g Gomega, resources []types.Resource, filename string) {
 
 	_, err = file.Write(jsonData)
 	g.Expect(err).To(BeNil())
+}
 
+func getTrafficSplits(virtualHost *routev3.VirtualHost) []resources.Route {
+	trafficSplits := make([]resources.Route, 0)
+
+	for _, route := range virtualHost.Routes {
+		trafficSplit := resources.Route{
+			RouteName: route.Name,
+			Clusters:  make([]resources.TrafficSplit, 0),
+		}
+
+		clusterSpecificer := route.GetRoute().GetClusterSpecifier()
+
+		fmt.Printf("%v", clusterSpecificer)
+
+		switch route.GetRoute().GetClusterSpecifier().(type) {
+		case *routev3.RouteAction_WeightedClusters:
+			weightedClusters := route.GetRoute().GetClusterSpecifier().(*routev3.RouteAction_WeightedClusters)
+
+			for _, weightedCluster := range weightedClusters.WeightedClusters.Clusters {
+				trafficSplit.Clusters = append(trafficSplit.Clusters, resources.TrafficSplit{
+					ModelName:     weightedCluster.Name,
+					TrafficWeight: weightedCluster.Weight.Value,
+				})
+			}
+		case *routev3.RouteAction_Cluster:
+			cluster := route.GetRoute().GetClusterSpecifier().(*routev3.RouteAction_Cluster)
+			trafficSplit.Clusters = append(trafficSplit.Clusters, resources.TrafficSplit{
+				ModelName:     cluster.Cluster,
+				TrafficWeight: 100,
+			})
+
+		}
+
+	}
+
+	return trafficSplits
 }
 
 func getEndpoints(loadAssignment *endpointv3.ClusterLoadAssignment) []resources.Endpoint {

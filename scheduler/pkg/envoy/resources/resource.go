@@ -157,7 +157,7 @@ func createMirrorRouteAction(trafficWeight uint32, rest bool) []*route.RouteActi
 
 // weighted clusters do not play well with session affinity see https://github.com/envoyproxy/envoy/issues/8167
 // Traffic shifting may need to be reinvesigated https://github.com/envoyproxy/envoy/pull/18207
-func createWeightedModelClusterAction(clusterTraffics []TrafficSplits, mirrorTraffics []TrafficSplits, rest bool) *route.Route_Route {
+func createWeightedModelClusterAction(clusterTraffics []TrafficSplit, mirrorTraffics []TrafficSplit, rest bool) *route.Route_Route {
 	// Add Weighted Clusters with given traffic percentages to each internal model
 	var splits []*route.WeightedCluster_ClusterWeight
 	var mirrors []*route.RouteAction_RequestMirrorPolicy
@@ -263,9 +263,9 @@ func makeModelHttpRoute(r *Route, rt *route.Route, isMirror bool) {
 	}
 
 	if isMirror {
-		rt.Action = createWeightedModelClusterAction([]TrafficSplits{*r.Mirror}, []TrafficSplits{}, true)
+		rt.Action = createWeightedModelClusterAction([]TrafficSplit{*r.Mirror}, []TrafficSplit{}, true)
 	} else {
-		rt.Action = createWeightedModelClusterAction(r.Clusters, []TrafficSplits{}, true)
+		rt.Action = createWeightedModelClusterAction(r.Clusters, []TrafficSplit{}, true)
 	}
 
 	if r.LogPayloads {
@@ -273,7 +273,7 @@ func makeModelHttpRoute(r *Route, rt *route.Route, isMirror bool) {
 	}
 }
 
-func makeModelStickySessionRoute(r *Route, clusterTraffic *TrafficSplits, rt *route.Route, isGrpc bool) {
+func makeModelStickySessionRoute(r *Route, clusterTraffic *TrafficSplit, rt *route.Route, isGrpc bool) {
 	if isGrpc {
 		rt.Name = r.RouteName + "_grpc_experiment"
 		rt.Match.PathSpecifier = modelRouteMatchPathGrpc
@@ -373,9 +373,9 @@ func makeModelGrpcRoute(r *Route, rt *route.Route, isMirror bool) {
 	}
 
 	if isMirror {
-		rt.Action = createWeightedModelClusterAction([]TrafficSplits{*r.Mirror}, []TrafficSplits{}, false)
+		rt.Action = createWeightedModelClusterAction([]TrafficSplit{*r.Mirror}, []TrafficSplit{}, false)
 	} else {
-		rt.Action = createWeightedModelClusterAction(r.Clusters, []TrafficSplits{}, false)
+		rt.Action = createWeightedModelClusterAction(r.Clusters, []TrafficSplit{}, false)
 	}
 
 	if r.LogPayloads {
@@ -392,7 +392,7 @@ func getPipelineModelName(pipelineName string) string {
 	return fmt.Sprintf("%s.%s", pipelineName, SeldonPipelineHeaderSuffix)
 }
 
-func createWeightedPipelineClusterAction(clusterTraffics []PipelineTrafficSplits, mirrorTraffics []PipelineTrafficSplits, rest bool) *route.Route_Route {
+func createWeightedPipelineClusterAction(clusterTraffics []PipelineTrafficSplit, mirrorTraffics []PipelineTrafficSplit, rest bool) *route.Route_Route {
 	// Add Weighted Clusters with given traffic percentages to each internal model
 	var splits []*route.WeightedCluster_ClusterWeight
 	var mirrors []*route.RouteAction_RequestMirrorPolicy
@@ -466,9 +466,9 @@ func makePipelineHttpRoute(r *PipelineRoute, rt *route.Route, isMirror bool) {
 	}
 
 	if isMirror {
-		rt.Action = createWeightedPipelineClusterAction([]PipelineTrafficSplits{*r.Mirror}, []PipelineTrafficSplits{}, true)
+		rt.Action = createWeightedPipelineClusterAction([]PipelineTrafficSplit{*r.Mirror}, []PipelineTrafficSplit{}, true)
 	} else {
-		rt.Action = createWeightedPipelineClusterAction(r.Clusters, []PipelineTrafficSplits{}, true)
+		rt.Action = createWeightedPipelineClusterAction(r.Clusters, []PipelineTrafficSplit{}, true)
 	}
 }
 
@@ -493,13 +493,13 @@ func makePipelineGrpcRoute(r *PipelineRoute, rt *route.Route, isMirror bool) {
 	}
 
 	if isMirror {
-		rt.Action = createWeightedPipelineClusterAction([]PipelineTrafficSplits{*r.Mirror}, []PipelineTrafficSplits{}, false)
+		rt.Action = createWeightedPipelineClusterAction([]PipelineTrafficSplit{*r.Mirror}, []PipelineTrafficSplit{}, false)
 	} else {
-		rt.Action = createWeightedPipelineClusterAction(r.Clusters, []PipelineTrafficSplits{}, false)
+		rt.Action = createWeightedPipelineClusterAction(r.Clusters, []PipelineTrafficSplit{}, false)
 	}
 }
 
-func makePipelineStickySessionRoute(r *PipelineRoute, clusterTraffic *PipelineTrafficSplits, rt *route.Route, isGrpc bool) {
+func makePipelineStickySessionRoute(r *PipelineRoute, clusterTraffic *PipelineTrafficSplit, rt *route.Route, isGrpc bool) {
 	if isGrpc {
 		rt.Name = r.RouteName + "_grpc_experiment"
 		rt.Match.PathSpecifier = pipelineRoutePathGrpc

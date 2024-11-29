@@ -31,7 +31,7 @@ func TestMakeRoute(t *testing.T) {
 			modelRoutes: []*Route{
 				{
 					RouteName: "r1",
-					Clusters: []TrafficSplits{
+					Clusters: []TrafficSplit{
 						{
 							ModelName:     "m1",
 							ModelVersion:  1,
@@ -50,7 +50,7 @@ func TestMakeRoute(t *testing.T) {
 			pipelineRoutes: []*PipelineRoute{
 				{
 					RouteName: "r1",
-					Clusters: []PipelineTrafficSplits{
+					Clusters: []PipelineTrafficSplit{
 						{
 							PipelineName:  "p1",
 							TrafficWeight: 100,
@@ -66,7 +66,7 @@ func TestMakeRoute(t *testing.T) {
 			pipelineRoutes: []*PipelineRoute{
 				{
 					RouteName: "r1",
-					Clusters: []PipelineTrafficSplits{
+					Clusters: []PipelineTrafficSplit{
 						{
 							PipelineName:  "p1",
 							TrafficWeight: 50,
@@ -86,7 +86,7 @@ func TestMakeRoute(t *testing.T) {
 			pipelineRoutes: []*PipelineRoute{
 				{
 					RouteName: "r1",
-					Clusters: []PipelineTrafficSplits{
+					Clusters: []PipelineTrafficSplit{
 						{
 							PipelineName:  "p1",
 							TrafficWeight: 50,
@@ -96,7 +96,7 @@ func TestMakeRoute(t *testing.T) {
 							TrafficWeight: 50,
 						},
 					},
-					Mirror: &PipelineTrafficSplits{
+					Mirror: &PipelineTrafficSplit{
 						PipelineName:  "p3",
 						TrafficWeight: 100,
 					},
@@ -110,7 +110,7 @@ func TestMakeRoute(t *testing.T) {
 			modelRoutes: []*Route{
 				{
 					RouteName: "r1",
-					Clusters: []TrafficSplits{
+					Clusters: []TrafficSplit{
 						{
 							ModelName:     "m1",
 							ModelVersion:  1,
@@ -136,7 +136,7 @@ func TestMakeRoute(t *testing.T) {
 			modelRoutes: []*Route{
 				{
 					RouteName: "r1",
-					Clusters: []TrafficSplits{
+					Clusters: []TrafficSplit{
 						{
 							ModelName:     "m1",
 							ModelVersion:  1,
@@ -152,7 +152,7 @@ func TestMakeRoute(t *testing.T) {
 							GrpcCluster:   "g1",
 						},
 					},
-					Mirror: &TrafficSplits{
+					Mirror: &TrafficSplit{
 						ModelName:     "m3",
 						ModelVersion:  1,
 						TrafficWeight: 100,

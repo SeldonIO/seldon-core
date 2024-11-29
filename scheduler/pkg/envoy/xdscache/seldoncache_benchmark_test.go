@@ -30,7 +30,7 @@ func benchmarkRouteContents(b *testing.B, numResources uint) {
 	x := NewSeldonXDSCache(logrus.New(), nil)
 
 	for n := 0; n < int(numResources); n++ {
-		x.AddPipelineRoute(strconv.Itoa(n), []resources.PipelineTrafficSplits{{PipelineName: strconv.Itoa(n), TrafficWeight: 100}}, nil)
+		x.AddPipelineRoute(strconv.Itoa(n), []resources.PipelineTrafficSplit{{PipelineName: strconv.Itoa(n), TrafficWeight: 100}}, nil)
 
 		x.AddRouteClusterTraffic(fmt.Sprintf("model-%d", n), store.NewDefaultModelVersion(&scheduler.Model{Meta: &scheduler.MetaData{Name: fmt.Sprintf("model-%d", n)}}, 1), 100, false)
 	}

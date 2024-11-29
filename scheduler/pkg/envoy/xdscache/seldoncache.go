@@ -172,7 +172,7 @@ func (xds *SeldonXDSCache) SecretContents() []types.Resource {
 	return r
 }
 
-func (xds *SeldonXDSCache) AddPipelineRoute(routeName string, trafficSplits []resources.PipelineTrafficSplits, mirror *resources.PipelineTrafficSplits) {
+func (xds *SeldonXDSCache) AddPipelineRoute(routeName string, trafficSplits []resources.PipelineTrafficSplit, mirror *resources.PipelineTrafficSplit) {
 	xds.RemovePipelineRoute(routeName)
 	pipelineRoute, ok := xds.Pipelines[routeName]
 	if !ok {
@@ -274,7 +274,7 @@ func (xds *SeldonXDSCache) AddRouteClusterTraffic(
 		route.LogPayloads = true
 	}
 
-	clusterTraffic := resources.TrafficSplits{
+	clusterTraffic := resources.TrafficSplit{
 		ModelName:     modelName,
 		ModelVersion:  modelVersion.GetVersion(),
 		TrafficWeight: trafficPercent,
@@ -358,7 +358,7 @@ func getClusterNames(modelVersion *store.ModelVersion) (string, string) {
 	return httpClusterName, grpcClusterName
 }
 
-func (xds *SeldonXDSCache) removeRouteFromCluster(routeName string, route resources.Route, cluster resources.TrafficSplits) error {
+func (xds *SeldonXDSCache) removeRouteFromCluster(routeName string, route resources.Route, cluster resources.TrafficSplit) error {
 	httpCluster, ok := xds.Clusters[cluster.HttpCluster]
 	if !ok {
 		return fmt.Errorf("Can't find http cluster for route %s cluster %s route %+v", routeName, cluster.HttpCluster, route)
