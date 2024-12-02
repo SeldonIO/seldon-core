@@ -1000,6 +1000,11 @@ func getTrafficSplits(virtualHost *routev3.VirtualHost) []resources.Route {
 
 		}
 
+		if len(route.GetRoute().RequestMirrorPolicies) > 0 {
+			mirror := route.GetRoute().RequestMirrorPolicies[0]
+			trafficSplit.Mirror = &resources.TrafficSplit{ModelName: mirror.Cluster, TrafficWeight: mirror.RuntimeFraction.DefaultValue.Numerator}
+		}
+
 		trafficSplits = append(trafficSplits, trafficSplit)
 
 	}
