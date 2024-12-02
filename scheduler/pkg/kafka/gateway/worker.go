@@ -175,34 +175,37 @@ func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct
 }
 
 func (iw *InferWorker) processRequest(ctx context.Context, job *InferWork) error {
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, util.InferTimeoutDefault)
+	defer cancel()
+
 	// Has Type Header
 	if typeValue, ok := job.headers[HeaderKeyType]; ok {
 		switch typeValue {
 		case HeaderValueJsonReq:
-			return iw.restRequest(ctx, job, false)
+			return iw.restRequest(ctxWithTimeout, job, false)
 		case HeaderValueJsonRes:
-			return iw.restRequest(ctx, job, true)
+			return iw.restRequest(ctxWithTimeout, job, true)
 		case HeaderValueProtoReq:
 			protoRequest, err := getProtoInferRequest(job)
 			if err != nil {
 				return err
 			}
-			return iw.grpcRequest(ctx, job, protoRequest)
+			return iw.grpcRequest(ctxWithTimeout, job, protoRequest)
 		case HeaderValueProtoRes:
 			protoRequest, err := getProtoRequestAssumingResponse(job.msg.Value)
 			if err != nil {
 				return err
 			}
-			return iw.grpcRequest(ctx, job, protoRequest)
+			return iw.grpcRequest(ctxWithTimeout, job, protoRequest)
 		default:
 			return fmt.Errorf("Header %s with unknown type %s", HeaderKeyType, typeValue)
 		}
 	} else { // Does not have type header - this is the general case to allow easy use
 		protoRequest, err := getProtoInferRequest(job)
 		if err != nil {
-			return iw.restRequest(ctx, job, true)
+			return iw.restRequest(ctxWithTimeout, job, true)
 		} else {
-			return iw.grpcRequest(ctx, job, protoRequest)
+			return iw.grpcRequest(ctxWithTimeout, job, protoRequest)
 		}
 	}
 }
