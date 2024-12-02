@@ -974,7 +974,7 @@ func getTrafficSplits(virtualHost *routev3.VirtualHost) []resources.Route {
 	for _, route := range virtualHost.Routes {
 		trafficSplit := resources.Route{
 			RouteName: route.Name,
-			Clusters:  make([]resources.TrafficSplits, 0),
+			Clusters:  make([]resources.TrafficSplit, 0),
 		}
 
 		clusterSpecificer := route.GetRoute().GetClusterSpecifier()
@@ -986,14 +986,14 @@ func getTrafficSplits(virtualHost *routev3.VirtualHost) []resources.Route {
 			weightedClusters := route.GetRoute().GetClusterSpecifier().(*routev3.RouteAction_WeightedClusters)
 
 			for _, weightedCluster := range weightedClusters.WeightedClusters.Clusters {
-				trafficSplit.Clusters = append(trafficSplit.Clusters, resources.TrafficSplits{
+				trafficSplit.Clusters = append(trafficSplit.Clusters, resources.TrafficSplit{
 					ModelName:     weightedCluster.Name,
 					TrafficWeight: weightedCluster.Weight.Value,
 				})
 			}
 		case *routev3.RouteAction_Cluster:
 			cluster := route.GetRoute().GetClusterSpecifier().(*routev3.RouteAction_Cluster)
-			trafficSplit.Clusters = append(trafficSplit.Clusters, resources.TrafficSplits{
+			trafficSplit.Clusters = append(trafficSplit.Clusters, resources.TrafficSplit{
 				ModelName:     cluster.Cluster,
 				TrafficWeight: 100,
 			})
