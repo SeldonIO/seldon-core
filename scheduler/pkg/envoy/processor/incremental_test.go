@@ -866,7 +866,7 @@ func TestEnvoySettings(t *testing.T) {
 
 			resultingRoutes := getResultingRoutes(inc.xdsCache.RouteContents())
 
-			data, err := os.ReadFile("snapshots/" + routeFilename)
+			data, err := os.ReadFile(snapshots_directory_name + routeFilename)
 			g.Expect(err).To(BeNil())
 
 			var rawMessages []json.RawMessage
