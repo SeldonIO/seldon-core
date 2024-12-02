@@ -41,7 +41,9 @@ import (
 
 // Set this flag if you want to regenerate all of the snapshot files.
 // It should always default to false.
-var generateSnapshots *bool = flag.Bool("generate.envoy.snapshot.files", false, "Regenerate the snapshots of the envoy configs")
+var generateSnapshots bool = *flag.Bool("generate.envoy.snapshot.files", false, "Regenerate the snapshots of the envoy configs")
+
+const snapshots_directory_name = "snapshots_testdata"
 
 func TestGetTrafficShare(t *testing.T) {
 	g := NewGomegaWithT(t)
@@ -858,7 +860,7 @@ func TestEnvoySettings(t *testing.T) {
 			// Check snapshots
 
 			routeFilename := test.snapshotFilename + "-routes.json"
-			if *generateSnapshots {
+			if generateSnapshots {
 				createSnapshot(g, inc.xdsCache.RouteContents(), routeFilename)
 			}
 
@@ -890,7 +892,7 @@ func TestEnvoySettings(t *testing.T) {
 			g.Expect(len(resultingRoutes)).To(Equal(count))
 
 			clusterFilename := test.snapshotFilename + "-clusters.json"
-			if *generateSnapshots {
+			if generateSnapshots {
 				createSnapshot(g, inc.xdsCache.ClusterContents(), clusterFilename)
 			}
 
@@ -957,7 +959,7 @@ func createSnapshot(g Gomega, resources []types.Resource, filename string) {
 	jsonData = append(jsonData, ']')
 
 	// Write the JSON data to a file
-	file, err := os.Create("snapshots/" + filename)
+	file, err := os.Create(snapshots_directory_name + "/" + filename)
 	g.Expect(err).To(BeNil())
 
 	defer file.Close()
