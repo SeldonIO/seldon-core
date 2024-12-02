@@ -286,6 +286,18 @@ func (xds *SeldonXDSCache) AddRouteClusterTraffic(
 		route.LogPayloads = true
 	}
 
+	if httpCluster, ok := xds.Clusters[httpClusterName]; ok {
+		httpCluster.Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: modelName, Version: modelVersion}] = true
+	} else {
+		return
+	}
+
+	if grpcCluster, ok := xds.Clusters[grpcClusterName]; ok {
+		grpcCluster.Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: modelName, Version: modelVersion}] = true
+	} else {
+		return
+	}
+
 	clusterTraffic := resources.TrafficSplits{
 		ModelName:     modelName,
 		ModelVersion:  modelVersion,
@@ -303,9 +315,6 @@ func (xds *SeldonXDSCache) AddRouteClusterTraffic(
 
 func (xds *SeldonXDSCache) AddCluster(
 	name string,
-	routeName string,
-	modelName string,
-	modelVersion uint32,
 	isGrpc bool,
 ) {
 	cluster, ok := xds.Clusters[name]
@@ -317,14 +326,14 @@ func (xds *SeldonXDSCache) AddCluster(
 			Grpc:      isGrpc,
 		}
 	}
-	cluster.Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: modelName, Version: modelVersion}] = true
+
 	xds.Clusters[name] = cluster
 }
 
 func (xds *SeldonXDSCache) removeRouteFromCluster(routeName string, route resources.Route, cluster resources.TrafficSplits) error {
 	httpCluster, ok := xds.Clusters[cluster.HttpCluster]
 	if !ok {
-		return fmt.Errorf("Can't find http cluster for route %s cluster %s route %+v", routeName, cluster.HttpCluster, route)
+		return fmt.Errorf("can't find http cluster for route %s cluster %s route %+v", routeName, cluster.HttpCluster, route)
 	}
 	delete(httpCluster.Routes, resources.RouteVersionKey{RouteName: routeName, ModelName: cluster.ModelName, Version: cluster.ModelVersion})
 	if len(httpCluster.Routes) == 0 {
@@ -333,7 +342,7 @@ func (xds *SeldonXDSCache) removeRouteFromCluster(routeName string, route resour
 
 	grpcCluster, ok := xds.Clusters[cluster.GrpcCluster]
 	if !ok {
-		return fmt.Errorf("Can't find grpc cluster for route %s cluster %s route %+v", routeName, cluster.GrpcCluster, route)
+		return fmt.Errorf("can't find grpc cluster for route %s cluster %s route %+v", routeName, cluster.GrpcCluster, route)
 	}
 	delete(grpcCluster.Routes, resources.RouteVersionKey{RouteName: routeName, ModelName: cluster.ModelName, Version: cluster.ModelVersion})
 	if len(grpcCluster.Routes) == 0 {
