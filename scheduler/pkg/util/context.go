@@ -18,9 +18,8 @@ import (
 )
 
 // Extract tracing context from Kafka message
-func CreateContextFromKafkaMsg(msg *kafka.Message) (context.Context, context.CancelFunc) {
+func CreateContextFromKafkaMsg(msg *kafka.Message) context.Context {
 	ctx := context.Background()
 	carrierIn := splunkkafka.NewMessageCarrier(msg)
-	ctx = otel.GetTextMapPropagator().Extract(ctx, carrierIn)
-	return context.WithTimeout(ctx, inferTimeoutDefault)
+	return otel.GetTextMapPropagator().Extract(ctx, carrierIn)
 }
