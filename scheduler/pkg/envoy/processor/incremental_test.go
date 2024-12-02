@@ -866,7 +866,7 @@ func TestEnvoySettings(t *testing.T) {
 
 			resultingRoutes := getResultingRoutes(inc.xdsCache.RouteContents())
 
-			data, err := os.ReadFile(snapshots_directory_name + routeFilename)
+			data, err := os.ReadFile(snapshots_directory_name + "/" + routeFilename)
 			g.Expect(err).To(BeNil())
 
 			var rawMessages []json.RawMessage
@@ -898,7 +898,7 @@ func TestEnvoySettings(t *testing.T) {
 
 			resultingClusters := getResultingClusters(inc.xdsCache.ClusterContents())
 
-			data, err = os.ReadFile("snapshots/" + clusterFilename)
+			data, err = os.ReadFile(snapshots_directory_name + "/" + clusterFilename)
 			g.Expect(err).To(BeNil())
 
 			err = json.Unmarshal(data, &rawMessages)
