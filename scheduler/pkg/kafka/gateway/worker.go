@@ -165,12 +165,11 @@ func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct
 			return
 
 		case job := <-jobChan:
-			ctx, cancel := util.CreateContextFromKafkaMsg(job.msg)
+			ctx := util.CreateContextFromKafkaMsg(job.msg)
 			err := iw.processRequest(ctx, job)
 			if err != nil {
 				iw.logger.WithError(err).Errorf("Failed to process request for model %s", job.modelName)
 			}
-			cancel()
 		}
 	}
 }
