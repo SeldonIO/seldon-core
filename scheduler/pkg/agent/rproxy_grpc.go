@@ -355,7 +355,10 @@ func extractModelNamesFromHeaders(ctx context.Context) (string, string, bool) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if ok {
 		internalModelName := extractHeader(resources.SeldonInternalModelHeader, md)
-		externalModelName := extractHeader(resources.SeldonModelHeader, md)
+		externalModelName, _, err := util.GetOrignalModelNameAndVersion(internalModelName)
+		if err != nil {
+			externalModelName = extractHeader(resources.SeldonModelHeader, md)
+		}
 		return internalModelName, externalModelName, internalModelName != "" && externalModelName != ""
 	}
 	return "", "", false

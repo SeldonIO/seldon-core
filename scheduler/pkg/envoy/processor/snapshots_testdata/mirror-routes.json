@@ -53,7 +53,17 @@
                                     }
                                 ]
                             },
-                            "timeout": "0s"
+                            "timeout": "0s",
+                            "requestMirrorPolicies": [
+                                {
+                                    "cluster": "mirror_http",
+                                    "runtimeFraction": {
+                                        "defaultValue": {
+                                            "numerator": 100
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     {
@@ -101,7 +111,17 @@
                                     }
                                 ]
                             },
-                            "timeout": "0s"
+                            "timeout": "0s",
+                            "requestMirrorPolicies": [
+                                {
+                                    "cluster": "mirror_grpc",
+                                    "runtimeFraction": {
+                                        "defaultValue": {
+                                            "numerator": 100
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     {
@@ -245,7 +265,17 @@
                                     }
                                 ]
                             },
-                            "timeout": "0s"
+                            "timeout": "0s",
+                            "requestMirrorPolicies": [
+                                {
+                                    "cluster": "mirror_http",
+                                    "runtimeFraction": {
+                                        "defaultValue": {
+                                            "numerator": 100
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     {
@@ -293,7 +323,17 @@
                                     }
                                 ]
                             },
-                            "timeout": "0s"
+                            "timeout": "0s",
+                            "requestMirrorPolicies": [
+                                {
+                                    "cluster": "mirror_grpc",
+                                    "runtimeFraction": {
+                                        "defaultValue": {
+                                            "numerator": 100
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 ]

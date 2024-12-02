@@ -28,10 +28,11 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	testing_utils2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
-func setupReverseGRPCService(numModels int, modelPrefix string, backEndGRPCPort, rpPort, backEndServerPort int) *reverseGRPCProxy {
+func setupReverseGRPCService(numModels int, modelPrefix string, backEndGRPCPort, rpPort, backEndServerPort int, metricsHandler metrics.AgentMetricsHandler) *reverseGRPCProxy {
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
 
@@ -41,7 +42,7 @@ func setupReverseGRPCService(numModels int, modelPrefix string, backEndGRPCPort,
 		modelscaling.NewModelReplicaLagsKeeper(), modelscaling.NewModelReplicaLastUsedKeeper(),
 	)
 	rp := NewReverseGRPCProxy(
-		newFakeMetricsHandler(),
+		metricsHandler,
 		logger,
 		"localhost",
 		uint(backEndGRPCPort),
@@ -95,7 +96,8 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	rpGRPC := setupReverseGRPCService(10, dummyModelNamePrefix, backEndGRPCPort, rpPort, serverPort)
+	fakeMetricsHandler := newFakeMetricsHandler()
+	rpGRPC := setupReverseGRPCService(10, dummyModelNamePrefix, backEndGRPCPort, rpPort, serverPort, fakeMetricsHandler)
 	_ = rpGRPC.Start()
 
 	t.Log("Testing model found")
@@ -115,28 +117,28 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	}
 	defer conn.Close()
 
-	doInfer := func(modelSuffix string) (*v2.ModelInferResponse, error) {
+	doInfer := func(modelSuffixInternal, modelSuffix string) (*v2.ModelInferResponse, error) {
 		client := v2.NewGRPCInferenceServiceClient(conn)
 		ctx := context.Background()
-		ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffix, resources.SeldonModelHeader, dummyModelNamePrefix+modelSuffix)
+		ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffixInternal, resources.SeldonModelHeader, dummyModelNamePrefix+modelSuffix)
 		return client.ModelInfer(ctx, &v2.ModelInferRequest{ModelName: dummyModelNamePrefix}) // note without suffix
 	}
 
 	doMeta := func(modelSuffix string) (*v2.ModelMetadataResponse, error) {
 		client := v2.NewGRPCInferenceServiceClient(conn)
 		ctx := context.Background()
-		ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffix, resources.SeldonModelHeader, dummyModelNamePrefix+modelSuffix)
+		ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffix, resources.SeldonModelHeader, dummyModelNamePrefix)
 		return client.ModelMetadata(ctx, &v2.ModelMetadataRequest{Name: dummyModelNamePrefix}) // note without suffix
 	}
 
 	doModelReady := func(modelSuffix string) (*v2.ModelReadyResponse, error) {
 		client := v2.NewGRPCInferenceServiceClient(conn)
 		ctx := context.Background()
-		ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffix, resources.SeldonModelHeader, dummyModelNamePrefix+modelSuffix)
+		ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffix, resources.SeldonModelHeader, dummyModelNamePrefix)
 		return client.ModelReady(ctx, &v2.ModelReadyRequest{Name: dummyModelNamePrefix}) // note without suffix
 	}
 
-	responseInfer, errInfer := doInfer("_0")
+	responseInfer, errInfer := doInfer("_0", ".experiment")
 	g.Expect(errInfer).To(BeNil())
 	g.Expect(responseInfer.ModelName).To(Equal(dummyModelNamePrefix + "_0"))
 	g.Expect(responseInfer.ModelVersion).To(Equal("")) // in practice this should be something else
@@ -144,6 +146,11 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	t.Log("Testing model scaling stats")
 	g.Expect(rpGRPC.modelScalingStatsCollector.ModelLagStats.Get(dummyModelNamePrefix + "_0")).To(Equal(uint32(0)))
 	g.Expect(rpGRPC.modelScalingStatsCollector.ModelLastUsedStats.Get(dummyModelNamePrefix + "_0")).Should(BeNumerically("<=", time.Now().Unix())) // only triggered when we get results back
+
+	t.Log("Testing model infer metrics")
+	g.Expect(fakeMetricsHandler.modelInferState[dummyModelNamePrefix].internalModelName).To(Equal(dummyModelNamePrefix + "_0"))
+	g.Expect(fakeMetricsHandler.modelInferState[dummyModelNamePrefix].method).To(Equal("grpc"))
+	g.Expect(fakeMetricsHandler.modelInferState[dummyModelNamePrefix].code).To(Equal("OK")) // note it is not 200 for grpc, should we change this?
 
 	responseMeta, errMeta := doMeta("_0")
 	g.Expect(responseMeta.Name).To(Equal(dummyModelNamePrefix + "_0"))
@@ -157,13 +164,13 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 
 	t.Log("Testing lazy load")
 	mockMLServerState.setModelServerUnloaded(dummyModelNamePrefix + "_0")
-	responseInfer, errInfer = doInfer("_0")
+	responseInfer, errInfer = doInfer("_0", "")
 	g.Expect(errInfer).To(BeNil())
 	g.Expect(responseInfer.ModelName).To(Equal(dummyModelNamePrefix + "_0"))
 	g.Expect(responseInfer.ModelVersion).To(Equal("")) // in practice this should be something else
 
 	t.Log("Testing model not found")
-	_, errInfer = doInfer("_1")
+	_, errInfer = doInfer("_1", "")
 	g.Expect(errInfer).NotTo(BeNil())
 	g.Expect(mockMLServerState.isModelLoaded(dummyModelNamePrefix + "_1")).To(Equal(false))
 
@@ -184,7 +191,8 @@ func TestReverseGRPCServiceEarlyStop(t *testing.T) {
 
 	dummyModelNamePrefix := "dummy_model"
 
-	rpGRPC := setupReverseGRPCService(0, dummyModelNamePrefix, 1, 1, 1)
+	fakeMetricsHandler := newFakeMetricsHandler()
+	rpGRPC := setupReverseGRPCService(0, dummyModelNamePrefix, 1, 1, 1, fakeMetricsHandler)
 	err := rpGRPC.Stop()
 	g.Expect(err).To(BeNil())
 	ready := rpGRPC.Ready()

@@ -120,32 +120,6 @@
         "dnsLookupFamily": "V4_ONLY"
     },
     {
-        "name": "model3_1_http",
-        "type": "STRICT_DNS",
-        "connectTimeout": "5s",
-        "lbPolicy": "LEAST_REQUEST",
-        "loadAssignment": {
-            "clusterName": "model3_1_http",
-            "endpoints": [
-                {
-                    "lbEndpoints": [
-                        {
-                            "endpoint": {
-                                "address": {
-                                    "socketAddress": {
-                                        "address": "server.1",
-                                        "portValue": 1234
-                                    }
-                                }
-                            }
-                        }
-                    ]
-                }
-            ]
-        },
-        "dnsLookupFamily": "V4_ONLY"
-    },
-    {
         "name": "model3_1_grpc",
         "type": "STRICT_DNS",
         "connectTimeout": "5s",
@@ -296,6 +270,32 @@
                     "http2ProtocolOptions": {}
                 }
             }
+        },
+        "dnsLookupFamily": "V4_ONLY"
+    },
+    {
+        "name": "model3_1_http",
+        "type": "STRICT_DNS",
+        "connectTimeout": "5s",
+        "lbPolicy": "LEAST_REQUEST",
+        "loadAssignment": {
+            "clusterName": "model3_1_http",
+            "endpoints": [
+                {
+                    "lbEndpoints": [
+                        {
+                            "endpoint": {
+                                "address": {
+                                    "socketAddress": {
+                                        "address": "server.1",
+                                        "portValue": 1234
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
         },
         "dnsLookupFamily": "V4_ONLY"
     }

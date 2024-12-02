@@ -41,7 +41,9 @@ import (
 
 // Set this flag if you want to regenerate all of the snapshot files.
 // It should always default to false.
-var generateSnapshots *bool = flag.Bool("generate.envoy.snapshot.files", false, "Regenerate the snapshots of the envoy configs")
+var generateSnapshots bool = *flag.Bool("generate.envoy.snapshot.files", false, "Regenerate the snapshots of the envoy configs")
+
+const snapshots_directory_name = "snapshots_testdata"
 
 func TestGetTrafficShare(t *testing.T) {
 	g := NewGomegaWithT(t)
@@ -858,13 +860,13 @@ func TestEnvoySettings(t *testing.T) {
 			// Check snapshots
 
 			routeFilename := test.snapshotFilename + "-routes.json"
-			if *generateSnapshots {
+			if generateSnapshots {
 				createSnapshot(g, inc.xdsCache.RouteContents(), routeFilename)
 			}
 
 			resultingRoutes := getResultingRoutes(inc.xdsCache.RouteContents())
 
-			data, err := os.ReadFile("snapshots/" + routeFilename)
+			data, err := os.ReadFile(snapshots_directory_name + "/" + routeFilename)
 			g.Expect(err).To(BeNil())
 
 			var rawMessages []json.RawMessage
@@ -890,13 +892,13 @@ func TestEnvoySettings(t *testing.T) {
 			g.Expect(len(resultingRoutes)).To(Equal(count))
 
 			clusterFilename := test.snapshotFilename + "-clusters.json"
-			if *generateSnapshots {
+			if generateSnapshots {
 				createSnapshot(g, inc.xdsCache.ClusterContents(), clusterFilename)
 			}
 
 			resultingClusters := getResultingClusters(inc.xdsCache.ClusterContents())
 
-			data, err = os.ReadFile("snapshots/" + clusterFilename)
+			data, err = os.ReadFile(snapshots_directory_name + "/" + clusterFilename)
 			g.Expect(err).To(BeNil())
 
 			err = json.Unmarshal(data, &rawMessages)
@@ -957,7 +959,7 @@ func createSnapshot(g Gomega, resources []types.Resource, filename string) {
 	jsonData = append(jsonData, ']')
 
 	// Write the JSON data to a file
-	file, err := os.Create("snapshots/" + filename)
+	file, err := os.Create(snapshots_directory_name + "/" + filename)
 	g.Expect(err).To(BeNil())
 
 	defer file.Close()
@@ -972,7 +974,7 @@ func getTrafficSplits(virtualHost *routev3.VirtualHost) []resources.Route {
 	for _, route := range virtualHost.Routes {
 		trafficSplit := resources.Route{
 			RouteName: route.Name,
-			Clusters:  make([]resources.TrafficSplit, 0),
+			Clusters:  make([]resources.TrafficSplits, 0),
 		}
 
 		clusterSpecificer := route.GetRoute().GetClusterSpecifier()
@@ -984,14 +986,14 @@ func getTrafficSplits(virtualHost *routev3.VirtualHost) []resources.Route {
 			weightedClusters := route.GetRoute().GetClusterSpecifier().(*routev3.RouteAction_WeightedClusters)
 
 			for _, weightedCluster := range weightedClusters.WeightedClusters.Clusters {
-				trafficSplit.Clusters = append(trafficSplit.Clusters, resources.TrafficSplit{
+				trafficSplit.Clusters = append(trafficSplit.Clusters, resources.TrafficSplits{
 					ModelName:     weightedCluster.Name,
 					TrafficWeight: weightedCluster.Weight.Value,
 				})
 			}
 		case *routev3.RouteAction_Cluster:
 			cluster := route.GetRoute().GetClusterSpecifier().(*routev3.RouteAction_Cluster)
-			trafficSplit.Clusters = append(trafficSplit.Clusters, resources.TrafficSplit{
+			trafficSplit.Clusters = append(trafficSplit.Clusters, resources.TrafficSplits{
 				ModelName:     cluster.Cluster,
 				TrafficWeight: 100,
 			})
