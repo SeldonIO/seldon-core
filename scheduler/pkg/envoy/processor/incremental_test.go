@@ -1000,6 +1000,8 @@ func getTrafficSplits(virtualHost *routev3.VirtualHost) []resources.Route {
 
 		}
 
+		trafficSplits = append(trafficSplits, trafficSplit)
+
 	}
 
 	return trafficSplits

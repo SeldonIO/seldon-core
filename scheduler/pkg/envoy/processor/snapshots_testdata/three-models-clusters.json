@@ -120,6 +120,40 @@
         "dnsLookupFamily": "V4_ONLY"
     },
     {
+        "name": "model2_1_grpc",
+        "type": "STRICT_DNS",
+        "connectTimeout": "5s",
+        "lbPolicy": "LEAST_REQUEST",
+        "loadAssignment": {
+            "clusterName": "model2_1_grpc",
+            "endpoints": [
+                {
+                    "lbEndpoints": [
+                        {
+                            "endpoint": {
+                                "address": {
+                                    "socketAddress": {
+                                        "address": "server.1",
+                                        "portValue": 0
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "typedExtensionProtocolOptions": {
+            "envoy.extensions.upstreams.http.v3.HttpProtocolOptions": {
+                "@type": "type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions",
+                "explicitHttpConfig": {
+                    "http2ProtocolOptions": {}
+                }
+            }
+        },
+        "dnsLookupFamily": "V4_ONLY"
+    },
+    {
         "name": "model1_1_http",
         "type": "STRICT_DNS",
         "connectTimeout": "5s",
@@ -202,40 +236,6 @@
                     ]
                 }
             ]
-        },
-        "dnsLookupFamily": "V4_ONLY"
-    },
-    {
-        "name": "model2_1_grpc",
-        "type": "STRICT_DNS",
-        "connectTimeout": "5s",
-        "lbPolicy": "LEAST_REQUEST",
-        "loadAssignment": {
-            "clusterName": "model2_1_grpc",
-            "endpoints": [
-                {
-                    "lbEndpoints": [
-                        {
-                            "endpoint": {
-                                "address": {
-                                    "socketAddress": {
-                                        "address": "server.1",
-                                        "portValue": 0
-                                    }
-                                }
-                            }
-                        }
-                    ]
-                }
-            ]
-        },
-        "typedExtensionProtocolOptions": {
-            "envoy.extensions.upstreams.http.v3.HttpProtocolOptions": {
-                "@type": "type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions",
-                "explicitHttpConfig": {
-                    "http2ProtocolOptions": {}
-                }
-            }
         },
         "dnsLookupFamily": "V4_ONLY"
     }

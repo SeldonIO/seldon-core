@@ -157,7 +157,7 @@ func createMirrorRouteAction(trafficWeight uint32, rest bool) []*route.RouteActi
 
 // weighted clusters do not play well with session affinity see https://github.com/envoyproxy/envoy/issues/8167
 // Traffic shifting may need to be reinvesigated https://github.com/envoyproxy/envoy/pull/18207
-func createWeightedModelClusterAction(clusterTraffics []TrafficSplit, mirrorTraffics []TrafficSplit, rest bool) *route.Route_Route {
+func createWeightedModelClusterAction(clusterTraffics []TrafficSplit, mirrorTraffic *TrafficSplit, rest bool) *route.Route_Route {
 	// Add Weighted Clusters with given traffic percentages to each internal model
 	var splits []*route.WeightedCluster_ClusterWeight
 	var mirrors []*route.RouteAction_RequestMirrorPolicy
@@ -201,8 +201,8 @@ func createWeightedModelClusterAction(clusterTraffics []TrafficSplit, mirrorTraf
 			})
 
 	}
-	if len(mirrorTraffics) > 0 {
-		mirrors = createMirrorRouteAction(mirrorTraffics[0].TrafficWeight, rest)
+	if mirrorTraffic != nil {
+		mirrors = createMirrorRouteAction(mirrorTraffic.TrafficWeight, rest)
 	}
 	action := &route.Route_Route{
 		Route: &route.RouteAction{
@@ -263,9 +263,9 @@ func makeModelHttpRoute(r *Route, rt *route.Route, isMirror bool) {
 	}
 
 	if isMirror {
-		rt.Action = createWeightedModelClusterAction([]TrafficSplit{*r.Mirror}, []TrafficSplit{}, true)
+		rt.Action = createWeightedModelClusterAction([]TrafficSplit{*r.Mirror}, nil, true)
 	} else {
-		rt.Action = createWeightedModelClusterAction(r.Clusters, []TrafficSplit{}, true)
+		rt.Action = createWeightedModelClusterAction(r.Clusters, r.Mirror, true)
 	}
 
 	if r.LogPayloads {
@@ -373,9 +373,9 @@ func makeModelGrpcRoute(r *Route, rt *route.Route, isMirror bool) {
 	}
 
 	if isMirror {
-		rt.Action = createWeightedModelClusterAction([]TrafficSplit{*r.Mirror}, []TrafficSplit{}, false)
+		rt.Action = createWeightedModelClusterAction([]TrafficSplit{*r.Mirror}, nil, false)
 	} else {
-		rt.Action = createWeightedModelClusterAction(r.Clusters, []TrafficSplit{}, false)
+		rt.Action = createWeightedModelClusterAction(r.Clusters, r.Mirror, false)
 	}
 
 	if r.LogPayloads {
@@ -392,7 +392,7 @@ func getPipelineModelName(pipelineName string) string {
 	return fmt.Sprintf("%s.%s", pipelineName, SeldonPipelineHeaderSuffix)
 }
 
-func createWeightedPipelineClusterAction(clusterTraffics []PipelineTrafficSplit, mirrorTraffics []PipelineTrafficSplit, rest bool) *route.Route_Route {
+func createWeightedPipelineClusterAction(clusterTraffics []PipelineTrafficSplit, mirrorTraffic *PipelineTrafficSplit, rest bool) *route.Route_Route {
 	// Add Weighted Clusters with given traffic percentages to each internal model
 	var splits []*route.WeightedCluster_ClusterWeight
 	var mirrors []*route.RouteAction_RequestMirrorPolicy
@@ -428,8 +428,8 @@ func createWeightedPipelineClusterAction(clusterTraffics []PipelineTrafficSplit,
 			})
 
 	}
-	if len(mirrorTraffics) > 0 {
-		mirrors = createMirrorRouteAction(mirrorTraffics[0].TrafficWeight, rest)
+	if mirrorTraffic != nil {
+		mirrors = createMirrorRouteAction(mirrorTraffic.TrafficWeight, rest)
 	}
 	action := &route.Route_Route{
 		Route: &route.RouteAction{
@@ -466,9 +466,9 @@ func makePipelineHttpRoute(r *PipelineRoute, rt *route.Route, isMirror bool) {
 	}
 
 	if isMirror {
-		rt.Action = createWeightedPipelineClusterAction([]PipelineTrafficSplit{*r.Mirror}, []PipelineTrafficSplit{}, true)
+		rt.Action = createWeightedPipelineClusterAction([]PipelineTrafficSplit{*r.Mirror}, nil, true)
 	} else {
-		rt.Action = createWeightedPipelineClusterAction(r.Clusters, []PipelineTrafficSplit{}, true)
+		rt.Action = createWeightedPipelineClusterAction(r.Clusters, r.Mirror, true)
 	}
 }
 
@@ -493,9 +493,9 @@ func makePipelineGrpcRoute(r *PipelineRoute, rt *route.Route, isMirror bool) {
 	}
 
 	if isMirror {
-		rt.Action = createWeightedPipelineClusterAction([]PipelineTrafficSplit{*r.Mirror}, []PipelineTrafficSplit{}, false)
+		rt.Action = createWeightedPipelineClusterAction([]PipelineTrafficSplit{*r.Mirror}, nil, false)
 	} else {
-		rt.Action = createWeightedPipelineClusterAction(r.Clusters, []PipelineTrafficSplit{}, false)
+		rt.Action = createWeightedPipelineClusterAction(r.Clusters, r.Mirror, false)
 	}
 }
 
