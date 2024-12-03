@@ -120,66 +120,6 @@
         "dnsLookupFamily": "V4_ONLY"
     },
     {
-        "name": "model1_1_http",
-        "type": "STRICT_DNS",
-        "connectTimeout": "5s",
-        "lbPolicy": "LEAST_REQUEST",
-        "loadAssignment": {
-            "clusterName": "model1_1_http",
-            "endpoints": [
-                {
-                    "lbEndpoints": [
-                        {
-                            "endpoint": {
-                                "address": {
-                                    "socketAddress": {
-                                        "address": "server.0",
-                                        "portValue": 1234
-                                    }
-                                }
-                            }
-                        }
-                    ]
-                }
-            ]
-        },
-        "dnsLookupFamily": "V4_ONLY"
-    },
-    {
-        "name": "model1_1_grpc",
-        "type": "STRICT_DNS",
-        "connectTimeout": "5s",
-        "lbPolicy": "LEAST_REQUEST",
-        "loadAssignment": {
-            "clusterName": "model1_1_grpc",
-            "endpoints": [
-                {
-                    "lbEndpoints": [
-                        {
-                            "endpoint": {
-                                "address": {
-                                    "socketAddress": {
-                                        "address": "server.0",
-                                        "portValue": 0
-                                    }
-                                }
-                            }
-                        }
-                    ]
-                }
-            ]
-        },
-        "typedExtensionProtocolOptions": {
-            "envoy.extensions.upstreams.http.v3.HttpProtocolOptions": {
-                "@type": "type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions",
-                "explicitHttpConfig": {
-                    "http2ProtocolOptions": {}
-                }
-            }
-        },
-        "dnsLookupFamily": "V4_ONLY"
-    },
-    {
         "name": "model2_2_http",
         "type": "STRICT_DNS",
         "connectTimeout": "5s",
@@ -220,6 +160,66 @@
                                 "address": {
                                     "socketAddress": {
                                         "address": "server.1",
+                                        "portValue": 0
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "typedExtensionProtocolOptions": {
+            "envoy.extensions.upstreams.http.v3.HttpProtocolOptions": {
+                "@type": "type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions",
+                "explicitHttpConfig": {
+                    "http2ProtocolOptions": {}
+                }
+            }
+        },
+        "dnsLookupFamily": "V4_ONLY"
+    },
+    {
+        "name": "model1_1_http",
+        "type": "STRICT_DNS",
+        "connectTimeout": "5s",
+        "lbPolicy": "LEAST_REQUEST",
+        "loadAssignment": {
+            "clusterName": "model1_1_http",
+            "endpoints": [
+                {
+                    "lbEndpoints": [
+                        {
+                            "endpoint": {
+                                "address": {
+                                    "socketAddress": {
+                                        "address": "server.0",
+                                        "portValue": 1234
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "dnsLookupFamily": "V4_ONLY"
+    },
+    {
+        "name": "model1_1_grpc",
+        "type": "STRICT_DNS",
+        "connectTimeout": "5s",
+        "lbPolicy": "LEAST_REQUEST",
+        "loadAssignment": {
+            "clusterName": "model1_1_grpc",
+            "endpoints": [
+                {
+                    "lbEndpoints": [
+                        {
+                            "endpoint": {
+                                "address": {
+                                    "socketAddress": {
+                                        "address": "server.0",
                                         "portValue": 0
                                     }
                                 }
