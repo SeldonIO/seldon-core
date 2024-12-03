@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -102,7 +103,9 @@ func (drainer *DrainerService) Stop() error {
 	defer drainer.muServerReady.Unlock()
 	var err error
 	if drainer.server != nil {
-		err = drainer.server.Shutdown(context.Background())
+		ctx, cancel := context.WithTimeout(context.Background(), util.ServerControlPlaneTimeout)
+		defer cancel()
+		err = drainer.server.Shutdown(ctx)
 	}
 	drainer.serverReady = false
 	drainer.logger.Info("Finished graceful shutdown")
