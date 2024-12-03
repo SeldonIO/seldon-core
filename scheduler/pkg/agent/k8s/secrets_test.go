@@ -67,7 +67,7 @@ parameters:
 		t.Run(test.name, func(t *testing.T) {
 			fakeClientset := fake.NewSimpleClientset(test.secret)
 			s := NewSecretsHandler(fakeClientset, test.secret.Namespace)
-			data, err := s.GetSecretConfig(test.secretName)
+			data, err := s.GetSecretConfig(test.secretName, 1)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
 			} else {
