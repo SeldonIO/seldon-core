@@ -15,12 +15,24 @@ and servers (single-model serving). This will require:
 
 {% hint style="warning" %}
 The Core 2 HPA-based autoscaling has the following constraints/limitations:
-
-- HPA-scaling only works for single-model serving (1-1 correspondence between models and servers). Multi-model serving autoscaling is supported via the existing features described [here](autoscaling.md). Those continue to be improved targeting seamless autoscaling of a wider set of models and workloads.
-
-- **Only custom metrics** coming from Prometheus are supported; In particular, native k8s resource metrics such as CPU or memory will not work. This is because of a limitation introduced by HPA which does not allow scaling of both Models and Servers based on metrics gathered from the same set of pods (one HPA manifest needs to "own" those pods).
-
-- K8s clusters only allow for one provider of custom metrics to be installed at a time  (prometheus-adapter in Seldon's case). The K8s community is looking into ways of removing this limitation.
+    * HPA scaling only targets single-model serving, where there is a 1:1 correspondence between
+    models and servers. Autoscaling for multi-model serving (MMS) is supported for specific models
+    and workloads via the Core 2 native features described [here](autoscaling.md).
+    Significant improvements to MMS autoscaling are planned for future releases.
+    * **Only custom metrics** from Prometheus are supported. Native Kubernetes
+    resource metrics such as CPU or memory are not. This limitation exists because of HPA's
+    design: In order to prevent multiple HPA CRs from issuing conflicting scaling instructions,
+    each HPA CR must exclusively control a set of pods which is disjoint from the pods
+    controlled by other HPA CRs. In Seldon Core 2, CPU/memory metrics can be used to scale the
+    number of Server replicas via HPA. However, this also means that the CPU/memory metrics
+    from the same set of pods can no longer be used to scale the number of model replicas. We
+    are working on improvements in Core 2 to allow both servers and models to be scaled based on
+    a single HPA manifest, targeting the Model CR.
+    * Each Kubernetes cluster supports only one active custom metrics provider. If your cluster
+    already uses a custom metrics provider different from `prometheus-adapter`, it
+    will need to be removed before being able to scale Core 2 models and servers via HPA. The
+    Kubernetes is actively exploring solutions for allowing multiple custom metrics providers to
+    coexist.
 {% endhint %}
 
 ## Installing and configuring the Prometheus Adapter
@@ -46,6 +58,14 @@ If you are running Prometheus on a different port than the default 9090, you can
 prometheus.port=[custom_port]` You may inspect all the options available as helm values by
 running `helm show values prometheus-community/prometheus-adapter`
 
+{% hint style="warning" %}
+Please check that the `metricsRelistInterval` helm value (default to 1m) works well in your
+setup, and update it otherwise. This value needs to be larger than or equal to your Prometheus
+scrape interval. The corresponding prometheus adapter command-line argument is
+`--metrics-relist-interval`. If the relist interval is set incorrectly, it will lead to some of
+the custom metrics being intermittently reported as missing.
+{% endhint %}
+
 We now need to configure the adapter to look for the correct prometheus metrics and compute
 per-model RPS values. On install, the adapter has created a `ConfigMap` in the same namespace as
 itself, named `[helm_release_name]-prometheus-adapter`. In our case, it will be
@@ -70,10 +90,7 @@ data:
     "rules":
     -
       "seriesQuery": |
-         {__name__=~"^seldon_model.*_total",namespace!=""}
-      "seriesFilters":
-        - "isNot": "^seldon_.*_seconds_total"
-        - "isNot": "^seldon_.*_aggregate_.*"
+         {__name__="seldon_model_infer_total",namespace!=""}
       "resources":
         "overrides":
           "model": {group: "mlops.seldon.io", resource: "model"}
@@ -81,8 +98,8 @@ data:
           "pod": {resource: "pod"}
           "namespace": {resource: "namespace"}
       "name":
-        "matches": "^seldon_model_(.*)_total"
-        "as": "${1}_rps"
+        "matches": "seldon_model_infer_total"
+        "as": "infer_rps"
       "metricsQuery": |
         sum by (<<.GroupBy>>) (
           rate (
@@ -94,10 +111,37 @@ data:
 
 In this example, a single rule is defined to fetch the `seldon_model_infer_total` metric
 from Prometheus, compute its rate over a 1 minute window, and expose this to k8s as the `infer_rps`
-metric, with aggregations at model, server, inference server pod and namespace level.
+metric, with aggregations available at model, server, inference server pod and namespace level.
 
-A list of all the Prometheus metrics exposed by Seldon Core 2 in relation to Models, Servers and Pipelines is available [here](../metrics/operational.md),
-and those may be used when customizing the configuration.
+When HPA requests the `infer_rps` metric via the custom metrics API for a specific model,
+prometheus-adapter issues a Prometheus query in line with what it is defined in its config.
+
+For the configuration in our example, the query for a model named `irisa0` in namespace
+`seldon-mesh` would be:
+
+```
+sum by (model) (
+  rate (
+    seldon_model_infer_total{model="irisa0", namespace="seldon-mesh"}[1m]
+  )
+)
+```
+
+Before updating the ConfigMap, it is important to sanity-check the query by executing it against
+your Prometheus instance. To do so, pick an existing model CR in your Seldon Core 2 install, and
+send some inference requests towards it. Then, wait for a period equal to the Prometheus scrape
+interval (Prometheus default 1 minute) so that the metric values are updated. Finally, you can
+modify the model name and namespace in the query above to match the model you've picked and
+execute the query.
+
+If the query result is non-empty, you may proceed with the next steps, or customize the query
+according to your needs and re-test. If the query result is empty, please adjust it until it
+returns the expected metric values. Update the `metricsQuery` in the prometheus-adapter
+ConfigMap to match.
+
+A list of all the Prometheus metrics exposed by Seldon Core 2 in relation to Models, Servers and
+Pipelines is available [here](../metrics/operational.md), and those may be used when customizing
+the configuration.
 
 ### Understanding prometheus-adapter rule definitions
 
@@ -106,10 +150,20 @@ The rule definition can be broken down in four parts:
 * _Discovery_ (the `seriesQuery` and `seriesFilters` keys) controls what Prometheus
     metrics are considered for exposure via the k8s custom metrics API.
 
-  In the example, all the Seldon Prometheus metrics of the form `seldon_model_*_total` are
-  considered, excluding metrics pre-aggregated across all models (`.*_aggregate_.*`) as well as
-  the cummulative infer time per model (`.*_seconds_total`). For RPS, we are only interested in
-  the model inference count (`seldon_model_infer_total`)
+  As an alternative to the example above, all the Seldon Prometheus metrics of the form `seldon_model.*_total`
+  could be considered, followed by excluding metrics pre-aggregated across all models (`.*_aggregate_.*`) as well as
+  the cummulative infer time per model (`.*_seconds_total`):
+
+    ```yaml
+    "seriesQuery": |
+            {__name__=~"^seldon_model.*_total",namespace!=""}
+        "seriesFilters":
+            - "isNot": "^seldon_.*_seconds_total"
+            - "isNot": "^seldon_.*_aggregate_.*"
+    ...
+    ```
+
+  For RPS, we are only interested in the model inference count (`seldon_model_infer_total`)
 
 * _Association_ (the `resources` key) controls the Kubernetes resources that a particular
     metric can be attached to or aggregated over.
@@ -135,8 +189,14 @@ The rule definition can be broken down in four parts:
   `seldon_model_infer_total` and expose custom metric endpoints named `infer_rps`, which when
   called return the result of a query over the Prometheus metric.
 
-  The matching over the Prometheus metric name uses regex group capture expressions (line 22),
-  which are then be referenced in the custom metric name (line 23).
+  Instead of a literal match, one could also use regex group capture expressions,
+  which can then be referenced in the custom metric name:
+
+  ```yaml
+  "name":
+    "matches": "^seldon_model_(.*)_total"
+    "as": "${1}_rps"
+  ```
 
 * _Querying_ (the `metricsQuery` key) defines how a request for a specific k8s custom metric gets
     converted into a Prometheus query.
@@ -158,7 +218,6 @@ The rule definition can be broken down in four parts:
 
 For a complete reference for how `prometheus-adapter` can be configured via the `ConfigMap`, please
 consult the docs [here](https://github.com/kubernetes-sigs/prometheus-adapter/blob/master/docs/config.md).
-
 
 
 Once you have applied any necessary customizations, replace the default prometheus-adapter config
@@ -431,7 +490,8 @@ inspecting the corresponding Server HPA CR, or by fetching the metric directly v
 
 *   Filtering metrics by additional labels on the prometheus metric:
 
-    The prometheus metric from which the model RPS is computed has the following labels:
+    The prometheus metric from which the model RPS is computed has the following labels managed
+    by Seldon Core 2:
 
     ```c-like
     seldon_model_infer_total{
@@ -450,9 +510,11 @@ inspecting the corresponding Server HPA CR, or by fetching the metric directly v
     }
     ```
 
-    If you want the scaling metric to be computed based on inferences with a particular value
-    for any of those labels, you can add this in the HPA metric config, as in the example
-    (targeting `method_type="rest"`):
+    If you want the scaling metric to be computed based on a subset of the Prometheus time
+    series with particular label values (labels either managed by Seldon Core 2 or added
+    automatically within your infrastructure), you can add this as a selector the HPA metric
+    config. This is shown in the following example, which scales only based on the RPS of REST
+    requests as opposed to REST + gRPC:
 
     ```yaml
       metrics:
@@ -471,6 +533,7 @@ inspecting the corresponding Server HPA CR, or by fetching the metric directly v
     	    type: AverageValue
             averageValue: "3"
     ```
+
 *   Customize scale-up / scale-down rate & properties by using scaling policies as described in
     the [HPA scaling policies docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#configurable-scaling-behavior)
 
