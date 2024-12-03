@@ -20,6 +20,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
@@ -166,7 +167,7 @@ func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct
 
 		case job := <-jobChan:
 			ctx := util.CreateContextFromKafkaMsg(job.msg)
-			err := iw.processRequest(ctx, job)
+			err := iw.processRequest(ctx, job, util.InferTimeoutDefault)
 			if err != nil {
 				iw.logger.WithError(err).Errorf("Failed to process request for model %s", job.modelName)
 			}
@@ -174,8 +175,8 @@ func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct
 	}
 }
 
-func (iw *InferWorker) processRequest(ctx context.Context, job *InferWork) error {
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, util.InferTimeoutDefault)
+func (iw *InferWorker) processRequest(ctx context.Context, job *InferWork, timeout time.Duration) error {
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	// Has Type Header

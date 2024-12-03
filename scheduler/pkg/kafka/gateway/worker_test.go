@@ -455,6 +455,16 @@ func TestProcessRequest(t *testing.T) {
 			restCalls: 1,
 			timeout:   util.InferTimeoutDefault,
 		},
+		{
+			name: "grpc request with header - timeout",
+			job: &InferWork{
+				modelName: "foo",
+				headers:   map[string]string{HeaderKeyType: HeaderValueProtoReq},
+				msg:       &kafka.Message{Value: getProtoBytes(testRequest), Key: []byte{}},
+			},
+			grpcCalls: 0, // grpc call will not be made as it will timeout
+			timeout:   time.Nanosecond * 1,
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
