@@ -49,10 +49,10 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 		}
 		logger.Info("Received event to handle state", "event", event)
 
-		fn := func() error {
+		fn := func(ctx context.Context) error {
 			return s.handleStateOnReconnect(ctx, grpcClient, namespace, event.GetEvent())
 		}
-		_, err = execWithTimeout(fn, execTimeOut)
+		_, err = execWithTimeout(ctx, fn, execTimeOut)
 		if err != nil {
 			logger.Error(err, "Failed to handle state on reconnect")
 			return err
@@ -64,10 +64,14 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 	return nil
 }
 
-func execWithTimeout(f func() error, d time.Duration) (bool, error) {
+func execWithTimeout(baseContext context.Context, f func(ctx context.Context) error, d time.Duration) (bool, error) {
+	// cancel the context after the timeout
+	ctxWithCancel, cancel := context.WithCancel(baseContext)
+	defer cancel()
+
 	errChan := make(chan error, 1)
 	go func() {
-		errChan <- f()
+		errChan <- f(ctxWithCancel)
 		close(errChan)
 	}()
 	t := time.NewTimer(d)
