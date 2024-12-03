@@ -155,7 +155,7 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 				Debugf("received message")
 
 			if val, ok := c.requests.Get(string(e.Key)); ok {
-				ctx := util.CreateContextFromKafkaMsg(e)
+				ctx := util.CreateBaseContextFromKafkaMsg(e)
 
 				// Add tracing span
 				_, span := c.tracer.Start(ctx, "Consume")
