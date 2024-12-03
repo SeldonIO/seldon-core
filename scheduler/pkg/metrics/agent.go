@@ -18,6 +18,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
@@ -521,7 +522,9 @@ func (pm *PrometheusMetrics) Start(port int) error {
 func (pm *PrometheusMetrics) Stop() error {
 	pm.logger.Info("Graceful shutdown")
 	if pm.server != nil {
-		return pm.server.Shutdown(context.Background())
+		ctx, cancel := context.WithTimeout(context.Background(), util.ServerControlPlaneTimeout)
+		defer cancel()
+		return pm.server.Shutdown(ctx)
 	}
 	return nil
 }

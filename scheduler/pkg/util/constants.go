@@ -51,6 +51,11 @@ const (
 	K8sTimeoutDefault = 2 * time.Minute
 )
 
+// Servers control plane
+const (
+	ServerControlPlaneTimeout = time.Second * 5
+)
+
 // inference
 const (
 	InferTimeoutDefault = 10 * time.Minute // TODO: expose this as a config (map)?
