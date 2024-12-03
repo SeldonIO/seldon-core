@@ -46,6 +46,11 @@ const (
 	GRPCControlPlaneTimeout      = 1 * time.Minute // For control plane operations except load/unload
 )
 
+// K8s API
+const (
+	K8sTimeoutDefault = 2 * time.Minute
+)
+
 // inference
 const (
 	InferTimeoutDefault = 10 * time.Minute // TODO: expose this as a config (map)?
