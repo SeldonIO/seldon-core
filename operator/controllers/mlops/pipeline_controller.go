@@ -49,7 +49,7 @@ func (r *PipelineReconciler) handleFinalizer(
 		// Add our finalizer
 		if !utils.ContainsStr(pipeline.ObjectMeta.Finalizers, constants.PipelineFinalizerName) {
 			pipeline.ObjectMeta.Finalizers = append(pipeline.ObjectMeta.Finalizers, constants.PipelineFinalizerName)
-			if err := r.Update(context.Background(), pipeline); err != nil {
+			if err := r.Update(ctx, pipeline); err != nil {
 				return true, err
 			}
 		}

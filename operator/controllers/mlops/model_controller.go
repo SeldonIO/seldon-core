@@ -46,7 +46,7 @@ func (r *ModelReconciler) handleFinalizer(ctx context.Context, logger logr.Logge
 		// Add our finalizer
 		if !utils.ContainsStr(model.ObjectMeta.Finalizers, constants.ModelFinalizerName) {
 			model.ObjectMeta.Finalizers = append(model.ObjectMeta.Finalizers, constants.ModelFinalizerName)
-			if err := r.Update(context.Background(), model); err != nil {
+			if err := r.Update(ctx, model); err != nil {
 				return true, err
 			}
 		}

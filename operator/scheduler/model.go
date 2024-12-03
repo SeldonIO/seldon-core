@@ -161,10 +161,12 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 		// Handle terminated event to remove finalizer
 		if canRemoveFinalizer(latestVersionStatus.State.State) {
 			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-				latestModel := &v1alpha1.Model{}
+				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallTimeout)
+				defer cancel()
 
+				latestModel := &v1alpha1.Model{}
 				err = s.Get(
-					ctx,
+					ctxWithTimeout,
 					client.ObjectKey{
 						Name:      event.ModelName,
 						Namespace: latestVersionStatus.GetKubernetesMeta().Namespace,
@@ -181,7 +183,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 						latestModel.ObjectMeta.Finalizers,
 						constants.ModelFinalizerName,
 					)
-					if err := s.Update(ctx, latestModel); err != nil {
+					if err := s.Update(ctxWithTimeout, latestModel); err != nil {
 						logger.Error(err, "Failed to remove finalizer", "model", latestModel.GetName())
 						return err
 					}
@@ -195,70 +197,75 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 		}
 
 		// Try to update status
-		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-			latestModel := &v1alpha1.Model{}
+		{
+			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallTimeout)
+				defer cancel()
 
-			err = s.Get(
-				ctx,
-				client.ObjectKey{
-					Name:      event.ModelName,
-					Namespace: latestVersionStatus.GetKubernetesMeta().Namespace,
-				},
-				latestModel,
-			)
-			if err != nil {
-				return err
+				latestModel := &v1alpha1.Model{}
+
+				err = s.Get(
+					ctxWithTimeout,
+					client.ObjectKey{
+						Name:      event.ModelName,
+						Namespace: latestVersionStatus.GetKubernetesMeta().Namespace,
+					},
+					latestModel,
+				)
+				if err != nil {
+					return err
+				}
+
+				if latestVersionStatus.GetKubernetesMeta().Generation != latestModel.Generation {
+					logger.Info(
+						"Ignoring event for old generation",
+						"currentGeneration", latestModel.Generation,
+						"eventGeneration", latestVersionStatus.GetKubernetesMeta().Generation,
+						"model", event.ModelName,
+					)
+					return nil
+				}
+
+				// Handle status update
+				modelStatus := latestVersionStatus.GetState()
+				switch modelStatus.GetState() {
+				case scheduler.ModelStatus_ModelAvailable:
+					logger.Info(
+						"Setting model to ready",
+						"name", event.ModelName,
+						"state", modelStatus.GetState().String(),
+					)
+					latestModel.Status.CreateAndSetCondition(
+						v1alpha1.ModelReady,
+						true,
+						modelStatus.GetState().String(),
+						modelStatus.GetReason(),
+					)
+				default:
+					logger.Info(
+						"Setting model to not ready",
+						"name", event.ModelName,
+						"state", modelStatus.GetState().String(),
+					)
+					latestModel.Status.CreateAndSetCondition(
+						v1alpha1.ModelReady,
+						false,
+						modelStatus.GetState().String(),
+						modelStatus.GetReason(),
+					)
+				}
+
+				// Set the total number of replicas targeted by this model
+				latestModel.Status.Replicas = int32(
+					modelStatus.GetAvailableReplicas() +
+						modelStatus.GetUnavailableReplicas(),
+				)
+				latestModel.Status.Selector = "server=" + latestVersionStatus.ServerName
+				return s.updateModelStatus(ctxWithTimeout, latestModel)
+			})
+			if retryErr != nil {
+				logger.Error(err, "Failed to update status", "model", event.ModelName)
 			}
-
-			if latestVersionStatus.GetKubernetesMeta().Generation != latestModel.Generation {
-				logger.Info(
-					"Ignoring event for old generation",
-					"currentGeneration", latestModel.Generation,
-					"eventGeneration", latestVersionStatus.GetKubernetesMeta().Generation,
-					"model", event.ModelName,
-				)
-				return nil
-			}
-
-			// Handle status update
-			modelStatus := latestVersionStatus.GetState()
-			switch modelStatus.GetState() {
-			case scheduler.ModelStatus_ModelAvailable:
-				logger.Info(
-					"Setting model to ready",
-					"name", event.ModelName,
-					"state", modelStatus.GetState().String(),
-				)
-				latestModel.Status.CreateAndSetCondition(
-					v1alpha1.ModelReady,
-					true,
-					modelStatus.GetState().String(),
-					modelStatus.GetReason(),
-				)
-			default:
-				logger.Info(
-					"Setting model to not ready",
-					"name", event.ModelName,
-					"state", modelStatus.GetState().String(),
-				)
-				latestModel.Status.CreateAndSetCondition(
-					v1alpha1.ModelReady,
-					false,
-					modelStatus.GetState().String(),
-					modelStatus.GetReason(),
-				)
-			}
-
-			// Set the total number of replicas targeted by this model
-			latestModel.Status.Replicas = int32(
-				modelStatus.GetAvailableReplicas() +
-					modelStatus.GetUnavailableReplicas(),
-			)
-			latestModel.Status.Selector = "server=" + latestVersionStatus.ServerName
-			return s.updateModelStatus(latestModel)
-		})
-		if retryErr != nil {
-			logger.Error(err, "Failed to update status", "model", event.ModelName)
 		}
 
 	}
@@ -284,11 +291,11 @@ func modelReady(status v1alpha1.ModelStatus) bool {
 		status.GetCondition(apis.ConditionReady).Status == v1.ConditionTrue
 }
 
-func (s *SchedulerClient) updateModelStatus(model *v1alpha1.Model) error {
+func (s *SchedulerClient) updateModelStatus(ctx context.Context, model *v1alpha1.Model) error {
 	existingModel := &v1alpha1.Model{}
 	namespacedName := types.NamespacedName{Name: model.Name, Namespace: model.Namespace}
 
-	if err := s.Get(context.TODO(), namespacedName, existingModel); err != nil {
+	if err := s.Get(ctx, namespacedName, existingModel); err != nil {
 		if errors.IsNotFound(err) { //Ignore NotFound errors
 			return nil
 		}
@@ -299,7 +306,7 @@ func (s *SchedulerClient) updateModelStatus(model *v1alpha1.Model) error {
 	if equality.Semantic.DeepEqual(existingModel.Status, model.Status) {
 		// Not updating as no difference
 	} else {
-		if err := s.Status().Update(context.TODO(), model); err != nil {
+		if err := s.Status().Update(ctx, model); err != nil {
 			s.recorder.Eventf(
 				model,
 				v1.EventTypeWarning,

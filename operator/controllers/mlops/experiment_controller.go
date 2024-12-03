@@ -44,7 +44,7 @@ func (r *ExperimentReconciler) handleFinalizer(ctx context.Context, logger logr.
 		// Add our finalizer
 		if !utils.ContainsStr(experiment.ObjectMeta.Finalizers, constants.ExperimentFinalizerName) {
 			experiment.ObjectMeta.Finalizers = append(experiment.ObjectMeta.Finalizers, constants.ExperimentFinalizerName)
-			if err := r.Update(context.Background(), experiment); err != nil {
+			if err := r.Update(ctx, experiment); err != nil {
 				return true, err
 			}
 		}
