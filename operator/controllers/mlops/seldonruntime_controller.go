@@ -65,7 +65,7 @@ func (r *SeldonRuntimeReconciler) handleFinalizer(ctx context.Context, logger lo
 		// Add our finalizer
 		if !utils.ContainsStr(runtime.ObjectMeta.Finalizers, constants.RuntimeFinalizerName) {
 			runtime.ObjectMeta.Finalizers = append(runtime.ObjectMeta.Finalizers, constants.RuntimeFinalizerName)
-			if err := r.Update(context.Background(), runtime); err != nil {
+			if err := r.Update(ctx, runtime); err != nil {
 				return true, err
 			}
 		}
@@ -214,9 +214,11 @@ func (r *SeldonRuntimeReconciler) updateStatus(seldonRuntime *mlopsv1alpha1.Seld
 // Find SeldonRuntimes that reference the changes SeldonConfig
 // TODO: pass an actual context from the caller to be used here
 func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromSeldonConfig(_ context.Context, obj client.Object) []reconcile.Request {
-	logger := log.FromContext(context.Background()).WithName("mapSeldonRuntimesFromSeldonConfig")
+	ctx, cancel := context.WithTimeout(context.Background(), constants.K8sAPICallTimeout)
+	defer cancel()
+	logger := log.FromContext(ctx).WithName("mapSeldonRuntimesFromSeldonConfig")
 	var seldonRuntimes mlopsv1alpha1.SeldonRuntimeList
-	if err := r.Client.List(context.Background(), &seldonRuntimes); err != nil {
+	if err := r.Client.List(ctx, &seldonRuntimes); err != nil {
 		logger.Error(err, "error listing seldonRuntimes")
 		return nil
 	}
