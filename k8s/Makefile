@@ -11,7 +11,7 @@ HELM_SERVERS_BASE := helm-charts/seldon-core-v2-servers/templates
 create: create-helm-charts create-yaml
 
 .PHONY: create-helm-charts
-create-helm-charts:
+create-helm-charts: kustomize
 	sed "s/#TAG_VERSION_PLACEHOLDER#/${CUSTOM_IMAGE_TAG}/g" helm-charts/seldon-core-v2-setup/values.yaml.template > helm-charts/seldon-core-v2-setup/values.yaml
 	$(KUSTOMIZE) build kustomize/helm-crds/ > ${HELM_CRD_BASE}/seldon-v2-crds.yaml
 	$(KUSTOMIZE) build kustomize/helm-components-ns/ > ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
