@@ -91,7 +91,7 @@ func NewIncrementalProcessor(
 		batchTriggerManual:   nil,
 	}
 
-	err := ip.setListeners()
+	err := ip.init()
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +159,6 @@ func (p *IncrementalProcessor) handleExperimentEvents(event coordinator.Experime
 						p.setExperimentStatus(event, false, err.Error())
 					} else {
 						p.setExperimentStatus(event, true, "experiment active")
-
 					}
 				}
 			}
@@ -187,14 +186,15 @@ func (p *IncrementalProcessor) handleModelEvents(event coordinator.ModelEventMsg
 	}()
 }
 
-func (p *IncrementalProcessor) setListeners() error {
+func (p *IncrementalProcessor) init() error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	err := p.xdsCache.SetupTLS()
 	if err != nil {
 		return err
 	}
-	p.xdsCache.AddListeners()
+	p.xdsCache.AddPermanentListeners()
+	p.xdsCache.AddPermanentClusters()
 	return nil
 }
 
@@ -255,7 +255,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(routeName string, mode
 	logger := p.logger.WithField("func", "removeModelForServerInEnvoy")
 	assignment := modelVersion.GetAssignment()
 	if len(assignment) == 0 {
-		logger.Debugf("Not updating route: %s - so assigned replicas for %v", routeName, modelVersion)
+		logger.Debugf("Not updating route: %s - no assigned replicas for %v", routeName, modelVersion)
 		return
 	}
 	modelName := modelVersion.GetMeta().GetName()

@@ -24,22 +24,26 @@ ok  	github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor	45.753s
 
 After 
 
+
+goos: linux
+goarch: amd64
+pkg: github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor
 cpu: 12th Gen Intel(R) Core(TM) i7-12800H
-BenchmarkModelUpdate_Models_10_Replicas_1_Batch_10ms-20          	      97	  10595061 ns/op	 5797942 B/op	   80597 allocs/op
-BenchmarkModelUpdate_Models_100_Replicas_1_Batch_10ms-20         	     100	  12104785 ns/op	12280985 B/op	  158214 allocs/op
-BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_10ms-20       	      40	  50823389 ns/op	198125958 B/op	 2607753 allocs/op
-BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_10ms-20      	       3	 386964832 ns/op	1152973117 B/op	15222164 allocs/op
-BenchmarkModelUpdate_Models_10_Replicas_10_Batch_10ms-20         	     100	  12370770 ns/op	54507987 B/op	  716676 allocs/op
-BenchmarkModelUpdate_Models_100_Replicas_10_Batch_10ms-20        	      56	  32654522 ns/op	175813442 B/op	 2168497 allocs/op
-BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_10ms-20      	       4	 327542484 ns/op	1966787122 B/op	25414480 allocs/op
-BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_10ms-20     	       1	2811341215 ns/op	16305733248 B/op	218336265 allocs/op
-BenchmarkModelUpdate_Models_10_Replicas_1_Batch_100ms-20         	    7185	    206197 ns/op	 1158811 B/op	   12964 allocs/op
-BenchmarkModelUpdate_Models_100_Replicas_1_Batch_100ms-20        	      12	 103836792 ns/op	365931182 B/op	 4983502 allocs/op
-BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_100ms-20      	       9	 115325081 ns/op	243462439 B/op	 3147811 allocs/op
-BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_100ms-20     	       3	 528313284 ns/op	1905373328 B/op	24754973 allocs/op
-BenchmarkModelUpdate_Models_10_Replicas_10_Batch_100ms-20        	      14	 102099674 ns/op	168855868 B/op	 2256664 allocs/op
-BenchmarkModelUpdate_Models_100_Replicas_10_Batch_100ms-20       	       9	 113601365 ns/op	239911933 B/op	 3007353 allocs/op
-BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_100ms-20     	       6	 257669855 ns/op	879134305 B/op	 9943520 allocs/op
-BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_100ms-20    	       1	1831130958 ns/op	4130566752 B/op	52089918 allocs/op
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_10ms-20          	      99	  10503076 ns/op	 5459504 B/op	   75936 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_10ms-20         	     100	  12329506 ns/op	11528623 B/op	  147768 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_10ms-20       	      32	  57135215 ns/op	200141562 B/op	 2638843 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_10ms-20      	       3	 425881058 ns/op	1155633304 B/op	15271185 allocs/op
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_10ms-20         	      97	  12796395 ns/op	49125454 B/op	  644298 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_10ms-20        	      34	  33008128 ns/op	173017588 B/op	 2127563 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_10ms-20      	       4	 324180730 ns/op	1990164076 B/op	25634294 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_10ms-20     	       1	2786099232 ns/op	16107104968 B/op	215067138 allocs/op
+BenchmarkModelUpdate_Models_10_Replicas_1_Batch_100ms-20         	    5761	    230485 ns/op	 1276192 B/op	   14658 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_1_Batch_100ms-20        	      12	  95563752 ns/op	368770140 B/op	 5040953 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_100ms-20      	       9	 118337597 ns/op	345704658 B/op	 4589376 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_100ms-20     	       3	 531757210 ns/op	2030309925 B/op	26656810 allocs/op
+BenchmarkModelUpdate_Models_10_Replicas_10_Batch_100ms-20        	      18	 103613236 ns/op	149228799 B/op	 1985478 allocs/op
+BenchmarkModelUpdate_Models_100_Replicas_10_Batch_100ms-20       	       9	 113923163 ns/op	225481680 B/op	 2822586 allocs/op
+BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_100ms-20     	       6	 272610358 ns/op	945017966 B/op	10781455 allocs/op
+BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_100ms-20    	       1	1734657705 ns/op	3920402984 B/op	49687374 allocs/op
 PASS
-ok  	github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor	37.070s
+ok  	github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor	37.457s

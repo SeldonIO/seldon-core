@@ -62,6 +62,90 @@ const (
 	TLSRouteConfigurationName     = "listener_tls"
 )
 
+var (
+	pipelineRoutePathHttp = &route.RouteMatch_Prefix{Prefix: "/v2"}
+	pipelineRoutePathGrpc = &route.RouteMatch_Prefix{Prefix: "/inference.GRPCInferenceService"}
+)
+
+func MakeHTTPListener(listenerName, address string,
+	port uint32,
+	routeConfigurationName string,
+	serverSecret *Secret,
+) *listener.Listener {
+	routerConfig, _ := anypb.New(&router.Router{})
+	// HTTP filter configuration
+	manager := &hcm.HttpConnectionManager{
+		CodecType:                    hcm.HttpConnectionManager_AUTO,
+		StatPrefix:                   listenerName,
+		AlwaysSetRequestIdInResponse: false,
+		GenerateRequestId:            &wrappers.BoolValue{Value: false},
+		RouteSpecifier: &hcm.HttpConnectionManager_Rds{
+			Rds: &hcm.Rds{
+				ConfigSource:    makeConfigSource(),
+				RouteConfigName: routeConfigurationName,
+			},
+		},
+		HttpFilters: []*hcm.HttpFilter{
+			{
+				Name: "envoy.filters.http.tap",
+				ConfigType: &hcm.HttpFilter_TypedConfig{
+					TypedConfig: createTapConfig(),
+				},
+			},
+			{
+				Name: "envoy.filters.http.lua",
+				ConfigType: &hcm.HttpFilter_TypedConfig{
+					TypedConfig: createHeaderFilter(),
+				},
+			},
+			{
+				Name:       wellknown.Router,
+				ConfigType: &hcm.HttpFilter_TypedConfig{TypedConfig: routerConfig},
+			},
+		},
+		AccessLog: []*accesslog.AccessLog{
+			{
+				Name: "envoy.access_loggers.file",
+				ConfigType: &accesslog.AccessLog_TypedConfig{
+					TypedConfig: createAccessLogConfig(),
+				},
+			},
+		},
+	}
+	pbst, err := anypb.New(manager)
+	if err != nil {
+		panic(err)
+	}
+
+	return &listener.Listener{
+		Name: listenerName,
+		Address: &core.Address{
+			Address: &core.Address_SocketAddress{
+				SocketAddress: &core.SocketAddress{
+					Protocol: core.SocketAddress_TCP,
+					Address:  address,
+					PortSpecifier: &core.SocketAddress_PortValue{
+						PortValue: port,
+					},
+				},
+			},
+		},
+		FilterChains: []*listener.FilterChain{
+			{
+				Filters: []*listener.Filter{
+					{
+						Name: wellknown.HTTPConnectionManager,
+						ConfigType: &listener.Filter_TypedConfig{
+							TypedConfig: pbst,
+						},
+					},
+				},
+				TransportSocket: createDownstreamTransportSocket(serverSecret), // Add TLS if needed
+			},
+		},
+	}
+}
+
 func MakeCluster(clusterName string, eps []Endpoint, isGrpc bool, clientSecret *Secret) *cluster.Cluster {
 	if isGrpc {
 		// Need to ensure http 2 is used
@@ -133,14 +217,105 @@ func MakeEndpoint(clusterName string, eps []Endpoint) *endpoint.ClusterLoadAssig
 	}
 }
 
+func MakeRoutes(routes map[string]Route, pipelines map[string]PipelineRoute) (*route.RouteConfiguration, *route.RouteConfiguration) {
+	rts := make([]*route.Route, 2*(len(routes)+len(pipelines))+
+		countModelStickySessions(routes)+
+		countPipelineStickySessions(pipelines))
+
+	for i := range rts {
+		rts[i] = &route.Route{
+			Match: &route.RouteMatch{
+				Headers: make([]*route.HeaderMatcher, 2), // We always do 2 header matches
+			},
+		}
+	}
+
+	rtsMirrors := make([]*route.Route, countModelMirrors(routes)+
+		countPipelineMirrors(pipelines))
+
+	for i := range rtsMirrors {
+		rtsMirrors[i] = &route.Route{
+			Match: &route.RouteMatch{
+				Headers: make([]*route.HeaderMatcher, 2), // We always do 2 header matches
+			},
+		}
+	}
+
+	rtsIndex := 0
+	mirrorsIndex := 0
+
+	for _, r := range routes {
+		for _, clusterTraffic := range r.Clusters { // it's an experiment, so create some sticky session routes
+			if len(r.Clusters) > 1 {
+				makeModelStickySessionEnvoyRoute(r.RouteName, rts[rtsIndex], r.LogPayloads, &clusterTraffic, false)
+				rtsIndex++
+				makeModelStickySessionEnvoyRoute(r.RouteName, rts[rtsIndex], r.LogPayloads, &clusterTraffic, true)
+				rtsIndex++
+			}
+		}
+		makeModelEnvoyRoute(&r, rts[rtsIndex], false, false)
+		rtsIndex++
+		makeModelEnvoyRoute(&r, rts[rtsIndex], true, false)
+		rtsIndex++
+
+		if r.Mirror != nil {
+			makeModelEnvoyRoute(&r, rtsMirrors[mirrorsIndex], false, true)
+			mirrorsIndex++
+			makeModelEnvoyRoute(&r, rtsMirrors[mirrorsIndex], true, true)
+			mirrorsIndex++
+		}
+	}
+
+	// Create Pipeline Routes
+	for _, r := range pipelines {
+		if len(r.Clusters) > 1 { // it's an experiment, so create some sticky session routes
+			for _, clusterTraffic := range r.Clusters {
+				makePipelineStickySessionEnvoyRoute(r.RouteName, rts[rtsIndex], &clusterTraffic, false)
+				rtsIndex++
+				makePipelineStickySessionEnvoyRoute(r.RouteName, rts[rtsIndex], &clusterTraffic, true)
+				rtsIndex++
+			}
+		}
+
+		makePipelineEnvoyRoute(&r, rts[rtsIndex], false, false)
+		rtsIndex++
+		makePipelineEnvoyRoute(&r, rts[rtsIndex], true, false)
+		rtsIndex++
+
+		if r.Mirror != nil {
+			makePipelineEnvoyRoute(&r, rtsMirrors[mirrorsIndex], false, true)
+			mirrorsIndex++
+			makePipelineEnvoyRoute(&r, rtsMirrors[mirrorsIndex], true, true)
+			mirrorsIndex++
+		}
+	}
+
+	return &route.RouteConfiguration{
+			Name: DefaultRouteConfigurationName,
+			VirtualHosts: []*route.VirtualHost{{
+				Name:    "seldon_service",
+				Domains: []string{"*"},
+				Routes:  rts,
+			}},
+		},
+		&route.RouteConfiguration{
+			Name: MirrorRouteConfigurationName,
+			VirtualHosts: []*route.VirtualHost{{
+				Name:    "seldon_mirror",
+				Domains: []string{"*"},
+				Routes:  rtsMirrors,
+			}},
+		}
+}
+
 func wrapRouteHeader(key string) string {
 	return fmt.Sprintf("%s%s%s", SeldonRouteSeparator, key, SeldonRouteSeparator)
 }
 
-func createMirrorRouteAction(trafficWeight uint32, rest bool) []*route.RouteAction_RequestMirrorPolicy {
+func createMirrorRouteAction(trafficWeight uint32, isGrpc bool) []*route.RouteAction_RequestMirrorPolicy {
 	var mirrors []*route.RouteAction_RequestMirrorPolicy
 	clusterName := MirrorHttpClusterName
-	if !rest {
+	if isGrpc {
 		clusterName = MirrorGrpcClusterName
 	}
 	mirrors = append(mirrors, &route.RouteAction_RequestMirrorPolicy{
@@ -157,14 +332,14 @@ func createMirrorRouteAction(trafficWeight uint32, rest bool) []*route.RouteActi
 
 // weighted clusters do not play well with session affinity see https://github.com/envoyproxy/envoy/issues/8167
 // Traffic shifting may need to be reinvesigated https://github.com/envoyproxy/envoy/pull/18207
-func createWeightedModelClusterAction(clusterTraffics []TrafficSplit, mirrorTraffic *TrafficSplit, rest bool) *route.Route_Route {
+func createWeightedModelClusterAction(clusterTraffics []TrafficSplit, mirrorTraffic *TrafficSplit, isGrpc bool) *route.Route_Route {
 	// Add Weighted Clusters with given traffic percentages to each internal model
 	var splits []*route.WeightedCluster_ClusterWeight
 	var mirrors []*route.RouteAction_RequestMirrorPolicy
 	var totWeight uint32
 	for _, clusterTraffic := range clusterTraffics {
 		clusterName := clusterTraffic.HttpCluster
-		if !rest {
+		if isGrpc {
 			clusterName = clusterTraffic.GrpcCluster
 		}
 		totWeight = totWeight + clusterTraffic.TrafficWeight
@@ -202,7 +377,7 @@ func createWeightedModelClusterAction(clusterTraffics []TrafficSplit, mirrorTraf
 
 	}
 	if mirrorTraffic != nil {
-		mirrors = createMirrorRouteAction(mirrorTraffic.TrafficWeight, rest)
+		mirrors = createMirrorRouteAction(mirrorTraffic.TrafficWeight, isGrpc)
 	}
 	action := &route.Route_Route{
 		Route: &route.RouteAction{
@@ -242,57 +417,26 @@ func getRouteName(routeName string, isPipeline bool, isGrpc bool, isMirror bool)
 	return fmt.Sprintf("%s%s%s%s", routeName, pipelineSuffix, httpSuffix, mirrorSuffix)
 }
 
-func makeModelHttpRoute(r *Route, rt *route.Route, isMirror bool) {
-	rt.Name = getRouteName(r.RouteName, false, false, isMirror)
-	rt.Match.PathSpecifier = modelRouteMatchPathHttp
-	rt.Match.Headers[0] = &route.HeaderMatcher{
-		Name: SeldonModelHeader, // Header name we will match on
-		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
-			StringMatch: &matcherv3.StringMatcher{
-				MatchPattern: &matcherv3.StringMatcher_Exact{
-					Exact: r.RouteName,
-				},
-			},
-		},
-	}
-	rt.Match.Headers[1] = &route.HeaderMatcher{
-		Name: SeldonRouteHeader,
-		HeaderMatchSpecifier: &route.HeaderMatcher_PresentMatch{
-			PresentMatch: false,
-		},
-	}
-
-	if isMirror {
-		rt.Action = createWeightedModelClusterAction([]TrafficSplit{*r.Mirror}, nil, true)
-	} else {
-		rt.Action = createWeightedModelClusterAction(r.Clusters, r.Mirror, true)
-	}
-
-	if r.LogPayloads {
-		rt.ResponseHeadersToAdd = modelRouteHeaders
-	}
-}
-
-func makeModelStickySessionRoute(r *Route, clusterTraffic *TrafficSplit, rt *route.Route, isGrpc bool) {
+func makeModelStickySessionEnvoyRoute(routeName string, envoyRoute *route.Route, logPayloads bool, clusterTraffic *TrafficSplit, isGrpc bool) {
 	if isGrpc {
-		rt.Name = r.RouteName + "_grpc_experiment"
-		rt.Match.PathSpecifier = modelRouteMatchPathGrpc
+		envoyRoute.Name = routeName + "_grpc_experiment"
+		envoyRoute.Match.PathSpecifier = modelRouteMatchPathGrpc
 	} else {
-		rt.Name = r.RouteName + "_http_experiment"
-		rt.Match.PathSpecifier = modelRouteMatchPathHttp
+		envoyRoute.Name = routeName + "_http_experiment"
+		envoyRoute.Match.PathSpecifier = modelRouteMatchPathHttp
 	}
 
-	rt.Match.Headers[0] = &route.HeaderMatcher{
+	envoyRoute.Match.Headers[0] = &route.HeaderMatcher{
 		Name: SeldonModelHeader, // Header name we will match on
 		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
 			StringMatch: &matcherv3.StringMatcher{
 				MatchPattern: &matcherv3.StringMatcher_Exact{
-					Exact: r.RouteName,
+					Exact: routeName,
 				},
 			},
 		},
 	}
-	rt.Match.Headers[1] = &route.HeaderMatcher{
+	envoyRoute.Match.Headers[1] = &route.HeaderMatcher{
 		Name: SeldonRouteHeader, // Header name we will match on
 		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
 			StringMatch: &matcherv3.StringMatcher{
@@ -304,7 +448,7 @@ func makeModelStickySessionRoute(r *Route, clusterTraffic *TrafficSplit, rt *rou
 		},
 	}
 
-	rt.RequestHeadersToAdd = []*core.HeaderValueOption{
+	envoyRoute.RequestHeadersToAdd = []*core.HeaderValueOption{
 		{
 			Header: &core.HeaderValue{
 				Key: SeldonInternalModelHeader,
@@ -319,7 +463,7 @@ func makeModelStickySessionRoute(r *Route, clusterTraffic *TrafficSplit, rt *rou
 			},
 		},
 	}
-	rt.ResponseHeadersToAdd = []*core.HeaderValueOption{
+	envoyRoute.ResponseHeadersToAdd = []*core.HeaderValueOption{
 		{
 			Header: &core.HeaderValue{
 				Key: SeldonRouteHeader,
@@ -329,7 +473,7 @@ func makeModelStickySessionRoute(r *Route, clusterTraffic *TrafficSplit, rt *rou
 		},
 	}
 	if isGrpc {
-		rt.Action = &route.Route_Route{
+		envoyRoute.Action = &route.Route_Route{
 			Route: &route.RouteAction{
 				Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
 				ClusterSpecifier: &route.RouteAction_Cluster{
@@ -338,7 +482,7 @@ func makeModelStickySessionRoute(r *Route, clusterTraffic *TrafficSplit, rt *rou
 			},
 		}
 	} else {
-		rt.Action = &route.Route_Route{
+		envoyRoute.Action = &route.Route_Route{
 			Route: &route.RouteAction{
 				Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
 				ClusterSpecifier: &route.RouteAction_Cluster{
@@ -347,15 +491,19 @@ func makeModelStickySessionRoute(r *Route, clusterTraffic *TrafficSplit, rt *rou
 			},
 		}
 	}
-	if r.LogPayloads {
-		rt.ResponseHeadersToAdd = append(rt.RequestHeadersToAdd, modelRouteHeaders...)
+	if logPayloads {
+		envoyRoute.ResponseHeadersToAdd = append(envoyRoute.RequestHeadersToAdd, modelRouteHeaders...)
 	}
 }
 
-func makeModelGrpcRoute(r *Route, rt *route.Route, isMirror bool) {
-	rt.Name = getRouteName(r.RouteName, false, true, isMirror)
-	rt.Match.PathSpecifier = modelRouteMatchPathGrpc
-	rt.Match.Headers[0] = &route.HeaderMatcher{
+func makeModelEnvoyRoute(r *Route, envoyRoute *route.Route, isGrpc, isMirror bool) {
+	envoyRoute.Name = getRouteName(r.RouteName, false, isGrpc, isMirror)
+	if isGrpc {
+		envoyRoute.Match.PathSpecifier = modelRouteMatchPathGrpc
+	} else {
+		envoyRoute.Match.PathSpecifier = modelRouteMatchPathHttp
+	}
+	envoyRoute.Match.Headers[0] = &route.HeaderMatcher{
 		Name: SeldonModelHeader, // Header name we will match on
 		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
 			StringMatch: &matcherv3.StringMatcher{
@@ -365,7 +513,7 @@ func makeModelGrpcRoute(r *Route, rt *route.Route, isMirror bool) {
 			},
 		},
 	}
-	rt.Match.Headers[1] = &route.HeaderMatcher{
+	envoyRoute.Match.Headers[1] = &route.HeaderMatcher{
 		Name: SeldonRouteHeader,
 		HeaderMatchSpecifier: &route.HeaderMatcher_PresentMatch{
 			PresentMatch: false,
@@ -373,33 +521,58 @@ func makeModelGrpcRoute(r *Route, rt *route.Route, isMirror bool) {
 	}
 
 	if isMirror {
-		rt.Action = createWeightedModelClusterAction([]TrafficSplit{*r.Mirror}, nil, false)
+		envoyRoute.Action = createWeightedModelClusterAction([]TrafficSplit{*r.Mirror}, nil, isGrpc)
 	} else {
-		rt.Action = createWeightedModelClusterAction(r.Clusters, r.Mirror, false)
+		envoyRoute.Action = createWeightedModelClusterAction(r.Clusters, r.Mirror, isGrpc)
 	}
 
 	if r.LogPayloads {
-		rt.ResponseHeadersToAdd = append(rt.RequestHeadersToAdd, modelRouteHeaders...)
+		envoyRoute.ResponseHeadersToAdd = modelRouteHeaders
 	}
 }
 
-var (
-	pipelineRoutePathHttp = &route.RouteMatch_Prefix{Prefix: "/v2"}
-	pipelineRoutePathGrpc = &route.RouteMatch_Prefix{Prefix: "/inference.GRPCInferenceService"}
-)
+func makePipelineEnvoyRoute(r *PipelineRoute, envoyRoute *route.Route, isGrpc, isMirror bool) {
+	envoyRoute.Name = getRouteName(r.RouteName, true, isGrpc, isMirror)
+	envoyRoute.Match.PathSpecifier = pipelineRoutePathHttp
+	if isGrpc {
+		envoyRoute.Match.PathSpecifier = pipelineRoutePathGrpc
+	}
+	envoyRoute.Match.Headers[0] = &route.HeaderMatcher{
+		Name: SeldonModelHeader, // Header name we will match on
+		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
+			StringMatch: &matcherv3.StringMatcher{
+				MatchPattern: &matcherv3.StringMatcher_Exact{
+					Exact: r.RouteName,
+				},
+			},
+		},
+	}
+	envoyRoute.Match.Headers[1] = &route.HeaderMatcher{
+		Name: SeldonRouteHeader,
+		HeaderMatchSpecifier: &route.HeaderMatcher_PresentMatch{
+			PresentMatch: false,
+		},
+	}
+
+	if isMirror {
+		envoyRoute.Action = createWeightedPipelineClusterAction([]PipelineTrafficSplit{*r.Mirror}, nil, isGrpc)
+	} else {
+		envoyRoute.Action = createWeightedPipelineClusterAction(r.Clusters, r.Mirror, isGrpc)
+	}
+}
 
 func getPipelineModelName(pipelineName string) string {
 	return fmt.Sprintf("%s.%s", pipelineName, SeldonPipelineHeaderSuffix)
 }
 
-func createWeightedPipelineClusterAction(clusterTraffics []PipelineTrafficSplit, mirrorTraffic *PipelineTrafficSplit, rest bool) *route.Route_Route {
+func createWeightedPipelineClusterAction(clusterTraffics []PipelineTrafficSplit, mirrorTraffic *PipelineTrafficSplit, isGrpc bool) *route.Route_Route {
 	// Add Weighted Clusters with given traffic percentages to each internal model
 	var splits []*route.WeightedCluster_ClusterWeight
 	var mirrors []*route.RouteAction_RequestMirrorPolicy
 	var totWeight uint32
 	for _, clusterTraffic := range clusterTraffics {
 		clusterName := PipelineGatewayHttpClusterName
-		if !rest {
+		if isGrpc {
 			clusterName = PipelineGatewayGrpcClusterName
 		}
 		totWeight = totWeight + clusterTraffic.TrafficWeight
@@ -429,7 +602,7 @@ func createWeightedPipelineClusterAction(clusterTraffics []PipelineTrafficSplit,
 
 	}
 	if mirrorTraffic != nil {
-		mirrors = createMirrorRouteAction(mirrorTraffic.TrafficWeight, rest)
+		mirrors = createMirrorRouteAction(mirrorTraffic.TrafficWeight, isGrpc)
 	}
 	action := &route.Route_Route{
 		Route: &route.RouteAction{
@@ -445,70 +618,16 @@ func createWeightedPipelineClusterAction(clusterTraffics []PipelineTrafficSplit,
 	return action
 }
 
-func makePipelineHttpRoute(r *PipelineRoute, rt *route.Route, isMirror bool) {
-	rt.Name = getRouteName(r.RouteName, true, false, isMirror)
-	rt.Match.PathSpecifier = pipelineRoutePathHttp
-	rt.Match.Headers[0] = &route.HeaderMatcher{
-		Name: SeldonModelHeader, // Header name we will match on
-		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
-			StringMatch: &matcherv3.StringMatcher{
-				MatchPattern: &matcherv3.StringMatcher_Exact{
-					Exact: r.RouteName,
-				},
-			},
-		},
-	}
-	rt.Match.Headers[1] = &route.HeaderMatcher{
-		Name: SeldonRouteHeader,
-		HeaderMatchSpecifier: &route.HeaderMatcher_PresentMatch{
-			PresentMatch: false,
-		},
-	}
-
-	if isMirror {
-		rt.Action = createWeightedPipelineClusterAction([]PipelineTrafficSplit{*r.Mirror}, nil, true)
-	} else {
-		rt.Action = createWeightedPipelineClusterAction(r.Clusters, r.Mirror, true)
-	}
-}
-
-func makePipelineGrpcRoute(r *PipelineRoute, rt *route.Route, isMirror bool) {
-	rt.Name = getRouteName(r.RouteName, true, true, isMirror)
-	rt.Match.PathSpecifier = pipelineRoutePathGrpc
-	rt.Match.Headers[0] = &route.HeaderMatcher{
-		Name: SeldonModelHeader, // Header name we will match on
-		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
-			StringMatch: &matcherv3.StringMatcher{
-				MatchPattern: &matcherv3.StringMatcher_Exact{
-					Exact: r.RouteName,
-				},
-			},
-		},
-	}
-	rt.Match.Headers[1] = &route.HeaderMatcher{
-		Name: SeldonRouteHeader,
-		HeaderMatchSpecifier: &route.HeaderMatcher_PresentMatch{
-			PresentMatch: false,
-		},
-	}
-
-	if isMirror {
-		rt.Action = createWeightedPipelineClusterAction([]PipelineTrafficSplit{*r.Mirror}, nil, false)
-	} else {
-		rt.Action = createWeightedPipelineClusterAction(r.Clusters, r.Mirror, false)
-	}
-}
-
-func makePipelineStickySessionRoute(r *PipelineRoute, clusterTraffic *PipelineTrafficSplit, rt *route.Route, isGrpc bool) {
+func makePipelineStickySessionEnvoyRoute(routeName string, envoyRoute *route.Route, clusterTraffic *PipelineTrafficSplit, isGrpc bool) {
 	if isGrpc {
-		rt.Name = r.RouteName + "_grpc_experiment"
-		rt.Match.PathSpecifier = pipelineRoutePathGrpc
+		envoyRoute.Name = routeName + "_grpc_experiment"
+		envoyRoute.Match.PathSpecifier = pipelineRoutePathGrpc
 	} else {
-		rt.Name = r.RouteName + "_http_experiment"
-		rt.Match.PathSpecifier = pipelineRoutePathHttp
+		envoyRoute.Name = routeName + "_http_experiment"
+		envoyRoute.Match.PathSpecifier = pipelineRoutePathHttp
 	}
 
-	rt.Match.Headers[0] = &route.HeaderMatcher{
+	envoyRoute.Match.Headers[0] = &route.HeaderMatcher{
 		Name: SeldonRouteHeader, // Header name we will match on
 		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
 			StringMatch: &matcherv3.StringMatcher{
@@ -518,17 +637,17 @@ func makePipelineStickySessionRoute(r *PipelineRoute, clusterTraffic *PipelineTr
 			},
 		},
 	}
-	rt.Match.Headers[1] = &route.HeaderMatcher{
+	envoyRoute.Match.Headers[1] = &route.HeaderMatcher{
 		Name: SeldonModelHeader, // Header name we will match on
 		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
 			StringMatch: &matcherv3.StringMatcher{
 				MatchPattern: &matcherv3.StringMatcher_Exact{
-					Exact: r.RouteName,
+					Exact: routeName,
 				},
 			},
 		},
 	}
-	rt.RequestHeadersToAdd = []*core.HeaderValueOption{
+	envoyRoute.RequestHeadersToAdd = []*core.HeaderValueOption{
 		{
 			Header: &core.HeaderValue{
 				Key:   SeldonInternalModelHeader,
@@ -536,7 +655,7 @@ func makePipelineStickySessionRoute(r *PipelineRoute, clusterTraffic *PipelineTr
 			},
 		},
 	}
-	rt.ResponseHeadersToAdd = []*core.HeaderValueOption{
+	envoyRoute.ResponseHeadersToAdd = []*core.HeaderValueOption{
 		{
 			Header: &core.HeaderValue{
 				Key:   SeldonRouteHeader,
@@ -545,7 +664,7 @@ func makePipelineStickySessionRoute(r *PipelineRoute, clusterTraffic *PipelineTr
 		},
 	}
 	if isGrpc {
-		rt.Action = &route.Route_Route{
+		envoyRoute.Action = &route.Route_Route{
 			Route: &route.RouteAction{
 				Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
 				ClusterSpecifier: &route.RouteAction_Cluster{
@@ -554,7 +673,7 @@ func makePipelineStickySessionRoute(r *PipelineRoute, clusterTraffic *PipelineTr
 			},
 		}
 	} else {
-		rt.Action = &route.Route_Route{
+		envoyRoute.Action = &route.Route_Route{
 			Route: &route.RouteAction{
 				Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
 				ClusterSpecifier: &route.RouteAction_Cluster{
@@ -565,30 +684,41 @@ func makePipelineStickySessionRoute(r *PipelineRoute, clusterTraffic *PipelineTr
 	}
 }
 
-// This will allow sticky sessions for a) any experiment b) any in progression rollout
-func IsModelExperiment(r *Route) bool {
-	return len(r.Clusters) > 1
-}
-
-func IsPipelineExperiment(r *PipelineRoute) bool {
-	return len(r.Clusters) > 1
-}
-
-func calcNumberOfModelStickySessionsNeeded(modelRoutes []*Route) int {
+func countModelStickySessions(routes map[string]Route) int {
 	count := 0
-	for _, r := range modelRoutes {
-		if IsModelExperiment(r) {
+	for _, r := range routes {
+		if len(r.Clusters) > 1 {
 			count = count + (len(r.Clusters) * 2) // REST and GRPC routes for each model in an experiment
 		}
 	}
 	return count
 }
 
-func calcNumberOfPipelineStickySessionsNeeded(pipelineRoutes []*PipelineRoute) int {
+func countPipelineStickySessions(pipelineRoutes map[string]PipelineRoute) int {
 	count := 0
 	for _, r := range pipelineRoutes {
-		if IsPipelineExperiment(r) {
+		if len(r.Clusters) > 1 {
 			count = count + (len(r.Clusters) * 2) // REST and GRPC routes for each model in an experiment
+		}
+	}
+	return count
+}
+
+func countModelMirrors(models map[string]Route) int {
+	count := 0
+	for _, r := range models {
+		if r.Mirror != nil {
+			count = count + 2 // REST and gRPC
+		}
+	}
+	return count
+}
+
+func countPipelineMirrors(pipelines map[string]PipelineRoute) int {
+	count := 0
+	for _, r := range pipelines {
+		if r.Mirror != nil {
+			count = count + 2 // REST and gRPC
 		}
 	}
 	return count
@@ -612,107 +742,6 @@ func calcNumberOfPipelineMirrorsNeeded(pipelineRoutes []*PipelineRoute) int {
 		}
 	}
 	return count
-}
-
-func MakeRoute(modelRoutes []*Route, pipelineRoutes []*PipelineRoute) (*route.RouteConfiguration, *route.RouteConfiguration) {
-	rts := make([]*route.Route, 2*(len(modelRoutes)+
-		len(pipelineRoutes))+
-		calcNumberOfModelStickySessionsNeeded(modelRoutes)+
-		calcNumberOfPipelineStickySessionsNeeded(pipelineRoutes))
-	// Pre-allocate objects for better CPU pipelining
-	// Warning: assumes a fixes number of route-match headers
-	for i := 0; i < len(rts); i++ {
-		rts[i] = &route.Route{
-			Match: &route.RouteMatch{
-				Headers: make([]*route.HeaderMatcher, 2), // We always do 2 header matches
-			},
-		}
-	}
-
-	idx := 0
-
-	// Create Model Routes
-	for _, r := range modelRoutes {
-		for _, clusterTraffic := range r.Clusters {
-			if IsModelExperiment(r) {
-				makeModelStickySessionRoute(r, &clusterTraffic, rts[idx], false)
-				idx++
-				makeModelStickySessionRoute(r, &clusterTraffic, rts[idx], true)
-				idx++
-			}
-		}
-		makeModelHttpRoute(r, rts[idx], false)
-		idx++
-		makeModelGrpcRoute(r, rts[idx], false)
-		idx++
-	}
-
-	// Create Pipeline Routes
-	for _, r := range pipelineRoutes {
-		if IsPipelineExperiment(r) {
-			for _, clusterTraffic := range r.Clusters {
-				makePipelineStickySessionRoute(r, &clusterTraffic, rts[idx], false)
-				idx++
-				makePipelineStickySessionRoute(r, &clusterTraffic, rts[idx], true)
-				idx++
-			}
-		}
-		makePipelineHttpRoute(r, rts[idx], false)
-		idx++
-		makePipelineGrpcRoute(r, rts[idx], false)
-		idx++
-	}
-
-	rtsMirrors := make([]*route.Route, calcNumberOfModelMirrorsNeeded(modelRoutes)+
-		calcNumberOfPipelineMirrorsNeeded(pipelineRoutes))
-	// Pre-allocate objects for better CPU pipelining
-	// Warning: assumes a fixes number of route-match headers
-	for i := 0; i < len(rtsMirrors); i++ {
-		rtsMirrors[i] = &route.Route{
-			Match: &route.RouteMatch{
-				Headers: make([]*route.HeaderMatcher, 2), // We always do 2 header matches
-			},
-		}
-	}
-
-	idx = 0
-
-	// Create Model Mirror Routes
-	for _, r := range modelRoutes {
-		if r.Mirror != nil {
-			makeModelHttpRoute(r, rtsMirrors[idx], true)
-			idx++
-			makeModelGrpcRoute(r, rtsMirrors[idx], true)
-			idx++
-		}
-	}
-
-	// Create Pipeline Mirror Routes
-	for _, r := range pipelineRoutes {
-		if r.Mirror != nil {
-			makePipelineHttpRoute(r, rtsMirrors[idx], true)
-			idx++
-			makePipelineGrpcRoute(r, rtsMirrors[idx], true)
-			idx++
-		}
-	}
-
-	return &route.RouteConfiguration{
-			Name: DefaultRouteConfigurationName,
-			VirtualHosts: []*route.VirtualHost{{
-				Name:    "seldon_service",
-				Domains: []string{"*"},
-				Routes:  rts,
-			}},
-		},
-		&route.RouteConfiguration{
-			Name: MirrorRouteConfigurationName,
-			VirtualHosts: []*route.VirtualHost{{
-				Name:    "seldon_mirror",
-				Domains: []string{"*"},
-				Routes:  rtsMirrors,
-			}},
-		}
 }
 
 func createTapConfig() *anypb.Any {
@@ -838,85 +867,6 @@ end
 		panic(err)
 	}
 	return luaAny
-}
-
-func MakeHTTPListener(listenerName, address string,
-	port uint32,
-	routeConfigurationName string,
-	serverSecret *Secret,
-) *listener.Listener {
-	routerConfig, _ := anypb.New(&router.Router{})
-	// HTTP filter configuration
-	manager := &hcm.HttpConnectionManager{
-		CodecType:                    hcm.HttpConnectionManager_AUTO,
-		StatPrefix:                   listenerName,
-		AlwaysSetRequestIdInResponse: false,
-		GenerateRequestId:            &wrappers.BoolValue{Value: false},
-		RouteSpecifier: &hcm.HttpConnectionManager_Rds{
-			Rds: &hcm.Rds{
-				ConfigSource:    makeConfigSource(),
-				RouteConfigName: routeConfigurationName,
-			},
-		},
-		HttpFilters: []*hcm.HttpFilter{
-			{
-				Name: "envoy.filters.http.tap",
-				ConfigType: &hcm.HttpFilter_TypedConfig{
-					TypedConfig: createTapConfig(),
-				},
-			},
-			{
-				Name: "envoy.filters.http.lua",
-				ConfigType: &hcm.HttpFilter_TypedConfig{
-					TypedConfig: createHeaderFilter(),
-				},
-			},
-			{
-				Name:       wellknown.Router,
-				ConfigType: &hcm.HttpFilter_TypedConfig{TypedConfig: routerConfig},
-			},
-		},
-		AccessLog: []*accesslog.AccessLog{
-			{
-				Name: "envoy.access_loggers.file",
-				ConfigType: &accesslog.AccessLog_TypedConfig{
-					TypedConfig: createAccessLogConfig(),
-				},
-			},
-		},
-	}
-	pbst, err := anypb.New(manager)
-	if err != nil {
-		panic(err)
-	}
-
-	return &listener.Listener{
-		Name: listenerName,
-		Address: &core.Address{
-			Address: &core.Address_SocketAddress{
-				SocketAddress: &core.SocketAddress{
-					Protocol: core.SocketAddress_TCP,
-					Address:  address,
-					PortSpecifier: &core.SocketAddress_PortValue{
-						PortValue: port,
-					},
-				},
-			},
-		},
-		FilterChains: []*listener.FilterChain{
-			{
-				Filters: []*listener.Filter{
-					{
-						Name: wellknown.HTTPConnectionManager,
-						ConfigType: &listener.Filter_TypedConfig{
-							TypedConfig: pbst,
-						},
-					},
-				},
-				TransportSocket: createDownstreamTransportSocket(serverSecret), // Add TLS if needed
-			},
-		},
-	}
 }
 
 func makeConfigSource() *core.ConfigSource {

@@ -37,7 +37,8 @@ const (
 )
 
 type SeldonXDSCache struct {
-	Listeners              map[string]resources.Listener
+	permanentListeners     []types.Resource
+	permanentClusters      []types.Resource
 	Routes                 map[string]resources.Route
 	Clusters               map[string]resources.Cluster
 	Pipelines              map[string]resources.PipelineRoute
@@ -55,7 +56,8 @@ type PipelineGatewayDetails struct {
 
 func NewSeldonXDSCache(logger logrus.FieldLogger, pipelineGatewayDetails *PipelineGatewayDetails) *SeldonXDSCache {
 	return &SeldonXDSCache{
-		Listeners:              make(map[string]resources.Listener),
+		permanentListeners:     make([]types.Resource, 2),
+		permanentClusters:      make([]types.Resource, 4),
 		Clusters:               make(map[string]resources.Cluster),
 		Routes:                 make(map[string]resources.Route),
 		Pipelines:              make(map[string]resources.PipelineRoute),
@@ -63,6 +65,87 @@ func NewSeldonXDSCache(logger logrus.FieldLogger, pipelineGatewayDetails *Pipeli
 		PipelineGatewayDetails: pipelineGatewayDetails,
 		logger:                 logger.WithField("source", "SeldonXDSCache"),
 	}
+}
+
+func (xds *SeldonXDSCache) SetupTLS() error {
+	logger := xds.logger.WithField("func", "SetupTLS")
+	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixEnvoy)
+	if protocol == seldontls.SecurityProtocolSSL {
+		xds.TLSActive = true
+
+		// Envoy client to talk to agent or Pipelinegateway
+		logger.Info("Upstream TLS active")
+		tlsUpstreamClient, err := seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixEnvoyUpstreamClient),
+			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixEnvoyUpstreamServer))
+		if err != nil {
+			return err
+		}
+		xds.AddSecret(EnvoyUpstreamClientCertName, EnvoyUpstreamServerCertName, tlsUpstreamClient)
+
+		// Envoy listener - external calls to Seldon
+		logger.Info("Downstream TLS active")
+		tlsDownstreamServer, err := seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixEnvoyDownstreamServer),
+			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixEnvoyDownstreamClient))
+		if err != nil {
+			return err
+		}
+		xds.AddSecret(EnvoyDownstreamServerCertName, EnvoyDownstreamClientCertName, tlsDownstreamServer)
+	}
+	return nil
+}
+
+func (xds *SeldonXDSCache) AddPermanentListeners() {
+	var serverSecret *resources.Secret
+	if xds.TLSActive {
+		if secret, ok := xds.Secrets[EnvoyDownstreamServerCertName]; ok {
+			serverSecret = &secret
+		}
+	}
+	xds.permanentListeners[0] = resources.MakeHTTPListener(defaultListenerName, defaultListenerAddress, defaultListenerPort, resources.DefaultRouteConfigurationName, serverSecret)
+	xds.permanentListeners[1] = resources.MakeHTTPListener(mirrorListenerName, mirrorListenerAddress, mirrorListenerPort, resources.MirrorRouteConfigurationName, serverSecret)
+}
+
+func (xds *SeldonXDSCache) AddPermanentClusters() {
+
+	var clientSecret *resources.Secret
+	if xds.TLSActive {
+		if secret, ok := xds.Secrets[EnvoyUpstreamClientCertName]; ok {
+			clientSecret = &secret
+		}
+	}
+
+	// Add pipeline gateway clusters
+	xds.logger.Infof("Add http pipeline cluster %s host:%s port:%d", resources.PipelineGatewayHttpClusterName, xds.PipelineGatewayDetails.Host, xds.PipelineGatewayDetails.HttpPort)
+	xds.permanentClusters[0] = resources.MakeCluster(resources.PipelineGatewayHttpClusterName, []resources.Endpoint{
+		{
+			UpstreamHost: xds.PipelineGatewayDetails.Host,
+			UpstreamPort: uint32(xds.PipelineGatewayDetails.HttpPort),
+		},
+	}, false, clientSecret)
+
+	xds.logger.Infof("Add grpc pipeline cluster %s host:%s port:%d", resources.PipelineGatewayGrpcClusterName, xds.PipelineGatewayDetails.Host, xds.PipelineGatewayDetails.GrpcPort)
+	xds.permanentClusters[1] = resources.MakeCluster(resources.PipelineGatewayGrpcClusterName, []resources.Endpoint{
+		{
+			UpstreamHost: xds.PipelineGatewayDetails.Host,
+			UpstreamPort: uint32(xds.PipelineGatewayDetails.GrpcPort),
+		},
+	}, true, clientSecret)
+
+	// Add Mirror clusters
+	xds.logger.Infof("Add http mirror cluster %s host:%s port:%d", resources.MirrorHttpClusterName, mirrorListenerAddress, mirrorListenerPort)
+	xds.permanentClusters[2] = resources.MakeCluster(resources.MirrorHttpClusterName, []resources.Endpoint{
+		{
+			UpstreamHost: mirrorListenerAddress,
+			UpstreamPort: mirrorListenerPort,
+		},
+	}, false, nil)
+	xds.logger.Infof("Add grpc mirror cluster %s host:%s port:%d", resources.MirrorGrpcClusterName, mirrorListenerAddress, mirrorListenerPort)
+	xds.permanentClusters[3] = resources.MakeCluster(resources.MirrorGrpcClusterName, []resources.Endpoint{
+		{
+			UpstreamHost: mirrorListenerAddress,
+			UpstreamPort: mirrorListenerPort,
+		},
+	}, true, nil)
 }
 
 func (xds *SeldonXDSCache) ClusterContents() []types.Resource {
@@ -75,37 +158,9 @@ func (xds *SeldonXDSCache) ClusterContents() []types.Resource {
 		}
 	}
 
-	// Add pipeline gateway clusters
-	xds.logger.Infof("Add http pipeline cluster %s host:%s port:%d", resources.PipelineGatewayHttpClusterName, xds.PipelineGatewayDetails.Host, xds.PipelineGatewayDetails.HttpPort)
-	r = append(r, resources.MakeCluster(resources.PipelineGatewayHttpClusterName, []resources.Endpoint{
-		{
-			UpstreamHost: xds.PipelineGatewayDetails.Host,
-			UpstreamPort: uint32(xds.PipelineGatewayDetails.HttpPort),
-		},
-	}, false, clientSecret))
-	xds.logger.Infof("Add grpc pipeline cluster %s host:%s port:%d", resources.PipelineGatewayGrpcClusterName, xds.PipelineGatewayDetails.Host, xds.PipelineGatewayDetails.GrpcPort)
-	r = append(r, resources.MakeCluster(resources.PipelineGatewayGrpcClusterName, []resources.Endpoint{
-		{
-			UpstreamHost: xds.PipelineGatewayDetails.Host,
-			UpstreamPort: uint32(xds.PipelineGatewayDetails.GrpcPort),
-		},
-	}, true, clientSecret))
-
-	// Add Mirror clusters
-	xds.logger.Infof("Add http mirror cluster %s host:%s port:%d", resources.MirrorHttpClusterName, mirrorListenerAddress, mirrorListenerPort)
-	r = append(r, resources.MakeCluster(resources.MirrorHttpClusterName, []resources.Endpoint{
-		{
-			UpstreamHost: mirrorListenerAddress,
-			UpstreamPort: mirrorListenerPort,
-		},
-	}, false, nil))
-	xds.logger.Infof("Add grpc mirror cluster %s host:%s port:%d", resources.MirrorGrpcClusterName, mirrorListenerAddress, mirrorListenerPort)
-	r = append(r, resources.MakeCluster(resources.MirrorGrpcClusterName, []resources.Endpoint{
-		{
-			UpstreamHost: mirrorListenerAddress,
-			UpstreamPort: mirrorListenerPort,
-		},
-	}, true, nil))
+	for _, permanentCluster := range xds.permanentClusters {
+		r = append(r, permanentCluster)
+	}
 
 	for _, c := range xds.Clusters {
 		endpoints := make([]resources.Endpoint, 0, len(c.Endpoints))
@@ -119,41 +174,12 @@ func (xds *SeldonXDSCache) ClusterContents() []types.Resource {
 }
 
 func (xds *SeldonXDSCache) RouteContents() []types.Resource {
-	routesArray := make([]*resources.Route, len(xds.Routes))
-	rIdx := 0
-	for _, r := range xds.Routes { // This could be very large as is equal to number of models (100k?)
-		modelRoute := r
-		routesArray[rIdx] = &modelRoute
-		rIdx++
-	}
-
-	pipelinesArray := make([]*resources.PipelineRoute, len(xds.Pipelines))
-	pIdx := 0
-	for _, r := range xds.Pipelines { // Likely to be less pipelines than models
-		pipelineRoute := r
-		pipelinesArray[pIdx] = &pipelineRoute
-		pIdx++
-	}
-
-	defaultRoutes, mirrorRoutes := resources.MakeRoute(routesArray, pipelinesArray)
+	defaultRoutes, mirrorRoutes := resources.MakeRoutes(xds.Routes, xds.Pipelines)
 	return []types.Resource{defaultRoutes, mirrorRoutes}
 }
 
 func (xds *SeldonXDSCache) ListenerContents() []types.Resource {
-	var r []types.Resource
-
-	var serverSecret *resources.Secret
-	if xds.TLSActive {
-		if secret, ok := xds.Secrets[EnvoyDownstreamServerCertName]; ok {
-			serverSecret = &secret
-		}
-	}
-
-	for _, l := range xds.Listeners {
-		r = append(r, resources.MakeHTTPListener(l.Name, l.Address, l.Port, l.RouteConfigurationName, serverSecret))
-	}
-
-	return r
+	return xds.permanentListeners
 }
 
 func (xds *SeldonXDSCache) SecretContents() []types.Resource {
@@ -196,48 +222,6 @@ func (xds *SeldonXDSCache) AddSecret(name string, validationSecretName string, c
 		Name:                 name,
 		ValidationSecretName: validationSecretName,
 		Certificate:          certificate,
-	}
-}
-
-func (xds *SeldonXDSCache) SetupTLS() error {
-	logger := xds.logger.WithField("func", "SetupTLS")
-	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixEnvoy)
-	if protocol == seldontls.SecurityProtocolSSL {
-		xds.TLSActive = true
-
-		// Envoy client to talk to agent or Pipelinegateway
-		logger.Info("Upstream TLS active")
-		tlsUpstreamClient, err := seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixEnvoyUpstreamClient),
-			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixEnvoyUpstreamServer))
-		if err != nil {
-			return err
-		}
-		xds.AddSecret(EnvoyUpstreamClientCertName, EnvoyUpstreamServerCertName, tlsUpstreamClient)
-
-		// Envoy listener - external calls to Seldon
-		logger.Info("Downstream TLS active")
-		tlsDownstreamServer, err := seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixEnvoyDownstreamServer),
-			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixEnvoyDownstreamClient))
-		if err != nil {
-			return err
-		}
-		xds.AddSecret(EnvoyDownstreamServerCertName, EnvoyDownstreamClientCertName, tlsDownstreamServer)
-	}
-	return nil
-}
-
-func (xds *SeldonXDSCache) AddListeners() {
-	xds.Listeners[defaultListenerName] = resources.Listener{
-		Name:                   defaultListenerName,
-		Address:                defaultListenerAddress,
-		Port:                   defaultListenerPort,
-		RouteConfigurationName: resources.DefaultRouteConfigurationName,
-	}
-	xds.Listeners[mirrorListenerName] = resources.Listener{
-		Name:                   mirrorListenerName,
-		Address:                mirrorListenerAddress,
-		Port:                   mirrorListenerPort,
-		RouteConfigurationName: resources.MirrorRouteConfigurationName,
 	}
 }
 
@@ -331,27 +315,6 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 	grpcCluster.Routes[routeVersionKey] = true
 }
 
-func (xds *SeldonXDSCache) removeRouteFromCluster(route resources.Route, cluster resources.TrafficSplit) error {
-	httpCluster, ok := xds.Clusters[cluster.HttpCluster]
-	if !ok {
-		return fmt.Errorf("can't find http cluster for route %s cluster %s route %+v", route.RouteName, cluster.HttpCluster, route)
-	}
-	delete(httpCluster.Routes, resources.RouteVersionKey{RouteName: route.RouteName, ModelName: cluster.ModelName, Version: cluster.ModelVersion})
-	if len(httpCluster.Routes) == 0 {
-		delete(xds.Clusters, cluster.HttpCluster)
-	}
-
-	grpcCluster, ok := xds.Clusters[cluster.GrpcCluster]
-	if !ok {
-		return fmt.Errorf("can't find grpc cluster for route %s cluster %s route %+v", route.RouteName, cluster.GrpcCluster, route)
-	}
-	delete(grpcCluster.Routes, resources.RouteVersionKey{RouteName: route.RouteName, ModelName: cluster.ModelName, Version: cluster.ModelVersion})
-	if len(grpcCluster.Routes) == 0 {
-		delete(xds.Clusters, cluster.GrpcCluster)
-	}
-	return nil
-}
-
 func (xds *SeldonXDSCache) RemoveRoute(routeName string) error {
 	logger := xds.logger.WithField("func", "RemoveRoute")
 	logger.Infof("Remove routes for model %s", routeName)
@@ -372,6 +335,27 @@ func (xds *SeldonXDSCache) RemoveRoute(routeName string) error {
 		if err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func (xds *SeldonXDSCache) removeRouteFromCluster(route resources.Route, cluster resources.TrafficSplit) error {
+	httpCluster, ok := xds.Clusters[cluster.HttpCluster]
+	if !ok {
+		return fmt.Errorf("can't find http cluster for route %s cluster %s route %+v", route.RouteName, cluster.HttpCluster, route)
+	}
+	delete(httpCluster.Routes, resources.RouteVersionKey{RouteName: route.RouteName, ModelName: cluster.ModelName, Version: cluster.ModelVersion})
+	if len(httpCluster.Routes) == 0 {
+		delete(xds.Clusters, cluster.HttpCluster)
+	}
+
+	grpcCluster, ok := xds.Clusters[cluster.GrpcCluster]
+	if !ok {
+		return fmt.Errorf("can't find grpc cluster for route %s cluster %s route %+v", route.RouteName, cluster.GrpcCluster, route)
+	}
+	delete(grpcCluster.Routes, resources.RouteVersionKey{RouteName: route.RouteName, ModelName: cluster.ModelName, Version: cluster.ModelVersion})
+	if len(grpcCluster.Routes) == 0 {
+		delete(xds.Clusters, cluster.GrpcCluster)
 	}
 	return nil
 }

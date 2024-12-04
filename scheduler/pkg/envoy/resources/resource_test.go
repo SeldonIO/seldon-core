@@ -19,8 +19,8 @@ func TestMakeRoute(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
 		name                  string
-		modelRoutes           []*Route
-		pipelineRoutes        []*PipelineRoute
+		modelRoutes           map[string]Route
+		pipelineRoutes        map[string]PipelineRoute
 		expectedDefaultRoutes int
 		expectedMirrorRoutes  int
 	}
@@ -28,138 +28,132 @@ func TestMakeRoute(t *testing.T) {
 	tests := []test{
 		{
 			name: "one model",
-			modelRoutes: []*Route{
-				{
-					RouteName: "r1",
-					Clusters: []TrafficSplit{
-						{
-							ModelName:     "m1",
-							ModelVersion:  1,
-							TrafficWeight: 100,
-							HttpCluster:   "h1",
-							GrpcCluster:   "g1",
-						},
-					},
-				},
-			},
-			expectedDefaultRoutes: 2,
-			expectedMirrorRoutes:  0,
-		},
-		{
-			name: "one pipeline",
-			pipelineRoutes: []*PipelineRoute{
-				{
-					RouteName: "r1",
-					Clusters: []PipelineTrafficSplit{
-						{
-							PipelineName:  "p1",
-							TrafficWeight: 100,
-						},
-					},
-				},
-			},
-			expectedDefaultRoutes: 2,
-			expectedMirrorRoutes:  0,
-		},
-		{
-			name: "pipeline experiment",
-			pipelineRoutes: []*PipelineRoute{
-				{
-					RouteName: "r1",
-					Clusters: []PipelineTrafficSplit{
-						{
-							PipelineName:  "p1",
-							TrafficWeight: 50,
-						},
-						{
-							PipelineName:  "p2",
-							TrafficWeight: 50,
-						},
-					},
-				},
-			},
-			expectedDefaultRoutes: 6,
-			expectedMirrorRoutes:  0,
-		},
-		{
-			name: "pipeline experiment with mirror",
-			pipelineRoutes: []*PipelineRoute{
-				{
-					RouteName: "r1",
-					Clusters: []PipelineTrafficSplit{
-						{
-							PipelineName:  "p1",
-							TrafficWeight: 50,
-						},
-						{
-							PipelineName:  "p2",
-							TrafficWeight: 50,
-						},
-					},
-					Mirror: &PipelineTrafficSplit{
-						PipelineName:  "p3",
-						TrafficWeight: 100,
-					},
-				},
-			},
-			expectedDefaultRoutes: 6,
-			expectedMirrorRoutes:  2,
-		},
-		{
-			name: "model experiment",
-			modelRoutes: []*Route{
-				{
-					RouteName: "r1",
-					Clusters: []TrafficSplit{
-						{
-							ModelName:     "m1",
-							ModelVersion:  1,
-							TrafficWeight: 50,
-							HttpCluster:   "h1",
-							GrpcCluster:   "g1",
-						},
-						{
-							ModelName:     "m2",
-							ModelVersion:  1,
-							TrafficWeight: 50,
-							HttpCluster:   "h1",
-							GrpcCluster:   "g1",
-						},
-					},
-				},
-			},
-			expectedDefaultRoutes: 6,
-			expectedMirrorRoutes:  0,
-		},
-		{
-			name: "experiment with model mirror",
-			modelRoutes: []*Route{
-				{
-					RouteName: "r1",
-					Clusters: []TrafficSplit{
-						{
-							ModelName:     "m1",
-							ModelVersion:  1,
-							TrafficWeight: 50,
-							HttpCluster:   "h1",
-							GrpcCluster:   "g1",
-						},
-						{
-							ModelName:     "m2",
-							ModelVersion:  1,
-							TrafficWeight: 50,
-							HttpCluster:   "h1",
-							GrpcCluster:   "g1",
-						},
-					},
-					Mirror: &TrafficSplit{
-						ModelName:     "m3",
+			modelRoutes: map[string]Route{"r1": Route{
+				RouteName: "r1",
+				Clusters: []TrafficSplit{
+					{
+						ModelName:     "m1",
 						ModelVersion:  1,
 						TrafficWeight: 100,
 						HttpCluster:   "h1",
 						GrpcCluster:   "g1",
 					},
 				},
+			},
+			},
+			expectedDefaultRoutes: 2,
+			expectedMirrorRoutes:  0,
+		},
+		{
+			name: "one pipeline",
+			pipelineRoutes: map[string]PipelineRoute{"r1": PipelineRoute{
+				RouteName: "r1",
+				Clusters: []PipelineTrafficSplit{
+					{
+						PipelineName:  "p1",
+						TrafficWeight: 100,
+					},
+				},
+			},
+			},
+			expectedDefaultRoutes: 2,
+			expectedMirrorRoutes:  0,
+		},
+		{
+			name: "pipeline experiment",
+			pipelineRoutes: map[string]PipelineRoute{"r1": PipelineRoute{
+				RouteName: "r1",
+				Clusters: []PipelineTrafficSplit{
+					{
+						PipelineName:  "p1",
+						TrafficWeight: 50,
+					},
+					{
+						PipelineName:  "p2",
+						TrafficWeight: 50,
+					},
+				},
+			},
+			},
+			expectedDefaultRoutes: 6,
+			expectedMirrorRoutes:  0,
+		},
+		{
+			name: "pipeline experiment with mirror",
+			pipelineRoutes: map[string]PipelineRoute{"r1": PipelineRoute{
+				RouteName: "r1",
+				Clusters: []PipelineTrafficSplit{
+					{
+						PipelineName:  "p1",
+						TrafficWeight: 50,
+					},
+					{
+						PipelineName:  "p2",
+						TrafficWeight: 50,
+					},
+				},
+				Mirror: &PipelineTrafficSplit{
+					PipelineName:  "p3",
+					TrafficWeight: 100,
+				},
+			},
+			},
+			expectedDefaultRoutes: 6,
+			expectedMirrorRoutes:  2,
+		},
+		{
+			name: "model experiment",
+			modelRoutes: map[string]Route{"r1": Route{
+				RouteName: "r1",
+				Clusters: []TrafficSplit{
+					{
+						ModelName:     "m1",
+						ModelVersion:  1,
+						TrafficWeight: 50,
+						HttpCluster:   "h1",
+						GrpcCluster:   "g1",
+					},
+					{
+						ModelName:     "m2",
+						ModelVersion:  1,
+						TrafficWeight: 50,
+						HttpCluster:   "h1",
+						GrpcCluster:   "g1",
+					},
+				},
+			},
+			},
+			expectedDefaultRoutes: 6,
+			expectedMirrorRoutes:  0,
+		},
+		{
+			name: "experiment with model mirror",
+			modelRoutes: map[string]Route{"r1": Route{
+				RouteName: "r1",
+				Clusters: []TrafficSplit{
+					{
+						ModelName:     "m1",
+						ModelVersion:  1,
+						TrafficWeight: 50,
+						HttpCluster:   "h1",
+						GrpcCluster:   "g1",
+					},
+					{
+						ModelName:     "m2",
+						ModelVersion:  1,
+						TrafficWeight: 50,
+						HttpCluster:   "h1",
+						GrpcCluster:   "g1",
+					},
+				},
+				Mirror: &TrafficSplit{
+					ModelName:     "m3",
+					ModelVersion:  1,
+					TrafficWeight: 100,
+					HttpCluster:   "h1",
+					GrpcCluster:   "g1",
+				},
+			},
 			},
 			expectedDefaultRoutes: 6,
 			expectedMirrorRoutes:  2,
@@ -168,7 +162,7 @@ func TestMakeRoute(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			rcDef, rcMirror := MakeRoute(test.modelRoutes, test.pipelineRoutes)
+			rcDef, rcMirror := MakeRoutes(test.modelRoutes, test.pipelineRoutes)
 			g.Expect(len(rcDef.VirtualHosts[0].Routes)).To(Equal(test.expectedDefaultRoutes))
 			g.Expect(len(rcMirror.VirtualHosts[0].Routes)).To(Equal(test.expectedMirrorRoutes))
 		})

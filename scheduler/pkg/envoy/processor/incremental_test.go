@@ -351,7 +351,7 @@ func TestRollingUpdate(t *testing.T) {
 				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil, nil),
 				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil, modelStore),
 			}
-			inc.xdsCache.AddListeners()
+			inc.xdsCache.AddPermanentListeners()
 			for _, op := range test.ops {
 				op(inc, g)
 			}
@@ -421,7 +421,7 @@ func TestDraining(t *testing.T) {
 				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil, nil),
 				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil, modelStore),
 			}
-			inc.xdsCache.AddListeners()
+			inc.xdsCache.AddPermanentListeners()
 			for _, op := range test.ops {
 				op(inc, g)
 			}
@@ -566,7 +566,7 @@ func TestModelSync(t *testing.T) {
 				pipelineHandler:      pipeline.NewPipelineStore(log.New(), nil, modelStore),
 				pendingModelVersions: test.pendingModelVersions,
 			}
-			inc.xdsCache.AddListeners()
+			inc.xdsCache.AddPermanentListeners()
 			for _, op := range test.ops {
 				op(inc, g)
 			}
@@ -827,7 +827,8 @@ func TestEnvoySettings(t *testing.T) {
 				inc.handlePipelinesEvents,
 			)
 
-			inc.xdsCache.AddListeners()
+			inc.xdsCache.AddPermanentListeners()
+			inc.xdsCache.AddPermanentClusters()
 			for _, op := range test.ops {
 				op(inc, g)
 				time.Sleep(50 * time.Millisecond) // to allow event handlers to process

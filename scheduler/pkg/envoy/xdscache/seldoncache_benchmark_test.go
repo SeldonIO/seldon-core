@@ -17,10 +17,7 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/sirupsen/logrus"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
 // Prevent compiler from optimising away benchmarks
@@ -32,15 +29,16 @@ func benchmarkRouteContents(b *testing.B, numResources uint) {
 	for n := 0; n < int(numResources); n++ {
 		x.AddPipelineRoute(strconv.Itoa(n), []resources.PipelineTrafficSplit{{PipelineName: strconv.Itoa(n), TrafficWeight: 100}}, nil)
 
-		modelVersion := store.NewDefaultModelVersion(&scheduler.Model{Meta: &scheduler.MetaData{Name: fmt.Sprintf("model-%d", n)}}, 1)
-
 		x.AddRouteClusterTraffic(
 			fmt.Sprintf("model-%d", n),
-			modelVersion.GetMeta().GetName(),
-			fmt.Sprintf("model-%d-%d-http", n, modelVersion.GetMeta().Version),
-			fmt.Sprintf("model-%d-%d-http", n, modelVersion.GetMeta().Version),
-			modelVersion.GetVersion(),
-			100, false, false)
+			fmt.Sprintf("model-%d", n),
+			"http",
+			"grpc",
+			1,
+			100,
+			false,
+			false,
+		)
 	}
 
 	// Prevent compiler optimising away function calls

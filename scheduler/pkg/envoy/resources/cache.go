@@ -23,7 +23,6 @@ type Listener struct {
 	Address                string
 	Port                   uint32
 	RouteConfigurationName string
-	// RouteNames []string
 }
 
 type Route struct {
