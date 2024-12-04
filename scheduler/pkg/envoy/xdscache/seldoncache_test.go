@@ -316,7 +316,7 @@ func addVersionedRoute(c *SeldonXDSCache, modelRouteName string, modelName strin
 
 	addCluster(c, httpCluster, modelRouteName, modelName, version, false)
 	addCluster(c, grpcCluster, modelRouteName, modelName, version, true)
-	c.AddRouteClusterTraffic(modelRouteName, modelVersion, traffic, false)
+	c.AddRouteClusterTraffic(modelRouteName, modelName, httpCluster, grpcCluster, modelVersion.GetVersion(), traffic, false, false)
 	addEndpoint(c, httpCluster, "0.0.0.0", 9000)
 	addEndpoint(c, grpcCluster, "0.0.0.0", 9001)
 }

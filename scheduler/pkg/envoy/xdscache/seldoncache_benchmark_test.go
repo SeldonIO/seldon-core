@@ -32,7 +32,15 @@ func benchmarkRouteContents(b *testing.B, numResources uint) {
 	for n := 0; n < int(numResources); n++ {
 		x.AddPipelineRoute(strconv.Itoa(n), []resources.PipelineTrafficSplit{{PipelineName: strconv.Itoa(n), TrafficWeight: 100}}, nil)
 
-		x.AddRouteClusterTraffic(fmt.Sprintf("model-%d", n), store.NewDefaultModelVersion(&scheduler.Model{Meta: &scheduler.MetaData{Name: fmt.Sprintf("model-%d", n)}}, 1), 100, false)
+		modelVersion := store.NewDefaultModelVersion(&scheduler.Model{Meta: &scheduler.MetaData{Name: fmt.Sprintf("model-%d", n)}}, 1)
+
+		x.AddRouteClusterTraffic(
+			fmt.Sprintf("model-%d", n),
+			modelVersion.GetMeta().GetName(),
+			fmt.Sprintf("model-%d-%d-http", n, modelVersion.GetMeta().Version),
+			fmt.Sprintf("model-%d-%d-http", n, modelVersion.GetMeta().Version),
+			modelVersion.GetVersion(),
+			100, false, false)
 	}
 
 	// Prevent compiler optimising away function calls

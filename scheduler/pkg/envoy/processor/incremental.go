@@ -252,10 +252,31 @@ func (p *IncrementalProcessor) removeRouteForServerInEnvoyCache(routeName string
 }
 
 func (p *IncrementalProcessor) updateEnvoyForModelVersion(routeName string, modelVersion *store.ModelVersion, server *store.ServerSnapshot, trafficPercent uint32, isMirror bool) {
-	err := p.xdsCache.AddClustersForRoute(routeName, modelVersion, server)
-	if err != nil {
-		p.xdsCache.AddRouteClusterTraffic(routeName, modelVersion, trafficPercent, isMirror)
+	logger := p.logger.WithField("func", "removeModelForServerInEnvoy")
+	assignment := modelVersion.GetAssignment()
+	if len(assignment) == 0 {
+		logger.Debugf("Not updating route: %s - so assigned replicas for %v", routeName, modelVersion)
+		return
 	}
+	modelName := modelVersion.GetMeta().GetName() + "_" + strconv.FormatInt(int64(modelVersion.GetVersion()), 10)
+	modelVersionNumber := modelVersion.GetVersion()
+	httpClusterName, grpcClusterName := getClusterNames(modelName, modelVersionNumber)
+	p.xdsCache.AddClustersForRoute(routeName, modelName, httpClusterName, grpcClusterName, modelVersionNumber, assignment, server)
+
+	logPayloads := false
+	if modelVersion.GetDeploymentSpec() != nil {
+		logPayloads = modelVersion.GetDeploymentSpec().LogPayloads
+	} else {
+		logger.Warnf("model %s has not deployment spec", modelName)
+	}
+	p.xdsCache.AddRouteClusterTraffic(routeName, modelName, httpClusterName, grpcClusterName, modelVersionNumber, trafficPercent, logPayloads, isMirror)
+}
+
+func getClusterNames(modelVersion string, modelVersionNumber uint32) (string, string) {
+	clusterNameBase := modelVersion + "_" + strconv.FormatInt(int64(modelVersionNumber), 10)
+	httpClusterName := clusterNameBase + "_http"
+	grpcClusterName := clusterNameBase + "_grpc"
+	return httpClusterName, grpcClusterName
 }
 
 func getTrafficShare(latestModel *store.ModelVersion, lastAvailableModelVersion *store.ModelVersion, weight uint32) (uint32, uint32) {
@@ -276,7 +297,7 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 		if latestModel == nil {
 			logger.Infof("latest model is nil for model %s route %s", model.Name, routeName)
 		}
-		return fmt.Errorf("No live replica for model %s for model route %s", model.Name, routeName)
+		return fmt.Errorf("no live replica for model %s for model route %s", model.Name, routeName)
 	}
 
 	server, err := p.modelStore.GetServer(latestModel.Server(), false, false)
