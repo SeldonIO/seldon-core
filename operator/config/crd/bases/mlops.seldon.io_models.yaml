@@ -3,8 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.9.2
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.16.2
   name: models.mlops.seldon.io
 spec:
   group: mlops.seldon.io
@@ -35,14 +34,19 @@ spec:
         description: Model is the Schema for the models API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -50,19 +54,23 @@ spec:
             description: ModelSpec defines the desired state of Model
             properties:
               artifactVersion:
-                description: Artifact Version A v2 version folder to select from storage
-                  bucket
+                description: |-
+                  Artifact Version
+                  A v2 version folder to select from storage bucket
                 format: int32
                 type: integer
               dedicated:
-                description: Dedicated server exclusive to this model Default false
+                description: |-
+                  Dedicated server exclusive to this model
+                  Default false
                 type: boolean
               explainer:
                 description: Explainer spec
                 properties:
                   modelRef:
-                    description: one of the following need to be set for blackbox
-                      explainers Reference to Model
+                    description: |-
+                      one of the following need to be set for blackbox explainers
+                      Reference to Model
                     type: string
                   pipelineRef:
                     description: Reference to Pipeline
@@ -110,8 +118,9 @@ spec:
                   type: object
                 type: array
               preloaded:
-                description: Model already loaded on a server. Don't schedule. Default
-                  false
+                description: |-
+                  Model already loaded on a server. Don't schedule.
+                  Default false
                 type: boolean
               replicas:
                 description: Number of replicas - default 1
@@ -144,22 +153,24 @@ spec:
               annotations:
                 additionalProperties:
                   type: string
-                description: Annotations is additional Status fields for the Resource
-                  to save some additional State as well as convey more information
-                  to the user. This is roughly akin to Annotations on any k8s resource,
-                  just the reconciler conveying richer information outwards.
+                description: |-
+                  Annotations is additional Status fields for the Resource to save some
+                  additional State as well as convey more information to the user. This is
+                  roughly akin to Annotations on any k8s resource, just the reconciler conveying
+                  richer information outwards.
                 type: object
               conditions:
                 description: Conditions the latest available observations of a resource's
                   current state.
                 items:
-                  description: 'Condition defines a readiness condition for a Knative
-                    resource. See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties'
+                  description: |-
+                    Condition defines a readiness condition for a Knative resource.
+                    See: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time the condition
-                        transitioned from one status to another. We use VolatileTime
-                        in place of metav1.Time to exclude this from creating equality.Semantic
+                      description: |-
+                        LastTransitionTime is the last time the condition transitioned from one status to another.
+                        We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic
                         differences (all other things held constant).
                       type: string
                     message:
@@ -170,8 +181,9 @@ spec:
                       description: The reason for the condition's last transition.
                       type: string
                     severity:
-                      description: Severity with which to treat failures of this type
-                        of condition. When this is not specified, it defaults to Error.
+                      description: |-
+                        Severity with which to treat failures of this type of condition.
+                        When this is not specified, it defaults to Error.
                       type: string
                     status:
                       description: Status of the condition, one of True, False, Unknown.
@@ -185,8 +197,9 @@ spec:
                   type: object
                 type: array
               observedGeneration:
-                description: ObservedGeneration is the 'Generation' of the Service
-                  that was last processed by the controller.
+                description: |-
+                  ObservedGeneration is the 'Generation' of the Service that
+                  was last processed by the controller.
                 format: int64
                 type: integer
               replicas:
