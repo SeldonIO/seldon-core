@@ -19,10 +19,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-)
-
-const (
-	execTimeOut = 5 * time.Minute
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 )
 
 func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
@@ -54,7 +51,7 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 		}
 		// in general we could have also handled timeout via a context with timeout
 		// but we want to handle the timeout in a more controlled way and not depending on the other side
-		_, err = execWithTimeout(ctx, fn, execTimeOut)
+		_, err = execWithTimeout(ctx, fn, constants.ControlPlaneExecTimeOut)
 		if err != nil {
 			logger.Error(err, "Failed to handle state on reconnect")
 			return err

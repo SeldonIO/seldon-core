@@ -78,6 +78,8 @@ func (r *ModelReconciler) handleFinalizer(ctx context.Context, logger logr.Logge
 
 func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx).WithName("Reconcile")
+	ctx, cancel := context.WithTimeout(ctx, constants.ReconcileTimeout)
+	defer cancel()
 
 	model := &mlopsv1alpha1.Model{}
 	if err := r.Get(ctx, req.NamespacedName, model); err != nil {

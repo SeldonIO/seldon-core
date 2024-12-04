@@ -94,6 +94,8 @@ func (r *PipelineReconciler) handleFinalizer(
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.10.0/pkg/reconcile
 func (r *PipelineReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx).WithName("Reconcile")
+	ctx, cancel := context.WithTimeout(ctx, constants.ReconcileTimeout)
+	defer cancel()
 
 	pipeline := &mlopsv1alpha1.Pipeline{}
 	if err := r.Get(ctx, req.NamespacedName, pipeline); err != nil {

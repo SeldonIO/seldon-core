@@ -56,5 +56,7 @@ const (
 
 // k8s api call timeout
 const (
-	K8sAPICallTimeout = 2 * time.Minute
+	K8sAPICallTimeout       = 2 * time.Minute
+	ControlPlaneExecTimeOut = 5 * time.Minute
+	ReconcileTimeout        = 5 * time.Minute
 )
