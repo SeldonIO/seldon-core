@@ -52,6 +52,8 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 		fn := func(ctx context.Context) error {
 			return s.handleStateOnReconnect(ctx, grpcClient, namespace, event.GetEvent())
 		}
+		// in general we could have also handled timeout via a context with timeout
+		// but we want to handle the timeout in a more controlled way and not depending on the other side
 		_, err = execWithTimeout(ctx, fn, execTimeOut)
 		if err != nil {
 			logger.Error(err, "Failed to handle state on reconnect")
