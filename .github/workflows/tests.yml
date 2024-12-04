@@ -24,7 +24,7 @@ jobs:
         run: make -C components/kafka test
       - name: check CRDs changes
         run: | 
-          make -C operator generate
+          make -C operator generate manifests
           git diff --exit-code
       - name: check helm changes
         run: | 
