@@ -264,7 +264,7 @@ func (m *MLServerRepositoryHandler) findModelVersionInPath(modelPath string, ver
 	case 1:
 		return found[0], nil
 	default:
-		return "", fmt.Errorf("Found multiple folders with version %d %v", version, found)
+		return "", fmt.Errorf("found multiple folders with version %d %v", version, found)
 	}
 }
 
@@ -324,7 +324,7 @@ func (m *MLServerRepositoryHandler) findHighestVersionInPath(modelPath string) (
 	return "", nil
 }
 
-func (m *MLServerRepositoryHandler) GetModelConfig(path string) (*agent.ModelConfig, error) {
+func (m *MLServerRepositoryHandler) GetModelConfig(_ string) (*agent.ModelConfig, error) {
 	parallelWorkers := os.Getenv(parallelWorkersEnvVar)
 	instanceCount, err := strconv.Atoi(parallelWorkers)
 	if err != nil || parallelWorkers == "" {
