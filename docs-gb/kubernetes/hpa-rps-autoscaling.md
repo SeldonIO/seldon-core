@@ -16,26 +16,14 @@ and servers (single-model serving). This will require:
 {% hint style="warning" %}
 The Core 2 HPA-based autoscaling has the following constraints/limitations:
 
-    - HPA scaling only targets single-model serving, where there is a 1:1 correspondence between
-    models and servers. Autoscaling for multi-model serving (MMS) is supported for specific models
-    and workloads via the Core 2 native features described [here](autoscaling.md).
-    Significant improvements to MMS autoscaling are planned for future releases.
+- HPA scaling only targets single-model serving, where there is a 1:1 correspondence between models and servers. Autoscaling for multi-model serving (MMS) is supported for specific models and workloads via the Core 2 native features described [here](autoscaling.md). 
+  - Significant improvements to MMS autoscaling are planned for future releases.
     
-    - **Only custom metrics** from Prometheus are supported. Native Kubernetes
-    resource metrics such as CPU or memory are not. This limitation exists because of HPA's
-    design: In order to prevent multiple HPA CRs from issuing conflicting scaling instructions,
-    each HPA CR must exclusively control a set of pods which is disjoint from the pods
-    controlled by other HPA CRs. In Seldon Core 2, CPU/memory metrics can be used to scale the
-    number of Server replicas via HPA. However, this also means that the CPU/memory metrics
-    from the same set of pods can no longer be used to scale the number of model replicas. We
-    are working on improvements in Core 2 to allow both servers and models to be scaled based on
-    a single HPA manifest, targeting the Model CR.
+- **Only custom metrics** from Prometheus are supported. Native Kubernetes resource metrics such as CPU or memory are not. This limitation exists because of HPA's design: In order to prevent multiple HPA CRs from issuing conflicting scaling instructions, each HPA CR must exclusively control a set of pods which is disjoint from the pods controlled by other HPA CRs. In Seldon Core 2, CPU/memory metrics can be used to scale the number of Server replicas via HPA. However, this also means that the CPU/memory metrics from the same set of pods can no longer be used to scale the number of model replicas. 
+  - We are working on improvements in Core 2 to allow both servers and models to be scaled based on a single HPA manifest, targeting the Model CR.
     
-    - Each Kubernetes cluster supports only one active custom metrics provider. If your cluster
-    already uses a custom metrics provider different from `prometheus-adapter`, it
-    will need to be removed before being able to scale Core 2 models and servers via HPA. The
-    Kubernetes is actively exploring solutions for allowing multiple custom metrics providers to
-    coexist.
+- Each Kubernetes cluster supports only one active custom metrics provider. If your cluster already uses a custom metrics provider different from `prometheus-adapter`, it will need to be removed before being able to scale Core 2 models and servers via HPA. 
+  - The Kubernetes community is actively exploring solutions for allowing multiple custom metrics providers to coexist.
 {% endhint %}
 
 ## Installing and configuring the Prometheus Adapter
