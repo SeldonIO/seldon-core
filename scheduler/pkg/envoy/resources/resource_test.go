@@ -28,7 +28,7 @@ func TestMakeRoute(t *testing.T) {
 	tests := []test{
 		{
 			name: "one model",
-			modelRoutes: map[string]Route{"r1": Route{
+			modelRoutes: map[string]Route{"r1": {
 				RouteName: "r1",
 				Clusters: []TrafficSplit{
 					{
@@ -46,7 +46,7 @@ func TestMakeRoute(t *testing.T) {
 		},
 		{
 			name: "one pipeline",
-			pipelineRoutes: map[string]PipelineRoute{"r1": PipelineRoute{
+			pipelineRoutes: map[string]PipelineRoute{"r1": {
 				RouteName: "r1",
 				Clusters: []PipelineTrafficSplit{
 					{
@@ -61,7 +61,7 @@ func TestMakeRoute(t *testing.T) {
 		},
 		{
 			name: "pipeline experiment",
-			pipelineRoutes: map[string]PipelineRoute{"r1": PipelineRoute{
+			pipelineRoutes: map[string]PipelineRoute{"r1": {
 				RouteName: "r1",
 				Clusters: []PipelineTrafficSplit{
 					{
@@ -80,7 +80,7 @@ func TestMakeRoute(t *testing.T) {
 		},
 		{
 			name: "pipeline experiment with mirror",
-			pipelineRoutes: map[string]PipelineRoute{"r1": PipelineRoute{
+			pipelineRoutes: map[string]PipelineRoute{"r1": {
 				RouteName: "r1",
 				Clusters: []PipelineTrafficSplit{
 					{
@@ -103,7 +103,7 @@ func TestMakeRoute(t *testing.T) {
 		},
 		{
 			name: "model experiment",
-			modelRoutes: map[string]Route{"r1": Route{
+			modelRoutes: map[string]Route{"r1": {
 				RouteName: "r1",
 				Clusters: []TrafficSplit{
 					{
@@ -128,7 +128,7 @@ func TestMakeRoute(t *testing.T) {
 		},
 		{
 			name: "experiment with model mirror",
-			modelRoutes: map[string]Route{"r1": Route{
+			modelRoutes: map[string]Route{"r1": {
 				RouteName: "r1",
 				Clusters: []TrafficSplit{
 					{

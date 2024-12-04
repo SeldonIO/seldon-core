@@ -724,26 +724,6 @@ func countPipelineMirrors(pipelines map[string]PipelineRoute) int {
 	return count
 }
 
-func calcNumberOfModelMirrorsNeeded(modelRoutes []*Route) int {
-	count := 0
-	for _, r := range modelRoutes {
-		if r.Mirror != nil {
-			count = count + 2 // REST and gRPC
-		}
-	}
-	return count
-}
-
-func calcNumberOfPipelineMirrorsNeeded(pipelineRoutes []*PipelineRoute) int {
-	count := 0
-	for _, r := range pipelineRoutes {
-		if r.Mirror != nil {
-			count = count + 2 // REST and gRPC
-		}
-	}
-	return count
-}
-
 func createTapConfig() *anypb.Any {
 	// Create Tap Config
 	tapFilter := tapfilter.Tap{
