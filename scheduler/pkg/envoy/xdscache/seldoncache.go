@@ -158,9 +158,7 @@ func (xds *SeldonXDSCache) ClusterContents() []types.Resource {
 		}
 	}
 
-	for _, permanentCluster := range xds.permanentClusters {
-		r = append(r, permanentCluster)
-	}
+	r = append(r, xds.permanentClusters...)
 
 	for _, c := range xds.Clusters {
 		endpoints := make([]resources.Endpoint, 0, len(c.Endpoints))
