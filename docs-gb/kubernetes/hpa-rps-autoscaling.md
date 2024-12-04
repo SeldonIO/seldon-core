@@ -16,13 +16,13 @@ and servers (single-model serving). This will require:
 {% hint style="warning" %}
 The Core 2 HPA-based autoscaling has the following constraints/limitations:
 
-- HPA scaling only targets single-model serving, where there is a 1:1 correspondence between models and servers. Autoscaling for multi-model serving (MMS) is supported for specific models and workloads via the Core 2 native features described [here](autoscaling.md). 
+- HPA scaling only targets single-model serving, where there is a 1:1 correspondence between models and servers. Autoscaling for multi-model serving (MMS) is supported for specific models and workloads via the Core 2 native features described [here](autoscaling.md).
   - Significant improvements to MMS autoscaling are planned for future releases.
-    
-- **Only custom metrics** from Prometheus are supported. Native Kubernetes resource metrics such as CPU or memory are not. This limitation exists because of HPA's design: In order to prevent multiple HPA CRs from issuing conflicting scaling instructions, each HPA CR must exclusively control a set of pods which is disjoint from the pods controlled by other HPA CRs. In Seldon Core 2, CPU/memory metrics can be used to scale the number of Server replicas via HPA. However, this also means that the CPU/memory metrics from the same set of pods can no longer be used to scale the number of model replicas. 
+
+- **Only custom metrics** from Prometheus are supported. Native Kubernetes resource metrics such as CPU or memory are not. This limitation exists because of HPA's design: In order to prevent multiple HPA CRs from issuing conflicting scaling instructions, each HPA CR must exclusively control a set of pods which is disjoint from the pods controlled by other HPA CRs. In Seldon Core 2, CPU/memory metrics can be used to scale the number of Server replicas via HPA. However, this also means that the CPU/memory metrics from the same set of pods can no longer be used to scale the number of model replicas.
   - We are working on improvements in Core 2 to allow both servers and models to be scaled based on a single HPA manifest, targeting the Model CR.
-    
-- Each Kubernetes cluster supports only one active custom metrics provider. If your cluster already uses a custom metrics provider different from `prometheus-adapter`, it will need to be removed before being able to scale Core 2 models and servers via HPA. 
+
+- Each Kubernetes cluster supports only one active custom metrics provider. If your cluster already uses a custom metrics provider different from `prometheus-adapter`, it will need to be removed before being able to scale Core 2 models and servers via HPA.
   - The Kubernetes community is actively exploring solutions for allowing multiple custom metrics providers to coexist.
 {% endhint %}
 
@@ -94,15 +94,16 @@ data:
       "metricsQuery": |
         sum by (<<.GroupBy>>) (
           rate (
-            <<.Series>>{<<.LabelMatchers>>}[1m]
+            <<.Series>>{<<.LabelMatchers>>}[2m]
           )
         )
 ````
 {% endcode %}
 
-In this example, a single rule is defined to fetch the `seldon_model_infer_total` metric
-from Prometheus, compute its rate over a 1 minute window, and expose this to k8s as the `infer_rps`
-metric, with aggregations available at model, server, inference server pod and namespace level.
+In this example, a single rule is defined to fetch the `seldon_model_infer_total` metric from
+Prometheus, compute its per second change rate based on data within a 2 minute sliding window,
+and expose this to Kubernetes as the `infer_rps` metric, with aggregations available at model,
+server, inference server pod and namespace level.
 
 When HPA requests the `infer_rps` metric via the custom metrics API for a specific model,
 prometheus-adapter issues a Prometheus query in line with what it is defined in its config.
@@ -113,22 +114,31 @@ For the configuration in our example, the query for a model named `irisa0` in na
 ```
 sum by (model) (
   rate (
-    seldon_model_infer_total{model="irisa0", namespace="seldon-mesh"}[1m]
+    seldon_model_infer_total{model="irisa0", namespace="seldon-mesh"}[2m]
   )
 )
 ```
 
-Before configuring prometheus-adapter via the ConfigMap, it is important to sanity-check the query by executing it against
-your Prometheus instance. To do so, pick an existing model CR in your Seldon Core 2 install, and
-send some inference requests towards it. Then, wait for a period equal to the Prometheus scrape
-interval (Prometheus default 1 minute) so that the metric values are updated. Finally, you can
-modify the model name and namespace in the query above to match the model you've picked and
-execute the query.
+You may want to modify the query in the example to match the one that you typically use in your
+monitoring setup for RPS metrics. The example calls [`rate()`](https://prometheus.io/docs/prometheus/latest/querying/functions/#rate)
+with a 2 minute sliding window. Values scraped at the beginning and end of the 2 minute window
+before query time are used to compute the RPS.
 
-If the query result is non-empty, you may proceed with the next steps, or customize the query
-according to your needs and re-test. If the query result is empty, please adjust it until it
-returns the expected metric values. Update the `metricsQuery` in the prometheus-adapter
-ConfigMap to match.
+It is important to sanity-check the query by executing it against your Prometheus instance. To
+do so, pick an existing model CR in your Seldon Core 2 install, and send some inference requests
+towards it. Then, wait for a period equal to at least twice the Prometheus scrape interval
+(Prometheus default 1 minute), so that two values from the series are captured and a rate can be
+computed. Finally, you can modify the model name and namespace in the query above to match the
+model you've picked and execute the query.
+
+If the query result is empty, please adjust it until it consistently returns the expected metric
+values. Pay special attention to the window size (2 minutes in the example): if it is smaller
+than twice the Prometheus scrape interval, the query may return no results. A compromise needs
+to be reached to set the window size large enough to reject noise but also small enough to make
+the result responsive to quick changes in load.
+
+Update the `metricsQuery` in the prometheus-adapter ConfigMap to match any query changes you
+have made during tests.
 
 A list of all the Prometheus metrics exposed by Seldon Core 2 in relation to Models, Servers and
 Pipelines is available [here](../metrics/operational.md), and those may be used when customizing
@@ -201,10 +211,6 @@ The rule definition can be broken down in four parts:
     `namespace="n"` is kept.
     - .GroupBy is replaced by the resource type of the requested metric (e.g. `model`,
     `server`, `pod` or `namespace`).
-
-  You may want to modify the query in the example to match the one that you typically use in
-  your monitoring setup for RPS metrics. The example calls [`rate()`](https://prometheus.io/docs/prometheus/latest/querying/functions/#rate)
-  with a 1 minute window.
 
 
 For a complete reference for how `prometheus-adapter` can be configured via the `ConfigMap`, please
@@ -361,8 +367,8 @@ spec:
 ```
 {% endcode %}
 
-In the preceding HPA manifests, the scaling metric is exactly the same, and uses the exact same
-parameters. This is to ensure that both the Models and the Servers are scaled up/down at
+It is important to keep both the scaling metric and any scaling policies the same across the two
+HPA manifests. This is to ensure that both the Models and the Servers are scaled up/down at
 approximately the same time. Small variations in the scale-up time are expected because each HPA
 samples the metrics independently, at regular intervals.
 
@@ -377,9 +383,17 @@ In order to ensure similar scaling behaviour between Models and Servers, the num
 `minReplicas` and `maxReplicas`, as well as any other configured scaling policies should be kept
 in sync across the HPA for the model and the server.
 
-### Details on custom metrics of type Object
+{% hint style="danger" %}
+The Object metric allows for two target value types: `AverageValue` and `Value`. Of the two,
+only `AverageValue` is supported for the current Seldon Core 2 setup. The `Value` target type is
+typically used for metrics describing the utilization of a resource and would not be suitable
+for RPS-based scaling.
+{% endhint %}
 
-The HPA manifests use metrics of type "Object" that fetch the data used in scaling
+
+### HPA metrics of type Object
+
+The example HPA manifests use metrics of type "Object" that fetch the data used in scaling
 decisions by querying k8s metrics associated with a particular k8s object.  The endpoints that
 HPA uses for fetching those metrics are the same ones that were tested in the previous section
 using `kubectl get --raw ...`. Because you have configured the Prometheus Adapter to expose those
@@ -408,7 +422,7 @@ query template configured in our example would be transformed into:
 ```
 sum by (namespace) (
   rate (
-    seldon_model_infer_total{namespace="seldon-mesh"}[1m]
+    seldon_model_infer_total{namespace="seldon-mesh"}[2m]
   )
 )
 ```
@@ -420,25 +434,37 @@ identifying the namespace where the HPA manifest resides in.:
 ```
 sum by (pod) (
   rate (
-    seldon_model_infer_total{pod="mlserver-0", namespace="seldon-mesh"}[1m]
+    seldon_model_infer_total{pod="mlserver-0", namespace="seldon-mesh"}[2m]
   )
 )
 ```
 
-For the `target` of the Object metric you **must** use a `type` of `AverageValue`. The value
-given in `averageValue` represents the per replica RPS scaling threshold of the `scaleTargetRef`
-object (either a Model or a Server in our case), with the target number of replicas being
-computed by HPA according to the following formula:
+The `target` section establishes the thresholds used in scaling decisions. For RPS, the
+`AverageValue` target type refers to the threshold per replica RPS above which the number of the
+`scaleTargetRef` (Model or Server) replicas should be increased. The target number of replicas
+is being computed by HPA according to the following formula:
 
-$$\texttt{targetReplicas} = \frac{\texttt{infer\_rps}}{\texttt{thresholdPerReplicaRPS}}$$
+$$\texttt{targetReplicas} = \frac{\texttt{infer\_rps}}{\texttt{averageValue}}$$
 
-{% hint style="info" %}
-**Note**: Attempting other target types does not work under the current Seldon Core 2 setup, because they
-use the number of active Pods associated with the Model CR (i.e. the associated Server pods) in
-the `targetReplicas` computation. However, this also means that this set of pods becomes "owned"
-by the Model HPA. Once a pod is owned by a given HPA it is not available for other HPAs to use,
-so we would no longer be able to scale the Server CRs using HPA.
-{% endhint %}
+As an example, if `averageValue=50` and `infer_rps=150`, the `targetReplicas` would be 3.
+
+Importantly, computing the target number of replicas does not require knowing the number of
+active pods currently associated with the Server or Model. This is what allows both the Model
+and the Server to be targeted by two separate HPA manifests. Otherwise, both HPA CRs would
+attempt to take ownership of the same set of pods, and transition into a failure state.
+
+This is also why the `Value` target type is **not currently supported**. In this case, HPA first
+computes an `utilizationRatio`:
+
+$$\texttt{utilizationRatio} = \frac{\texttt{custom\_metric\_value}}{\texttt{threshold\_value}}$$
+
+As an example, if `threshold_value=100` and `custom_metric_value=200`, the `utilizationRatio`
+would be 2. HPA deduces from this that the number of active pods associated with the
+`scaleTargetRef` object should be doubled, and expects that once that target is achieved, the
+`custom_metric_value` will become equal to the `threshold_value` (`utilizationRatio=1`). However,
+by using the number of active pods, the HPA CRs for both the Model and the Server also try to
+take exclusive ownership of the same set of pods, and fail.
+
 
 ### HPA sampling of custom metrics
 
