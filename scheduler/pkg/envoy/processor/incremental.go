@@ -79,7 +79,7 @@ func NewIncrementalProcessor(
 		cache:                cache,
 		nodeID:               nodeID,
 		snapshotVersion:      rand.Int63n(1000),
-		logger:               log.WithField("source", "EnvoyServer"),
+		logger:               log.WithField("source", "IncrementalProcessor"),
 		xdsCache:             xdscache.NewSeldonXDSCache(log, pipelineGatewayDetails),
 		modelStore:           modelStore,
 		experimentServer:     experimentServer,
@@ -154,20 +154,25 @@ func (p *IncrementalProcessor) handleExperimentEvents(event coordinator.Experime
 			} else {
 				if event.UpdatedExperiment {
 					err := p.experimentUpdate(exp)
-					var err2 error
 					if err != nil {
 						logger.WithError(err).Errorf("Failed to process sync for experiment %s", event.String())
-						err2 = p.experimentServer.SetStatus(event.ExperimentName, false, err.Error())
+						p.setExperimentStatus(event, false, err.Error())
 					} else {
-						err2 = p.experimentServer.SetStatus(event.ExperimentName, true, "experiment active")
-					}
-					if err2 != nil {
-						logger.WithError(err2).Errorf("Failed to set experiment activation")
+						p.setExperimentStatus(event, true, "experiment active")
+
 					}
 				}
 			}
 		}
 	}()
+}
+
+func (p *IncrementalProcessor) setExperimentStatus(event coordinator.ExperimentEventMsg, active bool, msg string) {
+	logger := p.logger.WithField("func", "setExperimentStatus")
+	err := p.experimentServer.SetStatus(event.ExperimentName, active, msg)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to set experiment activation")
+	}
 }
 
 func (p *IncrementalProcessor) handleModelEvents(event coordinator.ModelEventMsg) {
@@ -247,8 +252,10 @@ func (p *IncrementalProcessor) removeRouteForServerInEnvoyCache(routeName string
 }
 
 func (p *IncrementalProcessor) updateEnvoyForModelVersion(routeName string, modelVersion *store.ModelVersion, server *store.ServerSnapshot, trafficPercent uint32, isMirror bool) {
-	p.xdsCache.AddClustersForRoute(routeName, modelVersion, server)
-	p.xdsCache.AddRouteClusterTraffic(routeName, modelVersion, trafficPercent, isMirror)
+	err := p.xdsCache.AddClustersForRoute(routeName, modelVersion, server)
+	if err != nil {
+		p.xdsCache.AddRouteClusterTraffic(routeName, modelVersion, trafficPercent, isMirror)
+	}
 }
 
 func getTrafficShare(latestModel *store.ModelVersion, lastAvailableModelVersion *store.ModelVersion, weight uint32) (uint32, uint32) {
@@ -524,7 +531,7 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 
 	model, err := p.modelStore.GetModel(modelName)
 	if err != nil {
-		logger.WithError(err).Warnf("Failed to sync model %s", modelName)
+		logger.WithError(err).Warnf("sync: Failed to sync model %s", modelName)
 		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
 			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
 			p.modelStore.UnlockModel(modelName)

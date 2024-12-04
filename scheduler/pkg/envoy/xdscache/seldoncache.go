@@ -281,6 +281,7 @@ func (xds *SeldonXDSCache) AddRouteClusterTraffic(
 		HttpCluster:   httpClusterName,
 		GrpcCluster:   grpcClusterName,
 	}
+
 	if isMirror {
 		route.Mirror = &clusterTraffic
 	} else {
@@ -294,13 +295,13 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 	routeName string,
 	modelVersion *store.ModelVersion,
 	server *store.ServerSnapshot,
-) {
+) error {
 	logger := xds.logger.WithField("func", "AddClustersForRoute")
 
 	assignment := modelVersion.GetAssignment() // Get loaded replicas for model
 	if len(assignment) == 0 {
 		logger.Debugf("No assigned replicas so returning for %s", routeName)
-		return
+		return fmt.Errorf("model: %v has no assignments", modelVersion)
 	}
 
 	httpClusterName, grpcClusterName := getClusterNames(modelVersion)
@@ -316,6 +317,7 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 			Grpc:      false,
 		}
 	}
+	xds.Clusters[httpClusterName] = httpCluster
 	httpCluster.Routes[routeVersionKey] = true
 
 	grpcCluster, ok := xds.Clusters[grpcClusterName]
@@ -327,7 +329,6 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 			Grpc:      true,
 		}
 	}
-	grpcCluster.Routes[routeVersionKey] = true
 
 	for _, replicaIdx := range assignment {
 		replica, ok := server.Replicas[replicaIdx]
@@ -346,9 +347,9 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 			}
 		}
 	}
-
-	xds.Clusters[httpClusterName] = httpCluster
 	xds.Clusters[grpcClusterName] = grpcCluster
+	grpcCluster.Routes[routeVersionKey] = true
+	return nil
 }
 
 func getClusterNames(modelVersion *store.ModelVersion) (string, string) {
@@ -358,21 +359,21 @@ func getClusterNames(modelVersion *store.ModelVersion) (string, string) {
 	return httpClusterName, grpcClusterName
 }
 
-func (xds *SeldonXDSCache) removeRouteFromCluster(routeName string, route resources.Route, cluster resources.TrafficSplit) error {
+func (xds *SeldonXDSCache) removeRouteFromCluster(route resources.Route, cluster resources.TrafficSplit) error {
 	httpCluster, ok := xds.Clusters[cluster.HttpCluster]
 	if !ok {
-		return fmt.Errorf("Can't find http cluster for route %s cluster %s route %+v", routeName, cluster.HttpCluster, route)
+		return fmt.Errorf("Can't find http cluster for route %s cluster %s route %+v", route.RouteName, cluster.HttpCluster, route)
 	}
-	delete(httpCluster.Routes, resources.RouteVersionKey{RouteName: routeName, ModelName: cluster.ModelName, Version: cluster.ModelVersion})
+	delete(httpCluster.Routes, resources.RouteVersionKey{RouteName: route.RouteName, ModelName: cluster.ModelName, Version: cluster.ModelVersion})
 	if len(httpCluster.Routes) == 0 {
 		delete(xds.Clusters, cluster.HttpCluster)
 	}
 
 	grpcCluster, ok := xds.Clusters[cluster.GrpcCluster]
 	if !ok {
-		return fmt.Errorf("Can't find grpc cluster for route %s cluster %s route %+v", routeName, cluster.GrpcCluster, route)
+		return fmt.Errorf("Can't find grpc cluster for route %s cluster %s route %+v", route.RouteName, cluster.GrpcCluster, route)
 	}
-	delete(grpcCluster.Routes, resources.RouteVersionKey{RouteName: routeName, ModelName: cluster.ModelName, Version: cluster.ModelVersion})
+	delete(grpcCluster.Routes, resources.RouteVersionKey{RouteName: route.RouteName, ModelName: cluster.ModelName, Version: cluster.ModelVersion})
 	if len(grpcCluster.Routes) == 0 {
 		delete(xds.Clusters, cluster.GrpcCluster)
 	}
@@ -389,13 +390,13 @@ func (xds *SeldonXDSCache) RemoveRoute(routeName string) error {
 	}
 	delete(xds.Routes, routeName)
 	for _, cluster := range route.Clusters {
-		err := xds.removeRouteFromCluster(routeName, route, cluster)
+		err := xds.removeRouteFromCluster(route, cluster)
 		if err != nil {
 			return err
 		}
 	}
 	if route.Mirror != nil {
-		err := xds.removeRouteFromCluster(routeName, route, *route.Mirror)
+		err := xds.removeRouteFromCluster(route, *route.Mirror)
 		if err != nil {
 			return err
 		}
