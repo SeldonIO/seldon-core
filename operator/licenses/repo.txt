@@ -200,7 +200,6 @@ hashicorp/serf
 hashicorp/vault
 heetch/avro
 hpcloud/tail
-iancoleman/orderedmap
 ianlancetaylor/demangle
 imdario/mergo
 in-toto/in-toto-golang
@@ -214,8 +213,6 @@ jcmturner/goidentity
 jcmturner/gokrb5
 jcmturner/rpc
 jessevdk/go-flags
-jhump/gopoet
-jhump/goprotoc
 jhump/protoreflect
 jonboulle/clockwork
 josharian/intern
@@ -223,7 +220,6 @@ jpillora/backoff
 json-iterator/go
 jstemmer/go-junit-report
 jtolds/gls
-juju/qthttptest
 julienschmidt/httprouter
 kballard/go-shellquote
 kelseyhightower/envconfig
@@ -236,7 +232,6 @@ kr/pretty
 kr/pty
 kr/text
 kylelemons/godebug
-linkedin/goavro
 lufia/plan9stats
 lyft/protoc-gen-validate
 magiconair/properties
@@ -270,7 +265,6 @@ mwitkow/go-conntrack
 mxk/go-flowrate
 natefinch/lumberjack
 niemeyer/pretty
-nrwiersma/avro-benchmarks
 nxadm/tail
 oklog/ulid
 olekukonko/tablewriter
@@ -286,7 +280,6 @@ pelletier/go-toml
 peterbourgon/diskv
 pierrec/lz4
 pkg/browser
-pkg/diff
 pkg/errors
 pkg/profile
 planetscale/vtprotobuf
@@ -305,7 +298,6 @@ r3labs/sse
 rabbitmq/amqp091-go
 rcrowley/go-metrics
 rivo/uniseg
-rogpeppe/clock
 rogpeppe/fastuuid
 rogpeppe/go-internal
 russross/blackfriday
@@ -370,16 +362,12 @@ xiatechs/jsonata-go
 yuin/goldmark
 yusufpapurcu/wmi
 https://github.com/golang/go
-go-avro/avro
 go-check/check
 cheggaaa/pb
 go-errgo/errgo
-go-httprequest/httprequest
 go-inf/inf
 go-ini/ini
-go-mgo/mgo
 go-resty/resty
-go-retry/retry
 square/go-jose
 go-tomb/tomb
 go-yaml/yaml

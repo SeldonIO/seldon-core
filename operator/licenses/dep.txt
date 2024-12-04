@@ -45,7 +45,6 @@ github.com/Shopify/toxiproxy
 github.com/Shopify/toxiproxy/v2
 github.com/acarl005/stripansi
 github.com/actgardner/gogen-avro/v10
-github.com/actgardner/gogen-avro/v9
 github.com/alecthomas/jsonschema
 github.com/alecthomas/kingpin/v2
 github.com/alecthomas/template
@@ -97,7 +96,6 @@ github.com/cncf/udpa/go
 github.com/cncf/xds/go
 github.com/cockroachdb/datadriven
 github.com/compose-spec/compose-go/v2
-github.com/confluentinc/confluent-kafka-go
 github.com/confluentinc/confluent-kafka-go/v2
 github.com/containerd/console
 github.com/containerd/containerd
@@ -225,7 +223,6 @@ github.com/grpc-ecosystem/go-grpc-middleware
 github.com/grpc-ecosystem/go-grpc-prometheus
 github.com/grpc-ecosystem/grpc-gateway
 github.com/grpc-ecosystem/grpc-gateway/v2
-github.com/hamba/avro
 github.com/hamba/avro/v2
 github.com/hashicorp/consul/api
 github.com/hashicorp/consul/sdk
@@ -252,7 +249,6 @@ github.com/hashicorp/serf
 github.com/hashicorp/vault/api
 github.com/heetch/avro
 github.com/hpcloud/tail
-github.com/iancoleman/orderedmap
 github.com/ianlancetaylor/demangle
 github.com/imdario/mergo
 github.com/in-toto/in-toto-golang
@@ -266,8 +262,6 @@ github.com/jcmturner/goidentity/v6
 github.com/jcmturner/gokrb5/v8
 github.com/jcmturner/rpc/v2
 github.com/jessevdk/go-flags
-github.com/jhump/gopoet
-github.com/jhump/goprotoc
 github.com/jhump/protoreflect
 github.com/jonboulle/clockwork
 github.com/josharian/intern
@@ -275,7 +269,6 @@ github.com/jpillora/backoff
 github.com/json-iterator/go
 github.com/jstemmer/go-junit-report
 github.com/jtolds/gls
-github.com/juju/qthttptest
 github.com/julienschmidt/httprouter
 github.com/kballard/go-shellquote
 github.com/kelseyhightower/envconfig
@@ -288,8 +281,6 @@ github.com/kr/pretty
 github.com/kr/pty
 github.com/kr/text
 github.com/kylelemons/godebug
-github.com/linkedin/goavro
-github.com/linkedin/goavro/v2
 github.com/lufia/plan9stats
 github.com/lyft/protoc-gen-validate
 github.com/magiconair/properties
@@ -328,7 +319,6 @@ github.com/mwitkow/go-conntrack
 github.com/mxk/go-flowrate
 github.com/natefinch/lumberjack
 github.com/niemeyer/pretty
-github.com/nrwiersma/avro-benchmarks
 github.com/nxadm/tail
 github.com/oklog/ulid
 github.com/olekukonko/tablewriter
@@ -345,7 +335,6 @@ github.com/pelletier/go-toml
 github.com/peterbourgon/diskv
 github.com/pierrec/lz4
 github.com/pkg/browser
-github.com/pkg/diff
 github.com/pkg/errors
 github.com/pkg/profile
 github.com/planetscale/vtprotobuf
@@ -364,7 +353,6 @@ github.com/r3labs/sse
 github.com/rabbitmq/amqp091-go
 github.com/rcrowley/go-metrics
 github.com/rivo/uniseg
-github.com/rogpeppe/clock
 github.com/rogpeppe/fastuuid
 github.com/rogpeppe/go-internal
 github.com/russross/blackfriday/v2
@@ -489,21 +477,16 @@ google.golang.org/grpc
 google.golang.org/grpc/cmd/protoc-gen-go-grpc
 google.golang.org/protobuf
 gopkg.in/alecthomas/kingpin.v2
-gopkg.in/avro.v0
 gopkg.in/cenkalti/backoff.v1
 gopkg.in/check.v1
 gopkg.in/cheggaaa/pb.v1
-gopkg.in/errgo.v1
 gopkg.in/errgo.v2
 gopkg.in/evanphx/json-patch.v4
 gopkg.in/fsnotify.v1
-gopkg.in/httprequest.v1
 gopkg.in/inf.v0
 gopkg.in/ini.v1
-gopkg.in/mgo.v2
 gopkg.in/natefinch/lumberjack.v2
 gopkg.in/resty.v1
-gopkg.in/retry.v1
 gopkg.in/square/go-jose.v2
 gopkg.in/tomb.v1
 gopkg.in/yaml.v2
