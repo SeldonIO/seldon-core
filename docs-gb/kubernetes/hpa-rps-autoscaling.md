@@ -15,11 +15,11 @@ and servers (single-model serving). This will require:
 
 {% hint style="warning" %}
 The Core 2 HPA-based autoscaling has the following constraints/limitations:
-    * HPA scaling only targets single-model serving, where there is a 1:1 correspondence between
+    - HPA scaling only targets single-model serving, where there is a 1:1 correspondence between
     models and servers. Autoscaling for multi-model serving (MMS) is supported for specific models
     and workloads via the Core 2 native features described [here](autoscaling.md).
     Significant improvements to MMS autoscaling are planned for future releases.
-    * **Only custom metrics** from Prometheus are supported. Native Kubernetes
+    - **Only custom metrics** from Prometheus are supported. Native Kubernetes
     resource metrics such as CPU or memory are not. This limitation exists because of HPA's
     design: In order to prevent multiple HPA CRs from issuing conflicting scaling instructions,
     each HPA CR must exclusively control a set of pods which is disjoint from the pods
@@ -28,7 +28,7 @@ The Core 2 HPA-based autoscaling has the following constraints/limitations:
     from the same set of pods can no longer be used to scale the number of model replicas. We
     are working on improvements in Core 2 to allow both servers and models to be scaled based on
     a single HPA manifest, targeting the Model CR.
-    * Each Kubernetes cluster supports only one active custom metrics provider. If your cluster
+    - Each Kubernetes cluster supports only one active custom metrics provider. If your cluster
     already uses a custom metrics provider different from `prometheus-adapter`, it
     will need to be removed before being able to scale Core 2 models and servers via HPA. The
     Kubernetes is actively exploring solutions for allowing multiple custom metrics providers to
@@ -127,7 +127,7 @@ sum by (model) (
 )
 ```
 
-Before updating the ConfigMap, it is important to sanity-check the query by executing it against
+Before configuring prometheus-adapter via the ConfigMap, it is important to sanity-check the query by executing it against
 your Prometheus instance. To do so, pick an existing model CR in your Seldon Core 2 install, and
 send some inference requests towards it. Then, wait for a period equal to the Prometheus scrape
 interval (Prometheus default 1 minute) so that the metric values are updated. Finally, you can
@@ -143,7 +143,7 @@ A list of all the Prometheus metrics exposed by Seldon Core 2 in relation to Mod
 Pipelines is available [here](../metrics/operational.md), and those may be used when customizing
 the configuration.
 
-### Understanding prometheus-adapter rule definitions
+### Customizing prometheus-adapter rule definitions
 
 The rule definition can be broken down in four parts:
 
