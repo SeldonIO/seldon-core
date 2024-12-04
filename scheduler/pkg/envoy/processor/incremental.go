@@ -258,7 +258,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(routeName string, mode
 		logger.Debugf("Not updating route: %s - so assigned replicas for %v", routeName, modelVersion)
 		return
 	}
-	modelName := modelVersion.GetMeta().GetName() + "_" + strconv.FormatInt(int64(modelVersion.GetVersion()), 10)
+	modelName := modelVersion.GetMeta().GetName()
 	modelVersionNumber := modelVersion.GetVersion()
 	httpClusterName, grpcClusterName := getClusterNames(modelName, modelVersionNumber)
 	p.xdsCache.AddClustersForRoute(routeName, modelName, httpClusterName, grpcClusterName, modelVersionNumber, assignment, server)
