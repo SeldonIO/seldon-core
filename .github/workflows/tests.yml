@@ -22,3 +22,11 @@ jobs:
         run: make -C components/tls test
       - name: test-components-kafka
         run: make -C components/kafka test
+      - name: check CRDs changes
+        run: | 
+          make -C operator generate
+          git diff --exit-code
+      - name: check helm changes
+        run: | 
+          make -C k8s create
+          git diff --exit-code
