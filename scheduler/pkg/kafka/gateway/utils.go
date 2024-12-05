@@ -13,8 +13,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	"google.golang.org/grpc/metadata"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func extractHeadersHttp(headers http.Header) map[string][]string {
