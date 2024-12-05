@@ -254,9 +254,10 @@ func (kc *KafkaClient) InspectStep(
 		fmt.Printf("%s\n", string(b))
 	} else {
 		for _, topic := range ki.Topics {
+			fmt.Printf("\nTopic: %s\n", topic.Name)
 			for _, msg := range topic.Msgs {
 				if verbose {
-					fmt.Printf("%s\t%s\t%s\t", topic.Name, msg.Key, msg.Value)
+					fmt.Printf("%s\t%s\t", msg.Key, msg.Value)
 					for k, v := range msg.Headers {
 						fmt.Printf("\t%s=%s", k, v)
 					}
@@ -265,6 +266,7 @@ func (kc *KafkaClient) InspectStep(
 					fmt.Printf("%s\t%s\t%s\n", topic.Name, msg.Key, msg.Value)
 				}
 			}
+			fmt.Print("----------------\n")
 		}
 	}
 
