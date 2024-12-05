@@ -1,6 +1,6 @@
 # Securing model endpoints
 
-In enterprise use cases, you may need to control who can access the endpoints for deployed models or pipelines. You can leverage existing authentication mechanisms in your cluster or environment, such as service mesh-level controls, or use cloud provider solutions like Apigee on GCP, Amazon API Gateway on AWS, or a provider-agnostic gateway like Gravitee. Seldon Core 2 integrates with various service meshes that support these requirements. Though Seldon Core 2 is service-mesh agnostic, the example on this page demonstrates how to set up authentication and authorization to secure a model endpoint using the Istio service mesh.
+In enterprise use cases, you may need to control who can access the endpoints for deployed models or pipelines. You can leverage existing authentication mechanisms in your cluster or environment, such as service mesh-level controls, or use cloud provider solutions like Apigee on GCP, Amazon API Gateway on AWS, or a provider-agnostic gateway like Gravitee. Seldon Core 2 integrates with various [service meshes](../kubernetes/service-meshes/) that support these requirements. Though Seldon Core 2 is service-mesh agnostic, the example on this page demonstrates how to set up authentication and authorization to secure a model endpoint using the Istio service mesh.
 
 ## Securing Endpoints with Istio
 
