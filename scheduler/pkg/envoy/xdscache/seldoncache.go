@@ -30,6 +30,9 @@ const (
 	mirrorListenerAddress        = "0.0.0.0"
 	mirrorListenerPort    uint32 = 9001
 
+	permanentListenerCount int = 2 // seldon_service and seldon_mirrors
+	permanentClusterCount  int = 4 // pipeline gateway * 2 + model gateway * 2
+
 	EnvoyDownstreamServerCertName = "downstream_server"
 	EnvoyDownstreamClientCertName = "downstream_client"
 	EnvoyUpstreamServerCertName   = "upstream_server"
@@ -56,8 +59,8 @@ type PipelineGatewayDetails struct {
 
 func NewSeldonXDSCache(logger logrus.FieldLogger, pipelineGatewayDetails *PipelineGatewayDetails) *SeldonXDSCache {
 	return &SeldonXDSCache{
-		permanentListeners:     make([]types.Resource, 2),
-		permanentClusters:      make([]types.Resource, 4),
+		permanentListeners:     make([]types.Resource, permanentListenerCount),
+		permanentClusters:      make([]types.Resource, permanentClusterCount),
 		Clusters:               make(map[string]resources.Cluster),
 		Routes:                 make(map[string]resources.Route),
 		Pipelines:              make(map[string]resources.PipelineRoute),
@@ -106,7 +109,6 @@ func (xds *SeldonXDSCache) AddPermanentListeners() {
 }
 
 func (xds *SeldonXDSCache) AddPermanentClusters() {
-
 	var clientSecret *resources.Secret
 	if xds.TLSActive {
 		if secret, ok := xds.Secrets[EnvoyUpstreamClientCertName]; ok {
@@ -338,22 +340,25 @@ func (xds *SeldonXDSCache) RemoveRoute(routeName string) error {
 }
 
 func (xds *SeldonXDSCache) removeRouteFromCluster(route resources.Route, cluster resources.TrafficSplit) error {
-	httpCluster, ok := xds.Clusters[cluster.HttpCluster]
-	if !ok {
-		return fmt.Errorf("can't find http cluster for route %s cluster %s route %+v", route.RouteName, cluster.HttpCluster, route)
-	}
-	delete(httpCluster.Routes, resources.RouteVersionKey{RouteName: route.RouteName, ModelName: cluster.ModelName, Version: cluster.ModelVersion})
-	if len(httpCluster.Routes) == 0 {
-		delete(xds.Clusters, cluster.HttpCluster)
+	removeCluster := func(route resources.Route, clusterName string, split resources.TrafficSplit) error {
+		cluster, ok := xds.Clusters[clusterName]
+		if !ok {
+			return fmt.Errorf("can't find cluster for route %s cluster %s route %+v", route.RouteName, clusterName, route)
+		}
+		delete(cluster.Routes, resources.RouteVersionKey{RouteName: route.RouteName, ModelName: split.ModelName, Version: split.ModelVersion})
+		if len(cluster.Routes) == 0 {
+			delete(xds.Clusters, clusterName)
+		}
+		return nil
 	}
 
-	grpcCluster, ok := xds.Clusters[cluster.GrpcCluster]
-	if !ok {
-		return fmt.Errorf("can't find grpc cluster for route %s cluster %s route %+v", route.RouteName, cluster.GrpcCluster, route)
+	err := removeCluster(route, cluster.HttpCluster, cluster)
+	if err != nil {
+		return err
 	}
-	delete(grpcCluster.Routes, resources.RouteVersionKey{RouteName: route.RouteName, ModelName: cluster.ModelName, Version: cluster.ModelVersion})
-	if len(grpcCluster.Routes) == 0 {
-		delete(xds.Clusters, cluster.GrpcCluster)
+	err = removeCluster(route, cluster.GrpcCluster, cluster)
+	if err != nil {
+		return err
 	}
 	return nil
 }

@@ -246,7 +246,7 @@ func MakeRoutes(routes map[string]Route, pipelines map[string]PipelineRoute) (*r
 
 	for _, r := range routes {
 		for _, clusterTraffic := range r.Clusters { // it's an experiment, so create some sticky session routes
-			if len(r.Clusters) > 1 {
+			if isExperiment(r.Clusters) {
 				makeModelStickySessionEnvoyRoute(r.RouteName, rts[rtsIndex], r.LogPayloads, &clusterTraffic, false)
 				rtsIndex++
 				makeModelStickySessionEnvoyRoute(r.RouteName, rts[rtsIndex], r.LogPayloads, &clusterTraffic, true)
@@ -268,7 +268,7 @@ func MakeRoutes(routes map[string]Route, pipelines map[string]PipelineRoute) (*r
 
 	// Create Pipeline Routes
 	for _, r := range pipelines {
-		if len(r.Clusters) > 1 { // it's an experiment, so create some sticky session routes
+		if isExperiment(r.Clusters) { // it's an experiment, so create some sticky session routes
 			for _, clusterTraffic := range r.Clusters {
 				makePipelineStickySessionEnvoyRoute(r.RouteName, rts[rtsIndex], &clusterTraffic, false)
 				rtsIndex++
@@ -687,7 +687,7 @@ func makePipelineStickySessionEnvoyRoute(routeName string, envoyRoute *route.Rou
 func countModelStickySessions(routes map[string]Route) int {
 	count := 0
 	for _, r := range routes {
-		if len(r.Clusters) > 1 {
+		if isExperiment(r.Clusters) {
 			count = count + (len(r.Clusters) * 2) // REST and GRPC routes for each model in an experiment
 		}
 	}
@@ -697,11 +697,15 @@ func countModelStickySessions(routes map[string]Route) int {
 func countPipelineStickySessions(pipelineRoutes map[string]PipelineRoute) int {
 	count := 0
 	for _, r := range pipelineRoutes {
-		if len(r.Clusters) > 1 {
+		if isExperiment(r.Clusters) {
 			count = count + (len(r.Clusters) * 2) // REST and GRPC routes for each model in an experiment
 		}
 	}
 	return count
+}
+
+func isExperiment[T any](clusters []T) bool {
+	return len(clusters) > 1
 }
 
 func countModelMirrors(models map[string]Route) int {
