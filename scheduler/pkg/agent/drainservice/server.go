@@ -18,8 +18,9 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 const (
