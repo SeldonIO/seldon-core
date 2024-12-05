@@ -20,7 +20,6 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
@@ -80,10 +79,10 @@ func TestAddRemoveHttpAndGrpcRouteVersions(t *testing.T) {
 	g.Expect(len(c.Clusters[grpcCluster1].Endpoints)).To(Equal(1))
 	g.Expect(c.Clusters[httpCluster1].Grpc).To(BeFalse())
 	g.Expect(c.Clusters[grpcCluster1].Grpc).To(BeTrue())
-	g.Expect(c.Clusters[httpCluster1].Routes[resources.RouteVersionKey{RouteName: route1, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcCluster1].Routes[resources.RouteVersionKey{RouteName: route1, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[httpCluster2].Routes[resources.RouteVersionKey{RouteName: route1, ModelName: model1, Version: 2}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcCluster2].Routes[resources.RouteVersionKey{RouteName: route1, ModelName: model1, Version: 2}]).To(BeTrue())
+	g.Expect(c.Clusters[httpCluster1].Routes[RouteVersionKey{RouteName: route1, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[grpcCluster1].Routes[RouteVersionKey{RouteName: route1, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[httpCluster2].Routes[RouteVersionKey{RouteName: route1, ModelName: model1, Version: 2}]).To(BeTrue())
+	g.Expect(c.Clusters[grpcCluster2].Routes[RouteVersionKey{RouteName: route1, ModelName: model1, Version: 2}]).To(BeTrue())
 
 	addVersionedRoute(c, route2, model1, httpCluster1, grpcCluster1, 100, 1)
 
@@ -91,8 +90,8 @@ func TestAddRemoveHttpAndGrpcRouteVersions(t *testing.T) {
 	g.Expect(len(c.Routes[route2].Clusters)).To(Equal(1))
 	clusters = c.Routes[route2].Clusters
 	g.Expect(clusters[0].TrafficWeight).To(Equal(uint32(100)))
-	g.Expect(c.Clusters[httpCluster1].Routes[resources.RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcCluster1].Routes[resources.RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[httpCluster1].Routes[RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[grpcCluster1].Routes[RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
 	g.Expect(len(c.Clusters[httpCluster1].Endpoints)).To(Equal(1))
 	g.Expect(len(c.Clusters[grpcCluster1].Endpoints)).To(Equal(1))
 
@@ -136,10 +135,10 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForSameModel(t *testing.T) {
 	g.Expect(len(c.Clusters[grpcCluster1].Endpoints)).To(Equal(1))
 	g.Expect(c.Clusters[httpCluster1].Grpc).To(BeFalse())
 	g.Expect(c.Clusters[grpcCluster1].Grpc).To(BeTrue())
-	g.Expect(c.Clusters[httpCluster1].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcCluster1].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[httpCluster2].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 2}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcCluster2].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 2}]).To(BeTrue())
+	g.Expect(c.Clusters[httpCluster1].Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[grpcCluster1].Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[httpCluster2].Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 2}]).To(BeTrue())
+	g.Expect(c.Clusters[grpcCluster2].Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 2}]).To(BeTrue())
 
 	err := c.RemoveRoute(routeName)
 	g.Expect(err).To(BeNil())
@@ -176,10 +175,10 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentModels(t *testing.T) {
 	g.Expect(len(c.Clusters[grpcClusterModel1].Endpoints)).To(Equal(1))
 	g.Expect(c.Clusters[httpClusterModel1].Grpc).To(BeFalse())
 	g.Expect(c.Clusters[grpcClusterModel1].Grpc).To(BeTrue())
-	g.Expect(c.Clusters[httpClusterModel1].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcClusterModel1].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[httpClusterModel2].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model2, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcClusterModel2].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model2, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[httpClusterModel1].Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[grpcClusterModel1].Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[httpClusterModel2].Routes[RouteVersionKey{RouteName: routeName, ModelName: model2, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[grpcClusterModel2].Routes[RouteVersionKey{RouteName: routeName, ModelName: model2, Version: 1}]).To(BeTrue())
 
 	err := c.RemoveRoute(routeName)
 	g.Expect(err).To(BeNil())
@@ -217,10 +216,10 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentRoutesSameModel(t *testing
 	g.Expect(len(c.Clusters[grpcClusterModel1].Endpoints)).To(Equal(1))
 	g.Expect(c.Clusters[httpClusterModel1].Grpc).To(BeFalse())
 	g.Expect(c.Clusters[grpcClusterModel1].Grpc).To(BeTrue())
-	g.Expect(c.Clusters[httpClusterModel1].Routes[resources.RouteVersionKey{RouteName: route1, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcClusterModel1].Routes[resources.RouteVersionKey{RouteName: route1, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[httpClusterModel1].Routes[resources.RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcClusterModel1].Routes[resources.RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[httpClusterModel1].Routes[RouteVersionKey{RouteName: route1, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[grpcClusterModel1].Routes[RouteVersionKey{RouteName: route1, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[httpClusterModel1].Routes[RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[grpcClusterModel1].Routes[RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
 
 	err := c.RemoveRoute(route1)
 	g.Expect(err).To(BeNil())
@@ -331,21 +330,21 @@ func addCluster(
 ) {
 	cluster, ok := xds.Clusters[name]
 	if !ok {
-		cluster = resources.Cluster{
+		cluster = Cluster{
 			Name:      name,
-			Endpoints: make(map[string]resources.Endpoint),
-			Routes:    make(map[resources.RouteVersionKey]bool),
+			Endpoints: make(map[string]Endpoint),
+			Routes:    make(map[RouteVersionKey]bool),
 			Grpc:      isGrpc,
 		}
 	}
-	cluster.Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: modelName, Version: modelVersion}] = true
+	cluster.Routes[RouteVersionKey{RouteName: routeName, ModelName: modelName, Version: modelVersion}] = true
 	xds.Clusters[name] = cluster
 }
 
 func addEndpoint(xds *SeldonXDSCache, clusterName, upstreamHost string, upstreamPort uint32) {
 	cluster := xds.Clusters[clusterName]
 	k := fmt.Sprintf("%s:%d", upstreamHost, upstreamPort)
-	cluster.Endpoints[k] = resources.Endpoint{
+	cluster.Endpoints[k] = Endpoint{
 		UpstreamHost: upstreamHost,
 		UpstreamPort: upstreamPort,
 	}

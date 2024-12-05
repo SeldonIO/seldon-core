@@ -23,7 +23,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
@@ -187,9 +186,9 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, reso
 }
 
 func getResourceFromHeaders(req *http.Request, logger log.FieldLogger) (string, bool, error) {
-	modelHeader := req.Header.Get(resources.SeldonModelHeader)
+	modelHeader := req.Header.Get(util.SeldonModelHeader)
 	// may have multiple header values due to shadow/mirror processing
-	modelInternalHeader := req.Header.Values(resources.SeldonInternalModelHeader)
+	modelInternalHeader := req.Header.Values(util.SeldonInternalModelHeader)
 	logger.Debugf("Seldon model header %s and seldon internal model header %s", modelHeader, modelInternalHeader)
 	if len(modelInternalHeader) > 0 {
 		return createResourceNameFromHeader(modelInternalHeader[len(modelInternalHeader)-1]) // get last header if multiple

@@ -13,15 +13,14 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	"google.golang.org/grpc/metadata"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 )
 
 func extractHeadersHttp(headers http.Header) map[string][]string {
 	filteredHeaders := make(map[string][]string)
 	for k, v := range headers {
-		if strings.HasPrefix(k, resources.ExternalHeaderPrefix) {
+		if strings.HasPrefix(k, util.ExternalHeaderPrefix) {
 			filteredHeaders[k] = v
 		}
 	}
@@ -31,12 +30,12 @@ func extractHeadersHttp(headers http.Header) map[string][]string {
 func extractHeadersGrpc(headers metadata.MD, trailers metadata.MD) map[string][]string {
 	filteredHeaders := make(map[string][]string)
 	for k, v := range headers {
-		if strings.HasPrefix(k, resources.ExternalHeaderPrefix) {
+		if strings.HasPrefix(k, util.ExternalHeaderPrefix) {
 			filteredHeaders[k] = v
 		}
 	}
 	for k, v := range trailers {
-		if strings.HasPrefix(k, resources.ExternalHeaderPrefix) {
+		if strings.HasPrefix(k, util.ExternalHeaderPrefix) {
 			filteredHeaders[k] = v
 		}
 	}

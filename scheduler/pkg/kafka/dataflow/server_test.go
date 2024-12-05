@@ -808,7 +808,6 @@ func createTestScheduler(t *testing.T, serverName string) (*ChainerServer, *coor
 	configFilePath := fmt.Sprintf("%s/kafka.json", t.TempDir())
 	_ = os.WriteFile(configFilePath, []byte(data), 0644)
 	kc, _ := kafka_config.NewKafkaConfig(configFilePath)
-
 	b := util.NewRingLoadBalancer(1)
 	b.AddServer(serverName)
 	s, _ := NewChainerServer(logger, eventHub, pipelineServer, "test-ns", b, kc)

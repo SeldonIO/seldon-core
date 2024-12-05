@@ -31,7 +31,6 @@ import (
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
@@ -482,26 +481,26 @@ func TestAddMetadataToOutgoingContext(t *testing.T) {
 		{
 			name:            "ignore xseldon-route header",
 			ctx:             metadata.NewIncomingContext(context.TODO(), metadata.New(map[string]string{})),
-			job:             &InferWork{modelName: "foo", headers: map[string]string{resources.SeldonRouteHeader: ":a:"}},
-			expectedHeaders: map[string][]string{resources.SeldonModelHeader: {"foo"}},
+			job:             &InferWork{modelName: "foo", headers: map[string]string{util.SeldonRouteHeader: ":a:"}},
+			expectedHeaders: map[string][]string{util.SeldonModelHeader: {"foo"}},
 		},
 		{
 			name:            "pass x-request-id header",
 			ctx:             metadata.NewIncomingContext(context.TODO(), metadata.New(map[string]string{})),
 			job:             &InferWork{modelName: "foo", headers: map[string]string{util.RequestIdHeader: "1234"}},
-			expectedHeaders: map[string][]string{resources.SeldonModelHeader: {"foo"}, util.RequestIdHeader: {"1234"}},
+			expectedHeaders: map[string][]string{util.SeldonModelHeader: {"foo"}, util.RequestIdHeader: {"1234"}},
 		},
 		{
 			name:            "pass custom header",
 			ctx:             metadata.NewIncomingContext(context.TODO(), metadata.New(map[string]string{})),
 			job:             &InferWork{modelName: "foo", headers: map[string]string{"x-myheader": "1234"}},
-			expectedHeaders: map[string][]string{resources.SeldonModelHeader: {"foo"}, "x-myheader": {"1234"}},
+			expectedHeaders: map[string][]string{util.SeldonModelHeader: {"foo"}, "x-myheader": {"1234"}},
 		},
 		{
 			name:            "ignore non x- prefix headers",
 			ctx:             metadata.NewIncomingContext(context.TODO(), metadata.New(map[string]string{})),
 			job:             &InferWork{modelName: "foo", headers: map[string]string{"myheader": "1234"}},
-			expectedHeaders: map[string][]string{resources.SeldonModelHeader: {"foo"}},
+			expectedHeaders: map[string][]string{util.SeldonModelHeader: {"foo"}},
 		},
 	}
 	for _, test := range tests {

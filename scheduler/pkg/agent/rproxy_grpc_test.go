@@ -26,7 +26,6 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	testing_utils2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
@@ -120,21 +119,21 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	doInfer := func(modelSuffixInternal, modelSuffix string) (*v2.ModelInferResponse, error) {
 		client := v2.NewGRPCInferenceServiceClient(conn)
 		ctx := context.Background()
-		ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffixInternal, resources.SeldonModelHeader, dummyModelNamePrefix+modelSuffix)
+		ctx = metadata.AppendToOutgoingContext(ctx, util.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffixInternal, util.SeldonModelHeader, dummyModelNamePrefix+modelSuffix)
 		return client.ModelInfer(ctx, &v2.ModelInferRequest{ModelName: dummyModelNamePrefix}) // note without suffix
 	}
 
 	doMeta := func(modelSuffix string) (*v2.ModelMetadataResponse, error) {
 		client := v2.NewGRPCInferenceServiceClient(conn)
 		ctx := context.Background()
-		ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffix, resources.SeldonModelHeader, dummyModelNamePrefix)
+		ctx = metadata.AppendToOutgoingContext(ctx, util.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffix, util.SeldonModelHeader, dummyModelNamePrefix)
 		return client.ModelMetadata(ctx, &v2.ModelMetadataRequest{Name: dummyModelNamePrefix}) // note without suffix
 	}
 
 	doModelReady := func(modelSuffix string) (*v2.ModelReadyResponse, error) {
 		client := v2.NewGRPCInferenceServiceClient(conn)
 		ctx := context.Background()
-		ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffix, resources.SeldonModelHeader, dummyModelNamePrefix)
+		ctx = metadata.AppendToOutgoingContext(ctx, util.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffix, util.SeldonModelHeader, dummyModelNamePrefix)
 		return client.ModelReady(ctx, &v2.ModelReadyRequest{Name: dummyModelNamePrefix}) // note without suffix
 	}
 

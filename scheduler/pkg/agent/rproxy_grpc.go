@@ -31,7 +31,6 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelserver_controlplane/oip"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -169,10 +168,10 @@ func (rp *reverseGRPCProxy) extractModelNamesFromContext(ctx context.Context) (s
 	var internalModelName, externalModelName string
 	var inHeader bool
 	if internalModelName, externalModelName, inHeader = extractModelNamesFromHeaders(ctx); inHeader {
-		rp.logger.Debugf("Extracted model name %s:%s %s:%s", resources.SeldonInternalModelHeader, internalModelName, resources.SeldonModelHeader, externalModelName)
+		rp.logger.Debugf("Extracted model name %s:%s %s:%s", util.SeldonInternalModelHeader, internalModelName, util.SeldonModelHeader, externalModelName)
 		return internalModelName, externalModelName, nil
 	} else {
-		msg := fmt.Sprintf("Failed to extract model name %s:[%s] %s:[%s]", resources.SeldonInternalModelHeader, internalModelName, resources.SeldonModelHeader, externalModelName)
+		msg := fmt.Sprintf("Failed to extract model name %s:[%s] %s:[%s]", util.SeldonInternalModelHeader, internalModelName, util.SeldonModelHeader, externalModelName)
 		rp.logger.Error(msg)
 		return "", "", status.Error(codes.FailedPrecondition, msg)
 	}
@@ -354,10 +353,10 @@ func extractHeader(key string, md metadata.MD) string {
 func extractModelNamesFromHeaders(ctx context.Context) (string, string, bool) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if ok {
-		internalModelName := extractHeader(resources.SeldonInternalModelHeader, md)
+		internalModelName := extractHeader(util.SeldonInternalModelHeader, md)
 		externalModelName, _, err := util.GetOrignalModelNameAndVersion(internalModelName)
 		if err != nil {
-			externalModelName = extractHeader(resources.SeldonModelHeader, md)
+			externalModelName = extractHeader(util.SeldonModelHeader, md)
 		}
 		return internalModelName, externalModelName, internalModelName != "" && externalModelName != ""
 	}

@@ -37,7 +37,6 @@ import (
 
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 	pipeline "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
@@ -313,7 +312,7 @@ func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeCon
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set(resources.SeldonModelHeader, job.modelName)
+	req.Header.Set(util.SeldonModelHeader, job.modelName)
 	if reqId, ok := job.headers[util.RequestIdHeader]; ok {
 		req.Header[util.RequestIdHeader] = []string{reqId}
 	}
@@ -358,13 +357,13 @@ func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeCon
 // Add all external headers to request metadata
 func addMetadataToOutgoingContext(ctx context.Context, job *InferWork, logger log.FieldLogger) context.Context {
 	for k, v := range job.headers {
-		if strings.HasPrefix(k, resources.ExternalHeaderPrefix) &&
-			k != resources.SeldonRouteHeader { // We don;t want to send x-seldon-route as this will confuse envoy
+		if strings.HasPrefix(k, util.ExternalHeaderPrefix) &&
+			k != util.SeldonRouteHeader { // We don;t want to send x-seldon-route as this will confuse envoy
 			logger.Debugf("Adding outgoing ctx metadata %s:%s", k, v)
 			ctx = metadata.AppendToOutgoingContext(ctx, k, v)
 		}
 	}
-	ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonModelHeader, job.modelName)
+	ctx = metadata.AppendToOutgoingContext(ctx, util.SeldonModelHeader, job.modelName)
 	return ctx
 }
 

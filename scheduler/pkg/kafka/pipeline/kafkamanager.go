@@ -24,7 +24,6 @@ import (
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
@@ -220,7 +219,7 @@ func (km *KafkaManager) Infer(
 		outputTopic = km.topicNamer.GetModelTopicInputs(resourceName)
 	}
 	logger.Debugf("Produce on topic %s with key %s", outputTopic, compositeKey)
-	kafkaHeaders := append(headers, kafka.Header{Key: resources.SeldonPipelineHeader, Value: []byte(resourceName)})
+	kafkaHeaders := append(headers, kafka.Header{Key: util.SeldonPipelineHeader, Value: []byte(resourceName)})
 	kafkaHeaders = addRequestIdToKafkaHeadersIfMissing(kafkaHeaders, requestId)
 
 	msg := &kafka.Message{

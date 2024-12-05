@@ -29,7 +29,6 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -76,14 +75,14 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	var originalBody []byte
 	var err error
 
-	internalModelName := req.Header.Get(resources.SeldonInternalModelHeader)
+	internalModelName := req.Header.Get(util.SeldonInternalModelHeader)
 	// externalModelName is the name of the model as it is known to the client, we should not use
-	// resources.SeldonModelHeader though as it can contain the experiment tag (used for routing by envoy)
-	// however for the metrics we need the actual model name and this is done by using resources.SeldonInternalModelHeader
+	// util.SeldonModelHeader though as it can contain the experiment tag (used for routing by envoy)
+	// however for the metrics we need the actual model name and this is done by using util.SeldonInternalModelHeader
 	externalModelName, _, err := util.GetOrignalModelNameAndVersion(internalModelName)
 	if err != nil {
 		t.logger.WithError(err).Warnf("cannot extract model name from %s, revert to actual header", internalModelName)
-		externalModelName = req.Header.Get(resources.SeldonModelHeader)
+		externalModelName = req.Header.Get(util.SeldonModelHeader)
 	}
 
 	// to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
@@ -121,7 +120,7 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	// in the case of triton, a request to a model that is not found is considered a bad request
 	// this is likely to increase latency for genuine bad requests as we will retry twice
 	if res.StatusCode == http.StatusNotFound || res.StatusCode == http.StatusBadRequest {
-		internalModelName := req.Header.Get(resources.SeldonInternalModelHeader)
+		internalModelName := req.Header.Get(util.SeldonInternalModelHeader)
 		if v2Err := t.loader(internalModelName); v2Err != nil {
 			t.logger.WithError(v2Err).Warnf("cannot load model %s", internalModelName)
 		}
@@ -143,26 +142,26 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 func (rp *reverseHTTPProxy) addHandlers(proxy http.Handler) http.Handler {
 	return otelhttp.NewHandler(rp.metrics.AddModelHistogramMetricsHandler(func(w http.ResponseWriter, r *http.Request) {
 		startTime := time.Now()
-		rp.logger.Debugf("Received request with host %s and internal header %v", r.Host, r.Header.Values(resources.SeldonInternalModelHeader))
+		rp.logger.Debugf("Received request with host %s and internal header %v", r.Host, r.Header.Values(util.SeldonInternalModelHeader))
 		rewriteHostHandler(r)
 
-		internalModelName := r.Header.Get(resources.SeldonInternalModelHeader)
+		internalModelName := r.Header.Get(util.SeldonInternalModelHeader)
 		// externalModelName is the name of the model as it is known to the client, we should not use
-		// resources.SeldonModelHeader though as it can contain the experiment tag (used for routing by envoy)
-		// however for the metrics we need the actual model name and this is done by using resources.SeldonInternalModelHeader
+		// util.SeldonModelHeader though as it can contain the experiment tag (used for routing by envoy)
+		// however for the metrics we need the actual model name and this is done by using util.SeldonInternalModelHeader
 		externalModelName, _, err := util.GetOrignalModelNameAndVersion(internalModelName)
 		if err != nil {
 			rp.logger.WithError(err).Warnf("cannot extract model name from %s, revert to actual header", internalModelName)
-			externalModelName = r.Header.Get(resources.SeldonModelHeader)
+			externalModelName = r.Header.Get(util.SeldonModelHeader)
 		}
 
 		//TODO should we return a 404 if headers not found?
 		if externalModelName == "" || internalModelName == "" {
-			rp.logger.Warnf("Failed to extract model name %s:[%s] %s:[%s]", resources.SeldonInternalModelHeader, internalModelName, resources.SeldonModelHeader, externalModelName)
+			rp.logger.Warnf("Failed to extract model name %s:[%s] %s:[%s]", util.SeldonInternalModelHeader, internalModelName, util.SeldonModelHeader, externalModelName)
 			proxy.ServeHTTP(w, r)
 			return
 		} else {
-			rp.logger.Debugf("Extracted model name %s:%s %s:%s", resources.SeldonInternalModelHeader, internalModelName, resources.SeldonModelHeader, externalModelName)
+			rp.logger.Debugf("Extracted model name %s:%s %s:%s", util.SeldonInternalModelHeader, internalModelName, util.SeldonModelHeader, externalModelName)
 		}
 
 		if err := rp.stateManager.EnsureLoadModel(internalModelName); err != nil {

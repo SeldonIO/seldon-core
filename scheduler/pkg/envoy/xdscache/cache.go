@@ -7,7 +7,7 @@ Use of this software is governed by
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package resources
+package xdscache
 
 import "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
