@@ -23,17 +23,16 @@ type Listener struct {
 	Address                string
 	Port                   uint32
 	RouteConfigurationName string
-	//RouteNames []string
 }
 
 type Route struct {
 	RouteName   string
 	LogPayloads bool
-	Clusters    []TrafficSplits
-	Mirrors     []TrafficSplits
+	Clusters    []TrafficSplit
+	Mirror      *TrafficSplit
 }
 
-type TrafficSplits struct {
+type TrafficSplit struct {
 	ModelName     string
 	ModelVersion  uint32
 	TrafficWeight uint32
@@ -61,11 +60,11 @@ type Endpoint struct {
 
 type PipelineRoute struct {
 	RouteName string
-	Clusters  []PipelineTrafficSplits
-	Mirrors   []PipelineTrafficSplits
+	Clusters  []PipelineTrafficSplit
+	Mirror    *PipelineTrafficSplit
 }
 
-type PipelineTrafficSplits struct {
+type PipelineTrafficSplit struct {
 	PipelineName  string
 	TrafficWeight uint32
 }

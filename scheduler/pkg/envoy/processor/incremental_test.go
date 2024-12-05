@@ -351,7 +351,7 @@ func TestRollingUpdate(t *testing.T) {
 				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil, nil),
 				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil, modelStore),
 			}
-			inc.xdsCache.AddListeners()
+			inc.xdsCache.AddPermanentListeners()
 			for _, op := range test.ops {
 				op(inc, g)
 			}
@@ -421,7 +421,7 @@ func TestDraining(t *testing.T) {
 				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil, nil),
 				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil, modelStore),
 			}
-			inc.xdsCache.AddListeners()
+			inc.xdsCache.AddPermanentListeners()
 			for _, op := range test.ops {
 				op(inc, g)
 			}
@@ -566,7 +566,7 @@ func TestModelSync(t *testing.T) {
 				pipelineHandler:      pipeline.NewPipelineStore(log.New(), nil, modelStore),
 				pendingModelVersions: test.pendingModelVersions,
 			}
-			inc.xdsCache.AddListeners()
+			inc.xdsCache.AddPermanentListeners()
 			for _, op := range test.ops {
 				op(inc, g)
 			}
@@ -827,7 +827,8 @@ func TestEnvoySettings(t *testing.T) {
 				inc.handlePipelinesEvents,
 			)
 
-			inc.xdsCache.AddListeners()
+			inc.xdsCache.AddPermanentListeners()
+			inc.xdsCache.AddPermanentClusters()
 			for _, op := range test.ops {
 				op(inc, g)
 				time.Sleep(50 * time.Millisecond) // to allow event handlers to process
@@ -974,7 +975,7 @@ func getTrafficSplits(virtualHost *routev3.VirtualHost) []resources.Route {
 	for _, route := range virtualHost.Routes {
 		trafficSplit := resources.Route{
 			RouteName: route.Name,
-			Clusters:  make([]resources.TrafficSplits, 0),
+			Clusters:  make([]resources.TrafficSplit, 0),
 		}
 
 		clusterSpecificer := route.GetRoute().GetClusterSpecifier()
@@ -986,19 +987,26 @@ func getTrafficSplits(virtualHost *routev3.VirtualHost) []resources.Route {
 			weightedClusters := route.GetRoute().GetClusterSpecifier().(*routev3.RouteAction_WeightedClusters)
 
 			for _, weightedCluster := range weightedClusters.WeightedClusters.Clusters {
-				trafficSplit.Clusters = append(trafficSplit.Clusters, resources.TrafficSplits{
+				trafficSplit.Clusters = append(trafficSplit.Clusters, resources.TrafficSplit{
 					ModelName:     weightedCluster.Name,
 					TrafficWeight: weightedCluster.Weight.Value,
 				})
 			}
 		case *routev3.RouteAction_Cluster:
 			cluster := route.GetRoute().GetClusterSpecifier().(*routev3.RouteAction_Cluster)
-			trafficSplit.Clusters = append(trafficSplit.Clusters, resources.TrafficSplits{
+			trafficSplit.Clusters = append(trafficSplit.Clusters, resources.TrafficSplit{
 				ModelName:     cluster.Cluster,
 				TrafficWeight: 100,
 			})
 
 		}
+
+		if len(route.GetRoute().RequestMirrorPolicies) > 0 {
+			mirror := route.GetRoute().RequestMirrorPolicies[0]
+			trafficSplit.Mirror = &resources.TrafficSplit{ModelName: mirror.Cluster, TrafficWeight: mirror.RuntimeFraction.DefaultValue.Numerator}
+		}
+
+		trafficSplits = append(trafficSplits, trafficSplit)
 
 	}
 

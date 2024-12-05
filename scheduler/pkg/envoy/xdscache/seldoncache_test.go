@@ -17,9 +17,11 @@ import (
 	"github.com/otiai10/copy"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
 // Checks a cluster remains until all routes are removed
@@ -28,28 +30,22 @@ func TestAddRemoveHttpAndGrpcRoute(t *testing.T) {
 	logger := log.New()
 	c := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
 
-	addVersionedRoute := func(c *SeldonXDSCache, routeName string, modelName string, httpCluster string, grpcCluster string, traffic uint32, version uint32) {
-		c.AddCluster(httpCluster, routeName, modelName, version, false)
-		c.AddCluster(grpcCluster, routeName, modelName, version, true)
-		c.AddRouteClusterTraffic(routeName, modelName, version, traffic, httpCluster, grpcCluster, true, false)
-		c.AddEndpoint(httpCluster, "0.0.0.0", 9000)
-		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001)
-	}
-
-	httpCluster := "http1"
-	grpcCluster := "grpc1"
+	httpCluster := "m1_1_http"
+	grpcCluster := "m1_1_grpc"
 	model1 := "m1"
-	model2 := "m2"
-	addVersionedRoute(c, model1, model1, httpCluster, grpcCluster, 100, 1)
-	addVersionedRoute(c, model2, model2, httpCluster, grpcCluster, 100, 1)
+	route1 := "r1"
+	route2 := "r2"
 
-	err := c.RemoveRoute(model1)
+	addVersionedRoute(c, route1, model1, httpCluster, grpcCluster, 100, 1)
+	addVersionedRoute(c, route2, model1, httpCluster, grpcCluster, 100, 1)
+
+	err := c.RemoveRoute(route1)
 	g.Expect(err).To(BeNil())
 	_, ok := c.Clusters[httpCluster]
 	g.Expect(ok).To(BeTrue()) // http Cluster remains as r2 still connected
 	_, ok = c.Clusters[grpcCluster]
 	g.Expect(ok).To(BeTrue()) // grpc Cluster remains as r2 still connected
-	err = c.RemoveRoute(model2)
+	err = c.RemoveRoute(route2)
 	g.Expect(err).To(BeNil())
 	_, ok = c.Clusters[httpCluster]
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
@@ -62,59 +58,55 @@ func TestAddRemoveHttpAndGrpcRouteVersions(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	addVersionedRoute := func(c *SeldonXDSCache, routeName string, modelName string, httpCluster string, grpcCluster string, traffic uint32, version uint32) {
-		c.AddCluster(httpCluster, routeName, modelName, version, false)
-		c.AddCluster(grpcCluster, routeName, modelName, version, true)
-		c.AddRouteClusterTraffic(routeName, modelName, version, traffic, httpCluster, grpcCluster, true, false)
-		c.AddEndpoint(httpCluster, "0.0.0.0", 9000)
-		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001)
-	}
-
 	c := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
 
-	httpCluster := "http1"
-	grpcCluster := "grpc1"
+	httpCluster1 := "m1_1_http"
+	grpcCluster1 := "m1_1_grpc"
+	httpCluster2 := "m1_2_http"
+	grpcCluster2 := "m1_2_grpc"
 	model1 := "m1"
-	model2 := "m2"
-	addVersionedRoute(c, model1, model1, httpCluster, grpcCluster, 40, 1)
-	addVersionedRoute(c, model1, model1, httpCluster, grpcCluster, 60, 2)
+	route1 := "r1"
+	route2 := "r2"
+
+	addVersionedRoute(c, route1, model1, httpCluster1, grpcCluster1, 40, 1)
+	addVersionedRoute(c, route1, model1, httpCluster2, grpcCluster2, 60, 2)
 
 	// check what we have added
-	g.Expect(len(c.Routes[model1].Clusters)).To(Equal(2))
-	clusters := c.Routes[model1].Clusters
+	g.Expect(len(c.Routes[route1].Clusters)).To(Equal(2))
+	clusters := c.Routes[route1].Clusters
 	g.Expect(clusters[0].TrafficWeight).To(Equal(uint32(40)))
 	g.Expect(clusters[1].TrafficWeight).To(Equal(uint32(60)))
-	g.Expect(len(c.Clusters[httpCluster].Endpoints)).To(Equal(1))
-	g.Expect(len(c.Clusters[grpcCluster].Endpoints)).To(Equal(1))
-	g.Expect(c.Clusters[httpCluster].Grpc).To(BeFalse())
-	g.Expect(c.Clusters[grpcCluster].Grpc).To(BeTrue())
-	g.Expect(c.Clusters[httpCluster].Routes[resources.RouteVersionKey{RouteName: model1, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcCluster].Routes[resources.RouteVersionKey{RouteName: model1, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[httpCluster].Routes[resources.RouteVersionKey{RouteName: model1, ModelName: model1, Version: 2}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcCluster].Routes[resources.RouteVersionKey{RouteName: model1, ModelName: model1, Version: 2}]).To(BeTrue())
+	g.Expect(len(c.Clusters[httpCluster1].Endpoints)).To(Equal(1))
+	g.Expect(len(c.Clusters[grpcCluster1].Endpoints)).To(Equal(1))
+	g.Expect(c.Clusters[httpCluster1].Grpc).To(BeFalse())
+	g.Expect(c.Clusters[grpcCluster1].Grpc).To(BeTrue())
+	g.Expect(c.Clusters[httpCluster1].Routes[resources.RouteVersionKey{RouteName: route1, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[grpcCluster1].Routes[resources.RouteVersionKey{RouteName: route1, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[httpCluster2].Routes[resources.RouteVersionKey{RouteName: route1, ModelName: model1, Version: 2}]).To(BeTrue())
+	g.Expect(c.Clusters[grpcCluster2].Routes[resources.RouteVersionKey{RouteName: route1, ModelName: model1, Version: 2}]).To(BeTrue())
 
-	addVersionedRoute(c, model2, model2, httpCluster, grpcCluster, 100, 1)
+	addVersionedRoute(c, route2, model1, httpCluster1, grpcCluster1, 100, 1)
 
 	// check what we added
-	g.Expect(len(c.Routes[model2].Clusters)).To(Equal(1))
-	clusters = c.Routes[model2].Clusters
+	g.Expect(len(c.Routes[route2].Clusters)).To(Equal(1))
+	clusters = c.Routes[route2].Clusters
 	g.Expect(clusters[0].TrafficWeight).To(Equal(uint32(100)))
-	g.Expect(c.Clusters[httpCluster].Routes[resources.RouteVersionKey{RouteName: model2, ModelName: model2, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcCluster].Routes[resources.RouteVersionKey{RouteName: model2, ModelName: model2, Version: 1}]).To(BeTrue())
-	g.Expect(len(c.Clusters[httpCluster].Endpoints)).To(Equal(1))
-	g.Expect(len(c.Clusters[grpcCluster].Endpoints)).To(Equal(1))
+	g.Expect(c.Clusters[httpCluster1].Routes[resources.RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[grpcCluster1].Routes[resources.RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(len(c.Clusters[httpCluster1].Endpoints)).To(Equal(1))
+	g.Expect(len(c.Clusters[grpcCluster1].Endpoints)).To(Equal(1))
 
-	err := c.RemoveRoute(model1)
+	err := c.RemoveRoute(route1)
 	g.Expect(err).To(BeNil())
-	_, ok := c.Clusters[httpCluster]
+	_, ok := c.Clusters[httpCluster1]
 	g.Expect(ok).To(BeTrue()) // http Cluster remains as r2 still connected
-	_, ok = c.Clusters[grpcCluster]
+	_, ok = c.Clusters[grpcCluster1]
 	g.Expect(ok).To(BeTrue()) // grpc Cluster remains as r2 still connected
-	err = c.RemoveRoute(model2)
+	err = c.RemoveRoute(route2)
 	g.Expect(err).To(BeNil())
-	_, ok = c.Clusters[httpCluster]
+	_, ok = c.Clusters[httpCluster1]
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
-	_, ok = c.Clusters[grpcCluster]
+	_, ok = c.Clusters[grpcCluster1]
 	g.Expect(ok).To(BeFalse()) // grpc Cluster removed
 }
 
@@ -123,42 +115,37 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForSameModel(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	addVersionedRoute := func(c *SeldonXDSCache, routeName string, modelName string, httpCluster string, grpcCluster string, traffic uint32, version uint32) {
-		c.AddCluster(httpCluster, routeName, modelName, version, false)
-		c.AddCluster(grpcCluster, routeName, modelName, version, true)
-		c.AddRouteClusterTraffic(routeName, modelName, version, traffic, httpCluster, grpcCluster, true, false)
-		c.AddEndpoint(httpCluster, "0.0.0.0", 9000)
-		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001)
-	}
-
 	c := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
 
 	routeName := "r1"
-	httpCluster := "http1"
-	grpcCluster := "grpc1"
+	httpCluster1 := "m1_1_http"
+	grpcCluster1 := "m1_1_grpc"
+	httpCluster2 := "m1_2_http"
+	grpcCluster2 := "m1_2_grpc"
 	model1 := "m1"
-	addVersionedRoute(c, routeName, model1, httpCluster, grpcCluster, 40, 1)
-	addVersionedRoute(c, routeName, model1, httpCluster, grpcCluster, 60, 2)
+
+	addVersionedRoute(c, routeName, model1, httpCluster1, grpcCluster1, 40, 1)
+	addVersionedRoute(c, routeName, model1, httpCluster2, grpcCluster2, 60, 2)
 
 	// check what we have added
 	g.Expect(len(c.Routes[routeName].Clusters)).To(Equal(2))
 	clusters := c.Routes[routeName].Clusters
 	g.Expect(clusters[0].TrafficWeight).To(Equal(uint32(40)))
 	g.Expect(clusters[1].TrafficWeight).To(Equal(uint32(60)))
-	g.Expect(len(c.Clusters[httpCluster].Endpoints)).To(Equal(1))
-	g.Expect(len(c.Clusters[grpcCluster].Endpoints)).To(Equal(1))
-	g.Expect(c.Clusters[httpCluster].Grpc).To(BeFalse())
-	g.Expect(c.Clusters[grpcCluster].Grpc).To(BeTrue())
-	g.Expect(c.Clusters[httpCluster].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcCluster].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[httpCluster].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 2}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcCluster].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 2}]).To(BeTrue())
+	g.Expect(len(c.Clusters[httpCluster1].Endpoints)).To(Equal(1))
+	g.Expect(len(c.Clusters[grpcCluster1].Endpoints)).To(Equal(1))
+	g.Expect(c.Clusters[httpCluster1].Grpc).To(BeFalse())
+	g.Expect(c.Clusters[grpcCluster1].Grpc).To(BeTrue())
+	g.Expect(c.Clusters[httpCluster1].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[grpcCluster1].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[httpCluster2].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 2}]).To(BeTrue())
+	g.Expect(c.Clusters[grpcCluster2].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 2}]).To(BeTrue())
 
 	err := c.RemoveRoute(routeName)
 	g.Expect(err).To(BeNil())
-	_, ok := c.Clusters[httpCluster]
+	_, ok := c.Clusters[httpCluster1]
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
-	_, ok = c.Clusters[grpcCluster]
+	_, ok = c.Clusters[grpcCluster1]
 	g.Expect(ok).To(BeFalse()) // grpc Cluster removed
 }
 
@@ -167,40 +154,34 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentModels(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	addVersionedRoute := func(c *SeldonXDSCache, modelRouteName string, modelName string, httpCluster string, grpcCluster string, traffic uint32, version uint32) {
-		c.AddCluster(httpCluster, modelRouteName, modelName, version, false)
-		c.AddCluster(grpcCluster, modelRouteName, modelName, version, true)
-		c.AddRouteClusterTraffic(modelRouteName, modelName, version, traffic, httpCluster, grpcCluster, true, false)
-		c.AddEndpoint(httpCluster, "0.0.0.0", 9000)
-		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001)
-	}
-
 	c := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
 
-	httpClusterModel1 := "model1_http1"
-	grpcClusterModel1 := "model1_grpc1"
-	httpClusterModel2 := "model2_http1"
-	grpcClusterModel2 := "model2_grpc1"
+	httpClusterModel1 := "m1_1_http"
+	grpcClusterModel1 := "m1_1_grpc"
+	httpClusterModel2 := "m2_1_http"
+	grpcClusterModel2 := "m2_1_grpc"
 	model1 := "m1"
 	model2 := "m2"
-	addVersionedRoute(c, model1, model1, httpClusterModel1, grpcClusterModel1, 40, 1)
-	addVersionedRoute(c, model1, model2, httpClusterModel2, grpcClusterModel2, 60, 1)
+	routeName := "r1"
+
+	addVersionedRoute(c, routeName, model1, httpClusterModel1, grpcClusterModel1, 40, 1)
+	addVersionedRoute(c, routeName, model2, httpClusterModel2, grpcClusterModel2, 60, 1)
 
 	// check what we have added
-	g.Expect(len(c.Routes[model1].Clusters)).To(Equal(2))
-	clusters := c.Routes[model1].Clusters
+	g.Expect(len(c.Routes[routeName].Clusters)).To(Equal(2))
+	clusters := c.Routes[routeName].Clusters
 	g.Expect(clusters[0].TrafficWeight).To(Equal(uint32(40)))
 	g.Expect(clusters[1].TrafficWeight).To(Equal(uint32(60)))
 	g.Expect(len(c.Clusters[httpClusterModel1].Endpoints)).To(Equal(1))
 	g.Expect(len(c.Clusters[grpcClusterModel1].Endpoints)).To(Equal(1))
 	g.Expect(c.Clusters[httpClusterModel1].Grpc).To(BeFalse())
 	g.Expect(c.Clusters[grpcClusterModel1].Grpc).To(BeTrue())
-	g.Expect(c.Clusters[httpClusterModel1].Routes[resources.RouteVersionKey{RouteName: model1, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcClusterModel1].Routes[resources.RouteVersionKey{RouteName: model1, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[httpClusterModel2].Routes[resources.RouteVersionKey{RouteName: model1, ModelName: model2, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcClusterModel2].Routes[resources.RouteVersionKey{RouteName: model1, ModelName: model2, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[httpClusterModel1].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[grpcClusterModel1].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[httpClusterModel2].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model2, Version: 1}]).To(BeTrue())
+	g.Expect(c.Clusters[grpcClusterModel2].Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: model2, Version: 1}]).To(BeTrue())
 
-	err := c.RemoveRoute(model1)
+	err := c.RemoveRoute(routeName)
 	g.Expect(err).To(BeNil())
 	_, ok := c.Clusters[httpClusterModel1]
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
@@ -216,21 +197,14 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentRoutesSameModel(t *testing
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	addVersionedRoute := func(c *SeldonXDSCache, modelRouteName string, modelName string, httpCluster string, grpcCluster string, traffic uint32, version uint32) {
-		c.AddCluster(httpCluster, modelRouteName, modelName, version, false)
-		c.AddCluster(grpcCluster, modelRouteName, modelName, version, true)
-		c.AddRouteClusterTraffic(modelRouteName, modelName, version, traffic, httpCluster, grpcCluster, true, false)
-		c.AddEndpoint(httpCluster, "0.0.0.0", 9000)
-		c.AddEndpoint(grpcCluster, "0.0.0.0", 9001)
-	}
-
 	c := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
 
 	route1 := "r1"
 	route2 := "r2"
-	httpClusterModel1 := "model1_http1"
-	grpcClusterModel1 := "model1_grpc1"
+	httpClusterModel1 := "m1_1_http"
+	grpcClusterModel1 := "m1_1_grpc"
 	model1 := "m1"
+
 	addVersionedRoute(c, route1, model1, httpClusterModel1, grpcClusterModel1, 100, 1)
 	addVersionedRoute(c, route2, model1, httpClusterModel1, grpcClusterModel1, 100, 1)
 
@@ -323,4 +297,58 @@ func TestSetupTLS(t *testing.T) {
 			}
 		})
 	}
+}
+
+func addVersionedRoute(c *SeldonXDSCache, modelRouteName string, modelName string, httpCluster string, grpcCluster string, traffic uint32, version uint32) {
+	modelVersion := store.NewModelVersion(
+		&scheduler.Model{
+			Meta:           &scheduler.MetaData{Name: modelName},
+			DeploymentSpec: &scheduler.DeploymentSpec{LogPayloads: false},
+		},
+		version,
+		"server",
+		map[int]store.ReplicaStatus{
+			1: {State: store.Loaded},
+		},
+		false,
+		store.ModelAvailable,
+	)
+
+	addCluster(c, httpCluster, modelRouteName, modelName, version, false)
+	addCluster(c, grpcCluster, modelRouteName, modelName, version, true)
+	c.AddRouteClusterTraffic(modelRouteName, modelName, httpCluster, grpcCluster, modelVersion.GetVersion(), traffic, false, false)
+	addEndpoint(c, httpCluster, "0.0.0.0", 9000)
+	addEndpoint(c, grpcCluster, "0.0.0.0", 9001)
+}
+
+func addCluster(
+	xds *SeldonXDSCache,
+	name string,
+	routeName string,
+	modelName string,
+	modelVersion uint32,
+	isGrpc bool,
+) {
+	cluster, ok := xds.Clusters[name]
+	if !ok {
+		cluster = resources.Cluster{
+			Name:      name,
+			Endpoints: make(map[string]resources.Endpoint),
+			Routes:    make(map[resources.RouteVersionKey]bool),
+			Grpc:      isGrpc,
+		}
+	}
+	cluster.Routes[resources.RouteVersionKey{RouteName: routeName, ModelName: modelName, Version: modelVersion}] = true
+	xds.Clusters[name] = cluster
+}
+
+func addEndpoint(xds *SeldonXDSCache, clusterName, upstreamHost string, upstreamPort uint32) {
+	cluster := xds.Clusters[clusterName]
+	k := fmt.Sprintf("%s:%d", upstreamHost, upstreamPort)
+	cluster.Endpoints[k] = resources.Endpoint{
+		UpstreamHost: upstreamHost,
+		UpstreamPort: upstreamPort,
+	}
+
+	xds.Clusters[clusterName] = cluster
 }

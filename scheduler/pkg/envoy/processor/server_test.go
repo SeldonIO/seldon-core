@@ -60,7 +60,7 @@ func TestFetch(t *testing.T) {
 		nodeID:           "node_1",
 	}
 
-	err = inc.setListeners()
+	err = inc.init()
 	g.Expect(err).To(BeNil())
 
 	conn, err := grpc.NewClient(":"+strconv.Itoa(port), grpc.WithTransportCredentials(insecure.NewCredentials()))
