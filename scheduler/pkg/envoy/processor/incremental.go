@@ -252,7 +252,7 @@ func (p *IncrementalProcessor) removeRouteForServerInEnvoyCache(routeName string
 }
 
 func (p *IncrementalProcessor) updateEnvoyForModelVersion(routeName string, modelVersion *store.ModelVersion, server *store.ServerSnapshot, trafficPercent uint32, isMirror bool) {
-	logger := p.logger.WithField("func", "removeModelForServerInEnvoy")
+	logger := p.logger.WithField("func", "updateEnvoyForModelVersion")
 	assignment := modelVersion.GetAssignment()
 	if len(assignment) == 0 {
 		logger.Debugf("Not updating route: %s - no assigned replicas for %v", routeName, modelVersion)
