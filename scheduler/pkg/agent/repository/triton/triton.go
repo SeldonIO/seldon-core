@@ -248,7 +248,7 @@ func (t *TritonRepositoryHandler) GetModelConfig(path string) (*agent.ModelConfi
 					}
 				}
 			}
-			// Default to 1, if no KIND_CPU is found, as KIND_GPU is currently not supported
+			// Default to 1 if no KIND_CPU is found, as KIND_GPU is currently not supported
 			if instanceCount < 1 {
 				instanceCount = 1
 			}
