@@ -14,7 +14,6 @@ import (
 )
 
 // Headers
-
 const (
 	SeldonModelHeader          = "seldon-model"
 	SeldonPipelineHeader       = "pipeline"
