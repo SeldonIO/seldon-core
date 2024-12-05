@@ -401,6 +401,8 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 	return nil
 }
 
+// this is redundant code but is kept there to avoid circular dependencies
+// todo: refactor tracing pkg in general and remove this
 func createBaseContextFromKafkaMsg(msg *kafka.Message) context.Context {
 	// these are just a base context for a new span
 	// callers should add timeout, etc for this context as they see fit.
