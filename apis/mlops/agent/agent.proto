@@ -31,14 +31,30 @@ message ModelEventMessage {
 }
 
 message ModelConfig {
-  uint32 instanceCount = 1; // The number of instances of the model on a replica
-  enum Resource {
-      UNKNOWN_RESOURCE = 0;
-      MEMORY = 1;
-      GPU_MEMORY = 2;
-      }
-  Resource resource = 2; // The resource consumed
+  enum Type {
+        UNKNOWN_TYPE = 0;
+        MLSERVER = 1;
+        TRITON = 2;
+        }
+
+  Type type = 1;
+  oneof config {
+    MLServerModelConfig mlserver = 2; 
+    TritonModelConfig triton = 3;
+    }
 }
+
+message MLServerModelConfig {
+  uint32 instanceCount = 1;
+}
+
+message TritonModelConfig {
+  TritonCPU cpu = 1;
+}
+
+message TritonCPU {
+  uint32 instanceCount = 1;
+  }
 
 message ModelEventResponse {
 

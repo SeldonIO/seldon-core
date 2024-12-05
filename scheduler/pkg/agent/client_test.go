@@ -66,7 +66,8 @@ func (f *FakeModelRepository) RemoveModelVersion(modelName string) error {
 }
 
 func (f *FakeModelRepository) GetModelConfig(modelName string) (*pb.ModelConfig, error) {
-	return &pb.ModelConfig{InstanceCount: 1, Resource: pb.ModelConfig_MEMORY}, nil
+	modelConfig := &pb.ModelConfig_Mlserver{Mlserver: &pb.MLServerModelConfig{InstanceCount: uint32(1)}}
+	return &pb.ModelConfig{Type: pb.ModelConfig_MLSERVER, Config: modelConfig}, nil
 }
 
 func (f *FakeModelRepository) DownloadModelVersion(modelName string, version uint32, modelSpec *pbs.ModelSpec, config []byte) (*string, error) {
@@ -277,11 +278,11 @@ func TestLoadModel(t *testing.T) {
 						},
 						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
 					},
-					ModelConfig: defaultModelConfig,
+					ModelConfig: getModelConfig(1),
 				},
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
-			modelConfig:             defaultModelConfig,
+			modelConfig:             getModelConfig(1),
 			expectedAvailableMemory: 500,
 			v2Status:                200,
 			success:                 true,
@@ -298,12 +299,12 @@ func TestLoadModel(t *testing.T) {
 						},
 						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
 					},
-					ModelConfig: defaultModelConfig,
+					ModelConfig: getModelConfig(1),
 				},
 				AutoscalingEnabled: true,
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
-			modelConfig:             defaultModelConfig,
+			modelConfig:             getModelConfig(1),
 			expectedAvailableMemory: 500,
 			v2Status:                200,
 			success:                 true,
@@ -321,11 +322,11 @@ func TestLoadModel(t *testing.T) {
 						},
 						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
 					},
-					ModelConfig: defaultModelConfig,
+					ModelConfig: getModelConfig(1),
 				},
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
-			modelConfig:             defaultModelConfig,
+			modelConfig:             getModelConfig(1),
 			expectedAvailableMemory: 1000,
 			v2Status:                400,
 			success:                 false,
@@ -342,11 +343,11 @@ func TestLoadModel(t *testing.T) {
 						},
 						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &largeMemory},
 					},
-					ModelConfig: defaultModelConfig,
+					ModelConfig: getModelConfig(1),
 				},
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
-			modelConfig:             defaultModelConfig,
+			modelConfig:             getModelConfig(1),
 			expectedAvailableMemory: 1000,
 			v2Status:                200,
 			success:                 false,
@@ -416,8 +417,7 @@ func TestLoadModel(t *testing.T) {
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
 				g.Expect(len(mockAgentV2Server.events)).To(Equal(1))
 				g.Expect(mockAgentV2Server.events[0].ModelConfig).ToNot(BeNil())
-				g.Expect(mockAgentV2Server.events[0].ModelConfig.Resource).To(Equal(pb.ModelConfig_MEMORY))
-				g.Expect(mockAgentV2Server.events[0].ModelConfig.InstanceCount).To(Equal(uint32(1)))
+				g.Expect(mockAgentV2Server.events[0].ModelConfig.GetMlserver().InstanceCount).To(Equal(uint32(1)))
 				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 				g.Expect(modelRepository.modelRemovals).To(Equal(0))
 				loadedVersions := client.stateManager.modelVersions.getVersionsForAllModels()

@@ -330,5 +330,6 @@ func (m *MLServerRepositoryHandler) GetModelConfig(_ string) (*agent.ModelConfig
 	if err != nil || parallelWorkers == "" {
 		instanceCount = 1
 	}
-	return &agent.ModelConfig{InstanceCount: uint32(instanceCount), Resource: agent.ModelConfig_MEMORY}, nil
+	modelConfig := &agent.ModelConfig_Mlserver{Mlserver: &agent.MLServerModelConfig{InstanceCount: uint32(instanceCount)}}
+	return &agent.ModelConfig{Type: agent.ModelConfig_MLSERVER, Config: modelConfig}, nil
 }

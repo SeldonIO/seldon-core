@@ -20,6 +20,7 @@ import (
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
@@ -817,7 +818,9 @@ func TestGetModelConfig(t *testing.T) {
 			config, err := m.GetModelConfig("test-model")
 			// mlserver should never return an error
 			g.Expect(err).To(BeNil())
-			g.Expect(config.InstanceCount).To(Equal(test.expected))
+			g.Expect(config.Type).To(Equal(agent.ModelConfig_MLSERVER))
+			modelConfig := config.Config.(*agent.ModelConfig_Mlserver)
+			g.Expect(modelConfig.Mlserver.InstanceCount).To(Equal(test.expected))
 		})
 	}
 }

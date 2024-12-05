@@ -223,22 +223,37 @@ func (t *TritonRepositoryHandler) SetExtraParameters(modelRepoPath string, param
 func (t *TritonRepositoryHandler) GetModelConfig(path string) (*agent.ModelConfig, error) {
 	configPath := filepath.Join(path, TritonConfigFile)
 	tritonConfig, err := t.loadConfigFromFile(configPath)
+	tritonModelConfig := &agent.ModelConfig_Triton{
+		Triton: &agent.TritonModelConfig{
+			Cpu: &agent.TritonCPU{
+				InstanceCount: 1,
+			},
+		},
+	}
 	if err == nil {
-		instanceGroup := tritonConfig.InstanceGroup
-		if len(instanceGroup) > 0 {
-			if instanceGroup[0].Kind == pb.ModelInstanceGroup_KIND_CPU {
-				if instanceGroup[0].Count < 1 {
-					backend := tritonConfig.Backend
-					if strings.ToLower(backend) == "tensorflow" || strings.ToLower(backend) == "onnxruntime" {
-						return &agent.ModelConfig{InstanceCount: 2, Resource: agent.ModelConfig_MEMORY}, nil
+		instanceGroups := tritonConfig.InstanceGroup
+		if len(instanceGroups) > 0 {
+			var instanceCount int32 = 0
+			backend := tritonConfig.Backend
+			for _, instanceGroup := range instanceGroups {
+				if instanceGroup.Kind == pb.ModelInstanceGroup_KIND_CPU {
+					if instanceGroup.Count < 1 {
+						if strings.ToLower(backend) == "tensorflow" || strings.ToLower(backend) == "onnxruntime" {
+							instanceCount += 2
+						} else {
+							instanceCount += 1
+						}
 					} else {
-						return &agent.ModelConfig{InstanceCount: 1, Resource: agent.ModelConfig_MEMORY}, nil
+						instanceCount += instanceGroup.Count
 					}
-				} else {
-					return &agent.ModelConfig{InstanceCount: uint32(instanceGroup[0].Count), Resource: agent.ModelConfig_MEMORY}, nil
 				}
 			}
+			// Default to 1, if no KIND_CPU is found, as KIND_GPU is currently not supported
+			if instanceCount < 1 {
+				instanceCount = 1
+			}
+			tritonModelConfig.Triton.Cpu.InstanceCount = uint32(instanceCount)
 		}
 	}
-	return &agent.ModelConfig{InstanceCount: 1, Resource: agent.ModelConfig_MEMORY}, nil
+	return &agent.ModelConfig{Type: agent.ModelConfig_TRITON, Config: tritonModelConfig}, nil
 }

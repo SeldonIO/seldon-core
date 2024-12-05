@@ -415,8 +415,10 @@ func TestGetModelConfig(t *testing.T) {
 			modelConfig, err := triton.GetModelConfig(rclonePath)
 
 			g.Expect(err).To(BeNil())
-			g.Expect(modelConfig.InstanceCount).To(Equal(test.expectedInstanceCount))
-			g.Expect(modelConfig.Resource).To(Equal(agent.ModelConfig_MEMORY))
+
+			g.Expect(modelConfig.Type).To(Equal(agent.ModelConfig_TRITON))
+			tritonModelConfig := modelConfig.Config.(*agent.ModelConfig_Triton)
+			g.Expect(tritonModelConfig.Triton.Cpu.InstanceCount).To(Equal(test.expectedInstanceCount))
 		})
 	}
 }

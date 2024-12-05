@@ -152,7 +152,20 @@ type modelVersion struct {
 }
 
 func (version *modelVersion) getVersionMemory() uint64 {
-	return version.versionInfo.GetModel().GetModelSpec().GetMemoryBytes() * uint64(version.versionInfo.ModelConfig.GetInstanceCount())
+	instanceCount := getInstanceCount(version)
+	return version.versionInfo.GetModel().GetModelSpec().GetMemoryBytes() * instanceCount
+}
+
+func getInstanceCount(version *modelVersion) uint64 {
+	modelConfigType := version.versionInfo.ModelConfig.Type
+	switch modelConfigType {
+	case agent.ModelConfig_MLSERVER:
+		return uint64(version.versionInfo.ModelConfig.GetMlserver().InstanceCount)
+	case agent.ModelConfig_TRITON:
+		return uint64(version.versionInfo.ModelConfig.GetTriton().Cpu.InstanceCount)
+	default:
+		return 1
+	}
 }
 
 func (version *modelVersion) getVersion() uint32 {
