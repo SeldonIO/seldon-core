@@ -66,7 +66,7 @@ func (f *FakeModelRepository) RemoveModelVersion(modelName string) error {
 }
 
 func (f *FakeModelRepository) GetModelConfig(modelName string) (*pb.ModelConfig, error) {
-	modelConfig := &pb.ModelConfig_Mlserver{Mlserver: &pb.MLServerModelConfig{InstanceCount: uint32(1)}}
+	modelConfig := &pb.ModelConfig_Mlserver{Mlserver: &pb.MLServerModelConfig{ParallelWorkers: uint32(1)}}
 	return &pb.ModelConfig{Type: pb.ModelConfig_MLSERVER, Config: modelConfig}, nil
 }
 
@@ -417,7 +417,7 @@ func TestLoadModel(t *testing.T) {
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
 				g.Expect(len(mockAgentV2Server.events)).To(Equal(1))
 				g.Expect(mockAgentV2Server.events[0].ModelConfig).ToNot(BeNil())
-				g.Expect(mockAgentV2Server.events[0].ModelConfig.GetMlserver().InstanceCount).To(Equal(uint32(1)))
+				g.Expect(mockAgentV2Server.events[0].ModelConfig.GetMlserver().ParallelWorkers).To(Equal(uint32(1)))
 				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 				g.Expect(modelRepository.modelRemovals).To(Equal(0))
 				loadedVersions := client.stateManager.modelVersions.getVersionsForAllModels()

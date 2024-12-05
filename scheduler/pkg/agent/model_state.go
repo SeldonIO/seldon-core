@@ -160,7 +160,7 @@ func getInstanceCount(version *modelVersion) uint64 {
 	modelConfigType := version.versionInfo.ModelConfig.Type
 	switch modelConfigType {
 	case agent.ModelConfig_MLSERVER:
-		return uint64(version.versionInfo.ModelConfig.GetMlserver().InstanceCount)
+		return uint64(version.versionInfo.ModelConfig.GetMlserver().ParallelWorkers)
 	case agent.ModelConfig_TRITON:
 		return uint64(version.versionInfo.ModelConfig.GetTriton().Cpu.InstanceCount)
 	default:

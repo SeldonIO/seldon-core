@@ -820,7 +820,7 @@ func TestGetModelConfig(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			g.Expect(config.Type).To(Equal(agent.ModelConfig_MLSERVER))
 			modelConfig := config.Config.(*agent.ModelConfig_Mlserver)
-			g.Expect(modelConfig.Mlserver.InstanceCount).To(Equal(test.expected))
+			g.Expect(modelConfig.Mlserver.ParallelWorkers).To(Equal(test.expected))
 		})
 	}
 }

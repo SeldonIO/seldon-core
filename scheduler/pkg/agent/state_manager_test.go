@@ -1192,6 +1192,6 @@ func TestModelMetricsStats(t *testing.T) {
 
 // TODO: getModelConfig method
 func getModelConfig(instanceCount uint32) *pba.ModelConfig {
-	mlserverModedConfig := &pba.ModelConfig_Mlserver{Mlserver: &pba.MLServerModelConfig{InstanceCount: instanceCount}}
+	mlserverModedConfig := &pba.ModelConfig_Mlserver{Mlserver: &pba.MLServerModelConfig{ParallelWorkers: instanceCount}}
 	return &pba.ModelConfig{Type: pba.ModelConfig_MLSERVER, Config: mlserverModedConfig}
 }
