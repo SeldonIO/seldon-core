@@ -263,7 +263,7 @@ func (kc *KafkaClient) InspectStep(
 					}
 					fmt.Println("")
 				} else {
-					fmt.Printf("%s\t%s\t%s\n", topic.Name, msg.Key, msg.Value)
+					fmt.Printf("%s\t%s\n", msg.Key, msg.Value)
 				}
 			}
 			fmt.Print("----------------\n")
