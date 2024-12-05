@@ -166,7 +166,7 @@ func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct
 			return
 
 		case job := <-jobChan:
-			ctx := util.CreateBaseContextFromKafkaMsg(job.msg)
+			ctx := createBaseContextFromKafkaMsg(job.msg)
 			err := iw.processRequest(ctx, job, util.InferTimeoutDefault)
 			if err != nil {
 				iw.logger.WithError(err).Errorf("Failed to process request for model %s", job.modelName)
@@ -399,4 +399,12 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), []byte(err.Error()), true, nil)
 	}
 	return nil
+}
+
+func createBaseContextFromKafkaMsg(msg *kafka.Message) context.Context {
+	// these are just a base context for a new span
+	// callers should add timeout, etc for this context as they see fit.
+	ctx := context.Background()
+	carrierIn := splunkkafka.NewMessageCarrier(msg)
+	return otel.GetTextMapPropagator().Extract(ctx, carrierIn)
 }

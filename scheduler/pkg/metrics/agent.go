@@ -18,10 +18,11 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 // Keep next line as used in docs

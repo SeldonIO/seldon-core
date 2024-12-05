@@ -10,12 +10,15 @@ the Change License after the Change Date as each is defined in accordance with t
 package pipeline
 
 import (
+	"context"
 	"sync"
 	"sync/atomic"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	cmap "github.com/orcaman/concurrent-map"
+	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka"
 	log "github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
@@ -155,7 +158,7 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 				Debugf("received message")
 
 			if val, ok := c.requests.Get(string(e.Key)); ok {
-				ctx := util.CreateBaseContextFromKafkaMsg(e)
+				ctx := createBaseContextFromKafkaMsg(e)
 
 				// Add tracing span
 				_, span := c.tracer.Start(ctx, "Consume")
@@ -190,4 +193,12 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 	}
 	logger.Warning("Ending kafka consumer poll")
 	return nil // assumption here is that the connection has already terminated
+}
+
+func createBaseContextFromKafkaMsg(msg *kafka.Message) context.Context {
+	// these are just a base context for a new span
+	// callers should add timeout, etc for this context as they see fit.
+	ctx := context.Background()
+	carrierIn := splunkkafka.NewMessageCarrier(msg)
+	return otel.GetTextMapPropagator().Extract(ctx, carrierIn)
 }
