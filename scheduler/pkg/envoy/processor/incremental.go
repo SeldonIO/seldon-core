@@ -24,7 +24,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/cleaner"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
@@ -390,14 +389,14 @@ func (p *IncrementalProcessor) addTrafficForExperiment(routeName string, exp *ex
 	switch exp.ResourceType {
 	case experiment.PipelineResourceType:
 
-		var mirrorSplit *resources.PipelineTrafficSplit
-		trafficSplits := make([]resources.PipelineTrafficSplit, len(exp.Candidates))
+		var mirrorSplit *xdscache.PipelineTrafficSplit
+		trafficSplits := make([]xdscache.PipelineTrafficSplit, len(exp.Candidates))
 
 		for _, candidate := range exp.Candidates {
-			trafficSplits = append(trafficSplits, resources.PipelineTrafficSplit{PipelineName: candidate.Name, TrafficWeight: candidate.Weight})
+			trafficSplits = append(trafficSplits, xdscache.PipelineTrafficSplit{PipelineName: candidate.Name, TrafficWeight: candidate.Weight})
 		}
 		if exp.Mirror != nil {
-			mirrorSplit = &resources.PipelineTrafficSplit{PipelineName: exp.Mirror.Name, TrafficWeight: exp.Mirror.Percent}
+			mirrorSplit = &xdscache.PipelineTrafficSplit{PipelineName: exp.Mirror.Name, TrafficWeight: exp.Mirror.Percent}
 		}
 
 		p.xdsCache.AddPipelineRoute(routeName, trafficSplits, mirrorSplit)
@@ -463,7 +462,7 @@ func (p *IncrementalProcessor) removeExperiment(exp *experiment.Experiment) erro
 }
 
 func getPipelineRouteName(pipelineName string) string {
-	return fmt.Sprintf("%s.%s", pipelineName, resources.SeldonPipelineHeaderSuffix)
+	return fmt.Sprintf("%s.%s", pipelineName, util.SeldonPipelineHeaderSuffix)
 }
 
 // TODO make envoy updates for pipelines batched
@@ -495,20 +494,20 @@ func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 		if exp.Deleted {
 			return fmt.Errorf("Experiment on pipeline %s, but %s is deleted", pip.Name, *exp.Default)
 		}
-		var mirrorSplit *resources.PipelineTrafficSplit
-		trafficSplits := make([]resources.PipelineTrafficSplit, len(exp.Candidates))
+		var mirrorSplit *xdscache.PipelineTrafficSplit
+		trafficSplits := make([]xdscache.PipelineTrafficSplit, len(exp.Candidates))
 
 		for _, candidate := range exp.Candidates {
-			trafficSplits = append(trafficSplits, resources.PipelineTrafficSplit{PipelineName: candidate.Name, TrafficWeight: candidate.Weight})
+			trafficSplits = append(trafficSplits, xdscache.PipelineTrafficSplit{PipelineName: candidate.Name, TrafficWeight: candidate.Weight})
 		}
 		if exp.Mirror != nil {
-			mirrorSplit = &resources.PipelineTrafficSplit{PipelineName: exp.Mirror.Name, TrafficWeight: exp.Mirror.Percent}
+			mirrorSplit = &xdscache.PipelineTrafficSplit{PipelineName: exp.Mirror.Name, TrafficWeight: exp.Mirror.Percent}
 		}
 
 		p.xdsCache.AddPipelineRoute(routeName, trafficSplits, mirrorSplit)
 	} else {
 		logger.Infof("Adding normal pipeline route %s", routeName)
-		p.xdsCache.AddPipelineRoute(routeName, []resources.PipelineTrafficSplit{{PipelineName: pip.Name, TrafficWeight: 100}}, nil)
+		p.xdsCache.AddPipelineRoute(routeName, []xdscache.PipelineTrafficSplit{{PipelineName: pip.Name, TrafficWeight: 100}}, nil)
 	}
 
 	return p.updateEnvoy()

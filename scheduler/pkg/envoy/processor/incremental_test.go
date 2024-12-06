@@ -31,7 +31,6 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
@@ -969,13 +968,13 @@ func createSnapshot(g Gomega, resources []types.Resource, filename string) {
 	g.Expect(err).To(BeNil())
 }
 
-func getTrafficSplits(virtualHost *routev3.VirtualHost) []resources.Route {
-	trafficSplits := make([]resources.Route, 0)
+func getTrafficSplits(virtualHost *routev3.VirtualHost) []xdscache.Route {
+	trafficSplits := make([]xdscache.Route, 0)
 
 	for _, route := range virtualHost.Routes {
-		trafficSplit := resources.Route{
+		trafficSplit := xdscache.Route{
 			RouteName: route.Name,
-			Clusters:  make([]resources.TrafficSplit, 0),
+			Clusters:  make([]xdscache.TrafficSplit, 0),
 		}
 
 		clusterSpecificer := route.GetRoute().GetClusterSpecifier()
@@ -987,14 +986,14 @@ func getTrafficSplits(virtualHost *routev3.VirtualHost) []resources.Route {
 			weightedClusters := route.GetRoute().GetClusterSpecifier().(*routev3.RouteAction_WeightedClusters)
 
 			for _, weightedCluster := range weightedClusters.WeightedClusters.Clusters {
-				trafficSplit.Clusters = append(trafficSplit.Clusters, resources.TrafficSplit{
+				trafficSplit.Clusters = append(trafficSplit.Clusters, xdscache.TrafficSplit{
 					ModelName:     weightedCluster.Name,
 					TrafficWeight: weightedCluster.Weight.Value,
 				})
 			}
 		case *routev3.RouteAction_Cluster:
 			cluster := route.GetRoute().GetClusterSpecifier().(*routev3.RouteAction_Cluster)
-			trafficSplit.Clusters = append(trafficSplit.Clusters, resources.TrafficSplit{
+			trafficSplit.Clusters = append(trafficSplit.Clusters, xdscache.TrafficSplit{
 				ModelName:     cluster.Cluster,
 				TrafficWeight: 100,
 			})
@@ -1003,7 +1002,7 @@ func getTrafficSplits(virtualHost *routev3.VirtualHost) []resources.Route {
 
 		if len(route.GetRoute().RequestMirrorPolicies) > 0 {
 			mirror := route.GetRoute().RequestMirrorPolicies[0]
-			trafficSplit.Mirror = &resources.TrafficSplit{ModelName: mirror.Cluster, TrafficWeight: mirror.RuntimeFraction.DefaultValue.Numerator}
+			trafficSplit.Mirror = &xdscache.TrafficSplit{ModelName: mirror.Cluster, TrafficWeight: mirror.RuntimeFraction.DefaultValue.Numerator}
 		}
 
 		trafficSplits = append(trafficSplits, trafficSplit)
@@ -1013,12 +1012,12 @@ func getTrafficSplits(virtualHost *routev3.VirtualHost) []resources.Route {
 	return trafficSplits
 }
 
-func getEndpoints(loadAssignment *endpointv3.ClusterLoadAssignment) []resources.Endpoint {
-	endpoints := make([]resources.Endpoint, 0)
+func getEndpoints(loadAssignment *endpointv3.ClusterLoadAssignment) []xdscache.Endpoint {
+	endpoints := make([]xdscache.Endpoint, 0)
 	for _, localityLbEndpoint := range loadAssignment.Endpoints {
 		for _, lbEndpoint := range localityLbEndpoint.LbEndpoints {
 			endpointEndpoint := lbEndpoint.HostIdentifier.(*endpointv3.LbEndpoint_Endpoint)
-			endpoints = append(endpoints, resources.Endpoint{
+			endpoints = append(endpoints, xdscache.Endpoint{
 				UpstreamHost: endpointEndpoint.Endpoint.Address.GetSocketAddress().Address,
 				UpstreamPort: endpointEndpoint.Endpoint.Address.GetSocketAddress().GetPortValue(),
 			})

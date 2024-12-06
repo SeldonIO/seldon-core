@@ -12,7 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-package resources
+package xdscache
 
 import (
 	"fmt"
@@ -48,15 +48,8 @@ import (
 const (
 	SeldonLoggingHeader           = "Seldon-Logging"
 	EnvoyLogPathPrefix            = "/tmp/request-log"
-	SeldonModelHeader             = "seldon-model"
-	SeldonPipelineHeader          = "pipeline"
-	SeldonInternalModelHeader     = "seldon-internal-model"
-	SeldonRouteHeader             = "x-seldon-route"
 	SeldonRouteSeparator          = ":" // Tried % but this seemed to break envoy matching. Maybe % is a special character or connected to regexp. A bug?
-	SeldonModelHeaderSuffix       = "model"
-	SeldonPipelineHeaderSuffix    = "pipeline"
-	DefaultRouteTimeoutSecs       = 0 // TODO allow configurable override
-	ExternalHeaderPrefix          = "x-"
+	DefaultRouteTimeoutSecs       = 0   // TODO allow configurable override
 	DefaultRouteConfigurationName = "listener_0"
 	MirrorRouteConfigurationName  = "listener_1"
 	TLSRouteConfigurationName     = "listener_tls"
@@ -349,11 +342,11 @@ func createWeightedModelClusterAction(clusterTraffics []TrafficSplit, mirrorTraf
 				Weight: &wrappers.UInt32Value{
 					Value: clusterTraffic.TrafficWeight,
 				},
-				RequestHeadersToRemove: []string{SeldonInternalModelHeader},
+				RequestHeadersToRemove: []string{util.SeldonInternalModelHeader},
 				RequestHeadersToAdd: []*core.HeaderValueOption{
 					{
 						Header: &core.HeaderValue{
-							Key: SeldonInternalModelHeader,
+							Key: util.SeldonInternalModelHeader,
 							// note: this is implementation specific for agent and it is exposed here
 							// basically the model versions are flattened and it is loaded as
 							// <model_name>_<model_version>
@@ -367,7 +360,7 @@ func createWeightedModelClusterAction(clusterTraffics []TrafficSplit, mirrorTraf
 				ResponseHeadersToAdd: []*core.HeaderValueOption{
 					{
 						Header: &core.HeaderValue{
-							Key: SeldonRouteHeader,
+							Key: util.SeldonRouteHeader,
 							Value: wrapRouteHeader(util.GetVersionedModelName(
 								clusterTraffic.ModelName, clusterTraffic.ModelVersion)),
 						},
@@ -427,7 +420,7 @@ func makeModelStickySessionEnvoyRoute(routeName string, envoyRoute *route.Route,
 	}
 
 	envoyRoute.Match.Headers[0] = &route.HeaderMatcher{
-		Name: SeldonModelHeader, // Header name we will match on
+		Name: util.SeldonModelHeader, // Header name we will match on
 		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
 			StringMatch: &matcherv3.StringMatcher{
 				MatchPattern: &matcherv3.StringMatcher_Exact{
@@ -437,7 +430,7 @@ func makeModelStickySessionEnvoyRoute(routeName string, envoyRoute *route.Route,
 		},
 	}
 	envoyRoute.Match.Headers[1] = &route.HeaderMatcher{
-		Name: SeldonRouteHeader, // Header name we will match on
+		Name: util.SeldonRouteHeader, // Header name we will match on
 		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
 			StringMatch: &matcherv3.StringMatcher{
 				MatchPattern: &matcherv3.StringMatcher_Contains{
@@ -451,14 +444,14 @@ func makeModelStickySessionEnvoyRoute(routeName string, envoyRoute *route.Route,
 	envoyRoute.RequestHeadersToAdd = []*core.HeaderValueOption{
 		{
 			Header: &core.HeaderValue{
-				Key: SeldonInternalModelHeader,
+				Key: util.SeldonInternalModelHeader,
 				Value: util.GetVersionedModelName(
 					clusterTraffic.ModelName, clusterTraffic.ModelVersion),
 			},
 		},
 		{
 			Header: &core.HeaderValue{
-				Key:   SeldonModelHeader,
+				Key:   util.SeldonModelHeader,
 				Value: clusterTraffic.ModelName,
 			},
 		},
@@ -466,7 +459,7 @@ func makeModelStickySessionEnvoyRoute(routeName string, envoyRoute *route.Route,
 	envoyRoute.ResponseHeadersToAdd = []*core.HeaderValueOption{
 		{
 			Header: &core.HeaderValue{
-				Key: SeldonRouteHeader,
+				Key: util.SeldonRouteHeader,
 				Value: wrapRouteHeader(util.GetVersionedModelName(
 					clusterTraffic.ModelName, clusterTraffic.ModelVersion)),
 			},
@@ -504,7 +497,7 @@ func makeModelEnvoyRoute(r *Route, envoyRoute *route.Route, isGrpc, isMirror boo
 		envoyRoute.Match.PathSpecifier = modelRouteMatchPathHttp
 	}
 	envoyRoute.Match.Headers[0] = &route.HeaderMatcher{
-		Name: SeldonModelHeader, // Header name we will match on
+		Name: util.SeldonModelHeader, // Header name we will match on
 		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
 			StringMatch: &matcherv3.StringMatcher{
 				MatchPattern: &matcherv3.StringMatcher_Exact{
@@ -514,7 +507,7 @@ func makeModelEnvoyRoute(r *Route, envoyRoute *route.Route, isGrpc, isMirror boo
 		},
 	}
 	envoyRoute.Match.Headers[1] = &route.HeaderMatcher{
-		Name: SeldonRouteHeader,
+		Name: util.SeldonRouteHeader,
 		HeaderMatchSpecifier: &route.HeaderMatcher_PresentMatch{
 			PresentMatch: false,
 		},
@@ -538,7 +531,7 @@ func makePipelineEnvoyRoute(r *PipelineRoute, envoyRoute *route.Route, isGrpc, i
 		envoyRoute.Match.PathSpecifier = pipelineRoutePathGrpc
 	}
 	envoyRoute.Match.Headers[0] = &route.HeaderMatcher{
-		Name: SeldonModelHeader, // Header name we will match on
+		Name: util.SeldonModelHeader, // Header name we will match on
 		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
 			StringMatch: &matcherv3.StringMatcher{
 				MatchPattern: &matcherv3.StringMatcher_Exact{
@@ -548,7 +541,7 @@ func makePipelineEnvoyRoute(r *PipelineRoute, envoyRoute *route.Route, isGrpc, i
 		},
 	}
 	envoyRoute.Match.Headers[1] = &route.HeaderMatcher{
-		Name: SeldonRouteHeader,
+		Name: util.SeldonRouteHeader,
 		HeaderMatchSpecifier: &route.HeaderMatcher_PresentMatch{
 			PresentMatch: false,
 		},
@@ -562,7 +555,7 @@ func makePipelineEnvoyRoute(r *PipelineRoute, envoyRoute *route.Route, isGrpc, i
 }
 
 func getPipelineModelName(pipelineName string) string {
-	return fmt.Sprintf("%s.%s", pipelineName, SeldonPipelineHeaderSuffix)
+	return fmt.Sprintf("%s.%s", pipelineName, util.SeldonPipelineHeaderSuffix)
 }
 
 func createWeightedPipelineClusterAction(clusterTraffics []PipelineTrafficSplit, mirrorTraffic *PipelineTrafficSplit, isGrpc bool) *route.Route_Route {
@@ -585,7 +578,7 @@ func createWeightedPipelineClusterAction(clusterTraffics []PipelineTrafficSplit,
 				RequestHeadersToAdd: []*core.HeaderValueOption{
 					{
 						Header: &core.HeaderValue{
-							Key:   SeldonInternalModelHeader,
+							Key:   util.SeldonInternalModelHeader,
 							Value: getPipelineModelName(clusterTraffic.PipelineName),
 						},
 					},
@@ -593,7 +586,7 @@ func createWeightedPipelineClusterAction(clusterTraffics []PipelineTrafficSplit,
 				ResponseHeadersToAdd: []*core.HeaderValueOption{
 					{
 						Header: &core.HeaderValue{
-							Key:   SeldonRouteHeader,
+							Key:   util.SeldonRouteHeader,
 							Value: wrapRouteHeader(getPipelineModelName(clusterTraffic.PipelineName)),
 						},
 					},
@@ -628,7 +621,7 @@ func makePipelineStickySessionEnvoyRoute(routeName string, envoyRoute *route.Rou
 	}
 
 	envoyRoute.Match.Headers[0] = &route.HeaderMatcher{
-		Name: SeldonRouteHeader, // Header name we will match on
+		Name: util.SeldonRouteHeader, // Header name we will match on
 		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
 			StringMatch: &matcherv3.StringMatcher{
 				MatchPattern: &matcherv3.StringMatcher_Contains{
@@ -638,7 +631,7 @@ func makePipelineStickySessionEnvoyRoute(routeName string, envoyRoute *route.Rou
 		},
 	}
 	envoyRoute.Match.Headers[1] = &route.HeaderMatcher{
-		Name: SeldonModelHeader, // Header name we will match on
+		Name: util.SeldonModelHeader, // Header name we will match on
 		HeaderMatchSpecifier: &route.HeaderMatcher_StringMatch{
 			StringMatch: &matcherv3.StringMatcher{
 				MatchPattern: &matcherv3.StringMatcher_Exact{
@@ -650,7 +643,7 @@ func makePipelineStickySessionEnvoyRoute(routeName string, envoyRoute *route.Rou
 	envoyRoute.RequestHeadersToAdd = []*core.HeaderValueOption{
 		{
 			Header: &core.HeaderValue{
-				Key:   SeldonInternalModelHeader,
+				Key:   util.SeldonInternalModelHeader,
 				Value: getPipelineModelName(clusterTraffic.PipelineName),
 			},
 		},
@@ -658,7 +651,7 @@ func makePipelineStickySessionEnvoyRoute(routeName string, envoyRoute *route.Rou
 	envoyRoute.ResponseHeadersToAdd = []*core.HeaderValueOption{
 		{
 			Header: &core.HeaderValue{
-				Key:   SeldonRouteHeader,
+				Key:   util.SeldonRouteHeader,
 				Value: wrapRouteHeader(getPipelineModelName(clusterTraffic.PipelineName)),
 			},
 		},
@@ -817,8 +810,8 @@ func createHeaderFilter() *anypb.Any {
 		DefaultSourceCode: &core.DataSource{
 			Specifier: &core.DataSource_InlineString{
 				InlineString: `function envoy_on_request(request_handle)
-  local modelHeader = request_handle:headers():get("` + SeldonModelHeader + `")
-  local routeHeader = request_handle:headers():get("` + SeldonRouteHeader + `")
+  local modelHeader = request_handle:headers():get("` + util.SeldonModelHeader + `")
+  local routeHeader = request_handle:headers():get("` + util.SeldonRouteHeader + `")
   if (modelHeader == nil or modelHeader == '') and (routeHeader == nil or routeHeader == '') then
     local path = request_handle:headers():get(":path")
     local i, j = string.find(path,"/v2/models/")
@@ -827,9 +820,9 @@ func createHeaderFilter() *anypb.Any {
       i, j = string.find(s, "/")
       if i then
         local model = string.sub(s,0,i-1)
-        request_handle:headers():add("` + SeldonModelHeader + `",model)
+        request_handle:headers():add("` + util.SeldonModelHeader + `",model)
       else
-        request_handle:headers():add("` + SeldonModelHeader + `",s)
+        request_handle:headers():add("` + util.SeldonModelHeader + `",s)
       end
     else
       i, j = string.find(path,"/v2/pipelines/")
@@ -837,7 +830,7 @@ func createHeaderFilter() *anypb.Any {
         local s = string.sub(path,j+1)
         i, j = string.find(s, "/")
         local model = string.sub(s,0,i-1)
-        request_handle:headers():add("` + SeldonModelHeader + `",model..".` + SeldonPipelineHeaderSuffix + `")
+        request_handle:headers():add("` + util.SeldonModelHeader + `",model..".` + util.SeldonPipelineHeaderSuffix + `")
       end
     end
   end

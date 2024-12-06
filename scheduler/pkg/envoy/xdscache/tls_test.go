@@ -7,7 +7,7 @@ Use of this software is governed by
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package resources
+package xdscache
 
 import (
 	"crypto/tls"
@@ -28,32 +28,32 @@ type FakeCertificateStore struct {
 }
 
 func (f FakeCertificateStore) GetServerCertificate(info *tls.ClientHelloInfo) (*tls.Certificate, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (f FakeCertificateStore) GetClientCertificate(info *tls.CertificateRequestInfo) (*tls.Certificate, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (f FakeCertificateStore) CreateClientTLSConfig() *tls.Config {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (f FakeCertificateStore) CreateClientTransportCredentials() credentials.TransportCredentials {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (f FakeCertificateStore) CreateServerTLSConfig() *tls.Config {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (f FakeCertificateStore) CreateServerTransportCredentials() credentials.TransportCredentials {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 

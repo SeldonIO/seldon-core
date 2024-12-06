@@ -29,7 +29,6 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	testing_utils2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
@@ -272,8 +271,8 @@ func TestReverseProxySmoke(t *testing.T) {
 			req, err := http.NewRequest(http.MethodPost, url, nil)
 			g.Expect(err).To(BeNil())
 			req.Header.Set("contentType", "application/json")
-			req.Header.Set(resources.SeldonModelHeader, test.modelExternalHeader)
-			req.Header.Set(resources.SeldonInternalModelHeader, test.modelToRequest)
+			req.Header.Set(util.SeldonModelHeader, test.modelExternalHeader)
+			req.Header.Set(util.SeldonInternalModelHeader, test.modelToRequest)
 			resp, err := http.DefaultClient.Do(req)
 			g.Expect(err).To(BeNil())
 
@@ -459,7 +458,7 @@ func TestLazyLoadRoundTripper(t *testing.T) {
 			httpClient.Transport = &lazyModelLoadTransport{
 				loader, http.DefaultTransport, metricsHandler, modelScalingStatsCollector, log.New()}
 			mockMLServerState.setModelServerUnloaded(dummyModel)
-			req.Header.Set(resources.SeldonInternalModelHeader, dummyModel)
+			req.Header.Set(util.SeldonInternalModelHeader, dummyModel)
 			resp, err := httpClient.Do(req)
 			g.Expect(err).To(BeNil())
 			g.Expect(resp.StatusCode).To(Equal(http.StatusOK))

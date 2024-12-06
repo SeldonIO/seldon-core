@@ -7,7 +7,7 @@ Use of this software is governed by
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package resources
+package xdscache
 
 import (
 	"testing"
@@ -28,132 +28,138 @@ func TestMakeRoute(t *testing.T) {
 	tests := []test{
 		{
 			name: "one model",
-			modelRoutes: map[string]Route{"r1": {
-				RouteName: "r1",
-				Clusters: []TrafficSplit{
-					{
-						ModelName:     "m1",
-						ModelVersion:  1,
-						TrafficWeight: 100,
-						HttpCluster:   "h1",
-						GrpcCluster:   "g1",
+			modelRoutes: map[string]Route{
+				"r1": {
+					RouteName: "r1",
+					Clusters: []TrafficSplit{
+						{
+							ModelName:     "m1",
+							ModelVersion:  1,
+							TrafficWeight: 100,
+							HttpCluster:   "h1",
+							GrpcCluster:   "g1",
+						},
 					},
 				},
-			},
 			},
 			expectedDefaultRoutes: 2,
 			expectedMirrorRoutes:  0,
 		},
 		{
 			name: "one pipeline",
-			pipelineRoutes: map[string]PipelineRoute{"r1": {
-				RouteName: "r1",
-				Clusters: []PipelineTrafficSplit{
-					{
-						PipelineName:  "p1",
-						TrafficWeight: 100,
+			pipelineRoutes: map[string]PipelineRoute{
+				"r1": {
+					RouteName: "r1",
+					Clusters: []PipelineTrafficSplit{
+						{
+							PipelineName:  "p1",
+							TrafficWeight: 100,
+						},
 					},
 				},
-			},
 			},
 			expectedDefaultRoutes: 2,
 			expectedMirrorRoutes:  0,
 		},
 		{
 			name: "pipeline experiment",
-			pipelineRoutes: map[string]PipelineRoute{"r1": {
-				RouteName: "r1",
-				Clusters: []PipelineTrafficSplit{
-					{
-						PipelineName:  "p1",
-						TrafficWeight: 50,
-					},
-					{
-						PipelineName:  "p2",
-						TrafficWeight: 50,
+			pipelineRoutes: map[string]PipelineRoute{
+				"r1": {
+					RouteName: "r1",
+					Clusters: []PipelineTrafficSplit{
+						{
+							PipelineName:  "p1",
+							TrafficWeight: 50,
+						},
+						{
+							PipelineName:  "p2",
+							TrafficWeight: 50,
+						},
 					},
 				},
-			},
 			},
 			expectedDefaultRoutes: 6,
 			expectedMirrorRoutes:  0,
 		},
 		{
 			name: "pipeline experiment with mirror",
-			pipelineRoutes: map[string]PipelineRoute{"r1": {
-				RouteName: "r1",
-				Clusters: []PipelineTrafficSplit{
-					{
-						PipelineName:  "p1",
-						TrafficWeight: 50,
+			pipelineRoutes: map[string]PipelineRoute{
+				"r1": {
+					RouteName: "r1",
+					Clusters: []PipelineTrafficSplit{
+						{
+							PipelineName:  "p1",
+							TrafficWeight: 50,
+						},
+						{
+							PipelineName:  "p2",
+							TrafficWeight: 50,
+						},
 					},
-					{
-						PipelineName:  "p2",
-						TrafficWeight: 50,
+					Mirror: &PipelineTrafficSplit{
+						PipelineName:  "p3",
+						TrafficWeight: 100,
 					},
 				},
-				Mirror: &PipelineTrafficSplit{
-					PipelineName:  "p3",
-					TrafficWeight: 100,
-				},
-			},
 			},
 			expectedDefaultRoutes: 6,
 			expectedMirrorRoutes:  2,
 		},
 		{
 			name: "model experiment",
-			modelRoutes: map[string]Route{"r1": {
-				RouteName: "r1",
-				Clusters: []TrafficSplit{
-					{
-						ModelName:     "m1",
-						ModelVersion:  1,
-						TrafficWeight: 50,
-						HttpCluster:   "h1",
-						GrpcCluster:   "g1",
-					},
-					{
-						ModelName:     "m2",
-						ModelVersion:  1,
-						TrafficWeight: 50,
-						HttpCluster:   "h1",
-						GrpcCluster:   "g1",
+			modelRoutes: map[string]Route{
+				"r1": {
+					RouteName: "r1",
+					Clusters: []TrafficSplit{
+						{
+							ModelName:     "m1",
+							ModelVersion:  1,
+							TrafficWeight: 50,
+							HttpCluster:   "h1",
+							GrpcCluster:   "g1",
+						},
+						{
+							ModelName:     "m2",
+							ModelVersion:  1,
+							TrafficWeight: 50,
+							HttpCluster:   "h1",
+							GrpcCluster:   "g1",
+						},
 					},
 				},
-			},
 			},
 			expectedDefaultRoutes: 6,
 			expectedMirrorRoutes:  0,
 		},
 		{
 			name: "experiment with model mirror",
-			modelRoutes: map[string]Route{"r1": {
-				RouteName: "r1",
-				Clusters: []TrafficSplit{
-					{
-						ModelName:     "m1",
-						ModelVersion:  1,
-						TrafficWeight: 50,
-						HttpCluster:   "h1",
-						GrpcCluster:   "g1",
+			modelRoutes: map[string]Route{
+				"r1": {
+					RouteName: "r1",
+					Clusters: []TrafficSplit{
+						{
+							ModelName:     "m1",
+							ModelVersion:  1,
+							TrafficWeight: 50,
+							HttpCluster:   "h1",
+							GrpcCluster:   "g1",
+						},
+						{
+							ModelName:     "m2",
+							ModelVersion:  1,
+							TrafficWeight: 50,
+							HttpCluster:   "h1",
+							GrpcCluster:   "g1",
+						},
 					},
-					{
-						ModelName:     "m2",
+					Mirror: &TrafficSplit{
+						ModelName:     "m3",
 						ModelVersion:  1,
-						TrafficWeight: 50,
+						TrafficWeight: 100,
 						HttpCluster:   "h1",
 						GrpcCluster:   "g1",
 					},
 				},
-				Mirror: &TrafficSplit{
-					ModelName:     "m3",
-					ModelVersion:  1,
-					TrafficWeight: 100,
-					HttpCluster:   "h1",
-					GrpcCluster:   "g1",
-				},
-			},
 			},
 			expectedDefaultRoutes: 6,
 			expectedMirrorRoutes:  2,

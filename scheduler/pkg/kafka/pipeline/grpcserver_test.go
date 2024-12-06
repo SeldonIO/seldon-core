@@ -24,7 +24,6 @@ import (
 
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -133,7 +132,7 @@ func TestGrpcServer(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			client := v2.NewGRPCInferenceServiceClient(conn)
 			ctx := context.TODO()
-			ctx = metadata.AppendToOutgoingContext(ctx, resources.SeldonModelHeader, test.header)
+			ctx = metadata.AppendToOutgoingContext(ctx, util.SeldonModelHeader, test.header)
 			var header, trailer metadata.MD
 			res, err := client.ModelInfer(ctx, test.req, grpc.Header(&header), grpc.Trailer(&trailer))
 			if test.error {

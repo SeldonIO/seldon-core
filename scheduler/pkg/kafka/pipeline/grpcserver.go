@@ -26,7 +26,6 @@ import (
 
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	status2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
@@ -111,16 +110,16 @@ func (g *GatewayGrpcServer) getRequestId(md metadata.MD) string {
 func (g *GatewayGrpcServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("failed to find any metadata - required %s or %s", resources.SeldonModelHeader, resources.SeldonInternalModelHeader))
+		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("failed to find any metadata - required %s or %s", util.SeldonModelHeader, util.SeldonInternalModelHeader))
 	}
-	g.logger.Debugf("Seldon model header %v and seldon internal model header %v", md[resources.SeldonModelHeader], md[resources.SeldonInternalModelHeader])
-	header := extractHeader(resources.SeldonInternalModelHeader, md) // Internal model header has precedence
-	if header == "" {                                                // If we don't find internal model header fall back on public one
-		header = extractHeader(resources.SeldonModelHeader, md)
+	g.logger.Debugf("Seldon model header %v and seldon internal model header %v", md[util.SeldonModelHeader], md[util.SeldonInternalModelHeader])
+	header := extractHeader(util.SeldonInternalModelHeader, md) // Internal model header has precedence
+	if header == "" {                                           // If we don't find internal model header fall back on public one
+		header = extractHeader(util.SeldonModelHeader, md)
 	}
 	resourceName, isModel, err := createResourceNameFromHeader(header)
 	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("failed to find valid header %s, found %s", resources.SeldonModelHeader, resourceName))
+		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("failed to find valid header %s, found %s", util.SeldonModelHeader, resourceName))
 	}
 
 	startTime := time.Now()
@@ -159,7 +158,7 @@ func (g *GatewayGrpcServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 func (g *GatewayGrpcServer) ModelReady(ctx context.Context, req *v2.ModelReadyRequest) (*v2.ModelReadyResponse, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("failed to find any metadata - required %s or %s", resources.SeldonModelHeader, resources.SeldonInternalModelHeader))
+		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("failed to find any metadata - required %s or %s", util.SeldonModelHeader, util.SeldonInternalModelHeader))
 	}
 	ready, err := g.pipelineReadyChecker.CheckPipelineReady(ctx, req.GetName(), g.getRequestId(md))
 	if err != nil {

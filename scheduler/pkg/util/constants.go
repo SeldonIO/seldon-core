@@ -13,6 +13,18 @@ import (
 	"time"
 )
 
+// Headers
+const (
+	SeldonModelHeader          = "seldon-model"
+	SeldonPipelineHeader       = "pipeline"
+	SeldonInternalModelHeader  = "seldon-internal-model"
+	SeldonLoggingHeader        = "Seldon-Logging"
+	SeldonRouteHeader          = "x-seldon-route"
+	ExternalHeaderPrefix       = "x-"
+	SeldonModelHeaderSuffix    = "model"
+	SeldonPipelineHeaderSuffix = "pipeline"
+)
+
 // REST
 const (
 	DefaultReverseProxyHTTPPort = 9999
