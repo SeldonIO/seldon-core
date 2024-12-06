@@ -30,7 +30,6 @@ const (
 	OutputsSpecifier         = "outputs"
 	PipelineSpecifier        = "pipeline"
 	ModelSpecifier           = "model"
-	KafkaTimeoutSeconds      = 2
 	DefaultNamespace         = "default"
 	DefaultMaxMessageSize    = 1000000000
 )
@@ -222,7 +221,9 @@ func getPipelineNameFromHeaders(headers []kafka.Header) (string, error) {
 	return "", fmt.Errorf("No pipeline found in headers.")
 }
 
-func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string, format string, verbose bool, truncateData bool, namespace string) error {
+func (kc *KafkaClient) InspectStep(
+	pipelineStep string, offset int64, key string, format string, verbose bool, truncateData bool, namespace string, timeout time.Duration,
+) error {
 	defer kc.consumer.Close()
 	if namespace == "" {
 		namespace = kc.namespace
@@ -238,7 +239,7 @@ func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string
 
 	ki := KafkaInspect{}
 	for _, topic := range pipelineTopics.topics {
-		kit, err := kc.createInspectTopic(topic, pipelineTopics.pipeline, pipelineTopics.tensor, offset, key, verbose, truncateData)
+		kit, err := kc.createInspectTopic(topic, pipelineTopics.pipeline, pipelineTopics.tensor, offset, key, verbose, truncateData, timeout)
 		if err != nil {
 			return err
 		}
@@ -253,24 +254,28 @@ func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string
 		fmt.Printf("%s\n", string(b))
 	} else {
 		for _, topic := range ki.Topics {
+			fmt.Printf("Topic: %s\n", topic.Name)
 			for _, msg := range topic.Msgs {
 				if verbose {
-					fmt.Printf("%s\t%s\t%s\t", topic.Name, msg.Key, msg.Value)
+					fmt.Printf("%s\t%s\t", msg.Key, msg.Value)
 					for k, v := range msg.Headers {
 						fmt.Printf("\t%s=%s", k, v)
 					}
 					fmt.Println("")
 				} else {
-					fmt.Printf("%s\t%s\t%s\n", topic.Name, msg.Key, msg.Value)
+					fmt.Printf("%s\t%s\n", msg.Key, msg.Value)
 				}
 			}
+			fmt.Print("----------------\n")
 		}
 	}
 
 	return nil
 }
 
-func (kc *KafkaClient) createInspectTopic(topic string, pipeline string, tensor string, offset int64, key string, verbose bool, truncateData bool) (*KafkaInspectTopic, error) {
+func (kc *KafkaClient) createInspectTopic(
+	topic string, pipeline string, tensor string, offset int64, key string, verbose bool, truncateData bool, timeout time.Duration,
+) (*KafkaInspectTopic, error) {
 	kit := KafkaInspectTopic{
 		Name: topic,
 	}
@@ -279,7 +284,7 @@ func (kc *KafkaClient) createInspectTopic(topic string, pipeline string, tensor 
 		return nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), KafkaTimeoutSeconds*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	run := true
