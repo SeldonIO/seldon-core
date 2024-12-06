@@ -21,6 +21,7 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 )
 
 func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler.SchedulerClient, servers []v1alpha1.Server, isFirstSync bool) error {
@@ -114,8 +115,11 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 
 		// Try to update status
 		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+			contextWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallTimeout)
+			defer cancel()
+
 			server := &v1alpha1.Server{}
-			err = s.Get(ctx, client.ObjectKey{Name: event.ServerName, Namespace: event.GetKubernetesMeta().GetNamespace()}, server)
+			err = s.Get(contextWithTimeout, client.ObjectKey{Name: event.ServerName, Namespace: event.GetKubernetesMeta().GetNamespace()}, server)
 			if err != nil {
 				return err
 			}
@@ -125,7 +129,7 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 			}
 			// Handle status update
 			server.Status.LoadedModelReplicas = event.NumLoadedModelReplicas
-			return s.updateServerStatus(server)
+			return s.updateServerStatus(contextWithTimeout, server)
 		})
 		if retryErr != nil {
 			logger.Error(err, "Failed to update status", "model", event.ServerName)
@@ -135,8 +139,8 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 	return nil
 }
 
-func (s *SchedulerClient) updateServerStatus(server *v1alpha1.Server) error {
-	if err := s.Status().Update(context.TODO(), server); err != nil {
+func (s *SchedulerClient) updateServerStatus(ctx context.Context, server *v1alpha1.Server) error {
+	if err := s.Status().Update(ctx, server); err != nil {
 		s.recorder.Eventf(server, v1.EventTypeWarning, "UpdateFailed",
 			"Failed to update status for Server %q: %v", server.Name, err)
 		return err
