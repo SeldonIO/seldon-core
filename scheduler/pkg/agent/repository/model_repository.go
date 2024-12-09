@@ -30,13 +30,13 @@ type ModelRepositoryHandler interface {
 	UpdateModelRepository(modelName string, path string, isVersionFolder bool, modelRepoPath string) error
 	SetExplainer(modelRepoPath string, explainerSpec *scheduler.ExplainerSpec, envoyHost string, envoyPort int) error
 	SetExtraParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error
-	GetModelConfig(path string) (*agent.ModelConfig, error)
+	GetModelRuntimeInfo(path string) (*agent.ModelRuntimeInfo, error)
 }
 
 type ModelRepository interface {
 	DownloadModelVersion(modelName string, version uint32, modelSpec *scheduler.ModelSpec, config []byte) (*string, error)
 	RemoveModelVersion(modelName string) error
-	GetModelConfig(modelName string) (*agent.ModelConfig, error)
+	GetModelRuntimeInfo(modelName string) (*agent.ModelRuntimeInfo, error)
 	Ready() error
 }
 
@@ -66,9 +66,9 @@ func NewModelRepository(logger log.FieldLogger,
 	}
 }
 
-func (r *V2ModelRepository) GetModelConfig(modelName string) (*agent.ModelConfig, error) {
+func (r *V2ModelRepository) GetModelRuntimeInfo(modelName string) (*agent.ModelRuntimeInfo, error) {
 	modelPathInRepo := filepath.Join(r.repoPath, modelName)
-	return r.modelRepositoryHandler.GetModelConfig(modelPathInRepo)
+	return r.modelRepositoryHandler.GetModelRuntimeInfo(modelPathInRepo)
 }
 
 func (r *V2ModelRepository) DownloadModelVersion(

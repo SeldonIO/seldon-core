@@ -815,12 +815,11 @@ func TestGetModelConfig(t *testing.T) {
 				os.Setenv(parallelWorkersEnvVar, strconv.FormatInt(int64(test.expected), 10))
 			}
 
-			config, err := m.GetModelConfig("test-model")
+			runtimeInfo, err := m.GetModelRuntimeInfo("test-model")
 			// mlserver should never return an error
 			g.Expect(err).To(BeNil())
-			g.Expect(config.Type).To(Equal(agent.ModelConfig_MLSERVER))
-			modelConfig := config.Config.(*agent.ModelConfig_Mlserver)
-			g.Expect(modelConfig.Mlserver.ParallelWorkers).To(Equal(test.expected))
+			mlserverRuntimeInfo := runtimeInfo.ModelRuntimeInfo.(*agent.ModelRuntimeInfo_Mlserver)
+			g.Expect(mlserverRuntimeInfo.Mlserver.ParallelWorkers).To(Equal(test.expected))
 		})
 	}
 }

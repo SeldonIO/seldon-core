@@ -60,7 +60,7 @@ func TestAgentDebugServiceSmoke(t *testing.T) {
 					MemoryBytes: &mem,
 				},
 			},
-			ModelConfig: getModelConfig(1),
+			RuntimeInfo: getModelRuntimeInfo(1),
 		},
 	)
 	g.Expect(err).To(BeNil())

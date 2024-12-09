@@ -27,34 +27,8 @@ message ModelEventMessage {
   Event event = 5;
   string message = 6;
   uint64 availableMemoryBytes = 7;
-  ModelConfig modelConfig = 8;
+  ModelRuntimeInfo runtimeInfo = 8;
 }
-
-message ModelConfig {
-  enum Type {
-        UNKNOWN_TYPE = 0;
-        MLSERVER = 1;
-        TRITON = 2;
-        }
-
-  Type type = 1;
-  oneof config {
-    MLServerModelConfig mlserver = 2; 
-    TritonModelConfig triton = 3;
-    }
-}
-
-message MLServerModelConfig {
-  uint32 parallelWorkers = 1;
-}
-
-message TritonModelConfig {
-  TritonCPU cpu = 1;
-}
-
-message TritonCPU {
-  uint32 instanceCount = 1;
-  }
 
 message ModelEventResponse {
 
@@ -119,8 +93,28 @@ message ModelOperationMessage {
 message ModelVersion {
   scheduler.Model model = 1;
   uint32 version = 2;
-  ModelConfig modelConfig = 3;
+  ModelRuntimeInfo runtimeInfo = 3;
 }
+
+message ModelRuntimeInfo {
+  oneof modelRuntimeInfo {
+    MLServerModelSettings mlserver = 1; 
+    TritonModelConfig triton = 2;
+    }
+}
+
+message MLServerModelSettings {
+  uint32 parallelWorkers = 1;
+}
+
+message TritonModelConfig {
+  repeated TritonCPU cpu = 1;
+}
+
+message TritonCPU {
+  uint32 instanceCount = 1;
+  }
+
 
 // [END Messages]
 

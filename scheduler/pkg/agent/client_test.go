@@ -29,6 +29,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
@@ -65,9 +66,8 @@ func (f *FakeModelRepository) RemoveModelVersion(modelName string) error {
 	return nil
 }
 
-func (f *FakeModelRepository) GetModelConfig(modelName string) (*pb.ModelConfig, error) {
-	modelConfig := &pb.ModelConfig_Mlserver{Mlserver: &pb.MLServerModelConfig{ParallelWorkers: uint32(1)}}
-	return &pb.ModelConfig{Type: pb.ModelConfig_MLSERVER, Config: modelConfig}, nil
+func (f *FakeModelRepository) GetModelRuntimeInfo(modelName string) (*pb.ModelRuntimeInfo, error) {
+	return &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &agent.MLServerModelSettings{ParallelWorkers: uint32(1)}}}, nil
 }
 
 func (f *FakeModelRepository) DownloadModelVersion(modelName string, version uint32, modelSpec *pbs.ModelSpec, config []byte) (*string, error) {
@@ -254,7 +254,7 @@ func TestLoadModel(t *testing.T) {
 		models                  []string
 		replicaConfig           *pb.ReplicaConfig
 		op                      *pb.ModelOperationMessage
-		modelConfig             *pb.ModelConfig
+		modelConfig             *pb.ModelRuntimeInfo
 		expectedAvailableMemory uint64
 		v2Status                int
 		modelRepoErr            error
@@ -278,11 +278,11 @@ func TestLoadModel(t *testing.T) {
 						},
 						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
 					},
-					ModelConfig: getModelConfig(1),
+					RuntimeInfo: getModelRuntimeInfo(1),
 				},
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
-			modelConfig:             getModelConfig(1),
+			modelConfig:             getModelRuntimeInfo(1),
 			expectedAvailableMemory: 500,
 			v2Status:                200,
 			success:                 true,
@@ -299,12 +299,12 @@ func TestLoadModel(t *testing.T) {
 						},
 						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
 					},
-					ModelConfig: getModelConfig(1),
+					RuntimeInfo: getModelRuntimeInfo(1),
 				},
 				AutoscalingEnabled: true,
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
-			modelConfig:             getModelConfig(1),
+			modelConfig:             getModelRuntimeInfo(1),
 			expectedAvailableMemory: 500,
 			v2Status:                200,
 			success:                 true,
@@ -322,11 +322,11 @@ func TestLoadModel(t *testing.T) {
 						},
 						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
 					},
-					ModelConfig: getModelConfig(1),
+					RuntimeInfo: getModelRuntimeInfo(1),
 				},
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
-			modelConfig:             getModelConfig(1),
+			modelConfig:             getModelRuntimeInfo(1),
 			expectedAvailableMemory: 1000,
 			v2Status:                400,
 			success:                 false,
@@ -343,11 +343,11 @@ func TestLoadModel(t *testing.T) {
 						},
 						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &largeMemory},
 					},
-					ModelConfig: getModelConfig(1),
+					RuntimeInfo: getModelRuntimeInfo(1),
 				},
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
-			modelConfig:             getModelConfig(1),
+			modelConfig:             getModelRuntimeInfo(1),
 			expectedAvailableMemory: 1000,
 			v2Status:                200,
 			success:                 false,
@@ -416,8 +416,8 @@ func TestLoadModel(t *testing.T) {
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
 				g.Expect(len(mockAgentV2Server.events)).To(Equal(1))
-				g.Expect(mockAgentV2Server.events[0].ModelConfig).ToNot(BeNil())
-				g.Expect(mockAgentV2Server.events[0].ModelConfig.GetMlserver().ParallelWorkers).To(Equal(uint32(1)))
+				g.Expect(mockAgentV2Server.events[0].RuntimeInfo).ToNot(BeNil())
+				g.Expect(mockAgentV2Server.events[0].RuntimeInfo.GetMlserver().ParallelWorkers).To(Equal(uint32(1)))
 				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 				g.Expect(modelRepository.modelRemovals).To(Equal(0))
 				loadedVersions := client.stateManager.modelVersions.getVersionsForAllModels()

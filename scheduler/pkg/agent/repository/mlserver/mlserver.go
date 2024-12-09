@@ -324,12 +324,12 @@ func (m *MLServerRepositoryHandler) findHighestVersionInPath(modelPath string) (
 	return "", nil
 }
 
-func (m *MLServerRepositoryHandler) GetModelConfig(_ string) (*agent.ModelConfig, error) {
+func (m *MLServerRepositoryHandler) GetModelRuntimeInfo(_ string) (*agent.ModelRuntimeInfo, error) {
 	parallelWorkersStr := os.Getenv(parallelWorkersEnvVar)
 	parallelWorkers, err := strconv.Atoi(parallelWorkersStr)
 	if err != nil || parallelWorkersStr == "" {
 		parallelWorkers = 1
 	}
-	modelConfig := &agent.ModelConfig_Mlserver{Mlserver: &agent.MLServerModelConfig{ParallelWorkers: uint32(parallelWorkers)}}
-	return &agent.ModelConfig{Type: agent.ModelConfig_MLSERVER, Config: modelConfig}, nil
+
+	return &agent.ModelRuntimeInfo{ModelRuntimeInfo: &agent.ModelRuntimeInfo_Mlserver{Mlserver: &agent.MLServerModelSettings{ParallelWorkers: uint32(parallelWorkers)}}}, nil
 }

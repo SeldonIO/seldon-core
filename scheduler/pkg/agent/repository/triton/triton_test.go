@@ -412,13 +412,12 @@ func TestGetModelConfig(t *testing.T) {
 
 			logger := log.New()
 			triton := TritonRepositoryHandler{logger: logger}
-			modelConfig, err := triton.GetModelConfig(rclonePath)
+			modelConfig, err := triton.GetModelRuntimeInfo(rclonePath)
 
 			g.Expect(err).To(BeNil())
 
-			g.Expect(modelConfig.Type).To(Equal(agent.ModelConfig_TRITON))
-			tritonModelConfig := modelConfig.Config.(*agent.ModelConfig_Triton)
-			g.Expect(tritonModelConfig.Triton.Cpu.InstanceCount).To(Equal(test.expectedInstanceCount))
+			tritonModelConfig := modelConfig.ModelRuntimeInfo.(*agent.ModelRuntimeInfo_Triton)
+			g.Expect(tritonModelConfig.Triton.Cpu[0].InstanceCount).To(Equal(test.expectedInstanceCount))
 		})
 	}
 }

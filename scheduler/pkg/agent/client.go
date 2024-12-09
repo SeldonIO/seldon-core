@@ -615,7 +615,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage, timestamp int64
 	}
 	logger.Infof("Chose path %s for model %s:%d", *chosenVersionPath, modelName, modelVersion)
 
-	modelConfig, err := c.ModelRepository.GetModelConfig(modelName)
+	modelConfig, err := c.ModelRepository.GetModelRuntimeInfo(modelName)
 	if err != nil {
 		logger.Errorf("there was a problem getting the config for model: %s", modelName)
 	}
@@ -751,7 +751,7 @@ func (c *Client) sendModelEventError(
 func (c *Client) sendAgentEvent(
 	modelName string,
 	modelVersion uint32,
-	modelConfig *agent.ModelConfig,
+	modelRuntimeInfo *agent.ModelRuntimeInfo,
 	event agent.ModelEventMessage_Event,
 ) error {
 	// if the server is draining and the model load has succeeded, we need to "cancel"
@@ -775,7 +775,7 @@ func (c *Client) sendAgentEvent(
 		ModelVersion:         modelVersion,
 		Event:                event,
 		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
-		ModelConfig:          modelConfig,
+		RuntimeInfo:          modelRuntimeInfo,
 	})
 	return err
 }

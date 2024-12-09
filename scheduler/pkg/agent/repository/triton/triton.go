@@ -220,13 +220,13 @@ func (t *TritonRepositoryHandler) SetExtraParameters(modelRepoPath string, param
 	return nil
 }
 
-func (t *TritonRepositoryHandler) GetModelConfig(path string) (*agent.ModelConfig, error) {
+func (t *TritonRepositoryHandler) GetModelRuntimeInfo(path string) (*agent.ModelRuntimeInfo, error) {
 	configPath := filepath.Join(path, TritonConfigFile)
 	tritonConfig, err := t.loadConfigFromFile(configPath)
-	tritonModelConfig := &agent.ModelConfig_Triton{
+	tritonRuntimeInfo := &agent.ModelRuntimeInfo_Triton{
 		Triton: &agent.TritonModelConfig{
-			Cpu: &agent.TritonCPU{
-				InstanceCount: 1,
+			Cpu: []*agent.TritonCPU{
+				{InstanceCount: 1},
 			},
 		},
 	}
@@ -236,12 +236,13 @@ func (t *TritonRepositoryHandler) GetModelConfig(path string) (*agent.ModelConfi
 			var instanceCount int32 = 0
 			backend := tritonConfig.Backend
 			for _, instanceGroup := range instanceGroups {
-				if instanceGroup.Kind == pb.ModelInstanceGroup_KIND_CPU {
+				// only take the value from the first KIND_CPU that's found
+				if instanceGroup.Kind == pb.ModelInstanceGroup_KIND_CPU && instanceCount == 0 {
 					if instanceGroup.Count < 1 {
 						if strings.ToLower(backend) == "tensorflow" || strings.ToLower(backend) == "onnxruntime" {
-							instanceCount += 2
+							instanceCount = 2
 						} else {
-							instanceCount += 1
+							instanceCount = 1
 						}
 					} else {
 						instanceCount += instanceGroup.Count
@@ -252,8 +253,8 @@ func (t *TritonRepositoryHandler) GetModelConfig(path string) (*agent.ModelConfi
 			if instanceCount < 1 {
 				instanceCount = 1
 			}
-			tritonModelConfig.Triton.Cpu.InstanceCount = uint32(instanceCount)
+			tritonRuntimeInfo.Triton.Cpu = []*agent.TritonCPU{{InstanceCount: uint32(instanceCount)}}
 		}
 	}
-	return &agent.ModelConfig{Type: agent.ModelConfig_TRITON, Config: tritonModelConfig}, nil
+	return &agent.ModelRuntimeInfo{ModelRuntimeInfo: tritonRuntimeInfo}, nil
 }

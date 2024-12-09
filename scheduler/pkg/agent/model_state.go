@@ -141,8 +141,8 @@ func (modelState *ModelState) getVersionsForAllModels() []*agent.ModelVersion {
 		mv := version.get()
 		versionedModelName := mv.Model.GetMeta().Name
 		originalModelName, originalModelVersion, _ := util.GetOrignalModelNameAndVersion(versionedModelName)
-		modelConfig := mv.ModelConfig
-		loadedModels = append(loadedModels, getModifiedModelVersion(originalModelName, originalModelVersion, mv, modelConfig))
+		modelRuntimeInfo := mv.RuntimeInfo
+		loadedModels = append(loadedModels, getModifiedModelVersion(originalModelName, originalModelVersion, mv, modelRuntimeInfo))
 	}
 	return loadedModels
 }
@@ -157,12 +157,11 @@ func (version *modelVersion) getVersionMemory() uint64 {
 }
 
 func getInstanceCount(version *modelVersion) uint64 {
-	modelConfigType := version.versionInfo.ModelConfig.Type
-	switch modelConfigType {
-	case agent.ModelConfig_MLSERVER:
-		return uint64(version.versionInfo.ModelConfig.GetMlserver().ParallelWorkers)
-	case agent.ModelConfig_TRITON:
-		return uint64(version.versionInfo.ModelConfig.GetTriton().Cpu.InstanceCount)
+	switch version.versionInfo.RuntimeInfo.ModelRuntimeInfo.(type) {
+	case *agent.ModelRuntimeInfo_Mlserver:
+		return uint64(version.versionInfo.GetRuntimeInfo().GetMlserver().ParallelWorkers)
+	case *agent.ModelRuntimeInfo_Triton:
+		return uint64(version.versionInfo.GetRuntimeInfo().GetTriton().Cpu[0].InstanceCount)
 	default:
 		return 1
 	}
