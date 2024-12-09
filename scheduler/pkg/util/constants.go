@@ -46,6 +46,21 @@ const (
 	GRPCControlPlaneTimeout      = 1 * time.Minute // For control plane operations except load/unload
 )
 
+// K8s API
+const (
+	K8sTimeoutDefault = 2 * time.Minute
+)
+
+// Servers control plane
+const (
+	ServerControlPlaneTimeout = time.Second * 5
+)
+
+// inference
+const (
+	InferTimeoutDefault = 10 * time.Minute // TODO: expose this as a config (map)?
+)
+
 const (
 	EnvoyUpdateDefaultBatchWait = 250 * time.Millisecond
 	// note that we keep client and server keepalive times the same

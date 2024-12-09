@@ -12,6 +12,7 @@ package rclone
 import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/k8s"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func (r *RCloneClient) loadRcloneConfiguration(config *config.AgentConfiguration) error {
@@ -119,7 +120,7 @@ func (r *RCloneClient) loadRcloneSecretsConfiguration(config *config.AgentConfig
 		for _, secret := range config.Rclone.ConfigSecrets {
 			logger.WithField("secret_name", secret).Infof("retrieving Rclone secret")
 
-			config, err := secretsHandler.GetSecretConfig(secret)
+			config, err := secretsHandler.GetSecretConfig(secret, util.K8sTimeoutDefault)
 			if err != nil {
 				return nil, err
 			}
