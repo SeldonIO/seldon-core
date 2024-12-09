@@ -152,6 +152,6 @@ Running the playbooks individually, gives you more control over what and when it
 To explore the inference Pipeline feature of Seldon Core 2, you need to complete the installation of other components in the following order:
 
 1. [Integrating with Kafka](self-hosted-kafka.md)
-2. [Installing Istio](../production-environment/ingress-controller/istio.md)
+2. [Installing a Service mesh](../production-environment/ingress-controller/istio.md)
 
 

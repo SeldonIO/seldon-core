@@ -1,6 +1,11 @@
 # Table of contents
 
 * [Home](README.md)
+## Installation
+* [Learning Environment](installation/learning-environment/README.md)
+  *[Self-hosted Kafka](installation/learning-environment/self-hosted-kafka.md)
+* [Production Environment](installation/production-environment/README.md)
+  *[Managed Kafka](installation/production-environment/managed-kafka.md)
 * [Getting Started](getting-started/README.md)
   * [Docker Installation](getting-started/docker-installation.md)
   * [Kubernetes Installation](getting-started/kubernetes-installation/README.md)
