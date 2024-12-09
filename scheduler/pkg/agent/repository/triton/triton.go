@@ -15,11 +15,13 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	copy2 "github.com/otiai10/copy"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/encoding/prototext"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	pb "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton/config"
@@ -42,7 +44,7 @@ func copyNonConfigFilesToModelRepo(src string, dst string) error {
 		if err != nil {
 			return err
 		}
-		if info.IsDir() && src != path { //Don't descend into directories
+		if info.IsDir() && src != path { // Don't descend into directories
 			return filepath.SkipDir
 		}
 		// Copy non- config.pbtxt files to dst folder
@@ -216,4 +218,43 @@ func (t *TritonRepositoryHandler) SetExplainer(modelRepoPath string, explainerSp
 
 func (t *TritonRepositoryHandler) SetExtraParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error {
 	return nil
+}
+
+func (t *TritonRepositoryHandler) GetModelRuntimeInfo(path string) (*agent.ModelRuntimeInfo, error) {
+	configPath := filepath.Join(path, TritonConfigFile)
+	tritonConfig, err := t.loadConfigFromFile(configPath)
+	tritonRuntimeInfo := &agent.ModelRuntimeInfo_Triton{
+		Triton: &agent.TritonModelConfig{
+			Cpu: []*agent.TritonCPU{
+				{InstanceCount: 1},
+			},
+		},
+	}
+	if err == nil {
+		instanceGroups := tritonConfig.InstanceGroup
+		if len(instanceGroups) > 0 {
+			var instanceCount int32 = 0
+			backend := tritonConfig.Backend
+			for _, instanceGroup := range instanceGroups {
+				// only take the value from the first KIND_CPU that's found
+				if instanceGroup.Kind == pb.ModelInstanceGroup_KIND_CPU && instanceCount == 0 {
+					if instanceGroup.Count < 1 {
+						if strings.ToLower(backend) == "tensorflow" || strings.ToLower(backend) == "onnxruntime" {
+							instanceCount = 2
+						} else {
+							instanceCount = 1
+						}
+					} else {
+						instanceCount += instanceGroup.Count
+					}
+				}
+			}
+			// Default to 1 if no KIND_CPU is found, as KIND_GPU is currently not supported
+			if instanceCount < 1 {
+				instanceCount = 1
+			}
+			tritonRuntimeInfo.Triton.Cpu = []*agent.TritonCPU{{InstanceCount: uint32(instanceCount)}}
+		}
+	}
+	return &agent.ModelRuntimeInfo{ModelRuntimeInfo: tritonRuntimeInfo}, nil
 }

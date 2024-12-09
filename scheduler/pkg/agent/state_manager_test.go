@@ -22,6 +22,7 @@ import (
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
@@ -78,8 +79,9 @@ func getDummyModelDetails(modelId string, memBytes uint64, version uint32) *pba.
 		},
 	}
 	mv := pba.ModelVersion{
-		Model:   &model,
-		Version: version,
+		Model:       &model,
+		Version:     version,
+		RuntimeInfo: getModelRuntimeInfo(1),
 	}
 	return &mv
 }
@@ -102,12 +104,11 @@ func setupLocalTestManagerWithState(
 	numModels int, modelPrefix string, v2Client interfaces.ModelServerControlPlaneClient,
 	capacity int, numVersions int, overCommitPercentage uint32,
 ) (*LocalStateManager, *testing_utils.V2State) {
-
 	logger := log.New()
 	logger.SetLevel(log.InfoLevel)
 
 	modelState := NewModelState()
-	//create mock v2 client
+	// create mock v2 client
 	var v2ClientState *testing_utils.V2State
 	if v2Client == nil {
 		models := make([]string, numModels*numVersions)
@@ -137,13 +138,13 @@ func setupLocalTestManager(numModels int, modelPrefix string, v2Client interface
 }
 
 // this mimics LoadModel in client.go with regards to locking
-func (manager *LocalStateManager) loadModelFn(modelVersionDetails *pba.ModelVersion) error {
+func (manager *LocalStateManager) loadModelFn(modelVersionDetails *pba.ModelVersion, modelConfig *agent.ModelRuntimeInfo) error {
 	modelName := modelVersionDetails.GetModel().GetMeta().GetName()
 	modelVersion := modelVersionDetails.GetVersion()
 
 	modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
 	pinnedModelVersion := util.GetPinnedModelVersion()
-	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, modelVersionDetails)
+	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, modelVersionDetails, modelConfig)
 
 	manager.cache.Lock(modelWithVersion)
 	defer manager.cache.Unlock(modelWithVersion)
@@ -152,14 +153,14 @@ func (manager *LocalStateManager) loadModelFn(modelVersionDetails *pba.ModelVers
 }
 
 // this mimics UnloadModel in client.go with regards to locking
-func (manager *LocalStateManager) unloadModelFn(modelVersionDetails *pba.ModelVersion) error {
+func (manager *LocalStateManager) unloadModelFn(modelVersionDetails *pba.ModelVersion, modelConfig *agent.ModelRuntimeInfo) error {
 	modelName := modelVersionDetails.GetModel().GetMeta().GetName()
 	modelVersion := modelVersionDetails.GetVersion()
 
 	modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
 	pinnedModelVersion := util.GetPinnedModelVersion()
 	// we dont have memory actually requirement in unload
-	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, modelVersionDetails)
+	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, modelVersionDetails, getModelRuntimeInfo(1))
 
 	manager.cache.Lock(modelWithVersion)
 	defer manager.cache.Unlock(modelWithVersion)
@@ -175,13 +176,12 @@ func (manager *LocalStateManager) ensureLoadModelFn(modelName string, modelVersi
 }
 
 func TestLocalStateManagerSmoke(t *testing.T) {
-
 	numModels := 10
 	dummyModelPrefix := "dummy_model"
 
 	manager, v2State := setupLocalTestManagerWithState(numModels, dummyModelPrefix, nil, numModels-2, 1, 100)
 
-	//activate mock http server for v2
+	// activate mock http server for v2
 	httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 	defer httpmock.DeactivateAndReset()
 
@@ -190,7 +190,7 @@ func TestLocalStateManagerSmoke(t *testing.T) {
 	for i := 0; i < numModels; i++ {
 		modelName := getModelId(dummyModelPrefix, i)
 		memBytes := uint64(1)
-		err := manager.loadModelFn(getDummyModelDetails(modelName, memBytes, uint32(1)))
+		err := manager.loadModelFn(getDummyModelDetails(modelName, memBytes, uint32(1)), getModelRuntimeInfo(1))
 		g.Expect(err).To(BeNil())
 	}
 
@@ -213,7 +213,6 @@ func TestLocalStateManagerSmoke(t *testing.T) {
 		t.Logf("Difference in models %v", modelsDiff)
 	}
 	g.Expect(isMatch).To(Equal(true))
-
 }
 
 // Ensures that we have a lock on model reloading
@@ -254,7 +253,7 @@ func TestConcurrentReload(t *testing.T) {
 			t.Log("Setup test")
 
 			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1, 100)
-			//activate mock http server for v2
+			// activate mock http server for v2
 			httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
@@ -262,7 +261,7 @@ func TestConcurrentReload(t *testing.T) {
 			for i := test.numModels - 1; i >= 0; i-- {
 				modelName := getModelId(dummyModelPrefix, i)
 				memBytes := uint64(1)
-				_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, uint32(1)))
+				_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, uint32(1)), getModelRuntimeInfo(1))
 			}
 
 			t.Log("Start test")
@@ -303,15 +302,13 @@ func TestConcurrentReload(t *testing.T) {
 			t.Log("Test unload models")
 			for i := 0; i < test.numModels; i++ {
 				modelName := getModelId(dummyModelPrefix, i)
-				err := manager.unloadModelFn(getDummyModelDetailsUnload(modelName, uint32(1)))
+				err := manager.unloadModelFn(getDummyModelDetailsUnload(modelName, uint32(1)), getModelRuntimeInfo(1))
 				g.Expect(err).To(BeNil())
 			}
 			g.Expect(manager.availableMainMemoryBytes).Should(BeNumerically("==", test.capacity))
 			g.Expect(manager.modelVersions.numModels()).Should(BeNumerically("==", 0))
-
 		})
 	}
-
 }
 
 // Test concurrent infer requests
@@ -351,7 +348,7 @@ func TestConcurrentInfer(t *testing.T) {
 			t.Log("Setup test")
 
 			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1, 100)
-			//activate mock http server for v2
+			// activate mock http server for v2
 			httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
@@ -359,7 +356,7 @@ func TestConcurrentInfer(t *testing.T) {
 			for i := test.numModels - 1; i >= 0; i-- {
 				modelName := getModelId(dummyModelPrefix, i)
 				memBytes := uint64(1)
-				_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, uint32(1)))
+				_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, uint32(1)), getModelRuntimeInfo(1))
 			}
 
 			t.Log("Start test")
@@ -401,14 +398,13 @@ func TestConcurrentInfer(t *testing.T) {
 			t.Log("Test unload models")
 			for i := 0; i < test.numModels; i++ {
 				modelName := getModelId(dummyModelPrefix, i)
-				err := manager.unloadModelFn(getDummyModelDetailsUnload(modelName, uint32(1)))
+				err := manager.unloadModelFn(getDummyModelDetailsUnload(modelName, uint32(1)), getModelRuntimeInfo(1))
 				g.Expect(err).To(BeNil())
 			}
 			g.Expect(manager.availableMainMemoryBytes).Should(BeNumerically("==", test.capacity))
 			g.Expect(manager.modelVersions.numModels()).Should(BeNumerically("==", 0))
 		})
 	}
-
 }
 
 // We have concurrent load and unload of models from the scheduler.
@@ -448,11 +444,10 @@ func TestConcurrentLoad(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-
 			t.Log("Setup test")
 			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1, 100)
 
-			//activate mock http server for v2
+			// activate mock http server for v2
 			httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
@@ -463,11 +458,11 @@ func TestConcurrentLoad(t *testing.T) {
 				modelName := getModelId(dummyModelPrefix, i)
 				memBytes := uint64(1)
 				checkerFn := func(wg *sync.WaitGroup, modelName string, modelVersion uint32) {
-					err := manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion))
+					err := manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion), getModelRuntimeInfo(1))
 					for err != nil {
 						t.Logf("Error %s", err)
 						time.Sleep(10 * time.Millisecond)
-						err = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion))
+						err = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion), getModelRuntimeInfo(1))
 					}
 					g.Expect(manager.availableMainMemoryBytes).Should(BeNumerically(">=", 0))
 					wg.Done()
@@ -492,7 +487,7 @@ func TestConcurrentLoad(t *testing.T) {
 			for i := 0; i < test.numModels; i++ {
 				modelName := getModelId(dummyModelPrefix, i)
 				checkerFn := func(wg *sync.WaitGroup, modelName string, modelVersion uint32) {
-					err := manager.unloadModelFn(getDummyModelDetailsUnload(modelName, modelVersion))
+					err := manager.unloadModelFn(getDummyModelDetailsUnload(modelName, modelVersion), getModelRuntimeInfo(1))
 					if err != nil {
 						t.Logf("Error %s", err)
 					}
@@ -507,7 +502,6 @@ func TestConcurrentLoad(t *testing.T) {
 			// should be an empty server
 			g.Expect(manager.availableMainMemoryBytes).Should(BeNumerically("==", test.capacity))
 			g.Expect(manager.modelVersions.numModels()).Should(BeNumerically("==", 0))
-
 		})
 	}
 }
@@ -545,7 +539,7 @@ func TestConcurrentLoadWithVersions(t *testing.T) {
 			t.Log("Setup test")
 			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, numberOfVersionsToAdd, 100)
 
-			//activate mock http server for v2
+			// activate mock http server for v2
 			httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
@@ -554,11 +548,11 @@ func TestConcurrentLoadWithVersions(t *testing.T) {
 			wg.Add(test.numModels * numberOfVersionsToAdd)
 
 			checkerFn := func(wg *sync.WaitGroup, modelName string, memBytes uint64, modelVersion uint32) {
-				err := manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion))
+				err := manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion), getModelRuntimeInfo(1))
 				for err != nil {
 					t.Logf("Error %s for model %s version %d", err, modelName, modelVersion)
 					time.Sleep(10 * time.Millisecond)
-					err = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion))
+					err = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion), getModelRuntimeInfo(1))
 				}
 				g.Expect(manager.availableMainMemoryBytes).Should(BeNumerically(">=", 0))
 				wg.Done()
@@ -587,7 +581,7 @@ func TestConcurrentLoadWithVersions(t *testing.T) {
 			wg.Add(test.numModels * numberOfVersionsToAdd)
 
 			checkerFn = func(wg *sync.WaitGroup, modelName string, _ uint64, modelVersion uint32) {
-				err := manager.unloadModelFn(getDummyModelDetailsUnload(modelName, modelVersion))
+				err := manager.unloadModelFn(getDummyModelDetailsUnload(modelName, modelVersion), getModelRuntimeInfo(1))
 				if err != nil {
 					t.Logf("Error %s", err)
 				}
@@ -605,7 +599,6 @@ func TestConcurrentLoadWithVersions(t *testing.T) {
 			// should be an empty server
 			g.Expect(manager.availableMainMemoryBytes).Should(BeNumerically("==", test.capacity))
 			g.Expect(manager.modelVersions.numModels()).Should(BeNumerically("==", 0))
-
 		})
 	}
 }
@@ -640,7 +633,7 @@ func TestDataAndControlPlaneInteractionSmoke(t *testing.T) {
 			t.Log("Setup test")
 			manager, v2State := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, numberOfVersionsToAdd, 100)
 
-			//activate mock http server for v2
+			// activate mock http server for v2
 			httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
@@ -650,7 +643,7 @@ func TestDataAndControlPlaneInteractionSmoke(t *testing.T) {
 				modelName := getModelId(dummyModelPrefix, i)
 				memBytes := uint64(1)
 				modelVersion := uint32(1)
-				_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion))
+				_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion), getModelRuntimeInfo(1))
 			}
 
 			t.Log("Start test")
@@ -664,12 +657,12 @@ func TestDataAndControlPlaneInteractionSmoke(t *testing.T) {
 				switch op {
 				case 0:
 					t.Logf("Load model %s", modelName)
-					if err := manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion)); err != nil {
+					if err := manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion), getModelRuntimeInfo(1)); err != nil {
 						t.Logf("Load model %s failed (%s)", modelName, err)
 					}
 				case 1:
 					t.Logf("Unload model %s", modelName)
-					if err := manager.unloadModelFn(getDummyModelDetailsUnload(modelName, modelVersion)); err != nil {
+					if err := manager.unloadModelFn(getDummyModelDetailsUnload(modelName, modelVersion), getModelRuntimeInfo(1)); err != nil {
 						t.Logf("Unload model %s failed (%s)", modelName, err)
 					}
 				case 2:
@@ -706,12 +699,11 @@ func TestDataAndControlPlaneInteractionSmoke(t *testing.T) {
 			for i := 0; i < test.numModels; i++ {
 				modelName := getModelId(dummyModelPrefix, i)
 				for j := 1; j <= numberOfVersionsToAdd; j++ {
-					_ = manager.unloadModelFn(getDummyModelDetailsUnload(modelName, uint32(j)))
+					_ = manager.unloadModelFn(getDummyModelDetailsUnload(modelName, uint32(j)), getModelRuntimeInfo(1))
 				}
 			}
 			g.Expect(manager.availableMainMemoryBytes).Should(BeNumerically("==", test.capacity))
 			g.Expect(manager.modelVersions.numModels()).Should(BeNumerically("==", 0))
-
 		})
 	}
 }
@@ -824,7 +816,7 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			manager, v2State := setupLocalTestManagerWithState(numModels, dummyModelPrefix, nil, capacity, 1, 100)
 
-			//activate mock http server for v2
+			// activate mock http server for v2
 			httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
@@ -835,7 +827,7 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			for i := 0; i < capacity; i++ {
 				modelName := getModelId(dummyModelPrefix, i)
 				modelVersion := uint32(1)
-				_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion))
+				_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion), getModelRuntimeInfo(1))
 			}
 
 			var wg sync.WaitGroup
@@ -881,9 +873,8 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			}
 
 			t.Log("Setup step1")
-
 			if test.step1.isLoaded {
-				_ = manager.loadModelFn(getDummyModelDetails(getModelId(dummyModelPrefix, test.step1.modelIdSuffix), memBytes, uint32(test.step1.modelVersion)))
+				_ = manager.loadModelFn(getDummyModelDetails(getModelId(dummyModelPrefix, test.step1.modelIdSuffix), memBytes, uint32(test.step1.modelVersion)), getModelRuntimeInfo(1))
 				if !test.step1.inMemory {
 					// ensure load the other model 0, so evicts model_1 if in memory
 					_ = manager.ensureLoadModelFn(getModelId(dummyModelPrefix, 0), 1)
@@ -893,7 +884,7 @@ func TestControlAndDataPlaneUseCases(t *testing.T) {
 			t.Log("Setup step2")
 
 			if test.step2.isLoaded {
-				_ = manager.loadModelFn(getDummyModelDetails(getModelId(dummyModelPrefix, test.step2.modelIdSuffix), memBytes, uint32(test.step2.modelVersion)))
+				_ = manager.loadModelFn(getDummyModelDetails(getModelId(dummyModelPrefix, test.step2.modelIdSuffix), memBytes, uint32(test.step2.modelVersion)), getModelRuntimeInfo(1))
 				if !test.step2.inMemory {
 					// ensure load the other model 0, so evicts model_1 if in memory
 					_ = manager.ensureLoadModelFn(getModelId(dummyModelPrefix, 0), 1)
@@ -951,14 +942,16 @@ func TestAvailableMemoryWithOverCommit(t *testing.T) {
 		capacity                              int
 		overCommitPercentage                  int
 		expectedAvailableMemoryWithOverCommit uint64
+		runtimeInfo                           *agent.ModelRuntimeInfo
 	}
 	tests := []test{
 		{
 			name:                                  "extra main capacity",
 			numModels:                             10,
-			capacity:                              20,
+			capacity:                              30,
 			overCommitPercentage:                  0,
 			expectedAvailableMemoryWithOverCommit: 10,
+			runtimeInfo:                           getModelRuntimeInfo(2),
 		},
 		{
 			name:                                  "extra main capacity with overcommit",
@@ -966,6 +959,7 @@ func TestAvailableMemoryWithOverCommit(t *testing.T) {
 			capacity:                              20,
 			overCommitPercentage:                  10,
 			expectedAvailableMemoryWithOverCommit: 12,
+			runtimeInfo:                           getModelRuntimeInfo(1),
 		},
 		{
 			name:                                  "enough main capacity",
@@ -973,6 +967,7 @@ func TestAvailableMemoryWithOverCommit(t *testing.T) {
 			capacity:                              10,
 			overCommitPercentage:                  0,
 			expectedAvailableMemoryWithOverCommit: 0,
+			runtimeInfo:                           getModelRuntimeInfo(1),
 		},
 		{
 			name:                                  "enough main capacity with overcommit",
@@ -980,13 +975,15 @@ func TestAvailableMemoryWithOverCommit(t *testing.T) {
 			capacity:                              10,
 			overCommitPercentage:                  10,
 			expectedAvailableMemoryWithOverCommit: 1,
+			runtimeInfo:                           getModelRuntimeInfo(1),
 		},
 		{
 			name:                                  "overcommit",
 			numModels:                             10,
-			capacity:                              8,
+			capacity:                              16,
 			overCommitPercentage:                  50,
-			expectedAvailableMemoryWithOverCommit: 2,
+			expectedAvailableMemoryWithOverCommit: 4,
+			runtimeInfo:                           getModelRuntimeInfo(2),
 		},
 		{
 			name:                                  "overflow",
@@ -994,6 +991,7 @@ func TestAvailableMemoryWithOverCommit(t *testing.T) {
 			capacity:                              8,
 			overCommitPercentage:                  0,
 			expectedAvailableMemoryWithOverCommit: 0,
+			runtimeInfo:                           getModelRuntimeInfo(1),
 		},
 	}
 
@@ -1002,14 +1000,14 @@ func TestAvailableMemoryWithOverCommit(t *testing.T) {
 			t.Log("Test load")
 			manager, _ := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1, uint32(test.overCommitPercentage))
 
-			//activate mock http server for v2
+			// activate mock http server for v2
 			httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
 			for i := 0; i < test.numModels; i++ {
 				modelName := getModelId(dummyModelPrefix, i)
 				modelVersion := uint32(1)
-				_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion))
+				_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion), test.runtimeInfo)
 			}
 
 			g.Expect(manager.GetAvailableMemoryBytesWithOverCommit()).To(Equal(test.expectedAvailableMemoryWithOverCommit))
@@ -1029,14 +1027,14 @@ func TestServerConnectionIssues(t *testing.T) {
 
 	manager := setupLocalTestManager(numModels, dummyModelPrefix, nil, numModels-1, 1)
 
-	//activate httpmock for v2
+	// activate httpmock for v2
 	httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 	g := NewGomegaWithT(t)
 
 	for i := 0; i < numModels; i++ {
 		modelName := getModelId(dummyModelPrefix, i)
 		memBytes := uint64(1)
-		_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, uint32(1)))
+		_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, uint32(1)), getModelRuntimeInfo(1))
 	}
 
 	// disable httpmock, then we will have a connection issue, check that state is same
@@ -1082,14 +1080,14 @@ func TestModelMetricsStats(t *testing.T) {
 			t.Log("load test")
 			manager, _ := setupLocalTestManagerWithState(test.numModels, dummyModelPrefix, nil, test.capacity, 1, uint32(50))
 
-			//activate mock http server for v2
+			// activate mock http server for v2
 			httpmock.ActivateNonDefault(manager.v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			defer httpmock.DeactivateAndReset()
 
 			for i := 0; i < test.numModels; i++ {
 				modelName := getModelId(dummyModelPrefix, i)
 				modelVersion := uint32(1)
-				_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion))
+				_ = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion), getModelRuntimeInfo(1))
 				time.Sleep(10 * time.Millisecond)
 				model := getVersionedModelId(dummyModelPrefix, i, 1)
 				// model under test real load
@@ -1157,7 +1155,7 @@ func TestModelMetricsStats(t *testing.T) {
 			for i := 0; i < test.numModels; i++ {
 				modelName := getModelId(dummyModelPrefix, i)
 				modelVersion := uint32(1)
-				_ = manager.unloadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion))
+				_ = manager.unloadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion), getModelRuntimeInfo(1))
 				time.Sleep(10 * time.Millisecond)
 				model := getVersionedModelId(dummyModelPrefix, i, 1)
 				if test.capacity < test.numModels {
@@ -1177,7 +1175,6 @@ func TestModelMetricsStats(t *testing.T) {
 								isSoft: false,
 							},
 						))
-
 					}
 				} else {
 					g.Expect(manager.metrics.(fakeMetricsHandler).modelLoadState[model]).To(Equal(
@@ -1191,4 +1188,9 @@ func TestModelMetricsStats(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TODO: getModelRuntimeInfo method
+func getModelRuntimeInfo(instanceCount uint32) *pba.ModelRuntimeInfo {
+	return &pba.ModelRuntimeInfo{ModelRuntimeInfo: &pba.ModelRuntimeInfo_Mlserver{Mlserver: &agent.MLServerModelSettings{ParallelWorkers: instanceCount}}}
 }

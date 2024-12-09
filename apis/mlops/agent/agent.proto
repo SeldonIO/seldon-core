@@ -27,6 +27,7 @@ message ModelEventMessage {
   Event event = 5;
   string message = 6;
   uint64 availableMemoryBytes = 7;
+  ModelRuntimeInfo runtimeInfo = 8;
 }
 
 message ModelEventResponse {
@@ -92,7 +93,28 @@ message ModelOperationMessage {
 message ModelVersion {
   scheduler.Model model = 1;
   uint32 version = 2;
+  ModelRuntimeInfo runtimeInfo = 3;
 }
+
+message ModelRuntimeInfo {
+  oneof modelRuntimeInfo {
+    MLServerModelSettings mlserver = 1; 
+    TritonModelConfig triton = 2;
+    }
+}
+
+message MLServerModelSettings {
+  uint32 parallelWorkers = 1;
+}
+
+message TritonModelConfig {
+  repeated TritonCPU cpu = 1;
+}
+
+message TritonCPU {
+  uint32 instanceCount = 1;
+  }
+
 
 // [END Messages]
 
