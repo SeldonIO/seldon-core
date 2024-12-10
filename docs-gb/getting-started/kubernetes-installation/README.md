@@ -20,9 +20,9 @@ Here is a list of components that Seldon Core 2 depends on, with minimum and max
 | Prometheus-adapter | 0.12 | 0.12 | Optional |
 | Opentelemetry Collector | 0.68 | `***` | Optional |
 
-`*` These components are shipped as part of Seldon Core 2 docker images set, users should not install them separately but they need to be aware of the configuration options that are supported by these versions.
-`**` Kafka is only required to operate Seldon Core 2 dataflow Pipelines. If not required then users should not install seldon-modelgateway, seldon-pipelinegateway, and seldon-dataflow-engine.
-`***` Not hard limit on the maximum version to be used.
+`*` These components are shipped as part of Seldon Core 2 docker images set, users should not install them separately but they need to be aware of the configuration options that are supported by these versions.  
+`**` Kafka is only required to operate Seldon Core 2 dataflow Pipelines. If not required then users should not install seldon-modelgateway, seldon-pipelinegateway, and seldon-dataflow-engine.  
+`***` Not hard limit on the maximum version to be used.  
 
 
 ## Install Ecosystem Components
@@ -42,8 +42,8 @@ You also need to install our ecosystem components. For this we provide direction
 
 To install Seldon Core 2 from the [source repository](https://github.com/SeldonIO/seldon-core), you can choose one of the following methods:
 
-* [Helm](helm.md)(recommended for production systems)
-* [Ansible](ansible.md)(recommended for testing, development, or trial)
+* [Helm](helm.md) (recommended for production systems)
+* [Ansible](ansible.md) (recommended for testing, development, or trial)
 
 The Kubernetes operator that is installed runs in namespaced mode so any resources you create
 need to be in the same namespace as you installed into.
