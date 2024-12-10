@@ -23,7 +23,7 @@ require (
 	github.com/tidwall/gjson v1.18.0
 	golang.org/x/exp v0.0.0-20240112132812-db7319d0e0e3
 	google.golang.org/grpc v1.68.0
-	google.golang.org/protobuf v1.35.1
+	google.golang.org/protobuf v1.35.2
 	k8s.io/api v0.31.0
 	k8s.io/apimachinery v0.31.0
 	k8s.io/client-go v0.31.0
