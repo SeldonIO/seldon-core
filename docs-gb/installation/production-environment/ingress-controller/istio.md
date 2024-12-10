@@ -100,12 +100,12 @@ Installing Istio ingress controller in a Kubernetes cluster running Seldon Enter
 
 ### Expose Seldon mesh service
 
-It is important to expose `seldon-service` service to enablecommunication between deployed machine learning models and external clients or services. The Seldon Core 2 inference API is exposed through the `seldon-mesh` service in the `seldon` namespace. If you install Core 2 in multiple namespaces, you need to expose the `seldon-mesh` service in each of namespace.
+It is important to expose `seldon-service` service to enable communication between deployed machine learning models and external clients or services. The Seldon Core 2 inference API is exposed through the `seldon-mesh` service in the `seldon-mesh` namespace. If you install Core 2 in multiple namespaces, you need to expose the `seldon-mesh` service in each of namespace.
 
 1.  Verify if the `seldon-mesh` service is running for example, in the namespace `seldon`.
 
     ```bash
-    kubectl get svc -n seldon
+    kubectl get svc -n seldon-mesh
     ```
 
     When the services are running you should see something similar to this:
@@ -117,39 +117,29 @@ It is important to expose `seldon-service` service to enablecommunication betwee
     seldon-scheduler         LoadBalancer   34.118.225.138   35.204.34.162   9002:32099/TCP,9004:32100/TCP,9044:30342/TCP,9005:30473/TCP,9055:32732/TCP,9008:32716/TCP   45m
     triton-0                 ClusterIP      None             <none>          9000/TCP,9500/TCP,9005/TCP 
     ```
-2.  Create a YAML file to create a VirtualService Seldon Core 2 `seldon-mesh`. For example, create the `seldon-mesh-vs.yaml` file. Use your preferred text editor to create and save the file with the following content:
+2.  Create a YAML file to create a VirtualService named `iris-route` in the namespace `seldon-mesh`. For example, create the `seldon-mesh-vs.yaml` file. Use your preferred text editor to create and save the file with the following content:
 
     ```yaml
     apiVersion: networking.istio.io/v1alpha3
     kind: VirtualService
     metadata:
-      name: seldon-mesh
-      namespace: seldon
+      name: iris-route
+      namespace: seldon-mesh
     spec:
       gateways:
         - istio-system/seldon-gateway
       hosts:
         - "*"
       http:
-        - name: "data-plane-seldon"
-          match:
-            - authority:
-                exact: "seldon.inference.seldon"
-          route:
-            - destination:
-                host: "seldon-mesh.seldon.svc.cluster.local"
-                port:
-                 number: 80
-      - name: "control-plane-seldon"
-        match:
-          - authority:
-              exact: "seldon.admin.seldon"
+        - match:
+          - uri:
+              prefix: /v2
+        name: iris-http
         route:
-          - destination:
-              host: "seldon-scheduler.seldon.svc.cluster.local"
-              port:
-                number: 9004
-    ```
+        - destination:
+          host: seldon-mesh.seldon-mesh.svc.cluster.local
+        headers:
+      ```
 3.  Create a virtual service to expose the `seldon-mesh` service.
 
     ```
@@ -159,32 +149,8 @@ It is important to expose `seldon-service` service to enablecommunication betwee
     When the virtual service is created, you should see this:
 
     ```
-    virtualservice.networking.istio.io/seldon-mesh created
+    virtualservice.networking.istio.io/iris-route created
     ```
-4. Access Seldon Core 2.
-
-{% tabs %}
-{% tab title="Port forwarding" %}
-1.  Get the Pod that is running Seldon Enterprise Platform in the cluster and save it as `$POD_NAME.`
-
-    ```
-    export POD_NAME=$(kubectl get pods --namespace seldon-system -l "app.kubernetes.io/name=seldon-deploy,app.kubernetes.io/instance=seldon-enterprise" -o jsonpath="{.items[0].metadata.name}")
-    ```
-2.  You can use port-forwarding to access your application locally.
-
-    ```
-    kubectl port-forward $POD_NAME 8000:8000 --namespace seldon-system
-    ```
-3. Open your browser and navigate to `http://127.0.0.1:8000/seldon-deploy/` to access Seldon Enterprise Platform.
-{% endtab %}
-
-{% tab title="Static IP address" %}
-Replace `<ip_address>` with the IP address noted during the [Istio Ingress Gateway installation](istio.md#install-istio-ingress-gateway).\
-\
-1\. Open your browser and navigate to `http://<ip_address>/seldon-deploy/` to access Seldon Enterprise Platform.
-{% endtab %}
-{% endtabs %}
-
 #### Optional: Enable HTTPS/TLS
 
 To secure your Ingress with HTTPS, you can configure TLS settings in the `Gateway` resource using a certificate and key. This involves additional steps like creating Kubernetes secrets for your certificates.
