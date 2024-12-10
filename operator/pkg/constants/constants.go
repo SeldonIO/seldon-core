@@ -9,7 +9,10 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package constants
 
-import "os"
+import (
+	"os"
+	"time"
+)
 
 const (
 	// note: we do not have a finalizer for servers as we rely on the draining logic to reschedule models
@@ -49,4 +52,11 @@ const (
 	ReconcileNoChange
 	ReconcileUpdateNeeded
 	ReconcileCreateNeeded
+)
+
+// k8s api call timeout
+const (
+	K8sAPICallTimeout       = 2 * time.Minute
+	ControlPlaneExecTimeOut = 5 * time.Minute
+	ReconcileTimeout        = 5 * time.Minute
 )

@@ -559,7 +559,7 @@ func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte
 
 		}
 
-		config, err := c.secretsHandler.GetSecretConfig(x.StorageSecretName)
+		config, err := c.secretsHandler.GetSecretConfig(x.StorageSecretName, util.K8sTimeoutDefault)
 		if err != nil {
 			return nil, err
 		}

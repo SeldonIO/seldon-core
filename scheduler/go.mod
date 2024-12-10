@@ -26,8 +26,8 @@ require (
 	github.com/prometheus/client_golang v1.19.1
 	github.com/rs/xid v1.6.0
 	github.com/seldonio/seldon-core/apis/go/v2 v2.0.0-00010101000000-000000000000
-	github.com/seldonio/seldon-core/components/tls/v2 v2.0.0-00010101000000-000000000000
 	github.com/seldonio/seldon-core/components/kafka/v2 v2.0.0-00010101000000-000000000000
+	github.com/seldonio/seldon-core/components/tls/v2 v2.0.0-00010101000000-000000000000
 	github.com/serialx/hashring v0.0.0-20200727003509-22c0c7ab6b1b
 	github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka v1.19.0
 	github.com/sirupsen/logrus v1.9.3
