@@ -14,11 +14,13 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
@@ -773,6 +775,51 @@ func TestDefaultModelSettings(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			data, _ := json.Marshal(test.modelSettings)
 			g.Expect(data).To(Equal(test.expected))
+		})
+	}
+}
+
+func TestGetModelConfig(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	tests := []struct {
+		name     string
+		expected uint32
+		err      bool
+	}{
+		{
+			name:     "defaults to 1",
+			expected: 1,
+			err:      false,
+		},
+		{
+			name:     "should pick up env var",
+			expected: 10,
+			err:      false,
+		},
+		{
+			name:     "returns 1 on err",
+			expected: 1,
+			err:      true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			logger := log.New()
+			m := NewMLServerRepositoryHandler(logger)
+
+			if test.err {
+				os.Setenv(parallelWorkersEnvVar, "uh-oh")
+			} else if test.expected > 1 {
+				os.Setenv(parallelWorkersEnvVar, strconv.FormatInt(int64(test.expected), 10))
+			}
+
+			runtimeInfo, err := m.GetModelRuntimeInfo("test-model")
+			// mlserver should never return an error
+			g.Expect(err).To(BeNil())
+			mlserverRuntimeInfo := runtimeInfo.ModelRuntimeInfo.(*agent.ModelRuntimeInfo_Mlserver)
+			g.Expect(mlserverRuntimeInfo.Mlserver.ParallelWorkers).To(Equal(test.expected))
 		})
 	}
 }

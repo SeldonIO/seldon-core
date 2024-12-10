@@ -615,15 +615,23 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage, timestamp int64
 	}
 	logger.Infof("Chose path %s for model %s:%d", *chosenVersionPath, modelName, modelVersion)
 
+	modelConfig, err := c.ModelRepository.GetModelRuntimeInfo(modelWithVersion)
+	if err != nil {
+		logger.Errorf("there was a problem getting the config for model: %s", modelName)
+	}
+
 	// TODO: consider whether we need the actual protos being sent to `LoadModelVersion`?
 	modifiedModelVersionRequest := getModifiedModelVersion(
 		modelWithVersion,
 		pinnedModelVersion,
 		request.GetModelVersion(),
+		modelConfig,
 	)
+
 	loaderFn := func() error {
 		return c.stateManager.LoadModelVersion(modifiedModelVersionRequest)
 	}
+
 	if err := backoffWithMaxNumRetry(loaderFn, c.settings.maxLoadRetryCount, c.settings.maxLoadElapsedTime, logger); err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		c.cleanup(modelWithVersion)
@@ -641,7 +649,8 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage, timestamp int64
 	}
 
 	logger.Infof("Load model %s:%d success", modelName, modelVersion)
-	return c.sendAgentEvent(modelName, modelVersion, agent.ModelEventMessage_LOADED)
+
+	return c.sendAgentEvent(modelName, modelVersion, modelConfig, agent.ModelEventMessage_LOADED)
 }
 
 func (c *Client) UnloadModel(request *agent.ModelOperationMessage, timestamp int64) error {
@@ -674,7 +683,7 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage, timestamp int
 	defer c.modelTimestamps.Store(modelWithVersion, timestamp)
 
 	// we do not care about model versions here
-	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, request.GetModelVersion())
+	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, request.GetModelVersion(), nil)
 
 	unloaderFn := func() error {
 		return c.stateManager.UnloadModelVersion(modifiedModelVersionRequest)
@@ -702,7 +711,7 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage, timestamp int
 	}
 
 	logger.Infof("Unload model %s:%d success", modelName, modelVersion)
-	return c.sendAgentEvent(modelName, modelVersion, agent.ModelEventMessage_UNLOADED)
+	return c.sendAgentEvent(modelName, modelVersion, nil, agent.ModelEventMessage_UNLOADED)
 }
 
 func (c *Client) cleanup(modelWithVersion string) {
@@ -742,6 +751,7 @@ func (c *Client) sendModelEventError(
 func (c *Client) sendAgentEvent(
 	modelName string,
 	modelVersion uint32,
+	modelRuntimeInfo *agent.ModelRuntimeInfo,
 	event agent.ModelEventMessage_Event,
 ) error {
 	// if the server is draining and the model load has succeeded, we need to "cancel"
@@ -765,6 +775,7 @@ func (c *Client) sendAgentEvent(
 		ModelVersion:         modelVersion,
 		Event:                event,
 		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
+		RuntimeInfo:          modelRuntimeInfo,
 	})
 	return err
 }
