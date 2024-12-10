@@ -90,6 +90,7 @@ You could also install Selcon Core 2 locally if you have installed [Docker Compo
     seldon-v2-controller-manager-5dd676c7b7-xq5sm   1/1     Running            0             4m52s
     triton-0                                        2/3     Running            0             4m10s
     ```
+    
 {% hint style="info" %}
 **Note**: The status of the Pod that begins with the name `seldon-dataflow-engine` is not running because Kafka is not still integrated with Seldon Core 2.
 {% endhint %}
