@@ -24,7 +24,6 @@ Installing Istio ingress controller in a Kubernetes cluster running Seldon Enter
 1. [Install Istio](istio.md#install-istio)
 2. [Install Istio Ingress Gateway](istio.md#install-istio-ingress-gateway)
 3. [Expose Seldon mesh service](istio.md#expose-seldon-mesh-service)
-4. [Install Seldon Enterprise Platform with Istio ingress controller](istio.md#install-seldon-enterprise-platform-with-istio-ingress-controller)
 
 ### Install Istio
 
@@ -95,7 +94,7 @@ Installing Istio ingress controller in a Kubernetes cluster running Seldon Enter
     ```
 
     {% hint style="info" %}
-    Make a note of the IP address that is displayed in the output.
+    Make a note of the IP address that is displayed in the output. This is the IP address that you require to try out the [Kubernetes Examples](/docs-gb/examples/k8s-examples.md).
     {% endhint %}
 
 ### Expose Seldon mesh service
