@@ -154,7 +154,7 @@ settings for Kafka configuration.
       uid: 5c041e69-f36b-4f14-8f0d-c8790003cb3e
     ``` 
 
-### Customing the settings
+### Customzing the settings
 
 To customize the settings you can add and modify the Kafka configuration using Helm, for example to add compression for producers.
 
