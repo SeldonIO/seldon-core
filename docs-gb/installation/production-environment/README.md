@@ -31,7 +31,7 @@ To use Seldon Core 2 in a production environment:
     helm repo add seldon-charts https://seldonio.github.io/helm-charts/
     helm repo update seldon-charts
     ```
-2.  Install Custom resource definitions for Seldon Core 2.
+2.  Install custom resource definitions for Seldon Core 2.
 
     ```bash
     helm upgrade seldon-core-v2-crds seldon-charts/seldon-core-v2-crds \
@@ -66,6 +66,30 @@ To use Seldon Core 2 in a production environment:
      --namespace seldon-mesh \
      --install
     ```
+6. Check Seldon Core 2 operator, runtimes, servers, and CRDS are installed in the namespace `seldon-mesh`:
+    ```bash
+     kubectl get pods -n seldon-mesh
+    ```
+    The output should be similar to this:
+    ```
+    NAME                                            READY   STATUS             RESTARTS      AGE
+    hodometer-749d7c6875-4d4vw                      1/1     Running            0             4m33s
+    mlserver-0                                      3/3     Running            0             4m10s
+    seldon-dataflow-engine-7b98c76d67-v2ztq         0/1     CrashLoopBackOff   5 (49s ago)   4m33s
+    seldon-envoy-bb99f6c6b-4mpjd                    1/1     Running            0             4m33s
+    seldon-modelgateway-5c76c7695b-bhfj5            1/1     Running            0             4m34s
+    seldon-pipelinegateway-584c7d95c-bs8c9          1/1     Running            0             4m34s
+    seldon-scheduler-0                              1/1     Running            0             4m34s
+    seldon-v2-controller-manager-5dd676c7b7-xq5sm   1/1     Running            0             4m52s
+    triton-0                                        2/3     Running            0             4m10s
+    ```
+{% hint style="info" %}
+**Note**: The status of the Pod that begins with the name `seldon-dataflow-engine` is not running because Kafka is not still integrated with Seldon Core 2.
+{% endhint %}
+
+## Next steps
+You can integrate Seldon Core 2 with Kafka that is [self-hosted](/docs-gb/installation/learning-environment/self-hosted-kafka.md) or a [managed Kafka](/docs-gb/installation/production-environment/managed-kafka.md).
+
 ## Additional Resources
 
 * Seldon Core Documentation

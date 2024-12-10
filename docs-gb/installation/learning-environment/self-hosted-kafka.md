@@ -76,21 +76,30 @@ Strimzi provides a Kubernetes Operator to deploy and manage Kafka clusters. Firs
     ```
     kubectl apply -f kafka.yaml -n seldon-mesh
     ```
-6.  Check the status of the Kafka pods to ensure they are running properly:
+6.  Check the status of the Kafka Pods to ensure they are running properly:
 
     ```
     kubectl get pods -n seldon-mesh
     ```
 
-    You should see multiple pods for Kafka, Zookeeper, and Strimzi operators running.
+    You should see multiple Pods for Kafka, Zookeeper, and Strimzi operators running.
 
     ```
-    NAME                                       READY   STATUS    RESTARTS   AGE
-    seldon-kafka-0                             1/1     Running   0          2d1h
-    seldon-kafka-1                             1/1     Running   0          2d1h
-    seldon-kafka-2                             1/1     Running   0          2d1h
-    seldon-zookeeper-0                         1/1     Running   0          2d1h
-    strimzi-cluster-operator-58ff6ccf5-pqfjn   1/1     Running   0          2d1h
+    NAME                                            READY   STATUS    RESTARTS        AGE
+    hodometer-749d7c6875-4d4vw                      1/1     Running   0               17m
+    mlserver-0                                      3/3     Running   0               16m
+    seldon-dataflow-engine-7b98c76d67-v2ztq         1/1     Running   8 (5m33s ago)   17m
+    seldon-envoy-bb99f6c6b-4mpjd                    1/1     Running   0               17m
+    seldon-kafka-0                                  1/1     Running   0               111s
+    seldon-kafka-1                                  1/1     Running   0               111s
+    seldon-kafka-2                                  1/1     Running   0               111s
+    seldon-modelgateway-5c76c7695b-bhfj5            1/1     Running   0               17m
+    seldon-pipelinegateway-584c7d95c-bs8c9          1/1     Running   0               17m
+    seldon-scheduler-0                              1/1     Running   0               17m
+    seldon-v2-controller-manager-5dd676c7b7-xq5sm   1/1     Running   0               17m
+    seldon-zookeeper-0                              1/1     Running   0               2m26s
+    strimzi-cluster-operator-7cf9ff5686-6tb7p       1/1     Running   0               5m10s
+    triton-0                                        3/3     Running   0               16m
     ```
 
 ## Configuring Seldon Core 2

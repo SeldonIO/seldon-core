@@ -73,6 +73,26 @@ You could also install Selcon Core 2 locally if you have installed [Docker Compo
      --namespace seldon-mesh \
      --install
     ```
+7. Check Seldon Core 2 operator, runtimes, servers, and CRDS are installed in the namespace `seldon-mesh`:
+    ```bash
+     kubectl get pods -n seldon-mesh
+    ```
+    The output should be similar to this:
+    ```
+    NAME                                            READY   STATUS             RESTARTS      AGE
+    hodometer-749d7c6875-4d4vw                      1/1     Running            0             4m33s
+    mlserver-0                                      3/3     Running            0             4m10s
+    seldon-dataflow-engine-7b98c76d67-v2ztq         0/1     CrashLoopBackOff   5 (49s ago)   4m33s
+    seldon-envoy-bb99f6c6b-4mpjd                    1/1     Running            0             4m33s
+    seldon-modelgateway-5c76c7695b-bhfj5            1/1     Running            0             4m34s
+    seldon-pipelinegateway-584c7d95c-bs8c9          1/1     Running            0             4m34s
+    seldon-scheduler-0                              1/1     Running            0             4m34s
+    seldon-v2-controller-manager-5dd676c7b7-xq5sm   1/1     Running            0             4m52s
+    triton-0                                        2/3     Running            0             4m10s
+    ```
+    {% hint style="info" %}
+    **Note**: The status of the Pod that begins with the name `seldon-dataflow-engine` is not running because Kafka is not still integrated with Seldon Core 2.
+    {% endhint %}    
 {% endtab %}
 
 {% tab title="Ansible" %}
@@ -147,9 +167,9 @@ Running the playbooks individually, gives you more control over what and when it
 {% endtabs %}
 
    
-## Next
+## Next Steps
 
-To explore the inference Pipeline feature of Seldon Core 2, you need to complete the installation of other components in the following order:
+If you installed Seldon Core 2 using Helm, you need to complete the installation of other components in the following order:
 
 1. [Integrating with Kafka](self-hosted-kafka.md)
 2. [Installing a Service mesh](../production-environment/ingress-controller/istio.md)
