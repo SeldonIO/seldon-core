@@ -615,7 +615,7 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage, timestamp int64
 	}
 	logger.Infof("Chose path %s for model %s:%d", *chosenVersionPath, modelName, modelVersion)
 
-	modelConfig, err := c.ModelRepository.GetModelRuntimeInfo(modelName)
+	modelConfig, err := c.ModelRepository.GetModelRuntimeInfo(modelWithVersion)
 	if err != nil {
 		logger.Errorf("there was a problem getting the config for model: %s", modelName)
 	}
