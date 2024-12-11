@@ -5,8 +5,7 @@ go 1.13
 require (
 	github.com/golangci/golangci-lint v1.17.2-0.20190714145355-d2b1eea2c617
 	github.com/spf13/pflag v1.0.3 // indirect
-	golang.org/x/crypto v0.0.0-20190510104115-cbcb75029529 // indirect
-	golang.org/x/tools v0.0.0-20190606174628-0139d5756a7d // indirect
+	golang.org/x/crypto v0.31.0 // indirect
 	k8s.io/code-generator v0.0.0-20190311093542-50b561225d70
 	k8s.io/gengo v0.0.0-20190327210449-e17681d19d3a // indirect
 	k8s.io/klog v0.3.0 // indirect
