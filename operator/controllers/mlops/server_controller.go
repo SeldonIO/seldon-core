@@ -33,6 +33,7 @@ import (
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
 	serverreconcile "github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/server"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	scheduler "github.com/seldonio/seldon-core/operator/v2/scheduler"
 )
 
@@ -65,6 +66,8 @@ type ServerReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.10.0/pkg/reconcile
 func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx).WithName("Reconcile")
+	ctx, cancel := context.WithTimeout(ctx, constants.ReconcileTimeout)
+	defer cancel()
 
 	logger.Info("Received reconcile for Server", "name", req.Name, "namespace", req.NamespacedName.Namespace)
 
@@ -186,9 +189,11 @@ func (r *ServerReconciler) updateStatus(server *mlopsv1alpha1.Server) error {
 // Find Servers that need reconcilliation from a change to a given ServerConfig
 // TODO: pass an actual context from the caller to be used here
 func (r *ServerReconciler) mapServerFromServerConfig(_ context.Context, obj client.Object) []reconcile.Request {
-	logger := log.FromContext(context.Background()).WithName("mapServerFromServerConfig")
+	ctx, cancel := context.WithTimeout(context.Background(), constants.K8sAPICallsTxTimeout)
+	defer cancel()
+	logger := log.FromContext(ctx).WithName("mapServerFromServerConfig")
 	var servers mlopsv1alpha1.ServerList
-	if err := r.Client.List(context.Background(), &servers); err != nil {
+	if err := r.Client.List(ctx, &servers); err != nil {
 		logger.Error(err, "error listing servers")
 		return nil
 	}

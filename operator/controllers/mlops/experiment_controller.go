@@ -44,7 +44,7 @@ func (r *ExperimentReconciler) handleFinalizer(ctx context.Context, logger logr.
 		// Add our finalizer
 		if !utils.ContainsStr(experiment.ObjectMeta.Finalizers, constants.ExperimentFinalizerName) {
 			experiment.ObjectMeta.Finalizers = append(experiment.ObjectMeta.Finalizers, constants.ExperimentFinalizerName)
-			if err := r.Update(context.Background(), experiment); err != nil {
+			if err := r.Update(ctx, experiment); err != nil {
 				return true, err
 			}
 		}
@@ -84,6 +84,8 @@ func (r *ExperimentReconciler) handleFinalizer(ctx context.Context, logger logr.
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.10.0/pkg/reconcile
 func (r *ExperimentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx).WithName("Reconcile")
+	ctx, cancel := context.WithTimeout(ctx, constants.ReconcileTimeout)
+	defer cancel()
 
 	experiment := &mlopsv1alpha1.Experiment{}
 	if err := r.Get(ctx, req.NamespacedName, experiment); err != nil {

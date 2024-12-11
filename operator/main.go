@@ -12,6 +12,7 @@ package main
 import (
 	"flag"
 	"os"
+	"time"
 
 	//+kubebuilder:scaffold:imports
 	"go.uber.org/zap/zapcore"
@@ -42,6 +43,10 @@ func init() {
 	utilruntime.Must(mlopsv1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
+
+const (
+	defaultReconcileTimeout = 2 * time.Minute
+)
 
 func main() {
 	var metricsAddr string

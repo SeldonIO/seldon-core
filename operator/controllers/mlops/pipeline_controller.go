@@ -49,7 +49,7 @@ func (r *PipelineReconciler) handleFinalizer(
 		// Add our finalizer
 		if !utils.ContainsStr(pipeline.ObjectMeta.Finalizers, constants.PipelineFinalizerName) {
 			pipeline.ObjectMeta.Finalizers = append(pipeline.ObjectMeta.Finalizers, constants.PipelineFinalizerName)
-			if err := r.Update(context.Background(), pipeline); err != nil {
+			if err := r.Update(ctx, pipeline); err != nil {
 				return true, err
 			}
 		}
@@ -94,6 +94,8 @@ func (r *PipelineReconciler) handleFinalizer(
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.10.0/pkg/reconcile
 func (r *PipelineReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx).WithName("Reconcile")
+	ctx, cancel := context.WithTimeout(ctx, constants.ReconcileTimeout)
+	defer cancel()
 
 	pipeline := &mlopsv1alpha1.Pipeline{}
 	if err := r.Get(ctx, req.NamespacedName, pipeline); err != nil {

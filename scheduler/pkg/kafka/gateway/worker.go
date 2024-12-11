@@ -20,6 +20,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
@@ -158,14 +159,6 @@ func getProtoInferRequest(job *InferWork) (*v2.ModelInferRequest, error) {
 	return &ireq, nil
 }
 
-// Extract tracing context from Kafka message
-func createContextFromKafkaMsg(job *InferWork) context.Context {
-	ctx := context.Background()
-	carrierIn := splunkkafka.NewMessageCarrier(job.msg)
-	ctx = otel.GetTextMapPropagator().Extract(ctx, carrierIn)
-	return ctx
-}
-
 func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct{}) {
 	for {
 		select {
@@ -173,8 +166,8 @@ func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct
 			return
 
 		case job := <-jobChan:
-			ctx := createContextFromKafkaMsg(job)
-			err := iw.processRequest(ctx, job)
+			ctx := createBaseContextFromKafkaMsg(job.msg)
+			err := iw.processRequest(ctx, job, util.InferTimeoutDefault)
 			if err != nil {
 				iw.logger.WithError(err).Errorf("Failed to process request for model %s", job.modelName)
 			}
@@ -182,35 +175,38 @@ func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct
 	}
 }
 
-func (iw *InferWorker) processRequest(ctx context.Context, job *InferWork) error {
+func (iw *InferWorker) processRequest(ctx context.Context, job *InferWork, timeout time.Duration) error {
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	// Has Type Header
 	if typeValue, ok := job.headers[HeaderKeyType]; ok {
 		switch typeValue {
 		case HeaderValueJsonReq:
-			return iw.restRequest(ctx, job, false)
+			return iw.restRequest(ctxWithTimeout, job, false)
 		case HeaderValueJsonRes:
-			return iw.restRequest(ctx, job, true)
+			return iw.restRequest(ctxWithTimeout, job, true)
 		case HeaderValueProtoReq:
 			protoRequest, err := getProtoInferRequest(job)
 			if err != nil {
 				return err
 			}
-			return iw.grpcRequest(ctx, job, protoRequest)
+			return iw.grpcRequest(ctxWithTimeout, job, protoRequest)
 		case HeaderValueProtoRes:
 			protoRequest, err := getProtoRequestAssumingResponse(job.msg.Value)
 			if err != nil {
 				return err
 			}
-			return iw.grpcRequest(ctx, job, protoRequest)
+			return iw.grpcRequest(ctxWithTimeout, job, protoRequest)
 		default:
 			return fmt.Errorf("Header %s with unknown type %s", HeaderKeyType, typeValue)
 		}
 	} else { // Does not have type header - this is the general case to allow easy use
 		protoRequest, err := getProtoInferRequest(job)
 		if err != nil {
-			return iw.restRequest(ctx, job, true)
+			return iw.restRequest(ctxWithTimeout, job, true)
 		} else {
-			return iw.grpcRequest(ctx, job, protoRequest)
+			return iw.grpcRequest(ctxWithTimeout, job, protoRequest)
 		}
 	}
 }
@@ -403,4 +399,14 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), []byte(err.Error()), true, nil)
 	}
 	return nil
+}
+
+// this is redundant code but is kept there to avoid circular dependencies
+// todo: refactor tracing pkg in general and remove this
+func createBaseContextFromKafkaMsg(msg *kafka.Message) context.Context {
+	// these are just a base context for a new span
+	// callers should add timeout, etc for this context as they see fit.
+	ctx := context.Background()
+	carrierIn := splunkkafka.NewMessageCarrier(msg)
+	return otel.GetTextMapPropagator().Extract(ctx, carrierIn)
 }
