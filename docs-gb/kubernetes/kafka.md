@@ -89,5 +89,5 @@ ansible-playbook playbooks/setup-ecosystem.yaml -e full_install=no -e install_ka
 
 ## Notes
 - You can check [kafka-examples](https://github.com/strimzi/strimzi-kafka-operator/tree/main/examples/kafka) for more details.
-- As we are using [KRaft](https://kafka.apache.org/documentation/#kraft), use Kafka version 3.3 or above.
+- As we are using [KRaft](https://kafka.apache.org/documentation/#kraft), use Kafka version 3.4 or above.
 - For security settings check [here](../getting-started/kubernetes-installation/security.md#kafka).
