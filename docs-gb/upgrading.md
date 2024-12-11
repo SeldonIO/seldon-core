@@ -7,7 +7,7 @@ Core 2.8 introduces several new fields in our CRDs:
 * `Status.selector` was introduced as a mandatory field for **models** in 2.8.4 and made optional in 2.8.5. This field enables autoscaling with HPA.
 * `PodSpec` in the `OverrideSpec` for **SeldonRuntimes** enables users to customize how Seldon Core 2 pods are created. In particular, this also allows for setting custom taints/tolerations, adding additional containers to our pods, configuring custom security settings.
 
-These added fields do not result in breaking changes, apart from 2.8.4 which required the setting of the `Status.selector` upon upgrading (this was removed as mandatory in the subsequent 2.8.5 release). Updating the CRDs (e.g. via helm) will enable users to benefit from the associated functionality.
+These added fields do not result in breaking changes, apart from 2.8.4 which required the setting of the `Status.selector` upon upgrading. This field was however changed to optional in the subsequent 2.8.5 release. Updating the CRDs (e.g. via helm) will enable users to benefit from the associated functionality.
 
 ## Upgrading from 2.6 - 2.7
 
