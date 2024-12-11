@@ -278,7 +278,7 @@ custom_image_config:
   - components:
       - mlserver
     image:
-      tag: 1.6.0
+      tag: 1.6.1
 
 custom_servers_values:
   mlserver:
@@ -346,7 +346,7 @@ custom_image_config:
   - components:
       - mlserver
     image:
-      tag: 1.6.0
+      tag: 1.6.1
 
 custom_components_values:
   kafka:
