@@ -103,6 +103,7 @@ func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, grpcCli
 			continue
 		}
 
+		// An experiment is not active if it is being deleted or some models are not ready
 		if !event.Active {
 			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
