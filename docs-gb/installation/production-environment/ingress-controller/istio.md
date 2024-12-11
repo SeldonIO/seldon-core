@@ -14,7 +14,7 @@ Istio implements the Kubernetes ingress resource to expose a service and make it
 ## Prerequisites
 
 * Install[ Seldon Core 2](/docs-gb/installation/production-environment/README.md).
-* Ensure that you install the version of Istio that is compatible with the version of the Kubernetes cluster. For more information, see the [compatibility matrix](https://istio.io/latest/docs/releases/supported-releases/#support-status-of-istio-releases)
+* Ensure that you install a version of Istio that is compatible with your Kubernetes cluster version. For detailed information on supported versions, refer to the [Istio Compatibility Matrix](https://istio.io/latest/docs/releases/supported-releases/#support-status-of-istio-releases).
 
 ## Installing Istio ingress controller
 
