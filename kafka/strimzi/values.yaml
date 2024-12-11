@@ -2,7 +2,7 @@
 
 cluster:
   name: "seldon"
-  version: "3.8.1"
+  version: "3.8.0"
 
 metrics:
   enabled: true

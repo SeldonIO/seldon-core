@@ -60,10 +60,8 @@ spec:
         configMapKeyRef:
           name: kafka-metrics
           key: kafka-metrics-config.yml
-  # zookeeper settings should not be use in case of STRIMZI_FEATURE_GATES=+UseStrimziPodSets,+UseKRaft (raft)
-  # to enable raft run:
-  # `kubectl set env deployment/strimzi-cluster-operator STRIMZI_FEATURE_GATES=+UseStrimziPodSets,+UseKRaft -n kafka`
-  # which is the default with ansible install
+  # kraft is the default for the operator:
+  # `kubectl set env deployment/strimzi-cluster-operator -n kafka`
   zookeeper:
     replicas: {{ .Values.zookeeper.replicas }}
     readinessProbe:

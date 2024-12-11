@@ -53,7 +53,6 @@ You can enable `featureGates` during Helm installation via:
 helm upgrade --install strimzi-kafka-operator \
   strimzi/strimzi-kafka-operator \
   --namespace seldon-mesh --create-namespace \
-  --set featureGates='+UseKRaft\,+UseStrimziPodSets'
 ```
 
 {% hint style="warning" %}
