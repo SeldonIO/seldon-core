@@ -1,6 +1,6 @@
 ---
 strimzi_kafka_operator_namespace: "strimzi-system"
-strimzi_kafka_operator_version: "0.33.2"
+strimzi_kafka_operator_version: "0.44.0"
 strimzi_kafka_operator_values: "{{ lookup('template', 'strimzi-operator-values.yaml.j2') | from_yaml }}"
 strimzi_kafka_operator_wait_timeout: "300s"
 
