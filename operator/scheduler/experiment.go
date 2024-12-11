@@ -105,7 +105,7 @@ func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, grpcCli
 
 		if !event.Active {
 			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallTimeout)
+				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
 				defer cancel()
 
 				latestExperiment := &v1alpha1.Experiment{}
@@ -131,7 +131,7 @@ func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, grpcCli
 		// Try to update status
 		{
 			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallTimeout)
+				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
 				defer cancel()
 
 				experiment := &v1alpha1.Experiment{}

@@ -189,7 +189,7 @@ func (r *ServerReconciler) updateStatus(server *mlopsv1alpha1.Server) error {
 // Find Servers that need reconcilliation from a change to a given ServerConfig
 // TODO: pass an actual context from the caller to be used here
 func (r *ServerReconciler) mapServerFromServerConfig(_ context.Context, obj client.Object) []reconcile.Request {
-	ctx, cancel := context.WithTimeout(context.Background(), constants.K8sAPICallTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), constants.K8sAPICallsTxTimeout)
 	defer cancel()
 	logger := log.FromContext(ctx).WithName("mapServerFromServerConfig")
 	var servers mlopsv1alpha1.ServerList

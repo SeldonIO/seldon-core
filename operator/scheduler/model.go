@@ -161,7 +161,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 		// Handle terminated event to remove finalizer
 		if canRemoveFinalizer(latestVersionStatus.State.State) {
 			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallTimeout)
+				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
 				defer cancel()
 
 				latestModel := &v1alpha1.Model{}
@@ -199,7 +199,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 		// Try to update status
 		{
 			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallTimeout)
+				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
 				defer cancel()
 
 				latestModel := &v1alpha1.Model{}

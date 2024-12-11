@@ -127,7 +127,7 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 
 		if canRemovePipelineFinalizer(pv.State.Status) {
 			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallTimeout)
+				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
 				defer cancel()
 
 				latestPipeline := &v1alpha1.Pipeline{}
@@ -163,7 +163,7 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 		// Try to update status
 		{
 			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallTimeout)
+				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
 				defer cancel()
 
 				pipeline := &v1alpha1.Pipeline{}

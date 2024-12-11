@@ -115,7 +115,7 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 
 		// Try to update status
 		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-			contextWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallTimeout)
+			contextWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
 			defer cancel()
 
 			server := &v1alpha1.Server{}
