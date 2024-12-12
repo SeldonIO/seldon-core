@@ -33,6 +33,8 @@ broker:
 
   tmpDirSizeLimit: 100Mi
 
+  kraftMetadataSizeLimit: 1Gi
+  
   pvcSize: 100Gi
 
   messageMaxBytes: 1000000000

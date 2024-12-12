@@ -33,12 +33,6 @@ spec:
     livenessProbe:
       initialDelaySeconds: {{ .Values.broker.liveness.initialDelaySeconds }}
       timeoutSeconds: {{ .Values.broker.liveness.timeoutSeconds }}
-    resources:
-      requests:
-        cpu: '{{ .Values.broker.resources.cpu }}'
-        memory: '{{ .Values.broker.resources.memory }}'
-      limits:
-        memory: '{{ .Values.broker.resources.memory }}'
     config:
       auto.create.topics.enable: {{ .Values.topic.autoCreate }}
       offsets.topic.replication.factor: {{ .Values.topic.offsetReplicationFactor }}
@@ -47,16 +41,6 @@ spec:
       default.replication.factor: {{ .Values.topic.defaultReplicationFactor }}
       min.insync.replicas: {{ .Values.topic.minISR }}
       message.max.bytes: {{ .Values.broker.messageMaxBytes }}
-    template:
-      pod:
-        tmpDirSizeLimit: {{ .Values.broker.tmpDirSizeLimit }}
-    storage:
-      type: jbod
-      volumes:
-      - id: 0
-        type: persistent-claim
-        size: {{ .Values.broker.pvcSize }}
-        deleteClaim: false
     metricsConfig:
       type: jmxPrometheusExporter
       valueFrom:
