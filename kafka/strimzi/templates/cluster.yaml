@@ -2,11 +2,15 @@ apiVersion: kafka.strimzi.io/v1beta2
 kind: Kafka
 metadata:
   name: {{ .Values.cluster.name }}
+  annotations:
+    strimzi.io/node-pools: enabled
+    strimzi.io/kraft: enabled
 spec:
   entityOperator:
     userOperator: {}
   kafka:
     version: {{ .Values.cluster.version }}
+    metadataVersion: {{ .Values.cluster.metadataVersion }}
     replicas: {{ .Values.broker.replicas }}
     listeners:
       {{- if .Values.broker.plaintext.enabled }}
@@ -42,7 +46,6 @@ spec:
       transaction.state.log.min.isr: {{ .Values.topic.txStateMinISR }}
       default.replication.factor: {{ .Values.topic.defaultReplicationFactor }}
       min.insync.replicas: {{ .Values.topic.minISR }}
-      inter.broker.protocol.version: {{ .Values.broker.interBrokerProtocolVersion }}
       message.max.bytes: {{ .Values.broker.messageMaxBytes }}
     template:
       pod:
@@ -60,20 +63,4 @@ spec:
         configMapKeyRef:
           name: kafka-metrics
           key: kafka-metrics-config.yml
-  # kraft is the default for the operator:
-  # `kubectl set env deployment/strimzi-cluster-operator -n kafka`
-  zookeeper:
-    replicas: {{ .Values.zookeeper.replicas }}
-    readinessProbe:
-      initialDelaySeconds: {{ .Values.zookeeper.readiness.initialDelaySeconds }}
-      timeoutSeconds: {{ .Values.zookeeper.readiness.timeoutSeconds }}
-    livenessProbe:
-      initialDelaySeconds: {{ .Values.zookeeper.liveness.initialDelaySeconds }}
-      timeoutSeconds: {{ .Values.zookeeper.liveness.timeoutSeconds }}
-    storage:
-      type: persistent-claim
-      size: {{ .Values.zookeeper.pvcSize }}
-      deleteClaim: false
-  kafkaExporter:
-    topicRegex: ".*"
-    groupRegex: ".*"
+
