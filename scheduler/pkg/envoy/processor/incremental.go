@@ -174,9 +174,15 @@ func (p *IncrementalProcessor) handleModelEvents(event coordinator.ModelEventMsg
 }
 
 func (p *IncrementalProcessor) updateEnvoy() error {
-	p.xdsCache.UpdateRoutes(p.nodeID)
-	p.xdsCache.CleanupClusters()
-	return nil
+	err := p.xdsCache.AddClusters()
+	if err != nil {
+		return err
+	}
+	err = p.xdsCache.UpdateRoutes(p.nodeID)
+	if err != nil {
+		return err
+	}
+	return p.xdsCache.RemoveClusters()
 }
 
 // This function does not call `updateEnvoy` directly and therefore callers should make sure

@@ -835,7 +835,8 @@ func TestEnvoySettings(t *testing.T) {
 			}
 
 			// clusters won't be removed until the next time updateEnvoy is called
-			inc.updateEnvoy()
+			err = inc.updateEnvoy()
+			g.Expect(err).To(BeNil())
 
 			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.numExpectedClusters))
 			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.numExpectedRoutes))

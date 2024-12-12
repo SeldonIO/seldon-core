@@ -17,10 +17,6 @@ import (
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 )
 
-const (
-	xdsClusterName = "xds_cluster"
-)
-
 func MakeSecretResource(name string, validationName string, certStore tls.CertificateStoreHandler) []*tlsv3.Secret {
 	var secrets []*tlsv3.Secret
 

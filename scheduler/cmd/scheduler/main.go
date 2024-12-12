@@ -260,7 +260,7 @@ func main() {
 	// extra wait to allow routes state to get created
 	time.Sleep(xDSWaitTimeout)
 
-	// create the processor seperately, so it receives all updates
+	// create the processor separately, so it receives all updates
 	xdsServer := processor.NewXDSServer(incrementalProcessor, logger)
 	err = xdsServer.StartXDSServer(envoyPort)
 	if err != nil {
