@@ -11,7 +11,7 @@ You could also install Selcon Core 2 locally if you have installed [Docker Compo
 
 
 {% hint style="info" %}
-**Note**: These instructions guide you through installing the Seldon Core 2 on a local Kubernetes cluster, focusing on ease of learning. Ensure your kind cluster is running on hardware with at least 32GB of RAM. For installing Seldon Core 2 in a production environment, see[ cluster requirements](../production-environment/#cluster-requirements).
+**Note**: These instructions guide you through installing the Seldon Core 2 on a local Kubernetes cluster, focusing on ease of learning. Ensure your [kind](https://kubernetes.io/docs/tasks/tools/#kind) cluster is running on hardware with at least 32GB of RAM and a load balancer such as MetalLB is configured. For installing Seldon Core 2 in a production environment, see[ cluster requirements](../production-environment/#cluster-requirements).
 {% endhint %}
 
 
