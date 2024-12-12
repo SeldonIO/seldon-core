@@ -174,7 +174,8 @@ func (p *IncrementalProcessor) handleModelEvents(event coordinator.ModelEventMsg
 }
 
 func (p *IncrementalProcessor) updateEnvoy() error {
-	p.xdsCache.UpdateRoutes()
+	p.xdsCache.UpdateRoutes(p.nodeID)
+	p.xdsCache.CleanupClusters()
 	return nil
 }
 

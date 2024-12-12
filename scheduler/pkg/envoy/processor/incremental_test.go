@@ -804,7 +804,7 @@ func TestEnvoySettings(t *testing.T) {
 			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2})
 			g.Expect(err).To(BeNil())
 			inc := &IncrementalProcessor{
-				logger:           log.New(),
+				logger:           logger.WithField("source", "IncrementalProcessor"),
 				xdsCache:         xdsCache,
 				modelStore:       memoryStore,
 				experimentServer: experiment.NewExperimentServer(log.New(), eventHub, memoryStore, nil),
@@ -833,6 +833,9 @@ func TestEnvoySettings(t *testing.T) {
 				op(inc, g)
 				time.Sleep(50 * time.Millisecond) // to allow event handlers to process
 			}
+
+			// clusters won't be removed until the next time updateEnvoy is called
+			inc.updateEnvoy()
 
 			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.numExpectedClusters))
 			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.numExpectedRoutes))

@@ -12,6 +12,9 @@ package xdscache
 import (
 	"context"
 	"fmt"
+	"math"
+	"math/rand"
+	"strconv"
 
 	discoveryv3 "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
@@ -41,11 +44,11 @@ const (
 )
 
 type SeldonXDSCache struct {
-	muxCache *cache.MuxCache
-	cds      *cache.LinearCache
-	lds      *cache.LinearCache
-	rds      *cache.LinearCache
-	sds      *cache.LinearCache
+	muxCache      *cache.MuxCache
+	snapshotCache cache.SnapshotCache
+	cds           *cache.LinearCache
+	lds           *cache.LinearCache
+	sds           *cache.LinearCache
 
 	Clusters               map[string]Cluster
 	ClustersForRemoval     map[string]bool
@@ -55,6 +58,7 @@ type SeldonXDSCache struct {
 	Secrets                map[string]Secret
 	logger                 logrus.FieldLogger
 	TLSActive              bool
+	snapshotVersion        int64
 }
 
 type PipelineGatewayDetails struct {
@@ -72,6 +76,7 @@ func NewSeldonXDSCache(logger logrus.FieldLogger, pipelineGatewayDetails *Pipeli
 		Routes:                 make(map[string]Route),
 		Secrets:                make(map[string]Secret),
 		logger:                 logger.WithField("source", "SeldonXDSCache"),
+		snapshotVersion:        rand.Int63n(1000),
 	}
 	err := xdsCache.init()
 	if err != nil {
@@ -92,24 +97,36 @@ func (xds *SeldonXDSCache) Fetch(ctx context.Context, req *cache.Request) (cache
 	return xds.muxCache.Fetch(ctx, req)
 }
 
+func (xds *SeldonXDSCache) newSnapshotVersion() string {
+	// Reset the snapshotVersion if it ever hits max size.
+	if xds.snapshotVersion == math.MaxInt64 {
+		xds.snapshotVersion = 0
+	}
+
+	// Increment the snapshot version & return as string.
+	xds.snapshotVersion++
+	return strconv.FormatInt(xds.snapshotVersion, 10)
+}
+
 func (xds *SeldonXDSCache) init() error {
-	logger := xds.logger.WithField("source", "LinearCache")
+	linearLogger := xds.logger.WithField("source", "LinearCache")
+	snapshotLogger := xds.logger.WithField("source", "SnapshotCache")
 
 	secretTypeURL := resource.SecretType
-	sds := cache.NewLinearCache(secretTypeURL, cache.WithLogger(logger))
+	sds := cache.NewLinearCache(secretTypeURL, cache.WithLogger(linearLogger))
 	xds.sds = sds
 
 	listenerTypeURL := resource.ListenerType
-	lds := cache.NewLinearCache(listenerTypeURL, cache.WithLogger(logger))
+	lds := cache.NewLinearCache(listenerTypeURL, cache.WithLogger(linearLogger))
 	xds.lds = lds
 
 	clusterTypeURL := resource.ClusterType
-	cds := cache.NewLinearCache(clusterTypeURL, cache.WithLogger(logger))
+	cds := cache.NewLinearCache(clusterTypeURL, cache.WithLogger(linearLogger))
 	xds.cds = cds
 
 	routeTypeURL := resource.RouteType
-	rds := cache.NewLinearCache(routeTypeURL, cache.WithLogger(logger))
-	xds.rds = rds
+	snapshotCache := cache.NewSnapshotCache(true, cache.IDHash{}, snapshotLogger)
+	xds.snapshotCache = snapshotCache
 
 	xds.muxCache = &cache.MuxCache{
 		Classify: func(req *discoveryv3.DiscoveryRequest) string {
@@ -122,7 +139,7 @@ func (xds *SeldonXDSCache) init() error {
 			secretTypeURL:   sds,
 			listenerTypeURL: lds,
 			clusterTypeURL:  cds,
-			routeTypeURL:    rds,
+			routeTypeURL:    snapshotCache,
 		},
 	}
 
@@ -199,16 +216,18 @@ func (xds *SeldonXDSCache) AddPermanentClusters() {
 	}
 
 	// Add pipeline gateway clusters
-	pipelineGatewayCluster := MakeCluster(PipelineGatewayHttpClusterName, []Endpoint{
-		{
+	pipelineGatewayHttpEndpointName := fmt.Sprintf("%s:%d", xds.PipelineGatewayDetails.Host, xds.PipelineGatewayDetails.HttpPort)
+	pipelineGatewayHttpCluster := MakeCluster(PipelineGatewayHttpClusterName, map[string]Endpoint{
+		pipelineGatewayHttpEndpointName: {
 			UpstreamHost: xds.PipelineGatewayDetails.Host,
 			UpstreamPort: uint32(xds.PipelineGatewayDetails.HttpPort),
 		},
 	}, false, clientSecret)
-	xds.cds.UpdateResource(pipelineGatewayCluster.Name, pipelineGatewayCluster)
+	xds.cds.UpdateResource(pipelineGatewayHttpCluster.Name, pipelineGatewayHttpCluster)
 
-	pipelineGatewayGrpcCluster := MakeCluster(PipelineGatewayGrpcClusterName, []Endpoint{
-		{
+	pipelineGatewayGrpcEndpointName := fmt.Sprintf("%s:%d", xds.PipelineGatewayDetails.Host, xds.PipelineGatewayDetails.GrpcPort)
+	pipelineGatewayGrpcCluster := MakeCluster(PipelineGatewayGrpcClusterName, map[string]Endpoint{
+		pipelineGatewayGrpcEndpointName: {
 			UpstreamHost: xds.PipelineGatewayDetails.Host,
 			UpstreamPort: uint32(xds.PipelineGatewayDetails.GrpcPort),
 		},
@@ -216,16 +235,18 @@ func (xds *SeldonXDSCache) AddPermanentClusters() {
 	xds.cds.UpdateResource(pipelineGatewayGrpcCluster.Name, pipelineGatewayGrpcCluster)
 
 	// Add Mirror clusters
-	mirrorHttpCluster := MakeCluster(MirrorHttpClusterName, []Endpoint{
-		{
+	mirrorHttpEndpointName := fmt.Sprintf("%s:%d", mirrorListenerAddress, mirrorListenerPort)
+	mirrorHttpCluster := MakeCluster(MirrorHttpClusterName, map[string]Endpoint{
+		mirrorHttpEndpointName: {
 			UpstreamHost: mirrorListenerAddress,
 			UpstreamPort: mirrorListenerPort,
 		},
 	}, false, nil)
 	xds.cds.UpdateResource(mirrorHttpCluster.Name, mirrorHttpCluster)
 
-	mirrorGprcCluster := MakeCluster(MirrorGrpcClusterName, []Endpoint{
-		{
+	mirrorGrpcEndpointName := fmt.Sprintf("%s:%d", mirrorListenerAddress, mirrorListenerPort)
+	mirrorGprcCluster := MakeCluster(MirrorGrpcClusterName, map[string]Endpoint{
+		mirrorGrpcEndpointName: {
 			UpstreamHost: mirrorListenerAddress,
 			UpstreamPort: mirrorListenerPort,
 		},
@@ -242,11 +263,8 @@ func (xds *SeldonXDSCache) ClusterContents() []types.Resource {
 }
 
 func (xds *SeldonXDSCache) RouteContents() []types.Resource {
-	var r []types.Resource
-	for _, route := range xds.rds.GetResources() {
-		r = append(r, route)
-	}
-	return r
+	defaultRoutes, mirrorRoutes := MakeRoutes(xds.Routes, xds.Pipelines)
+	return []types.Resource{defaultRoutes, mirrorRoutes}
 }
 
 func (xds *SeldonXDSCache) ListenerContents() []types.Resource {
@@ -265,13 +283,37 @@ func (xds *SeldonXDSCache) SecretContents() []types.Resource {
 	return r
 }
 
-func (xds *SeldonXDSCache) UpdateRoutes() {
-	defaultRoutes, mirrorRoutes := MakeRoutes(xds.Routes, xds.Pipelines)
-	xds.rds.UpdateResource(defaultRoutes.Name, defaultRoutes)
-	xds.rds.UpdateResource(mirrorRoutes.Name, mirrorRoutes)
+func (xds *SeldonXDSCache) UpdateRoutes(nodeId string) error {
+	logger := xds.logger.WithField("func", "UpdateRoutes")
+	// Create the snapshot that we'll serve to Envoy
+	snapshot, err := cache.NewSnapshot(
+		xds.newSnapshotVersion(), // version
+		map[resource.Type][]types.Resource{
+			resource.RouteType: xds.RouteContents(), // routes
+		})
+	if err != nil {
+		return err
+	}
 
+	if err := snapshot.Consistent(); err != nil {
+		return err
+	}
+	logger.Debugf("will serve snapshot %+v", snapshot)
+
+	// Add the snapshot to the cache
+	if err := xds.snapshotCache.SetSnapshot(context.Background(), nodeId, snapshot); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (xds *SeldonXDSCache) CleanupClusters() {
 	for clusterName := range xds.ClustersForRemoval {
-		xds.cds.DeleteResource(clusterName)
+		cluster, ok := xds.Clusters[clusterName]
+		if !ok || len(cluster.Routes) < 1 {
+			xds.cds.DeleteResource(clusterName)
+		}
+		delete(xds.ClustersForRemoval, clusterName)
 	}
 }
 
@@ -346,7 +388,7 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 	if !ok {
 		httpCluster = Cluster{
 			Name:      httpClusterName,
-			Endpoints: make([]Endpoint, 0),
+			Endpoints: make(map[string]Endpoint),
 			Routes:    make(map[RouteVersionKey]bool),
 			Grpc:      false,
 		}
@@ -356,42 +398,41 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 	if !ok {
 		grpcCluster = Cluster{
 			Name:      grpcClusterName,
-			Endpoints: make([]Endpoint, 0),
+			Endpoints: make(map[string]Endpoint),
 			Routes:    make(map[RouteVersionKey]bool),
 			Grpc:      true,
 		}
 	}
 
-	httpEndpoints := make([]Endpoint, 0)
-	grpcEndpoints := make([]Endpoint, 0)
+	httpEndpoints := make(map[string]Endpoint)
+	grpcEndpoints := make(map[string]Endpoint)
 	for _, replicaIdx := range assignment {
 		replica, ok := server.Replicas[replicaIdx]
 		if !ok {
 			logger.Warnf("Invalid replica index %d for server %s", replicaIdx, server.Name)
 		} else {
-			httpEndpoint := Endpoint{
+			httpEndpointName := fmt.Sprintf("%s:%d", replica.GetInferenceSvc(), replica.GetInferenceHttpPort())
+			httpCluster.Endpoints[httpEndpointName] = Endpoint{
 				UpstreamHost: replica.GetInferenceSvc(),
 				UpstreamPort: uint32(replica.GetInferenceHttpPort()),
 			}
-			httpEndpoints = append(httpEndpoints, httpEndpoint)
 
-			grpcEndpoint := Endpoint{
+			grpcEndpointName := fmt.Sprintf("%s:%d", replica.GetInferenceSvc(), replica.GetInferenceGrpcPort())
+			grpcCluster.Endpoints[grpcEndpointName] = Endpoint{
 				UpstreamHost: replica.GetInferenceSvc(),
 				UpstreamPort: uint32(replica.GetInferenceGrpcPort()),
 			}
-			grpcEndpoints = append(grpcEndpoints, grpcEndpoint)
+
 		}
 	}
 
 	httpCluster.Endpoints = httpEndpoints
 	xds.Clusters[httpClusterName] = httpCluster
 	httpCluster.Routes[routeVersionKey] = true
-	delete(xds.ClustersForRemoval, httpClusterName)
 
 	grpcCluster.Endpoints = grpcEndpoints
 	xds.Clusters[grpcClusterName] = grpcCluster
 	grpcCluster.Routes[routeVersionKey] = true
-	delete(xds.ClustersForRemoval, grpcClusterName)
 
 	var clientSecret *Secret
 	if xds.TLSActive {

@@ -29,7 +29,7 @@ import (
 
 func TestFetch(t *testing.T) {
 	g := NewGomegaWithT(t)
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
 	logger := log.New()
@@ -72,11 +72,17 @@ func TestFetch(t *testing.T) {
 }
 
 func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) func(t *testing.T) {
-	expectedClusterNames := []string{"pipelinegateway_http", "pipelinegateway_grpc", "mirror_http", "mirror_grpc", "model_1_grpc", "model_1_http"}
+	firstFetch := []string{"pipelinegateway_http", "pipelinegateway_grpc", "mirror_http", "mirror_grpc"}
+	secondFetch := append(firstFetch, "model_1_grpc", "model_1_http")
+
+	expectedClusters := make([][]string, 2)
+
+	expectedClusters[0] = firstFetch
+	expectedClusters[1] = secondFetch
 
 	return func(t *testing.T) {
 		wg := sync.WaitGroup{}
-		wg.Add(1)
+		wg.Add(2)
 
 		ops := []func(inc *IncrementalProcessor, g *WithT){
 			createTestServer("server", 1),
@@ -89,22 +95,24 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 
 		go func() {
 			// watch for configs
-			resp, err := c.Fetch()
-			g.Expect(err).To(BeNil())
-			actualClusterNames := make([]string, 0)
-			for _, r := range resp.Resources {
-				cluster := &clusterv3.Cluster{}
-				err := anypb.UnmarshalTo(r, cluster, proto.UnmarshalOptions{})
+			for _, expectedClusterNames := range expectedClusters {
+				resp, err := c.Fetch()
 				g.Expect(err).To(BeNil())
-				actualClusterNames = append(actualClusterNames, cluster.Name)
-			}
-			slices.Sort(actualClusterNames)
-			slices.Sort(expectedClusterNames)
-			g.Expect(reflect.DeepEqual(actualClusterNames, expectedClusterNames)).To(BeTrue())
+				actualClusterNames := make([]string, 0)
+				for _, r := range resp.Resources {
+					cluster := &clusterv3.Cluster{}
+					err := anypb.UnmarshalTo(r, cluster, proto.UnmarshalOptions{})
+					g.Expect(err).To(BeNil())
+					actualClusterNames = append(actualClusterNames, cluster.Name)
+				}
+				slices.Sort(actualClusterNames)
+				slices.Sort(expectedClusterNames)
+				g.Expect(reflect.DeepEqual(actualClusterNames, expectedClusterNames)).To(BeTrue())
 
-			err = c.Ack()
-			g.Expect(err).To(BeNil())
-			wg.Done()
+				err = c.Ack()
+				g.Expect(err).To(BeNil())
+				wg.Done()
+			}
 		}()
 
 		wg.Wait()
@@ -112,11 +120,17 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 }
 
 func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSClient) func(t *testing.T) {
-	expectedClusterNames := []string{"pipelinegateway_http", "pipelinegateway_grpc", "mirror_http", "mirror_grpc", "model_2_grpc", "model_2_http"}
+	firstFetch := []string{"pipelinegateway_http", "pipelinegateway_grpc", "mirror_http", "mirror_grpc", "model_1_grpc", "model_1_http", "model_2_http"}
+	secondFetch := []string{"pipelinegateway_http", "pipelinegateway_grpc", "mirror_http", "mirror_grpc", "model_2_grpc", "model_2_http"}
+
+	expectedClusters := make([][]string, 2)
+
+	expectedClusters[0] = firstFetch
+	expectedClusters[1] = secondFetch
 
 	return func(t *testing.T) {
 		wg := sync.WaitGroup{}
-		wg.Add(1)
+		wg.Add(2)
 
 		ops := []func(inc *IncrementalProcessor, g *WithT){
 			createTestModel("model", "server", 1, []int{0}, 2, []store.ModelReplicaState{store.Available}),
@@ -128,25 +142,25 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 
 		go func() {
 			// watch for configs
-			resp, err := c.Fetch()
-			g.Expect(err).To(BeNil())
-			actualClusterNames := make([]string, 0)
-			for _, r := range resp.Resources {
-				cluster := &clusterv3.Cluster{}
-				err := anypb.UnmarshalTo(r, cluster, proto.UnmarshalOptions{})
+			for _, expectedClusterNames := range expectedClusters {
+
+				resp, err := c.Fetch()
 				g.Expect(err).To(BeNil())
-				actualClusterNames = append(actualClusterNames, cluster.Name)
+				actualClusterNames := make([]string, 0)
+				for _, r := range resp.Resources {
+					cluster := &clusterv3.Cluster{}
+					err := anypb.UnmarshalTo(r, cluster, proto.UnmarshalOptions{})
+					g.Expect(err).To(BeNil())
+					actualClusterNames = append(actualClusterNames, cluster.Name)
+				}
+				slices.Sort(actualClusterNames)
+				slices.Sort(expectedClusterNames)
+				g.Expect(reflect.DeepEqual(actualClusterNames, expectedClusterNames)).To(BeTrue())
+
+				err = c.Ack()
+				g.Expect(err).To(BeNil())
+				wg.Done()
 			}
-			slices.Sort(actualClusterNames)
-			slices.Sort(expectedClusterNames)
-			g.Expect(reflect.DeepEqual(actualClusterNames, expectedClusterNames)).To(BeTrue())
-
-			err = c.Ack()
-			g.Expect(err).To(BeNil())
-
-			err = c.Ack()
-			g.Expect(err).To(BeNil())
-			wg.Done()
 		}()
 
 		wg.Wait()

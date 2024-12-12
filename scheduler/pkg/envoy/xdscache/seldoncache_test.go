@@ -338,7 +338,7 @@ func addCluster(
 	if !ok {
 		cluster = Cluster{
 			Name:      name,
-			Endpoints: make([]Endpoint, 0),
+			Endpoints: make(map[string]Endpoint),
 			Routes:    make(map[RouteVersionKey]bool),
 			Grpc:      isGrpc,
 		}
@@ -349,10 +349,12 @@ func addCluster(
 
 func addEndpoint(xds *SeldonXDSCache, clusterName, upstreamHost string, upstreamPort uint32) {
 	cluster := xds.Clusters[clusterName]
-	cluster.Endpoints = append(cluster.Endpoints, Endpoint{
+
+	endpointName := fmt.Sprintf("%s:%d", upstreamHost, upstreamPort)
+	cluster.Endpoints[endpointName] = Endpoint{
 		UpstreamHost: upstreamHost,
 		UpstreamPort: upstreamPort,
-	})
+	}
 
 	xds.Clusters[clusterName] = cluster
 }
