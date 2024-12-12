@@ -12,6 +12,7 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -29,8 +30,10 @@ func NewSecretsHandler(clientset kubernetes.Interface, namespace string) *Secret
 	}
 }
 
-func (s *SecretHandler) GetSecretConfig(secretName string) ([]byte, error) {
-	secret, err := s.clientset.CoreV1().Secrets(s.namespace).Get(context.Background(), secretName, metav1.GetOptions{})
+func (s *SecretHandler) GetSecretConfig(secretName string, timeout time.Duration) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	secret, err := s.clientset.CoreV1().Secrets(s.namespace).Get(ctx, secretName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

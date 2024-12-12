@@ -29,6 +29,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
@@ -51,6 +52,7 @@ type mockAgentV2Server struct {
 	unloadFailedEvents int
 	otherEvents        int
 	errors             int
+	events             []*pb.ModelEventMessage
 }
 
 type FakeModelRepository struct {
@@ -62,6 +64,10 @@ type FakeModelRepository struct {
 func (f *FakeModelRepository) RemoveModelVersion(modelName string) error {
 	f.modelRemovals++
 	return nil
+}
+
+func (f *FakeModelRepository) GetModelRuntimeInfo(modelName string) (*pb.ModelRuntimeInfo, error) {
+	return &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &agent.MLServerModelSettings{ParallelWorkers: uint32(1)}}}, nil
 }
 
 func (f *FakeModelRepository) DownloadModelVersion(modelName string, version uint32, modelSpec *pbs.ModelSpec, config []byte) (*string, error) {
@@ -147,6 +153,7 @@ func (m *mockAgentV2Server) AgentEvent(ctx context.Context, message *pb.ModelEve
 	default:
 		m.otherEvents++
 	}
+	m.events = append(m.events, message)
 	return &pb.ModelEventResponse{}, nil
 }
 
@@ -247,6 +254,7 @@ func TestLoadModel(t *testing.T) {
 		models                  []string
 		replicaConfig           *pb.ReplicaConfig
 		op                      *pb.ModelOperationMessage
+		modelConfig             *pb.ModelRuntimeInfo
 		expectedAvailableMemory uint64
 		v2Status                int
 		modelRepoErr            error
@@ -270,9 +278,11 @@ func TestLoadModel(t *testing.T) {
 						},
 						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
 					},
+					RuntimeInfo: getModelRuntimeInfo(1),
 				},
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
+			modelConfig:             getModelRuntimeInfo(1),
 			expectedAvailableMemory: 500,
 			v2Status:                200,
 			success:                 true,
@@ -289,10 +299,12 @@ func TestLoadModel(t *testing.T) {
 						},
 						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
 					},
+					RuntimeInfo: getModelRuntimeInfo(1),
 				},
 				AutoscalingEnabled: true,
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
+			modelConfig:             getModelRuntimeInfo(1),
 			expectedAvailableMemory: 500,
 			v2Status:                200,
 			success:                 true,
@@ -310,9 +322,11 @@ func TestLoadModel(t *testing.T) {
 						},
 						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
 					},
+					RuntimeInfo: getModelRuntimeInfo(1),
 				},
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
+			modelConfig:             getModelRuntimeInfo(1),
 			expectedAvailableMemory: 1000,
 			v2Status:                400,
 			success:                 false,
@@ -329,9 +343,11 @@ func TestLoadModel(t *testing.T) {
 						},
 						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &largeMemory},
 					},
+					RuntimeInfo: getModelRuntimeInfo(1),
 				},
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
+			modelConfig:             getModelRuntimeInfo(1),
 			expectedAvailableMemory: 1000,
 			v2Status:                200,
 			success:                 false,
@@ -399,6 +415,9 @@ func TestLoadModel(t *testing.T) {
 				g.Expect(err).To(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
+				g.Expect(len(mockAgentV2Server.events)).To(Equal(1))
+				g.Expect(mockAgentV2Server.events[0].RuntimeInfo).ToNot(BeNil())
+				g.Expect(mockAgentV2Server.events[0].RuntimeInfo.GetMlserver().ParallelWorkers).To(Equal(uint32(1)))
 				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 				g.Expect(modelRepository.modelRemovals).To(Equal(0))
 				loadedVersions := client.stateManager.modelVersions.getVersionsForAllModels()

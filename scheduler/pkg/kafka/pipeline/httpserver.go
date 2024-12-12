@@ -68,7 +68,7 @@ func NewGatewayHttpServer(port int, logger log.FieldLogger,
 }
 
 func (g *GatewayHttpServer) Stop() error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*5))
+	ctx, cancel := context.WithTimeout(context.Background(), util.ServerControlPlaneTimeout)
 	defer cancel()
 	return g.server.Shutdown(ctx)
 }

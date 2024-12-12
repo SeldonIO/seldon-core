@@ -11,6 +11,7 @@ package cli
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 	"k8s.io/utils/env"
@@ -24,7 +25,7 @@ const (
 	flagOutputFormat   = "format"
 	flagTruncate       = "truncate"
 	flagNamespace      = "namespace"
-	flagTimeoutDefault = int64(60)
+	flagTimeoutDefault = int64(5)
 )
 
 func createPipelineInspect() *cobra.Command {
@@ -74,12 +75,16 @@ func createPipelineInspect() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			timeoutSecs, err := flags.GetInt64(flagTimeout)
+			if err != nil {
+				return err
+			}
 			kc, err := cli.NewKafkaClient(kafkaBroker, kafkaBrokerIsSet, schedulerHost, schedulerHostIsSet, kafkaConfigPath)
 			if err != nil {
 				return err
 			}
 			data := []byte(args[0])
-			err = kc.InspectStep(string(data), offset, requestId, format, verbose, truncateData, namespace)
+			err = kc.InspectStep(string(data), offset, requestId, format, verbose, truncateData, namespace, time.Duration(timeoutSecs)*time.Second)
 			return err
 		},
 	}
@@ -94,5 +99,6 @@ func createPipelineInspect() *cobra.Command {
 	flags.BoolP(flagVerbose, "v", false, "display more details, such as headers")
 	flags.BoolP(flagTruncate, "t", false, "truncate data")
 	flags.String(flagKafkaConfigPath, env.GetString(envKafkaConfigPath, ""), "path to kafka config file")
+	flags.Int64P(flagTimeout, "d", flagTimeoutDefault, "timeout seconds for kafka operations")
 	return cmd
 }

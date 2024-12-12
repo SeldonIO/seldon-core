@@ -19,10 +19,8 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-)
 
-const (
-	execTimeOut = 5 * time.Minute
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 )
 
 func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
@@ -49,10 +47,12 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 		}
 		logger.Info("Received event to handle state", "event", event)
 
-		fn := func() error {
+		fn := func(ctx context.Context) error {
 			return s.handleStateOnReconnect(ctx, grpcClient, namespace, event.GetEvent())
 		}
-		_, err = execWithTimeout(fn, execTimeOut)
+		// in general we could have also handled timeout via a context with timeout
+		// but we want to handle the timeout in a more controlled way and not depending on the other side
+		_, err = execWithTimeout(ctx, fn, constants.ControlPlaneExecTimeOut)
 		if err != nil {
 			logger.Error(err, "Failed to handle state on reconnect")
 			return err
@@ -64,10 +64,14 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 	return nil
 }
 
-func execWithTimeout(f func() error, d time.Duration) (bool, error) {
+func execWithTimeout(baseContext context.Context, f func(ctx context.Context) error, d time.Duration) (bool, error) {
+	// cancel the context after the timeout
+	ctxWithCancel, cancel := context.WithCancel(baseContext)
+	defer cancel()
+
 	errChan := make(chan error, 1)
 	go func() {
-		errChan <- f()
+		errChan <- f(ctxWithCancel)
 		close(errChan)
 	}()
 	t := time.NewTimer(d)

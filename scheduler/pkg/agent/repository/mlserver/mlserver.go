@@ -20,6 +20,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 )
@@ -29,6 +30,7 @@ const (
 	inferUriKey            = "infer_uri"
 	explainerTypeKey       = "explainer_type"
 	sslVerifyPath          = "ssl_verify_path"
+	parallelWorkersEnvVar  = "MLSERVER_PARALLEL_WORKERS"
 )
 
 type MLServerRepositoryHandler struct {
@@ -71,12 +73,12 @@ type ModelMetadataTensors struct {
 
 // MLServer model parameters.
 type ModelParameters struct {
-	//URI where the model artifacts can be found.
-	//This path must be either absolute or relative to where MLServer is running.
+	// URI where the model artifacts can be found.
+	// This path must be either absolute or relative to where MLServer is running.
 	Uri string `json:"uri,omitempty"`
-	//Version of the model
+	// Version of the model
 	Version string `json:"version,omitempty"`
-	//Format of the model (only available on certain runtimes).
+	// Format of the model (only available on certain runtimes).
 	Format             string                 `json:"format,omitempty"`
 	ContentType        string                 `json:"content_type,omitempty"`
 	Extra              map[string]interface{} `json:"extra,omitempty"`
@@ -98,7 +100,7 @@ func (m *MLServerRepositoryHandler) UpdateModelVersion(modelName string, version
 			return err
 		}
 	}
-	//Modify model-settings
+	// Modify model-settings
 	err := m.updateNameAndVersion(path, modelName, versionStr)
 	return err
 }
@@ -167,7 +169,7 @@ func (m *MLServerRepositoryHandler) SetExplainer(modelRepoPath string, explainer
 		if err != nil {
 			return err
 		}
-		//TODO: temporary fix for issue in mlserver with explainers
+		// TODO: temporary fix for issue in mlserver with explainers
 		ms.ParallelWorkers = &workers
 		if ms.Parameters == nil {
 			ms.Parameters = &ModelParameters{}
@@ -262,7 +264,7 @@ func (m *MLServerRepositoryHandler) findModelVersionInPath(modelPath string, ver
 	case 1:
 		return found[0], nil
 	default:
-		return "", fmt.Errorf("Found multiple folders with version %d %v", version, found)
+		return "", fmt.Errorf("found multiple folders with version %d %v", version, found)
 	}
 }
 
@@ -272,7 +274,7 @@ func (m *MLServerRepositoryHandler) getDefaultModelSettingsPath(modelPath string
 		if err != nil {
 			return err
 		}
-		if info.IsDir() && modelPath != path { //Don't descend into directories
+		if info.IsDir() && modelPath != path { // Don't descend into directories
 			return filepath.SkipDir
 		}
 		if !info.IsDir() && filepath.Base(path) == mlserverConfigFilename {
@@ -320,4 +322,14 @@ func (m *MLServerRepositoryHandler) findHighestVersionInPath(modelPath string) (
 		return highestVersionPath, nil
 	}
 	return "", nil
+}
+
+func (m *MLServerRepositoryHandler) GetModelRuntimeInfo(_ string) (*agent.ModelRuntimeInfo, error) {
+	parallelWorkersStr := os.Getenv(parallelWorkersEnvVar)
+	parallelWorkers, err := strconv.Atoi(parallelWorkersStr)
+	if err != nil || parallelWorkersStr == "" {
+		parallelWorkers = 1
+	}
+
+	return &agent.ModelRuntimeInfo{ModelRuntimeInfo: &agent.ModelRuntimeInfo_Mlserver{Mlserver: &agent.MLServerModelSettings{ParallelWorkers: uint32(parallelWorkers)}}}, nil
 }

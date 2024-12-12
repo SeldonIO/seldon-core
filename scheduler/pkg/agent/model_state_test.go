@@ -47,11 +47,12 @@ func TestAddModelVersion(t *testing.T) {
 						MemoryBytes: getUint64Ptr(500),
 					},
 				},
-				Version: 1,
+				RuntimeInfo: getModelRuntimeInfo(2),
+				Version:     1,
 			},
 			versionAdded:       true,
-			expectedModelBytes: 500,
-			expectedTotalBytes: 500,
+			expectedModelBytes: 1000,
+			expectedTotalBytes: 1000,
 		},
 		{
 			name: "NewModel (Another Model Exsits)",
@@ -67,7 +68,8 @@ func TestAddModelVersion(t *testing.T) {
 									MemoryBytes: getUint64Ptr(500),
 								},
 							},
-							Version: 1,
+							RuntimeInfo: getModelRuntimeInfo(1),
+							Version:     1,
 						},
 					},
 				},
@@ -82,7 +84,8 @@ func TestAddModelVersion(t *testing.T) {
 						MemoryBytes: getUint64Ptr(500),
 					},
 				},
-				Version: 1,
+				RuntimeInfo: getModelRuntimeInfo(1),
+				Version:     1,
 			},
 			versionAdded:       true,
 			expectedModelBytes: 500,
@@ -102,7 +105,8 @@ func TestAddModelVersion(t *testing.T) {
 									MemoryBytes: getUint64Ptr(500),
 								},
 							},
-							Version: 1,
+							RuntimeInfo: getModelRuntimeInfo(1),
+							Version:     1,
 						},
 					},
 				},
@@ -117,7 +121,8 @@ func TestAddModelVersion(t *testing.T) {
 						MemoryBytes: getUint64Ptr(500),
 					},
 				},
-				Version: 2,
+				RuntimeInfo: getModelRuntimeInfo(1),
+				Version:     2,
 			},
 			versionAdded:       false,
 			expectedModelBytes: 500,
@@ -137,7 +142,8 @@ func TestAddModelVersion(t *testing.T) {
 									MemoryBytes: getUint64Ptr(500),
 								},
 							},
-							Version: 1,
+							RuntimeInfo: getModelRuntimeInfo(1),
+							Version:     1,
 						},
 					},
 				},
@@ -152,7 +158,8 @@ func TestAddModelVersion(t *testing.T) {
 						MemoryBytes: getUint64Ptr(500),
 					},
 				},
-				Version: 1,
+				RuntimeInfo: getModelRuntimeInfo(1),
+				Version:     1,
 			},
 			versionAdded:       false,
 			expectedModelBytes: 500,
@@ -164,7 +171,7 @@ func TestAddModelVersion(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			versionAdded, err := test.state.addModelVersion(test.modelVersion)
 			g.Expect(versionAdded).To(Equal(test.versionAdded))
-			//check version exists
+			// check version exists
 			if versionAdded {
 				g.Expect(test.state.versionExists("iris", test.modelVersion.GetVersion())).To(Equal(true))
 			} else if err != nil {
@@ -204,7 +211,8 @@ func TestRemoveModelVersion(t *testing.T) {
 									MemoryBytes: getUint64Ptr(500),
 								},
 							},
-							Version: 1,
+							RuntimeInfo: getModelRuntimeInfo(1),
+							Version:     1,
 						},
 					},
 				},
@@ -216,7 +224,8 @@ func TestRemoveModelVersion(t *testing.T) {
 						Name: "iris",
 					},
 				},
-				Version: 1,
+				RuntimeInfo: getModelRuntimeInfo(1),
+				Version:     1,
 			},
 			modelDeleted:       true,
 			expectedModelBytes: 0,
@@ -237,7 +246,8 @@ func TestRemoveModelVersion(t *testing.T) {
 									MemoryBytes: getUint64Ptr(500),
 								},
 							},
-							Version: 1,
+							RuntimeInfo: getModelRuntimeInfo(1),
+							Version:     1,
 						},
 					},
 				},
@@ -249,7 +259,8 @@ func TestRemoveModelVersion(t *testing.T) {
 						Name: "iris",
 					},
 				},
-				Version: 2,
+				RuntimeInfo: getModelRuntimeInfo(1),
+				Version:     2,
 			},
 			modelDeleted:       false,
 			expectedModelBytes: 500,
@@ -262,7 +273,7 @@ func TestRemoveModelVersion(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			modelDeleted, _ := test.state.removeModelVersion(test.modelVersion)
 			g.Expect(modelDeleted).To(Equal(test.modelDeleted))
-			//check version not exists
+			// check version not exists
 			g.Expect(test.state.versionExists("iris", test.modelVersion.GetVersion())).To(Equal(false))
 			if !modelDeleted {
 				g.Expect(test.state.getModelMemoryBytes("iris")).To(Equal(test.expectedModelBytes))
