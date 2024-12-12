@@ -1,8 +1,7 @@
 # Table of contents
 
-* [Home](README.md)
 ## About
-* [Home](README.md)
+* [Overview](README.md)
 * [Installation](README.md)
   * [Learning Environment](installation/learning-environment/README.md)
     * [Self-hosted Kafka](installation/learning-environment/self-hosted-kafka.md)
