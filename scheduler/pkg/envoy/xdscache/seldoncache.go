@@ -404,8 +404,6 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 		}
 	}
 
-	httpEndpoints := make(map[string]Endpoint)
-	grpcEndpoints := make(map[string]Endpoint)
 	for _, replicaIdx := range assignment {
 		replica, ok := server.Replicas[replicaIdx]
 		if !ok {
@@ -426,11 +424,9 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 		}
 	}
 
-	httpCluster.Endpoints = httpEndpoints
 	xds.Clusters[httpClusterName] = httpCluster
 	httpCluster.Routes[routeVersionKey] = true
 
-	grpcCluster.Endpoints = grpcEndpoints
 	xds.Clusters[grpcClusterName] = grpcCluster
 	grpcCluster.Routes[routeVersionKey] = true
 
@@ -441,9 +437,9 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 		}
 	}
 
-	envoyHttpCluster := MakeCluster(httpClusterName, httpEndpoints, false, clientSecret)
+	envoyHttpCluster := MakeCluster(httpClusterName, httpCluster.Endpoints, false, clientSecret)
 	xds.cds.UpdateResource(envoyHttpCluster.Name, envoyHttpCluster)
-	envoyGrpcCluster := MakeCluster(grpcClusterName, grpcEndpoints, true, clientSecret)
+	envoyGrpcCluster := MakeCluster(grpcClusterName, grpcCluster.Endpoints, true, clientSecret)
 	xds.cds.UpdateResource(envoyGrpcCluster.Name, envoyGrpcCluster)
 }
 
