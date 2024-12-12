@@ -63,4 +63,3 @@ spec:
         configMapKeyRef:
           name: kafka-metrics
           key: kafka-metrics-config.yml
-
