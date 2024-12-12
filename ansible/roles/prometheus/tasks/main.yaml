@@ -18,7 +18,7 @@
 
 - name: Install Prometheus Adapter
   kubernetes.core.helm:
-    name: seldon-prometheus-adapter
+    name: prometheus-adapter
     release_namespace: "{{ seldon_monitoring_namespace }}"
     chart_repo_url: "https://prometheus-community.github.io/helm-charts"
     chart_ref: "prometheus-adapter"
