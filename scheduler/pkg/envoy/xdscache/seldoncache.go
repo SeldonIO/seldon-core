@@ -16,7 +16,6 @@ import (
 	"math/rand"
 	"strconv"
 
-	discoveryv3 "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
@@ -41,6 +40,7 @@ const (
 	EnvoyDownstreamClientCertName = "downstream_client"
 	EnvoyUpstreamServerCertName   = "upstream_server"
 	EnvoyUpstreamClientCertName   = "upstream_client"
+	SnapshotType                  = "snapshot"
 )
 
 type SeldonXDSCache struct {
@@ -124,22 +124,34 @@ func (xds *SeldonXDSCache) init() error {
 	cds := cache.NewLinearCache(clusterTypeURL, cache.WithLogger(linearLogger))
 	xds.cds = cds
 
-	routeTypeURL := resource.RouteType
 	snapshotCache := cache.NewSnapshotCache(true, cache.IDHash{}, snapshotLogger)
 	xds.snapshotCache = snapshotCache
 
+	classify := func(typeUrl string) string {
+		switch typeUrl {
+		case secretTypeURL:
+			return secretTypeURL
+		case listenerTypeURL:
+			return listenerTypeURL
+		case clusterTypeURL:
+			return clusterTypeURL
+		default:
+			return SnapshotType
+		}
+	}
+
 	xds.muxCache = &cache.MuxCache{
-		Classify: func(req *discoveryv3.DiscoveryRequest) string {
-			return req.GetTypeUrl()
+		Classify: func(req *cache.Request) string {
+			return classify(req.GetTypeUrl())
 		},
-		ClassifyDelta: func(req *discoveryv3.DeltaDiscoveryRequest) string {
-			return req.GetTypeUrl()
+		ClassifyDelta: func(req *cache.DeltaRequest) string {
+			return classify(req.GetTypeUrl())
 		},
 		Caches: map[string]cache.Cache{
 			secretTypeURL:   sds,
 			listenerTypeURL: lds,
 			clusterTypeURL:  cds,
-			routeTypeURL:    snapshotCache,
+			SnapshotType:    snapshotCache,
 		},
 	}
 
@@ -215,6 +227,8 @@ func (xds *SeldonXDSCache) AddPermanentClusters() {
 		}
 	}
 
+	resources := make(map[string]types.Resource)
+
 	// Add pipeline gateway clusters
 	pipelineGatewayHttpEndpointName := fmt.Sprintf("%s:%d", xds.PipelineGatewayDetails.Host, xds.PipelineGatewayDetails.HttpPort)
 	pipelineGatewayHttpCluster := MakeCluster(PipelineGatewayHttpClusterName, map[string]Endpoint{
@@ -223,7 +237,7 @@ func (xds *SeldonXDSCache) AddPermanentClusters() {
 			UpstreamPort: uint32(xds.PipelineGatewayDetails.HttpPort),
 		},
 	}, false, clientSecret)
-	xds.cds.UpdateResource(pipelineGatewayHttpCluster.Name, pipelineGatewayHttpCluster)
+	resources[pipelineGatewayHttpCluster.Name] = pipelineGatewayHttpCluster
 
 	pipelineGatewayGrpcEndpointName := fmt.Sprintf("%s:%d", xds.PipelineGatewayDetails.Host, xds.PipelineGatewayDetails.GrpcPort)
 	pipelineGatewayGrpcCluster := MakeCluster(PipelineGatewayGrpcClusterName, map[string]Endpoint{
@@ -232,7 +246,7 @@ func (xds *SeldonXDSCache) AddPermanentClusters() {
 			UpstreamPort: uint32(xds.PipelineGatewayDetails.GrpcPort),
 		},
 	}, true, clientSecret)
-	xds.cds.UpdateResource(pipelineGatewayGrpcCluster.Name, pipelineGatewayGrpcCluster)
+	resources[pipelineGatewayGrpcCluster.Name] = pipelineGatewayGrpcCluster
 
 	// Add Mirror clusters
 	mirrorHttpEndpointName := fmt.Sprintf("%s:%d", mirrorListenerAddress, mirrorListenerPort)
@@ -242,7 +256,7 @@ func (xds *SeldonXDSCache) AddPermanentClusters() {
 			UpstreamPort: mirrorListenerPort,
 		},
 	}, false, nil)
-	xds.cds.UpdateResource(mirrorHttpCluster.Name, mirrorHttpCluster)
+	resources[mirrorHttpCluster.Name] = mirrorHttpCluster
 
 	mirrorGrpcEndpointName := fmt.Sprintf("%s:%d", mirrorListenerAddress, mirrorListenerPort)
 	mirrorGprcCluster := MakeCluster(MirrorGrpcClusterName, map[string]Endpoint{
@@ -251,7 +265,9 @@ func (xds *SeldonXDSCache) AddPermanentClusters() {
 			UpstreamPort: mirrorListenerPort,
 		},
 	}, true, nil)
-	xds.cds.UpdateResource(mirrorGprcCluster.Name, mirrorGprcCluster)
+	resources[mirrorGprcCluster.Name] = mirrorGprcCluster
+
+	xds.cds.UpdateResources(resources, make([]string, 0))
 }
 
 func (xds *SeldonXDSCache) ClusterContents() []types.Resource {
@@ -292,12 +308,10 @@ func (xds *SeldonXDSCache) UpdateRoutes(nodeId string) error {
 			resource.RouteType: xds.RouteContents(), // routes
 		})
 	if err != nil {
+		logger.Errorf("could not create snapshot %+v", snapshot)
 		return err
 	}
 
-	if err := snapshot.Consistent(); err != nil {
-		return err
-	}
 	logger.Debugf("will serve snapshot %+v", snapshot)
 
 	// Add the snapshot to the cache
@@ -308,13 +322,17 @@ func (xds *SeldonXDSCache) UpdateRoutes(nodeId string) error {
 }
 
 func (xds *SeldonXDSCache) CleanupClusters() {
+	clusterNames := make([]string, 0)
 	for clusterName := range xds.ClustersForRemoval {
 		cluster, ok := xds.Clusters[clusterName]
 		if !ok || len(cluster.Routes) < 1 {
-			xds.cds.DeleteResource(clusterName)
+			clusterNames = append(clusterNames, clusterName)
 		}
 		delete(xds.ClustersForRemoval, clusterName)
 	}
+
+	xds.cds.UpdateResources(nil, clusterNames)
+
 }
 
 func (xds *SeldonXDSCache) AddPipelineRoute(routeName string, trafficSplits []PipelineTrafficSplit, mirror *PipelineTrafficSplit) {
@@ -437,10 +455,14 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 		}
 	}
 
+	resources := make(map[string]types.Resource)
+
 	envoyHttpCluster := MakeCluster(httpClusterName, httpCluster.Endpoints, false, clientSecret)
-	xds.cds.UpdateResource(envoyHttpCluster.Name, envoyHttpCluster)
+	resources[envoyHttpCluster.Name] = envoyHttpCluster
 	envoyGrpcCluster := MakeCluster(grpcClusterName, grpcCluster.Endpoints, true, clientSecret)
-	xds.cds.UpdateResource(envoyGrpcCluster.Name, envoyGrpcCluster)
+	resources[envoyGrpcCluster.Name] = envoyGrpcCluster
+
+	xds.cds.UpdateResources(resources, make([]string, 0))
 }
 
 func (xds *SeldonXDSCache) RemoveRoute(routeName string) error {
