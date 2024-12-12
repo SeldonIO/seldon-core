@@ -49,7 +49,7 @@ type RouteVersionKey struct {
 type Cluster struct {
 	Name      string
 	Grpc      bool
-	Endpoints map[string]Endpoint
+	Endpoints []Endpoint
 	Routes    map[RouteVersionKey]bool
 }
 

@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package processor
 
 import (
+	"context"
 	"fmt"
 	"net"
 
@@ -33,7 +34,11 @@ type XDSServer struct {
 	logger           log.FieldLogger
 }
 
-func NewXDSServer(server serverv3.Server, logger log.FieldLogger) *XDSServer {
+func NewXDSServer(incrementalProcessor *IncrementalProcessor, logger log.FieldLogger) *XDSServer {
+	// Start envoy xDS server, this is done after the scheduler is ready
+	// so that the xDS server can start sending valid updates to envoy.
+	ctx := context.Background()
+	server := serverv3.NewServer(ctx, incrementalProcessor.xdsCache, nil)
 	return &XDSServer{
 		srv3:   server,
 		logger: logger,

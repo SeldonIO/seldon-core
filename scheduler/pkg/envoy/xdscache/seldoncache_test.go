@@ -27,8 +27,9 @@ import (
 func TestAddRemoveHttpAndGrpcRoute(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
-	c := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
 
+	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	g.Expect(err).To(BeNil())
 	httpCluster := "m1_1_http"
 	grpcCluster := "m1_1_grpc"
 	model1 := "m1"
@@ -38,7 +39,7 @@ func TestAddRemoveHttpAndGrpcRoute(t *testing.T) {
 	addVersionedRoute(c, route1, model1, httpCluster, grpcCluster, 100, 1)
 	addVersionedRoute(c, route2, model1, httpCluster, grpcCluster, 100, 1)
 
-	err := c.RemoveRoute(route1)
+	err = c.RemoveRoute(route1)
 	g.Expect(err).To(BeNil())
 	_, ok := c.Clusters[httpCluster]
 	g.Expect(ok).To(BeTrue()) // http Cluster remains as r2 still connected
@@ -57,7 +58,8 @@ func TestAddRemoveHttpAndGrpcRouteVersions(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	c := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	g.Expect(err).To(BeNil())
 
 	httpCluster1 := "m1_1_http"
 	grpcCluster1 := "m1_1_grpc"
@@ -95,7 +97,7 @@ func TestAddRemoveHttpAndGrpcRouteVersions(t *testing.T) {
 	g.Expect(len(c.Clusters[httpCluster1].Endpoints)).To(Equal(1))
 	g.Expect(len(c.Clusters[grpcCluster1].Endpoints)).To(Equal(1))
 
-	err := c.RemoveRoute(route1)
+	err = c.RemoveRoute(route1)
 	g.Expect(err).To(BeNil())
 	_, ok := c.Clusters[httpCluster1]
 	g.Expect(ok).To(BeTrue()) // http Cluster remains as r2 still connected
@@ -114,7 +116,8 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForSameModel(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	c := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	g.Expect(err).To(BeNil())
 
 	routeName := "r1"
 	httpCluster1 := "m1_1_http"
@@ -140,7 +143,7 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForSameModel(t *testing.T) {
 	g.Expect(c.Clusters[httpCluster2].Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 2}]).To(BeTrue())
 	g.Expect(c.Clusters[grpcCluster2].Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 2}]).To(BeTrue())
 
-	err := c.RemoveRoute(routeName)
+	err = c.RemoveRoute(routeName)
 	g.Expect(err).To(BeNil())
 	_, ok := c.Clusters[httpCluster1]
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
@@ -153,7 +156,8 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentModels(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	c := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	g.Expect(err).To(BeNil())
 
 	httpClusterModel1 := "m1_1_http"
 	grpcClusterModel1 := "m1_1_grpc"
@@ -180,7 +184,7 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentModels(t *testing.T) {
 	g.Expect(c.Clusters[httpClusterModel2].Routes[RouteVersionKey{RouteName: routeName, ModelName: model2, Version: 1}]).To(BeTrue())
 	g.Expect(c.Clusters[grpcClusterModel2].Routes[RouteVersionKey{RouteName: routeName, ModelName: model2, Version: 1}]).To(BeTrue())
 
-	err := c.RemoveRoute(routeName)
+	err = c.RemoveRoute(routeName)
 	g.Expect(err).To(BeNil())
 	_, ok := c.Clusters[httpClusterModel1]
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
@@ -196,7 +200,8 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentRoutesSameModel(t *testing
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	c := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	g.Expect(err).To(BeNil())
 
 	route1 := "r1"
 	route2 := "r2"
@@ -221,7 +226,7 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentRoutesSameModel(t *testing
 	g.Expect(c.Clusters[httpClusterModel1].Routes[RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
 	g.Expect(c.Clusters[grpcClusterModel1].Routes[RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
 
-	err := c.RemoveRoute(route1)
+	err = c.RemoveRoute(route1)
 	g.Expect(err).To(BeNil())
 	_, ok := c.Clusters[httpClusterModel1]
 	g.Expect(ok).To(BeTrue()) // http Cluster not removed
@@ -275,7 +280,8 @@ func TestSetupTLS(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			c := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+			c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+			g.Expect(err).To(BeNil())
 			if test.setTLS {
 				t.Setenv(fmt.Sprintf("%s%s", seldontls.EnvSecurityPrefixEnvoy, seldontls.EnvSecurityProtocolSuffix), seldontls.SecurityProtocolSSL)
 			}
@@ -288,7 +294,7 @@ func TestSetupTLS(t *testing.T) {
 				t.Setenv(fmt.Sprintf("%s%s", envPrefix, seldontls.EnvKeyLocationSuffix), fmt.Sprintf("%s/tls.key", tmpFolder))
 				t.Setenv(fmt.Sprintf("%s%s", envPrefix, seldontls.EnvCaLocationSuffix), fmt.Sprintf("%s/ca.crt", tmpFolder))
 			}
-			err := c.SetupTLS()
+			err = c.SetupTLS()
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
 			} else {
@@ -332,7 +338,7 @@ func addCluster(
 	if !ok {
 		cluster = Cluster{
 			Name:      name,
-			Endpoints: make(map[string]Endpoint),
+			Endpoints: make([]Endpoint, 0),
 			Routes:    make(map[RouteVersionKey]bool),
 			Grpc:      isGrpc,
 		}
@@ -343,11 +349,10 @@ func addCluster(
 
 func addEndpoint(xds *SeldonXDSCache, clusterName, upstreamHost string, upstreamPort uint32) {
 	cluster := xds.Clusters[clusterName]
-	k := fmt.Sprintf("%s:%d", upstreamHost, upstreamPort)
-	cluster.Endpoints[k] = Endpoint{
+	cluster.Endpoints = append(cluster.Endpoints, Endpoint{
 		UpstreamHost: upstreamHost,
 		UpstreamPort: upstreamPort,
-	}
+	})
 
 	xds.Clusters[clusterName] = cluster
 }

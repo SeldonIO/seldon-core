@@ -15,7 +15,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 
@@ -125,7 +124,6 @@ func benchmarkModelUpdate(
 		memoryStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
 		pipelineStore := pipeline.NewPipelineStore(logger, eventHub, memoryStore)
 		ip, err := NewIncrementalProcessor(
-			cache.NewSnapshotCache(false, cache.IDHash{}, logger),
 			"some node",
 			logger,
 			memoryStore,
@@ -163,12 +161,15 @@ func benchmarkModelUpdate(
 func BenchmarkModelUpdate_Models_10_Replicas_1_Batch_10ms(b *testing.B) {
 	benchmarkModelUpdate(b, 10, 1, 1, 10)
 }
+
 func BenchmarkModelUpdate_Models_100_Replicas_1_Batch_10ms(b *testing.B) {
 	benchmarkModelUpdate(b, 100, 1, 1, 10)
 }
+
 func BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_10ms(b *testing.B) {
 	benchmarkModelUpdate(b, 1_000, 1, 1, 10)
 }
+
 func BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_10ms(b *testing.B) {
 	benchmarkModelUpdate(b, 10_000, 1, 1, 10)
 }
@@ -177,12 +178,15 @@ func BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_10ms(b *testing.B) {
 func BenchmarkModelUpdate_Models_10_Replicas_10_Batch_10ms(b *testing.B) {
 	benchmarkModelUpdate(b, 10, 1, 10, 10)
 }
+
 func BenchmarkModelUpdate_Models_100_Replicas_10_Batch_10ms(b *testing.B) {
 	benchmarkModelUpdate(b, 100, 1, 10, 10)
 }
+
 func BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_10ms(b *testing.B) {
 	benchmarkModelUpdate(b, 1_000, 1, 10, 10)
 }
+
 func BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_10ms(b *testing.B) {
 	benchmarkModelUpdate(b, 10_000, 1, 10, 10)
 }
@@ -191,12 +195,15 @@ func BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_10ms(b *testing.B) {
 func BenchmarkModelUpdate_Models_10_Replicas_1_Batch_100ms(b *testing.B) {
 	benchmarkModelUpdate(b, 1, 1, 1, 100)
 }
+
 func BenchmarkModelUpdate_Models_100_Replicas_1_Batch_100ms(b *testing.B) {
 	benchmarkModelUpdate(b, 100, 1, 1, 100)
 }
+
 func BenchmarkModelUpdate_Models_1_000_Replicas_1_Batch_100ms(b *testing.B) {
 	benchmarkModelUpdate(b, 1_000, 1, 1, 100)
 }
+
 func BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_100ms(b *testing.B) {
 	benchmarkModelUpdate(b, 10_000, 1, 1, 100)
 }
@@ -205,12 +212,15 @@ func BenchmarkModelUpdate_Models_10_000_Replicas_1_Batch_100ms(b *testing.B) {
 func BenchmarkModelUpdate_Models_10_Replicas_10_Batch_100ms(b *testing.B) {
 	benchmarkModelUpdate(b, 10, 1, 10, 100)
 }
+
 func BenchmarkModelUpdate_Models_100_Replicas_10_Batch_100ms(b *testing.B) {
 	benchmarkModelUpdate(b, 100, 1, 10, 100)
 }
+
 func BenchmarkModelUpdate_Models_1_000_Replicas_10_Batch_100ms(b *testing.B) {
 	benchmarkModelUpdate(b, 1_000, 1, 10, 100)
 }
+
 func BenchmarkModelUpdate_Models_10_000_Replicas_10_Batch_100ms(b *testing.B) {
 	benchmarkModelUpdate(b, 10_000, 1, 10, 100)
 }

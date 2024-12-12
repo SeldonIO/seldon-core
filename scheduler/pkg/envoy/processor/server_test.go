@@ -11,10 +11,8 @@ import (
 
 	clusterv3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
-	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	client "github.com/envoyproxy/go-control-plane/pkg/client/sotw/v3"
 	resource "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
-	envoyServerControlPlaneV3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -36,31 +34,29 @@ func TestFetch(t *testing.T) {
 
 	logger := log.New()
 
-	snapCache := cache.NewSnapshotCache(true, cache.IDHash{}, logger)
-
-	port, err := testing_utils.GetFreePortForTest()
-	if err != nil {
-		t.Fatal(err)
-	}
-	go func() {
-		err := startAdsServer(ctx, snapCache, uint(port))
-		g.Expect(err).To(BeNil())
-	}()
-
 	memoryStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), nil)
 	pipelineHandler := pipeline.NewPipelineStore(logger, nil, memoryStore)
 
+	xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{})
+	g.Expect(err).To(BeNil())
 	inc := &IncrementalProcessor{
-		cache:            snapCache,
 		logger:           logger,
-		xdsCache:         xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{}),
+		xdsCache:         xdsCache,
 		pipelineHandler:  pipelineHandler,
 		modelStore:       memoryStore,
 		experimentServer: experiment.NewExperimentServer(logger, nil, memoryStore, pipelineHandler),
 		nodeID:           "node_1",
 	}
 
-	err = inc.init()
+	port, err := testing_utils.GetFreePortForTest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	go func() {
+		err := startAdsServer(inc, uint(port))
+		g.Expect(err).To(BeNil())
+	}()
+
 	g.Expect(err).To(BeNil())
 
 	conn, err := grpc.NewClient(":"+strconv.Itoa(port), grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -157,10 +153,9 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 	}
 }
 
-func startAdsServer(ctx context.Context, snapCache cache.SnapshotCache, port uint) error {
+func startAdsServer(inc *IncrementalProcessor, port uint) error {
 	logger := log.New()
-	srv := envoyServerControlPlaneV3.NewServer(ctx, snapCache, nil)
-	xdsServer := NewXDSServer(srv, logger)
+	xdsServer := NewXDSServer(inc, logger)
 	err := xdsServer.StartXDSServer(port)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start envoy xDS server")

@@ -10,17 +10,11 @@ the Change License after the Change Date as each is defined in accordance with t
 package processor
 
 import (
-	"context"
 	"fmt"
-	"math"
-	"math/rand"
 	"strconv"
 	"sync"
 	"time"
 
-	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
-	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
-	rsrc "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -40,10 +34,7 @@ const (
 )
 
 type IncrementalProcessor struct {
-	cache  cache.SnapshotCache
-	nodeID string
-	// snapshotVersion holds the current version of the snapshot.
-	snapshotVersion      int64
+	nodeID               string
 	logger               logrus.FieldLogger
 	xdsCache             *xdscache.SeldonXDSCache
 	mu                   sync.RWMutex
@@ -64,9 +55,8 @@ type pendingModelVersion struct {
 }
 
 func NewIncrementalProcessor(
-	cache cache.SnapshotCache,
 	nodeID string,
-	log logrus.FieldLogger,
+	logger logrus.FieldLogger,
 	modelStore store.ModelStore,
 	experimentServer experiment.ExperimentServer,
 	pipelineHandler pipeline.PipelineHandler,
@@ -74,12 +64,15 @@ func NewIncrementalProcessor(
 	pipelineGatewayDetails *xdscache.PipelineGatewayDetails,
 	versionCleaner cleaner.ModelVersionCleaner,
 ) (*IncrementalProcessor, error) {
+	xdsCache, err := xdscache.NewSeldonXDSCache(logger, pipelineGatewayDetails)
+	if err != nil {
+		return nil, err
+	}
+
 	ip := &IncrementalProcessor{
-		cache:                cache,
 		nodeID:               nodeID,
-		snapshotVersion:      rand.Int63n(1000),
-		logger:               log.WithField("source", "IncrementalProcessor"),
-		xdsCache:             xdscache.NewSeldonXDSCache(log, pipelineGatewayDetails),
+		logger:               logger.WithField("source", "IncrementalProcessor"),
+		xdsCache:             xdsCache,
 		modelStore:           modelStore,
 		experimentServer:     experimentServer,
 		pipelineHandler:      pipelineHandler,
@@ -88,11 +81,6 @@ func NewIncrementalProcessor(
 		batchWait:            util.EnvoyUpdateDefaultBatchWait,
 		versionCleaner:       versionCleaner,
 		batchTriggerManual:   nil,
-	}
-
-	err := ip.init()
-	if err != nil {
-		return nil, err
 	}
 
 	hub.RegisterModelEventHandler(
@@ -185,56 +173,8 @@ func (p *IncrementalProcessor) handleModelEvents(event coordinator.ModelEventMsg
 	}()
 }
 
-func (p *IncrementalProcessor) init() error {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	err := p.xdsCache.SetupTLS()
-	if err != nil {
-		return err
-	}
-	p.xdsCache.AddPermanentListeners()
-	p.xdsCache.AddPermanentClusters()
-	return nil
-}
-
-// newSnapshotVersion increments the current snapshotVersion
-// and returns as a string.
-func (p *IncrementalProcessor) newSnapshotVersion() string {
-	// Reset the snapshotVersion if it ever hits max size.
-	if p.snapshotVersion == math.MaxInt64 {
-		p.snapshotVersion = 0
-	}
-
-	// Increment the snapshot version & return as string.
-	p.snapshotVersion++
-	return strconv.FormatInt(p.snapshotVersion, 10)
-}
-
 func (p *IncrementalProcessor) updateEnvoy() error {
-	logger := p.logger.WithField("func", "updateEnvoy")
-	// Create the snapshot that we'll serve to Envoy
-	snapshot, err := cache.NewSnapshot(
-		p.newSnapshotVersion(), // version
-		map[rsrc.Type][]types.Resource{
-			rsrc.ClusterType:  p.xdsCache.ClusterContents(),  // clusters
-			rsrc.RouteType:    p.xdsCache.RouteContents(),    // routes
-			rsrc.ListenerType: p.xdsCache.ListenerContents(), // listeners
-			rsrc.SecretType:   p.xdsCache.SecretContents(),   // Secrets
-		})
-	if err != nil {
-		return err
-	}
-
-	if err := snapshot.Consistent(); err != nil {
-		return err
-	}
-	logger.Debugf("will serve snapshot %+v", snapshot)
-
-	// Add the snapshot to the cache
-	if err := p.cache.SetSnapshot(context.Background(), p.nodeID, snapshot); err != nil {
-		return err
-	}
-
+	p.xdsCache.UpdateRoutes()
 	return nil
 }
 
