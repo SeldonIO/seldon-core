@@ -866,10 +866,10 @@ func TestEnvoySettings(t *testing.T) {
 
 			routeFilename := test.snapshotFilename + "-routes.json"
 			if generateSnapshots {
-				createSnapshot(g, inc.xdsCache.RouteContents(), routeFilename)
+				createSnapshot(g, inc.xdsCache.RouteResources(), routeFilename)
 			}
 
-			resultingRoutes := getResultingRoutes(inc.xdsCache.RouteContents())
+			resultingRoutes := getResultingRoutes(inc.xdsCache.RouteResources())
 
 			data, err := os.ReadFile(snapshots_directory_name + "/" + routeFilename)
 			g.Expect(err).To(BeNil())
@@ -898,10 +898,10 @@ func TestEnvoySettings(t *testing.T) {
 
 			clusterFilename := test.snapshotFilename + "-clusters.json"
 			if generateSnapshots {
-				createSnapshot(g, inc.xdsCache.ClusterContents(), clusterFilename)
+				createSnapshot(g, inc.xdsCache.ClusterResources(), clusterFilename)
 			}
 
-			resultingClusters := getResultingClusters(inc.xdsCache.ClusterContents())
+			resultingClusters := getResultingClusters(inc.xdsCache.ClusterResources())
 
 			data, err = os.ReadFile(snapshots_directory_name + "/" + clusterFilename)
 			g.Expect(err).To(BeNil())

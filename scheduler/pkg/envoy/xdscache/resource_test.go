@@ -168,7 +168,7 @@ func TestMakeRoute(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			rcDef, rcMirror := MakeRoutes(test.modelRoutes, test.pipelineRoutes)
+			rcDef, rcMirror := makeRoutes(test.modelRoutes, test.pipelineRoutes)
 			g.Expect(len(rcDef.VirtualHosts[0].Routes)).To(Equal(test.expectedDefaultRoutes))
 			g.Expect(len(rcMirror.VirtualHosts[0].Routes)).To(Equal(test.expectedMirrorRoutes))
 		})

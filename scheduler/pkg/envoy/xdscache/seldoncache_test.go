@@ -39,9 +39,14 @@ func TestAddRemoveHttpAndGrpcRoute(t *testing.T) {
 	addVersionedRoute(c, route1, model1, httpCluster, grpcCluster, 100, 1)
 	addVersionedRoute(c, route2, model1, httpCluster, grpcCluster, 100, 1)
 
+	_, ok := c.clustersToAdd[httpCluster]
+	g.Expect(ok).To(BeTrue()) // http Cluster to be added to cds
+	_, ok = c.clustersToAdd[grpcCluster]
+	g.Expect(ok).To(BeTrue()) // grpc Cluster to be added to cds
+
 	err = c.RemoveRoute(route1)
 	g.Expect(err).To(BeNil())
-	_, ok := c.Clusters[httpCluster]
+	_, ok = c.Clusters[httpCluster]
 	g.Expect(ok).To(BeTrue()) // http Cluster remains as r2 still connected
 	_, ok = c.Clusters[grpcCluster]
 	g.Expect(ok).To(BeTrue()) // grpc Cluster remains as r2 still connected
@@ -72,6 +77,15 @@ func TestAddRemoveHttpAndGrpcRouteVersions(t *testing.T) {
 	addVersionedRoute(c, route1, model1, httpCluster1, grpcCluster1, 40, 1)
 	addVersionedRoute(c, route1, model1, httpCluster2, grpcCluster2, 60, 2)
 
+	_, ok := c.clustersToAdd[httpCluster1]
+	g.Expect(ok).To(BeTrue()) // http Cluster to be added to cds
+	_, ok = c.clustersToAdd[grpcCluster1]
+	g.Expect(ok).To(BeTrue()) // grpc Cluster to be added to cds
+	_, ok = c.clustersToAdd[httpCluster2]
+	g.Expect(ok).To(BeTrue()) // http Cluster to be added to cds
+	_, ok = c.clustersToAdd[grpcCluster2]
+	g.Expect(ok).To(BeTrue()) // grpc Cluster to be added to cds
+
 	// check what we have added
 	g.Expect(len(c.Routes[route1].Clusters)).To(Equal(2))
 	clusters := c.Routes[route1].Clusters
@@ -99,16 +113,34 @@ func TestAddRemoveHttpAndGrpcRouteVersions(t *testing.T) {
 
 	err = c.RemoveRoute(route1)
 	g.Expect(err).To(BeNil())
-	_, ok := c.Clusters[httpCluster1]
+	err = c.RemoveClusters() // remove clusters to clear clustersToRemove
+	g.Expect(err).To(BeNil())
+	_, ok = c.Clusters[httpCluster1]
 	g.Expect(ok).To(BeTrue()) // http Cluster remains as r2 still connected
 	_, ok = c.Clusters[grpcCluster1]
 	g.Expect(ok).To(BeTrue()) // grpc Cluster remains as r2 still connected
+	_, ok = c.clustersToRemove[httpCluster1]
+	g.Expect(ok).To(BeFalse()) // http Cluster not to be removed from cds
+	_, ok = c.clustersToRemove[grpcCluster1]
+	g.Expect(ok).To(BeFalse()) // grpc Cluster not to be removed from cds
+	ok = c.shouldRemoveCluster(httpCluster1)
+	g.Expect(ok).To(BeFalse()) // http Cluster not to be removed from cds
+	ok = c.shouldRemoveCluster(grpcCluster1)
+	g.Expect(ok).To(BeFalse()) // grpc Cluster not to be removed from cds
 	err = c.RemoveRoute(route2)
 	g.Expect(err).To(BeNil())
 	_, ok = c.Clusters[httpCluster1]
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
 	_, ok = c.Clusters[grpcCluster1]
 	g.Expect(ok).To(BeFalse()) // grpc Cluster removed
+	_, ok = c.clustersToRemove[httpCluster1]
+	g.Expect(ok).To(BeTrue()) // http Cluster to be removed from cds
+	_, ok = c.clustersToRemove[grpcCluster1]
+	g.Expect(ok).To(BeTrue()) // grpc Cluster to be removed from cds
+	ok = c.shouldRemoveCluster(httpCluster1)
+	g.Expect(ok).To(BeTrue()) // http Cluster to be removed from cds
+	ok = c.shouldRemoveCluster(grpcCluster1)
+	g.Expect(ok).To(BeTrue()) // grpc Cluster to be removed from cds
 }
 
 // Checks a cluster with multiple versions is created correctly
@@ -129,6 +161,15 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForSameModel(t *testing.T) {
 	addVersionedRoute(c, routeName, model1, httpCluster1, grpcCluster1, 40, 1)
 	addVersionedRoute(c, routeName, model1, httpCluster2, grpcCluster2, 60, 2)
 
+	_, ok := c.clustersToAdd[httpCluster1]
+	g.Expect(ok).To(BeTrue()) // http Cluster to be added to cds
+	_, ok = c.clustersToAdd[grpcCluster1]
+	g.Expect(ok).To(BeTrue()) // grpc Cluster to be added to cds
+	_, ok = c.clustersToAdd[httpCluster2]
+	g.Expect(ok).To(BeTrue()) // http Cluster to be added to cds
+	_, ok = c.clustersToAdd[grpcCluster2]
+	g.Expect(ok).To(BeTrue()) // grpc Cluster to be added to cds
+
 	// check what we have added
 	g.Expect(len(c.Routes[routeName].Clusters)).To(Equal(2))
 	clusters := c.Routes[routeName].Clusters
@@ -145,10 +186,18 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForSameModel(t *testing.T) {
 
 	err = c.RemoveRoute(routeName)
 	g.Expect(err).To(BeNil())
-	_, ok := c.Clusters[httpCluster1]
+	_, ok = c.Clusters[httpCluster1]
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
 	_, ok = c.Clusters[grpcCluster1]
 	g.Expect(ok).To(BeFalse()) // grpc Cluster removed
+	_, ok = c.clustersToRemove[httpCluster1]
+	g.Expect(ok).To(BeTrue()) // http Cluster to be removed from cds
+	_, ok = c.clustersToRemove[grpcCluster1]
+	g.Expect(ok).To(BeTrue()) // grpc Cluster to be removed from cds
+	ok = c.shouldRemoveCluster(httpCluster1)
+	g.Expect(ok).To(BeTrue()) // http Cluster to be removed from cds
+	ok = c.shouldRemoveCluster(grpcCluster1)
+	g.Expect(ok).To(BeTrue()) // grpc Cluster to be removed from cds
 }
 
 // Checks a cluster with multiple versions is created correctly
@@ -170,6 +219,15 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentModels(t *testing.T) {
 	addVersionedRoute(c, routeName, model1, httpClusterModel1, grpcClusterModel1, 40, 1)
 	addVersionedRoute(c, routeName, model2, httpClusterModel2, grpcClusterModel2, 60, 1)
 
+	_, ok := c.clustersToAdd[httpClusterModel1]
+	g.Expect(ok).To(BeTrue()) // http Cluster to be added to cds
+	_, ok = c.clustersToAdd[grpcClusterModel1]
+	g.Expect(ok).To(BeTrue()) // grpc Cluster to be added to cds
+	_, ok = c.clustersToAdd[httpClusterModel2]
+	g.Expect(ok).To(BeTrue()) // http Cluster to be added to cds
+	_, ok = c.clustersToAdd[grpcClusterModel2]
+	g.Expect(ok).To(BeTrue()) // grpc Cluster to be added to cds
+
 	// check what we have added
 	g.Expect(len(c.Routes[routeName].Clusters)).To(Equal(2))
 	clusters := c.Routes[routeName].Clusters
@@ -186,7 +244,7 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentModels(t *testing.T) {
 
 	err = c.RemoveRoute(routeName)
 	g.Expect(err).To(BeNil())
-	_, ok := c.Clusters[httpClusterModel1]
+	_, ok = c.Clusters[httpClusterModel1]
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
 	_, ok = c.Clusters[grpcClusterModel1]
 	g.Expect(ok).To(BeFalse()) // grpc Cluster removed
@@ -194,6 +252,22 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentModels(t *testing.T) {
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
 	_, ok = c.Clusters[grpcClusterModel2]
 	g.Expect(ok).To(BeFalse()) // grpc Cluster removed
+	_, ok = c.clustersToRemove[httpClusterModel1]
+	g.Expect(ok).To(BeTrue()) // http Cluster to be removed from cds
+	_, ok = c.clustersToRemove[grpcClusterModel1]
+	g.Expect(ok).To(BeTrue()) // grpc Cluster to be removed from cds
+	ok = c.shouldRemoveCluster(httpClusterModel1)
+	g.Expect(ok).To(BeTrue()) // http Cluster to be removed from cds
+	ok = c.shouldRemoveCluster(grpcClusterModel1)
+	g.Expect(ok).To(BeTrue()) // grpc Cluster to be removed from cds
+	_, ok = c.clustersToRemove[httpClusterModel2]
+	g.Expect(ok).To(BeTrue()) // http Cluster to be removed from cds
+	_, ok = c.clustersToRemove[grpcClusterModel2]
+	g.Expect(ok).To(BeTrue()) // grpc Cluster to be removed from cds
+	ok = c.shouldRemoveCluster(httpClusterModel2)
+	g.Expect(ok).To(BeTrue()) // http Cluster to be removed from cds
+	ok = c.shouldRemoveCluster(grpcClusterModel2)
+	g.Expect(ok).To(BeTrue()) // grpc Cluster to be removed from cds
 }
 
 func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentRoutesSameModel(t *testing.T) {
@@ -212,6 +286,11 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentRoutesSameModel(t *testing
 	addVersionedRoute(c, route1, model1, httpClusterModel1, grpcClusterModel1, 100, 1)
 	addVersionedRoute(c, route2, model1, httpClusterModel1, grpcClusterModel1, 100, 1)
 
+	_, ok := c.clustersToAdd[httpClusterModel1]
+	g.Expect(ok).To(BeTrue()) // http Cluster to be added to cds
+	_, ok = c.clustersToAdd[grpcClusterModel1]
+	g.Expect(ok).To(BeTrue()) // grpc Cluster to be added to cds
+
 	// check what we have added
 	g.Expect(len(c.Routes[route1].Clusters)).To(Equal(1))
 	g.Expect(len(c.Routes[route2].Clusters)).To(Equal(1))
@@ -228,16 +307,28 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentRoutesSameModel(t *testing
 
 	err = c.RemoveRoute(route1)
 	g.Expect(err).To(BeNil())
-	_, ok := c.Clusters[httpClusterModel1]
+	_, ok = c.Clusters[httpClusterModel1]
 	g.Expect(ok).To(BeTrue()) // http Cluster not removed
 	_, ok = c.Clusters[grpcClusterModel1]
 	g.Expect(ok).To(BeTrue()) // grpc Cluster not removed
+	ok = c.shouldRemoveCluster(httpClusterModel1)
+	g.Expect(ok).To(BeFalse()) // http Cluster not to be removed from cds
+	ok = c.shouldRemoveCluster(grpcClusterModel1)
+	g.Expect(ok).To(BeFalse()) // grpc Cluster not to be removed from cds
 	err = c.RemoveRoute(route2)
 	g.Expect(err).To(BeNil())
 	_, ok = c.Clusters[httpClusterModel1]
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
 	_, ok = c.Clusters[grpcClusterModel1]
 	g.Expect(ok).To(BeFalse()) // grpc Cluster removed
+	_, ok = c.clustersToRemove[httpClusterModel1]
+	g.Expect(ok).To(BeTrue()) // http Cluster to be removed from cds
+	_, ok = c.clustersToRemove[grpcClusterModel1]
+	g.Expect(ok).To(BeTrue()) // grpc Cluster to be removed from cds
+	ok = c.shouldRemoveCluster(httpClusterModel1)
+	g.Expect(ok).To(BeTrue()) // http Cluster to be removed from cds
+	ok = c.shouldRemoveCluster(grpcClusterModel1)
+	g.Expect(ok).To(BeTrue()) // grpc Cluster to be removed from cds
 }
 
 func TestSetupTLS(t *testing.T) {
@@ -294,7 +385,7 @@ func TestSetupTLS(t *testing.T) {
 				t.Setenv(fmt.Sprintf("%s%s", envPrefix, seldontls.EnvKeyLocationSuffix), fmt.Sprintf("%s/tls.key", tmpFolder))
 				t.Setenv(fmt.Sprintf("%s%s", envPrefix, seldontls.EnvCaLocationSuffix), fmt.Sprintf("%s/ca.crt", tmpFolder))
 			}
-			err = c.SetupTLS()
+			err = c.setupTLS()
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
 			} else {
@@ -319,42 +410,12 @@ func addVersionedRoute(c *SeldonXDSCache, modelRouteName string, modelName strin
 		store.ModelAvailable,
 	)
 
-	addCluster(c, httpCluster, modelRouteName, modelName, version, false)
-	addCluster(c, grpcCluster, modelRouteName, modelName, version, true)
+	server := &store.ServerSnapshot{
+		Name: "server",
+		Replicas: map[int]*store.ServerReplica{
+			1: store.NewServerReplica("0.0.0.0", 9000, 9001, 1, store.NewServer("server", false), nil, 100, 100, 0, nil, 100),
+		},
+	}
+	c.AddClustersForRoute(modelRouteName, modelName, httpCluster, grpcCluster, modelVersion.GetVersion(), []int{1}, server)
 	c.AddRouteClusterTraffic(modelRouteName, modelName, httpCluster, grpcCluster, modelVersion.GetVersion(), traffic, false, false)
-	addEndpoint(c, httpCluster, "0.0.0.0", 9000)
-	addEndpoint(c, grpcCluster, "0.0.0.0", 9001)
-}
-
-func addCluster(
-	xds *SeldonXDSCache,
-	name string,
-	routeName string,
-	modelName string,
-	modelVersion uint32,
-	isGrpc bool,
-) {
-	cluster, ok := xds.Clusters[name]
-	if !ok {
-		cluster = Cluster{
-			Name:      name,
-			Endpoints: make(map[string]Endpoint),
-			Routes:    make(map[RouteVersionKey]bool),
-			Grpc:      isGrpc,
-		}
-	}
-	cluster.Routes[RouteVersionKey{RouteName: routeName, ModelName: modelName, Version: modelVersion}] = true
-	xds.Clusters[name] = cluster
-}
-
-func addEndpoint(xds *SeldonXDSCache, clusterName, upstreamHost string, upstreamPort uint32) {
-	cluster := xds.Clusters[clusterName]
-
-	endpointName := fmt.Sprintf("%s:%d", upstreamHost, upstreamPort)
-	cluster.Endpoints[endpointName] = Endpoint{
-		UpstreamHost: upstreamHost,
-		UpstreamPort: upstreamPort,
-	}
-
-	xds.Clusters[clusterName] = cluster
 }

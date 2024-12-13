@@ -36,11 +36,11 @@ const (
 	mirrorListenerAddress        = "0.0.0.0"
 	mirrorListenerPort    uint32 = 9001
 
-	EnvoyDownstreamServerCertName = "downstream_server"
-	EnvoyDownstreamClientCertName = "downstream_client"
-	EnvoyUpstreamServerCertName   = "upstream_server"
-	EnvoyUpstreamClientCertName   = "upstream_client"
-	SnapshotType                  = "snapshot"
+	envoyDownstreamServerCertName = "downstream_server"
+	envoyDownstreamClientCertName = "downstream_client"
+	envoyUpstreamServerCertName   = "upstream_server"
+	envoyUpstreamClientCertName   = "upstream_client"
+	snapshotType                  = "snapshot"
 )
 
 type SeldonXDSCache struct {
@@ -51,14 +51,14 @@ type SeldonXDSCache struct {
 	sds           *cache.LinearCache
 
 	Clusters               map[string]Cluster
-	ClustersToAdd          map[string]bool
-	ClustersToRemove       map[string]bool
 	Pipelines              map[string]PipelineRoute
-	PipelineGatewayDetails *PipelineGatewayDetails
 	Routes                 map[string]Route
-	Secrets                map[string]Secret
+	clustersToAdd          map[string]bool
+	clustersToRemove       map[string]bool
+	pipelineGatewayDetails *PipelineGatewayDetails
+	secrets                map[string]Secret
 	logger                 logrus.FieldLogger
-	TLSActive              bool
+	tlsActive              bool
 	snapshotVersion        int64
 }
 
@@ -71,12 +71,12 @@ type PipelineGatewayDetails struct {
 func NewSeldonXDSCache(logger logrus.FieldLogger, pipelineGatewayDetails *PipelineGatewayDetails) (*SeldonXDSCache, error) {
 	xdsCache := &SeldonXDSCache{
 		Clusters:               make(map[string]Cluster),
-		ClustersToAdd:          make(map[string]bool),
-		ClustersToRemove:       make(map[string]bool),
 		Pipelines:              make(map[string]PipelineRoute),
-		PipelineGatewayDetails: pipelineGatewayDetails,
 		Routes:                 make(map[string]Route),
-		Secrets:                make(map[string]Secret),
+		clustersToAdd:          make(map[string]bool),
+		clustersToRemove:       make(map[string]bool),
+		pipelineGatewayDetails: pipelineGatewayDetails,
+		secrets:                make(map[string]Secret),
 		logger:                 logger.WithField("source", "SeldonXDSCache"),
 		snapshotVersion:        rand.Int63n(1000),
 	}
@@ -138,7 +138,7 @@ func (xds *SeldonXDSCache) init() error {
 		case clusterTypeURL:
 			return clusterTypeURL
 		default:
-			return SnapshotType
+			return snapshotType
 		}
 	}
 
@@ -153,30 +153,30 @@ func (xds *SeldonXDSCache) init() error {
 			secretTypeURL:   sds,
 			listenerTypeURL: lds,
 			clusterTypeURL:  cds,
-			SnapshotType:    snapshotCache,
+			snapshotType:    snapshotCache,
 		},
 	}
 
-	err := xds.SetupTLS()
+	err := xds.setupTLS()
 	if err != nil {
 		return err
 	}
-	err = xds.AddPermanentListeners()
+	err = xds.addPermanentListeners()
 	if err != nil {
 		return err
 	}
-	err = xds.AddPermanentClusters()
+	err = xds.addPermanentClusters()
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (xds *SeldonXDSCache) SetupTLS() error {
+func (xds *SeldonXDSCache) setupTLS() error {
 	logger := xds.logger.WithField("func", "SetupTLS")
 	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixEnvoy)
 	if protocol == seldontls.SecurityProtocolSSL {
-		xds.TLSActive = true
+		xds.tlsActive = true
 
 		// Envoy client to talk to agent or Pipelinegateway
 		logger.Info("Upstream TLS active")
@@ -185,7 +185,7 @@ func (xds *SeldonXDSCache) SetupTLS() error {
 		if err != nil {
 			return err
 		}
-		err = xds.createSecret(EnvoyUpstreamClientCertName, EnvoyUpstreamServerCertName, tlsUpstreamClient)
+		err = xds.createSecret(envoyUpstreamClientCertName, envoyUpstreamServerCertName, tlsUpstreamClient)
 		if err != nil {
 			return err
 		}
@@ -197,7 +197,7 @@ func (xds *SeldonXDSCache) SetupTLS() error {
 		if err != nil {
 			return err
 		}
-		err = xds.createSecret(EnvoyDownstreamServerCertName, EnvoyDownstreamClientCertName, tlsDownstreamServer)
+		err = xds.createSecret(envoyDownstreamServerCertName, envoyDownstreamClientCertName, tlsDownstreamServer)
 		if err != nil {
 			return err
 		}
@@ -212,7 +212,7 @@ func (xds *SeldonXDSCache) createSecret(name string, validationSecretName string
 		Certificate:          certificate,
 	}
 
-	xds.Secrets[name] = seldonSecret
+	xds.secrets[name] = seldonSecret
 	secrets := MakeSecretResource(seldonSecret.Name, seldonSecret.ValidationSecretName, seldonSecret.Certificate)
 	for _, secret := range secrets {
 		err := xds.sds.UpdateResource(secret.Name, secret)
@@ -223,23 +223,23 @@ func (xds *SeldonXDSCache) createSecret(name string, validationSecretName string
 	return nil
 }
 
-func (xds *SeldonXDSCache) AddPermanentListeners() error {
+func (xds *SeldonXDSCache) addPermanentListeners() error {
 	var serverSecret *Secret
-	if xds.TLSActive {
-		if secret, ok := xds.Secrets[EnvoyDownstreamServerCertName]; ok {
+	if xds.tlsActive {
+		if secret, ok := xds.secrets[envoyDownstreamServerCertName]; ok {
 			serverSecret = &secret
 		}
 	}
 	resources := make(map[string]types.Resource)
-	resources[defaultListenerName] = MakeHTTPListener(defaultListenerName, defaultListenerAddress, defaultListenerPort, DefaultRouteConfigurationName, serverSecret)
-	resources[mirrorListenerName] = MakeHTTPListener(mirrorListenerName, mirrorListenerAddress, mirrorListenerPort, MirrorRouteConfigurationName, serverSecret)
+	resources[defaultListenerName] = makeHTTPListener(defaultListenerName, defaultListenerAddress, defaultListenerPort, DefaultRouteConfigurationName, serverSecret)
+	resources[mirrorListenerName] = makeHTTPListener(mirrorListenerName, mirrorListenerAddress, mirrorListenerPort, MirrorRouteConfigurationName, serverSecret)
 	return xds.lds.UpdateResources(resources, nil)
 }
 
-func (xds *SeldonXDSCache) AddPermanentClusters() error {
+func (xds *SeldonXDSCache) addPermanentClusters() error {
 	var clientSecret *Secret
-	if xds.TLSActive {
-		if secret, ok := xds.Secrets[EnvoyUpstreamClientCertName]; ok {
+	if xds.tlsActive {
+		if secret, ok := xds.secrets[envoyUpstreamClientCertName]; ok {
 			clientSecret = &secret
 		}
 	}
@@ -247,27 +247,27 @@ func (xds *SeldonXDSCache) AddPermanentClusters() error {
 	resources := make(map[string]types.Resource)
 
 	// Add pipeline gateway clusters
-	pipelineGatewayHttpEndpointName := fmt.Sprintf("%s:%d", xds.PipelineGatewayDetails.Host, xds.PipelineGatewayDetails.HttpPort)
-	pipelineGatewayHttpCluster := MakeCluster(PipelineGatewayHttpClusterName, map[string]Endpoint{
+	pipelineGatewayHttpEndpointName := fmt.Sprintf("%s:%d", xds.pipelineGatewayDetails.Host, xds.pipelineGatewayDetails.HttpPort)
+	pipelineGatewayHttpCluster := makeCluster(PipelineGatewayHttpClusterName, map[string]Endpoint{
 		pipelineGatewayHttpEndpointName: {
-			UpstreamHost: xds.PipelineGatewayDetails.Host,
-			UpstreamPort: uint32(xds.PipelineGatewayDetails.HttpPort),
+			UpstreamHost: xds.pipelineGatewayDetails.Host,
+			UpstreamPort: uint32(xds.pipelineGatewayDetails.HttpPort),
 		},
 	}, false, clientSecret)
 	resources[pipelineGatewayHttpCluster.Name] = pipelineGatewayHttpCluster
 
-	pipelineGatewayGrpcEndpointName := fmt.Sprintf("%s:%d", xds.PipelineGatewayDetails.Host, xds.PipelineGatewayDetails.GrpcPort)
-	pipelineGatewayGrpcCluster := MakeCluster(PipelineGatewayGrpcClusterName, map[string]Endpoint{
+	pipelineGatewayGrpcEndpointName := fmt.Sprintf("%s:%d", xds.pipelineGatewayDetails.Host, xds.pipelineGatewayDetails.GrpcPort)
+	pipelineGatewayGrpcCluster := makeCluster(PipelineGatewayGrpcClusterName, map[string]Endpoint{
 		pipelineGatewayGrpcEndpointName: {
-			UpstreamHost: xds.PipelineGatewayDetails.Host,
-			UpstreamPort: uint32(xds.PipelineGatewayDetails.GrpcPort),
+			UpstreamHost: xds.pipelineGatewayDetails.Host,
+			UpstreamPort: uint32(xds.pipelineGatewayDetails.GrpcPort),
 		},
 	}, true, clientSecret)
 	resources[pipelineGatewayGrpcCluster.Name] = pipelineGatewayGrpcCluster
 
 	// Add Mirror clusters
 	mirrorHttpEndpointName := fmt.Sprintf("%s:%d", mirrorListenerAddress, mirrorListenerPort)
-	mirrorHttpCluster := MakeCluster(MirrorHttpClusterName, map[string]Endpoint{
+	mirrorHttpCluster := makeCluster(MirrorHttpClusterName, map[string]Endpoint{
 		mirrorHttpEndpointName: {
 			UpstreamHost: mirrorListenerAddress,
 			UpstreamPort: mirrorListenerPort,
@@ -276,7 +276,7 @@ func (xds *SeldonXDSCache) AddPermanentClusters() error {
 	resources[mirrorHttpCluster.Name] = mirrorHttpCluster
 
 	mirrorGrpcEndpointName := fmt.Sprintf("%s:%d", mirrorListenerAddress, mirrorListenerPort)
-	mirrorGprcCluster := MakeCluster(MirrorGrpcClusterName, map[string]Endpoint{
+	mirrorGprcCluster := makeCluster(MirrorGrpcClusterName, map[string]Endpoint{
 		mirrorGrpcEndpointName: {
 			UpstreamHost: mirrorListenerAddress,
 			UpstreamPort: mirrorListenerPort,
@@ -287,7 +287,7 @@ func (xds *SeldonXDSCache) AddPermanentClusters() error {
 	return xds.cds.UpdateResources(resources, nil)
 }
 
-func (xds *SeldonXDSCache) ClusterContents() []types.Resource {
+func (xds *SeldonXDSCache) ClusterResources() []types.Resource {
 	var r []types.Resource
 	for _, cluster := range xds.cds.GetResources() {
 		r = append(r, cluster)
@@ -295,25 +295,9 @@ func (xds *SeldonXDSCache) ClusterContents() []types.Resource {
 	return r
 }
 
-func (xds *SeldonXDSCache) RouteContents() []types.Resource {
-	defaultRoutes, mirrorRoutes := MakeRoutes(xds.Routes, xds.Pipelines)
+func (xds *SeldonXDSCache) RouteResources() []types.Resource {
+	defaultRoutes, mirrorRoutes := makeRoutes(xds.Routes, xds.Pipelines)
 	return []types.Resource{defaultRoutes, mirrorRoutes}
-}
-
-func (xds *SeldonXDSCache) ListenerContents() []types.Resource {
-	var r []types.Resource
-	for _, listener := range xds.lds.GetResources() {
-		r = append(r, listener)
-	}
-	return r
-}
-
-func (xds *SeldonXDSCache) SecretContents() []types.Resource {
-	var r []types.Resource
-	for _, secret := range xds.sds.GetResources() {
-		r = append(r, secret)
-	}
-	return r
 }
 
 func (xds *SeldonXDSCache) UpdateRoutes(nodeId string) error {
@@ -322,7 +306,7 @@ func (xds *SeldonXDSCache) UpdateRoutes(nodeId string) error {
 	snapshot, err := cache.NewSnapshot(
 		xds.newSnapshotVersion(), // version
 		map[resource.Type][]types.Resource{
-			resource.RouteType: xds.RouteContents(), // routes
+			resource.RouteType: xds.RouteResources(), // routes
 		})
 	if err != nil {
 		logger.Errorf("could not create snapshot %+v", snapshot)
@@ -340,21 +324,21 @@ func (xds *SeldonXDSCache) UpdateRoutes(nodeId string) error {
 
 func (xds *SeldonXDSCache) AddClusters() error {
 	var clientSecret *Secret
-	if xds.TLSActive {
-		if secret, ok := xds.Secrets[EnvoyUpstreamClientCertName]; ok {
+	if xds.tlsActive {
+		if secret, ok := xds.secrets[envoyUpstreamClientCertName]; ok {
 			clientSecret = &secret
 		}
 	}
 
 	resources := make(map[string]types.Resource)
-	for clusterName := range xds.ClustersToAdd {
+	for clusterName := range xds.clustersToAdd {
 		cluster, ok := xds.Clusters[clusterName]
 		if ok {
-			resource := MakeCluster(cluster.Name, cluster.Endpoints, cluster.Grpc, clientSecret)
+			resource := makeCluster(cluster.Name, cluster.Endpoints, cluster.Grpc, clientSecret)
 			resources[cluster.Name] = resource
 
 		}
-		delete(xds.ClustersToAdd, clusterName)
+		delete(xds.clustersToAdd, clusterName)
 	}
 
 	return xds.cds.UpdateResources(resources, nil)
@@ -362,15 +346,19 @@ func (xds *SeldonXDSCache) AddClusters() error {
 
 func (xds *SeldonXDSCache) RemoveClusters() error {
 	clustersToRemove := make([]string, 0)
-	for clusterName := range xds.ClustersToRemove {
-		cluster, ok := xds.Clusters[clusterName]
-		if !ok || len(cluster.Routes) < 1 {
+	for clusterName := range xds.clustersToRemove {
+		if xds.shouldRemoveCluster(clusterName) {
 			clustersToRemove = append(clustersToRemove, clusterName)
 		}
-		delete(xds.ClustersToRemove, clusterName)
+		delete(xds.clustersToRemove, clusterName)
 	}
 
 	return xds.cds.UpdateResources(nil, clustersToRemove)
+}
+
+func (xds *SeldonXDSCache) shouldRemoveCluster(name string) bool {
+	cluster, ok := xds.Clusters[name]
+	return !ok || len(cluster.Routes) < 1
 }
 
 func (xds *SeldonXDSCache) AddPipelineRoute(routeName string, trafficSplits []PipelineTrafficSplit, mirror *PipelineTrafficSplit) {
@@ -482,11 +470,11 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 
 	xds.Clusters[httpClusterName] = httpCluster
 	httpCluster.Routes[routeVersionKey] = true
-	xds.ClustersToAdd[httpClusterName] = true
+	xds.clustersToAdd[httpClusterName] = true
 
 	xds.Clusters[grpcClusterName] = grpcCluster
 	grpcCluster.Routes[routeVersionKey] = true
-	xds.ClustersToAdd[grpcClusterName] = true
+	xds.clustersToAdd[grpcClusterName] = true
 }
 
 func (xds *SeldonXDSCache) RemoveRoute(routeName string) error {
@@ -522,7 +510,7 @@ func (xds *SeldonXDSCache) removeRouteFromCluster(route Route, cluster TrafficSp
 		delete(cluster.Routes, RouteVersionKey{RouteName: route.RouteName, ModelName: split.ModelName, Version: split.ModelVersion})
 		if len(cluster.Routes) == 0 {
 			delete(xds.Clusters, clusterName)
-			xds.ClustersToRemove[clusterName] = true
+			xds.clustersToRemove[clusterName] = true
 		}
 		return nil
 	}

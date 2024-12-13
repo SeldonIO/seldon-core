@@ -174,6 +174,7 @@ func (p *IncrementalProcessor) handleModelEvents(event coordinator.ModelEventMsg
 }
 
 func (p *IncrementalProcessor) updateEnvoy() error {
+	// sequencing is important here - send clusters before updating routes and removing old clusters
 	err := p.xdsCache.AddClusters()
 	if err != nil {
 		return err

@@ -60,7 +60,7 @@ var (
 	pipelineRoutePathGrpc = &route.RouteMatch_Prefix{Prefix: "/inference.GRPCInferenceService"}
 )
 
-func MakeHTTPListener(listenerName, address string,
+func makeHTTPListener(listenerName, address string,
 	port uint32,
 	routeConfigurationName string,
 	serverSecret *Secret,
@@ -139,7 +139,7 @@ func MakeHTTPListener(listenerName, address string,
 	}
 }
 
-func MakeCluster(clusterName string, eps map[string]Endpoint, isGrpc bool, clientSecret *Secret) *cluster.Cluster {
+func makeCluster(clusterName string, eps map[string]Endpoint, isGrpc bool, clientSecret *Secret) *cluster.Cluster {
 	if isGrpc {
 		// Need to ensure http 2 is used
 		// https://github.com/envoyproxy/go-control-plane/blob/d1a10d9a9366e8ab48f3f76b44a35930bac46fec/envoy/extensions/upstreams/http/v3/http_protocol_options.pb.go#L165-L166
@@ -161,7 +161,7 @@ func MakeCluster(clusterName string, eps map[string]Endpoint, isGrpc bool, clien
 			ConnectTimeout:                durationpb.New(5 * time.Second),
 			ClusterDiscoveryType:          &cluster.Cluster_Type{Type: cluster.Cluster_STRICT_DNS},
 			LbPolicy:                      cluster.Cluster_LEAST_REQUEST,
-			LoadAssignment:                MakeEndpoint(clusterName, eps),
+			LoadAssignment:                makeEndpoint(clusterName, eps),
 			DnsLookupFamily:               cluster.Cluster_V4_ONLY,
 			TypedExtensionProtocolOptions: map[string]*anypb.Any{"envoy.extensions.upstreams.http.v3.HttpProtocolOptions": hpoMarshalled},
 			TransportSocket:               createUpstreamTransportSocket(clientSecret),
@@ -172,14 +172,14 @@ func MakeCluster(clusterName string, eps map[string]Endpoint, isGrpc bool, clien
 			ConnectTimeout:       durationpb.New(5 * time.Second),
 			ClusterDiscoveryType: &cluster.Cluster_Type{Type: cluster.Cluster_STRICT_DNS},
 			LbPolicy:             cluster.Cluster_LEAST_REQUEST,
-			LoadAssignment:       MakeEndpoint(clusterName, eps),
+			LoadAssignment:       makeEndpoint(clusterName, eps),
 			DnsLookupFamily:      cluster.Cluster_V4_ONLY,
 			TransportSocket:      createUpstreamTransportSocket(clientSecret),
 		}
 	}
 }
 
-func MakeEndpoint(clusterName string, eps map[string]Endpoint) *endpoint.ClusterLoadAssignment {
+func makeEndpoint(clusterName string, eps map[string]Endpoint) *endpoint.ClusterLoadAssignment {
 	var endpoints []*endpoint.LbEndpoint
 
 	for _, e := range eps {
@@ -210,7 +210,7 @@ func MakeEndpoint(clusterName string, eps map[string]Endpoint) *endpoint.Cluster
 	}
 }
 
-func MakeRoutes(routes map[string]Route, pipelines map[string]PipelineRoute) (*route.RouteConfiguration, *route.RouteConfiguration) {
+func makeRoutes(routes map[string]Route, pipelines map[string]PipelineRoute) (*route.RouteConfiguration, *route.RouteConfiguration) {
 	rts := make([]*route.Route, 2*(len(routes)+len(pipelines))+
 		countModelStickySessions(routes)+
 		countPipelineStickySessions(pipelines))

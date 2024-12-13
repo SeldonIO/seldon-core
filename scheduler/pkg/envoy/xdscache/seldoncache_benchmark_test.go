@@ -42,7 +42,7 @@ func benchmarkRouteContents(b *testing.B, numResources uint) {
 	// Prevent compiler optimising away function calls
 	var r []types.Resource
 	for i := 0; i < b.N; i++ {
-		r = x.RouteContents()
+		r = x.RouteResources()
 	}
 	results = r
 }
