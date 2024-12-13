@@ -1,3 +1,23 @@
+---
+icon: gera-complex-code
+cover: 0
+layout:
+  cover:
+    visible: true
+    size: full
+  title:
+    visible: true
+  description:
+    visible: false
+  tableOfContents:
+    visible: true
+  outline:
+    visible: true
+  pagination:
+    visible: true
+---
+
+
 # About
 
 Seldon Core 2 APIs provide a state of the art solution for machine learning inference which
