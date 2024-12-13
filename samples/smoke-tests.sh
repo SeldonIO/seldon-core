@@ -28,13 +28,13 @@ function load() {
   else
       if [ $1 == "model" ]
       then
-            seldon model load -f $2
+            SELDON_FORCE_CONTROL_PLANE=true seldon model load -f $2
       elif [ $1 == "pipeline" ]
       then
-            seldon pipeline load -f $2
+            SELDON_FORCE_CONTROL_PLANE=true seldon pipeline load -f $2
       elif [ $1 == "experiment" ]
       then
-            seldon experiment start -f $2
+            SELDON_FORCE_CONTROL_PLANE=true seldon experiment start -f $2
       fi
   fi
 }
@@ -47,13 +47,13 @@ function unload() {
   else
       if [ $1 == "model" ]
       then
-            seldon model unload $2
+            SELDON_FORCE_CONTROL_PLANE=true seldon model unload $2
       elif [ $1 == "pipeline" ]
       then
-            seldon pipeline unload $2
+            SELDON_FORCE_CONTROL_PLANE=true seldon pipeline unload $2
       elif [ $1 == "experiment" ]
       then
-            seldon experiment stop $2
+            SELDON_FORCE_CONTROL_PLANE=true seldon experiment stop $2
       fi
   fi
 }
@@ -74,10 +74,10 @@ function status() {
   else
       if [ $1 == "model" ]
       then
-            seldon model status $2 -w ModelAvailable | jq -M .
+            seldon model status $2 -w ModelAvailable -t 10 | jq -M .
       elif [ $1 == "pipeline" ]
       then
-            seldon pipeline status $2 -w PipelineReady | jq -M .
+            seldon pipeline status $2 -w PipelineReady -t 10 | jq -M .
       elif [ $1 == "experiment" ]
       then
             seldon experiment status $2 -w | jq -M .
@@ -189,9 +189,9 @@ unload pipeline trigger-joins ./pipelines/trigger-joins.yaml
 unload model mul10 ./models/mul10.yaml
 unload model add10 ./models/add10.yaml
 
+sleep $sleepTime
 
 # MLServer
-sleep $sleepTime
 load model ./models/sklearn-iris-gs.yaml
 status model iris
 seldon model infer iris '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}' 
@@ -199,6 +199,7 @@ seldon model infer iris --inference-mode grpc \
    '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' | jq -M .
 unload model iris ./models/sklearn-iris-gs.yaml
 
+sleep $sleepTime
 
 # Experiments
 load model ./models/sklearn1.yaml

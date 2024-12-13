@@ -2,11 +2,15 @@ apiVersion: kafka.strimzi.io/v1beta2
 kind: Kafka
 metadata:
   name: {{ .Values.cluster.name }}
+  annotations:
+    strimzi.io/node-pools: enabled
+    strimzi.io/kraft: enabled
 spec:
   entityOperator:
     userOperator: {}
   kafka:
     version: {{ .Values.cluster.version }}
+    metadataVersion: {{ .Values.cluster.metadataVersion }}
     replicas: {{ .Values.broker.replicas }}
     listeners:
       {{- if .Values.broker.plaintext.enabled }}
@@ -29,12 +33,6 @@ spec:
     livenessProbe:
       initialDelaySeconds: {{ .Values.broker.liveness.initialDelaySeconds }}
       timeoutSeconds: {{ .Values.broker.liveness.timeoutSeconds }}
-    resources:
-      requests:
-        cpu: '{{ .Values.broker.resources.cpu }}'
-        memory: '{{ .Values.broker.resources.memory }}'
-      limits:
-        memory: '{{ .Values.broker.resources.memory }}'
     config:
       auto.create.topics.enable: {{ .Values.topic.autoCreate }}
       offsets.topic.replication.factor: {{ .Values.topic.offsetReplicationFactor }}
@@ -42,40 +40,10 @@ spec:
       transaction.state.log.min.isr: {{ .Values.topic.txStateMinISR }}
       default.replication.factor: {{ .Values.topic.defaultReplicationFactor }}
       min.insync.replicas: {{ .Values.topic.minISR }}
-      inter.broker.protocol.version: {{ .Values.broker.interBrokerProtocolVersion }}
       message.max.bytes: {{ .Values.broker.messageMaxBytes }}
-    template:
-      pod:
-        tmpDirSizeLimit: {{ .Values.broker.tmpDirSizeLimit }}
-    storage:
-      type: jbod
-      volumes:
-      - id: 0
-        type: persistent-claim
-        size: {{ .Values.broker.pvcSize }}
-        deleteClaim: false
     metricsConfig:
       type: jmxPrometheusExporter
       valueFrom:
         configMapKeyRef:
           name: kafka-metrics
           key: kafka-metrics-config.yml
-  # zookeeper settings should not be use in case of STRIMZI_FEATURE_GATES=+UseStrimziPodSets,+UseKRaft (raft)
-  # to enable raft run:
-  # `kubectl set env deployment/strimzi-cluster-operator STRIMZI_FEATURE_GATES=+UseStrimziPodSets,+UseKRaft -n kafka`
-  # which is the default with ansible install
-  zookeeper:
-    replicas: {{ .Values.zookeeper.replicas }}
-    readinessProbe:
-      initialDelaySeconds: {{ .Values.zookeeper.readiness.initialDelaySeconds }}
-      timeoutSeconds: {{ .Values.zookeeper.readiness.timeoutSeconds }}
-    livenessProbe:
-      initialDelaySeconds: {{ .Values.zookeeper.liveness.initialDelaySeconds }}
-      timeoutSeconds: {{ .Values.zookeeper.liveness.timeoutSeconds }}
-    storage:
-      type: persistent-claim
-      size: {{ .Values.zookeeper.pvcSize }}
-      deleteClaim: false
-  kafkaExporter:
-    topicRegex: ".*"
-    groupRegex: ".*"

@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-adapter
+data:
+  config.yaml: |-
+    "rules":
+    -
+      "seriesQuery": |
+         {__name__="seldon_model_infer_total",namespace!=""}
+      "resources":
+        "overrides":
+          "model": {group: "mlops.seldon.io", resource: "model"}
+          "server": {group: "mlops.seldon.io", resource: "server"}
+          "pod": {resource: "pod"}
+          "namespace": {resource: "namespace"}
+      "name":
+        "matches": "seldon_model_infer_total"
+        "as": "infer_rps"
+      "metricsQuery": |
+        sum by (<<.GroupBy>>) (
+          rate (
+            <<.Series>>{<<.LabelMatchers>>}[{{ seldon_prometheus_adapter_config_rate }}]
+          )
+        )
