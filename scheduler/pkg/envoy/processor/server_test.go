@@ -2,7 +2,6 @@ package processor
 
 import (
 	"context"
-	"reflect"
 	"slices"
 	"strconv"
 	"testing"
@@ -30,7 +29,6 @@ var permanentClusterNames = []string{"pipelinegateway_http", "pipelinegateway_gr
 
 func TestFetch(t *testing.T) {
 	g := NewGomegaWithT(t)
-	// The timeout might be a bit conservative when running as part of the CI test suite
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -74,82 +72,61 @@ func TestFetch(t *testing.T) {
 }
 
 func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) func(t *testing.T) {
-	secondFetch := append(permanentClusterNames, "model_1_grpc", "model_1_http")
-
-	expectedClusters := make([][]string, 2)
-
-	expectedClusters[0] = permanentClusterNames
-	expectedClusters[1] = secondFetch
+	firstFetch := append(permanentClusterNames, "model_1_grpc", "model_1_http")
 
 	return func(t *testing.T) {
+
+		fecthAndVerifyResponse(permanentClusterNames, c, g)
+
 		ops := []func(inc *IncrementalProcessor, g *WithT){
 			createTestServer("server", 1),
 			createTestModel("model", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
 		}
-
-		go func() {
-			for _, op := range ops {
-				op(inc, g)
-			}
-		}()
-
-		for _, expectedClusterNames := range expectedClusters {
-			resp, err := c.Fetch()
-			g.Expect(err).To(BeNil())
-			actualClusterNames := make([]string, 0)
-			for _, r := range resp.Resources {
-				cluster := &clusterv3.Cluster{}
-				err := anypb.UnmarshalTo(r, cluster, proto.UnmarshalOptions{})
-				g.Expect(err).To(BeNil())
-				actualClusterNames = append(actualClusterNames, cluster.Name)
-			}
-			slices.Sort(actualClusterNames)
-			slices.Sort(expectedClusterNames)
-			g.Expect(reflect.DeepEqual(actualClusterNames, expectedClusterNames)).To(BeTrue(), "%v does not equal %v", actualClusterNames, expectedClusterNames)
-
-			err = c.Ack()
-			g.Expect(err).To(BeNil())
+		for _, op := range ops {
+			op(inc, g)
 		}
+		fecthAndVerifyResponse(firstFetch, c, g)
 	}
 }
 
 func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSClient) func(t *testing.T) {
-	firstFetch := append(permanentClusterNames, "model_1_grpc", "model_1_http", "model_2_grpc", "model_2_http")
+	firstFetch := append(permanentClusterNames, "model_1_grpc", "model_1_http")
 	secondFetch := append(permanentClusterNames, "model_2_grpc", "model_2_http")
 
-	expectedClusters := make([][]string, 2)
-
-	expectedClusters[0] = firstFetch
-	expectedClusters[1] = secondFetch
-
 	return func(t *testing.T) {
+
+		fecthAndVerifyResponse(firstFetch, c, g)
+
 		ops := []func(inc *IncrementalProcessor, g *WithT){
 			createTestModel("model", "server", 1, []int{0}, 2, []store.ModelReplicaState{store.Available}),
 		}
-
 		for _, op := range ops {
 			op(inc, g)
 		}
-
-		for _, expectedClusterNames := range expectedClusters {
-
-			resp, err := c.Fetch()
-			g.Expect(err).To(BeNil())
-			actualClusterNames := make([]string, 0)
-			for _, r := range resp.Resources {
-				cluster := &clusterv3.Cluster{}
-				err := anypb.UnmarshalTo(r, cluster, proto.UnmarshalOptions{})
-				g.Expect(err).To(BeNil())
-				actualClusterNames = append(actualClusterNames, cluster.Name)
-			}
-			slices.Sort(actualClusterNames)
-			slices.Sort(expectedClusterNames)
-			g.Expect(reflect.DeepEqual(actualClusterNames, expectedClusterNames)).To(BeTrue())
-
-			err = c.Ack()
-			g.Expect(err).To(BeNil())
-		}
+		fecthAndVerifyResponse(secondFetch, c, g)
 	}
+}
+
+func fecthAndVerifyResponse(expectedClusterNames []string, c client.ADSClient, g *WithT) {
+	slices.Sort(expectedClusterNames)
+	g.Eventually(fetch(c, g)).Within(5 * time.Second).ProbeEvery(100 * time.Millisecond).
+		Should(ConsistOf(expectedClusterNames))
+}
+
+func fetch(c client.ADSClient, g *WithT) []string {
+	resp, err := c.Fetch()
+	g.Expect(err).To(BeNil())
+	actualClusterNames := make([]string, 0)
+	for _, r := range resp.Resources {
+		cluster := &clusterv3.Cluster{}
+		err := anypb.UnmarshalTo(r, cluster, proto.UnmarshalOptions{})
+		g.Expect(err).To(BeNil())
+		actualClusterNames = append(actualClusterNames, cluster.Name)
+	}
+	slices.Sort(actualClusterNames)
+	err = c.Ack()
+	g.Expect(err).To(BeNil())
+	return actualClusterNames
 }
 
 func startAdsServer(inc *IncrementalProcessor, port uint) error {
