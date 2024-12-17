@@ -40,21 +40,24 @@ const (
 	envoyDownstreamClientCertName = "downstream_client"
 	envoyUpstreamServerCertName   = "upstream_server"
 	envoyUpstreamClientCertName   = "upstream_client"
-	snapshotType                  = "snapshot"
 )
 
 type SeldonXDSCache struct {
+	// https://github.com/envoyproxy/go-control-plane?tab=readme-ov-file#resource-caching
+	// each envoy resourece is managed independently, using ADS (aggregated discovery service), so
+	// updates can be sequenced in a way that reduces the susceptibility to "no cluster found"
+	// responses
 	muxCache      *cache.MuxCache
-	snapshotCache cache.SnapshotCache
-	cds           *cache.LinearCache
-	lds           *cache.LinearCache
-	sds           *cache.LinearCache
+	snapshotCache cache.SnapshotCache // routes
+	cds           *cache.LinearCache  // clusters
+	lds           *cache.LinearCache  // listener
+	sds           *cache.LinearCache  // secrets
 
 	Clusters               map[string]Cluster
 	Pipelines              map[string]PipelineRoute
 	Routes                 map[string]Route
-	clustersToAdd          map[string]bool
-	clustersToRemove       map[string]bool
+	clustersToAdd          map[string]struct{}
+	clustersToRemove       map[string]struct{}
 	pipelineGatewayDetails *PipelineGatewayDetails
 	secrets                map[string]Secret
 	logger                 logrus.FieldLogger
@@ -73,8 +76,8 @@ func NewSeldonXDSCache(logger logrus.FieldLogger, pipelineGatewayDetails *Pipeli
 		Clusters:               make(map[string]Cluster),
 		Pipelines:              make(map[string]PipelineRoute),
 		Routes:                 make(map[string]Route),
-		clustersToAdd:          make(map[string]bool),
-		clustersToRemove:       make(map[string]bool),
+		clustersToAdd:          make(map[string]struct{}),
+		clustersToRemove:       make(map[string]struct{}),
 		pipelineGatewayDetails: pipelineGatewayDetails,
 		secrets:                make(map[string]Secret),
 		logger:                 logger.WithField("source", "SeldonXDSCache"),
@@ -111,6 +114,7 @@ func (xds *SeldonXDSCache) newSnapshotVersion() string {
 }
 
 func (xds *SeldonXDSCache) init() error {
+	const snapshotType = "snapshot"
 	linearLogger := xds.logger.WithField("source", "LinearCache")
 	snapshotLogger := xds.logger.WithField("source", "SnapshotCache")
 
@@ -356,6 +360,7 @@ func (xds *SeldonXDSCache) RemoveClusters() error {
 	return xds.cds.UpdateResources(nil, clustersToRemove)
 }
 
+// updates are batched - always check if the state has changed
 func (xds *SeldonXDSCache) shouldRemoveCluster(name string) bool {
 	cluster, ok := xds.Clusters[name]
 	return !ok || len(cluster.Routes) < 1
@@ -470,11 +475,11 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 
 	xds.Clusters[httpClusterName] = httpCluster
 	httpCluster.Routes[routeVersionKey] = true
-	xds.clustersToAdd[httpClusterName] = true
+	xds.clustersToAdd[httpClusterName] = struct{}{}
 
 	xds.Clusters[grpcClusterName] = grpcCluster
 	grpcCluster.Routes[routeVersionKey] = true
-	xds.clustersToAdd[grpcClusterName] = true
+	xds.clustersToAdd[grpcClusterName] = struct{}{}
 }
 
 func (xds *SeldonXDSCache) RemoveRoute(routeName string) error {
@@ -510,7 +515,7 @@ func (xds *SeldonXDSCache) removeRouteFromCluster(route Route, cluster TrafficSp
 		delete(cluster.Routes, RouteVersionKey{RouteName: route.RouteName, ModelName: split.ModelName, Version: split.ModelVersion})
 		if len(cluster.Routes) == 0 {
 			delete(xds.Clusters, clusterName)
-			xds.clustersToRemove[clusterName] = true
+			xds.clustersToRemove[clusterName] = struct{}{}
 		}
 		return nil
 	}

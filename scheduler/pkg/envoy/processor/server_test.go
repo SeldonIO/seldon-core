@@ -30,7 +30,8 @@ var permanentClusterNames = []string{"pipelinegateway_http", "pipelinegateway_gr
 
 func TestFetch(t *testing.T) {
 	g := NewGomegaWithT(t)
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	// The timeout might be a bit conservative when running as part of the CI test suite
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	logger := log.New()
@@ -81,7 +82,6 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 	expectedClusters[1] = secondFetch
 
 	return func(t *testing.T) {
-
 		ops := []func(inc *IncrementalProcessor, g *WithT){
 			createTestServer("server", 1),
 			createTestModel("model", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
@@ -121,7 +121,6 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 	expectedClusters[1] = secondFetch
 
 	return func(t *testing.T) {
-
 		ops := []func(inc *IncrementalProcessor, g *WithT){
 			createTestModel("model", "server", 1, []int{0}, 2, []store.ModelReplicaState{store.Available}),
 		}
@@ -148,7 +147,6 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 			err = c.Ack()
 			g.Expect(err).To(BeNil())
 		}
-
 	}
 }
 
