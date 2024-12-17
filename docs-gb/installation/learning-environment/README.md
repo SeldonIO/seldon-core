@@ -1,5 +1,5 @@
 ---
-description: Installing Seldon Core 2 in a learning environment.
+description: Install Seldon Core 2 in a local learning environment.
 ---
 
 # Learning Environment
