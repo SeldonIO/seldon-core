@@ -2,7 +2,8 @@
 
 cluster:
   name: "seldon"
-  version: "3.3.1"
+  version: "3.8.0"
+  metadataVersion: "3.8.0"
 
 metrics:
   enabled: true
@@ -30,10 +31,10 @@ broker:
     initialDelaySeconds: 15
     timeoutSeconds: 5
 
-  interBrokerProtocolVersion: "3.3"
-
   tmpDirSizeLimit: 100Mi
 
+  kraftMetadataSizeLimit: 1Gi
+  
   pvcSize: 100Gi
 
   messageMaxBytes: 1000000000
@@ -50,15 +51,3 @@ topic:
   defaultReplicationFactor: 1
   minISR: 1
 
-zookeeper:
-  replicas: 1
-
-  readiness:
-    initialDelaySeconds: 15
-    timeoutSeconds: 5
-
-  liveness:
-    initialDelaySeconds: 15
-    timeoutSeconds: 5
-
-  pvcSize: 100Gi
