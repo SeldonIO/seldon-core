@@ -21,7 +21,6 @@ import (
 	endpointv3 "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
-	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/format"
 	log "github.com/sirupsen/logrus"
@@ -291,9 +290,11 @@ func TestUpdateEnvoyForModelVersion(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2})
+			g.Expect(err).To(BeNil())
 			inc := IncrementalProcessor{
 				logger:   log.New(),
-				xdsCache: xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{}),
+				xdsCache: xdsCache,
 			}
 			for _, mv := range test.modelVersions {
 				inc.updateEnvoyForModelVersion(mv.GetMeta().GetName(), mv, test.server, test.traffic, false)
@@ -342,15 +343,15 @@ func TestRollingUpdate(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			modelStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil)
+			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2})
+			g.Expect(err).To(BeNil())
 			inc := &IncrementalProcessor{
-				cache:            cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
 				logger:           log.New(),
-				xdsCache:         xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
+				xdsCache:         xdsCache,
 				modelStore:       modelStore,
 				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil, nil),
 				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil, modelStore),
 			}
-			inc.xdsCache.AddPermanentListeners()
 			for _, op := range test.ops {
 				op(inc, g)
 			}
@@ -412,15 +413,15 @@ func TestDraining(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			modelStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil)
+			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2})
+			g.Expect(err).To(BeNil())
 			inc := &IncrementalProcessor{
-				cache:            cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
 				logger:           log.New(),
-				xdsCache:         xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
+				xdsCache:         xdsCache,
 				modelStore:       modelStore,
 				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil, nil),
 				pipelineHandler:  pipeline.NewPipelineStore(log.New(), nil, modelStore),
 			}
-			inc.xdsCache.AddPermanentListeners()
 			for _, op := range test.ops {
 				op(inc, g)
 			}
@@ -556,16 +557,16 @@ func TestModelSync(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			modelStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil)
+			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2})
+			g.Expect(err).To(BeNil())
 			inc := &IncrementalProcessor{
-				cache:                cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
 				logger:               log.New(),
-				xdsCache:             xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
+				xdsCache:             xdsCache,
 				modelStore:           modelStore,
 				experimentServer:     experiment.NewExperimentServer(log.New(), nil, nil, nil),
 				pipelineHandler:      pipeline.NewPipelineStore(log.New(), nil, modelStore),
 				pendingModelVersions: test.pendingModelVersions,
 			}
-			inc.xdsCache.AddPermanentListeners()
 			for _, op := range test.ops {
 				op(inc, g)
 			}
@@ -605,6 +606,21 @@ func TestEnvoySettings(t *testing.T) {
 
 	getStrPtr := func(t string) *string { return &t }
 	tests := []test{
+		{
+			name: "experiment with deleted model",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), nil),
+				removeTestModel("model2", 1, "server", 1),
+			},
+			numExpectedClusters: 2, // model2 should be removed from the clusters (server 1)
+			numExpectedRoutes:   2, // model2 should be removed from the routes
+			experimentActive:    false,
+			experimentExists:    true,
+			snapshotFilename:    "experiment-deleted-model",
+		},
 		{
 			name: "One model",
 			ops: []func(inc *IncrementalProcessor, g *WithT){
@@ -690,21 +706,7 @@ func TestEnvoySettings(t *testing.T) {
 			},
 			snapshotFilename: "experiment-new-model-version",
 		},
-		{
-			name: "experiment with deleted model",
-			ops: []func(inc *IncrementalProcessor, g *WithT){
-				createTestServer("server", 2),
-				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
-				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-				createTestExperiment("exp", []string{"model1", "model2"}, getStrPtr("model1"), nil),
-				removeTestModel("model2", 1, "server", 1),
-			},
-			numExpectedClusters: 2, // model2 should be removed from the clusters (server 1)
-			numExpectedRoutes:   2, // model2 should be removed from the routes
-			experimentActive:    false,
-			experimentExists:    true,
-			snapshotFilename:    "experiment-deleted-model",
-		},
+
 		{
 			name: "delete experiment",
 			ops: []func(inc *IncrementalProcessor, g *WithT){
@@ -799,10 +801,11 @@ func TestEnvoySettings(t *testing.T) {
 			logger := log.New()
 			eventHub, _ := coordinator.NewEventHub(logger)
 			memoryStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), eventHub)
+			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2})
+			g.Expect(err).To(BeNil())
 			inc := &IncrementalProcessor{
-				cache:            cache.NewSnapshotCache(false, cache.IDHash{}, log.New()),
-				logger:           log.New(),
-				xdsCache:         xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}),
+				logger:           logger.WithField("source", "IncrementalProcessor"),
+				xdsCache:         xdsCache,
 				modelStore:       memoryStore,
 				experimentServer: experiment.NewExperimentServer(log.New(), eventHub, memoryStore, nil),
 				pipelineHandler:  pipeline.NewPipelineStore(log.New(), eventHub, memoryStore),
@@ -826,12 +829,14 @@ func TestEnvoySettings(t *testing.T) {
 				inc.handlePipelinesEvents,
 			)
 
-			inc.xdsCache.AddPermanentListeners()
-			inc.xdsCache.AddPermanentClusters()
 			for _, op := range test.ops {
 				op(inc, g)
 				time.Sleep(50 * time.Millisecond) // to allow event handlers to process
 			}
+
+			// clusters won't be removed until the next time updateEnvoy is called
+			err = inc.updateEnvoy()
+			g.Expect(err).To(BeNil())
 
 			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.numExpectedClusters))
 			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.numExpectedRoutes))
@@ -861,10 +866,10 @@ func TestEnvoySettings(t *testing.T) {
 
 			routeFilename := test.snapshotFilename + "-routes.json"
 			if generateSnapshots {
-				createSnapshot(g, inc.xdsCache.RouteContents(), routeFilename)
+				createSnapshot(g, inc.xdsCache.RouteResources(), routeFilename)
 			}
 
-			resultingRoutes := getResultingRoutes(inc.xdsCache.RouteContents())
+			resultingRoutes := getResultingRoutes(inc.xdsCache.RouteResources())
 
 			data, err := os.ReadFile(snapshots_directory_name + "/" + routeFilename)
 			g.Expect(err).To(BeNil())
@@ -893,10 +898,10 @@ func TestEnvoySettings(t *testing.T) {
 
 			clusterFilename := test.snapshotFilename + "-clusters.json"
 			if generateSnapshots {
-				createSnapshot(g, inc.xdsCache.ClusterContents(), clusterFilename)
+				createSnapshot(g, inc.xdsCache.ClusterResources(), clusterFilename)
 			}
 
-			resultingClusters := getResultingClusters(inc.xdsCache.ClusterContents())
+			resultingClusters := getResultingClusters(inc.xdsCache.ClusterResources())
 
 			data, err = os.ReadFile(snapshots_directory_name + "/" + clusterFilename)
 			g.Expect(err).To(BeNil())

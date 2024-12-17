@@ -17,10 +17,6 @@ import (
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 )
 
-const (
-	xdsClusterName = "xds_cluster"
-)
-
 func MakeSecretResource(name string, validationName string, certStore tls.CertificateStoreHandler) []*tlsv3.Secret {
 	var secrets []*tlsv3.Secret
 
@@ -54,22 +50,8 @@ func MakeSecretResource(name string, validationName string, certStore tls.Certif
 }
 
 var configSource = &core.ConfigSource{
-	ResourceApiVersion: core.ApiVersion_V3,
-	ConfigSourceSpecifier: &core.ConfigSource_ApiConfigSource{
-		ApiConfigSource: &core.ApiConfigSource{
-			ApiType:             core.ApiConfigSource_GRPC,
-			TransportApiVersion: core.ApiVersion_V3,
-			GrpcServices: []*core.GrpcService{
-				{
-					TargetSpecifier: &core.GrpcService_EnvoyGrpc_{
-						EnvoyGrpc: &core.GrpcService_EnvoyGrpc{
-							ClusterName: xdsClusterName,
-						},
-					},
-				},
-			},
-		},
-	},
+	ResourceApiVersion:    core.ApiVersion_V3,
+	ConfigSourceSpecifier: &core.ConfigSource_Ads{},
 }
 
 func createDownstreamTransportSocket(serverSecret *Secret) *core.TransportSocket {

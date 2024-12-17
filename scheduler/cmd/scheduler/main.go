@@ -10,7 +10,6 @@ the Change License after the Change Date as each is defined in accordance with t
 package main
 
 import (
-	"context"
 	"flag"
 	"math/rand"
 	"os"
@@ -18,8 +17,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
-	envoyServerControlPlaneV3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
 	log "github.com/sirupsen/logrus"
 
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
@@ -166,9 +163,6 @@ func main() {
 	defer eventHub.Close()
 	go makeSignalHandler(logger, done)
 
-	// Create a cache
-	xdsCache := cache.NewSnapshotCache(true, cache.IDHash{}, logger)
-
 	tracer, err := tracing.NewTraceProvider("seldon-scheduler", &tracingConfigPath, logger)
 	if err != nil {
 		logger.WithError(err).Fatalf("Failed to configure otel tracer")
@@ -189,7 +183,7 @@ func main() {
 	}
 
 	// Create envoy incremental processor
-	_, err = processor.NewIncrementalProcessor(xdsCache, nodeID, logger, ss, es, ps, eventHub, &pipelineGatewayDetails, cleaner)
+	incrementalProcessor, err := processor.NewIncrementalProcessor(nodeID, logger, ss, es, ps, eventHub, &pipelineGatewayDetails, cleaner)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to create incremental processor")
 	}
@@ -266,11 +260,8 @@ func main() {
 	// extra wait to allow routes state to get created
 	time.Sleep(xDSWaitTimeout)
 
-	// Start envoy xDS server, this is done after the scheduler is ready
-	// so that the xDS server can start sending valid updates to envoy.
-	ctx := context.Background()
-	srv := envoyServerControlPlaneV3.NewServer(ctx, xdsCache, nil)
-	xdsServer := processor.NewXDSServer(srv, logger)
+	// create the processor separately, so it receives all updates
+	xdsServer := processor.NewXDSServer(incrementalProcessor, logger)
 	err = xdsServer.StartXDSServer(envoyPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start envoy xDS server")

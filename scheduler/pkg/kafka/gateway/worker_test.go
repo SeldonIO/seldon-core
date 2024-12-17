@@ -200,7 +200,8 @@ func createInferWorkerWithMockConn(
 	logger log.FieldLogger,
 	serverConfig *InferenceServerConfig,
 	modelConfig *KafkaModelConfig,
-	g *WithT) (*InferKafkaHandler, *InferWorker) {
+	g *WithT,
+) (*InferKafkaHandler, *InferWorker) {
 	conn, _ := grpc.NewClient("passthrough://", grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 		return grpcServer.listener.Dial()
 	}), grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -446,7 +447,7 @@ func TestProcessRequest(t *testing.T) {
 			timeout: util.InferTimeoutDefault,
 		},
 		{
-			name: "grpc request with json header treated as json", //TODO maybe fail in this case as it will fail at server
+			name: "grpc request with json header treated as json", // TODO maybe fail in this case as it will fail at server
 			job: &InferWork{
 				modelName: "foo",
 				headers:   map[string]string{HeaderKeyType: HeaderValueJsonReq},

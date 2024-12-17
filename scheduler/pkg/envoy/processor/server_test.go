@@ -5,16 +5,13 @@ import (
 	"reflect"
 	"slices"
 	"strconv"
-	"sync"
 	"testing"
 	"time"
 
 	clusterv3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
-	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	client "github.com/envoyproxy/go-control-plane/pkg/client/sotw/v3"
 	resource "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
-	envoyServerControlPlaneV3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -29,6 +26,8 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
+var permanentClusterNames = []string{"pipelinegateway_http", "pipelinegateway_grpc", "mirror_http", "mirror_grpc"}
+
 func TestFetch(t *testing.T) {
 	g := NewGomegaWithT(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -36,31 +35,29 @@ func TestFetch(t *testing.T) {
 
 	logger := log.New()
 
-	snapCache := cache.NewSnapshotCache(true, cache.IDHash{}, logger)
-
-	port, err := testing_utils.GetFreePortForTest()
-	if err != nil {
-		t.Fatal(err)
-	}
-	go func() {
-		err := startAdsServer(ctx, snapCache, uint(port))
-		g.Expect(err).To(BeNil())
-	}()
-
 	memoryStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), nil)
 	pipelineHandler := pipeline.NewPipelineStore(logger, nil, memoryStore)
 
+	xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{})
+	g.Expect(err).To(BeNil())
 	inc := &IncrementalProcessor{
-		cache:            snapCache,
 		logger:           logger,
-		xdsCache:         xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{}),
+		xdsCache:         xdsCache,
 		pipelineHandler:  pipelineHandler,
 		modelStore:       memoryStore,
 		experimentServer: experiment.NewExperimentServer(logger, nil, memoryStore, pipelineHandler),
 		nodeID:           "node_1",
 	}
 
-	err = inc.init()
+	port, err := testing_utils.GetFreePortForTest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	go func() {
+		err := startAdsServer(inc, uint(port))
+		g.Expect(err).To(BeNil())
+	}()
+
 	g.Expect(err).To(BeNil())
 
 	conn, err := grpc.NewClient(":"+strconv.Itoa(port), grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -76,11 +73,14 @@ func TestFetch(t *testing.T) {
 }
 
 func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) func(t *testing.T) {
-	expectedClusterNames := []string{"pipelinegateway_http", "pipelinegateway_grpc", "mirror_http", "mirror_grpc", "model_1_grpc", "model_1_http"}
+	secondFetch := append(permanentClusterNames, "model_1_grpc", "model_1_http")
+
+	expectedClusters := make([][]string, 2)
+
+	expectedClusters[0] = permanentClusterNames
+	expectedClusters[1] = secondFetch
 
 	return func(t *testing.T) {
-		wg := sync.WaitGroup{}
-		wg.Add(1)
 
 		ops := []func(inc *IncrementalProcessor, g *WithT){
 			createTestServer("server", 1),
@@ -91,8 +91,7 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 			op(inc, g)
 		}
 
-		go func() {
-			// watch for configs
+		for _, expectedClusterNames := range expectedClusters {
 			resp, err := c.Fetch()
 			g.Expect(err).To(BeNil())
 			actualClusterNames := make([]string, 0)
@@ -108,19 +107,20 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 
 			err = c.Ack()
 			g.Expect(err).To(BeNil())
-			wg.Done()
-		}()
-
-		wg.Wait()
+		}
 	}
 }
 
 func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSClient) func(t *testing.T) {
-	expectedClusterNames := []string{"pipelinegateway_http", "pipelinegateway_grpc", "mirror_http", "mirror_grpc", "model_2_grpc", "model_2_http"}
+	firstFetch := append(permanentClusterNames, "model_1_grpc", "model_1_http", "model_2_grpc", "model_2_http")
+	secondFetch := append(permanentClusterNames, "model_2_grpc", "model_2_http")
+
+	expectedClusters := make([][]string, 2)
+
+	expectedClusters[0] = firstFetch
+	expectedClusters[1] = secondFetch
 
 	return func(t *testing.T) {
-		wg := sync.WaitGroup{}
-		wg.Add(1)
 
 		ops := []func(inc *IncrementalProcessor, g *WithT){
 			createTestModel("model", "server", 1, []int{0}, 2, []store.ModelReplicaState{store.Available}),
@@ -130,8 +130,8 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 			op(inc, g)
 		}
 
-		go func() {
-			// watch for configs
+		for _, expectedClusterNames := range expectedClusters {
+
 			resp, err := c.Fetch()
 			g.Expect(err).To(BeNil())
 			actualClusterNames := make([]string, 0)
@@ -147,20 +147,14 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 
 			err = c.Ack()
 			g.Expect(err).To(BeNil())
+		}
 
-			err = c.Ack()
-			g.Expect(err).To(BeNil())
-			wg.Done()
-		}()
-
-		wg.Wait()
 	}
 }
 
-func startAdsServer(ctx context.Context, snapCache cache.SnapshotCache, port uint) error {
+func startAdsServer(inc *IncrementalProcessor, port uint) error {
 	logger := log.New()
-	srv := envoyServerControlPlaneV3.NewServer(ctx, snapCache, nil)
-	xdsServer := NewXDSServer(srv, logger)
+	xdsServer := NewXDSServer(inc, logger)
 	err := xdsServer.StartXDSServer(port)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start envoy xDS server")
