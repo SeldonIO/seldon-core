@@ -1,4 +1,6 @@
-Seldon Core 2 provides a state of the art solution for machine learning inference. 
+---
+description: Install Core 2 in a production Kubernetes environment.
+---
 
 ## Prerequisites
 
