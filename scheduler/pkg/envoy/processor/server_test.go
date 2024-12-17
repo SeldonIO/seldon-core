@@ -87,9 +87,11 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 			createTestModel("model", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
 		}
 
-		for _, op := range ops {
-			op(inc, g)
-		}
+		go func() {
+			for _, op := range ops {
+				op(inc, g)
+			}
+		}()
 
 		for _, expectedClusterNames := range expectedClusters {
 			resp, err := c.Fetch()
@@ -103,7 +105,7 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 			}
 			slices.Sort(actualClusterNames)
 			slices.Sort(expectedClusterNames)
-			g.Expect(reflect.DeepEqual(actualClusterNames, expectedClusterNames)).To(BeTrue())
+			g.Expect(reflect.DeepEqual(actualClusterNames, expectedClusterNames)).To(BeTrue(), "%v does not equal %v", actualClusterNames, expectedClusterNames)
 
 			err = c.Ack()
 			g.Expect(err).To(BeNil())
