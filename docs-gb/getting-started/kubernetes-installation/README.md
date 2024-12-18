@@ -14,7 +14,7 @@ Here is a list of components that Seldon Core 2 depends on, with minimum and max
 | Kubernetes | 1.27 | 1.31 | Required |
 | Envoy`*` | 1.32.2 | 1.32.2 | Required |
 | Rclone`*` | 1.68.2 | 1.68.2 | Required |
-| Kafka`**` | 3.4 | 3.8 | Optional |
+| Kafka`**` | 3.4 | 3.8 | Recommended |
 | Prometheus | 2.0 | 2.x | Optional |
 | Grafana | 10.0 | `***` | Optional |
 | Prometheus-adapter | 0.12 | 0.12 | Optional |
