@@ -94,7 +94,6 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 }
 
 func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSClient) func(t *testing.T) {
-	firstFetch := append(permanentClusterNames, "model_1_grpc", "model_1_http")
 	secondFetch := append(permanentClusterNames, "model_2_grpc", "model_2_http")
 
 	return func(t *testing.T) {
