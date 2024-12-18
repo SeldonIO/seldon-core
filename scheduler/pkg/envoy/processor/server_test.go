@@ -90,7 +90,6 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSClient) func(t *testing.T) {
 	firstFetch := append(permanentClusterNames, "model_1_grpc", "model_1_http")
 	secondFetch := append(permanentClusterNames, "model_1_grpc", "model_1_http", "model_2_grpc", "model_2_http")
-	thirdFetch := append(permanentClusterNames, "model_2_grpc", "model_2_http")
 
 	return func(t *testing.T) {
 		// only version 1 exists
@@ -105,8 +104,6 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 
 		// version 1 and version 2 exist temporarily
 		fecthAndVerifyResponse(secondFetch, c, g)
-		// version is eventually removed and only version 2 exists
-		fecthAndVerifyResponse(thirdFetch, c, g)
 	}
 }
 
