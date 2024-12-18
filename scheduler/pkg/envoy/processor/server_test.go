@@ -98,9 +98,6 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 	secondFetch := append(permanentClusterNames, "model_2_grpc", "model_2_http")
 
 	return func(t *testing.T) {
-		// only version 1 exists
-		fecthAndVerifyResponse(firstFetch, c, g)
-
 		ops := []func(inc *IncrementalProcessor, g *WithT){
 			createTestModel("model", "server", 1, []int{0}, 2, []store.ModelReplicaState{store.Available}),
 		}
