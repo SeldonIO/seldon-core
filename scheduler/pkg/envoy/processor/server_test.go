@@ -29,7 +29,8 @@ var permanentClusterNames = []string{"pipelinegateway_http", "pipelinegateway_gr
 
 func TestFetch(t *testing.T) {
 	g := NewGomegaWithT(t)
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
 
 	logger := log.New()
 
