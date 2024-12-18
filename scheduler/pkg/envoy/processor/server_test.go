@@ -81,9 +81,14 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 			createTestServer("server", 1),
 			createTestModel("model", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
 		}
-		for _, op := range ops {
-			op(inc, g)
-		}
+		go func() {
+			for _, op := range ops {
+				op(inc, g)
+			}
+		}()
+
+		g.Eventually(inc.xdsCache.Clusters).WithPolling(10 * time.Millisecond).WithTimeout(2 * time.Second).Should(HaveKey(MatchRegexp(`^model_1`)))
+
 		fecthAndVerifyResponse(firstFetch, c, g)
 	}
 }
@@ -99,19 +104,22 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 		ops := []func(inc *IncrementalProcessor, g *WithT){
 			createTestModel("model", "server", 1, []int{0}, 2, []store.ModelReplicaState{store.Available}),
 		}
-		for _, op := range ops {
-			op(inc, g)
-		}
+		go func() {
+			for _, op := range ops {
+				op(inc, g)
+			}
+		}()
 
-		// version 1 and version 2 exist temporarily
+		g.Eventually(inc.xdsCache.Clusters).WithPolling(10 * time.Millisecond).WithTimeout(2 * time.Second).Should(HaveKey(MatchRegexp(`^model_2`)))
+
+		// version 2 exists
 		fecthAndVerifyResponse(secondFetch, c, g)
 	}
 }
 
 func fecthAndVerifyResponse(expectedClusterNames []string, c client.ADSClient, g *WithT) {
 	slices.Sort(expectedClusterNames)
-	g.Eventually(fetch(c, g)).Within(3 * time.Second).ProbeEvery(1 * time.Second).
-		Should(ContainElements(expectedClusterNames))
+	g.Expect(fetch(c, g)).Should(ContainElements(expectedClusterNames))
 }
 
 func fetch(c client.ADSClient, g *WithT) []string {
