@@ -75,7 +75,6 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 	firstFetch := append(permanentClusterNames, "model_1_grpc", "model_1_http")
 
 	return func(t *testing.T) {
-
 		fecthAndVerifyResponse(permanentClusterNames, c, g)
 
 		ops := []func(inc *IncrementalProcessor, g *WithT){
@@ -91,10 +90,11 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 
 func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSClient) func(t *testing.T) {
 	firstFetch := append(permanentClusterNames, "model_1_grpc", "model_1_http")
-	secondFetch := append(permanentClusterNames, "model_2_grpc", "model_2_http")
+	secondFetch := append(permanentClusterNames, "model_1_grpc", "model_1_http", "model_2_grpc", "model_2_http")
+	thirdFetch := append(permanentClusterNames, "model_2_grpc", "model_2_http")
 
 	return func(t *testing.T) {
-
+		// only version 1 exists
 		fecthAndVerifyResponse(firstFetch, c, g)
 
 		ops := []func(inc *IncrementalProcessor, g *WithT){
@@ -103,13 +103,17 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 		for _, op := range ops {
 			op(inc, g)
 		}
+
+		// version 1 and version 2 exist temporarily
 		fecthAndVerifyResponse(secondFetch, c, g)
+		// version is eventually removed and only version 2 exists
+		fecthAndVerifyResponse(thirdFetch, c, g)
 	}
 }
 
 func fecthAndVerifyResponse(expectedClusterNames []string, c client.ADSClient, g *WithT) {
 	slices.Sort(expectedClusterNames)
-	g.Eventually(fetch(c, g)).Within(5 * time.Second).ProbeEvery(100 * time.Millisecond).
+	g.Eventually(fetch(c, g)).Within(5 * time.Second).ProbeEvery(1 * time.Second).
 		Should(ConsistOf(expectedClusterNames))
 }
 
