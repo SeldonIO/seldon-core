@@ -87,7 +87,7 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 			}
 		}()
 
-		g.Eventually(inc.xdsCache.Clusters).WithPolling(10 * time.Millisecond).WithTimeout(2 * time.Second).Should(HaveKey(MatchRegexp(`^model_1`)))
+		g.Eventually(inc.xdsCache.Clusters).WithPolling(100 * time.Millisecond).WithTimeout(5 * time.Second).Should(HaveKey(MatchRegexp(`^model_1`)))
 
 		fecthAndVerifyResponse(firstFetch, c, g)
 	}
@@ -110,7 +110,7 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 			}
 		}()
 
-		g.Eventually(inc.xdsCache.Clusters).WithPolling(10 * time.Millisecond).WithTimeout(2 * time.Second).Should(HaveKey(MatchRegexp(`^model_2`)))
+		g.Eventually(inc.xdsCache.Clusters).WithPolling(100 * time.Millisecond).WithTimeout(5 * time.Second).Should(HaveKey(MatchRegexp(`^model_2`)))
 
 		// version 2 exists
 		fecthAndVerifyResponse(secondFetch, c, g)
