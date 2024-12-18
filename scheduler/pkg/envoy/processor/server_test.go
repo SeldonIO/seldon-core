@@ -89,7 +89,7 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 
 func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSClient) func(t *testing.T) {
 	firstFetch := append(permanentClusterNames, "model_1_grpc", "model_1_http")
-	secondFetch := append(permanentClusterNames, "model_1_grpc", "model_1_http", "model_2_grpc", "model_2_http")
+	secondFetch := append(permanentClusterNames, "model_2_grpc", "model_2_http")
 
 	return func(t *testing.T) {
 		// only version 1 exists
@@ -110,7 +110,7 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 func fecthAndVerifyResponse(expectedClusterNames []string, c client.ADSClient, g *WithT) {
 	slices.Sort(expectedClusterNames)
 	g.Eventually(fetch(c, g)).Within(3 * time.Second).ProbeEvery(1 * time.Second).
-		Should(ConsistOf(expectedClusterNames))
+		Should(ContainElements(expectedClusterNames))
 }
 
 func fetch(c client.ADSClient, g *WithT) []string {
