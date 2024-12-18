@@ -29,7 +29,7 @@ var permanentClusterNames = []string{"pipelinegateway_http", "pipelinegateway_gr
 
 func TestFetch(t *testing.T) {
 	g := NewGomegaWithT(t)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
 	logger := log.New()
@@ -113,7 +113,7 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 
 func fecthAndVerifyResponse(expectedClusterNames []string, c client.ADSClient, g *WithT) {
 	slices.Sort(expectedClusterNames)
-	g.Eventually(fetch(c, g)).Within(5 * time.Second).ProbeEvery(1 * time.Second).
+	g.Eventually(fetch(c, g)).Within(3 * time.Second).ProbeEvery(1 * time.Second).
 		Should(ConsistOf(expectedClusterNames))
 }
 
