@@ -16,6 +16,7 @@
       * [Strimzi SASL Example](getting-started/kubernetes-installation/security/strimzi-sasl.md)
       * [Reference](getting-started/kubernetes-installation/security/reference.md)
   * [Configuration](getting-started/configuration.md)
+      * [Managed Kafka](getting-started/managed-kafka.md)
   * [Seldon CLI](getting-started/cli.md)
 * [APIs](apis/README.md)
   * [Internal](apis/internal/README.md)
