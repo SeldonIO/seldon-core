@@ -137,7 +137,6 @@ It is important to expose `seldon-service` service to enable communication betwe
           route:
             - destination:
                 host: seldon-mesh.seldon-mesh.svc.cluster.local
-          headers: {}
     ```
 
 3.  Create a virtual service to expose the `seldon-mesh` service.
