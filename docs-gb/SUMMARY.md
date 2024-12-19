@@ -1,6 +1,13 @@
 # Table of contents
+* [Welcome](README.md)
 
-* [Home](README.md)
+## Installation
+* [Installation](installation/README.md)
+    * [Learning Environment](installation/learning-environment/README.md)
+      * [Self-hosted Kafka](installation/learning-environment/self-hosted-kafka.md)
+    * [Production Environment](installation/production-environment/README.md)
+      * [Managed Kafka](installation/production-environment/kafka/README.md)
+      * [Ingress Controller](installation/production-environment/ingress-controller/istio.md)
 * [Getting Started](getting-started/README.md)
   * [Docker Installation](getting-started/docker-installation.md)
   * [Kubernetes Installation](getting-started/kubernetes-installation/README.md)
