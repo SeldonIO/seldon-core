@@ -44,7 +44,7 @@ bufbuild/protocompile,https://github.com/bufbuild/protocompile/blob/main/LICENSE
 buger/goterm,https://github.com/buger/goterm/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/buger/goterm/master/LICENSE
 buger/jsonparser,https://github.com/buger/jsonparser/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/buger/jsonparser/master/LICENSE
 c2h5oh/datasize,https://github.com/c2h5oh/datasize/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/c2h5oh/datasize/master/LICENSE
-cenkalti/backoff,https://github.com/cenkalti/backoff/blob/v4/LICENSE,MIT License,https://raw.githubusercontent.com/cenkalti/backoff/v4/LICENSE
+cenkalti/backoff,https://github.com/cenkalti/backoff/blob/v5/LICENSE,MIT License,https://raw.githubusercontent.com/cenkalti/backoff/v5/LICENSE
 census-instrumentation/opencensus-proto,https://github.com/census-instrumentation/opencensus-proto/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/census-instrumentation/opencensus-proto/master/LICENSE
 cespare/xxhash,https://github.com/cespare/xxhash/blob/main/LICENSE.txt,MIT License,https://raw.githubusercontent.com/cespare/xxhash/main/LICENSE.txt
 chzyer/logex,https://github.com/chzyer/logex/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/chzyer/logex/master/LICENSE
