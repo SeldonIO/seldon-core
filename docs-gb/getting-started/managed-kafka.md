@@ -2,15 +2,9 @@
 
 Seldon recommends a [managed Kafka](../#managed-kafka) for production installation. On this page we will demonstrate how you can integrate and configure your managed Kafka with Seldon Core 2. 
 
-1. [Example configurations](../managed-kafka.md#example-configurations-for-managed-kafka-services)
-2. [Configuring with Seldon Core 2](../managed-kafka.md#configuring-seldon-core-2)
-
 ## Securing managed Kafka services
 
-You can secure Seldon Core 2 integrations with managed Kafka services using:
-
-* [Kafka Encryption](../managed-kafka.md#kafka-encryption-tls)
-* [Kafka Authentication](../managed-kafka.md#kafka-authentication)
+You can secure your Seldon Core 2 integration with managed Kafka services by setting up encryption and authenticaion.
 
 ### Kafka Encryption (TLS)
 
