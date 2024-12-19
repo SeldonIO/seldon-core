@@ -55,7 +55,7 @@ Installing Istio ingress controller in a Kubernetes cluster running Seldon Enter
     This should return details of the Istio Ingress Gateway, including the external IP address.
 2.  Create a YAML file to specify Gateway resource in the `istio-system` namespace to expose your application. For example, create the `istio-seldon-gateway.yaml` file. Use your preferred text editor to create and save the file with the following content:
 
-    ```
+    ```yaml
      apiVersion: networking.istio.io/v1alpha3
      kind: Gateway
      metadata:
