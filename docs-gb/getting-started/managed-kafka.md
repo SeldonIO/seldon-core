@@ -1,6 +1,6 @@
 # Managed Kafka
 
-Seldon recommends a [managed Kafka](../#managed-kafka) for production installation. On this page we will demonstrate how you can integrate and configure your managed Kafka with Seldon Core 2. 
+Seldon recommends managed Kafka for production installation. On this page we will demonstrate how you can integrate and configure your managed Kafka with Seldon Core 2. 
 
 ## Securing managed Kafka services
 
