@@ -117,6 +117,7 @@ It is important to expose `seldon-service` service to enable communication betwe
     ```
 2.  Create a YAML file to create a VirtualService named `iris-route` in the namespace `seldon-mesh`. For example, create the `seldon-mesh-vs.yaml` file. Use your preferred text editor to create and save the file with the following content:
 
+
     ```yaml
     apiVersion: networking.istio.io/v1alpha3
     kind: VirtualService
@@ -129,15 +130,16 @@ It is important to expose `seldon-service` service to enable communication betwe
       hosts:
         - "*"
       http:
-        - match:
-          - uri:
-              prefix: /v2
-        name: iris-http
-        route:
-        - destination:
-          host: seldon-mesh.seldon-mesh.svc.cluster.local
-        headers:
-      ```
+        - name: iris-http
+          match:
+            - uri:
+                prefix: /v2
+          route:
+            - destination:
+                host: seldon-mesh.seldon-mesh.svc.cluster.local
+          headers: {}
+    ```
+
 3.  Create a virtual service to expose the `seldon-mesh` service.
 
     ```
