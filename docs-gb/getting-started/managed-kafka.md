@@ -84,6 +84,7 @@ security:
 ```
 
 The `security.kafka.ssl.client.brokerValidationSecret` field is optional. Leave it empty if your brokers use well known Certificate Authority such as Let’s Encrypt.
+{% endtab %}
 
 {% tab title="OAuth2.0" %}
 When you use OAuth 2.0 as the authentication mechanism for Kafka, the credentials consist of a Client ID and Client Secret, which are used with your Identity Provider to obtain JWT tokens for authenticating with Kafka brokers.
