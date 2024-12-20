@@ -83,6 +83,11 @@ Strimzi provides a Kubernetes Operator to deploy and manage Kafka clusters. Firs
     ```
 
     You should see multiple Pods for Kafka, Zookeeper, and Strimzi operators running.
+    {% hint style="info" %}
+    **Note**: It might take a couple of minutes for all the Pods to be ready.
+    To check the status of the Pods in real time use this command: `kubectl get pods -w -n seldon-mesh`. 
+    {% endhint %}
+
 
     ```
     NAME                                            READY   STATUS    RESTARTS        AGE
