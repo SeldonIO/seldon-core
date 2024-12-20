@@ -6,7 +6,7 @@
     * [Learning Environment](installation/learning-environment/README.md)
       * [Self-hosted Kafka](installation/learning-environment/self-hosted-kafka.md)
     * [Production Environment](installation/production-environment/README.md)
-      * [Managed Kafka](installation/production-environment/kafka/README.md)
+      * [Kafka Integration](installation/production-environment/kafka/README.md)
       * [Ingress Controller](installation/production-environment/ingress-controller/istio.md)
 * [Getting Started](getting-started/README.md)
   * [Docker Installation](getting-started/docker-installation.md)
