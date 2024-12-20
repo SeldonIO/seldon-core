@@ -6,7 +6,7 @@ var kubeClient = null
 
 export const options = {
     tags: {
-      id: getConfig().metaTestId,
+      run_id: __ENV.RUN_ID,
     },
     thresholds: {
         'http_req_duration{scenario:default}': [`max>=0`],
@@ -31,6 +31,7 @@ export const options = {
 
 export function setup() {
     const config = getConfig()
+    console.log(__ENV.K6_ENV)
 
     setupBase(config)
 

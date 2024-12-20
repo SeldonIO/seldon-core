@@ -235,6 +235,13 @@ function doWarmup() {
     return true
 }
 
+function warmupIterations() {
+    if (__ENV.WARMUP_ITERATIONS) {
+        return parseInt(__ENV.WARMUP_ITERATIONS)
+    }
+    return 100
+}
+
 
 function requestRate() {
     if (__ENV.REQUEST_RATE) {
@@ -389,6 +396,43 @@ function metaTestTargets() {
     return targets
 }
 
+function synthPredictDataSize() {
+    if (__ENV.SYNTH_PREDICT_DATA_SIZE) {
+        return parseInt(__ENV.SYNTH_PREDICT_DATA_SIZE)
+    }
+    return 1
+}
+function synthPredictLatencyDist() {
+    if (__ENV.SYNTH_PREDICT_LATENCY_DIST) {
+        return __ENV.SYNTH_PREDICT_LATENCY_DIST
+    }
+    return "none"
+}
+function synthPredictLatencyAvgUs() {
+    if (__ENV.SYNTH_PREDICT_LATENCY_AVG_US) {
+        return parseInt(__ENV.SYNTH_PREDICT_LATENCY_AVG_US)
+    }
+    return 1000 // 1ms
+}
+function synthPredictLatencySdUs() {
+    if (__ENV.SYNTH_PREDICT_LATENCY_SD_US) {
+        return parseInt(__ENV.SYNTH_PREDICT_LATENCY_SD_US)
+    }
+    return 200 // 0.2ms
+}
+function synthPredictWorkType() {
+    if (__ENV.SYNTH_PREDICT_WORK_TYPE) {
+        return __ENV.SYNTH_PREDICT_WORK_TYPE
+    }
+    return "async_sleep"
+}
+function synthMemoryUsageKb() {
+    if (__ENV.SYNTH_MEMORY_USAGE_KB) {
+        return parseInt(__ENV.SYNTH_MEMORY_USAGE_KB)
+    }
+    return 1024 // 1MB
+}
+
 export function getConfig() {
     return {
         "useKubeControlPlane": useKubeControlPlane(),
@@ -417,6 +461,7 @@ export function getConfig() {
         "modelName" : modelName(),
         "inferType" : inferType(),
         "doWarmup": doWarmup(),
+        "warmupIterations": warmupIterations(),
         "requestRate": requestRate(),
         "requestRates": requestRates(),
         "constantRateDurationSeconds": constantRateDurationSeconds(),
@@ -439,5 +484,11 @@ export function getConfig() {
         "metaTestId": metaTestId(),
         "metaTestConfig": metaTestConfig(),
         "metaTestTargets": metaTestTargets(),
+        "synthPredictDataSize": synthPredictDataSize(),
+        "synthPredictLatencyDist": synthPredictLatencyDist(),
+        "synthPredictLatencyAvgUs": synthPredictLatencyAvgUs(),
+        "synthPredictLatencySdUs": synthPredictLatencySdUs(),
+        "synthPredictWorkType": synthPredictWorkType(),
+        "synthMemoryUsageKb": synthMemoryUsageKb(),
     }
 }
