@@ -69,7 +69,7 @@ spec:
         #   ]
         env:
         - name: REQUEST_RATE
-          value: "150"
+          value: "100"
         # REQUEST_RATES allows you to specify multiple target RPS values, and is
         # used in the infer_multiple_rates scenario. The duration over which
         # each rate is maintained is controlled via the value at the same index
@@ -88,25 +88,6 @@ spec:
         # ramp-up/ramp-down stages)
         # - name: CONSTANT_RATE_DURATIONS_SECONDS
         #   value: "120,120,400,120,400"
-        - name: TEST_CONFIG_TAGS
-          # The value ends up as a single string in the raw data output
-          # to keep cardinality low, follow the format: [cluster_type],[test_regime]
-          # Typical values for cluser_type:
-          #   * kind
-          #   * gke_small
-          #   * gke_scaleup
-          # Typical values for test_regime:
-          #  * smoke
-          #  * avg_load
-          #  * stress_fixed_resources
-          #  * stress_autoscale
-          #  * chaos
-          value: "kind,smoke"
-        # - name: TEST_TARGET_TAGS
-        #   # The value ends up as a single string in the raw data output
-        #   # to keep cardinality low, follow the format:
-        #   # {"model"|"pipeline"}_{type}
-        #   value: "model_synthetic"
         - name: USE_KUBE_CONTROL_PLANE
           value: "true"
         # - name: SKIP_UNLOAD_MODEL
@@ -160,7 +141,7 @@ spec:
         # times more likely than the Create.
         # - name: MODEL_CREATE_UPDATE_DELETE_BIAS
         #   value: "1,3,1"
-        # The following two variables are used to change the model replicas while doing 
+        # The following two variables are used to change the model replicas while doing
         # data plane tests. The ENABLE_MODEL_REPLICA_CHANGE variable should be set to true
         # to enable the model replica change. The SLEEP_BETWEEN_REPLICA_CHANGE variable
         # should be set to the number of seconds to wait between changing the model replicas.
@@ -183,20 +164,53 @@ spec:
         - name: OUTPUT_TYPE
           value: "clickhouse"
           # value: "gs_bucket"
-        # K6_CLICKHOUSE_DSN is the connection string to the Clickhouse database.
-        # It is used when OUTPUT_TYPE is set to "clickhouse".
-        # The format is "clickhouse://<username>:<password>@<host>:<port>/<database>"
-        # Because of the sensitivity of the password, it is recommended to get this string from
-        # a k8s secret
-        - name: K6_CLICKHOUSE_DSN
+        # OUTPUT_TYPE_STRICT controls whether the k6 job should fail if the output set in
+        # OUTPUT_TYPE fails. If set to "false", the job will fall back to CSV output if there
+        # are errors in using some of the other output types.
+        - name: OUTPUT_TYPE_STRICT
+          value: "false"
+        # The following variables, of the form K6_CLICKHOUSE_* are only used to get the Clickhouse
+        # db connection when OUTPUT_TYPE is set to "clickhouse".
+        # Because of the sensitivity of the password, it is recommended, at a minimum, to get this
+        # string from a k8s secret. The example below fetches all the details from keys within a
+        # secret.
+        - name: K6_CLICKHOUSE_USER
           valueFrom:
             secretKeyRef:
-              name: clickhouse-client-conn
-              key: dsn
+              name: clickhouse-connection
+              key: user
+              optional: true
+        - name: K6_CLICKHOUSE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-connection
+              key: password
+              optional: true
+        - name: K6_CLICKHOUSE_HOST
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-connection
+              key: host
+              optional: true
+        - name: K6_CLICKHOUSE_PORT
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-connection
+              key: port
+              optional: true
+        - name: K6_CLICKHOUSE_DB
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-connection
+              key: database
               optional: true
         # K6 metrics that should not be saved to Clickhouse
         - name: K6_CLICKHOUSE_IGNORE_METRICS
           value: ""
+        # - name: K6_CLICKHOUSE_PUSH_INTERVAL
+        #   value: "15s"
+        - name: LOADTEST_NOTES
+          value: "k6 load test"
         # GOOGLE_APPLICATION_CREDENTIALS is the path to the service account key file
         # that is used to authenticate with Google Cloud Storage.
         # It is used when OUTPUT_TYPE is set to "gs_bucket".
@@ -212,6 +226,18 @@ spec:
         # It is used when OUTPUT_TYPE is set to "gs_bucket".
         # - name: GS_BUCKET_NAME
         #   value: "gs://seldon-tmp/scv2-k6-results"
+        - name: SYNTH_PREDICT_DATA_SIZE
+          value: 1
+        - name: SYNTH_PREDICT_LATENCY_DIST
+          value: "none"
+        - name: SYNTH_PREDICT_LATENCY_AVG_US
+          value: 1000
+        - name: SYNTH_PREDICT_LATENCY_SD_US
+          value: 200
+        - name: SYNTH_PREDICT_WORK_TYPE
+          value: "async_sleep"
+        - name: SYNTH_MEMORY_USAGE_KB
+          value: 1024
         - name: NAMESPACE
           valueFrom:
             fieldRef:
@@ -225,6 +251,8 @@ spec:
           mountPath: "/var/run/secret/cloud.google.com"
         - name: podinfo
           mountPath: /info
+        - name: clustermeta
+          mountPath: /info/clustermeta
         - name: results
           mountPath: /home/k6/k6/results
       imagePullSecrets:
@@ -241,6 +269,13 @@ spec:
               - path: "labels"
                 fieldRef:
                   fieldPath: metadata.labels
+        - name: clustermeta
+          configMap:
+            name: core2-clustermeta
+            optional: true
+            items:
+            - key: metadata.uuid
+              path: cluster.uuid
         - name: results
           persistentVolumeClaim:
             claimName: k6-results

@@ -11,8 +11,8 @@ resources:
 
 images:
 - name: k6
-  newName: seldonio/seldon-k6
-  newTag: latest
+  newName: europe-west2-docker.pkg.dev/dev-seldon-registry/testing/k6-bench
+  newTag: 19122024-3
 
 configurations:
 - ./prefix-rules.yaml

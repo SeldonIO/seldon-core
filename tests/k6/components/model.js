@@ -11,6 +11,7 @@ const onnx_gpt2 = "onnx_gpt2"
 const mlflow_wine = "mlflow_wine" // mlserver
 const add10 = "add10" // https://github.com/SeldonIO/triton-python-examples/tree/master/add10
 const sentiment = "sentiment" // mlserver
+const synth = "synth" // mlserver
 
 const models = {
     mlflow_wine: {
@@ -91,6 +92,14 @@ const models = {
             "maxUriSuffix": 0,
             "requirements": ["onnx"],
             "memoryBytes": 20000,
+        },
+    },
+    synth: {
+        "modelTemplate": {
+            "uriTemplate": "gs://lcr-seldon-pub/models/mlserver/synth",
+            "maxUriSuffix": 0,
+            "requirements": ["sklearn"],
+            "memoryBytes": getConfig().synthMemoryUsageKb,
         },
     },
 }
@@ -182,6 +191,18 @@ export function getModelInferencePayload(modelName, inferBatchSize) {
         return {
             "http": { "inputs": [{ "name": "input_ids", "data": data, "datatype": datatype, "shape": shape }, { "name": "attention_mask", "data": data, "datatype": datatype, "shape": shape }] },
             "grpc": { "inputs": [{ "name": "input_ids", "contents": { "int_contents": data }, "datatype": datatype, "shape": shape }, { "name": "attention_mask", "contents": { "int_contents": data }, "datatype": datatype, "shape": shape }] }
+        }
+    } else if (modelName == synth) {
+        const dataSize = getConfig().synthPredictDataSize
+        const shape = [inferBatchSize, dataSize]
+        var data = []
+        for (var i = 0; i < dataSize * inferBatchSize; i++) {
+            var data_point = Math.floor(Math.random() * 1000)
+            data.push(data_point)
+        }
+        return {
+            "http": { "inputs": [{ "name": "INPUT0", "data": data, "datatype": "INT32", "shape": shape }, { "name": "INPUT1", "data": data, "datatype": "INT32", "shape": shape }] },
+            "grpc": { "inputs": [{ "name": "INPUT0", "contents": { "int_contents": data }, "datatype": "INT32", "shape": shape }, { "name": "INPUT1", "contents": { "int_contents": data }, "datatype": "INT32", "shape": shape }] }
         }
     } else if (modelName == mlflow_wine) {
         const fields = ["fixed acidity", "volatile acidity", "citric acidity", "residual sugar", "chlorides", "free sulfur dioxide", "total sulfur dioxide", "density", "pH", "sulphates", "alcohol"]
@@ -361,6 +382,20 @@ export function generateModel(modelType, modelName, uriOffset, replicas, isProxy
             "memory": (memoryBytes == null) ? modelTemplate.memoryBytes : memoryBytes,
             "replicas": replicas
         }
+    }
+
+    if (modelType == synth) {
+        const params =  [
+            { "name": "predict_latency_dist", "value": getConfig().synthPredictLatencyDist },
+            { "name": "predict_latency_avg_us", "value": getConfig().synthPredictLatencyAvgUs },
+            { "name": "predict_latency_sd_us", "value": getConfig().synthPredictLatencySdUs },
+            { "name": "work_type", "value": getConfig().synthPredictWorkType },
+            { "name": "model_memory_usage_kb", "value": getConfig().synthMemoryUsageKb }
+        ]
+
+        modelCR.push({
+            "parameters": params
+        })
     }
 
     const modelCRYaml = yamlDump(modelCR)

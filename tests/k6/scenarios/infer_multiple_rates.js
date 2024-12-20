@@ -1,6 +1,7 @@
 import { getConfig } from '../components/settings.js'
 import { doInfer, setupBase, teardownBase, getVersionSuffix, applyModelReplicaChange } from '../components/utils.js'
 import { vu } from 'k6/execution';
+import { tagWithCurrentStageIndex, tagWithCurrentStageProfile } from 'https://jslib.k6.io/k6-utils/1.3.0/index.js'
 
 export const options = {
     thresholds: {
@@ -35,6 +36,8 @@ export function setup() {
 }
 
 export default function (config) {
+    tagWithCurrentStageIndex();
+    tagWithCurrentStageProfile();
     const numModelTypes = config.modelType.length
 
     let candidateIdxs = []

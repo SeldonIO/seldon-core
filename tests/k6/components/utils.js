@@ -72,8 +72,16 @@ export function setupBase(config) {
 
                     const model = generateModel(config.modelType[j], modelNameWithVersion, 1, 1, config.isSchedulerProxy, config.modelMemoryBytes[j])
 
-                    inferHttpLoop(
-                        config.inferHttpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, model.inference.http, 1, config.isEnvoy, config.dataflowTag)
+                    var rest_enabled = Number(config.inferHttpIterations)
+                    var grpc_enabled = Number(config.inferGrpcIterations)
+                    if (rest_enabled) {
+                        inferHttpLoop(
+                            config.inferHttpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, model.inference.http, config.warmupIterations, config.isEnvoy, config.dataflowTag)
+                    }
+                    if (grpc_enabled) {
+                        inferGrpcLoop(
+                            config.inferGrpcEndpoint, config.isEnvoy?modelName:modelNameWithVersion, model.inference.grpc, config.warmupIterations, config.isEnvoy, config.dataflowTag)
+                    }
                 }
             }
         }
