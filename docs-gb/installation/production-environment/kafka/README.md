@@ -4,7 +4,7 @@
 
 An inference request is a request sent to a machine learning model to make a prediction or inference based on input data. It is a core concept in deploying machine learning models in production, where models serve predictions to users or systems in real-time or batch mode.
 
-To explore this feature of Seldon Core 2, you need to integrate with Kafka. Integrate Kafka through [managed cloud services](../#managed-kafka) or by deploying it [directly within a Kubernetes cluster](./#self-hosted-kafka).
+To explore this feature of Seldon Core 2, you need to integrate with Kafka. Integrate Kafka through [managed cloud services](managed-kafka.md) or by deploying it [directly within a Kubernetes cluster](./#self-hosted-kafka).
 
 {% hint style="info" %}
 **Note**: Kafka is an external component outside of the main Seldon stack. Therefore, it is the cluster administrator’s responsibility to administrate and manage the Kafka instance used by Seldon. For production installation it is highly recommended to use managed Kafka instance.
