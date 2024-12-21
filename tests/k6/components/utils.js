@@ -49,6 +49,7 @@ export function setupBase(config) {
                   const modelNameWithVersion = modelName + getVersionSuffix(config.isSchedulerProxy)  // first version
                   while (modelStatusHttp(config.inferHttpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, config.isEnvoy) !== 200) {
                       sleep(1)
+                      console.log(`Waiting for ${modelName} to become ready...`)
                   }
                 }
             }

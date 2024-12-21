@@ -149,8 +149,11 @@ export function getModelReadyCondition(modelCR) {
 }
 
 export function loadModel(modelName, data, awaitReady=true) {
+    console.log(`Loading model ${modelName}`)
     try {
+        console.log(data)
         kubeclient.apply(data)
+        console.log("kubectl applied")
         let created = kubeclient.get(seldonObjectType.MODEL.description, modelName, seldon_target_ns)
         if ('uid' in created.metadata) {
             if (awaitReady) {
@@ -158,7 +161,8 @@ export function loadModel(modelName, data, awaitReady=true) {
             }
         }
         return seldonOpExecStatus.OK
-    } catch (_) {
+    } catch (e) {
+        console.log(`Error loading model ${modelName}: ${e}`)
         // continue on error. the apply may be concurrent with a delete and fail
         return seldonOpExecStatus.CONCURRENT_OP_FAIL
     }
@@ -170,6 +174,7 @@ export function awaitStatus(modelName, status) {
         while (!modelConditionMet(modelName, status)) {
             sleep(1)
             retries++
+            console.log(`Awaiting model ${modelName} to reach status ${status}`)
             if(retries > MAX_RETRIES) {
                 console.log(`Giving up on waiting for model ${modelName} to reach status ${status}, after ${MAX_RETRIES} retries`)
                 return seldonOpExecStatus.FAIL

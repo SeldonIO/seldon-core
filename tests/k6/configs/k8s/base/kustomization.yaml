@@ -12,7 +12,7 @@ resources:
 images:
 - name: k6
   newName: europe-west2-docker.pkg.dev/dev-seldon-registry/testing/k6-bench
-  newTag: 19122024-3
+  newTag: 21122024-7
 
 configurations:
 - ./prefix-rules.yaml

@@ -3,8 +3,8 @@
 DIR="results"
 NOW=$(date +"%Y_%m_%d_%H_%M_%S")
 K6_ENV=$(env | grep -v -e SELDON -e SIMPLEST -e KUBERNETES -e GIT_COMMIT -e GIT_BRANCH -e HOSTNAME -e SHLVL -e PATH -e TEST_ID -e CLICKHOUSE -e ENDPOINT -e HOME -e NAMESPACE -e TERM -e PWD | sort )
-K6_ENV_ENCODED=$(echo "${K6_ENV}" | base64)
-LOADTEST_NOTES_ENCODED=$(echo "${LOADTEST_NOTES}" | base64)
+K6_ENV_ENCODED=$(echo "${K6_ENV}" | base64 -w 0)
+LOADTEST_NOTES_ENCODED=$(echo "${LOADTEST_NOTES}" | base64 -w 0)
 METADATA_FILE="metadata-${TEST_ID}-${NOW}.txt"
 SUMMARY_FILE="summary-${TEST_ID}-${NOW}.json"
 RAW_FILE="rawTestData-${TEST_ID}-${NOW}.json"
@@ -93,7 +93,7 @@ case $OUTPUT_TYPE in
                         '${TEST_TARGET}',                \
                         '${SCENARIO}',                   \
                         '${K6_ENV_ENCODED}',             \
-                        '${ENV_ID}',                     \
+                        unhex('${ENV_ID}'),              \
                         '${LOADTEST_NOTES_ENCODED}'      \
                     )"
         fi
@@ -108,7 +108,7 @@ shift
 
 ./k6 ${K6_CMD} --env RUN_ID=${JOBID} --env K6_TEST_TARGET=${TEST_TARGET} --env K6_LOADTEST_SCRIPT=${SCENARIO} --env K6_ENV="${K6_ENV}" --env K6_ENV_ID=${ENV_ID} ${K6_ARGS} $@
 
-K6_SUMMARY=$(cat $DIR/${SUMMARY_FILE} | base64)
+K6_SUMMARY_ENCODED=$(cat $DIR/${SUMMARY_FILE} | base64 -w 0)
 # k6 post-test
 echo "end:"$(date) >> $DIR/$METADATA_FILE
 echo "args:"$@ >> $DIR/$METADATA_FILE
@@ -140,7 +140,7 @@ case $OUTPUT_TYPE in
                     ( \
                         toUUIDOrZero('${CLUSTER_UUID}'), \
                         '${JOBID}',                      \
-                        '${K6_SUMMARY}'                  \
+                        '${K6_SUMMARY_ENCODED}'          \
                     )"
         fi
         ;;
