@@ -68,7 +68,7 @@ deploy-envoy-test:
 	kustomize build configs/k8s/overlays/envoy | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" ENVOY_ENDPOINT="${ENVOY_ENDPOINT}" envsubst | kubectl apply -f -
 
 undeploy-envoy-test:
-	kubectl delete Job -l app=envoy-k6
+	kubectl delete -n ${NAMESPACE} Job -l app=envoy-k6
 
 deploy-rproxy-test:
 	cd configs/k8s/base && kustomize edit set image k6=${IMG} && kustomize edit set namespace ${NAMESPACE}

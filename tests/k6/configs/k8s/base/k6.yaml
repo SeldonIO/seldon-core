@@ -69,7 +69,7 @@ spec:
         #   ]
         env:
         - name: REQUEST_RATE
-          value: "100"
+          value: "250"
         # REQUEST_RATES allows you to specify multiple target RPS values, and is
         # used in the infer_multiple_rates scenario. The duration over which
         # each rate is maintained is controlled via the value at the same index
@@ -99,9 +99,9 @@ spec:
         - name: INFER_GRPC_ITERATIONS
           value: "1"
         - name: MODELNAME_PREFIX
-          value: "tfsimplea,pytorch-cifar10a,tfmnista,mlflow-winea,irisa"
+          value: "synth"
         - name: MODEL_TYPE
-          value: "tfsimple,pytorch_cifar10,tfmnist,mlflow_wine,iris"
+          value: "synth"
         # Specify MODEL_MEMORY_BYTES using unit-of measure suffixes (k, M, G, T)
         # rather than numbers without units of measure. If supplying "naked
         # numbers", the seldon operator will take care of converting the number
@@ -109,13 +109,13 @@ spec:
         # next time you run the scenario creating/updating of the model CR will
         # fail.
         - name: MODEL_MEMORY_BYTES
-          value: "400k,8M,43M,200k,3M"
+          value: "3M"
         - name: MAX_MEM_UPDATE_FRACTION
           value: "0.1"
         - name: MAX_NUM_MODELS
           # value: "800,100,25,100,100"
           # value: "800,100,25,100,100"
-          value: "0,0,0,0,1"
+          value: "1"
         #
         # MAX_NUM_MODELS_HEADROOM is a variable used by control-plane tests.
         # It's the approximate number of models that can be created over
@@ -134,7 +134,7 @@ spec:
         #   value: "2,2,0,2,2"
         #
         - name: INFER_BATCH_SIZE
-          value: "1,1,1,1,1"
+          value: "1"
         # MODEL_CREATE_UPDATE_DELETE_BIAS defines the probability ratios between
         # the operations, for control-plane tests. For example, "1, 4, 3"
         # makes an Update four times more likely then a Create, and a Delete 3
@@ -207,10 +207,10 @@ spec:
         # K6 metrics that should not be saved to Clickhouse
         - name: K6_CLICKHOUSE_IGNORE_METRICS
           value: ""
-        # - name: K6_CLICKHOUSE_PUSH_INTERVAL
-        #   value: "15s"
+        - name: K6_CLICKHOUSE_PUSH_INTERVAL
+          value: "30s"
         - name: LOADTEST_NOTES
-          value: "k6 load test"
+          value: "250 RPS constant-rate load on fully async model with latency 1ms"
         # GOOGLE_APPLICATION_CREDENTIALS is the path to the service account key file
         # that is used to authenticate with Google Cloud Storage.
         # It is used when OUTPUT_TYPE is set to "gs_bucket".
@@ -227,17 +227,17 @@ spec:
         # - name: GS_BUCKET_NAME
         #   value: "gs://seldon-tmp/scv2-k6-results"
         - name: SYNTH_PREDICT_DATA_SIZE
-          value: 1
+          value: "1"
         - name: SYNTH_PREDICT_LATENCY_DIST
           value: "none"
         - name: SYNTH_PREDICT_LATENCY_AVG_US
-          value: 1000
+          value: "1000"
         - name: SYNTH_PREDICT_LATENCY_SD_US
-          value: 200
+          value: "200"
         - name: SYNTH_PREDICT_WORK_TYPE
           value: "async_sleep"
         - name: SYNTH_MEMORY_USAGE_KB
-          value: 1024
+          value: "1024"
         - name: NAMESPACE
           valueFrom:
             fieldRef:

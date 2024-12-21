@@ -31,7 +31,6 @@ export const options = {
 
 export function setup() {
     const config = getConfig()
-    console.log(__ENV.K6_ENV)
 
     setupBase(config)
 
