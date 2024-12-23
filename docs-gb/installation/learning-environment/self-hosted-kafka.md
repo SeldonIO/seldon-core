@@ -88,7 +88,7 @@ To check the status of the Pods in real time use this command: `kubectl get pods
 
 You should see multiple Pods for Kafka, Zookeeper, and Strimzi operators running.
 
-    ```
+    ```bash
     NAME                                            READY   STATUS    RESTARTS        AGE
     hodometer-749d7c6875-4d4vw                      1/1     Running   0               17m
     mlserver-0                                      3/3     Running   0               16m
