@@ -217,7 +217,7 @@ These are the steps that you need to perform in Azure Portal.
     Endpoint=sb://<namespace>.servicebus.windows.net/;SharedAccessKeyName=XXXXXX;SharedAccessKey=XXXXXX
     ```
 
-**Creating secrets for Seldon Core 2 and Seldon Enterprise Platform** These are the steps that you need to perform in the Kubernetes cluster that run Seldon Core 2 and Seldon Enteprise Platform to store the SASL password.
+**Creating secrets for Seldon Core 2** These are the steps that you need to perform in the Kubernetes cluster that run Seldon Core 2 to store the SASL password.
 
 1. Create a secret named `azure-kafka-secret` for Seldon Core 2 in the namespace `seldon`. In the following command make sure to replace `<password>` with a password of your choice and `<namespace>` with the namespace form Azure Event Hub.
 
@@ -243,8 +243,8 @@ Confluent generates a configuration file with the details.
 
 2. Save the values of `Key`, `Secret`, and `bootstrap.servers` from the configuration file.
 
-**Creating secrets for Seldon Core 2 and Seldon Enterprise Platform**\
-These are the steps that you need to perform in the Kubernetes cluster that run Seldon Core 2 and Seldon Enteprise Platform to store the SASL password.
+**Creating secrets for Seldon Core 2**\
+These are the steps that you need to perform in the Kubernetes cluster that run Seldon Core 2 to store the SASL password.
 
 1. Create a secret named `confluent-kafka-sasl` for Seldon Core 2 in the namespace `seldon`. In the following command make sure to replace `<password>` with with the value of `Secret` that you generated in Confluent cloud.
 
@@ -252,11 +252,6 @@ These are the steps that you need to perform in the Kubernetes cluster that run 
 kubectl create secret generic confluent-kafka-sasl --from-literal password="<password>" -n seldon
 ```
 
-2. Create a secret named `confluent-kafka-sasl` for Seldon Enterprise Platform in the namespace `seldon-system`. In the following command make sure to replace `<password>` with the value of `Secret` that you generated in Confluent cloud.
-
-```
-kubectl create secret generic confluent-kafka-sasl --from-literal password="<password>" -n seldon-system
-```
 {% endtab %}
 
 {% tab title="Confluent Cloud with OAuth2.0" %}
@@ -303,11 +298,7 @@ If you are using Azure AD you may will need to set `scope: api://<client id>/.de
     ```
 
     This secret must be present in `seldon-logs` namespace and every namespace containing Seldon Core 2 runtime.
-3.  Provide the secret named `confluent-kafka-oauth` in the `seldon-system` namespace to configure with Seldon Enterprise Platform.
 
-    ```
-    kubectl apply -f kafka-secret.yaml -n seldon-system
-    ```
 {% endtab %}
 {% endtabs %}
 
