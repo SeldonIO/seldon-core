@@ -2,7 +2,7 @@
 * [About](README.md)
 
 ## Installation
-* [Installting Seldon Core 2](installation/README.md)
+* [Installing Seldon Core 2](installation/README.md)
     * [Learning Environment](installation/learning-environment/README.md)
       * [Self-hosted Kafka](installation/learning-environment/self-hosted-kafka.md)
     * [Production Environment](installation/production-environment/README.md)
