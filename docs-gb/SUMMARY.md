@@ -1,5 +1,5 @@
 # Table of contents
-* [Welcome](README.md)
+* [About](README.md)
 
 ## Installation
 * [Installting Seldon Core 2](installation/README.md)
