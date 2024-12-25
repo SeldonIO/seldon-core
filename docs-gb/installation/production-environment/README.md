@@ -94,8 +94,7 @@ You can integrate Seldon Core 2 with Kafka that is [self-hosted](/docs-gb/instal
 
 ## Additional Resources
 
-* Seldon Core Documentation
-* Seldon Enterprise Documentation
-* GKE Documentation
-* AWS Documentation
-* Azure Documentation
+* [Seldon Enterprise Documentation](https://docs.seldon.ai/seldon-enterprise-platform)
+* [GKE Documentation](https://cloud.google.com/kubernetes-engine/docs)
+* [AWS Documentation](https://docs.aws.amazon.com)
+* [Azure Documentation](https://learn.microsoft.com/en-us/azure)
