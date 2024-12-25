@@ -17,7 +17,7 @@ You could also install Seldon Core 2 locally if you have installed [Docker Compo
 
 ## Prerequisites
 
-* Install a Kubernetes cluster that is running version 1.23 or later.
+* Install a Kubernetes cluster that is running version 1.27 or later.
 * Install [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl), the Kubernetes command-line tool.
 * Install [Helm](https://helm.sh/docs/intro/install/), the package manager for Kubernetes or [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-and-upgrading-ansible), the automation tool used for provisioning, configuration management, and application deployment.  
 
@@ -41,7 +41,7 @@ You could also install Seldon Core 2 locally if you have installed [Docker Compo
 
     ```bash
     helm upgrade seldon-core-v2-crds seldon-charts/seldon-core-v2-crds \
-    --version 2.8.3 \
+    --version 2.8.5 \
     --namespace default \
     --install 
     ```
@@ -49,7 +49,7 @@ You could also install Seldon Core 2 locally if you have installed [Docker Compo
 
     ```bash
      helm upgrade seldon-core-v2-setup seldon-charts/seldon-core-v2-setup \
-     --version 2.8.3 \
+     --version 2.8.5 \
      --namespace seldon-mesh --set controller.clusterwide=true \
      --install
     ```
@@ -61,7 +61,7 @@ You could also install Seldon Core 2 locally if you have installed [Docker Compo
 
     ```bash
     helm upgrade seldon-core-v2-runtime seldon-charts/seldon-core-v2-runtime \
-    --version 2.8.3 \
+    --version 2.8.5 \
     --namespace seldon-mesh \
     --install
     ```
@@ -69,7 +69,7 @@ You could also install Seldon Core 2 locally if you have installed [Docker Compo
 
     ```bash
      helm upgrade seldon-core-v2-servers seldon-charts/seldon-core-v2-servers \
-     --version 2.8.3 \
+     --version 2.8.5 \
      --namespace seldon-mesh \
      --install
     ```
