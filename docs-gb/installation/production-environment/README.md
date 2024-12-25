@@ -4,7 +4,7 @@ description: Install Core 2 in a production Kubernetes environment.
 
 ## Prerequisites
 
-* Set up and connect to a Kubernetes cluster running version 1.23 or later. For instructions on connecting to your Kubernetes cluster, refer to the documentation provided by your cloud provider.
+* Set up and connect to a Kubernetes cluster running version 1.27 or later. For instructions on connecting to your Kubernetes cluster, refer to the documentation provided by your cloud provider.
 * Install [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl), the Kubernetes command-line tool.
 * Install [Helm](https://helm.sh/docs/intro/install/), the package manager for Kubernetes.
 
@@ -37,7 +37,7 @@ To use Seldon Core 2 in a production environment:
 
     ```bash
     helm upgrade seldon-core-v2-crds seldon-charts/seldon-core-v2-crds \
-    --version 2.8.3 \
+    --version 2.8.5 \
     --namespace default \
     --install 
     ```
@@ -45,7 +45,7 @@ To use Seldon Core 2 in a production environment:
 
     ```bash
      helm upgrade seldon-core-v2-setup seldon-charts/seldon-core-v2-setup \
-     --version 2.8.3 \
+     --version 2.8.5 \
      --namespace seldon-mesh --set controller.clusterwide=true \
      --install
     ```
@@ -56,7 +56,7 @@ To use Seldon Core 2 in a production environment:
 
     ```bash
     helm upgrade seldon-core-v2-runtime seldon-charts/seldon-core-v2-runtime \
-    --version 2.8.3 \
+    --version 2.8.5 \
     --namespace seldon-mesh \
     --install
     ```
@@ -64,7 +64,7 @@ To use Seldon Core 2 in a production environment:
 
     ```bash
      helm upgrade seldon-core-v2-servers seldon-charts/seldon-core-v2-servers \
-     --version 2.8.3 \
+     --version 2.8.5 \
      --namespace seldon-mesh \
      --install
     ```
