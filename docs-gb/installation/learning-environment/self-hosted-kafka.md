@@ -172,7 +172,7 @@ To customize the settings you can add and modify the Kafka configuration using H
   ```bash
   helm upgrade seldon-core-v2-runtime seldon-charts/seldon-core-v2-runtime \
   --namespace seldon-mesh \
-  --f values-runtime-kafka-compression.yaml \
+  -f values-runtime-kafka-compression.yaml \
   --install
   ```
 ### Configuring topic and consumer isolation
