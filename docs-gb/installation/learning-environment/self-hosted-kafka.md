@@ -170,7 +170,7 @@ To customize the settings you can add and modify the Kafka configuration using H
 2. Change to the directory that contains the `values-runtime-kafka-compression.yaml` file and then install Seldon Core 2 runtime in the namespace `seldon-mesh`.
 
   ```bash
-  helm upgrade seldon-v2-runtime k8s/helm-charts/seldon-core-v2-runtime \
+  helm upgrade seldon-core-v2-runtime seldon-charts/seldon-core-v2-runtime \
   --namespace seldon-mesh \
   --f values-runtime-kafka-compression.yaml \
   --install
@@ -185,7 +185,8 @@ If you are using a shared Kafka cluster with other applications, it is advisable
 Here’s an example of how to configure topic name and consumer group ID isolation during a Helm installation for an application named `myorg`:
 
 ```bash
-helm upgrade --install seldon-v2 k8s/helm-charts/seldon-core-v2-setup/ -n seldon-mesh \
+helm upgrade --install seldon-core-v2-setup seldon-charts/seldon-core-v2-setup \
+--namespace seldon-mesh \
 --set controller.clusterwide=true \
 --set kafka.topicPrefix=myorg \
 --set kafka.consumerGroupIdPrefix=myorg
