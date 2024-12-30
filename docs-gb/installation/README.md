@@ -21,6 +21,18 @@ Can be deployed on platforms like OpenShift or custom Kubernetes setups.
 
 By selecting the appropriate installation mode—whether it's Docker Compose for simplicity, Kind for local Kubernetes experimentation, or production-grade Kubernetes for scalability—you can effectively leverage Seldon Core 2 to meet your specific needs.
 
+## Helm Charts
+
+| **Name of the Helm Chart**              | **Description**                                                                                                                                              |
+|-----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `seldon-core-v2-crds`      | Cluster-wide installation of custom resources.                                                                                                              |
+| `seldon-core-v2-setup`     | Installation of the manager to manage resources in the namespace or cluster-wide. This also installs default `SeldonConfig` and `ServerConfig` resources, allowing *Runtimes* and *Servers* to be installed on demand. |
+| `seldon-core-v2-runtime`   | Installs a `SeldonRuntime` custom resource that creates the core components in a namespace.                                                                 |
+| `seldon-core-v2-servers`   | Installs `Server` custom resources providing example core servers to load models.                                                                            |
+| `seldon-core-v2-certs`     | A default set of certificates for TLS.                                                                                                                       |
+
+For more information, see the published [Helm charts](https://github.com/SeldonIO/helm-charts).
+
 ### Get started
 
 <table data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-cover data-type="files"></th><th data-hidden></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody>
