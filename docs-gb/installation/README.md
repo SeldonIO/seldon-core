@@ -33,6 +33,27 @@ By selecting the appropriate installation mode—whether it's Docker Compose for
 
 For more information, see the published [Helm charts](https://github.com/SeldonIO/helm-charts).
 
+## Core 2 Dependencies
+
+Here is a list of components that Seldon Core 2 requires, along with the minimum and maximum supported versions:
+
+| **Component**              | **Minimum Version** | **Maximum Version** | **Notes**                                                                                                                                               |
+|-----------------------------|---------------------|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Kubernetes**             | 1.27               | 1.31               | Required                                                                                                                                                |
+| **Envoy***                 | 1.32.2             | 1.32.2             | Required                                                                                                                                                |
+| **Rclone***                | 1.68.2             | 1.68.2             | Required                                                                                                                                                |
+| **Kafka**                  | 3.4                | 3.8                | Recommended (only required for operating Seldon Core 2 dataflow Pipelines)                                                                             |
+| **Prometheus**             | 2.0                | 2.x                | Optional                                                                                                                                                |
+| **Grafana**                | 10.0               | ***                | Optional (no hard limit on the maximum version to be used)                                                                                              |
+| **Prometheus-adapter**     | 0.12               | 0.12               | Optional                                                                                                                                                |
+| **Opentelemetry Collector**| 0.68               | ***                | Optional (no hard limit on the maximum version to be used)                                                                                              |
+
+### Notes:
+- **Envoy** and **Rclone**: These components are included as part of the Seldon Core 2 Docker images. You are not required to install them separately but must be aware of the configuration options supported by these versions.
+- **Kafka**: Only required for operating Seldon Core 2 dataflow Pipelines. If not needed, you should avoid installing `seldon-modelgateway`, `seldon-pipelinegateway`, and `seldon-dataflow-engine`.
+- **Maximum Versions** marked with `***` indicates no hard limit on the version that can be used.
+
+
 ### Get started
 
 <table data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-cover data-type="files"></th><th data-hidden></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody>
