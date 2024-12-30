@@ -33,7 +33,7 @@ By selecting the appropriate installation mode—whether it's Docker Compose for
 
 For more information, see the published [Helm charts](https://github.com/SeldonIO/helm-charts).
 
-## Core 2 Dependencies
+## Seldon Core 2 Dependencies
 
 Here is a list of components that Seldon Core 2 requires, along with the minimum and maximum supported versions:
 
