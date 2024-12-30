@@ -26,7 +26,7 @@ To use Seldon Core 2 in a production environment:
     ```
 
 ## Installing Seldon Core 2
-Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that are required to install Seldon Core 2. For more information see, [Helm charts](/docs-gb/installation/learning-environment/README.md#helm-charts).
+Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that are required to install Seldon Core 2. For more information see, [Helm charts](/docs-gb/installation/README.md#helm-charts) and [Dependencies](/docs-gb/installation/README.md#seldon-core-2-dependencies)
 
 1.  Add and update the Helm charts `seldon-charts` to the repository.
 
