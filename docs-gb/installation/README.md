@@ -57,7 +57,7 @@ Here is a list of components that Seldon Core 2 requires, along with the minimum
 ### Get started
 
 <table data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-cover data-type="files"></th><th data-hidden></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody>
-<tr><td><strong>Local environment</strong></td>
+<tr><td><strong>Learning environment</strong></td>
 <td>Install Seldon Core 2 in Docker Compose, or Kind </td>
 <td></td><td></td><td><a href="learning-environment/README.md">README.md</a></td></tr>
 <tr><td><strong>Production environment</strong></td>
