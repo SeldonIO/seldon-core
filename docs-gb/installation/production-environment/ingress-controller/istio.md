@@ -93,7 +93,7 @@ Installing Istio ingress controller in a Kubernetes cluster running Seldon Enter
     ```
 
     {% hint style="info" %}
-    Make a note of the IP address that is displayed in the output. This is the IP address that you require to [test the installation](/docs-gb/installation/production-environment/test-installation.md).
+    Make a note of the IP address that is displayed in the output. This is the IP address that you require to [test the installation](/docs-gb/installation/test-installation.md).
     {% endhint %}
 
 ### Expose Seldon mesh service
