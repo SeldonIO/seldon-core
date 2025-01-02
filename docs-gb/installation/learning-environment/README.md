@@ -109,7 +109,7 @@ You can install Seldon Core 2 and its components using Ansible in one of the fol
 
 ### Single command
 
-To install Core 2 into a new local kind Kubernetes cluster, you can use the `seldon-all` playbook with a single command:
+To install Seldon Core 2 into a new local kind Kubernetes cluster, you can use the `seldon-all` playbook with a single command:
 
 ```bash
 ansible-playbook playbooks/seldon-all.yaml
@@ -120,8 +120,7 @@ Prometheus, OpenTelemetry, and Jaeger as well as all the seldon-specific compone
 The seldon components are installed using helm-charts from the current git
 checkout (`../k8s/helm-charts/`).
 
-Internally this runs, in order, the following playbooks (described in more detail
-in the sections below):
+Internally this runs, in order, the following playbooks:
 - kind-cluster.yaml
 - setup-ecosystem.yaml
 - setup-seldon.yaml
