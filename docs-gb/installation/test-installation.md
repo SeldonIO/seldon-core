@@ -1,6 +1,6 @@
 # Verify the Installation of Seldon Core 2
 
-To confirm the successful installation of [Seldon Core 2](/docs-gb/installation/production-environment/README.md), [Kafka](/docs-gb/installation/production-environment/kafka/), and the [service mesh](/docs-gb/installation/production-environment/ingress-controller/), deploy a sample model and perform an inference test. Follow these steps:
+To confirm the successful installation of [Seldon Core 2](/docs-gb/installation/production-environment/README.md), [Kafka](/docs-gb/installation/production-environment/kafka/), and the [service mesh](/docs-gb/installation/production-environment/ingress-controller/istio.md), deploy a sample model and perform an inference test. Follow these steps:
 
 ## Deploy the Iris Model
 
