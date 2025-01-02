@@ -19,7 +19,12 @@ You could also install Seldon Core 2 locally if you have installed [Docker Compo
 
 * Install a Kubernetes cluster that is running version 1.27 or later.
 * Install [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl), the Kubernetes command-line tool.
-* Install [Helm](https://helm.sh/docs/intro/install/), the package manager for Kubernetes or [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-and-upgrading-ansible), the automation tool used for provisioning, configuration management, and application deployment.  
+* Install [Helm](https://helm.sh/docs/intro/install/), the package manager for Kubernetes or [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-and-upgrading-ansible), the automation tool used for provisioning, configuration management, and application deployment.
+
+{% hint style="info" %}
+**Note**: Ansible automates provisioning, configuration management, and handles all dependencies required for Seldon Core 2.
+With Helm, you need to configure and manage the dependencies yourself.
+{% endhint %}
 
 ## Installing Seldon Core 2
 
