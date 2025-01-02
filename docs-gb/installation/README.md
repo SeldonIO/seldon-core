@@ -48,7 +48,7 @@ Here is a list of components that Seldon Core 2 requires, along with the minimum
 | **Prometheus-adapter**     | 0.12               | 0.12               | Optional                                                                                                                                                |
 | **Opentelemetry Collector**| 0.68               | ***                | Optional (no hard limit on the maximum version to be used)                                                                                              |
 
-### Notes:
+**Notes**:
 - **Envoy** and **Rclone**: These components are included as part of the Seldon Core 2 Docker images. You are not required to install them separately but must be aware of the configuration options supported by these versions.
 - **Kafka**: Only required for operating Seldon Core 2 dataflow Pipelines. If not needed, you should avoid installing `seldon-modelgateway`, `seldon-pipelinegateway`, and `seldon-dataflow-engine`.
 - **Maximum Versions** marked with `***` indicates no hard limit on the version that can be used.
