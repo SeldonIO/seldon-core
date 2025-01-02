@@ -83,16 +83,15 @@ Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that
 
     serviceGRPCPrefix: "http2-"
     ```
-    This configuration installs Seldon Core 2 operator across an entire Kubernetes cluster.
-    You can configure the installation to deploy the Seldon Core 2 operator in a specific namespace. To do this, set `clusterwide` to `false` in the `components-values.yaml` file.
+    This configuration installs Seldon Core 2 operator across an entire Kubernetes cluster. To perform `cluster-wide` operations, create `ClusterRoles` and ensure you have the necessary permissions during deployment. With cluster-wide operations, you can create `SeldonRuntimes` in any namespace. You can also set the configuration to deploy the Seldon Core 2 operator in a specific namespace. To do this, set `clusterwide` to `false` in the `components-values.yaml` file.
 
-4.  Change to the directory that contains the `components-values.yaml` file and then install Seldon Core 2 operator in the namespace `seldon-system`.
+5.  Change to the directory that contains the `components-values.yaml` file and then install Seldon Core 2 operator in the namespace `seldon-mesh`.
 
     ```bash
      helm upgrade seldon-core-v2-components seldon-charts/seldon-core-v2-setup \
      --version 2.8.5 \
      -f components-values.yaml \
-     --namespace seldon-system \
+     --namespace seldon-mesh \
      --install
     ```
     To install Seldon Core 2 operator in a specific namespace `seldon`.
@@ -104,7 +103,7 @@ Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that
      --namespace seldon\
      --install
     ```
-5.  Install Seldon Core 2 runtimes in the namespace `seldon-mesh`.
+6.  Install Seldon Core 2 runtimes in the namespace `seldon-mesh`.
 
     ```bash
     helm upgrade seldon-core-v2-runtime seldon-charts/seldon-core-v2-runtime \
@@ -112,7 +111,7 @@ Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that
     --namespace seldon-mesh \
     --install
     ```
-6. Install Seldon Core 2 servers in the namespace `seldon-mesh`.
+7. Install Seldon Core 2 servers in the namespace `seldon-mesh`.
 
     ```bash
      helm upgrade seldon-core-v2-servers seldon-charts/seldon-core-v2-servers \
@@ -120,7 +119,7 @@ Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that
      --namespace seldon-mesh \
      --install
     ```
-7. Check Seldon Core 2 operator, runtimes, servers, and CRDS are installed in the namespace `seldon-mesh`:
+8. Check Seldon Core 2 operator, runtimes, servers, and CRDS are installed in the namespace `seldon-mesh`:
     ```bash
      kubectl get pods -n seldon-mesh
     ```
