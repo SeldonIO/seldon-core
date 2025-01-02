@@ -42,18 +42,67 @@ Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that
     --namespace default \
     --install 
     ```
-3.  Install Seldon Core 2 operator in the namespace `seldon-mesh`.
+3.  Create a YAML file to specify the initial configuration for Seldon Core 2 operator. For example, create the `components-values.yaml` file. Use your preferred text editor to create and save the file with the following content:
+
+    ```yaml
+    controller:
+      clusterwide: true
+
+    dataflow:
+      resources:
+        cpu: 500m
+
+    envoy:
+      service:
+        type: ClusterIP
+
+    kafka:
+      bootstrap: seldon-kafka-bootstrap.seldon-mesh:9092
+      topics:
+        numPartitions: 4
+
+    opentelemetry:
+      enable: false
+
+    scheduler:
+      service:
+        type: ClusterIP
+
+    serverConfig:
+      mlserver:
+        resources:
+          cpu: 1
+          memory: 2Gi
+
+      triton:
+        resources:
+          cpu: 1
+          memory: 2Gi
+
+    serviceGRPCPrefix: "http2-"
+    ```
+    This configuration installs Seldon Core 2 operator across an entire Kubernetes cluster.
+    You can configure the installation to deploy the Seldon Core 2 operator in a specific namespace. To do this, set `clusterwide` to `false` in the `components-values.yaml` file.
+
+4.  Change to the directory that contains the `components-values.yaml` file and then install Seldon Core 2 operator in the namespace `seldon-system`.
 
     ```bash
-     helm upgrade seldon-core-v2-setup seldon-charts/seldon-core-v2-setup \
+     helm upgrade seldon-core-v2-components seldon-charts/seldon-core-v2-setup \
      --version 2.8.5 \
-     --namespace seldon-mesh --set controller.clusterwide=true \
+     -f components-values.yaml \
+     --namespace seldon-system \
      --install
     ```
-    This configuration installs Seldon Core 2 operator across an entire Kubernetes cluster. To perform cluster-wide operations, create `ClusterRoles` and ensure your user has the necessary permissions during deployment. With cluster-wide operations, you can create `SeldonRuntimes` in any namespace.
+    To install Seldon Core 2 operator in a specific namespace `seldon`.
 
-    You can configure the installation to deploy the Seldon Core 2 operator in a specific namespace so that it control resources in the provided namespace. To do this, set `controller.clusterwide` to `false`.
-4.  Install Seldon Core 2 runtimes in the namespace `seldon-mesh`.
+    ```bash
+     helm upgrade seldon-core-v2-components seldon-charts/seldon-core-v2-setup \
+     --version 2.8.5 \
+     -f components-values.yaml \
+     --namespace seldon\
+     --install
+    ```
+5.  Install Seldon Core 2 runtimes in the namespace `seldon-mesh`.
 
     ```bash
     helm upgrade seldon-core-v2-runtime seldon-charts/seldon-core-v2-runtime \
@@ -61,7 +110,7 @@ Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that
     --namespace seldon-mesh \
     --install
     ```
-5. Install Seldon Core 2 servers in the namespace `seldon-mesh`.
+6. Install Seldon Core 2 servers in the namespace `seldon-mesh`.
 
     ```bash
      helm upgrade seldon-core-v2-servers seldon-charts/seldon-core-v2-servers \
@@ -69,7 +118,7 @@ Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that
      --namespace seldon-mesh \
      --install
     ```
-6. Check Seldon Core 2 operator, runtimes, servers, and CRDS are installed in the namespace `seldon-mesh`:
+7. Check Seldon Core 2 operator, runtimes, servers, and CRDS are installed in the namespace `seldon-mesh`:
     ```bash
      kubectl get pods -n seldon-mesh
     ```
