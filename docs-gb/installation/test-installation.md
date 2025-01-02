@@ -21,7 +21,7 @@ EOF
 ```
 The output is:
 ```
-model.mlops.seldon.io/iris configured
+model.mlops.seldon.io/iris created
 ```
 2. Verify that the model is deployed in the namespace `seldon-mesh`.
  ```bash
