@@ -7,10 +7,13 @@ description: Install Core 2 in a production Kubernetes environment.
 * Set up and connect to a Kubernetes cluster running version 1.27 or later. For instructions on connecting to your Kubernetes cluster, refer to the documentation provided by your cloud provider.
 * Install [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl), the Kubernetes command-line tool.
 * Install [Helm](https://helm.sh/docs/intro/install/), the package manager for Kubernetes.
+  
 
 To use Seldon Core 2 in a production environment:
 1. [Create namespaces](seldon-core-2.md#creating-namespaces)
 2. [Install Seldon Core 2](seldon-core-2.md#installing-seldon-core-2)
+
+Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that are required to install Seldon Core 2. For more information see about the Helm charts and the related dependencies, [Helm charts](/docs-gb/installation/README.md#helm-charts) and [Dependencies](/docs-gb/installation/README.md#seldon-core-2-dependencies).
 
 ## Creating Namespaces
 
@@ -26,7 +29,6 @@ To use Seldon Core 2 in a production environment:
     ```
 
 ## Installing Seldon Core 2
-Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that are required to install Seldon Core 2. For more information see, [Helm charts](/docs-gb/installation/README.md#helm-charts) and [Dependencies](/docs-gb/installation/README.md#seldon-core-2-dependencies)
 
 1.  Add and update the Helm charts `seldon-charts` to the repository.
 
