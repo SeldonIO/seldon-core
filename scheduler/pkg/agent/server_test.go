@@ -31,8 +31,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
-type mockScheduler struct {
-}
+type mockScheduler struct{}
 
 var _ scheduler.Scheduler = (*mockScheduler)(nil)
 
@@ -99,7 +98,7 @@ func (m *mockStore) UnloadVersionModels(modelKey string, version uint32) (bool, 
 	panic("implement me")
 }
 
-func (m *mockStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState store.ModelReplicaState, reason string) error {
+func (m *mockStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState store.ModelReplicaState, reason string, runtimeInfo *pbs.ModelRuntimeInfo) error {
 	model := m.models[modelKey]
 	for _, mv := range model.Versions {
 		if mv.GetVersion() == version {
@@ -795,7 +794,6 @@ func TestModelScalingProtos(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-
 			model, _ := test.store.GetModel(test.triggerModelName)
 			if model != nil { // in the cases where the model is not in the scheduler state yet
 				lastestModel := model.GetLatest()
@@ -891,7 +889,6 @@ func TestModelRelocatedWaiterSmoke(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-
 			waiter := newModelRelocatedWaiter()
 			for _, i := range test.input {
 				waiter.registerServerReplica(i.serverReplica.serverName, i.serverReplica.serverIdx, i.models)
@@ -913,7 +910,6 @@ func TestModelRelocatedWaiterSmoke(t *testing.T) {
 			waiter.signalModel("dummy")
 		})
 	}
-
 }
 
 func TestAutoscalingEnabled(t *testing.T) {
@@ -960,7 +956,6 @@ func TestAutoscalingEnabled(t *testing.T) {
 			g.Expect(enabled).To(Equal(test.enabled))
 		})
 	}
-
 }
 
 func TestSubscribe(t *testing.T) {

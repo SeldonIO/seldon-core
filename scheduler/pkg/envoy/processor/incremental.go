@@ -680,6 +680,7 @@ func (p *IncrementalProcessor) modelSync() {
 					serverReplicaExpectedState,
 					serverReplicaState,
 					reason,
+					nil,
 				)
 				if err2 != nil {
 					logger.WithError(err2).Warnf("Failed to update replica state for model %s to %s from %s",
@@ -704,6 +705,7 @@ func (p *IncrementalProcessor) modelSync() {
 				serverReplicaExpectedState,
 				store.UnloadRequested,
 				"",
+				nil,
 			); err != nil {
 				logger.WithError(err).Warnf("Failed to update replica state for model %s to %s from %s",
 					mv.name, store.UnloadRequested.String(), serverReplicaExpectedState.String())

@@ -499,7 +499,7 @@ func (f fakeModelStore) UnloadVersionModels(modelKey string, version uint32) (bo
 	panic("implement me")
 }
 
-func (f fakeModelStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState store.ModelReplicaState, reason string) error {
+func (f fakeModelStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState store.ModelReplicaState, reason string, runtimeInfo *scheduler.ModelRuntimeInfo) error {
 	panic("implement me")
 }
 

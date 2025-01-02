@@ -44,6 +44,7 @@ message ModelSpec {
   optional string server = 6; // the particular model server to load the model. If unspecified will be chosen.
   optional ExplainerSpec explainer = 7; // optional black box explainer details
   repeated ParameterSpec parameters = 8; // parameters to load with model
+  optional ModelRuntimeInfo modelRuntimeInfo = 9; // model specific settings that are sent by the agent
 }
 
 message ParameterSpec {
@@ -57,6 +58,27 @@ message ExplainerSpec {
   optional string modelRef = 2;
   optional string pipelineRef = 3;
 }
+
+message ModelRuntimeInfo {
+  oneof modelRuntimeInfo {
+    MLServerModelSettings mlserver = 1; 
+    TritonModelConfig triton = 2;
+    }
+}
+
+message MLServerModelSettings {
+  uint32 parallelWorkers = 1;
+}
+
+message TritonModelConfig {
+  repeated TritonCPU cpu = 1;
+}
+
+message TritonCPU {
+  uint32 instanceCount = 1;
+  }
+
+
 
 message KubernetesMeta {
   string namespace = 1;

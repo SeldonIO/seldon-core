@@ -29,7 +29,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
@@ -66,8 +65,8 @@ func (f *FakeModelRepository) RemoveModelVersion(modelName string) error {
 	return nil
 }
 
-func (f *FakeModelRepository) GetModelRuntimeInfo(modelName string) (*pb.ModelRuntimeInfo, error) {
-	return &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &agent.MLServerModelSettings{ParallelWorkers: uint32(1)}}}, nil
+func (f *FakeModelRepository) GetModelRuntimeInfo(modelName string) (*pbs.ModelRuntimeInfo, error) {
+	return &pbs.ModelRuntimeInfo{ModelRuntimeInfo: &pbs.ModelRuntimeInfo_Mlserver{Mlserver: &pbs.MLServerModelSettings{ParallelWorkers: uint32(1)}}}, nil
 }
 
 func (f *FakeModelRepository) DownloadModelVersion(modelName string, version uint32, modelSpec *pbs.ModelSpec, config []byte) (*string, error) {
@@ -254,7 +253,6 @@ func TestLoadModel(t *testing.T) {
 		models                  []string
 		replicaConfig           *pb.ReplicaConfig
 		op                      *pb.ModelOperationMessage
-		modelConfig             *pb.ModelRuntimeInfo
 		expectedAvailableMemory uint64
 		v2Status                int
 		modelRepoErr            error
@@ -262,8 +260,8 @@ func TestLoadModel(t *testing.T) {
 		autoscalingEnabled      bool
 	}
 
-	smallMemory := uint64(500)
-	largeMemory := uint64(2000)
+	memory500 := uint64(500)
+	memory2000 := uint64(2000)
 
 	tests := []test{
 		{
@@ -276,13 +274,11 @@ func TestLoadModel(t *testing.T) {
 						Meta: &pbs.MetaData{
 							Name: "iris",
 						},
-						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
+						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &memory500, ModelRuntimeInfo: getModelRuntimeInfo(1)},
 					},
-					RuntimeInfo: getModelRuntimeInfo(1),
 				},
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
-			modelConfig:             getModelRuntimeInfo(1),
 			expectedAvailableMemory: 500,
 			v2Status:                200,
 			success:                 true,
@@ -297,14 +293,12 @@ func TestLoadModel(t *testing.T) {
 						Meta: &pbs.MetaData{
 							Name: "iris",
 						},
-						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
+						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &memory500, ModelRuntimeInfo: getModelRuntimeInfo(1)},
 					},
-					RuntimeInfo: getModelRuntimeInfo(1),
 				},
 				AutoscalingEnabled: true,
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
-			modelConfig:             getModelRuntimeInfo(1),
 			expectedAvailableMemory: 500,
 			v2Status:                200,
 			success:                 true,
@@ -320,13 +314,11 @@ func TestLoadModel(t *testing.T) {
 						Meta: &pbs.MetaData{
 							Name: "iris",
 						},
-						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
+						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &memory500, ModelRuntimeInfo: getModelRuntimeInfo(1)},
 					},
-					RuntimeInfo: getModelRuntimeInfo(1),
 				},
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
-			modelConfig:             getModelRuntimeInfo(1),
 			expectedAvailableMemory: 1000,
 			v2Status:                400,
 			success:                 false,
@@ -341,13 +333,11 @@ func TestLoadModel(t *testing.T) {
 						Meta: &pbs.MetaData{
 							Name: "iris",
 						},
-						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &largeMemory},
+						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &memory2000, ModelRuntimeInfo: getModelRuntimeInfo(1)},
 					},
-					RuntimeInfo: getModelRuntimeInfo(1),
 				},
 			},
 			replicaConfig:           &pb.ReplicaConfig{MemoryBytes: 1000},
-			modelConfig:             getModelRuntimeInfo(1),
 			expectedAvailableMemory: 1000,
 			v2Status:                200,
 			success:                 false,

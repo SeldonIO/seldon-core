@@ -14,6 +14,7 @@ import (
 	"sync"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -141,7 +142,7 @@ func (modelState *ModelState) getVersionsForAllModels() []*agent.ModelVersion {
 		mv := version.get()
 		versionedModelName := mv.Model.GetMeta().Name
 		originalModelName, originalModelVersion, _ := util.GetOrignalModelNameAndVersion(versionedModelName)
-		modelRuntimeInfo := mv.RuntimeInfo
+		modelRuntimeInfo := mv.Model.GetModelSpec().GetModelRuntimeInfo()
 		loadedModels = append(loadedModels, getModifiedModelVersion(originalModelName, originalModelVersion, mv, modelRuntimeInfo))
 	}
 	return loadedModels
@@ -157,11 +158,11 @@ func (version *modelVersion) getVersionMemory() uint64 {
 }
 
 func getInstanceCount(version *modelVersion) uint64 {
-	switch version.versionInfo.RuntimeInfo.ModelRuntimeInfo.(type) {
-	case *agent.ModelRuntimeInfo_Mlserver:
-		return uint64(version.versionInfo.GetRuntimeInfo().GetMlserver().ParallelWorkers)
-	case *agent.ModelRuntimeInfo_Triton:
-		return uint64(version.versionInfo.GetRuntimeInfo().GetTriton().Cpu[0].InstanceCount)
+	switch version.get().GetModel().GetModelSpec().GetModelRuntimeInfo().ModelRuntimeInfo.(type) {
+	case *scheduler.ModelRuntimeInfo_Mlserver:
+		return uint64(version.get().GetModel().GetModelSpec().GetModelRuntimeInfo().GetMlserver().ParallelWorkers)
+	case *scheduler.ModelRuntimeInfo_Triton:
+		return uint64(version.get().GetModel().GetModelSpec().GetModelRuntimeInfo().GetTriton().Cpu[0].InstanceCount)
 	default:
 		return 1
 	}

@@ -19,6 +19,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 )
@@ -54,11 +55,13 @@ func isReady(service interfaces.DependencyServiceInterface, logger *log.Entry, m
 	return backoff.RetryNotify(readyToError, backoffWithMax, logFailure)
 }
 
-func getModifiedModelVersion(modelId string, version uint32, originalModelVersion *agent.ModelVersion, modelRuntimeInfo *agent.ModelRuntimeInfo) *agent.ModelVersion {
+func getModifiedModelVersion(modelId string, version uint32, originalModelVersion *agent.ModelVersion, modelRuntimeInfo *scheduler.ModelRuntimeInfo) *agent.ModelVersion {
 	mv := proto.Clone(originalModelVersion)
 	mv.(*agent.ModelVersion).Model.Meta.Name = modelId
+	if mv.(*agent.ModelVersion).Model.ModelSpec != nil && modelRuntimeInfo != nil {
+		mv.(*agent.ModelVersion).Model.ModelSpec.ModelRuntimeInfo = modelRuntimeInfo
+	}
 	mv.(*agent.ModelVersion).Version = version
-	mv.(*agent.ModelVersion).RuntimeInfo = modelRuntimeInfo
 	return mv.(*agent.ModelVersion)
 }
 
