@@ -93,7 +93,7 @@ Installing Istio ingress controller in a Kubernetes cluster running Seldon Enter
     ```
 
     {% hint style="info" %}
-    Make a note of the IP address that is displayed in the output. This is the IP address that you require to try out the [Kubernetes Examples](/docs-gb/examples/k8s-examples.md).
+    Make a note of the IP address that is displayed in the output. This is the IP address that you require to [test the installation](/docs-gb/installation/production-environment/test-installation.md).
     {% endhint %}
 
 ### Expose Seldon mesh service
@@ -153,6 +153,9 @@ It is important to expose `seldon-service` service to enable communication betwe
 #### Optional: Enable HTTPS/TLS
 
 To secure your Ingress with HTTPS, you can configure TLS settings in the `Gateway` resource using a certificate and key. This involves additional steps like creating Kubernetes secrets for your certificates.
+
+#### Next Steps:
+[Verify the installation](/docs-gb/installation/production-environment/test-installation.md)
 
 #### Additional Resources
 
