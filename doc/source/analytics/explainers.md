@@ -45,7 +45,7 @@ For an e2e example, please check AnchorTabular notebook [here](../examples/iris_
 
 ## Explain API
 
-**Note**: Seldon protocol and TensorFlow protocol are no longer supported, as Seldon has transitioned to the industry-standard Open Inference Protocol (OIP). Customers are encouraged to migrate to OIP, which offers seamless integration across various model serving runtimes, supports the development of versatile client and benchmarking tools, and ensures a high-performance, consistent, and unified inference experience.
+**Note**: Seldon is phasing out support for the Seldon and TensorFlow protocols, transitioning to the industry-standard Open Inference Protocol (OIP). We encourage customers to migrate to OIP, which facilitates seamless integration across various model serving runtimes, supports the development of versatile client and benchmarking tools, and ensures a high-performance, consistent, and unified inference experience.
 
 
 For the Seldon Protocol an endpoint path will be exposed for:
