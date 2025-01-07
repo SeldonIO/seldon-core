@@ -46,7 +46,6 @@ With Helm, you need to configure and manage the dependencies yourself.
 
     ```bash
     helm upgrade seldon-core-v2-crds seldon-charts/seldon-core-v2-crds \
-    --version 2.8.5 \
     --namespace default \
     --install 
     ```
@@ -54,7 +53,6 @@ With Helm, you need to configure and manage the dependencies yourself.
 
     ```bash
      helm upgrade seldon-core-v2-setup seldon-charts/seldon-core-v2-setup \
-     --version 2.8.5 \
      --namespace seldon-mesh --set controller.clusterwide=true \
      --install
     ```
@@ -66,7 +64,6 @@ With Helm, you need to configure and manage the dependencies yourself.
 
     ```bash
     helm upgrade seldon-core-v2-runtime seldon-charts/seldon-core-v2-runtime \
-    --version 2.8.5 \
     --namespace seldon-mesh \
     --install
     ```
@@ -74,7 +71,6 @@ With Helm, you need to configure and manage the dependencies yourself.
 
     ```bash
      helm upgrade seldon-core-v2-servers seldon-charts/seldon-core-v2-servers \
-     --version 2.8.5 \
      --namespace seldon-mesh \
      --install
     ```

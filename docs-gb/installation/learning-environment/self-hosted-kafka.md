@@ -37,45 +37,83 @@ Strimzi provides a Kubernetes Operator to deploy and manage Kafka clusters. Firs
 
     This deploys the `Strimzi Operator` in the `seldon-mesh` namespace. After the Strimzi Operator is running, you can create a Kafka cluster by applying a Kafka custom resource definition.
 4.  Create a YAML file to specify the initial configuration.
-   This configuration sets up a Kafka cluster with version 3.7.0. Ensure that you review the the [supported versions](https://strimzi.io/downloads/) of Kafka and update the version in the `kafka.yaml` file as needed. For more configuration examples, see this [strimzi-kafka-operator](https://github.com/strimzi/strimzi-kafka-operator/tree/main/examples/kafka). For example, create the `kafka.yaml` file. Use your preferred text editor to create and save the file with the following content:
+   This configuration sets up a Kafka cluster with version 3.9.0. Ensure that you review the the [supported versions](https://strimzi.io/downloads/) of Kafka and update the version in the `kafka.yaml` file as needed. For more configuration examples, see this [strimzi-kafka-operator](https://github.com/strimzi/strimzi-kafka-operator/tree/main/examples/kafka). For example, create the `kafka.yaml` file. Use your preferred text editor to create and save the file with the following content:
 
-    ```yaml
-     apiVersion: kafka.strimzi.io/v1beta2
-     kind: Kafka
-     metadata:
-       name: seldon
-       namespace: seldon-mesh
-     spec:
-       kafka:
-         replicas: 3
-         version: 3.7.0
-         config:
-           auto.create.topics.enable: true
-           default.replication.factor: 1
-           inter.broker.protocol.version: 3.7
-           min.insync.replicas: 1
-           offsets.topic.replication.factor: 1
-           transaction.state.log.min.isr: 1
-           transaction.state.log.replication.factor: 1
-         listeners:
-         - name: plain
-           port: 9092
-           tls: false
-           type: internal
-         storage:
-           type: ephemeral
-       zookeeper:
-         replicas: 1
-         storage:
-           type: ephemeral
-    ```
-
+  ```yaml
+  apiVersion: kafka.strimzi.io/v1beta2
+  kind: Kafka
+  metadata:
+    name: seldon
+    namespace: seldon-mesh
+    annotations:
+      strimzi.io/node-pools: enabled
+      strimzi.io/kraft: enabled
+  spec:
+    kafka:
+      replicas: 3
+      version: 3.9.0
+      listeners:
+        - name: plain
+          port: 9092
+          tls: false
+          type: internal
+        - name: tls
+          port: 9093
+          tls: true
+          type: internal
+      config:
+        processMode: kraft
+        auto.create.topics.enable: true
+        default.replication.factor: 1
+        inter.broker.protocol.version: 3.7
+        min.insync.replicas: 1
+        offsets.topic.replication.factor: 1
+        transaction.state.log.min.isr: 1
+        transaction.state.log.replication.factor: 1
+    entityOperator: null
+  ```
 6.  Apply the Kafka cluster configuration.
 
     ```
     kubectl apply -f kafka.yaml -n seldon-mesh
     ```
-7.  Check the status of the Kafka Pods to ensure they are running properly:
+7.  Create a YAML file named `kafka-nodepool.yaml` to create a nodepool for the kafka cluster.
+
+  ```yaml
+  apiVersion: kafka.strimzi.io/v1beta2
+  kind: KafkaNodePool
+  metadata:
+    name: kafka
+    namespace: seldon-mesh
+    labels:
+      strimzi.io/cluster: seldon
+  spec:
+    replicas: 3
+    roles:
+      - broker
+      - controller
+    resources:
+      requests:
+        cpu: '500m'
+        memory: '2Gi'
+      limits:
+        memory: '2Gi'
+    template:
+      pod:
+        tmpDirSizeLimit: 1Gi
+    storage:
+      type: jbod
+      volumes:
+        - id: 0
+          type: ephemeral
+          sizeLimit: 500Mi
+          kraftMetadata: shared
+        - id: 1
+          type: persistent-claim
+          size: 10Gi
+          deleteClaim: false
+  ```    
+8.  Check the status of the Kafka Pods to ensure they are running properly:
 
     ```
     kubectl get pods -n seldon-mesh
@@ -89,21 +127,20 @@ To check the status of the Pods in real time use this command: `kubectl get pods
 You should see multiple Pods for Kafka, Zookeeper, and Strimzi operators running.
 
     ```bash
-    NAME                                            READY   STATUS    RESTARTS        AGE
-    hodometer-749d7c6875-4d4vw                      1/1     Running   0               17m
-    mlserver-0                                      3/3     Running   0               16m
-    seldon-dataflow-engine-7b98c76d67-v2ztq         1/1     Running   8 (5m33s ago)   17m
-    seldon-envoy-bb99f6c6b-4mpjd                    1/1     Running   0               17m
-    seldon-kafka-0                                  1/1     Running   0               111s
-    seldon-kafka-1                                  1/1     Running   0               111s
-    seldon-kafka-2                                  1/1     Running   0               111s
-    seldon-modelgateway-5c76c7695b-bhfj5            1/1     Running   0               17m
-    seldon-pipelinegateway-584c7d95c-bs8c9          1/1     Running   0               17m
-    seldon-scheduler-0                              1/1     Running   0               17m
-    seldon-v2-controller-manager-5dd676c7b7-xq5sm   1/1     Running   0               17m
-    seldon-zookeeper-0                              1/1     Running   0               2m26s
-    strimzi-cluster-operator-7cf9ff5686-6tb7p       1/1     Running   0               5m10s
-    triton-0                                        3/3     Running   0               16m
+    NAME                                            READY   STATUS    RESTARTS      AGE
+    hodometer-5489f768bf-9xnmd                      1/1     Running   0             25m
+    mlserver-0                                      3/3     Running   0             24m
+    seldon-dataflow-engine-75f9bf6d8f-2blgt         1/1     Running   5 (23m ago)   25m
+    seldon-envoy-7c764cc88-xg24l                    1/1     Running   0             25m
+    seldon-kafka-0                                  1/1     Running   0             21m
+    seldon-kafka-1                                  1/1     Running   0             21m
+    seldon-kafka-2                                  1/1     Running   0             21m
+    seldon-modelgateway-54d457794-x4nzq             1/1     Running   0             25m
+    seldon-pipelinegateway-6957c5f9dc-6blx6         1/1     Running   0             25m
+    seldon-scheduler-0                              1/1     Running   0             25m
+    seldon-v2-controller-manager-7b5df98677-4jbpp   1/1     Running   0             25m
+    strimzi-cluster-operator-66b5ff8bbb-qnr4l       1/1     Running   0             23m
+    triton-0                                        3/3     Running   0             24m
     ```
 
 ## Configuring Seldon Core 2

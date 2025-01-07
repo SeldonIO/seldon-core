@@ -40,7 +40,6 @@ Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that
 
     ```bash
     helm upgrade seldon-core-v2-crds seldon-charts/seldon-core-v2-crds \
-    --version 2.8.5 \
     --namespace default \
     --install 
     ```
@@ -48,7 +47,6 @@ Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that
 
     ```bash
      helm upgrade seldon-core-v2-setup seldon-charts/seldon-core-v2-setup \
-     --version 2.8.5 \
      --namespace seldon-mesh --set controller.clusterwide=true \
      --install
     ```
@@ -59,7 +57,6 @@ Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that
 
     ```bash
     helm upgrade seldon-core-v2-runtime seldon-charts/seldon-core-v2-runtime \
-    --version 2.8.5 \
     --namespace seldon-mesh \
     --install
     ```
@@ -67,7 +64,6 @@ Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that
 
     ```bash
      helm upgrade seldon-core-v2-servers seldon-charts/seldon-core-v2-servers \
-     --version 2.8.5 \
      --namespace seldon-mesh \
      --install
     ```
