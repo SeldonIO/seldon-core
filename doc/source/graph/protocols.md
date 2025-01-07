@@ -11,9 +11,8 @@ Seldon Core supports the following data planes:
  * REST and gRPC Tensorflow Serving Protocol
 
 
-{% tabs %}
 
-{% tab title="REST and gRPC Open Inference Protocol" %}
+### REST and gRPC Open Inference Protocol
 
 Seldon has collaborated with the [NVIDIA Triton Server
 Project](https://github.com/triton-inference-server/server) and the [KServe
@@ -60,17 +59,16 @@ In particular,
 | [MLFLOW_SERVER](../servers/mlflow.md) | ✅  | [Seldon MLServer](https://github.com/seldonio/mlserver) |
 
 You can try out the `v2` in [this example notebook](../examples/protocol_examples.html). 
- {% endtab %}
 
-{% tab title="REST and gRPC Seldon Protocol" %} 
+
+### REST and gRPC Seldon Protocol
 * [REST Seldon Protocol](../reference/apis/index.html)
 
 Seldon is the default protocol for SeldonDeployment resources. You can specify the gRPC protocol by setting `transport: grpc` in your SeldonDeployment resource or ensuring all components in the graph have endpoint.tranport set ot grpc.
 
 See [example notebook](../examples/protocol_examples.html). 
-{% endtab %}
 
-{% tab title="REST and gRPC Tensorflow Protocol" %} 
+### REST and gRPC Tensorflow Protocol
   * [REST Tensorflow Protocol definition](https://github.com/tensorflow/serving/blob/master/tensorflow_serving/g3doc/api_rest.md).
   * [gRPC Tensorflow Protocol definition](https://github.com/tensorflow/serving/blob/master/tensorflow_serving/apis/prediction_service.proto).
 
@@ -92,6 +90,5 @@ General considerations:
   * a non-standard Seldon extension is available to call predict on the graph as a whole: `/v1/models/:predict`.
   * The name of the model in the `graph` section of the SeldonDeployment spec must match the name of the model loaded onto the Tensorflow Server. {% endtab %}
 
-{% endtabs %}
 
 
