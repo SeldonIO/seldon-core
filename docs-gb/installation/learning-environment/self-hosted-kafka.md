@@ -159,13 +159,15 @@ settings for Kafka configuration.
 
     ```
     NAME                       DATA   AGE
-    kube-root-ca.crt           1      50m
-    seldon-agent               1      48m
-    seldon-kafka               1      48m
-    seldon-manager-config      1      49m
-    seldon-tracing             4      48m
-    seldon-zookeeper-config    2      5m
-    strimzi-cluster-operator   1      44m
+    kube-root-ca.crt           1      38m
+    seldon-agent               1      30m
+    seldon-kafka               1      30m
+    seldon-kafka-0             6      26m
+    seldon-kafka-1             6      26m
+    seldon-kafka-2             6      26m
+    seldon-manager-config      1      30m
+    seldon-tracing             4      30m
+    strimzi-cluster-operator   1      28m
     ```
 2. View the configuration of the the ConfigMap named `seldon-kafka`.
 
