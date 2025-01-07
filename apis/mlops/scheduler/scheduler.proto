@@ -76,9 +76,7 @@ message TritonModelConfig {
 
 message TritonCPU {
   uint32 instanceCount = 1;
-  }
-
-
+}
 
 message KubernetesMeta {
   string namespace = 1;
