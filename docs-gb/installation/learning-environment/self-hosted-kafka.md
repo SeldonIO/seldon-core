@@ -164,7 +164,7 @@ You should see multiple Pods for Kafka, and Strimzi operators running.
    ```
    kubectl get svc -n seldon-mesh
    ```
-1. Manually restart the Pod:
+1. Restart the Pod:
    ```
    kubectl delete pod <seldon-dataflow-engine> -n seldon-mesh 
    ```
