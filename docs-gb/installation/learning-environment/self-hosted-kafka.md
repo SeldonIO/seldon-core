@@ -124,7 +124,7 @@ Strimzi provides a Kubernetes Operator to deploy and manage Kafka clusters. Firs
 To check the status of the Pods in real time use this command: `kubectl get pods -w -n seldon-mesh`. 
 {% endhint %}
 
-You should see multiple Pods for Kafka, Zookeeper, and Strimzi operators running.
+You should see multiple Pods for Kafka, and Strimzi operators running.
 
     ```bash
     NAME                                            READY   STATUS    RESTARTS      AGE
@@ -143,6 +143,32 @@ You should see multiple Pods for Kafka, Zookeeper, and Strimzi operators running
     triton-0                                        3/3     Running   0             24m
     ```
 
+### Troubleshooting
+
+**Error**
+ The Pod that begins with the name `seldon-dataflow-engine` does not show the status as `Running`.
+
+ One of the possible reasons could be that the DNS resolution for the service failed.
+
+**Solution**
+1. Check the logs of the Pod `<seldon-dataflow-engine>`:
+   ```
+   kubectl logs <seldon-dataflow-engine> -n seldon-mesh
+   ```
+1. In the output check if a message reads:
+   ```
+   WARN [main] org.apache.kafka.clients.ClientUtils : Couldn't resolve server seldon-kafka-bootstrap.seldon-mesh:9092 from bootstrap.servers as DNS resolution failed for seldon-kafka-bootstrap.seldon-mesh
+   ```
+1. Verify the `name` in the `metadata` for the `kafka.yaml` and `kafka-nodepool.yaml`. It should read `seldon`.
+1. Check the name of the Kafka services in the namespace:
+   ```
+   kubectl get svc -n seldon-mesh
+   ```
+1. Manually restart the Pod:
+   ```
+   kubectl delete pod <seldon-dataflow-engine> -n seldon-mesh 
+   ```
+   
 ## Configuring Seldon Core 2
 
 When the `SeldonRuntime` is installed in a namespace a ConfigMap is created with the
