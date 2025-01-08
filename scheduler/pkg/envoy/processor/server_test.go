@@ -1,3 +1,12 @@
+/*
+Copyright (c) 2024 Seldon Technologies Ltd.
+
+Use of this software is governed BY
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
+*/
+
 package processor
 
 import (
@@ -46,6 +55,7 @@ func TestFetch(t *testing.T) {
 		modelStore:       memoryStore,
 		experimentServer: experiment.NewExperimentServer(logger, nil, memoryStore, pipelineHandler),
 		nodeID:           "node_1",
+		batchWait:        time.Nanosecond,
 	}
 
 	port, err := testing_utils.GetFreePortForTest()
@@ -72,10 +82,9 @@ func TestFetch(t *testing.T) {
 }
 
 func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) func(t *testing.T) {
-	firstFetch := append(permanentClusterNames, "model_1_grpc", "model_1_http")
+	firstFetch := []string{"model_1_grpc", "model_1_http"}
 
 	return func(t *testing.T) {
-		fecthAndVerifyResponse(permanentClusterNames, c, g)
 
 		ops := []func(inc *IncrementalProcessor, g *WithT){
 			createTestServer("server", 1),
@@ -88,13 +97,16 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 		}()
 
 		g.Eventually(inc.xdsCache.Clusters).WithPolling(100 * time.Millisecond).WithTimeout(5 * time.Second).Should(HaveKey(MatchRegexp(`^model_1`)))
+		result := fetch(c, g, firstFetch)
 
-		fecthAndVerifyResponse(firstFetch, c, g)
+		// version 1 exists
+		g.Expect(result).Should(ContainElements(permanentClusterNames))
+		g.Expect(result).Should(ContainElements(firstFetch))
 	}
 }
 
 func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSClient) func(t *testing.T) {
-	secondFetch := append(permanentClusterNames, "model_2_grpc", "model_2_http")
+	secondFetch := []string{"model_2_grpc", "model_2_http"}
 
 	return func(t *testing.T) {
 		ops := []func(inc *IncrementalProcessor, g *WithT){
@@ -107,30 +119,31 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 		}()
 
 		g.Eventually(inc.xdsCache.Clusters).WithPolling(100 * time.Millisecond).WithTimeout(5 * time.Second).Should(HaveKey(MatchRegexp(`^model_2`)))
+		result := fetch(c, g, secondFetch)
 
 		// version 2 exists
-		fecthAndVerifyResponse(secondFetch, c, g)
+		g.Expect(result).Should(ContainElements(permanentClusterNames))
+		g.Expect(result).Should(ContainElements(secondFetch))
 	}
 }
 
-func fecthAndVerifyResponse(expectedClusterNames []string, c client.ADSClient, g *WithT) {
-	slices.Sort(expectedClusterNames)
-	g.Expect(fetch(c, g)).Should(ContainElements(expectedClusterNames))
-}
-
-func fetch(c client.ADSClient, g *WithT) []string {
-	resp, err := c.Fetch()
-	g.Expect(err).To(BeNil())
+func fetch(c client.ADSClient, g *WithT, expectedClusterNames []string) []string {
 	actualClusterNames := make([]string, 0)
-	for _, r := range resp.Resources {
-		cluster := &clusterv3.Cluster{}
-		err := anypb.UnmarshalTo(r, cluster, proto.UnmarshalOptions{})
+
+	for !slices.Contains(actualClusterNames, expectedClusterNames[0]) && !slices.Contains(actualClusterNames, expectedClusterNames[1]) {
+		resp, err := c.Fetch()
 		g.Expect(err).To(BeNil())
-		actualClusterNames = append(actualClusterNames, cluster.Name)
+		for _, r := range resp.Resources {
+			cluster := &clusterv3.Cluster{}
+			err := anypb.UnmarshalTo(r, cluster, proto.UnmarshalOptions{})
+			g.Expect(err).To(BeNil())
+			actualClusterNames = append(actualClusterNames, cluster.Name)
+		}
+		slices.Sort(actualClusterNames)
+		err = c.Ack()
+		g.Expect(err).To(BeNil())
 	}
-	slices.Sort(actualClusterNames)
-	err = c.Ack()
-	g.Expect(err).To(BeNil())
+
 	return actualClusterNames
 }
 

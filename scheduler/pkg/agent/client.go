@@ -27,6 +27,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
@@ -683,6 +684,7 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage, timestamp int
 	defer c.modelTimestamps.Store(modelWithVersion, timestamp)
 
 	// we do not care about model versions here
+	// model runtime info is retrieved from the existing version, so nil is passed here
 	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, request.GetModelVersion(), nil)
 
 	unloaderFn := func() error {
@@ -751,7 +753,7 @@ func (c *Client) sendModelEventError(
 func (c *Client) sendAgentEvent(
 	modelName string,
 	modelVersion uint32,
-	modelRuntimeInfo *agent.ModelRuntimeInfo,
+	modelRuntimeInfo *scheduler.ModelRuntimeInfo,
 	event agent.ModelEventMessage_Event,
 ) error {
 	// if the server is draining and the model load has succeeded, we need to "cancel"

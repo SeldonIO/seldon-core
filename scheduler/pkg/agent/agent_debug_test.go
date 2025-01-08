@@ -56,11 +56,11 @@ func TestAgentDebugServiceSmoke(t *testing.T) {
 					Name: "dummy_1_1",
 				},
 				ModelSpec: &pbs.ModelSpec{
-					Uri:         "gs://dummy",
-					MemoryBytes: &mem,
+					Uri:              "gs://dummy",
+					MemoryBytes:      &mem,
+					ModelRuntimeInfo: getModelRuntimeInfo(1),
 				},
 			},
-			RuntimeInfo: getModelRuntimeInfo(1),
 		},
 	)
 	g.Expect(err).To(BeNil())

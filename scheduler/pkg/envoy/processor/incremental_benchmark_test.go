@@ -98,6 +98,7 @@ func addModel(
 			store.LoadRequested,
 			store.Loaded,
 			"",
+			nil,
 		)
 		require.NoError(b, err)
 	}

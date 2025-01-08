@@ -275,12 +275,12 @@ func (s *Server) Sync(modelName string) {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				if errState := s.store.UpdateModelState(
 					latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil,
-					store.LoadRequested, store.LoadFailed, err.Error()); errState != nil {
+					store.LoadRequested, store.LoadFailed, err.Error(), nil); errState != nil {
 					logger.WithError(errState).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				}
 				continue
 			}
-			err = s.store.UpdateModelState(latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil, store.LoadRequested, store.Loading, "")
+			err = s.store.UpdateModelState(latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil, store.LoadRequested, store.Loading, "", nil)
 			if err != nil {
 				logger.WithError(err).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				continue
@@ -307,12 +307,12 @@ func (s *Server) Sync(modelName string) {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				if errState := s.store.UpdateModelState(
 					latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil,
-					store.UnloadRequested, store.UnloadFailed, err.Error()); errState != nil {
+					store.UnloadRequested, store.UnloadFailed, err.Error(), nil); errState != nil {
 					logger.WithError(errState).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				}
 				continue
 			}
-			err = s.store.UpdateModelState(modelVersion.Key(), modelVersion.GetVersion(), modelVersion.Server(), replicaIdx, nil, store.UnloadRequested, store.Unloading, "")
+			err = s.store.UpdateModelState(modelVersion.Key(), modelVersion.GetVersion(), modelVersion.Server(), replicaIdx, nil, store.UnloadRequested, store.Unloading, "", nil)
 			if err != nil {
 				logger.WithError(err).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				continue
@@ -352,7 +352,7 @@ func (s *Server) AgentEvent(ctx context.Context, message *pb.ModelEventMessage) 
 	logger.Infof("Updating state for model %s to %s", message.ModelName, desiredState.String())
 	s.store.LockModel(message.ModelName)
 	defer s.store.UnlockModel(message.ModelName)
-	err := s.store.UpdateModelState(message.ModelName, message.GetModelVersion(), message.ServerName, int(message.ReplicaIdx), &message.AvailableMemoryBytes, expectedState, desiredState, message.GetMessage())
+	err := s.store.UpdateModelState(message.ModelName, message.GetModelVersion(), message.ServerName, int(message.ReplicaIdx), &message.AvailableMemoryBytes, expectedState, desiredState, message.GetMessage(), message.GetRuntimeInfo())
 	if err != nil {
 		logger.WithError(err).Infof("Failed Updating state for model %s", message.ModelName)
 		return nil, status.Error(codes.Internal, err.Error())
@@ -507,7 +507,6 @@ func (s *Server) drainServerReplicaImpl(serverName string, serverReplicaIdx int)
 }
 
 func (s *Server) applyModelScaling(message *pb.ModelScalingTriggerMessage) error {
-
 	modelName := message.ModelName
 	model, err := s.store.GetModel(modelName)
 	if err != nil {
@@ -585,7 +584,6 @@ func isModelStable(modelVersion *store.ModelVersion) bool {
 }
 
 func calculateDesiredNumReplicas(model *pbs.Model, trigger pb.ModelScalingTriggerMessage_Trigger, numReplicas int) (int, error) {
-
 	if trigger == pb.ModelScalingTriggerMessage_SCALE_UP {
 		if err := checkModelScalingWithinRange(model, numReplicas+1); err != nil {
 			return 0, err

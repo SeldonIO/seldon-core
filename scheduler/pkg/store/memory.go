@@ -455,8 +455,9 @@ func (m *MemoryStore) UpdateModelState(
 	expectedState ModelReplicaState,
 	desiredState ModelReplicaState,
 	reason string,
+	runtimeInfo *pb.ModelRuntimeInfo,
 ) error {
-	evt, err := m.updateModelStateImpl(modelKey, version, serverKey, replicaIdx, availableMemory, expectedState, desiredState, reason)
+	evt, err := m.updateModelStateImpl(modelKey, version, serverKey, replicaIdx, availableMemory, expectedState, desiredState, reason, runtimeInfo)
 	if err != nil {
 		return err
 	}
@@ -478,6 +479,7 @@ func (m *MemoryStore) updateModelStateImpl(
 	expectedState ModelReplicaState,
 	desiredState ModelReplicaState,
 	reason string,
+	runtimeInfo *pb.ModelRuntimeInfo,
 ) (*coordinator.ModelEventMsg, error) {
 	logger := m.logger.WithField("func", "updateModelStateImpl")
 	m.mu.Lock()
@@ -488,6 +490,8 @@ func (m *MemoryStore) updateModelStateImpl(
 	if err != nil {
 		return nil, err
 	}
+
+	modelVersion.UpdateRuntimeInfo(runtimeInfo)
 
 	existingState := modelVersion.GetModelReplicaState(replicaIdx)
 

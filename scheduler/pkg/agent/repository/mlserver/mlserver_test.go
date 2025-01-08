@@ -20,7 +20,6 @@ import (
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
@@ -818,7 +817,7 @@ func TestGetModelConfig(t *testing.T) {
 			runtimeInfo, err := m.GetModelRuntimeInfo("test-model")
 			// mlserver should never return an error
 			g.Expect(err).To(BeNil())
-			mlserverRuntimeInfo := runtimeInfo.ModelRuntimeInfo.(*agent.ModelRuntimeInfo_Mlserver)
+			mlserverRuntimeInfo := runtimeInfo.ModelRuntimeInfo.(*scheduler.ModelRuntimeInfo_Mlserver)
 			g.Expect(mlserverRuntimeInfo.Mlserver.ParallelWorkers).To(Equal(test.expected))
 		})
 	}

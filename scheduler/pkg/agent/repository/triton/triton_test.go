@@ -20,7 +20,7 @@ import (
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	pb "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton/config"
 )
@@ -416,7 +416,7 @@ func TestGetModelConfig(t *testing.T) {
 
 			g.Expect(err).To(BeNil())
 
-			tritonModelConfig := modelConfig.ModelRuntimeInfo.(*agent.ModelRuntimeInfo_Triton)
+			tritonModelConfig := modelConfig.ModelRuntimeInfo.(*scheduler.ModelRuntimeInfo_Triton)
 			g.Expect(tritonModelConfig.Triton.Cpu[0].InstanceCount).To(Equal(test.expectedInstanceCount))
 		})
 	}

@@ -18,7 +18,6 @@ import (
 	copy2 "github.com/otiai10/copy"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/rclone"
@@ -30,13 +29,13 @@ type ModelRepositoryHandler interface {
 	UpdateModelRepository(modelName string, path string, isVersionFolder bool, modelRepoPath string) error
 	SetExplainer(modelRepoPath string, explainerSpec *scheduler.ExplainerSpec, envoyHost string, envoyPort int) error
 	SetExtraParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error
-	GetModelRuntimeInfo(path string) (*agent.ModelRuntimeInfo, error)
+	GetModelRuntimeInfo(path string) (*scheduler.ModelRuntimeInfo, error)
 }
 
 type ModelRepository interface {
 	DownloadModelVersion(modelName string, version uint32, modelSpec *scheduler.ModelSpec, config []byte) (*string, error)
 	RemoveModelVersion(modelName string) error
-	GetModelRuntimeInfo(modelName string) (*agent.ModelRuntimeInfo, error)
+	GetModelRuntimeInfo(modelName string) (*scheduler.ModelRuntimeInfo, error)
 	Ready() error
 }
 
@@ -66,7 +65,7 @@ func NewModelRepository(logger log.FieldLogger,
 	}
 }
 
-func (r *V2ModelRepository) GetModelRuntimeInfo(modelName string) (*agent.ModelRuntimeInfo, error) {
+func (r *V2ModelRepository) GetModelRuntimeInfo(modelName string) (*scheduler.ModelRuntimeInfo, error) {
 	modelPathInRepo := filepath.Join(r.repoPath, modelName)
 	return r.modelRepositoryHandler.GetModelRuntimeInfo(modelPathInRepo)
 }

@@ -1090,7 +1090,7 @@ func createTestModel(modelName string,
 		g.Expect(err).To(BeNil())
 
 		for idx, replicaIdx := range replicas {
-			err = inc.modelStore.UpdateModelState(modelName, version, serverName, replicaIdx, nil, store.LoadRequested, replicaStates[idx], "")
+			err = inc.modelStore.UpdateModelState(modelName, version, serverName, replicaIdx, nil, store.LoadRequested, replicaStates[idx], "", nil)
 			g.Expect(err).To(BeNil())
 		}
 
@@ -1109,7 +1109,7 @@ func removeTestModel(
 	f := func(inc *IncrementalProcessor, g *WithT) {
 		err := inc.modelStore.RemoveModel(&scheduler.UnloadModelRequest{Model: &scheduler.ModelReference{Name: "model1", Version: &version}})
 		g.Expect(err).To(BeNil())
-		err = inc.modelStore.UpdateModelState(modelName, version, serverName, serverIdx, nil, store.Available, store.Unloaded, "")
+		err = inc.modelStore.UpdateModelState(modelName, version, serverName, serverIdx, nil, store.Available, store.Unloaded, "", nil)
 		g.Expect(err).To(BeNil())
 	}
 	return f

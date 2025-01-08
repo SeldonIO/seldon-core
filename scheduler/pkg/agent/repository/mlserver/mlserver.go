@@ -20,7 +20,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 )
@@ -324,12 +323,12 @@ func (m *MLServerRepositoryHandler) findHighestVersionInPath(modelPath string) (
 	return "", nil
 }
 
-func (m *MLServerRepositoryHandler) GetModelRuntimeInfo(_ string) (*agent.ModelRuntimeInfo, error) {
+func (m *MLServerRepositoryHandler) GetModelRuntimeInfo(_ string) (*scheduler.ModelRuntimeInfo, error) {
 	parallelWorkersStr := os.Getenv(parallelWorkersEnvVar)
 	parallelWorkers, err := strconv.Atoi(parallelWorkersStr)
 	if err != nil || parallelWorkersStr == "" {
 		parallelWorkers = 1
 	}
 
-	return &agent.ModelRuntimeInfo{ModelRuntimeInfo: &agent.ModelRuntimeInfo_Mlserver{Mlserver: &agent.MLServerModelSettings{ParallelWorkers: uint32(parallelWorkers)}}}, nil
+	return &scheduler.ModelRuntimeInfo{ModelRuntimeInfo: &scheduler.ModelRuntimeInfo_Mlserver{Mlserver: &scheduler.MLServerModelSettings{ParallelWorkers: uint32(parallelWorkers)}}}, nil
 }

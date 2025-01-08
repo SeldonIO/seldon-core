@@ -22,8 +22,8 @@ import (
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
@@ -74,14 +74,14 @@ func getDummyModelDetails(modelId string, memBytes uint64, version uint32) *pba.
 	model := pbs.Model{
 		Meta: &meta,
 		ModelSpec: &pbs.ModelSpec{
-			Uri:         "gs://dummy",
-			MemoryBytes: &memBytes,
+			Uri:              "gs://dummy",
+			MemoryBytes:      &memBytes,
+			ModelRuntimeInfo: getModelRuntimeInfo(1),
 		},
 	}
 	mv := pba.ModelVersion{
-		Model:       &model,
-		Version:     version,
-		RuntimeInfo: getModelRuntimeInfo(1),
+		Model:   &model,
+		Version: version,
 	}
 	return &mv
 }
@@ -138,7 +138,7 @@ func setupLocalTestManager(numModels int, modelPrefix string, v2Client interface
 }
 
 // this mimics LoadModel in client.go with regards to locking
-func (manager *LocalStateManager) loadModelFn(modelVersionDetails *pba.ModelVersion, modelConfig *agent.ModelRuntimeInfo) error {
+func (manager *LocalStateManager) loadModelFn(modelVersionDetails *pba.ModelVersion, modelConfig *scheduler.ModelRuntimeInfo) error {
 	modelName := modelVersionDetails.GetModel().GetMeta().GetName()
 	modelVersion := modelVersionDetails.GetVersion()
 
@@ -153,7 +153,7 @@ func (manager *LocalStateManager) loadModelFn(modelVersionDetails *pba.ModelVers
 }
 
 // this mimics UnloadModel in client.go with regards to locking
-func (manager *LocalStateManager) unloadModelFn(modelVersionDetails *pba.ModelVersion, modelConfig *agent.ModelRuntimeInfo) error {
+func (manager *LocalStateManager) unloadModelFn(modelVersionDetails *pba.ModelVersion, _ *scheduler.ModelRuntimeInfo) error {
 	modelName := modelVersionDetails.GetModel().GetMeta().GetName()
 	modelVersion := modelVersionDetails.GetVersion()
 
@@ -942,7 +942,7 @@ func TestAvailableMemoryWithOverCommit(t *testing.T) {
 		capacity                              int
 		overCommitPercentage                  int
 		expectedAvailableMemoryWithOverCommit uint64
-		runtimeInfo                           *agent.ModelRuntimeInfo
+		runtimeInfo                           *scheduler.ModelRuntimeInfo
 	}
 	tests := []test{
 		{
@@ -1155,7 +1155,7 @@ func TestModelMetricsStats(t *testing.T) {
 			for i := 0; i < test.numModels; i++ {
 				modelName := getModelId(dummyModelPrefix, i)
 				modelVersion := uint32(1)
-				_ = manager.unloadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion), getModelRuntimeInfo(1))
+				_ = manager.unloadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion), nil)
 				time.Sleep(10 * time.Millisecond)
 				model := getVersionedModelId(dummyModelPrefix, i, 1)
 				if test.capacity < test.numModels {
@@ -1191,6 +1191,6 @@ func TestModelMetricsStats(t *testing.T) {
 }
 
 // TODO: getModelRuntimeInfo method
-func getModelRuntimeInfo(instanceCount uint32) *pba.ModelRuntimeInfo {
-	return &pba.ModelRuntimeInfo{ModelRuntimeInfo: &pba.ModelRuntimeInfo_Mlserver{Mlserver: &agent.MLServerModelSettings{ParallelWorkers: instanceCount}}}
+func getModelRuntimeInfo(instanceCount uint32) *pbs.ModelRuntimeInfo {
+	return &pbs.ModelRuntimeInfo{ModelRuntimeInfo: &pbs.ModelRuntimeInfo_Mlserver{Mlserver: &pbs.MLServerModelSettings{ParallelWorkers: instanceCount}}}
 }

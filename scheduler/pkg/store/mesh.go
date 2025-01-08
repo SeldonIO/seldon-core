@@ -375,7 +375,24 @@ func (m *ModelVersion) GetVersion() uint32 {
 }
 
 func (m *ModelVersion) GetRequiredMemory() uint64 {
-	return m.modelDefn.GetModelSpec().GetMemoryBytes()
+	var multiplier uint64 = 1
+	if m.GetModelSpec() != nil &&
+		m.GetModelSpec().ModelRuntimeInfo != nil &&
+		m.GetModelSpec().ModelRuntimeInfo.ModelRuntimeInfo != nil {
+		multiplier = getInstanceCount(m.GetModelSpec().ModelRuntimeInfo)
+	}
+	return m.modelDefn.GetModelSpec().GetMemoryBytes() * multiplier
+}
+
+func getInstanceCount(modelRuntimeInfo *pb.ModelRuntimeInfo) uint64 {
+	switch modelRuntimeInfo.ModelRuntimeInfo.(type) {
+	case *pb.ModelRuntimeInfo_Mlserver:
+		return uint64(modelRuntimeInfo.GetMlserver().ParallelWorkers)
+	case *pb.ModelRuntimeInfo_Triton:
+		return uint64(modelRuntimeInfo.GetTriton().Cpu[0].InstanceCount)
+	default:
+		return 1
+	}
 }
 
 func (m *ModelVersion) GetRequirements() []string {
@@ -546,6 +563,14 @@ func (m *ModelVersion) DeleteReplica(replicaIdx int) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	delete(m.replicas, replicaIdx)
+}
+
+func (m *ModelVersion) UpdateRuntimeInfo(runtimeInfo *pb.ModelRuntimeInfo) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if m.modelDefn.ModelSpec != nil && m.modelDefn.ModelSpec.ModelRuntimeInfo == nil && runtimeInfo != nil {
+		m.modelDefn.ModelSpec.ModelRuntimeInfo = runtimeInfo
+	}
 }
 
 func (s *Server) Key() string {

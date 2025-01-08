@@ -21,7 +21,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/encoding/prototext"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	pb "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton/config"
@@ -220,12 +219,12 @@ func (t *TritonRepositoryHandler) SetExtraParameters(modelRepoPath string, param
 	return nil
 }
 
-func (t *TritonRepositoryHandler) GetModelRuntimeInfo(path string) (*agent.ModelRuntimeInfo, error) {
+func (t *TritonRepositoryHandler) GetModelRuntimeInfo(path string) (*scheduler.ModelRuntimeInfo, error) {
 	configPath := filepath.Join(path, TritonConfigFile)
 	tritonConfig, err := t.loadConfigFromFile(configPath)
-	tritonRuntimeInfo := &agent.ModelRuntimeInfo_Triton{
-		Triton: &agent.TritonModelConfig{
-			Cpu: []*agent.TritonCPU{
+	tritonRuntimeInfo := &scheduler.ModelRuntimeInfo_Triton{
+		Triton: &scheduler.TritonModelConfig{
+			Cpu: []*scheduler.TritonCPU{
 				{InstanceCount: 1},
 			},
 		},
@@ -253,8 +252,8 @@ func (t *TritonRepositoryHandler) GetModelRuntimeInfo(path string) (*agent.Model
 			if instanceCount < 1 {
 				instanceCount = 1
 			}
-			tritonRuntimeInfo.Triton.Cpu = []*agent.TritonCPU{{InstanceCount: uint32(instanceCount)}}
+			tritonRuntimeInfo.Triton.Cpu = []*scheduler.TritonCPU{{InstanceCount: uint32(instanceCount)}}
 		}
 	}
-	return &agent.ModelRuntimeInfo{ModelRuntimeInfo: tritonRuntimeInfo}, nil
+	return &scheduler.ModelRuntimeInfo{ModelRuntimeInfo: tritonRuntimeInfo}, nil
 }
