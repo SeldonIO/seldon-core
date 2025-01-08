@@ -1144,7 +1144,7 @@ bufbuild/protocompile  Apache License 2.0  https://github.com/bufbuild/protocomp
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright 2020-2024 Buf Technologies, Inc.
+   Copyright 2020-2025 Buf Technologies, Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -1209,7 +1209,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 --------------------------------------------------------------------------------
-cenkalti/backoff  MIT License  https://github.com/cenkalti/backoff/blob/v4/LICENSE
+cenkalti/backoff  MIT License  https://github.com/cenkalti/backoff/blob/v5/LICENSE
 --------------------------------------------------------------------------------
 The MIT License (MIT)
 
@@ -6587,7 +6587,7 @@ SOFTWARE.
 --------------------------------------------------------------------------------
 gofrs/flock  BSD 3-Clause "New" or "Revised" License  https://github.com/gofrs/flock/blob/main/LICENSE
 --------------------------------------------------------------------------------
-Copyright (c) 2018-2024, The Gofrs
+Copyright (c) 2018-2025, The Gofrs
 Copyright (c) 2015-2020, Tim Heckman
 All rights reserved.
 
