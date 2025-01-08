@@ -58,7 +58,10 @@ func isReady(service interfaces.DependencyServiceInterface, logger *log.Entry, m
 func getModifiedModelVersion(modelId string, version uint32, originalModelVersion *agent.ModelVersion, modelRuntimeInfo *scheduler.ModelRuntimeInfo) *agent.ModelVersion {
 	mv := proto.Clone(originalModelVersion)
 	mv.(*agent.ModelVersion).Model.Meta.Name = modelId
-	if mv.(*agent.ModelVersion).Model.ModelSpec != nil && modelRuntimeInfo != nil {
+	if modelRuntimeInfo != nil && modelRuntimeInfo.ModelRuntimeInfo != nil {
+		if mv.(*agent.ModelVersion).Model.ModelSpec == nil {
+			mv.(*agent.ModelVersion).Model.ModelSpec = &scheduler.ModelSpec{}
+		}
 		mv.(*agent.ModelVersion).Model.ModelSpec.ModelRuntimeInfo = modelRuntimeInfo
 	}
 	mv.(*agent.ModelVersion).Version = version

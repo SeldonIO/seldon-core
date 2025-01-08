@@ -376,7 +376,9 @@ func (m *ModelVersion) GetVersion() uint32 {
 
 func (m *ModelVersion) GetRequiredMemory() uint64 {
 	var multiplier uint64 = 1
-	if m.GetModelSpec() != nil && m.GetModelSpec().ModelRuntimeInfo != nil {
+	if m.GetModelSpec() != nil &&
+		m.GetModelSpec().ModelRuntimeInfo != nil &&
+		m.GetModelSpec().ModelRuntimeInfo.ModelRuntimeInfo != nil {
 		multiplier = getInstanceCount(m.GetModelSpec().ModelRuntimeInfo)
 	}
 	return m.modelDefn.GetModelSpec().GetMemoryBytes() * multiplier
