@@ -150,11 +150,11 @@ It is important to expose `seldon-service` service to enable communication betwe
     ```
     virtualservice.networking.istio.io/iris-route created
     ```
-#### Optional: Enable HTTPS/TLS
+#### (Optional) Enable HTTPS/TLS
 
 To secure your Ingress with HTTPS, you can configure TLS settings in the `Gateway` resource using a certificate and key. This involves additional steps like creating Kubernetes secrets for your certificates.
 
-#### Next Steps:
+### Next Steps
 [Verify the installation](/docs-gb/installation/test-installation.md)
 
 #### Additional Resources

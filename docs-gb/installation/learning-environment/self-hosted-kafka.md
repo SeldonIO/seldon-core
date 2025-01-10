@@ -223,7 +223,9 @@ settings for Kafka configuration.
       uid: 5c041e69-f36b-4f14-8f0d-c8790003cb3e
     ``` 
 
-### Customzing the settings
+After you integrated Seldon Core 2 with Kafka, you need to [Install an Ingress Controller](../production-environment/ingress-controller/istio.md) that adds an abstraction layer for traffic routing by receiving traffic from outside the Kubernetes platform and load balancing it to Pods running within the Kubernetes cluster.
+
+### Customzing the settings (optional)
 
 To customize the settings you can add and modify the Kafka configuration using Helm, for example to add compression for producers.
 
@@ -240,7 +242,7 @@ To customize the settings you can add and modify the Kafka configuration using H
   -f values-runtime-kafka-compression.yaml \
   --install
   ```
-### Configuring topic and consumer isolation
+### Configuring topic and consumer isolation (optional)
 
 If you are using a shared Kafka cluster with other applications, it is advisable to isolate topic names and consumer group IDs from other cluster users to prevent naming conflicts. This can be achieved by configuring the following two settings:
 
