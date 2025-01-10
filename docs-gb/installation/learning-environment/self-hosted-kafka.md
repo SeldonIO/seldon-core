@@ -37,9 +37,7 @@ Strimzi provides a Kubernetes Operator to deploy and manage Kafka clusters. Firs
 
     This deploys the `Strimzi Operator` in the `seldon-mesh` namespace. After the Strimzi Operator is running, you can create a Kafka cluster by applying a Kafka custom resource definition.
 4.  Create a YAML file to specify the initial configuration. 
-    {% hint style="info" %}
     **Note**: This configuration sets up a Kafka cluster with version 3.9.0. Ensure that you review the the [supported versions](https://strimzi.io/downloads/) of Kafka and update the version in the `kafka.yaml` file as needed. For more configuration examples, see this [strimzi-kafka-operator](https://github.com/strimzi/strimzi-kafka-operator/tree/main/examples/kafka).
-    {% endhint %}
     
     Use your preferred text editor to create and save the file as `kafka.yaml` with the following content:
 
