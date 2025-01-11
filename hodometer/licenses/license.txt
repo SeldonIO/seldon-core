@@ -510,7 +510,7 @@ THE SOFTWARE.
 
 
 --------------------------------------------------------------------------------
-cenkalti/backoff  MIT License  https://github.com/cenkalti/backoff/blob/v4/LICENSE
+cenkalti/backoff  MIT License  https://github.com/cenkalti/backoff/blob/v5/LICENSE
 --------------------------------------------------------------------------------
 The MIT License (MIT)
 

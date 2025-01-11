@@ -24,7 +24,7 @@ blang/semver,https://github.com/blang/semver/blob/master/LICENSE,MIT License,htt
 bufbuild/protocompile,https://github.com/bufbuild/protocompile/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/bufbuild/protocompile/main/LICENSE
 buger/goterm,https://github.com/buger/goterm/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/buger/goterm/master/LICENSE
 buger/jsonparser,https://github.com/buger/jsonparser/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/buger/jsonparser/master/LICENSE
-cenkalti/backoff,https://github.com/cenkalti/backoff/blob/v4/LICENSE,MIT License,https://raw.githubusercontent.com/cenkalti/backoff/v4/LICENSE
+cenkalti/backoff,https://github.com/cenkalti/backoff/blob/v5/LICENSE,MIT License,https://raw.githubusercontent.com/cenkalti/backoff/v5/LICENSE
 census-instrumentation/opencensus-proto,https://github.com/census-instrumentation/opencensus-proto/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/census-instrumentation/opencensus-proto/master/LICENSE
 cespare/xxhash,https://github.com/cespare/xxhash/blob/main/LICENSE.txt,MIT License,https://raw.githubusercontent.com/cespare/xxhash/main/LICENSE.txt
 cncf/xds,https://github.com/cncf/xds/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/cncf/xds/main/LICENSE
