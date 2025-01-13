@@ -23,7 +23,7 @@ require (
 	github.com/onsi/gomega v1.35.1
 	github.com/orcaman/concurrent-map v1.0.0
 	github.com/otiai10/copy v1.14.0
-	github.com/prometheus/client_golang v1.19.1
+	github.com/prometheus/client_golang v1.20.5
 	github.com/rs/xid v1.6.0
 	github.com/seldonio/seldon-core/apis/go/v2 v2.0.0-00010101000000-000000000000
 	github.com/seldonio/seldon-core/components/kafka/v2 v2.0.0-00010101000000-000000000000
@@ -85,6 +85,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
+	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
@@ -94,9 +95,9 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/prometheus/client_model v0.6.0 // indirect
-	github.com/prometheus/common v0.48.0 // indirect
-	github.com/prometheus/procfs v0.12.0 // indirect
+	github.com/prometheus/client_model v0.6.1 // indirect
+	github.com/prometheus/common v0.55.0 // indirect
+	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/signalfx/splunk-otel-go/instrumentation/internal v1.19.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	go.opencensus.io v0.24.0 // indirect
