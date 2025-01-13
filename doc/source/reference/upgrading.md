@@ -93,7 +93,7 @@ Only the v1 versions of the CRD will be supported moving forward. The v1beta1 ve
 
 ### Model Health Checks
 
-**Note**:Seldon is no longer maintaining the Seldon and TensorFlow protocols. Instead, Seldon is adopting the industry-standard Open Inference Protocol (OIP). As part of this transition, you need to use [MLServer](https://github.com/SeldonIO/MLServer) for model serving in Seldon Core 1.
+**Note**:Seldon is no longer maintaining the Seldon and TensorFlow protocols. Instead, Seldon is adopting the industry-standard Open Inference Protocol (OIP). As part of this transition, you need to use [MLServer](https://docs.seldon.ai/mlserver) for model serving in Seldon Core 1.
 
 We strongly encourage you to adopt the OIP, which provides seamless integration across diverse model serving runtimes, supports the development of versatile client and benchmarking tools, and ensures a high-performance, consistent, and unified inference experience.
 We have updated the health checks done by Seldon for the model nodes in your inference graph. If `executor.fullHealthChecks` is set to true then:
