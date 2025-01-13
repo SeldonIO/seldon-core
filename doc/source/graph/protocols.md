@@ -1,6 +1,8 @@
 # Protocols
 
-**Note**: Seldon is no longer maintaining the Seldon and TensorFlow protocols. Instead, Seldon is adopting the industry-standard Open Inference Protocol (OIP). We strongly encourage customers to use the OIP, which offers seamless integration across diverse model serving runtimes, supports the creation of versatile client and benchmarking tools, and ensures a high-performance, consistent, and unified inference experience.
+**Note**: Seldon is no longer maintaining the Seldon and TensorFlow protocols. Instead, Seldon is adopting the industry-standard Open Inference Protocol (OIP). As part of this transition, you need to use [MLServer](https://github.com/SeldonIO/MLServer) for model serving in Seldon Core 1.
+
+We strongly encourage you to adopt the OIP, which provides seamless integration across diverse model serving runtimes, supports the development of versatile client and benchmarking tools, and ensures a high-performance, consistent, and unified inference experience.
 
 Tensorflow protocol is only available in version >=1.1.
 
