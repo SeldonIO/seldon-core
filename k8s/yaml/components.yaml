@@ -785,6 +785,15 @@ spec:
               optional: true
         image: 'docker.io/seldonio/seldon-envoy:latest'
         imagePullPolicy: 'IfNotPresent'
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - |
+                echo -ne "POST /healthcheck/fail HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" > /dev/tcp/localhost/9901
+                sleep 30
         name: envoy
         ports:
         - containerPort: 9000

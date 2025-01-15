@@ -944,6 +944,15 @@ spec:
         image: '{{ .Values.envoy.image.registry }}/{{ .Values.envoy.image.repository
           }}:{{ .Values.envoy.image.tag }}'
         imagePullPolicy: '{{ .Values.envoy.image.pullPolicy }}'
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - |
+                echo -ne "POST /healthcheck/fail HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" > /dev/tcp/localhost/9901
+                sleep 30
         name: envoy
         ports:
         - containerPort: 9000

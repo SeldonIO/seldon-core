@@ -47,4 +47,4 @@ spec:
           containerPort: 9000
         - name: envoy-stats
           containerPort: 9003
-      terminationGracePeriodSeconds: 5
+      terminationGracePeriodSeconds: 120
