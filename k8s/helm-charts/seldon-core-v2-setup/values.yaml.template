@@ -199,6 +199,8 @@ envoy:
     runAsUser: 1000
     runAsGroup: 1000
     runAsNonRoot: true
+  preStopSleepPeriodSeconds: 30
+  terminationGracePeriodSeconds: 120
 
 scheduler:
   image:

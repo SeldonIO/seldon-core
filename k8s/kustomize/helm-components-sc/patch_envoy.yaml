@@ -47,4 +47,4 @@ spec:
               - -c
               - |
                   echo -ne "POST /healthcheck/fail HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" > /dev/tcp/localhost/9901
-                  sleep 30
+                  sleep '{{ .Values.envoy.preStopSleepPeriodSeconds }}'

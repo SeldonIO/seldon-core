@@ -952,7 +952,7 @@ spec:
               - -c
               - |
                 echo -ne "POST /healthcheck/fail HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" > /dev/tcp/localhost/9901
-                sleep 30
+                sleep '{{ .Values.envoy.preStopSleepPeriodSeconds }}'
         name: envoy
         ports:
         - containerPort: 9000
@@ -978,7 +978,8 @@ spec:
 {{- end }}
       securityContext: {{- toYaml .Values.envoy.securityContext | nindent
         8 }}
-      terminationGracePeriodSeconds: 5
+      terminationGracePeriodSeconds: {{ .Values.envoy.terminationGracePeriodSeconds
+        }}
     replicas: 1
   - annotations: {{- toYaml .Values.dataflow.annotations | nindent 8
       }}
