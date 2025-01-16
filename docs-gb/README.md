@@ -19,7 +19,7 @@ Data-centricity is an approach that places the management, integrity, and flow o
 This approach to MLOps, influenced by our position paper [Desiderata for next generation of ML model serving](https://arxiv.org/abs/2210.14665), enables real-time observability, insight, and control on the behavior, and performance of your ML systems.  
 
 
-![data-centric pipeline](images/pipeline-intro.png)
+![Data-centric pipeline](images/pipeline-intro.png)
 
 Lastly, Core 2 provides Experiments as part of its orchestration capabilities, enabling users to implement routing logic like A/B tests or Canary deployments to models or pipelines in production. After experiments are run, you can promote new models or pipelines, or launch new experiments, allowing you to continuously improve the performance of your ML products.
 
