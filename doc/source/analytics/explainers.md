@@ -45,7 +45,7 @@ For an e2e example, please check AnchorTabular notebook [here](../examples/iris_
 
 ## Explain API
 
-**Note**: Seldon is no longer maintaining the Seldon and TensorFlow protocols. Instead, Seldon is adopting the industry-standard Open Inference Protocol (OIP). As part of this transition, you need to use [MLServer](https://docs.seldon.ai/mlserver) for model serving in Seldon Core 1.
+**Note**: Seldon has adopted the industry-standard Open Inference Protocol (OIP) and is no longer maintaining the Seldon and TensorFlow protocols. This transition allows for greater interoperability among various model serving runtimes, such as MLServer. To learn more about implementing OIP for model serving in Seldon Core 1, see [MLServer](https://docs.seldon.ai/mlserver).
 
 We strongly encourage you to adopt the OIP, which provides seamless integration across diverse model serving runtimes, supports the development of versatile client and benchmarking tools, and ensures a high-performance, consistent, and unified inference experience.
 

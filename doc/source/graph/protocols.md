@@ -1,6 +1,6 @@
 # Protocols
 
-**Note**: Seldon is no longer maintaining the Seldon and TensorFlow protocols. Instead, Seldon is adopting the industry-standard Open Inference Protocol (OIP). As part of this transition, you need to use [MLServer](https://docs.seldon.ai/mlserver) for model serving in Seldon Core 1.
+**Note**: Seldon has adopted the industry-standard Open Inference Protocol (OIP) and is no longer maintaining the Seldon and TensorFlow protocols. This transition allows for greater interoperability among various model serving runtimes, such as MLServer. To learn more about implementing OIP for model serving in Seldon Core 1, see [MLServer](https://docs.seldon.ai/mlserver).
 
 We strongly encourage you to adopt the OIP, which provides seamless integration across diverse model serving runtimes, supports the development of versatile client and benchmarking tools, and ensures a high-performance, consistent, and unified inference experience.
 
@@ -49,7 +49,7 @@ spec:
     name: default
 ```
 
-At present, the `v2` protocol is only supported in a subset of
+At present, the `OIP` or `v2` protocol is only supported in a subset of
 pre-packaged inference servers.
 In particular,
 
@@ -74,7 +74,7 @@ See [example notebook](../examples/protocol_examples.html).
   * [REST Tensorflow Protocol definition](https://github.com/tensorflow/serving/blob/master/tensorflow_serving/g3doc/api_rest.md).
   * [gRPC Tensorflow Protocol definition](https://github.com/tensorflow/serving/blob/master/tensorflow_serving/apis/prediction_service.proto).
 
-Activate this protocol by speicfying `protocol: tensorflow` and `transport: rest` or `transport: grpc` in your Seldon Deployment. See [example notebook](../examples/protocol_examples.html). 
+Activate this protocol by specifying `protocol: tensorflow` and `transport: rest` or `transport: grpc` in your Seldon Deployment. See [example notebook](../examples/protocol_examples.html). 
 
 For Seldon graphs the protocol will work as expected for single model graphs for Tensorflow Serving servers running as the single model in the graph. For more complex graphs you can chain models:
 
