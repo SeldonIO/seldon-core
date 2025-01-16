@@ -19,7 +19,7 @@ Data-centricity is an approach that places the management, integrity, and flow o
 This approach to MLOps, influenced by our position paper ![Desiderata for next generation of ML model serving](https://arxiv.org/abs/2210.14665), enables real-time observability, insight, and control on the behavior, and performance of your ML systems.  
 
 
-![data-centric pipeline](pipeline-intro.png)
+![data-centric pipeline](images/pipeline-intro.png)
 
 Lastly, Core 2 provides Experiments as part of its orchestration capabilities, enabling users to implement routing logic like A/B tests or Canary deployments to models or pipelines in production. After experiments are run, you can promote new models or pipelines, or launch new experiments, allowing you to continuously improve the performance of your ML products.
 
@@ -46,49 +46,3 @@ This modular, flexible architecture not only supports diverse deployment pattern
 - To get Core 2 running, see our installation guide
 - Then see our Quickstart and Tutorials
 - Join our Slack Community for updates or for answers to any questions
-
-
-
-
-
-
-
-
-
-
-
-
-
-Seldon transparently will provision your model onto the correct inference server.
-
-![mms1](images/multimodel1.png)
-
-By packing multiple models onto a smaller set of servers users can save infrastructure costs and
-efficiently utilize their models.
-
-![mms2](images/mms.png)
-
-By allowing over-commit users can provision model models that available memory resources by
-allowing Seldon to transparently unload models that are not in use.
-
-![mms3](images/overcommit.png)
-
-## Inference Servers
-
-Seldon V2 supports any V2 protocol inference server. At present we include Seldon's MLServer and NVIDIA's Triton inference server automatically on install. These servers cover a wide range of artifacts including custom python models.
-
-![servers](images/servers.png)
-
-## Service Mesh Agnostic
-
-Seldon Core 2 can be integrated with any Kubernetes service mesh. There are current examples with istio, Ambassador and Traefic.
-
-![mesh](images/mesh.png)
-
-## Publication
-
-These features are influenced by our position paper on the next generation of ML model serving frameworks:
-
-*Title*: [Desiderata for next generation of ML model serving](http://arxiv.org/abs/2210.14665)
-
-*Workshop*: Challenges in deploying and monitoring ML systems workshop - NeurIPS 2022
