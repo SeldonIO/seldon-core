@@ -16,7 +16,7 @@ Machine learning applications are increasingly complex. They’ve evolved from i
 Data-centricity is an approach that places the management, integrity, and flow of data at the core of the machine learning deployment framework. 
 {% endhint %}
 
-This approach to MLOps, influenced by our position paper ![Desiderata for next generation of ML model serving](https://arxiv.org/abs/2210.14665), enables real-time observability, insight, and control on the behavior, and performance of your ML systems.  
+This approach to MLOps, influenced by our position paper [Desiderata for next generation of ML model serving](https://arxiv.org/abs/2210.14665), enables real-time observability, insight, and control on the behavior, and performance of your ML systems.  
 
 
 ![data-centric pipeline](images/pipeline-intro.png)
