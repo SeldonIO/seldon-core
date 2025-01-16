@@ -1,6 +1,6 @@
 # Table of contents
 
-* [Home](README.md)
+* [Overview](README.md)
 * [Getting Started](getting-started/README.md)
   * [Docker Installation](getting-started/docker-installation.md)
   * [Kubernetes Installation](getting-started/kubernetes-installation/README.md)
