@@ -21,7 +21,7 @@ This approach to MLOps, influenced by our position paper [Desiderata for next ge
 
 ![Data-centric pipeline](images/pipeline-intro.png)
 
-Lastly, Core 2 provides Experiments as part of its orchestration capabilities, enabling users to implement routing logic such as A/B tests or Canary deployments to models or pipelines in production. After experiments are run, you can promote new models or pipelines, or launch new experiments, so that you can continuously improve the performance of your ML products.
+Lastly, Core 2 provides Experiments as part of its orchestration capabilities, enabling users to implement routing logic such as A/B tests or Canary deployments to models or pipelines in production. After experiments are run, you can promote new models or pipelines, or launch new experiments, so that you can continuously improve the performance of your ML applications.
 
 
 ## Resource Management
@@ -41,7 +41,7 @@ Core 2 demonstrates the power of a standardized, data-centric approach to MLOps 
 
 This modular, flexible architecture not only supports diverse deployment patterns but also ensures compatibility with the latest AI innovations. By embedding data-centricity and adaptability into its foundation, Core 2 equips organizations to scale and improve their machine learning systems effectively, to capture value from increasingly complex AI systems.
 
-## What's Next
+## Next Steps
 
 - Install Seldon Core 2
 - Explore the Quickstart and Tutorials
