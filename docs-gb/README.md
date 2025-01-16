@@ -43,6 +43,6 @@ This modular, flexible architecture not only supports diverse deployment pattern
 
 ## Next Steps
 
-- Install Seldon Core 2
-- Explore the Quickstart and Tutorials
-- Join our Slack Community for updates or for answers to any questions
+- [Install Seldon Core 2](./getting-started/README.md)
+- Explore our [Tutorials](./examples/README.md)
+- [Join our Slack Community](https://seldondev.slack.com/join/shared_invite/zt-vejg6ttd-ksZiQs3O_HOtPQsen_labg#/shared-invite/email) for updates or for answers to any questions
