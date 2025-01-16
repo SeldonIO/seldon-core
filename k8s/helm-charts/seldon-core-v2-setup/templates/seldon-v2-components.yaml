@@ -951,7 +951,7 @@ spec:
               - /bin/sh
               - -c
               - |
-                echo -ne "POST /healthcheck/fail HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" > /dev/tcp/localhost/9901
+                echo -ne "POST /healthcheck/fail HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" > /dev/tcp/localhost/{{ .Values.envoy.adminInterfacePort }}
                 sleep '{{ .Values.envoy.preStopSleepPeriodSeconds }}'
         name: envoy
         ports:

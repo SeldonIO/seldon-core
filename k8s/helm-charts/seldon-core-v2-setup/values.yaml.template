@@ -201,6 +201,7 @@ envoy:
     runAsNonRoot: true
   preStopSleepPeriodSeconds: 30
   terminationGracePeriodSeconds: 120
+  adminInterfacePort: 9901
 
 scheduler:
   image:
