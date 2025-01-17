@@ -45,6 +45,11 @@ For an e2e example, please check AnchorTabular notebook [here](../examples/iris_
 
 ## Explain API
 
+**Note**: Seldon has adopted the industry-standard Open Inference Protocol (OIP) and is no longer maintaining the Seldon and TensorFlow protocols. This transition allows for greater interoperability among various model serving runtimes, such as MLServer. To learn more about implementing OIP for model serving in Seldon Core 1, see [MLServer](https://docs.seldon.ai/mlserver).
+
+We strongly encourage you to adopt the OIP, which provides seamless integration across diverse model serving runtimes, supports the development of versatile client and benchmarking tools, and ensures a high-performance, consistent, and unified inference experience.
+
+
 For the Seldon Protocol an endpoint path will be exposed for:
 
 ```
@@ -86,9 +91,9 @@ The explain method is also supported for tensorflow and Open Inference protocols
 
 | Protocol | URI |
 | ------ | ----- |
+| v2 | `http://<host>/<ingress-path>/v2/models/<model-name>/infer` |
 | seldon | `http://<host>/<ingress-path>/api/v1.0/explain` |
 | tensorflow | `http://<host>/<ingress-path>/v1/models/<model-name>:explain` |
-| v2 | `http://<host>/<ingress-path>/v2/models/<model-name>/infer` |
 
 
 Note: for `tensorflow` protocol we support similar non-standard extension as for the [prediction API](../graph/protocols.md#rest-and-grpc-tensorflow-protocol), `http://<host>/<ingress-path>/v1/models/:explain`.

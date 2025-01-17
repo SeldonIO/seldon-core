@@ -9,6 +9,11 @@ Using the Seldon python wrapper there are various optimization areas one needs t
 
 ### Seldon Protocol Payload Types with REST and gRPC
 
+**Note**: Seldon has adopted the industry-standard Open Inference Protocol (OIP) and is no longer maintaining the Seldon and TensorFlow protocols. This transition allows for greater interoperability among various model serving runtimes, such as MLServer. To learn more about implementing OIP for model serving in Seldon Core 1, see [MLServer](https://docs.seldon.ai/mlserver).
+
+We strongly encourage you to adopt the OIP, which provides seamless integration across diverse model serving runtimes, supports the development of versatile client and benchmarking tools, and ensures a high-performance, consistent, and unified inference experience.
+
+
 Depending on whether you want to use REST or gRPC and want to send tensor data the format of the request will have a deserialization/serialization cost in the python wrapper. This is investigated in a [python serialization notebook](../examples/python_serialization.html).
 
 The conclusions are:
