@@ -621,6 +621,21 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage, timestamp int64
 		logger.Errorf("there was a problem getting the config for model: %s", modelName)
 	}
 
+	// we are going to clean-up all the older stale version of model
+	for _, v := range c.stateManager.modelVersions.getVersionsForAllModels() {
+		// skip if version is same as current one
+		if v.GetVersion() == modelVersion {
+			continue
+		}
+		c.logger.WithField("func", c.stateManager.modelVersions.getVersionsForAllModels()).Infof("----")
+
+		err := c.ModelRepository.RemoveModelVersion(util.GetVersionedModelName(modelName, v.GetVersion()))
+		if err != nil {
+			c.sendModelEventError(modelName, v.GetVersion(), agent.ModelEventMessage_UNLOAD_FAILED, err)
+			return err
+		}
+	}
+
 	// TODO: consider whether we need the actual protos being sent to `LoadModelVersion`?
 	modifiedModelVersionRequest := getModifiedModelVersion(
 		modelWithVersion,
