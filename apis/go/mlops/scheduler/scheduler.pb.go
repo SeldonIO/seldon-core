@@ -519,11 +519,11 @@ func (x ControlPlaneResponse_Event) String() string {
 }
 
 func (ControlPlaneResponse_Event) Descriptor() protoreflect.EnumDescriptor {
-	return file_mlops_scheduler_scheduler_proto_enumTypes[7].Descriptor()
+	return file_mlops_scheduler_scheduler_proto_enumTypes[8].Descriptor()
 }
 
 func (ControlPlaneResponse_Event) Type() protoreflect.EnumType {
-	return &file_mlops_scheduler_scheduler_proto_enumTypes[7]
+	return &file_mlops_scheduler_scheduler_proto_enumTypes[8]
 }
 
 func (x ControlPlaneResponse_Event) Number() protoreflect.EnumNumber {
