@@ -36,37 +36,36 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 		grpcClient = scheduler.NewSchedulerClient(conn)
 	}
 
-	var scalingSpec *v1alpha1.ValidatedScalingSpec
-	if !server.ObjectMeta.DeletionTimestamp.IsZero() {
-		scalingSpec = &v1alpha1.ValidatedScalingSpec{
-			Replicas:    0,
-			MinReplicas: 0,
-			MaxReplicas: 0,
-		}
-	} else {
-		scalingSpec, err = v1alpha1.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
-		if err != nil {
-			return err
-		}
-	}
-
 	var requests []*scheduler.ServerNotify
 	for _, server := range servers {
-		var replicas int32
+		var scalingSpec *v1alpha1.ValidatedScalingSpec
+		var err error
+
 		if !server.ObjectMeta.DeletionTimestamp.IsZero() {
-			replicas = 0
-		} else if server.Spec.Replicas != nil {
-			replicas = *server.Spec.Replicas
+			scalingSpec = &v1alpha1.ValidatedScalingSpec{
+				Replicas:    0,
+				MinReplicas: 0,
+				MaxReplicas: 0,
+			}
 		} else {
-			replicas = 1
+			scalingSpec, err = v1alpha1.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
+			if err != nil {
+				return err
+			}
 		}
 
-		logger.Info("Notify server", "name", server.GetName(), "namespace", server.GetNamespace(), "replicas", replicas)
+		logger.Info(
+			"Notify server", "name", server.GetName(), "namespace", server.GetNamespace(),
+			"replicas", scalingSpec.Replicas,
+			"minReplicas", scalingSpec.MinReplicas,
+			"maxReplicas", scalingSpec.MaxReplicas,
+		)
+
 		requests = append(requests, &scheduler.ServerNotify{
 			Name:             server.GetName(),
-			ExpectedReplicas: replicas,
-			MinReplicas:			scalingSpec.MinReplicas,
-			MaxReplicas:			scalingSpec.MaxReplicas,
+			ExpectedReplicas: scalingSpec.Replicas,
+			MinReplicas:      scalingSpec.MinReplicas,
+			MaxReplicas:      scalingSpec.MaxReplicas,
 			KubernetesMeta: &scheduler.KubernetesMeta{
 				Namespace:  server.GetNamespace(),
 				Generation: server.GetGeneration(),
@@ -150,7 +149,7 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 			// discovery phase (just starting up, after a restart)
 			//
 			// At the moment, the scheduler doesn't send multiple types of updates in a single event;
-			switch event.GetType()	{
+			switch event.GetType() {
 			case scheduler.ServerStatusResponse_StatusUpdate:
 				return s.applyStatusUpdates(ctx, server, event)
 			case scheduler.ServerStatusResponse_ScalingRequest:
