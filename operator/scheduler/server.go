@@ -177,32 +177,3 @@ func (s *SchedulerClient) updateServerStatus(ctx context.Context, server *v1alph
 	}
 	return nil
 }
-
-// when need to notify the scheduler about existing Server configuration
-func handleRegisteredServers(
-	ctx context.Context, namespace string, s *SchedulerClient, grpcClient scheduler.SchedulerClient) {
-	serverList := &v1alpha1.ServerList{}
-	// Get all servers in the namespace
-	err := s.List(
-		ctx,
-		serverList,
-		client.InNamespace(namespace),
-	)
-	if err != nil {
-		return
-	}
-
-	for _, server := range serverList.Items {
-		// servers that are not in the process of being deleted has DeletionTimestamp as zero
-		if server.ObjectMeta.DeletionTimestamp.IsZero() {
-			s.logger.V(1).Info("Calling NotifyServer (on reconnect)", "server", server.Name)
-			if err := s.ServerNotify(ctx, &server); err != nil {
-				s.logger.Error(err, "Failed to notify scheduler about initial Server parameters", "server", server.Name)
-			} else {
-				s.logger.V(1).Info("Load model called successfully", "server", server.Name)
-			}
-		} else {
-			s.logger.V(1).Info("Server being deleted, not notifying", "server", server.Name)
-		}
-	}
-}
