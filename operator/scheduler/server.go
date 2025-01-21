@@ -151,16 +151,12 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 			// At the moment, the scheduler doesn't send multiple types of updates in a single event;
 			switch event.GetType() {
 			case scheduler.ServerStatusResponse_StatusUpdate:
-				return s.applyStatusUpdates(ctx, server, event)
+				return s.updateServerStatus(contextWithTimeout, server) // todo: implement replica info update
 			case scheduler.ServerStatusResponse_ScalingRequest:
-				if event.ExpectedReplicas != event.AvailableReplicas {
-					return s.applyReplicaUpdates(ctx, server, event)
-				} else {
-					return nil
-				}
+				return nil // TODO: implement scaling request
 			case scheduler.ServerStatusResponse_NonAuthoritativeReplicaInfo:
 				// skip updating replica info, only update status
-				return s.updateServerStatus(server)
+				return s.updateServerStatus(contextWithTimeout, server)
 			default: // we ignore unknown event types
 				return nil
 			}
