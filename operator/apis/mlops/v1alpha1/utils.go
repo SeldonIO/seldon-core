@@ -17,11 +17,10 @@ type ValidatedScalingSpec struct {
 	MaxReplicas uint32
 }
 
-
 func GetValidatedScalingSpec(replicas *int32, minReplicas *int32, maxReplicas *int32) (*ValidatedScalingSpec, error) {
 	var validatedSpec ValidatedScalingSpec
 
-	if replicas != nil && *replicas > 0  {
+	if replicas != nil && *replicas > 0 {
 		validatedSpec.Replicas = uint32(*replicas)
 	} else {
 		if minReplicas != nil && *minReplicas > 0 {
@@ -32,7 +31,7 @@ func GetValidatedScalingSpec(replicas *int32, minReplicas *int32, maxReplicas *i
 		}
 	}
 
-	if minReplicas != nil && *minReplicas > 0  {
+	if minReplicas != nil && *minReplicas > 0 {
 		validatedSpec.MinReplicas = uint32(*minReplicas)
 		if validatedSpec.Replicas < validatedSpec.MinReplicas {
 			return nil, fmt.Errorf("number of replicas %d must be >= min replicas  %d", validatedSpec.Replicas, validatedSpec.MinReplicas)
@@ -41,7 +40,7 @@ func GetValidatedScalingSpec(replicas *int32, minReplicas *int32, maxReplicas *i
 		validatedSpec.MinReplicas = 0
 	}
 
-	if maxReplicas != nil && *maxReplicas > 0  {
+	if maxReplicas != nil && *maxReplicas > 0 {
 		validatedSpec.MaxReplicas = uint32(*maxReplicas)
 		if validatedSpec.Replicas > validatedSpec.MaxReplicas {
 			return nil, fmt.Errorf("number of replicas %d must be <= min replicas  %d", validatedSpec.Replicas, validatedSpec.MaxReplicas)
