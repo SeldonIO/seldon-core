@@ -88,7 +88,7 @@ type ServerEventStream struct {
 	trigger       *time.Timer
 	pendingEvents map[string]struct{}
 	pendingLock   sync.Mutex
-	syncPhase			SchedulerSyncPhase
+	syncPhase     SchedulerSyncPhase
 }
 
 type ExperimentEventStream struct {
@@ -218,7 +218,7 @@ func NewSchedulerServer(
 			batchWait:     defaultBatchWait,
 			trigger:       nil,
 			pendingEvents: map[string]struct{}{},
-			syncPhase:		 SCHEDULER_SYNC_INIT,
+			syncPhase:     SCHEDULER_SYNC_INIT,
 		},
 		pipelineEventStream: PipelineEventStream{
 			streams: make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription),
@@ -238,20 +238,6 @@ func NewSchedulerServer(
 		pendingEventsQueueSize,
 		s.logger,
 		s.handleModelEvent,
-	)
-
-	eventHub.RegisterServerEventHandler(
-		serverEventHandlerName,
-		pendingEventsQueueSize,
-		s.logger,
-		s.handleServerEvent,
-	)
-
-	eventHub.RegisterModelEventHandler(
-		serverModelEventHandlerName,
-		pendingEventsQueueSize,
-		s.logger,
-		s.handleServerModelEvent,
 	)
 
 	eventHub.RegisterExperimentEventHandler(
