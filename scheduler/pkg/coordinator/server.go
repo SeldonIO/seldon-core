@@ -32,14 +32,13 @@ func (h *EventHub) RegisterServerEventHandler(
 		}
 	}()
 
-	handler := h.newServerEventHandler(logger, events, handle)
+	handler := h.newServerEventHandler(logger, events)
 	h.bus.RegisterHandler(name, handler)
 }
 
 func (h *EventHub) newServerEventHandler(
 	logger log.FieldLogger,
 	events chan ServerEventMsg,
-	_ func(event ServerEventMsg),
 ) busV3.Handler {
 	handleServerEventMessage := func(_ context.Context, e busV3.Event) {
 		l := logger.WithField("func", "handleServerEventMessage")
