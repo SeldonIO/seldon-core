@@ -235,12 +235,6 @@ func NewSchedulerServer(
 		s.logger,
 		s.handleServerModelEvent,
 	)
-	eventHub.RegisterServerEventHandler(
-		serverEventHandlerName,
-		pendingEventsQueueSize,
-		s.logger,
-		s.handleServerEvent,
-	)
 	eventHub.RegisterExperimentEventHandler(
 		experimentEventHandlerName,
 		pendingEventsQueueSize,

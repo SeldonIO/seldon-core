@@ -173,11 +173,6 @@ func (s *SchedulerServer) handleServerModelEvent(event coordinator.ModelEventMsg
 	}
 }
 
-func (s *SchedulerServer) handleServerEvent(event coordinator.ServerEventMsg) {
-	logger := s.logger.WithField("func", "handleServerEvent")
-	logger.Debugf("Got server event for %s", event.String())
-}
-
 func (s *SchedulerServer) StopSendServerEvents() {
 	s.serverEventStream.mu.Lock()
 	defer s.serverEventStream.mu.Unlock()
