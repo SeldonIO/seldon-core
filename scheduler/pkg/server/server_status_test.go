@@ -330,6 +330,7 @@ func TestServersStatusStream(t *testing.T) {
 				g.Expect(ssr.ServerName).To(Equal("foo"))
 				g.Expect(ssr.GetAvailableReplicas()).To(Equal(expectedReplicas))
 				g.Expect(ssr.NumLoadedModelReplicas).To(Equal(expectedNumLoadedModelReplicas))
+				g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_StatusUpdate))
 			}
 		})
 	}
