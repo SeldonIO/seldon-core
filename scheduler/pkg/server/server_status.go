@@ -163,7 +163,7 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 	}
 }
 
-func (s *SchedulerServer) handleServerModelEvent(event coordinator.ModelEventMsg) {
+func (s *SchedulerServer) handleModelEventForServerStatus(event coordinator.ModelEventMsg) {
 	logger := s.logger.WithField("func", "handleServerEvent")
 	logger.Debugf("Got server state change for %s", event.String())
 
