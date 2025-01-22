@@ -152,7 +152,7 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 			switch event.GetType() {
 			case scheduler.ServerStatusResponse_StatusUpdate:
 				server.Status.LoadedModelReplicas = event.NumLoadedModelReplicas
-				return s.updateServerStatus(contextWithTimeout, server) // todo: implement replica info update
+				return s.updateServerStatus(contextWithTimeout, server)
 			case scheduler.ServerStatusResponse_ScalingRequest:
 				return nil // TODO: implement scaling request
 			default: // we ignore unknown event types
