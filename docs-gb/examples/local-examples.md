@@ -72,11 +72,14 @@ seldon model status iris -w ModelAvailable | jq -M .
 
 Do a REST inference call
 
-```bash
-seldon model infer iris \
-  '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
-```
+{% tabs %}
 
+{% tab title="curl" %}
+```bash
+curl --location 'http://${MESH_IP}:9000/v2/models/iris/infer' \
+	--header 'Content-Type: application/json'  \
+    --data '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+```
 ```json
 {
 	"model_name": "iris_1",
@@ -100,8 +103,42 @@ seldon model infer iris \
 		}
 	]
 }
-
 ```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+```bash
+seldon model infer iris \
+  '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+```
+```json
+{
+	"model_name": "iris_1",
+	"model_version": "1",
+	"id": "983bd95f-4b4d-4ff1-95b2-df9d6d089164",
+	"parameters": {},
+	"outputs": [
+		{
+			"name": "predict",
+			"shape": [
+				1,
+				1
+			],
+			"datatype": "INT64",
+			"parameters": {
+				"content_type": "np"
+			},
+			"data": [
+				2
+			]
+		}
+	]
+}
+```
+{% endtab %}
+
+{% endtabs %}
+
 
 Do a gRPC inference call
 
