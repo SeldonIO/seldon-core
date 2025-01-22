@@ -177,9 +177,22 @@ seldon model infer iris --inference-mode grpc \
 
 Unload the model
 
+{% tabs %}
+
+{% tab title="kubectl" %}
+```bash
+kubectl delete model iris
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model unload iris
 ```
+{% endtab %}
+
+{% endtabs %}
+
 
 ### Tensorflow Model
 
@@ -204,25 +217,52 @@ spec:
 
 Load the model.
 
+{% tabs %}
+
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ./models/tfsimple1.yaml
+```
+```bash
+model.mlops.seldon.io/tfsimple1 created
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model load -f ./models/tfsimple1.yaml
 ```
-
 ```json
 {}
-
 ```
+{% endtab %}
+
+{% endtabs %}
+
 
 Wait for the model to be ready.
 
+{% tabs %}
+
+{% tab title="kubectl" %}
+```bash
+kubectl get model tfsimple1 -n seldon-mesh -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
+```
+```bash
+True
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model status tfsimple1 -w ModelAvailable | jq -M .
 ```
-
 ```json
 {}
-
 ```
+{% endtab %}
+
+{% endtabs %}
 
 Get model metadata
 
