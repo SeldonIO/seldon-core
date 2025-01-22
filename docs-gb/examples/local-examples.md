@@ -697,12 +697,12 @@ Wait for both models to be ready.
 {% tabs %}
 
 {% tab title="kubectl" %}
-```
-kubectl get model iris -n seldon-mesh -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
-kubectl get model iris2 -n seldon-mesh -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
+```bash
+kubectl get model sklearn1 -n seldon-mesh -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
+kubectl get model sklearn2 -n seldon-mesh -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
 ```
 
-```
+```bash
 True
 True
 ```
