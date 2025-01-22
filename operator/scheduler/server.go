@@ -145,8 +145,6 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 			// The types of updates we may get from the scheduler are:
 			// 1. Status updates
 			// 2. Requests for changing the number of server replicas
-			// 3. Updates containing non-authoritative replica info, because the scheduler is in a
-			// discovery phase (just starting up, after a restart)
 			//
 			// At the moment, the scheduler doesn't send multiple types of updates in a single event;
 			switch event.GetType() {
