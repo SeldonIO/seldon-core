@@ -51,14 +51,6 @@ var (
 	ErrAddServerEmptyServerName = status.Errorf(codes.FailedPrecondition, "Empty server name passed")
 )
 
-type SchedulerSyncPhase uint8
-
-const (
-	SCHEDULER_SYNC_INIT SchedulerSyncPhase = iota
-	SCHEDULER_SYNC_PARTIAL
-	SCHEDULER_SYNC_ONLINE
-)
-
 type SchedulerServer struct {
 	pb.UnimplementedSchedulerServer
 	logger                log.FieldLogger
@@ -88,7 +80,6 @@ type ServerEventStream struct {
 	trigger       *time.Timer
 	pendingEvents map[string]struct{}
 	pendingLock   sync.Mutex
-	syncPhase     SchedulerSyncPhase
 }
 
 type ExperimentEventStream struct {
@@ -218,7 +209,6 @@ func NewSchedulerServer(
 			batchWait:     defaultBatchWait,
 			trigger:       nil,
 			pendingEvents: map[string]struct{}{},
-			syncPhase:     SCHEDULER_SYNC_INIT,
 		},
 		pipelineEventStream: PipelineEventStream{
 			streams: make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription),
