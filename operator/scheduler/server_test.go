@@ -156,7 +156,6 @@ func TestServerNotify(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			// note that responses_experiments is nill -> scheduler state is not existing
 			grpcClient := mockSchedulerGrpcClient{
 				requests_servers: []*scheduler.ServerNotify{},
 			}
@@ -182,7 +181,6 @@ func TestSubscribeServerEvents(t *testing.T) {
 		name               string
 		existing_resources []client.Object
 		results            []*scheduler.ServerStatusResponse
-		noSchedulerState   bool
 	}
 
 	// note expected state is derived in the test, maybe we should be explicit about it in the future
@@ -201,6 +199,7 @@ func TestSubscribeServerEvents(t *testing.T) {
 			},
 			results: []*scheduler.ServerStatusResponse{
 				{
+					Type:       scheduler.ServerStatusResponse_NonAuthoritativeReplicaInfo,
 					ServerName: "foo",
 					Resources: []*scheduler.ServerReplicaResources{
 						{
@@ -212,7 +211,6 @@ func TestSubscribeServerEvents(t *testing.T) {
 					NumLoadedModelReplicas: 0, // no update
 				},
 			},
-			noSchedulerState: true,
 		},
 		{
 			name: "server - with scheduler state",
@@ -227,6 +225,7 @@ func TestSubscribeServerEvents(t *testing.T) {
 			},
 			results: []*scheduler.ServerStatusResponse{
 				{
+					Type:       scheduler.ServerStatusResponse_StatusUpdate,
 					ServerName: "foo",
 					Resources: []*scheduler.ServerReplicaResources{
 						{
@@ -242,29 +241,20 @@ func TestSubscribeServerEvents(t *testing.T) {
 					},
 				},
 			},
-			noSchedulerState: false,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			// note that if responses_pipelines is nil -> scheduler state is not existing
-			var grpcClient mockSchedulerGrpcClient
-			if !test.noSchedulerState {
-				grpcClient = mockSchedulerGrpcClient{
-					responses_subscribe_servers: test.results,
-					responses_servers:           test.results,
-				}
-			} else {
-				grpcClient = mockSchedulerGrpcClient{
-					responses_subscribe_servers: test.results,
-				}
+			grpcClient := mockSchedulerGrpcClient{
+				responses_subscribe_servers: test.results,
 			}
+
 			controller := newMockControllerClient(test.existing_resources...)
 			err := controller.SubscribeServerEvents(context.Background(), &grpcClient, "")
 			g.Expect(err).To(BeNil())
 
-			// check state is correct for each pipeline
+			// check state is correct for each server
 			for _, r := range test.results {
 
 				namespace := "default"
