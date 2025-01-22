@@ -26,7 +26,6 @@ import (
 
 func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler.SchedulerClient, servers []v1alpha1.Server, isFirstSync bool) error {
 	logger := s.logger.WithName("NotifyServer")
-
 	if grpcClient == nil {
 		// we assume that all servers are in the same namespace
 		namespace := servers[0].Namespace
@@ -39,19 +38,34 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 
 	var requests []*scheduler.ServerNotify
 	for _, server := range servers {
-		var replicas int32
+		var scalingSpec *v1alpha1.ValidatedScalingSpec
+		var err error
+
 		if !server.ObjectMeta.DeletionTimestamp.IsZero() {
-			replicas = 0
-		} else if server.Spec.Replicas != nil {
-			replicas = *server.Spec.Replicas
+			scalingSpec = &v1alpha1.ValidatedScalingSpec{
+				Replicas:    0,
+				MinReplicas: 0,
+				MaxReplicas: 0,
+			}
 		} else {
-			replicas = 1
+			scalingSpec, err = v1alpha1.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
+			if err != nil {
+				return err
+			}
 		}
 
-		logger.Info("Notify server", "name", server.GetName(), "namespace", server.GetNamespace(), "replicas", replicas)
+		logger.Info(
+			"Notify server", "name", server.GetName(), "namespace", server.GetNamespace(),
+			"replicas", scalingSpec.Replicas,
+			"minReplicas", scalingSpec.MinReplicas,
+			"maxReplicas", scalingSpec.MaxReplicas,
+		)
+
 		requests = append(requests, &scheduler.ServerNotify{
 			Name:             server.GetName(),
-			ExpectedReplicas: replicas,
+			ExpectedReplicas: scalingSpec.Replicas,
+			MinReplicas:      scalingSpec.MinReplicas,
+			MaxReplicas:      scalingSpec.MaxReplicas,
 			KubernetesMeta: &scheduler.KubernetesMeta{
 				Namespace:  server.GetNamespace(),
 				Generation: server.GetGeneration(),
@@ -127,9 +141,21 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 				logger.Info("Ignoring event for old generation", "currentGeneration", server.Generation, "eventGeneration", event.GetKubernetesMeta().Generation, "server", event.ServerName)
 				return nil
 			}
-			// Handle status update
-			server.Status.LoadedModelReplicas = event.NumLoadedModelReplicas
-			return s.updateServerStatus(contextWithTimeout, server)
+
+			// The types of updates we may get from the scheduler are:
+			// 1. Status updates
+			// 2. Requests for changing the number of server replicas
+			//
+			// At the moment, the scheduler doesn't send multiple types of updates in a single event;
+			switch event.GetType() {
+			case scheduler.ServerStatusResponse_StatusUpdate:
+				server.Status.LoadedModelReplicas = event.NumLoadedModelReplicas
+				return s.updateServerStatus(contextWithTimeout, server)
+			case scheduler.ServerStatusResponse_ScalingRequest:
+				return nil // TODO: implement scaling request
+			default: // we ignore unknown event types
+				return nil
+			}
 		})
 		if retryErr != nil {
 			logger.Error(err, "Failed to update status", "model", event.ServerName)

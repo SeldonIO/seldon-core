@@ -583,6 +583,7 @@ func (m *MemoryStore) AddServerReplica(request *agent.AgentSubscribeRequest) err
 			serverEvt,
 		)
 	}
+
 	return nil
 }
 
@@ -765,6 +766,8 @@ func (m *MemoryStore) ServerNotify(request *pb.ServerNotify) error {
 		m.store.servers[request.Name] = server
 	}
 	server.SetExpectedReplicas(int(request.ExpectedReplicas))
+	server.SetMinReplicas(int(request.MinReplicas))
+	server.SetMaxReplicas(int(request.MaxReplicas))
 	server.SetKubernetesMeta(request.KubernetesMeta)
 	return nil
 }

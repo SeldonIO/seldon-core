@@ -19,6 +19,8 @@ type ServerSnapshot struct {
 	Replicas         map[int]*ServerReplica
 	Shared           bool
 	ExpectedReplicas int
+	MinReplicas      int
+	MaxReplicas      int
 	KubernetesMeta   *pb.KubernetesMeta
 }
 

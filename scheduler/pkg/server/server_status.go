@@ -163,12 +163,11 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 	}
 }
 
-// TODO - Create a ServerStatusMsg type to disambiguate?
-func (s *SchedulerServer) handleServerEvent(event coordinator.ModelEventMsg) {
+func (s *SchedulerServer) handleModelEventForServerStatus(event coordinator.ModelEventMsg) {
 	logger := s.logger.WithField("func", "handleServerEvent")
 	logger.Debugf("Got server state change for %s", event.String())
 
-	err := s.updateServerStatus(event)
+	err := s.updateServerModelsStatus(event)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to update server status for model event %s", event.String())
 	}
@@ -182,7 +181,7 @@ func (s *SchedulerServer) StopSendServerEvents() {
 	}
 }
 
-func (s *SchedulerServer) updateServerStatus(evt coordinator.ModelEventMsg) error {
+func (s *SchedulerServer) updateServerModelsStatus(evt coordinator.ModelEventMsg) error {
 	logger := s.logger.WithField("func", "sendServerStatusEvent")
 
 	model, err := s.modelStore.GetModel(evt.ModelName)
