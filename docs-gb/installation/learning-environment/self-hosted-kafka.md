@@ -115,8 +115,13 @@ Strimzi provides a Kubernetes Operator to deploy and manage Kafka clusters. Firs
           type: persistent-claim
           size: 10Gi
           deleteClaim: false
-  ```    
-8.  Check the status of the Kafka Pods to ensure they are running properly:
+  ```
+8.  Apply the Kafka node pool configuration.
+
+    ```
+    kubectl apply -f kafka-nodepool.yaml -n seldon-mesh
+    ```  
+9.  Check the status of the Kafka Pods to ensure they are running properly:
 
     ```
     kubectl get pods -n seldon-mesh
