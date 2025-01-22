@@ -731,6 +731,8 @@ func TestServerNotify(t *testing.T) {
 					{
 						Name:             "server1",
 						ExpectedReplicas: 2,
+						MinReplicas:      1,
+						MaxReplicas:      3,
 						Shared:           true,
 					},
 					{
@@ -745,6 +747,8 @@ func TestServerNotify(t *testing.T) {
 				{
 					Name:             "server1",
 					ExpectedReplicas: 2,
+					MinReplicas:      1,
+					MaxReplicas:      3,
 					Shared:           true,
 					Replicas:         map[int]*store.ServerReplica{},
 				},
