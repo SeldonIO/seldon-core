@@ -152,7 +152,7 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 				server.Status.LoadedModelReplicas = event.NumLoadedModelReplicas
 				return s.updateServerStatus(contextWithTimeout, server)
 			case scheduler.ServerStatusResponse_ScalingRequest:
-				return nil // TODO: implement scaling request
+				return s.scaleServerReplicas(contextWithTimeout, server, event)
 			default: // we ignore unknown event types
 				return nil
 			}
@@ -172,4 +172,38 @@ func (s *SchedulerClient) updateServerStatus(ctx context.Context, server *v1alph
 		return err
 	}
 	return nil
+}
+
+func (s *SchedulerClient) scaleServerReplicas(ctx context.Context, server *v1alpha1.Server, event *scheduler.ServerStatusResponse) error {
+	isValidEvent, validatedScalingSpec, err := isValidScalingEvent(server, event)
+	if err != nil {
+		return err
+	}
+	if isValidEvent {
+		newServer := server.DeepCopy()
+		newServer.Spec.Replicas = &event.ExpectedReplicas
+
+		if err := s.Patch(ctx, newServer, client.MergeFrom(server)); err != nil {
+			s.recorder.Eventf(server, v1.EventTypeWarning, "PatchFailed",
+				"Failed to patch replicas for Server %q: %v", server.Name, err)
+			return err
+		}
+	} else {
+		s.logger.Info("Ignoring scale replicas request for server as expected replics is not valid",
+			"server", server.Name,
+			"expected replicas", event.ExpectedReplicas,
+			"min replicas", validatedScalingSpec.MinReplicas,
+			"max replicas", validatedScalingSpec.MaxReplicas)
+	}
+
+	return nil
+}
+
+func isValidScalingEvent(server *v1alpha1.Server, event *scheduler.ServerStatusResponse) (bool, *v1alpha1.ValidatedScalingSpec, error) {
+	validatedScalingSpec, err := v1alpha1.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
+	if err != nil {
+		return false, nil, err
+	}
+
+	return uint32(event.ExpectedReplicas) <= validatedScalingSpec.MaxReplicas && uint32(event.ExpectedReplicas) >= validatedScalingSpec.MinReplicas, validatedScalingSpec, nil
 }
