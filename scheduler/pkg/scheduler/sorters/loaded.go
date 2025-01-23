@@ -29,8 +29,5 @@ func (m ModelAlreadyLoadedOnServerSorter) Name() string {
 }
 
 func (m ModelAlreadyLoadedOnServerSorter) IsLess(i *CandidateServer, j *CandidateServer) bool {
-	if i.Model.Server() == i.Server.Name {
-		return true
-	}
-	return false
+	return i.Model.Server() == i.Server.Name
 }
