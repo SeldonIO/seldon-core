@@ -324,9 +324,21 @@ b'{"generated_text": "Once upon a time in a galaxy far away\\nOne night, a littl
 
 Unload the model
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl delete custom-tiny-stories-text-gen
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model unload custom-tiny-stories-text-gen
 ```
+{% endtab %}
+{% endtabs %}
+
+
 
 ````
 As a next step, why not try running a larger-scale model? You can find a definition for one in ./models/hf-text-gen-custom-gpt2.yaml. However, you may need to request and allocate more memory!
