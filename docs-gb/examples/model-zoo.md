@@ -33,6 +33,60 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+
+```bash
+seldon model load -f ./models/sklearn-iris-gs.yaml
+```
+```bash
+model.mlops.seldon.io/iris created
+```
+
+```bash
+kubectl get model iris -n ${NAMESPACE} -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
+```
+
+```bash
+True
+```
+
+```bash
+curl --location 'http://${MESH_IP}:9000/v2/models/iris/infer' \
+	--header 'Content-Type: application/json'  \
+    --data '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+```
+
+```json
+{
+	"model_name": "iris_1",
+	"model_version": "1",
+	"id": "09263298-ca66-49c5-acb9-0ca75b06f825",
+	"parameters": {},
+	"outputs": [
+		{
+			"name": "predict",
+			"shape": [
+				1,
+				1
+			],
+			"datatype": "INT64",
+			"data": [
+				2
+			]
+		}
+	]
+}
+
+```
+
+```bash
+kubectl delete  model iris
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+
 ```bash
 seldon model load -f ./models/sklearn-iris-gs.yaml
 ```
@@ -87,6 +141,9 @@ seldon model unload iris
 {}
 
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ### Tensorflow CIFAR10 Image Classification Model
 
@@ -175,23 +232,37 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ./models/cifar10-no-config.yaml
+```
+```bash
+model.mlops.seldon.io/cifar10 created
+```
+```bash
+kubectl get model cifar10 -n ${NAMESPACE} -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
+```
+```bash
+True
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model load -f ./models/cifar10-no-config.yaml
 ```
-
 ```json
 {}
-
 ```
-
 ```bash
 seldon model status cifar10 -w ModelAvailable | jq -M .
 ```
-
 ```json
 {}
-
 ```
+{% endtab %}
+{% endtabs %}
 
 ```python
 infer("cifar10",4)
@@ -205,14 +276,23 @@ car
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash 
+kubectl delete model cifar10
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model unload cifar10
 ```
-
 ```json
 {}
-
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ### XGBoost Model
 
@@ -458,14 +538,23 @@ seldon model infer income-lgb \
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl delete model income-lgb
+```
+{% endtab %}
+{% tab title="seldon-cli" %}
+
 ```bash
 seldon model unload income-lgb
 ```
-
 ```json
 {}
-
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ### MLFlow Wine Model
 
@@ -487,6 +576,30 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+
+```bash
+kubectl apply -f ./models/wine-mlflow.yaml
+```
+
+```bash
+model.mlops.seldon.io/wine created
+```
+
+```bash
+kubectl get model wine -n ${NAMESPACE} -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
+```
+
+```bash
+True
+
+```
+
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+
 ```bash
 seldon model load -f ./models/wine-mlflow.yaml
 ```
@@ -502,8 +615,10 @@ seldon model status wine -w ModelAvailable | jq -M .
 
 ```json
 {}
-
 ```
+
+{% endtab %}
+{% endtabs %}
 
 ```python
 import requests
@@ -588,9 +703,22 @@ print(response_raw.json())
 
 ```
 
+
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl delete model wine
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model unload wine
 ```
+{% endtab %}
+{% endtabs %}
+
+
 
 ```json
 {}
@@ -661,6 +789,28 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ./models/mnist-pytorch.yaml
+```
+
+```bash
+model.mlops.seldon.io/mnist-pytorch created
+
+```
+
+```bash
+kubectl get model mnist-pytorch -n ${NAMESPACE} -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
+```
+
+```bash
+True
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+
 ```bash
 seldon model load -f ./models/mnist-pytorch.yaml
 ```
@@ -678,6 +828,8 @@ seldon model status mnist-pytorch -w ModelAvailable | jq -M .
 {}
 
 ```
+{% endtab %}
+{% endtabs %}
 
 ```python
 infer_mnist()
@@ -691,11 +843,22 @@ infer_mnist()
 
 ```
 
+
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl delete model  mnist-pytorch
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model unload mnist-pytorch
 ```
-
 ```json
 {}
 
 ```
+{% endtab %}
+{% endtabs %}
+
