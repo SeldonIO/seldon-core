@@ -20,3 +20,17 @@ func (m ModelAlreadyLoadedSorter) IsLess(i *CandidateReplica, j *CandidateReplic
 	jIsLoading := j.Model.IsLoadingOrLoaded(j.Server.Name, j.Replica.GetReplicaIdx())
 	return iIsLoading && !jIsLoading
 }
+
+// This sorter favours servers that have the models already loaded on them
+type ModelAlreadyLoadedOnServerSorter struct{}
+
+func (m ModelAlreadyLoadedOnServerSorter) Name() string {
+	return "ModelAlreadyLoadedOnServerSorter"
+}
+
+func (m ModelAlreadyLoadedOnServerSorter) IsLess(i *CandidateServer, j *CandidateServer) bool {
+	if i.Model.Server() == i.Server.Name {
+		return true
+	}
+	return false
+}
