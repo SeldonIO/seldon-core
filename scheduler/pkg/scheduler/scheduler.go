@@ -84,6 +84,11 @@ func (s *SimpleScheduler) ScheduleFailedModels() ([]string, error) {
 	return updatedModels, nil
 }
 
+// Get failed models
+// Currently this includes:
+// - models that have failed to schedule
+// - models that have failed to load
+// - models that have loaded but not all replicas are available (e.g. min replicas is met but not desired replicas)
 func (s *SimpleScheduler) getFailedModels() ([]string, error) {
 	models, err := s.store.GetModels()
 	if err != nil {
@@ -94,8 +99,8 @@ func (s *SimpleScheduler) getFailedModels() ([]string, error) {
 		version := model.GetLatest()
 		if version != nil {
 			versionState := version.ModelState()
-			if versionState.State == store.ModelFailed || versionState.State == store.ScheduleFailed || 
-			(versionState.State == store.ModelAvailable && versionState.AvailableReplicas < version.GetDeploymentSpec().GetReplicas()) {
+			if versionState.State == store.ModelFailed || versionState.State == store.ScheduleFailed ||
+				(versionState.State == store.ModelAvailable && versionState.AvailableReplicas < version.GetDeploymentSpec().GetReplicas()) {
 				failedModels = append(failedModels, model.Name)
 			}
 		}
