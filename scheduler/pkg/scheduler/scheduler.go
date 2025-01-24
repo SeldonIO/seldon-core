@@ -171,7 +171,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 
 	// The main logic of trying to find a server for the model is as follows:
 	// 1. If there are enough replicas on a server, schedule the model
-	// 2. If there are not enough replicas on a server, try to schedule with min replicas. In this case we actually should get 
+	// 2. If there are not enough replicas on a server, try to schedule with min replicas. In this case we actually should get
 	// the models loaded on all the replicas of the servers (assuming min replicas is less than the number of replicas on the server)
 	// we also mark the model in this case as failed to schedule so that if the infra changes in the future we can try to reschedule
 
