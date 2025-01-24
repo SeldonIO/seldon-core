@@ -252,6 +252,32 @@ func TestSubscribeServerEvents(t *testing.T) {
 			},
 		},
 		{
+			name: "server - with no scaling spec",
+			existingServer: mlopsv1alpha1.Server{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:       "foo",
+					Namespace:  "seldon",
+					Generation: 1,
+				},
+			},
+			response: &scheduler.ServerStatusResponse{
+				Type:       scheduler.ServerStatusResponse_ScalingRequest,
+				ServerName: "foo",
+				Resources: []*scheduler.ServerReplicaResources{
+					{
+						ReplicaIdx: 0,
+					},
+				},
+				AvailableReplicas:      3,
+				ExpectedReplicas:       6,
+				NumLoadedModelReplicas: 0,
+				KubernetesMeta: &scheduler.KubernetesMeta{
+					Namespace:  "seldon",
+					Generation: 1,
+				},
+			},
+		},
+		{
 			// no scheduler state means lost servers metadata
 			name: "servers - no scheduler state",
 			existingServer: mlopsv1alpha1.Server{
