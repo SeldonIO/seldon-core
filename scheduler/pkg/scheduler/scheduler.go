@@ -178,23 +178,26 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 	// For each server filter and sort replicas and attempt schedule if enough replicas
 	ok := s.findAndUpdateToServers(filteredServers, latestModel, desiredReplicas, desiredReplicas)
 	// Try to scheduler with min replicas if not enough replicas
+	okWithMinReplicas := false
 	if !ok {
 		if minReplicas > 0 {
-			if minOk := s.findAndUpdateToServers(filteredServers, latestModel, desiredReplicas, int(minReplicas)); minOk {
-				logger.Debug("Managed to scheduled model with min replicas")
-			}
+			okWithMinReplicas = s.findAndUpdateToServers(filteredServers, latestModel, desiredReplicas, int(minReplicas))
 		}
 	}
 
 	if !ok {
 		msg := "Failed to schedule model as no matching server had enough suitable replicas"
+		if okWithMinReplicas {
+			msg = "Failed to schedule model as no matching server had enough suitable replicas, managed to schedule with min replicas"
+		}
 		logger.Debug(msg)
 		// we do not want to reset the server if it has live replicas or loading replicas
 		// in the case of loading replicas, we need to make sure that we can unload them later.
 		// for example in the case that a model is just marked as loading on a particular server replica
 		// then it gets a delete request (before it is marked as loaded or available) we need to make sure
 		// that we can unload it from the server
-		s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas() && !latestModel.IsLoadingOrLoadedOnServer())
+		// we also do not want to reset the server if we managed to schedule with min replicas
+		s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas() && !latestModel.IsLoadingOrLoadedOnServer() && !okWithMinReplicas)
 		return errors.New(msg)
 	}
 
