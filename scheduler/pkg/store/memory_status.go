@@ -88,7 +88,8 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 			modelReason = stats.lastFailedReason
 			modelTimestamp = stats.lastFailedStateTime
 		} else if (modelVersion.GetDeploymentSpec() != nil && stats.replicasAvailable == modelVersion.GetDeploymentSpec().Replicas) || // equal to desired replicas
-			(stats.replicasAvailable > 0 && prevModelVersion != nil && modelVersion != prevModelVersion && prevModelVersion.state.State == ModelAvailable) { // TODO In future check if available replicas is > minReplicas
+			(modelVersion.GetDeploymentSpec() != nil && stats.replicasAvailable >= modelVersion.GetDeploymentSpec().MinReplicas && modelVersion.GetDeploymentSpec().MinReplicas > 0) || // min replicas is set and available replicas are greater than or equal to min replicas
+			(stats.replicasAvailable > 0 && prevModelVersion != nil && modelVersion != prevModelVersion && prevModelVersion.state.State == ModelAvailable) {
 			modelState = ModelAvailable
 		} else {
 			modelState = ModelProgressing
