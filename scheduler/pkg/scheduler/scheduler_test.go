@@ -563,12 +563,23 @@ func TestFailedModels(t *testing.T) {
 	logger := log.New()
 	g := NewGomegaWithT(t)
 
-	newMockStore := func(models map[string]store.ModelState) *mockStore {
+	type modelStateWithMetadata struct {
+		state             store.ModelState
+		deploymentSpec    *pb.DeploymentSpec
+		availableReplicas uint32
+	}
+
+	newMockStore := func(models map[string]modelStateWithMetadata) *mockStore {
 		snapshots := map[string]*store.ModelSnapshot{}
 		for name, state := range models {
+			mv := store.NewModelVersion(&pb.Model{DeploymentSpec: state.deploymentSpec}, 1, "", map[int]store.ReplicaStatus{}, false, state.state)
+			mv.SetModelState(store.ModelStatus{
+				State:             state.state,
+				AvailableReplicas: state.availableReplicas,
+			})
 			snapshot := &store.ModelSnapshot{
 				Name:     name,
-				Versions: []*store.ModelVersion{store.NewModelVersion(&pb.Model{}, 1, "", map[int]store.ReplicaStatus{}, false, state)},
+				Versions: []*store.ModelVersion{mv},
 			}
 			snapshots[name] = snapshot
 		}
@@ -579,24 +590,25 @@ func TestFailedModels(t *testing.T) {
 
 	type test struct {
 		name                 string
-		models               map[string]store.ModelState
+		models               map[string]modelStateWithMetadata
 		expectedFailedModels []string
 	}
 
 	tests := []test{
 		{
 			name: "SmokeTest",
-			models: map[string]store.ModelState{
-				"model1": store.ScheduleFailed,
-				"model2": store.ModelFailed,
-				"model3": store.ModelAvailable,
+			models: map[string]modelStateWithMetadata{
+				"model1": {store.ScheduleFailed, &pb.DeploymentSpec{Replicas: 1}, 0},
+				"model2": {store.ModelFailed, &pb.DeploymentSpec{Replicas: 1}, 0},
+				"model3": {store.ModelAvailable, &pb.DeploymentSpec{Replicas: 1}, 1},
+				"model4": {store.ModelAvailable, &pb.DeploymentSpec{Replicas: 2, MinReplicas: 1}, 1}, // retry models that have not reached desired replicas
 			},
-			expectedFailedModels: []string{"model1", "model2"},
+			expectedFailedModels: []string{"model1", "model2", "model4"},
 		},
 		{
 			name: "SmokeTest",
-			models: map[string]store.ModelState{
-				"model3": store.ModelAvailable,
+			models: map[string]modelStateWithMetadata{
+				"model3": {store.ModelAvailable, &pb.DeploymentSpec{Replicas: 1}, 1},
 			},
 			expectedFailedModels: nil,
 		},

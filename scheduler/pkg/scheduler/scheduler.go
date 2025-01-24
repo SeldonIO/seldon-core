@@ -94,7 +94,8 @@ func (s *SimpleScheduler) getFailedModels() ([]string, error) {
 		version := model.GetLatest()
 		if version != nil {
 			versionState := version.ModelState()
-			if versionState.State == store.ModelFailed || versionState.State == store.ScheduleFailed {
+			if versionState.State == store.ModelFailed || versionState.State == store.ScheduleFailed || 
+			(versionState.State == store.ModelAvailable && versionState.AvailableReplicas < version.GetDeploymentSpec().GetReplicas()) {
 				failedModels = append(failedModels, model.Name)
 			}
 		}
