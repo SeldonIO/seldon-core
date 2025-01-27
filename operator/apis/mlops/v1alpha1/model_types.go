@@ -181,7 +181,7 @@ func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
 		}
 	}
 	if m.Spec.Llm != nil {
-		md.ModelSpec.Llm = &scheduler.LLMSpec{
+		md.ModelSpec.Llm = &scheduler.LlmSpec{
 			ModelRef:    m.Spec.Llm.ModelRef,
 			PipelineRef: m.Spec.Llm.PipelineRef,
 		}
