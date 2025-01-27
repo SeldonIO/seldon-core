@@ -241,7 +241,7 @@ func TestScheduler(t *testing.T) {
 					ExpectedReplicas: -1,
 				},
 			},
-			scheduled:         false, // not here that we still mark the model as scheduleFailed
+			scheduled:         true, // not here that we still trying to mark the model as Available
 			scheduledServer:   "server2",
 			scheduledReplicas: []int{0, 1},
 		},
@@ -464,7 +464,7 @@ func TestScheduler(t *testing.T) {
 					ExpectedReplicas: -1,
 				},
 			},
-			scheduled:         false,
+			scheduled:         true, // note that we are still trying to make the model as Available
 			scheduledServer:   "server1",
 			scheduledReplicas: []int{0, 1, 2, 3}, // used all replicas
 		},
