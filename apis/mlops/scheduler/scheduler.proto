@@ -43,8 +43,9 @@ message ModelSpec {
   optional uint64 memoryBytes = 5; // Requested memory
   optional string server = 6; // the particular model server to load the model. If unspecified will be chosen.
   optional ExplainerSpec explainer = 7; // optional black box explainer details
-  repeated ParameterSpec parameters = 8; // parameters to load with model
-  optional ModelRuntimeInfo modelRuntimeInfo = 9; // model specific settings that are sent by the agent
+  optional LlmSpec llm = 8; // LLM specific settings
+  repeated ParameterSpec parameters = 9; // parameters to load with model
+  optional ModelRuntimeInfo modelRuntimeInfo = 10; // model specific settings that are sent by the agent
 }
 
 message ParameterSpec {
@@ -57,6 +58,11 @@ message ExplainerSpec {
   // 1 of semantic either model or pipeline reference
   optional string modelRef = 2;
   optional string pipelineRef = 3;
+}
+
+message LlmSpec {
+  optional string modelRef = 1;
+  optional string pipelineRef = 2;
 }
 
 message ModelRuntimeInfo {
