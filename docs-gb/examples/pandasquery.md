@@ -213,14 +213,26 @@ spec:
 
 {% tabs %}
 {% tab title="kubectl" %}
-####################
+```bash
+kubectl apply -f pipelines/choice.yaml
+```
+```bash
+pipeline.mlops.seldon.io/choice created
+```
+
+```bash
+kubectl wait --for condition=ready --timeout=300s pipelines choice -n ${NAMESPACE}
+```
+
+```
+pipeline.mlops.seldon.io/choice condition met
+```
 {% endtab %}
 
 {% tab title="seldon-cli" %}
 ```bash
 seldon pipeline load -f ../../pipelines/choice.yaml
 ```
-
 ```bash
 seldon pipeline status choice -w PipelineReady | jq -M .
 ```
@@ -344,7 +356,7 @@ seldon pipeline infer choice --inference-mode grpc \
 
 {% tabs %}
 {% tab title="kubectl" %}
-```
+```bash
 kubectl delete -f ../../models/choice1.yaml -n ${NAMESPACE}
 kubectl delete -f ../../models/choice2.yaml -n ${NAMESPACE}
 kubectl delete -f ../../models/add10.yaml -n ${NAMESPACE}
