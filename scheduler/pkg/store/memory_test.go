@@ -725,6 +725,42 @@ func TestUpdateLoadedModels(t *testing.T) {
 			expectedStates:     map[int]ReplicaStatus{0: {State: Available}, 1: {State: Unloaded}},
 			expectedModelState: &ModelStatus{State: ModelAvailable},
 		},
+		{
+			name: "PartiallyAvailableModels",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"model": {
+					versions: []*ModelVersion{
+						{
+							modelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 3, MinReplicas: 2}},
+							server:    "server",
+							version:   1,
+							replicas: map[int]ReplicaStatus{
+								0: {State: Available},
+								1: {State: Available},
+							},
+							state: ModelStatus{State: ModelProgressing},
+						},
+					},
+				}},
+				servers: map[string]*Server{
+					"server": {
+						name: "server",
+						replicas: map[int]*ServerReplica{
+							0: {},
+							1: {},
+						},
+					},
+				},
+			},
+			modelKey:  "model",
+			version:   1,
+			serverKey: "server",
+			replicas: []*ServerReplica{
+				{replicaIdx: 0}, {replicaIdx: 1},
+			},
+			expectedStates:     map[int]ReplicaStatus{0: {State: Available}, 1: {State: Available}},
+			expectedModelState: &ModelStatus{State: ModelAvailable},
+		},
 	}
 
 	for _, test := range tests {
