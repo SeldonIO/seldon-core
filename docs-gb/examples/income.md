@@ -195,7 +195,7 @@ kubectl apply -f ../../pipelines/income.yaml
 ```
 pipeline.mlops.seldon.io/income created
 ```
-```
+```bash
 kubectl wait --for condition=ready --timeout=300s pipelines income -n ${NAMESPACE}
 ```
 ```
@@ -406,7 +406,7 @@ infer("income-explainer",batchSz,"normal")
 
 {% tabs %}
 {% tab title="kubectl" %}
-```
+```bash
 kubectl delete -f ../../piplines/income-production.yaml -n ${NAMESPACE}
 kubectl delete -f ../../models/income-preprocess.yaml -n ${NAMESPACE}
 kubectl delete -f ../../models/income.yaml -n ${NAMESPACE}
