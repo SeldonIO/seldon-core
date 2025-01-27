@@ -233,7 +233,7 @@ settings for Kafka configuration.
 
 After you integrated Seldon Core 2 with Kafka, you need to [Install an Ingress Controller](../production-environment/ingress-controller/istio.md) that adds an abstraction layer for traffic routing by receiving traffic from outside the Kubernetes platform and load balancing it to Pods running within the Kubernetes cluster.
 
-### Customzing the settings (optional)
+### Customizing the settings (optional)
 
 To customize the settings you can add and modify the Kafka configuration using Helm, for example to add compression for producers.
 
