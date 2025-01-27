@@ -59,7 +59,7 @@ Installing Istio ingress controller in a Kubernetes cluster running Seldon Enter
      apiVersion: networking.istio.io/v1alpha3
      kind: Gateway
      metadata:
-       name: my-gateway
+       name: seldon-gateway
        namespace: seldon-mesh
      spec:
        selector:
