@@ -44,6 +44,8 @@ type ModelSpec struct {
 	Explainer *ExplainerSpec `json:"explainer,omitempty"`
 	// Parameters to load with model
 	Parameters []ParameterSpec `json:"parameters,omitempty"`
+	// Llm spec
+	Llm *LlmSpec `json:"llm,omitempty"`
 }
 
 type ParameterSpec struct {
@@ -56,6 +58,16 @@ type ExplainerSpec struct {
 	// type of explainer
 	Type string `json:"type,omitempty"`
 	// one of the following need to be set for blackbox explainers
+	// Reference to Model
+	// +optional
+	ModelRef *string `json:"modelRef,omitempty"`
+	// Reference to Pipeline
+	// +optional
+	PipelineRef *string `json:"pipelineRef,omitempty"`
+}
+
+// Either ModelRef or PipelineRef is required
+type LlmSpec struct {
 	// Reference to Model
 	// +optional
 	ModelRef *string `json:"modelRef,omitempty"`
@@ -166,6 +178,12 @@ func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
 			Type:        m.Spec.Explainer.Type,
 			ModelRef:    m.Spec.Explainer.ModelRef,
 			PipelineRef: m.Spec.Explainer.PipelineRef,
+		}
+	}
+	if m.Spec.Llm != nil {
+		md.ModelSpec.Llm = &scheduler.LLMSpec{
+			ModelRef:    m.Spec.Llm.ModelRef,
+			PipelineRef: m.Spec.Llm.PipelineRef,
 		}
 	}
 	if len(m.Spec.Parameters) > 0 {

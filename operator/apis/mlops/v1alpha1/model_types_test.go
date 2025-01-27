@@ -39,7 +39,7 @@ func TestAsModelDetails(t *testing.T) {
 	server := "server"
 	m1 := resource.MustParse("1M")
 	m1bytes := uint64(1_000_000)
-	incomeModel := "income"
+	incomeModel, llmModel := "income", "chat-gpt"
 	tests := []test{
 		{
 			name: "simple",
@@ -96,6 +96,9 @@ func TestAsModelDetails(t *testing.T) {
 						Type:     "anchor_tabular",
 						ModelRef: &incomeModel,
 					},
+					Llm: &LlmSpec{
+						ModelRef: &llmModel,
+					},
 					Parameters: []ParameterSpec{
 						{
 							Name:  "foo",
@@ -124,6 +127,9 @@ func TestAsModelDetails(t *testing.T) {
 					Explainer: &scheduler.ExplainerSpec{
 						Type:     "anchor_tabular",
 						ModelRef: &incomeModel,
+					},
+					Llm: &scheduler.LLMSpec{
+						ModelRef: &llmModel,
 					},
 					Parameters: []*scheduler.ParameterSpec{
 						{
