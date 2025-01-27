@@ -236,11 +236,11 @@ spec:
                     type: string
                 type: object
               llm:
-                description: LLM spec
+                description: Llm spec
                 properties:
                   modelRef:
                     description: |-
-                      one of the following need to be set for the LLM
+                      one of the following need to be set for the llm
                       Reference to Model
                     type: string
                   pipelineRef:

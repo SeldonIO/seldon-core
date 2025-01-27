@@ -68,6 +68,7 @@ type ExplainerSpec struct {
 
 // Either ModelRef or PipelineRef is required
 type LlmSpec struct {
+	// one of the following need to be set for the llm
 	// Reference to Model
 	// +optional
 	ModelRef *string `json:"modelRef,omitempty"`
