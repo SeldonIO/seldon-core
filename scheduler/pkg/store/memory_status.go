@@ -106,12 +106,14 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 }
 
 func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string, reset bool) {
+	availableReplicas := uint32(len(modelVersion.GetAssignment()))
+
 	modelVersion.state = ModelStatus{
 		State:               ScheduleFailed,
 		Reason:              reason,
 		Timestamp:           time.Now(),
-		AvailableReplicas:   modelVersion.state.AvailableReplicas,
-		UnavailableReplicas: modelVersion.GetModel().GetDeploymentSpec().GetReplicas() - modelVersion.state.AvailableReplicas,
+		AvailableReplicas:   availableReplicas,
+		UnavailableReplicas: modelVersion.GetModel().GetDeploymentSpec().GetReplicas() - availableReplicas,
 	}
 	// make sure we reset server but only if there are no available replicas
 	if reset {
