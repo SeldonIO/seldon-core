@@ -123,7 +123,7 @@ func TestSetLlm(t *testing.T) {
 				Parameters: &ModelParameters{
 					Version: "1",
 					Extra: map[string]interface{}{
-						"url": "http://0.0.0.0:9000/v2/models/mymodel/infer",
+						inferUriKey: "http://0.0.0.0:9000/v2/models/mymodel/infer",
 						"prompt_utils": map[string]interface{}{
 							"model_type": "chat.completions",
 						},
@@ -144,7 +144,7 @@ func TestSetLlm(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			modelSettings, err := m.loadModelSettingsFromFile(settingsFile)
 			g.Expect(err).To(BeNil())
-			g.Expect(modelSettings.Parameters.Extra["url"]).To(Equal(test.expected.Parameters.Extra["url"]))
+			g.Expect(modelSettings.Parameters.Extra[inferUriKey]).To(Equal(test.expected.Parameters.Extra[inferUriKey]))
 			g.Expect(modelSettings.Parameters.Extra["prompt_utils"]).To(Equal(test.expected.Parameters.Extra["prompt_utils"]))
 
 		})
