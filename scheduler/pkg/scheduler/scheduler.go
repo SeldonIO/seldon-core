@@ -189,7 +189,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		okWithMinReplicas = s.findAndUpdateToServers(filteredServers, latestModel, desiredReplicas, int(minReplicas))
 		if okWithMinReplicas {
 			msg := "Failed to schedule model as no matching server had enough suitable replicas, managed to schedule with min replicas"
-			logger.Debug(msg)
+			logger.Warn(msg)
 		}
 	}
 
