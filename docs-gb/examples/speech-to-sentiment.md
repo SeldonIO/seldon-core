@@ -644,7 +644,7 @@ Explanation anchors: ['great']
 {% tabs %}
 {% tab title="kubectl" %}
 
-```
+```bash
 kubectl delete -f ../../pipelines/speech-to-sentiment.yaml -n ${NAMESPACE}
 kubectl delete -f ../../pipelines/sentiment-explain.yaml -n ${NAMESPACE}
 kubectl delete -f ../../models/hf-whisper.yaml -n ${NAMESPACE}

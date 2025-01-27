@@ -71,6 +71,23 @@ ERROR:
 
 ```
 
+
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ./pipelines/tfsimples.yaml -n ${NAMESPACE}
+```
+```
+pipeline.mlops.seldon.io/tfsimples created
+```
+
+```bash
+kubectl wait --for condition=ready --timeout=300s pipeline tfsimples -n ${NAMESPACE}
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+
 ```bash
 seldon pipeline load -f ./pipelines/tfsimples.yaml
 seldon pipeline status tfsimples -w PipelineReady
@@ -89,6 +106,9 @@ seldon pipeline status tfsimples | jq .versions[0].state.modelsReady
 null
 
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ```bash
 curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
@@ -110,6 +130,22 @@ grpcurl -d '{"name":"tfsimples"}' \
 }
 
 ```
+
+
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ./models/tfsimple1.yaml -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s model tfsimple1 -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/tfsimple1 created
+model.mlops.seldon.io/tfsimple1 condition met
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 
 ```bash
 seldon model load -f ./models/tfsimple1.yaml
@@ -121,6 +157,9 @@ seldon model status tfsimple1 -w ModelAvailable
 {}
 
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ```bash
 curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
@@ -142,6 +181,22 @@ grpcurl -d '{"name":"tfsimples"}' \
 
 ```
 
+
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ./models/tfsimple2.yaml -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s model tfsimple2 -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/tfsimple2 created
+model.mlops.seldon.io/tfsimple2 condition met
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+
 ```bash
 seldon model load -f ./models/tfsimple2.yaml
 seldon model status tfsimple2 -w ModelAvailable | jq -M .
@@ -152,6 +207,9 @@ seldon model status tfsimple2 -w ModelAvailable | jq -M .
 {}
 
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ```bash
 curl -Ik ${INFER_REST_ENDPOINT}/v2/pipelines/tfsimples/ready
