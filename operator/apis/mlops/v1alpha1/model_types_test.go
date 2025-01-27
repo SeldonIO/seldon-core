@@ -128,7 +128,7 @@ func TestAsModelDetails(t *testing.T) {
 						Type:     "anchor_tabular",
 						ModelRef: &incomeModel,
 					},
-					Llm: &scheduler.LLMSpec{
+					Llm: &scheduler.LlmSpec{
 						ModelRef: &llmModel,
 					},
 					Parameters: []*scheduler.ParameterSpec{
