@@ -28,6 +28,7 @@ type ModelRepositoryHandler interface {
 	UpdateModelVersion(modelName string, version uint32, path string, modelSpec *scheduler.ModelSpec) error
 	UpdateModelRepository(modelName string, path string, isVersionFolder bool, modelRepoPath string) error
 	SetExplainer(modelRepoPath string, explainerSpec *scheduler.ExplainerSpec, envoyHost string, envoyPort int) error
+	SetLlm(modelRepoPath string, llmSpec *scheduler.LlmSpec, envoyHost string, envoyPort int) error
 	SetExtraParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error
 	GetModelRuntimeInfo(path string) (*scheduler.ModelRuntimeInfo, error)
 }
@@ -82,6 +83,7 @@ func (r *V2ModelRepository) DownloadModelVersion(
 	artifactVersion := modelSpec.ArtifactVersion
 	srcUri := modelSpec.Uri
 	explainerSpec := modelSpec.GetExplainer()
+	llmSpec := modelSpec.GetLlm()
 	parameters := modelSpec.GetParameters()
 
 	logger.Debugf("running with model %s:%d srcUri %s", modelName, version, srcUri)
@@ -157,6 +159,19 @@ func (r *V2ModelRepository) DownloadModelVersion(
 		err = r.modelRepositoryHandler.SetExplainer(
 			modelVersionPathInRepo,
 			explainerSpec,
+			r.envoyHost,
+			r.envoyPort,
+		)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Update details for LLM
+	if llmSpec != nil {
+		err = r.modelRepositoryHandler.SetLlm(
+			modelVersionPathInRepo,
+			llmSpec,
 			r.envoyHost,
 			r.envoyPort,
 		)

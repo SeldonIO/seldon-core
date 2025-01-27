@@ -96,6 +96,62 @@ func TestSetExplainer(t *testing.T) {
 	}
 }
 
+func TestSetLlm(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	envoyHost := "0.0.0.0"
+	envoyPort := 9000
+	type test struct {
+		name     string
+		data     []byte
+		llmSpec  *scheduler.LlmSpec
+		expected *ModelSettings
+	}
+
+	getStrPr := func(str string) *string { return &str }
+	tests := []test{
+		{
+			name: "chat-completion",
+			data: []byte(`{"name": "chat-completion","implementation": "mlserver_prompt_utils.runtime.PromptRuntime",
+"parameters": {"version": "1", "extra":{"prompt_utils": {"model_type": "chat.completions"}}}}`),
+			llmSpec: &scheduler.LlmSpec{
+				ModelRef: getStrPr("mymodel"),
+			},
+			expected: &ModelSettings{
+				Name:           "chat-completion",
+				Implementation: "mlserver_prompt_utils.runtime.PromptRuntime",
+				Parameters: &ModelParameters{
+					Version: "1",
+					Extra: map[string]interface{}{
+						"url": "http://0.0.0.0:9000/v2/models/mymodel/infer",
+						"prompt_utils": map[string]interface{}{
+							"model_type": "chat.completions",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			modelRepoPath := t.TempDir()
+			settingsFile := filepath.Join(modelRepoPath, mlserverConfigFilename)
+			err := os.WriteFile(settingsFile, test.data, os.ModePerm)
+			g.Expect(err).To(BeNil())
+			m := &MLServerRepositoryHandler{}
+			err = m.SetLlm(modelRepoPath, test.llmSpec, envoyHost, envoyPort)
+			g.Expect(err).To(BeNil())
+			modelSettings, err := m.loadModelSettingsFromFile(settingsFile)
+			g.Expect(err).To(BeNil())
+			g.Expect(modelSettings.Parameters.Extra["url"]).To(Equal(test.expected.Parameters.Extra["url"]))
+			g.Expect(modelSettings.Parameters.Extra["prompt_utils"]).To(Equal(test.expected.Parameters.Extra["prompt_utils"]))
+
+		})
+	}
+
+}
+
 func TestLoadFromBytes(t *testing.T) {
 	g := NewGomegaWithT(t)
 

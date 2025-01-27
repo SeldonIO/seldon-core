@@ -215,6 +215,10 @@ func (t *TritonRepositoryHandler) SetExplainer(modelRepoPath string, explainerSp
 	return nil
 }
 
+func (t *TritonRepositoryHandler) SetLlm(modelRepoPath string, llmSpec *scheduler.LlmSpec, envoyHost string, envoyPort int) error {
+	return nil
+}
+
 func (t *TritonRepositoryHandler) SetExtraParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error {
 	return nil
 }
