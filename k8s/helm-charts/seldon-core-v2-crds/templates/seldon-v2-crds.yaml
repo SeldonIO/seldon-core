@@ -235,6 +235,18 @@ spec:
                     description: type of explainer
                     type: string
                 type: object
+              llm:
+                description: LLMs spec
+                properties:
+                  modelRef:
+                    description: |-
+                      one of the following need to be set for LLMs
+                      Reference to Model
+                    type: string
+                  pipelineRef:
+                    description: Reference to Pipeline
+                    type: string
+                type: object
               logger:
                 description: Payload logging
                 properties:
