@@ -216,7 +216,7 @@ spec:
 ```bash
 kubectl apply -f pipelines/choice.yaml
 ```
-```bash
+```
 pipeline.mlops.seldon.io/choice created
 ```
 
