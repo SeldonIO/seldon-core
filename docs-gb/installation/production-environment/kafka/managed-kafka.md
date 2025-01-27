@@ -1,6 +1,15 @@
 # Managed Kafka
 
-Seldon recommends a [managed Kafka](../#managed-kafka) for production installation. You can integrate and secure your managed Kafka Seldon Core 2.
+Seldon recommends a managed Kafka service for production installation. You can integrate and secure your managed Kafka Seldon Core 2.
+
+Some of the Managed Kafka services that are tested are:
+
+* Confluent Cloud (security: SASL/PLAIN)
+* Confluent Cloud (security: SASL/OAUTHBEARER)
+* Amazon MSK (security: mTLS)
+* Amazon MSK (security: SASL/SCRAM)
+* Azure Event Hub (security: SASL/PLAIN)
+
 
 ## Integrating managed Kafka services
 
