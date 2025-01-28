@@ -160,40 +160,88 @@ func (m *MLServerRepositoryHandler) updateNameAndVersion(path string, modelName 
 	return os.WriteFile(settingsPath, data, fs.ModePerm)
 }
 
+func (m *MLServerRepositoryHandler) setExtraParameters(
+	modelRepoPath string,
+	modelRef *string,
+	pipelineRef *string,
+	envoyHost string,
+	envoyPort int,
+	extra map[string]interface{},
+) error {
+	workers := 0
+	settingsPath := filepath.Join(modelRepoPath, mlserverConfigFilename)
+	ms, err := m.loadModelSettingsFromFile(settingsPath)
+	if err != nil {
+		return err
+	}
+
+	//TODO: temporary fix for issue in mlserver with explainers
+	ms.ParallelWorkers = &workers
+	if ms.Parameters == nil {
+		ms.Parameters = &ModelParameters{}
+	}
+
+	if ms.Parameters.Extra == nil {
+		ms.Parameters.Extra = map[string]interface{}{}
+	}
+
+	scheme := "http"
+	if m.SSL {
+		scheme = "https"
+		ms.Parameters.Extra[sslVerifyPath] = "/mnt/certs/ca.crt"
+	}
+
+	var inferUri string
+	if modelRef != nil {
+		inferUri = fmt.Sprintf("%s://%s:%d/v2/models/%s/infer", scheme, envoyHost, envoyPort, *modelRef)
+	} else {
+		inferUri = fmt.Sprintf("%s://%s:%d/v2/pipelines/%s/infer", scheme, envoyHost, envoyPort, *pipelineRef)
+	}
+
+	if inferUri != "" {
+		ms.Parameters.Extra[inferUriKey] = &inferUri
+	}
+
+	// add extra parameters if any
+	for key, value := range extra {
+		ms.Parameters.Extra[key] = value
+	}
+
+	data, err := json.Marshal(ms)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(settingsPath, data, fs.ModePerm)
+
+}
+
 func (m *MLServerRepositoryHandler) SetExplainer(modelRepoPath string, explainerSpec *scheduler.ExplainerSpec, envoyHost string, envoyPort int) error {
 	if explainerSpec != nil {
-		workers := 0
-		settingsPath := filepath.Join(modelRepoPath, mlserverConfigFilename)
-		ms, err := m.loadModelSettingsFromFile(settingsPath)
-		if err != nil {
-			return err
-		}
-		// TODO: temporary fix for issue in mlserver with explainers
-		ms.ParallelWorkers = &workers
-		if ms.Parameters == nil {
-			ms.Parameters = &ModelParameters{}
-		}
-		if ms.Parameters.Extra == nil {
-			ms.Parameters.Extra = map[string]interface{}{}
-		}
-		ms.Parameters.Extra[explainerTypeKey] = &explainerSpec.Type
-		scheme := "http"
-		if m.SSL {
-			scheme = "https"
-			ms.Parameters.Extra[sslVerifyPath] = "/mnt/certs/ca.crt"
-		}
-		if explainerSpec.ModelRef != nil {
-			inferUri := fmt.Sprintf("%s://%s:%d/v2/models/%s/infer", scheme, envoyHost, envoyPort, *explainerSpec.ModelRef)
-			ms.Parameters.Extra[inferUriKey] = &inferUri
-		} else if explainerSpec.PipelineRef != nil {
-			inferUri := fmt.Sprintf("%s://%s:%d/v2/pipelines/%s/infer", scheme, envoyHost, envoyPort, *explainerSpec.PipelineRef)
-			ms.Parameters.Extra[inferUriKey] = &inferUri
-		}
-		data, err := json.Marshal(ms)
-		if err != nil {
-			return err
-		}
-		return os.WriteFile(settingsPath, data, fs.ModePerm)
+		return m.setExtraParameters(
+			modelRepoPath,
+			explainerSpec.ModelRef,
+			explainerSpec.PipelineRef,
+			envoyHost,
+			envoyPort,
+			map[string]interface{}{
+				explainerTypeKey: explainerSpec.Type,
+			},
+		)
+	}
+	return nil
+}
+
+func (m *MLServerRepositoryHandler) SetLlm(modelRepoPath string, llmSpec *scheduler.LlmSpec, envoyHost string, envoyPort int) error {
+	if llmSpec != nil {
+		return m.setExtraParameters(
+			modelRepoPath,
+			llmSpec.ModelRef,
+			llmSpec.PipelineRef,
+			envoyHost,
+			envoyPort,
+			nil,
+		)
 	}
 	return nil
 }

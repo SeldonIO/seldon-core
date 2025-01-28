@@ -24,6 +24,55 @@ import (
 	scheduler "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
+func TestModelSpec_Validate(t *testing.T) {
+	g := NewGomegaWithT(t)
+	tests := []struct {
+		name    string
+		spec    *ModelSpec
+		wantErr bool
+	}{
+		{
+			name: "Both explainer and llm set",
+			spec: &ModelSpec{
+				Explainer: &ExplainerSpec{},
+				Llm:       &LlmSpec{},
+			},
+			wantErr: true,
+		},
+		{
+			name: "Only explainer set",
+			spec: &ModelSpec{
+				Explainer: &ExplainerSpec{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Only llm set",
+			spec: &ModelSpec{
+				Llm: &LlmSpec{},
+			},
+			wantErr: false,
+		},
+		{
+			name:    "Neither explainer nor llm set",
+			spec:    &ModelSpec{},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		err := tt.spec.Validate()
+
+		if tt.wantErr {
+			g.Expect(err).ToNot(BeNil())
+			g.Expect(err.Error()).To(ContainSubstring("Can't have both explainer and llm in model spec."))
+		} else {
+			g.Expect(err).To(BeNil())
+		}
+	}
+
+}
+
 func TestAsModelDetails(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
@@ -39,7 +88,7 @@ func TestAsModelDetails(t *testing.T) {
 	server := "server"
 	m1 := resource.MustParse("1M")
 	m1bytes := uint64(1_000_000)
-	incomeModel := "income"
+	incomeModel, llmModel := "income", "chat-gpt"
 	tests := []test{
 		{
 			name: "simple",
@@ -75,7 +124,7 @@ func TestAsModelDetails(t *testing.T) {
 			},
 		},
 		{
-			name: "complex",
+			name: "complex - explainer",
 			model: &Model{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:       "foo",
@@ -121,9 +170,81 @@ func TestAsModelDetails(t *testing.T) {
 					Requirements:  []string{"a", "b", modelType},
 					StorageConfig: &scheduler.StorageConfig{Config: &scheduler.StorageConfig_StorageSecretName{StorageSecretName: secret}},
 					Server:        &server,
-					Explainer: &scheduler.ExplainerSpec{
-						Type:     "anchor_tabular",
-						ModelRef: &incomeModel,
+					ModelSpec: &scheduler.ModelSpec_Explainer{
+						Explainer: &scheduler.ExplainerSpec{
+							Type:     "anchor_tabular",
+							ModelRef: &incomeModel,
+						},
+					},
+					Parameters: []*scheduler.ParameterSpec{
+						{
+							Name:  "foo",
+							Value: "bar",
+						},
+						{
+							Name:  "foo2",
+							Value: "bar2",
+						},
+					},
+				},
+				DeploymentSpec: &scheduler.DeploymentSpec{
+					Replicas:    4,
+					LogPayloads: true,
+					MinReplicas: 0,
+					MaxReplicas: 0,
+				},
+			},
+		},
+		{
+			name: "complex - llm",
+			model: &Model{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:       "foo",
+					Namespace:  "default",
+					Generation: 1,
+				},
+				Spec: ModelSpec{
+					InferenceArtifactSpec: InferenceArtifactSpec{
+						ModelType:  &modelType,
+						StorageURI: "gs://test",
+						SecretName: &secret,
+					},
+					Logger:       &LoggingSpec{},
+					Requirements: []string{"a", "b"},
+					ScalingSpec:  ScalingSpec{Replicas: &replicas},
+					Server:       &server,
+					Llm: &LlmSpec{
+						ModelRef: &llmModel,
+					},
+					Parameters: []ParameterSpec{
+						{
+							Name:  "foo",
+							Value: "bar",
+						},
+						{
+							Name:  "foo2",
+							Value: "bar2",
+						},
+					},
+				},
+			},
+			modelpb: &scheduler.Model{
+				Meta: &scheduler.MetaData{
+					Name: "foo",
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+				ModelSpec: &scheduler.ModelSpec{
+					Uri:           "gs://test",
+					Requirements:  []string{"a", "b", modelType},
+					StorageConfig: &scheduler.StorageConfig{Config: &scheduler.StorageConfig_StorageSecretName{StorageSecretName: secret}},
+					Server:        &server,
+					ModelSpec: &scheduler.ModelSpec_Llm{
+						Llm: &scheduler.LlmSpec{
+							ModelRef: &llmModel,
+						},
 					},
 					Parameters: []*scheduler.ParameterSpec{
 						{
