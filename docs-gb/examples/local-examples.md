@@ -23,33 +23,63 @@ spec:
 
 Load the model
 
+{% tabs %}
+
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ./models/sklearn-iris-gs.yaml
+```
+```bash
+model.mlops.seldon.io/iris created
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model load -f ./models/sklearn-iris-gs.yaml
 ```
-
 ```json
 {}
-
 ```
+{% endtab %}
+
+{% endtabs %}
+
 
 Wait for the model to be ready
 
+{% tabs %}
+
+{% tab title="kubectl" %}
+```bash
+kubectl get model iris -n ${NAMESPACE} -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
+```
+```bash
+True
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model status iris -w ModelAvailable | jq -M .
 ```
-
 ```json
 {}
-
 ```
+{% endtab %}
+
+{% endtabs %}
 
 Do a REST inference call
 
-```bash
-seldon model infer iris \
-  '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
-```
+{% tabs %}
 
+{% tab title="curl" %}
+```bash
+curl --location 'http://${MESH_IP}:9000/v2/models/iris/infer' \
+	--header 'Content-Type: application/json'  \
+    --data '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+```
 ```json
 {
 	"model_name": "iris_1",
@@ -73,8 +103,42 @@ seldon model infer iris \
 		}
 	]
 }
-
 ```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+```bash
+seldon model infer iris \
+  '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+```
+```json
+{
+	"model_name": "iris_1",
+	"model_version": "1",
+	"id": "983bd95f-4b4d-4ff1-95b2-df9d6d089164",
+	"parameters": {},
+	"outputs": [
+		{
+			"name": "predict",
+			"shape": [
+				1,
+				1
+			],
+			"datatype": "INT64",
+			"parameters": {
+				"content_type": "np"
+			},
+			"data": [
+				2
+			]
+		}
+	]
+}
+```
+{% endtab %}
+
+{% endtabs %}
+
 
 Do a gRPC inference call
 
@@ -113,9 +177,22 @@ seldon model infer iris --inference-mode grpc \
 
 Unload the model
 
+{% tabs %}
+
+{% tab title="kubectl" %}
+```bash
+kubectl delete model iris
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model unload iris
 ```
+{% endtab %}
+
+{% endtabs %}
+
 
 ### Tensorflow Model
 
@@ -140,28 +217,113 @@ spec:
 
 Load the model.
 
+{% tabs %}
+
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ./models/tfsimple1.yaml
+```
+```bash
+model.mlops.seldon.io/tfsimple1 created
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model load -f ./models/tfsimple1.yaml
 ```
-
 ```json
 {}
-
 ```
+{% endtab %}
+
+{% endtabs %}
+
 
 Wait for the model to be ready.
 
+{% tabs %}
+
+{% tab title="kubectl" %}
+```bash
+kubectl get model tfsimple1 -n ${NAMESPACE} -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
+```
+```bash
+True
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model status tfsimple1 -w ModelAvailable | jq -M .
 ```
-
 ```json
 {}
-
 ```
+{% endtab %}
+
+{% endtabs %}
 
 Get model metadata
 
+
+{% tabs %}
+
+{% tab title="curl" %}
+
+```bash
+curl --location 'http://${MESH_IP}:9000/v2/models/tfsimple1'
+```
+
+```json
+{
+	"name": "tfsimple1_1",
+	"versions": [
+		"1"
+	],
+	"platform": "tensorflow_graphdef",
+	"inputs": [
+		{
+			"name": "INPUT0",
+			"datatype": "INT32",
+			"shape": [
+				-1,
+				16
+			]
+		},
+		{
+			"name": "INPUT1",
+			"datatype": "INT32",
+			"shape": [
+				-1,
+				16
+			]
+		}
+	],
+	"outputs": [
+		{
+			"name": "OUTPUT0",
+			"datatype": "INT32",
+			"shape": [
+				-1,
+				16
+			]
+		},
+		{
+			"name": "OUTPUT1",
+			"datatype": "INT32",
+			"shape": [
+				-1,
+				16
+			]
+		}
+	]
+}
+
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model metadata tfsimple1
 ```
@@ -212,8 +374,88 @@ seldon model metadata tfsimple1
 }
 
 ```
+{% endtab %}
+
+{% endtabs %}
+
 
 Do a REST inference call.
+
+
+
+{% tabs %}
+
+{% tab title="curl" %}
+```bash
+curl --location 'http://${MESH_IP}:9000/v2/models/iris/infer' \
+	--header 'Content-Type: application/json'  \
+    --data '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
+```
+
+```json
+{
+  "model_name": "tfsimple1_1",
+  "model_version": "1",
+  "outputs": [
+    {
+      "name": "OUTPUT0",
+      "datatype": "INT32",
+      "shape": [
+        1,
+        16
+      ],
+      "data": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20,
+        22,
+        24,
+        26,
+        28,
+        30,
+        32
+      ]
+    },
+    {
+      "name": "OUTPUT1",
+      "datatype": "INT32",
+      "shape": [
+        1,
+        16
+      ],
+      "data": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ]
+}
+
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 
 ```bash
 seldon model infer tfsimple1 \
@@ -281,6 +523,11 @@ seldon model infer tfsimple1 \
 }
 
 ```
+{% endtab %}
+
+{% endtabs %}
+
+
 
 Do a gRPC inference call
 
@@ -357,9 +604,24 @@ seldon model infer tfsimple1 --inference-mode grpc \
 
 Unload the model
 
+
+{% tabs %}
+
+{% tab title="kubectl" %}
+```bash
+kubectl delete model tfsimple1
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model unload tfsimple1
 ```
+{% endtab %}
+
+{% endtabs %}
+
+
 
 ### Experiment
 
@@ -399,19 +661,54 @@ spec:
 
 Load both models.
 
+
+{% tabs %}
+
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ./models/sklearn1.yaml
+kubectl apply -f ./models/sklearn2.yaml
+```
+
+```bash
+model.mlops.seldon.io/sklearn1 created
+model.mlops.seldon.io/sklearn2 created
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model load -f ./models/sklearn1.yaml
 seldon model load -f ./models/sklearn2.yaml
 ```
-
 ```json
 {}
 {}
-
 ```
+{% endtab %}
+
+{% endtabs %}
+
+
 
 Wait for both models to be ready.
 
+
+{% tabs %}
+
+{% tab title="kubectl" %}
+```bash
+kubectl get model sklearn1 -n seldon-mesh -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
+kubectl get model sklearn2 -n seldon-mesh -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
+```
+
+```bash
+True
+True
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model status iris | jq -M .
 seldon model status iris2 | jq -M .
@@ -492,6 +789,12 @@ seldon model status iris2 | jq -M .
 }
 
 ```
+{% endtab %}
+
+{% endtabs %}
+
+
+
 
 Create an experiment that modifies the iris model to add a second model splitting traffic 50/50 between the two.
 
@@ -626,7 +929,23 @@ Success: map[:iris_1::100]
 
 Unload both models.
 
+
+
+{% tabs %}
+
+{% tab title="kubectl" %}
+```bash
+kubectl delete model iris
+kubectl delete model iris2
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model unload iris
 seldon model unload iris2
 ```
+{% endtab %}
+
+{% endtabs %}
+
