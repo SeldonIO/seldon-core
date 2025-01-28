@@ -166,7 +166,7 @@ func (m *MLServerRepositoryHandler) setExtraParameters(
 	pipelineRef *string,
 	envoyHost string,
 	envoyPort int,
-	customize func(*ModelSettings) error,
+	customize func(map[string]interface{}) error,
 ) error {
 	workers := 0
 	settingsPath := filepath.Join(modelRepoPath, mlserverConfigFilename)
@@ -204,7 +204,7 @@ func (m *MLServerRepositoryHandler) setExtraParameters(
 
 	// custom logic for specific caller
 	if customize != nil {
-		if err := customize(ms); err != nil {
+		if err := customize(ms.Parameters.Extra); err != nil {
 			return err
 		}
 	}
@@ -226,8 +226,8 @@ func (m *MLServerRepositoryHandler) SetExplainer(modelRepoPath string, explainer
 			explainerSpec.PipelineRef,
 			envoyHost,
 			envoyPort,
-			func(ms *ModelSettings) error {
-				ms.Parameters.Extra[explainerTypeKey] = &explainerSpec.Type
+			func(extra map[string]interface{}) error {
+				extra[explainerTypeKey] = &explainerSpec.Type
 				return nil
 			},
 		)
