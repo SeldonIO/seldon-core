@@ -42,10 +42,14 @@ message ModelSpec {
   repeated string requirements = 4; // list of capabilities the server must satisfy to run this model
   optional uint64 memoryBytes = 5; // Requested memory
   optional string server = 6; // the particular model server to load the model. If unspecified will be chosen.
-  optional ExplainerSpec explainer = 7; // optional black box explainer details
-  optional LlmSpec llm = 8; // LLM specific settings
-  repeated ParameterSpec parameters = 9; // parameters to load with model
-  optional ModelRuntimeInfo modelRuntimeInfo = 10; // model specific settings that are sent by the agent
+  repeated ParameterSpec parameters = 8; // parameters to load with model
+  optional ModelRuntimeInfo modelRuntimeInfo = 9; // model specific settings that are sent by the agent
+
+  // ensure only one of explainer or llm is specified at a time
+  oneof model_spec {
+    ExplainerSpec explainer = 7; // optional black box explainer details
+    LlmSpec llm = 10; // optional LLM specific settings
+  }
 }
 
 message ParameterSpec {
