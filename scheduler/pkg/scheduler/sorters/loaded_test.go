@@ -74,3 +74,60 @@ func TestModelAlreadyLoadedSort(t *testing.T) {
 		})
 	}
 }
+
+func TestModelAlreadyLoadedOnServerSort(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name     string
+		servers  []*CandidateServer
+		ordering []string
+	}
+
+	modelServer1 := store.NewModelVersion(
+		nil,
+		1,
+		"server1",
+		map[int]store.ReplicaStatus{},
+		false,
+		store.ModelAvailable)
+
+	modelNoServer := store.NewModelVersion(
+		nil,
+		1,
+		"",
+		map[int]store.ReplicaStatus{},
+		false,
+		store.ModelStateUnknown)
+
+	tests := []test{
+		{
+			name: "LoadedOnOneServer",
+			servers: []*CandidateServer{
+				{Model: modelServer1, Server: &store.ServerSnapshot{Name: "server3"}},
+				{Model: modelServer1, Server: &store.ServerSnapshot{Name: "server2"}},
+				{Model: modelServer1, Server: &store.ServerSnapshot{Name: "server1"}},
+			},
+			ordering: []string{"server1", "server3", "server2"},
+		},
+		{
+			name: "Not",
+			servers: []*CandidateServer{
+				{Model: modelNoServer, Server: &store.ServerSnapshot{Name: "server3"}},
+				{Model: modelNoServer, Server: &store.ServerSnapshot{Name: "server2"}},
+				{Model: modelNoServer, Server: &store.ServerSnapshot{Name: "server1"}},
+			},
+			ordering: []string{"server3", "server2", "server1"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			sorter := ModelAlreadyLoadedOnServerSorter{}
+			sort.SliceStable(test.servers, func(i, j int) bool { return sorter.IsLess(test.servers[i], test.servers[j]) })
+			for idx, expected := range test.ordering {
+				g.Expect(test.servers[idx].Server.Name).To(Equal(expected))
+			}
+		})
+	}
+}

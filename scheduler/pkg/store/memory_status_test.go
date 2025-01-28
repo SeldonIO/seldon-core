@@ -97,6 +97,69 @@ func TestUpdateStatus(t *testing.T) {
 			expectedModelStatus: ModelAvailable,
 		},
 		{
+			name: "Available - Min replicas",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{
+					"model": {
+						versions: []*ModelVersion{
+							{
+								version: 1,
+								modelDefn: &pb.Model{
+									Meta: &pb.MetaData{
+										Name: "model",
+									},
+									ModelSpec: &pb.ModelSpec{},
+									DeploymentSpec: &pb.DeploymentSpec{
+										Replicas: 1,
+									},
+								},
+								server: "server2",
+								replicas: map[int]ReplicaStatus{
+									0: {State: Loaded},
+								},
+							},
+							{
+								version: 2,
+								modelDefn: &pb.Model{
+									Meta: &pb.MetaData{
+										Name: "model",
+									},
+									ModelSpec: &pb.ModelSpec{},
+									DeploymentSpec: &pb.DeploymentSpec{
+										Replicas:    2,
+										MinReplicas: 1,
+									},
+								},
+								server: "server1",
+								replicas: map[int]ReplicaStatus{
+									0: {State: Available},
+								},
+							},
+						},
+					},
+				},
+				servers: map[string]*Server{
+					"server1": {
+						name: "server1",
+						replicas: map[int]*ServerReplica{
+							0: {},
+						},
+					},
+					"server2": {
+						name: "server2",
+						replicas: map[int]*ServerReplica{
+							0: {},
+						},
+					},
+				},
+			},
+			modelName:           "model",
+			serverName:          "server2",
+			version:             2,
+			prevVersion:         nil,
+			expectedModelStatus: ModelAvailable,
+		},
+		{
 			name: "NotEnoughReplicasButPreviousAvailable",
 			store: &LocalSchedulerStore{
 				models: map[string]*Model{
