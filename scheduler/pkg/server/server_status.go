@@ -12,6 +12,7 @@ package server
 import (
 	"time"
 
+	"github.com/pkg/errors"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -164,7 +165,7 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 }
 
 func (s *SchedulerServer) handleModelEventForServerStatus(event coordinator.ModelEventMsg) {
-	logger := s.logger.WithField("func", "handleServerEvent")
+	logger := s.logger.WithField("func", "handleModelEventForServerStatus")
 	logger.Debugf("Got server state change for %s", event.String())
 
 	err := s.updateServerModelsStatus(event)
@@ -198,14 +199,35 @@ func (s *SchedulerServer) updateServerModelsStatus(evt coordinator.ModelEventMsg
 		return nil
 	}
 
-	s.serverEventStream.pendingLock.Lock()
-	// we are coalescing events so we only send one event (the latest status) per server
-	s.serverEventStream.pendingEvents[modelVersion.Server()] = struct{}{}
-	if s.serverEventStream.trigger == nil {
-		s.serverEventStream.trigger = time.AfterFunc(defaultBatchWait, s.sendServerStatus)
-	}
-	s.serverEventStream.pendingLock.Unlock()
+	switch evt.UpdateContext {
+	case coordinator.MODEL_SCHEDULE_FAILED:
+		err = s.incrementExpectedReplicasForServer(modelVersion.Server())
+	case coordinator.MODEL_STATUS_UPDATE:
+		s.serverEventStream.pendingLock.Lock()
+		// we are coalescing events so we only send one event (the latest status) per server
+		s.serverEventStream.pendingEvents[modelVersion.Server()] = struct{}{}
+		if s.serverEventStream.trigger == nil {
+			s.serverEventStream.trigger = time.AfterFunc(defaultBatchWait, s.sendServerStatus)
+		}
+		s.serverEventStream.pendingLock.Unlock()
+	default:
+		err = errors.Errorf("unknown update context received: %d", evt.UpdateContext)
 
+	}
+
+	return err
+}
+
+func (s *SchedulerServer) incrementExpectedReplicasForServer(serverKey string) error {
+	// TODO: should there be some sort of velocity check ?
+	server, err := s.modelStore.GetServer(serverKey, true, true)
+	if err != nil {
+		return err
+	}
+	ssr := createServerStatusUpdateResponse(server)
+	ssr.ExpectedReplicas = ssr.ExpectedReplicas + 1
+	ssr.Type = pb.ServerStatusResponse_ScalingRequest
+	s.sendServerStatusResponse(ssr)
 	return nil
 }
 
@@ -228,21 +250,24 @@ func (s *SchedulerServer) sendServerStatus() {
 			logger.Errorf("Failed to get server %s", serverName)
 			continue
 		}
-		ssr := createServerStatusResponse(server)
+		ssr := createServerStatusUpdateResponse(server)
+		s.sendServerStatusResponse(ssr)
+	}
+}
 
-		for stream, subscription := range s.serverEventStream.streams {
-			hasExpired, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
-			if hasExpired {
-				// this should trigger a reconnect from the client
-				close(subscription.fin)
-				delete(s.serverEventStream.streams, stream)
-			}
-			if err != nil {
-				logger.WithError(err).Errorf("Failed to send server status event to %s", subscription.name)
-			}
+func (s *SchedulerServer) sendServerStatusResponse(ssr *pb.ServerStatusResponse) {
+	logger := s.logger.WithField("func", "sendServerStatusResponse")
+	for stream, subscription := range s.serverEventStream.streams {
+		hasExpired, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
+		if hasExpired {
+			// this should trigger a reconnect from the client
+			close(subscription.fin)
+			delete(s.serverEventStream.streams, stream)
+		}
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to send server status event to %s", subscription.name)
 		}
 	}
-
 }
 
 // initial send of server statuses to a new controller
@@ -252,7 +277,7 @@ func (s *SchedulerServer) sendCurrentServerStatuses(stream pb.Scheduler_ServerSt
 		return err
 	}
 	for _, server := range servers {
-		ssr := createServerStatusResponse(server)
+		ssr := createServerStatusUpdateResponse(server)
 		_, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
 		if err != nil {
 			return err
