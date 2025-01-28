@@ -24,6 +24,55 @@ import (
 	scheduler "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
+func TestModelSpec_Validate(t *testing.T) {
+	g := NewGomegaWithT(t)
+	tests := []struct {
+		name    string
+		spec    *ModelSpec
+		wantErr bool
+	}{
+		{
+			name: "Both explainer and llm set",
+			spec: &ModelSpec{
+				Explainer: &ExplainerSpec{},
+				Llm:       &LlmSpec{},
+			},
+			wantErr: true,
+		},
+		{
+			name: "Only explainer set",
+			spec: &ModelSpec{
+				Explainer: &ExplainerSpec{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Only llm set",
+			spec: &ModelSpec{
+				Llm: &LlmSpec{},
+			},
+			wantErr: false,
+		},
+		{
+			name:    "Neither explainer nor llm set",
+			spec:    &ModelSpec{},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		err := tt.spec.Validate()
+
+		if tt.wantErr {
+			g.Expect(err).ToNot(BeNil())
+			g.Expect(err.Error()).To(ContainSubstring("Can't have both explainer and llm in model spec."))
+		} else {
+			g.Expect(err).To(BeNil())
+		}
+	}
+
+}
+
 func TestAsModelDetails(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
