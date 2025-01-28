@@ -68,7 +68,7 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
-.GOLANGCILINT_VERSION := v1.57.2
+.GOLANGCILINT_VERSION := v1.63.4
 .GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint/$(.GOLANGCILINT_VERSION)
 
 ${.GOLANGCILINT_PATH}/golangci-lint:
@@ -202,7 +202,7 @@ build-push-deploy: build docker-build docker-push deploy-all
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
-	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.16.2)
+	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.17.1)
 
 KUSTOMIZE = $(shell pwd)/bin/kustomize
 .PHONY: kustomize

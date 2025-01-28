@@ -22,6 +22,12 @@ type ServerSnapshot struct {
 	MinReplicas      int
 	MaxReplicas      int
 	KubernetesMeta   *pb.KubernetesMeta
+	Stats            *ServerStats
+}
+
+type ServerStats struct {
+	NumEmptyReplicas          uint32
+	MaxNumReplicaHostedModels uint32
 }
 
 func (s *ServerSnapshot) String() string {

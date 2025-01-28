@@ -43,7 +43,7 @@ func DefaultSchedulerConfig(store store.ModelStore) SchedulerConfig {
 	return SchedulerConfig{
 		serverFilters:  []filters.ServerFilter{filters.ServerReplicaFilter{}, filters.SharingServerFilter{}, filters.DeletedServerFilter{}, filters.ServerRequirementFilter{}},
 		replicaFilters: []filters.ReplicaFilter{filters.AvailableMemoryReplicaFilter{}, filters.ExplainerFilter{}, filters.ReplicaDrainingFilter{}},
-		serverSorts:    []sorters.ServerSorter{},
+		serverSorts:    []sorters.ServerSorter{sorters.ModelAlreadyLoadedOnServerSorter{}},
 		replicaSorts:   []sorters.ReplicaSorter{sorters.ReplicaIndexSorter{}, sorters.AvailableMemorySorter{}, sorters.ModelAlreadyLoadedSorter{}},
 	}
 }
@@ -84,6 +84,11 @@ func (s *SimpleScheduler) ScheduleFailedModels() ([]string, error) {
 	return updatedModels, nil
 }
 
+// Get failed models
+// Currently this includes:
+// - models that have failed to schedule
+// - models that have failed to load
+// - models that have loaded but not all replicas are available (e.g. min replicas is met but not desired replicas)
 func (s *SimpleScheduler) getFailedModels() ([]string, error) {
 	models, err := s.store.GetModels()
 	if err != nil {
@@ -94,7 +99,8 @@ func (s *SimpleScheduler) getFailedModels() ([]string, error) {
 		version := model.GetLatest()
 		if version != nil {
 			versionState := version.ModelState()
-			if versionState.State == store.ModelFailed || versionState.State == store.ScheduleFailed {
+			if versionState.State == store.ModelFailed || versionState.State == store.ScheduleFailed ||
+				(versionState.State == store.ModelAvailable && versionState.AvailableReplicas < version.GetDeploymentSpec().GetReplicas()) {
 				failedModels = append(failedModels, model.Name)
 			}
 		}
@@ -160,52 +166,35 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		return errors.New(msg)
 	}
 
+	desiredReplicas := latestModel.DesiredReplicas()
+	minReplicas := latestModel.GetDeploymentSpec().GetMinReplicas()
+
 	s.sortServers(latestModel, filteredServers)
 	logger.
 		WithField("candidate_servers", filteredServers).
-		WithField("desired_replicas", latestModel.DesiredReplicas()).
+		WithField("desired_replicas", desiredReplicas).
+		WithField("min_replicas", minReplicas).
 		Debug("Identified candidate servers for model")
 
+	// The main logic of trying to find a server for the model is as follows:
+	// 1. If there are enough replicas on a server, schedule the model
+	// 2. If there are not enough replicas on a server, try to schedule with min replicas. In this case we actually should get
+	// the models loaded on all the replicas of the servers (assuming min replicas is less than the number of replicas on the server)
+	// we also mark the model in this case as failed to schedule so that if the infra changes in the future we can try to reschedule
+
 	// For each server filter and sort replicas and attempt schedule if enough replicas
-	ok := false
-	for _, candidateServer := range filteredServers {
-		logger.WithField("server", candidateServer.Name).Debug("Checking compatibility with candidate server")
-		var candidateReplicas *sorters.CandidateServer
-
-		// we need a lock here, we could have many goroutines at sorting
-		// without the store being reflected and hence sorting on stale values
-		s.muSortAndUpdate.Lock()
-		candidateReplicas = s.filterReplicas(latestModel, candidateServer)
-		if len(candidateReplicas.ChosenReplicas) < latestModel.DesiredReplicas() {
-			logger.
-				WithField("server", candidateServer.Name).
-				WithField("available_replicas", len(candidateReplicas.ChosenReplicas)).
-				WithField("desired_replicas", latestModel.DesiredReplicas()).
-				Debug("Skipping server due to insufficient suitable replicas")
-
-			s.muSortAndUpdate.Unlock()
-			continue
-		}
-
-		s.sortReplicas(candidateReplicas)
-		err = s.store.UpdateLoadedModels(
-			modelName,
-			latestModel.GetVersion(),
-			candidateServer.Name,
-			candidateReplicas.ChosenReplicas[0:latestModel.DesiredReplicas()],
-		)
-		s.muSortAndUpdate.Unlock()
-
-		if err != nil {
-			logger.WithField("server", candidateServer.Name).Warn("Failed to update model replicas")
-		} else {
-			logger.WithField("server", candidateServer.Name).Debug("Scheduled model onto server")
-			ok = true
-			break
+	ok := s.findAndUpdateToServers(filteredServers, latestModel, desiredReplicas, desiredReplicas)
+	// Try to scheduler with min replicas if not enough replicas
+	okWithMinReplicas := false
+	if !ok && minReplicas > 0 {
+		okWithMinReplicas = s.findAndUpdateToServers(filteredServers, latestModel, desiredReplicas, int(minReplicas))
+		if okWithMinReplicas {
+			msg := "Failed to schedule model as no matching server had enough suitable replicas, managed to schedule with min replicas"
+			logger.Warn(msg)
 		}
 	}
 
-	if !ok {
+	if !ok && !okWithMinReplicas {
 		msg := "Failed to schedule model as no matching server had enough suitable replicas"
 		logger.Debug(msg)
 		// we do not want to reset the server if it has live replicas or loading replicas
@@ -219,6 +208,55 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 
 	//TODO Cleanup previous version if needed?
 	return nil
+}
+
+func (s *SimpleScheduler) findAndUpdateToServers(filteredServers []*store.ServerSnapshot, latestModel *store.ModelVersion, desiredReplicas, minReplicas int) bool {
+	modelName := latestModel.GetMeta().GetName()
+	logger := s.logger.WithField("func", "findAndUpdateToServers").WithField("model", modelName)
+	ok := false
+	for _, candidateServer := range filteredServers {
+		logger.WithField("server", candidateServer.Name).Debug("Checking compatibility with candidate server")
+		var candidateReplicas *sorters.CandidateServer
+
+		// we need a lock here, we could have many goroutines at sorting
+		// without the store being reflected and hence sorting on stale values
+		s.muSortAndUpdate.Lock()
+		candidateReplicas = s.filterReplicas(latestModel, candidateServer)
+		numServerReplicas := len(candidateReplicas.ChosenReplicas)
+		if numServerReplicas < minReplicas {
+			logger.
+				WithField("server", candidateServer.Name).
+				WithField("available_replicas", numServerReplicas).
+				WithField("desired_replicas", desiredReplicas).
+				WithField("min_replicas", minReplicas).
+				Debug("Skipping server due to insufficient suitable replicas")
+
+			s.muSortAndUpdate.Unlock()
+			continue
+		}
+
+		s.sortReplicas(candidateReplicas)
+		numReplicas := minReplicas
+		if minReplicas != desiredReplicas {
+			numReplicas = min(numServerReplicas, desiredReplicas) // we have more replicas for the server than min, so we can use all of them
+		}
+		err := s.store.UpdateLoadedModels(
+			modelName,
+			latestModel.GetVersion(),
+			candidateServer.Name,
+			candidateReplicas.ChosenReplicas[0:numReplicas],
+		)
+		s.muSortAndUpdate.Unlock()
+
+		if err != nil {
+			logger.WithField("server", candidateServer.Name).Warn("Failed to update model replicas")
+		} else {
+			logger.WithField("server", candidateServer.Name).Debug("Scheduled model onto server")
+			ok = true
+			break
+		}
+	}
+	return ok
 }
 
 func showServerSlice(servers []*store.ServerSnapshot) string {

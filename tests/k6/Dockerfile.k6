@@ -1,4 +1,5 @@
 ARG K6_VERSION=0.51.0
+ARG XK6_VERSION=0.13.4
 
 FROM alpine:3.19.1 AS builder
 
@@ -13,6 +14,7 @@ RUN curl -sSL https://sdk.cloud.google.com | bash
 
 FROM grafana/k6:${K6_VERSION}
 ARG K6_VERSION
+ARG XK6_VERSION
 USER root
 
 RUN apk add --update python3 uuidgen sed go
@@ -31,7 +33,7 @@ ADD apis /home/apis/
 
 WORKDIR k6
 
-RUN go install go.k6.io/xk6/cmd/xk6@latest
+RUN go install go.k6.io/xk6/cmd/xk6@v${XK6_VERSION}
 RUN ~/go/bin/xk6 build v${K6_VERSION} --with github.com/grafana/xk6-kubernetes
 
 RUN mkdir results

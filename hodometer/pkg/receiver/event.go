@@ -169,7 +169,7 @@ func (p *Properties) UnmarshalJSON(b []byte) error {
 				errBuilder.WriteString(",")
 			}
 		}
-		return fmt.Errorf(errBuilder.String())
+		return fmt.Errorf("json error %v", errBuilder.String())
 	}
 
 	if len(extra) > 0 {

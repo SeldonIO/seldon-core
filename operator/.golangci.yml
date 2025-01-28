@@ -36,9 +36,7 @@ linters:
     - govet
     - misspell
     - staticcheck
-    - structcheck
     - typecheck
-    - varcheck
 
 linters-settings:
   errcheck:
@@ -51,3 +49,6 @@ linters-settings:
       - prefix(github.com/seldonio/seldon-core/operator)
   goconst:
     min-occurrences: 5
+  govet:
+    disable:
+      - printf
