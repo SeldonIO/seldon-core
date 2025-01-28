@@ -202,7 +202,7 @@ func (m *MLServerRepositoryHandler) setModelSettings(
 		ms.Parameters.Extra[inferUriKey] = &inferUri
 	}
 
-	// custom logic for specifc callser
+	// custom logic for specific caller
 	if customize != nil {
 		if err := customize(ms); err != nil {
 			return err
