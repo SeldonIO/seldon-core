@@ -106,7 +106,7 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 }
 
 func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string, reset bool) {
-	availableReplicas := uint32(len(modelVersion.GetAssignment()))
+	availableReplicas := modelVersion.state.AvailableReplicas
 
 	modelVersion.state = ModelStatus{
 		State:               ScheduleFailed,
