@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"

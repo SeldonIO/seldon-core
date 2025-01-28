@@ -181,11 +181,10 @@ func TestServersStatusStream(t *testing.T) {
 
 	g := NewGomegaWithT(t)
 	type test struct {
-		name          string
-		loadReq       []serverReplicaRequest
-		server        *SchedulerServer
-		updateContext coordinator.ModelEventUpdateContext
-		err           bool
+		name    string
+		loadReq []serverReplicaRequest
+		server  *SchedulerServer
+		err     bool
 	}
 
 	tests := []test{
