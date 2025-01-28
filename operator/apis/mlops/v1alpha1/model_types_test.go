@@ -75,7 +75,7 @@ func TestAsModelDetails(t *testing.T) {
 			},
 		},
 		{
-			name: "complex",
+			name: "complex - explainer",
 			model: &Model{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:       "foo",
@@ -96,6 +96,74 @@ func TestAsModelDetails(t *testing.T) {
 						Type:     "anchor_tabular",
 						ModelRef: &incomeModel,
 					},
+					Parameters: []ParameterSpec{
+						{
+							Name:  "foo",
+							Value: "bar",
+						},
+						{
+							Name:  "foo2",
+							Value: "bar2",
+						},
+					},
+				},
+			},
+			modelpb: &scheduler.Model{
+				Meta: &scheduler.MetaData{
+					Name: "foo",
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+				ModelSpec: &scheduler.ModelSpec{
+					Uri:           "gs://test",
+					Requirements:  []string{"a", "b", modelType},
+					StorageConfig: &scheduler.StorageConfig{Config: &scheduler.StorageConfig_StorageSecretName{StorageSecretName: secret}},
+					Server:        &server,
+					ModelSpec: &scheduler.ModelSpec_Explainer{
+						Explainer: &scheduler.ExplainerSpec{
+							Type:     "anchor_tabular",
+							ModelRef: &incomeModel,
+						},
+					},
+					Parameters: []*scheduler.ParameterSpec{
+						{
+							Name:  "foo",
+							Value: "bar",
+						},
+						{
+							Name:  "foo2",
+							Value: "bar2",
+						},
+					},
+				},
+				DeploymentSpec: &scheduler.DeploymentSpec{
+					Replicas:    4,
+					LogPayloads: true,
+					MinReplicas: 0,
+					MaxReplicas: 0,
+				},
+			},
+		},
+		{
+			name: "complex - llm",
+			model: &Model{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:       "foo",
+					Namespace:  "default",
+					Generation: 1,
+				},
+				Spec: ModelSpec{
+					InferenceArtifactSpec: InferenceArtifactSpec{
+						ModelType:  &modelType,
+						StorageURI: "gs://test",
+						SecretName: &secret,
+					},
+					Logger:       &LoggingSpec{},
+					Requirements: []string{"a", "b"},
+					ScalingSpec:  ScalingSpec{Replicas: &replicas},
+					Server:       &server,
 					Llm: &LlmSpec{
 						ModelRef: &llmModel,
 					},
@@ -124,12 +192,10 @@ func TestAsModelDetails(t *testing.T) {
 					Requirements:  []string{"a", "b", modelType},
 					StorageConfig: &scheduler.StorageConfig{Config: &scheduler.StorageConfig_StorageSecretName{StorageSecretName: secret}},
 					Server:        &server,
-					Explainer: &scheduler.ExplainerSpec{
-						Type:     "anchor_tabular",
-						ModelRef: &incomeModel,
-					},
-					Llm: &scheduler.LlmSpec{
-						ModelRef: &llmModel,
+					ModelSpec: &scheduler.ModelSpec_Llm{
+						Llm: &scheduler.LlmSpec{
+							ModelRef: &llmModel,
+						},
 					},
 					Parameters: []*scheduler.ParameterSpec{
 						{

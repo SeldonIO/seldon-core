@@ -48,6 +48,13 @@ type ModelSpec struct {
 	Llm *LlmSpec `json:"llm,omitempty"`
 }
 
+func (m *ModelSpec) Validate() error {
+	if m.Explainer != nil && m.Llm != nil {
+		return fmt.Errorf("Can't have both explainer and llm in model spec.")
+	}
+	return nil
+}
+
 type ParameterSpec struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
@@ -156,6 +163,7 @@ func init() {
 
 // Method to convert Model resource to scheduler proto for communication with Scheduler
 func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
+	m.Spec.Validate() // guarantees that Explainer and Llm are mutually exclusive
 	md := &scheduler.Model{
 		Meta: &scheduler.MetaData{
 			Name: m.Name,
@@ -175,16 +183,20 @@ func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
 		},
 	}
 	if m.Spec.Explainer != nil {
-		md.ModelSpec.Explainer = &scheduler.ExplainerSpec{
-			Type:        m.Spec.Explainer.Type,
-			ModelRef:    m.Spec.Explainer.ModelRef,
-			PipelineRef: m.Spec.Explainer.PipelineRef,
+		md.ModelSpec.ModelSpec = &scheduler.ModelSpec_Explainer{
+			Explainer: &scheduler.ExplainerSpec{
+				Type:        m.Spec.Explainer.Type,
+				ModelRef:    m.Spec.Explainer.ModelRef,
+				PipelineRef: m.Spec.Explainer.PipelineRef,
+			},
 		}
 	}
 	if m.Spec.Llm != nil {
-		md.ModelSpec.Llm = &scheduler.LlmSpec{
-			ModelRef:    m.Spec.Llm.ModelRef,
-			PipelineRef: m.Spec.Llm.PipelineRef,
+		md.ModelSpec.ModelSpec = &scheduler.ModelSpec_Llm{
+			Llm: &scheduler.LlmSpec{
+				ModelRef:    m.Spec.Llm.ModelRef,
+				PipelineRef: m.Spec.Llm.PipelineRef,
+			},
 		}
 	}
 	if len(m.Spec.Parameters) > 0 {
