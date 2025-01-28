@@ -379,6 +379,8 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 
 	// note that we use len(modelVersion.GetAssignment()) to calculate the number of replicas as the status of the model at this point might not reflect the actual number of replicas
 	// in modelVersion.state.AvailableReplicas (we call updateModelStatus later)
+
+	// TODO: the conditions here keep growing, refactor or consider a simpler check.
 	if replicaStateUpdated || modelVersion.state.State == ScheduleFailed || model.IsDeleted() || modelVersion.state.State == ModelProgressing ||
 		(modelVersion.state.State == ModelAvailable && len(modelVersion.GetAssignment()) < modelVersion.DesiredReplicas()) {
 		logger.Debugf("Updating model status for model %s server %s", modelKey, serverKey)
