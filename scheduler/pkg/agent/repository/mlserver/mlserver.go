@@ -160,7 +160,7 @@ func (m *MLServerRepositoryHandler) updateNameAndVersion(path string, modelName 
 	return os.WriteFile(settingsPath, data, fs.ModePerm)
 }
 
-func (m *MLServerRepositoryHandler) setModelSettings(
+func (m *MLServerRepositoryHandler) setExtraParameters(
 	modelRepoPath string,
 	modelRef *string,
 	pipelineRef *string,
@@ -220,7 +220,7 @@ func (m *MLServerRepositoryHandler) setModelSettings(
 
 func (m *MLServerRepositoryHandler) SetExplainer(modelRepoPath string, explainerSpec *scheduler.ExplainerSpec, envoyHost string, envoyPort int) error {
 	if explainerSpec != nil {
-		return m.setModelSettings(
+		return m.setExtraParameters(
 			modelRepoPath,
 			explainerSpec.ModelRef,
 			explainerSpec.PipelineRef,
@@ -237,7 +237,7 @@ func (m *MLServerRepositoryHandler) SetExplainer(modelRepoPath string, explainer
 
 func (m *MLServerRepositoryHandler) SetLlm(modelRepoPath string, llmSpec *scheduler.LlmSpec, envoyHost string, envoyPort int) error {
 	if llmSpec != nil {
-		return m.setModelSettings(
+		return m.setExtraParameters(
 			modelRepoPath,
 			llmSpec.ModelRef,
 			llmSpec.PipelineRef,
