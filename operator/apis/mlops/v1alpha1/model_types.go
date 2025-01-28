@@ -163,7 +163,10 @@ func init() {
 
 // Method to convert Model resource to scheduler proto for communication with Scheduler
 func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
-	m.Spec.Validate() // guarantees that Explainer and Llm are mutually exclusive
+	// guarantees that Explainer and Llm are mutually exclusive
+	if err := m.Spec.Validate(); err != nil {
+		return nil, err
+	}
 	md := &scheduler.Model{
 		Meta: &scheduler.MetaData{
 			Name: m.Name,
