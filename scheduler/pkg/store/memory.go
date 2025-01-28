@@ -375,7 +375,14 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 	// this could be in the cases where we are scaling down a model and the new replica count can be all deployed
 	// and always send an update for deleted models, so the operator will remove them from k8s
 	// also send an update for progressing models so the operator can update the status in the case of a network glitch where the model generation has been updated
-	if replicaStateUpdated || modelVersion.state.State == ScheduleFailed || model.IsDeleted() || modelVersion.state.State == ModelProgressing {
+	// also send an update if the model is not yet at desired replicas, if we have partial scheduling
+
+	// note that we use len(modelVersion.GetAssignment()) to calculate the number of replicas as the status of the model at this point might not reflect the actual number of replicas
+	// in modelVersion.state.AvailableReplicas (we call updateModelStatus later)
+
+	// TODO: the conditions here keep growing, refactor or consider a simpler check.
+	if replicaStateUpdated || modelVersion.state.State == ScheduleFailed || model.IsDeleted() || modelVersion.state.State == ModelProgressing ||
+		(modelVersion.state.State == ModelAvailable && len(modelVersion.GetAssignment()) < modelVersion.DesiredReplicas()) {
 		logger.Debugf("Updating model status for model %s server %s", modelKey, serverKey)
 		modelVersion.server = serverKey
 		m.updateModelStatus(true, model.IsDeleted(), modelVersion, model.GetLastAvailableModelVersion())
