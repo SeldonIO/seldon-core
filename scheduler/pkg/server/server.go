@@ -47,9 +47,7 @@ const (
 	sendTimeout                     = 30 * time.Second // Timeout for sending events to subscribers via grpc `sendMsg`
 )
 
-var (
-	ErrAddServerEmptyServerName = status.Errorf(codes.FailedPrecondition, "Empty server name passed")
-)
+var ErrAddServerEmptyServerName = status.Errorf(codes.FailedPrecondition, "Empty server name passed")
 
 type SchedulerServer struct {
 	pb.UnimplementedSchedulerServer
@@ -445,7 +443,7 @@ func (s *SchedulerServer) ServerStatus(
 		}
 
 		for _, s := range servers {
-			resp := createServerStatusResponse(s)
+			resp := createServerStatusUpdateResponse(s)
 			err := stream.Send(resp)
 			if err != nil {
 				return status.Errorf(codes.Internal, err.Error())
@@ -458,7 +456,7 @@ func (s *SchedulerServer) ServerStatus(
 		if err != nil {
 			return status.Errorf(codes.FailedPrecondition, err.Error())
 		}
-		resp := createServerStatusResponse(server)
+		resp := createServerStatusUpdateResponse(server)
 		err = stream.Send(resp)
 		if err != nil {
 			return status.Errorf(codes.Internal, err.Error())
@@ -467,7 +465,7 @@ func (s *SchedulerServer) ServerStatus(
 	}
 }
 
-func createServerStatusResponse(s *store.ServerSnapshot) *pb.ServerStatusResponse {
+func createServerStatusUpdateResponse(s *store.ServerSnapshot) *pb.ServerStatusResponse {
 	// note we dont count draining replicas in available replicas
 
 	resp := &pb.ServerStatusResponse{
