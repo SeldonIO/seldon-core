@@ -377,6 +377,8 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 	// also send an update for progressing models so the operator can update the status in the case of a network glitch where the model generation has been updated
 	// also send an update if the model is not yet at desired replicas, if we have partial scheduling
 
+	// note that we use len(modelVersion.GetAssignment()) to calculate the number of replicas as the status of the model at this point might not reflect the actual number of replicas
+	// in modelVersion.state.AvailableReplicas (we call updateModelStatus later)
 	if replicaStateUpdated || modelVersion.state.State == ScheduleFailed || model.IsDeleted() || modelVersion.state.State == ModelProgressing ||
 		(modelVersion.state.State == ModelAvailable && len(modelVersion.GetAssignment()) < modelVersion.DesiredReplicas()) {
 		logger.Debugf("Updating model status for model %s server %s", modelKey, serverKey)
