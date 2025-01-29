@@ -146,7 +146,8 @@ func TestModelsStatusEvents(t *testing.T) {
 			}
 			g.Expect(s.modelEventStream.streams[stream]).ToNot(BeNil())
 			hub.PublishModelEvent(modelEventHandlerName, coordinator.ModelEventMsg{
-				ModelName: "foo", ModelVersion: 1})
+				ModelName: "foo", ModelVersion: 1,
+			})
 
 			// to allow events to propagate
 			time.Sleep(500 * time.Millisecond)
@@ -340,10 +341,12 @@ func TestServersStatusEvents(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name    string
-		loadReq *pba.AgentSubscribeRequest
-		timeout time.Duration
-		err     bool
+		name                 string
+		loadReq              *pba.AgentSubscribeRequest
+		timeout              time.Duration
+		desiredModelReplicas uint32
+		updateContext        coordinator.ModelEventUpdateContext
+		err                  bool
 	}
 
 	tests := []test{
@@ -353,7 +356,8 @@ func TestServersStatusEvents(t *testing.T) {
 				ServerName: "foo",
 			},
 			timeout: 10 * time.Millisecond,
-			err:     false,
+
+			err: false,
 		},
 		{
 			name: "timeout",
@@ -362,6 +366,26 @@ func TestServersStatusEvents(t *testing.T) {
 			},
 			timeout: 1 * time.Millisecond,
 			err:     true,
+		},
+		{
+			name: "schedule failed",
+			loadReq: &pba.AgentSubscribeRequest{
+				ServerName: "foo",
+			},
+			timeout:              1 * time.Millisecond,
+			desiredModelReplicas: 1,
+			updateContext:        coordinator.MODEL_SCHEDULE_FAILED,
+			err:                  false,
+		},
+		{
+			name: "schedule failed - desired replicas matches available replicas",
+			loadReq: &pba.AgentSubscribeRequest{
+				ServerName: "foo",
+			},
+			timeout:              1 * time.Millisecond,
+			desiredModelReplicas: 0, // no replicas become availble
+			updateContext:        coordinator.MODEL_SCHEDULE_FAILED,
+			err:                  true,
 		},
 	}
 
@@ -374,7 +398,8 @@ func TestServersStatusEvents(t *testing.T) {
 				g.Expect(err).To(BeNil())
 				err = s.modelStore.UpdateModel(&pb.LoadModelRequest{
 					Model: &pb.Model{
-						Meta: &pb.MetaData{Name: "foo"},
+						Meta:           &pb.MetaData{Name: "foo"},
+						DeploymentSpec: &pb.DeploymentSpec{Replicas: test.desiredModelReplicas},
 					},
 				})
 				g.Expect(err).To(BeNil())
@@ -394,15 +419,19 @@ func TestServersStatusEvents(t *testing.T) {
 			}
 			g.Expect(s.serverEventStream.streams[stream]).ToNot(BeNil())
 			hub.PublishModelEvent(serverModelEventHandlerName, coordinator.ModelEventMsg{
-				ModelName: "foo", ModelVersion: 1})
+				ModelName: "foo", ModelVersion: 1, UpdateContext: test.updateContext,
+			})
 
 			// to allow events to propagate
 			time.Sleep(500 * time.Millisecond)
 
 			if test.err {
 				g.Expect(s.serverEventStream.streams).To(HaveLen(0))
+			} else if test.err && test.updateContext == coordinator.MODEL_SCHEDULE_FAILED {
+				// no scaling requests are sent for models in the desired state
+				g.Expect(stream.msgs).To(HaveLen(0))
+				g.Expect(s.serverEventStream.streams).To(HaveLen(0))
 			} else {
-
 				var ssr *pb.ServerStatusResponse
 				select {
 				case next := <-stream.msgs:
@@ -413,7 +442,15 @@ func TestServersStatusEvents(t *testing.T) {
 
 				g.Expect(ssr).ToNot(BeNil())
 				g.Expect(ssr.ServerName).To(Equal("foo"))
-				g.Expect(s.serverEventStream.streams).To(HaveLen(1))
+
+				if test.updateContext == coordinator.MODEL_SCHEDULE_FAILED {
+					// server events are not coalesced for scaling request
+					g.Expect(s.serverEventStream.streams).To(HaveLen(0))
+					g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_ScalingRequest))
+				} else {
+					g.Expect(s.serverEventStream.streams).To(HaveLen(1))
+					g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_StatusUpdate))
+				}
 			}
 		})
 	}

@@ -11,6 +11,13 @@ package coordinator
 
 import "fmt"
 
+type ModelEventUpdateContext int
+
+const (
+	MODEL_STATUS_UPDATE ModelEventUpdateContext = iota
+	MODEL_SCHEDULE_FAILED
+)
+
 type ServerEventUpdateContext int
 
 const (
@@ -19,8 +26,9 @@ const (
 )
 
 type ModelEventMsg struct {
-	ModelName    string
-	ModelVersion uint32
+	ModelName     string
+	ModelVersion  uint32
+	UpdateContext ModelEventUpdateContext
 }
 
 func (m ModelEventMsg) String() string {
