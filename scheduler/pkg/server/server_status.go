@@ -17,6 +17,7 @@ import (
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
 func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest, stream pb.Scheduler_SubscribeModelStatusServer) error {
@@ -184,7 +185,7 @@ func (s *SchedulerServer) StopSendServerEvents() {
 }
 
 func (s *SchedulerServer) updateServerModelsStatus(evt coordinator.ModelEventMsg) error {
-	logger := s.logger.WithField("func", "sendServerStatusEvent")
+	logger := s.logger.WithField("func", "updateServerModelStatus")
 
 	model, err := s.modelStore.GetModel(evt.ModelName)
 	if err != nil {
@@ -202,7 +203,7 @@ func (s *SchedulerServer) updateServerModelsStatus(evt coordinator.ModelEventMsg
 
 	switch evt.UpdateContext {
 	case coordinator.MODEL_SCHEDULE_FAILED:
-		err = s.incrementExpectedReplicasForServer(modelVersion.Server())
+		err = s.incrementExpectedReplicas(model, evt)
 	case coordinator.MODEL_STATUS_UPDATE:
 		s.serverEventStream.pendingLock.Lock()
 		// we are coalescing events so we only send one event (the latest status) per server
@@ -213,22 +214,33 @@ func (s *SchedulerServer) updateServerModelsStatus(evt coordinator.ModelEventMsg
 		s.serverEventStream.pendingLock.Unlock()
 	default:
 		err = errors.Errorf("unknown update context received: %d", evt.UpdateContext)
-
 	}
 
 	return err
 }
 
-func (s *SchedulerServer) incrementExpectedReplicasForServer(serverKey string) error {
+func (s *SchedulerServer) incrementExpectedReplicas(model *store.ModelSnapshot, evt coordinator.ModelEventMsg) error {
 	// TODO: should there be some sort of velocity check ?
-	server, err := s.modelStore.GetServer(serverKey, true, true)
-	if err != nil {
-		return err
+	logger := s.logger.WithField("func", "incrementExpectedReplicas")
+	latestModel := model.GetLatest()
+	if latestModel != nil && latestModel.GetVersion() == evt.ModelVersion &&
+		latestModel.DesiredReplicas() > int(latestModel.ModelState().AvailableReplicas) {
+		server, err := s.modelStore.GetServer(latestModel.Server(), true, true)
+		if err != nil {
+			return err
+		}
+		newExpectedReplicas := server.ExpectedReplicas + 1
+		if newExpectedReplicas < latestModel.DesiredReplicas() {
+			newExpectedReplicas = latestModel.DesiredReplicas()
+		}
+		ssr := createServerStatusUpdateResponse(server)
+		ssr.ExpectedReplicas = int32(newExpectedReplicas)
+		ssr.Type = pb.ServerStatusResponse_ScalingRequest
+		s.sendServerStatusResponse(ssr)
+
+	} else {
+		logger.Debugf("skipping scaling request event %s", evt.String())
 	}
-	ssr := createServerStatusUpdateResponse(server)
-	ssr.ExpectedReplicas = ssr.ExpectedReplicas + 1
-	ssr.Type = pb.ServerStatusResponse_ScalingRequest
-	s.sendServerStatusResponse(ssr)
 	return nil
 }
 
@@ -266,7 +278,7 @@ func (s *SchedulerServer) sendServerStatusResponse(ssr *pb.ServerStatusResponse)
 			delete(s.serverEventStream.streams, stream)
 		}
 		if err != nil {
-			logger.WithError(err).Errorf("Failed to send server status event to %s", subscription.name)
+			logger.WithError(err).Errorf("Failed to send server status response to %s", subscription.name)
 		}
 	}
 }
