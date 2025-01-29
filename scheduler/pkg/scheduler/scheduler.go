@@ -173,6 +173,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 	logger.
 		WithField("candidate_servers", filteredServers).
 		WithField("desired_replicas", desiredReplicas).
+		WithField("min_replicas", minReplicas).
 		Debug("Identified candidate servers for model")
 
 	// The main logic of trying to find a server for the model is as follows:
