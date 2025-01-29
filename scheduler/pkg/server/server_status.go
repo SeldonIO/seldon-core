@@ -223,6 +223,7 @@ func (s *SchedulerServer) incrementExpectedReplicas(model *store.ModelSnapshot, 
 	// TODO: should there be some sort of velocity check ?
 	logger := s.logger.WithField("func", "incrementExpectedReplicas")
 	latestModel := model.GetLatest()
+	logger.Debugf("will attempt to scale servers to %d for %s", latestModel.DesiredReplicas(), evt.String())
 	if latestModel != nil && latestModel.GetVersion() == evt.ModelVersion &&
 		latestModel.DesiredReplicas() > int(latestModel.ModelState().AvailableReplicas) {
 		server, err := s.modelStore.GetServer(latestModel.Server(), true, true)

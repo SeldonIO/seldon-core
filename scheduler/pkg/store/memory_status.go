@@ -105,11 +105,19 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 	}
 }
 
+func (m *MemoryStore) PartiallyScheduled(modelVersion *ModelVersion, reason string, reset bool) {
+	m.failedScheduling(modelVersion, reason, reset, ModelAvailable)
+}
+
 func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string, reset bool) {
+	m.failedScheduling(modelVersion, reason, reset, ScheduleFailed)
+}
+
+func (m *MemoryStore) failedScheduling(modelVersion *ModelVersion, reason string, reset bool, state ModelState) {
 	availableReplicas := modelVersion.state.AvailableReplicas
 
 	modelVersion.state = ModelStatus{
-		State:               ScheduleFailed,
+		State:               state,
 		Reason:              reason,
 		Timestamp:           time.Now(),
 		AvailableReplicas:   availableReplicas,
