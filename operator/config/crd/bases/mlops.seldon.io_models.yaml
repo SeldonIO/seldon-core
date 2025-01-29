@@ -21,9 +21,13 @@ spec:
       jsonPath: .status.conditions[?(@.type=="ModelReady")].status
       name: Ready
       type: string
-    - description: Number of replicas
-      jsonPath: .status.replicas
-      name: Replicas
+    - description: Number of desired replicas
+      jsonPath: .spec.replicas
+      name: Desired Replicas
+      type: integer
+    - description: Number of replicas available to receive inference requests
+      jsonPath: .status.availableReplicas
+      name: Available Replicas
       type: integer
     - jsonPath: .metadata.creationTimestamp
       name: Age
@@ -171,6 +175,10 @@ spec:
                   roughly akin to Annotations on any k8s resource, just the reconciler conveying
                   richer information outwards.
                 type: object
+              availableReplicas:
+                description: Number of available replicas
+                format: int32
+                type: integer
               conditions:
                 description: Conditions the latest available observations of a resource's
                   current state.
