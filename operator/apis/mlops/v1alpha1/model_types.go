@@ -44,6 +44,15 @@ type ModelSpec struct {
 	Explainer *ExplainerSpec `json:"explainer,omitempty"`
 	// Parameters to load with model
 	Parameters []ParameterSpec `json:"parameters,omitempty"`
+	// Llm spec
+	Llm *LlmSpec `json:"llm,omitempty"`
+}
+
+func (m *ModelSpec) Validate() error {
+	if m.Explainer != nil && m.Llm != nil {
+		return fmt.Errorf("Can't have both explainer and llm in model spec.")
+	}
+	return nil
 }
 
 type ParameterSpec struct {
@@ -56,6 +65,17 @@ type ExplainerSpec struct {
 	// type of explainer
 	Type string `json:"type,omitempty"`
 	// one of the following need to be set for blackbox explainers
+	// Reference to Model
+	// +optional
+	ModelRef *string `json:"modelRef,omitempty"`
+	// Reference to Pipeline
+	// +optional
+	PipelineRef *string `json:"pipelineRef,omitempty"`
+}
+
+// Either ModelRef or PipelineRef is required
+type LlmSpec struct {
+	// one of the following need to be set for the llm
 	// Reference to Model
 	// +optional
 	ModelRef *string `json:"modelRef,omitempty"`
@@ -143,6 +163,10 @@ func init() {
 
 // Method to convert Model resource to scheduler proto for communication with Scheduler
 func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
+	// guarantees that Explainer and Llm are mutually exclusive
+	if err := m.Spec.Validate(); err != nil {
+		return nil, err
+	}
 	md := &scheduler.Model{
 		Meta: &scheduler.MetaData{
 			Name: m.Name,
@@ -162,10 +186,20 @@ func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
 		},
 	}
 	if m.Spec.Explainer != nil {
-		md.ModelSpec.Explainer = &scheduler.ExplainerSpec{
-			Type:        m.Spec.Explainer.Type,
-			ModelRef:    m.Spec.Explainer.ModelRef,
-			PipelineRef: m.Spec.Explainer.PipelineRef,
+		md.ModelSpec.ModelSpec = &scheduler.ModelSpec_Explainer{
+			Explainer: &scheduler.ExplainerSpec{
+				Type:        m.Spec.Explainer.Type,
+				ModelRef:    m.Spec.Explainer.ModelRef,
+				PipelineRef: m.Spec.Explainer.PipelineRef,
+			},
+		}
+	}
+	if m.Spec.Llm != nil {
+		md.ModelSpec.ModelSpec = &scheduler.ModelSpec_Llm{
+			Llm: &scheduler.LlmSpec{
+				ModelRef:    m.Spec.Llm.ModelRef,
+				PipelineRef: m.Spec.Llm.PipelineRef,
+			},
 		}
 	}
 	if len(m.Spec.Parameters) > 0 {
