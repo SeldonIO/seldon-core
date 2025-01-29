@@ -110,7 +110,7 @@ func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string
 	availableReplicas := uint32(len(modelVersion.GetAssignment()))
 
 	modelVersion.state = ModelStatus{
-		State:               ScheduleFailed,
+		State:               state,
 		Reason:              reason,
 		Timestamp:           time.Now(),
 		AvailableReplicas:   availableReplicas,

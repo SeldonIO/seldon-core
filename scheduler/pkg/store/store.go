@@ -127,6 +127,7 @@ type ModelStore interface {
 	ServerNotify(request *pb.ServerNotify) error
 	RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) // return previously loaded models
 	DrainServerReplica(serverName string, replicaIdx int) ([]string, error)  // return previously loaded models
+	PartiallyScheduled(modelVersion *ModelVersion, reason string, reset bool)
 	FailedScheduling(modelVersion *ModelVersion, reason string, reset bool)
 	GetAllModels() []string
 }

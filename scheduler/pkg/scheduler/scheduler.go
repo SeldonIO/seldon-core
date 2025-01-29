@@ -51,7 +51,8 @@ func DefaultSchedulerConfig(store store.ModelStore) SchedulerConfig {
 func NewSimpleScheduler(logger log.FieldLogger,
 	store store.ModelStore,
 	schedulerConfig SchedulerConfig,
-	synchroniser synchroniser.Synchroniser) *SimpleScheduler {
+	synchroniser synchroniser.Synchroniser,
+) *SimpleScheduler {
 	s := &SimpleScheduler{
 		store:           store,
 		logger:          logger.WithField("Name", "SimpleScheduler"),
@@ -191,6 +192,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		if okWithMinReplicas {
 			msg := "Failed to schedule model as no matching server had enough suitable replicas, managed to schedule with min replicas"
 			logger.Warn(msg)
+			s.store.PartiallyScheduled(latestModel, msg, !latestModel.HasLiveReplicas() && !latestModel.IsLoadingOrLoadedOnServer())
 		}
 	}
 
@@ -206,7 +208,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		return errors.New(msg)
 	}
 
-	//TODO Cleanup previous version if needed?
+	// TODO Cleanup previous version if needed?
 	return nil
 }
 
