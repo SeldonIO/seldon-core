@@ -6,11 +6,17 @@ Seldon Core 2 is a source-available framework for deploying and managing machine
 
 ## Model Deployment
 
-Seldon Core 2 orchestrates and scales machine learning components running as production-grade microservices. These components can be deployed locally or in enterprise-scale kubernetes clusters. The components of your ML system - such as models, processing steps, custom logic, or monitoring methods - are deployed as **Models**, leveraging serving solutions compatible with Core 2 such as MLServer, Alibi, LLM Module, or Triton Inference Server. These serving solutions package the required dependencies and standardize inference using the Open Inference Protocol. This ensures that, regardless of your model types and use-cases, all request and responses follow a unified format. After models are deployed, they can process REST or gRPC requests for real-time inference.
+Seldon Core 2 orchestrates and scales machine learning components running as production-grade microservices. These components can be deployed locally or in enterprise-scale kubernetes clusters. The components of your ML system - such as models, processing steps, custom logic, or monitoring methods - are deployed as **Models**. Core 2 is compabitible with various serving solutions to deploy various types of  models or ML components depending on the use-case: 
+* Seldon's [MLServer](https://mlserver.readthedocs.io/en/stable/index.html) or [Triton Inference Server](https://developer.nvidia.com/triton-inference-server) for ML models
+* Seldon's Alibi libraries for [drift and outlier detection](https://docs.seldon.io/projects/alibi-detect/en/latest/) and [explainability](https://docs.seldon.io/projects/alibi/en/latest/) methods, or
+* Seldon's [LLM Module](https://www.seldon.io/solutions/llm-module) for deploying LLM-powered applications.
+
+These serving solutions package the required dependencies and standardize inference using the Open Inference Protocol. This ensures that, regardless of your model types and use-cases, all request and responses follow a unified format. After models are deployed, they can process REST or gRPC requests for real-time inference.
 
 ## Complex Applications & Orchestration
 
-Machine learning applications are increasingly complex. They’ve evolved from individual models deployed as services, to complex applications that can consist of multiple models, processing steps, custom logic, and asynchronous monitoring components. With Core you can build  Pipelines that connect any of these components to make data-centric applications. Core 2 handles orchestration and scaling of the underlying components of such an application, and exposes the data streamed through the application in real time using Kafka. 
+### Pipelines
+Machine learning applications are increasingly complex. They’ve evolved from individual models deployed as services, to complex applications that can consist of multiple models, processing steps, custom logic, and asynchronous monitoring components. With Core you can build  **Pipelines** that connect any of these components to make data-centric applications. Core 2 handles orchestration and scaling of the underlying components of such an application, and exposes the data streamed through the application in real time using Kafka. 
 
 {% hint style="info" %}
 Data-centricity is an approach that places the management, integrity, and flow of data at the core of the machine learning deployment framework. 
@@ -21,7 +27,8 @@ This approach to MLOps, influenced by our position paper [Desiderata for next ge
 
 ![Data-centric pipeline](images/pipeline-intro.png)
 
-Lastly, Core 2 provides Experiments as part of its orchestration capabilities, enabling users to implement routing logic such as A/B tests or Canary deployments to models or pipelines in production. After experiments are run, you can promote new models or pipelines, or launch new experiments, so that you can continuously improve the performance of your ML applications.
+### Experiments
+Lastly, Core 2 provides **Experiments** as part of its orchestration capabilities, enabling users to implement routing logic such as A/B tests or Canary deployments to models or pipelines in production. After experiments are run, you can promote new models or pipelines, or launch new experiments, so that you can continuously improve the performance of your ML applications.
 
 
 ## Resource Management
