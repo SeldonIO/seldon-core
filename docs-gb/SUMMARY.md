@@ -1,6 +1,90 @@
 # Table of contents
+* [About](README.md)
 
-* [Overview](README.md)
+## Installation
+* [Installing Seldon Core 2](installation/README.md)
+    * [Learning Environment](installation/learning-environment/README.md)
+      * [Self-hosted Kafka](installation/learning-environment/self-hosted-kafka.md)
+    * [Production Environment](installation/production-environment/README.md)
+      * [Kafka Integration](installation/production-environment/kafka/README.md)
+         * [Managed Kafka](installation/production-environment/kafka/managed-kafka.md) 
+      * [Ingress Controller](installation/production-environment/ingress-controller/istio.md)
+    * [Test the Installation](installation/test-installation.md)
+## User Guide
+* [Getting Started]
+  * Deploy Model (OIP+MLServer Link)
+  * Pipeline
+  * Inference Server
+  * Run Inference
+  * Kubernetes Resources  
+* [Servers](kubernetes/resources/server.md)
+    * [Server Config](kubernetes/resources/serverconfig.md)
+    * [Resource allocation](resource-allocation/README.md)
+      * [Example: Serving models on dedicated GPU nodes](resource-allocation/example-serving-models-on-dedicated-gpu-nodes.md)
+* Models
+    * CRD
+    * Registration
+    * Versioning
+    * LLM
+    * Parameterized Models
+    * Links to Secret Management 
+* Inference
+    * [Inference Server](https://docs.seldon.io/projects/seldon-core/en/v2/contents/about/index.html#inference-servers)
+    * [Run Inference](https://docs.seldon.io/projects/seldon-core/en/v2/contents/inference/index.html)
+    * [OIP](apis/inference/v2.md)
+    * [Batch](examples/batch-examples-k8s.md) and (examples/batch-examples-local.md)
+* Pipelines
+    * [Scaling](kubernetes/scaling.md)
+        * Server Scaling
+        * Component Scaling
+        * [Autoscaling](kubernetes/autoscaling.md)
+        * Multi-Component Serving and Overcommit
+        * [HPA Autoscaling in single-model serving](kubernetes/hpa-rps-autoscaling.md)
+* Data Science Monitoring
+    * Dataflow with Kafka
+    * Request & Response Logging
+    * [Model Performance Metrics](performance-tests.md)
+    * [Drift Detection](drift.md)
+    * [Outlier Detection](outlier.md)
+    * [Explainability](explainers.md)
+* Operational Monitoring
+    * [Operational Metrics](metrics/operational.md)
+    * Kubernetes Metrics
+    * [Usage Metrics](metrics/usage.md)
+    * [Tracing](kubernetes/tracing.md)
+    * Performance Tests
+    * Performance Tuning 
+* Rollouts & Experiments
+    * Rollout Strategies
+        * Progressive Rollouts
+        * Rollbacks
+    * Experiments
+      * A/B Testing
+      * Traffic Splitting
+      * Canary
+      * Shadow 
+    * CI/CD
+      * Link to Component Versioning 
+## Resources
+* Troubleshooting
+* Tutorials
+* [Security](https://docs.seldon.io/projects/seldon-core/en/v2/contents/getting-started/kubernetes-installation/security/index.html)
+  * [Secure Model Endpoints](models/securing-endpoints.md)
+  * Authentication
+  * Authorization
+  * Secrets Management
+* Integrations
+    * Audit Trails
+    * Alerts
+    * Data Management
+    * Modules 
+* APIs
+    * API Reference
+    * Internal APIs
+    * [CLI](https://docs.seldon.io/projects/seldon-core/en/v2/contents/getting-started/cli.html)
+* Reference
+    * Glossary 
+* FAQs           
 * [Getting Started](getting-started/README.md)
   * [Docker Installation](getting-started/docker-installation.md)
   * [Kubernetes Installation](getting-started/kubernetes-installation/README.md)
