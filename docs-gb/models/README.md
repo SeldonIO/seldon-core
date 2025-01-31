@@ -72,3 +72,7 @@ See [Multi-model serving](mms.md) for more information.
 ## Autoscaling of Models
 
 See [here](../kubernetes/autoscaling.md) for discussion of autoscaling of models.
+
+## Scheduling of Models onto Servers
+
+See [here](scheduling.md) for details on how Core 2 schedules Models onto Servers.
