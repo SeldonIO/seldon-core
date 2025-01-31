@@ -1,10 +1,10 @@
 # Model Scheduling
 
-Core 2 architecture is built around decoupling `Model` and `Server` CRs to allow for multi-model deployement, 
+Core 2 architecture is built around decoupling `Model` and `Server` CRs to allow for multi-model deployment, 
 i.e. enabling multiple models to be loaded and served on one server replica (`Pod`). Multi-model serving
 allows for more efficient use of resources, check [here](mms.md) for more information.
 
-This architecture requires that Core 2 handles scheduling of models onto server pods natively. In particular Core 2 implement different sorters and filters which are used to find the best Server that is able to host a given Model. This process we describe in the following section.
+This architecture requires that Core 2 handles scheduling of models onto server pods natively. In particular Core 2 implements different sorters and filters which are used to find the best Server that is able to host a given Model. This process we describe in the following section.
 
 ## Scheduling Process
 
@@ -23,12 +23,12 @@ Once a candidate Server is identified for a given Model, Core 2 will attempt to 
 This process is extensible and in future versions we might add other filters that can be used for scheduling decisions.
 
 {% hint style="info" %}
-**Note**: A specific Model can be only be assigned to at most one Server and therefore this Server will require to have enough replicas to host all replicas of the Model.
+**Note**: A specific Model can only be assigned to at most one Server and therefore this Server will require to have enough replicas to host all replicas of the Model.
 {% endhint %}
 
 ## Partial Scheduling
 
-Core 2 (from `2.9`) is able to do partial scheduling of Models. Partial scheduling is defined as the loading of enough replicas of the model above `spec.minReplicas` and upto the number of available Server replicas. This allows the user a little bit more flexibility in serving traffic while optimising infrastrucutre provisioning. 
+Core 2 (from `2.9`) is able to do partial scheduling of Models. Partial scheduling is defined as the loading of enough replicas of the model above `spec.minReplicas` and upto the number of available Server replicas. This allows the user a little bit more flexibility in serving traffic while optimising infrastructure provisioning. 
 
 To enable partial scheduling, `spec.minReplicas` needs to be defined as it provides Core 2 the minimum replicas of the model that is required for serving. 
 
