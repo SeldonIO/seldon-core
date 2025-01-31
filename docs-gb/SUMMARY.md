@@ -79,7 +79,7 @@
   * [Parameterized Models](models/parameterized-models/README.md)
   * [Pandas Query](models/parameterized-models/pandasquery.md)
   * [Securing Endpoints](models/securing-endpoints.md)
-  * [Scheduling] (models/scheduling.md)
+  * [Scheduling](models/scheduling.md)
 * [Metrics](metrics/README.md)
   * [Usage](metrics/usage.md)
   * [Operational](metrics/operational.md)
