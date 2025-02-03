@@ -13,7 +13,7 @@ To use Seldon Core 2 in a production environment:
 1. [Create namespaces](seldon-core-2.md#creating-namespaces)
 2. [Install Seldon Core 2](seldon-core-2.md#installing-seldon-core-2)
 
-Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that are required to install Seldon Core 2. For more information see about the Helm charts and the related dependencies, [Helm charts](/docs-gb/installation/README.md#helm-charts) and [Dependencies](/docs-gb/installation/README.md#seldon-core-2-dependencies).
+Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that are required to install Seldon Core 2. For more information about the Helm charts and the related dependencies, see [Helm charts](/docs-gb/installation/README.md#helm-charts) and [Dependencies](/docs-gb/installation/README.md#seldon-core-2-dependencies).
 
 ## Creating Namespaces
 
