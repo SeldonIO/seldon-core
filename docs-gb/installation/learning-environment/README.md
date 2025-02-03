@@ -72,11 +72,7 @@ With Helm, you need to configure and manage the dependencies yourself.
      --namespace seldon-mesh \
      --install
     ```
-7. Check Seldon Core 2 operator, runtimes, servers, and CRDS are installed in the `seldon-mesh` namespace.
-{% hint style="info" %}
-**Note**: It might take a couple of minutes for all the Pods to be ready.
-To check the status of the Pods in real time use this command: `kubectl get pods -w -n seldon-mesh`. 
-{% endhint %}
+7. Check Seldon Core 2 operator, runtimes, servers, and CRDS are installed in the `seldon-mesh` namespace. It might take a couple of minutes for all the Pods to be ready. To check the status of the Pods in real time use this command: `kubectl get pods -w -n seldon-mesh`. 
 
     ```bash
      kubectl get pods -n seldon-mesh
