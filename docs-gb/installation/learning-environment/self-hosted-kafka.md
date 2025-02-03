@@ -266,5 +266,7 @@ helm upgrade --install seldon-core-v2-setup seldon-charts/seldon-core-v2-setup \
 --set kafka.topicPrefix=myorg \
 --set kafka.consumerGroupIdPrefix=myorg
 ```
+## Next Steps
 
+After you installed Seldon Core 2, and Kafka using Helm, you need to complete [Installing a Service mesh](../production-environment/ingress-controller/istio.md).
 
