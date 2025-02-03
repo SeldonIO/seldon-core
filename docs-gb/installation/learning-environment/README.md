@@ -6,10 +6,6 @@ description: Install Seldon Core 2 in a local learning environment.
 
 You can install Seldon Core 2 on your local computer that is running a Kubernetes cluster using [kind](https://kubernetes.io/docs/tasks/tools/#kind).
 
-You could also install Seldon Core 2 locally if you have installed [Docker Compose](https://docs.docker.com/compose/install/) and `make` utility on your Linux systems. Clone the Seldon core repository:
-`git clone https://github.com/SeldonIO/seldon-core --branch=v2`,change to the `seldon-core` directory, and run `make deploy-local`.
-
-
 {% hint style="info" %}
 **Note**: These instructions guide you through installing Seldon Core 2 on a local Kubernetes cluster, focusing on ease of learning. Ensure your [kind](https://kubernetes.io/docs/tasks/tools/#kind) cluster is running on hardware with at least 32GB of RAM and a load balancer such as MetalLB is configured.
 {% endhint %}
