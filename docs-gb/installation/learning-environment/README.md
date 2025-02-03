@@ -6,18 +6,18 @@ description: Install Seldon Core 2 in a local learning environment.
 
 You can install Seldon Core 2 on your local computer that is running a Kubernetes cluster using [kind](https://kubernetes.io/docs/tasks/tools/#kind).
 
+Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that are required to install Seldon Core 2. For more information about the Helm charts and the related dependencies,see [Helm charts](/docs-gb/installation/README.md#helm-charts) and [Dependencies](/docs-gb/installation/README.md#seldon-core-2-dependencies).
+
 {% hint style="info" %}
 **Note**: These instructions guide you through installing Seldon Core 2 on a local Kubernetes cluster, focusing on ease of learning. Ensure your [kind](https://kubernetes.io/docs/tasks/tools/#kind) cluster is running on hardware with at least 32GB of RAM and a load balancer such as MetalLB is configured.
 {% endhint %}
 
 
 ## Prerequisites
-
-* Install a Kubernetes cluster that is running version 1.27 or later.
+* Install a Kubernetes cluster that is running version 1.27 or later. 
 * Install [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl), the Kubernetes command-line tool.
 * Install [Helm](https://helm.sh/docs/intro/install/), the package manager for Kubernetes or [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-and-upgrading-ansible), the automation tool used for provisioning, configuration management, and application deployment.
 
-Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that are required to install Seldon Core 2. For more information see about the Helm charts and the related dependencies, [Helm charts](/docs-gb/installation/README.md#helm-charts) and [Dependencies](/docs-gb/installation/README.md#seldon-core-2-dependencies).
 
 {% hint style="info" %}
 **Note**: Ansible automates provisioning, configuration management, and handles all dependencies required for Seldon Core 2.
