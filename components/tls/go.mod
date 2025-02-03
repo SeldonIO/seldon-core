@@ -1,8 +1,8 @@
 module github.com/seldonio/seldon-core/components/tls/v2
 
-go 1.22.7
+go 1.23.0
 
-toolchain go1.22.9
+toolchain go1.23.4
 
 require (
 	github.com/onsi/gomega v1.30.0
