@@ -67,14 +67,19 @@ With Helm, you need to configure and manage the dependencies yourself.
     --namespace seldon-mesh \
     --install
     ```
-6. Install Seldon Core 2 servers in the `seldon-mesh` namespace.
+6. Install Seldon Core 2 servers in the `seldon-mesh` namespace. Two example servers named `mlserver-0`, and `triton-0` are installed so that you can load the models to these servers after installation.
 
     ```bash
      helm upgrade seldon-core-v2-servers seldon-charts/seldon-core-v2-servers \
      --namespace seldon-mesh \
      --install
     ```
-7. Check Seldon Core 2 operator, runtimes, servers, and CRDS are installed in the `seldon-mesh` namespace:
+7. Check Seldon Core 2 operator, runtimes, servers, and CRDS are installed in the `seldon-mesh` namespace.
+{% hint style="info" %}
+**Note**: It might take a couple of minutes for all the Pods to be ready.
+To check the status of the Pods in real time use this command: `kubectl get pods -w -n seldon-mesh`. 
+{% endhint %}
+
     ```bash
      kubectl get pods -n seldon-mesh
     ```
