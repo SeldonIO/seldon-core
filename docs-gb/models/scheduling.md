@@ -17,7 +17,7 @@ The scheduling process in Core 2 identifies a suitable candidate server for a gi
 - Each replica of Server has enough available memory to load one replica of the model defined in `spec.memory`.
 - Server that already hosts the Model is preferred to reduce flip-flops between different candidate servers.
 
-Once a candidate Server is identified for a given Model, Core 2 will attempt to load this Model onto it. Otherwise if there is no matching Server, the Model will be marked as `ScheduleFailed`.
+After a suitable candidate server is identified for a given model, Core 2 attempts to load the model onto it. If no matching server is found, the model is marked as `ScheduleFailed`.
 
 This process is extensible and in future versions we might add other filters that can be used for scheduling decisions.
 
