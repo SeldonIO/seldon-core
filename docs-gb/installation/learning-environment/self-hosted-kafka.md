@@ -180,7 +180,7 @@ You should see multiple Pods for Kafka, and Strimzi operators running.
 ## Configuring Seldon Core 2
 
 When the `SeldonRuntime` is installed in a namespace a ConfigMap is created with the
-settings for Kafka configuration.
+settings for Kafka configuration. Update the `ConfigMap` only if you need to customize the configurations.
 {% @github-files/github-code-block url="https://github.com/SeldonIO/seldon-core/blob/v2/scheduler/config/kafka-internal.json" %} 
 
 1. Verify that the ConfigMap resource named `seldon-kafka` that is created in the namespace `seldon-mesh`:
