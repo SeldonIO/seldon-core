@@ -345,7 +345,6 @@ func TestServersStatusEvents(t *testing.T) {
 		loadReq              *pba.AgentSubscribeRequest
 		timeout              time.Duration
 		desiredModelReplicas uint32
-		updateContext        coordinator.ModelEventUpdateContext
 		err                  bool
 	}
 
@@ -374,7 +373,6 @@ func TestServersStatusEvents(t *testing.T) {
 			},
 			timeout:              1 * time.Millisecond,
 			desiredModelReplicas: 1,
-			updateContext:        coordinator.MODEL_SCHEDULE_FAILED,
 			err:                  false,
 		},
 		{
@@ -384,7 +382,6 @@ func TestServersStatusEvents(t *testing.T) {
 			},
 			timeout:              1 * time.Millisecond,
 			desiredModelReplicas: 0, // no replicas become availble
-			updateContext:        coordinator.MODEL_SCHEDULE_FAILED,
 			err:                  true,
 		},
 	}
@@ -419,17 +416,13 @@ func TestServersStatusEvents(t *testing.T) {
 			}
 			g.Expect(s.serverEventStream.streams[stream]).ToNot(BeNil())
 			hub.PublishModelEvent(serverModelEventHandlerName, coordinator.ModelEventMsg{
-				ModelName: "foo", ModelVersion: 1, UpdateContext: test.updateContext,
+				ModelName: "foo", ModelVersion: 1,
 			})
 
 			// to allow events to propagate
 			time.Sleep(500 * time.Millisecond)
 
 			if test.err {
-				g.Expect(s.serverEventStream.streams).To(HaveLen(0))
-			} else if test.err && test.updateContext == coordinator.MODEL_SCHEDULE_FAILED {
-				// no scaling requests are sent for models in the desired state
-				g.Expect(stream.msgs).To(HaveLen(0))
 				g.Expect(s.serverEventStream.streams).To(HaveLen(0))
 			} else {
 				var ssr *pb.ServerStatusResponse
@@ -443,15 +436,10 @@ func TestServersStatusEvents(t *testing.T) {
 				g.Expect(ssr).ToNot(BeNil())
 				g.Expect(ssr.ServerName).To(Equal("foo"))
 
-				if test.updateContext == coordinator.MODEL_SCHEDULE_FAILED {
-					// server events are not coalesced for scaling request
-					g.Expect(s.serverEventStream.streams).To(HaveLen(0))
-					g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_ScalingRequest))
-				} else {
-					g.Expect(s.serverEventStream.streams).To(HaveLen(1))
-					g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_StatusUpdate))
-				}
+				g.Expect(s.serverEventStream.streams).To(HaveLen(1))
+				g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_StatusUpdate))
 			}
+
 		})
 	}
 }

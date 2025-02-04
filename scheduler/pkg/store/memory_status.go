@@ -110,7 +110,7 @@ func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string
 	availableReplicas := uint32(len(modelVersion.GetAssignment()))
 
 	modelVersion.state = ModelStatus{
-		State:               state,
+		State:               ScheduleFailed,
 		Reason:              reason,
 		Timestamp:           time.Now(),
 		AvailableReplicas:   availableReplicas,
@@ -124,9 +124,8 @@ func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string
 	m.eventHub.PublishModelEvent(
 		modelFailureEventSource,
 		coordinator.ModelEventMsg{
-			ModelName:     modelVersion.GetMeta().GetName(),
-			ModelVersion:  modelVersion.GetVersion(),
-			UpdateContext: coordinator.MODEL_SCHEDULE_FAILED,
+			ModelName:    modelVersion.GetMeta().GetName(),
+			ModelVersion: modelVersion.GetVersion(),
 		},
 	)
 }

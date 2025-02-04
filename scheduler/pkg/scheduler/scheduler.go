@@ -168,8 +168,6 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 	}
 
 	desiredReplicas := latestModel.DesiredReplicas()
-	minReplicas := latestModel.GetDeploymentSpec().GetMinReplicas()
-
 	s.sortServers(latestModel, filteredServers)
 	logger.
 		WithField("candidate_servers", filteredServers).
@@ -185,27 +183,26 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 
 	// For each server filter and sort replicas and attempt schedule if enough replicas
 	ok := s.findAndUpdateToServers(filteredServers, latestModel, desiredReplicas, desiredReplicas)
-	// Try to scheduler with min replicas if not enough replicas
-	okWithMinReplicas := false
-	if !ok && minReplicas > 0 {
-		okWithMinReplicas = s.findAndUpdateToServers(filteredServers, latestModel, desiredReplicas, int(minReplicas))
-		if okWithMinReplicas {
-			msg := "Failed to schedule model as no matching server had enough suitable replicas, managed to schedule with min replicas"
-			logger.Warn(msg)
-			s.store.PartiallyScheduled(latestModel, msg, !latestModel.HasLiveReplicas() && !latestModel.IsLoadingOrLoadedOnServer())
+	if !ok {
+		// Try to schedule with min replicas if not enough replicas
+		minReplicas := latestModel.GetDeploymentSpec().GetMinReplicas()
+		if minReplicas > 0 {
+			okWithMinReplicas := s.findAndUpdateToServers(filteredServers, latestModel, desiredReplicas, int(minReplicas))
+			if okWithMinReplicas {
+				msg := "Failed to schedule model as no matching server had enough suitable replicas, managed to schedule with min replicas"
+				logger.Warn(msg)
+			} else {
+				msg := "Failed to schedule model as no matching server had enough suitable replicas"
+				logger.Debug(msg)
+				// we do not want to reset the server if it has live replicas or loading replicas
+				// in the case of loading replicas, we need to make sure that we can unload them later.
+				// for example in the case that a model is just marked as loading on a particular server replica
+				// then it gets a delete request (before it is marked as loaded or available) we need to make sure
+				// that we can unload it from the server
+				s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas() && !latestModel.IsLoadingOrLoadedOnServer())
+				return errors.New(msg)
+			}
 		}
-	}
-
-	if !ok && !okWithMinReplicas {
-		msg := "Failed to schedule model as no matching server had enough suitable replicas"
-		logger.Debug(msg)
-		// we do not want to reset the server if it has live replicas or loading replicas
-		// in the case of loading replicas, we need to make sure that we can unload them later.
-		// for example in the case that a model is just marked as loading on a particular server replica
-		// then it gets a delete request (before it is marked as loaded or available) we need to make sure
-		// that we can unload it from the server
-		s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas() && !latestModel.IsLoadingOrLoadedOnServer())
-		return errors.New(msg)
 	}
 
 	// TODO Cleanup previous version if needed?

@@ -12,8 +12,6 @@ package server
 import (
 	"time"
 
-	"github.com/pkg/errors"
-
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -201,47 +199,47 @@ func (s *SchedulerServer) updateServerModelsStatus(evt coordinator.ModelEventMsg
 		return nil
 	}
 
-	switch evt.UpdateContext {
-	case coordinator.MODEL_SCHEDULE_FAILED:
-		err = s.incrementExpectedReplicas(model, evt)
-	case coordinator.MODEL_STATUS_UPDATE:
-		s.serverEventStream.pendingLock.Lock()
-		// we are coalescing events so we only send one event (the latest status) per server
-		s.serverEventStream.pendingEvents[modelVersion.Server()] = struct{}{}
-		if s.serverEventStream.trigger == nil {
-			s.serverEventStream.trigger = time.AfterFunc(defaultBatchWait, s.sendServerStatus)
+	latestModel := model.GetLatest()
+
+	if latestModel != nil && latestModel.GetVersion() == evt.ModelVersion &&
+		latestModel.DesiredReplicas() > int(latestModel.ModelState().AvailableReplicas) {
+		err := s.incrementExpectedReplicas(latestModel)
+		if err != nil {
+			return err
+		} else {
+			return nil
 		}
-		s.serverEventStream.pendingLock.Unlock()
-	default:
-		err = errors.Errorf("unknown update context received: %d", evt.UpdateContext)
 	}
+
+	s.serverEventStream.pendingLock.Lock()
+	// we are coalescing events so we only send one event (the latest status) per server
+	s.serverEventStream.pendingEvents[modelVersion.Server()] = struct{}{}
+	if s.serverEventStream.trigger == nil {
+		s.serverEventStream.trigger = time.AfterFunc(defaultBatchWait, s.sendServerStatus)
+	}
+	s.serverEventStream.pendingLock.Unlock()
 
 	return err
 }
 
-func (s *SchedulerServer) incrementExpectedReplicas(model *store.ModelSnapshot, evt coordinator.ModelEventMsg) error {
+func (s *SchedulerServer) incrementExpectedReplicas(latestModel *store.ModelVersion) error {
 	// TODO: should there be some sort of velocity check ?
 	logger := s.logger.WithField("func", "incrementExpectedReplicas")
-	latestModel := model.GetLatest()
-	logger.Debugf("will attempt to scale servers to %d for %s", latestModel.DesiredReplicas(), evt.String())
-	if latestModel != nil && latestModel.GetVersion() == evt.ModelVersion &&
-		latestModel.DesiredReplicas() > int(latestModel.ModelState().AvailableReplicas) {
-		server, err := s.modelStore.GetServer(latestModel.Server(), true, true)
-		if err != nil {
-			return err
-		}
-		newExpectedReplicas := server.ExpectedReplicas + 1
-		if newExpectedReplicas < latestModel.DesiredReplicas() {
-			newExpectedReplicas = latestModel.DesiredReplicas()
-		}
-		ssr := createServerStatusUpdateResponse(server)
-		ssr.ExpectedReplicas = int32(newExpectedReplicas)
-		ssr.Type = pb.ServerStatusResponse_ScalingRequest
-		s.sendServerStatusResponse(ssr)
+	logger.Debugf("will attempt to scale servers to %d for %v", latestModel.DesiredReplicas(), latestModel)
 
-	} else {
-		logger.Debugf("skipping scaling request event %s", evt.String())
+	server, err := s.modelStore.GetServer(latestModel.Server(), true, true)
+	if err != nil {
+		return err
 	}
+	newExpectedReplicas := server.ExpectedReplicas + 1
+	if newExpectedReplicas < latestModel.DesiredReplicas() {
+		newExpectedReplicas = latestModel.DesiredReplicas()
+	}
+	ssr := createServerStatusUpdateResponse(server)
+	ssr.ExpectedReplicas = int32(newExpectedReplicas)
+	ssr.Type = pb.ServerStatusResponse_ScalingRequest
+	s.sendServerStatusResponse(ssr)
+
 	return nil
 }
 
