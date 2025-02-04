@@ -10,8 +10,7 @@ This architecture requires that Core 2 handles scheduling of models onto server 
 
 ### Overview
 
-The scheduling process in Core 2 attempts to find a candidate server for a given model. This is based on multiple steps that sort and filter 
-servers mainly based on the following criterias:
+The scheduling process in Core 2 identifies a suitable candidate server for a given model through a series of steps. These steps involve sorting and filtering servers primarily based on the following criteria:
 
 - Server has matching Capabilities with Model `spec.requirements`.
 - Server has enough replicas to load the desired `spec.replicas` of the Model.
