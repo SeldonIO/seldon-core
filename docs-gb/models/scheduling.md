@@ -1,7 +1,7 @@
 # Model Scheduling
 
 Core 2 architecture is built around decoupling `Model` and `Server` CRs to allow for multi-model deployment, 
-i.e. enabling multiple models to be loaded and served on one server replica (`Pod`). Multi-model serving
+enabling multiple models to be loaded and served on one server replica or a single `Pod`. Multi-model serving
 allows for more efficient use of resources, check [here](mms.md) for more information.
 
 This architecture requires that Core 2 handles scheduling of models onto server pods natively. In particular Core 2 implements different sorters and filters which are used to find the best Server that is able to host a given Model. This process we describe in the following section.
