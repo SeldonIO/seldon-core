@@ -22,7 +22,7 @@ After a suitable candidate server is identified for a given model, Core 2 attemp
 This process is designed to be extensible, allowing for the addition of new filters in future versions to enhance scheduling decisions.
 
 {% hint style="info" %}
-**Note**: A specific Model can only be assigned to at most one Server and therefore this Server will require to have enough replicas to host all replicas of the Model.
+**Note**: A specific Model can only be assigned to at most one Server and therefore this Server requires enough replicas to host all replicas of the Model.
 {% endhint %}
 
 ## Partial Scheduling
