@@ -36718,11 +36718,11 @@ third-party archives.
    limitations under the License.
 
 --------------------------------------------------------------------------------
-go-resty/resty  MIT License  https://github.com/go-resty/resty/blob/v2/LICENSE
+go-resty/resty  MIT License  https://github.com/go-resty/resty/blob/v3/LICENSE
 --------------------------------------------------------------------------------
 The MIT License (MIT)
 
-Copyright (c) 2015-2024 Jeevanandam M., https://myjeeva.com <jeeva@myjeeva.com>
+Copyright (c) 2015-present Jeevanandam M., https://myjeeva.com <jeeva@myjeeva.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
