@@ -31,7 +31,7 @@ Core 2 (from `2.9`) is able to do partial scheduling of Models. Partial scheduli
 
 To enable partial scheduling, `spec.minReplicas` needs to be defined as it provides Core 2 the minimum replicas of the model that is required for serving. 
 
-There is no explicit state for partial scheduling though; the Model will be marked as `ModelAvailable` and ready to serve traffic. The user can inspect the status of the Model CR, where we populate DESIRED REPLICAS and AVAILABLE REPLICAS to expose information on how many replicas are currently loaded in Core 2. Accordingly, the following logic can be performed:
+Partial scheduling does not have an explicit state; instead, the model is marked as `ModelAvailable` and is ready to serve traffic. The status of the Model CR can be inspected, where `DESIRED REPLICAS` and `AVAILABLE REPLICAS` provide insight into the number of replicas currently loaded in Core 2. Based on this information, the following logic are applied:
 
 - *Fully Scheduled*: READY is True and DESIRED REPLICAS is equal to AVAILABLE REPLICAS (STATUS is `ModelAvailable`)
 - *Partially Scheduled*: READY is TRUE and DESIRED REPLICAS is greater than AVAILABLE REPLICAS (STATUS is `ModelAvailable`)
