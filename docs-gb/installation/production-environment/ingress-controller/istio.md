@@ -26,25 +26,35 @@ Installing Istio ingress controller in a Kubernetes cluster running Seldon Enter
 
 ### Install Istio
 
-1.  Download the Istio installation package for the version you want to use. In the following command replace `<version>` with the version of Istio that you downloaded:
+1.  Add the Istio Helm charts repository and update it:
 
     ```
-    curl -L https://istio.io/downloadIstio | sh -
-    cd istio-<version>
-    export PATH=$PWD/bin:$PATH
+    helm repo add istio https://istio-release.storage.googleapis.com/charts
+    helm repo update
     ```
-2.  Install the Istio Custom Resource Definitions (CRDs) and Istio components in your cluster using the `istioctl` command line tool:
+2.  Create the `istio-system` namespace where Istio components are installed:
 
     ```
-    istioctl install --set profile=default -y
+    kubectl create namespace istio-system
     ```
-3.  Create a namespace where you want to enable Istio automatic sidecar injection. For example in the namespace `seldon-mesh`:
+3.  Install the base component:
 
     ```
-    kubectl label namespace seldon-mesh istio-injection=enabled
+    helm install istio-base istio/base -n istio-system
     ```
+4. Install Istiod, the Istio control plane:
+
+    ```
+    helm install istiod istio/istiod -n istio-system --wait
+    ```    
 
 ### Install Istio Ingress Gateway
+
+1. Install Istio Ingress Gateway:
+
+    ```
+    helm install istio-ingress istio/gateway -n istio-system
+    ```
 
 1.  Verify that Istio Ingress Gateway is installed:
 
@@ -53,37 +63,30 @@ Installing Istio ingress controller in a Kubernetes cluster running Seldon Enter
     ```
 
     This should return details of the Istio Ingress Gateway, including the external IP address.
-2.  Create a YAML file to specify Gateway resource in the `istio-system` namespace to expose your application. For example, create the `istio-seldon-gateway.yaml` file. Use your preferred text editor to create and save the file with the following content:
 
-    ```yaml
-     apiVersion: networking.istio.io/v1alpha3
-     kind: Gateway
-     metadata:
-       name: seldon-gateway
-       namespace: seldon-mesh
-     spec:
-       selector:
-         istio: ingressgateway # Use Istio's default ingress gateway
-       servers:
-       - port:
-           number: 80
-           name: http
-           protocol: HTTP
-         hosts:
-         - "*"
-    ```
-3.  Change to the directory that contains `istio-seldon-gateway.yaml` file and apply the configuration:
+2. Verify that all Istio Pods are running:
 
     ```
-    kubectl apply -f istio-seldon-gateway.yaml
+    kubectl get pods -n istio-system
     ```
+    The output is similar to:
 
-    When the configuration is applied, you should see this:
+    ```
+    NAME                          READY   STATUS    RESTARTS   AGE
+    istiod-xxxxxxx-xxxxx          1/1     Running   0          2m
+    istio-ingressgateway-xxxxx    1/1     Running   0          2m
+    ```
+3. Inject Envoy sidecars into application Pods in the namespace `seldon-mesh`:
 
     ```
-    gateway.networking.istio.io/seldon-gateway created
+    kubectl label namespace seldon-mesh istio-injection=enabled
+    ```    
+4.  Verify that the injection happens to the Pods in the namespace `seldon-mesh`:
+
     ```
-4.  Find the IP address of the Seldon Core 2 instance running with Istio:
+    kubectl get namespace seldon-mesh --show-labels
+    ```
+5.  Find the IP address of the Seldon Core 2 instance running with Istio:
 
     ```
     ISTIO_INGRESS=$(kubectl get svc seldon-mesh -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
