@@ -317,7 +317,7 @@ func (kc *KafkaClient) createInspectTopic(
 					run = false
 				}
 			case kafka.Error:
-				return nil, fmt.Errorf(e.Error())
+				return nil, e.Error()
 			default:
 				continue
 			}
