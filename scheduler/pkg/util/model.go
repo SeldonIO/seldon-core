@@ -36,3 +36,15 @@ func GetOrignalModelNameAndVersion(versionedModel string) (string, uint32, error
 func GetPinnedModelVersion() uint32 {
 	return 1
 }
+
+// if min and max replicas are not set, we do not allow autoscaling
+// we check that they are not set if they are equal to zero as per
+// `GetMinReplicas` and `GetMaxReplicas` definition
+func AutoscalingEnabled(minReplicas, maxReplicas uint32) bool {
+	if (minReplicas == 0) && (maxReplicas == 0) {
+		// no autoscaling
+		return false
+	} else {
+		return true
+	}
+}

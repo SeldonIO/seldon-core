@@ -21,8 +21,7 @@ import (
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/proxy"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 type ProxyServer struct {
@@ -56,11 +55,12 @@ func (p *ProxyServer) Start(port uint) error {
 }
 
 func (p *ProxyServer) LoadModel(ctx context.Context, r *pb.LoadModelRequest) (*pb.LoadModelResponse, error) {
+	model := r.GetRequest().GetModel()
 	m := ModelEvent{
 		ModelOperationMessage: &pba.ModelOperationMessage{
 			Operation:          pba.ModelOperationMessage_LOAD_MODEL,
-			ModelVersion:       &pba.ModelVersion{Model: r.GetRequest().GetModel(), Version: r.GetVersion()},
-			AutoscalingEnabled: agent.AutoscalingEnabled(r.GetRequest().GetModel()),
+			ModelVersion:       &pba.ModelVersion{Model: model, Version: r.GetVersion()},
+			AutoscalingEnabled: util.AutoscalingEnabled(model.DeploymentSpec.MinReplicas, model.DeploymentSpec.MaxReplicas),
 		},
 	}
 	p.modelEvents <- m
@@ -74,7 +74,8 @@ func (p *ProxyServer) UnloadModel(ctx context.Context, r *pb.UnloadModelRequest)
 			Operation: pba.ModelOperationMessage_UNLOAD_MODEL,
 			ModelVersion: &pba.ModelVersion{
 				Model:   &pbs.Model{Meta: &pbs.MetaData{Name: r.GetModel().GetName()}},
-				Version: r.GetVersion()},
+				Version: r.GetVersion(),
+			},
 		},
 	}
 	p.modelEvents <- m

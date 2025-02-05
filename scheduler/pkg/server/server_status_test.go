@@ -345,6 +345,8 @@ func TestServersStatusEvents(t *testing.T) {
 		loadReq              *pba.AgentSubscribeRequest
 		timeout              time.Duration
 		desiredModelReplicas uint32
+		minModelReplicas     uint32
+		maxModelReplicas     uint32
 		err                  bool
 	}
 
@@ -355,8 +357,7 @@ func TestServersStatusEvents(t *testing.T) {
 				ServerName: "foo",
 			},
 			timeout: 10 * time.Millisecond,
-
-			err: false,
+			err:     false,
 		},
 		{
 			name: "timeout",
@@ -367,22 +368,37 @@ func TestServersStatusEvents(t *testing.T) {
 			err:     true,
 		},
 		{
-			name: "schedule failed",
+			name: "scaling requested",
 			loadReq: &pba.AgentSubscribeRequest{
 				ServerName: "foo",
 			},
-			timeout:              1 * time.Millisecond,
-			desiredModelReplicas: 1,
+			timeout:              10 * time.Minute,
+			desiredModelReplicas: 3,
+			minModelReplicas:     2,
+			maxModelReplicas:     3,
 			err:                  false,
 		},
 		{
-			name: "schedule failed - desired replicas matches available replicas",
+			name: "scaling requested",
 			loadReq: &pba.AgentSubscribeRequest{
 				ServerName: "foo",
 			},
-			timeout:              1 * time.Millisecond,
-			desiredModelReplicas: 0, // no replicas become availble
-			err:                  true,
+			timeout:              10 * time.Minute,
+			desiredModelReplicas: 1,
+			minModelReplicas:     2,
+			maxModelReplicas:     3,
+			err:                  false,
+		},
+		{
+			name: "desired replicas less than available replicas",
+			loadReq: &pba.AgentSubscribeRequest{
+				ServerName: "foo",
+			},
+			timeout:              10 * time.Minute,
+			desiredModelReplicas: 1,
+			minModelReplicas:     2,
+			maxModelReplicas:     3,
+			err:                  false,
 		},
 	}
 
@@ -396,7 +412,7 @@ func TestServersStatusEvents(t *testing.T) {
 				err = s.modelStore.UpdateModel(&pb.LoadModelRequest{
 					Model: &pb.Model{
 						Meta:           &pb.MetaData{Name: "foo"},
-						DeploymentSpec: &pb.DeploymentSpec{Replicas: test.desiredModelReplicas},
+						DeploymentSpec: &pb.DeploymentSpec{Replicas: test.desiredModelReplicas, MinReplicas: test.minModelReplicas, MaxReplicas: test.maxModelReplicas},
 					},
 				})
 				g.Expect(err).To(BeNil())
@@ -435,9 +451,15 @@ func TestServersStatusEvents(t *testing.T) {
 
 				g.Expect(ssr).ToNot(BeNil())
 				g.Expect(ssr.ServerName).To(Equal("foo"))
-
 				g.Expect(s.serverEventStream.streams).To(HaveLen(1))
-				g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_StatusUpdate))
+
+				if test.desiredModelReplicas > 0 {
+					g.Expect(ssr.ExpectedReplicas).To(Equal(int32(test.desiredModelReplicas)))
+					g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_ScalingRequest))
+				} else {
+					g.Expect(ssr.ExpectedReplicas).To(Equal(int32(0)))
+					g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_StatusUpdate))
+				}
 			}
 
 		})

@@ -21,7 +21,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
@@ -29,6 +28,7 @@ import (
 	testing_utils "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 type mockScheduler struct{}
@@ -952,7 +952,7 @@ func TestAutoscalingEnabled(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			enabled := AutoscalingEnabled(test.model)
+			enabled := util.AutoscalingEnabled(test.model.DeploymentSpec.MinReplicas, test.model.DeploymentSpec.MaxReplicas)
 			g.Expect(enabled).To(Equal(test.enabled))
 		})
 	}
@@ -1009,13 +1009,13 @@ func TestSubscribe(t *testing.T) {
 
 	getStream := func(id uint32, context context.Context, port int) *grpc.ClientConn {
 		conn, _ := grpc.NewClient(fmt.Sprintf(":%d", port), grpc.WithTransportCredentials(insecure.NewCredentials()))
-		grpcClient := agent.NewAgentServiceClient(conn)
+		grpcClient := pb.NewAgentServiceClient(conn)
 		_, _ = grpcClient.Subscribe(
 			context,
-			&agent.AgentSubscribeRequest{
+			&pb.AgentSubscribeRequest{
 				ServerName:           "dummy",
 				ReplicaIdx:           id,
-				ReplicaConfig:        &agent.ReplicaConfig{},
+				ReplicaConfig:        &pb.ReplicaConfig{},
 				Shared:               true,
 				AvailableMemoryBytes: 0,
 			},

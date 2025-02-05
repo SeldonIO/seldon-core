@@ -16,6 +16,7 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest, stream pb.Scheduler_SubscribeModelStatusServer) error {
@@ -202,6 +203,7 @@ func (s *SchedulerServer) updateServerModelsStatus(evt coordinator.ModelEventMsg
 	latestModel := model.GetLatest()
 
 	if latestModel != nil && latestModel.GetVersion() == evt.ModelVersion &&
+		util.AutoscalingEnabled(latestModel.GetDeploymentSpec().MinReplicas, latestModel.GetDeploymentSpec().MaxReplicas) &&
 		latestModel.DesiredReplicas() > int(latestModel.ModelState().AvailableReplicas) {
 		err := s.incrementExpectedReplicas(latestModel)
 		if err != nil {
