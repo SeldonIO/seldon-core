@@ -46,7 +46,7 @@ func TestNewOAuthStoreWithSecret(t *testing.T) {
 			fieldScope:        []byte(expectedExisting.Scope),
 		},
 	}
-	clientset := fake.NewSimpleClientset(secret)
+	clientset := fake.NewClientset(secret)
 
 	prefix := "prefix"
 	t.Setenv(prefix+envSecretSuffix, secret.Name)
