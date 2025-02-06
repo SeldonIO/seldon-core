@@ -38,11 +38,11 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository == 'SeldonIO/seldon-core' # Do not run this on forks.
     steps:
-      - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
           cache: false
+          
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
@@ -53,12 +53,12 @@ jobs:
           remove-docker-images: 'true'
           overprovision-lvm: 'true'
           swap-size-mb: 1024
-
-      - name: build-api
-        run: make -C apis clean-go build-go
           
       - name: Checkout Git Commit
         uses: actions/checkout@v4
+
+      - name: build-api
+        run: make -C apis clean-go build-go
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
