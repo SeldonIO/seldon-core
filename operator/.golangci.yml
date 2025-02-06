@@ -36,9 +36,7 @@ linters:
     - govet
     - misspell
     - staticcheck
-    - structcheck
     - typecheck
-    - varcheck
 
 linters-settings:
   errcheck:
