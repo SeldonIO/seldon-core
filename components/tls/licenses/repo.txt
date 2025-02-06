@@ -5,6 +5,7 @@ AlecAivazis/survey
 Azure/azure-sdk-for-go
 Azure/go-ansiterm
 AzureAD/microsoft-authentication-library-for-go
+GoogleCloudPlatform/opentelemetry-operations-go
 Masterminds/semver
 Microsoft/go-winio
 Microsoft/hcsshim
@@ -13,7 +14,6 @@ acarl005/stripansi
 actgardner/gogen-avro
 alecthomas/kingpin
 alecthomas/units
-antlr/antlr4
 antlr4-go/antlr
 armon/go-socks5
 asaskevich/govalidator
@@ -43,7 +43,6 @@ coreos/go-semver
 coreos/go-systemd
 cpuguy83/dockercfg
 cpuguy83/go-md2man
-creack/pty
 davecgh/go-spew
 distribution/reference
 docker/buildx
@@ -66,9 +65,8 @@ felixge/httpsnoop
 fsnotify/fsevents
 fsnotify/fsnotify
 fvbommel/sortorder
+fxamacker/cbor
 go-jose/go-jose
-go-kit/log
-go-logfmt/logfmt
 go-logr/logr
 go-logr/stdr
 go-logr/zapr
@@ -131,7 +129,6 @@ kisielk/errcheck
 kisielk/gotool
 klauspost/compress
 kr/pretty
-kr/pty
 kr/text
 kylelemons/godebug
 lufia/plan9stats
@@ -159,7 +156,6 @@ morikuni/aec
 munnerz/goautoneg
 mwitkow/go-conntrack
 mxk/go-flowrate
-natefinch/lumberjack
 onsi/ginkgo
 onsi/gomega
 opencontainers/go-digest
@@ -212,6 +208,7 @@ tonistiigi/fsutil
 tonistiigi/units
 tonistiigi/vt100
 wk8/go-ordered-map
+x448/float16
 xeipuuv/gojsonpointer
 xeipuuv/gojsonreference
 xeipuuv/gojsonschema
@@ -223,4 +220,5 @@ yusufpapurcu/wmi
 https://github.com/golang/go
 go-check/check
 go-inf/inf
+natefinch/lumberjack
 go-yaml/yaml
