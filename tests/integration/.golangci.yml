@@ -49,3 +49,6 @@ linters-settings:
       - prefix(github.com/seldonio/seldon-core/tests/integration)
   goconst:
     min-occurrences: 5
+  govet:
+    disable:
+      - printf

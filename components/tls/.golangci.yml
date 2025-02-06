@@ -49,3 +49,6 @@ linters-settings:
       - prefix(github.com/seldonio/seldon-core/components/tls)
   goconst:
     min-occurrences: 5
+  govet:
+    disable:
+      - printf
