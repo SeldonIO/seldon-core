@@ -4,6 +4,7 @@ cloud.google.com/go
 cloud.google.com/go/compute
 cloud.google.com/go/compute/metadata
 cloud.google.com/go/logging
+cloud.google.com/go/longrunning
 dario.cat/mergo
 github.com/AdaLogics/go-fuzz-headers
 github.com/AlecAivazis/survey/v2
@@ -14,6 +15,7 @@ github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azkeys
 github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/internal
 github.com/Azure/go-ansiterm
 github.com/AzureAD/microsoft-authentication-library-for-go
+github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp
 github.com/Masterminds/semver/v3
 github.com/Microsoft/go-winio
 github.com/Microsoft/hcsshim
@@ -22,7 +24,6 @@ github.com/acarl005/stripansi
 github.com/actgardner/gogen-avro/v10
 github.com/alecthomas/kingpin/v2
 github.com/alecthomas/units
-github.com/antlr/antlr4/runtime/Go/antlr/v4
 github.com/antlr4-go/antlr/v4
 github.com/armon/go-socks5
 github.com/asaskevich/govalidator
@@ -64,7 +65,6 @@ github.com/coreos/go-semver
 github.com/coreos/go-systemd/v22
 github.com/cpuguy83/dockercfg
 github.com/cpuguy83/go-md2man/v2
-github.com/creack/pty
 github.com/davecgh/go-spew
 github.com/distribution/reference
 github.com/docker/buildx
@@ -88,9 +88,8 @@ github.com/felixge/httpsnoop
 github.com/fsnotify/fsevents
 github.com/fsnotify/fsnotify
 github.com/fvbommel/sortorder
+github.com/fxamacker/cbor/v2
 github.com/go-jose/go-jose/v4
-github.com/go-kit/log
-github.com/go-logfmt/logfmt
 github.com/go-logr/logr
 github.com/go-logr/stdr
 github.com/go-logr/zapr
@@ -98,7 +97,7 @@ github.com/go-ole/go-ole
 github.com/go-openapi/jsonpointer
 github.com/go-openapi/jsonreference
 github.com/go-openapi/swag
-github.com/go-task/slim-sprig
+github.com/go-task/slim-sprig/v3
 github.com/go-viper/mapstructure/v2
 github.com/goccy/go-json
 github.com/gofrs/flock
@@ -156,7 +155,6 @@ github.com/kisielk/errcheck
 github.com/kisielk/gotool
 github.com/klauspost/compress
 github.com/kr/pretty
-github.com/kr/pty
 github.com/kr/text
 github.com/kylelemons/godebug
 github.com/lufia/plan9stats
@@ -167,7 +165,6 @@ github.com/mattn/go-isatty
 github.com/mattn/go-runewidth
 github.com/mattn/go-shellwords
 github.com/matttproud/golang_protobuf_extensions
-github.com/matttproud/golang_protobuf_extensions/v2
 github.com/mgutz/ansi
 github.com/miekg/pkcs11
 github.com/mitchellh/go-homedir
@@ -189,7 +186,6 @@ github.com/morikuni/aec
 github.com/munnerz/goautoneg
 github.com/mwitkow/go-conntrack
 github.com/mxk/go-flowrate
-github.com/natefinch/lumberjack
 github.com/onsi/ginkgo/v2
 github.com/onsi/gomega
 github.com/opencontainers/go-digest
@@ -243,6 +239,7 @@ github.com/tonistiigi/fsutil
 github.com/tonistiigi/units
 github.com/tonistiigi/vt100
 github.com/wk8/go-ordered-map/v2
+github.com/x448/float16
 github.com/xeipuuv/gojsonpointer
 github.com/xeipuuv/gojsonreference
 github.com/xeipuuv/gojsonschema
@@ -260,6 +257,7 @@ go.etcd.io/etcd/pkg/v3
 go.etcd.io/etcd/raft/v3
 go.etcd.io/etcd/server/v3
 go.opencensus.io
+go.opentelemetry.io/contrib/detectors/gcp
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc
 go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace
 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
@@ -302,11 +300,12 @@ google.golang.org/grpc
 google.golang.org/protobuf
 gopkg.in/cenkalti/backoff.v1
 gopkg.in/check.v1
+gopkg.in/evanphx/json-patch.v4
 gopkg.in/inf.v0
 gopkg.in/natefinch/lumberjack.v2
 gopkg.in/yaml.v2
 gopkg.in/yaml.v3
-gotest.tools
+gotest.tools/v3
 istio.io/pkg
 k8s.io/api
 k8s.io/apiextensions-apiserver
@@ -315,7 +314,7 @@ k8s.io/apiserver
 k8s.io/client-go
 k8s.io/code-generator
 k8s.io/component-base
-k8s.io/gengo
+k8s.io/gengo/v2
 k8s.io/klog/v2
 k8s.io/kms
 k8s.io/kube-openapi
