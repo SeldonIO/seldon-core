@@ -53,6 +53,9 @@ jobs:
           remove-docker-images: 'true'
           overprovision-lvm: 'true'
           swap-size-mb: 1024
+
+      - name: build-api
+        run: make -C apis clean-go build-go
           
       - name: Checkout Git Commit
         uses: actions/checkout@v4
