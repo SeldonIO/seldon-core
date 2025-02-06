@@ -779,6 +779,31 @@ func (m *MemoryStore) ServerNotify(request *pb.ServerNotify) error {
 	return nil
 }
 
+func (m *MemoryStore) numEmptyServerReplicas(serverName string) (uint32, error) {
+	emptyReplicas := uint32(0)
+	server, ok := m.store.servers[serverName]
+	if !ok {
+		return emptyReplicas, fmt.Errorf("Failed to find server %s", serverName)
+	}
+	for _, replica := range server.replicas {
+		if len(replica.GetLoadedOrLoadingModelVersions()) == 0 {
+			emptyReplicas++
+		}
+	}
+	return emptyReplicas, nil
+}
+
+func (m *MemoryStore) maxNumModelReplicas(serverName string) uint32 {
+	maxNumModels := uint32(0)
+	for _, model := range m.store.models {
+		latest := model.Latest()
+		if latest != nil && latest.Server() == serverName {
+			maxNumModels = max(maxNumModels, uint32(latest.DesiredReplicas()))
+		}
+	}
+	return maxNumModels
+}
+
 func toSchedulerLoadedModels(agentLoadedModels []*agent.ModelVersion) map[ModelVersionID]bool {
 	loadedModels := make(map[ModelVersionID]bool)
 	for _, modelVersionReq := range agentLoadedModels {
