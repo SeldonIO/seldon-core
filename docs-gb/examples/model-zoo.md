@@ -314,13 +314,34 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+
+```bash
+kubectl apply -f ./models/income-xgb.yaml
+```
+
+```
+model.mlops.seldon.io/income-xgb is created
+```
+
+```json
+kubectl wait --for condition=ready --timeout=300s model income-xgb -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/income-xgb condition met
+```
+
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model load -f ./models/income-xgb.yaml
 ```
 
 ```json
 {}
-
 ```
 
 ```bash
@@ -329,8 +350,9 @@ seldon model status income-xgb -w ModelAvailable | jq -M .
 
 ```json
 {}
-
 ```
+{% endtab %}
+{% endtabs %}
 
 ```bash
 seldon model infer income-xgb \
@@ -360,14 +382,23 @@ seldon model infer income-xgb \
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl delete -f ./models/income-xgb.yaml
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model unload income-xgb
 ```
 
 ```json
 {}
-
 ```
+{% endtab %}
+{% endtabs %}
 
 ## ONNX MNIST Model
 
