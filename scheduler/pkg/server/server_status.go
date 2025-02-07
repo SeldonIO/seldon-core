@@ -194,6 +194,16 @@ func (s *SchedulerServer) handleModelEventForServerStatus(event coordinator.Mode
 	}
 }
 
+func (s *SchedulerServer) handleServerEvents(event coordinator.ServerEventMsg) {
+	logger := s.logger.WithField("func", "handleServerEvent")
+	logger.Debugf("Got server state %s change for %s", event.ServerName, event.String())
+
+	server, _ := s.modelStore.GetServer(event.ServerName, true, true)
+	if server.Stats.ScaleDownFlag {
+		logger.Infof("Server %s is scaling down", event.ServerName)
+	}
+}
+
 func (s *SchedulerServer) StopSendServerEvents() {
 	s.serverEventStream.mu.Lock()
 	defer s.serverEventStream.mu.Unlock()

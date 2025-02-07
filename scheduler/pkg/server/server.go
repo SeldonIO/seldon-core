@@ -249,7 +249,7 @@ func NewSchedulerServer(
 		serverEventHandlerName,
 		pendingEventsQueueSize,
 		s.logger,
-		s.handleServerEvent,
+		s.handleServerEvents,
 	)
 
 	return s
