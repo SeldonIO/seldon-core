@@ -37,18 +37,18 @@ spec:
 {% tab title="kubectl" %}
 
 ```bash
-seldon model load -f ./models/sklearn-iris-gs.yaml
+kubectl apply -f ./models/sklearn-iris-gs.yaml
 ```
-```bash
+```
 model.mlops.seldon.io/iris created
 ```
 
 ```bash
-kubectl get model iris -n ${NAMESPACE} -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
+kubectl wait --for condition=ready --timeout=300s model iris -n ${NAMESPACE}
 ```
 
-```bash
-True
+```
+model.mlops.seldon.io/iris condition met
 ```
 
 ```bash
@@ -81,7 +81,7 @@ curl --location 'http://${MESH_IP}:9000/v2/models/iris/infer' \
 ```
 
 ```bash
-kubectl delete  model iris
+kubectl delete -f ./models/sklearn-iris-gs.yaml
 ```
 {% endtab %}
 
@@ -93,7 +93,6 @@ seldon model load -f ./models/sklearn-iris-gs.yaml
 
 ```json
 {}
-
 ```
 
 ```bash
@@ -102,7 +101,6 @@ seldon model status iris -w ModelAvailable | jq -M .
 
 ```json
 {}
-
 ```
 
 ```bash
@@ -279,7 +277,7 @@ car
 {% tabs %}
 {% tab title="kubectl" %}
 ```bash 
-kubectl delete model cifar10
+kubectl delete -f ./models/cifar10-no-config.yaml
 ```
 {% endtab %}
 
@@ -464,23 +462,37 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ./models/mnist-onnx.yaml
+```
+```
+model.mlops.seldon.io/mnist-onnx created
+```
+```bash
+kubectl wait --for condition=ready --timeout=300s model mnist-onnx -n ${NAMESPACE}
+```
+```
+model.mlops.seldon.io/mnist-onnx condition met
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model load -f ./models/mnist-onnx.yaml
 ```
-
 ```json
 {}
-
 ```
-
 ```bash
 seldon model status mnist-onnx -w ModelAvailable | jq -M .
 ```
-
 ```json
 {}
-
 ```
+{% endtab %}
+{% endtabs %}
 
 ```python
 infer_mnist()
