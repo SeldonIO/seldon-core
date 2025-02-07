@@ -614,17 +614,16 @@ spec:
 kubectl apply -f ./models/wine-mlflow.yaml
 ```
 
-```bash
+```
 model.mlops.seldon.io/wine created
 ```
 
 ```bash
-kubectl get model wine -n ${NAMESPACE} -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
+kubectl wait --for condition=ready --timeout=300s model wine -n ${NAMESPACE}
 ```
 
-```bash
-True
-
+```
+model.mlops.seldon.io/wine condition met
 ```
 
 {% endtab %}
@@ -637,7 +636,6 @@ seldon model load -f ./models/wine-mlflow.yaml
 
 ```json
 {}
-
 ```
 
 ```bash
@@ -746,15 +744,16 @@ kubectl delete model wine
 ```bash
 seldon model unload wine
 ```
+```json
+{}
+
+```
 {% endtab %}
 {% endtabs %}
 
 
 
-```json
-{}
 
-```
 
 ## Pytorch MNIST Model
 
