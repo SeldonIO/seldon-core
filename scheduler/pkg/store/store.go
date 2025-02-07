@@ -22,6 +22,11 @@ type ServerSnapshot struct {
 	MinReplicas      int
 	MaxReplicas      int
 	KubernetesMeta   *pb.KubernetesMeta
+	Stats            *ServerStats
+}
+
+type ServerStats struct {
+	ScaleDownFlag bool
 }
 
 func (s *ServerSnapshot) String() string {

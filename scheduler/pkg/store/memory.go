@@ -238,7 +238,14 @@ func (m *MemoryStore) GetServer(serverKey string, shallow bool, modelDetails boo
 	if server == nil {
 		return nil, fmt.Errorf("Server [%s] not found", serverKey)
 	} else {
-		return server.CreateSnapshot(shallow, modelDetails), nil
+		// TODO: refactor cleanly
+		snapshot := server.CreateSnapshot(shallow, modelDetails)
+		if modelDetails {
+			snapshot.Stats = &ServerStats{
+				ScaleDownFlag: m.numEmptyServerReplicas(serverKey) > 0 || m.maxNumModelReplicasForServer(serverKey) < server.NumReplicas(),
+			}
+		}
+		return snapshot, nil
 	}
 }
 
@@ -779,21 +786,21 @@ func (m *MemoryStore) ServerNotify(request *pb.ServerNotify) error {
 	return nil
 }
 
-func (m *MemoryStore) numEmptyServerReplicas(serverName string) (uint32, error) {
+func (m *MemoryStore) numEmptyServerReplicas(serverName string) uint32 {
 	emptyReplicas := uint32(0)
 	server, ok := m.store.servers[serverName]
 	if !ok {
-		return emptyReplicas, fmt.Errorf("Failed to find server %s", serverName)
+		return emptyReplicas
 	}
 	for _, replica := range server.replicas {
 		if len(replica.GetLoadedOrLoadingModelVersions()) == 0 {
 			emptyReplicas++
 		}
 	}
-	return emptyReplicas, nil
+	return emptyReplicas
 }
 
-func (m *MemoryStore) maxNumModelReplicas(serverName string) uint32 {
+func (m *MemoryStore) maxNumModelReplicasForServer(serverName string) uint32 {
 	maxNumModels := uint32(0)
 	for _, model := range m.store.models {
 		latest := model.Latest()
