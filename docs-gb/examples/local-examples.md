@@ -27,9 +27,9 @@ Load the model
 
 {% tab title="kubectl" %}
 ```bash
-kubectl apply -f ./models/sklearn-iris-gs.yaml
+kubectl apply -f ./models/sklearn-iris-gs.yaml -n ${NAMESPACE}
 ```
-```bash
+```
 model.mlops.seldon.io/iris created
 ```
 {% endtab %}
@@ -76,7 +76,7 @@ Do a REST inference call
 
 {% tab title="curl" %}
 ```bash
-curl --location 'http://${MESH_IP}:9000/v2/models/iris/infer' \
+curl --location 'http://${SELDON_INFER_HOST}/v2/models/iris/infer' \
 	--header 'Content-Type: application/json'  \
     --data '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
@@ -140,7 +140,7 @@ seldon model infer iris \
 {% endtabs %}
 
 
-Do a gRPC inference call
+Do a **gRPC** inference call
 
 ```bash
 seldon model infer iris --inference-mode grpc \
@@ -181,7 +181,7 @@ Unload the model
 
 {% tab title="kubectl" %}
 ```bash
-kubectl delete model iris
+kubectl delete -f ./models/sklearn-iris-gs.yaml -n ${NAMESPACE}
 ```
 {% endtab %}
 
@@ -221,7 +221,7 @@ Load the model.
 
 {% tab title="kubectl" %}
 ```bash
-kubectl apply -f ./models/tfsimple1.yaml
+kubectl apply -f ./models/tfsimple1.yaml -n ${NAMESPACE}
 ```
 ```bash
 model.mlops.seldon.io/tfsimple1 created
@@ -272,7 +272,7 @@ Get model metadata
 {% tab title="curl" %}
 
 ```bash
-curl --location 'http://${MESH_IP}:9000/v2/models/tfsimple1'
+curl --location 'http://${SELDON_INFER_HOST}/v2/models/tfsimple1'
 ```
 
 ```json
@@ -387,7 +387,7 @@ Do a REST inference call.
 
 {% tab title="curl" %}
 ```bash
-curl --location 'http://${MESH_IP}:9000/v2/models/iris/infer' \
+curl --location 'http://${SELDON_INFER_HOST}/v2/models/iris/infer' \
 	--header 'Content-Type: application/json'  \
     --data '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
@@ -666,8 +666,8 @@ Load both models.
 
 {% tab title="kubectl" %}
 ```bash
-kubectl apply -f ./models/sklearn1.yaml
-kubectl apply -f ./models/sklearn2.yaml
+kubectl apply -f ./models/sklearn1.yaml -n ${NAMESPACE}
+kubectl apply -f ./models/sklearn2.yaml -n ${NAMESPACE}
 ```
 
 ```bash
@@ -855,10 +855,22 @@ Success: map[:iris2_1::57 :iris_1::43]
 
 Run one more request
 
+{% tabs %}
+{% tab title="curl" %}
+```bash
+curl --location 'http://${SELDON_INFER_HOST}/v2/models/iris/infer' \
+	  --header 'Content-Type: application/json'  \
+    --data '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model infer iris \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
+{% endtab %}
+{% endtabs %}
 
 ```json
 {
@@ -889,15 +901,30 @@ seldon model infer iris \
 Use sticky session key passed by last infer request to ensure same route is taken each time.
 We will test REST and gRPC.
 
+{% tabs %}
+{% tab title="curl" %}
+```bash
+curl --location 'http://${SELDON_INFER_HOST}/v2/models/iris/infer' \
+	  --header 'Content-Type: application/json'  \
+    --data '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model infer iris -s -i 50 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ```
 Success: map[:iris_1::50]
 
 ```
+
+gPRC
 
 ```bash
 seldon model infer iris --inference-mode grpc -s -i 50\
@@ -917,10 +944,23 @@ seldon experiment stop experiment-sample
 
 Show the requests all go to original model now.
 
+{% tabs %}
+{% tab title="curl" %}
+```bash
+curl --location 'http://${SELDON_INFER_HOST}/v2/models/iris/infer' \
+	  --header 'Content-Type: application/json'  \
+    --data '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model infer iris -i 100 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ```
 Success: map[:iris_1::100]
@@ -935,8 +975,8 @@ Unload both models.
 
 {% tab title="kubectl" %}
 ```bash
-kubectl delete model iris
-kubectl delete model iris2
+kubectl delete -f ./models/sklearn1.yaml -n ${NAMESPACE}
+kubectl delete -f ./models/sklearn2.yaml -n ${NAMESPACE}
 ```
 {% endtab %}
 
