@@ -331,6 +331,38 @@ kubectl wait --for condition=ready --timeout=300s model income-xgb -n ${NAMESPAC
 model.mlops.seldon.io/income-xgb condition met
 ```
 
+```bash
+curl --location 'http://${MESH_IP}:9000/v2/models/income-xgb/infer' \
+	--header 'Content-Type: application/json'  \
+    --data '{ "parameters": {"content_type": "pd"}, "inputs": [{"name": "Age", "shape": [1, 1], "datatype": "INT64", "data": [47]},{"name": "Workclass", "shape": [1, 1], "datatype": "INT64", "data": [4]},{"name": "Education", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Marital Status", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Occupation", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Relationship", "shape": [1, 1], "datatype": "INT64", "data": [3]},{"name": "Race", "shape": [1, 1], "datatype": "INT64", "data": [4]},{"name": "Sex", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Capital Gain", "shape": [1, 1], "datatype": "INT64", "data": [0]},{"name": "Capital Loss", "shape": [1, 1], "datatype": "INT64", "data": [0]},{"name": "Hours per week", "shape": [1, 1], "datatype": "INT64", "data": [40]},{"name": "Country", "shape": [1, 1], "datatype": "INT64", "data": [9]}]}'
+```
+
+```json
+{
+	"model_name": "income-lgb_1",
+	"model_version": "1",
+	"id": "4437a71e-9af1-4e3b-aa4b-cb95d2cd86b9",
+	"parameters": {},
+	"outputs": [
+		{
+			"name": "predict",
+			"shape": [
+				1,
+				1
+			],
+			"datatype": "FP64",
+			"data": [
+				0.06279460120044741
+			]
+		}
+	]
+}
+```
+
+```bash
+kubectl delete -f ./models/income-xgb.yaml
+```
+
 {% endtab %}
 
 {% tab title="seldon-cli" %}
@@ -349,9 +381,6 @@ seldon model status income-xgb -w ModelAvailable | jq -M .
 ```json
 {}
 ```
-{% endtab %}
-{% endtabs %}
-
 ```bash
 seldon model infer income-xgb \
   '{ "parameters": {"content_type": "pd"}, "inputs": [{"name": "Age", "shape": [1, 1], "datatype": "INT64", "data": [47]},{"name": "Workclass", "shape": [1, 1], "datatype": "INT64", "data": [4]},{"name": "Education", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Marital Status", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Occupation", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Relationship", "shape": [1, 1], "datatype": "INT64", "data": [3]},{"name": "Race", "shape": [1, 1], "datatype": "INT64", "data": [4]},{"name": "Sex", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Capital Gain", "shape": [1, 1], "datatype": "INT64", "data": [0]},{"name": "Capital Loss", "shape": [1, 1], "datatype": "INT64", "data": [0]},{"name": "Hours per week", "shape": [1, 1], "datatype": "INT64", "data": [40]},{"name": "Country", "shape": [1, 1], "datatype": "INT64", "data": [9]}]}'
@@ -379,15 +408,6 @@ seldon model infer income-xgb \
 }
 
 ```
-
-{% tabs %}
-{% tab title="kubectl" %}
-```bash
-kubectl delete -f ./models/income-xgb.yaml
-```
-{% endtab %}
-
-{% tab title="seldon-cli" %}
 ```bash
 seldon model unload income-xgb
 ```
@@ -397,6 +417,7 @@ seldon model unload income-xgb
 ```
 {% endtab %}
 {% endtabs %}
+
 
 ## ONNX MNIST Model
 
