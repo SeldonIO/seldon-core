@@ -190,7 +190,7 @@ spec:
 {% tabs %}
 {% tab title="kubectl" %}
 ```bash
-kubectl apply -f ../../pipelines/income.yaml
+kubectl apply -f ../../pipelines/income.yaml -n ${NAMESPACE}
 ```
 ```
 pipeline.mlops.seldon.io/income created

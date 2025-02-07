@@ -649,8 +649,8 @@ kubectl delete -f ../../pipelines/speech-to-sentiment.yaml -n ${NAMESPACE}
 kubectl delete -f ../../pipelines/sentiment-explain.yaml -n ${NAMESPACE}
 kubectl delete -f ../../models/hf-whisper.yaml -n ${NAMESPACE}
 kubectl delete -f ../../models/hf-sentiment.yaml -n ${NAMESPACE}
-kubectl delete -f ../../models/hf-sentiment-input-transform.yaml
-kubectl delete -f ../../models/hf-sentiment-output-transform.yaml
+kubectl delete -f ../../models/hf-sentiment-input-transform.yaml -n ${NAMESPACE}
+kubectl delete -f ../../models/hf-sentiment-output-transform.yaml -n ${NAMESPACE}
 ```
 {% endtab %}
 
