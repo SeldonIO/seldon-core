@@ -418,20 +418,28 @@ KeyError: 0
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl delete -f ./models/moviesentiment-explainer.yaml -n ${NAMESPACE}
+```
+```bash
+kubectl delete -f ./models/moviesentiment.yaml -n ${NAMESPACE}
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model unload sentiment-explainer
 ```
-
 ```json
 {}
-
 ```
-
 ```bash
 seldon model unload sentiment
 ```
-
 ```json
 {}
-
 ```
+{% endtab %}
+{% endtabs %}
