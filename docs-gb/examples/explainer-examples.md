@@ -31,7 +31,7 @@ pipeline.mlops.seldon.io/income created
 kubectl wait --for condition=ready --timeout=300s model income -n ${NAMESPACE}
 ```
 
-```json
+```
 model.mlops.seldon.io/income condition met
 ```
 
@@ -140,7 +140,7 @@ spec:
 kubectl apply -f ./models/income-explainer.yaml -n ${NAMESPACE}
 ```
 
-```json
+```
 model.mlops.seldon.io/income-explainer created
 ```
 
@@ -148,7 +148,7 @@ model.mlops.seldon.io/income-explainer created
 kubectl wait --for condition=ready --timeout=300s model income-explainer -n ${NAMESPACE}
 ```
 
-```json
+```
 model.mlops.seldon.io/income-explainer condition met
 ```
 
@@ -290,7 +290,7 @@ spec:
 kubectl apply -f ./models/moviesentiment.yaml -n ${NAMESPACE}
 ```
 
-```json
+```
 model.mlops.seldon.io/sentiment created
 ```
 
@@ -298,7 +298,7 @@ model.mlops.seldon.io/sentiment created
 kubectl wait --for condition=ready --timeout=300s model sentiment -n ${NAMESPACE}
 ```
 
-```json
+```
 model.mlops.seldon.io/sentiment condition met
 ```
 
@@ -413,7 +413,7 @@ spec:
 kubectl apply -f ./models/moviesentiment-explainer.yaml -n ${NAMESPACE}
 ```
 
-```json
+```
 model.mlops.seldon.io/sentiment-explainer created
 ```
 
@@ -421,7 +421,7 @@ model.mlops.seldon.io/sentiment-explainer created
 kubectl wait --for condition=ready --timeout=300s model sentiment-explainer -n ${NAMESPACE}
 ```
 
-```json
+```
 model.mlops.seldon.io/sentiment-explainer condition met
 ```
 
