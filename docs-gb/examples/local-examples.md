@@ -226,7 +226,7 @@ Load the model.
 ```bash
 kubectl apply -f ./models/tfsimple1.yaml -n ${NAMESPACE}
 ```
-```bash
+```
 model.mlops.seldon.io/tfsimple1 created
 ```
 {% endtab %}
@@ -249,10 +249,10 @@ Wait for the model to be ready.
 
 {% tab title="kubectl" %}
 ```bash
-kubectl get model tfsimple1 -n ${NAMESPACE} -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
+kubectl wait --for condition=ready --timeout=300s model tfsimple1 -n ${NAMESPACE}
 ```
 ```bash
-True
+model.mlops.seldon.io/tfsimple1 condition met
 ```
 {% endtab %}
 
@@ -612,7 +612,10 @@ Unload the model
 
 {% tab title="kubectl" %}
 ```bash
-kubectl delete model tfsimple1
+kubectl delete -f ./models/tfsimple1.yaml -n ${NAMESPACE}
+```
+```
+model.mlops.seldon.io "tfsimple1" deleted
 ```
 {% endtab %}
 
@@ -666,7 +669,6 @@ Load both models.
 
 
 {% tabs %}
-
 {% tab title="kubectl" %}
 ```bash
 kubectl apply -f ./models/sklearn1.yaml -n ${NAMESPACE}
@@ -689,7 +691,6 @@ seldon model load -f ./models/sklearn2.yaml
 {}
 ```
 {% endtab %}
-
 {% endtabs %}
 
 
@@ -698,16 +699,15 @@ Wait for both models to be ready.
 
 
 {% tabs %}
-
 {% tab title="kubectl" %}
 ```bash
-kubectl get model sklearn1 -n seldon-mesh -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
-kubectl get model sklearn2 -n seldon-mesh -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
+kubectl wait --for condition=ready --timeout=300s model iris -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s model iris2 -n ${NAMESPACE}
 ```
 
-```bash
-True
-True
+```
+model.mlops.seldon.io/iris condition met
+model.mlops.seldon.io/iris2 condition met
 ```
 {% endtab %}
 
@@ -793,7 +793,6 @@ seldon model status iris2 | jq -M .
 
 ```
 {% endtab %}
-
 {% endtabs %}
 
 
