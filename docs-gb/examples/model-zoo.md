@@ -575,7 +575,7 @@ model.mlops.seldon.io/income-lgb created
 ```
 
 ```bash
-seldon model status income-lgb -w ModelAvailable | jq -M .
+kubectl wait --for condition=ready --timeout=300s model income-lgb -n ${NAMESPACE}
 ```
 
 ```
@@ -909,15 +909,14 @@ kubectl apply -f ./models/mnist-pytorch.yaml -n ${NAMESPACE}
 
 ```
 model.mlops.seldon.io/mnist-pytorch created
-
 ```
 
 ```bash
-kubectl get model mnist-pytorch -n ${NAMESPACE} -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
+kubectl wait --for condition=ready --timeout=300s model mnist-pytorch -n ${NAMESPACE}
 ```
 
 ```
-True
+model.mlops.seldon.io/mnist-pytorch condition met
 ```
 {% endtab %}
 
