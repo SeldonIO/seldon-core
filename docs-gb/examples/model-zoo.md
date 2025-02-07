@@ -960,6 +960,9 @@ infer_mnist()
 ```bash
 kubectl delete -f ./models/mnist-pytorch.yaml -n ${NAMESPACE}
 ```
+```
+model.mlops.seldon.io "mnist-pytorch" deleted
+```
 {% endtab %}
 
 {% tab title="seldon-cli" %}
