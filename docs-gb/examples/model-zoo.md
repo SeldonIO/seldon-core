@@ -37,7 +37,7 @@ spec:
 {% tab title="kubectl" %}
 
 ```bash
-kubectl apply -f ./models/sklearn-iris-gs.yaml
+kubectl apply -f ./models/sklearn-iris-gs.yaml -n ${NAMESPACE}
 ```
 ```
 model.mlops.seldon.io/iris created
@@ -52,7 +52,7 @@ model.mlops.seldon.io/iris condition met
 ```
 
 ```bash
-curl --location 'http://${MESH_IP}:9000/v2/models/iris/infer' \
+curl --location 'http://${SELDON_INFER_HOST}/v2/models/iris/infer' \
 	--header 'Content-Type: application/json'  \
     --data '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
@@ -81,7 +81,7 @@ curl --location 'http://${MESH_IP}:9000/v2/models/iris/infer' \
 ```
 
 ```bash
-kubectl delete -f ./models/sklearn-iris-gs.yaml
+kubectl delete -f ./models/sklearn-iris-gs.yaml -n ${NAMESPACE}
 ```
 {% endtab %}
 
@@ -233,7 +233,7 @@ spec:
 {% tabs %}
 {% tab title="kubectl" %}
 ```bash
-kubectl apply -f ./models/cifar10-no-config.yaml
+kubectl apply -f ./models/cifar10-no-config.yaml -n ${NAMESPACE}
 ```
 ```
 model.mlops.seldon.io/cifar10 created
@@ -277,7 +277,7 @@ car
 {% tabs %}
 {% tab title="kubectl" %}
 ```bash 
-kubectl delete -f ./models/cifar10-no-config.yaml
+kubectl delete -f ./models/cifar10-no-config.yaml -n ${NAMESPACE}
 ```
 {% endtab %}
 
@@ -316,7 +316,7 @@ spec:
 {% tab title="kubectl" %}
 
 ```bash
-kubectl apply -f ./models/income-xgb.yaml
+kubectl apply -f ./models/income-xgb.yaml -n ${NAMESPACE}
 ```
 
 ```
@@ -332,7 +332,7 @@ model.mlops.seldon.io/income-xgb condition met
 ```
 
 ```bash
-curl --location 'http://${MESH_IP}:9000/v2/models/income-xgb/infer' \
+curl --location 'http://${SELDON_INFER_HOST}/v2/models/income-xgb/infer' \
 	--header 'Content-Type: application/json'  \
     --data '{ "parameters": {"content_type": "pd"}, "inputs": [{"name": "Age", "shape": [1, 1], "datatype": "INT64", "data": [47]},{"name": "Workclass", "shape": [1, 1], "datatype": "INT64", "data": [4]},{"name": "Education", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Marital Status", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Occupation", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Relationship", "shape": [1, 1], "datatype": "INT64", "data": [3]},{"name": "Race", "shape": [1, 1], "datatype": "INT64", "data": [4]},{"name": "Sex", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Capital Gain", "shape": [1, 1], "datatype": "INT64", "data": [0]},{"name": "Capital Loss", "shape": [1, 1], "datatype": "INT64", "data": [0]},{"name": "Hours per week", "shape": [1, 1], "datatype": "INT64", "data": [40]},{"name": "Country", "shape": [1, 1], "datatype": "INT64", "data": [9]}]}'
 ```
@@ -360,7 +360,7 @@ curl --location 'http://${MESH_IP}:9000/v2/models/income-xgb/infer' \
 ```
 
 ```bash
-kubectl delete -f ./models/income-xgb.yaml
+kubectl delete -f ./models/income-xgb.yaml -n ${NAMESPACE}
 ```
 
 {% endtab %}
@@ -486,7 +486,7 @@ spec:
 {% tabs %}
 {% tab title="kubectl" %}
 ```bash
-kubectl apply -f ./models/mnist-onnx.yaml
+kubectl apply -f ./models/mnist-onnx.yaml -n ${NAMESPACE}
 ```
 ```
 model.mlops.seldon.io/mnist-onnx created
@@ -530,7 +530,7 @@ infer_mnist()
 {% tabs %}
 {% tab title="kubectl" %}
 ```bash
-kubectl delete -f ./models/mnist-onnx.yaml
+kubectl delete -f ./models/mnist-onnx.yaml -n ${NAMESPACE}
 ```
 {% endtab %}
 
@@ -568,7 +568,7 @@ spec:
 {% tabs %}
 {% tab title="kubectl" %}
 ```bash
-kubectl apply -f ./models/income-lgb.yaml
+kubectl apply -f ./models/income-lgb.yaml -n ${NAMESPACE}
 ```
 ```
 model.mlops.seldon.io/income-lgb created
@@ -583,7 +583,7 @@ model.mlops.seldon.io/income-lgb condition met
 ```
 
 ```bash
-curl --location 'http://${MESH_IP}:9000/v2/models/income-lgb/infer' \
+curl --location 'http://${SELDON_INFER_HOST}/v2/models/income-lgb/infer' \
 	--header 'Content-Type: application/json'  \
     --data '{ "parameters": {"content_type": "pd"}, "inputs": [{"name": "Age", "shape": [1, 1], "datatype": "INT64", "data": [47]},{"name": "Workclass", "shape": [1, 1], "datatype": "INT64", "data": [4]},{"name": "Education", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Marital Status", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Occupation", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Relationship", "shape": [1, 1], "datatype": "INT64", "data": [3]},{"name": "Race", "shape": [1, 1], "datatype": "INT64", "data": [4]},{"name": "Sex", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Capital Gain", "shape": [1, 1], "datatype": "INT64", "data": [0]},{"name": "Capital Loss", "shape": [1, 1], "datatype": "INT64", "data": [0]},{"name": "Hours per week", "shape": [1, 1], "datatype": "INT64", "data": [40]},{"name": "Country", "shape": [1, 1], "datatype": "INT64", "data": [9]}]}'
 ```
@@ -611,7 +611,7 @@ curl --location 'http://${MESH_IP}:9000/v2/models/income-lgb/infer' \
 ```
 
 ```bash
-kubectl delete -f ./models/income-lgb.yaml
+kubectl delete -f ./models/income-lgb.yaml -n ${NAMESPACE}
 ```
 {% endtab %}
 
@@ -693,7 +693,7 @@ spec:
 {% tab title="kubectl" %}
 
 ```bash
-kubectl apply -f ./models/wine-mlflow.yaml
+kubectl apply -f ./models/wine-mlflow.yaml -n ${NAMESPACE}
 ```
 
 ```
@@ -818,7 +818,7 @@ print(response_raw.json())
 {% tabs %}
 {% tab title="kubectl" %}
 ```bash
-kubectl delete model wine
+kubectl delete model wine -n ${NAMESPACE}
 ```
 {% endtab %}
 
@@ -904,7 +904,7 @@ spec:
 {% tabs %}
 {% tab title="kubectl" %}
 ```bash
-kubectl apply -f ./models/mnist-pytorch.yaml
+kubectl apply -f ./models/mnist-pytorch.yaml -n ${NAMESPACE}
 ```
 
 ```
@@ -959,7 +959,7 @@ infer_mnist()
 {% tabs %}
 {% tab title="kubectl" %}
 ```bash
-kubectl delete model mnist-pytorch
+kubectl delete -f ./models/mnist-pytorch.yaml -n ${NAMESPACE}
 ```
 {% endtab %}
 
