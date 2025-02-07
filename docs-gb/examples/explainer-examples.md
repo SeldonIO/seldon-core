@@ -283,6 +283,60 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+
+```bash
+kubectl apply -f ./models/moviesentiment.yaml -n ${NAMESPACE}
+```
+
+```json
+model.mlops.seldon.io/sentiment created
+```
+
+```bash
+kubectl wait --for condition=ready --timeout=300s model sentiment -n ${NAMESPACE}
+```
+
+```json
+model.mlops.seldon.io/sentiment condition met
+```
+
+```bash
+curl --location 'http://${SELDON_INFER_HOST}/v2/models/iris/infer' \
+	--header 'Content-Type: application/json'  \
+    --data '{"parameters": {"content_type": "str"}, "inputs": [{"name": "foo", "data": ["I am good"], "datatype": "BYTES","shape": [1]}]}'
+```
+
+```json
+{
+	"model_name": "sentiment_2",
+	"model_version": "1",
+	"id": "f5c07363-7e9d-4f09-aa30-228c81fdf4a4",
+	"parameters": {},
+	"outputs": [
+		{
+			"name": "predict",
+			"shape": [
+				1,
+				1
+			],
+			"datatype": "INT64",
+			"parameters": {
+				"content_type": "np"
+			},
+			"data": [
+				0
+			]
+		}
+	]
+}
+
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+
 ```bash
 seldon model load -f ./models/moviesentiment.yaml
 ```
@@ -331,6 +385,9 @@ seldon model infer sentiment \
 }
 
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ```bash
 cat ./models/moviesentiment-explainer.yaml
@@ -348,6 +405,34 @@ spec:
     modelRef: sentiment
 
 ```
+
+{% tabs %}
+{% tab title="kubectl" %}
+
+```bash
+kubectl apply -f ./models/moviesentiment-explainer.yaml -n ${NAMESPACE}
+```
+
+```json
+model.mlops.seldon.io/sentiment-explainer created
+```
+
+```bash
+kubectl wait --for condition=ready --timeout=300s model sentiment-explainer -n ${NAMESPACE}
+```
+
+```json
+model.mlops.seldon.io/sentiment-explainer condition met
+```
+
+```bash
+curl --location 'http://${SELDON_INFER_HOST}/v2/models/iris/infer' \
+	--header 'Content-Type: application/json'  \
+    --data '{"parameters": {"content_type": "str"}, "inputs": [{"name": "foo", "data": ["I am good"], "datatype": "BYTES","shape": [1]}]}'
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 
 ```bash
 seldon model load -f ./models/moviesentiment-explainer.yaml
@@ -371,6 +456,9 @@ seldon model status sentiment-explainer -w ModelAvailable
 seldon model infer sentiment-explainer \
   '{"parameters": {"content_type": "str"}, "inputs": [{"name": "foo", "data": ["I am good"], "datatype": "BYTES","shape": [1]}]}'
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ```
 Error: V2 server error: 500 Traceback (most recent call last):
