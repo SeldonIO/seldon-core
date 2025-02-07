@@ -237,14 +237,14 @@ spec:
 ```bash
 kubectl apply -f ./models/cifar10-no-config.yaml
 ```
-```bash
+```
 model.mlops.seldon.io/cifar10 created
 ```
 ```bash
-kubectl get model cifar10 -n ${NAMESPACE} -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
+kubectl wait --for condition=ready --timeout=300s model cifar10 -n ${NAMESPACE}
 ```
-```bash
-True
+```
+model.mlops.seldon.io/cifar10 condition met
 ```
 {% endtab %}
 
@@ -325,7 +325,7 @@ kubectl apply -f ./models/income-xgb.yaml
 model.mlops.seldon.io/income-xgb is created
 ```
 
-```json
+```bash
 kubectl wait --for condition=ready --timeout=300s model income-xgb -n ${NAMESPACE}
 ```
 
@@ -826,7 +826,7 @@ spec:
 kubectl apply -f ./models/mnist-pytorch.yaml
 ```
 
-```bash
+```
 model.mlops.seldon.io/mnist-pytorch created
 
 ```
@@ -835,7 +835,7 @@ model.mlops.seldon.io/mnist-pytorch created
 kubectl get model mnist-pytorch -n ${NAMESPACE} -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
 ```
 
-```bash
+```
 True
 ```
 {% endtab %}
@@ -878,7 +878,7 @@ infer_mnist()
 {% tabs %}
 {% tab title="kubectl" %}
 ```bash
-kubectl delete model  mnist-pytorch
+kubectl delete model mnist-pytorch
 ```
 {% endtab %}
 
