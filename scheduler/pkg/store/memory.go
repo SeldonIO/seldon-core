@@ -241,6 +241,7 @@ func (m *MemoryStore) GetServer(serverKey string, shallow bool, modelDetails boo
 		// TODO: refactor cleanly
 		snapshot := server.CreateSnapshot(shallow, modelDetails)
 		if modelDetails {
+			// this is a hint to the caller that the server is in a state where it can be scaled down
 			snapshot.Stats = &ServerStats{
 				ScaleDownFlag: m.numEmptyServerReplicas(serverKey) > 0 || m.maxNumModelReplicasForServer(serverKey) < server.NumReplicas(),
 			}
