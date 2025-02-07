@@ -52,10 +52,10 @@ Wait for the model to be ready
 
 {% tab title="kubectl" %}
 ```bash
-kubectl get model iris -n ${NAMESPACE} -o json | jq -r '.status.conditions[] | select(.message == "ModelAvailable") | .status'
+kubectl wait --for condition=ready --timeout=300s model iris -n ${NAMESPACE}
 ```
-```bash
-True
+```
+model.mlops.seldon.io/iris condition met
 ```
 {% endtab %}
 
@@ -182,6 +182,9 @@ Unload the model
 {% tab title="kubectl" %}
 ```bash
 kubectl delete -f ./models/sklearn-iris-gs.yaml -n ${NAMESPACE}
+```
+```
+model.mlops.seldon.io "iris" deleted
 ```
 {% endtab %}
 
