@@ -179,19 +179,29 @@ func (s *SchedulerServer) handleServerEvents(event coordinator.ServerEventMsg) {
 	logger.Debugf("Got server state %s change for %s", event.ServerName, event.String())
 
 	server, _ := s.modelStore.GetServer(event.ServerName, true, true)
-	if server.Stats != nil {
-		stats := server.Stats
-		// 25% chance of trying to pack replicas if models are not fully packed
-		tryPack := false
-		rand := rand.Float32()
-		if rand > 0.75 {
-			if stats.MaxNumReplicaHostedModels < uint32(server.ExpectedReplicas) {
-				tryPack = true
+
+	scaleDownFlag := func() bool {
+		if server.Stats != nil {
+			stats := server.Stats
+			// 25% chance of trying to pack replicas if models are not fully packed
+			tryPack := false
+			rand := rand.Float32()
+			if rand > 0.75 {
+				if stats.MaxNumReplicaHostedModels < uint32(server.ExpectedReplicas) {
+					tryPack = true
+				}
 			}
+			// we do scaling down if:
+			// 1. we are trying to pack replicas: max number of replicas for any hosted model is less than the number of expected replicas (only 25% of the time)
+			// 2. we have empty replicas and the server has more than one expected replicas
+			return tryPack || (stats.NumEmptyReplicas > 0 && server.ExpectedReplicas > 1)
 		}
-		if tryPack || stats.NumEmptyReplicas > 0 {
-			logger.Infof("Server %s is scaling down", event.ServerName)
-		}
+		return false
+	}
+
+	if scaleDownFlag() {
+		logger.Infof("Server %s is scaling down", event.ServerName)
+		// TODO send control message to scale down
 	}
 }
 

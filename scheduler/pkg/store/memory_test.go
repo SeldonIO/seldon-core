@@ -470,7 +470,7 @@ func TestGetServer(t *testing.T) {
 			}
 
 			// no details
-			server, err = ms.GetServer(test.key, false, false)
+			server, _ = ms.GetServer(test.key, false, false)
 			if !test.isErr {
 				for _, v := range server.Replicas {
 					g.Expect(len(v.loadedModels)).To(Equal(0))
