@@ -26,7 +26,8 @@ type ServerSnapshot struct {
 }
 
 type ServerStats struct {
-	ScaleDownFlag bool
+	NumEmptyReplicas          uint32
+	MaxNumReplicaHostedModels uint32
 }
 
 func (s *ServerSnapshot) String() string {
