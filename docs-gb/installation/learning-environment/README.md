@@ -92,7 +92,7 @@ With Helm, you need to configure and manage the dependencies yourself.
     ```
     
 {% hint style="info" %}
-**Note**: The status of the Pod that begins with the name `seldon-dataflow-engine` is not running because Kafka is not still integrated with Seldon Core 2.
+**Note**: The status of the Pods that begins with the name `seldon-dataflow-engine`, `seldon-pipelinegateway`, and `seldon-modelgateway` may have errors in their logs until they are able to connect to kafka. This is because Kafka is not still integrated with Seldon Core 2.
 {% endhint %}
     
 {% endtab %}
