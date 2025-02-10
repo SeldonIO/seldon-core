@@ -293,6 +293,193 @@ func TestGetModel(t *testing.T) {
 	}
 }
 
+func TestGetServer(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name     string
+		store    *LocalSchedulerStore
+		key      string
+		isErr    bool
+		expected *ServerSnapshot
+	}
+
+	tests := []test{
+		{
+			name:     "NoServer",
+			store:    NewLocalSchedulerStore(),
+			key:      "server",
+			isErr:    true,
+			expected: nil,
+		},
+		{
+			name: "ServerExists",
+			store: &LocalSchedulerStore{
+				servers: map[string]*Server{
+					"server": {
+						name: "server",
+						replicas: map[int]*ServerReplica{
+							0: {},
+						},
+						expectedReplicas: 1,
+						minReplicas:      0,
+						maxReplicas:      0,
+					},
+				},
+			},
+			key:   "server",
+			isErr: false,
+			expected: &ServerSnapshot{
+				Name:             "server",
+				ExpectedReplicas: 1,
+				MinReplicas:      0,
+				MaxReplicas:      0,
+				Stats: &ServerStats{
+					NumEmptyReplicas:          1,
+					MaxNumReplicaHostedModels: 0,
+				},
+				Replicas: map[int]*ServerReplica{
+					0: {
+						loadedModels: map[ModelVersionID]bool{},
+					},
+				},
+			},
+		},
+		{
+			name: "ServerExistsWithModel",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{
+					"model": {
+						versions: []*ModelVersion{
+							{
+								modelDefn: &pb.Model{
+									Meta: &pb.MetaData{
+										Name: "model",
+									},
+								},
+							},
+						},
+					},
+				},
+				servers: map[string]*Server{
+					"server": {
+						name: "server",
+						replicas: map[int]*ServerReplica{
+							0: {
+								loadedModels: map[ModelVersionID]bool{
+									{Name: "model", Version: 1}: true,
+								}},
+						},
+						expectedReplicas: 1,
+						minReplicas:      0,
+						maxReplicas:      0,
+					},
+				},
+			},
+			key:   "server",
+			isErr: false,
+			expected: &ServerSnapshot{
+				Name:             "server",
+				ExpectedReplicas: 1,
+				MinReplicas:      0,
+				MaxReplicas:      0,
+				Stats: &ServerStats{
+					NumEmptyReplicas:          0,
+					MaxNumReplicaHostedModels: 1,
+				},
+				Replicas: map[int]*ServerReplica{
+					0: {
+						loadedModels: map[ModelVersionID]bool{
+							{Name: "model", Version: 1}: true,
+						}},
+				},
+			},
+		},
+		{
+			name: "ServerWithEmptyReplicas",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{
+					"model": {
+						versions: []*ModelVersion{
+							{
+								modelDefn: &pb.Model{
+									Meta: &pb.MetaData{
+										Name: "model",
+									},
+								},
+							},
+						},
+					},
+				},
+				servers: map[string]*Server{
+					"server": {
+						name: "server",
+						replicas: map[int]*ServerReplica{
+							0: {
+								loadedModels: map[ModelVersionID]bool{
+									{Name: "model", Version: 1}: true,
+								}},
+							1: {},
+						},
+						expectedReplicas: 1,
+						minReplicas:      0,
+						maxReplicas:      0,
+					},
+				},
+			},
+			key:   "server",
+			isErr: false,
+			expected: &ServerSnapshot{
+				Name:             "server",
+				ExpectedReplicas: 1,
+				MinReplicas:      0,
+				MaxReplicas:      0,
+				Stats: &ServerStats{
+					NumEmptyReplicas:          1,
+					MaxNumReplicaHostedModels: 1,
+				},
+				Replicas: map[int]*ServerReplica{
+					0: {
+						loadedModels: map[ModelVersionID]bool{
+							{Name: "model", Version: 1}: true,
+						}},
+					1: {
+						loadedModels: map[ModelVersionID]bool{},
+					},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			logger := log.New()
+			eventHub, err := coordinator.NewEventHub(logger)
+			g.Expect(err).To(BeNil())
+			ms := NewMemoryStore(logger, test.store, eventHub)
+			server, err := ms.GetServer(test.key, false, true)
+			if !test.isErr {
+				g.Expect(err).To(BeNil())
+				g.Expect(server.Name).To(Equal(test.expected.Name))
+				g.Expect(server.ExpectedReplicas).To(Equal(test.expected.ExpectedReplicas))
+				for k, v := range server.Replicas {
+					g.Expect(v.loadedModels).To(Equal(test.expected.Replicas[k].loadedModels))
+				}
+			} else {
+				g.Expect(err).ToNot(BeNil())
+			}
+
+			// no details
+			server, err = ms.GetServer(test.key, false, false)
+			if !test.isErr {
+				for _, v := range server.Replicas {
+					g.Expect(len(v.loadedModels)).To(Equal(0))
+				}
+			}
+		})
+	}
+}
+
 func TestRemoveModel(t *testing.T) {
 	g := NewGomegaWithT(t)
 
