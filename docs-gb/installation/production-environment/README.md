@@ -60,7 +60,7 @@ Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that
     --namespace seldon-mesh \
     --install
     ```
-5. Install Seldon Core 2 servers in the namespace `seldon-mesh`.
+5. Install Seldon Core 2 servers in the namespace `seldon-mesh`. Two example servers named `mlserver-0`, and `triton-0` are installed so that you can load the models to these servers after installation.
 
     ```bash
      helm upgrade seldon-core-v2-servers seldon-charts/seldon-core-v2-servers \
@@ -85,7 +85,7 @@ Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that
     triton-0                                        2/3     Running            0             4m10s
     ```
 {% hint style="info" %}
-**Note**: The status of the Pod that begins with the name `seldon-dataflow-engine` is not running because Kafka is not still integrated with Seldon Core 2.
+**Note**: Pods with names starting with `seldon-dataflow-engine`, `seldon-pipelinegateway`, and `seldon-modelgateway` may generate log errors until they successfully connect to Kafka. This occurs because Kafka is not yet fully integrated with Seldon Core 2.
 {% endhint %}
 
 ## Next steps
