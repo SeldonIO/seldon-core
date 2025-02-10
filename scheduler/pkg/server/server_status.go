@@ -179,7 +179,7 @@ func (s *SchedulerServer) handleServerEvents(event coordinator.ServerEventMsg) {
 
 	server, _ := s.modelStore.GetServer(event.ServerName, true, true)
 
-	if shouldScaleDown(server) {
+	if shouldScaleDown(server, AllowPackingPercentage) {
 		logger.Infof("Server %s is scaling down", event.ServerName)
 		// TODO send control message to scale down
 	}
