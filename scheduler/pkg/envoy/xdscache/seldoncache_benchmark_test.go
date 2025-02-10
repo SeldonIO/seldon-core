@@ -22,17 +22,18 @@ import (
 var results []types.Resource
 
 func benchmarkRouteContents(b *testing.B, numResources uint) {
-	x := NewSeldonXDSCache(logrus.New(), nil)
+	x, _ := NewSeldonXDSCache(logrus.New(), nil)
 
 	for n := 0; n < int(numResources); n++ {
-		x.AddPipelineRoute(strconv.Itoa(n), strconv.Itoa(n), 100, false)
+		x.AddPipelineRoute(strconv.Itoa(n), []PipelineTrafficSplit{{PipelineName: strconv.Itoa(n), TrafficWeight: 100}}, nil)
+
 		x.AddRouteClusterTraffic(
 			fmt.Sprintf("model-%d", n),
 			fmt.Sprintf("model-%d", n),
-			1,
-			100,
 			"http",
 			"grpc",
+			1,
+			100,
 			false,
 			false,
 		)
@@ -41,7 +42,7 @@ func benchmarkRouteContents(b *testing.B, numResources uint) {
 	// Prevent compiler optimising away function calls
 	var r []types.Resource
 	for i := 0; i < b.N; i++ {
-		r = x.RouteContents()
+		r = x.RouteResources()
 	}
 	results = r
 }

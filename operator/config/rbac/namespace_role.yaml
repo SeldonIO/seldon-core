@@ -2,13 +2,15 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  creationTimestamp: null
   name: v2-manager-role
 rules:
 - apiGroups:
   - ""
   resources:
   - configmaps
+  - secrets
+  - serviceaccounts
+  - services
   verbs:
   - create
   - delete
@@ -25,62 +27,9 @@ rules:
   - create
   - patch
 - apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - serviceaccounts
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - services
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
   - apps
   resources:
   - deployments
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - apps
-  resources:
-  - deployments/status
-  verbs:
-  - get
-- apiGroups:
-  - apps
-  resources:
   - statefulsets
   verbs:
   - create
@@ -93,6 +42,7 @@ rules:
 - apiGroups:
   - apps
   resources:
+  - deployments/status
   - statefulsets/status
   verbs:
   - get
@@ -100,161 +50,11 @@ rules:
   - mlops.seldon.io
   resources:
   - experiments
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - experiments/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - experiments/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
   - models
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - models/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - models/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
   - pipelines
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - pipelines/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - pipelines/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
   - seldonconfigs
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - seldonconfigs/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - seldonconfigs/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
   - seldonruntimes
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - seldonruntimes/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - seldonruntimes/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
   - serverconfigs
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - serverconfigs/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - serverconfigs/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
   - servers
   verbs:
   - create
@@ -267,12 +67,24 @@ rules:
 - apiGroups:
   - mlops.seldon.io
   resources:
+  - experiments/finalizers
+  - models/finalizers
+  - pipelines/finalizers
+  - seldonconfigs/finalizers
+  - seldonruntimes/finalizers
+  - serverconfigs/finalizers
   - servers/finalizers
   verbs:
   - update
 - apiGroups:
   - mlops.seldon.io
   resources:
+  - experiments/status
+  - models/status
+  - pipelines/status
+  - seldonconfigs/status
+  - seldonruntimes/status
+  - serverconfigs/status
   - servers/status
   verbs:
   - get
@@ -282,17 +94,6 @@ rules:
   - rbac.authorization.k8s.io
   resources:
   - rolebindings
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - rbac.authorization.k8s.io
-  resources:
   - roles
   verbs:
   - create
@@ -306,17 +107,6 @@ rules:
   - v1
   resources:
   - serviceaccounts
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - v1
-  resources:
   - services
   verbs:
   - create

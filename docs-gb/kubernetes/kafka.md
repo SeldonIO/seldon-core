@@ -5,7 +5,7 @@ See our [architecture](../architecture/README.md) documentation to learn more on
 
 
 {% hint style="info" %}
-Kafka integration is required to enable data-centric inference pipelines feature.
+**Note**: Kafka integration is required to enable data-centric inference pipelines feature.
 It is highly advice to configure Kafka integration to take full advantage of Seldon Core 2 features.
 {% endhint %}
 
@@ -34,7 +34,7 @@ Seldon Core 2 requires Kafka to implement data-centric inference Pipelines.
 To install Kafka for testing purposed in your k8s cluster, we recommend to use [Strimzi Operator](https://github.com/strimzi/strimzi-kafka-operator).
 
 {% hint style="info" %}
-This page discuss how to install Strimzi Operator and create Kafka cluster for trial, dev, or testing purposes.
+**Note**: This page discuss how to install Strimzi Operator and create Kafka cluster for trial, dev, or testing purposes.
 For production grade installation consult [Strimzi documentation](https://strimzi.io/documentation/) or use one of managed solutions mentioned [here](./index.md).
 {% endhint %}
 
@@ -53,11 +53,10 @@ You can enable `featureGates` during Helm installation via:
 helm upgrade --install strimzi-kafka-operator \
   strimzi/strimzi-kafka-operator \
   --namespace seldon-mesh --create-namespace \
-  --set featureGates='+UseKRaft\,+UseStrimziPodSets'
 ```
 
 {% hint style="warning" %}
-Use with caution!
+**Warning**:
 Currently Kraft installation of Strimzi is not production ready.
 See Strimzi [documentation](https://strimzi.io/docs/operators/0.35.0/deploying.html#ref-operator-use-kraft-feature-gate-str)
 and related GitHub [issue](https://github.com/strimzi/strimzi-kafka-operator/issues/5615) for further details.
@@ -89,5 +88,5 @@ ansible-playbook playbooks/setup-ecosystem.yaml -e full_install=no -e install_ka
 
 ## Notes
 - You can check [kafka-examples](https://github.com/strimzi/strimzi-kafka-operator/tree/main/examples/kafka) for more details.
-- As we are using [KRaft](https://kafka.apache.org/documentation/#kraft), use Kafka version 3.3 or above.
+- As we are using [KRaft](https://kafka.apache.org/documentation/#kraft), use Kafka version 3.4 or above.
 - For security settings check [here](../getting-started/kubernetes-installation/security.md#kafka).

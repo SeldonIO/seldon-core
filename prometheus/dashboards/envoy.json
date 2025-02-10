@@ -412,7 +412,7 @@
         {
           "datasource": "${DS_PROMETHEUS}",
           "editorMode": "code",
-          "expr": "sum by (pod, envoy_response_code_class) (rate(envoy_http_downstream_rq_xx{namespace=\"$namespace\", pod=\"$pod\", envoy_http_conn_manager_prefix=\"http\"}[$interval]))",
+          "expr": "sum by (pod, envoy_response_code_class) (rate(envoy_http_downstream_rq_xx{namespace=\"$namespace\", pod=\"$pod\", envoy_http_conn_manager_prefix=\"seldon_http\"}[$interval]))",
           "instant": false,
           "legendFormat": "{{envoy_response_code_class}}xx",
           "range": true,
@@ -470,7 +470,7 @@
         {
           "datasource": "${DS_PROMETHEUS}",
           "editorMode": "code",
-          "expr": "envoy_http_downstream_rq_active{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\"}",
+          "expr": "envoy_http_downstream_rq_active{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"seldon_http\"}",
           "instant": false,
           "legendFormat": "{{pod}}",
           "range": true,
@@ -559,7 +559,7 @@
         {
           "datasource": "${DS_PROMETHEUS}",
           "editorMode": "code",
-          "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_http_downstream_rq_total{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\", envoy_cluster_name!=\"xds_cluster\", pod=\"$pod\"}[$interval]))",
+          "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_http_downstream_rq_total{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"seldon_http\", envoy_cluster_name!=\"xds_cluster\", pod=\"$pod\"}[$interval]))",
           "instant": false,
           "legendFormat": "{{pod}}-total",
           "range": true,
@@ -568,7 +568,7 @@
         {
           "datasource": "${DS_PROMETHEUS}",
           "editorMode": "code",
-          "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_http_downstream_rq_tx_reset{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\", envoy_cluster_name!=\"xds_cluster\", pod=\"$pod\"}[$interval]))",
+          "expr": "sum by (pod, envoy_cluster_name) (rate(envoy_http_downstream_rq_tx_reset{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"seldon_http\", envoy_cluster_name!=\"xds_cluster\", pod=\"$pod\"}[$interval]))",
           "hide": false,
           "instant": false,
           "legendFormat": "{{pod}}-reset",
@@ -659,7 +659,7 @@
         {
           "datasource": "${DS_PROMETHEUS}",
           "editorMode": "code",
-          "expr": "histogram_quantile(0.99,  sum by (le) (rate(envoy_http_downstream_rq_time_bucket{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\", pod=\"$pod\"}[$interval])))",
+          "expr": "histogram_quantile(0.99,  sum by (le) (rate(envoy_http_downstream_rq_time_bucket{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"seldon_http\", pod=\"$pod\"}[$interval])))",
           "format": "time_series",
           "instant": false,
           "legendFormat": "p99",
@@ -669,7 +669,7 @@
         {
           "datasource": "${DS_PROMETHEUS}",
           "editorMode": "code",
-          "expr": "histogram_quantile(0.90,  sum by (le) (rate(envoy_http_downstream_rq_time_bucket{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\", pod=\"$pod\"}[$interval])))",
+          "expr": "histogram_quantile(0.90,  sum by (le) (rate(envoy_http_downstream_rq_time_bucket{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"seldon_http\", pod=\"$pod\"}[$interval])))",
           "hide": false,
           "instant": false,
           "legendFormat": "p90",
@@ -679,7 +679,7 @@
         {
           "datasource": "${DS_PROMETHEUS}",
           "editorMode": "code",
-          "expr": "histogram_quantile(0.50,  sum by (le) (rate(envoy_http_downstream_rq_time_bucket{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"http\", pod=\"$pod\"}[$interval])))",
+          "expr": "histogram_quantile(0.50,  sum by (le) (rate(envoy_http_downstream_rq_time_bucket{namespace=\"$namespace\", envoy_http_conn_manager_prefix=\"seldon_http\", pod=\"$pod\"}[$interval])))",
           "hide": false,
           "instant": false,
           "legendFormat": "p50",

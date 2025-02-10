@@ -12,6 +12,9 @@ spec:
   podSpec: null
   replicas: 1
   serverConfig: mlserver
+  statefulSetPersistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
 ---
 # Source: seldon-core-v2-servers/templates/seldon-v2-servers.yaml
 apiVersion: mlops.seldon.io/v1alpha1
@@ -26,3 +29,6 @@ spec:
   podSpec: null
   replicas: 1
   serverConfig: triton
+  statefulSetPersistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain

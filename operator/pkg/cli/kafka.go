@@ -13,7 +13,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"strings"
 	"time"
 
@@ -31,8 +30,8 @@ const (
 	OutputsSpecifier         = "outputs"
 	PipelineSpecifier        = "pipeline"
 	ModelSpecifier           = "model"
-	kafkaTimeoutSeconds      = 2
 	DefaultNamespace         = "default"
+	DefaultMaxMessageSize    = 1000000000
 )
 
 type KafkaClient struct {
@@ -63,55 +62,18 @@ type KafkaInspectTopicMessage struct {
 	Value   json.RawMessage     `json:"value"`
 }
 
-func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost string, schedulerHostIsSet bool) (*KafkaClient, error) {
-	config, err := LoadSeldonCLIConfig()
+func NewKafkaClient(kafkaBroker string, kafkaBrokerIsSet bool, schedulerHost string, schedulerHostIsSet bool, kafkaConfigPath string) (*KafkaClient, error) {
+	// Note: SeldonCliConfig (for kafka) is different from Seldon KafkaConfigMap
+	cliConfig, err := LoadSeldonCLIConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	s1 := rand.NewSource(time.Now().UnixNano())
-	r1 := rand.New(s1)
-
-	// Overwrite broker if set in config
-	if !kafkaBrokerIsSet && config.Kafka != nil && config.Kafka.Bootstrap != "" {
-		kafkaBroker = config.Kafka.Bootstrap
-	}
-	consumerConfig := kafka.ConfigMap{
-		"bootstrap.servers": kafkaBroker,
-		"group.id":          fmt.Sprintf("seldon-cli-%d", r1.Int()),
-		"auto.offset.reset": "largest",
+	consumerConfig, namespace, topicPrefix, err := getKafkaConsumerConfig(kafkaBrokerIsSet, kafkaBroker, cliConfig, kafkaConfigPath)
+	if err != nil {
+		return nil, err
 	}
 
-	namespace := DefaultNamespace
-	topicPrefix := SeldonDefaultTopicPrefix
-	if config.Kafka != nil {
-		if config.Kafka.Namespace != "" {
-			namespace = config.Kafka.Namespace
-		}
-		if config.Kafka.TopicPrefix != "" {
-			topicPrefix = config.Kafka.TopicPrefix
-		}
-		switch config.Kafka.Protocol {
-		case KafkaConfigProtocolSSL:
-			consumerConfig["security.protocol"] = KafkaConfigProtocolSSL
-			consumerConfig["ssl.ca.location"] = config.Kafka.CaPath
-			consumerConfig["ssl.key.location"] = config.Kafka.KeyPath
-			consumerConfig["ssl.certificate.location"] = config.Kafka.CrtPath
-		case KafkaConfigProtocolSASLSSL:
-			consumerConfig["security.protocol"] = KafkaConfigProtocolSASLSSL
-			consumerConfig["sasl.mechanism"] = "SCRAM-SHA-512"
-			consumerConfig["ssl.ca.location"] = config.Kafka.CaPath
-			consumerConfig["sasl.username"] = config.Kafka.SaslUsername
-			consumerConfig["sasl.password"] = config.Kafka.SaslPassword
-			consumerConfig["ssl.endpoint.identification.algorithm"] = "none"
-		case KafkaConfigProtocolSASLPlaintxt:
-			consumerConfig["security.protocol"] = KafkaConfigProtocolSASLPlaintxt
-			consumerConfig["sasl.mechanism"] = "SCRAM-SHA-512"
-			consumerConfig["sasl.username"] = config.Kafka.SaslUsername
-			consumerConfig["sasl.password"] = config.Kafka.SaslPassword
-		}
-	}
-	consumerConfig["message.max.bytes"] = 1000000000
 	consumer, err := kafka.NewConsumer(&consumerConfig)
 	if err != nil {
 		return nil, err
@@ -137,18 +99,18 @@ func (kc *KafkaClient) subscribeAndSetOffset(pipelineStep string, offset int64) 
 		return err
 	}
 
+	partitions := make([]kafka.TopicPartition, 0)
 	for _, partitionMeta := range md.Topics[pipelineStep].Partitions {
-		err := kc.consumer.Assign([]kafka.TopicPartition{
-			{
-				Topic:     &pipelineStep,
-				Partition: partitionMeta.ID,
-				//Note will get more messages than requested when multiple partitions available
-				Offset: kafka.OffsetTail(kafka.Offset(offset)),
-			},
+		partitions = append(partitions, kafka.TopicPartition{
+			Topic:     &pipelineStep,
+			Partition: partitionMeta.ID,
+			//Note will get more messages than requested when multiple partitions available
+			Offset: kafka.OffsetTail(kafka.Offset(offset)),
 		})
-		if err != nil {
-			return err
-		}
+	}
+	err = kc.consumer.Assign(partitions)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -175,6 +137,7 @@ func createPipelineInspectTopics(pipelineSpec string, response *scheduler.Pipeli
 		}
 		topics = append(topics, fmt.Sprintf("%s.%s.%s.%s.%s", topicPrefix, namespace, PipelineSpecifier, parts[0], InputsSpecifier))
 		topics = append(topics, fmt.Sprintf("%s.%s.%s.%s.%s", topicPrefix, namespace, PipelineSpecifier, parts[0], OutputsSpecifier))
+		topics = append(topics, fmt.Sprintf("%s.%s.errors.errors", topicPrefix, namespace)) // error topic
 		return &PipelineTopics{
 			pipeline: pipelineSpec,
 			topics:   topics,
@@ -258,7 +221,10 @@ func getPipelineNameFromHeaders(headers []kafka.Header) (string, error) {
 	return "", fmt.Errorf("No pipeline found in headers.")
 }
 
-func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string, format string, verbose bool, truncateData bool, namespace string) error {
+func (kc *KafkaClient) InspectStep(
+	pipelineStep string, offset int64, key string, format string, verbose bool, truncateData bool, namespace string, timeout time.Duration,
+) error {
+	defer kc.consumer.Close()
 	if namespace == "" {
 		namespace = kc.namespace
 	}
@@ -273,7 +239,7 @@ func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string
 
 	ki := KafkaInspect{}
 	for _, topic := range pipelineTopics.topics {
-		kit, err := kc.createInspectTopic(topic, pipelineTopics.pipeline, pipelineTopics.tensor, offset, key, verbose, truncateData)
+		kit, err := kc.createInspectTopic(topic, pipelineTopics.pipeline, pipelineTopics.tensor, offset, key, verbose, truncateData, timeout)
 		if err != nil {
 			return err
 		}
@@ -288,26 +254,28 @@ func (kc *KafkaClient) InspectStep(pipelineStep string, offset int64, key string
 		fmt.Printf("%s\n", string(b))
 	} else {
 		for _, topic := range ki.Topics {
+			fmt.Printf("Topic: %s\n", topic.Name)
 			for _, msg := range topic.Msgs {
 				if verbose {
-					fmt.Printf("%s\t%s\t%s\t", topic.Name, msg.Key, msg.Value)
+					fmt.Printf("%s\t%s\t", msg.Key, msg.Value)
 					for k, v := range msg.Headers {
 						fmt.Printf("\t%s=%s", k, v)
 					}
 					fmt.Println("")
 				} else {
-					fmt.Printf("%s\t%s\t%s\n", topic.Name, msg.Key, msg.Value)
+					fmt.Printf("%s\t%s\n", msg.Key, msg.Value)
 				}
 			}
+			fmt.Print("----------------\n")
 		}
 	}
 
-	// Fast close requires maybe: https://github.com/confluentinc/confluent-kafka-go/pull/757
-	//_ = kc.consumer.Close()
 	return nil
 }
 
-func (kc *KafkaClient) createInspectTopic(topic string, pipeline string, tensor string, offset int64, key string, verbose bool, truncateData bool) (*KafkaInspectTopic, error) {
+func (kc *KafkaClient) createInspectTopic(
+	topic string, pipeline string, tensor string, offset int64, key string, verbose bool, truncateData bool, timeout time.Duration,
+) (*KafkaInspectTopic, error) {
 	kit := KafkaInspectTopic{
 		Name: topic,
 	}
@@ -316,7 +284,7 @@ func (kc *KafkaClient) createInspectTopic(topic string, pipeline string, tensor 
 		return nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), kafkaTimeoutSeconds*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	run := true
@@ -349,7 +317,7 @@ func (kc *KafkaClient) createInspectTopic(topic string, pipeline string, tensor 
 					run = false
 				}
 			case kafka.Error:
-				return nil, fmt.Errorf(e.Error())
+				return nil, fmt.Errorf("kafka error %v", e.Error())
 			default:
 				continue
 			}

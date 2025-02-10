@@ -42,9 +42,9 @@ Finally, inference graph can now be extended with adding new nodes at arbitrary 
 ## References
 
 More details and information on data-centric AI and data flow paradigm can be found in these resources:
-* Data-centric AI Resource Hub: https://datacentricai.org/
-* Stanford MLSys seminar "What can Data-Centric AI Learn from Data and ML Engineering?": https://www.youtube.com/watch?v=cqDgxP8DcJA
-* A paper that explores data flow in ML deployment context: https://arxiv.org/abs/2204.12781
-* Introduction to flow based programming from its creator J.P. Morrison: https://jpaulm.github.io/fbp/index.html
-* Pathways: Asynchronous Distributed Dataflow for ML (research work from Google on the design and implementation of data flow based orchestration layer for accelerators): https://arxiv.org/abs/2203.12533
-* Better understanding of data requires tracking its history and context: https://queue.acm.org/detail.cfm?id=2602651
+* [Data-centric AI Resource Hub](https://datacentricai.org/)
+* Stanford MLSys seminar ["What can Data-Centric AI Learn from Data and ML Engineering?"](https://www.youtube.com/watch?v=cqDgxP8DcJA)
+* A paper that explores [data flow in ML deployment context](https://arxiv.org/abs/2204.12781)
+* [Introduction to flow based programming](https://jpaulm.github.io/fbp/index.html) from its creator J.P. Morrison: 
+* Pathways: Asynchronous Distributed Dataflow for [ML research work](https://arxiv.org/abs/2203.12533)from Google on the design and implementation of data flow based orchestration layer for accelerators
+* Better understanding of data requires tracking its [history and context](https://queue.acm.org/detail.cfm?id=2602651)

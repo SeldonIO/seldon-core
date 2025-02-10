@@ -89,7 +89,11 @@ func (m *MemoryStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*Mode
 }
 
 func (m *MemoryStore) addNextModelVersion(model *Model, pbmodel *pb.Model) {
-	version := uint32(1)
+	// if we start from a clean state, lets use the generation id as the starting version
+	// this is to ensure that we have monotonic increasing version numbers
+	// and we never reset back to 1
+	generation := pbmodel.GetMeta().GetKubernetesMeta().GetGeneration()
+	version := max(uint32(1), uint32(generation))
 	if model.Latest() != nil {
 		version = model.Latest().GetVersion() + 1
 	}
@@ -329,7 +333,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 		modelVersion = model.Latest()
 	}
 
-	//  resevere memory for existing replicas that are not already loading or loaded
+	//  reserve memory for existing replicas that are not already loading or loaded
 	replicaStateUpdated := false
 	for replicaIdx := range assignedReplicaIds {
 		if existingState, ok := modelVersion.replicas[replicaIdx]; !ok {
@@ -370,7 +374,15 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 	// in cases where we did have a previous ScheduleFailed, we need to reflect the change here
 	// this could be in the cases where we are scaling down a model and the new replica count can be all deployed
 	// and always send an update for deleted models, so the operator will remove them from k8s
-	if replicaStateUpdated || modelVersion.state.State == ScheduleFailed || model.IsDeleted() {
+	// also send an update for progressing models so the operator can update the status in the case of a network glitch where the model generation has been updated
+	// also send an update if the model is not yet at desired replicas, if we have partial scheduling
+
+	// note that we use len(modelVersion.GetAssignment()) to calculate the number of replicas as the status of the model at this point might not reflect the actual number of replicas
+	// in modelVersion.state.AvailableReplicas (we call updateModelStatus later)
+
+	// TODO: the conditions here keep growing, refactor or consider a simpler check.
+	if replicaStateUpdated || modelVersion.state.State == ScheduleFailed || model.IsDeleted() || modelVersion.state.State == ModelProgressing ||
+		(modelVersion.state.State == ModelAvailable && len(modelVersion.GetAssignment()) < modelVersion.DesiredReplicas()) {
 		logger.Debugf("Updating model status for model %s server %s", modelKey, serverKey)
 		modelVersion.server = serverKey
 		m.updateModelStatus(true, model.IsDeleted(), modelVersion, model.GetLastAvailableModelVersion())
@@ -450,8 +462,9 @@ func (m *MemoryStore) UpdateModelState(
 	expectedState ModelReplicaState,
 	desiredState ModelReplicaState,
 	reason string,
+	runtimeInfo *pb.ModelRuntimeInfo,
 ) error {
-	evt, err := m.updateModelStateImpl(modelKey, version, serverKey, replicaIdx, availableMemory, expectedState, desiredState, reason)
+	evt, err := m.updateModelStateImpl(modelKey, version, serverKey, replicaIdx, availableMemory, expectedState, desiredState, reason, runtimeInfo)
 	if err != nil {
 		return err
 	}
@@ -473,6 +486,7 @@ func (m *MemoryStore) updateModelStateImpl(
 	expectedState ModelReplicaState,
 	desiredState ModelReplicaState,
 	reason string,
+	runtimeInfo *pb.ModelRuntimeInfo,
 ) (*coordinator.ModelEventMsg, error) {
 	logger := m.logger.WithField("func", "updateModelStateImpl")
 	m.mu.Lock()
@@ -483,6 +497,8 @@ func (m *MemoryStore) updateModelStateImpl(
 	if err != nil {
 		return nil, err
 	}
+
+	modelVersion.UpdateRuntimeInfo(runtimeInfo)
 
 	existingState := modelVersion.GetModelReplicaState(replicaIdx)
 
@@ -574,6 +590,7 @@ func (m *MemoryStore) AddServerReplica(request *agent.AgentSubscribeRequest) err
 			serverEvt,
 		)
 	}
+
 	return nil
 }
 
@@ -756,6 +773,8 @@ func (m *MemoryStore) ServerNotify(request *pb.ServerNotify) error {
 		m.store.servers[request.Name] = server
 	}
 	server.SetExpectedReplicas(int(request.ExpectedReplicas))
+	server.SetMinReplicas(int(request.MinReplicas))
+	server.SetMaxReplicas(int(request.MaxReplicas))
 	server.SetKubernetesMeta(request.KubernetesMeta)
 	return nil
 }

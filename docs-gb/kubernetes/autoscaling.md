@@ -38,7 +38,7 @@ Therefore there should generally be minimal disruption to the inference workload
 For more details on HPA check this [Kubernetes walk-through](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/).
 
 {% hint style="info" %}
-Autoscaling of inference servers via `seldon-scheduler` is under consideration for the roadmap. This allow for more fine grained interactions with model autoscaling.
+**Note**: Autoscaling of inference servers via `seldon-scheduler` is under consideration for the roadmap. This allow for more fine grained interactions with model autoscaling.
 {% endhint %}
 
 Autoscaling both Models and Servers using HPA and custom metrics is possible for the special
@@ -55,6 +55,7 @@ Autoscaling of models is enabled if at least `MinReplicas` or `MaxReplicas` is s
 resource. Then according to load the system will scale the number of `Replicas` within this range.
 
 For example the following model will be deployed at first with 1 replica and it can scale up according to load.
+
 ```yaml
 # samples/models/tfsimple_scaling.yaml
 apiVersion: mlops.seldon.io/v1alpha1

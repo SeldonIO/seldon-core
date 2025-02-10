@@ -28,12 +28,15 @@ type ModelRepositoryHandler interface {
 	UpdateModelVersion(modelName string, version uint32, path string, modelSpec *scheduler.ModelSpec) error
 	UpdateModelRepository(modelName string, path string, isVersionFolder bool, modelRepoPath string) error
 	SetExplainer(modelRepoPath string, explainerSpec *scheduler.ExplainerSpec, envoyHost string, envoyPort int) error
+	SetLlm(modelRepoPath string, llmSpec *scheduler.LlmSpec, envoyHost string, envoyPort int) error
 	SetExtraParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error
+	GetModelRuntimeInfo(path string) (*scheduler.ModelRuntimeInfo, error)
 }
 
 type ModelRepository interface {
 	DownloadModelVersion(modelName string, version uint32, modelSpec *scheduler.ModelSpec, config []byte) (*string, error)
 	RemoveModelVersion(modelName string) error
+	GetModelRuntimeInfo(modelName string) (*scheduler.ModelRuntimeInfo, error)
 	Ready() error
 }
 
@@ -41,7 +44,7 @@ type V2ModelRepository struct {
 	logger                 log.FieldLogger
 	rcloneClient           *rclone.RCloneClient
 	repoPath               string
-	modelrepositoryHandler ModelRepositoryHandler
+	modelRepositoryHandler ModelRepositoryHandler
 	envoyHost              string
 	envoyPort              int
 }
@@ -51,15 +54,21 @@ func NewModelRepository(logger log.FieldLogger,
 	repoPath string,
 	modelRepositoryHandler ModelRepositoryHandler,
 	envoyHost string,
-	envoyPort int) *V2ModelRepository {
+	envoyPort int,
+) *V2ModelRepository {
 	return &V2ModelRepository{
 		logger:                 logger.WithField("Name", "V2ModelRepository"),
 		rcloneClient:           rcloneClient,
 		repoPath:               repoPath,
-		modelrepositoryHandler: modelRepositoryHandler,
+		modelRepositoryHandler: modelRepositoryHandler,
 		envoyHost:              envoyHost,
 		envoyPort:              envoyPort,
 	}
+}
+
+func (r *V2ModelRepository) GetModelRuntimeInfo(modelName string) (*scheduler.ModelRuntimeInfo, error) {
+	modelPathInRepo := filepath.Join(r.repoPath, modelName)
+	return r.modelRepositoryHandler.GetModelRuntimeInfo(modelPathInRepo)
 }
 
 func (r *V2ModelRepository) DownloadModelVersion(
@@ -74,6 +83,7 @@ func (r *V2ModelRepository) DownloadModelVersion(
 	artifactVersion := modelSpec.ArtifactVersion
 	srcUri := modelSpec.Uri
 	explainerSpec := modelSpec.GetExplainer()
+	llmSpec := modelSpec.GetLlm()
 	parameters := modelSpec.GetParameters()
 
 	logger.Debugf("running with model %s:%d srcUri %s", modelName, version, srcUri)
@@ -94,7 +104,7 @@ func (r *V2ModelRepository) DownloadModelVersion(
 	}()
 
 	// Find the version folder we want
-	modelVersionFolder, foundVersionFolder, err := r.modelrepositoryHandler.FindModelVersionFolder(
+	modelVersionFolder, foundVersionFolder, err := r.modelRepositoryHandler.FindModelVersionFolder(
 		modelName,
 		artifactVersion,
 		rclonePath,
@@ -134,7 +144,7 @@ func (r *V2ModelRepository) DownloadModelVersion(
 	}
 
 	// Update model version in repo
-	err = r.modelrepositoryHandler.UpdateModelVersion(
+	err = r.modelRepositoryHandler.UpdateModelVersion(
 		modelName,
 		version,
 		modelVersionPathInRepo,
@@ -146,7 +156,7 @@ func (r *V2ModelRepository) DownloadModelVersion(
 
 	// Update details for blackbox explainer
 	if explainerSpec != nil {
-		err = r.modelrepositoryHandler.SetExplainer(
+		err = r.modelRepositoryHandler.SetExplainer(
 			modelVersionPathInRepo,
 			explainerSpec,
 			r.envoyHost,
@@ -157,14 +167,27 @@ func (r *V2ModelRepository) DownloadModelVersion(
 		}
 	}
 
+	// Update details for LLM
+	if llmSpec != nil {
+		err = r.modelRepositoryHandler.SetLlm(
+			modelVersionPathInRepo,
+			llmSpec,
+			r.envoyHost,
+			r.envoyPort,
+		)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	// Set init parameters inside model
-	err = r.modelrepositoryHandler.SetExtraParameters(modelVersionPathInRepo, parameters)
+	err = r.modelRepositoryHandler.SetExtraParameters(modelVersionPathInRepo, parameters)
 	if err != nil {
 		return nil, err
 	}
 
 	// Update global model configuration
-	err = r.modelrepositoryHandler.UpdateModelRepository(
+	err = r.modelRepositoryHandler.UpdateModelRepository(
 		modelName,
 		modelVersionFolder,
 		foundVersionFolder,

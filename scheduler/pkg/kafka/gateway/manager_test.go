@@ -15,7 +15,8 @@ import (
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 )
 
@@ -66,7 +67,7 @@ func TestAddRemoveModel(t *testing.T) {
 			}
 			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
-			c := &ManagerConfig{SeldonKafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
+			c := &ManagerConfig{SeldonKafkaConfig: &kafka_config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
 			cm, err := NewConsumerManager(logger, c, test.numConsumers)
 			g.Expect(err).To(BeNil())
 			for _, model := range test.models {
@@ -126,7 +127,7 @@ func TestExists(t *testing.T) {
 			}
 			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
-			c := &ManagerConfig{SeldonKafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
+			c := &ManagerConfig{SeldonKafkaConfig: &kafka_config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
 			cm, err := NewConsumerManager(logger, c, 5)
 			g.Expect(err).To(BeNil())
 			for _, model := range test.modelsConsumed {
@@ -163,7 +164,7 @@ func TestConsistentModelToConsumer(t *testing.T) {
 			}
 			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
-			c := &ManagerConfig{SeldonKafkaConfig: &config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
+			c := &ManagerConfig{SeldonKafkaConfig: &kafka_config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
 			cm, err := NewConsumerManager(logger, c, 10)
 			g.Expect(err).To(BeNil())
 			ic, _ := cm.getInferKafkaConsumer(test.model, true)

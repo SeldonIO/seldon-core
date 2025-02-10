@@ -21,11 +21,11 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 )
 
 func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler.SchedulerClient, servers []v1alpha1.Server, isFirstSync bool) error {
 	logger := s.logger.WithName("NotifyServer")
-
 	if grpcClient == nil {
 		// we assume that all servers are in the same namespace
 		namespace := servers[0].Namespace
@@ -38,19 +38,34 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 
 	var requests []*scheduler.ServerNotify
 	for _, server := range servers {
-		var replicas int32
+		var scalingSpec *v1alpha1.ValidatedScalingSpec
+		var err error
+
 		if !server.ObjectMeta.DeletionTimestamp.IsZero() {
-			replicas = 0
-		} else if server.Spec.Replicas != nil {
-			replicas = *server.Spec.Replicas
+			scalingSpec = &v1alpha1.ValidatedScalingSpec{
+				Replicas:    0,
+				MinReplicas: 0,
+				MaxReplicas: 0,
+			}
 		} else {
-			replicas = 1
+			scalingSpec, err = v1alpha1.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
+			if err != nil {
+				return err
+			}
 		}
 
-		logger.Info("Notify server", "name", server.GetName(), "namespace", server.GetNamespace(), "replicas", replicas)
+		logger.Info(
+			"Notify server", "name", server.GetName(), "namespace", server.GetNamespace(),
+			"replicas", scalingSpec.Replicas,
+			"minReplicas", scalingSpec.MinReplicas,
+			"maxReplicas", scalingSpec.MaxReplicas,
+		)
+
 		requests = append(requests, &scheduler.ServerNotify{
 			Name:             server.GetName(),
-			ExpectedReplicas: replicas,
+			ExpectedReplicas: scalingSpec.Replicas,
+			MinReplicas:      scalingSpec.MinReplicas,
+			MaxReplicas:      scalingSpec.MaxReplicas,
 			KubernetesMeta: &scheduler.KubernetesMeta{
 				Namespace:  server.GetNamespace(),
 				Generation: server.GetGeneration(),
@@ -114,8 +129,11 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 
 		// Try to update status
 		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+			contextWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
+			defer cancel()
+
 			server := &v1alpha1.Server{}
-			err = s.Get(ctx, client.ObjectKey{Name: event.ServerName, Namespace: event.GetKubernetesMeta().GetNamespace()}, server)
+			err = s.Get(contextWithTimeout, client.ObjectKey{Name: event.ServerName, Namespace: event.GetKubernetesMeta().GetNamespace()}, server)
 			if err != nil {
 				return err
 			}
@@ -123,9 +141,21 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 				logger.Info("Ignoring event for old generation", "currentGeneration", server.Generation, "eventGeneration", event.GetKubernetesMeta().Generation, "server", event.ServerName)
 				return nil
 			}
-			// Handle status update
-			server.Status.LoadedModelReplicas = event.NumLoadedModelReplicas
-			return s.updateServerStatus(server)
+
+			// The types of updates we may get from the scheduler are:
+			// 1. Status updates
+			// 2. Requests for changing the number of server replicas
+			//
+			// At the moment, the scheduler doesn't send multiple types of updates in a single event;
+			switch event.GetType() {
+			case scheduler.ServerStatusResponse_StatusUpdate:
+				server.Status.LoadedModelReplicas = event.NumLoadedModelReplicas
+				return s.updateServerStatus(contextWithTimeout, server)
+			case scheduler.ServerStatusResponse_ScalingRequest:
+				return s.scaleServerReplicas(contextWithTimeout, server, event)
+			default: // we ignore unknown event types
+				return nil
+			}
 		})
 		if retryErr != nil {
 			logger.Error(err, "Failed to update status", "model", event.ServerName)
@@ -135,11 +165,45 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 	return nil
 }
 
-func (s *SchedulerClient) updateServerStatus(server *v1alpha1.Server) error {
-	if err := s.Status().Update(context.TODO(), server); err != nil {
+func (s *SchedulerClient) updateServerStatus(ctx context.Context, server *v1alpha1.Server) error {
+	if err := s.Status().Update(ctx, server); err != nil {
 		s.recorder.Eventf(server, v1.EventTypeWarning, "UpdateFailed",
 			"Failed to update status for Server %q: %v", server.Name, err)
 		return err
 	}
 	return nil
+}
+
+func (s *SchedulerClient) scaleServerReplicas(ctx context.Context, server *v1alpha1.Server, event *scheduler.ServerStatusResponse) error {
+	isValidEvent, validatedScalingSpec, err := isValidScalingEvent(server, event)
+	if err != nil {
+		return err
+	}
+	if isValidEvent {
+		newServer := server.DeepCopy()
+		newServer.Spec.Replicas = &event.ExpectedReplicas
+
+		if err := s.Patch(ctx, newServer, client.MergeFrom(server)); err != nil {
+			s.recorder.Eventf(server, v1.EventTypeWarning, "PatchFailed",
+				"Failed to patch replicas for Server %q: %v", server.Name, err)
+			return err
+		}
+	} else {
+		s.logger.Info("Ignoring scale replicas request for server as expected replics is not valid",
+			"server", server.Name,
+			"expected replicas", event.ExpectedReplicas,
+			"min replicas", validatedScalingSpec.MinReplicas,
+			"max replicas", validatedScalingSpec.MaxReplicas)
+	}
+
+	return nil
+}
+
+func isValidScalingEvent(server *v1alpha1.Server, event *scheduler.ServerStatusResponse) (bool, *v1alpha1.ValidatedScalingSpec, error) {
+	validatedScalingSpec, err := v1alpha1.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
+	if err != nil {
+		return false, nil, err
+	}
+
+	return uint32(event.ExpectedReplicas) <= validatedScalingSpec.MaxReplicas && uint32(event.ExpectedReplicas) >= validatedScalingSpec.MinReplicas, validatedScalingSpec, nil
 }

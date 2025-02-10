@@ -10,5 +10,5 @@ resources:
 
 images:
 - name: k6
-  newName: sakoush/seldon-k6
+  newName: seldonio/seldon-k6
   newTag: latest

@@ -13,6 +13,18 @@ import (
 	"time"
 )
 
+// Headers
+const (
+	SeldonModelHeader          = "seldon-model"
+	SeldonPipelineHeader       = "pipeline"
+	SeldonInternalModelHeader  = "seldon-internal-model"
+	SeldonLoggingHeader        = "Seldon-Logging"
+	SeldonRouteHeader          = "x-seldon-route"
+	ExternalHeaderPrefix       = "x-"
+	SeldonModelHeaderSuffix    = "model"
+	SeldonPipelineHeaderSuffix = "pipeline"
+)
+
 // REST
 const (
 	DefaultReverseProxyHTTPPort = 9999
@@ -32,6 +44,21 @@ const (
 	GRPCModelServerLoadTimeout   = 60 * time.Minute // How long to wait for a model to load? think of LLM Load, maybe should be a config
 	GRPCModelServerUnloadTimeout = 2 * time.Minute
 	GRPCControlPlaneTimeout      = 1 * time.Minute // For control plane operations except load/unload
+)
+
+// K8s API
+const (
+	K8sTimeoutDefault = 2 * time.Minute
+)
+
+// Servers control plane
+const (
+	ServerControlPlaneTimeout = time.Second * 5
+)
+
+// inference
+const (
+	InferTimeoutDefault = 10 * time.Minute // TODO: expose this as a config (map)?
 )
 
 const (

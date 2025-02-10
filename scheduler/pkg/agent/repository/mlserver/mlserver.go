@@ -29,6 +29,7 @@ const (
 	inferUriKey            = "infer_uri"
 	explainerTypeKey       = "explainer_type"
 	sslVerifyPath          = "ssl_verify_path"
+	parallelWorkersEnvVar  = "MLSERVER_PARALLEL_WORKERS"
 )
 
 type MLServerRepositoryHandler struct {
@@ -71,12 +72,12 @@ type ModelMetadataTensors struct {
 
 // MLServer model parameters.
 type ModelParameters struct {
-	//URI where the model artifacts can be found.
-	//This path must be either absolute or relative to where MLServer is running.
+	// URI where the model artifacts can be found.
+	// This path must be either absolute or relative to where MLServer is running.
 	Uri string `json:"uri,omitempty"`
-	//Version of the model
+	// Version of the model
 	Version string `json:"version,omitempty"`
-	//Format of the model (only available on certain runtimes).
+	// Format of the model (only available on certain runtimes).
 	Format             string                 `json:"format,omitempty"`
 	ContentType        string                 `json:"content_type,omitempty"`
 	Extra              map[string]interface{} `json:"extra,omitempty"`
@@ -98,7 +99,7 @@ func (m *MLServerRepositoryHandler) UpdateModelVersion(modelName string, version
 			return err
 		}
 	}
-	//Modify model-settings
+	// Modify model-settings
 	err := m.updateNameAndVersion(path, modelName, versionStr)
 	return err
 }
@@ -159,40 +160,88 @@ func (m *MLServerRepositoryHandler) updateNameAndVersion(path string, modelName 
 	return os.WriteFile(settingsPath, data, fs.ModePerm)
 }
 
+func (m *MLServerRepositoryHandler) setExtraParameters(
+	modelRepoPath string,
+	modelRef *string,
+	pipelineRef *string,
+	envoyHost string,
+	envoyPort int,
+	extra map[string]interface{},
+) error {
+	workers := 0
+	settingsPath := filepath.Join(modelRepoPath, mlserverConfigFilename)
+	ms, err := m.loadModelSettingsFromFile(settingsPath)
+	if err != nil {
+		return err
+	}
+
+	//TODO: temporary fix for issue in mlserver with explainers
+	ms.ParallelWorkers = &workers
+	if ms.Parameters == nil {
+		ms.Parameters = &ModelParameters{}
+	}
+
+	if ms.Parameters.Extra == nil {
+		ms.Parameters.Extra = map[string]interface{}{}
+	}
+
+	scheme := "http"
+	if m.SSL {
+		scheme = "https"
+		ms.Parameters.Extra[sslVerifyPath] = "/mnt/certs/ca.crt"
+	}
+
+	var inferUri string
+	if modelRef != nil {
+		inferUri = fmt.Sprintf("%s://%s:%d/v2/models/%s/infer", scheme, envoyHost, envoyPort, *modelRef)
+	} else {
+		inferUri = fmt.Sprintf("%s://%s:%d/v2/pipelines/%s/infer", scheme, envoyHost, envoyPort, *pipelineRef)
+	}
+
+	if inferUri != "" {
+		ms.Parameters.Extra[inferUriKey] = &inferUri
+	}
+
+	// add extra parameters if any
+	for key, value := range extra {
+		ms.Parameters.Extra[key] = value
+	}
+
+	data, err := json.Marshal(ms)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(settingsPath, data, fs.ModePerm)
+
+}
+
 func (m *MLServerRepositoryHandler) SetExplainer(modelRepoPath string, explainerSpec *scheduler.ExplainerSpec, envoyHost string, envoyPort int) error {
 	if explainerSpec != nil {
-		workers := 0
-		settingsPath := filepath.Join(modelRepoPath, mlserverConfigFilename)
-		ms, err := m.loadModelSettingsFromFile(settingsPath)
-		if err != nil {
-			return err
-		}
-		//TODO: temporary fix for issue in mlserver with explainers
-		ms.ParallelWorkers = &workers
-		if ms.Parameters == nil {
-			ms.Parameters = &ModelParameters{}
-		}
-		if ms.Parameters.Extra == nil {
-			ms.Parameters.Extra = map[string]interface{}{}
-		}
-		ms.Parameters.Extra[explainerTypeKey] = &explainerSpec.Type
-		scheme := "http"
-		if m.SSL {
-			scheme = "https"
-			ms.Parameters.Extra[sslVerifyPath] = "/mnt/certs/ca.crt"
-		}
-		if explainerSpec.ModelRef != nil {
-			inferUri := fmt.Sprintf("%s://%s:%d/v2/models/%s/infer", scheme, envoyHost, envoyPort, *explainerSpec.ModelRef)
-			ms.Parameters.Extra[inferUriKey] = &inferUri
-		} else if explainerSpec.PipelineRef != nil {
-			inferUri := fmt.Sprintf("%s://%s:%d/v2/pipelines/%s/infer", scheme, envoyHost, envoyPort, *explainerSpec.PipelineRef)
-			ms.Parameters.Extra[inferUriKey] = &inferUri
-		}
-		data, err := json.Marshal(ms)
-		if err != nil {
-			return err
-		}
-		return os.WriteFile(settingsPath, data, fs.ModePerm)
+		return m.setExtraParameters(
+			modelRepoPath,
+			explainerSpec.ModelRef,
+			explainerSpec.PipelineRef,
+			envoyHost,
+			envoyPort,
+			map[string]interface{}{
+				explainerTypeKey: explainerSpec.Type,
+			},
+		)
+	}
+	return nil
+}
+
+func (m *MLServerRepositoryHandler) SetLlm(modelRepoPath string, llmSpec *scheduler.LlmSpec, envoyHost string, envoyPort int) error {
+	if llmSpec != nil {
+		return m.setExtraParameters(
+			modelRepoPath,
+			llmSpec.ModelRef,
+			llmSpec.PipelineRef,
+			envoyHost,
+			envoyPort,
+			nil,
+		)
 	}
 	return nil
 }
@@ -262,7 +311,7 @@ func (m *MLServerRepositoryHandler) findModelVersionInPath(modelPath string, ver
 	case 1:
 		return found[0], nil
 	default:
-		return "", fmt.Errorf("Found multiple folders with version %d %v", version, found)
+		return "", fmt.Errorf("found multiple folders with version %d %v", version, found)
 	}
 }
 
@@ -272,7 +321,7 @@ func (m *MLServerRepositoryHandler) getDefaultModelSettingsPath(modelPath string
 		if err != nil {
 			return err
 		}
-		if info.IsDir() && modelPath != path { //Don't descend into directories
+		if info.IsDir() && modelPath != path { // Don't descend into directories
 			return filepath.SkipDir
 		}
 		if !info.IsDir() && filepath.Base(path) == mlserverConfigFilename {
@@ -320,4 +369,14 @@ func (m *MLServerRepositoryHandler) findHighestVersionInPath(modelPath string) (
 		return highestVersionPath, nil
 	}
 	return "", nil
+}
+
+func (m *MLServerRepositoryHandler) GetModelRuntimeInfo(_ string) (*scheduler.ModelRuntimeInfo, error) {
+	parallelWorkersStr := os.Getenv(parallelWorkersEnvVar)
+	parallelWorkers, err := strconv.Atoi(parallelWorkersStr)
+	if err != nil || parallelWorkersStr == "" {
+		parallelWorkers = 1
+	}
+
+	return &scheduler.ModelRuntimeInfo{ModelRuntimeInfo: &scheduler.ModelRuntimeInfo_Mlserver{Mlserver: &scheduler.MLServerModelSettings{ParallelWorkers: uint32(parallelWorkers)}}}, nil
 }

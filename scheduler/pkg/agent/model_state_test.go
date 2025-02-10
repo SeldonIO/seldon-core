@@ -44,14 +44,15 @@ func TestAddModelVersion(t *testing.T) {
 						Name: "iris",
 					},
 					ModelSpec: &pbs.ModelSpec{
-						MemoryBytes: getUint64Ptr(500),
+						MemoryBytes:      getUint64Ptr(500),
+						ModelRuntimeInfo: getModelRuntimeInfo(2),
 					},
 				},
 				Version: 1,
 			},
 			versionAdded:       true,
-			expectedModelBytes: 500,
-			expectedTotalBytes: 500,
+			expectedModelBytes: 1000,
+			expectedTotalBytes: 1000,
 		},
 		{
 			name: "NewModel (Another Model Exsits)",
@@ -64,7 +65,8 @@ func TestAddModelVersion(t *testing.T) {
 									Name: "mnist",
 								},
 								ModelSpec: &pbs.ModelSpec{
-									MemoryBytes: getUint64Ptr(500),
+									MemoryBytes:      getUint64Ptr(500),
+									ModelRuntimeInfo: getModelRuntimeInfo(1),
 								},
 							},
 							Version: 1,
@@ -79,7 +81,8 @@ func TestAddModelVersion(t *testing.T) {
 						Name: "iris",
 					},
 					ModelSpec: &pbs.ModelSpec{
-						MemoryBytes: getUint64Ptr(500),
+						MemoryBytes:      getUint64Ptr(500),
+						ModelRuntimeInfo: getModelRuntimeInfo(1),
 					},
 				},
 				Version: 1,
@@ -99,7 +102,8 @@ func TestAddModelVersion(t *testing.T) {
 									Name: "iris",
 								},
 								ModelSpec: &pbs.ModelSpec{
-									MemoryBytes: getUint64Ptr(500),
+									MemoryBytes:      getUint64Ptr(500),
+									ModelRuntimeInfo: getModelRuntimeInfo(1),
 								},
 							},
 							Version: 1,
@@ -114,7 +118,8 @@ func TestAddModelVersion(t *testing.T) {
 						Name: "iris",
 					},
 					ModelSpec: &pbs.ModelSpec{
-						MemoryBytes: getUint64Ptr(500),
+						MemoryBytes:      getUint64Ptr(500),
+						ModelRuntimeInfo: getModelRuntimeInfo(1),
 					},
 				},
 				Version: 2,
@@ -134,7 +139,8 @@ func TestAddModelVersion(t *testing.T) {
 									Name: "iris",
 								},
 								ModelSpec: &pbs.ModelSpec{
-									MemoryBytes: getUint64Ptr(500),
+									MemoryBytes:      getUint64Ptr(500),
+									ModelRuntimeInfo: getModelRuntimeInfo(1),
 								},
 							},
 							Version: 1,
@@ -149,7 +155,8 @@ func TestAddModelVersion(t *testing.T) {
 						Name: "iris",
 					},
 					ModelSpec: &pbs.ModelSpec{
-						MemoryBytes: getUint64Ptr(500),
+						MemoryBytes:      getUint64Ptr(500),
+						ModelRuntimeInfo: getModelRuntimeInfo(1),
 					},
 				},
 				Version: 1,
@@ -164,7 +171,7 @@ func TestAddModelVersion(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			versionAdded, err := test.state.addModelVersion(test.modelVersion)
 			g.Expect(versionAdded).To(Equal(test.versionAdded))
-			//check version exists
+			// check version exists
 			if versionAdded {
 				g.Expect(test.state.versionExists("iris", test.modelVersion.GetVersion())).To(Equal(true))
 			} else if err != nil {
@@ -201,7 +208,8 @@ func TestRemoveModelVersion(t *testing.T) {
 									Name: "iris",
 								},
 								ModelSpec: &pbs.ModelSpec{
-									MemoryBytes: getUint64Ptr(500),
+									MemoryBytes:      getUint64Ptr(500),
+									ModelRuntimeInfo: getModelRuntimeInfo(1),
 								},
 							},
 							Version: 1,
@@ -214,6 +222,9 @@ func TestRemoveModelVersion(t *testing.T) {
 				Model: &pbs.Model{
 					Meta: &pbs.MetaData{
 						Name: "iris",
+					},
+					ModelSpec: &pbs.ModelSpec{
+						ModelRuntimeInfo: getModelRuntimeInfo(1),
 					},
 				},
 				Version: 1,
@@ -234,7 +245,8 @@ func TestRemoveModelVersion(t *testing.T) {
 									Name: "iris",
 								},
 								ModelSpec: &pbs.ModelSpec{
-									MemoryBytes: getUint64Ptr(500),
+									MemoryBytes:      getUint64Ptr(500),
+									ModelRuntimeInfo: getModelRuntimeInfo(1),
 								},
 							},
 							Version: 1,
@@ -262,7 +274,7 @@ func TestRemoveModelVersion(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			modelDeleted, _ := test.state.removeModelVersion(test.modelVersion)
 			g.Expect(modelDeleted).To(Equal(test.modelDeleted))
-			//check version not exists
+			// check version not exists
 			g.Expect(test.state.versionExists("iris", test.modelVersion.GetVersion())).To(Equal(false))
 			if !modelDeleted {
 				g.Expect(test.state.getModelMemoryBytes("iris")).To(Equal(test.expectedModelBytes))

@@ -51,6 +51,7 @@ type mockAgentV2Server struct {
 	unloadFailedEvents int
 	otherEvents        int
 	errors             int
+	events             []*pb.ModelEventMessage
 }
 
 type FakeModelRepository struct {
@@ -62,6 +63,10 @@ type FakeModelRepository struct {
 func (f *FakeModelRepository) RemoveModelVersion(modelName string) error {
 	f.modelRemovals++
 	return nil
+}
+
+func (f *FakeModelRepository) GetModelRuntimeInfo(modelName string) (*pbs.ModelRuntimeInfo, error) {
+	return &pbs.ModelRuntimeInfo{ModelRuntimeInfo: &pbs.ModelRuntimeInfo_Mlserver{Mlserver: &pbs.MLServerModelSettings{ParallelWorkers: uint32(1)}}}, nil
 }
 
 func (f *FakeModelRepository) DownloadModelVersion(modelName string, version uint32, modelSpec *pbs.ModelSpec, config []byte) (*string, error) {
@@ -147,6 +152,7 @@ func (m *mockAgentV2Server) AgentEvent(ctx context.Context, message *pb.ModelEve
 	default:
 		m.otherEvents++
 	}
+	m.events = append(m.events, message)
 	return &pb.ModelEventResponse{}, nil
 }
 
@@ -254,8 +260,8 @@ func TestLoadModel(t *testing.T) {
 		autoscalingEnabled      bool
 	}
 
-	smallMemory := uint64(500)
-	largeMemory := uint64(2000)
+	memory500 := uint64(500)
+	memory2000 := uint64(2000)
 
 	tests := []test{
 		{
@@ -268,7 +274,7 @@ func TestLoadModel(t *testing.T) {
 						Meta: &pbs.MetaData{
 							Name: "iris",
 						},
-						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
+						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &memory500, ModelRuntimeInfo: getModelRuntimeInfo(1)},
 					},
 				},
 			},
@@ -287,7 +293,7 @@ func TestLoadModel(t *testing.T) {
 						Meta: &pbs.MetaData{
 							Name: "iris",
 						},
-						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
+						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &memory500, ModelRuntimeInfo: getModelRuntimeInfo(1)},
 					},
 				},
 				AutoscalingEnabled: true,
@@ -308,7 +314,7 @@ func TestLoadModel(t *testing.T) {
 						Meta: &pbs.MetaData{
 							Name: "iris",
 						},
-						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &smallMemory},
+						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &memory500, ModelRuntimeInfo: getModelRuntimeInfo(1)},
 					},
 				},
 			},
@@ -327,7 +333,7 @@ func TestLoadModel(t *testing.T) {
 						Meta: &pbs.MetaData{
 							Name: "iris",
 						},
-						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &largeMemory},
+						ModelSpec: &pbs.ModelSpec{Uri: "gs://model", MemoryBytes: &memory2000, ModelRuntimeInfo: getModelRuntimeInfo(1)},
 					},
 				},
 			},
@@ -399,6 +405,9 @@ func TestLoadModel(t *testing.T) {
 				g.Expect(err).To(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
+				g.Expect(len(mockAgentV2Server.events)).To(Equal(1))
+				g.Expect(mockAgentV2Server.events[0].RuntimeInfo).ToNot(BeNil())
+				g.Expect(mockAgentV2Server.events[0].RuntimeInfo.GetMlserver().ParallelWorkers).To(Equal(uint32(1)))
 				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 				g.Expect(modelRepository.modelRemovals).To(Equal(0))
 				loadedVersions := client.stateManager.modelVersions.getVersionsForAllModels()

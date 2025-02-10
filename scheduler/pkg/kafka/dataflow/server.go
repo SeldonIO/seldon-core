@@ -21,10 +21,10 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -55,7 +55,7 @@ type ChainerSubscription struct {
 }
 
 func NewChainerServer(logger log.FieldLogger, eventHub *coordinator.EventHub, pipelineHandler pipeline.PipelineHandler,
-	namespace string, loadBalancer util.LoadBalancer, kafkaConfig *config.KafkaConfig) (*ChainerServer, error) {
+	namespace string, loadBalancer util.LoadBalancer, kafkaConfig *kafka_config.KafkaConfig) (*ChainerServer, error) {
 	topicNamer, err := kafka.NewTopicNamer(namespace, kafkaConfig.TopicPrefix)
 	if err != nil {
 		return nil, err

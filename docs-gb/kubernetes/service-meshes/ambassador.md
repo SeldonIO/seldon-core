@@ -80,7 +80,7 @@ spec:
 ## Traffic Split
 
 {% hint style="warning" %}
-Traffic splitting does not presently work due to this [issue](https://github.com/emissary-ingress/emissary/issues/4062). We recommend you use a Seldon Experiment instead.
+**Note**: Traffic splitting does not presently work due to this [issue](https://github.com/emissary-ingress/emissary/issues/4062). We recommend you use a Seldon Experiment instead.
 {% endhint %}
 
 Seldon provides an Experiment resource for service mesh agnostic traffic splitting but if you wish to control this via Ambassador and example is shown below to split traffic between two models.
@@ -210,7 +210,7 @@ Assumes
  emissary-ingress-7.3.2 insatlled via [helm](https://www.getambassador.io/docs/emissary/latest/tutorials/getting-started/)
 
 
-```python
+```bash
 INGRESS_IP=!kubectl get svc emissary-ingress -n emissary -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 INGRESS_IP=INGRESS_IP[0]
 import os
@@ -228,8 +228,8 @@ INGRESS_IP
 ### Ambassador Single Model Example
 
 
-```python
-!kustomize build config/single-model
+```bash
+kustomize build config/single-model
 ```
 
     apiVersion: getambassador.io/v3alpha1
@@ -297,8 +297,8 @@ INGRESS_IP
 
 
 
-```python
-!kustomize build config/single-model | kubectl apply --validate=false -f -
+```bash
+kustomize build config/single-model | kubectl apply --validate=false -f -
 ```
 
     host.getambassador.io/wildcard created
@@ -309,16 +309,16 @@ INGRESS_IP
 
 
 
-```python
-!kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
+```bash
+kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
 ```
 
-    model.mlops.seldon.io/iris condition met
+```
+model.mlops.seldon.io/iris condition met
+```
 
-
-
-```python
-!curl -v http://${INGRESS_IP}/v2/models/iris/infer -H "Content-Type: application/json"\
+```bash
+curl -v http://${INGRESS_IP}/v2/models/iris/infer -H "Content-Type: application/json"\
         -d '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
@@ -344,8 +344,8 @@ INGRESS_IP
     {"model_name":"iris_1","model_version":"1","id":"72ac79f5-b355-4be3-b8c5-2ebedaa39f60","parameters":null,"outputs":[{"name":"predict","shape":[1],"datatype":"INT64","parameters":null,"data":[2]}]}
 
 
-```python
-!grpcurl -d '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' \
+```bash
+grpcurl -d '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' \
     -plaintext \
     -import-path ../../apis \
     -proto ../../apis/mlops/v2_dataplane/v2_dataplane.proto \
@@ -373,8 +373,8 @@ INGRESS_IP
 
 
 
-```python
-!kustomize build config/single-model | kubectl delete -f -
+```bash
+kustomize build config/single-model | kubectl delete -f -
 ```
 
     host.getambassador.io "wildcard" deleted
@@ -390,10 +390,10 @@ INGRESS_IP
 
 
 
-```python
-!kustomize build config/traffic-split
+```bash
+kustomize build config/traffic-split
 ```
-
+```yaml
     apiVersion: getambassador.io/v3alpha1
     kind: Host
     metadata:
@@ -506,8 +506,8 @@ INGRESS_IP
 
 
 
-```python
-!kustomize build config/traffic-split | kubectl apply -f -
+```bash
+kustomize build config/traffic-split | kubectl apply -f -
 ```
 
     host.getambassador.io/wildcard created
@@ -521,8 +521,8 @@ INGRESS_IP
 
 
 
-```python
-!kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
+```bash
+kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
 ```
 
     model.mlops.seldon.io/iris1 condition met
@@ -530,8 +530,8 @@ INGRESS_IP
 
 
 
-```python
-!curl -v http://${INGRESS_IP}/v2/models/iris/infer -H "Content-Type: application/json" \
+```bash
+curl -v http://${INGRESS_IP}/v2/models/iris/infer -H "Content-Type: application/json" \
         -d '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
 
@@ -558,8 +558,8 @@ INGRESS_IP
     {"model_name":"iris2_1","model_version":"1","id":"ed521c32-cd85-4cb8-90eb-7c896803f271","parameters":null,"outputs":[{"name":"predict","shape":[1],"datatype":"INT64","parameters":null,"data":[2]}]}
 
 
-```python
-!grpcurl -d '{"model_name":"iris1","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' \
+```bash
+grpcurl -d '{"model_name":"iris1","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' \
     -plaintext \
     -import-path ../../apis \
     -proto ../../apis/mlops/v2_dataplane/v2_dataplane.proto \
@@ -587,8 +587,8 @@ INGRESS_IP
 
 
 
-```python
-!kustomize build config/traffic-split | kubectl delete -f -
+```bash
+kustomize build config/traffic-split | kubectl delete -f -
 ```
 
     host.getambassador.io "wildcard" deleted

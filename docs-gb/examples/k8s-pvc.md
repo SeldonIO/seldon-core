@@ -32,7 +32,7 @@ To run this example in Kind we need to start Kind with access to a local folder 
 !cat kind-config.yaml
 ```
 
-```
+```yaml
 apiVersion: kind.x-k8s.io/v1alpha4
 kind: Cluster
 nodes:
@@ -65,7 +65,7 @@ Here we create a storage class and associated persistent colume referencing the 
 !cat pvc.yaml
 ```
 
-```
+```yaml
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -117,7 +117,7 @@ We also add a new capability `pvc` to allow us to schedule models to this server
 !cat server.yaml
 ```
 
-```
+```yaml
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
 metadata:
@@ -146,7 +146,7 @@ We use a simple sklearn iris classification model with the added `pvc` requireme
 !cat ./iris.yaml
 ```
 
-```
+```yaml
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Model
 metadata:

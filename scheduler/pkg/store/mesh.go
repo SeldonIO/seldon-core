@@ -101,6 +101,8 @@ type Server struct {
 	replicas         map[int]*ServerReplica
 	shared           bool
 	expectedReplicas int
+	minReplicas      int
+	maxReplicas      int
 	kubernetesMeta   *pb.KubernetesMeta
 }
 
@@ -122,12 +124,22 @@ func (s *Server) CreateSnapshot(shallow bool, modelDetails bool) *ServerSnapshot
 		Replicas:         replicas,
 		Shared:           s.shared,
 		ExpectedReplicas: s.expectedReplicas,
+		MinReplicas:      s.minReplicas,
+		MaxReplicas:      s.maxReplicas,
 		KubernetesMeta:   proto.Clone(s.kubernetesMeta).(*pb.KubernetesMeta),
 	}
 }
 
 func (s *Server) SetExpectedReplicas(replicas int) {
 	s.expectedReplicas = replicas
+}
+
+func (s *Server) SetMinReplicas(replicas int) {
+	s.minReplicas = replicas
+}
+
+func (s *Server) SetMaxReplicas(replicas int) {
+	s.maxReplicas = replicas
 }
 
 func (s *Server) SetKubernetesMeta(meta *pb.KubernetesMeta) {
@@ -375,7 +387,24 @@ func (m *ModelVersion) GetVersion() uint32 {
 }
 
 func (m *ModelVersion) GetRequiredMemory() uint64 {
-	return m.modelDefn.GetModelSpec().GetMemoryBytes()
+	var multiplier uint64 = 1
+	if m.GetModelSpec() != nil &&
+		m.GetModelSpec().ModelRuntimeInfo != nil &&
+		m.GetModelSpec().ModelRuntimeInfo.ModelRuntimeInfo != nil {
+		multiplier = getInstanceCount(m.GetModelSpec().ModelRuntimeInfo)
+	}
+	return m.modelDefn.GetModelSpec().GetMemoryBytes() * multiplier
+}
+
+func getInstanceCount(modelRuntimeInfo *pb.ModelRuntimeInfo) uint64 {
+	switch modelRuntimeInfo.ModelRuntimeInfo.(type) {
+	case *pb.ModelRuntimeInfo_Mlserver:
+		return uint64(modelRuntimeInfo.GetMlserver().ParallelWorkers)
+	case *pb.ModelRuntimeInfo_Triton:
+		return uint64(modelRuntimeInfo.GetTriton().Cpu[0].InstanceCount)
+	default:
+		return 1
+	}
 }
 
 func (m *ModelVersion) GetRequirements() []string {
@@ -546,6 +575,14 @@ func (m *ModelVersion) DeleteReplica(replicaIdx int) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	delete(m.replicas, replicaIdx)
+}
+
+func (m *ModelVersion) UpdateRuntimeInfo(runtimeInfo *pb.ModelRuntimeInfo) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if m.modelDefn.ModelSpec != nil && m.modelDefn.ModelSpec.ModelRuntimeInfo == nil && runtimeInfo != nil {
+		m.modelDefn.ModelSpec.ModelRuntimeInfo = runtimeInfo
+	}
 }
 
 func (s *Server) Key() string {

@@ -23,8 +23,15 @@ func (s *SchedulerServer) SubscribeControlPlane(req *pb.ControlPlaneSubscription
 		return err
 	}
 
-	fin := make(chan bool)
+	s.synchroniser.WaitReady()
 
+	err = s.sendResourcesMarker(stream)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to send resources marker to %s", req.GetSubscriberName())
+		return err
+	}
+
+	fin := make(chan bool)
 	s.controlPlaneStream.mu.Lock()
 	s.controlPlaneStream.streams[stream] = &ControlPlaneSubsription{
 		name:   req.GetSubscriberName(),
@@ -61,11 +68,20 @@ func (s *SchedulerServer) StopSendControlPlaneEvents() {
 // this is to mark the initial start of a new stream (at application level)
 // as otherwise the other side sometimes doesnt know if the scheduler has established a new stream explicitly
 func (s *SchedulerServer) sendStartServerStreamMarker(stream pb.Scheduler_SubscribeControlPlaneServer) error {
-	ssr := &pb.ControlPlaneResponse{}
+	ssr := &pb.ControlPlaneResponse{Event: pb.ControlPlaneResponse_SEND_SERVERS}
 	_, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
 	if err != nil {
 		return err
 	}
+	return nil
+}
 
+// this is to mark a stage to send resources (models, pipelines, experiments) from the controller
+func (s *SchedulerServer) sendResourcesMarker(stream pb.Scheduler_SubscribeControlPlaneServer) error {
+	ssr := &pb.ControlPlaneResponse{Event: pb.ControlPlaneResponse_SEND_RESOURCES}
+	_, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
+	if err != nil {
+		return err
+	}
 	return nil
 }

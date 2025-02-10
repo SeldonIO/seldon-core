@@ -1,6 +1,6 @@
 ---
-grafana_chart_version: 8.4.1
-grafana_app_version: 11.1.3
+grafana_chart_version: 8.6.4
+grafana_app_version: 11.3.1
 
 grafana_preloaded_dashboards:
   - name: mms

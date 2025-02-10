@@ -40,13 +40,13 @@ function load() {
   else
       if [ $1 == "model" ]
       then
-            seldon model load -f $2
+            SELDON_FORCE_CONTROL_PLANE=true seldon model load -f $2
       elif [ $1 == "pipeline" ]
       then
-            seldon pipeline load -f $2
+            SELDON_FORCE_CONTROL_PLANE=true seldon pipeline load -f $2
       elif [ $1 == "experiment" ]
       then
-            seldon experiment start -f $2
+            SELDON_FORCE_CONTROL_PLANE=true seldon experiment start -f $2
       fi
   fi
 }
@@ -59,13 +59,13 @@ function unload() {
   else
       if [ $1 == "model" ]
       then
-            seldon model unload $2
+            SELDON_FORCE_CONTROL_PLANE=true seldon model unload $2
       elif [ $1 == "pipeline" ]
       then
-            seldon pipeline unload $2
+            SELDON_FORCE_CONTROL_PLANE=true seldon pipeline unload $2
       elif [ $1 == "experiment" ]
       then
-            seldon experiment stop $2
+            SELDON_FORCE_CONTROL_PLANE=true seldon experiment stop $2
       fi
   fi
 }
@@ -86,13 +86,13 @@ function status() {
   else
       if [ $1 == "model" ]
       then
-            seldon model status $2 -w ModelAvailable | jq -M .
+            seldon model status $2 -w ModelAvailable -t 10 | jq -M .
       elif [ $1 == "pipeline" ]
       then
-            seldon pipeline status $2 -w PipelineReady | jq -M .
+            seldon pipeline status $2 -w PipelineReady -t 10 | jq -M .
       elif [ $1 == "experiment" ]
       then
-            seldon experiment status $2 -w | jq -M .
+            seldon experiment status $2 -w -t 10 | jq -M .
       fi
   fi
 }

@@ -2,18 +2,19 @@ CUSTOM_IMAGE_TAG ?= latest
 DOCKERHUB_USERNAME ?= seldonio
 NAMESPACE ?= seldon-mesh
 K6_VERSION ?= 0.51.0
+XK6_VERSION ?= 0.13.4
 
 IMG ?= ${DOCKERHUB_USERNAME}/seldon-k6:${CUSTOM_IMAGE_TAG}
 GIT_COMMIT := $(shell git rev-parse HEAD)
 GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 
 CMD = kubectl describe pod ${POD} -n ${NAMESPACE} | grep IP: -m 1 | cut -d' ' -f2- | xargs
+CMD_SVC = kubectl describe svc seldon-mesh -n ${NAMESPACE} | grep IP: -m 1 | cut -d' ' -f2- | xargs
 
 POD = seldon-scheduler
 SCHEDULER_ENDPOINT := $(shell ${CMD})
 
-POD = seldon-envoy
-ENVOY_ENDPOINT := $(shell ${CMD})
+ENVOY_ENDPOINT := $(shell ${CMD_SVC})
 
 POD = mlserver-0
 RPROXY_MLSERVER_ENDPOINT := $(shell ${CMD})
@@ -37,6 +38,7 @@ docker-build:
 		--build-arg GIT_COMMIT=${GIT_COMMIT} \
 		--build-arg GIT_BRANCH=${GIT_BRANCH} \
 		--build-arg K6_VERSION=${K6_VERSION} \
+		--build-arg XK6_VERSION=${XK6_VERSION} \
 		-t ${IMG} \
 		-f tests/k6/Dockerfile.k6 .
 	rm ../../k6.tar.gz

@@ -3,7 +3,7 @@
 This example runs you through a series of batch inference requests made to both models and pipelines running on Seldon Core locally.
 
 {% hint style="warning" %}
-Deprecated: The MLServer CLI `infer` feature is experimental and will be removed in future work.
+**Deprecated**: The MLServer CLI `infer` feature is experimental and will be removed in future work.
 {% endhint %}
 
 ## Setup
@@ -12,7 +12,7 @@ If you haven't already, you'll need to [clone the Seldon Core repository and run
 before you run through this example.
 
 {% hint style="info" %}
-By default, the CLI will expect your inference endpoint to be at `0.0.0.0:9000`. If you have
+**Note**: By default, the CLI will expect your inference endpoint to be at `0.0.0.0:9000`. If you have
 customized this, you'll need to [redirect the CLI](../cli/README.md).
 {% endhint %}
 
@@ -508,7 +508,7 @@ As before, we can run the inference batch job using the `mlserver infer` command
 mlserver infer -u localhost:9000 -m tfsimple1 -i batch-inputs/tfsimple-input.txt -o /tmp/tfsimple-output.txt --workers 10
 
 ```
-```
+```output
 2023-01-23 14:56:10,870 [mlserver] INFO - Using asyncio event-loop policy: uvloop
 2023-01-23 14:56:10,872 [mlserver] INFO - server url: localhost:9000
 2023-01-23 14:56:10,872 [mlserver] INFO - model name: tfsimple1

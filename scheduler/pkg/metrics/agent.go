@@ -21,6 +21,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 // Keep next line as used in docs
@@ -521,7 +523,9 @@ func (pm *PrometheusMetrics) Start(port int) error {
 func (pm *PrometheusMetrics) Stop() error {
 	pm.logger.Info("Graceful shutdown")
 	if pm.server != nil {
-		return pm.server.Shutdown(context.Background())
+		ctx, cancel := context.WithTimeout(context.Background(), util.ServerControlPlaneTimeout)
+		defer cancel()
+		return pm.server.Shutdown(ctx)
 	}
 	return nil
 }

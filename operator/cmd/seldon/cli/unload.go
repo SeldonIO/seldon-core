@@ -10,6 +10,9 @@ the Change License after the Change Date as each is defined in accordance with t
 package cli
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
 	"k8s.io/utils/env"
 
@@ -45,6 +48,14 @@ func createUnload() *cobra.Command {
 			if filename != "" {
 				dataFile = loadFile(filename)
 			}
+			force, err := flags.GetBool(flagForceControlPlane)
+			if err != nil {
+				return err
+			}
+			fmt.Println(helpForceControlPlaneWarning)
+			if !force {
+				return nil
+			}
 
 			schedulerClient, err := cli.NewSchedulerClient(schedulerHost, schedulerHostIsSet, authority, verbose)
 			if err != nil {
@@ -66,6 +77,11 @@ func createUnload() *cobra.Command {
 	flags.String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
 	flags.String(flagAuthority, "", helpAuthority)
 	flags.StringP(flagFile, "f", "", "model manifest file (YAML)")
+	forceFlag, err := env.GetBool(envForceControlPlane, defaultForceControlPlane)
+	if err != nil {
+		os.Exit(-1)
+	}
+	flags.Bool(flagForceControlPlane, forceFlag, helpForceControlPlane)
 
 	return cmd
 }

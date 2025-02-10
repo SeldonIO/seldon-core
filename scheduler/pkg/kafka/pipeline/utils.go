@@ -17,7 +17,6 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
@@ -30,14 +29,14 @@ func createResourceNameFromHeader(header string) (string, bool, error) {
 		}
 	case 2:
 		switch parts[1] {
-		case resources.SeldonPipelineHeaderSuffix:
+		case util.SeldonPipelineHeaderSuffix:
 			return parts[0], false, nil
-		case resources.SeldonModelHeaderSuffix:
+		case util.SeldonModelHeaderSuffix:
 			return parts[0], true, nil
 		}
 	}
 	return "", false, fmt.Errorf(
-		"Bad or missing header %s %s", resources.SeldonModelHeader, header)
+		"Bad or missing header %s %s", util.SeldonModelHeader, header)
 }
 
 func addRequestIdToKafkaHeadersIfMissing(headers []kafka.Header, requestId string) []kafka.Header {
@@ -57,7 +56,7 @@ func convertHttpHeadersToKafkaHeaders(httpHeaders http.Header) []kafka.Header {
 	var kafkaHeaders []kafka.Header
 	for k, vals := range httpHeaders {
 		key := strings.ToLower(k)
-		if strings.HasPrefix(key, resources.ExternalHeaderPrefix) {
+		if strings.HasPrefix(key, util.ExternalHeaderPrefix) {
 			for _, headerValue := range vals {
 				kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: key, Value: []byte(headerValue)})
 			}
@@ -69,7 +68,7 @@ func convertHttpHeadersToKafkaHeaders(httpHeaders http.Header) []kafka.Header {
 func convertKafkaHeadersToHttpHeaders(kafkaHeaders []kafka.Header) http.Header {
 	httpHeaders := make(http.Header)
 	for _, kafkaHeader := range kafkaHeaders {
-		if strings.HasPrefix(strings.ToLower(kafkaHeader.Key), resources.ExternalHeaderPrefix) {
+		if strings.HasPrefix(strings.ToLower(kafkaHeader.Key), util.ExternalHeaderPrefix) {
 			if val, ok := httpHeaders[kafkaHeader.Key]; ok {
 				val = append(val, string(kafkaHeader.Value))
 				httpHeaders[kafkaHeader.Key] = val
@@ -84,7 +83,7 @@ func convertKafkaHeadersToHttpHeaders(kafkaHeaders []kafka.Header) http.Header {
 func convertGrpcMetadataToKafkaHeaders(grpcMetadata metadata.MD) []kafka.Header {
 	var kafkaHeaders []kafka.Header
 	for k, vals := range grpcMetadata {
-		if strings.HasPrefix(strings.ToLower(k), resources.ExternalHeaderPrefix) {
+		if strings.HasPrefix(strings.ToLower(k), util.ExternalHeaderPrefix) {
 			for _, headerValue := range vals {
 				kafkaHeaders = append(kafkaHeaders, kafka.Header{Key: k, Value: []byte(headerValue)})
 			}
@@ -96,7 +95,7 @@ func convertGrpcMetadataToKafkaHeaders(grpcMetadata metadata.MD) []kafka.Header 
 func convertKafkaHeadersToGrpcMetadata(kafkaHeaders []kafka.Header) metadata.MD {
 	grpcMetadata := make(metadata.MD)
 	for _, kafkaHeader := range kafkaHeaders {
-		if strings.HasPrefix(strings.ToLower(kafkaHeader.Key), resources.ExternalHeaderPrefix) {
+		if strings.HasPrefix(strings.ToLower(kafkaHeader.Key), util.ExternalHeaderPrefix) {
 			if val, ok := grpcMetadata[kafkaHeader.Key]; ok {
 				val = append(val, string(kafkaHeader.Value))
 				grpcMetadata[kafkaHeader.Key] = val

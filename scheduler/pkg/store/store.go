@@ -19,6 +19,8 @@ type ServerSnapshot struct {
 	Replicas         map[int]*ServerReplica
 	Shared           bool
 	ExpectedReplicas int
+	MinReplicas      int
+	MaxReplicas      int
 	KubernetesMeta   *pb.KubernetesMeta
 }
 
@@ -58,7 +60,7 @@ func (m *ModelSnapshot) GetPrevious() *ModelVersion {
 }
 
 func (m *ModelSnapshot) getLastAvailableModelIdx() int {
-	if m == nil { //TODO Make safe by not working on actual object
+	if m == nil { // TODO Make safe by not working on actual object
 		return -1
 	}
 	lastAvailableIdx := -1
@@ -82,7 +84,7 @@ func (m *ModelSnapshot) CanReceiveTraffic() bool {
 }
 
 func (m *ModelSnapshot) GetLastAvailableModel() *ModelVersion {
-	if m == nil { //TODO Make safe by not working on actual object
+	if m == nil { // TODO Make safe by not working on actual object
 		return nil
 	}
 	lastAvailableIdx := m.getLastAvailableModelIdx()
@@ -93,7 +95,7 @@ func (m *ModelSnapshot) GetLastAvailableModel() *ModelVersion {
 }
 
 func (m *ModelSnapshot) GetVersionsBeforeLastAvailable() []*ModelVersion {
-	if m == nil { //TODO Make safe by not working on actual object
+	if m == nil { // TODO Make safe by not working on actual object
 		return nil
 	}
 	lastAvailableIdx := m.getLastAvailableModelIdx()
@@ -114,7 +116,7 @@ type ModelStore interface {
 	GetServer(serverKey string, shallow bool, modelDetails bool) (*ServerSnapshot, error)
 	UpdateLoadedModels(modelKey string, version uint32, serverKey string, replicas []*ServerReplica) error
 	UnloadVersionModels(modelKey string, version uint32) (bool, error)
-	UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState ModelReplicaState, reason string) error
+	UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState ModelReplicaState, reason string, runtimeInfo *pb.ModelRuntimeInfo) error
 	AddServerReplica(request *pba.AgentSubscribeRequest) error
 	ServerNotify(request *pb.ServerNotify) error
 	RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) // return previously loaded models

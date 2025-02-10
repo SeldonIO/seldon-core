@@ -11,6 +11,7 @@ package cli
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 	"k8s.io/utils/env"
@@ -24,7 +25,7 @@ const (
 	flagOutputFormat   = "format"
 	flagTruncate       = "truncate"
 	flagNamespace      = "namespace"
-	flagTimeoutDefault = int64(60)
+	flagTimeoutDefault = int64(5)
 )
 
 func createPipelineInspect() *cobra.Command {
@@ -70,12 +71,20 @@ func createPipelineInspect() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			data := []byte(args[0])
-			kc, err := cli.NewKafkaClient(kafkaBroker, kafkaBrokerIsSet, schedulerHost, schedulerHostIsSet)
+			kafkaConfigPath, err := flags.GetString(flagKafkaConfigPath)
 			if err != nil {
 				return err
 			}
-			err = kc.InspectStep(string(data), offset, requestId, format, verbose, truncateData, namespace)
+			timeoutSecs, err := flags.GetInt64(flagTimeout)
+			if err != nil {
+				return err
+			}
+			kc, err := cli.NewKafkaClient(kafkaBroker, kafkaBrokerIsSet, schedulerHost, schedulerHostIsSet, kafkaConfigPath)
+			if err != nil {
+				return err
+			}
+			data := []byte(args[0])
+			err = kc.InspectStep(string(data), offset, requestId, format, verbose, truncateData, namespace, time.Duration(timeoutSecs)*time.Second)
 			return err
 		},
 	}
@@ -86,8 +95,10 @@ func createPipelineInspect() *cobra.Command {
 	flags.String(flagRequestId, "", "request id to show, if not specified will be all messages in offset range")
 	flags.String(flagSchedulerHost, env.GetString(envScheduler, defaultSchedulerHost), helpSchedulerHost)
 	flags.String(flagOutputFormat, cli.InspectFormatRaw, fmt.Sprintf("inspect output format: raw or json. Default %s", cli.InspectFormatRaw))
-	flags.String(flagNamespace, "", fmt.Sprintf("Kubernetes namespace. Default %s", cli.DefaultNamespace))
+	flags.String(flagNamespace, env.GetString(envNamespace, cli.DefaultNamespace), fmt.Sprintf("Kubernetes namespace. Default %s", cli.DefaultNamespace))
 	flags.BoolP(flagVerbose, "v", false, "display more details, such as headers")
 	flags.BoolP(flagTruncate, "t", false, "truncate data")
+	flags.String(flagKafkaConfigPath, env.GetString(envKafkaConfigPath, ""), "path to kafka config file")
+	flags.Int64P(flagTimeout, "d", flagTimeoutDefault, "timeout seconds for kafka operations")
 	return cmd
 }

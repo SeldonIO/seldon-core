@@ -49,6 +49,21 @@ func TestUpdateModel(t *testing.T) {
 			expectedVersion: 1,
 		},
 		{
+			name:  "simple with generation",
+			store: NewLocalSchedulerStore(),
+			loadModelReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{
+						Name: "model",
+						KubernetesMeta: &pb.KubernetesMeta{
+							Generation: 100,
+						},
+					},
+				},
+			},
+			expectedVersion: 100,
+		},
+		{
 			name: "VersionAlreadyExists",
 			store: &LocalSchedulerStore{
 				models: map[string]*Model{
@@ -337,15 +352,16 @@ func TestUpdateLoadedModels(t *testing.T) {
 	memBytes := uint64(1)
 
 	type test struct {
-		name           string
-		store          *LocalSchedulerStore
-		modelKey       string
-		version        uint32
-		serverKey      string
-		replicas       []*ServerReplica
-		expectedStates map[int]ReplicaStatus
-		err            bool
-		isModelDeleted bool
+		name               string
+		store              *LocalSchedulerStore
+		modelKey           string
+		version            uint32
+		serverKey          string
+		replicas           []*ServerReplica
+		expectedStates     map[int]ReplicaStatus
+		err                bool
+		isModelDeleted     bool
+		expectedModelState *ModelStatus
 	}
 
 	tests := []test{
@@ -673,6 +689,78 @@ func TestUpdateLoadedModels(t *testing.T) {
 			isModelDeleted: true,
 			expectedStates: map[int]ReplicaStatus{},
 		},
+		{
+			name: "ProgressModelLoading",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"model": {
+					versions: []*ModelVersion{
+						{
+							modelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
+							server:    "server",
+							version:   1,
+							replicas: map[int]ReplicaStatus{
+								0: {State: Available},
+								1: {State: Unloaded},
+							},
+							state: ModelStatus{State: ModelProgressing},
+						},
+					},
+				}},
+				servers: map[string]*Server{
+					"server": {
+						name: "server",
+						replicas: map[int]*ServerReplica{
+							0: {},
+							1: {},
+						},
+					},
+				},
+			},
+			modelKey:  "model",
+			version:   1,
+			serverKey: "server",
+			replicas: []*ServerReplica{
+				{replicaIdx: 0},
+			},
+			expectedStates:     map[int]ReplicaStatus{0: {State: Available}, 1: {State: Unloaded}},
+			expectedModelState: &ModelStatus{State: ModelAvailable},
+		},
+		{
+			name: "PartiallyAvailableModels",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"model": {
+					versions: []*ModelVersion{
+						{
+							modelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 3, MinReplicas: 2}},
+							server:    "server",
+							version:   1,
+							replicas: map[int]ReplicaStatus{
+								0: {State: Available},
+								1: {State: Available},
+							},
+							state: ModelStatus{State: ModelProgressing},
+						},
+					},
+				}},
+				servers: map[string]*Server{
+					"server": {
+						name: "server",
+						replicas: map[int]*ServerReplica{
+							0: {},
+							1: {},
+						},
+					},
+				},
+			},
+			modelKey:  "model",
+			version:   1,
+			serverKey: "server",
+			replicas: []*ServerReplica{
+				{replicaIdx: 0}, {replicaIdx: 1},
+			},
+			expectedStates:     map[int]ReplicaStatus{0: {State: Available}, 1: {State: Available}},
+			expectedModelState: &ModelStatus{State: ModelAvailable},
+		},
 	}
 
 	for _, test := range tests {
@@ -688,8 +776,8 @@ func TestUpdateLoadedModels(t *testing.T) {
 			if !test.err {
 				g.Expect(err).To(BeNil())
 				g.Expect(msg).ToNot(BeNil())
+				mv := test.store.models[test.modelKey].Latest()
 				for replicaIdx, state := range test.expectedStates {
-					mv := test.store.models[test.modelKey].Latest()
 					g.Expect(mv).ToNot(BeNil())
 					g.Expect(mv.GetModelReplicaState(replicaIdx)).To(Equal(state.State))
 					ss, _ := ms.GetServer(test.serverKey, false, true)
@@ -698,6 +786,9 @@ func TestUpdateLoadedModels(t *testing.T) {
 					} else {
 						g.Expect(ss.Replicas[replicaIdx].GetReservedMemory()).To(Equal(uint64(0)))
 					}
+				}
+				if test.expectedModelState != nil {
+					g.Expect(mv.state.State).To(Equal(test.expectedModelState.State))
 				}
 			} else {
 				g.Expect(err).ToNot(BeNil())
@@ -721,6 +812,7 @@ func TestUpdateModelState(t *testing.T) {
 		expectedState          ModelReplicaState
 		desiredState           ModelReplicaState
 		availableMemory        uint64
+		modelRuntimeInfo       *pb.ModelRuntimeInfo
 		numModelVersionsLoaded int
 		modelVersionLoaded     bool
 		deleted                bool
@@ -759,6 +851,7 @@ func TestUpdateModelState(t *testing.T) {
 			numModelVersionsLoaded: 1,
 			modelVersionLoaded:     true,
 			availableMemory:        20,
+			modelRuntimeInfo:       &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &pb.MLServerModelSettings{ParallelWorkers: uint32(1)}}},
 		},
 		{
 			name: "UnloadedModel",
@@ -791,6 +884,7 @@ func TestUpdateModelState(t *testing.T) {
 			numModelVersionsLoaded: 0,
 			modelVersionLoaded:     false,
 			availableMemory:        20,
+			modelRuntimeInfo:       &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &pb.MLServerModelSettings{ParallelWorkers: uint32(1)}}},
 		},
 		{
 			name: "Unloaded model but not matching expected state",
@@ -859,6 +953,7 @@ func TestUpdateModelState(t *testing.T) {
 			modelVersionLoaded:     false,
 			availableMemory:        20,
 			deleted:                true,
+			modelRuntimeInfo:       &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &pb.MLServerModelSettings{ParallelWorkers: uint32(1)}}},
 		},
 		{
 			name: "Model updated but not latest on replica which is loaded",
@@ -900,6 +995,7 @@ func TestUpdateModelState(t *testing.T) {
 			numModelVersionsLoaded: 1,
 			modelVersionLoaded:     false,
 			availableMemory:        20,
+			modelRuntimeInfo:       &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &pb.MLServerModelSettings{ParallelWorkers: uint32(1)}}},
 			err:                    false,
 		},
 		{
@@ -927,7 +1023,7 @@ func TestUpdateModelState(t *testing.T) {
 					"server": {
 						name: "server",
 						replicas: map[int]*ServerReplica{
-							0: {loadedModels: map[ModelVersionID]bool{{Name: "foo", Version: 2}: true, {Name: "foo", Version: 1}: true}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{"foo": true}},
+							0: {loadedModels: map[ModelVersionID]bool{{Name: "foo", Version: 2}: true, {Name: "foo", Version: 1}: true}, reservedMemory: memBytes * 2, uniqueLoadedModels: map[string]bool{"foo": true}},
 							1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
 						},
 					},
@@ -942,10 +1038,43 @@ func TestUpdateModelState(t *testing.T) {
 			numModelVersionsLoaded: 1,
 			modelVersionLoaded:     false,
 			availableMemory:        20,
+			modelRuntimeInfo:       &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &pb.MLServerModelSettings{ParallelWorkers: uint32(2)}}},
 			err:                    false,
 		},
+		{
+			name: "Existing ModelRuntimeInfo is not overwritten",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{"model": {
+					versions: []*ModelVersion{
+						{
+							modelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes, ModelRuntimeInfo: &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &pb.MLServerModelSettings{ParallelWorkers: uint32(2)}}}}},
+							version:   1,
+							replicas:  map[int]ReplicaStatus{},
+						},
+					},
+				}},
+				servers: map[string]*Server{
+					"server": {
+						name: "server",
+						replicas: map[int]*ServerReplica{
+							0: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
+							1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
+						},
+					},
+				},
+			},
+			modelKey:               "model",
+			version:                1,
+			serverKey:              "server",
+			replicaIdx:             0,
+			expectedState:          ModelReplicaStateUnknown,
+			desiredState:           Loaded,
+			numModelVersionsLoaded: 1,
+			modelVersionLoaded:     true,
+			availableMemory:        20,
+			modelRuntimeInfo:       &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &pb.MLServerModelSettings{ParallelWorkers: uint32(500)}}},
+		},
 	}
-
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			logger := log.New()
@@ -954,8 +1083,14 @@ func TestUpdateModelState(t *testing.T) {
 			if test.deleted {
 				test.store.models[test.modelKey].SetDeleted()
 			}
+			var expectedModelRuntimeInfo *pb.ModelRuntimeInfo
+			if test.store.models[test.modelKey].GetVersion(test.version).modelDefn.ModelSpec.ModelRuntimeInfo != nil {
+				expectedModelRuntimeInfo = test.store.models[test.modelKey].GetVersion(test.version).modelDefn.ModelSpec.ModelRuntimeInfo
+			} else {
+				expectedModelRuntimeInfo = test.modelRuntimeInfo
+			}
 			ms := NewMemoryStore(logger, test.store, eventHub)
-			err = ms.UpdateModelState(test.modelKey, test.version, test.serverKey, test.replicaIdx, &test.availableMemory, test.expectedState, test.desiredState, "")
+			err = ms.UpdateModelState(test.modelKey, test.version, test.serverKey, test.replicaIdx, &test.availableMemory, test.expectedState, test.desiredState, "", test.modelRuntimeInfo)
 			if !test.err {
 				g.Expect(err).To(BeNil())
 				if !test.deleted {
@@ -967,13 +1102,16 @@ func TestUpdateModelState(t *testing.T) {
 					g.Expect(test.store.models[test.modelKey].Latest().state.State).To(Equal(ModelTerminated))
 				}
 
+				if expectedModelRuntimeInfo != nil {
+					g.Expect(test.store.models[test.modelKey].GetVersion(test.version).modelDefn.ModelSpec.ModelRuntimeInfo).To(Equal(expectedModelRuntimeInfo))
+				}
 			} else {
 				g.Expect(err).ToNot(BeNil())
 			}
 			if test.desiredState == Loaded || test.desiredState == LoadFailed {
 				g.Expect(test.store.servers[test.serverKey].replicas[test.replicaIdx].GetReservedMemory()).To(Equal(uint64(0)))
 			} else {
-				g.Expect(test.store.servers[test.serverKey].replicas[test.replicaIdx].GetReservedMemory()).To(Equal(memBytes))
+				g.Expect(test.store.servers[test.serverKey].replicas[test.replicaIdx].GetReservedMemory()).To(Equal(test.store.models[test.modelKey].GetVersion(test.version).GetRequiredMemory()))
 			}
 
 			uniqueLoadedModels := toUniqueModels(test.store.servers[test.serverKey].replicas[test.replicaIdx].loadedModels)
@@ -1477,13 +1615,15 @@ func TestAddServerReplica(t *testing.T) {
 					{
 						Model: &pb.Model{
 							Meta:      &pb.MetaData{Name: "model1"},
-							ModelSpec: &pb.ModelSpec{}},
+							ModelSpec: &pb.ModelSpec{},
+						},
 						Version: 1,
 					},
 					{
 						Model: &pb.Model{
 							Meta:      &pb.MetaData{Name: "model2"},
-							ModelSpec: &pb.ModelSpec{}},
+							ModelSpec: &pb.ModelSpec{},
+						},
 						Version: 1,
 					},
 				},

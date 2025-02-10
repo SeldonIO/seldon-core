@@ -16,7 +16,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 )
 
@@ -96,7 +97,7 @@ func TestLoadOrStorePipeline(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			km, err := NewKafkaManager(logrus.New(), "default", &config.KafkaConfig{}, tracer, 10, 10)
+			km, err := NewKafkaManager(logrus.New(), "default", &kafka_config.KafkaConfig{}, tracer, 10, 10)
 			g.Expect(err).To(BeNil())
 			if test.pipeline != nil {
 				km.pipelines.Store(getPipelineKey(test.resourceName, test.isModel), test.pipeline)

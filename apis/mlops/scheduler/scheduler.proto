@@ -42,8 +42,14 @@ message ModelSpec {
   repeated string requirements = 4; // list of capabilities the server must satisfy to run this model
   optional uint64 memoryBytes = 5; // Requested memory
   optional string server = 6; // the particular model server to load the model. If unspecified will be chosen.
-  optional ExplainerSpec explainer = 7; // optional black box explainer details
   repeated ParameterSpec parameters = 8; // parameters to load with model
+  optional ModelRuntimeInfo modelRuntimeInfo = 9; // model specific settings that are sent by the agent
+
+  // ensure only one of explainer or llm is specified at a time
+  oneof model_spec {
+    ExplainerSpec explainer = 7; // optional black box explainer details
+    LlmSpec llm = 10; // optional LLM specific settings
+  }
 }
 
 message ParameterSpec {
@@ -56,6 +62,30 @@ message ExplainerSpec {
   // 1 of semantic either model or pipeline reference
   optional string modelRef = 2;
   optional string pipelineRef = 3;
+}
+
+message LlmSpec {
+  optional string modelRef = 1;
+  optional string pipelineRef = 2;
+}
+
+message ModelRuntimeInfo {
+  oneof modelRuntimeInfo {
+    MLServerModelSettings mlserver = 1; 
+    TritonModelConfig triton = 2;
+    }
+}
+
+message MLServerModelSettings {
+  uint32 parallelWorkers = 1;
+}
+
+message TritonModelConfig {
+  repeated TritonCPU cpu = 1;
+}
+
+message TritonCPU {
+  uint32 instanceCount = 1;
 }
 
 message KubernetesMeta {
@@ -158,6 +188,18 @@ message ServerStatusRequest {
 /* ServerStatusResponse provides details of current server status
 */
 message ServerStatusResponse {
+  /* Type of SterverStatus update. At the moment the scheduler doesn't combine multiple types of
+   * updates in the same response. However, the Type enum is forward-compatible with this
+   * possibility, by setting members to power-of-two values. This means enum values can be used
+   * as flags and combined with bitwise OR, with the exception of StatusResponseTypeUnknown.
+   */
+  enum Type {
+    StatusResponseTypeUnknown = 0;
+    StatusUpdate = 1;
+    NonAuthoritativeReplicaInfo = 2;
+    ScalingRequest = 4;
+  }
+  Type type = 7;
   string serverName = 1;
   repeated ServerReplicaResources resources = 2;
   int32 expectedReplicas = 3;
@@ -191,7 +233,9 @@ message ServerNotifyRequest {
 
 message ServerNotify {
   string name = 1;
-  int32 expectedReplicas = 2;
+  uint32 expectedReplicas = 2;
+  uint32 minReplicas = 5;
+  uint32 maxReplicas = 6;
   bool shared = 3;
   optional KubernetesMeta kubernetesMeta = 4;
 }
@@ -390,7 +434,12 @@ message ControlPlaneSubscriptionRequest {
 }
 
 message ControlPlaneResponse {
-
+  enum Event {
+    UNKNOWN_EVENT = 0;
+    SEND_SERVERS = 1;  // initial sync for the servers
+    SEND_RESOURCES = 2;  // send models / pipelines / experiments
+  }
+  Event event = 1;
 }
 
 // [END Messages]

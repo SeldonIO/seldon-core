@@ -1,0 +1,774 @@
+[
+    {
+        "name": "listener_0",
+        "virtualHosts": [
+            {
+                "name": "seldon_service",
+                "domains": [
+                    "*"
+                ],
+                "routes": [
+                    {
+                        "name": "model1_http_experiment",
+                        "match": {
+                            "prefix": "/v2",
+                            "headers": [
+                                {
+                                    "name": "seldon-model",
+                                    "stringMatch": {
+                                        "exact": "model1"
+                                    }
+                                },
+                                {
+                                    "name": "x-seldon-route",
+                                    "stringMatch": {
+                                        "contains": ":model1_1:"
+                                    }
+                                }
+                            ]
+                        },
+                        "route": {
+                            "cluster": "model1_1_http",
+                            "timeout": "0s"
+                        },
+                        "requestHeadersToAdd": [
+                            {
+                                "header": {
+                                    "key": "seldon-internal-model",
+                                    "value": "model1_1"
+                                }
+                            },
+                            {
+                                "header": {
+                                    "key": "seldon-model",
+                                    "value": "model1"
+                                }
+                            }
+                        ],
+                        "responseHeadersToAdd": [
+                            {
+                                "header": {
+                                    "key": "x-seldon-route",
+                                    "value": ":model1_1:"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "model1_grpc_experiment",
+                        "match": {
+                            "prefix": "/inference.GRPCInferenceService",
+                            "headers": [
+                                {
+                                    "name": "seldon-model",
+                                    "stringMatch": {
+                                        "exact": "model1"
+                                    }
+                                },
+                                {
+                                    "name": "x-seldon-route",
+                                    "stringMatch": {
+                                        "contains": ":model1_1:"
+                                    }
+                                }
+                            ]
+                        },
+                        "route": {
+                            "cluster": "model1_1_grpc",
+                            "timeout": "0s"
+                        },
+                        "requestHeadersToAdd": [
+                            {
+                                "header": {
+                                    "key": "seldon-internal-model",
+                                    "value": "model1_1"
+                                }
+                            },
+                            {
+                                "header": {
+                                    "key": "seldon-model",
+                                    "value": "model1"
+                                }
+                            }
+                        ],
+                        "responseHeadersToAdd": [
+                            {
+                                "header": {
+                                    "key": "x-seldon-route",
+                                    "value": ":model1_1:"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "model1_http_experiment",
+                        "match": {
+                            "prefix": "/v2",
+                            "headers": [
+                                {
+                                    "name": "seldon-model",
+                                    "stringMatch": {
+                                        "exact": "model1"
+                                    }
+                                },
+                                {
+                                    "name": "x-seldon-route",
+                                    "stringMatch": {
+                                        "contains": ":model2_1:"
+                                    }
+                                }
+                            ]
+                        },
+                        "route": {
+                            "cluster": "model2_1_http",
+                            "timeout": "0s"
+                        },
+                        "requestHeadersToAdd": [
+                            {
+                                "header": {
+                                    "key": "seldon-internal-model",
+                                    "value": "model2_1"
+                                }
+                            },
+                            {
+                                "header": {
+                                    "key": "seldon-model",
+                                    "value": "model2"
+                                }
+                            }
+                        ],
+                        "responseHeadersToAdd": [
+                            {
+                                "header": {
+                                    "key": "x-seldon-route",
+                                    "value": ":model2_1:"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "model1_grpc_experiment",
+                        "match": {
+                            "prefix": "/inference.GRPCInferenceService",
+                            "headers": [
+                                {
+                                    "name": "seldon-model",
+                                    "stringMatch": {
+                                        "exact": "model1"
+                                    }
+                                },
+                                {
+                                    "name": "x-seldon-route",
+                                    "stringMatch": {
+                                        "contains": ":model2_1:"
+                                    }
+                                }
+                            ]
+                        },
+                        "route": {
+                            "cluster": "model2_1_grpc",
+                            "timeout": "0s"
+                        },
+                        "requestHeadersToAdd": [
+                            {
+                                "header": {
+                                    "key": "seldon-internal-model",
+                                    "value": "model2_1"
+                                }
+                            },
+                            {
+                                "header": {
+                                    "key": "seldon-model",
+                                    "value": "model2"
+                                }
+                            }
+                        ],
+                        "responseHeadersToAdd": [
+                            {
+                                "header": {
+                                    "key": "x-seldon-route",
+                                    "value": ":model2_1:"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "model1_http",
+                        "match": {
+                            "prefix": "/v2",
+                            "headers": [
+                                {
+                                    "name": "seldon-model",
+                                    "stringMatch": {
+                                        "exact": "model1"
+                                    }
+                                },
+                                {
+                                    "name": "x-seldon-route",
+                                    "presentMatch": false
+                                }
+                            ]
+                        },
+                        "route": {
+                            "weightedClusters": {
+                                "clusters": [
+                                    {
+                                        "name": "model1_1_http",
+                                        "weight": 1,
+                                        "requestHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "seldon-internal-model",
+                                                    "value": "model1_1"
+                                                }
+                                            }
+                                        ],
+                                        "requestHeadersToRemove": [
+                                            "seldon-internal-model"
+                                        ],
+                                        "responseHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "x-seldon-route",
+                                                    "value": ":model1_1:"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "name": "model2_1_http",
+                                        "weight": 1,
+                                        "requestHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "seldon-internal-model",
+                                                    "value": "model2_1"
+                                                }
+                                            }
+                                        ],
+                                        "requestHeadersToRemove": [
+                                            "seldon-internal-model"
+                                        ],
+                                        "responseHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "x-seldon-route",
+                                                    "value": ":model2_1:"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "timeout": "0s"
+                        }
+                    },
+                    {
+                        "name": "model1_grpc",
+                        "match": {
+                            "prefix": "/inference.GRPCInferenceService",
+                            "headers": [
+                                {
+                                    "name": "seldon-model",
+                                    "stringMatch": {
+                                        "exact": "model1"
+                                    }
+                                },
+                                {
+                                    "name": "x-seldon-route",
+                                    "presentMatch": false
+                                }
+                            ]
+                        },
+                        "route": {
+                            "weightedClusters": {
+                                "clusters": [
+                                    {
+                                        "name": "model1_1_grpc",
+                                        "weight": 1,
+                                        "requestHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "seldon-internal-model",
+                                                    "value": "model1_1"
+                                                }
+                                            }
+                                        ],
+                                        "requestHeadersToRemove": [
+                                            "seldon-internal-model"
+                                        ],
+                                        "responseHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "x-seldon-route",
+                                                    "value": ":model1_1:"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "name": "model2_1_grpc",
+                                        "weight": 1,
+                                        "requestHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "seldon-internal-model",
+                                                    "value": "model2_1"
+                                                }
+                                            }
+                                        ],
+                                        "requestHeadersToRemove": [
+                                            "seldon-internal-model"
+                                        ],
+                                        "responseHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "x-seldon-route",
+                                                    "value": ":model2_1:"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "timeout": "0s"
+                        }
+                    },
+                    {
+                        "name": "model2_http",
+                        "match": {
+                            "prefix": "/v2",
+                            "headers": [
+                                {
+                                    "name": "seldon-model",
+                                    "stringMatch": {
+                                        "exact": "model2"
+                                    }
+                                },
+                                {
+                                    "name": "x-seldon-route",
+                                    "presentMatch": false
+                                }
+                            ]
+                        },
+                        "route": {
+                            "weightedClusters": {
+                                "clusters": [
+                                    {
+                                        "name": "model2_1_http",
+                                        "weight": 100,
+                                        "requestHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "seldon-internal-model",
+                                                    "value": "model2_1"
+                                                }
+                                            }
+                                        ],
+                                        "requestHeadersToRemove": [
+                                            "seldon-internal-model"
+                                        ],
+                                        "responseHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "x-seldon-route",
+                                                    "value": ":model2_1:"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "timeout": "0s"
+                        }
+                    },
+                    {
+                        "name": "model2_grpc",
+                        "match": {
+                            "prefix": "/inference.GRPCInferenceService",
+                            "headers": [
+                                {
+                                    "name": "seldon-model",
+                                    "stringMatch": {
+                                        "exact": "model2"
+                                    }
+                                },
+                                {
+                                    "name": "x-seldon-route",
+                                    "presentMatch": false
+                                }
+                            ]
+                        },
+                        "route": {
+                            "weightedClusters": {
+                                "clusters": [
+                                    {
+                                        "name": "model2_1_grpc",
+                                        "weight": 100,
+                                        "requestHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "seldon-internal-model",
+                                                    "value": "model2_1"
+                                                }
+                                            }
+                                        ],
+                                        "requestHeadersToRemove": [
+                                            "seldon-internal-model"
+                                        ],
+                                        "responseHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "x-seldon-route",
+                                                    "value": ":model2_1:"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "timeout": "0s"
+                        }
+                    },
+                    {
+                        "name": "exp.experiment_http_experiment",
+                        "match": {
+                            "prefix": "/v2",
+                            "headers": [
+                                {
+                                    "name": "seldon-model",
+                                    "stringMatch": {
+                                        "exact": "exp.experiment"
+                                    }
+                                },
+                                {
+                                    "name": "x-seldon-route",
+                                    "stringMatch": {
+                                        "contains": ":model1_1:"
+                                    }
+                                }
+                            ]
+                        },
+                        "route": {
+                            "cluster": "model1_1_http",
+                            "timeout": "0s"
+                        },
+                        "requestHeadersToAdd": [
+                            {
+                                "header": {
+                                    "key": "seldon-internal-model",
+                                    "value": "model1_1"
+                                }
+                            },
+                            {
+                                "header": {
+                                    "key": "seldon-model",
+                                    "value": "model1"
+                                }
+                            }
+                        ],
+                        "responseHeadersToAdd": [
+                            {
+                                "header": {
+                                    "key": "x-seldon-route",
+                                    "value": ":model1_1:"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "exp.experiment_grpc_experiment",
+                        "match": {
+                            "prefix": "/inference.GRPCInferenceService",
+                            "headers": [
+                                {
+                                    "name": "seldon-model",
+                                    "stringMatch": {
+                                        "exact": "exp.experiment"
+                                    }
+                                },
+                                {
+                                    "name": "x-seldon-route",
+                                    "stringMatch": {
+                                        "contains": ":model1_1:"
+                                    }
+                                }
+                            ]
+                        },
+                        "route": {
+                            "cluster": "model1_1_grpc",
+                            "timeout": "0s"
+                        },
+                        "requestHeadersToAdd": [
+                            {
+                                "header": {
+                                    "key": "seldon-internal-model",
+                                    "value": "model1_1"
+                                }
+                            },
+                            {
+                                "header": {
+                                    "key": "seldon-model",
+                                    "value": "model1"
+                                }
+                            }
+                        ],
+                        "responseHeadersToAdd": [
+                            {
+                                "header": {
+                                    "key": "x-seldon-route",
+                                    "value": ":model1_1:"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "exp.experiment_http_experiment",
+                        "match": {
+                            "prefix": "/v2",
+                            "headers": [
+                                {
+                                    "name": "seldon-model",
+                                    "stringMatch": {
+                                        "exact": "exp.experiment"
+                                    }
+                                },
+                                {
+                                    "name": "x-seldon-route",
+                                    "stringMatch": {
+                                        "contains": ":model2_1:"
+                                    }
+                                }
+                            ]
+                        },
+                        "route": {
+                            "cluster": "model2_1_http",
+                            "timeout": "0s"
+                        },
+                        "requestHeadersToAdd": [
+                            {
+                                "header": {
+                                    "key": "seldon-internal-model",
+                                    "value": "model2_1"
+                                }
+                            },
+                            {
+                                "header": {
+                                    "key": "seldon-model",
+                                    "value": "model2"
+                                }
+                            }
+                        ],
+                        "responseHeadersToAdd": [
+                            {
+                                "header": {
+                                    "key": "x-seldon-route",
+                                    "value": ":model2_1:"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "exp.experiment_grpc_experiment",
+                        "match": {
+                            "prefix": "/inference.GRPCInferenceService",
+                            "headers": [
+                                {
+                                    "name": "seldon-model",
+                                    "stringMatch": {
+                                        "exact": "exp.experiment"
+                                    }
+                                },
+                                {
+                                    "name": "x-seldon-route",
+                                    "stringMatch": {
+                                        "contains": ":model2_1:"
+                                    }
+                                }
+                            ]
+                        },
+                        "route": {
+                            "cluster": "model2_1_grpc",
+                            "timeout": "0s"
+                        },
+                        "requestHeadersToAdd": [
+                            {
+                                "header": {
+                                    "key": "seldon-internal-model",
+                                    "value": "model2_1"
+                                }
+                            },
+                            {
+                                "header": {
+                                    "key": "seldon-model",
+                                    "value": "model2"
+                                }
+                            }
+                        ],
+                        "responseHeadersToAdd": [
+                            {
+                                "header": {
+                                    "key": "x-seldon-route",
+                                    "value": ":model2_1:"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "exp.experiment_http",
+                        "match": {
+                            "prefix": "/v2",
+                            "headers": [
+                                {
+                                    "name": "seldon-model",
+                                    "stringMatch": {
+                                        "exact": "exp.experiment"
+                                    }
+                                },
+                                {
+                                    "name": "x-seldon-route",
+                                    "presentMatch": false
+                                }
+                            ]
+                        },
+                        "route": {
+                            "weightedClusters": {
+                                "clusters": [
+                                    {
+                                        "name": "model1_1_http",
+                                        "weight": 1,
+                                        "requestHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "seldon-internal-model",
+                                                    "value": "model1_1"
+                                                }
+                                            }
+                                        ],
+                                        "requestHeadersToRemove": [
+                                            "seldon-internal-model"
+                                        ],
+                                        "responseHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "x-seldon-route",
+                                                    "value": ":model1_1:"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "name": "model2_1_http",
+                                        "weight": 1,
+                                        "requestHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "seldon-internal-model",
+                                                    "value": "model2_1"
+                                                }
+                                            }
+                                        ],
+                                        "requestHeadersToRemove": [
+                                            "seldon-internal-model"
+                                        ],
+                                        "responseHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "x-seldon-route",
+                                                    "value": ":model2_1:"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "timeout": "0s"
+                        }
+                    },
+                    {
+                        "name": "exp.experiment_grpc",
+                        "match": {
+                            "prefix": "/inference.GRPCInferenceService",
+                            "headers": [
+                                {
+                                    "name": "seldon-model",
+                                    "stringMatch": {
+                                        "exact": "exp.experiment"
+                                    }
+                                },
+                                {
+                                    "name": "x-seldon-route",
+                                    "presentMatch": false
+                                }
+                            ]
+                        },
+                        "route": {
+                            "weightedClusters": {
+                                "clusters": [
+                                    {
+                                        "name": "model1_1_grpc",
+                                        "weight": 1,
+                                        "requestHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "seldon-internal-model",
+                                                    "value": "model1_1"
+                                                }
+                                            }
+                                        ],
+                                        "requestHeadersToRemove": [
+                                            "seldon-internal-model"
+                                        ],
+                                        "responseHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "x-seldon-route",
+                                                    "value": ":model1_1:"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "name": "model2_1_grpc",
+                                        "weight": 1,
+                                        "requestHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "seldon-internal-model",
+                                                    "value": "model2_1"
+                                                }
+                                            }
+                                        ],
+                                        "requestHeadersToRemove": [
+                                            "seldon-internal-model"
+                                        ],
+                                        "responseHeadersToAdd": [
+                                            {
+                                                "header": {
+                                                    "key": "x-seldon-route",
+                                                    "value": ":model2_1:"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "timeout": "0s"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "listener_1",
+        "virtualHosts": [
+            {
+                "name": "seldon_mirror",
+                "domains": [
+                    "*"
+                ]
+            }
+        ]
+    }
+]

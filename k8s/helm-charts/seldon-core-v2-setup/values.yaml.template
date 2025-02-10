@@ -199,6 +199,9 @@ envoy:
     runAsUser: 1000
     runAsGroup: 1000
     runAsNonRoot: true
+  preStopSleepPeriodSeconds: 30
+  terminationGracePeriodSeconds: 120
+  adminInterfacePort: 9901
 
 scheduler:
   image:
@@ -265,7 +268,7 @@ serverConfig:
       pullPolicy: IfNotPresent
       registry: docker.io
       repository: seldonio/mlserver
-      tag: 1.6.0
+      tag: 1.6.1
     serverCapabilities: "mlserver,alibi-detect,alibi-explain,huggingface,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
     modelVolumeStorage: 1Gi
     resources:

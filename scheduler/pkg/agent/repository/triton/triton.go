@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	copy2 "github.com/otiai10/copy"
 	log "github.com/sirupsen/logrus"
@@ -42,7 +43,7 @@ func copyNonConfigFilesToModelRepo(src string, dst string) error {
 		if err != nil {
 			return err
 		}
-		if info.IsDir() && src != path { //Don't descend into directories
+		if info.IsDir() && src != path { // Don't descend into directories
 			return filepath.SkipDir
 		}
 		// Copy non- config.pbtxt files to dst folder
@@ -214,6 +215,49 @@ func (t *TritonRepositoryHandler) SetExplainer(modelRepoPath string, explainerSp
 	return nil
 }
 
+func (t *TritonRepositoryHandler) SetLlm(modelRepoPath string, llmSpec *scheduler.LlmSpec, envoyHost string, envoyPort int) error {
+	return nil
+}
+
 func (t *TritonRepositoryHandler) SetExtraParameters(modelRepoPath string, parameters []*scheduler.ParameterSpec) error {
 	return nil
+}
+
+func (t *TritonRepositoryHandler) GetModelRuntimeInfo(path string) (*scheduler.ModelRuntimeInfo, error) {
+	configPath := filepath.Join(path, TritonConfigFile)
+	tritonConfig, err := t.loadConfigFromFile(configPath)
+	tritonRuntimeInfo := &scheduler.ModelRuntimeInfo_Triton{
+		Triton: &scheduler.TritonModelConfig{
+			Cpu: []*scheduler.TritonCPU{
+				{InstanceCount: 1},
+			},
+		},
+	}
+	if err == nil {
+		instanceGroups := tritonConfig.InstanceGroup
+		if len(instanceGroups) > 0 {
+			var instanceCount int32 = 0
+			backend := tritonConfig.Backend
+			for _, instanceGroup := range instanceGroups {
+				// only take the value from the first KIND_CPU that's found
+				if instanceGroup.Kind == pb.ModelInstanceGroup_KIND_CPU && instanceCount == 0 {
+					if instanceGroup.Count < 1 {
+						if strings.ToLower(backend) == "tensorflow" || strings.ToLower(backend) == "onnxruntime" {
+							instanceCount = 2
+						} else {
+							instanceCount = 1
+						}
+					} else {
+						instanceCount += instanceGroup.Count
+					}
+				}
+			}
+			// Default to 1 if no KIND_CPU is found, as KIND_GPU is currently not supported
+			if instanceCount < 1 {
+				instanceCount = 1
+			}
+			tritonRuntimeInfo.Triton.Cpu = []*scheduler.TritonCPU{{InstanceCount: uint32(instanceCount)}}
+		}
+	}
+	return &scheduler.ModelRuntimeInfo{ModelRuntimeInfo: tritonRuntimeInfo}, nil
 }

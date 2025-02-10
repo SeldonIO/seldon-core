@@ -3,9 +3,23 @@
 The SeldonRuntime resource is used to create an instance of Seldon installed in a particular namespace.
 
 ```go
-// operator/apis/mlops/v1alpha1/seldonruntime_types.go
-// :start-after: // SeldonRuntimeSpec
-// :end-before: // SeldonRuntimeStatus
+type SeldonRuntimeSpec struct {
+	SeldonConfig string              `json:"seldonConfig"`
+	Overrides    []*OverrideSpec     `json:"overrides,omitempty"`
+	Config       SeldonConfiguration `json:"config,omitempty"`
+	// +Optional
+	// If set then when the referenced SeldonConfig changes we will NOT update the SeldonRuntime immediately.
+	// Explicit changes to the SeldonRuntime itself will force a reconcile though
+	DisableAutoUpdate bool `json:"disableAutoUpdate,omitempty"`
+}
+
+type OverrideSpec struct {
+	Name        string         `json:"name"`
+	Disable     bool           `json:"disable,omitempty"`
+	Replicas    *int32         `json:"replicas,omitempty"`
+	ServiceType v1.ServiceType `json:"serviceType,omitempty"`
+	PodSpec     *PodSpec       `json:"podSpec,omitempty"`
+}
 ```
 
 For the definition of `SeldonConfiguration` above see the [SeldonConfig resource](seldonconfig.md).

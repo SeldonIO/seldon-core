@@ -23,6 +23,8 @@ import (
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 )
 
+var getIntPtr = func(val int32) *int32 { return &val }
+
 func TestServerNotify(t *testing.T) {
 	g := NewGomegaWithT(t)
 
@@ -31,7 +33,6 @@ func TestServerNotify(t *testing.T) {
 		servers        []v1alpha1.Server
 		expectedProtos []*scheduler.ServerNotify
 	}
-	getIntPtr := func(val int32) *int32 { return &val }
 	now := metav1.Now()
 	tests := []test{
 		{
@@ -156,7 +157,6 @@ func TestServerNotify(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			// note that responses_experiments is nill -> scheduler state is not existing
 			grpcClient := mockSchedulerGrpcClient{
 				requests_servers: []*scheduler.ServerNotify{},
 			}
@@ -170,7 +170,6 @@ func TestServerNotify(t *testing.T) {
 			} else {
 				g.Expect(len(grpcClient.requests_servers)).To(Equal(0))
 			}
-
 		})
 	}
 }
@@ -179,112 +178,191 @@ func TestSubscribeServerEvents(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name               string
-		existing_resources []client.Object
-		results            []*scheduler.ServerStatusResponse
-		noSchedulerState   bool
+		name           string
+		existingServer mlopsv1alpha1.Server
+		response       *scheduler.ServerStatusResponse
 	}
 
 	// note expected state is derived in the test, maybe we should be explicit about it in the future
 	tests := []test{
 		{
+			name: "server - with a valid scaling request",
+			existingServer: mlopsv1alpha1.Server{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:       "foo",
+					Namespace:  "seldon",
+					Generation: 1,
+				},
+				Spec: v1alpha1.ServerSpec{
+					ScalingSpec: v1alpha1.ScalingSpec{
+						Replicas:    getIntPtr(1),
+						MinReplicas: getIntPtr(1),
+						MaxReplicas: getIntPtr(5),
+					},
+				},
+			},
+			response: &scheduler.ServerStatusResponse{
+				Type:       scheduler.ServerStatusResponse_ScalingRequest,
+				ServerName: "foo",
+				Resources: []*scheduler.ServerReplicaResources{
+					{
+						ReplicaIdx: 0,
+					},
+				},
+				AvailableReplicas:      1,
+				ExpectedReplicas:       2,
+				NumLoadedModelReplicas: 0,
+				KubernetesMeta: &scheduler.KubernetesMeta{
+					Namespace:  "seldon",
+					Generation: 1,
+				},
+			},
+		},
+		{
+			name: "server - with an invalid scaling request",
+			existingServer: mlopsv1alpha1.Server{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:       "foo",
+					Namespace:  "seldon",
+					Generation: 1,
+				},
+				Spec: v1alpha1.ServerSpec{
+					ScalingSpec: v1alpha1.ScalingSpec{
+						Replicas:    getIntPtr(1),
+						MinReplicas: getIntPtr(1),
+						MaxReplicas: getIntPtr(5),
+					},
+				},
+			},
+			response: &scheduler.ServerStatusResponse{
+				Type:       scheduler.ServerStatusResponse_ScalingRequest,
+				ServerName: "foo",
+				Resources: []*scheduler.ServerReplicaResources{
+					{
+						ReplicaIdx: 0,
+					},
+				},
+				AvailableReplicas:      1,
+				ExpectedReplicas:       6,
+				NumLoadedModelReplicas: 0,
+				KubernetesMeta: &scheduler.KubernetesMeta{
+					Namespace:  "seldon",
+					Generation: 1,
+				},
+			},
+		},
+		{
+			name: "server - with no scaling spec",
+			existingServer: mlopsv1alpha1.Server{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:       "foo",
+					Namespace:  "seldon",
+					Generation: 1,
+				},
+			},
+			response: &scheduler.ServerStatusResponse{
+				Type:       scheduler.ServerStatusResponse_ScalingRequest,
+				ServerName: "foo",
+				Resources: []*scheduler.ServerReplicaResources{
+					{
+						ReplicaIdx: 0,
+					},
+				},
+				AvailableReplicas:      3,
+				ExpectedReplicas:       6,
+				NumLoadedModelReplicas: 0,
+				KubernetesMeta: &scheduler.KubernetesMeta{
+					Namespace:  "seldon",
+					Generation: 1,
+				},
+			},
+		},
+		{
 			// no scheduler state means lost servers metadata
 			name: "servers - no scheduler state",
-			existing_resources: []client.Object{
-				&mlopsv1alpha1.Server{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:       "foo",
-						Namespace:  "default",
-						Generation: 1,
-					},
+			existingServer: mlopsv1alpha1.Server{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:       "foo",
+					Namespace:  "default",
+					Generation: 1,
 				},
 			},
-			results: []*scheduler.ServerStatusResponse{
-				{
-					ServerName: "foo",
-					Resources: []*scheduler.ServerReplicaResources{
-						{
-							ReplicaIdx: 0,
-						},
+			response: &scheduler.ServerStatusResponse{
+				Type:       scheduler.ServerStatusResponse_NonAuthoritativeReplicaInfo,
+				ServerName: "foo",
+				Resources: []*scheduler.ServerReplicaResources{
+					{
+						ReplicaIdx: 0,
 					},
-					AvailableReplicas:      1,
-					ExpectedReplicas:       1,
-					NumLoadedModelReplicas: 0, // no update
 				},
+				AvailableReplicas:      1,
+				ExpectedReplicas:       1,
+				NumLoadedModelReplicas: 0, // no update
 			},
-			noSchedulerState: true,
 		},
 		{
 			name: "server - with scheduler state",
-			existing_resources: []client.Object{
-				&mlopsv1alpha1.Server{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:       "foo",
-						Namespace:  "seldon",
-						Generation: 1,
-					},
+			existingServer: mlopsv1alpha1.Server{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:       "foo",
+					Namespace:  "seldon",
+					Generation: 1,
 				},
 			},
-			results: []*scheduler.ServerStatusResponse{
-				{
-					ServerName: "foo",
-					Resources: []*scheduler.ServerReplicaResources{
-						{
-							ReplicaIdx: 0,
-						},
-					},
-					AvailableReplicas:      1,
-					ExpectedReplicas:       1,
-					NumLoadedModelReplicas: 2,
-					KubernetesMeta: &scheduler.KubernetesMeta{
-						Namespace:  "seldon",
-						Generation: 1,
+			response: &scheduler.ServerStatusResponse{
+				Type:       scheduler.ServerStatusResponse_StatusUpdate,
+				ServerName: "foo",
+				Resources: []*scheduler.ServerReplicaResources{
+					{
+						ReplicaIdx: 0,
 					},
 				},
+				AvailableReplicas:      1,
+				ExpectedReplicas:       1,
+				NumLoadedModelReplicas: 2,
+				KubernetesMeta: &scheduler.KubernetesMeta{
+					Namespace:  "seldon",
+					Generation: 1,
+				},
 			},
-			noSchedulerState: false,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			// note that if responses_pipelines is nil -> scheduler state is not existing
-			var grpcClient mockSchedulerGrpcClient
-			if !test.noSchedulerState {
-				grpcClient = mockSchedulerGrpcClient{
-					responses_subscribe_servers: test.results,
-					responses_servers:           test.results,
-				}
-			} else {
-				grpcClient = mockSchedulerGrpcClient{
-					responses_subscribe_servers: test.results,
-				}
+			grpcClient := mockSchedulerGrpcClient{
+				responses_subscribe_servers: []*scheduler.ServerStatusResponse{test.response},
 			}
-			controller := newMockControllerClient(test.existing_resources...)
+
+			existing_resources := []client.Object{&test.existingServer}
+			controller := newMockControllerClient(existing_resources...)
 			err := controller.SubscribeServerEvents(context.Background(), &grpcClient, "")
 			g.Expect(err).To(BeNil())
 
-			// check state is correct for each pipeline
-			for _, r := range test.results {
+			// check state is correct for each server
 
-				namespace := "default"
-				if r.KubernetesMeta != nil {
-					namespace = r.KubernetesMeta.Namespace
-				}
-				server := &mlopsv1alpha1.Server{}
-				err := controller.Get(
-					context.Background(),
-					client.ObjectKey{
-						Name:      r.ServerName,
-						Namespace: namespace,
-					},
-					server,
-				)
-				g.Expect(err).To(BeNil())
-				g.Expect(server.Status.LoadedModelReplicas).To(Equal(r.NumLoadedModelReplicas))
-
+			namespace := "default"
+			if test.response.KubernetesMeta != nil {
+				namespace = test.response.KubernetesMeta.Namespace
 			}
-
+			server := &mlopsv1alpha1.Server{}
+			err = controller.Get(
+				context.Background(),
+				client.ObjectKey{
+					Name:      test.response.ServerName,
+					Namespace: namespace,
+				},
+				server,
+			)
+			g.Expect(err).To(BeNil())
+			g.Expect(server.Status.LoadedModelReplicas).To(Equal(test.response.NumLoadedModelReplicas))
+			isValidEvent, _, err := isValidScalingEvent(&test.existingServer, test.response)
+			g.Expect(err).To(BeNil())
+			if isValidEvent && test.existingServer.Spec.Replicas != nil {
+				g.Expect(*server.Spec.Replicas).To(Equal(test.response.ExpectedReplicas))
+			} else {
+				g.Expect(server.Spec.Replicas).To(Equal(test.existingServer.Spec.Replicas))
+			}
 		})
 	}
 }

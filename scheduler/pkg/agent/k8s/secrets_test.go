@@ -11,6 +11,7 @@ package k8s
 
 import (
 	"testing"
+	"time"
 
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/api/core/v1"
@@ -67,7 +68,7 @@ parameters:
 		t.Run(test.name, func(t *testing.T) {
 			fakeClientset := fake.NewSimpleClientset(test.secret)
 			s := NewSecretsHandler(fakeClientset, test.secret.Namespace)
-			data, err := s.GetSecretConfig(test.secretName)
+			data, err := s.GetSecretConfig(test.secretName, 1*time.Millisecond)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
 			} else {

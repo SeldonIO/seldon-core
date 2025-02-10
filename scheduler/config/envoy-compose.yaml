@@ -11,7 +11,12 @@ static_resources:
                     socket_address:
                       address: scheduler
                       port_value: 9002
-      http2_protocol_options: {}
+      http2_protocol_options: {
+        connection_keepalive: {
+          interval: 60s,
+          timeout: 2s,
+        }
+      }
       name: xds_cluster
     - connect_timeout: 0.250s
       type: LOGICAL_DNS
@@ -39,6 +44,13 @@ static_resources:
             "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
             stat_prefix: util_endpoint_http
             http_filters:
+            - name: envoy.filters.http.health_check
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.http.health_check.v3.HealthCheck
+                pass_through_mode: false
+                headers:
+                  - exact_match: /ready
+                    name: :path
             - name: envoy.filters.http.router
               typed_config:
                 "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
@@ -52,29 +64,20 @@ static_resources:
                     prefix: /stats
                   route:
                     cluster: admin_interface_cluster
-                - match:
-                    prefix: /ready
-                  route:
-                    cluster: admin_interface_cluster
 dynamic_resources:
+  ads_config:
+    api_type: DELTA_GRPC
+    transport_api_version: V3
+    grpc_services:
+    - envoy_grpc:
+        cluster_name: xds_cluster
+    set_node_on_first_message_only: true
   cds_config:
     resource_api_version: V3
-    api_config_source:
-      api_type: DELTA_GRPC
-      transport_api_version: V3
-      grpc_services:
-        - envoy_grpc:
-            cluster_name: xds_cluster
-      set_node_on_first_message_only: true
+    ads: {}
   lds_config:
     resource_api_version: V3
-    api_config_source:
-      api_type: DELTA_GRPC
-      transport_api_version: V3
-      grpc_services:
-        - envoy_grpc:
-            cluster_name: xds_cluster
-      set_node_on_first_message_only: true
+    ads: {}
 node:
   cluster: test-cluster
   id: test-id
@@ -84,12 +87,7 @@ layered_runtime:
       rtds_layer:
         rtds_config:
           resource_api_version: V3
-          api_config_source:
-            transport_api_version: V3
-            api_type: DELTA_GRPC
-            grpc_services:
-              envoy_grpc:
-                cluster_name: xds_cluster
+          ads: {}
         name: runtime-0
 admin:
   access_log_path: /dev/null

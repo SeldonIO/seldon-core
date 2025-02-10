@@ -67,7 +67,7 @@ func TestSendWithTimeout(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			hasExpired, err := execWithTimeout(func() error {
+			hasExpired, err := execWithTimeout(context.Background(), func(_ context.Context) error {
 				return fn(test.err)
 			}, test.sleepTime)
 			g.Expect(hasExpired).To(Equal(test.isExpired))
