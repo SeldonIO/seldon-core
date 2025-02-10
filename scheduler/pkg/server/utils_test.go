@@ -82,6 +82,13 @@ func TestSouldScaleUp(t *testing.T) {
 		shouldScaleUp       bool
 		newExpectedReplicas uint32
 		server              *store.ServerSnapshot
+func TestShouldScaleDown(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name            string
+		server          *store.ServerSnapshot
+		shouldScaleDown bool
 	}
 
 	tests := []test{
@@ -124,6 +131,48 @@ func TestSouldScaleUp(t *testing.T) {
 				ExpectedReplicas: -1,
 				Stats:            &store.ServerStats{MaxNumReplicaHostedModels: 3},
 			},
+			name: "should scale down - empty replicas",
+			server: &store.ServerSnapshot{
+				Stats: &store.ServerStats{
+					NumEmptyReplicas:          1,
+					MaxNumReplicaHostedModels: 0,
+				},
+				ExpectedReplicas: 2,
+			},
+			shouldScaleDown: true,
+		},
+		{
+			name: "should scale down - pack",
+			server: &store.ServerSnapshot{
+				Stats: &store.ServerStats{
+					NumEmptyReplicas:          0,
+					MaxNumReplicaHostedModels: 1,
+				},
+				ExpectedReplicas: 2,
+			},
+			shouldScaleDown: true,
+		},
+		{
+			name: "should not scale down - empty replicas - last replica",
+			server: &store.ServerSnapshot{
+				Stats: &store.ServerStats{
+					NumEmptyReplicas:          1,
+					MaxNumReplicaHostedModels: 0,
+				},
+				ExpectedReplicas: 1,
+			},
+			shouldScaleDown: false,
+		},
+		{
+			name: "should not scale down - pack - last replica",
+			server: &store.ServerSnapshot{
+				Stats: &store.ServerStats{
+					NumEmptyReplicas:          1,
+					MaxNumReplicaHostedModels: 0,
+				},
+				ExpectedReplicas: 1,
+			},
+			shouldScaleDown: false,
 		},
 	}
 
@@ -134,6 +183,7 @@ func TestSouldScaleUp(t *testing.T) {
 			if ok {
 				g.Expect(expectedReplicas).To(Equal(test.newExpectedReplicas))
 			}
+			g.Expect(shouldScaleDown(test.server, 1.0)).To(Equal(test.shouldScaleDown))
 		})
 	}
 }
