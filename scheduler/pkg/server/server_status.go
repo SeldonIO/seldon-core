@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package server
 
 import (
+	"math/rand/v2"
 	"time"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
@@ -199,8 +200,19 @@ func (s *SchedulerServer) handleServerEvents(event coordinator.ServerEventMsg) {
 	logger.Debugf("Got server state %s change for %s", event.ServerName, event.String())
 
 	server, _ := s.modelStore.GetServer(event.ServerName, true, true)
-	if server.Stats.ScaleDownFlag {
-		logger.Infof("Server %s is scaling down", event.ServerName)
+	if server.Stats != nil {
+		stats := server.Stats
+		// 25% chance of trying to pack replicas if models are not fully packed
+		tryPack := false
+		rand := rand.Float32()
+		if rand > 0.75 {
+			if stats.MaxNumReplicaHostedModels < uint32(server.ExpectedReplicas) {
+				tryPack = true
+			}
+		}
+		if tryPack || stats.NumEmptyReplicas > 0 {
+			logger.Infof("Server %s is scaling down", event.ServerName)
+		}
 	}
 }
 
