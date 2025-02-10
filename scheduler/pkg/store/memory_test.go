@@ -362,6 +362,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 		err                bool
 		isModelDeleted     bool
 		expectedModelState *ModelStatus
+		isModelUnloaded    bool
 	}
 
 	tests := []test{
@@ -491,7 +492,8 @@ func TestUpdateLoadedModels(t *testing.T) {
 			replicas: []*ServerReplica{
 				{replicaIdx: 1},
 			},
-			expectedStates: map[int]ReplicaStatus{0: {State: UnloadEnvoyRequested}, 1: {State: LoadRequested}},
+			expectedStates:  map[int]ReplicaStatus{0: {State: UnloadEnvoyRequested}, 1: {State: LoadRequested}},
+			isModelUnloaded: true,
 		},
 		{
 			name: "DeletedModel",
@@ -519,12 +521,13 @@ func TestUpdateLoadedModels(t *testing.T) {
 					},
 				},
 			},
-			modelKey:       "model",
-			version:        1,
-			serverKey:      "server",
-			replicas:       []*ServerReplica{},
-			isModelDeleted: true,
-			expectedStates: map[int]ReplicaStatus{0: {State: UnloadEnvoyRequested}, 1: {State: UnloadEnvoyRequested}},
+			modelKey:        "model",
+			version:         1,
+			serverKey:       "server",
+			replicas:        []*ServerReplica{},
+			isModelDeleted:  true,
+			expectedStates:  map[int]ReplicaStatus{0: {State: UnloadEnvoyRequested}, 1: {State: UnloadEnvoyRequested}},
+			isModelUnloaded: true,
 		},
 		{
 			name: "DeletedModelNoReplicas",
@@ -772,7 +775,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 				test.store.models[test.modelKey].SetDeleted()
 			}
 			ms := NewMemoryStore(logger, test.store, eventHub)
-			msg, err := ms.updateLoadedModelsImpl(test.modelKey, test.version, test.serverKey, test.replicas)
+			msg, msgServer, err := ms.updateLoadedModelsImpl(test.modelKey, test.version, test.serverKey, test.replicas)
 			if !test.err {
 				g.Expect(err).To(BeNil())
 				g.Expect(msg).ToNot(BeNil())
@@ -790,9 +793,17 @@ func TestUpdateLoadedModels(t *testing.T) {
 				if test.expectedModelState != nil {
 					g.Expect(mv.state.State).To(Equal(test.expectedModelState.State))
 				}
+				if test.isModelUnloaded {
+					g.Expect(msgServer).ToNot(BeNil())
+					g.Expect(msgServer.ServerName).To(Equal(test.serverKey))
+					g.Expect(msgServer.UpdateContext).To(Equal(coordinator.SERVER_SCALE))
+				} else {
+					g.Expect(msgServer).To(BeNil())
+				}
 			} else {
 				g.Expect(err).ToNot(BeNil())
 				g.Expect(msg).To(BeNil())
+				g.Expect(msgServer).To(BeNil())
 			}
 		})
 	}
