@@ -25,6 +25,11 @@ type fakeModelStore struct {
 	status map[string]store.ModelState
 }
 
+// ServerScaleUp implements store.ModelStore.
+func (f fakeModelStore) ServerScaleUp(modelVersion *store.ModelVersion) {
+	panic("unimplemented")
+}
+
 var _ store.ModelStore = (*fakeModelStore)(nil)
 
 func (f fakeModelStore) UpdateModel(config *scheduler.LoadModelRequest) error {

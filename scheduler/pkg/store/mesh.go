@@ -20,6 +20,7 @@ import (
 
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 type LocalSchedulerStore struct {
@@ -405,6 +406,14 @@ func getInstanceCount(modelRuntimeInfo *pb.ModelRuntimeInfo) uint64 {
 	default:
 		return 1
 	}
+}
+
+func (m *ModelVersion) ShouldScaleUp() bool {
+	if !util.AutoscalingEnabled(m.GetDeploymentSpec().GetMinReplicas(), m.GetDeploymentSpec().GetMaxReplicas()) {
+		return false
+	}
+
+	return m.DesiredReplicas() > int(m.ModelState().AvailableReplicas)
 }
 
 func (m *ModelVersion) GetRequirements() []string {

@@ -51,7 +51,8 @@ func DefaultSchedulerConfig(store store.ModelStore) SchedulerConfig {
 func NewSimpleScheduler(logger log.FieldLogger,
 	store store.ModelStore,
 	schedulerConfig SchedulerConfig,
-	synchroniser synchroniser.Synchroniser) *SimpleScheduler {
+	synchroniser synchroniser.Synchroniser,
+) *SimpleScheduler {
 	s := &SimpleScheduler{
 		store:           store,
 		logger:          logger.WithField("Name", "SimpleScheduler"),
@@ -194,19 +195,22 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		}
 	}
 
-	if !ok && !okWithMinReplicas {
-		msg := "Failed to schedule model as no matching server had enough suitable replicas"
-		logger.Debug(msg)
-		// we do not want to reset the server if it has live replicas or loading replicas
-		// in the case of loading replicas, we need to make sure that we can unload them later.
-		// for example in the case that a model is just marked as loading on a particular server replica
-		// then it gets a delete request (before it is marked as loaded or available) we need to make sure
-		// that we can unload it from the server
-		s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas() && !latestModel.IsLoadingOrLoadedOnServer())
-		return errors.New(msg)
+	if !ok {
+		s.store.ServerScaleUp(latestModel)
+		if !okWithMinReplicas {
+			msg := "Failed to schedule model as no matching server had enough suitable replicas"
+			logger.Debug(msg)
+			// we do not want to reset the server if it has live replicas or loading replicas
+			// in the case of loading replicas, we need to make sure that we can unload them later.
+			// for example in the case that a model is just marked as loading on a particular server replica
+			// then it gets a delete request (before it is marked as loaded or available) we need to make sure
+			// that we can unload it from the server
+			s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas() && !latestModel.IsLoadingOrLoadedOnServer())
+			return errors.New(msg)
+		}
 	}
 
-	//TODO Cleanup previous version if needed?
+	// TODO Cleanup previous version if needed?
 	return nil
 }
 

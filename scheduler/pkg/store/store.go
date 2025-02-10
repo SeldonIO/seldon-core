@@ -125,6 +125,7 @@ type ModelStore interface {
 	UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState ModelReplicaState, reason string, runtimeInfo *pb.ModelRuntimeInfo) error
 	AddServerReplica(request *pba.AgentSubscribeRequest) error
 	ServerNotify(request *pb.ServerNotify) error
+	ServerScaleUp(modelVersion *ModelVersion)
 	RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) // return previously loaded models
 	DrainServerReplica(serverName string, replicaIdx int) ([]string, error)  // return previously loaded models
 	FailedScheduling(modelVersion *ModelVersion, reason string, reset bool)

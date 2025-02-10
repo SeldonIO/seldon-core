@@ -31,6 +31,11 @@ type mockStore struct {
 	scheduledReplicas []int
 }
 
+// ServerScaleUp implements store.ModelStore.
+func (f *mockStore) ServerScaleUp(modelVersion *store.ModelVersion) {
+	panic("unimplemented")
+}
+
 var _ store.ModelStore = (*mockStore)(nil)
 
 func (f mockStore) FailedScheduling(modelVersion *store.ModelVersion, reason string, reset bool) {

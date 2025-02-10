@@ -15,8 +15,6 @@ import (
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest, stream pb.Scheduler_SubscribeModelStatusServer) error {
@@ -88,6 +86,19 @@ func (s *SchedulerServer) handleModelEvent(event coordinator.ModelEventMsg) {
 	err := s.sendModelStatusEvent(event)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to update model status for model %s", event.String())
+	}
+}
+
+func (s *SchedulerServer) handleServerEvent(event coordinator.ServerEventMsg) {
+	logger := s.logger.WithField("func", "handleServerEvent")
+	logger.Debugf("Got server event msg for %s", event.String())
+
+	switch event.UpdateContext {
+	case coordinator.SERVER_SCALE_UP_REQUESTED:
+		s.incrementExpectedReplicas(event)
+	default:
+		logger.Debugf("Skipping server event msg for %s as it is not a scale up event", event.String())
+
 	}
 }
 
@@ -200,19 +211,6 @@ func (s *SchedulerServer) updateServerModelsStatus(evt coordinator.ModelEventMsg
 		return nil
 	}
 
-	latestModel := model.GetLatest()
-
-	if latestModel != nil && latestModel.GetVersion() == evt.ModelVersion &&
-		util.AutoscalingEnabled(latestModel.GetDeploymentSpec().MinReplicas, latestModel.GetDeploymentSpec().MaxReplicas) &&
-		latestModel.DesiredReplicas() > int(latestModel.ModelState().AvailableReplicas) {
-		err := s.incrementExpectedReplicas(latestModel)
-		if err != nil {
-			return err
-		} else {
-			return nil
-		}
-	}
-
 	s.serverEventStream.pendingLock.Lock()
 	// we are coalescing events so we only send one event (the latest status) per server
 	s.serverEventStream.pendingEvents[modelVersion.Server()] = struct{}{}
@@ -224,21 +222,16 @@ func (s *SchedulerServer) updateServerModelsStatus(evt coordinator.ModelEventMsg
 	return err
 }
 
-func (s *SchedulerServer) incrementExpectedReplicas(latestModel *store.ModelVersion) error {
+func (s *SchedulerServer) incrementExpectedReplicas(event coordinator.ServerEventMsg) error {
 	// TODO: should there be some sort of velocity check ?
-	logger := s.logger.WithField("func", "incrementExpectedReplicas")
-	logger.Debugf("will attempt to scale servers to %d for %v", latestModel.DesiredReplicas(), latestModel)
-
-	server, err := s.modelStore.GetServer(latestModel.Server(), true, true)
+	server, err := s.modelStore.GetServer(event.ServerName, true, true)
 	if err != nil {
 		return err
 	}
-	newExpectedReplicas := server.ExpectedReplicas + 1
-	if newExpectedReplicas < latestModel.DesiredReplicas() {
-		newExpectedReplicas = latestModel.DesiredReplicas()
-	}
+	logger := s.logger.WithField("func", "incrementExpectedReplicas")
+	logger.Debugf("will attempt to scale servers to %d for %v", server.ExpectedReplicas, server.Name)
+
 	ssr := createServerStatusUpdateResponse(server)
-	ssr.ExpectedReplicas = int32(newExpectedReplicas)
 	ssr.Type = pb.ServerStatusResponse_ScalingRequest
 	s.sendServerStatusResponse(ssr)
 
