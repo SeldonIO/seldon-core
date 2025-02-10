@@ -22,10 +22,10 @@ Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that
     ```bash
     kubectl create ns seldon-mesh || echo "Namespace seldon-mesh already exists"
     ```
-*   Create a namespace to contain the components related to request logging. For example, create the namespace `seldon-logs`:
+*   Create a namespace to contain the components related to monitoring. For example, create the namespace `seldon-monitoring`:
 
     ```bash
-    kubectl create ns seldon-logs || echo "Namespace seldon-logs already exists"
+    kubectl create ns seldon-monitoring || echo "Namespace seldon-monitoring already exists"
     ```
 
 ## Installing Seldon Core 2
