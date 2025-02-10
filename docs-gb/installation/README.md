@@ -29,7 +29,7 @@ By selecting the appropriate installation mode—whether it's Docker Compose for
 | `seldon-core-v2-setup`     | Installation of the manager to manage resources in the namespace or cluster-wide. This also installs default `SeldonConfig` and `ServerConfig` resources, allowing *Runtimes* and *Servers* to be installed on demand. |
 | `seldon-core-v2-runtime`   | Installs a `SeldonRuntime` custom resource that creates the core components in a namespace.                                                                 |
 | `seldon-core-v2-servers`   | Installs `Server` custom resources providing example core servers to load models.                                                                            |
-| `seldon-core-v2-certs`     | A default set of certificates for TLS.                                                                                                                       |
+                                                                    
 
 For more information, see the published [Helm charts](https://github.com/SeldonIO/helm-charts).
 
@@ -39,9 +39,9 @@ Here is a list of components that Seldon Core 2 requires, along with the minimum
 
 | **Component**              | **Minimum Version** | **Maximum Version** | **Notes**                                                                                                                                               |
 |-----------------------------|---------------------|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Kubernetes**             | 1.27               | 1.31               | Required                                                                                                                                                |
+| **Kubernetes**             | 1.27               | 1.33.0               | Required                                                                                                                                                |
 | **Envoy***                 | 1.32.2             | 1.32.2             | Required                                                                                                                                                |
-| **Rclone***                | 1.68.2             | 1.68.2             | Required                                                                                                                                                |
+| **Rclone***                | 1.68.2             | 1.69.0            | Required                                                                                                                                                |
 | **Kafka**                  | 3.4                | 3.8                | Recommended (only required for operating Seldon Core 2 dataflow Pipelines)                                                                             |
 | **Prometheus**             | 2.0                | 2.x                | Optional                                                                                                                                                |
 | **Grafana**                | 10.0               | ***                | Optional (no hard limit on the maximum version to be used)                                                                                              |
