@@ -10,21 +10,10 @@ the Change License after the Change Date as each is defined in accordance with t
 package server
 
 import (
-	"math/rand/v2"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-)
-
-const (
-	// percentage of time we try to pack server replicas if models are not fully packed
-	// this is to be a bit more conservative and not pack all the time as it can lead to
-	// increased latency in the case of MMS
-	// in the future we should have more metrics to decide whether packing can lead
-	// to better performance
-	AllowPackingPercentage = 0.25
 )
 
 func sendWithTimeout(f func() error, d time.Duration) (bool, error) {
@@ -43,25 +32,4 @@ func sendWithTimeout(f func() error, d time.Duration) (bool, error) {
 		}
 		return false, err
 	}
-}
-
-func shouldScaleDown(server *store.ServerSnapshot, perc float32) bool {
-
-	if server.Stats != nil {
-		stats := server.Stats
-		// 25% chance of trying to pack replicas if models are not fully packed
-		tryPack := false
-		rand := rand.Float32()
-		if rand > (1 - perc) {
-			if stats.MaxNumReplicaHostedModels < uint32(server.ExpectedReplicas) {
-				tryPack = true
-			}
-		}
-		// we do scaling down if:
-		// 1. we are trying to pack replicas: max number of replicas for any hosted model is less than the number of expected replicas (only 25% of the time)
-		// 2. we have empty replicas and the server has more than one expected replicas
-		return (tryPack || stats.NumEmptyReplicas > 0) && server.ExpectedReplicas > 1
-	}
-	return false
-
 }

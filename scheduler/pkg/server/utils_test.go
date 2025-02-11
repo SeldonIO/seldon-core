@@ -15,7 +15,6 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
 func TestSendWithTimeout(t *testing.T) {
@@ -69,69 +68,6 @@ func TestSendWithTimeout(t *testing.T) {
 			} else {
 				g.Expect(err).To(BeNil())
 			}
-		})
-	}
-}
-
-func TestShouldScaleDown(t *testing.T) {
-	g := NewGomegaWithT(t)
-
-	type test struct {
-		name            string
-		server          *store.ServerSnapshot
-		shouldScaleDown bool
-	}
-
-	tests := []test{
-		{
-			name: "should scale down - empty replicas",
-			server: &store.ServerSnapshot{
-				Stats: &store.ServerStats{
-					NumEmptyReplicas:          1,
-					MaxNumReplicaHostedModels: 0,
-				},
-				ExpectedReplicas: 2,
-			},
-			shouldScaleDown: true,
-		},
-		{
-			name: "should scale down - pack",
-			server: &store.ServerSnapshot{
-				Stats: &store.ServerStats{
-					NumEmptyReplicas:          0,
-					MaxNumReplicaHostedModels: 1,
-				},
-				ExpectedReplicas: 2,
-			},
-			shouldScaleDown: true,
-		},
-		{
-			name: "should not scale down - empty replicas - last replica",
-			server: &store.ServerSnapshot{
-				Stats: &store.ServerStats{
-					NumEmptyReplicas:          1,
-					MaxNumReplicaHostedModels: 0,
-				},
-				ExpectedReplicas: 1,
-			},
-			shouldScaleDown: false,
-		},
-		{
-			name: "should not scale down - pack - last replica",
-			server: &store.ServerSnapshot{
-				Stats: &store.ServerStats{
-					NumEmptyReplicas:          1,
-					MaxNumReplicaHostedModels: 0,
-				},
-				ExpectedReplicas: 1,
-			},
-			shouldScaleDown: false,
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			g.Expect(shouldScaleDown(test.server, 1.0)).To(Equal(test.shouldScaleDown))
 		})
 	}
 }

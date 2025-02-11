@@ -247,12 +247,6 @@ func NewSchedulerServer(
 		s.logger,
 		s.handlePipelineEvents,
 	)
-	eventHub.RegisterServerEventHandler(
-		serverEventHandlerName,
-		pendingEventsQueueSize,
-		s.logger,
-		s.handleServerEvents,
-	)
 
 	return s
 }
