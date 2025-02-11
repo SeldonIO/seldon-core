@@ -207,7 +207,7 @@ func (s *SchedulerServer) handleServerEvents(event coordinator.ServerEventMsg) {
 	if event.UpdateContext == coordinator.SERVER_SCALE {
 		if shouldScaleDown(server, AllowPackingPercentage) {
 			logger.Infof("Server %s is scaling down", event.ServerName)
-			// TODO send control message to scale down
+			s.sendServerScale(server, uint32(server.ExpectedReplicas)-1)
 		}
 	}
 }
