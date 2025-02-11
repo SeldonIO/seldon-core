@@ -506,6 +506,19 @@ func createServerStatusUpdateResponse(s *store.ServerSnapshot) *pb.ServerStatusR
 	return resp
 }
 
+func createServerScaleResponse(s *store.ServerSnapshot, expectedReplicas uint32) *pb.ServerStatusResponse {
+	// we dont care about populating the other fields as they should not be used by the controller, reconsider if this changes
+
+	resp := &pb.ServerStatusResponse{
+		Type:             pb.ServerStatusResponse_ScalingRequest,
+		ServerName:       s.Name,
+		ExpectedReplicas: int32(expectedReplicas),
+		KubernetesMeta:   s.KubernetesMeta,
+	}
+
+	return resp
+}
+
 func (s *SchedulerServer) StartExperiment(ctx context.Context, req *pb.StartExperimentRequest) (*pb.StartExperimentResponse, error) {
 	err := s.experimentServer.StartExperiment(experiment.CreateExperimentFromRequest(req.Experiment))
 	if err != nil {

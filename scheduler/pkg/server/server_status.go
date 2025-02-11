@@ -298,6 +298,30 @@ func (s *SchedulerServer) sendServerStatusResponse(ssr *pb.ServerStatusResponse)
 	}
 }
 
+func (s *SchedulerServer) sendServerScale(server *store.ServerSnapshot, expectedReplicas uint32) {
+	// TODO: should there be some sort of velocity check ?
+	logger := s.logger.WithField("func", "sendServerScale")
+	logger.Debugf("will attempt to scale servers to %d for %v", expectedReplicas, server.Name)
+
+	ssr := createServerScaleResponse(server, expectedReplicas)
+	s.sendServerResponse(ssr)
+}
+
+func (s *SchedulerServer) sendServerResponse(ssr *pb.ServerStatusResponse) {
+	logger := s.logger.WithField("func", "sendServerStatusResponse")
+	for stream, subscription := range s.serverEventStream.streams {
+		hasExpired, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
+		if hasExpired {
+			// this should trigger a reconnect from the client
+			close(subscription.fin)
+			delete(s.serverEventStream.streams, stream)
+		}
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to send server status response to %s", subscription.name)
+		}
+	}
+}
+
 // initial send of server statuses to a new controller
 func (s *SchedulerServer) sendCurrentServerStatuses(stream pb.Scheduler_ServerStatusServer) error {
 	servers, err := s.modelStore.GetServers(true, true) // shallow, with model details
