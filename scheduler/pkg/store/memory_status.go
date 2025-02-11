@@ -16,10 +16,9 @@ import (
 )
 
 const (
-	modelFailureEventSource  = "memory.status.scheduling.failed"
-	modelUpdateEventSource   = "memory.status.model.update"
-	serverUpdateEventSource  = "memory.status.server.update"
-	serverScaleupEventSource = "memory.status.server.scaleup"
+	modelFailureEventSource = "memory.status.scheduling.failed"
+	modelUpdateEventSource  = "memory.status.model.update"
+	serverUpdateEventSource = "memory.status.server.update"
 )
 
 type modelVersionStateStatistics struct {

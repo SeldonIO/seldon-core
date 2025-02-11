@@ -19,10 +19,9 @@ const (
 	SERVER_SCALE
 )
 
-
 type ModelEventMsg struct {
-	ModelName     string
-	ModelVersion  uint32
+	ModelName    string
+	ModelVersion uint32
 }
 
 func (m ModelEventMsg) String() string {
