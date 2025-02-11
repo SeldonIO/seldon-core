@@ -224,7 +224,7 @@ func (s *SchedulerServer) updateServerModelsStatus(evt coordinator.ModelEventMsg
 	return err
 }
 
-func (s *SchedulerServer) incrementExpectedReplicas(server *store.ServerSnapshot) error {
+func (s *SchedulerServer) incrementExpectedReplicas(server *store.ServerSnapshot) {
 	// TODO: should there be some sort of velocity check ?
 	logger := s.logger.WithField("func", "incrementExpectedReplicas")
 	logger.Debugf("will attempt to scale servers to %d for %v", server.Stats.MaxNumReplicaHostedModels, server.Name)
@@ -233,8 +233,6 @@ func (s *SchedulerServer) incrementExpectedReplicas(server *store.ServerSnapshot
 	ssr.ExpectedReplicas = int32(server.Stats.MaxNumReplicaHostedModels)
 	ssr.Type = pb.ServerStatusResponse_ScalingRequest
 	s.sendServerStatusResponse(ssr)
-
-	return nil
 }
 
 func (s *SchedulerServer) sendServerStatus() {

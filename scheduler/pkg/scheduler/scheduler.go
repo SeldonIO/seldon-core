@@ -25,7 +25,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 )
 
-const serverScaleupEventSource = "memory.status.server.scaleup"
+const serverScaleupEventSource = "scheduler.server.scaleup"
 
 type SimpleScheduler struct {
 	muSortAndUpdate sync.Mutex
@@ -309,7 +309,6 @@ func (s *SimpleScheduler) serverScaleUp(modelVersion *store.ModelVersion) {
 	} else {
 		logger.Debugf("Skpping request to scale server for model %s", modelVersion.GetMeta().Name)
 	}
-
 }
 
 func showReplicaSlice(candidateServer *sorters.CandidateServer) string {

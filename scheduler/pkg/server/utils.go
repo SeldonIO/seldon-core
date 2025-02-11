@@ -12,9 +12,10 @@ package server
 import (
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
 func sendWithTimeout(f func() error, d time.Duration) (bool, error) {
