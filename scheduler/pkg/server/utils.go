@@ -12,6 +12,7 @@ package server
 import (
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -32,4 +33,12 @@ func sendWithTimeout(f func() error, d time.Duration) (bool, error) {
 		}
 		return false, err
 	}
+}
+
+func shouldScaleUp(server *store.ServerSnapshot) bool {
+	if server.Stats != nil {
+		stats := server.Stats
+		return stats.MaxNumReplicaHostedModels > uint32(server.ExpectedReplicas)
+	}
+	return false
 }

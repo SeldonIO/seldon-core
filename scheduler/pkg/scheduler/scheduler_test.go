@@ -20,6 +20,7 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 )
@@ -29,11 +30,6 @@ type mockStore struct {
 	servers           []*store.ServerSnapshot
 	scheduledServer   string
 	scheduledReplicas []int
-}
-
-// ServerScaleUp implements store.ModelStore.
-func (f *mockStore) ServerScaleUp(modelVersion *store.ModelVersion) {
-	panic("unimplemented")
 }
 
 var _ store.ModelStore = (*mockStore)(nil)
@@ -132,7 +128,7 @@ func TestScheduler(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	newTestModel := func(name string, requiredMemory uint64, requirements []string, server *string, replicas, minReplicas uint32, loadedModels []int, deleted bool, scheduledServer string, drainedModels []int) *store.ModelSnapshot {
-		config := &pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: &requiredMemory, Requirements: requirements, Server: server}, DeploymentSpec: &pb.DeploymentSpec{Replicas: replicas, MinReplicas: minReplicas}}
+		config := &pb.Model{Meta: &pb.MetaData{Name: t.Name()}, ModelSpec: &pb.ModelSpec{MemoryBytes: &requiredMemory, Requirements: requirements, Server: server}, DeploymentSpec: &pb.DeploymentSpec{Replicas: replicas, MinReplicas: minReplicas}}
 		rmap := make(map[int]store.ReplicaStatus)
 		for _, ridx := range loadedModels {
 			rmap[ridx] = store.ReplicaStatus{State: store.Loaded}
@@ -546,8 +542,9 @@ func TestScheduler(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			eventHub, _ := coordinator.NewEventHub(logger)
 			mockStore := newMockStore(test.model, test.servers)
-			scheduler := NewSimpleScheduler(logger, mockStore, DefaultSchedulerConfig(mockStore), synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)))
+			scheduler := NewSimpleScheduler(logger, mockStore, DefaultSchedulerConfig(mockStore), synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), eventHub)
 			err := scheduler.Schedule(test.model.Name)
 			if test.scheduled {
 				g.Expect(err).To(BeNil())
@@ -621,8 +618,9 @@ func TestFailedModels(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			eventHub, _ := coordinator.NewEventHub(logger)
 			mockStore := newMockStore(test.models)
-			scheduler := NewSimpleScheduler(logger, mockStore, DefaultSchedulerConfig(mockStore), synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)))
+			scheduler := NewSimpleScheduler(logger, mockStore, DefaultSchedulerConfig(mockStore), synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), eventHub)
 			failedMoels, err := scheduler.getFailedModels()
 			g.Expect(err).To(BeNil())
 			sort.Strings(failedMoels)

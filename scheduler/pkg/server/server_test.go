@@ -65,6 +65,7 @@ func TestLoadModel(t *testing.T) {
 			schedulerStore,
 			scheduler2.DefaultSchedulerConfig(schedulerStore),
 			sync,
+			eventHub,
 		)
 		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub, sync)
 		sync.Signals(1)
@@ -366,6 +367,7 @@ func TestUnloadModel(t *testing.T) {
 			schedulerStore,
 			scheduler2.DefaultSchedulerConfig(schedulerStore),
 			sync,
+			eventHub,
 		)
 		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub, sync)
 		sync.Signals(1)
@@ -712,6 +714,7 @@ func TestServerNotify(t *testing.T) {
 			schedulerStore,
 			scheduler2.DefaultSchedulerConfig(schedulerStore),
 			sync,
+			eventHub,
 		)
 		s := NewSchedulerServer(logger, schedulerStore, nil, nil, scheduler, eventHub, sync)
 		return s, sync

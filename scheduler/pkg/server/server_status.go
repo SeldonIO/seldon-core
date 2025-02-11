@@ -15,6 +15,7 @@ import (
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
 func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest, stream pb.Scheduler_SubscribeModelStatusServer) error {
@@ -93,12 +94,13 @@ func (s *SchedulerServer) handleServerEvent(event coordinator.ServerEventMsg) {
 	logger := s.logger.WithField("func", "handleServerEvent")
 	logger.Debugf("Got server event msg for %s", event.String())
 
-	switch event.UpdateContext {
-	case coordinator.SERVER_SCALE_UP_REQUESTED:
-		s.incrementExpectedReplicas(event)
-	default:
-		logger.Debugf("Skipping server event msg for %s as it is not a scale up event", event.String())
+	server, err := s.modelStore.GetServer(event.ServerName, true, true)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to handle server event for server %s", event.ServerName)
+	}
 
+	if shouldScaleUp(server) {
+		s.incrementExpectedReplicas(server)
 	}
 }
 
@@ -222,16 +224,13 @@ func (s *SchedulerServer) updateServerModelsStatus(evt coordinator.ModelEventMsg
 	return err
 }
 
-func (s *SchedulerServer) incrementExpectedReplicas(event coordinator.ServerEventMsg) error {
+func (s *SchedulerServer) incrementExpectedReplicas(server *store.ServerSnapshot) error {
 	// TODO: should there be some sort of velocity check ?
-	server, err := s.modelStore.GetServer(event.ServerName, true, true)
-	if err != nil {
-		return err
-	}
 	logger := s.logger.WithField("func", "incrementExpectedReplicas")
-	logger.Debugf("will attempt to scale servers to %d for %v", server.ExpectedReplicas, server.Name)
+	logger.Debugf("will attempt to scale servers to %d for %v", server.Stats.MaxNumReplicaHostedModels, server.Name)
 
 	ssr := createServerStatusUpdateResponse(server)
+	ssr.ExpectedReplicas = int32(server.Stats.MaxNumReplicaHostedModels)
 	ssr.Type = pb.ServerStatusResponse_ScalingRequest
 	s.sendServerStatusResponse(ssr)
 

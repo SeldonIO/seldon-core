@@ -106,35 +106,6 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 	}
 }
 
-func (m *MemoryStore) ServerScaleUp(modelVersion *ModelVersion) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	logger := m.logger.WithField("func", "ServerScaleUp")
-
-	if modelVersion.Server() == "" {
-		logger.Warnf("Empty server for %s so ignoring scale up request", modelVersion.modelDefn.GetMeta().Name)
-		return
-	}
-	if modelVersion.ShouldScaleUp() {
-		server, ok := m.store.servers[modelVersion.Server()]
-		if !ok {
-			logger.Errorf("Failed to get server details for model %s", modelVersion.modelDefn.GetMeta().Name)
-		}
-		newExpectedReplicas := server.expectedReplicas + 1
-		if newExpectedReplicas < modelVersion.DesiredReplicas() {
-			newExpectedReplicas = modelVersion.DesiredReplicas()
-		}
-		server.expectedReplicas = newExpectedReplicas
-		m.eventHub.PublishServerEvent(
-			serverScaleupEventSource,
-			coordinator.ServerEventMsg{
-				ServerName:    server.name,
-				UpdateContext: coordinator.SERVER_SCALE_UP_REQUESTED,
-			},
-		)
-	}
-}
-
 func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string, reset bool) {
 	// we use len of GetAssignment instead of .state.AvailableReplicas as it is more accurate in this context
 	availableReplicas := uint32(len(modelVersion.GetAssignment()))

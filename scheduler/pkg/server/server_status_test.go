@@ -337,17 +337,14 @@ func TestServersStatusStream(t *testing.T) {
 	}
 }
 
-func TestServersStatusEvents(t *testing.T) {
+func TestModelEventsForServerStatus(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name                 string
-		loadReq              *pba.AgentSubscribeRequest
-		timeout              time.Duration
-		desiredModelReplicas uint32
-		minModelReplicas     uint32
-		maxModelReplicas     uint32
-		err                  bool
+		name    string
+		loadReq *pba.AgentSubscribeRequest
+		timeout time.Duration
+		err     bool
 	}
 
 	tests := []test{
@@ -367,39 +364,6 @@ func TestServersStatusEvents(t *testing.T) {
 			timeout: 1 * time.Millisecond,
 			err:     true,
 		},
-		{
-			name: "scaling requested",
-			loadReq: &pba.AgentSubscribeRequest{
-				ServerName: "foo",
-			},
-			timeout:              10 * time.Minute,
-			desiredModelReplicas: 3,
-			minModelReplicas:     2,
-			maxModelReplicas:     3,
-			err:                  false,
-		},
-		{
-			name: "scaling requested",
-			loadReq: &pba.AgentSubscribeRequest{
-				ServerName: "foo",
-			},
-			timeout:              10 * time.Minute,
-			desiredModelReplicas: 1,
-			minModelReplicas:     2,
-			maxModelReplicas:     3,
-			err:                  false,
-		},
-		{
-			name: "desired replicas less than available replicas",
-			loadReq: &pba.AgentSubscribeRequest{
-				ServerName: "foo",
-			},
-			timeout:              10 * time.Minute,
-			desiredModelReplicas: 1,
-			minModelReplicas:     2,
-			maxModelReplicas:     3,
-			err:                  false,
-		},
 	}
 
 	for _, test := range tests {
@@ -411,8 +375,7 @@ func TestServersStatusEvents(t *testing.T) {
 				g.Expect(err).To(BeNil())
 				err = s.modelStore.UpdateModel(&pb.LoadModelRequest{
 					Model: &pb.Model{
-						Meta:           &pb.MetaData{Name: "foo"},
-						DeploymentSpec: &pb.DeploymentSpec{Replicas: test.desiredModelReplicas, MinReplicas: test.minModelReplicas, MaxReplicas: test.maxModelReplicas},
+						Meta: &pb.MetaData{Name: "foo"},
 					},
 				})
 				g.Expect(err).To(BeNil())
@@ -452,14 +415,7 @@ func TestServersStatusEvents(t *testing.T) {
 				g.Expect(ssr).ToNot(BeNil())
 				g.Expect(ssr.ServerName).To(Equal("foo"))
 				g.Expect(s.serverEventStream.streams).To(HaveLen(1))
-
-				if test.desiredModelReplicas > 0 {
-					g.Expect(ssr.ExpectedReplicas).To(Equal(int32(test.desiredModelReplicas)))
-					g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_ScalingRequest))
-				} else {
-					g.Expect(ssr.ExpectedReplicas).To(Equal(int32(0)))
-					g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_StatusUpdate))
-				}
+				g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_StatusUpdate))
 			}
 
 		})
@@ -481,6 +437,7 @@ func createTestScheduler() (*SchedulerServer, *coordinator.EventHub) {
 		schedulerStore,
 		scheduler2.DefaultSchedulerConfig(schedulerStore),
 		synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)),
+		eventHub,
 	)
 	s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub, synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)))
 

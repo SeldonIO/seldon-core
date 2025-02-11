@@ -237,6 +237,7 @@ func main() {
 		ss,
 		scheduler.DefaultSchedulerConfig(ss),
 		sync,
+		eventHub,
 	)
 
 	// scheduler <-> controller grpc

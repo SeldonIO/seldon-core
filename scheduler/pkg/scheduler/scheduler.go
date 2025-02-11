@@ -18,17 +18,21 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/filters"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/sorters"
 	store "github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 )
 
+const serverScaleupEventSource = "memory.status.server.scaleup"
+
 type SimpleScheduler struct {
 	muSortAndUpdate sync.Mutex
 	store           store.ModelStore
 	logger          log.FieldLogger
 	synchroniser    synchroniser.Synchroniser
+	eventHub        *coordinator.EventHub
 	SchedulerConfig
 }
 
@@ -52,12 +56,14 @@ func NewSimpleScheduler(logger log.FieldLogger,
 	store store.ModelStore,
 	schedulerConfig SchedulerConfig,
 	synchroniser synchroniser.Synchroniser,
+	eventHub *coordinator.EventHub,
 ) *SimpleScheduler {
 	s := &SimpleScheduler{
 		store:           store,
 		logger:          logger.WithField("Name", "SimpleScheduler"),
 		SchedulerConfig: schedulerConfig,
 		synchroniser:    synchroniser,
+		eventHub:        eventHub,
 	}
 	return s
 }
@@ -196,7 +202,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 	}
 
 	if !ok {
-		s.store.ServerScaleUp(latestModel)
+		s.serverScaleUp(latestModel)
 		if !okWithMinReplicas {
 			msg := "Failed to schedule model as no matching server had enough suitable replicas"
 			logger.Debug(msg)
@@ -283,6 +289,27 @@ func (s *SimpleScheduler) sortServers(model *store.ModelVersion, server []*store
 		})
 		logger.Debugf("Sorted servers for %s:%d with %s: %s", model.Key(), model.GetVersion(), sorter.Name(), showServerSlice(server))
 	}
+}
+
+func (s *SimpleScheduler) serverScaleUp(modelVersion *store.ModelVersion) {
+	logger := s.logger.WithField("func", "serverScaleUp")
+
+	if modelVersion.Server() == "" {
+		logger.Warnf("Empty server for %s so ignoring scale up request", modelVersion.GetMeta().Name)
+		return
+	}
+	if modelVersion.ShouldScaleUp() {
+		s.eventHub.PublishServerEvent(
+			serverScaleupEventSource,
+			coordinator.ServerEventMsg{
+				ServerName:    modelVersion.Server(),
+				UpdateContext: coordinator.SERVER_SCALE,
+			},
+		)
+	} else {
+		logger.Debugf("Skpping request to scale server for model %s", modelVersion.GetMeta().Name)
+	}
+
 }
 
 func showReplicaSlice(candidateServer *sorters.CandidateServer) string {
