@@ -198,11 +198,17 @@ func (s *SchedulerServer) handleServerEvents(event coordinator.ServerEventMsg) {
 	logger := s.logger.WithField("func", "handleServerEvent")
 	logger.Debugf("Got server state %s change for %s", event.ServerName, event.String())
 
-	server, _ := s.modelStore.GetServer(event.ServerName, true, true)
+	server, err := s.modelStore.GetServer(event.ServerName, true, true)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to get server %s", event.ServerName)
+		return
+	}
 
-	if shouldScaleDown(server, AllowPackingPercentage) {
-		logger.Infof("Server %s is scaling down", event.ServerName)
-		// TODO send control message to scale down
+	if event.UpdateContext == coordinator.SERVER_SCALE {
+		if shouldScaleDown(server, AllowPackingPercentage) {
+			logger.Infof("Server %s is scaling down", event.ServerName)
+			// TODO send control message to scale down
+		}
 	}
 }
 
