@@ -238,7 +238,20 @@ func (m *MemoryStore) GetServer(serverKey string, shallow bool, modelDetails boo
 	if server == nil {
 		return nil, fmt.Errorf("Server [%s] not found", serverKey)
 	} else {
-		return server.CreateSnapshot(shallow, modelDetails), nil
+		// TODO: refactor cleanly
+		snapshot := server.CreateSnapshot(shallow, modelDetails)
+		if modelDetails {
+			// this is a hint to the caller that the server is in a state where it can be scaled down
+			snapshot.Stats = m.getServerStats(serverKey)
+		}
+		return snapshot, nil
+	}
+}
+
+func (m *MemoryStore) getServerStats(serverKey string) *ServerStats {
+	return &ServerStats{
+		NumEmptyReplicas:          m.numEmptyServerReplicas(serverKey),
+		MaxNumReplicaHostedModels: m.maxNumModelReplicasForServer(serverKey),
 	}
 }
 
@@ -270,15 +283,21 @@ func (m *MemoryStore) UpdateLoadedModels(
 	replicas []*ServerReplica,
 ) error {
 	m.mu.Lock()
-	evt, err := m.updateLoadedModelsImpl(modelKey, version, serverKey, replicas)
+	modelEvt, serverEvt, err := m.updateLoadedModelsImpl(modelKey, version, serverKey, replicas)
 	m.mu.Unlock()
 	if err != nil {
 		return err
 	}
-	if m.eventHub != nil && evt != nil {
+	if m.eventHub != nil && modelEvt != nil {
 		m.eventHub.PublishModelEvent(
 			modelUpdateEventSource,
-			*evt,
+			*modelEvt,
+		)
+	}
+	if m.eventHub != nil && serverEvt != nil {
+		m.eventHub.PublishServerEvent(
+			serverUpdateEventSource,
+			*serverEvt,
 		)
 	}
 	return nil
@@ -289,18 +308,18 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 	version uint32,
 	serverKey string,
 	replicas []*ServerReplica,
-) (*coordinator.ModelEventMsg, error) {
+) (*coordinator.ModelEventMsg, *coordinator.ServerEventMsg, error) {
 	logger := m.logger.WithField("func", "updateLoadedModelsImpl")
 
 	// Validate
 	model, ok := m.store.models[modelKey]
 	if !ok {
-		return nil, fmt.Errorf("failed to find model %s", modelKey)
+		return nil, nil, fmt.Errorf("failed to find model %s", modelKey)
 	}
 
 	modelVersion := model.Latest()
 	if version != modelVersion.GetVersion() {
-		return nil, fmt.Errorf(
+		return nil, nil, fmt.Errorf(
 			"Model version mismatch for %s got %d but latest version is now %d",
 			modelKey, version, modelVersion.GetVersion(),
 		)
@@ -308,18 +327,21 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 
 	if serverKey == "" {
 		// nothing to do for a model that doesn't have a server, proceed with sending an event for downstream
-		return &coordinator.ModelEventMsg{ModelName: modelVersion.GetMeta().GetName(), ModelVersion: modelVersion.GetVersion()}, nil
+		return &coordinator.ModelEventMsg{
+			ModelName:    modelVersion.GetMeta().GetName(),
+			ModelVersion: modelVersion.GetVersion(),
+		}, nil, nil
 	}
 
 	server, ok := m.store.servers[serverKey]
 	if !ok {
-		return nil, fmt.Errorf("failed to find server %s", serverKey)
+		return nil, nil, fmt.Errorf("failed to find server %s", serverKey)
 	}
 
 	assignedReplicaIds := make(map[int]struct{})
 	for _, replica := range replicas {
 		if _, ok := server.replicas[replica.replicaIdx]; !ok {
-			return nil, fmt.Errorf(
+			return nil, nil, fmt.Errorf(
 				"failed to reserve replica %d as it does not exist on server %s",
 				replica.replicaIdx, serverKey,
 			)
@@ -335,6 +357,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 
 	//  reserve memory for existing replicas that are not already loading or loaded
 	replicaStateUpdated := false
+	unloadRequested := false
 	for replicaIdx := range assignedReplicaIds {
 		if existingState, ok := modelVersion.replicas[replicaIdx]; !ok {
 			logger.Debugf(
@@ -367,6 +390,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 			if !existingState.State.UnloadingOrUnloaded() && existingState.State != Draining {
 				modelVersion.SetReplicaState(replicaIdx, UnloadEnvoyRequested, "")
 				replicaStateUpdated = true
+				unloadRequested = true
 			}
 		}
 	}
@@ -386,10 +410,27 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 		logger.Debugf("Updating model status for model %s server %s", modelKey, serverKey)
 		modelVersion.server = serverKey
 		m.updateModelStatus(true, model.IsDeleted(), modelVersion, model.GetLastAvailableModelVersion())
-		return &coordinator.ModelEventMsg{ModelName: modelVersion.GetMeta().GetName(), ModelVersion: modelVersion.GetVersion()}, nil
+		if unloadRequested {
+			return &coordinator.ModelEventMsg{
+					ModelName:    modelVersion.GetMeta().GetName(),
+					ModelVersion: modelVersion.GetVersion(),
+				},
+				&coordinator.ServerEventMsg{
+					ServerName:    serverKey,
+					UpdateContext: coordinator.SERVER_SCALE,
+				},
+				nil
+		} else {
+			return &coordinator.ModelEventMsg{
+					ModelName:    modelVersion.GetMeta().GetName(),
+					ModelVersion: modelVersion.GetVersion(),
+				},
+				nil,
+				nil
+		}
 	} else {
 		logger.Debugf("Model status update not required for model %s server %s as no replicas were updated", modelKey, serverKey)
-		return nil, nil
+		return nil, nil, nil
 	}
 }
 
@@ -777,6 +818,31 @@ func (m *MemoryStore) ServerNotify(request *pb.ServerNotify) error {
 	server.SetMaxReplicas(int(request.MaxReplicas))
 	server.SetKubernetesMeta(request.KubernetesMeta)
 	return nil
+}
+
+func (m *MemoryStore) numEmptyServerReplicas(serverName string) uint32 {
+	emptyReplicas := uint32(0)
+	server, ok := m.store.servers[serverName]
+	if !ok {
+		return emptyReplicas
+	}
+	for _, replica := range server.replicas {
+		if len(replica.GetLoadedOrLoadingModelVersions()) == 0 {
+			emptyReplicas++
+		}
+	}
+	return emptyReplicas
+}
+
+func (m *MemoryStore) maxNumModelReplicasForServer(serverName string) uint32 {
+	maxNumModels := uint32(0)
+	for _, model := range m.store.models {
+		latest := model.Latest()
+		if latest != nil && latest.Server() == serverName {
+			maxNumModels = max(maxNumModels, uint32(latest.DesiredReplicas()))
+		}
+	}
+	return maxNumModels
 }
 
 func toSchedulerLoadedModels(agentLoadedModels []*agent.ModelVersion) map[ModelVersionID]bool {

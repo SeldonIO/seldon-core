@@ -293,6 +293,193 @@ func TestGetModel(t *testing.T) {
 	}
 }
 
+func TestGetServer(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name     string
+		store    *LocalSchedulerStore
+		key      string
+		isErr    bool
+		expected *ServerSnapshot
+	}
+
+	tests := []test{
+		{
+			name:     "NoServer",
+			store:    NewLocalSchedulerStore(),
+			key:      "server",
+			isErr:    true,
+			expected: nil,
+		},
+		{
+			name: "ServerExists",
+			store: &LocalSchedulerStore{
+				servers: map[string]*Server{
+					"server": {
+						name: "server",
+						replicas: map[int]*ServerReplica{
+							0: {},
+						},
+						expectedReplicas: 1,
+						minReplicas:      0,
+						maxReplicas:      0,
+					},
+				},
+			},
+			key:   "server",
+			isErr: false,
+			expected: &ServerSnapshot{
+				Name:             "server",
+				ExpectedReplicas: 1,
+				MinReplicas:      0,
+				MaxReplicas:      0,
+				Stats: &ServerStats{
+					NumEmptyReplicas:          1,
+					MaxNumReplicaHostedModels: 0,
+				},
+				Replicas: map[int]*ServerReplica{
+					0: {
+						loadedModels: map[ModelVersionID]bool{},
+					},
+				},
+			},
+		},
+		{
+			name: "ServerExistsWithModel",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{
+					"model": {
+						versions: []*ModelVersion{
+							{
+								modelDefn: &pb.Model{
+									Meta: &pb.MetaData{
+										Name: "model",
+									},
+								},
+							},
+						},
+					},
+				},
+				servers: map[string]*Server{
+					"server": {
+						name: "server",
+						replicas: map[int]*ServerReplica{
+							0: {
+								loadedModels: map[ModelVersionID]bool{
+									{Name: "model", Version: 1}: true,
+								}},
+						},
+						expectedReplicas: 1,
+						minReplicas:      0,
+						maxReplicas:      0,
+					},
+				},
+			},
+			key:   "server",
+			isErr: false,
+			expected: &ServerSnapshot{
+				Name:             "server",
+				ExpectedReplicas: 1,
+				MinReplicas:      0,
+				MaxReplicas:      0,
+				Stats: &ServerStats{
+					NumEmptyReplicas:          0,
+					MaxNumReplicaHostedModels: 1,
+				},
+				Replicas: map[int]*ServerReplica{
+					0: {
+						loadedModels: map[ModelVersionID]bool{
+							{Name: "model", Version: 1}: true,
+						}},
+				},
+			},
+		},
+		{
+			name: "ServerWithEmptyReplicas",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{
+					"model": {
+						versions: []*ModelVersion{
+							{
+								modelDefn: &pb.Model{
+									Meta: &pb.MetaData{
+										Name: "model",
+									},
+								},
+							},
+						},
+					},
+				},
+				servers: map[string]*Server{
+					"server": {
+						name: "server",
+						replicas: map[int]*ServerReplica{
+							0: {
+								loadedModels: map[ModelVersionID]bool{
+									{Name: "model", Version: 1}: true,
+								}},
+							1: {},
+						},
+						expectedReplicas: 1,
+						minReplicas:      0,
+						maxReplicas:      0,
+					},
+				},
+			},
+			key:   "server",
+			isErr: false,
+			expected: &ServerSnapshot{
+				Name:             "server",
+				ExpectedReplicas: 1,
+				MinReplicas:      0,
+				MaxReplicas:      0,
+				Stats: &ServerStats{
+					NumEmptyReplicas:          1,
+					MaxNumReplicaHostedModels: 1,
+				},
+				Replicas: map[int]*ServerReplica{
+					0: {
+						loadedModels: map[ModelVersionID]bool{
+							{Name: "model", Version: 1}: true,
+						}},
+					1: {
+						loadedModels: map[ModelVersionID]bool{},
+					},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			logger := log.New()
+			eventHub, err := coordinator.NewEventHub(logger)
+			g.Expect(err).To(BeNil())
+			ms := NewMemoryStore(logger, test.store, eventHub)
+			server, err := ms.GetServer(test.key, false, true)
+			if !test.isErr {
+				g.Expect(err).To(BeNil())
+				g.Expect(server.Name).To(Equal(test.expected.Name))
+				g.Expect(server.ExpectedReplicas).To(Equal(test.expected.ExpectedReplicas))
+				for k, v := range server.Replicas {
+					g.Expect(v.loadedModels).To(Equal(test.expected.Replicas[k].loadedModels))
+				}
+			} else {
+				g.Expect(err).ToNot(BeNil())
+			}
+
+			// no details
+			server, _ = ms.GetServer(test.key, false, false)
+			if !test.isErr {
+				for _, v := range server.Replicas {
+					g.Expect(len(v.loadedModels)).To(Equal(0))
+				}
+			}
+		})
+	}
+}
+
 func TestRemoveModel(t *testing.T) {
 	g := NewGomegaWithT(t)
 
@@ -362,6 +549,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 		err                bool
 		isModelDeleted     bool
 		expectedModelState *ModelStatus
+		isModelUnloaded    bool
 	}
 
 	tests := []test{
@@ -491,7 +679,8 @@ func TestUpdateLoadedModels(t *testing.T) {
 			replicas: []*ServerReplica{
 				{replicaIdx: 1},
 			},
-			expectedStates: map[int]ReplicaStatus{0: {State: UnloadEnvoyRequested}, 1: {State: LoadRequested}},
+			expectedStates:  map[int]ReplicaStatus{0: {State: UnloadEnvoyRequested}, 1: {State: LoadRequested}},
+			isModelUnloaded: true,
 		},
 		{
 			name: "DeletedModel",
@@ -519,12 +708,13 @@ func TestUpdateLoadedModels(t *testing.T) {
 					},
 				},
 			},
-			modelKey:       "model",
-			version:        1,
-			serverKey:      "server",
-			replicas:       []*ServerReplica{},
-			isModelDeleted: true,
-			expectedStates: map[int]ReplicaStatus{0: {State: UnloadEnvoyRequested}, 1: {State: UnloadEnvoyRequested}},
+			modelKey:        "model",
+			version:         1,
+			serverKey:       "server",
+			replicas:        []*ServerReplica{},
+			isModelDeleted:  true,
+			expectedStates:  map[int]ReplicaStatus{0: {State: UnloadEnvoyRequested}, 1: {State: UnloadEnvoyRequested}},
+			isModelUnloaded: true,
 		},
 		{
 			name: "DeletedModelNoReplicas",
@@ -772,7 +962,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 				test.store.models[test.modelKey].SetDeleted()
 			}
 			ms := NewMemoryStore(logger, test.store, eventHub)
-			msg, err := ms.updateLoadedModelsImpl(test.modelKey, test.version, test.serverKey, test.replicas)
+			msg, msgServer, err := ms.updateLoadedModelsImpl(test.modelKey, test.version, test.serverKey, test.replicas)
 			if !test.err {
 				g.Expect(err).To(BeNil())
 				g.Expect(msg).ToNot(BeNil())
@@ -790,9 +980,17 @@ func TestUpdateLoadedModels(t *testing.T) {
 				if test.expectedModelState != nil {
 					g.Expect(mv.state.State).To(Equal(test.expectedModelState.State))
 				}
+				if test.isModelUnloaded {
+					g.Expect(msgServer).ToNot(BeNil())
+					g.Expect(msgServer.ServerName).To(Equal(test.serverKey))
+					g.Expect(msgServer.UpdateContext).To(Equal(coordinator.SERVER_SCALE))
+				} else {
+					g.Expect(msgServer).To(BeNil())
+				}
 			} else {
 				g.Expect(err).ToNot(BeNil())
 				g.Expect(msg).To(BeNil())
+				g.Expect(msgServer).To(BeNil())
 			}
 		})
 	}
