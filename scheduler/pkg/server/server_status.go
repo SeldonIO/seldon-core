@@ -92,16 +92,20 @@ func (s *SchedulerServer) handleModelEvent(event coordinator.ModelEventMsg) {
 
 func (s *SchedulerServer) handleServerEvent(event coordinator.ServerEventMsg) {
 	logger := s.logger.WithField("func", "handleServerEvent")
-	logger.Debugf("Got server event msg for %s", event.String())
 
-	server, err := s.modelStore.GetServer(event.ServerName, true, true)
-	if err != nil {
-		logger.WithError(err).Errorf("Failed to handle server event for server %s", event.ServerName)
+	if event.UpdateContext == coordinator.SERVER_SCALE {
+		logger.Debugf("Got server event msg for %s", event.String())
+
+		server, err := s.modelStore.GetServer(event.ServerName, true, true)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to handle server event for server %s", event.ServerName)
+		}
+
+		if shouldScaleUp(server) {
+			s.incrementExpectedReplicas(server)
+		}
 	}
 
-	if shouldScaleUp(server) {
-		s.incrementExpectedReplicas(server)
-	}
 }
 
 func (s *SchedulerServer) StopSendModelEvents() {
