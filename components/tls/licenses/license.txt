@@ -11672,7 +11672,7 @@ hamba/avro  MIT License  https://github.com/hamba/avro/blob/main/LICENCE
 --------------------------------------------------------------------------------
 MIT License
 
-Copyright (c) 2024 Nicholas Wiersma
+Copyright (c) 2025 Nicholas Wiersma
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
