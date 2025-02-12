@@ -1,19 +1,14 @@
 # Usage Metrics
 
-There are various interesting system metrics about how Seldon Core v2 is used. These metrics can be
-recorded **anonymously** and sent to Seldon by a lightweight, optional, stand-alone component called Hodometer.
+There are various interesting system metrics about how Seldon Core 2 is used. These metrics can be recorded **anonymously** and sent to Seldon by a lightweight, optional, stand-alone component called Hodometer.
 
-When provided, these metrics will be used to understand the adoption of Seldon Core v2 and how people interact
-with it. For example, knowing how many clusters Seldon Core v2 is running on, if it is used in Kubernetes or for
-local development, and how many people are benefitting from features like multi-model serving.
+When provided, these metrics are used to understand the adoption of Seldon Core 2 and how you interact with it. For example, knowing how many clusters Seldon Core 2 is running on, if it is used in Kubernetes or for local development, and how many users are benefitting from features such as multi-model serving.
 
 ## Architecture
 
 ![Hodometer architecture](../images/hodometer-architecture.png)
 
-Hodometer is not an integral part of Seldon Core v2, but rather an independent component which connects to
-the public APIs of the Seldon Core v2 scheduler. If deployed in Kubernetes, it will also try to request
-some basic information from the Kubernetes API.
+Hodometer is not an integral part of Seldon Core 2, but rather an independent component which connects to the public APIs of the Seldon Core 2 scheduler. If deployed in Kubernetes, it requests some basic information from the Kubernetes API.
 
 Recorded metrics are sent to Seldon and, optionally, to any [additional endpoints](#extra-publish-urls) you define.
 
@@ -21,26 +16,18 @@ Recorded metrics are sent to Seldon and, optionally, to any [additional endpoint
 
 Hodometer was explicitly designed with privacy of user information and transparency of implementation in mind.
 
-It does not record any sensitive or identifying information. For example, it has no knowledge of IP addresses,
-model names, or user information. All information sent to Seldon is anonymised with a completely random
-cluster identifier.
+It does not record any sensitive or identifying information. For example, it has no knowledge of IP addresses, model names, or user information. All information sent to Seldon is anonymised with a completely random cluster identifier.
 
-Hodometer supports [different information levels](#metrics-levels), so you have full control over what
-metrics are provided to Seldon, if any.
+Hodometer supports [different information levels](#metrics-levels), so you have full control over what metrics are provided to Seldon, if any.
 
-For transparency, the implementation is fully open-source and designed to be easy to read. The full source
-code is available [here](https://github.com/seldonio/seldon-core/tree/v2/hodometer), with metrics defined in
-code [here](https://github.com/seldonio/seldon-core/tree/v2/hodometer/pkg/hodometer/metrics.go). See
+For transparency, the implementation is fully open-source and designed to be easy to read. The full source code is available [here](https://github.com/seldonio/seldon-core/tree/v2/hodometer), with metrics defined in code [here](https://github.com/seldonio/seldon-core/tree/v2/hodometer/pkg/hodometer/metrics.go). See
 [below](#list-of-metrics) for an equivalent table of metrics.
 
 ## Performance
 
-Metrics are collected as periodic snapshots a few times per day. They are lightweight to collect, coming
-mostly from the Seldon Core v2 scheduler, and are heavily aggregated. As such, they should have minimal
-impact on CPU, memory, and network consumption.
+Metrics are collected as periodic snapshots a few times per day. They are lightweight to collect, coming mostly from the Seldon Core v2 scheduler, and are heavily aggregated. As such, they should have minimal impact on CPU, memory, and network consumption.
 
-Hodometer does not store anything it records, so does not have any persistent storage. As a result, it
-should not be considered a replacement for tools like Prometheus.
+Hodometer does not store anything it records, so does not have any persistent storage. As a result, it should not be considered a replacement for tools like Prometheus.
 
 ## Configuration
 
