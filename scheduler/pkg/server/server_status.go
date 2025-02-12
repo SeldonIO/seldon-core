@@ -101,11 +101,11 @@ func (s *SchedulerServer) handleServerEvent(event coordinator.ServerEventMsg) {
 			logger.WithError(err).Errorf("Failed to handle server event for server %s", event.ServerName)
 		}
 
-		if shouldScaleUp(server) {
-			s.incrementExpectedReplicas(server)
+		ok, expectedReplicas := shouldScaleUp(server)
+		if ok {
+			s.sendScalingRequest(server, expectedReplicas)
 		}
 	}
-
 }
 
 func (s *SchedulerServer) StopSendModelEvents() {
@@ -228,13 +228,13 @@ func (s *SchedulerServer) updateServerModelsStatus(evt coordinator.ModelEventMsg
 	return err
 }
 
-func (s *SchedulerServer) incrementExpectedReplicas(server *store.ServerSnapshot) {
+func (s *SchedulerServer) sendScalingRequest(server *store.ServerSnapshot, expectedReplicas int32) {
 	// TODO: should there be some sort of velocity check ?
-	logger := s.logger.WithField("func", "incrementExpectedReplicas")
+	logger := s.logger.WithField("func", "sendScalingRequest")
 	logger.Debugf("will attempt to scale servers to %d for %v", server.Stats.MaxNumReplicaHostedModels, server.Name)
 
 	ssr := createServerStatusUpdateResponse(server)
-	ssr.ExpectedReplicas = int32(server.Stats.MaxNumReplicaHostedModels)
+	ssr.ExpectedReplicas = expectedReplicas
 	ssr.Type = pb.ServerStatusResponse_ScalingRequest
 	s.sendServerStatusResponse(ssr)
 }

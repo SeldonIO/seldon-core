@@ -423,29 +423,53 @@ func TestServerScalingEvents(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name          string
-		loadReq       *pba.AgentSubscribeRequest
-		timeout       time.Duration
-		modelReplicas int
-		scaleUp       bool
-		notifyReq     *pb.ServerNotifyRequest
+		name             string
+		loadReq          *pba.AgentSubscribeRequest
+		timeout          time.Duration
+		modelReplicas    int
+		expectedReplicas int32
+		scaleUp          bool
+		notifyReq        *pb.ServerNotifyRequest
 	}
 
 	tests := []test{
 		{
-			name: "scale up requested",
+			name: "scale up requested to match max server replicas",
 			loadReq: &pba.AgentSubscribeRequest{
 				ServerName: "foo-server",
 			},
-			timeout:       10 * time.Second,
-			modelReplicas: 10,
-			scaleUp:       true,
+			timeout:          10 * time.Second,
+			modelReplicas:    10,
+			scaleUp:          true,
+			expectedReplicas: 3,
 			notifyReq: &pb.ServerNotifyRequest{
 				Servers: []*pb.ServerNotify{
 					{
 						Name:             "foo-server",
 						ExpectedReplicas: 2,
 						Shared:           true,
+						MaxReplicas:      3,
+					},
+				},
+				IsFirstSync: false,
+			},
+		},
+		{
+			name: "scale up requested to match max model replicas",
+			loadReq: &pba.AgentSubscribeRequest{
+				ServerName: "foo-server",
+			},
+			timeout:          10 * time.Second,
+			modelReplicas:    4,
+			scaleUp:          true,
+			expectedReplicas: 4,
+			notifyReq: &pb.ServerNotifyRequest{
+				Servers: []*pb.ServerNotify{
+					{
+						Name:             "foo-server",
+						ExpectedReplicas: 2,
+						Shared:           true,
+						MaxReplicas:      5,
 					},
 				},
 				IsFirstSync: false,
@@ -544,12 +568,11 @@ func TestServerScalingEvents(t *testing.T) {
 
 				if !test.scaleUp {
 					g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_StatusUpdate))
-
 				} else {
+					g.Expect(ssr.ExpectedReplicas).To(Equal(test.expectedReplicas))
 					g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_ScalingRequest))
 				}
 			}
-
 		})
 	}
 }
