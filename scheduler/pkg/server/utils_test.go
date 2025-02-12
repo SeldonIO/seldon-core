@@ -90,6 +90,7 @@ func TestShouldScaleDown(t *testing.T) {
 		server           *store.ServerSnapshot
 		shouldScaleDown  bool
 		expectedReplicas uint32
+		packThreshold    float32
 	}
 
 	tests := []test{
@@ -143,6 +144,7 @@ func TestShouldScaleDown(t *testing.T) {
 			},
 			shouldScaleDown:  true,
 			expectedReplicas: 1,
+			packThreshold:    0.0,
 		},
 		{
 			name: "should scale down - empty replicas > 1 - 1",
@@ -156,6 +158,7 @@ func TestShouldScaleDown(t *testing.T) {
 			},
 			shouldScaleDown:  true,
 			expectedReplicas: 1,
+			packThreshold:    0.0,
 		},
 		{
 			name: "should scale down - violate min replicas",
@@ -169,6 +172,7 @@ func TestShouldScaleDown(t *testing.T) {
 			},
 			shouldScaleDown:  true,
 			expectedReplicas: 2,
+			packThreshold:    0.0,
 		},
 		{
 			name: "should scale down - empty replicas > 1 - 2",
@@ -182,6 +186,7 @@ func TestShouldScaleDown(t *testing.T) {
 			},
 			shouldScaleDown:  true,
 			expectedReplicas: 2,
+			packThreshold:    0.0,
 		},
 		{
 			name: "should scale down - pack",
@@ -195,6 +200,7 @@ func TestShouldScaleDown(t *testing.T) {
 			},
 			shouldScaleDown:  true,
 			expectedReplicas: 1,
+			packThreshold:    1.0,
 		},
 		{
 			name: "should scale down - pack > 1",
@@ -208,6 +214,21 @@ func TestShouldScaleDown(t *testing.T) {
 			},
 			shouldScaleDown:  true,
 			expectedReplicas: 1,
+			packThreshold:    1.0,
+		},
+		{
+			name: "should not scale down - pack threshold",
+			server: &store.ServerSnapshot{
+				Stats: &store.ServerStats{
+					NumEmptyReplicas:          0,
+					MaxNumReplicaHostedModels: 1,
+				},
+				ExpectedReplicas: 3,
+				MinReplicas:      1,
+			},
+			shouldScaleDown:  false,
+			expectedReplicas: 0,
+			packThreshold:    0.0,
 		},
 		{
 			name: "should not scale down - empty replicas - last replica",
@@ -221,6 +242,7 @@ func TestShouldScaleDown(t *testing.T) {
 			},
 			shouldScaleDown:  false,
 			expectedReplicas: 0,
+			packThreshold:    0.0,
 		},
 		{
 			name: "should not scale down - pack - last replica",
@@ -234,19 +256,12 @@ func TestShouldScaleDown(t *testing.T) {
 			},
 			shouldScaleDown:  false,
 			expectedReplicas: 0,
+			packThreshold:    1.0,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-<<<<<<< HEAD
-			ok, expectedReplicas := shouldScaleUp(test.server)
-			g.Expect(ok).To(Equal(test.shouldScaleUp))
-			if ok {
-				g.Expect(expectedReplicas).To(Equal(test.newExpectedReplicas))
-			}
-			g.Expect(shouldScaleDown(test.server, 1.0)).To(Equal(test.shouldScaleDown))
-=======
 			scaleDown, replicas := shouldScaleDown(test.server, 1.0)
 			g.Expect(scaleDown).To(Equal(test.shouldScaleDown))
 			if scaleDown {

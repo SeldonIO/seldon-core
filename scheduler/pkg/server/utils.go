@@ -64,6 +64,9 @@ func shouldScaleDown(server *store.ServerSnapshot, perc float32) (bool, uint32) 
 		stats := server.Stats
 		currentReplicas := uint32(server.ExpectedReplicas)
 		minReplicas := uint32(server.MinReplicas)
+		if minReplicas == 0 {
+			minReplicas = 1
+		}
 		// 25% chance of trying to pack replicas if models are not fully packed
 		tryPack := false
 		rand := rand.Float32()
@@ -79,13 +82,13 @@ func shouldScaleDown(server *store.ServerSnapshot, perc float32) (bool, uint32) 
 		targetReplicas := max(minReplicas, currentReplicas-stats.NumEmptyReplicas)
 		if tryPack {
 			toRemoveReplicasfromPack := currentReplicas - stats.MaxNumReplicaHostedModels
-			remainingReplicasfromPack := currentReplicas-toRemoveReplicasfromPack
+			remainingReplicasfromPack := currentReplicas - toRemoveReplicasfromPack
 			if toRemoveReplicasfromPack > stats.NumEmptyReplicas && remainingReplicasfromPack > 0 {
 				targetReplicas = max(minReplicas, remainingReplicasfromPack)
 			}
-
-			return (tryPack || stats.NumEmptyReplicas > 0) && server.ExpectedReplicas > 1, targetReplicas
 		}
+
+		return (tryPack || stats.NumEmptyReplicas > 0) && server.ExpectedReplicas > 1, targetReplicas
 	}
 	return false, 0
 }
