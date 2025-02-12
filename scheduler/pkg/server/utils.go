@@ -78,9 +78,10 @@ func shouldScaleDown(server *store.ServerSnapshot, perc float32) (bool, uint32) 
 
 		targetReplicas := max(minReplicas, currentReplicas-stats.NumEmptyReplicas)
 		if tryPack {
-			toRemoveReplicas := currentReplicas - stats.MaxNumReplicaHostedModels
-			if toRemoveReplicas > stats.NumEmptyReplicas {
-				targetReplicas = max(minReplicas, currentReplicas-toRemoveReplicas)
+			toRemoveReplicasfromPack := currentReplicas - stats.MaxNumReplicaHostedModels
+			remainingReplicasfromPack := currentReplicas-toRemoveReplicasfromPack
+			if toRemoveReplicasfromPack > stats.NumEmptyReplicas && remainingReplicasfromPack > 0 {
+				targetReplicas = max(minReplicas, remainingReplicasfromPack)
 			}
 
 			return (tryPack || stats.NumEmptyReplicas > 0) && server.ExpectedReplicas > 1, targetReplicas

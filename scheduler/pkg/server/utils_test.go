@@ -145,6 +145,45 @@ func TestShouldScaleDown(t *testing.T) {
 			expectedReplicas: 1,
 		},
 		{
+			name: "should scale down - empty replicas > 1 - 1",
+			server: &store.ServerSnapshot{
+				Stats: &store.ServerStats{
+					NumEmptyReplicas:          2,
+					MaxNumReplicaHostedModels: 0,
+				},
+				ExpectedReplicas: 3,
+				MinReplicas:      1,
+			},
+			shouldScaleDown:  true,
+			expectedReplicas: 1,
+		},
+		{
+			name: "should scale down - violate min replicas",
+			server: &store.ServerSnapshot{
+				Stats: &store.ServerStats{
+					NumEmptyReplicas:          2,
+					MaxNumReplicaHostedModels: 0,
+				},
+				ExpectedReplicas: 3,
+				MinReplicas:      2,
+			},
+			shouldScaleDown:  true,
+			expectedReplicas: 2,
+		},
+		{
+			name: "should scale down - empty replicas > 1 - 2",
+			server: &store.ServerSnapshot{
+				Stats: &store.ServerStats{
+					NumEmptyReplicas:          1,
+					MaxNumReplicaHostedModels: 0,
+				},
+				ExpectedReplicas: 3,
+				MinReplicas:      1,
+			},
+			shouldScaleDown:  true,
+			expectedReplicas: 2,
+		},
+		{
 			name: "should scale down - pack",
 			server: &store.ServerSnapshot{
 				Stats: &store.ServerStats{
