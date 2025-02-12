@@ -1,4 +1,4 @@
-# Overview
+# About
 
 Seldon Core 2 is a source-available framework for deploying and managing machine learning systems at scale. The data-centric approach and modular architecture of Core 2 helps you deploy, manage, and scale your ML - from simple models to complex ML applications. After the models are deployed, Core 2 enables the monitoring and experimentation on those systems in production. With support for a wide range of model types, and design patterns to build around those models, you can standardize ML deployment across a range of use-cases in the cloud or on-premise serving infrastructure of your choice. 
 

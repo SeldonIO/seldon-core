@@ -1,6 +1,16 @@
 # Table of contents
+* [About](README.md)
 
-* [Overview](README.md)
+## Installation
+* [Installing Seldon Core 2](installation/README.md)
+    * [Learning Environment](installation/learning-environment/README.md)
+      * [Self-hosted Kafka](installation/learning-environment/self-hosted-kafka.md)
+    * [Production Environment](installation/production-environment/README.md)
+      * [Kafka Integration](installation/production-environment/kafka/README.md)
+         * [Managed Kafka](installation/production-environment/kafka/managed-kafka.md) 
+      * [Ingress Controller](installation/production-environment/ingress-controller/istio.md)
+    * [Test the Installation](installation/test-installation.md)
+    
 * [Getting Started](getting-started/README.md)
   * [Docker Installation](getting-started/docker-installation.md)
   * [Kubernetes Installation](getting-started/kubernetes-installation/README.md)
