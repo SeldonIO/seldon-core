@@ -86,9 +86,10 @@ func TestShouldScaleDown(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name            string
-		server          *store.ServerSnapshot
-		shouldScaleDown bool
+		name             string
+		server           *store.ServerSnapshot
+		shouldScaleDown  bool
+		expectedReplicas uint32
 	}
 
 	tests := []test{
@@ -138,8 +139,10 @@ func TestShouldScaleDown(t *testing.T) {
 					MaxNumReplicaHostedModels: 0,
 				},
 				ExpectedReplicas: 2,
+				MinReplicas:      1,
 			},
-			shouldScaleDown: true,
+			shouldScaleDown:  true,
+			expectedReplicas: 1,
 		},
 		{
 			name: "should scale down - pack",
@@ -149,8 +152,10 @@ func TestShouldScaleDown(t *testing.T) {
 					MaxNumReplicaHostedModels: 1,
 				},
 				ExpectedReplicas: 2,
+				MinReplicas:      1,
 			},
-			shouldScaleDown: true,
+			shouldScaleDown:  true,
+			expectedReplicas: 1,
 		},
 		{
 			name: "should not scale down - empty replicas - last replica",
@@ -160,8 +165,10 @@ func TestShouldScaleDown(t *testing.T) {
 					MaxNumReplicaHostedModels: 0,
 				},
 				ExpectedReplicas: 1,
+				MinReplicas:      1,
 			},
-			shouldScaleDown: false,
+			shouldScaleDown:  false,
+			expectedReplicas: 0,
 		},
 		{
 			name: "should not scale down - pack - last replica",
@@ -171,19 +178,29 @@ func TestShouldScaleDown(t *testing.T) {
 					MaxNumReplicaHostedModels: 0,
 				},
 				ExpectedReplicas: 1,
+				MinReplicas:      1,
 			},
-			shouldScaleDown: false,
+			shouldScaleDown:  false,
+			expectedReplicas: 0,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+<<<<<<< HEAD
 			ok, expectedReplicas := shouldScaleUp(test.server)
 			g.Expect(ok).To(Equal(test.shouldScaleUp))
 			if ok {
 				g.Expect(expectedReplicas).To(Equal(test.newExpectedReplicas))
 			}
 			g.Expect(shouldScaleDown(test.server, 1.0)).To(Equal(test.shouldScaleDown))
+=======
+			scaleDown, replicas := shouldScaleDown(test.server, 1.0)
+			g.Expect(scaleDown).To(Equal(test.shouldScaleDown))
+			if scaleDown {
+				g.Expect(replicas).To(Equal(test.expectedReplicas))
+			}
+>>>>>>> 49f623d79 (fix test)
 		})
 	}
 }
