@@ -15,6 +15,8 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
 func TestSendWithTimeout(t *testing.T) {
@@ -67,6 +69,70 @@ func TestSendWithTimeout(t *testing.T) {
 				g.Expect(err).ToNot(BeNil())
 			} else {
 				g.Expect(err).To(BeNil())
+			}
+		})
+	}
+}
+
+func TestSouldScaleUp(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name                string
+		shouldScaleUp       bool
+		newExpectedReplicas uint32
+		server              *store.ServerSnapshot
+	}
+
+	tests := []test{
+		{
+			name:                "scales up to MaxReplicas",
+			shouldScaleUp:       true,
+			newExpectedReplicas: 2,
+			server: &store.ServerSnapshot{
+				MaxReplicas:      2,
+				ExpectedReplicas: 1,
+				Stats:            &store.ServerStats{MaxNumReplicaHostedModels: 3},
+			},
+		},
+		{
+			name:                "scales up to MaxNumReplicaHostedModels",
+			shouldScaleUp:       true,
+			newExpectedReplicas: 3,
+			server: &store.ServerSnapshot{
+				MaxReplicas:      4,
+				ExpectedReplicas: 1,
+				Stats:            &store.ServerStats{MaxNumReplicaHostedModels: 3},
+			},
+		},
+		{
+			name:                "",
+			shouldScaleUp:       false,
+			newExpectedReplicas: 3,
+			server: &store.ServerSnapshot{
+				MaxReplicas:      3,
+				ExpectedReplicas: 3,
+				Stats:            &store.ServerStats{MaxNumReplicaHostedModels: 2},
+			},
+		},
+		{
+			name:                "does not scale up for ExpectedReplicas below 0",
+			shouldScaleUp:       false,
+			newExpectedReplicas: 2,
+			server: &store.ServerSnapshot{
+				MaxReplicas:      2,
+				ExpectedReplicas: -1,
+				Stats:            &store.ServerStats{MaxNumReplicaHostedModels: 3},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ok, expectedReplicas := shouldScaleUp(test.server)
+			g.Expect(ok).To(Equal(test.shouldScaleUp))
+			if ok {
+				g.Expect(expectedReplicas).To(Equal(test.newExpectedReplicas))
 			}
 		})
 	}

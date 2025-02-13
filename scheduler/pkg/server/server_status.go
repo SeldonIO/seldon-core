@@ -15,6 +15,7 @@ import (
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
 func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest, stream pb.Scheduler_SubscribeModelStatusServer) error {
@@ -86,6 +87,26 @@ func (s *SchedulerServer) handleModelEvent(event coordinator.ModelEventMsg) {
 	err := s.sendModelStatusEvent(event)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to update model status for model %s", event.String())
+	}
+}
+
+func (s *SchedulerServer) handleServerEvent(event coordinator.ServerEventMsg) {
+	logger := s.logger.WithField("func", "handleServerEvent")
+
+	if event.UpdateContext == coordinator.SERVER_SCALE {
+		logger.Debugf("Got server event msg for %s", event.String())
+
+		server, err := s.modelStore.GetServer(event.ServerName, true, true)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to handle server event for server %s", event.ServerName)
+		}
+
+		ok, expectedReplicas := shouldScaleUp(server)
+		if ok {
+			s.sendScalingRequest(server, expectedReplicas)
+		} else {
+			logger.Debugf("Will not scale server for event %s", event.String())
+		}
 	}
 }
 
@@ -164,7 +185,7 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 }
 
 func (s *SchedulerServer) handleModelEventForServerStatus(event coordinator.ModelEventMsg) {
-	logger := s.logger.WithField("func", "handleServerEvent")
+	logger := s.logger.WithField("func", "handleModelEventForServerStatus")
 	logger.Debugf("Got server state change for %s", event.String())
 
 	err := s.updateServerModelsStatus(event)
@@ -182,7 +203,7 @@ func (s *SchedulerServer) StopSendServerEvents() {
 }
 
 func (s *SchedulerServer) updateServerModelsStatus(evt coordinator.ModelEventMsg) error {
-	logger := s.logger.WithField("func", "sendServerStatusEvent")
+	logger := s.logger.WithField("func", "updateServerModelStatus")
 
 	model, err := s.modelStore.GetModel(evt.ModelName)
 	if err != nil {
@@ -206,7 +227,18 @@ func (s *SchedulerServer) updateServerModelsStatus(evt coordinator.ModelEventMsg
 	}
 	s.serverEventStream.pendingLock.Unlock()
 
-	return nil
+	return err
+}
+
+func (s *SchedulerServer) sendScalingRequest(server *store.ServerSnapshot, expectedReplicas uint32) {
+	// TODO: should there be some sort of velocity check ?
+	logger := s.logger.WithField("func", "sendScalingRequest")
+	logger.Debugf("will attempt to scale servers to %d for %v", server.Stats.MaxNumReplicaHostedModels, server.Name)
+
+	ssr := createServerStatusUpdateResponse(server)
+	ssr.ExpectedReplicas = int32(expectedReplicas)
+	ssr.Type = pb.ServerStatusResponse_ScalingRequest
+	s.sendServerStatusResponse(ssr)
 }
 
 func (s *SchedulerServer) sendServerStatus() {
@@ -228,21 +260,24 @@ func (s *SchedulerServer) sendServerStatus() {
 			logger.Errorf("Failed to get server %s", serverName)
 			continue
 		}
-		ssr := createServerStatusResponse(server)
+		ssr := createServerStatusUpdateResponse(server)
+		s.sendServerStatusResponse(ssr)
+	}
+}
 
-		for stream, subscription := range s.serverEventStream.streams {
-			hasExpired, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
-			if hasExpired {
-				// this should trigger a reconnect from the client
-				close(subscription.fin)
-				delete(s.serverEventStream.streams, stream)
-			}
-			if err != nil {
-				logger.WithError(err).Errorf("Failed to send server status event to %s", subscription.name)
-			}
+func (s *SchedulerServer) sendServerStatusResponse(ssr *pb.ServerStatusResponse) {
+	logger := s.logger.WithField("func", "sendServerStatusResponse")
+	for stream, subscription := range s.serverEventStream.streams {
+		hasExpired, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
+		if hasExpired {
+			// this should trigger a reconnect from the client
+			close(subscription.fin)
+			delete(s.serverEventStream.streams, stream)
+		}
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to send server status response to %s", subscription.name)
 		}
 	}
-
 }
 
 // initial send of server statuses to a new controller
@@ -252,7 +287,7 @@ func (s *SchedulerServer) sendCurrentServerStatuses(stream pb.Scheduler_ServerSt
 		return err
 	}
 	for _, server := range servers {
-		ssr := createServerStatusResponse(server)
+		ssr := createServerStatusUpdateResponse(server)
 		_, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
 		if err != nil {
 			return err

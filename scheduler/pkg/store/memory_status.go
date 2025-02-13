@@ -120,6 +120,7 @@ func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string
 	if reset {
 		modelVersion.server = ""
 	}
+
 	m.eventHub.PublishModelEvent(
 		modelFailureEventSource,
 		coordinator.ModelEventMsg{

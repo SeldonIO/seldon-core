@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package server
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -146,7 +147,8 @@ func TestModelsStatusEvents(t *testing.T) {
 			}
 			g.Expect(s.modelEventStream.streams[stream]).ToNot(BeNil())
 			hub.PublishModelEvent(modelEventHandlerName, coordinator.ModelEventMsg{
-				ModelName: "foo", ModelVersion: 1})
+				ModelName: "foo", ModelVersion: 1,
+			})
 
 			// to allow events to propagate
 			time.Sleep(500 * time.Millisecond)
@@ -336,7 +338,7 @@ func TestServersStatusStream(t *testing.T) {
 	}
 }
 
-func TestServersStatusEvents(t *testing.T) {
+func TestModelEventsForServerStatus(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -367,7 +369,7 @@ func TestServersStatusEvents(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, hub := createTestScheduler()
+			s, _ := createTestScheduler()
 			s.timeout = test.timeout
 			if test.loadReq != nil {
 				err := s.modelStore.AddServerReplica(test.loadReq)
@@ -393,8 +395,6 @@ func TestServersStatusEvents(t *testing.T) {
 				fin:    make(chan bool),
 			}
 			g.Expect(s.serverEventStream.streams[stream]).ToNot(BeNil())
-			hub.PublishModelEvent(serverModelEventHandlerName, coordinator.ModelEventMsg{
-				ModelName: "foo", ModelVersion: 1})
 
 			// to allow events to propagate
 			time.Sleep(500 * time.Millisecond)
@@ -402,7 +402,6 @@ func TestServersStatusEvents(t *testing.T) {
 			if test.err {
 				g.Expect(s.serverEventStream.streams).To(HaveLen(0))
 			} else {
-
 				var ssr *pb.ServerStatusResponse
 				select {
 				case next := <-stream.msgs:
@@ -414,6 +413,165 @@ func TestServersStatusEvents(t *testing.T) {
 				g.Expect(ssr).ToNot(BeNil())
 				g.Expect(ssr.ServerName).To(Equal("foo"))
 				g.Expect(s.serverEventStream.streams).To(HaveLen(1))
+				g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_StatusUpdate))
+			}
+		})
+	}
+}
+
+func TestServerScalingEvents(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name             string
+		loadReq          *pba.AgentSubscribeRequest
+		timeout          time.Duration
+		modelReplicas    int
+		expectedReplicas int32
+		scaleUp          bool
+		notifyReq        *pb.ServerNotifyRequest
+	}
+
+	tests := []test{
+		{
+			name: "scale up requested to match max server replicas",
+			loadReq: &pba.AgentSubscribeRequest{
+				ServerName: "foo-server",
+			},
+			timeout:          10 * time.Second,
+			modelReplicas:    10,
+			scaleUp:          true,
+			expectedReplicas: 3,
+			notifyReq: &pb.ServerNotifyRequest{
+				Servers: []*pb.ServerNotify{
+					{
+						Name:             "foo-server",
+						ExpectedReplicas: 2,
+						Shared:           true,
+						MaxReplicas:      3,
+					},
+				},
+				IsFirstSync: false,
+			},
+		},
+		{
+			name: "scale up requested to match max model replicas",
+			loadReq: &pba.AgentSubscribeRequest{
+				ServerName: "foo-server",
+			},
+			timeout:          10 * time.Second,
+			modelReplicas:    4,
+			scaleUp:          true,
+			expectedReplicas: 4,
+			notifyReq: &pb.ServerNotifyRequest{
+				Servers: []*pb.ServerNotify{
+					{
+						Name:             "foo-server",
+						ExpectedReplicas: 2,
+						Shared:           true,
+						MaxReplicas:      5,
+					},
+				},
+				IsFirstSync: false,
+			},
+		},
+		{
+			name: "scale up not requested",
+			loadReq: &pba.AgentSubscribeRequest{
+				ServerName: "foo-server",
+			},
+			timeout:       10 * time.Second,
+			modelReplicas: 1,
+			scaleUp:       false,
+			notifyReq: &pb.ServerNotifyRequest{
+				Servers: []*pb.ServerNotify{
+					{
+						Name:             "server1",
+						ExpectedReplicas: 2,
+						Shared:           true,
+					},
+				},
+				IsFirstSync: false,
+			},
+		},
+		{
+			name: "scale up not requested - expected replicas not set",
+			loadReq: &pba.AgentSubscribeRequest{
+				ServerName: "foo-server",
+			},
+			timeout:       10 * time.Second,
+			modelReplicas: 1,
+			scaleUp:       false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s, hub := createTestScheduler()
+			s.timeout = test.timeout
+
+			if test.notifyReq != nil {
+				_, err := s.ServerNotify(context.Background(), test.notifyReq)
+				g.Expect(err).To(BeNil())
+			}
+
+			if test.loadReq != nil {
+				err := s.modelStore.AddServerReplica(test.loadReq)
+				g.Expect(err).To(BeNil())
+				err = s.modelStore.UpdateModel(&pb.LoadModelRequest{
+					Model: &pb.Model{
+						Meta:           &pb.MetaData{Name: "foo-model"},
+						DeploymentSpec: &pb.DeploymentSpec{Replicas: uint32(test.modelReplicas)},
+					},
+				})
+				g.Expect(err).To(BeNil())
+				err = s.modelStore.UpdateLoadedModels(
+					"foo-model", 1, "foo-server", []*store.ServerReplica{
+						store.NewServerReplica("", 8080, 5001, 0, store.NewServer("foo-server", true), []string{}, 100, 100, 0, map[store.ModelVersionID]bool{}, 100),
+					},
+				)
+				g.Expect(err).To(BeNil())
+			}
+
+			// to allow events to propagate
+			time.Sleep(1 * time.Second)
+
+			stream := newStubServerStatusServer(1, 5*time.Millisecond)
+			s.serverEventStream.streams[stream] = &ServerSubscription{
+				name:   "dummy",
+				stream: stream,
+				fin:    make(chan bool),
+			}
+
+			g.Expect(s.serverEventStream.streams[stream]).ToNot(BeNil())
+
+			hub.PublishServerEvent(serverEventHandlerName, coordinator.ServerEventMsg{
+				ServerName: "foo-server", UpdateContext: coordinator.SERVER_SCALE,
+			})
+
+			if !test.scaleUp {
+				g.Expect(s.serverEventStream.streams).To(HaveLen(1))
+			} else {
+				g.Eventually(stream.msgs).WithTimeout(1 * time.Second).WithPolling(500 * time.Millisecond).Should(HaveLen(1))
+
+				var ssr *pb.ServerStatusResponse
+				select {
+				case next := <-stream.msgs:
+					ssr = next
+				default:
+					t.Fail()
+				}
+
+				g.Expect(ssr).ToNot(BeNil())
+				g.Expect(ssr.ServerName).To(Equal("foo-server"))
+				g.Expect(s.serverEventStream.streams).To(HaveLen(1))
+
+				if !test.scaleUp {
+					g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_StatusUpdate))
+				} else {
+					g.Expect(ssr.ExpectedReplicas).To(Equal(test.expectedReplicas))
+					g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_ScalingRequest))
+				}
 			}
 		})
 	}
@@ -434,6 +592,7 @@ func createTestScheduler() (*SchedulerServer, *coordinator.EventHub) {
 		schedulerStore,
 		scheduler2.DefaultSchedulerConfig(schedulerStore),
 		synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)),
+		eventHub,
 	)
 	s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub, synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)))
 
