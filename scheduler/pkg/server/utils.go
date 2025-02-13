@@ -37,7 +37,7 @@ func sendWithTimeout(f func() error, d time.Duration) (bool, error) {
 }
 
 func shouldScaleUp(server *store.ServerSnapshot) (bool, uint32) {
-	if server.ExpectedReplicas < 0 || server.MaxReplicas < 1 { // it's not set
+	if server.ExpectedReplicas < 0 || server.MaxReplicas < 1 {
 		return false, 0
 	}
 	if server.Stats != nil {
