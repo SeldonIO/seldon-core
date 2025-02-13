@@ -80,7 +80,7 @@ func TestSouldScaleUp(t *testing.T) {
 	type test struct {
 		name                string
 		shouldScaleUp       bool
-		newExpectedReplicas int32
+		newExpectedReplicas uint32
 		server              *store.ServerSnapshot
 	}
 

@@ -36,15 +36,13 @@ func sendWithTimeout(f func() error, d time.Duration) (bool, error) {
 	}
 }
 
-func shouldScaleUp(server *store.ServerSnapshot) (bool, int32) {
-	if server.Stats != nil {
-		stats := server.Stats
-
-		if server.ExpectedReplicas < 0 { // it's not set
-			return false, int32(server.ExpectedReplicas)
-		}
-
-		return stats.MaxNumReplicaHostedModels > uint32(server.ExpectedReplicas), min(int32(stats.MaxNumReplicaHostedModels), int32(server.MaxReplicas))
+func shouldScaleUp(server *store.ServerSnapshot) (bool, uint32) {
+	if server.ExpectedReplicas < 0 { // it's not set
+		return false, 0
 	}
-	return false, int32(server.ExpectedReplicas)
+	if server.Stats != nil {
+		maxNumReplicaHostedModels := server.Stats.MaxNumReplicaHostedModels
+		return maxNumReplicaHostedModels > uint32(server.ExpectedReplicas), min(maxNumReplicaHostedModels, uint32(server.MaxReplicas))
+	}
+	return false, 0
 }
