@@ -983,7 +983,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 				if test.isModelUnloaded {
 					g.Expect(msgServer).ToNot(BeNil())
 					g.Expect(msgServer.ServerName).To(Equal(test.serverKey))
-					g.Expect(msgServer.UpdateContext).To(Equal(coordinator.SERVER_SCALE))
+					g.Expect(msgServer.UpdateContext).To(Equal(coordinator.SERVER_SCALE_DOWN))
 				} else {
 					g.Expect(msgServer).To(BeNil())
 				}

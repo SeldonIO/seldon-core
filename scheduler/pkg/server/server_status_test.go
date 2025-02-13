@@ -419,7 +419,7 @@ func TestModelEventsForServerStatus(t *testing.T) {
 	}
 }
 
-func TestServerScalingEvents(t *testing.T) {
+func TestServerScaleUpEvents(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -455,7 +455,7 @@ func TestServerScalingEvents(t *testing.T) {
 			},
 		},
 		{
-			name: "scale up requested to match max model replicas",
+			name: "scale up requested to match max model replicas - 2",
 			loadReq: &pba.AgentSubscribeRequest{
 				ServerName: "foo-server",
 			},
@@ -546,7 +546,7 @@ func TestServerScalingEvents(t *testing.T) {
 			g.Expect(s.serverEventStream.streams[stream]).ToNot(BeNil())
 
 			hub.PublishServerEvent(serverEventHandlerName, coordinator.ServerEventMsg{
-				ServerName: "foo-server", UpdateContext: coordinator.SERVER_SCALE,
+				ServerName: "foo-server", UpdateContext: coordinator.SERVER_SCALE_UP,
 			})
 
 			if !test.scaleUp {
@@ -577,7 +577,7 @@ func TestServerScalingEvents(t *testing.T) {
 	}
 }
 
-func TestServersScaleEvents(t *testing.T) {
+func TestServerScaleDownEvents(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -659,7 +659,7 @@ func TestServersScaleEvents(t *testing.T) {
 			// publish a scale event
 			event.PublishServerEvent("", coordinator.ServerEventMsg{
 				ServerName:    test.serverName,
-				UpdateContext: coordinator.SERVER_SCALE,
+				UpdateContext: coordinator.SERVER_SCALE_DOWN,
 			})
 
 			// to allow events to propagate

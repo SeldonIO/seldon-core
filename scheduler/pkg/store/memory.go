@@ -417,7 +417,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 				},
 				&coordinator.ServerEventMsg{
 					ServerName:    serverKey,
-					UpdateContext: coordinator.SERVER_SCALE,
+					UpdateContext: coordinator.SERVER_SCALE_DOWN,
 				},
 				nil
 		} else {

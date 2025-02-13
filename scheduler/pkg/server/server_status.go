@@ -90,26 +90,6 @@ func (s *SchedulerServer) handleModelEvent(event coordinator.ModelEventMsg) {
 	}
 }
 
-func (s *SchedulerServer) handleServerEvent(event coordinator.ServerEventMsg) {
-	logger := s.logger.WithField("func", "handleServerEvent")
-
-	if event.UpdateContext == coordinator.SERVER_SCALE {
-		logger.Debugf("Got server event msg for %s", event.String())
-
-		server, err := s.modelStore.GetServer(event.ServerName, true, true)
-		if err != nil {
-			logger.WithError(err).Errorf("Failed to handle server event for server %s", event.ServerName)
-		}
-
-		ok, expectedReplicas := shouldScaleUp(server)
-		if ok {
-			s.sendScalingRequest(server, expectedReplicas)
-		} else {
-			logger.Debugf("Will not scale server for event %s", event.String())
-		}
-	}
-}
-
 func (s *SchedulerServer) StopSendModelEvents() {
 	s.modelEventStream.mu.Lock()
 	defer s.modelEventStream.mu.Unlock()
@@ -195,7 +175,7 @@ func (s *SchedulerServer) handleModelEventForServerStatus(event coordinator.Mode
 }
 
 func (s *SchedulerServer) handleServerEvents(event coordinator.ServerEventMsg) {
-	logger := s.logger.WithField("func", "handleServerEvent")
+	logger := s.logger.WithField("func", "handleServerEvents")
 	logger.Debugf("Got server state %s change for %s", event.ServerName, event.String())
 
 	server, err := s.modelStore.GetServer(event.ServerName, true, true)
@@ -204,9 +184,14 @@ func (s *SchedulerServer) handleServerEvents(event coordinator.ServerEventMsg) {
 		return
 	}
 
-	if event.UpdateContext == coordinator.SERVER_SCALE {
-		if scaleFlag, replicas := shouldScaleDown(server, AllowPackingPercentage); scaleFlag {
+	if event.UpdateContext == coordinator.SERVER_SCALE_DOWN {
+		if ok, replicas := shouldScaleDown(server, AllowPackingPercentage); ok {
 			logger.Infof("Server %s is scaling down to %d", event.ServerName, replicas)
+			s.sendServerScale(server, replicas)
+		}
+	} else if event.UpdateContext == coordinator.SERVER_SCALE_UP {
+		if ok, replicas := shouldScaleUp(server); ok {
+			logger.Infof("Server %s is scaling up to %d", event.ServerName, replicas)
 			s.sendServerScale(server, replicas)
 		}
 	}
@@ -246,17 +231,6 @@ func (s *SchedulerServer) updateServerModelsStatus(evt coordinator.ModelEventMsg
 	s.serverEventStream.pendingLock.Unlock()
 
 	return err
-}
-
-func (s *SchedulerServer) sendScalingRequest(server *store.ServerSnapshot, expectedReplicas uint32) {
-	// TODO: should there be some sort of velocity check ?
-	logger := s.logger.WithField("func", "sendScalingRequest")
-	logger.Debugf("will attempt to scale servers to %d for %v", server.Stats.MaxNumReplicaHostedModels, server.Name)
-
-	ssr := createServerStatusUpdateResponse(server)
-	ssr.ExpectedReplicas = int32(expectedReplicas)
-	ssr.Type = pb.ServerStatusResponse_ScalingRequest
-	s.sendServerStatusResponse(ssr)
 }
 
 func (s *SchedulerServer) sendServerStatus() {
