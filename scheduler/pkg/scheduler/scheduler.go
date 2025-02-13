@@ -72,6 +72,7 @@ func (s *SimpleScheduler) Schedule(modelKey string) error {
 	s.synchroniser.WaitReady()
 	serverEvent, err := s.scheduleToServer(modelKey)
 	if serverEvent != nil {
+		s.logger.Debugf("Sending server event for %s", serverEvent.ServerName)
 		s.eventHub.PublishServerEvent(serverScaleupEventSource, *serverEvent)
 	}
 	return err
@@ -207,7 +208,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) (*coordinator.Serve
 
 	var serverEvent *coordinator.ServerEventMsg
 	if !ok {
-		serverEvent := s.serverScaleUp(latestModel)
+		serverEvent = s.serverScaleUp(latestModel)
 		if !okWithMinReplicas {
 			msg := "Failed to schedule model as no matching server had enough suitable replicas"
 			logger.Debug(msg)

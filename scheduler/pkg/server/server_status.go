@@ -104,6 +104,8 @@ func (s *SchedulerServer) handleServerEvent(event coordinator.ServerEventMsg) {
 		ok, expectedReplicas := shouldScaleUp(server)
 		if ok {
 			s.sendScalingRequest(server, expectedReplicas)
+		} else {
+			logger.Debugf("Will not scale server for event %s", event.String())
 		}
 	}
 }

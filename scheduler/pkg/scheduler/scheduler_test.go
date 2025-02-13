@@ -153,12 +153,13 @@ func TestScheduler(t *testing.T) {
 	}
 
 	type test struct {
-		name              string
-		model             *store.ModelSnapshot
-		servers           []*store.ServerSnapshot
-		scheduled         bool
-		scheduledServer   string
-		scheduledReplicas []int
+		name                 string
+		model                *store.ModelSnapshot
+		servers              []*store.ServerSnapshot
+		scheduled            bool
+		scheduledServer      string
+		scheduledReplicas    []int
+		expectedServerEvents int
 	}
 
 	tests := []test{
@@ -243,9 +244,10 @@ func TestScheduler(t *testing.T) {
 					ExpectedReplicas: -1,
 				},
 			},
-			scheduled:         true, // not here that we still trying to mark the model as Available
-			scheduledServer:   "server2",
-			scheduledReplicas: []int{0, 1},
+			scheduled:            true, // not here that we still trying to mark the model as Available
+			scheduledServer:      "server2",
+			scheduledReplicas:    []int{0, 1},
+			expectedServerEvents: 1,
 		},
 		{
 			name:  "MemoryOneServer",
@@ -466,9 +468,10 @@ func TestScheduler(t *testing.T) {
 					ExpectedReplicas: -1,
 				},
 			},
-			scheduled:         true, // note that we are still trying to make the model as Available
-			scheduledServer:   "server1",
-			scheduledReplicas: []int{0, 1, 2, 3}, // used all replicas
+			scheduled:            true, // note that we are still trying to make the model as Available
+			scheduledServer:      "server1",
+			scheduledReplicas:    []int{0, 1, 2, 3}, // used all replicas
+			expectedServerEvents: 1,
 		},
 		{
 			name:  "Scale up - no capacity on loaded replica servers, should still go there",
@@ -561,14 +564,15 @@ func TestScheduler(t *testing.T) {
 			} else {
 				g.Expect(err).ToNot(BeNil())
 			}
+			if test.expectedServerEvents > 0 { // wait for event
+				time.Sleep(500 * time.Millisecond)
+			}
 			if test.scheduledServer != "" {
 				g.Expect(test.scheduledServer).To(Equal(mockStore.scheduledServer))
 				sort.Ints(test.scheduledReplicas)
 				sort.Ints(mockStore.scheduledReplicas)
 				g.Expect(test.scheduledReplicas).To(Equal(mockStore.scheduledReplicas))
-				if test.model.GetLatest().DesiredReplicas() < len(test.scheduledReplicas) {
-					g.Expect(serverEvents).To(Equal(int64(1)))
-				}
+				g.Expect(serverEvents).To(Equal(int64(test.expectedServerEvents)))
 			}
 		})
 	}
