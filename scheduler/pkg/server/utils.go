@@ -13,7 +13,6 @@ import (
 	"math/rand/v2"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
