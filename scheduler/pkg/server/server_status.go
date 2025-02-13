@@ -253,22 +253,7 @@ func (s *SchedulerServer) sendServerStatus() {
 			continue
 		}
 		ssr := createServerStatusUpdateResponse(server)
-		s.sendServerStatusResponse(ssr)
-	}
-}
-
-func (s *SchedulerServer) sendServerStatusResponse(ssr *pb.ServerStatusResponse) {
-	logger := s.logger.WithField("func", "sendServerStatusResponse")
-	for stream, subscription := range s.serverEventStream.streams {
-		hasExpired, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
-		if hasExpired {
-			// this should trigger a reconnect from the client
-			close(subscription.fin)
-			delete(s.serverEventStream.streams, stream)
-		}
-		if err != nil {
-			logger.WithError(err).Errorf("Failed to send server status response to %s", subscription.name)
-		}
+		s.sendServerResponse(ssr)
 	}
 }
 
@@ -282,7 +267,7 @@ func (s *SchedulerServer) sendServerScale(server *store.ServerSnapshot, expected
 }
 
 func (s *SchedulerServer) sendServerResponse(ssr *pb.ServerStatusResponse) {
-	logger := s.logger.WithField("func", "sendServerStatusResponse")
+	logger := s.logger.WithField("func", "sendServerResponse")
 	for stream, subscription := range s.serverEventStream.streams {
 		hasExpired, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
 		if hasExpired {
