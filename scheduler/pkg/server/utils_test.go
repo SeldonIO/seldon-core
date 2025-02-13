@@ -125,6 +125,15 @@ func TestSouldScaleUp(t *testing.T) {
 				Stats:            &store.ServerStats{MaxNumReplicaHostedModels: 3},
 			},
 		},
+		{
+			name:                "does not scale up for missing max replicas",
+			shouldScaleUp:       false,
+			newExpectedReplicas: 0,
+			server: &store.ServerSnapshot{
+				ExpectedReplicas: 1,
+				Stats:            &store.ServerStats{MaxNumReplicaHostedModels: 3},
+			},
+		},
 	}
 
 	for _, test := range tests {
