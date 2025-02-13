@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	// percentage of time we try to pack server replicas if models are not fully packed
+	// percentage of time we try to pack server replicas, i.e. number of server replicas is greater than `MaxNumReplicaHostedModels`
 	// this is to be a bit more conservative and not pack all the time as it can lead to
 	// increased latency in the case of MMS
 	// in the future we should have more metrics to decide whether packing can lead
