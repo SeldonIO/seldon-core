@@ -566,11 +566,10 @@ func TestScheduler(t *testing.T) {
 				sort.Ints(test.scheduledReplicas)
 				sort.Ints(mockStore.scheduledReplicas)
 				g.Expect(test.scheduledReplicas).To(Equal(mockStore.scheduledReplicas))
-				if test.model.GetLatest().ShouldScaleUp() && test.model.GetLatest().DesiredReplicas() < len(test.scheduledReplicas) {
+				if test.model.GetLatest().DesiredReplicas() < len(test.scheduledReplicas) {
 					g.Expect(serverEvents).To(Equal(int64(1)))
 				}
 			}
-
 		})
 	}
 }

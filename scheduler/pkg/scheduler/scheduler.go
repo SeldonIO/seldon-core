@@ -303,15 +303,11 @@ func (s *SimpleScheduler) serverScaleUp(modelVersion *store.ModelVersion) *coord
 		logger.Warnf("Empty server for %s so ignoring scale up request", modelVersion.GetMeta().Name)
 		return nil
 	}
-	if modelVersion.ShouldScaleUp() {
-		return &coordinator.ServerEventMsg{
-			ServerName:    modelVersion.Server(),
-			UpdateContext: coordinator.SERVER_SCALE,
-		}
-	} else {
-		logger.Debugf("Skpping request to scale server for model %s", modelVersion.GetMeta().Name)
+
+	return &coordinator.ServerEventMsg{
+		ServerName:    modelVersion.Server(),
+		UpdateContext: coordinator.SERVER_SCALE,
 	}
-	return nil
 }
 
 func showReplicaSlice(candidateServer *sorters.CandidateServer) string {
