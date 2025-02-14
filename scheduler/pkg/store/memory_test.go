@@ -1277,6 +1277,16 @@ func TestUpdateModelState(t *testing.T) {
 				expectedModelRuntimeInfo = test.modelRuntimeInfo
 			}
 
+			var modelEvt *coordinator.ModelEventMsg
+			eventHub.RegisterModelEventHandler(
+				"handler-model",
+				10,
+				logger,
+				func(event coordinator.ModelEventMsg) {
+					modelEvt = &event
+				},
+			)
+
 			var serverEvt *coordinator.ServerEventMsg
 			eventHub.RegisterServerEventHandler(
 				"handler-server",
@@ -1316,9 +1326,14 @@ func TestUpdateModelState(t *testing.T) {
 			uniqueLoadedModels := toUniqueModels(test.store.servers[test.serverKey].replicas[test.replicaIdx].loadedModels)
 			g.Expect(uniqueLoadedModels).To(Equal(test.store.servers[test.serverKey].replicas[test.replicaIdx].uniqueLoadedModels))
 
+			// allow events to propagate
+			time.Sleep(500 * time.Millisecond)
+
+			if !test.err {
+				g.Expect(modelEvt).ToNot(BeNil())
+				g.Expect(modelEvt.ModelVersion).To(Equal(test.version))
+			}
 			if test.name == "DeletedModel" {
-				// allow events to propagate
-				time.Sleep(500 * time.Millisecond)
 				g.Expect(serverEvt).ToNot(BeNil())
 				g.Expect(serverEvt.UpdateContext).To(Equal(coordinator.SERVER_SCALE_DOWN))
 				g.Expect(serverEvt.ServerName).To(Equal(test.serverKey))
