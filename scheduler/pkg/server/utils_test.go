@@ -106,9 +106,8 @@ func TestSouldScaleUp(t *testing.T) {
 			},
 		},
 		{
-			name:                "",
-			shouldScaleUp:       false,
-			newExpectedReplicas: 3,
+			name:          "should not scale if expectedReplicas is greater than MaxNumReplicaHostedModels",
+			shouldScaleUp: false,
 			server: &store.ServerSnapshot{
 				MaxReplicas:      3,
 				ExpectedReplicas: 3,
@@ -116,13 +115,29 @@ func TestSouldScaleUp(t *testing.T) {
 			},
 		},
 		{
-			name:                "does not scale up for ExpectedReplicas below 0",
-			shouldScaleUp:       false,
-			newExpectedReplicas: 2,
+			name:          "does not scale up for ExpectedReplicas below 0",
+			shouldScaleUp: false,
 			server: &store.ServerSnapshot{
 				MaxReplicas:      2,
 				ExpectedReplicas: -1,
 				Stats:            &store.ServerStats{MaxNumReplicaHostedModels: 3},
+			},
+		},
+		{
+			name:          "does not scale up for missing max replicas",
+			shouldScaleUp: false,
+			server: &store.ServerSnapshot{
+				ExpectedReplicas: 1,
+				Stats:            &store.ServerStats{MaxNumReplicaHostedModels: 3},
+			},
+		},
+		{
+			name:          "does not scale to zero",
+			shouldScaleUp: false,
+			server: &store.ServerSnapshot{
+				MaxReplicas:      0,
+				ExpectedReplicas: 0,
+				Stats:            &store.ServerStats{MaxNumReplicaHostedModels: 0},
 			},
 		},
 	}
@@ -131,7 +146,7 @@ func TestSouldScaleUp(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			ok, expectedReplicas := shouldScaleUp(test.server)
 			g.Expect(ok).To(Equal(test.shouldScaleUp))
-			if ok {
+			if test.shouldScaleUp {
 				g.Expect(expectedReplicas).To(Equal(test.newExpectedReplicas))
 			}
 		})
