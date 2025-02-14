@@ -419,7 +419,7 @@ func TestModelEventsForServerStatus(t *testing.T) {
 	}
 }
 
-func TestServerScalingEvents(t *testing.T) {
+func TestServerScaleUpEvents(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -455,7 +455,7 @@ func TestServerScalingEvents(t *testing.T) {
 			},
 		},
 		{
-			name: "scale up requested to match max model replicas",
+			name: "scale up requested to match max model replicas - 2",
 			loadReq: &pba.AgentSubscribeRequest{
 				ServerName: "foo-server",
 			},
@@ -546,7 +546,7 @@ func TestServerScalingEvents(t *testing.T) {
 			g.Expect(s.serverEventStream.streams[stream]).ToNot(BeNil())
 
 			hub.PublishServerEvent(serverEventHandlerName, coordinator.ServerEventMsg{
-				ServerName: "foo-server", UpdateContext: coordinator.SERVER_SCALE,
+				ServerName: "foo-server", UpdateContext: coordinator.SERVER_SCALE_UP,
 			})
 
 			if !test.scaleUp {
@@ -573,6 +573,109 @@ func TestServerScalingEvents(t *testing.T) {
 					g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_ScalingRequest))
 				}
 			}
+		})
+	}
+}
+
+func TestServerScaleDownEvents(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name       string
+		serverName string
+		agents     []*pba.AgentSubscribeRequest
+		model      *pb.LoadModelRequest
+	}
+
+	tests := []test{
+		{
+			name:       "scale down",
+			serverName: "server1",
+			agents: []*pba.AgentSubscribeRequest{
+				{
+					ServerName:           "server1",
+					ReplicaIdx:           0,
+					Shared:               true,
+					AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{
+						InferenceSvc:      "server1",
+						InferenceHttpPort: 1,
+						MemoryBytes:       1000,
+						Capabilities:      []string{"sklearn"},
+					},
+				},
+				{
+					ServerName:           "server1",
+					ReplicaIdx:           1,
+					Shared:               true,
+					AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{
+						InferenceSvc:      "server1",
+						InferenceHttpPort: 1,
+						MemoryBytes:       1000,
+						Capabilities:      []string{"sklearn"},
+					},
+				},
+			},
+			model: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "model1"},
+					ModelSpec: &pb.ModelSpec{
+						Uri:          "gs://model",
+						Requirements: []string{"sklearn"},
+					},
+					DeploymentSpec: &pb.DeploymentSpec{Replicas: 1},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s, event := createTestScheduler()
+			for _, agent := range test.agents {
+				err := s.modelStore.AddServerReplica(agent)
+				g.Expect(err).To(BeNil())
+			}
+			err := s.modelStore.ServerNotify(
+				&pb.ServerNotify{
+					Name:             test.serverName,
+					ExpectedReplicas: 2,
+				},
+			)
+			g.Expect(err).To(BeNil())
+
+			err = s.modelStore.UpdateModel(test.model)
+			g.Expect(err).To(BeNil())
+
+			stream := newStubServerStatusServer(1, 5*time.Millisecond)
+			s.serverEventStream.streams[stream] = &ServerSubscription{
+				name:   "dummy",
+				stream: stream,
+				fin:    make(chan bool),
+			}
+			g.Expect(s.serverEventStream.streams[stream]).ToNot(BeNil())
+
+			// publish a scale event
+			event.PublishServerEvent("", coordinator.ServerEventMsg{
+				ServerName:    test.serverName,
+				UpdateContext: coordinator.SERVER_SCALE_DOWN,
+			})
+
+			// to allow events to propagate
+			time.Sleep(500 * time.Millisecond)
+
+			var ssr *pb.ServerStatusResponse
+			select {
+			case next := <-stream.msgs:
+				ssr = next
+			default:
+				t.Fail()
+			}
+
+			g.Expect(ssr).ToNot(BeNil())
+			g.Expect(ssr.ServerName).To(Equal(test.serverName))
+
 		})
 	}
 }

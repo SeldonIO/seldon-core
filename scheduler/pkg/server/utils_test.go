@@ -152,3 +152,154 @@ func TestSouldScaleUp(t *testing.T) {
 		})
 	}
 }
+
+func TestShouldScaleDown(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name             string
+		server           *store.ServerSnapshot
+		shouldScaleDown  bool
+		expectedReplicas uint32
+		packThreshold    float32
+	}
+
+	tests := []test{
+		{
+			name: "should scale down - empty replicas",
+			server: &store.ServerSnapshot{
+				Stats: &store.ServerStats{
+					NumEmptyReplicas:          1,
+					MaxNumReplicaHostedModels: 0,
+				},
+				ExpectedReplicas: 2,
+				MinReplicas:      1,
+			},
+			shouldScaleDown:  true,
+			expectedReplicas: 1,
+			packThreshold:    0.0,
+		},
+		{
+			name: "should scale down - empty replicas > 1 - 1",
+			server: &store.ServerSnapshot{
+				Stats: &store.ServerStats{
+					NumEmptyReplicas:          2,
+					MaxNumReplicaHostedModels: 0,
+				},
+				ExpectedReplicas: 3,
+				MinReplicas:      1,
+			},
+			shouldScaleDown:  true,
+			expectedReplicas: 1,
+			packThreshold:    0.0,
+		},
+		{
+			name: "should scale down - violate min replicas",
+			server: &store.ServerSnapshot{
+				Stats: &store.ServerStats{
+					NumEmptyReplicas:          2,
+					MaxNumReplicaHostedModels: 0,
+				},
+				ExpectedReplicas: 3,
+				MinReplicas:      2,
+			},
+			shouldScaleDown:  true,
+			expectedReplicas: 2,
+			packThreshold:    0.0,
+		},
+		{
+			name: "should scale down - empty replicas > 1 - 2",
+			server: &store.ServerSnapshot{
+				Stats: &store.ServerStats{
+					NumEmptyReplicas:          1,
+					MaxNumReplicaHostedModels: 0,
+				},
+				ExpectedReplicas: 3,
+				MinReplicas:      1,
+			},
+			shouldScaleDown:  true,
+			expectedReplicas: 2,
+			packThreshold:    0.0,
+		},
+		{
+			name: "should scale down - pack",
+			server: &store.ServerSnapshot{
+				Stats: &store.ServerStats{
+					NumEmptyReplicas:          0,
+					MaxNumReplicaHostedModels: 1,
+				},
+				ExpectedReplicas: 2,
+				MinReplicas:      1,
+			},
+			shouldScaleDown:  true,
+			expectedReplicas: 1,
+			packThreshold:    1.0,
+		},
+		{
+			name: "should scale down - pack > 1",
+			server: &store.ServerSnapshot{
+				Stats: &store.ServerStats{
+					NumEmptyReplicas:          0,
+					MaxNumReplicaHostedModels: 1,
+				},
+				ExpectedReplicas: 3,
+				MinReplicas:      1,
+			},
+			shouldScaleDown:  true,
+			expectedReplicas: 1,
+			packThreshold:    1.0,
+		},
+		{
+			name: "should not scale down - pack threshold",
+			server: &store.ServerSnapshot{
+				Stats: &store.ServerStats{
+					NumEmptyReplicas:          0,
+					MaxNumReplicaHostedModels: 1,
+				},
+				ExpectedReplicas: 3,
+				MinReplicas:      1,
+			},
+			shouldScaleDown:  false,
+			expectedReplicas: 0,
+			packThreshold:    0.0,
+		},
+		{
+			name: "should not scale down - empty replicas - last replica",
+			server: &store.ServerSnapshot{
+				Stats: &store.ServerStats{
+					NumEmptyReplicas:          1,
+					MaxNumReplicaHostedModels: 0,
+				},
+				ExpectedReplicas: 1,
+				MinReplicas:      1,
+			},
+			shouldScaleDown:  false,
+			expectedReplicas: 0,
+			packThreshold:    0.0,
+		},
+		{
+			name: "should not scale down - pack - last replica",
+			server: &store.ServerSnapshot{
+				Stats: &store.ServerStats{
+					NumEmptyReplicas:          1,
+					MaxNumReplicaHostedModels: 0,
+				},
+				ExpectedReplicas: 1,
+				MinReplicas:      1,
+			},
+			shouldScaleDown:  false,
+			expectedReplicas: 0,
+			packThreshold:    1.0,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			scaleDown, replicas := shouldScaleDown(test.server, test.packThreshold)
+			g.Expect(scaleDown).To(Equal(test.shouldScaleDown))
+			if scaleDown {
+				g.Expect(replicas).To(Equal(test.expectedReplicas))
+			}
+		})
+	}
+}

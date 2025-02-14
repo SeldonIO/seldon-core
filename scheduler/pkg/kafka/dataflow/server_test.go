@@ -307,6 +307,9 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 			}
 			g.Expect(err).To(BeNil())
 
+			// to allow events to propagate
+			time.Sleep(500 * time.Millisecond)
+
 			if test.loadReqV2 != nil {
 				err = s.pipelineHandler.AddPipeline(test.loadReqV2) // version 2
 				g.Expect(err).To(BeNil())
@@ -325,7 +328,7 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 			}
 
 			// to allow events to propagate
-			time.Sleep(700 * time.Millisecond)
+			time.Sleep(500 * time.Millisecond)
 
 			if test.connection {
 				if test.loadReqV2 != nil {

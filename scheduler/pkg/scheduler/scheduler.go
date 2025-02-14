@@ -307,7 +307,7 @@ func (s *SimpleScheduler) serverScaleUp(modelVersion *store.ModelVersion) *coord
 
 	return &coordinator.ServerEventMsg{
 		ServerName:    modelVersion.Server(),
-		UpdateContext: coordinator.SERVER_SCALE,
+		UpdateContext: coordinator.SERVER_SCALE_UP,
 	}
 }
 
