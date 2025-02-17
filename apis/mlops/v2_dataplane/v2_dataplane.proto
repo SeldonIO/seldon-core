@@ -46,6 +46,11 @@ service GRPCInferenceService
   // indicates success and other codes indicate failure.
   rpc ModelInfer(ModelInferRequest) returns (ModelInferResponse) {}
 
+  // The ModelStreamInfer API performs bidirectional inference streaming using the
+  // specified model. Errors are indicated by the google.rpc.Status returned for
+  // the request. The OK code indicates success and other codes indicate failure.
+  rpc ModelStreamInfer(stream ModelInferRequest) returns (stream ModelInferResponse) {}
+
   // control plance
   rpc RepositoryIndex(RepositoryIndexRequest) returns (RepositoryIndexResponse){}
 
