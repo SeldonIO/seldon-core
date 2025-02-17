@@ -9,6 +9,8 @@ metadata:
     null
   name: mlserver
 spec:
+  maxReplicas: 1
+  minReplicas: 1
   podSpec: null
   replicas: 1
   serverConfig: mlserver
@@ -26,6 +28,8 @@ metadata:
     null
   name: triton
 spec:
+  maxReplicas: 1
+  minReplicas: 1
   podSpec: null
   replicas: 1
   serverConfig: triton
