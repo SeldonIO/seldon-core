@@ -40,7 +40,9 @@ func (f mockStore) FailedScheduling(modelVersion *store.ModelVersion, reason str
 }
 
 func (f mockStore) UnloadVersionModels(modelKey string, version uint32) (bool, error) {
-	f.unloadedModels[modelKey] = version
+	if f.unloadedModels != nil {
+		f.unloadedModels[modelKey] = version
+	}
 	return true, nil
 }
 
