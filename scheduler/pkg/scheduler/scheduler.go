@@ -152,6 +152,17 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) (*coordinator.Serve
 		}
 
 		logger.Debug("Ensuring deleted model is removed")
+
+		// remove old versions of the model if they exist
+		// this is because the latest version might not have been applied properly and therefore
+		// the old version might still be dangling around
+		for _, mv := range model.Versions {
+			_, err := s.store.UnloadVersionModels(modelName, mv.GetVersion())
+			if err != nil {
+				logger.WithError(err).Warnf("Failed to unload model %s version %d", modelName, mv.GetVersion())
+			}
+		}
+
 		err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), server, []*store.ServerReplica{})
 		if err != nil {
 			logger.WithError(err).WithField("server", server).Warn("Failed to unschedule model replicas from server")
