@@ -12,6 +12,8 @@ package testing_utils
 import (
 	"context"
 	"fmt"
+	"io"
+	"log"
 	"net"
 	"net/http"
 	"sync"
@@ -109,6 +111,28 @@ func (m *MockGRPCMLServer) Stop() {
 
 func (m *MockGRPCMLServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
 	return &v2.ModelInferResponse{ModelName: r.ModelName, ModelVersion: r.ModelVersion}, nil
+}
+
+func (m *MockGRPCMLServer) ModelStreamInfer(stream v2.GRPCInferenceService_ModelStreamInferServer) error {
+	for {
+		r, err := stream.Recv()
+		if err == io.EOF {
+			return nil // Client closed the stream
+		}
+		if err != nil {
+			log.Printf("Error receiving request: %v", err)
+			return err // Return error to stop the stream
+		}
+
+		err = stream.Send(&v2.ModelInferResponse{
+			ModelName:    r.ModelName,
+			ModelVersion: r.ModelVersion,
+		})
+		if err != nil {
+			log.Printf("Error sending response: %v", err)
+			return err
+		}
+	}
 }
 
 func (m *MockGRPCMLServer) ModelMetadata(ctx context.Context, r *v2.ModelMetadataRequest) (*v2.ModelMetadataResponse, error) {

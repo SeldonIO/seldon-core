@@ -14,12 +14,14 @@ package agent
 import (
 	"context"
 	"fmt"
+	"io"
 	"math"
 	"math/rand"
 	"net"
 	"sync"
 	"time"
 
+	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
@@ -258,6 +260,68 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	elapsedTime := time.Since(startTime).Seconds()
 	go rp.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeGrpc, elapsedTime, grpcStatus.Code().String())
 	return resp, err
+}
+
+func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_ModelStreamInferServer) error {
+	ctx := stream.Context()
+
+	logger := rp.logger.WithField("func", "ModelStreamInfer")
+	internalModelName, externalModelName, err := rp.extractModelNamesFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	r, err := stream.Recv()
+	r.ModelName = internalModelName
+	r.ModelVersion = ""
+
+	if err == io.EOF {
+		return nil
+	}
+
+	if err != nil {
+		logger.WithError(err).Error("Failed to receive request")
+	}
+
+	startTime := time.Now()
+	err = rp.ensureLoadModel(r.ModelName)
+	if err != nil {
+		elapsedTime := time.Since(startTime).Seconds()
+		go rp.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeGrpc, elapsedTime, codes.NotFound.String())
+		return status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.ModelName, err))
+	}
+
+	// Create an outgoing context for the proxy call to service from incoming context
+	outgoingCtx, _ := rp.createOutgoingCtxWithRequestId(ctx)
+
+	var trailer metadata.MD
+	opts := append(rp.callOptions, grpc.Trailer(&trailer), grpc_retry.Disable())
+
+	client_stream, err := rp.getV2GRPCClient().ModelStreamInfer(outgoingCtx, opts...)
+	if err != nil {
+		logger.WithError(err).Error("Failed to create stream")
+		return err
+	}
+
+	if err := client_stream.Send(r); err != nil {
+		logger.WithError(err).Error("Failed to send request")
+		return err
+	}
+
+	client_stream_resp, err := client_stream.Recv()
+	if err != nil {
+		logger.WithError(err).Error("Failed to receive response")
+		return err
+	}
+
+	client_stream.CloseSend()
+
+	if err := stream.Send(client_stream_resp); err != nil {
+		logger.WithError(err).Error("Failed to send response")
+		return err
+	}
+
+	return nil
 }
 
 func (rp *reverseGRPCProxy) ModelMetadata(ctx context.Context, r *v2.ModelMetadataRequest) (*v2.ModelMetadataResponse, error) {

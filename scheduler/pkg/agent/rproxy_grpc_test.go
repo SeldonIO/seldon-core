@@ -110,7 +110,10 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 
 	// client to proxy
-	conn, err := grpc.NewClient(":"+strconv.Itoa(rpPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(
+		":"+strconv.Itoa(rpPort),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
 	if err != nil {
 		t.Fatalf("Cannot connect to server (%s)", err)
 	}
@@ -121,6 +124,39 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 		ctx := context.Background()
 		ctx = metadata.AppendToOutgoingContext(ctx, util.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffixInternal, util.SeldonModelHeader, dummyModelNamePrefix+modelSuffix)
 		return client.ModelInfer(ctx, &v2.ModelInferRequest{ModelName: dummyModelNamePrefix}) // note without suffix
+	}
+
+	doStreamInfer := func(modelSuffixInternal, modelSuffix string) (*v2.ModelInferResponse, error) {
+		logger := log.New()
+		logger.SetLevel(log.DebugLevel)
+		logger.Debug("Starting stream infer")
+
+		client := v2.NewGRPCInferenceServiceClient(conn)
+		ctx := context.Background()
+		ctx = metadata.AppendToOutgoingContext(ctx, util.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffixInternal, util.SeldonModelHeader, dummyModelNamePrefix+modelSuffix)
+
+		stream, err := client.ModelStreamInfer(ctx)
+		if err != nil {
+			logger.Errorf("Error creating stream: %v", err)
+			return nil, err
+		}
+
+		r := v2.ModelInferRequest{ModelName: dummyModelNamePrefix}
+		err = stream.Send(&r)
+		if err != nil {
+			logger.Errorf("Error sending request: %v", err)
+			return nil, err
+		}
+
+		resp, err := stream.Recv()
+		if err != nil {
+			logger.Errorf("Error receiving response: %v", err)
+			return nil, err
+		}
+
+		stream.CloseSend()
+		logger.Debugf("RESPONSE: %v", resp)
+		return resp, nil
 	}
 
 	doMeta := func(modelSuffix string) (*v2.ModelMetadataResponse, error) {
@@ -141,6 +177,11 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	g.Expect(errInfer).To(BeNil())
 	g.Expect(responseInfer.ModelName).To(Equal(dummyModelNamePrefix + "_0"))
 	g.Expect(responseInfer.ModelVersion).To(Equal("")) // in practice this should be something else
+
+	responserStreamInfer, errStreamInfer := doStreamInfer("_0", ".experiment")
+	g.Expect(errStreamInfer).To(BeNil())
+	g.Expect(responserStreamInfer.ModelName).To(Equal(dummyModelNamePrefix + "_0"))
+	g.Expect(responserStreamInfer.ModelVersion).To(Equal("")) // in practice this should be something else
 
 	t.Log("Testing model scaling stats")
 	g.Expect(rpGRPC.modelScalingStatsCollector.ModelLagStats.Get(dummyModelNamePrefix + "_0")).To(Equal(uint32(0)))
