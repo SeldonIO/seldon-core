@@ -31,6 +31,7 @@ type mockStore struct {
 	servers           []*store.ServerSnapshot
 	scheduledServer   string
 	scheduledReplicas []int
+	unloadedModels    map[string]uint32
 }
 
 var _ store.ModelStore = (*mockStore)(nil)
@@ -39,6 +40,7 @@ func (f mockStore) FailedScheduling(modelVersion *store.ModelVersion, reason str
 }
 
 func (f mockStore) UnloadVersionModels(modelKey string, version uint32) (bool, error) {
+	f.unloadedModels[modelKey] = version
 	return true, nil
 }
 
@@ -644,6 +646,98 @@ func TestFailedModels(t *testing.T) {
 			sort.Strings(failedModels)
 			sort.Strings(test.expectedFailedModels)
 			g.Expect(failedModels).To(Equal(test.expectedFailedModels))
+		})
+	}
+}
+
+func TestRemoveAllVersions(t *testing.T) {
+	logger := log.New()
+	g := NewGomegaWithT(t)
+
+	newTestModel := func(name string, requirements []string, loadedModels []int, scheduledServer string, numVersions int) *store.ModelSnapshot {
+		config := &pb.Model{Meta: &pb.MetaData{Name: t.Name()}, ModelSpec: &pb.ModelSpec{Requirements: requirements}}
+		rmap := make(map[int]store.ReplicaStatus)
+		for _, ridx := range loadedModels {
+			rmap[ridx] = store.ReplicaStatus{State: store.Loaded}
+		}
+
+		versions := []*store.ModelVersion{}
+		for i := 1; i <= numVersions; i++ {
+			versions = append(versions, store.NewModelVersion(config, uint32(i), scheduledServer, rmap, false, store.ModelAvailable))
+		}
+		return &store.ModelSnapshot{
+			Name:     name,
+			Versions: versions,
+			Deleted:  true,
+		}
+	}
+
+	gsr := func(replicaIdx int, availableMemory uint64, capabilities []string, serverName string) *store.ServerReplica {
+		replica := store.NewServerReplica("svc", 8080, 5001, replicaIdx, store.NewServer(serverName, true), capabilities, availableMemory, availableMemory, 0, nil, 100)
+		return replica
+	}
+
+	newMockStore := func(model *store.ModelSnapshot, servers []*store.ServerSnapshot) *mockStore {
+		modelMap := make(map[string]*store.ModelSnapshot)
+		modelMap[model.Name] = model
+		return &mockStore{
+			models:         modelMap,
+			servers:        servers,
+			unloadedModels: make(map[string]uint32),
+		}
+	}
+
+	type test struct {
+		name        string
+		model       *store.ModelSnapshot
+		servers     []*store.ServerSnapshot
+		numVersions int
+	}
+
+	tests := []test{
+		{
+			name:  "Allversions - 1",
+			model: newTestModel("model1", []string{"sklearn"}, []int{0, 1}, "server", 1),
+			servers: []*store.ServerSnapshot{
+				{
+					Name: "server2",
+					Replicas: map[int]*store.ServerReplica{
+						0: gsr(0, 200, []string{"sklearn"}, "server"),
+						1: gsr(1, 200, []string{"sklearn"}, "server"),
+					},
+					Shared:           true,
+					ExpectedReplicas: -1,
+				},
+			},
+			numVersions: 1,
+		},
+		{
+			name:  "Allversions - > 1",
+			model: newTestModel("model1", []string{"sklearn"}, []int{0, 1}, "server", 10),
+			servers: []*store.ServerSnapshot{
+				{
+					Name: "server",
+					Replicas: map[int]*store.ServerReplica{
+						0: gsr(0, 200, []string{"sklearn"}, "server"),
+						1: gsr(1, 200, []string{"sklearn"}, "server"),
+					},
+					Shared:           true,
+					ExpectedReplicas: -1,
+				},
+			},
+			numVersions: 10,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, _ = coordinator.NewEventHub(logger)
+			mockStore := newMockStore(test.model, test.servers)
+			scheduler := NewSimpleScheduler(logger, mockStore, DefaultSchedulerConfig(mockStore), synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), nil)
+			err := scheduler.Schedule(test.model.Name)
+			g.Expect(err).To(BeNil())
+
+			g.Expect(mockStore.unloadedModels[test.model.Name]).To(Equal(uint32(test.numVersions)))
 		})
 	}
 }

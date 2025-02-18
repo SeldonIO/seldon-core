@@ -206,13 +206,15 @@ func (m *MemoryStore) RemoveModel(req *pb.UnloadModelRequest) error {
 func (m *MemoryStore) removeModelImpl(req *pb.UnloadModelRequest) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	model, ok := m.store.models[req.GetModel().GetName()]
+	modelName := req.GetModel().GetName()
+	model, ok := m.store.models[modelName]
 	if ok {
 		// Updating the k8s meta is required to be updated so status updates back (to manager)
 		// will match latest generation value. Previous generation values might be ignored by manager.
 		if req.GetKubernetesMeta() != nil { // k8s meta can be nil if unload is called directly using scheduler grpc api
 			model.Latest().UpdateKubernetesMeta(req.GetKubernetesMeta())
 		}
+
 		model.SetDeleted()
 		m.updateModelStatus(true, true, model.Latest(), model.GetLastAvailableModelVersion())
 		return nil
