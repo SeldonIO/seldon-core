@@ -397,18 +397,6 @@ func TestUnloadModel(t *testing.T) {
 			modelState: store.ModelTerminated,
 		},
 		{
-			name: "Multiple",
-			req: []*pba.AgentSubscribeRequest{
-				{
-					ServerName: "server1", ReplicaIdx: 0, Shared: true, AvailableMemoryBytes: 1000,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn", "xgboost"}},
-				},
-			},
-			model:      &pb.Model{Meta: &pb.MetaData{Name: "model1"}, ModelSpec: &pb.ModelSpec{Uri: "gs://model", Requirements: []string{"sklearn", "xgboost"}, MemoryBytes: &smallMemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
-			code:       codes.OK,
-			modelState: store.ModelTerminated,
-		},
-		{
 			name: "TwoReplicas",
 			req: []*pba.AgentSubscribeRequest{
 				{
