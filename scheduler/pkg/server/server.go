@@ -64,6 +64,12 @@ type SchedulerServer struct {
 	certificateStore      *seldontls.CertificateStore
 	timeout               time.Duration
 	synchroniser          synchroniser.Synchroniser
+	config                SchedulerServerConfig
+}
+
+type SchedulerServerConfig struct {
+	PackThreshold float32
+	AllowPacking  bool
 }
 
 type ModelEventStream struct {
@@ -192,6 +198,7 @@ func NewSchedulerServer(
 	scheduler scheduler2.Scheduler,
 	eventHub *coordinator.EventHub,
 	synchroniser synchroniser.Synchroniser,
+	config SchedulerServerConfig,
 ) *SchedulerServer {
 	s := &SchedulerServer{
 		logger:           logger.WithField("source", "SchedulerServer"),
@@ -219,6 +226,7 @@ func NewSchedulerServer(
 		},
 		timeout:      sendTimeout,
 		synchroniser: synchroniser,
+		config:       config,
 	}
 
 	eventHub.RegisterModelEventHandler(

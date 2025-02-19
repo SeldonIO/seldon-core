@@ -241,7 +241,7 @@ func main() {
 	)
 
 	// scheduler <-> controller grpc
-	s := schedulerServer.NewSchedulerServer(logger, ss, es, ps, sched, eventHub, sync)
+	s := schedulerServer.NewSchedulerServer(logger, ss, es, ps, sched, eventHub, sync, schedulerServer.SchedulerServerConfig{})
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start server gRPC servers")
