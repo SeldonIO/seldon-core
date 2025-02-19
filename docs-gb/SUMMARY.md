@@ -11,7 +11,7 @@
       * [Ingress Controller](installation/production-environment/ingress-controller/istio.md)
     * [Test the Installation](installation/test-installation.md)
 ## User Guide
-* [Getting Started]
+* Getting Started
   * Deploy Model (OIP+MLServer Link)
   * Pipeline
   * Inference Server
@@ -204,9 +204,6 @@
 * [Experiments](experiments.md)
 * [Servers](servers.md)
 * [Inference](inference.md)
-* [Outlier Detection](outlier.md)
-* [Drift Detection](drift.md)
-* [Explainers](explainers.md)
 * [Performance Tests](performance-tests.md)
 * [Upgrading](upgrading.md)
 * [FAQ](faqs.md)
