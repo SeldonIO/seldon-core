@@ -247,7 +247,7 @@ func TestSubscribeServerEvents(t *testing.T) {
 				NumLoadedModelReplicas: 0,
 				KubernetesMeta: &scheduler.KubernetesMeta{
 					Namespace:  "seldon",
-					Generation: 1,  // older generation is still allowed for scaling requests
+					Generation: 1, // older generation is still allowed for scaling requests
 				},
 			},
 		},
