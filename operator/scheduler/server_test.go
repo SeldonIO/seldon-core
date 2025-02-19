@@ -219,6 +219,39 @@ func TestSubscribeServerEvents(t *testing.T) {
 			},
 		},
 		{
+			name: "server - with a valid scaling request - different generation",
+			existingServer: mlopsv1alpha1.Server{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:       "foo",
+					Namespace:  "seldon",
+					Generation: 2,
+				},
+				Spec: v1alpha1.ServerSpec{
+					ScalingSpec: v1alpha1.ScalingSpec{
+						Replicas:    getIntPtr(1),
+						MinReplicas: getIntPtr(1),
+						MaxReplicas: getIntPtr(5),
+					},
+				},
+			},
+			response: &scheduler.ServerStatusResponse{
+				Type:       scheduler.ServerStatusResponse_ScalingRequest,
+				ServerName: "foo",
+				Resources: []*scheduler.ServerReplicaResources{
+					{
+						ReplicaIdx: 0,
+					},
+				},
+				AvailableReplicas:      1,
+				ExpectedReplicas:       2,
+				NumLoadedModelReplicas: 0,
+				KubernetesMeta: &scheduler.KubernetesMeta{
+					Namespace:  "seldon",
+					Generation: 1, // older generation is still allowed for scaling requests
+				},
+			},
+		},
+		{
 			name: "server - with an invalid scaling request",
 			existingServer: mlopsv1alpha1.Server{
 				ObjectMeta: metav1.ObjectMeta{

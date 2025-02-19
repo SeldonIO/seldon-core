@@ -137,7 +137,8 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 			if err != nil {
 				return err
 			}
-			if event.GetKubernetesMeta().Generation != server.Generation {
+			// we allow scaling requests for any generation (coming from scheduler), but we ignore status updates for old generations
+			if event.GetKubernetesMeta().Generation != server.Generation && event.GetType() != scheduler.ServerStatusResponse_ScalingRequest {
 				logger.Info("Ignoring event for old generation", "currentGeneration", server.Generation, "eventGeneration", event.GetKubernetesMeta().Generation, "server", event.ServerName)
 				return nil
 			}
