@@ -10,6 +10,10 @@
          * [Managed Kafka](installation/production-environment/kafka/managed-kafka.md) 
       * [Ingress Controller](installation/production-environment/ingress-controller/istio.md)
     * [Test the Installation](installation/test-installation.md)
+  * Advanced Configurations
+    * [Server Config](kubernetes/resources/serverconfig.md)
+    * [Server Runtime](kubernetes/resources/seldonruntime.md)
+    * [Seldon Config](kubernetes/resources/seldonconfig.md)
 ## User Guide
 * Getting Started
   * Deploy Model (OIP+MLServer Link)
@@ -18,10 +22,9 @@
   * Run Inference
   * Kubernetes Resources  
 * [Servers](kubernetes/resources/server.md)
-    * [Server Config](kubernetes/resources/serverconfig.md)
     * [Resource allocation](resource-allocation/README.md)
       * [Example: Serving models on dedicated GPU nodes](resource-allocation/example-serving-models-on-dedicated-gpu-nodes.md)
-* Models
+* [Models](kubernetes/resources/model.md)
     * CRD
     * Registration
     * Versioning
@@ -33,7 +36,7 @@
     * [Run Inference](https://docs.seldon.io/projects/seldon-core/en/v2/contents/inference/index.html)
     * [OIP](apis/inference/v2.md)
     * [Batch](examples/batch-examples-k8s.md) and (examples/batch-examples-local.md)
-* Pipelines
+* [Pipelines](kubernetes/resources/pipeline.md)
 * [Scaling](kubernetes/scaling.md)
   * Server Scaling
   * Component Scaling
@@ -64,7 +67,13 @@
       * Canary
       * Shadow 
     * CI/CD
-      * Link to Component Versioning 
+      * Link to Component Versioning
+## Integrations
+  * [Service Meshes](kubernetes/service-meshes/README.md)
+    * [Ambassador](kubernetes/service-meshes/ambassador.md)
+    * [Istio](kubernetes/service-meshes/istio.md)
+    * [Traefik](kubernetes/service-meshes/traefik.md)
+  
 ## Resources
 * Troubleshooting
 * Tutorials
@@ -146,14 +155,6 @@
     * [Model](kubernetes/resources/model.md)
     * [Experiment](kubernetes/resources/experiment.md)
     * [Pipeline](kubernetes/resources/pipeline.md)
-    * [Server](kubernetes/resources/server.md)
-    * [Server Config](kubernetes/resources/serverconfig.md)
-    * [Server Runtime](kubernetes/resources/seldonruntime.md)
-    * [Seldon Config](kubernetes/resources/seldonconfig.md)
-  * [Service Meshes](kubernetes/service-meshes/README.md)
-    * [Ambassador](kubernetes/service-meshes/ambassador.md)
-    * [Istio](kubernetes/service-meshes/istio.md)
-    * [Traefik](kubernetes/service-meshes/traefik.md)
 * [Resource allocation](resource-allocation/README.md)
   * [Example: Serving models on dedicated GPU nodes](resource-allocation/example-serving-models-on-dedicated-gpu-nodes.md)
 * [Models](models/README.md)
