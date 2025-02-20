@@ -34,12 +34,12 @@
     * [OIP](apis/inference/v2.md)
     * [Batch](examples/batch-examples-k8s.md) and (examples/batch-examples-local.md)
 * Pipelines
-    * [Scaling](kubernetes/scaling.md)
-        * Server Scaling
-        * Component Scaling
-        * [Autoscaling](kubernetes/autoscaling.md)
-        * Multi-Component Serving and Overcommit
-        * [HPA Autoscaling in single-model serving](kubernetes/hpa-rps-autoscaling.md)
+* [Scaling](kubernetes/scaling.md)
+  * Server Scaling
+  * Component Scaling
+  * [Autoscaling](kubernetes/autoscaling.md)
+  * Multi-Component Serving and Overcommit
+  * [HPA Autoscaling in single-model serving](kubernetes/hpa-rps-autoscaling.md)
 * Data Science Monitoring
     * Dataflow with Kafka
     * Request & Response Logging
