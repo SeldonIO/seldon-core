@@ -68,8 +68,7 @@ type SchedulerServer struct {
 }
 
 type SchedulerServerConfig struct {
-	PackThreshold float32
-	AllowPacking  bool
+	PackThreshold float64
 }
 
 type ModelEventStream struct {

@@ -57,6 +57,8 @@ var (
 	kafkaConfigPath              string
 	schedulerReadyTimeoutSeconds uint
 	deletedResourceTTLSeconds    uint
+	serverPackingEnabled         bool
+	serverPackingPercentage      float64
 )
 
 const (
@@ -116,6 +118,15 @@ func init() {
 
 	// This TTL is set in badger DB
 	flag.UintVar(&deletedResourceTTLSeconds, "deleted-resource-ttl-seconds", 86400, "TTL for deleted experiments and pipelines (in seconds)")
+
+	// Server packing
+	flag.BoolVar(&serverPackingEnabled, "server-packing-enabled", false, "Enable server packing")
+	flag.Float64Var(&serverPackingPercentage, "server-packing-percentage", schedulerServer.AllowPackingPercentage, "Percentage of time we try to pack server replicas")
+
+	if !serverPackingEnabled {
+		// zero packing percentage == server packing is disabled
+		serverPackingPercentage = 0
+	}
 }
 
 func getNamespace() string {
@@ -241,7 +252,11 @@ func main() {
 	)
 
 	// scheduler <-> controller grpc
-	s := schedulerServer.NewSchedulerServer(logger, ss, es, ps, sched, eventHub, sync, schedulerServer.SchedulerServerConfig{})
+	s := schedulerServer.NewSchedulerServer(
+		logger, ss, es, ps, sched, eventHub, sync,
+		schedulerServer.SchedulerServerConfig{
+			PackThreshold: serverPackingPercentage,
+		})
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start server gRPC servers")
