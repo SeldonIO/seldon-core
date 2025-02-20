@@ -61,7 +61,7 @@
     * Rollout Strategies
         * Progressive Rollouts
         * Rollbacks
-    * Experiments
+    * [Experiments](kubernetes/resources/experiment.md)
       * A/B Testing
       * Traffic Splitting
       * Canary
@@ -152,9 +152,6 @@
   * [Kafka](kubernetes/kafka.md)
   * [Metrics](kubernetes/metrics.md)
   * [Resources](kubernetes/resources/README.md)
-    * [Model](kubernetes/resources/model.md)
-    * [Experiment](kubernetes/resources/experiment.md)
-    * [Pipeline](kubernetes/resources/pipeline.md)
 * [Resource allocation](resource-allocation/README.md)
   * [Example: Serving models on dedicated GPU nodes](resource-allocation/example-serving-models-on-dedicated-gpu-nodes.md)
 * [Models](models/README.md)
