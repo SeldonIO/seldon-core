@@ -168,6 +168,8 @@ func main() {
 	logger.SetLevel(logIntLevel)
 
 	logger.Debugf("Scheduler ready timeout is set to %d seconds", schedulerReadyTimeoutSeconds)
+	logger.Debugf("Server packing is set to %t", serverPackingEnabled)
+	logger.Debugf("Server packing percentage is set to %f", serverPackingPercentage)
 
 	done := make(chan bool, 1)
 
