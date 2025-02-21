@@ -584,11 +584,12 @@ func TestServerScaleDownEvents(t *testing.T) {
 		name       string
 		serverName string
 		agents     []*pba.AgentSubscribeRequest
-		model      *pb.LoadModelRequest
 	}
 
 	tests := []test{
 		{
+			// this test will create a 2 replicas server
+			// and then trigger a scale down event
 			name:       "scale down",
 			serverName: "server1",
 			agents: []*pba.AgentSubscribeRequest{
@@ -617,22 +618,13 @@ func TestServerScaleDownEvents(t *testing.T) {
 					},
 				},
 			},
-			model: &pb.LoadModelRequest{
-				Model: &pb.Model{
-					Meta: &pb.MetaData{Name: "model1"},
-					ModelSpec: &pb.ModelSpec{
-						Uri:          "gs://model",
-						Requirements: []string{"sklearn"},
-					},
-					DeploymentSpec: &pb.DeploymentSpec{Replicas: 1},
-				},
-			},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			s, event := createTestScheduler()
+
 			for _, agent := range test.agents {
 				err := s.modelStore.AddServerReplica(agent)
 				g.Expect(err).To(BeNil())
@@ -645,16 +637,16 @@ func TestServerScaleDownEvents(t *testing.T) {
 			)
 			g.Expect(err).To(BeNil())
 
-			err = s.modelStore.UpdateModel(test.model)
-			g.Expect(err).To(BeNil())
-
-			stream := newStubServerStatusServer(1, 5*time.Millisecond)
+			stream := newStubServerStatusServer(1, 200*time.Millisecond)
 			s.serverEventStream.streams[stream] = &ServerSubscription{
 				name:   "dummy",
 				stream: stream,
 				fin:    make(chan bool),
 			}
 			g.Expect(s.serverEventStream.streams[stream]).ToNot(BeNil())
+
+			// to allow events to propagate
+			time.Sleep(500 * time.Millisecond)
 
 			// publish a scale event
 			event.PublishServerEvent("", coordinator.ServerEventMsg{
@@ -668,7 +660,9 @@ func TestServerScaleDownEvents(t *testing.T) {
 			var ssr *pb.ServerStatusResponse
 			select {
 			case next := <-stream.msgs:
-				ssr = next
+				if next.Type == pb.ServerStatusResponse_ScalingRequest {
+					ssr = next
+				}
 			default:
 				t.Fail()
 			}
