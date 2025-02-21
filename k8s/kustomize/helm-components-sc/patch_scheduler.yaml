@@ -61,6 +61,10 @@ spec:
             value: '{{ .Values.security.envoy.ssl.downstream.server.clientCaPath }}'
           - name: SCHEDULER_READY_TIMEOUT_SECONDS
             value: '{{ .Values.scheduler.schedulerReadyTimeoutSeconds }}'
+          - name: SERVER_PACKING_ENABLED
+            value: '{{ .Values.autoscaling.serverPackingEnabled }}'
+          - name: SERVER_PACKING_PERCENTAGE
+            value: '{{ .Values.autoscaling.serverPackingPercentage }}'
     volumeClaimTemplates:
     - name: scheduler-state
       spec:

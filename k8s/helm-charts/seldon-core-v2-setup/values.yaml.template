@@ -221,6 +221,10 @@ scheduler:
     runAsGroup: 1000
     runAsNonRoot: true
   schedulerReadyTimeoutSeconds: 600
+  
+autoscaling:
+  serverPackingEnabled: false
+  serverPackingPercentage: 0.0
 
 serverConfig:
   terminationGracePeriodSeconds: 120

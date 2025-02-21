@@ -342,6 +342,8 @@ spec:
         - --allow-plaintxt=$(ALLOW_PLAINTXT)
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --scheduler-ready-timeout-seconds=$(SCHEDULER_READY_TIMEOUT_SECONDS)
+        - --server-packing-enabled=$(SERVER_PACKING_ENABLED)
+        - --server-packing-percentage=$(SERVER_PACKING_PERCENTAGE)
         command:
         - /bin/scheduler
         env:
@@ -387,6 +389,10 @@ spec:
           value: '/tmp/certs/ddc/ca.crt'
         - name: SCHEDULER_READY_TIMEOUT_SECONDS
           value: '600'
+        - name: SERVER_PACKING_ENABLED
+          value: 'false'
+        - name: SERVER_PACKING_PERCENTAGE
+          value: '0'
         - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE

@@ -487,6 +487,8 @@ spec:
         - --allow-plaintxt=$(ALLOW_PLAINTXT)
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --scheduler-ready-timeout-seconds=$(SCHEDULER_READY_TIMEOUT_SECONDS)
+        - --server-packing-enabled=$(SERVER_PACKING_ENABLED)
+        - --server-packing-percentage=$(SERVER_PACKING_PERCENTAGE)
         command:
         - /bin/scheduler
         env:
@@ -535,6 +537,10 @@ spec:
           value: '{{ .Values.security.envoy.ssl.downstream.server.clientCaPath }}'
         - name: SCHEDULER_READY_TIMEOUT_SECONDS
           value: '{{ .Values.scheduler.schedulerReadyTimeoutSeconds }}'
+        - name: SERVER_PACKING_ENABLED
+          value: '{{ .Values.autoscaling.serverPackingEnabled }}'
+        - name: SERVER_PACKING_PERCENTAGE
+          value: '{{ .Values.autoscaling.serverPackingPercentage }}'
         - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE
