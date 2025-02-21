@@ -675,6 +675,7 @@ func TestServerScaleDownEvents(t *testing.T) {
 
 			g.Expect(ssr).ToNot(BeNil())
 			g.Expect(ssr.ServerName).To(Equal(test.serverName))
+			g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_ScalingRequest))
 
 		})
 	}
