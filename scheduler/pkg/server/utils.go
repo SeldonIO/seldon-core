@@ -19,15 +19,6 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
-const (
-	// percentage of time we try to pack server replicas, i.e. number of server replicas is greater than `MaxNumReplicaHostedModels`
-	// this is to be a bit more conservative and not pack all the time as it can lead to
-	// increased latency in the case of MMS
-	// in the future we should have more metrics to decide whether packing can lead
-	// to better performance
-	AllowPackingPercentage = 0.25
-)
-
 func sendWithTimeout(f func() error, d time.Duration) (bool, error) {
 	errChan := make(chan error, 1)
 	go func() {

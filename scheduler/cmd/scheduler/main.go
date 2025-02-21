@@ -63,6 +63,13 @@ var (
 
 const (
 	xDSWaitTimeout = time.Duration(10 * time.Second)
+
+	// percentage of time we try to pack server replicas, i.e. number of server replicas is greater than `MaxNumReplicaHostedModels`
+	// this is to be a bit more conservative and not pack all the time as it can lead to
+	// increased latency in the case of MMS
+	// in the future we should have more metrics to decide whether packing can lead
+	// to better performance
+	allowPackingPercentageDefault = 0.25
 )
 
 func init() {
@@ -121,7 +128,7 @@ func init() {
 
 	// Server packing
 	flag.BoolVar(&serverPackingEnabled, "server-packing-enabled", false, "Enable server packing")
-	flag.Float64Var(&serverPackingPercentage, "server-packing-percentage", schedulerServer.AllowPackingPercentage, "Percentage of time we try to pack server replicas")
+	flag.Float64Var(&serverPackingPercentage, "server-packing-percentage", allowPackingPercentageDefault, "Percentage of time we try to pack server replicas")
 
 	if !serverPackingEnabled {
 		// zero packing percentage == server packing is disabled
