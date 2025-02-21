@@ -698,8 +698,8 @@ func createTestScheduler() (*SchedulerServer, *coordinator.EventHub) {
 		eventHub,
 	)
 	s := NewSchedulerServer(
-		logger, schedulerStore, experimentServer, pipelineServer, scheduler, 
-		eventHub, synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), SchedulerServerConfig{} )
+		logger, schedulerStore, experimentServer, pipelineServer, scheduler,
+		eventHub, synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), SchedulerServerConfig{})
 
 	return s, eventHub
 }
