@@ -267,7 +267,7 @@ func main() {
 	s := schedulerServer.NewSchedulerServer(
 		logger, ss, es, ps, sched, eventHub, sync,
 		schedulerServer.SchedulerServerConfig{
-			PackThreshold: serverPackingPercentage,
+			PackThreshold: serverPackingPercentage, // note that if threshold is 0, packing is disabled
 		})
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {
