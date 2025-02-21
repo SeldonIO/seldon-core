@@ -129,11 +129,6 @@ func init() {
 	// Server packing
 	flag.BoolVar(&serverPackingEnabled, "server-packing-enabled", false, "Enable server packing")
 	flag.Float64Var(&serverPackingPercentage, "server-packing-percentage", allowPackingPercentageDefault, "Percentage of time we try to pack server replicas")
-
-	if !serverPackingEnabled {
-		// zero packing percentage == server packing is disabled
-		serverPackingPercentage = 0
-	}
 }
 
 func getNamespace() string {
@@ -157,9 +152,17 @@ func makeSignalHandler(logger *log.Logger, done chan<- bool) {
 	close(done)
 }
 
+func parseFlags() {
+	flag.Parse()
+	if !serverPackingEnabled {
+		// zero packing percentage == server packing is disabled
+		serverPackingPercentage = 0
+	}
+}
+
 func main() {
 	logger := log.New()
-	flag.Parse()
+	parseFlags()
 	logIntLevel, err := log.ParseLevel(logLevel)
 	if err != nil {
 		logger.WithError(err).Fatalf("Failed to set log level %s", logLevel)
