@@ -53,7 +53,7 @@ Installing Istio ingress controller in a Kubernetes cluster running Seldon Enter
 1. Install Istio Ingress Gateway:
 
     ```
-    helm install istio-ingress istio/gateway -n istio-system
+    helm install istio-ingressgateway istio/gateway -n istio-system
     ```
 
 1.  Verify that Istio Ingress Gateway is installed:
