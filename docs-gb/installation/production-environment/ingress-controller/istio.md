@@ -53,7 +53,7 @@ Installing Istio ingress controller in a Kubernetes cluster running Seldon Enter
 1. Install Istio Ingress Gateway:
 
     ```
-    helm install istio-ingress istio/gateway -n istio-system
+    helm install istio-ingressgateway istio/gateway -n istio-system
     ```
 
 1.  Verify that Istio Ingress Gateway is installed:
@@ -153,9 +153,7 @@ It is important to expose `seldon-service` service to enable communication betwe
     ```
     virtualservice.networking.istio.io/iris-route created
     ```
-#### (Optional) Enable HTTPS/TLS
 
-To secure your Ingress with HTTPS, you can configure TLS settings in the `Gateway` resource using a certificate and key. This involves additional steps like creating Kubernetes secrets for your certificates.
 
 ### Next Steps
 [Verify the installation](/docs-gb/installation/test-installation.md)
