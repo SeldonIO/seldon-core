@@ -99,6 +99,8 @@ func makeHTTPListener(listenerName, address string,
 		AccessLog: []*accesslog.AccessLog{
 			{
 				Name: "envoy.access_loggers.file",
+				// log only errors
+				Filter: createAccessLogFilterForErrors(),
 				ConfigType: &accesslog.AccessLog_TypedConfig{
 					TypedConfig: createAccessLogConfig(),
 				},
@@ -801,6 +803,37 @@ func createAccessLogConfig() *anypb.Any {
 		panic(err)
 	}
 	return accessAny
+}
+
+func createAccessLogFilterForErrors() *accesslog.AccessLogFilter {
+	return &accesslog.AccessLogFilter{
+		FilterSpecifier: &accesslog.AccessLogFilter_OrFilter{
+			OrFilter: &accesslog.OrFilter{
+				Filters: []*accesslog.AccessLogFilter{
+					// http
+					{
+						FilterSpecifier: &accesslog.AccessLogFilter_StatusCodeFilter{
+							StatusCodeFilter: &accesslog.StatusCodeFilter{
+								Comparison: &accesslog.ComparisonFilter{
+									Op:    accesslog.ComparisonFilter_GE,
+									Value: &core.RuntimeUInt32{DefaultValue: 400},
+								},
+							},
+						},
+					},
+					// grpc
+					{
+						FilterSpecifier: &accesslog.AccessLogFilter_GrpcStatusFilter{
+							GrpcStatusFilter: &accesslog.GrpcStatusFilter{
+								Statuses: []accesslog.GrpcStatusFilter_Status{0}, // grpc status OK
+								Exclude:  true,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 }
 
 // A filter to add the seldon-model header from the http path if its not passed
