@@ -48,6 +48,7 @@ import (
 const (
 	SeldonLoggingHeader           = "Seldon-Logging"
 	EnvoyLogPathPrefix            = "/tmp/request-log"
+	EnvoyAccessLogPath            = "/tmp/envoy-accesslog.txt"
 	SeldonRouteSeparator          = ":" // Tried % but this seemed to break envoy matching. Maybe % is a special character or connected to regexp. A bug?
 	DefaultRouteTimeoutSecs       = 0   // TODO allow configurable override
 	DefaultRouteConfigurationName = "listener_0"
@@ -785,7 +786,7 @@ func createTapConfig() *anypb.Any {
 
 func createAccessLogConfig() *anypb.Any {
 	accessFilter := accesslog_file.FileAccessLog{
-		Path: "/tmp/envoy-accesslog.txt",
+		Path: EnvoyAccessLogPath,
 		AccessLogFormat: &accesslog_file.FileAccessLog_LogFormat{
 			LogFormat: &core.SubstitutionFormatString{
 				Format: &core.SubstitutionFormatString_TextFormatSource{
