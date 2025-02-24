@@ -28,7 +28,7 @@ func TestAddRemoveHttpAndGrpcRoute(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{}, nil)
 	g.Expect(err).To(BeNil())
 	httpCluster := "m1_1_http"
 	grpcCluster := "m1_1_grpc"
@@ -63,7 +63,7 @@ func TestAddRemoveHttpAndGrpcRouteVersions(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{}, nil)
 	g.Expect(err).To(BeNil())
 
 	httpCluster1 := "m1_1_http"
@@ -148,7 +148,7 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForSameModel(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{}, nil)
 	g.Expect(err).To(BeNil())
 
 	routeName := "r1"
@@ -205,7 +205,7 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentModels(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{}, nil)
 	g.Expect(err).To(BeNil())
 
 	httpClusterModel1 := "m1_1_http"
@@ -274,7 +274,7 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentRoutesSameModel(t *testing
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{}, nil)
 	g.Expect(err).To(BeNil())
 
 	route1 := "r1"
@@ -371,7 +371,7 @@ func TestSetupTLS(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+			c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{}, nil)
 			g.Expect(err).To(BeNil())
 			if test.setTLS {
 				t.Setenv(fmt.Sprintf("%s%s", seldontls.EnvSecurityPrefixEnvoy, seldontls.EnvSecurityProtocolSuffix), seldontls.SecurityProtocolSSL)

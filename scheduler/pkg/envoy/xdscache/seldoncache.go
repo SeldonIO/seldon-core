@@ -63,6 +63,7 @@ type SeldonXDSCache struct {
 	logger                 logrus.FieldLogger
 	tlsActive              bool
 	snapshotVersion        int64
+	config                 *EnvoyConfig
 }
 
 type PipelineGatewayDetails struct {
@@ -71,7 +72,14 @@ type PipelineGatewayDetails struct {
 	GrpcPort int
 }
 
-func NewSeldonXDSCache(logger logrus.FieldLogger, pipelineGatewayDetails *PipelineGatewayDetails) (*SeldonXDSCache, error) {
+type EnvoyConfig struct {
+	AccessLogPath             string
+	TapPath                   string
+	IncludeSuccessfulRequests bool
+	EnableAccessLog           bool
+}
+
+func NewSeldonXDSCache(logger logrus.FieldLogger, pipelineGatewayDetails *PipelineGatewayDetails, config *EnvoyConfig) (*SeldonXDSCache, error) {
 	xdsCache := &SeldonXDSCache{
 		Clusters:               make(map[string]Cluster),
 		Pipelines:              make(map[string]PipelineRoute),
@@ -82,6 +90,7 @@ func NewSeldonXDSCache(logger logrus.FieldLogger, pipelineGatewayDetails *Pipeli
 		secrets:                make(map[string]Secret),
 		logger:                 logger.WithField("source", "SeldonXDSCache"),
 		snapshotVersion:        rand.Int63n(1000),
+		config:                 config,
 	}
 	err := xdsCache.init()
 	if err != nil {

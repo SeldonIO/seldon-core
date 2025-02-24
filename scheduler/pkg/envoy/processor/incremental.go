@@ -63,8 +63,9 @@ func NewIncrementalProcessor(
 	hub *coordinator.EventHub,
 	pipelineGatewayDetails *xdscache.PipelineGatewayDetails,
 	versionCleaner cleaner.ModelVersionCleaner,
+	config *xdscache.EnvoyConfig,
 ) (*IncrementalProcessor, error) {
-	xdsCache, err := xdscache.NewSeldonXDSCache(logger, pipelineGatewayDetails)
+	xdsCache, err := xdscache.NewSeldonXDSCache(logger, pipelineGatewayDetails, config)
 	if err != nil {
 		return nil, err
 	}
