@@ -74,7 +74,6 @@ type PipelineGatewayDetails struct {
 
 type EnvoyConfig struct {
 	AccessLogPath             string
-	TapPath                   string
 	IncludeSuccessfulRequests bool
 	EnableAccessLog           bool
 }
@@ -244,8 +243,8 @@ func (xds *SeldonXDSCache) addPermanentListeners() error {
 		}
 	}
 	resources := make(map[string]types.Resource)
-	resources[defaultListenerName] = makeHTTPListener(defaultListenerName, defaultListenerAddress, defaultListenerPort, DefaultRouteConfigurationName, serverSecret)
-	resources[mirrorListenerName] = makeHTTPListener(mirrorListenerName, mirrorListenerAddress, mirrorListenerPort, MirrorRouteConfigurationName, serverSecret)
+	resources[defaultListenerName] = makeHTTPListener(defaultListenerName, defaultListenerAddress, defaultListenerPort, DefaultRouteConfigurationName, serverSecret, xds.config)
+	resources[mirrorListenerName] = makeHTTPListener(mirrorListenerName, mirrorListenerAddress, mirrorListenerPort, MirrorRouteConfigurationName, serverSecret, xds.config)
 	return xds.lds.UpdateResources(resources, nil)
 }
 

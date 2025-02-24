@@ -65,6 +65,7 @@ func makeHTTPListener(listenerName, address string,
 	port uint32,
 	routeConfigurationName string,
 	serverSecret *Secret,
+	config *EnvoyConfig,
 ) *listener.Listener {
 	routerConfig, _ := anypb.New(&router.Router{})
 	// HTTP filter configuration
@@ -97,16 +98,22 @@ func makeHTTPListener(listenerName, address string,
 				ConfigType: &hcm.HttpFilter_TypedConfig{TypedConfig: routerConfig},
 			},
 		},
-		AccessLog: []*accesslog.AccessLog{
+	}
+	if config != nil && config.EnableAccessLog {
+		var filter *accesslog.AccessLogFilter = nil
+		if config.IncludeSuccessfulRequests {
+			filter = createAccessLogFilterForErrors()
+		}
+		manager.AccessLog = []*accesslog.AccessLog{
 			{
 				Name: "envoy.access_loggers.file",
-				// log only errors
-				Filter: createAccessLogFilterForErrors(),
+				// log only errors if required
+				Filter: filter,
 				ConfigType: &accesslog.AccessLog_TypedConfig{
-					TypedConfig: createAccessLogConfig(),
+					TypedConfig: createAccessLogConfig(config.AccessLogPath),
 				},
 			},
-		},
+		}
 	}
 	pbst, err := anypb.New(manager)
 	if err != nil {
@@ -784,9 +791,9 @@ func createTapConfig() *anypb.Any {
 	return tapAny
 }
 
-func createAccessLogConfig() *anypb.Any {
+func createAccessLogConfig(path string) *anypb.Any {
 	accessFilter := accesslog_file.FileAccessLog{
-		Path: EnvoyAccessLogPath,
+		Path: path,
 		AccessLogFormat: &accesslog_file.FileAccessLog_LogFormat{
 			LogFormat: &core.SubstitutionFormatString{
 				Format: &core.SubstitutionFormatString_TextFormatSource{
