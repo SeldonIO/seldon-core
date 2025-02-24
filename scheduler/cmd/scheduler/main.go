@@ -57,10 +57,19 @@ var (
 	kafkaConfigPath              string
 	schedulerReadyTimeoutSeconds uint
 	deletedResourceTTLSeconds    uint
+	serverPackingEnabled         bool
+	serverPackingPercentage      float64
 )
 
 const (
 	xDSWaitTimeout = time.Duration(10 * time.Second)
+
+	// percentage of time we try to pack server replicas, i.e. number of server replicas is greater than `MaxNumReplicaHostedModels`
+	// this is to be a bit more conservative and not pack all the time as it can lead to
+	// increased latency in the case of MMS
+	// in the future we should have more metrics to decide whether packing can lead
+	// to better performance
+	allowPackingPercentageDefault = 0.25
 )
 
 func init() {
@@ -116,6 +125,10 @@ func init() {
 
 	// This TTL is set in badger DB
 	flag.UintVar(&deletedResourceTTLSeconds, "deleted-resource-ttl-seconds", 86400, "TTL for deleted experiments and pipelines (in seconds)")
+
+	// Server packing
+	flag.BoolVar(&serverPackingEnabled, "server-packing-enabled", false, "Enable server packing")
+	flag.Float64Var(&serverPackingPercentage, "server-packing-percentage", allowPackingPercentageDefault, "Percentage of time we try to pack server replicas")
 }
 
 func getNamespace() string {
@@ -139,9 +152,17 @@ func makeSignalHandler(logger *log.Logger, done chan<- bool) {
 	close(done)
 }
 
+func parseFlags() {
+	flag.Parse()
+	if !serverPackingEnabled {
+		// zero packing percentage == server packing is disabled
+		serverPackingPercentage = 0
+	}
+}
+
 func main() {
 	logger := log.New()
-	flag.Parse()
+	parseFlags()
 	logIntLevel, err := log.ParseLevel(logLevel)
 	if err != nil {
 		logger.WithError(err).Fatalf("Failed to set log level %s", logLevel)
@@ -150,6 +171,8 @@ func main() {
 	logger.SetLevel(logIntLevel)
 
 	logger.Debugf("Scheduler ready timeout is set to %d seconds", schedulerReadyTimeoutSeconds)
+	logger.Debugf("Server packing is set to %t", serverPackingEnabled)
+	logger.Debugf("Server packing percentage is set to %f", serverPackingPercentage)
 
 	done := make(chan bool, 1)
 
@@ -241,7 +264,11 @@ func main() {
 	)
 
 	// scheduler <-> controller grpc
-	s := schedulerServer.NewSchedulerServer(logger, ss, es, ps, sched, eventHub, sync)
+	s := schedulerServer.NewSchedulerServer(
+		logger, ss, es, ps, sched, eventHub, sync,
+		schedulerServer.SchedulerServerConfig{
+			PackThreshold: serverPackingPercentage, // note that if threshold is 0, packing is disabled
+		})
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start server gRPC servers")

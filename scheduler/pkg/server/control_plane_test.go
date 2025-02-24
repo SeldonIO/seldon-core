@@ -130,7 +130,7 @@ func TestSubscribeControlPlane(t *testing.T) {
 
 		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10 * time.Millisecond))
 
-		s := NewSchedulerServer(logger, nil, nil, nil, nil, eventHub, sync)
+		s := NewSchedulerServer(logger, nil, nil, nil, nil, eventHub, sync, SchedulerServerConfig{})
 		sync.Signals(1)
 
 		return s

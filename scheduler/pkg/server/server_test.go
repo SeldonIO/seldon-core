@@ -67,7 +67,9 @@ func TestLoadModel(t *testing.T) {
 			sync,
 			eventHub,
 		)
-		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub, sync)
+		s := NewSchedulerServer(
+			logger, schedulerStore, experimentServer, pipelineServer,
+			scheduler, eventHub, sync, SchedulerServerConfig{})
 		sync.Signals(1)
 		mockAgent := &mockAgentHandler{}
 
@@ -369,7 +371,9 @@ func TestUnloadModel(t *testing.T) {
 			sync,
 			eventHub,
 		)
-		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub, sync)
+		s := NewSchedulerServer(
+			logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub,
+			sync, SchedulerServerConfig{})
 		sync.Signals(1)
 		return s, mockAgent, eventHub
 	}
@@ -704,7 +708,9 @@ func TestServerNotify(t *testing.T) {
 			sync,
 			eventHub,
 		)
-		s := NewSchedulerServer(logger, schedulerStore, nil, nil, scheduler, eventHub, sync)
+		s := NewSchedulerServer(
+			logger, schedulerStore, nil, nil, scheduler, eventHub,
+			sync, SchedulerServerConfig{})
 		return s, sync
 	}
 

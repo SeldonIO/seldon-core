@@ -185,7 +185,7 @@ func (s *SchedulerServer) handleServerEvents(event coordinator.ServerEventMsg) {
 	}
 
 	if event.UpdateContext == coordinator.SERVER_SCALE_DOWN {
-		if ok, replicas := shouldScaleDown(server, AllowPackingPercentage); ok {
+		if ok, replicas := shouldScaleDown(server, float32(s.config.PackThreshold)); ok {
 			logger.Infof("Server %s is scaling down to %d", event.ServerName, replicas)
 			s.sendServerScale(server, replicas)
 		}
