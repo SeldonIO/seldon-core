@@ -87,10 +87,10 @@
     * [Ambassador](kubernetes/service-meshes/ambassador.md)
     * [Istio](kubernetes/service-meshes/istio.md)
     * [Traefik](kubernetes/service-meshes/traefik.md)
-    * Audit Trails
-    * Alerts
-    * Data Management
-    * Modules 
+  * Audit Trails
+  * Alerts
+  * Data Management
+  * Modules 
   
 ## Resources
 * Troubleshooting
