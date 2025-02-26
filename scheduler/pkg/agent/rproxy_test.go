@@ -71,8 +71,8 @@ func (mlserver *mockMLServerState) v2InferStream(w http.ResponseWriter, req *htt
 	chunks := []string{"Model ", "inference: ", modelName}
 	for _, chunk := range chunks {
 		newLineChunk := chunk + "\n"
-		w.Write([]byte(newLineChunk)) // Write a chunk
-		flusher.Flush()               // Flush to send immediately
+		_, _ = w.Write([]byte(newLineChunk)) // Write a chunk
+		flusher.Flush()                      // Flush to send immediately
 	}
 }
 
