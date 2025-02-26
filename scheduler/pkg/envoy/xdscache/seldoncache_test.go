@@ -13,6 +13,11 @@ import (
 	"fmt"
 	"testing"
 
+	accesslog "github.com/envoyproxy/go-control-plane/envoy/config/accesslog/v3"
+	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+	listener "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
+	accesslog_file "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/file/v3"
+	http_connection_managerv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	. "github.com/onsi/gomega"
 	"github.com/otiai10/copy"
 	log "github.com/sirupsen/logrus"
@@ -392,6 +397,112 @@ func TestSetupTLS(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 		})
+	}
+}
+
+func TestAccessLogSettings(t *testing.T) {
+	g := NewGomegaWithT(t)
+	logger := log.New()
+
+	type test struct {
+		name        string
+		EnvoyConfig *EnvoyConfig
+	}
+
+	tests := []test{
+		{
+			name:        "nil config",
+			EnvoyConfig: nil,
+		},
+		{
+			name:        "empty config",
+			EnvoyConfig: &EnvoyConfig{},
+		},
+		{
+			name: "config with access log",
+			EnvoyConfig: &EnvoyConfig{
+				AccessLogPath:             "dummy",
+				EnableAccessLog:           true,
+				IncludeSuccessfulRequests: true,
+			},
+		},
+		{
+			name: "config with access log - only bad requests",
+			EnvoyConfig: &EnvoyConfig{
+				AccessLogPath:             "dummy",
+				EnableAccessLog:           true,
+				IncludeSuccessfulRequests: false,
+			},
+		},
+		{
+			name: "config with access log disabled",
+			EnvoyConfig: &EnvoyConfig{
+				AccessLogPath:   "dummy",
+				EnableAccessLog: false,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		cache, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{}, test.EnvoyConfig)
+		g.Expect(err).To(BeNil())
+		if test.EnvoyConfig != nil {
+			for _, res := range cache.lds.GetResources() {
+				// check access log settings
+				for _, c := range res.(*listener.Listener).FilterChains {
+					for _, filterpb := range c.Filters {
+						conn := new(http_connection_managerv3.HttpConnectionManager)
+						err := filterpb.GetTypedConfig().UnmarshalTo(conn)
+						g.Expect(err).To(BeNil())
+
+						if test.EnvoyConfig.EnableAccessLog {
+							g.Expect(len(conn.GetAccessLog())).To(Equal(1))
+							accessLogpb := conn.GetAccessLog()[0]
+
+							// ConfigType
+							accessLogConfig := new(accesslog_file.FileAccessLog)
+							err := accessLogpb.GetTypedConfig().UnmarshalTo(accessLogConfig)
+							g.Expect(err).To(BeNil())
+							g.Expect(accessLogConfig.Path).To(Equal(test.EnvoyConfig.AccessLogPath))
+
+							// Filter
+							if test.EnvoyConfig.IncludeSuccessfulRequests {
+								g.Expect(accessLogpb.Filter).To(BeNil())
+							} else {
+								expectedFilter := &accesslog.OrFilter{
+									Filters: []*accesslog.AccessLogFilter{
+										// http
+										{
+											FilterSpecifier: &accesslog.AccessLogFilter_StatusCodeFilter{
+												StatusCodeFilter: &accesslog.StatusCodeFilter{
+													Comparison: &accesslog.ComparisonFilter{
+														Op:    accesslog.ComparisonFilter_GE,
+														Value: &core.RuntimeUInt32{DefaultValue: 400},
+													},
+												},
+											},
+										},
+										// grpc
+										{
+											FilterSpecifier: &accesslog.AccessLogFilter_GrpcStatusFilter{
+												GrpcStatusFilter: &accesslog.GrpcStatusFilter{
+													Statuses: []accesslog.GrpcStatusFilter_Status{0}, // grpc status OK
+													Exclude:  true,
+												},
+											},
+										},
+									},
+								}
+								filter := accessLogpb.Filter.FilterSpecifier.(*accesslog.AccessLogFilter_OrFilter)
+								g.Expect(filter.OrFilter).To(Equal(expectedFilter))
+							}
+
+						}
+					}
+				}
+			}
+
+		}
 	}
 }
 

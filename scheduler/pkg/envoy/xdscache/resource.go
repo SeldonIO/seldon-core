@@ -101,7 +101,7 @@ func makeHTTPListener(listenerName, address string,
 	}
 	if config != nil && config.EnableAccessLog {
 		var filter *accesslog.AccessLogFilter = nil
-		if config.IncludeSuccessfulRequests {
+		if !config.IncludeSuccessfulRequests {
 			filter = createAccessLogFilterForErrors()
 		}
 		manager.AccessLog = []*accesslog.AccessLog{
@@ -792,7 +792,7 @@ func createTapConfig() *anypb.Any {
 }
 
 func createAccessLogConfig(path string) *anypb.Any {
-	accessFilter := accesslog_file.FileAccessLog{
+	config := accesslog_file.FileAccessLog{
 		Path: path,
 		AccessLogFormat: &accesslog_file.FileAccessLog_LogFormat{
 			LogFormat: &core.SubstitutionFormatString{
@@ -806,7 +806,7 @@ func createAccessLogConfig(path string) *anypb.Any {
 			},
 		},
 	}
-	accessAny, err := anypb.New(&accessFilter)
+	accessAny, err := anypb.New(&config)
 	if err != nil {
 		panic(err)
 	}
