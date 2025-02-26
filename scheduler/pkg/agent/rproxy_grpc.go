@@ -264,31 +264,34 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 
 func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_ModelStreamInferServer) error {
 	ctx := stream.Context()
-
 	logger := rp.logger.WithField("func", "ModelStreamInfer")
 	internalModelName, externalModelName, err := rp.extractModelNamesFromContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	r, err := stream.Recv()
-	r.ModelName = internalModelName
-	r.ModelVersion = ""
-
-	if err == io.EOF {
-		return nil
-	}
-
-	if err != nil {
-		logger.WithError(err).Error("Failed to receive request")
-	}
+	// to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		if err := rp.modelScalingStatsCollector.ScalingMetricsSetup(&wg, internalModelName); err != nil {
+			logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+		}
+	}()
+	defer func() {
+		go func() {
+			if err := rp.modelScalingStatsCollector.ScalingMetricsTearDown(&wg, internalModelName); err != nil {
+				logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+			}
+		}()
+	}()
 
 	startTime := time.Now()
-	err = rp.ensureLoadModel(r.ModelName)
+	err = rp.ensureLoadModel(internalModelName)
 	if err != nil {
 		elapsedTime := time.Since(startTime).Seconds()
 		go rp.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeGrpc, elapsedTime, codes.NotFound.String())
-		return status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", r.ModelName, err))
+		return status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", internalModelName, err))
 	}
 
 	// Create an outgoing context for the proxy call to service from incoming context
@@ -303,24 +306,54 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 		return err
 	}
 
-	if err := client_stream.Send(r); err != nil {
-		logger.WithError(err).Error("Failed to send request")
-		return err
+	// receive incoming request and forward them
+	go func() {
+		for {
+			r, err := stream.Recv()
+			if err == io.EOF {
+				client_stream.CloseSend()
+				return
+			}
+
+			if err != nil {
+				logger.WithError(err).Error("Failed to receive request")
+				return
+			}
+
+			r.ModelName = internalModelName
+			r.ModelVersion = ""
+
+			if err := client_stream.Send(r); err != nil {
+				logger.WithError(err).Error("Failed to forward request")
+				return
+			}
+		}
+	}()
+
+	// receive responses and forward them
+	var finalErr error
+	for {
+		client_stream_resp, err := client_stream.Recv()
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			logger.WithError(err).Error("Failed to receive response")
+			finalErr = err
+			break
+		}
+
+		if err := stream.Send(client_stream_resp); err != nil {
+			logger.WithError(err).Error("Failed to forward response")
+			finalErr = err
+		}
+
 	}
 
-	client_stream_resp, err := client_stream.Recv()
-	if err != nil {
-		logger.WithError(err).Error("Failed to receive response")
-		return err
-	}
-
-	client_stream.CloseSend()
-
-	if err := stream.Send(client_stream_resp); err != nil {
-		logger.WithError(err).Error("Failed to send response")
-		return err
-	}
-
+	grpcStatus, _ := status.FromError(finalErr)
+	elapsedTime := time.Since(startTime).Seconds()
+	go rp.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeGrpc, elapsedTime, grpcStatus.Code().String())
 	return nil
 }
 

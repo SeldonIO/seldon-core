@@ -126,7 +126,8 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 		return client.ModelInfer(ctx, &v2.ModelInferRequest{ModelName: dummyModelNamePrefix}) // note without suffix
 	}
 
-	doStreamInfer := func(modelSuffixInternal, modelSuffix string) (*v2.ModelInferResponse, error) {
+	numStreamMessages := 10
+	doStreamInfer := func(modelSuffixInternal, modelSuffix string) ([]*v2.ModelInferResponse, error) {
 		logger := log.New()
 		logger.SetLevel(log.DebugLevel)
 		logger.Debug("Starting stream infer")
@@ -141,22 +142,26 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 			return nil, err
 		}
 
-		r := v2.ModelInferRequest{ModelName: dummyModelNamePrefix}
-		err = stream.Send(&r)
-		if err != nil {
-			logger.Errorf("Error sending request: %v", err)
-			return nil, err
-		}
+		responses := []*v2.ModelInferResponse{}
+		for i := 0; i < numStreamMessages; i++ {
+			r := v2.ModelInferRequest{ModelName: dummyModelNamePrefix}
+			err = stream.Send(&r)
+			if err != nil {
+				logger.Errorf("Error sending request: %v", err)
+				return nil, err
+			}
 
-		resp, err := stream.Recv()
-		if err != nil {
-			logger.Errorf("Error receiving response: %v", err)
-			return nil, err
+			response, err := stream.Recv()
+			if err != nil {
+				logger.Errorf("Error receiving response: %v", err)
+				return nil, err
+			}
+
+			responses = append(responses, response)
 		}
 
 		stream.CloseSend()
-		logger.Debugf("RESPONSE: %v", resp)
-		return resp, nil
+		return responses, nil
 	}
 
 	doMeta := func(modelSuffix string) (*v2.ModelMetadataResponse, error) {
@@ -178,12 +183,14 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	g.Expect(responseInfer.ModelName).To(Equal(dummyModelNamePrefix + "_0"))
 	g.Expect(responseInfer.ModelVersion).To(Equal("")) // in practice this should be something else
 
-	responserStreamInfer, errStreamInfer := doStreamInfer("_0", ".experiment")
+	responsesStreamInfer, errStreamInfer := doStreamInfer("_0", ".experiment")
 	g.Expect(errStreamInfer).To(BeNil())
-	g.Expect(responserStreamInfer.ModelName).To(Equal(dummyModelNamePrefix + "_0"))
-	g.Expect(responserStreamInfer.ModelVersion).To(Equal("")) // in practice this should be something else
+	g.Expect(len(responsesStreamInfer)).To(Equal(numStreamMessages))
+	g.Expect(responsesStreamInfer[0].ModelName).To(Equal(dummyModelNamePrefix + "_0"))
+	g.Expect(responsesStreamInfer[0].ModelVersion).To(Equal("")) // in practice this should be something else
 
 	t.Log("Testing model scaling stats")
+	time.Sleep(50 * time.Millisecond)
 	g.Expect(rpGRPC.modelScalingStatsCollector.ModelLagStats.Get(dummyModelNamePrefix + "_0")).To(Equal(uint32(0)))
 	g.Expect(rpGRPC.modelScalingStatsCollector.ModelLastUsedStats.Get(dummyModelNamePrefix + "_0")).Should(BeNumerically("<=", time.Now().Unix())) // only triggered when we get results back
 
