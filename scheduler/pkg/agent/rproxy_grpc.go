@@ -311,7 +311,7 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 		for {
 			r, err := stream.Recv()
 			if err == io.EOF {
-				client_stream.CloseSend()
+				_ = client_stream.CloseSend()
 				return
 			}
 

@@ -160,7 +160,7 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 			responses = append(responses, response)
 		}
 
-		stream.CloseSend()
+		_ = stream.CloseSend()
 		return responses, nil
 	}
 
