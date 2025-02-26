@@ -206,7 +206,8 @@ func main() {
 	}
 
 	// Create envoy incremental processor
-	incrementalProcessor, err := processor.NewIncrementalProcessor(nodeID, logger, ss, es, ps, eventHub, &pipelineGatewayDetails, cleaner, &xdscache.EnvoyConfig{})
+	incrementalProcessor, err := processor.NewIncrementalProcessor(
+		nodeID, logger, ss, es, ps, eventHub, &pipelineGatewayDetails, cleaner, &xdscache.EnvoyConfig{})
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to create incremental processor")
 	}
