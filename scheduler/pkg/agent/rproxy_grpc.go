@@ -208,16 +208,8 @@ func (rp *reverseGRPCProxy) setTrailer(ctx context.Context, trailer metadata.MD,
 	}
 }
 
-func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
-	logger := rp.logger.WithField("func", "ModelInfer")
-	internalModelName, externalModelName, err := rp.extractModelNamesFromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-	r.ModelName = internalModelName
-	r.ModelVersion = ""
-
-	// to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
+// to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
+func syncScalingMetrics(rp *reverseGRPCProxy, internalModelName string, logger log.FieldLogger) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
@@ -232,6 +224,20 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 			}
 		}()
 	}()
+
+}
+
+func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
+	logger := rp.logger.WithField("func", "ModelInfer")
+	internalModelName, externalModelName, err := rp.extractModelNamesFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	r.ModelName = internalModelName
+	r.ModelVersion = ""
+
+	// handle scaling metrics
+	syncScalingMetrics(rp, internalModelName, logger)
 
 	startTime := time.Now()
 	err = rp.ensureLoadModel(r.ModelName)
@@ -270,21 +276,8 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 		return err
 	}
 
-	// to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		if err := rp.modelScalingStatsCollector.ScalingMetricsSetup(&wg, internalModelName); err != nil {
-			logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
-		}
-	}()
-	defer func() {
-		go func() {
-			if err := rp.modelScalingStatsCollector.ScalingMetricsTearDown(&wg, internalModelName); err != nil {
-				logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
-			}
-		}()
-	}()
+	// handle scaling metrics
+	syncScalingMetrics(rp, internalModelName, logger)
 
 	startTime := time.Now()
 	err = rp.ensureLoadModel(internalModelName)
