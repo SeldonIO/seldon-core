@@ -799,7 +799,7 @@ func createAccessLogConfig(path string) *anypb.Any {
 				Format: &core.SubstitutionFormatString_TextFormatSource{
 					TextFormatSource: &core.DataSource{
 						Specifier: &core.DataSource_InlineString{
-							InlineString: "[%START_TIME%] \"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%\" %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% \"%REQ(X-FORWARDED-FOR)%\" \"%REQ(USER-AGENT)%\" \"%REQ(X-REQUEST-ID)%\" \"%REQ(:AUTHORITY)%\" \"%UPSTREAM_HOST%\"\n",
+							InlineString: "[%START_TIME%] \"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%\" %RESPONSE_CODE% %GRPC_STATUS_NUMBER% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% \"%REQ(X-FORWARDED-FOR)%\" \"%REQ(USER-AGENT)%\" \"%REQ(X-REQUEST-ID)%\" \"%REQ(:AUTHORITY)%\" \"%UPSTREAM_HOST%\"\n",
 						},
 					},
 				},
@@ -820,21 +820,58 @@ func createAccessLogFilterForErrors() *accesslog.AccessLogFilter {
 				Filters: []*accesslog.AccessLogFilter{
 					// http
 					{
-						FilterSpecifier: &accesslog.AccessLogFilter_StatusCodeFilter{
-							StatusCodeFilter: &accesslog.StatusCodeFilter{
-								Comparison: &accesslog.ComparisonFilter{
-									Op:    accesslog.ComparisonFilter_GE,
-									Value: &core.RuntimeUInt32{DefaultValue: 400},
+						FilterSpecifier: &accesslog.AccessLogFilter_AndFilter{
+							AndFilter: &accesslog.AndFilter{
+								Filters: []*accesslog.AccessLogFilter{
+									{
+										FilterSpecifier: &accesslog.AccessLogFilter_StatusCodeFilter{
+											StatusCodeFilter: &accesslog.StatusCodeFilter{
+												Comparison: &accesslog.ComparisonFilter{
+													Op:    accesslog.ComparisonFilter_GE,
+													Value: &core.RuntimeUInt32{DefaultValue: 400, RuntimeKey: "status_code"},
+												},
+											},
+										},
+									},
+									{
+										FilterSpecifier: &accesslog.AccessLogFilter_HeaderFilter{
+											HeaderFilter: &accesslog.HeaderFilter{
+												Header: &route.HeaderMatcher{
+													Name:                 "content-type",
+													HeaderMatchSpecifier: &route.HeaderMatcher_ContainsMatch{ContainsMatch: "grpc"},
+													InvertMatch:          true,
+												},
+											},
+										},
+									},
 								},
 							},
 						},
 					},
 					// grpc
 					{
-						FilterSpecifier: &accesslog.AccessLogFilter_GrpcStatusFilter{
-							GrpcStatusFilter: &accesslog.GrpcStatusFilter{
-								Statuses: []accesslog.GrpcStatusFilter_Status{0}, // grpc status OK
-								Exclude:  true,
+						FilterSpecifier: &accesslog.AccessLogFilter_AndFilter{
+							AndFilter: &accesslog.AndFilter{
+								Filters: []*accesslog.AccessLogFilter{
+									{
+										FilterSpecifier: &accesslog.AccessLogFilter_GrpcStatusFilter{
+											GrpcStatusFilter: &accesslog.GrpcStatusFilter{
+												Statuses: []accesslog.GrpcStatusFilter_Status{accesslog.GrpcStatusFilter_OK},
+												Exclude:  true,
+											},
+										},
+									},
+									{
+										FilterSpecifier: &accesslog.AccessLogFilter_HeaderFilter{
+											HeaderFilter: &accesslog.HeaderFilter{
+												Header: &route.HeaderMatcher{
+													Name:                 "content-type",
+													HeaderMatchSpecifier: &route.HeaderMatcher_ContainsMatch{ContainsMatch: "grpc"},
+												},
+											},
+										},
+									},
+								},
 							},
 						},
 					},
