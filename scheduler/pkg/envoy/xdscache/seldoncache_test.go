@@ -16,8 +16,10 @@ import (
 	accesslog "github.com/envoyproxy/go-control-plane/envoy/config/accesslog/v3"
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	listener "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
+	route "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	accesslog_file "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/file/v3"
 	http_connection_managerv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
+	matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 	. "github.com/onsi/gomega"
 	"github.com/otiai10/copy"
 	log "github.com/sirupsen/logrus"
@@ -469,25 +471,70 @@ func TestAccessLogSettings(t *testing.T) {
 							if test.EnvoyConfig.IncludeSuccessfulRequests {
 								g.Expect(accessLogpb.Filter).To(BeNil())
 							} else {
+								grpcMatcher := &route.HeaderMatcher_StringMatch{
+									StringMatch: &matcherv3.StringMatcher{
+										MatchPattern: &matcherv3.StringMatcher_Prefix{
+											Prefix: "application/grpc",
+										},
+										IgnoreCase: true,
+									},
+								}
 								expectedFilter := &accesslog.OrFilter{
 									Filters: []*accesslog.AccessLogFilter{
 										// http
 										{
-											FilterSpecifier: &accesslog.AccessLogFilter_StatusCodeFilter{
-												StatusCodeFilter: &accesslog.StatusCodeFilter{
-													Comparison: &accesslog.ComparisonFilter{
-														Op:    accesslog.ComparisonFilter_GE,
-														Value: &core.RuntimeUInt32{DefaultValue: 400},
+											FilterSpecifier: &accesslog.AccessLogFilter_AndFilter{
+												AndFilter: &accesslog.AndFilter{
+													Filters: []*accesslog.AccessLogFilter{
+														{
+															FilterSpecifier: &accesslog.AccessLogFilter_StatusCodeFilter{
+																StatusCodeFilter: &accesslog.StatusCodeFilter{
+																	Comparison: &accesslog.ComparisonFilter{
+																		Op:    accesslog.ComparisonFilter_GE,
+																		Value: &core.RuntimeUInt32{DefaultValue: 400, RuntimeKey: "status_code"},
+																	},
+																},
+															},
+														},
+														{
+															FilterSpecifier: &accesslog.AccessLogFilter_HeaderFilter{
+																HeaderFilter: &accesslog.HeaderFilter{
+																	Header: &route.HeaderMatcher{
+																		Name:                 "content-type",
+																		HeaderMatchSpecifier: grpcMatcher,
+																		InvertMatch:          true,
+																	},
+																},
+															},
+														},
 													},
 												},
 											},
 										},
 										// grpc
 										{
-											FilterSpecifier: &accesslog.AccessLogFilter_GrpcStatusFilter{
-												GrpcStatusFilter: &accesslog.GrpcStatusFilter{
-													Statuses: []accesslog.GrpcStatusFilter_Status{0}, // grpc status OK
-													Exclude:  true,
+											FilterSpecifier: &accesslog.AccessLogFilter_AndFilter{
+												AndFilter: &accesslog.AndFilter{
+													Filters: []*accesslog.AccessLogFilter{
+														{
+															FilterSpecifier: &accesslog.AccessLogFilter_GrpcStatusFilter{
+																GrpcStatusFilter: &accesslog.GrpcStatusFilter{
+																	Statuses: []accesslog.GrpcStatusFilter_Status{accesslog.GrpcStatusFilter_OK},
+																	Exclude:  true,
+																},
+															},
+														},
+														{
+															FilterSpecifier: &accesslog.AccessLogFilter_HeaderFilter{
+																HeaderFilter: &accesslog.HeaderFilter{
+																	Header: &route.HeaderMatcher{
+																		Name:                 "content-type",
+																		HeaderMatchSpecifier: grpcMatcher,
+																	},
+																},
+															},
+														},
+													},
 												},
 											},
 										},

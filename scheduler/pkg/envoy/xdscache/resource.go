@@ -814,6 +814,16 @@ func createAccessLogConfig(path string) *anypb.Any {
 }
 
 func createAccessLogFilterForErrors() *accesslog.AccessLogFilter {
+	grpcMatcher := &route.HeaderMatcher_StringMatch{
+		StringMatch: &matcherv3.StringMatcher{
+			MatchPattern: &matcherv3.StringMatcher_Prefix{
+				// for grpc content-type starts with application/grpc:
+				// Content-Type → “content-type” “application/grpc” [(“+proto” / “+json” / {custom})]
+				Prefix: "application/grpc",
+			},
+			IgnoreCase: true,
+		},
+	}
 	return &accesslog.AccessLogFilter{
 		FilterSpecifier: &accesslog.AccessLogFilter_OrFilter{
 			OrFilter: &accesslog.OrFilter{
@@ -838,7 +848,7 @@ func createAccessLogFilterForErrors() *accesslog.AccessLogFilter {
 											HeaderFilter: &accesslog.HeaderFilter{
 												Header: &route.HeaderMatcher{
 													Name:                 "content-type",
-													HeaderMatchSpecifier: &route.HeaderMatcher_ContainsMatch{ContainsMatch: "grpc"},
+													HeaderMatchSpecifier: grpcMatcher,
 													InvertMatch:          true,
 												},
 											},
@@ -866,7 +876,7 @@ func createAccessLogFilterForErrors() *accesslog.AccessLogFilter {
 											HeaderFilter: &accesslog.HeaderFilter{
 												Header: &route.HeaderMatcher{
 													Name:                 "content-type",
-													HeaderMatchSpecifier: &route.HeaderMatcher_ContainsMatch{ContainsMatch: "grpc"},
+													HeaderMatchSpecifier: grpcMatcher,
 												},
 											},
 										},
