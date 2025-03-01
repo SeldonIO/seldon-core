@@ -68,7 +68,7 @@ We provide optimized model servers for some of the most popular Deep Learning an
 You only have to upload your model binaries into your preferred object store, in this case we have a trained scikit-learn iris model in a Google bucket:
 
 ```console
-gs://seldon-models/v1.19.0-dev/sklearn/iris/model.joblib
+gs://seldon-models/v1.18.2/sklearn/iris/model.joblib
 ```
 
 Create a namespace to run your model in:
@@ -91,7 +91,7 @@ spec:
   predictors:
   - graph:
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.19.0-dev/sklearn/iris
+      modelUri: gs://seldon-models/v1.18.2/sklearn/iris
       name: classifier
     name: default
     replicas: 1
