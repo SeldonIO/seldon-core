@@ -91,7 +91,7 @@ Now we can install Seldon Core in the ``seldon-system`` namespace.
         .. code:: bash
 
             helm install seldon-core seldon-core-operator \
-                --repo https://storage.googleapis.com/seldon-charts \
+                --repo https://seldonio.github.io/helm-charts \
                 --set usageMetrics.enabled=true \
                 --set istio.enabled=true \
                 --namespace seldon-system
@@ -101,7 +101,7 @@ Now we can install Seldon Core in the ``seldon-system`` namespace.
         .. code:: bash
 
             helm install seldon-core seldon-core-operator \
-                --repo https://storage.googleapis.com/seldon-charts \
+                --repo https://seldonio.github.io/helm-charts \
                 --set usageMetrics.enabled=true \
                 --set ambassador.enabled=true \
                 --namespace seldon-system
@@ -160,7 +160,7 @@ You can then install seldon-core with:
 .. code:: bash
 
     helm install seldon-core seldon-core-operator \
-        --repo https://storage.googleapis.com/seldon-charts \
+        --repo https://seldonio.github.io/helm-charts \
         --set usageMetrics.enabled=true \
         --namespace seldon-system \
         --set certManager.enabled=true
@@ -262,7 +262,7 @@ Install the Operator into the namespace:
 
 .. code:: bash
 
-    helm install seldon-namespaced seldon-core-operator  --repo https://storage.googleapis.com/seldon-charts  \
+    helm install seldon-namespaced seldon-core-operator  --repo https://seldonio.github.io/helm-charts  \
         --set singleNamespace=true \
         --set image.pullPolicy=IfNotPresent \
         --set usageMetrics.enabled=false \
@@ -306,7 +306,7 @@ To install the Operator run:
 
 .. code:: bash
 
-    helm install seldon-controllerid seldon-core-operator  --repo https://storage.googleapis.com/seldon-charts  \
+    helm install seldon-controllerid seldon-core-operator  --repo https://seldonio.github.io/helm-charts  \
         --set singleNamespace=false \
         --set image.pullPolicy=IfNotPresent \
         --set usageMetrics.enabled=false \
