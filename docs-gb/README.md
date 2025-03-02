@@ -7,9 +7,9 @@ Seldon Core 2 is a source-available, Kubernetes-native framework designed to dep
 | **Definition**       | Focuses on the management, integrity, and flow of data in the ML deployment framework. | Breaks complex systems into smaller, independent modules that can function separately or together. |
 | **Key concept**      | Data is at the core, ensuring consistency, quality, and accessibility. | It is similar to *LEGO blocks*, where each module can be combined, swapped, or upgraded independently. |
 | **Workflow design**  | Supports flexible and scalable data pathways for different use cases and experiments. | Enables plug-and-play architecture, making it easier to update, expand, or modify the system. |
-| **Real-Time data ** | Allows data streaming, enabling users to view, manage, and process data in real time. | Reduces dependency on monolithic structures, ensuring smooth upgrades and minimal disruptions. |
+| **Real-Time data** | Allows data streaming, enabling users to view, manage, and process data in real time. | Reduces dependency on monolithic structures, ensuring smooth upgrades and minimal disruptions. |
 | **Processing standardization** | Uses reusable methods for data transformation and routing, ensuring consistency. | Simplifies model deployment by keeping components modular and reusable. |
-| **Monitoring and observability** | Collects detailed metrics and logs** for **effective oversight and maintenance**. | Enhances observability, allowing teams to track and optimize individual components without affecting the entire system. |
+| **Monitoring and observability** | Collects detailed metrics and logs for effective oversight and maintenance. | Enhances observability, allowing teams to track and optimize individual components without affecting the entire system. |
 | **Optimization** | Ensures efficient data handling, reducing errors and redundant processing. | Optimizes costs by allowing businesses to use only necessary components, scaling resources as needed. |
 | **Flexibility & Customization** | Provides structured yet adaptable data pipelines to fit various *ML workflows*. | Empowers you to customize their deployment, swapping out modules without rebuilding the entire system. |
 
