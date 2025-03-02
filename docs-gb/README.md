@@ -1,45 +1,72 @@
 # About
 
-Seldon Core 2 is a source-available framework for deploying and managing machine learning systems at scale. The data-centric approach and modular architecture of Core 2 helps you deploy, manage, and scale your ML - from simple models to complex ML applications. After the models are deployed, Core 2 enables the monitoring and experimentation on those systems in production. With support for a wide range of model types, and design patterns to build around those models, you can standardize ML deployment across a range of use-cases in the cloud or on-premise serving infrastructure of your choice. 
+Seldon Core 2 is a source-available, Kubernetes-native framework designed to deploy and manage machine learning (ML) systems at scale. Its data-centric approach and modular architecture enable organizations to handle everything from simple models to complex ML applications, ensuring flexibility, observability, and cost efficiency across diverse environments, including on-premise, hybrid, and multi-cloud setups.
+
+Data-centric approach
+
+ graph TD;
+    A["Input"] -->|Synchronous| B["Routing Engine"];
+    A2["Input"] -->|Synchronous| B;
+    
+    B --> C["Custom Logic"];
+    
+    C --> D["ML Model B"];
+    C --> E["ML Model A"];
+    C -->|Synchronous| F["Drift Detector"];
+    
+    D --> G["ML Model C (LLM)"];
+    G --> H["Output"];
+    
+    F -->|Asynchronous| I["Drift Alerts"];
+
+    style F stroke-dasharray: 5,5;
+    style I stroke-dasharray: 5,5;
+    
+    subgraph Legend
+        J["Synchronous"]
+        K["Asynchronous"]:::dashed
+    end
+    
+    classDef dashed stroke-dasharray: 5,5;
+
 
 {% embed url="https://www.youtube.com/watch?v=ar5lSG_idh4" %}
 
-## Model Deployment
+Seldon Core 2 offers a powerful, modular framework that enables businesses to deploy, monitor, and optimize ML models with key benefits such as:
 
-Seldon Core 2 orchestrates and scales machine learning components running as production-grade microservices. These components can be deployed locally or in enterprise-scale kubernetes clusters. The components of your ML system - such as models, processing steps, custom logic, or monitoring methods - are deployed as **Models**, leveraging serving solutions compatible with Core 2 such as MLServer, Alibi, LLM Module, or Triton Inference Server. These serving solutions package the required dependencies and standardize inference using the Open Inference Protocol. This ensures that, regardless of your model types and use-cases, all request and responses follow a unified format. After models are deployed, they can process REST or gRPC requests for real-time inference.
+## Flexibility: Real-time, your way
 
-## Complex Applications & Orchestration
+Seldon Core 2 is designed to accommodate diverse machine learning deployment needs, offering a platform- and integration-agnostic framework that ensures seamless deployment across on-premise, cloud, and hybrid environments. Unlike rigid infrastructure solutions, the flexible architecture of Seldon Core 2 empowers businesses to build highly customizable applications tailored to their unique business and technical requirements.
+The adaptive framework future-proofs MLOps investments, enabling organizations to scale their ML deployments as applications and data evolve, whether in staging, testing, or production environments. Additionally, its modular design optimizes cost-efficiency and sustainability by allowing businesses to scale ML systems up or down as needed, reuse components across workflows, and maximize existing infrastructure investments.
+This approach helps organizations dynamically respond to changing demands, deploy resources efficiently, and maintain flexibility across any deployment environment, ensuring long-term scalability and operational efficiency.
 
-Machine learning applications are increasingly complex. They’ve evolved from individual models deployed as services, to complex applications that can consist of multiple models, processing steps, custom logic, and asynchronous monitoring components. With Core you can build  Pipelines that connect any of these components to make data-centric applications. Core 2 handles orchestration and scaling of the underlying components of such an application, and exposes the data streamed through the application in real time using Kafka. 
+## Standardization: consistency across workflows
 
-{% hint style="info" %}
-Data-centricity is an approach that places the management, integrity, and flow of data at the core of the machine learning deployment framework. 
-{% endhint %}
+Seldon Core 2 enforces industry best practices for ML deployment, ensuring consistency, reliability, and efficiency across the entire machine learning lifecycle. By creating repeatable processes, organizations can deploy models faster, course correct efficiently, and gain a competitive advantage. The platform automates critical deployment steps, freeing teams from operational bottlenecks so they can focus on high-value tasks instead of repetitive workflows.
 
-This approach to MLOps, influenced by our position paper [Desiderata for next generation of ML model serving](https://arxiv.org/abs/2210.14665), enables real-time observability, insight, and control on the behavior, and performance of your ML systems.  
+With a "learn it once, repeat everywhere" approach, Seldon Core 2 ensures that the same streamlined, standardized process can be used to deploy models anywhere, whether on-premise, in the cloud, or hybrid environments. This scalability and efficiency reduce deployment risks and enhance overall productivity. Furthermore, Seldon’s standardized methods build trust in both existing and newly deployed models, no matter how many are in use. This consistency encourages innovation and unlocks the unrealized potential of AI, allowing businesses to confidently scale their ML operations while maintaining accuracy and compliance.
 
+## Enhanced Observability: Data-Centric monitoring
 
-![Data-centric pipeline](images/pipeline-intro.png)
+Observability in Seldon Core 2 provides the ability to monitor, understand, and analyze the behavior, performance, and health of an ML system across its entire lifecycle—including data pipelines, models, and deployment environments. By offering a customizable observability framework, Seldon Core 2 seamlessly combines operational monitoring and data science monitoring, ensuring that teams have access to key metrics necessary for both model maintenance and strategic decision-making.
 
-Lastly, Core 2 provides Experiments as part of its orchestration capabilities, enabling users to implement routing logic such as A/B tests or Canary deployments to models or pipelines in production. After experiments are run, you can promote new models or pipelines, or launch new experiments, so that you can continuously improve the performance of your ML applications.
+With scalable maintenance for complex applications, Seldon simplifies operational monitoring while enabling teams to expand real-time ML deployments across the organization—supporting increasingly sophisticated and mission-critical use cases. A data-centric oversight approach ensures that all data involved in predictions can be reviewed and audited, enabling organizations to maintain explainability, compliance, and trust in AI-driven decisions.
 
+Seldon Core 2 also features flexible metric aggregation, surfacing operational, data science, and custom metrics tailored to different user personas and specific needs. Whether teams require high-level overviews or granular insights, Seldon ensures transparency at every level. With real-time access and insights, users can register, monitor, and audit models step by step, gaining full visibility into what data influences predictions and how decisions are made—allowing organizations to build more accountable, trustworthy AI systems.
 
-## Resource Management
+## Optimization: Modularity for efficient scaling
 
-In Seldon Core 2 your models are deployed on inference servers, which manage the packaging and execution of ML workloads. As part its design, Core 2 separates out **Servers** and **Models** as separate resources. This approach enables flexible allocation of models to servers aligning with the requirements of your models, and to the underlying infrastructure that you want your servers to run on. Core 2 also provides functionality to autoscale your models and servers up and down as needed based on your workload requirements or user-defined metrics. 
+Seldon Core 2 is designed to maximize resource efficiency, reduce infrastructure costs, and enhance collaboration while ensuring scalability and high-performance ML operations. Its modular architecture enables businesses to deploy only the necessary components, avoiding unnecessary expenses while maintaining agility and efficiency.
 
-With the modular design of Core 2, users are able to implement cutting-edge methods to minimize hardware costs:
+* Optimized resource utilization: Seldon allows users to scale infrastructure dynamically based on real-time demand, ensuring that only required resources are used. By eliminating redundancy and reusing models across workflows, organizations can reduce operational costs while maintaining efficiency.
 
-- **Multi-Model serving** consolidates multiple models onto shared inference servers to optimize resource utilization and decrease the number of servers required.
-- **Over-commit** allows you to provision more models than the available memory would normally allow by dynamically loading and unloading models from memory to disk based on demand.
+* Streamlined development: The flexible, standardized, and modular approach of Seldon enables you to build, adapt, and repurpose models efficiently, eliminating the need to start from scratch. This accelerates ML development, enhances operational efficiency, and optimizes time and resource management.
 
-![Example: Serving multiple model types across inference servers](images/models-servers.png)
+* Seamless collaboration: Seldon Core 2 fosters better communication and integration between MLOps Engineers, Data Scientists, and Software Engineers. By providing a customizable framework, it supports knowledge sharing, encourages innovation, and simplifies the adoption of new data science-focused features.
 
-## End-to-End MLOps with Core 2
+* Sustainable AI scaling: By optimizing infrastructure usage and reducing the need for continuous re-engineering, Seldon Core 2 helps organizations minimize computational expenses while ensuring long-term AI sustainability. Its modular components can be tailored and repurposed, making AI deployments more cost-effective and adaptable to evolving business needs.
 
-Core 2 demonstrates the power of a standardized, data-centric approach to MLOps at scale, ensuring that data observability and management are prioritized across every layer of machine learning operations. Furthermore, Core 2 seamlessly integrates into end-to-end MLOps workflows, from CI/CD, managing traffic with the service mesh of your choice, alerting, data visualization, or authentication and authorization. 
-
-This modular, flexible architecture not only supports diverse deployment patterns but also ensures compatibility with the latest AI innovations. By embedding data-centricity and adaptability into its foundation, Core 2 equips organizations to scale and improve their machine learning systems effectively, to capture value from increasingly complex AI systems.
+By combining scalability, modular efficiency, and collaborative innovation, Seldon Core 2 empowers you to lower costs, streamline ML workflows, and drive AI-driven innovation—all while maintaining flexibility and high performance. 
 
 ## Next Steps
 
