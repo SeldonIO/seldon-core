@@ -13,7 +13,33 @@ Seldon Core 2 is a source-available, Kubernetes-native framework designed to dep
 | **Optimization** | Ensures efficient data handling, reducing errors and redundant processing. | Optimizes costs by allowing businesses to use only necessary components, scaling resources as needed. |
 | **Flexibility & Customization** | Provides structured yet adaptable data pipelines to fit various *ML workflows*. | Empowers you to customize their deployment, swapping out modules without rebuilding the entire system. |
 
-{% embed url="https://www.youtube.com/watch?v=ar5lSG_idh4" %}
+```mermaid
+graph TD;
+    A["Input"] -->|Synchronous| B["Routing Engine"];
+    A2["Input"] -->|Synchronous| B;
+    
+    B --> C["Custom Logic"];
+    
+    C --> D["ML Model B"];
+    C --> E["ML Model A"];
+    C -->|Synchronous| F["Drift Detector"];
+    
+    D --> G["ML Model C (LLM)"];
+    G --> H["Output"];
+    
+    F -->|Asynchronous| I["Drift Alerts"];
+
+    style F stroke-dasharray: 5,5;
+    style I stroke-dasharray: 5,5;
+    
+    subgraph Legend
+        J["Synchronous"]
+        K["Asynchronous"]:::dashed
+    end
+    
+    classDef dashed stroke-dasharray: 5,5;
+```
+
 
 Seldon Core 2 offers a powerful, modular framework that enables businesses to deploy, monitor, and optimize ML models with key benefits such as:
 
@@ -50,6 +76,8 @@ Seldon Core 2 is designed to maximize resource efficiency, reduce infrastructure
 * Sustainable AI scaling: By optimizing infrastructure usage and reducing the need for continuous re-engineering, Seldon Core 2 helps you minimize computational expenses while ensuring long-term AI sustainability. Its modular components can be tailored and repurposed, making AI deployments more cost-effective and adaptable to evolving business needs.
 
 By combining scalability, modular efficiency, and collaborative innovation, Seldon Core 2 empowers you to lower costs, streamline ML workflows, and drive AI-driven innovation—all while maintaining flexibility and high performance. 
+
+{% embed url="https://www.youtube.com/watch?v=ar5lSG_idh4" %}
 
 ## Next Steps
 
