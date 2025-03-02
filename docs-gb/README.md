@@ -2,33 +2,16 @@
 
 Seldon Core 2 is a source-available, Kubernetes-native framework designed to deploy and manage machine learning (ML) systems at scale. Its data-centric approach and modular architecture enable organizations to handle everything from simple models to complex ML applications, ensuring flexibility, observability, and cost efficiency across diverse environments, including on-premise, hybrid, and multi-cloud setups.
 
-Data-centric approach
-
- graph TD;
-    A["Input"] -->|Synchronous| B["Routing Engine"];
-    A2["Input"] -->|Synchronous| B;
-    
-    B --> C["Custom Logic"];
-    
-    C --> D["ML Model B"];
-    C --> E["ML Model A"];
-    C -->|Synchronous| F["Drift Detector"];
-    
-    D --> G["ML Model C (LLM)"];
-    G --> H["Output"];
-    
-    F -->|Asynchronous| I["Drift Alerts"];
-
-    style F stroke-dasharray: 5,5;
-    style I stroke-dasharray: 5,5;
-    
-    subgraph Legend
-        J["Synchronous"]
-        K["Asynchronous"]:::dashed
-    end
-    
-    classDef dashed stroke-dasharray: 5,5;
-
+| **Aspect**           | **Data-Centric Approach** | **Modularity** |
+|----------------------|--------------------------|---------------|
+| **Definition**       | Focuses on the **management, integrity, and flow of data** in the ML deployment framework. | Breaks complex systems into **smaller, independent modules** that can function separately or together. |
+| **Key Concept**      | Data is at the core, ensuring **consistency, quality, and accessibility**. | It is similar to **LEGO blocks**, where each module can be combined, swapped, or upgraded independently. |
+| **Workflow Design**  | Supports **flexible and scalable data pathways** for different use cases and experiments. | Enables **plug-and-play architecture**, making it easier to update, expand, or modify the system. |
+| **Real-Time Data Use** | Allows **data streaming**, enabling users to **view, manage, and process data in real time**. | Reduces dependency on monolithic structures, ensuring **smooth upgrades and minimal disruptions**. |
+| **Processing Standardization** | Uses **reusable methods** for **data transformation and routing**, ensuring **consistency**. | Simplifies **software development and deployment** by keeping components modular and reusable. |
+| **Monitoring & Observability** | Collects **detailed metrics and logs** for **effective oversight and maintenance**. | Enhances **observability**, allowing teams to track and optimize individual components without affecting the entire system. |
+| **Optimization** | Ensures **efficient data handling**, reducing errors and redundant processing. | Optimizes costs by allowing businesses to **use only necessary components**, scaling resources as needed. |
+| **Flexibility & Customization** | Provides **structured yet adaptable** data pipelines to fit various **ML workflows**. | Empowers users to **customize their deployment**, swapping out modules without rebuilding the entire system. |
 
 {% embed url="https://www.youtube.com/watch?v=ar5lSG_idh4" %}
 
