@@ -1,6 +1,6 @@
 # About
 
-Seldon Core 2 is a source-available, Kubernetes-native framework designed to deploy and manage machine learning (ML) systems at scale. Its data-centric approach and modular architecture enable you to handle everything from simple models to complex ML applications, ensuring flexibility, observability, and cost efficiency across diverse environments, including on-premise, hybrid, and multi-cloud setups.
+Seldon Core 2 is a source-available, Kubernetes-native framework designed to deploy and manage machine learning (ML) systems at scale. Its data-centric approach and modular architecture enable you to handle everything from simple models to complex ML applications, ensuring flexibility, standardization, observability, and optimization across diverse environments, including on-premise, hybrid, and multi-cloud setups.
 <!---
 | **Aspect**           | **Data-Centric Approach** | **Modularity** |
 |----------------------|--------------------------|---------------|
