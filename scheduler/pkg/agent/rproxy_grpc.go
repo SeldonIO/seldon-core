@@ -300,57 +300,70 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 		return err
 	}
 
-	// receive incoming request and forward them
+	// receive incoming request from envoy and forward them to the model
+	var req_err error
+	done_req := make(chan bool)
 	go func() {
 		for {
 			r, err := stream.Recv()
 			if err == io.EOF {
 				_ = client_stream.CloseSend()
-				return
+				break
 			}
 
 			if err != nil {
-				logger.WithError(err).Error("Failed to receive request")
-				return
+				req_err = err
+				logger.WithError(req_err).Error("gRPC revers proxy failed to receive request from client")
+				break
 			}
 
 			r.ModelName = internalModelName
 			r.ModelVersion = ""
 
 			if err := client_stream.Send(r); err != nil {
-				logger.WithError(err).Error("Failed to forward request")
-				return
+				req_err = err
+				logger.WithError(req_err).Error("gRPC reverse proxy failed to forward request to server")
+				break
 			}
 		}
+
+		done_req <- true
 	}()
 
-	// receive responses and forward them
-	var finalErr error
+	// receive responses from the model and forward them back to envoy
+	var resp_err error
 	for {
 		client_stream_resp, err := client_stream.Recv()
 		if err == io.EOF {
+			client_stream.CloseSend()
 			break
 		}
 
 		if err != nil {
-			logger.WithError(err).Error("Failed to receive response")
-			finalErr = err
+			resp_err = err
+			logger.WithError(err).Error("gRPC reverse proxy failed to receive response from server")
 			break
 		}
 
 		if err := stream.Send(client_stream_resp); err != nil {
-			logger.WithError(err).Error("Failed to forward response")
-			finalErr = err
+			resp_err = err
+			logger.WithError(resp_err).Error("gRPC reverse proxy failed to forward response to client")
 		}
+	}
 
+	<-done_req
+	if req_err != nil {
+		err = req_err
+	} else if resp_err != nil {
+		err = resp_err
 	}
 
 	rp.setTrailer(ctx, trailer, requestId)
 
-	grpcStatus, _ := status.FromError(finalErr)
+	grpcStatus, _ := status.FromError(err)
 	elapsedTime := time.Since(startTime).Seconds()
 	go rp.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeGrpc, elapsedTime, grpcStatus.Code().String())
-	return nil
+	return err
 }
 
 func (rp *reverseGRPCProxy) ModelMetadata(ctx context.Context, r *v2.ModelMetadataRequest) (*v2.ModelMetadataResponse, error) {
