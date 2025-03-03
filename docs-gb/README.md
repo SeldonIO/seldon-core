@@ -1,9 +1,7 @@
 # About
 
 Seldon Core 2 is a source-available, Kubernetes-native framework designed to deploy and manage machine learning (ML) systems at scale. Its data-centric approach and modular architecture enable you to handle everything from simple models to complex ML applications, ensuring flexibility, observability, and cost efficiency across diverse environments, including on-premise, hybrid, and multi-cloud setups.
-
-<! --
-
+<!---
 | **Aspect**           | **Data-Centric Approach** | **Modularity** |
 |----------------------|--------------------------|---------------|
 | **Definition**       | Focuses on the management, integrity, and flow of data in the ML deployment framework. | Breaks complex systems into smaller, independent modules that can function separately or together. |
@@ -15,35 +13,6 @@ Seldon Core 2 is a source-available, Kubernetes-native framework designed to dep
 | **Optimization** | Ensures efficient data handling, reducing errors and redundant processing. | Optimizes costs by allowing you to use only necessary components, scaling resources as needed. |
 | **Flexibility & Customization** | Provides structured yet adaptable data pipelines to fit various *ML workflows*. | Empowers you to customize their deployment, swapping out modules without rebuilding the entire system. |
 
-```mermaid
-graph TD;
-    A["Input"] -->|Synchronous| B["Routing Engine"];
-    A2["Input"] -->|Synchronous| B;
-    
-    B --> C["Custom Logic"];
-    
-    C --> D["ML Model B"];
-    C --> E["ML Model A"];
-    C -->|Synchronous| F["Drift Detector"];
-    
-    D --> G["ML Model C (LLM)"];
-    G --> H["Output"];
-    
-    F -->|Asynchronous| I["Drift Alerts"];
-
-    style F stroke-dasharray: 5,5;
-    style I stroke-dasharray: 5,5;
-    
-    subgraph Legend
-        J["Synchronous"]
-        K["Asynchronous"]:::dashed
-    end
-    
-    classDef dashed stroke-dasharray: 5,5;
-```
-
-
-Seldon Core 2 offers a powerful, modular framework that enables you to deploy, monitor, and optimize ML models with key benefits such as flexibility, standardization, observability, and optimization.
 -->
 
 ![Seldon Core 2 key benefits](./images/seldon_core_2_intro.png)
