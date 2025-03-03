@@ -202,6 +202,9 @@ envoy:
   preStopSleepPeriodSeconds: 30
   terminationGracePeriodSeconds: 120
   adminInterfacePort: 9901
+  accesslogPath: /tmp/envoy-accesslog.txt
+  enableAccesslog: true
+  includeSuccessfulRequests: false
 
 scheduler:
   image:

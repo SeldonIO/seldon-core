@@ -134,9 +134,9 @@ func init() {
 	flag.Float64Var(&serverPackingPercentage, "server-packing-percentage", allowPackingPercentageDefault, "Percentage of time we try to pack server replicas")
 
 	// Envoy access log config
-	flag.StringVar(&accessLogPath, "access-log-path", "/tmp/envoy-accesslog.txt", "Envoy access log path")
-	flag.BoolVar(&enableAccessLog, "enable-access-log", true, "Enable Envoy access log")
-	flag.BoolVar(&includeSuccessfulRequests, "include-successful-requests", false, "Include successful requests in access log")
+	flag.StringVar(&accessLogPath, "envoy-accesslog-path", "/tmp/envoy-accesslog.txt", "Envoy access log path")
+	flag.BoolVar(&enableAccessLog, "enable-envoy-accesslog", true, "Enable Envoy access log")
+	flag.BoolVar(&includeSuccessfulRequests, "include-successful-requests-envoy-accesslog", false, "Include successful requests in Envoy access log")
 }
 
 func getNamespace() string {
