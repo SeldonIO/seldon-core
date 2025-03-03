@@ -288,7 +288,7 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 	}
 
 	// Create an outgoing context for the proxy call to service from incoming context
-	outgoingCtx, _ := rp.createOutgoingCtxWithRequestId(ctx)
+	outgoingCtx, requestId := rp.createOutgoingCtxWithRequestId(ctx)
 
 	var trailer metadata.MD
 	opts := append(rp.callOptions, grpc.Trailer(&trailer), grpc_retry.Disable())
@@ -343,6 +343,8 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 		}
 
 	}
+
+	rp.setTrailer(ctx, trailer, requestId)
 
 	grpcStatus, _ := status.FromError(finalErr)
 	elapsedTime := time.Since(startTime).Seconds()
