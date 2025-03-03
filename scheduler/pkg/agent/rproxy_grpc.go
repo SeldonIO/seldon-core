@@ -209,7 +209,7 @@ func (rp *reverseGRPCProxy) setTrailer(ctx context.Context, trailer metadata.MD,
 }
 
 // to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
-func syncScalingMetrics(rp *reverseGRPCProxy, internalModelName string, logger log.FieldLogger) {
+func (rp *reverseGRPCProxy) syncScalingMetrics(internalModelName string, logger log.FieldLogger) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
@@ -237,7 +237,7 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	r.ModelVersion = ""
 
 	// handle scaling metrics
-	syncScalingMetrics(rp, internalModelName, logger)
+	rp.syncScalingMetrics(internalModelName, logger)
 
 	startTime := time.Now()
 	err = rp.ensureLoadModel(r.ModelName)
@@ -277,7 +277,7 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 	}
 
 	// handle scaling metrics
-	syncScalingMetrics(rp, internalModelName, logger)
+	rp.syncScalingMetrics(internalModelName, logger)
 
 	startTime := time.Now()
 	err = rp.ensureLoadModel(internalModelName)
