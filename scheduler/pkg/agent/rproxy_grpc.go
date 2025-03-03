@@ -280,6 +280,7 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 	rp.syncScalingMetrics(internalModelName, logger)
 
 	startTime := time.Now()
+	// TODO: check the model is still loaded while the stream is going, not just at the start of the stream
 	err = rp.ensureLoadModel(internalModelName)
 	if err != nil {
 		elapsedTime := time.Since(startTime).Seconds()
