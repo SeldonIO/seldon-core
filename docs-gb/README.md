@@ -41,7 +41,9 @@ graph TD;
 ```
 
 
-Seldon Core 2 offers a powerful, modular framework that enables you to deploy, monitor, and optimize ML models with key benefits such as:
+Seldon Core 2 offers a powerful, modular framework that enables you to deploy, monitor, and optimize ML models with key benefits such as flexibility, standardization, observability, and optimization.
+
+![Seldon Core 2 key benefits](.images/seldon_core_2_intro.png)
 
 ## Flexibility: Real-time, your way
 
