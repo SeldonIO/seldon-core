@@ -209,18 +209,18 @@ func (rp *reverseGRPCProxy) setTrailer(ctx context.Context, trailer metadata.MD,
 }
 
 // to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
-func (rp *reverseGRPCProxy) syncScalingMetrics(internalModelName string, logger log.FieldLogger) {
+func (rp *reverseGRPCProxy) syncScalingMetrics(internalModelName string) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		if err := rp.modelScalingStatsCollector.ScalingMetricsSetup(&wg, internalModelName); err != nil {
-			logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+			rp.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
 		}
 	}()
 	defer func() {
 		go func() {
 			if err := rp.modelScalingStatsCollector.ScalingMetricsTearDown(&wg, internalModelName); err != nil {
-				logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+				rp.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
 			}
 		}()
 	}()
@@ -237,7 +237,7 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	r.ModelVersion = ""
 
 	// handle scaling metrics
-	rp.syncScalingMetrics(internalModelName, logger)
+	rp.syncScalingMetrics(internalModelName)
 
 	startTime := time.Now()
 	err = rp.ensureLoadModel(r.ModelName)
@@ -277,7 +277,7 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 	}
 
 	// handle scaling metrics
-	rp.syncScalingMetrics(internalModelName, logger)
+	rp.syncScalingMetrics(internalModelName)
 
 	startTime := time.Now()
 	// TODO: check the model is still loaded while the stream is going, not just at the start of the stream
