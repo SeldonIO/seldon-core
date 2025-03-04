@@ -294,68 +294,68 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 	var trailer metadata.MD
 	opts := append(rp.callOptions, grpc.Trailer(&trailer), grpc_retry.Disable())
 
-	client_stream, err := rp.getV2GRPCClient().ModelStreamInfer(outgoingCtx, opts...)
+	clientStream, err := rp.getV2GRPCClient().ModelStreamInfer(outgoingCtx, opts...)
 	if err != nil {
 		logger.WithError(err).Error("Failed to create stream")
 		return err
 	}
 
 	// receive incoming request from envoy and forward them to the model
-	var req_err error
-	done_req := make(chan bool)
+	var reqErr error
+	doneReq := make(chan bool)
 	go func() {
 		for {
 			r, err := stream.Recv()
 			if err == io.EOF {
-				_ = client_stream.CloseSend()
+				_ = clientStream.CloseSend()
 				break
 			}
 
 			if err != nil {
-				req_err = err
-				logger.WithError(req_err).Error("gRPC revers proxy failed to receive request from client")
+				reqErr = err
+				logger.WithError(reqErr).Error("gRPC revers proxy failed to receive request from client")
 				break
 			}
 
 			r.ModelName = internalModelName
 			r.ModelVersion = ""
 
-			if err := client_stream.Send(r); err != nil {
-				req_err = err
-				logger.WithError(req_err).Error("gRPC reverse proxy failed to forward request to server")
+			if err := clientStream.Send(r); err != nil {
+				reqErr = err
+				logger.WithError(reqErr).Error("gRPC reverse proxy failed to forward request to server")
 				break
 			}
 		}
 
-		done_req <- true
+		doneReq <- true
 	}()
 
 	// receive responses from the model and forward them back to envoy
-	var resp_err error
+	var respErr error
 	for {
-		client_stream_resp, err := client_stream.Recv()
+		clientStreamResp, err := clientStream.Recv()
 		if err == io.EOF {
-			_ = client_stream.CloseSend()
+			_ = clientStream.CloseSend()
 			break
 		}
 
 		if err != nil {
-			resp_err = err
+			respErr = err
 			logger.WithError(err).Error("gRPC reverse proxy failed to receive response from server")
 			break
 		}
 
-		if err := stream.Send(client_stream_resp); err != nil {
-			resp_err = err
-			logger.WithError(resp_err).Error("gRPC reverse proxy failed to forward response to client")
+		if err := stream.Send(clientStreamResp); err != nil {
+			respErr = err
+			logger.WithError(respErr).Error("gRPC reverse proxy failed to forward response to client")
 		}
 	}
 
-	<-done_req
-	if req_err != nil {
-		err = req_err
-	} else if resp_err != nil {
-		err = resp_err
+	<-doneReq
+	if reqErr != nil {
+		err = reqErr
+	} else if respErr != nil {
+		err = respErr
 	}
 
 	rp.setTrailer(ctx, trailer, requestId)
