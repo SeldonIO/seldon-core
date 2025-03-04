@@ -102,7 +102,7 @@ func makeHTTPListener(listenerName, address string,
 	if config != nil && config.EnableAccessLog {
 		var filter *accesslog.AccessLogFilter = nil
 		if !config.IncludeSuccessfulRequests {
-			filter = createAccessLogFilterForErrors()
+			filter = createAccessLogFilterMatchErrors()
 		}
 		manager.AccessLog = []*accesslog.AccessLog{
 			{
@@ -813,7 +813,7 @@ func createAccessLogConfig(path string) *anypb.Any {
 	return accessAny
 }
 
-func createAccessLogFilterForErrors() *accesslog.AccessLogFilter {
+func createAccessLogFilterMatchErrors() *accesslog.AccessLogFilter {
 	grpcMatcher := &route.HeaderMatcher_StringMatch{
 		StringMatch: &matcherv3.StringMatcher{
 			MatchPattern: &matcherv3.StringMatcher_Prefix{
