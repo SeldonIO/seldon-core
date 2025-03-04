@@ -481,7 +481,7 @@ func TestAccessLogSettings(t *testing.T) {
 								}
 								// this is a little bit cumbersome, but we need to check the filter
 								// as it is a nested structure
-								// the actual test to check the filter is correct (i.e. only fitlering bad requests) is 
+								// the actual test to check the filter is correct (i.e. only fitlering bad requests) is
 								// done manually.
 								expectedFilter := &accesslog.OrFilter{
 									Filters: []*accesslog.AccessLogFilter{
