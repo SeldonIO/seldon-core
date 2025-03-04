@@ -1,13 +1,10 @@
 # Operational Metrics
 
-While the system is running we collect metrics via Prometheus that allow users to observe different
-aspects of SCv2 with regards to throughput, latency, memory, CPU etc. This is in addition to the standard
-Kubernetes metrics that are scraped by Prometheus. There is a also a Grafana dashboard (referenced below)
-that provides an overview of the system.
+While the system runs, Prometheus collects metrics that enable you to observe various aspects of Seldon Core 2, including throughput, latency, memory, and CPU usage. In addition to the standard Kubernetes metrics scraped by Prometheus, a [Grafana dashboard](observability.md/#grafana) provides a comprehensive system overview.
 
-## List of SCv2 metrics
+## List of Seldon Core 2 metrics
 
-The list of SCv2 metrics that we are compiling is as follows.
+The list of Seldon Core 2 metrics that are compiling is as follows.
 
 For the agent that sits next to the inference servers:
 
@@ -54,29 +51,10 @@ const (
 )
 ```
 
-Many of these metrics are model and pipeline level counters and gauges. We also aggregate some of
-these metrics to speed up the display of graphs. We don't presently store per-model histogram metrics
-for performance reasons. However, we do presently store per-pipeline histogram metrics.
+Many of these metrics are model and pipeline level counters and gauges. Some of these metrics are aggregated to speed up the display of graphs. Currently,per-model histogram metrics are not stored for performance reasons. However, per-pipeline histogram metrics are stored.
 
-This is experimental and these metrics are bound to change to reflect the trends we want to capture as
-we get more information about the usage of the system.
+This is experimental, and these metrics are expected to evolve to better capture relevant trends as more information becomes available about system usage.
 
-## Grafana dashboard
-
-We have a prebuilt Grafana dashboard that makes use of many of the metrics that we expose.
-
-![kafka](../images/dashboard.png)
-
-### Local Use
-
-Grafana and Prometheus are available when you run Seldon locally. You will be able to connect to the Grafana
-dashboard at `http://localhost:3000`. Prometheus will be available at `http://localhost:9090`.
-
-### Kubernetes Installation
-
-Download the dashboard from [SCv2 dashboard](https://github.com/SeldonIO/seldon-core/blob/v2/prometheus/dashboards/seldon.json)
-and import it in Grafana, making sure that the data source is pointing to the correct Prometheus store.
-Find more information on how to import the dashboard [here](https://grafana.com/docs/grafana/latest/dashboards/export-import/).
 
 ### Local Metrics Examples
 
