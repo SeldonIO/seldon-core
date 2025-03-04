@@ -294,7 +294,10 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 	var trailer metadata.MD
 	opts := append(rp.callOptions, grpc.Trailer(&trailer), grpc_retry.Disable())
 
-	clientStream, err := rp.getV2GRPCClient().ModelStreamInfer(outgoingCtx, opts...)
+	ctxTimeout, cancel := context.WithCancel(outgoingCtx)
+	defer cancel()
+
+	clientStream, err := rp.getV2GRPCClient().ModelStreamInfer(ctxTimeout, opts...)
 	if err != nil {
 		logger.WithError(err).Error("Failed to create stream")
 		return err
@@ -304,17 +307,20 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 	var reqErr error
 	doneReq := make(chan bool)
 	go func() {
+		defer func() {
+			_ = clientStream.CloseSend()
+			doneReq <- true
+		}()
+
 		for {
 			r, err := stream.Recv()
 			if err == io.EOF {
-				_ = clientStream.CloseSend()
-				break
+				return
 			}
-
 			if err != nil {
 				reqErr = err
-				logger.WithError(reqErr).Error("gRPC revers proxy failed to receive request from client")
-				break
+				logger.WithError(reqErr).Error("gRPC reverse proxy failed to receive request from client")
+				return
 			}
 
 			r.ModelName = internalModelName
@@ -323,11 +329,9 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 			if err := clientStream.Send(r); err != nil {
 				reqErr = err
 				logger.WithError(reqErr).Error("gRPC reverse proxy failed to forward request to server")
-				break
+				return
 			}
 		}
-
-		doneReq <- true
 	}()
 
 	// receive responses from the model and forward them back to envoy
@@ -335,7 +339,6 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 	for {
 		clientStreamResp, err := clientStream.Recv()
 		if err == io.EOF {
-			_ = clientStream.CloseSend()
 			break
 		}
 
@@ -348,6 +351,7 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 		if err := stream.Send(clientStreamResp); err != nil {
 			respErr = err
 			logger.WithError(respErr).Error("gRPC reverse proxy failed to forward response to client")
+			break
 		}
 	}
 
