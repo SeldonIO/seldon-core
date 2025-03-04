@@ -10,6 +10,7 @@
          * [Managed Kafka](installation/production-environment/kafka/managed-kafka.md) 
       * [Ingress Controller](installation/production-environment/ingress-controller/istio.md)
     * [Test the Installation](installation/test-installation.md)
+    * [Helm Configuration](installation/helm/README.md)
 
 ## User Guide    
 * [Getting Started](getting-started/README.md)    
