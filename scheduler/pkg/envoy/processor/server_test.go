@@ -46,7 +46,7 @@ func TestFetch(t *testing.T) {
 	memoryStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), nil)
 	pipelineHandler := pipeline.NewPipelineStore(logger, nil, memoryStore)
 
-	xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{})
+	xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{}, nil)
 	g.Expect(err).To(BeNil())
 	inc := &IncrementalProcessor{
 		logger:           logger,

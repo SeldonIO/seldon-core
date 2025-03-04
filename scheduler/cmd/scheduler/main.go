@@ -59,6 +59,9 @@ var (
 	deletedResourceTTLSeconds    uint
 	serverPackingEnabled         bool
 	serverPackingPercentage      float64
+	accessLogPath                string
+	enableAccessLog              bool
+	includeSuccessfulRequests    bool
 )
 
 const (
@@ -129,6 +132,11 @@ func init() {
 	// Server packing
 	flag.BoolVar(&serverPackingEnabled, "server-packing-enabled", false, "Enable server packing")
 	flag.Float64Var(&serverPackingPercentage, "server-packing-percentage", allowPackingPercentageDefault, "Percentage of time we try to pack server replicas")
+
+	// Envoy access log config
+	flag.StringVar(&accessLogPath, "envoy-accesslog-path", "/tmp/envoy-accesslog.txt", "Envoy access log path")
+	flag.BoolVar(&enableAccessLog, "enable-envoy-accesslog", true, "Enable Envoy access log")
+	flag.BoolVar(&includeSuccessfulRequests, "include-successful-requests-envoy-accesslog", false, "Include successful requests in Envoy access log")
 }
 
 func getNamespace() string {
@@ -206,7 +214,9 @@ func main() {
 	}
 
 	// Create envoy incremental processor
-	incrementalProcessor, err := processor.NewIncrementalProcessor(nodeID, logger, ss, es, ps, eventHub, &pipelineGatewayDetails, cleaner)
+	incrementalProcessor, err := processor.NewIncrementalProcessor(
+		nodeID, logger, ss, es, ps, eventHub, &pipelineGatewayDetails, cleaner, &xdscache.EnvoyConfig{
+			AccessLogPath: accessLogPath, EnableAccessLog: enableAccessLog, IncludeSuccessfulRequests: includeSuccessfulRequests})
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to create incremental processor")
 	}

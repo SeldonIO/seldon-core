@@ -48,6 +48,7 @@ import (
 const (
 	SeldonLoggingHeader           = "Seldon-Logging"
 	EnvoyLogPathPrefix            = "/tmp/request-log"
+	EnvoyAccessLogPath            = "/tmp/envoy-accesslog.txt"
 	SeldonRouteSeparator          = ":" // Tried % but this seemed to break envoy matching. Maybe % is a special character or connected to regexp. A bug?
 	DefaultRouteTimeoutSecs       = 0   // TODO allow configurable override
 	DefaultRouteConfigurationName = "listener_0"
@@ -64,6 +65,7 @@ func makeHTTPListener(listenerName, address string,
 	port uint32,
 	routeConfigurationName string,
 	serverSecret *Secret,
+	config *EnvoyConfig,
 ) *listener.Listener {
 	routerConfig, _ := anypb.New(&router.Router{})
 	// HTTP filter configuration
@@ -96,14 +98,22 @@ func makeHTTPListener(listenerName, address string,
 				ConfigType: &hcm.HttpFilter_TypedConfig{TypedConfig: routerConfig},
 			},
 		},
-		AccessLog: []*accesslog.AccessLog{
+	}
+	if config != nil && config.EnableAccessLog {
+		var filter *accesslog.AccessLogFilter = nil
+		if !config.IncludeSuccessfulRequests {
+			filter = createAccessLogFilterMatchErrors()
+		}
+		manager.AccessLog = []*accesslog.AccessLog{
 			{
 				Name: "envoy.access_loggers.file",
+				// log only errors if required
+				Filter: filter,
 				ConfigType: &accesslog.AccessLog_TypedConfig{
-					TypedConfig: createAccessLogConfig(),
+					TypedConfig: createAccessLogConfig(config.AccessLogPath),
 				},
 			},
-		},
+		}
 	}
 	pbst, err := anypb.New(manager)
 	if err != nil {
@@ -781,26 +791,104 @@ func createTapConfig() *anypb.Any {
 	return tapAny
 }
 
-func createAccessLogConfig() *anypb.Any {
-	accessFilter := accesslog_file.FileAccessLog{
-		Path: "/tmp/envoy-accesslog.txt",
+func createAccessLogConfig(path string) *anypb.Any {
+	config := accesslog_file.FileAccessLog{
+		Path: path,
 		AccessLogFormat: &accesslog_file.FileAccessLog_LogFormat{
 			LogFormat: &core.SubstitutionFormatString{
 				Format: &core.SubstitutionFormatString_TextFormatSource{
 					TextFormatSource: &core.DataSource{
 						Specifier: &core.DataSource_InlineString{
-							InlineString: "[%START_TIME%] \"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%\" %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% \"%REQ(X-FORWARDED-FOR)%\" \"%REQ(USER-AGENT)%\" \"%REQ(X-REQUEST-ID)%\" \"%REQ(:AUTHORITY)%\" \"%UPSTREAM_HOST%\"\n",
+							InlineString: "[%START_TIME%] \"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%\" %RESPONSE_CODE% %GRPC_STATUS_NUMBER% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% \"%REQ(X-FORWARDED-FOR)%\" \"%REQ(USER-AGENT)%\" \"%REQ(X-REQUEST-ID)%\" \"%REQ(:AUTHORITY)%\" \"%UPSTREAM_HOST%\"\n",
 						},
 					},
 				},
 			},
 		},
 	}
-	accessAny, err := anypb.New(&accessFilter)
+	accessAny, err := anypb.New(&config)
 	if err != nil {
 		panic(err)
 	}
 	return accessAny
+}
+
+func createAccessLogFilterMatchErrors() *accesslog.AccessLogFilter {
+	grpcMatcher := &route.HeaderMatcher_StringMatch{
+		StringMatch: &matcherv3.StringMatcher{
+			MatchPattern: &matcherv3.StringMatcher_Prefix{
+				// for grpc content-type starts with application/grpc:
+				// Content-Type → “content-type” “application/grpc” [(“+proto” / “+json” / {custom})]
+				Prefix: "application/grpc",
+			},
+			IgnoreCase: true,
+		},
+	}
+	return &accesslog.AccessLogFilter{
+		FilterSpecifier: &accesslog.AccessLogFilter_OrFilter{
+			OrFilter: &accesslog.OrFilter{
+				Filters: []*accesslog.AccessLogFilter{
+					// http
+					{
+						FilterSpecifier: &accesslog.AccessLogFilter_AndFilter{
+							AndFilter: &accesslog.AndFilter{
+								Filters: []*accesslog.AccessLogFilter{
+									{
+										FilterSpecifier: &accesslog.AccessLogFilter_StatusCodeFilter{
+											StatusCodeFilter: &accesslog.StatusCodeFilter{
+												Comparison: &accesslog.ComparisonFilter{
+													Op:    accesslog.ComparisonFilter_GE,
+													Value: &core.RuntimeUInt32{DefaultValue: 400, RuntimeKey: "status_code"},
+												},
+											},
+										},
+									},
+									{
+										FilterSpecifier: &accesslog.AccessLogFilter_HeaderFilter{
+											HeaderFilter: &accesslog.HeaderFilter{
+												Header: &route.HeaderMatcher{
+													Name:                 "content-type",
+													HeaderMatchSpecifier: grpcMatcher,
+													InvertMatch:          true,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					// grpc
+					{
+						FilterSpecifier: &accesslog.AccessLogFilter_AndFilter{
+							AndFilter: &accesslog.AndFilter{
+								Filters: []*accesslog.AccessLogFilter{
+									{
+										FilterSpecifier: &accesslog.AccessLogFilter_GrpcStatusFilter{
+											GrpcStatusFilter: &accesslog.GrpcStatusFilter{
+												Statuses: []accesslog.GrpcStatusFilter_Status{accesslog.GrpcStatusFilter_OK},
+												Exclude:  true,
+											},
+										},
+									},
+									{
+										FilterSpecifier: &accesslog.AccessLogFilter_HeaderFilter{
+											HeaderFilter: &accesslog.HeaderFilter{
+												Header: &route.HeaderMatcher{
+													Name:                 "content-type",
+													HeaderMatchSpecifier: grpcMatcher,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 }
 
 // A filter to add the seldon-model header from the http path if its not passed

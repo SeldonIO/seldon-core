@@ -65,6 +65,12 @@ spec:
             value: '{{ .Values.autoscaling.serverPackingEnabled }}'
           - name: SERVER_PACKING_PERCENTAGE
             value: '{{ .Values.autoscaling.serverPackingPercentage }}'
+          - name: ENVOY_ACCESSLOG_PATH
+            value: '{{ .Values.envoy.accesslogPath }}'
+          - name: ENABLE_ENVOY_ACCESSLOG
+            value: '{{ .Values.envoy.enableAccesslog }}'
+          - name: INCLUDE_SUCCESSFUL_REQUESTS_ENVOY_ACCESSLOG
+            value: '{{ .Values.envoy.includeSuccessfulRequests }}'
     volumeClaimTemplates:
     - name: scheduler-state
       spec:

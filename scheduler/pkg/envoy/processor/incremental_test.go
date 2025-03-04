@@ -290,7 +290,7 @@ func TestUpdateEnvoyForModelVersion(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2})
+			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}, nil)
 			g.Expect(err).To(BeNil())
 			inc := IncrementalProcessor{
 				logger:   log.New(),
@@ -343,7 +343,7 @@ func TestRollingUpdate(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			modelStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil)
-			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2})
+			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}, nil)
 			g.Expect(err).To(BeNil())
 			inc := &IncrementalProcessor{
 				logger:           log.New(),
@@ -413,7 +413,7 @@ func TestDraining(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			modelStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil)
-			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2})
+			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}, nil)
 			g.Expect(err).To(BeNil())
 			inc := &IncrementalProcessor{
 				logger:           log.New(),
@@ -557,7 +557,7 @@ func TestModelSync(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			modelStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil)
-			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2})
+			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}, nil)
 			g.Expect(err).To(BeNil())
 			inc := &IncrementalProcessor{
 				logger:               log.New(),
@@ -801,7 +801,7 @@ func TestEnvoySettings(t *testing.T) {
 			logger := log.New()
 			eventHub, _ := coordinator.NewEventHub(logger)
 			memoryStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), eventHub)
-			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2})
+			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}, nil)
 			g.Expect(err).To(BeNil())
 			inc := &IncrementalProcessor{
 				logger:           logger.WithField("source", "IncrementalProcessor"),
