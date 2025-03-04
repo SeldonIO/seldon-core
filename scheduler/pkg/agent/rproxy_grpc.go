@@ -301,11 +301,11 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 
 	// receive incoming request from envoy and forward them to the model
 	var reqErr error
-	doneReq := make(chan bool)
+	doneReq := make(chan struct{})
 	go func() {
 		defer func() {
 			_ = clientStream.CloseSend()
-			doneReq <- true
+			close(doneReq)
 		}()
 
 		for {
