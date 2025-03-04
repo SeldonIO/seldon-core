@@ -9,7 +9,7 @@ description: >-
 `kube-prometheus`, also known as Prometheus Operator, is a popular open-source project that provides complete monitoring and alerting solutions for Kubernetes clusters. It combines tools and components to create a monitoring stack for Kubernetes environments.
 
 {% hint style="info" %}
-**Note**: Always install Prometheus within the same Kubernetes cluster as the Seldon Core 2.
+**Note**: In this example Prometheus is installed within the same Kubernetes cluster as the Seldon Core 2. However, Seldoc Core 2 exposes metrics to any of the managed Prometheus endpoints as well.
 {% endhint %}
 
 The Seldon Core 2, along with any deployed models, automatically exposes metrics to Prometheus. By default, certain alerting rules are pre-configured, and an alertmanager instance is included.
