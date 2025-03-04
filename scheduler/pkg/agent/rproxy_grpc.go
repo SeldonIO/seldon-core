@@ -293,11 +293,7 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 
 	var trailer metadata.MD
 	opts := append(rp.callOptions, grpc.Trailer(&trailer), grpc_retry.Disable())
-
-	ctxCancel, cancel := context.WithCancel(outgoingCtx)
-	defer cancel()
-
-	clientStream, err := rp.getV2GRPCClient().ModelStreamInfer(ctxCancel, opts...)
+	clientStream, err := rp.getV2GRPCClient().ModelStreamInfer(outgoingCtx, opts...)
 	if err != nil {
 		logger.WithError(err).Error("Failed to create stream")
 		return err
