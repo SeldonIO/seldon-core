@@ -33,7 +33,7 @@ By selecting the appropriate installation mode—whether it's Docker Compose for
 
 For more information, see the published [Helm charts](https://github.com/SeldonIO/helm-charts).
 
-For the description of (some) values that can be configured for these charts, see this [helm parameters section](helm/README.md).
+For the description of (some) values that can be configured for these charts, see this [Helm parameters section](helm/README.md).
 
 ## Seldon Core 2 Dependencies
 
