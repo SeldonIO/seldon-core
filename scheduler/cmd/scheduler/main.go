@@ -181,6 +181,7 @@ func main() {
 	logger.Debugf("Scheduler ready timeout is set to %d seconds", schedulerReadyTimeoutSeconds)
 	logger.Debugf("Server packing is set to %t", serverPackingEnabled)
 	logger.Debugf("Server packing percentage is set to %f", serverPackingPercentage)
+	logger.Infof("Autoscaling service is set to %t", !autoscalingModelDisabled)
 
 	done := make(chan bool, 1)
 
@@ -285,7 +286,6 @@ func main() {
 	}
 
 	// scheduler <-> agent  grpc
-	logger.Infof("Autoscaling service is set to %t", !autoscalingModelDisabled)
 	as := agent.NewAgentServer(logger, ss, sched, eventHub, !autoscalingModelDisabled)
 	err = as.StartGrpcServer(allowPlaintxt, agentPort, agentMtlsPort)
 	if err != nil {
