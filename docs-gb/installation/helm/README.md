@@ -27,7 +27,7 @@
 | `agent.modelInferenceLagThreshold` | components | Queue lag threshold to trigger scaling up of a model replica. | 30 |
 | `agent.modelInactiveSecondsThreshold` | components | Period with no activity after which to trigger scaling down of a model replica. | 600 |
 | `autoscaling.serverPackingEnabled` | components | Whether packing of models onto fewer servers is enabled. | false |
-| `autoscaling.serverPackingPercentage` | components | Percentage events where packing is allowed. Higher values represent more aggressive packing. This is only used when `serverPackingEnabled` is set. Range is from 0.0 to 1.0 | 0.0 |
+| `autoscaling.serverPackingPercentage` | components | Percentage of events where packing is allowed. Higher values represent more aggressive packing. This is only used when `serverPackingEnabled` is set. Range is from 0.0 to 1.0 | 0.0 |
 
 
 ## Server
@@ -36,7 +36,7 @@
 
 | Key | Chart | Description | Default
 | --- | --- | --- | --- |
-| `serverConfig.terminationGracePeriodSeconds` | components | Grace period to wait for prestop to finish for this particular Server pods. | 120 |
+| `serverConfig.terminationGracePeriodSeconds` | components | Grace period to wait for prestop process to finish for this particular Server pod. | 120 |
 
 
 ### Model Control Plane
@@ -48,4 +48,4 @@
 | `agent.maxLoadRetryCount` | components | Max number of retries for unsuccessful load command for a model on a particular server replica. Lower values allow control plane commands to fail faster.  | 5 |
 | `agent.maxUnloadElapsedTimeMinutes` | components | Max time allowed for one model unload command for a model on a particular server replica to take. Lower values allow errors to be exposed faster.  | 15 |
 | `agent.maxUnloadRetryCount` | components | Max number of retries for unsuccessful unload command for a model on a particular server replica. Lower values allow control plane commands to fail faster.  | 5 |
-| `agent.unloadGracePeriodSeconds` | components | Guarding against race conditions between Envoy actually applying the cluster change to remove a route before proceeding with the model replica unloading.  | 2 |
+| `agent.unloadGracePeriodSeconds` | components | A period guarding against race conditions between Envoy actually applying the cluster change to remove a route and before proceeding with the model replica unloading command.  | 2 |
