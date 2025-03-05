@@ -226,6 +226,7 @@ scheduler:
   schedulerReadyTimeoutSeconds: 600
   
 autoscaling:
+  autoscalingDisabled: true
   serverPackingEnabled: false
   serverPackingPercentage: 0.0
 
