@@ -268,6 +268,44 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	return resp, err
 }
 
+func forwardStream[T any](
+	ctx context.Context,
+	recv func() (T, error),
+	send func(T) error,
+	modify func(T) T,
+	errChan chan<- error,
+	doneChan chan struct{},
+	cancel context.CancelFunc,
+) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			msg, err := recv()
+			if err != nil {
+				if err == io.EOF {
+					close(doneChan)
+				} else {
+					errChan <- err
+					log.Printf("Stream forwarding error: %v", err)
+					cancel()
+				}
+				return
+			}
+
+			msg = modify(msg)
+
+			if err := send(msg); err != nil {
+				errChan <- err
+				log.Printf("Failed to forward message: %v", err)
+				cancel()
+				return
+			}
+		}
+	}
+}
+
 func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_ModelStreamInferServer) error {
 	ctx := stream.Context()
 	logger := rp.logger.WithField("func", "ModelStreamInfer")
@@ -305,69 +343,39 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 	ctxWithCancel, cancel := context.WithCancel(outgoingCtx)
 	defer cancel()
 
-	// Forward requests from client to server
-	go func() {
-		defer cancel()
+	doneChan := make(chan struct{}) // Channel to signal when the stream is done
 
-		for {
-			select {
-			case <-ctxWithCancel.Done():
-				return
-			default:
-				req, err := stream.Recv()
-				if err == io.EOF {
-					errChan <- nil
-					return
-				}
-				if err != nil {
-					errChan <- err
-					log.Printf("Failed to receive request from client: %v", err)
-					return
-				}
+	// Launch goroutines for forwarding
+	go forwardStream(
+		ctxWithCancel,
+		stream.Recv,
+		clientStream.Send,
+		func(req *v2.ModelInferRequest) *v2.ModelInferRequest {
+			req.ModelName = internalModelName
+			req.ModelVersion = ""
+			return req
+		},
+		errChan,
+		doneChan,
+		cancel,
+	)
 
-				req.ModelName = internalModelName
-				req.ModelVersion = ""
+	go forwardStream(
+		ctxWithCancel,
+		clientStream.Recv,
+		stream.Send,
+		func(resp *v2.ModelInferResponse) *v2.ModelInferResponse { return resp }, // No modification
+		errChan,
+		doneChan,
+		cancel,
+	)
 
-				if err := clientStream.Send(req); err != nil {
-					errChan <- err
-					log.Printf("Failed to forward request to server: %v", err)
-					return
-				}
-			}
-		}
-	}()
-
-	// Forward responses from server to client
-	go func() {
-		defer cancel()
-
-		for {
-			select {
-			case <-ctxWithCancel.Done():
-				return
-			default:
-				resp, err := clientStream.Recv()
-				if err == io.EOF {
-					errChan <- nil
-					return
-				}
-				if err != nil {
-					errChan <- err
-					log.Printf("Failed to receive response from server: %v", err)
-					return
-				}
-
-				if err := stream.Send(resp); err != nil {
-					errChan <- err
-					log.Printf("Failed to forward response to client: %v", err)
-					return
-				}
-			}
-		}
-	}()
-
-	// Wait for the first error or context cancellation
-	err = <-errChan
+	// Wait for the first error or successful completion
+	select {
+	case err = <-errChan:
+	case <-doneChan:
+		err = nil
+	}
 
 	rp.setTrailer(ctx, trailer, requestId)
 
