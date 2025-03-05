@@ -53,7 +53,7 @@ var (
 	dbPath                       string
 	nodeID                       string
 	allowPlaintxt                bool // scheduler server
-	autoscalingModelDisabled          bool
+	autoscalingModelDisabled     bool
 	kafkaConfigPath              string
 	schedulerReadyTimeoutSeconds uint
 	deletedResourceTTLSeconds    uint
