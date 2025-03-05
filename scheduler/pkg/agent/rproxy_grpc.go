@@ -274,36 +274,48 @@ func forwardStream[T any](
 	send func(T) error,
 	modify func(T) T,
 	errChan chan<- error,
-	doneChan chan struct{},
+	wg *sync.WaitGroup,
 	cancel context.CancelFunc,
+	closeSend func() error,
 ) {
+	defer func() {
+		if err := closeSend(); err != nil {
+			errChan <- fmt.Errorf("failed to close send stream: %v", err)
+			cancel()
+		}
+	}()
+	defer func() {
+		if r := recover(); r != nil {
+			errChan <- fmt.Errorf("panic in forwardStream: %v", r)
+			cancel()
+		}
+	}()
+	defer wg.Done()
+
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		default:
 			msg, err := recv()
+			if err == io.EOF {
+				return
+			}
 			if err != nil {
-				if err == io.EOF {
-					close(doneChan)
-				} else {
-					errChan <- err
-					log.Printf("Stream forwarding error: %v", err)
-					cancel()
-				}
+				errChan <- fmt.Errorf("stream recv error: %v", err)
+				cancel()
 				return
 			}
 
 			msg = modify(msg)
-
 			if err := send(msg); err != nil {
-				errChan <- err
-				log.Printf("Failed to forward message: %v", err)
+				errChan <- fmt.Errorf("stream send error: %v", err)
 				cancel()
 				return
 			}
 		}
 	}
+
 }
 
 func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_ModelStreamInferServer) error {
@@ -339,13 +351,14 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 
 	errChan := make(chan error, 2) // Buffered channel to collect errors
 
-	// Add cancel to context
-	ctxWithCancel, cancel := context.WithCancel(outgoingCtx)
+	// Add cancel to context to cancel goroutines when error occurs
+	ctxWithCancel, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	doneChan := make(chan struct{}) // Channel to signal when the stream is done
+	wg := sync.WaitGroup{}
 
 	// Launch goroutines for forwarding
+	wg.Add(2)
 	go forwardStream(
 		ctxWithCancel,
 		stream.Recv,
@@ -356,28 +369,32 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 			return req
 		},
 		errChan,
-		doneChan,
+		&wg,
 		cancel,
+		clientStream.CloseSend, // Pass CloseSend function here
 	)
-
 	go forwardStream(
 		ctxWithCancel,
 		clientStream.Recv,
 		stream.Send,
 		func(resp *v2.ModelInferResponse) *v2.ModelInferResponse { return resp }, // No modification
 		errChan,
-		doneChan,
+		&wg,
 		cancel,
+		func() error { return nil }, // No need to close stream on receiving
 	)
 
-	// Wait for the first error or successful completion
-	select {
-	case err = <-errChan:
-	case <-doneChan:
-		err = nil
-	}
+	go func() {
+		wg.Wait()
+		close(errChan) // Close the error channel after all goroutines are done
+	}()
 
 	rp.setTrailer(ctx, trailer, requestId)
+
+	err = <-errChan // Wait for the first error
+	if err != nil {
+		logger.WithError(err).Error("Error in stream forwarding")
+	}
 
 	grpcStatus, _ := status.FromError(err)
 	elapsedTime := time.Since(startTime).Seconds()
