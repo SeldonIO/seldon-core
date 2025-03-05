@@ -224,7 +224,7 @@ spec:
         - --envoy-accesslog-path=$(ENVOY_ACCESSLOG_PATH)
         - --enable-envoy-accesslog=$(ENABLE_ENVOY_ACCESSLOG)
         - --include-successful-requests-envoy-accesslog=$(INCLUDE_SUCCESSFUL_REQUESTS_ENVOY_ACCESSLOG)
-        - --disable-model-autoscaling=$(DISABLE_MODEL_AUTOSCALING)
+        - --enable-model-autoscaling=$(ENABLE_MODEL_AUTOSCALING)
         command:
         - /bin/scheduler
         env:
@@ -242,7 +242,7 @@ spec:
           value: "true"
         - name: INCLUDE_SUCCESSFUL_REQUESTS_ENVOY_ACCESSLOG
           value: "false"
-        - name: DISABLE_MODEL_AUTOSCALING
+        - name: ENABLE_MODEL_AUTOSCALING
           value: "true"
         - name: POD_NAMESPACE
           valueFrom:
