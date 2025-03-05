@@ -13,6 +13,13 @@ import (
 	"fmt"
 	"testing"
 
+	accesslog "github.com/envoyproxy/go-control-plane/envoy/config/accesslog/v3"
+	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+	listener "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
+	route "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
+	accesslog_file "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/file/v3"
+	http_connection_managerv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
+	matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 	. "github.com/onsi/gomega"
 	"github.com/otiai10/copy"
 	log "github.com/sirupsen/logrus"
@@ -28,7 +35,7 @@ func TestAddRemoveHttpAndGrpcRoute(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{}, nil)
 	g.Expect(err).To(BeNil())
 	httpCluster := "m1_1_http"
 	grpcCluster := "m1_1_grpc"
@@ -63,7 +70,7 @@ func TestAddRemoveHttpAndGrpcRouteVersions(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{}, nil)
 	g.Expect(err).To(BeNil())
 
 	httpCluster1 := "m1_1_http"
@@ -148,7 +155,7 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForSameModel(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{}, nil)
 	g.Expect(err).To(BeNil())
 
 	routeName := "r1"
@@ -205,7 +212,7 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentModels(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{}, nil)
 	g.Expect(err).To(BeNil())
 
 	httpClusterModel1 := "m1_1_http"
@@ -274,7 +281,7 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentRoutesSameModel(t *testing
 	g := NewGomegaWithT(t)
 	logger := log.New()
 
-	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+	c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{}, nil)
 	g.Expect(err).To(BeNil())
 
 	route1 := "r1"
@@ -371,7 +378,7 @@ func TestSetupTLS(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{})
+			c, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{}, nil)
 			g.Expect(err).To(BeNil())
 			if test.setTLS {
 				t.Setenv(fmt.Sprintf("%s%s", seldontls.EnvSecurityPrefixEnvoy, seldontls.EnvSecurityProtocolSuffix), seldontls.SecurityProtocolSSL)
@@ -392,6 +399,161 @@ func TestSetupTLS(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 		})
+	}
+}
+
+func TestAccessLogSettings(t *testing.T) {
+	g := NewGomegaWithT(t)
+	logger := log.New()
+
+	type test struct {
+		name        string
+		EnvoyConfig *EnvoyConfig
+	}
+
+	tests := []test{
+		{
+			name:        "nil config",
+			EnvoyConfig: nil,
+		},
+		{
+			name:        "empty config",
+			EnvoyConfig: &EnvoyConfig{},
+		},
+		{
+			name: "config with access log",
+			EnvoyConfig: &EnvoyConfig{
+				AccessLogPath:             "dummy",
+				EnableAccessLog:           true,
+				IncludeSuccessfulRequests: true,
+			},
+		},
+		{
+			name: "config with access log - only bad requests",
+			EnvoyConfig: &EnvoyConfig{
+				AccessLogPath:             "dummy",
+				EnableAccessLog:           true,
+				IncludeSuccessfulRequests: false,
+			},
+		},
+		{
+			name: "config with access log disabled",
+			EnvoyConfig: &EnvoyConfig{
+				AccessLogPath:   "dummy",
+				EnableAccessLog: false,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		cache, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{}, test.EnvoyConfig)
+		g.Expect(err).To(BeNil())
+		if test.EnvoyConfig != nil {
+			for _, res := range cache.lds.GetResources() {
+				// check access log settings
+				for _, c := range res.(*listener.Listener).FilterChains {
+					for _, filterpb := range c.Filters {
+						conn := new(http_connection_managerv3.HttpConnectionManager)
+						err := filterpb.GetTypedConfig().UnmarshalTo(conn)
+						g.Expect(err).To(BeNil())
+
+						if test.EnvoyConfig.EnableAccessLog {
+							g.Expect(len(conn.GetAccessLog())).To(Equal(1))
+							accessLogpb := conn.GetAccessLog()[0]
+
+							// ConfigType
+							accessLogConfig := new(accesslog_file.FileAccessLog)
+							err := accessLogpb.GetTypedConfig().UnmarshalTo(accessLogConfig)
+							g.Expect(err).To(BeNil())
+							g.Expect(accessLogConfig.Path).To(Equal(test.EnvoyConfig.AccessLogPath))
+
+							// Filter
+							if test.EnvoyConfig.IncludeSuccessfulRequests {
+								g.Expect(accessLogpb.Filter).To(BeNil())
+							} else {
+								grpcMatcher := &route.HeaderMatcher_StringMatch{
+									StringMatch: &matcherv3.StringMatcher{
+										MatchPattern: &matcherv3.StringMatcher_Prefix{
+											Prefix: "application/grpc",
+										},
+										IgnoreCase: true,
+									},
+								}
+								// this is a little bit cumbersome, but we need to check the filter
+								// as it is a nested structure
+								// the actual test to check the filter is correct (i.e. only fitlering bad requests) is
+								// done manually.
+								expectedFilter := &accesslog.OrFilter{
+									Filters: []*accesslog.AccessLogFilter{
+										// http
+										{
+											FilterSpecifier: &accesslog.AccessLogFilter_AndFilter{
+												AndFilter: &accesslog.AndFilter{
+													Filters: []*accesslog.AccessLogFilter{
+														{
+															FilterSpecifier: &accesslog.AccessLogFilter_StatusCodeFilter{
+																StatusCodeFilter: &accesslog.StatusCodeFilter{
+																	Comparison: &accesslog.ComparisonFilter{
+																		Op:    accesslog.ComparisonFilter_GE,
+																		Value: &core.RuntimeUInt32{DefaultValue: 400, RuntimeKey: "status_code"},
+																	},
+																},
+															},
+														},
+														{
+															FilterSpecifier: &accesslog.AccessLogFilter_HeaderFilter{
+																HeaderFilter: &accesslog.HeaderFilter{
+																	Header: &route.HeaderMatcher{
+																		Name:                 "content-type",
+																		HeaderMatchSpecifier: grpcMatcher,
+																		InvertMatch:          true,
+																	},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+										// grpc
+										{
+											FilterSpecifier: &accesslog.AccessLogFilter_AndFilter{
+												AndFilter: &accesslog.AndFilter{
+													Filters: []*accesslog.AccessLogFilter{
+														{
+															FilterSpecifier: &accesslog.AccessLogFilter_GrpcStatusFilter{
+																GrpcStatusFilter: &accesslog.GrpcStatusFilter{
+																	Statuses: []accesslog.GrpcStatusFilter_Status{accesslog.GrpcStatusFilter_OK},
+																	Exclude:  true,
+																},
+															},
+														},
+														{
+															FilterSpecifier: &accesslog.AccessLogFilter_HeaderFilter{
+																HeaderFilter: &accesslog.HeaderFilter{
+																	Header: &route.HeaderMatcher{
+																		Name:                 "content-type",
+																		HeaderMatchSpecifier: grpcMatcher,
+																	},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								}
+								filter := accessLogpb.Filter.FilterSpecifier.(*accesslog.AccessLogFilter_OrFilter)
+								g.Expect(filter.OrFilter).To(Equal(expectedFilter))
+							}
+
+						}
+					}
+				}
+			}
+
+		}
 	}
 }
 

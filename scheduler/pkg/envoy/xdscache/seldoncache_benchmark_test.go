@@ -22,7 +22,7 @@ import (
 var results []types.Resource
 
 func benchmarkRouteContents(b *testing.B, numResources uint) {
-	x, _ := NewSeldonXDSCache(logrus.New(), nil)
+	x, _ := NewSeldonXDSCache(logrus.New(), nil, nil)
 
 	for n := 0; n < int(numResources); n++ {
 		x.AddPipelineRoute(strconv.Itoa(n), []PipelineTrafficSplit{{PipelineName: strconv.Itoa(n), TrafficWeight: 100}}, nil)

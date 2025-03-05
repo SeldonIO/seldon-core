@@ -18,17 +18,21 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/filters"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/sorters"
 	store "github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 )
 
+const serverScaleupEventSource = "scheduler.server.scaleup"
+
 type SimpleScheduler struct {
 	muSortAndUpdate sync.Mutex
 	store           store.ModelStore
 	logger          log.FieldLogger
 	synchroniser    synchroniser.Synchroniser
+	eventHub        *coordinator.EventHub
 	SchedulerConfig
 }
 
@@ -43,7 +47,7 @@ func DefaultSchedulerConfig(store store.ModelStore) SchedulerConfig {
 	return SchedulerConfig{
 		serverFilters:  []filters.ServerFilter{filters.ServerReplicaFilter{}, filters.SharingServerFilter{}, filters.DeletedServerFilter{}, filters.ServerRequirementFilter{}},
 		replicaFilters: []filters.ReplicaFilter{filters.AvailableMemoryReplicaFilter{}, filters.ExplainerFilter{}, filters.ReplicaDrainingFilter{}},
-		serverSorts:    []sorters.ServerSorter{},
+		serverSorts:    []sorters.ServerSorter{sorters.ModelAlreadyLoadedOnServerSorter{}},
 		replicaSorts:   []sorters.ReplicaSorter{sorters.ReplicaIndexSorter{}, sorters.AvailableMemorySorter{}, sorters.ModelAlreadyLoadedSorter{}},
 	}
 }
@@ -51,19 +55,27 @@ func DefaultSchedulerConfig(store store.ModelStore) SchedulerConfig {
 func NewSimpleScheduler(logger log.FieldLogger,
 	store store.ModelStore,
 	schedulerConfig SchedulerConfig,
-	synchroniser synchroniser.Synchroniser) *SimpleScheduler {
+	synchroniser synchroniser.Synchroniser,
+	eventHub *coordinator.EventHub,
+) *SimpleScheduler {
 	s := &SimpleScheduler{
 		store:           store,
 		logger:          logger.WithField("Name", "SimpleScheduler"),
 		SchedulerConfig: schedulerConfig,
 		synchroniser:    synchroniser,
+		eventHub:        eventHub,
 	}
 	return s
 }
 
 func (s *SimpleScheduler) Schedule(modelKey string) error {
 	s.synchroniser.WaitReady()
-	return s.scheduleToServer(modelKey)
+	serverEvent, err := s.scheduleToServer(modelKey)
+	if serverEvent != nil {
+		s.logger.Debugf("Sending server event for %s", serverEvent.ServerName)
+		s.eventHub.PublishServerEvent(serverScaleupEventSource, *serverEvent)
+	}
+	return err
 }
 
 func (s *SimpleScheduler) ScheduleFailedModels() ([]string, error) {
@@ -74,7 +86,7 @@ func (s *SimpleScheduler) ScheduleFailedModels() ([]string, error) {
 	}
 	var updatedModels []string
 	for _, modelName := range failedModels {
-		err := s.scheduleToServer(modelName)
+		_, err := s.scheduleToServer(modelName)
 		if err != nil {
 			s.logger.Debugf("Failed to schedule failed model %s", modelName)
 		} else {
@@ -84,6 +96,11 @@ func (s *SimpleScheduler) ScheduleFailedModels() ([]string, error) {
 	return updatedModels, nil
 }
 
+// Get failed models
+// Currently this includes:
+// - models that have failed to schedule
+// - models that have failed to load
+// - models that have loaded but not all replicas are available (e.g. min replicas is met but not desired replicas)
 func (s *SimpleScheduler) getFailedModels() ([]string, error) {
 	models, err := s.store.GetModels()
 	if err != nil {
@@ -94,7 +111,8 @@ func (s *SimpleScheduler) getFailedModels() ([]string, error) {
 		version := model.GetLatest()
 		if version != nil {
 			versionState := version.ModelState()
-			if versionState.State == store.ModelFailed || versionState.State == store.ScheduleFailed {
+			if versionState.State == store.ModelFailed || versionState.State == store.ScheduleFailed ||
+				(versionState.State == store.ModelAvailable && versionState.AvailableReplicas < version.GetDeploymentSpec().GetReplicas()) {
 				failedModels = append(failedModels, model.Name)
 			}
 		}
@@ -103,7 +121,7 @@ func (s *SimpleScheduler) getFailedModels() ([]string, error) {
 }
 
 // TODO - clarify non shared models should not be scheduled
-func (s *SimpleScheduler) scheduleToServer(modelName string) error {
+func (s *SimpleScheduler) scheduleToServer(modelName string) (*coordinator.ServerEventMsg, error) {
 	logger := s.logger.WithField("func", "scheduleToServer").WithField("model", modelName)
 	logger.Debug("Schedule model")
 
@@ -113,15 +131,15 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 	// Get Model
 	model, err := s.store.GetModel(modelName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if model == nil {
-		return errors.New("Unable to find model")
+		return nil, errors.New("Unable to find model")
 	}
 
 	latestModel := model.GetLatest()
 	if latestModel == nil {
-		return errors.New("Unable to find latest version for model")
+		return nil, errors.New("Unable to find latest version for model")
 	}
 
 	if model.Deleted {
@@ -134,12 +152,23 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		}
 
 		logger.Debug("Ensuring deleted model is removed")
+
+		// remove old versions of the model if they exist
+		// this is because the latest version might not have been applied properly and therefore
+		// the old version might still be dangling around
+		for _, mv := range model.Versions {
+			_, err := s.store.UnloadVersionModels(modelName, mv.GetVersion())
+			if err != nil {
+				logger.WithError(err).Warnf("Failed to unload model %s version %d", modelName, mv.GetVersion())
+			}
+		}
+
 		err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), server, []*store.ServerReplica{})
 		if err != nil {
 			logger.WithError(err).WithField("server", server).Warn("Failed to unschedule model replicas from server")
 		}
 
-		return nil
+		return nil, nil
 	}
 
 	// Model needs to be (re)scheduled
@@ -148,7 +177,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 	// Get all servers
 	servers, err := s.store.GetServers(false, true)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Filter and sort servers
@@ -157,16 +186,60 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		msg := "Failed to schedule model as no matching servers are available"
 		logger.Debug(msg)
 		s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas())
-		return errors.New(msg)
+		return nil, errors.New(msg)
 	}
+
+	desiredReplicas := latestModel.DesiredReplicas()
+	minReplicas := latestModel.GetDeploymentSpec().GetMinReplicas()
 
 	s.sortServers(latestModel, filteredServers)
 	logger.
 		WithField("candidate_servers", filteredServers).
-		WithField("desired_replicas", latestModel.DesiredReplicas()).
+		WithField("desired_replicas", desiredReplicas).
+		WithField("min_replicas", minReplicas).
 		Debug("Identified candidate servers for model")
 
+	// The main logic of trying to find a server for the model is as follows:
+	// 1. If there are enough replicas on a server, schedule the model
+	// 2. If there are not enough replicas on a server, try to schedule with min replicas. In this case we actually should get
+	// the models loaded on all the replicas of the servers (assuming min replicas is less than the number of replicas on the server)
+	// we also mark the model in this case as failed to schedule so that if the infra changes in the future we can try to reschedule
+
 	// For each server filter and sort replicas and attempt schedule if enough replicas
+	ok := s.findAndUpdateToServers(filteredServers, latestModel, desiredReplicas, desiredReplicas)
+	// Try to scheduler with min replicas if not enough replicas
+	okWithMinReplicas := false
+	if !ok && minReplicas > 0 {
+		okWithMinReplicas = s.findAndUpdateToServers(filteredServers, latestModel, desiredReplicas, int(minReplicas))
+		if okWithMinReplicas {
+			msg := "Failed to schedule model as no matching server had enough suitable replicas, managed to schedule with min replicas"
+			logger.Warn(msg)
+		}
+	}
+
+	var serverEvent *coordinator.ServerEventMsg
+	if !ok {
+		serverEvent = s.serverScaleUp(latestModel)
+		if !okWithMinReplicas {
+			msg := "Failed to schedule model as no matching server had enough suitable replicas"
+			logger.Debug(msg)
+			// we do not want to reset the server if it has live replicas or loading replicas
+			// in the case of loading replicas, we need to make sure that we can unload them later.
+			// for example in the case that a model is just marked as loading on a particular server replica
+			// then it gets a delete request (before it is marked as loaded or available) we need to make sure
+			// that we can unload it from the server
+			s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas() && !latestModel.IsLoadingOrLoadedOnServer())
+			return serverEvent, errors.New(msg)
+		}
+	}
+
+	// TODO Cleanup previous version if needed?
+	return serverEvent, nil
+}
+
+func (s *SimpleScheduler) findAndUpdateToServers(filteredServers []*store.ServerSnapshot, latestModel *store.ModelVersion, desiredReplicas, minReplicas int) bool {
+	modelName := latestModel.GetMeta().GetName()
+	logger := s.logger.WithField("func", "findAndUpdateToServers").WithField("model", modelName)
 	ok := false
 	for _, candidateServer := range filteredServers {
 		logger.WithField("server", candidateServer.Name).Debug("Checking compatibility with candidate server")
@@ -176,11 +249,13 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		// without the store being reflected and hence sorting on stale values
 		s.muSortAndUpdate.Lock()
 		candidateReplicas = s.filterReplicas(latestModel, candidateServer)
-		if len(candidateReplicas.ChosenReplicas) < latestModel.DesiredReplicas() {
+		numServerReplicas := len(candidateReplicas.ChosenReplicas)
+		if numServerReplicas < minReplicas {
 			logger.
 				WithField("server", candidateServer.Name).
-				WithField("available_replicas", len(candidateReplicas.ChosenReplicas)).
-				WithField("desired_replicas", latestModel.DesiredReplicas()).
+				WithField("available_replicas", numServerReplicas).
+				WithField("desired_replicas", desiredReplicas).
+				WithField("min_replicas", minReplicas).
 				Debug("Skipping server due to insufficient suitable replicas")
 
 			s.muSortAndUpdate.Unlock()
@@ -188,11 +263,15 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 		}
 
 		s.sortReplicas(candidateReplicas)
-		err = s.store.UpdateLoadedModels(
+		numReplicas := minReplicas
+		if minReplicas != desiredReplicas {
+			numReplicas = min(numServerReplicas, desiredReplicas) // we have more replicas for the server than min, so we can use all of them
+		}
+		err := s.store.UpdateLoadedModels(
 			modelName,
 			latestModel.GetVersion(),
 			candidateServer.Name,
-			candidateReplicas.ChosenReplicas[0:latestModel.DesiredReplicas()],
+			candidateReplicas.ChosenReplicas[0:numReplicas],
 		)
 		s.muSortAndUpdate.Unlock()
 
@@ -204,21 +283,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) error {
 			break
 		}
 	}
-
-	if !ok {
-		msg := "Failed to schedule model as no matching server had enough suitable replicas"
-		logger.Debug(msg)
-		// we do not want to reset the server if it has live replicas or loading replicas
-		// in the case of loading replicas, we need to make sure that we can unload them later.
-		// for example in the case that a model is just marked as loading on a particular server replica
-		// then it gets a delete request (before it is marked as loaded or available) we need to make sure
-		// that we can unload it from the server
-		s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas() && !latestModel.IsLoadingOrLoadedOnServer())
-		return errors.New(msg)
-	}
-
-	//TODO Cleanup previous version if needed?
-	return nil
+	return ok
 }
 
 func showServerSlice(servers []*store.ServerSnapshot) string {
@@ -240,6 +305,20 @@ func (s *SimpleScheduler) sortServers(model *store.ModelVersion, server []*store
 			return sorter.IsLess(&sorters.CandidateServer{Model: model, Server: server[i]}, &sorters.CandidateServer{Model: model, Server: server[j]})
 		})
 		logger.Debugf("Sorted servers for %s:%d with %s: %s", model.Key(), model.GetVersion(), sorter.Name(), showServerSlice(server))
+	}
+}
+
+func (s *SimpleScheduler) serverScaleUp(modelVersion *store.ModelVersion) *coordinator.ServerEventMsg {
+	logger := s.logger.WithField("func", "serverScaleUp")
+
+	if modelVersion.Server() == "" {
+		logger.Warnf("Empty server for %s so ignoring scale up request", modelVersion.GetMeta().Name)
+		return nil
+	}
+
+	return &coordinator.ServerEventMsg{
+		ServerName:    modelVersion.Server(),
+		UpdateContext: coordinator.SERVER_SCALE_UP,
 	}
 }
 

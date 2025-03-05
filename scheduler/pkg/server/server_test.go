@@ -65,8 +65,11 @@ func TestLoadModel(t *testing.T) {
 			schedulerStore,
 			scheduler2.DefaultSchedulerConfig(schedulerStore),
 			sync,
+			eventHub,
 		)
-		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub, sync)
+		s := NewSchedulerServer(
+			logger, schedulerStore, experimentServer, pipelineServer,
+			scheduler, eventHub, sync, SchedulerServerConfig{})
 		sync.Signals(1)
 		mockAgent := &mockAgentHandler{}
 
@@ -366,8 +369,11 @@ func TestUnloadModel(t *testing.T) {
 			schedulerStore,
 			scheduler2.DefaultSchedulerConfig(schedulerStore),
 			sync,
+			eventHub,
 		)
-		s := NewSchedulerServer(logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub, sync)
+		s := NewSchedulerServer(
+			logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub,
+			sync, SchedulerServerConfig{})
 		sync.Signals(1)
 		return s, mockAgent, eventHub
 	}
@@ -391,18 +397,6 @@ func TestUnloadModel(t *testing.T) {
 				},
 			},
 			model:      &pb.Model{Meta: &pb.MetaData{Name: "model1"}, ModelSpec: &pb.ModelSpec{Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
-			code:       codes.OK,
-			modelState: store.ModelTerminated,
-		},
-		{
-			name: "Multiple",
-			req: []*pba.AgentSubscribeRequest{
-				{
-					ServerName: "server1", ReplicaIdx: 0, Shared: true, AvailableMemoryBytes: 1000,
-					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn", "xgboost"}},
-				},
-			},
-			model:      &pb.Model{Meta: &pb.MetaData{Name: "model1"}, ModelSpec: &pb.ModelSpec{Uri: "gs://model", Requirements: []string{"sklearn", "xgboost"}, MemoryBytes: &smallMemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
 			code:       codes.OK,
 			modelState: store.ModelTerminated,
 		},
@@ -712,8 +706,11 @@ func TestServerNotify(t *testing.T) {
 			schedulerStore,
 			scheduler2.DefaultSchedulerConfig(schedulerStore),
 			sync,
+			eventHub,
 		)
-		s := NewSchedulerServer(logger, schedulerStore, nil, nil, scheduler, eventHub, sync)
+		s := NewSchedulerServer(
+			logger, schedulerStore, nil, nil, scheduler, eventHub,
+			sync, SchedulerServerConfig{})
 		return s, sync
 	}
 
@@ -731,6 +728,8 @@ func TestServerNotify(t *testing.T) {
 					{
 						Name:             "server1",
 						ExpectedReplicas: 2,
+						MinReplicas:      1,
+						MaxReplicas:      3,
 						Shared:           true,
 					},
 					{
@@ -745,6 +744,8 @@ func TestServerNotify(t *testing.T) {
 				{
 					Name:             "server1",
 					ExpectedReplicas: 2,
+					MinReplicas:      1,
+					MaxReplicas:      3,
 					Shared:           true,
 					Replicas:         map[int]*store.ServerReplica{},
 				},

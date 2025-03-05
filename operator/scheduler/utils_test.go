@@ -268,10 +268,12 @@ func (s *mockSchedulerGrpcClient) StopExperiment(ctx context.Context, in *schedu
 	return nil, nil
 }
 func (s *mockSchedulerGrpcClient) ServerStatus(ctx context.Context, in *scheduler.ServerStatusRequest, opts ...grpc.CallOption) (scheduler.Scheduler_ServerStatusClient, error) {
+	// only used for seldon cli, not used in controller
 	return nil, nil
 
 }
 func (s *mockSchedulerGrpcClient) ModelStatus(ctx context.Context, in *scheduler.ModelStatusRequest, opts ...grpc.CallOption) (scheduler.Scheduler_ModelStatusClient, error) {
+	// only used for seldon cli, not used in controller
 	return nil, nil
 }
 func (s *mockSchedulerGrpcClient) PipelineStatus(ctx context.Context, in *scheduler.PipelineStatusRequest, opts ...grpc.CallOption) (scheduler.Scheduler_PipelineStatusClient, error) {

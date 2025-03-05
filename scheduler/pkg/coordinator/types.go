@@ -16,6 +16,8 @@ type ServerEventUpdateContext int
 const (
 	SERVER_STATUS_UPDATE ServerEventUpdateContext = iota
 	SERVER_REPLICA_CONNECTED
+	SERVER_SCALE_UP
+	SERVER_SCALE_DOWN
 )
 
 type ModelEventMsg struct {

@@ -74,7 +74,7 @@ func TestWatchSecretCertificate(t *testing.T) {
 	t.Setenv(fmt.Sprintf("%s%s", prefix, EnvKeyLocationSuffix), fmt.Sprintf("%s/tls.key", tmpFolder))
 	t.Setenv(fmt.Sprintf("%s%s", prefix, EnvCaLocationSuffix), fmt.Sprintf("%s/ca.crt", tmpFolder))
 	t.Setenv("POD_NAMESPACE", sec.Namespace)
-	clientset := fake.NewSimpleClientset(&sec)
+	clientset := fake.NewClientset(&sec)
 	cs, err := NewCertificateStore(Prefix(prefix), ClientSet(clientset))
 	g.Expect(err).To(BeNil())
 	c1, err := cs.GetServerCertificate(nil)
@@ -146,7 +146,7 @@ func TestWatchSecretCertificateWithValidation(t *testing.T) {
 	t.Setenv(fmt.Sprintf("%s%s", prefixCa, EnvCaLocationSuffix), fmt.Sprintf("%s/ca.crt", path2))
 
 	t.Setenv("POD_NAMESPACE", secCa.Namespace)
-	clientset := fake.NewSimpleClientset(&sec, &secCa)
+	clientset := fake.NewClientset(&sec, &secCa)
 	cs, err := NewCertificateStore(Prefix(prefix), ClientSet(clientset), ValidationPrefix(prefixCa))
 	g.Expect(err).To(BeNil())
 	c1, err := cs.GetServerCertificate(nil)
@@ -189,7 +189,7 @@ func TestWatchValidationSecret(t *testing.T) {
 	t.Setenv(fmt.Sprintf("%s%s", prefixCa, EnvCaLocationSuffix), fmt.Sprintf("%s/ca.crt", path2))
 
 	t.Setenv("POD_NAMESPACE", secCa.Namespace)
-	clientset := fake.NewSimpleClientset(&secCa)
+	clientset := fake.NewClientset(&secCa)
 	cs, err := NewCertificateStore(ClientSet(clientset), ValidationPrefix(prefixCa), ValidationOnly(true))
 	g.Expect(err).To(BeNil())
 	caCert := cs.GetValidationCertificate()

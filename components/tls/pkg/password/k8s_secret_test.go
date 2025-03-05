@@ -42,7 +42,7 @@ func TestWatchSecretPassword(t *testing.T) {
 	t.Setenv(fmt.Sprintf("%s%s", tls.EnvSecurityPrefixKafkaClient, envSecretSuffix), sec.Name)
 	t.Setenv(fmt.Sprintf("%s%s", prefix, suffix), fmt.Sprintf("%s/password", tmpFolder))
 	t.Setenv("POD_NAMESPACE", sec.Namespace)
-	clientset := fake.NewSimpleClientset(&sec)
+	clientset := fake.NewClientset(&sec)
 	ps, err := newK8sSecretStore(secName, clientset, "default", prefix, suffix, logrus.New())
 	g.Expect(err).To(BeNil())
 	err = ps.loadAndWatchPassword()

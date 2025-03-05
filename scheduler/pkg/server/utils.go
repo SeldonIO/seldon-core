@@ -10,10 +10,13 @@ the Change License after the Change Date as each is defined in accordance with t
 package server
 
 import (
+	"math/rand/v2"
 	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
 func sendWithTimeout(f func() error, d time.Duration) (bool, error) {
@@ -32,4 +35,50 @@ func sendWithTimeout(f func() error, d time.Duration) (bool, error) {
 		}
 		return false, err
 	}
+}
+
+func shouldScaleUp(server *store.ServerSnapshot) (bool, uint32) {
+	if server.ExpectedReplicas < 0 || server.MaxReplicas < 1 {
+		return false, 0
+	}
+	if server.Stats != nil {
+		maxNumReplicaHostedModels := server.Stats.MaxNumReplicaHostedModels
+		return maxNumReplicaHostedModels > uint32(server.ExpectedReplicas), min(maxNumReplicaHostedModels, uint32(server.MaxReplicas))
+	}
+	return false, 0
+}
+
+func shouldScaleDown(server *store.ServerSnapshot, perc float32) (bool, uint32) {
+
+	if server.Stats != nil {
+		stats := server.Stats
+		currentReplicas := uint32(server.ExpectedReplicas)
+		minReplicas := uint32(server.MinReplicas)
+		if minReplicas == 0 {
+			minReplicas = 1
+		}
+		// 25% chance of trying to pack replicas if models are not fully packed
+		tryPack := false
+		rand := rand.Float32()
+		if rand > (1 - perc) {
+			if stats.MaxNumReplicaHostedModels < currentReplicas {
+				tryPack = true
+			}
+		}
+		// we do scaling down if:
+		// 1. we are trying to pack replicas: max number of replicas for any hosted model is less than the number of expected replicas (only 25% of the time)
+		// 2. we have empty replicas and the server has more than one expected replicas
+
+		targetReplicas := max(minReplicas, currentReplicas-stats.NumEmptyReplicas)
+		if tryPack {
+			toRemoveReplicasfromPack := currentReplicas - stats.MaxNumReplicaHostedModels
+			remainingReplicasfromPack := currentReplicas - toRemoveReplicasfromPack
+			if toRemoveReplicasfromPack > stats.NumEmptyReplicas && remainingReplicasfromPack > 0 {
+				targetReplicas = max(minReplicas, remainingReplicasfromPack)
+			}
+		}
+
+		return (tryPack || stats.NumEmptyReplicas > 0) && server.ExpectedReplicas > 1, targetReplicas
+	}
+	return false, 0
 }

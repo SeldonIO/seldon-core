@@ -36,19 +36,18 @@ import (
 )
 
 const (
-	grpcMaxConcurrentStreams       = 1_000_000
-	pendingEventsQueueSize     int = 1000
-	modelEventHandlerName          = "scheduler.server.models"
-	serverEventHandlerName         = "scheduler.server.servers"
-	experimentEventHandlerName     = "scheduler.server.experiments"
-	pipelineEventHandlerName       = "scheduler.server.pipelines"
-	defaultBatchWait               = 250 * time.Millisecond
-	sendTimeout                    = 30 * time.Second // Timeout for sending events to subscribers via grpc `sendMsg`
+	grpcMaxConcurrentStreams        = 1_000_000
+	pendingEventsQueueSize      int = 1000
+	modelEventHandlerName           = "scheduler.server.models"
+	serverEventHandlerName          = "scheduler.server.servers"
+	serverModelEventHandlerName     = "scheduler.server.servers.models"
+	experimentEventHandlerName      = "scheduler.server.experiments"
+	pipelineEventHandlerName        = "scheduler.server.pipelines"
+	defaultBatchWait                = 250 * time.Millisecond
+	sendTimeout                     = 30 * time.Second // Timeout for sending events to subscribers via grpc `sendMsg`
 )
 
-var (
-	ErrAddServerEmptyServerName = status.Errorf(codes.FailedPrecondition, "Empty server name passed")
-)
+var ErrAddServerEmptyServerName = status.Errorf(codes.FailedPrecondition, "Empty server name passed")
 
 type SchedulerServer struct {
 	pb.UnimplementedSchedulerServer
@@ -65,6 +64,11 @@ type SchedulerServer struct {
 	certificateStore      *seldontls.CertificateStore
 	timeout               time.Duration
 	synchroniser          synchroniser.Synchroniser
+	config                SchedulerServerConfig
+}
+
+type SchedulerServerConfig struct {
+	PackThreshold float64
 }
 
 type ModelEventStream struct {
@@ -193,6 +197,7 @@ func NewSchedulerServer(
 	scheduler scheduler2.Scheduler,
 	eventHub *coordinator.EventHub,
 	synchroniser synchroniser.Synchroniser,
+	config SchedulerServerConfig,
 ) *SchedulerServer {
 	s := &SchedulerServer{
 		logger:           logger.WithField("source", "SchedulerServer"),
@@ -220,6 +225,7 @@ func NewSchedulerServer(
 		},
 		timeout:      sendTimeout,
 		synchroniser: synchroniser,
+		config:       config,
 	}
 
 	eventHub.RegisterModelEventHandler(
@@ -229,10 +235,10 @@ func NewSchedulerServer(
 		s.handleModelEvent,
 	)
 	eventHub.RegisterModelEventHandler(
-		serverEventHandlerName,
+		serverModelEventHandlerName,
 		pendingEventsQueueSize,
 		s.logger,
-		s.handleServerEvent,
+		s.handleModelEventForServerStatus,
 	)
 	eventHub.RegisterExperimentEventHandler(
 		experimentEventHandlerName,
@@ -245,6 +251,12 @@ func NewSchedulerServer(
 		pendingEventsQueueSize,
 		s.logger,
 		s.handlePipelineEvents,
+	)
+	eventHub.RegisterServerEventHandler(
+		serverEventHandlerName,
+		pendingEventsQueueSize,
+		s.logger,
+		s.handleServerEvents,
 	)
 
 	return s
@@ -444,7 +456,7 @@ func (s *SchedulerServer) ServerStatus(
 		}
 
 		for _, s := range servers {
-			resp := createServerStatusResponse(s)
+			resp := createServerStatusUpdateResponse(s)
 			err := stream.Send(resp)
 			if err != nil {
 				return status.Errorf(codes.Internal, err.Error())
@@ -457,7 +469,7 @@ func (s *SchedulerServer) ServerStatus(
 		if err != nil {
 			return status.Errorf(codes.FailedPrecondition, err.Error())
 		}
-		resp := createServerStatusResponse(server)
+		resp := createServerStatusUpdateResponse(server)
 		err = stream.Send(resp)
 		if err != nil {
 			return status.Errorf(codes.Internal, err.Error())
@@ -466,10 +478,11 @@ func (s *SchedulerServer) ServerStatus(
 	}
 }
 
-func createServerStatusResponse(s *store.ServerSnapshot) *pb.ServerStatusResponse {
+func createServerStatusUpdateResponse(s *store.ServerSnapshot) *pb.ServerStatusResponse {
 	// note we dont count draining replicas in available replicas
 
 	resp := &pb.ServerStatusResponse{
+		Type:             pb.ServerStatusResponse_StatusUpdate,
 		ServerName:       s.Name,
 		ExpectedReplicas: int32(s.ExpectedReplicas),
 		KubernetesMeta:   s.KubernetesMeta,
@@ -496,6 +509,19 @@ func createServerStatusResponse(s *store.ServerSnapshot) *pb.ServerStatusRespons
 	}
 	resp.NumLoadedModelReplicas = totalModels
 	resp.AvailableReplicas = numAvailableServerReplicas
+
+	return resp
+}
+
+func createServerScaleResponse(s *store.ServerSnapshot, expectedReplicas uint32) *pb.ServerStatusResponse {
+	// we dont care about populating the other fields as they should not be used by the controller, reconsider if this changes
+
+	resp := &pb.ServerStatusResponse{
+		Type:             pb.ServerStatusResponse_ScalingRequest,
+		ServerName:       s.Name,
+		ExpectedReplicas: int32(expectedReplicas),
+		KubernetesMeta:   s.KubernetesMeta,
+	}
 
 	return resp
 }

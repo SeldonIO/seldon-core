@@ -265,10 +265,11 @@ func (s *Server) Sync(modelName string) {
 			}
 
 			as.mutex.Lock()
+			model := latestModel.GetModel()
 			err = as.stream.Send(&pb.ModelOperationMessage{
 				Operation:          pb.ModelOperationMessage_LOAD_MODEL,
-				ModelVersion:       &pb.ModelVersion{Model: latestModel.GetModel(), Version: latestModel.GetVersion()},
-				AutoscalingEnabled: AutoscalingEnabled(latestModel.GetModel()) && s.autoscalingServiceEnabled,
+				ModelVersion:       &pb.ModelVersion{Model: model, Version: latestModel.GetVersion()},
+				AutoscalingEnabled: util.AutoscalingEnabled(model.DeploymentSpec.GetMinReplicas(), model.DeploymentSpec.GetMaxReplicas()) && s.autoscalingServiceEnabled,
 			})
 			as.mutex.Unlock()
 			if err != nil {
@@ -605,12 +606,12 @@ func calculateDesiredNumReplicas(model *pbs.Model, trigger pb.ModelScalingTrigge
 // which is hidden in this logic unfortunately as we reject the scaling up / down event.
 // a side effect is that we do not go below 1 replica of a model
 func checkModelScalingWithinRange(model *pbs.Model, targetNumReplicas int) error {
-	if !AutoscalingEnabled(model) {
-		return fmt.Errorf("No autoscaling for model %s", model.GetMeta().GetName())
-	}
-
 	minReplicas := model.DeploymentSpec.GetMinReplicas()
 	maxReplicas := model.DeploymentSpec.GetMaxReplicas()
+
+	if !util.AutoscalingEnabled(minReplicas, maxReplicas) {
+		return fmt.Errorf("No autoscaling for model %s", model.GetMeta().GetName())
+	}
 
 	if targetNumReplicas < int(minReplicas) || (targetNumReplicas < 1) {
 		return fmt.Errorf("Violating min replicas %d / %d for model %s", minReplicas, targetNumReplicas, model.GetMeta().GetName())
@@ -621,19 +622,4 @@ func checkModelScalingWithinRange(model *pbs.Model, targetNumReplicas int) error
 	}
 
 	return nil
-}
-
-// if min and max replicas are not set, we do not allow autoscaling
-// we check that they are not set if they are equal to zero as per
-// `GetMinReplicas` and `GetMaxReplicas` definition
-func AutoscalingEnabled(model *pbs.Model) bool {
-	minReplicas := model.DeploymentSpec.GetMinReplicas()
-	maxReplicas := model.DeploymentSpec.GetMaxReplicas()
-
-	if (minReplicas == 0) && (maxReplicas == 0) {
-		// no autoscaling
-		return false
-	} else {
-		return true
-	}
 }

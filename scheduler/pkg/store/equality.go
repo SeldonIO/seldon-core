@@ -23,6 +23,10 @@ type ModelEquality struct {
 }
 
 func ModelEqualityCheck(model1 *pb.Model, model2 *pb.Model) ModelEquality {
+	model1 = proto.Clone(model1).(*pb.Model)
+	removeModelRuntimeInfo(model1)
+	model2 = proto.Clone(model2).(*pb.Model)
+	removeModelRuntimeInfo(model2)
 	if proto.Equal(model1, model2) {
 		return ModelEquality{Equal: true}
 	} else {
@@ -37,5 +41,11 @@ func ModelEqualityCheck(model1 *pb.Model, model2 *pb.Model) ModelEquality {
 			me.DeploymentSpecDiffers = true
 		}
 		return me
+	}
+}
+
+func removeModelRuntimeInfo(model *pb.Model) {
+	if model.ModelSpec != nil {
+		model.ModelSpec.ModelRuntimeInfo = nil
 	}
 }

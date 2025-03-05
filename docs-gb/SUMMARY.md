@@ -18,12 +18,14 @@
          * [Managed Kafka](installation/production-environment/kafka/managed-kafka.md) 
       * [Ingress Controller](installation/production-environment/ingress-controller/istio.md)
     * [Test the Installation](installation/test-installation.md)
+    
   * Advanced Configurations
     * [Server Config](kubernetes/resources/serverconfig.md)
     * [Server Runtime](kubernetes/resources/seldonruntime.md)
     * [Seldon Config](kubernetes/resources/seldonconfig.md)
     * [Pipeline Config](kubernetes/resources/pipeline.md)  
-  * [Upgrading](upgrading.md)    
+  * [Upgrading](upgrading.md) 
+     
 ## User Guide
 * Getting Started
   * Deploy Model (OIP+MLServer Link)
@@ -84,6 +86,7 @@
       * Shadow 
     * CI/CD
       * Link to Component Versioning
+      
 ## Integrations
   * [Service Meshes](kubernetes/service-meshes/README.md)
     * [Ambassador](kubernetes/service-meshes/ambassador.md)
@@ -173,10 +176,10 @@
 * [FAQs](faqs.md)          
  
 
+
 * [Kubernetes](kubernetes/README.md)
   * [Storage Secrets](kubernetes/storage-secrets.md)
   * [Kafka](kubernetes/kafka.md)
-
 * [Metrics](metrics/README.md)
 
 * [Development](development/README.md)
