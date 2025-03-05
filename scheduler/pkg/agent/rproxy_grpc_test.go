@@ -128,17 +128,12 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 
 	numStreamMessages := 10
 	doStreamInfer := func(modelSuffixInternal, modelSuffix string) ([]*v2.ModelInferResponse, error) {
-		logger := log.New()
-		logger.SetLevel(log.DebugLevel)
-		logger.Debug("Starting stream infer")
-
 		client := v2.NewGRPCInferenceServiceClient(conn)
 		ctx := context.Background()
 		ctx = metadata.AppendToOutgoingContext(ctx, util.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffixInternal, util.SeldonModelHeader, dummyModelNamePrefix+modelSuffix)
 
 		stream, err := client.ModelStreamInfer(ctx)
 		if err != nil {
-			logger.Errorf("Error creating stream: %v", err)
 			return nil, err
 		}
 
@@ -147,13 +142,11 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 			r := v2.ModelInferRequest{ModelName: dummyModelNamePrefix}
 			err = stream.Send(&r)
 			if err != nil {
-				logger.Errorf("Error sending request: %v", err)
 				return nil, err
 			}
 
 			response, err := stream.Recv()
 			if err != nil {
-				logger.Errorf("Error receiving response: %v", err)
 				return nil, err
 			}
 

@@ -13,7 +13,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"net/http"
 	"sync"
@@ -117,11 +116,10 @@ func (m *MockGRPCMLServer) ModelStreamInfer(stream v2.GRPCInferenceService_Model
 	for {
 		r, err := stream.Recv()
 		if err == io.EOF {
-			return nil // Client closed the stream
+			return nil
 		}
 		if err != nil {
-			log.Printf("Error receiving request: %v", err)
-			return err // Return error to stop the stream
+			return err
 		}
 
 		err = stream.Send(&v2.ModelInferResponse{
@@ -129,7 +127,6 @@ func (m *MockGRPCMLServer) ModelStreamInfer(stream v2.GRPCInferenceService_Model
 			ModelVersion: r.ModelVersion,
 		})
 		if err != nil {
-			log.Printf("Error sending response: %v", err)
 			return err
 		}
 	}
