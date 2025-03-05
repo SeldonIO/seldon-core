@@ -83,6 +83,7 @@ type MockGRPCMLServer struct {
 	LoadSleep         time.Duration
 	UnloadSleep       time.Duration
 	ControlPlaneSleep time.Duration
+	StreamErr         bool
 	v2.UnimplementedGRPCInferenceServiceServer
 }
 
@@ -113,6 +114,10 @@ func (m *MockGRPCMLServer) ModelInfer(ctx context.Context, r *v2.ModelInferReque
 }
 
 func (m *MockGRPCMLServer) ModelStreamInfer(stream v2.GRPCInferenceService_ModelStreamInferServer) error {
+	if m.StreamErr {
+		return status.Error(codes.Internal, "stream mocked error")
+	}
+
 	for {
 		r, err := stream.Recv()
 		if err == io.EOF {

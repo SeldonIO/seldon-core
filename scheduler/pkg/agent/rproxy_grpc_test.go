@@ -137,6 +137,10 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 			return nil, err
 		}
 
+		defer func() {
+			_ = stream.CloseSend()
+		}()
+
 		responses := []*v2.ModelInferResponse{}
 		for i := 0; i < numStreamMessages; i++ {
 			r := v2.ModelInferRequest{ModelName: dummyModelNamePrefix}
@@ -152,8 +156,6 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 
 			responses = append(responses, response)
 		}
-
-		_ = stream.CloseSend()
 		return responses, nil
 	}
 
@@ -176,14 +178,7 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	g.Expect(responseInfer.ModelName).To(Equal(dummyModelNamePrefix + "_0"))
 	g.Expect(responseInfer.ModelVersion).To(Equal("")) // in practice this should be something else
 
-	responsesStreamInfer, errStreamInfer := doStreamInfer("_0", ".experiment")
-	g.Expect(errStreamInfer).To(BeNil())
-	g.Expect(len(responsesStreamInfer)).To(Equal(numStreamMessages))
-	g.Expect(responsesStreamInfer[0].ModelName).To(Equal(dummyModelNamePrefix + "_0"))
-	g.Expect(responsesStreamInfer[0].ModelVersion).To(Equal("")) // in practice this should be something else
-
 	t.Log("Testing model scaling stats")
-	time.Sleep(50 * time.Millisecond)
 	g.Expect(rpGRPC.modelScalingStatsCollector.ModelLagStats.Get(dummyModelNamePrefix + "_0")).To(Equal(uint32(0)))
 	g.Expect(rpGRPC.modelScalingStatsCollector.ModelLastUsedStats.Get(dummyModelNamePrefix + "_0")).Should(BeNumerically("<=", time.Now().Unix())) // only triggered when we get results back
 
@@ -201,6 +196,19 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	g.Expect(responseReady.Ready).To(Equal(true))
 	g.Expect(mockMLServerState.isModelLoaded(dummyModelNamePrefix + "_0")).To(Equal(true))
 	g.Expect(errReady).To(BeNil())
+
+	t.Log("Testing streaming")
+	responsesStreamInfer, errStreamInfer := doStreamInfer("_0", ".experiment")
+	g.Expect(errStreamInfer).To(BeNil())
+	g.Expect(len(responsesStreamInfer)).To(Equal(numStreamMessages))
+	g.Expect(responsesStreamInfer[0].ModelName).To(Equal(dummyModelNamePrefix + "_0"))
+	g.Expect(responsesStreamInfer[0].ModelVersion).To(Equal("")) // in practice this should be something else
+
+	t.Log("Testing streaming error")
+	mockMLServer.StreamErr = true
+	_, errStreamInfer = doStreamInfer("_0", "")
+	g.Expect(errStreamInfer).NotTo(BeNil())
+	g.Expect(errStreamInfer.Error()).To(ContainSubstring("stream mocked error"))
 
 	t.Log("Testing lazy load")
 	mockMLServerState.setModelServerUnloaded(dummyModelNamePrefix + "_0")
