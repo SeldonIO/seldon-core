@@ -347,7 +347,7 @@ spec:
         - --envoy-accesslog-path=$(ENVOY_ACCESSLOG_PATH)
         - --enable-envoy-accesslog=$(ENABLE_ENVOY_ACCESSLOG)
         - --include-successful-requests-envoy-accesslog=$(INCLUDE_SUCCESSFUL_REQUESTS_ENVOY_ACCESSLOG)
-        - --disable-autoscaling=$(DISABLE_MODEL_AUTOSCALING)
+        - --disable-model-autoscaling=$(DISABLE_MODEL_AUTOSCALING)
         command:
         - /bin/scheduler
         env:

@@ -203,7 +203,7 @@ services:
       - "/mnt/config/tracing-internal.json"
       - --db-path
       - ${DB_PATH_COMPOSE}
-      - --disable-model-autoscaling
+      - --disable-model-autoscaling=true
       - "--kafka-config-path"
       - "/mnt/config/kafka-internal.json"
       - "--scheduler-ready-timeout-seconds"
