@@ -492,6 +492,7 @@ spec:
         - --envoy-accesslog-path=$(ENVOY_ACCESSLOG_PATH)
         - --enable-envoy-accesslog=$(ENABLE_ENVOY_ACCESSLOG)
         - --include-successful-requests-envoy-accesslog=$(INCLUDE_SUCCESSFUL_REQUESTS_ENVOY_ACCESSLOG)
+        - --disable-autoscaling=$(DISABLE_AUTOSCALING)
         command:
         - /bin/scheduler
         env:
