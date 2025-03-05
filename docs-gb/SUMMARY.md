@@ -22,7 +22,8 @@
     * [Server Config](kubernetes/resources/serverconfig.md)
     * [Server Runtime](kubernetes/resources/seldonruntime.md)
     * [Seldon Config](kubernetes/resources/seldonconfig.md)
-    * [Pipeline Config](kubernetes/resources/pipeline.md)    
+    * [Pipeline Config](kubernetes/resources/pipeline.md)  
+  * [Upgrading](upgrading.md)    
 ## User Guide
 * Getting Started
   * Deploy Model (OIP+MLServer Link)
@@ -69,7 +70,8 @@
     * Kubernetes Metrics
     * [Usage Metrics](metrics/usage.md)
     * [Tracing](kubernetes/tracing.md)
-    * Performance Tests
+    * [Local Metrics](metrics/local-metrics-test.md)
+    * [Performance Tests](performance-tests.md)
     * Performance Tuning 
 * Rollouts & Experiments
     * Rollout Strategies
@@ -168,25 +170,17 @@
         * [Server Status](cli/seldon\_server\_status.md)
 * Reference
     * Glossary 
-* FAQs           
+* [FAQs](faqs.md)          
  
 
 * [Kubernetes](kubernetes/README.md)
-  * [Tracing](kubernetes/tracing.md)
   * [Storage Secrets](kubernetes/storage-secrets.md)
   * [Kafka](kubernetes/kafka.md)
-  * [Metrics](kubernetes/metrics.md)
-  * [Resources](kubernetes/resources/README.md)
 
 * [Metrics](metrics/README.md)
-  * [Usage](metrics/usage.md)
-  * [Operational](metrics/operational.md)
-  * [Local Metrics](metrics/local-metrics-test.md)
+
 * [Development](development/README.md)
   * [License](development/licenses.md)
   * [Release](development/release.md)
 
-* [Inference](inference.md)
-* [Performance Tests](performance-tests.md)
-* [Upgrading](upgrading.md)
-* [FAQ](faqs.md)
+
