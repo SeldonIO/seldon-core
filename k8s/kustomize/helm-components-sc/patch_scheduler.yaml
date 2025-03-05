@@ -71,8 +71,8 @@ spec:
             value: '{{ .Values.envoy.enableAccesslog }}'
           - name: INCLUDE_SUCCESSFUL_REQUESTS_ENVOY_ACCESSLOG
             value: '{{ .Values.envoy.includeSuccessfulRequests }}'
-          - name: DISABLE_AUTOSCALING
-            value: '{{ .Values.autoscaling.autoscalingDisabled }}'
+          - name: ENABLE_MODEL_AUTOSCALING
+            value: '{{ .Values.autoscaling.autoscalingModelEnabled }}'
     volumeClaimTemplates:
     - name: scheduler-state
       spec:

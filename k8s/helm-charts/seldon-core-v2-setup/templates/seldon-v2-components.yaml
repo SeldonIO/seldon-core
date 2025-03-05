@@ -551,11 +551,9 @@ spec:
           value: '{{ .Values.envoy.enableAccesslog }}'
         - name: INCLUDE_SUCCESSFUL_REQUESTS_ENVOY_ACCESSLOG
           value: '{{ .Values.envoy.includeSuccessfulRequests }}'
-        - name: DISABLE_AUTOSCALING
-          value: '{{ .Values.autoscaling.autoscalingDisabled }}'
-        - name: ALLOW_PLAINTXT
-          value: "true"
         - name: ENABLE_MODEL_AUTOSCALING
+          value: '{{ .Values.autoscaling.autoscalingModelEnabled }}'
+        - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE
           valueFrom:

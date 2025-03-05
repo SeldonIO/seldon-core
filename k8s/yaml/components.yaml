@@ -403,11 +403,9 @@ spec:
           value: 'true'
         - name: INCLUDE_SUCCESSFUL_REQUESTS_ENVOY_ACCESSLOG
           value: 'false'
-        - name: DISABLE_AUTOSCALING
-          value: ''
-        - name: ALLOW_PLAINTXT
-          value: "true"
         - name: ENABLE_MODEL_AUTOSCALING
+          value: 'false'
+        - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE
           valueFrom:
