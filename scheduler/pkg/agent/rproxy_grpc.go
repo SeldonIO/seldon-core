@@ -299,64 +299,75 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 		return err
 	}
 
-	// receive incoming request from envoy and forward them to the model
-	var reqErr error
-	doneReq := make(chan struct{})
+	errChan := make(chan error, 2) // Buffered channel to collect errors
+
+	// Add cancel to context
+	ctxWithCancel, cancel := context.WithCancel(outgoingCtx)
+	defer cancel()
+
+	// Forward requests from client to server
 	go func() {
-		defer func() {
-			_ = clientStream.CloseSend()
-			close(doneReq)
-		}()
+		defer cancel()
 
 		for {
-			r, err := stream.Recv()
-			if err == io.EOF {
+			select {
+			case <-ctxWithCancel.Done():
 				return
-			}
-			if err != nil {
-				reqErr = err
-				logger.WithError(reqErr).Error("gRPC reverse proxy failed to receive request from client")
-				return
-			}
+			default:
+				req, err := stream.Recv()
+				if err == io.EOF {
+					errChan <- nil
+					return
+				}
+				if err != nil {
+					errChan <- err
+					log.Printf("Failed to receive request from client: %v", err)
+					return
+				}
 
-			r.ModelName = internalModelName
-			r.ModelVersion = ""
+				req.ModelName = internalModelName
+				req.ModelVersion = ""
 
-			if err := clientStream.Send(r); err != nil {
-				reqErr = err
-				logger.WithError(reqErr).Error("gRPC reverse proxy failed to forward request to server")
-				return
+				if err := clientStream.Send(req); err != nil {
+					errChan <- err
+					log.Printf("Failed to forward request to server: %v", err)
+					return
+				}
 			}
 		}
 	}()
 
-	// receive responses from the model and forward them back to envoy
-	var respErr error
-	for {
-		clientStreamResp, err := clientStream.Recv()
-		if err == io.EOF {
-			break
-		}
+	// Forward responses from server to client
+	go func() {
+		defer cancel()
 
-		if err != nil {
-			respErr = err
-			logger.WithError(err).Error("gRPC reverse proxy failed to receive response from server")
-			break
-		}
+		for {
+			select {
+			case <-ctxWithCancel.Done():
+				return
+			default:
+				resp, err := clientStream.Recv()
+				if err == io.EOF {
+					errChan <- nil
+					return
+				}
+				if err != nil {
+					errChan <- err
+					log.Printf("Failed to receive response from server: %v", err)
+					return
+				}
 
-		if err := stream.Send(clientStreamResp); err != nil {
-			respErr = err
-			logger.WithError(respErr).Error("gRPC reverse proxy failed to forward response to client")
-			break
+				if err := stream.Send(resp); err != nil {
+					errChan <- err
+					log.Printf("Failed to forward response to client: %v", err)
+					return
+				}
+			}
 		}
-	}
+	}()
 
-	<-doneReq
-	if reqErr != nil {
-		err = reqErr
-	} else if respErr != nil {
-		err = respErr
-	}
+	// Wait for the first error or context cancellation
+	err = <-errChan
 
 	rp.setTrailer(ctx, trailer, requestId)
 
