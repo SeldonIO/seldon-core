@@ -53,7 +53,7 @@ var (
 	dbPath                       string
 	nodeID                       string
 	allowPlaintxt                bool // scheduler server
-	autoscalingDisabled          bool
+	autoscalingModelDisabled          bool
 	kafkaConfigPath              string
 	schedulerReadyTimeoutSeconds uint
 	deletedResourceTTLSeconds    uint
@@ -113,7 +113,7 @@ func init() {
 	flag.BoolVar(&allowPlaintxt, "allow-plaintxt", true, "Allow plain text scheduler server")
 
 	// Whether to enable autoscaling, default is true
-	flag.BoolVar(&autoscalingDisabled, "disable-autoscaling", false, "Disable native autoscaling feature")
+	flag.BoolVar(&autoscalingModelDisabled, "disable-model-autoscaling", false, "Disable native model autoscaling feature")
 
 	// Kafka config path
 	flag.StringVar(
@@ -285,8 +285,8 @@ func main() {
 	}
 
 	// scheduler <-> agent  grpc
-	logger.Infof("Autoscaling service is set to %t", !autoscalingDisabled)
-	as := agent.NewAgentServer(logger, ss, sched, eventHub, !autoscalingDisabled)
+	logger.Infof("Autoscaling service is set to %t", !autoscalingModelDisabled)
+	as := agent.NewAgentServer(logger, ss, sched, eventHub, !autoscalingModelDisabled)
 	err = as.StartGrpcServer(allowPlaintxt, agentPort, agentMtlsPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start agent gRPC server")
