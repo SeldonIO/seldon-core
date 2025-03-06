@@ -1,13 +1,6 @@
 # Table of contents
 * [About](README.md)
-
-## Concepts
-* Data-Centric MLOps
-* Servers
-* OIP
-* Components
-* Pipelines
-* [Experiments](experiments.md)
+* [Concepts](/docs-gb/concepts/README.md)
 
 ## Installation
 * [Installing Seldon Core 2](installation/README.md)
@@ -25,7 +18,6 @@
     * [Seldon Config](kubernetes/resources/seldonconfig.md)
     * [Pipeline Config](kubernetes/resources/pipeline.md)  
   * [Upgrading](upgrading.md) 
-     
 ## User Guide
 * Getting Started
   * Deploy Model (OIP+MLServer Link)
@@ -48,6 +40,7 @@
     * [rClone](models/rclone.md)
     * [Parameterized Models](models/parameterized-models/README.md)
     * [Pandas Query](models/parameterized-models/pandasquery.md) 
+    * [Storage Secrets](kubernetes/storage-secrets.md)
 * Inference
     * [Inference Server](https://docs.seldon.io/projects/seldon-core/en/v2/contents/about/index.html#inference-servers)
     * [Run Inference](https://docs.seldon.io/projects/seldon-core/en/v2/contents/inference/index.html)
@@ -86,33 +79,6 @@
       * Shadow 
     * CI/CD
       * Link to Component Versioning
-      
-## Integrations
-  * [Service Meshes](kubernetes/service-meshes/README.md)
-    * [Ambassador](kubernetes/service-meshes/ambassador.md)
-    * [Istio](kubernetes/service-meshes/istio.md)
-    * [Traefik](kubernetes/service-meshes/traefik.md)
-  * Audit Trails
-  * Alerts
-  * Data Management
-  * Modules 
-  
-## Resources
-* Troubleshooting
-* Tutorials
-* [Security](/getting-started/kubernetes-installation/security/index.html)
-  * [Secure Model Endpoints](models/securing-endpoints.md)
-  * Authentication
-  * Authorization
-  * Secrets Management
-* [APIs](apis/README.md)
-  * [Internal](apis/internal/README.md)
-    * [Chainer](apis/internal/chainer.md)
-    * [Agent](apis/internal/agent.md)
-  * [Inference](apis/inference/README.md)
-    * [Open Inference Protocol](apis/inference/v2.md)
-  * [Scheduler](apis/scheduler.md)
-* [Architecture](architecture/README.md)
 * [Examples](examples/README.md)
   * [Local examples](examples/local-examples.md)
   * [Kubernetes examples](examples/k8s-examples.md)
@@ -136,6 +102,34 @@
   * [Production income classifier with drift, outlier and explanations](examples/income.md)
   * [Conditional pipeline with pandas query model](examples/pandasquery.md)
   * [Kubernetes Server with PVC](examples/k8s-pvc.md)  
+
+
+## Integrations
+  * [Service Meshes](kubernetes/service-meshes/README.md)
+    * [Ambassador](kubernetes/service-meshes/ambassador.md)
+    * [Istio](kubernetes/service-meshes/istio.md)
+    * [Traefik](kubernetes/service-meshes/traefik.md)
+    * [Secure Model Endpoints](models/securing-endpoints.md)
+  * Audit Trails
+  * Alerts
+  * Data Management
+  * Modules 
+  
+## Resources
+* Troubleshooting
+* Tutorials
+* [Security](/getting-started/kubernetes-installation/security/index.html)
+  * Authentication
+  * Authorization
+  * Secrets Management
+* [APIs](apis/README.md)
+  * [Internal](apis/internal/README.md)
+    * [Chainer](apis/internal/chainer.md)
+    * [Agent](apis/internal/agent.md)
+  * [Inference](apis/inference/README.md)
+    * [Open Inference Protocol](apis/inference/v2.md)
+  * [Scheduler](apis/scheduler.md)
+* [Architecture](architecture/README.md)
 
 * APIs
     * API Reference
@@ -176,11 +170,6 @@
 * [FAQs](faqs.md)          
  
 
-
-* [Kubernetes](kubernetes/README.md)
-  * [Storage Secrets](kubernetes/storage-secrets.md)
-  * [Kafka](kubernetes/kafka.md)
-* [Metrics](metrics/README.md)
 
 * [Development](development/README.md)
   * [License](development/licenses.md)
