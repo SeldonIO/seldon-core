@@ -284,12 +284,6 @@ func forwardStream[T any](
 			cancel()
 		}
 	}()
-	defer func() {
-		if r := recover(); r != nil {
-			errChan <- fmt.Errorf("panic in forwardStream: %v", r)
-			cancel()
-		}
-	}()
 	defer wg.Done()
 
 	for {
@@ -315,7 +309,6 @@ func forwardStream[T any](
 			}
 		}
 	}
-
 }
 
 func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_ModelStreamInferServer) error {
