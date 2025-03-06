@@ -1,5 +1,7 @@
 # Table of contents
-* [About](README.md)
+
+## About
+* [Overview](README.md)
 * [Concepts](/docs-gb/concepts/README.md)
 * [Architecture](architecture/README.md)
 
