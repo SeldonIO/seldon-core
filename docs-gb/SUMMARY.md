@@ -1,16 +1,17 @@
 # Table of contents
 * [About](README.md)
 * [Concepts](/docs-gb/concepts/README.md)
+* [Architecture](architecture/README.md)
 
 ## Installation
 * [Installing Seldon Core 2](installation/README.md)
-    * [Learning Environment](installation/learning-environment/README.md)
-      * [Self-hosted Kafka](installation/learning-environment/self-hosted-kafka.md)
-    * [Production Environment](installation/production-environment/README.md)
-      * [Kafka Integration](installation/production-environment/kafka/README.md)
-         * [Managed Kafka](installation/production-environment/kafka/managed-kafka.md) 
-      * [Ingress Controller](installation/production-environment/ingress-controller/istio.md)
-    * [Test the Installation](installation/test-installation.md)
+  * [Learning Environment](installation/learning-environment/README.md)
+    * [Self-hosted Kafka](installation/learning-environment/self-hosted-kafka.md)
+  * [Production Environment](installation/production-environment/README.md)
+    * [Kafka Integration](installation/production-environment/kafka/README.md)
+    * [Managed Kafka](installation/production-environment/kafka/managed-kafka.md) 
+    * [Ingress Controller](installation/production-environment/ingress-controller/istio.md)
+  * [Test the Installation](installation/test-installation.md)
     
   * Advanced Configurations
     * [Server Config](kubernetes/resources/serverconfig.md)
@@ -129,7 +130,6 @@
   * [Inference](apis/inference/README.md)
     * [Open Inference Protocol](apis/inference/v2.md)
   * [Scheduler](apis/scheduler.md)
-* [Architecture](architecture/README.md)
 
 * APIs
     * API Reference
