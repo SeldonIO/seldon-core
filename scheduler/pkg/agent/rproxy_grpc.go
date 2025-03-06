@@ -268,7 +268,11 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	return resp, err
 }
 
-func forwardStream[T any](
+type InferMessage interface {
+	*v2.ModelInferRequest | *v2.ModelInferResponse
+}
+
+func forwardStream[T InferMessage](
 	ctx context.Context,
 	recv func() (T, error),
 	send func(T) error,
@@ -342,7 +346,7 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 		return err
 	}
 
-	errChan := make(chan error, 2) // Buffered channel to collect errors
+	errChan := make(chan error, 4) // Buffered channel to collect errors
 
 	// Add cancel to context to cancel goroutines when error occurs
 	ctxWithCancel, cancel := context.WithCancel(ctx)
