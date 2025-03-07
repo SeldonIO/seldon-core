@@ -272,6 +272,23 @@ type InferMessage interface {
 	*v2.ModelInferRequest | *v2.ModelInferResponse
 }
 
+// forwardStream forwards messages from recv to send, modifying them with modify
+// before sending. Two instances of forwardStream are launched, one for each
+// direction of the stream, from client to server and server to client. If one
+// of the streams stops due to an error, it cancels the context and returns.
+// This will stop the other stream as well. The error is sent to the errChan
+// and it is returned in the ModelStreamInfer. Note that EOF is not considered
+// an error, but it is just a signal that the stream is done. The CloseSend
+// function is called on either error or EOF to properly signal the end of the
+// stream so the resources can be properly released.
+//
+// A goroutine is launched to wait for the termination of the two streams. If
+// no error occurs, the goroutine closes the errChan, releasing the ModelStreamInfer
+// with a nil error. If an error occurs, the goroutine sends the error to the
+// errChan. In ModelStreamInfer, only the first error is waited for and returned.
+// Note that we need to launch a goroutine to wait for the termination of the
+// two streams, because otherwise the ModelStreamInfer function might wait indefinitely
+// (e.g., a forwardStream might be blocked on a recv operation and never call wg.Done()).
 func forwardStream[T InferMessage](
 	ctx context.Context,
 	recv func() (T, error),
