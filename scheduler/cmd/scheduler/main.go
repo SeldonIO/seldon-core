@@ -54,6 +54,7 @@ var (
 	nodeID                       string
 	allowPlaintxt                bool // scheduler server
 	autoscalingModelEnabled      bool
+	autoscalingServerEnabled     bool
 	kafkaConfigPath              string
 	schedulerReadyTimeoutSeconds uint
 	deletedResourceTTLSeconds    uint
@@ -112,8 +113,9 @@ func init() {
 	// Allow plaintext servers
 	flag.BoolVar(&allowPlaintxt, "allow-plaintxt", true, "Allow plain text scheduler server")
 
-	// Whether to enable autoscaling, default is true
-	flag.BoolVar(&autoscalingModelEnabled, "enable-model-autoscaling", false, "Disable native model autoscaling feature")
+	// Autoscaling
+	flag.BoolVar(&autoscalingModelEnabled, "enable-model-autoscaling", false, "Enable native model autoscaling feature")
+	flag.BoolVar(&autoscalingServerEnabled, "enable-server-autoscaling", false, "Enable native server autoscaling feature")
 
 	// Kafka config path
 	flag.StringVar(
@@ -278,7 +280,8 @@ func main() {
 	s := schedulerServer.NewSchedulerServer(
 		logger, ss, es, ps, sched, eventHub, sync,
 		schedulerServer.SchedulerServerConfig{
-			PackThreshold: serverPackingPercentage, // note that if threshold is 0, packing is disabled
+			PackThreshold:            serverPackingPercentage, // note that if threshold is 0, packing is disabled
+			AutoScalingServerEnabled: autoscalingServerEnabled,
 		})
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {

@@ -184,15 +184,17 @@ func (s *SchedulerServer) handleServerEvents(event coordinator.ServerEventMsg) {
 		return
 	}
 
-	if event.UpdateContext == coordinator.SERVER_SCALE_DOWN {
-		if ok, replicas := shouldScaleDown(server, float32(s.config.PackThreshold)); ok {
-			logger.Infof("Server %s is scaling down to %d", event.ServerName, replicas)
-			s.sendServerScale(server, replicas)
-		}
-	} else if event.UpdateContext == coordinator.SERVER_SCALE_UP {
-		if ok, replicas := shouldScaleUp(server); ok {
-			logger.Infof("Server %s is scaling up to %d", event.ServerName, replicas)
-			s.sendServerScale(server, replicas)
+	if s.config.AutoScalingServerEnabled {
+		if event.UpdateContext == coordinator.SERVER_SCALE_DOWN {
+			if ok, replicas := shouldScaleDown(server, float32(s.config.PackThreshold)); ok {
+				logger.Infof("Server %s is scaling down to %d", event.ServerName, replicas)
+				s.sendServerScale(server, replicas)
+			}
+		} else if event.UpdateContext == coordinator.SERVER_SCALE_UP {
+			if ok, replicas := shouldScaleUp(server); ok {
+				logger.Infof("Server %s is scaling up to %d", event.ServerName, replicas)
+				s.sendServerScale(server, replicas)
+			}
 		}
 	}
 }
