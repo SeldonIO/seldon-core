@@ -131,10 +131,11 @@
 * Troubleshooting
 * Tutorials -->
 * [Security](/getting-started/kubernetes-installation/security/index.html)
-<!-->
+<!--
   * Authentication
   * Authorization
-  * Secrets Management -->
+  * Secrets Management 
+  -->
 * [APIs](apis/README.md)
   * [Internal](apis/internal/README.md)
     * [Chainer](apis/internal/chainer.md)
@@ -175,8 +176,8 @@
       * [Server Status](cli/seldon\_server\_status.md)
 <!--    
 * Reference
-    * Glossary 
-* [FAQs](faqs.md)-->          
+    * Glossary -->
+* [FAQs](faqs.md)          
  
 * [Development](development/README.md)
   * [License](development/licenses.md)
