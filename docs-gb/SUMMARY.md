@@ -22,22 +22,24 @@
     * [Pipeline Config](kubernetes/resources/pipeline.md)  
   * [Upgrading](upgrading.md) 
 ## User Guide
+<!-->
 * Getting Started
   * Deploy Model (OIP+MLServer Link)
   * Pipeline
   * Inference Server
-  * Run Inference
+  * Run Inference -->
   * [Kubernetes Resources](kubernetes/resources/README.md) 
 * [Servers](servers.md)
     * [Resource allocation](resource-allocation/README.md)
       * [Example: Serving models on dedicated GPU nodes](resource-allocation/example-serving-models-on-dedicated-gpu-nodes.md)
 * [Models](models/README.md)
-    * CRD
+  <!-->  
+   * CRD
     * Registration
     * Versioning
     * LLM
     * Parameterized Models
-    * Links to Secret Management
+    * Links to Secret Management -->
     * [Multi-Model Serving](models/mms.md)
     * [Inference Artifacts](models/inference-artifacts.md)
     * [rClone](models/rclone.md)
@@ -51,10 +53,12 @@
     * [Batch](examples/batch-examples-k8s.md) and (examples/batch-examples-local.md)
 * [Pipelines](pipelines.md)
 * [Scaling](kubernetes/scaling.md)
+  <!-- 
   * Server Scaling
-  * Component Scaling
+  * Component Scaling -->
   * [Autoscaling](kubernetes/autoscaling.md)
-  * Multi-Component Serving and Overcommit
+  <!--
+  * Multi-Component Serving and Overcommit -->
   * [HPA Autoscaling in single-model serving](kubernetes/hpa-rps-autoscaling.md)
 * Data Science Monitoring
     * [Dataflow with Kafka](architecture/dataflow.md)
@@ -70,18 +74,21 @@
     * [Tracing](kubernetes/tracing.md)
     * [Local Metrics](metrics/local-metrics-test.md)
     * [Performance Tests](performance-tests.md)
-    * Performance Tuning 
+    <!--
+    * Performance Tuning -->
+<!--    
 * Rollouts & Experiments
     * Rollout Strategies
         * Progressive Rollouts
-        * Rollbacks
+        * Rollbacks -->
     * [Experiments](kubernetes/resources/experiment.md)
+  <!-->
       * A/B Testing
       * Traffic Splitting
       * Canary
       * Shadow 
     * CI/CD
-      * Link to Component Versioning
+      * Link to Component Versioning -->
 * [Examples](examples/README.md)
   * [Local examples](examples/local-examples.md)
   * [Kubernetes examples](examples/k8s-examples.md)
@@ -113,18 +120,21 @@
     * [Istio](kubernetes/service-meshes/istio.md)
     * [Traefik](kubernetes/service-meshes/traefik.md)
     * [Secure Model Endpoints](models/securing-endpoints.md)
+<!--   
   * Audit Trails
   * Alerts
   * Data Management
   * Modules 
-  
+  -->
 ## Resources
+<!--
 * Troubleshooting
-* Tutorials
+* Tutorials -->
 * [Security](/getting-started/kubernetes-installation/security/index.html)
+<!-->
   * Authentication
   * Authorization
-  * Secrets Management
+  * Secrets Management -->
 * [APIs](apis/README.md)
   * [Internal](apis/internal/README.md)
     * [Chainer](apis/internal/chainer.md)
@@ -163,12 +173,11 @@
     * [Server](cli/seldon\_server.md)
       * [Server List](cli/seldon\_server\_list.md)
       * [Server Status](cli/seldon\_server\_status.md)
+<!--    
 * Reference
     * Glossary 
-* [FAQs](faqs.md)          
+* [FAQs](faqs.md)-->          
  
-
-
 * [Development](development/README.md)
   * [License](development/licenses.md)
   * [Release](development/release.md)
