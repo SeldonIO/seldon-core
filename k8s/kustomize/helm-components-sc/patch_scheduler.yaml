@@ -73,6 +73,8 @@ spec:
             value: '{{ .Values.envoy.includeSuccessfulRequests }}'
           - name: ENABLE_MODEL_AUTOSCALING
             value: '{{ .Values.autoscaling.autoscalingModelEnabled }}'
+          - name: ENABLE_SERVER_AUTOSCALING
+            value: '{{ .Values.autoscaling.autoscalingServerEnabled }}'
     volumeClaimTemplates:
     - name: scheduler-state
       spec:

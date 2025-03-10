@@ -227,6 +227,7 @@ scheduler:
   
 autoscaling:
   autoscalingModelEnabled: false
+  autoscalingServerEnabled: false
   serverPackingEnabled: false
   serverPackingPercentage: 0.0
 

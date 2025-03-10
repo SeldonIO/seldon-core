@@ -493,6 +493,7 @@ spec:
         - --enable-envoy-accesslog=$(ENABLE_ENVOY_ACCESSLOG)
         - --include-successful-requests-envoy-accesslog=$(INCLUDE_SUCCESSFUL_REQUESTS_ENVOY_ACCESSLOG)
         - --enable-model-autoscaling=$(ENABLE_MODEL_AUTOSCALING)
+        - --enable-server-autoscaling=$(ENABLE_SERVER_AUTOSCALING)
         command:
         - /bin/scheduler
         env:
@@ -553,6 +554,8 @@ spec:
           value: '{{ .Values.envoy.includeSuccessfulRequests }}'
         - name: ENABLE_MODEL_AUTOSCALING
           value: '{{ .Values.autoscaling.autoscalingModelEnabled }}'
+        - name: ENABLE_SERVER_AUTOSCALING
+          value: '{{ .Values.autoscaling.autoscalingServerEnabled }}'
         - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE
