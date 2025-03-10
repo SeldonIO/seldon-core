@@ -1,5 +1,14 @@
 # Helm Configuration Options
 
+Seldon Core 2 provides a highly configurable deployment framework that allows you to fine-tune various components using Helm configuration options. These options offer control over deployment behavior, resource management, logging, autoscaling, and model lifecycle policies to optimize the performance and scalability of machine learning deployments.
+
+This section details the key Helm configuration parameters for Envoy, Autoscaling, Server Prestop, and Model Control Plane, ensuring that you can customize deployment workflows and enhance operational efficiency.
+
+* Envoy Configuration: Manage pre-stop behaviors and configure access logging to track request-level interactions.
+* Autoscaling (Experimental): Fine-tune dynamic scaling policies for efficient resource allocation based on real-time inference workloads.
+* Server Configuration: Define grace periods for controlled shutdowns and optimize model control plane parameters for efficient model loading, unloading, and error handling.
+
+
 ## Envoy
 
 ### Prestop
