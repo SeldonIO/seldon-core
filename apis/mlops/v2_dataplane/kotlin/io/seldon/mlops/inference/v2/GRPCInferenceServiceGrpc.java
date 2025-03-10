@@ -204,6 +204,37 @@ public final class GRPCInferenceServiceGrpc {
     return getModelInferMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest,
+      io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse> getModelStreamInferMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "ModelStreamInfer",
+      requestType = io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.class,
+      responseType = io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING)
+  public static io.grpc.MethodDescriptor<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest,
+      io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse> getModelStreamInferMethod() {
+    io.grpc.MethodDescriptor<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest, io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse> getModelStreamInferMethod;
+    if ((getModelStreamInferMethod = GRPCInferenceServiceGrpc.getModelStreamInferMethod) == null) {
+      synchronized (GRPCInferenceServiceGrpc.class) {
+        if ((getModelStreamInferMethod = GRPCInferenceServiceGrpc.getModelStreamInferMethod) == null) {
+          GRPCInferenceServiceGrpc.getModelStreamInferMethod = getModelStreamInferMethod =
+              io.grpc.MethodDescriptor.<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest, io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "ModelStreamInfer"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new GRPCInferenceServiceMethodDescriptorSupplier("ModelStreamInfer"))
+              .build();
+        }
+      }
+    }
+    return getModelStreamInferMethod;
+  }
+
   private static volatile io.grpc.MethodDescriptor<io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexRequest,
       io.seldon.mlops.inference.v2.V2Dataplane.RepositoryIndexResponse> getRepositoryIndexMethod;
 
@@ -417,6 +448,18 @@ public final class GRPCInferenceServiceGrpc {
 
     /**
      * <pre>
+     * The ModelStreamInfer API performs bidirectional inference streaming using the
+     * specified model. Errors are indicated by the google.rpc.Status returned for
+     * the request. The OK code indicates success and other codes indicate failure.
+     * </pre>
+     */
+    default io.grpc.stub.StreamObserver<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest> modelStreamInfer(
+        io.grpc.stub.StreamObserver<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse> responseObserver) {
+      return io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall(getModelStreamInferMethod(), responseObserver);
+    }
+
+    /**
+     * <pre>
      * control plance
      * </pre>
      */
@@ -544,6 +587,19 @@ public final class GRPCInferenceServiceGrpc {
         io.grpc.stub.StreamObserver<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getModelInferMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     * <pre>
+     * The ModelStreamInfer API performs bidirectional inference streaming using the
+     * specified model. Errors are indicated by the google.rpc.Status returned for
+     * the request. The OK code indicates success and other codes indicate failure.
+     * </pre>
+     */
+    public io.grpc.stub.StreamObserver<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest> modelStreamInfer(
+        io.grpc.stub.StreamObserver<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse> responseObserver) {
+      return io.grpc.stub.ClientCalls.asyncBidiStreamingCall(
+          getChannel().newCall(getModelStreamInferMethod(), getCallOptions()), responseObserver);
     }
 
     /**
@@ -814,6 +870,7 @@ public final class GRPCInferenceServiceGrpc {
   private static final int METHODID_REPOSITORY_INDEX = 6;
   private static final int METHODID_REPOSITORY_MODEL_LOAD = 7;
   private static final int METHODID_REPOSITORY_MODEL_UNLOAD = 8;
+  private static final int METHODID_MODEL_STREAM_INFER = 9;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -878,6 +935,9 @@ public final class GRPCInferenceServiceGrpc {
     public io.grpc.stub.StreamObserver<Req> invoke(
         io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
+        case METHODID_MODEL_STREAM_INFER:
+          return (io.grpc.stub.StreamObserver<Req>) serviceImpl.modelStreamInfer(
+              (io.grpc.stub.StreamObserver<io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse>) responseObserver);
         default:
           throw new AssertionError();
       }
@@ -928,6 +988,13 @@ public final class GRPCInferenceServiceGrpc {
               io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest,
               io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse>(
                 service, METHODID_MODEL_INFER)))
+        .addMethod(
+          getModelStreamInferMethod(),
+          io.grpc.stub.ServerCalls.asyncBidiStreamingCall(
+            new MethodHandlers<
+              io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest,
+              io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse>(
+                service, METHODID_MODEL_STREAM_INFER)))
         .addMethod(
           getRepositoryIndexMethod(),
           io.grpc.stub.ServerCalls.asyncUnaryCall(
@@ -1003,6 +1070,7 @@ public final class GRPCInferenceServiceGrpc {
               .addMethod(getServerMetadataMethod())
               .addMethod(getModelMetadataMethod())
               .addMethod(getModelInferMethod())
+              .addMethod(getModelStreamInferMethod())
               .addMethod(getRepositoryIndexMethod())
               .addMethod(getRepositoryModelLoadMethod())
               .addMethod(getRepositoryModelUnloadMethod())

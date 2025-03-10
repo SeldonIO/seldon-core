@@ -29256,7 +29256,7 @@ io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter defaultValue) 
       ".ParametersEntry\032V\n\017ParametersEntry\022\013\n\003k" +
       "ey\030\001 \001(\t\0222\n\005value\030\002 \001(\0132#.inference.Mode" +
       "lRepositoryParameter:\0028\001\"\037\n\035RepositoryMo" +
-      "delUnloadResponse2\256\006\n\024GRPCInferenceServi" +
+      "delUnloadResponse2\205\007\n\024GRPCInferenceServi" +
       "ce\022K\n\nServerLive\022\034.inference.ServerLiveR" +
       "equest\032\035.inference.ServerLiveResponse\"\000\022" +
       "N\n\013ServerReady\022\035.inference.ServerReadyRe" +
@@ -29269,17 +29269,19 @@ io.seldon.mlops.inference.v2.V2Dataplane.ModelRepositoryParameter defaultValue) 
       "MetadataRequest\032 .inference.ModelMetadat" +
       "aResponse\"\000\022K\n\nModelInfer\022\034.inference.Mo" +
       "delInferRequest\032\035.inference.ModelInferRe" +
-      "sponse\"\000\022Z\n\017RepositoryIndex\022!.inference." +
-      "RepositoryIndexRequest\032\".inference.Repos" +
-      "itoryIndexResponse\"\000\022f\n\023RepositoryModelL" +
-      "oad\022%.inference.RepositoryModelLoadReque" +
-      "st\032&.inference.RepositoryModelLoadRespon" +
-      "se\"\000\022l\n\025RepositoryModelUnload\022\'.inferenc" +
-      "e.RepositoryModelUnloadRequest\032(.inferen" +
-      "ce.RepositoryModelUnloadResponse\"\000B]\n\034io" +
-      ".seldon.mlops.inference.v2Z=github.com/s" +
-      "eldonio/seldon-core/apis/go/v2/mlops/v2_" +
-      "dataplaneb\006proto3"
+      "sponse\"\000\022U\n\020ModelStreamInfer\022\034.inference" +
+      ".ModelInferRequest\032\035.inference.ModelInfe" +
+      "rResponse\"\000(\0010\001\022Z\n\017RepositoryIndex\022!.inf" +
+      "erence.RepositoryIndexRequest\032\".inferenc" +
+      "e.RepositoryIndexResponse\"\000\022f\n\023Repositor" +
+      "yModelLoad\022%.inference.RepositoryModelLo" +
+      "adRequest\032&.inference.RepositoryModelLoa" +
+      "dResponse\"\000\022l\n\025RepositoryModelUnload\022\'.i" +
+      "nference.RepositoryModelUnloadRequest\032(." +
+      "inference.RepositoryModelUnloadResponse\"" +
+      "\000B]\n\034io.seldon.mlops.inference.v2Z=githu" +
+      "b.com/seldonio/seldon-core/apis/go/v2/ml" +
+      "ops/v2_dataplaneb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
