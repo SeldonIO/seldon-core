@@ -4,9 +4,9 @@ Seldon Core 2 provides a highly configurable deployment framework that allows yo
 
 This section details the key Helm configuration parameters for Envoy, Autoscaling, Server Prestop, and Model Control Plane, ensuring that you can customize deployment workflows and enhance operational efficiency.
 
-* Envoy Configuration: Manage pre-stop behaviors and configure access logging to track request-level interactions.
-* Autoscaling (Experimental): Fine-tune dynamic scaling policies for efficient resource allocation based on real-time inference workloads.
-* Server Configuration: Define grace periods for controlled shutdowns and optimize model control plane parameters for efficient model loading, unloading, and error handling.
+* **Envoy**: Manage pre-stop behaviors and configure access logging to track request-level interactions.
+* **Autoscaling** (Experimental): Fine-tune dynamic scaling policies for efficient resource allocation based on real-time inference workloads.
+* **Servers**: Define grace periods for controlled shutdowns and optimize model control plane parameters for efficient model loading, unloading, and error handling.
 
 
 ## Envoy
