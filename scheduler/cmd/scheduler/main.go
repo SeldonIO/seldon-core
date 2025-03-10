@@ -115,7 +115,7 @@ func init() {
 
 	// Autoscaling
 	flag.BoolVar(&autoscalingModelEnabled, "enable-model-autoscaling", false, "Enable native model autoscaling feature")
-	flag.BoolVar(&autoscalingServerEnabled, "enable-server-autoscaling", false, "Enable native server autoscaling feature")
+	flag.BoolVar(&autoscalingServerEnabled, "enable-server-autoscaling", true, "Enable native server autoscaling feature")
 
 	// Kafka config path
 	flag.StringVar(
@@ -183,8 +183,7 @@ func main() {
 	logger.Debugf("Scheduler ready timeout is set to %d seconds", schedulerReadyTimeoutSeconds)
 	logger.Debugf("Server packing is set to %t", serverPackingEnabled)
 	logger.Debugf("Server packing percentage is set to %f", serverPackingPercentage)
-	logger.Infof("Autoscaling service is set to %t", autoscalingModelEnabled)
-
+	logger.Infof("Autoscaling service is set to Model: %t and Server: %t", autoscalingModelEnabled, autoscalingServerEnabled)
 	done := make(chan bool, 1)
 
 	namespace = getNamespace()
