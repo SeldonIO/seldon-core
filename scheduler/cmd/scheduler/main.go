@@ -183,7 +183,7 @@ func main() {
 	logger.Debugf("Scheduler ready timeout is set to %d seconds", schedulerReadyTimeoutSeconds)
 	logger.Debugf("Server packing is set to %t", serverPackingEnabled)
 	logger.Debugf("Server packing percentage is set to %f", serverPackingPercentage)
-	logger.Infof("Autoscaling service is set to Model: %t and Server: %t", autoscalingModelEnabled, autoscalingServerEnabled)
+	logger.Infof("Autoscaling (native) service is set to Model: %t and Server: %t", autoscalingModelEnabled, autoscalingServerEnabled)
 	done := make(chan bool, 1)
 
 	namespace = getNamespace()
