@@ -12,6 +12,7 @@ package testing_utils
 import (
 	"context"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"sync"
@@ -82,6 +83,7 @@ type MockGRPCMLServer struct {
 	LoadSleep         time.Duration
 	UnloadSleep       time.Duration
 	ControlPlaneSleep time.Duration
+	StreamErr         bool
 	v2.UnimplementedGRPCInferenceServiceServer
 }
 
@@ -109,6 +111,30 @@ func (m *MockGRPCMLServer) Stop() {
 
 func (m *MockGRPCMLServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
 	return &v2.ModelInferResponse{ModelName: r.ModelName, ModelVersion: r.ModelVersion}, nil
+}
+
+func (m *MockGRPCMLServer) ModelStreamInfer(stream v2.GRPCInferenceService_ModelStreamInferServer) error {
+	if m.StreamErr {
+		return status.Error(codes.Internal, "stream mocked error")
+	}
+
+	for {
+		r, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+
+		err = stream.Send(&v2.ModelInferResponse{
+			ModelName:    r.ModelName,
+			ModelVersion: r.ModelVersion,
+		})
+		if err != nil {
+			return err
+		}
+	}
 }
 
 func (m *MockGRPCMLServer) ModelMetadata(ctx context.Context, r *v2.ModelMetadataRequest) (*v2.ModelMetadataResponse, error) {

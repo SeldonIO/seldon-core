@@ -110,7 +110,10 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 
 	// client to proxy
-	conn, err := grpc.NewClient(":"+strconv.Itoa(rpPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(
+		":"+strconv.Itoa(rpPort),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
 	if err != nil {
 		t.Fatalf("Cannot connect to server (%s)", err)
 	}
@@ -121,6 +124,39 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 		ctx := context.Background()
 		ctx = metadata.AppendToOutgoingContext(ctx, util.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffixInternal, util.SeldonModelHeader, dummyModelNamePrefix+modelSuffix)
 		return client.ModelInfer(ctx, &v2.ModelInferRequest{ModelName: dummyModelNamePrefix}) // note without suffix
+	}
+
+	numStreamMessages := 10
+	doStreamInfer := func(modelSuffixInternal, modelSuffix string) ([]*v2.ModelInferResponse, error) {
+		client := v2.NewGRPCInferenceServiceClient(conn)
+		ctx := context.Background()
+		ctx = metadata.AppendToOutgoingContext(ctx, util.SeldonInternalModelHeader, dummyModelNamePrefix+modelSuffixInternal, util.SeldonModelHeader, dummyModelNamePrefix+modelSuffix)
+
+		stream, err := client.ModelStreamInfer(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		defer func() {
+			_ = stream.CloseSend()
+		}()
+
+		responses := []*v2.ModelInferResponse{}
+		for i := 0; i < numStreamMessages; i++ {
+			r := v2.ModelInferRequest{ModelName: dummyModelNamePrefix}
+			err = stream.Send(&r)
+			if err != nil {
+				return nil, err
+			}
+
+			response, err := stream.Recv()
+			if err != nil {
+				return nil, err
+			}
+
+			responses = append(responses, response)
+		}
+		return responses, nil
 	}
 
 	doMeta := func(modelSuffix string) (*v2.ModelMetadataResponse, error) {
@@ -160,6 +196,19 @@ func TestReverseGRPCServiceSmoke(t *testing.T) {
 	g.Expect(responseReady.Ready).To(Equal(true))
 	g.Expect(mockMLServerState.isModelLoaded(dummyModelNamePrefix + "_0")).To(Equal(true))
 	g.Expect(errReady).To(BeNil())
+
+	t.Log("Testing streaming")
+	responsesStreamInfer, errStreamInfer := doStreamInfer("_0", ".experiment")
+	g.Expect(errStreamInfer).To(BeNil())
+	g.Expect(len(responsesStreamInfer)).To(Equal(numStreamMessages))
+	g.Expect(responsesStreamInfer[0].ModelName).To(Equal(dummyModelNamePrefix + "_0"))
+	g.Expect(responsesStreamInfer[0].ModelVersion).To(Equal("")) // in practice this should be something else
+
+	t.Log("Testing streaming error")
+	mockMLServer.StreamErr = true
+	_, errStreamInfer = doStreamInfer("_0", "")
+	g.Expect(errStreamInfer).NotTo(BeNil())
+	g.Expect(errStreamInfer.Error()).To(ContainSubstring("stream mocked error"))
 
 	t.Log("Testing lazy load")
 	mockMLServerState.setModelServerUnloaded(dummyModelNamePrefix + "_0")

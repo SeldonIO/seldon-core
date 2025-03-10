@@ -39,6 +39,7 @@ const (
 	GRPCInferenceService_ServerMetadata_FullMethodName        = "/inference.GRPCInferenceService/ServerMetadata"
 	GRPCInferenceService_ModelMetadata_FullMethodName         = "/inference.GRPCInferenceService/ModelMetadata"
 	GRPCInferenceService_ModelInfer_FullMethodName            = "/inference.GRPCInferenceService/ModelInfer"
+	GRPCInferenceService_ModelStreamInfer_FullMethodName      = "/inference.GRPCInferenceService/ModelStreamInfer"
 	GRPCInferenceService_RepositoryIndex_FullMethodName       = "/inference.GRPCInferenceService/RepositoryIndex"
 	GRPCInferenceService_RepositoryModelLoad_FullMethodName   = "/inference.GRPCInferenceService/RepositoryModelLoad"
 	GRPCInferenceService_RepositoryModelUnload_FullMethodName = "/inference.GRPCInferenceService/RepositoryModelUnload"
@@ -69,6 +70,10 @@ type GRPCInferenceServiceClient interface {
 	// indicated by the google.rpc.Status returned for the request. The OK code
 	// indicates success and other codes indicate failure.
 	ModelInfer(ctx context.Context, in *ModelInferRequest, opts ...grpc.CallOption) (*ModelInferResponse, error)
+	// The ModelStreamInfer API performs bidirectional inference streaming using the
+	// specified model. Errors are indicated by the google.rpc.Status returned for
+	// the request. The OK code indicates success and other codes indicate failure.
+	ModelStreamInfer(ctx context.Context, opts ...grpc.CallOption) (GRPCInferenceService_ModelStreamInferClient, error)
 	// control plance
 	RepositoryIndex(ctx context.Context, in *RepositoryIndexRequest, opts ...grpc.CallOption) (*RepositoryIndexResponse, error)
 	RepositoryModelLoad(ctx context.Context, in *RepositoryModelLoadRequest, opts ...grpc.CallOption) (*RepositoryModelLoadResponse, error)
@@ -143,6 +148,38 @@ func (c *gRPCInferenceServiceClient) ModelInfer(ctx context.Context, in *ModelIn
 	return out, nil
 }
 
+func (c *gRPCInferenceServiceClient) ModelStreamInfer(ctx context.Context, opts ...grpc.CallOption) (GRPCInferenceService_ModelStreamInferClient, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &GRPCInferenceService_ServiceDesc.Streams[0], GRPCInferenceService_ModelStreamInfer_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &gRPCInferenceServiceModelStreamInferClient{ClientStream: stream}
+	return x, nil
+}
+
+type GRPCInferenceService_ModelStreamInferClient interface {
+	Send(*ModelInferRequest) error
+	Recv() (*ModelInferResponse, error)
+	grpc.ClientStream
+}
+
+type gRPCInferenceServiceModelStreamInferClient struct {
+	grpc.ClientStream
+}
+
+func (x *gRPCInferenceServiceModelStreamInferClient) Send(m *ModelInferRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *gRPCInferenceServiceModelStreamInferClient) Recv() (*ModelInferResponse, error) {
+	m := new(ModelInferResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *gRPCInferenceServiceClient) RepositoryIndex(ctx context.Context, in *RepositoryIndexRequest, opts ...grpc.CallOption) (*RepositoryIndexResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RepositoryIndexResponse)
@@ -198,6 +235,10 @@ type GRPCInferenceServiceServer interface {
 	// indicated by the google.rpc.Status returned for the request. The OK code
 	// indicates success and other codes indicate failure.
 	ModelInfer(context.Context, *ModelInferRequest) (*ModelInferResponse, error)
+	// The ModelStreamInfer API performs bidirectional inference streaming using the
+	// specified model. Errors are indicated by the google.rpc.Status returned for
+	// the request. The OK code indicates success and other codes indicate failure.
+	ModelStreamInfer(GRPCInferenceService_ModelStreamInferServer) error
 	// control plance
 	RepositoryIndex(context.Context, *RepositoryIndexRequest) (*RepositoryIndexResponse, error)
 	RepositoryModelLoad(context.Context, *RepositoryModelLoadRequest) (*RepositoryModelLoadResponse, error)
@@ -226,6 +267,9 @@ func (UnimplementedGRPCInferenceServiceServer) ModelMetadata(context.Context, *M
 }
 func (UnimplementedGRPCInferenceServiceServer) ModelInfer(context.Context, *ModelInferRequest) (*ModelInferResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ModelInfer not implemented")
+}
+func (UnimplementedGRPCInferenceServiceServer) ModelStreamInfer(GRPCInferenceService_ModelStreamInferServer) error {
+	return status.Errorf(codes.Unimplemented, "method ModelStreamInfer not implemented")
 }
 func (UnimplementedGRPCInferenceServiceServer) RepositoryIndex(context.Context, *RepositoryIndexRequest) (*RepositoryIndexResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RepositoryIndex not implemented")
@@ -357,6 +401,32 @@ func _GRPCInferenceService_ModelInfer_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GRPCInferenceService_ModelStreamInfer_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(GRPCInferenceServiceServer).ModelStreamInfer(&gRPCInferenceServiceModelStreamInferServer{ServerStream: stream})
+}
+
+type GRPCInferenceService_ModelStreamInferServer interface {
+	Send(*ModelInferResponse) error
+	Recv() (*ModelInferRequest, error)
+	grpc.ServerStream
+}
+
+type gRPCInferenceServiceModelStreamInferServer struct {
+	grpc.ServerStream
+}
+
+func (x *gRPCInferenceServiceModelStreamInferServer) Send(m *ModelInferResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *gRPCInferenceServiceModelStreamInferServer) Recv() (*ModelInferRequest, error) {
+	m := new(ModelInferRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func _GRPCInferenceService_RepositoryIndex_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RepositoryIndexRequest)
 	if err := dec(in); err != nil {
@@ -455,6 +525,13 @@ var GRPCInferenceService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _GRPCInferenceService_RepositoryModelUnload_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "ModelStreamInfer",
+			Handler:       _GRPCInferenceService_ModelStreamInfer_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "mlops/v2_dataplane/v2_dataplane.proto",
 }
