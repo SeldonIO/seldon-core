@@ -274,7 +274,7 @@ type InferMessage interface {
 
 // forwardStream forwards messages from recv to send, modifying them with modify
 // before sending. Two instances of forwardStream are launched, one for each
-// direction of the stream, from client to server and server to client. If one
+// direction of the stream, from client <> reverse proxy and  reverse proxy <> (model) server. If one
 // of the streams stops due to an error, it cancels the context and returns.
 // This will stop the other stream as well. The error is sent to the errChan
 // and it is returned in the ModelStreamInfer. Note that EOF is not considered
