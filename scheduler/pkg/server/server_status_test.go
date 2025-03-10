@@ -507,7 +507,11 @@ func TestServerScaleUpEvents(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, hub := createTestScheduler()
+			s, hub := createTestSchedulerWithConfig(
+				SchedulerServerConfig{
+					AutoScalingServerEnabled: true,
+				},
+			)
 			s.timeout = test.timeout
 
 			if test.notifyReq != nil {
@@ -584,6 +588,7 @@ func TestServerScaleDownEvents(t *testing.T) {
 		name       string
 		serverName string
 		agents     []*pba.AgentSubscribeRequest
+		enabled    bool
 	}
 
 	tests := []test{
@@ -618,12 +623,50 @@ func TestServerScaleDownEvents(t *testing.T) {
 					},
 				},
 			},
+			enabled: true,
+		},
+		{
+			// this test will create a 2 replicas server
+			// and then trigger a scale down event
+			name:       "scale down - not triggered",
+			serverName: "server1",
+			agents: []*pba.AgentSubscribeRequest{
+				{
+					ServerName:           "server1",
+					ReplicaIdx:           0,
+					Shared:               true,
+					AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{
+						InferenceSvc:      "server1",
+						InferenceHttpPort: 1,
+						MemoryBytes:       1000,
+						Capabilities:      []string{"sklearn"},
+					},
+				},
+				{
+					ServerName:           "server1",
+					ReplicaIdx:           1,
+					Shared:               true,
+					AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{
+						InferenceSvc:      "server1",
+						InferenceHttpPort: 1,
+						MemoryBytes:       1000,
+						Capabilities:      []string{"sklearn"},
+					},
+				},
+			},
+			enabled: false,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, event := createTestScheduler()
+			s, event := createTestSchedulerWithConfig(
+				SchedulerServerConfig{
+					AutoScalingServerEnabled: test.enabled,
+				},
+			)
 
 			for _, agent := range test.agents {
 				err := s.modelStore.AddServerReplica(agent)
@@ -664,18 +707,32 @@ func TestServerScaleDownEvents(t *testing.T) {
 					ssr = next
 				}
 			default:
-				t.Fail()
+				if test.enabled {
+					t.Fail()
+				}
 			}
 
-			g.Expect(ssr).ToNot(BeNil())
-			g.Expect(ssr.ServerName).To(Equal(test.serverName))
-			g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_ScalingRequest))
+			if test.enabled {
+				g.Expect(ssr).ToNot(BeNil())
+				g.Expect(ssr.ServerName).To(Equal(test.serverName))
+				g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_ScalingRequest))
+			} else {
+				g.Expect(ssr).To(BeNil())
+			}
 
 		})
 	}
 }
 
 func createTestScheduler() (*SchedulerServer, *coordinator.EventHub) {
+	return createTestSchedulerWithConfig(SchedulerServerConfig{})
+}
+
+func createTestSchedulerWithConfig(config SchedulerServerConfig) (*SchedulerServer, *coordinator.EventHub) {
+	return createTestSchedulerImpl(config)
+}
+
+func createTestSchedulerImpl(config SchedulerServerConfig) (*SchedulerServer, *coordinator.EventHub) {
 	logger := log.New()
 	logger.SetLevel(log.WarnLevel)
 
@@ -694,7 +751,7 @@ func createTestScheduler() (*SchedulerServer, *coordinator.EventHub) {
 	)
 	s := NewSchedulerServer(
 		logger, schedulerStore, experimentServer, pipelineServer, scheduler,
-		eventHub, synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), SchedulerServerConfig{})
+		eventHub, synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), config)
 
 	return s, eventHub
 }

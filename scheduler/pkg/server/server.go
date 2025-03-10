@@ -68,7 +68,8 @@ type SchedulerServer struct {
 }
 
 type SchedulerServerConfig struct {
-	PackThreshold float64
+	PackThreshold            float64
+	AutoScalingServerEnabled bool
 }
 
 type ModelEventStream struct {

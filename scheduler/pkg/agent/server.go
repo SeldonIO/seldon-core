@@ -105,14 +105,14 @@ type ServerKey struct {
 type Server struct {
 	mutex sync.RWMutex
 	pb.UnimplementedAgentServiceServer
-	logger                    log.FieldLogger
-	agents                    map[ServerKey]*AgentSubscriber
-	store                     store.ModelStore
-	scheduler                 scheduler.Scheduler
-	certificateStore          *seldontls.CertificateStore
-	waiter                    *modelRelocatedWaiter // waiter for when we want to drain a particular server replica
-	autoscalingServiceEnabled bool
-	agentMutex                sync.Map // to force a serial order per agent (serverName, replicaIdx)
+	logger                  log.FieldLogger
+	agents                  map[ServerKey]*AgentSubscriber
+	store                   store.ModelStore
+	scheduler               scheduler.Scheduler
+	certificateStore        *seldontls.CertificateStore
+	waiter                  *modelRelocatedWaiter // waiter for when we want to drain a particular server replica
+	autoscalingModelEnabled bool
+	agentMutex              sync.Map // to force a serial order per agent (serverName, replicaIdx)
 }
 
 type SchedulerAgent interface {
@@ -130,16 +130,16 @@ func NewAgentServer(
 	store store.ModelStore,
 	scheduler scheduler.Scheduler,
 	hub *coordinator.EventHub,
-	autoscalingServiceEnabled bool,
+	autoscalingModelEnabled bool,
 ) *Server {
 	s := &Server{
-		logger:                    logger.WithField("source", "AgentServer"),
-		agents:                    make(map[ServerKey]*AgentSubscriber),
-		store:                     store,
-		scheduler:                 scheduler,
-		waiter:                    newModelRelocatedWaiter(),
-		autoscalingServiceEnabled: autoscalingServiceEnabled,
-		agentMutex:                sync.Map{},
+		logger:                  logger.WithField("source", "AgentServer"),
+		agents:                  make(map[ServerKey]*AgentSubscriber),
+		store:                   store,
+		scheduler:               scheduler,
+		waiter:                  newModelRelocatedWaiter(),
+		autoscalingModelEnabled: autoscalingModelEnabled,
+		agentMutex:              sync.Map{},
 	}
 
 	hub.RegisterModelEventHandler(
@@ -269,7 +269,7 @@ func (s *Server) Sync(modelName string) {
 			err = as.stream.Send(&pb.ModelOperationMessage{
 				Operation:          pb.ModelOperationMessage_LOAD_MODEL,
 				ModelVersion:       &pb.ModelVersion{Model: model, Version: latestModel.GetVersion()},
-				AutoscalingEnabled: util.AutoscalingEnabled(model.DeploymentSpec.GetMinReplicas(), model.DeploymentSpec.GetMaxReplicas()) && s.autoscalingServiceEnabled,
+				AutoscalingEnabled: util.AutoscalingEnabled(model.DeploymentSpec.GetMinReplicas(), model.DeploymentSpec.GetMaxReplicas()) && s.autoscalingModelEnabled,
 			})
 			as.mutex.Unlock()
 			if err != nil {

@@ -32,6 +32,8 @@ This section details the key Helm configuration parameters for Envoy, Autoscalin
 
 | Key | Chart | Description | Default
 | --- | --- | --- | --- |
+| `autoscaling.autoscalingModelEnabled` | components | Enable _native_ autoscaling for Models. This is orthogonal to external autoscaling services e.g. HPA. | false |
+| `autoscaling.autoscalingServerEnabled` | components | Enable _native_ autoscaling for Models. This is orthogonal to external autoscaling services e.g. HPA. | true |
 | `agent.scalingStatsPeriodSeconds` | components | Sampling rate for metrics used for autoscaling. | 20 |
 | `agent.modelInferenceLagThreshold` | components | Queue lag threshold to trigger scaling up of a model replica. | 30 |
 | `agent.modelInactiveSecondsThreshold` | components | Period with no activity after which to trigger scaling down of a model replica. | 600 |

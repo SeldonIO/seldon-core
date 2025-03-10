@@ -53,7 +53,8 @@ var (
 	dbPath                       string
 	nodeID                       string
 	allowPlaintxt                bool // scheduler server
-	autoscalingDisabled          bool
+	autoscalingModelEnabled      bool
+	autoscalingServerEnabled     bool
 	kafkaConfigPath              string
 	schedulerReadyTimeoutSeconds uint
 	deletedResourceTTLSeconds    uint
@@ -112,8 +113,9 @@ func init() {
 	// Allow plaintext servers
 	flag.BoolVar(&allowPlaintxt, "allow-plaintxt", true, "Allow plain text scheduler server")
 
-	// Whether to enable autoscaling, default is true
-	flag.BoolVar(&autoscalingDisabled, "disable-autoscaling", false, "Disable autoscaling feature")
+	// Autoscaling
+	flag.BoolVar(&autoscalingModelEnabled, "enable-model-autoscaling", false, "Enable native model autoscaling feature")
+	flag.BoolVar(&autoscalingServerEnabled, "enable-server-autoscaling", true, "Enable native server autoscaling feature")
 
 	// Kafka config path
 	flag.StringVar(
@@ -181,7 +183,7 @@ func main() {
 	logger.Debugf("Scheduler ready timeout is set to %d seconds", schedulerReadyTimeoutSeconds)
 	logger.Debugf("Server packing is set to %t", serverPackingEnabled)
 	logger.Debugf("Server packing percentage is set to %f", serverPackingPercentage)
-
+	logger.Infof("Autoscaling (native) service is set to Model: %t and Server: %t", autoscalingModelEnabled, autoscalingServerEnabled)
 	done := make(chan bool, 1)
 
 	namespace = getNamespace()
@@ -277,7 +279,8 @@ func main() {
 	s := schedulerServer.NewSchedulerServer(
 		logger, ss, es, ps, sched, eventHub, sync,
 		schedulerServer.SchedulerServerConfig{
-			PackThreshold: serverPackingPercentage, // note that if threshold is 0, packing is disabled
+			PackThreshold:            serverPackingPercentage, // note that if threshold is 0, packing is disabled
+			AutoScalingServerEnabled: autoscalingServerEnabled,
 		})
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {
@@ -285,8 +288,7 @@ func main() {
 	}
 
 	// scheduler <-> agent  grpc
-	logger.Infof("Autoscaling service is set to %t", !autoscalingDisabled)
-	as := agent.NewAgentServer(logger, ss, sched, eventHub, !autoscalingDisabled)
+	as := agent.NewAgentServer(logger, ss, sched, eventHub, autoscalingModelEnabled)
 	err = as.StartGrpcServer(allowPlaintxt, agentPort, agentMtlsPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start agent gRPC server")
