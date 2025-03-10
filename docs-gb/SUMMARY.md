@@ -62,17 +62,17 @@
   * [HPA Autoscaling in single-model serving](kubernetes/hpa-rps-autoscaling.md)
 * Data Science Monitoring
     * [Dataflow with Kafka](architecture/dataflow.md)
-    * Request & Response Logging
+    <!-- * Request & Response Logging  -->
     * [Model Performance Metrics](performance-tests.md)
     * [Drift Detection](drift.md)
     * [Outlier Detection](outlier.md)
     * [Explainability](explainers.md)
 * Operational Monitoring
     * [Operational Metrics](metrics/operational.md)
-    * Kubernetes Metrics
-    * [Usage Metrics](metrics/usage.md)
+    <!-- * Kubernetes Metrics -->
+    <!--  * [Usage Metrics](metrics/usage.md) -->
     * [Tracing](kubernetes/tracing.md)
-    * [Local Metrics](metrics/local-metrics-test.md)
+    <!-- * [Local Metrics](metrics/local-metrics-test.md) -->
     * [Performance Tests](performance-tests.md)
     <!--
     * Performance Tuning -->
