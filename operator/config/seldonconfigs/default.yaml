@@ -246,7 +246,7 @@ spec:
         - name: ENABLE_MODEL_AUTOSCALING
           value: "false"
         - name: ENABLE_SERVER_AUTOSCALING
-          value: "false"
+          value: "true"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
