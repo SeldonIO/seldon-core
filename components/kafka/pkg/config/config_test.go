@@ -141,3 +141,93 @@ func TestGetKafkaConsumerName(t *testing.T) {
 		})
 	}
 }
+
+func TestParseSysInfoLogLevel(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name     string
+		level    string
+		expected int
+		err      bool
+	}
+	tests := []test{
+		{
+			name:     "debug",
+			level:    "debug",
+			expected: 7,
+			err:      false,
+		},
+		{
+			name:     "info",
+			level:    "info",
+			expected: 6,
+			err:      false,
+		},
+		{
+			name:     "warn",
+			level:    "warn",
+			expected: 4,
+			err:      false,
+		},
+		{
+			name:     "error",
+			level:    "error",
+			expected: 3,
+			err:      false,
+		},
+		{
+			name:     "invalid",
+			level:    "invalid",
+			expected: 0,
+			err:      true,
+		},
+		{
+			name:     "panic",
+			level:    "panic",
+			expected: 0,
+			err:      false,
+		},
+		{
+			name:     "warning",
+			level:    "warning",
+			expected: 4,
+			err:      false,
+		},
+		{
+			name:     "warn",
+			level:    "warn",
+			expected: 4,
+			err:      false,
+		},
+		{
+			name:     "alert",
+			level:    "alert",
+			expected: 1,
+			err:      false,
+		},
+		{
+			name:     "crit",
+			level:    "crit",
+			expected: 2,
+			err:      false,
+		},
+		{
+			name:     "emerg",
+			level:    "emerg",
+			expected: 0,
+			err:      false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result, err := parseSysInfoLogLevel(test.level)
+			if test.err {
+				g.Expect(err).To(HaveOccurred())
+			} else {
+				g.Expect(int(result)).To(Equal(test.expected))
+			}
+		})
+	}
+}
