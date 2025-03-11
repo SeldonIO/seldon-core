@@ -553,6 +553,8 @@ spec:
           value: '/tmp/certs/cpc/ca.crt'
         - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
           value: '/tmp/certs/cps/ca.crt'
+        - name: LOG_LEVEL
+          value: 'warn'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
@@ -678,6 +680,8 @@ spec:
           value: '/tmp/certs/ddc/ca.crt'
         - name: ENVOY_DOWNSTREAM_SERVER_TLS_CA_LOCATION
           value: '/tmp/certs/dds/ca.crt'
+        - name: LOG_LEVEL
+          value: 'warn'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
