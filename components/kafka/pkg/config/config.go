@@ -147,8 +147,8 @@ func NewKafkaConfig(path string, logLevel string) (*KafkaConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	kc.Consumer[KafkaLogLevel] = sysinfoLogLevel
-	kc.Producer[KafkaLogLevel] = sysinfoLogLevel
+	kc.Consumer[KafkaLogLevel] = int(sysinfoLogLevel)
+	kc.Producer[KafkaLogLevel] = int(sysinfoLogLevel)
 	return &kc, nil
 }
 
