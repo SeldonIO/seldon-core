@@ -126,7 +126,7 @@ func main() {
 		defer tracer.Stop()
 	}
 
-	kafkaConfigMap, err := kafka_config.NewKafkaConfig(kafkaConfigPath)
+	kafkaConfigMap, err := kafka_config.NewKafkaConfig(kafkaConfigPath, logLevel)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
