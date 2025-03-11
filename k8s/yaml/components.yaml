@@ -484,6 +484,7 @@ spec:
         - --envoy-port=80
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --tracing-config-path=/mnt/tracing/tracing.json
+        - --log-level=$(LOG_LEVEL)
         command:
         - /bin/pipelinegateway
         env:
@@ -617,6 +618,7 @@ spec:
         - --envoy-port=80
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --tracing-config-path=/mnt/tracing/tracing.json
+        - --log-level=$(LOG_LEVEL)
         command:
         - /bin/modelgateway
         env:
