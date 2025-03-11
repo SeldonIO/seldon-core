@@ -74,7 +74,7 @@ func TestNewKafkaConfig(t *testing.T) {
 			configFilePath := fmt.Sprintf("%s/kafka.json", t.TempDir())
 			err := os.WriteFile(configFilePath, []byte(test.data), 0644)
 			g.Expect(err).To(BeNil())
-			kc, err := NewKafkaConfig(configFilePath)
+			kc, err := NewKafkaConfig(configFilePath, "debug")
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
 			} else {
