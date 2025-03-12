@@ -5,6 +5,8 @@ In the context of machine learning and Seldon Core 2, concepts provide a framewo
 * [Open Inference Protocol](#open-inference-protocol-in-seldon-core-2)
 * [Components](#components-in-seldon-core-2)
 * [Pipelines](#pipelines)
+* [Severs](#servers)
+* [Experiments](#experiments)
 
 ## Data-Centric MLOps
 
@@ -12,10 +14,10 @@ Data-centricity is an approach that prioritizes the management, integrity, and f
 
 | **Key Principle**          | **Description** |
 |---------------------------|---------------|
-| **Flexible Workflows**      | Seldon Core 2 supports **adaptable and scalable data pathways**, accommodating various **use cases and experiments**. This ensures ML pipelines remain **agile**, allowing you to evolve the **data processing strategies** as requirements change. |
-| **Real-Time Data Streaming** | Integrated **data streaming capabilities** allow you to **view, store, manage, and process data in real time**. This enhances **responsiveness and decision-making**, ensuring models work with **the most up-to-date data** for accurate predictions. |
-| **Standardized Processing**  | Seldon Core 2 promotes **reusable and consistent** data transformation and routing mechanisms. Standardized processing ensures **data integrity and uniformity** across applications, reducing errors and inconsistencies. |
-| **Comprehensive Monitoring** | **Detailed metrics and logs** provide real-time visibility into **data integrity, transformations, and flow**. This enables **effective oversight and maintenance**, allowing teams to detect **anomalies, drifts, or inefficiencies** early. |
+| **Flexible Workflows**      | Seldon Core 2 supports *adaptable and scalable data pathways*, accommodating various **use cases and experiments**. This ensures ML pipelines remain *agile*, allowing you to evolve the **data processing strategies** as requirements change. |
+| **Real-Time Data Streaming** | Integrated *data streaming capabilities* allow you to *view, store, manage, and process data in real time*. This enhances *responsiveness and decision-making*, ensuring models work with *the most up-to-date data* for accurate predictions. |
+| **Standardized Processing**  | Seldon Core 2 promotes *reusable and consistent* data transformation and routing mechanisms. Standardized processing ensures *data integrity and uniformity* across applications, reducing errors and inconsistencies. |
+| **Comprehensive Monitoring** | *Detailed metrics and logs* provide real-time visibility into *data integrity, transformations, and flow*. This enables *effective oversight and maintenance*, allowing teams to detect *anomalies, drifts, or inefficiencies* early. |
 
 Why Data-Centricity Matters?
 
@@ -32,9 +34,9 @@ The Open Inference Protocol ensures standardized communication between inference
 To be compliant, an inference server must implement these three key APIs:
 | **API**            | **Function** |
 |-------------------|-------------|
-| **Health API**    | Ensures the server is **operational and available** for inference requests. |
-| **Metadata API**  | Provides **essential details** about deployed models, including **capabilities and configurations**. |
-| **Inference V2 API** | Facilitates **standardized request and response handling** for model inference. |
+| **Health API**    | Ensures the server is *operational and available* for inference requests. |
+| **Metadata API**  | Provides *essential details* about deployed models, including *capabilities and configurations*. |
+| **Inference V2 API** | Facilitates *standardized request and response handling* for model inference. |
 
 **Protocol Compatibility**
 * Flexible API Support: A compliant server can implement either HTTP/REST or gRPC APIs, or both.
@@ -73,8 +75,33 @@ In a model serving platform, a pipeline is an automated sequence of steps that m
 | **Preprocessing**            | Transforms input data for example, tokenization, or normalization before passing it to the model. |
 | **Model Selection & Routing**| Directs requests to the appropriate model based on rules, versions, or A/B testing. |
 | **Inference Execution**      | Runs predictions using the deployed model. |
-| **Postprocessing**           | Converts model outputs into a consumable format (e.g., confidence scores, structured responses). |
+| **Postprocessing**           | Converts model outputs into a consumable format such as confidence scores, structured responses. |
 | **Response Delivery**        | Returns inference results to the requesting application or system. |
 | **Monitoring & Logging**     | Tracks model performance, latency, and accuracy; detects drift and triggers alerts if needed. |
+
+## Servers
+In Seldon Core 2, servers are responsible for hosting and serving machine learning models, handling inference requests, and ensuring scalability, efficiency, and observability in production. Seldon Core 2 supports multiple inference servers, including MLServer and NVIDIA Triton, enabling flexible and optimized model deployments.
+
+| **Server**        | **Description** | **Best Suited For** |
+|-------------------|---------------|---------------------|
+| **MLServer**     | A lightweight, extensible inference server designed to work with multiple ML frameworks, including *scikit-learn, XGBoost, TensorFlow, and PyTorch*. It supports *custom Python models* and integrates well with *MLOps workflows*. | *General-purpose model serving*, custom model wrappers, multi-framework support. |
+| **NVIDIA Triton** | A high-performance inference server optimized for *GPU and CPU acceleration*, supporting deep learning models across frameworks like *TensorFlow, PyTorch, and ONNX*. Triton enables *multi-model and ensemble model inference*, making it ideal for *scalable AI workloads*. | *High-throughput deep learning inference*, multi-model deployments, GPU-accelerated workloads. |
+
+With MLServer and Triton, Seldon Core 2 provides a powerful, efficient, and flexible model-serving platform for production-scale AI applications. 
+
+## Experiments
+
+In Seldon Core 2, experiments enable controlled A/B testing, model comparisons, and performance evaluations by defining an HTTP traffic split between different models or inference pipelines. This allows organizations to test multiple versions of a model in production while managing risk and ensuring continuous improvements.
+
+| **Experiment Type**  | **Description** |
+|----------------------|----------------|
+| **Traffic Splitting** | Distributes inference requests across different models or pipelines based on predefined percentage splits. This enables *A/B testing* and comparison of multiple model versions. |
+| **Mirror Testing** | Sends a *percentage of the traffic* to a *mirror model or pipeline* without affecting the response returned to users. This allows evaluation of new models without impacting production workflows. |
+
+Some of the advantages of using Experiments:
+* A/B Testing & Model comparison: Compare different models under real-world conditions without full deployment.
+* Risk-Free model validation: Test a new model or pipeline in parallel without affecting live predictions.
+* Performance & Drift monitoring: Assess latency, accuracy, and reliability before a full rollout.
+* Continuous improvement: Make data-driven deployment decisions based on real-time model performance.
 
 
