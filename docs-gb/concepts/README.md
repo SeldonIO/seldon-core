@@ -1,7 +1,7 @@
 
 In the context of machine learning and Seldon Core 2, concepts provide a framework for understanding key functionalities, architectures, and workflows within the system.
 
-### Components in Seldon Core 2
+## Components in Seldon Core 2
 Components are the building blocks of an inference graph, processing data at various stages of the ML inference pipeline. They provide reusable, standardized interfaces, making it easier to maintain and update workflows without disrupting the entire system. Components include ML models, data processors, routers, and supplementary services.
 
 Types of Components
