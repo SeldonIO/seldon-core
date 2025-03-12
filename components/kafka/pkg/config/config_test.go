@@ -41,8 +41,8 @@ func TestNewKafkaConfig(t *testing.T) {
 `,
 			expected: &KafkaConfig{
 				BootstrapServers: "kafka:9092",
-				Consumer:         kafka.ConfigMap{"bootstrap.servers": "kafka:9092", "session.timeout.ms": 6000, "someBool": true, "someString": "foo"},
-				Producer:         kafka.ConfigMap{"bootstrap.servers": "kafka:9092", "linger.ms": 0},
+				Consumer:         kafka.ConfigMap{"bootstrap.servers": "kafka:9092", "session.timeout.ms": 6000, "someBool": true, "someString": "foo", "log_level": 7},
+				Producer:         kafka.ConfigMap{"bootstrap.servers": "kafka:9092", "linger.ms": 0, "log_level": 7},
 				Streams:          kafka.ConfigMap{"bootstrap.servers": "kafka:9092", "replication.factor": 1},
 			},
 		},
@@ -58,8 +58,8 @@ func TestNewKafkaConfig(t *testing.T) {
 `,
 			expected: &KafkaConfig{
 				BootstrapServers: "kafka:9092",
-				Consumer:         kafka.ConfigMap{"bootstrap.servers": "foo", "session.timeout.ms": 6000, "someBool": true, "someString": "foo"},
-				Producer:         kafka.ConfigMap{"bootstrap.servers": "foo", "linger.ms": 0},
+				Consumer:         kafka.ConfigMap{"bootstrap.servers": "foo", "session.timeout.ms": 6000, "someBool": true, "someString": "foo", "log_level": 7},
+				Producer:         kafka.ConfigMap{"bootstrap.servers": "foo", "linger.ms": 0, "log_level": 7},
 				Streams:          kafka.ConfigMap{"bootstrap.servers": "foo", "replication.factor": 1},
 			},
 		},
