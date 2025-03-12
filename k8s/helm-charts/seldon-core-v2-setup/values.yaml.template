@@ -274,6 +274,7 @@ serverConfig:
     resources:
       cpu: 200m
       memory: 1Gi
+    logLevel: warn
 
   mlserver:
     image:

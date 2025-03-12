@@ -1255,6 +1255,8 @@ spec:
         value: ""
       - name: SELDON_SERVER_TYPE
         value: mlserver
+      - name: SELDON_LOG_LEVEL
+        value: '{{ .Values.serverConfig.agent.logLevel }}'
       - name: SELDON_ENVOY_HOST
         value: seldon-mesh
       - name: SELDON_ENVOY_PORT
@@ -1517,6 +1519,8 @@ spec:
         value: "9007"
       - name: SELDON_SERVER_TYPE
         value: triton
+      - name: SELDON_LOG_LEVEL
+        value: '{{ .Values.serverConfig.agent.logLevel }}'
       - name: POD_NAME
         valueFrom:
           fieldRef:
