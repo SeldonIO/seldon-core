@@ -1231,6 +1231,8 @@ spec:
         value: '{{ .Values.security.envoy.ssl.upstream.server.clientCaPath }}'
       - name: MLSERVER_TRACING_SERVER
         value: '{{ .Values.opentelemetry.endpoint }}'
+      - name: SELDON_LOG_LEVEL
+        value: '{{ .Values.serverConfig.agent.logLevel }}'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -1255,8 +1257,6 @@ spec:
         value: ""
       - name: SELDON_SERVER_TYPE
         value: mlserver
-      - name: SELDON_LOG_LEVEL
-        value: '{{ .Values.serverConfig.agent.logLevel }}'
       - name: SELDON_ENVOY_HOST
         value: seldon-mesh
       - name: SELDON_ENVOY_PORT
@@ -1497,6 +1497,8 @@ spec:
         value: '{{ .Values.security.envoy.ssl.upstream.server.caPath }}'
       - name: ENVOY_UPSTREAM_CLIENT_TLS_CA_LOCATION
         value: '{{ .Values.security.envoy.ssl.upstream.server.clientCaPath }}'
+      - name: SELDON_LOG_LEVEL
+        value: '{{ .Values.serverConfig.agent.logLevel }}'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -1519,8 +1521,6 @@ spec:
         value: "9007"
       - name: SELDON_SERVER_TYPE
         value: triton
-      - name: SELDON_LOG_LEVEL
-        value: '{{ .Values.serverConfig.agent.logLevel }}'
       - name: POD_NAME
         valueFrom:
           fieldRef:
