@@ -3,7 +3,7 @@
 ## About
 * [Why Seldon Core](README.md)
 * [Seldon Core features](core-features.md)
-* [Concepts](/docs-gb/concepts/README.md)
+* [Concepts](concepts/README.md)
 * [Architecture](architecture/README.md)
 
 ## Installation
