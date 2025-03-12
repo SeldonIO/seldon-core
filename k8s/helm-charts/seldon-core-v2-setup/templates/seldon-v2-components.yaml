@@ -1061,6 +1061,10 @@ spec:
             }}'
         - name: SELDON_CORES_COUNT
           value: '{{ .Values.dataflow.cores }}'
+        - name: SELDON_LOG_LEVEL_APP
+          value: '{{ .Values.dataflow.logLevel }}'
+        - name: SELDON_LOG_LEVEL_KAFKA
+          value: '{{ .Values.dataflow.logLevel }}'
         - name: SELDON_UPSTREAM_HOST
           value: seldon-scheduler
         - name: SELDON_UPSTREAM_PORT

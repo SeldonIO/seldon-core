@@ -899,6 +899,10 @@ spec:
           value: ''
         - name: SELDON_CORES_COUNT
           value: '4'
+        - name: SELDON_LOG_LEVEL_APP
+          value: 'warn'
+        - name: SELDON_LOG_LEVEL_KAFKA
+          value: 'warn'
         - name: SELDON_UPSTREAM_HOST
           value: seldon-scheduler
         - name: SELDON_UPSTREAM_PORT
