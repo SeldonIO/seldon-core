@@ -75,6 +75,8 @@ spec:
             value: '{{ .Values.autoscaling.autoscalingModelEnabled }}'
           - name: ENABLE_SERVER_AUTOSCALING
             value: '{{ .Values.autoscaling.autoscalingServerEnabled }}'
+          - name: LOG_LEVEL
+            value: '{{ .Values.scheduler.logLevel }}'
     volumeClaimTemplates:
     - name: scheduler-state
       spec:

@@ -349,6 +349,7 @@ spec:
         - --include-successful-requests-envoy-accesslog=$(INCLUDE_SUCCESSFUL_REQUESTS_ENVOY_ACCESSLOG)
         - --enable-model-autoscaling=$(ENABLE_MODEL_AUTOSCALING)
         - --enable-server-autoscaling=$(ENABLE_SERVER_AUTOSCALING)
+        - --log-level=$(LOG_LEVEL)
         command:
         - /bin/scheduler
         env:
@@ -408,6 +409,8 @@ spec:
           value: 'false'
         - name: ENABLE_SERVER_AUTOSCALING
           value: 'true'
+        - name: LOG_LEVEL
+          value: 'warn'
         - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE

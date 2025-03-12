@@ -226,6 +226,7 @@ scheduler:
     runAsGroup: 1000
     runAsNonRoot: true
   schedulerReadyTimeoutSeconds: 600
+  logLevel: warn
   
 autoscaling:
   autoscalingModelEnabled: false
