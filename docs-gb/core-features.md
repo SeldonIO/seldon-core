@@ -21,12 +21,12 @@ This approach to MLOps, influenced by our position paper [Desiderata for next ge
 
 ![Data-centric pipeline](images/pipeline-intro.png)
 
-Lastly, Core 2 provides Experiments as part of its orchestration capabilities, enabling users to implement routing logic such as A/B tests or Canary deployments to models or pipelines in production. After experiments are run, you can promote new models or pipelines, or launch new experiments, so that you can continuously improve the performance of your ML applications.
+Lastly, Core 2 provides Experiments as part of its orchestration capabilities, enabling users to implement routing logic such as A/B tests or Canary deployments to models or pipelines in production. After experiments are run, you can promote new models and/or pipelines, or launch new experiments, so that you can continuously improve the performance of your ML applications.
 
 
 ## Resource Management
 
-In Seldon Core 2 your models are deployed on inference servers, which manage the packaging and execution of ML workloads. As part its design, Core 2 separates out **Servers** and **Models** as separate resources. This approach enables flexible allocation of models to servers aligning with the requirements of your models, and to the underlying infrastructure that you want your servers to run on. Core 2 also provides functionality to autoscale your models and servers up and down as needed based on your workload requirements or user-defined metrics. 
+In Seldon Core 2 your models are deployed on inference servers, which are software that manage the packaging and execution of ML workloads. As part its design, Core 2 separates out **Servers** and **Models** as separate resources. This approach enables flexible allocation of models to servers aligning with the requirements of your models, and to the underlying infrastructure that you want your servers to run on. Core 2 also provides functionality to autoscale your models and servers up and down as needed based on your workload requirements or user-defined metrics. 
 
 With the modular design of Core 2, users are able to implement cutting-edge methods to minimize hardware costs:
 
