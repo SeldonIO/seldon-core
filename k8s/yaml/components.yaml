@@ -267,6 +267,7 @@ spec:
         - --leader-elect
         - --namespace=$(POD_NAMESPACE)
         - --clusterwide=$(CLUSTERWIDE)
+        - --log-level=$(LOG_LEVEL)
         command:
         - /manager
         env:
@@ -286,6 +287,8 @@ spec:
           value: '/tmp/certs/cpc/ca.crt'
         - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
           value: '/tmp/certs/cps/ca.crt'
+        - name: LOG_LEVEL
+          value: 'warn'
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:

@@ -180,6 +180,7 @@ controller:
     runAsUser: 1000
     runAsGroup: 1000
     runAsNonRoot: true
+  logLevel: warn
 
 envoy:
   annotations:

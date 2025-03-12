@@ -33,3 +33,5 @@ spec:
             value: '{{ .Values.security.controlplane.ssl.client.caPath }}'
           - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
             value: '{{ .Values.security.controlplane.ssl.client.serverCaPath }}'
+          - name: LOG_LEVEL
+            value: '{{ .Values.controller.logLevel }}'

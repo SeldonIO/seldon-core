@@ -12,9 +12,11 @@ package main
 import (
 	"flag"
 	"os"
+	"strings"
 	"time"
 
 	//+kubebuilder:scaffold:imports
+	zap2 "go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -48,12 +50,24 @@ const (
 	defaultReconcileTimeout = 2 * time.Minute
 )
 
+func getLogLevel(l string) zap2.AtomicLevel {
+	level, err := zap2.ParseAtomicLevel(strings.ToLower(l))
+	if err != nil {
+		level = zap2.NewAtomicLevelAt(zapcore.DebugLevel)
+	}
+	return level
+}
+
 func main() {
-	var metricsAddr string
-	var enableLeaderElection bool
-	var probeAddr string
-	var namespace string
-	var clusterwide bool
+	var (
+		metricsAddr          string
+		enableLeaderElection bool
+		probeAddr            string
+		namespace            string
+		clusterwide          bool
+		logLevel             string
+	)
+
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":4000", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":4001", "The address the probe endpoint binds to.")
 	flag.StringVar(&namespace, "namespace", "", "The namespace to restrict the operator.")
@@ -61,12 +75,16 @@ func main() {
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.BoolVar(&clusterwide, "clusterwide", false, "Allow clusterwide operations")
+	flag.StringVar(&logLevel, "log-level", "debug", "The log level to use for the operator.")
+
 	opts := zap.Options{
 		Development: true,
 		TimeEncoder: zapcore.ISO8601TimeEncoder,
 	}
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
+
+	opts.Level = getLogLevel(logLevel)
 
 	logger := zap.New(zap.UseFlagOptions(&opts))
 	ctrl.SetLogger(logger)
@@ -76,6 +94,9 @@ func main() {
 		watchNamespaceConfig = map[string]cache.Config{} // unset namespace so manager watches all namespaces
 	}
 	setupLog.Info("Starting manager", "clusterwide", clusterwide)
+
+	setupLog.Info("Setting log level", "level", logLevel)
+
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		Metrics:                metricsserver.Options{BindAddress: metricsAddr},
@@ -165,7 +186,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
