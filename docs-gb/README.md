@@ -16,7 +16,7 @@ With a "learn once, deploy anywhere" approach, Seldon Core 2 standardizes mode
 
 Seldon Core 2 enhances collaboration between MLOps Engineers, Data Scientists, and Software Engineers through a customizable framework that promotes knowledge sharing, innovation, and seamless adoption of new data science features.
 
-## **Enhanced Observability: Data-Centric monitoring**
+## **Enhanced Observability**
 
 Observability in Seldon Core 2 enables real-time monitoring, analysis, and performance tracking of ML systems, covering data pipelines, models, and deployment environments. Its customizable framework combines operational and data science monitoring, ensuring teams have the key metrics needed for maintenance and decision-making.
 
