@@ -1145,7 +1145,7 @@ spec:
     containers:
     - env:
       - name: RCLONE_LOG_LEVEL
-        value: '{{ .Values.serverConfig.rclone.logLevel }}'
+        value: '{{ upper .Values.serverConfig.rclone.logLevel }}'
       image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository
         }}:{{ .Values.serverConfig.rclone.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
