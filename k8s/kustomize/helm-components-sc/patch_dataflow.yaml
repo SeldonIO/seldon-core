@@ -54,9 +54,9 @@ spec:
         - name: SELDON_CORES_COUNT
           value: '{{ .Values.dataflow.cores }}'
         - name: SELDON_LOG_LEVEL_APP
-          value: '{{ .Values.dataflow.logLevel }}'
+          value: '{{ upper .Values.dataflow.logLevel }}'
         - name: SELDON_LOG_LEVEL_KAFKA
-          value: '{{ .Values.dataflow.logLevel }}'
+          value: '{{ upper .Values.dataflow.logLevel }}'
         resources:
           requests:
             cpu: '{{ .Values.dataflow.resources.cpu }}'
