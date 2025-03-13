@@ -978,7 +978,10 @@ metadata:
 spec:
   podSpec:
     containers:
-    - image: 'docker.io/seldonio/seldon-rclone:latest'
+    - env:
+      - name: RCLONE_LOG_LEVEL
+        value: 'warn'
+      image: 'docker.io/seldonio/seldon-rclone:latest'
       imagePullPolicy: 'IfNotPresent'
       lifecycle:
         preStop:
@@ -1236,7 +1239,10 @@ metadata:
 spec:
   podSpec:
     containers:
-    - image: 'docker.io/seldonio/seldon-rclone:latest'
+    - env:
+      - name: RCLONE_LOG_LEVEL
+        value: 'warn'
+      image: 'docker.io/seldonio/seldon-rclone:latest'
       imagePullPolicy: 'IfNotPresent'
       lifecycle:
         preStop:

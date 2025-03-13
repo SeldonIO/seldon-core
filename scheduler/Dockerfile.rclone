@@ -19,4 +19,4 @@ RUN mkdir /rclone && \
 USER 1000
 
 ENTRYPOINT [ "rclone" ]
-CMD ["rcd","--rc-no-auth","--config=/rclone/rclone.conf","--rc-addr=0.0.0.0:5572","--verbose"]
+CMD ["rcd","--rc-no-auth","--config=/rclone/rclone.conf","--rc-addr=0.0.0.0:5572"]
