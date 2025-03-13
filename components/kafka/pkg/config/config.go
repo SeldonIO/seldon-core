@@ -38,13 +38,13 @@ const (
 	KafkaLogLevel         = "log_level"
 )
 
-type sysinfoLogLevel int
+type sysLogLevel int
 
 // Based on syslog levels
 // https://datatracker.ietf.org/doc/html/rfc5424#section-6.2.1
 // which is used in librdkafka log_level
 const (
-	emergLevel sysinfoLogLevel = iota
+	emergLevel sysLogLevel = iota
 	alertLevel
 	critLevel
 	errLevel
@@ -76,7 +76,7 @@ func CloneKafkaConfigMap(m kafka.ConfigMap) kafka.ConfigMap {
 }
 
 // note that we also try to match logrus levels here as well
-func parseSysInfoLogLevel(lvl string) (sysinfoLogLevel, error) {
+func parseSysLogLevel(lvl string) (sysLogLevel, error) {
 	switch strings.ToLower(lvl) {
 	case "panic", "emerg":
 		return emergLevel, nil
@@ -96,8 +96,8 @@ func parseSysInfoLogLevel(lvl string) (sysinfoLogLevel, error) {
 		return debugLevel, nil
 	}
 
-	var l sysinfoLogLevel
-	return l, fmt.Errorf("not a valid sysinfo Level: %q", lvl)
+	var l sysLogLevel
+	return l, fmt.Errorf("not a valid syslog Level: %q", lvl)
 }
 
 func NewKafkaConfig(path string, logLevel string) (*KafkaConfig, error) {
@@ -143,12 +143,12 @@ func NewKafkaConfig(path string, logLevel string) (*KafkaConfig, error) {
 		kc.Producer[KafkaDebug] = kc.Debug
 	}
 
-	sysinfoLogLevel, err := parseSysInfoLogLevel(logLevel)
+	sysLogLevel, err := parseSysLogLevel(logLevel)
 	if err != nil {
 		return nil, err
 	}
-	kc.Consumer[KafkaLogLevel] = int(sysinfoLogLevel)
-	kc.Producer[KafkaLogLevel] = int(sysinfoLogLevel)
+	kc.Consumer[KafkaLogLevel] = int(sysLogLevel)
+	kc.Producer[KafkaLogLevel] = int(sysLogLevel)
 	return &kc, nil
 }
 

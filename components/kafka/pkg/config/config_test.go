@@ -142,7 +142,7 @@ func TestGetKafkaConsumerName(t *testing.T) {
 	}
 }
 
-func TestParseSysInfoLogLevel(t *testing.T) {
+func TestParseSysLogLevel(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -222,7 +222,7 @@ func TestParseSysInfoLogLevel(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			result, err := parseSysInfoLogLevel(test.level)
+			result, err := parseSysLogLevel(test.level)
 			if test.err {
 				g.Expect(err).To(HaveOccurred())
 			} else {
