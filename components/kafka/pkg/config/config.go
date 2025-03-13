@@ -41,7 +41,7 @@ const (
 type sysinfoLogLevel int
 
 // Based on syslog levels
-// e.g. https://linuxconfig.org/introduction-to-the-linux-kernel-log-levels
+// https://datatracker.ietf.org/doc/html/rfc5424#section-6.2.1
 // which is used in librdkafka log_level
 const (
 	emergLevel sysinfoLogLevel = iota
