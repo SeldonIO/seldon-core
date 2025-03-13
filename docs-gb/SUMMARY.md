@@ -1,8 +1,9 @@
 # Table of contents
 
 ## About
-* [Overview](README.md)
-<!-- * [Concepts](/docs-gb/concepts/README.md) -->
+* [Why Seldon Core](README.md)
+* [Seldon Core features](core-features.md)
+* [Concepts](concepts/README.md)
 * [Architecture](architecture/README.md)
 
 ## Installation
@@ -24,13 +25,12 @@
 * [Upgrading](upgrading.md) 
 
 ## User Guide
-<!-->
-* Getting Started
-  * Deploy Model (OIP+MLServer Link)
-  * Pipeline
-  * Inference Server
-  * Run Inference -->
-  * [Kubernetes Resources](kubernetes/resources/README.md) 
+<!-- * Getting Started -->
+<!-- * Deploy Model (OIP+MLServer Link) -->
+<!-- * Pipeline -->
+<!-- * Inference Server -->
+<!-- * Run Inference -->
+* [Kubernetes Resources](kubernetes/resources/README.md) 
 * [Servers](servers.md)
     * [Resource allocation](resource-allocation/README.md)
       * [Example: Serving models on dedicated GPU nodes](resource-allocation/example-serving-models-on-dedicated-gpu-nodes.md)
