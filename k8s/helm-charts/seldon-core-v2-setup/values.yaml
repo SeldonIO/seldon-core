@@ -254,6 +254,7 @@ serverConfig:
     resources:
       cpu: 50m
       memory: 128Mi
+    logLevel: warn
 
   agent:
     image:
