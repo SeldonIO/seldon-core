@@ -40,7 +40,7 @@ const (
 
 type sysinfoLogLevel int
 
-// Based on sysinfo log levels
+// Based on syslog levels
 // e.g. https://linuxconfig.org/introduction-to-the-linux-kernel-log-levels
 // which is used in librdkafka log_level
 const (
