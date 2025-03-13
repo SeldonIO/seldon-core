@@ -131,6 +131,7 @@ modelgateway:
     runAsUser: 1000
     runAsGroup: 1000
     runAsNonRoot: true
+  logLevel: warn
 
 pipelinegateway:
   image:
@@ -146,6 +147,7 @@ pipelinegateway:
     runAsUser: 1000
     runAsGroup: 1000
     runAsNonRoot: true
+  logLevel: warn
 
 dataflow:
   image:
@@ -224,6 +226,7 @@ scheduler:
     runAsGroup: 1000
     runAsNonRoot: true
   schedulerReadyTimeoutSeconds: 600
+  logLevel: warn
   
 autoscaling:
   autoscalingModelEnabled: false
@@ -271,6 +274,7 @@ serverConfig:
     resources:
       cpu: 200m
       memory: 1Gi
+    logLevel: warn
 
   mlserver:
     image:

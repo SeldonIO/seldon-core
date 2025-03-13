@@ -54,7 +54,7 @@ func getKafkaConsumerConfig(kafkaBrokerIsSet bool, kafkaBroker string, config *S
 	var kafkaConfigMap *kafka_config.KafkaConfig
 	if kafkaConfigPath != "" {
 		var err error
-		kafkaConfigMap, err = kafka_config.NewKafkaConfig(kafkaConfigPath)
+		kafkaConfigMap, err = kafka_config.NewKafkaConfig(kafkaConfigPath, "debug")
 		if err != nil {
 			fmt.Printf("Failed to load Kafka config with error: %s\n", err.Error())
 			return nil, "", "", err

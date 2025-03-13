@@ -41,8 +41,8 @@ func TestNewKafkaConfig(t *testing.T) {
 `,
 			expected: &KafkaConfig{
 				BootstrapServers: "kafka:9092",
-				Consumer:         kafka.ConfigMap{"bootstrap.servers": "kafka:9092", "session.timeout.ms": 6000, "someBool": true, "someString": "foo"},
-				Producer:         kafka.ConfigMap{"bootstrap.servers": "kafka:9092", "linger.ms": 0},
+				Consumer:         kafka.ConfigMap{"bootstrap.servers": "kafka:9092", "session.timeout.ms": 6000, "someBool": true, "someString": "foo", "log_level": 7},
+				Producer:         kafka.ConfigMap{"bootstrap.servers": "kafka:9092", "linger.ms": 0, "log_level": 7},
 				Streams:          kafka.ConfigMap{"bootstrap.servers": "kafka:9092", "replication.factor": 1},
 			},
 		},
@@ -58,8 +58,8 @@ func TestNewKafkaConfig(t *testing.T) {
 `,
 			expected: &KafkaConfig{
 				BootstrapServers: "kafka:9092",
-				Consumer:         kafka.ConfigMap{"bootstrap.servers": "foo", "session.timeout.ms": 6000, "someBool": true, "someString": "foo"},
-				Producer:         kafka.ConfigMap{"bootstrap.servers": "foo", "linger.ms": 0},
+				Consumer:         kafka.ConfigMap{"bootstrap.servers": "foo", "session.timeout.ms": 6000, "someBool": true, "someString": "foo", "log_level": 7},
+				Producer:         kafka.ConfigMap{"bootstrap.servers": "foo", "linger.ms": 0, "log_level": 7},
 				Streams:          kafka.ConfigMap{"bootstrap.servers": "foo", "replication.factor": 1},
 			},
 		},
@@ -74,7 +74,7 @@ func TestNewKafkaConfig(t *testing.T) {
 			configFilePath := fmt.Sprintf("%s/kafka.json", t.TempDir())
 			err := os.WriteFile(configFilePath, []byte(test.data), 0644)
 			g.Expect(err).To(BeNil())
-			kc, err := NewKafkaConfig(configFilePath)
+			kc, err := NewKafkaConfig(configFilePath, "debug")
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
 			} else {
@@ -138,6 +138,96 @@ func TestGetKafkaConsumerName(t *testing.T) {
 			).To(Equal(
 				test.expected),
 			)
+		})
+	}
+}
+
+func TestParseSysLogLevel(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name     string
+		level    string
+		expected int
+		err      bool
+	}
+	tests := []test{
+		{
+			name:     "debug",
+			level:    "debug",
+			expected: 7,
+			err:      false,
+		},
+		{
+			name:     "info",
+			level:    "info",
+			expected: 6,
+			err:      false,
+		},
+		{
+			name:     "warn",
+			level:    "warn",
+			expected: 4,
+			err:      false,
+		},
+		{
+			name:     "error",
+			level:    "error",
+			expected: 3,
+			err:      false,
+		},
+		{
+			name:     "invalid",
+			level:    "invalid",
+			expected: 0,
+			err:      true,
+		},
+		{
+			name:     "panic",
+			level:    "panic",
+			expected: 0,
+			err:      false,
+		},
+		{
+			name:     "warning",
+			level:    "warning",
+			expected: 4,
+			err:      false,
+		},
+		{
+			name:     "warn",
+			level:    "warn",
+			expected: 4,
+			err:      false,
+		},
+		{
+			name:     "alert",
+			level:    "alert",
+			expected: 1,
+			err:      false,
+		},
+		{
+			name:     "crit",
+			level:    "crit",
+			expected: 2,
+			err:      false,
+		},
+		{
+			name:     "emerg",
+			level:    "emerg",
+			expected: 0,
+			err:      false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result, err := parseSysLogLevel(test.level)
+			if test.err {
+				g.Expect(err).To(HaveOccurred())
+			} else {
+				g.Expect(int(result)).To(Equal(test.expected))
+			}
 		})
 	}
 }

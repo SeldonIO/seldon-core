@@ -113,6 +113,7 @@ spec:
         - --envoy-port=80
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --tracing-config-path=/mnt/tracing/tracing.json
+        - --log-level=$(LOG_LEVEL)
         command:
         - /bin/modelgateway
         env:
@@ -122,6 +123,8 @@ spec:
           value: "9044"
         - name: MODELGATEWAY_MAX_NUM_CONSUMERS
           value: "100"
+        - name: LOG_LEVEL
+          value: "warn"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -164,6 +167,7 @@ spec:
         - --envoy-port=80
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --tracing-config-path=/mnt/tracing/tracing.json
+        - --log-level=$(LOG_LEVEL)
         command:
         - /bin/pipelinegateway
         env:
@@ -171,6 +175,8 @@ spec:
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
           value: "9044"
+        - name: LOG_LEVEL
+          value: "warn"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -226,6 +232,7 @@ spec:
         - --include-successful-requests-envoy-accesslog=$(INCLUDE_SUCCESSFUL_REQUESTS_ENVOY_ACCESSLOG)
         - --enable-model-autoscaling=$(ENABLE_MODEL_AUTOSCALING)
         - --enable-server-autoscaling=$(ENABLE_SERVER_AUTOSCALING)
+        - --log-level=$(LOG_LEVEL)
         command:
         - /bin/scheduler
         env:
@@ -247,6 +254,8 @@ spec:
           value: "false"
         - name: ENABLE_SERVER_AUTOSCALING
           value: "true"
+        - name: LOG_LEVEL
+          value: "warn"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:

@@ -12,6 +12,7 @@ package config
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"os"
 	"strings"
 
@@ -34,6 +35,23 @@ type stringSet = map[string]none
 const (
 	KafkaBootstrapServers = "bootstrap.servers"
 	KafkaDebug            = "debug"
+	KafkaLogLevel         = "log_level"
+)
+
+type sysLogLevel int
+
+// Based on syslog levels
+// https://datatracker.ietf.org/doc/html/rfc5424#section-6.2.1
+// which is used in librdkafka log_level
+const (
+	emergLevel sysLogLevel = iota
+	alertLevel
+	critLevel
+	errLevel
+	warningLevel
+	noticeLevel
+	infoLevel
+	debugLevel
 )
 
 // Based on config options defined for librdkafka:
@@ -57,7 +75,32 @@ func CloneKafkaConfigMap(m kafka.ConfigMap) kafka.ConfigMap {
 	return m2
 }
 
-func NewKafkaConfig(path string) (*KafkaConfig, error) {
+// note that we also try to match logrus levels here as well
+func parseSysLogLevel(lvl string) (sysLogLevel, error) {
+	switch strings.ToLower(lvl) {
+	case "panic", "emerg":
+		return emergLevel, nil
+	case "fatal", "alert":
+		return alertLevel, nil
+	case "crit":
+		return critLevel, nil
+	case "error", "err":
+		return errLevel, nil
+	case "warn", "warning":
+		return warningLevel, nil
+	case "notice":
+		return noticeLevel, nil
+	case "info":
+		return infoLevel, nil
+	case "debug", "trace":
+		return debugLevel, nil
+	}
+
+	var l sysLogLevel
+	return l, fmt.Errorf("not a valid syslog Level: %q", lvl)
+}
+
+func NewKafkaConfig(path string, logLevel string) (*KafkaConfig, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -99,6 +142,13 @@ func NewKafkaConfig(path string) (*KafkaConfig, error) {
 		kc.Consumer[KafkaDebug] = kc.Debug
 		kc.Producer[KafkaDebug] = kc.Debug
 	}
+
+	sysLogLevel, err := parseSysLogLevel(logLevel)
+	if err != nil {
+		return nil, err
+	}
+	kc.Consumer[KafkaLogLevel] = int(sysLogLevel)
+	kc.Producer[KafkaLogLevel] = int(sysLogLevel)
 	return &kc, nil
 }
 

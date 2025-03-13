@@ -27,6 +27,7 @@ spec:
         - --envoy-port=80
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --tracing-config-path=/mnt/tracing/tracing.json
+        - --log-level=$(LOG_LEVEL)
         image: modelgateway:latest
         imagePullPolicy: IfNotPresent
         name: modelgateway
@@ -39,6 +40,8 @@ spec:
             value: "8"
           - name: MODELGATEWAY_MAX_NUM_CONSUMERS
             value: "100"
+          - name: LOG_LEVEL
+            value: "warn"
           - name: POD_NAMESPACE
             valueFrom:
               fieldRef:

@@ -225,7 +225,7 @@ func main() {
 
 	// scheduler <-> dataflow grpc
 	dataFlowLoadBalancer := util.NewRingLoadBalancer(1)
-	kafkaConfigMap, err := kafka_config.NewKafkaConfig(kafkaConfigPath)
+	kafkaConfigMap, err := kafka_config.NewKafkaConfig(kafkaConfigPath, logLevel)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}

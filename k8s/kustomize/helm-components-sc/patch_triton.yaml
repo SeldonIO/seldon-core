@@ -70,6 +70,8 @@ spec:
         value: '{{ .Values.security.envoy.ssl.upstream.server.caPath }}'
       - name: ENVOY_UPSTREAM_CLIENT_TLS_CA_LOCATION
         value: '{{ .Values.security.envoy.ssl.upstream.server.clientCaPath }}'
+      - name: SELDON_LOG_LEVEL
+        value: '{{ .Values.serverConfig.agent.logLevel }}'
       image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository }}:{{ .Values.serverConfig.agent.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.agent.image.pullPolicy }}'
       name: agent

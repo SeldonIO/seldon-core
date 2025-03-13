@@ -349,6 +349,7 @@ spec:
         - --include-successful-requests-envoy-accesslog=$(INCLUDE_SUCCESSFUL_REQUESTS_ENVOY_ACCESSLOG)
         - --enable-model-autoscaling=$(ENABLE_MODEL_AUTOSCALING)
         - --enable-server-autoscaling=$(ENABLE_SERVER_AUTOSCALING)
+        - --log-level=$(LOG_LEVEL)
         command:
         - /bin/scheduler
         env:
@@ -408,6 +409,8 @@ spec:
           value: 'false'
         - name: ENABLE_SERVER_AUTOSCALING
           value: 'true'
+        - name: LOG_LEVEL
+          value: 'warn'
         - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE
@@ -484,6 +487,7 @@ spec:
         - --envoy-port=80
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --tracing-config-path=/mnt/tracing/tracing.json
+        - --log-level=$(LOG_LEVEL)
         command:
         - /bin/pipelinegateway
         env:
@@ -553,6 +557,8 @@ spec:
           value: '/tmp/certs/cpc/ca.crt'
         - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
           value: '/tmp/certs/cps/ca.crt'
+        - name: LOG_LEVEL
+          value: 'warn'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
@@ -615,6 +621,7 @@ spec:
         - --envoy-port=80
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --tracing-config-path=/mnt/tracing/tracing.json
+        - --log-level=$(LOG_LEVEL)
         command:
         - /bin/modelgateway
         env:
@@ -678,6 +685,8 @@ spec:
           value: '/tmp/certs/ddc/ca.crt'
         - name: ENVOY_DOWNSTREAM_SERVER_TLS_CA_LOCATION
           value: '/tmp/certs/dds/ca.crt'
+        - name: LOG_LEVEL
+          value: 'warn'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
@@ -1052,6 +1061,8 @@ spec:
         value: '/tmp/certs/duc/ca.crt'
       - name: MLSERVER_TRACING_SERVER
         value: 'seldon-collector.seldon-mesh:4317'
+      - name: SELDON_LOG_LEVEL
+        value: 'warn'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -1306,6 +1317,8 @@ spec:
         value: '/tmp/certs/dus/ca.crt'
       - name: ENVOY_UPSTREAM_CLIENT_TLS_CA_LOCATION
         value: '/tmp/certs/duc/ca.crt'
+      - name: SELDON_LOG_LEVEL
+        value: 'warn'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
