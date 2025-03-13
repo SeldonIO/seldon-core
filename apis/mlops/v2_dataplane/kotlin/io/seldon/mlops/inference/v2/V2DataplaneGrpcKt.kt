@@ -21,7 +21,9 @@ import io.grpc.Status.UNIMPLEMENTED
 import io.grpc.StatusException
 import io.grpc.kotlin.AbstractCoroutineServerImpl
 import io.grpc.kotlin.AbstractCoroutineStub
+import io.grpc.kotlin.ClientCalls.bidiStreamingRpc
 import io.grpc.kotlin.ClientCalls.unaryRpc
+import io.grpc.kotlin.ServerCalls.bidiStreamingServerMethodDefinition
 import io.grpc.kotlin.ServerCalls.unaryServerMethodDefinition
 import io.grpc.kotlin.StubFor
 import io.seldon.mlops.inference.v2.GRPCInferenceServiceGrpc.getServiceDescriptor
@@ -30,6 +32,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmStatic
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Holder for Kotlin coroutine-based client and server APIs for inference.GRPCInferenceService.
@@ -70,6 +73,11 @@ public object GRPCInferenceServiceGrpcKt {
       MethodDescriptor<V2Dataplane.ModelInferRequest, V2Dataplane.ModelInferResponse>
     @JvmStatic
     get() = GRPCInferenceServiceGrpc.getModelInferMethod()
+
+  public val modelStreamInferMethod:
+      MethodDescriptor<V2Dataplane.ModelInferRequest, V2Dataplane.ModelInferResponse>
+    @JvmStatic
+    get() = GRPCInferenceServiceGrpc.getModelStreamInferMethod()
 
   public val repositoryIndexMethod:
       MethodDescriptor<V2Dataplane.RepositoryIndexRequest, V2Dataplane.RepositoryIndexResponse>
@@ -226,6 +234,35 @@ public object GRPCInferenceServiceGrpcKt {
       channel,
       GRPCInferenceServiceGrpc.getModelInferMethod(),
       request,
+      callOptions,
+      headers
+    )
+
+    /**
+     * Returns a [Flow] that, when collected, executes this RPC and emits responses from the
+     * server as they arrive.  That flow finishes normally if the server closes its response with
+     * [`Status.OK`][io.grpc.Status], and fails by throwing a [StatusException] otherwise.  If
+     * collecting the flow downstream fails exceptionally (including via cancellation), the RPC
+     * is cancelled with that exception as a cause.
+     *
+     * The [Flow] of requests is collected once each time the [Flow] of responses is
+     * collected. If collection of the [Flow] of responses completes normally or
+     * exceptionally before collection of `requests` completes, the collection of
+     * `requests` is cancelled.  If the collection of `requests` completes
+     * exceptionally for any other reason, then the collection of the [Flow] of responses
+     * completes exceptionally for the same reason and the RPC is cancelled with that reason.
+     *
+     * @param requests A [Flow] of request messages.
+     *
+     * @param headers Metadata to attach to the request.  Most users will not need this.
+     *
+     * @return A flow that, when collected, emits the responses from the server.
+     */
+    public fun modelStreamInfer(requests: Flow<V2Dataplane.ModelInferRequest>, headers: Metadata =
+        Metadata()): Flow<V2Dataplane.ModelInferResponse> = bidiStreamingRpc(
+      channel,
+      GRPCInferenceServiceGrpc.getModelStreamInferMethod(),
+      requests,
       callOptions,
       headers
     )
@@ -395,6 +432,25 @@ public object GRPCInferenceServiceGrpcKt {
         StatusException(UNIMPLEMENTED.withDescription("Method inference.GRPCInferenceService.ModelInfer is unimplemented"))
 
     /**
+     * Returns a [Flow] of responses to an RPC for inference.GRPCInferenceService.ModelStreamInfer.
+     *
+     * If creating or collecting the returned flow fails with a [StatusException], the RPC
+     * will fail with the corresponding [io.grpc.Status].  If it fails with a
+     * [java.util.concurrent.CancellationException], the RPC will fail with status
+     * `Status.CANCELLED`.  If creating
+     * or collecting the returned flow fails for any other reason, the RPC will fail with
+     * `Status.UNKNOWN` with the exception as a cause.
+     *
+     * @param requests A [Flow] of requests from the client.  This flow can be
+     *        collected only once and throws [java.lang.IllegalStateException] on attempts to
+     * collect
+     *        it more than once.
+     */
+    public open fun modelStreamInfer(requests: Flow<V2Dataplane.ModelInferRequest>):
+        Flow<V2Dataplane.ModelInferResponse> = throw
+        StatusException(UNIMPLEMENTED.withDescription("Method inference.GRPCInferenceService.ModelStreamInfer is unimplemented"))
+
+    /**
      * Returns the response to an RPC for inference.GRPCInferenceService.RepositoryIndex.
      *
      * If this method fails with a [StatusException], the RPC will fail with the corresponding
@@ -470,6 +526,11 @@ public object GRPCInferenceServiceGrpcKt {
       context = this.context,
       descriptor = GRPCInferenceServiceGrpc.getModelInferMethod(),
       implementation = ::modelInfer
+    ))
+      .addMethod(bidiStreamingServerMethodDefinition(
+      context = this.context,
+      descriptor = GRPCInferenceServiceGrpc.getModelStreamInferMethod(),
+      implementation = ::modelStreamInfer
     ))
       .addMethod(unaryServerMethodDefinition(
       context = this.context,

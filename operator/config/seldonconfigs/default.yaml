@@ -221,6 +221,11 @@ spec:
         - --scheduler-ready-timeout-seconds=$(SCHEDULER_READY_TIMEOUT_SECONDS)
         - --server-packing-enabled=$(SERVER_PACKING_ENABLED)
         - --server-packing-percentage=$(SERVER_PACKING_PERCENTAGE)
+        - --envoy-accesslog-path=$(ENVOY_ACCESSLOG_PATH)
+        - --enable-envoy-accesslog=$(ENABLE_ENVOY_ACCESSLOG)
+        - --include-successful-requests-envoy-accesslog=$(INCLUDE_SUCCESSFUL_REQUESTS_ENVOY_ACCESSLOG)
+        - --enable-model-autoscaling=$(ENABLE_MODEL_AUTOSCALING)
+        - --enable-server-autoscaling=$(ENABLE_SERVER_AUTOSCALING)
         command:
         - /bin/scheduler
         env:
@@ -232,6 +237,16 @@ spec:
           value: "false"
         - name: SERVER_PACKING_PERCENTAGE
           value: "0.0"
+        - name: ENVOY_ACCESSLOG_PATH
+          value: /tmp/envoy-accesslog.txt
+        - name: ENABLE_ENVOY_ACCESSLOG
+          value: "true"
+        - name: INCLUDE_SUCCESSFUL_REQUESTS_ENVOY_ACCESSLOG
+          value: "false"
+        - name: ENABLE_MODEL_AUTOSCALING
+          value: "false"
+        - name: ENABLE_SERVER_AUTOSCALING
+          value: "true"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:

@@ -65,6 +65,16 @@ spec:
             value: '{{ .Values.autoscaling.serverPackingEnabled }}'
           - name: SERVER_PACKING_PERCENTAGE
             value: '{{ .Values.autoscaling.serverPackingPercentage }}'
+          - name: ENVOY_ACCESSLOG_PATH
+            value: '{{ .Values.envoy.accesslogPath }}'
+          - name: ENABLE_ENVOY_ACCESSLOG
+            value: '{{ .Values.envoy.enableAccesslog }}'
+          - name: INCLUDE_SUCCESSFUL_REQUESTS_ENVOY_ACCESSLOG
+            value: '{{ .Values.envoy.includeSuccessfulRequests }}'
+          - name: ENABLE_MODEL_AUTOSCALING
+            value: '{{ .Values.autoscaling.autoscalingModelEnabled }}'
+          - name: ENABLE_SERVER_AUTOSCALING
+            value: '{{ .Values.autoscaling.autoscalingServerEnabled }}'
     volumeClaimTemplates:
     - name: scheduler-state
       spec:

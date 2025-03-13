@@ -25,13 +25,12 @@
 * [Upgrading](upgrading.md) 
 
 ## User Guide
-<!-->
-* Getting Started
-  * Deploy Model (OIP+MLServer Link)
-  * Pipeline
-  * Inference Server
-  * Run Inference -->
-  * [Kubernetes Resources](kubernetes/resources/README.md) 
+<!-- * Getting Started -->
+<!-- * Deploy Model (OIP+MLServer Link) -->
+<!-- * Pipeline -->
+<!-- * Inference Server -->
+<!-- * Run Inference -->
+* [Kubernetes Resources](kubernetes/resources/README.md) 
 * [Servers](servers.md)
     * [Resource allocation](resource-allocation/README.md)
       * [Example: Serving models on dedicated GPU nodes](resource-allocation/example-serving-models-on-dedicated-gpu-nodes.md)
@@ -182,3 +181,8 @@
     * Glossary -->
 * [FAQs](faqs.md)          
  
+* [Development](development/README.md)
+  * [License](development/licenses.md)
+  * [Release](development/release.md)
+
+
