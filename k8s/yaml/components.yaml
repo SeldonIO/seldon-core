@@ -1241,7 +1241,7 @@ spec:
     containers:
     - env:
       - name: RCLONE_LOG_LEVEL
-        value: 'info'
+        value: 'INFO'
       image: 'docker.io/seldonio/seldon-rclone:latest'
       imagePullPolicy: 'IfNotPresent'
       lifecycle:
