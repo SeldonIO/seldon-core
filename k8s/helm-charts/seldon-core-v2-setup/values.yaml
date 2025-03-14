@@ -81,7 +81,10 @@ opentelemetry:
 
 # logging
 # this is a global setting, in the case individual components logLevel is not set
-# from:	fatal, error, warn, info, debug, trace
+# Users should set a value from: 
+# fatal, error, warn, info, debug, trace
+# if used also for .rclone.logLevel, the allowed set reduces to:
+# debug, info, error
 logging:
   logLevel: info
 
