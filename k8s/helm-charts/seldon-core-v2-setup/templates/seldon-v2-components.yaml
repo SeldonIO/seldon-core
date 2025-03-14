@@ -902,7 +902,8 @@ spec:
         - name: METRICS_LEVEL
           value: '{{ .Values.hodometer.metricsLevel }}'
         - name: LOG_LEVEL
-          value: '{{ .Values.hodometer.logLevel }}'
+          value: '{{ hasKey .Values.hodometer "logLevel" | ternary .Values.hodometer.logLevel
+            .Values.logging.logLevel }}'
         - name: EXTRA_PUBLISH_URLS
           value: '{{ .Values.hodometer.extraPublishUrls }}'
         - name: CONTROL_PLANE_SECURITY_PROTOCOL
