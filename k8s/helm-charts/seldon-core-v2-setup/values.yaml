@@ -79,6 +79,11 @@ opentelemetry:
   disable: false
   ratio: 1
 
+# logging
+# this is a global setting, in the case individual components logLevel is not set
+logging:
+  logLevel: info
+
 hodometer:
   image:
     pullPolicy: IfNotPresent
@@ -131,7 +136,6 @@ modelgateway:
     runAsUser: 1000
     runAsGroup: 1000
     runAsNonRoot: true
-  logLevel: warn
 
 pipelinegateway:
   image:
@@ -147,7 +151,6 @@ pipelinegateway:
     runAsUser: 1000
     runAsGroup: 1000
     runAsNonRoot: true
-  logLevel: warn
 
 dataflow:
   image:
@@ -164,7 +167,6 @@ dataflow:
     runAsUser: 1000
     runAsGroup: 1000
     runAsNonRoot: true
-  logLevel: warn
 
 controller:
   clusterwide: false
@@ -181,7 +183,6 @@ controller:
     runAsUser: 1000
     runAsGroup: 1000
     runAsNonRoot: true
-  logLevel: warn
 
 envoy:
   annotations:
@@ -228,7 +229,6 @@ scheduler:
     runAsGroup: 1000
     runAsNonRoot: true
   schedulerReadyTimeoutSeconds: 600
-  logLevel: warn
   
 autoscaling:
   autoscalingModelEnabled: false
@@ -277,7 +277,6 @@ serverConfig:
     resources:
       cpu: 200m
       memory: 1Gi
-    logLevel: warn
 
   mlserver:
     image:

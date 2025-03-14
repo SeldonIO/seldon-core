@@ -76,7 +76,7 @@ spec:
       - name: MLSERVER_TRACING_SERVER
         value: '{{ .Values.opentelemetry.endpoint }}'
       - name: SELDON_LOG_LEVEL
-        value: '{{ .Values.serverConfig.agent.logLevel }}'
+        value: '{{ hasKey .Values.serverConfig.agent "logLevel" | ternary .Values.serverConfig.agent.logLevel .Values.logging.logLevel }}'
       image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository }}:{{ .Values.serverConfig.agent.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.agent.image.pullPolicy }}'
       name: agent
