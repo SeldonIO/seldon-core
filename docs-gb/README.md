@@ -16,7 +16,7 @@ With a "learn once, deploy anywhere" approach, Seldon Core 2 standardizes model 
 
 ## **Enhanced Observability**
 
-Observability in Seldon Core 2 enables real-time monitoring, analysis, and performance tracking of ML systems, covering data pipelines, models, and deployment environments. Its customizable framework combines operational and data science monitoring, ensuring teams have the key metrics needed for maintenance and decision-making.
+Observability in Seldon Core 2 enables real-time monitoring, analysis, and performance tracking of ML systems, covering data pipelines, models, and deployment environments. Its customizable framework combines [operational](./operational-monitoring/README.md) and [data science](./architecture/dataflow.md) monitoring, ensuring teams have the key metrics needed for maintenance and decision-making.
 
 Seldon simplifies operational monitoring, allowing real-time ML or LLM deployments to expand across organizations while supporting complex, mission-critical use cases. A [data-centric approach](./concepts/README.md#data-centric-mlops) ensures all prediction data is auditable, maintaining explainability, compliance, and trust in AI-driven decisions.
 
@@ -26,7 +26,7 @@ Seldon Core 2 provides flexible metric aggregation, surfacing operational, dat
 
 Seldon Core 2 is built for scalability, efficiency, and cost-effective ML operations, enabling you to deploy only the necessary components while maintaining agility and high performance. Its modular architecture ensures that resources are optimized, infrastructure is consolidated, and deployments remain adaptable to evolving business needs.
 
-**Scaling for Efficiency:** enables dynamic infrastructure scaling based on real-time demand, ensuring that only the required resources are used. With support for scaling to zero, unused resources can be completely deallocated, reducing infrastructure costs when models are not in use. Additionally, scaling to one ensures that at least one replica remains active, preventing cold starts and maintaining responsiveness. By eliminating redundancy and optimizing model deployments, you can balance cost efficiency with performance, ensuring seamless and reliable inference at any scale.
+**Scaling for Efficiency:** enables dynamic infrastructure [scaling](./kubernetes/scaling.md) based on real-time demand, ensuring that only the required resources are used. With support for scaling to zero, unused resources can be completely deallocated, reducing infrastructure costs when models are not in use. Additionally, scaling to one ensures that at least one replica remains active, preventing cold starts and maintaining responsiveness. By eliminating redundancy and optimizing model deployments, you can balance cost efficiency with performance, ensuring seamless and reliable inference at any scale.
 
 **Consolidated Serving Infrastructure**: With multi-model serving (MMS) and overcommit capabilities, Seldon Core 2 maximizes resource utilization by intelligently allocating models across available infrastructure. This approach reduces compute overhead while ensuring reliable and efficient model inference.
 
