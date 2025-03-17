@@ -6,7 +6,10 @@ spec:
   podSpec:
     imagePullSecrets: []
     containers:
-    - image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository }}:{{ .Values.serverConfig.rclone.image.tag }}'
+    - env:
+      - name: RCLONE_LOG_LEVEL
+        value: '{{ hasKey .Values.serverConfig.rclone "logLevel" | ternary .Values.serverConfig.rclone.logLevel .Values.logging.logLevel | upper }}'
+      image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository }}:{{ .Values.serverConfig.rclone.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
       name: rclone
       resources:
@@ -73,7 +76,7 @@ spec:
       - name: MLSERVER_TRACING_SERVER
         value: '{{ .Values.opentelemetry.endpoint }}'
       - name: SELDON_LOG_LEVEL
-        value: '{{ .Values.serverConfig.agent.logLevel }}'
+        value: '{{ hasKey .Values.serverConfig.agent "logLevel" | ternary .Values.serverConfig.agent.logLevel .Values.logging.logLevel }}'
       image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository }}:{{ .Values.serverConfig.agent.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.agent.image.pullPolicy }}'
       name: agent

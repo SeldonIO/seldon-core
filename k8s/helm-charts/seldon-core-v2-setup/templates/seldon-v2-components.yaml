@@ -410,6 +410,7 @@ spec:
         - --leader-elect
         - --namespace=$(POD_NAMESPACE)
         - --clusterwide=$(CLUSTERWIDE)
+        - --log-level=$(LOG_LEVEL)
         command:
         - /manager
         env:
@@ -430,6 +431,9 @@ spec:
           value: '{{ .Values.security.controlplane.ssl.client.caPath }}'
         - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
           value: '{{ .Values.security.controlplane.ssl.client.serverCaPath }}'
+        - name: LOG_LEVEL
+          value: '{{ hasKey .Values.controller "logLevel" | ternary .Values.controller.logLevel
+            .Values.logging.logLevel }}'
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -558,7 +562,8 @@ spec:
         - name: ENABLE_SERVER_AUTOSCALING
           value: '{{ .Values.autoscaling.autoscalingServerEnabled }}'
         - name: LOG_LEVEL
-          value: '{{ .Values.scheduler.logLevel }}'
+          value: '{{ hasKey .Values.scheduler "logLevel" | ternary .Values.scheduler.logLevel
+            .Values.logging.logLevel }}'
         - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE
@@ -711,7 +716,8 @@ spec:
         - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
           value: '{{ .Values.security.controlplane.ssl.client.serverCaPath }}'
         - name: LOG_LEVEL
-          value: '{{ .Values.pipelinegateway.logLevel }}'
+          value: '{{ hasKey .Values.pipelinegateway "logLevel" | ternary .Values.pipelinegateway.logLevel
+            .Values.logging.logLevel }}'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
@@ -843,7 +849,8 @@ spec:
         - name: ENVOY_DOWNSTREAM_SERVER_TLS_CA_LOCATION
           value: '{{ .Values.security.envoy.ssl.downstream.client.serverCaPath }}'
         - name: LOG_LEVEL
-          value: '{{ .Values.modelgateway.logLevel }}'
+          value: '{{ hasKey .Values.modelgateway "logLevel" | ternary .Values.modelgateway.logLevel
+            .Values.logging.logLevel }}'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
@@ -895,7 +902,8 @@ spec:
         - name: METRICS_LEVEL
           value: '{{ .Values.hodometer.metricsLevel }}'
         - name: LOG_LEVEL
-          value: '{{ .Values.hodometer.logLevel }}'
+          value: '{{ hasKey .Values.hodometer "logLevel" | ternary .Values.hodometer.logLevel
+            .Values.logging.logLevel }}'
         - name: EXTRA_PUBLISH_URLS
           value: '{{ .Values.hodometer.extraPublishUrls }}'
         - name: CONTROL_PLANE_SECURITY_PROTOCOL
@@ -1058,6 +1066,12 @@ spec:
             }}'
         - name: SELDON_CORES_COUNT
           value: '{{ .Values.dataflow.cores }}'
+        - name: SELDON_LOG_LEVEL_APP
+          value: '{{ hasKey .Values.dataflow "logLevel" | ternary .Values.dataflow.logLevel
+            .Values.logging.logLevel | upper }}'
+        - name: SELDON_LOG_LEVEL_KAFKA
+          value: '{{ hasKey .Values.dataflow "logLevel" | ternary .Values.dataflow.logLevel
+            .Values.logging.logLevel | upper }}'
         - name: SELDON_UPSTREAM_HOST
           value: seldon-scheduler
         - name: SELDON_UPSTREAM_PORT
@@ -1136,7 +1150,11 @@ metadata:
 spec:
   podSpec:
     containers:
-    - image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository
+    - env:
+      - name: RCLONE_LOG_LEVEL
+        value: '{{ hasKey .Values.serverConfig.rclone "logLevel" | ternary .Values.serverConfig.rclone.logLevel
+          .Values.logging.logLevel | upper }}'
+      image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository
         }}:{{ .Values.serverConfig.rclone.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
       lifecycle:
@@ -1232,7 +1250,8 @@ spec:
       - name: MLSERVER_TRACING_SERVER
         value: '{{ .Values.opentelemetry.endpoint }}'
       - name: SELDON_LOG_LEVEL
-        value: '{{ .Values.serverConfig.agent.logLevel }}'
+        value: '{{ hasKey .Values.serverConfig.agent "logLevel" | ternary .Values.serverConfig.agent.logLevel
+          .Values.logging.logLevel }}'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -1404,7 +1423,11 @@ metadata:
 spec:
   podSpec:
     containers:
-    - image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository
+    - env:
+      - name: RCLONE_LOG_LEVEL
+        value: '{{ hasKey .Values.serverConfig.rclone "logLevel" | ternary .Values.serverConfig.rclone.logLevel
+          .Values.logging.logLevel | upper }}'
+      image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository
         }}:{{ .Values.serverConfig.rclone.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
       lifecycle:
@@ -1498,7 +1521,8 @@ spec:
       - name: ENVOY_UPSTREAM_CLIENT_TLS_CA_LOCATION
         value: '{{ .Values.security.envoy.ssl.upstream.server.clientCaPath }}'
       - name: SELDON_LOG_LEVEL
-        value: '{{ .Values.serverConfig.agent.logLevel }}'
+        value: '{{ hasKey .Values.serverConfig.agent "logLevel" | ternary .Values.serverConfig.agent.logLevel
+          .Values.logging.logLevel }}'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT

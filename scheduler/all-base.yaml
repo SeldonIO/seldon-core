@@ -155,18 +155,16 @@ services:
       dockerfile: scheduler/Dockerfile.rclone
       context: ..
     image: "${RCLONE_IMAGE_AND_TAG}"
+    environment:
+      - RCLONE_LOG_LEVEL=DEBUG
 
   rclone-triton:
     build:
       dockerfile: scheduler/Dockerfile.rclone
       context: ..
     image: "${RCLONE_IMAGE_AND_TAG}"
-    command:
-      - "rcd"
-      - "--rc-no-auth"
-      - "--config=/rclone/rclone.conf"
-      - "--rc-addr=0.0.0.0:${RCLONE_TRITON_HTTP_PORT}"
-      - "--verbose"
+    environment:
+      - RCLONE_LOG_LEVEL=DEBUG
 
   scheduler:
     user: "${UID_GID}"
