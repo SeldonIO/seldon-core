@@ -12,7 +12,7 @@ With a "develop in anything, deploy anywhere" approach Seldon Core 2 offers a p
 
 Seldon Core 2 enforces best practices for ML deployment, ensuring consistency, reliability, and efficiency across the entire lifecycle. By automating key deployment steps, it removes operational bottlenecks, enabling faster rollouts and allowing teams to focus on high-value tasks.
 
-With a "learn once, deploy anywhere" approach, Seldon Core 2 standardizes model deployment across on-premise, cloud, and hybrid environments, reducing risks and improving productivity. Its unified execution framework supports conventional, foundational, and LLM models, providing a consistent and efficient way to deploy diverse model types. This enhances operational efficiency, fosters innovation, and ensures accuracy, compliance, and seamless scalability. Also, enhances collaboration between MLOps Engineers, Data Scientists, and Software Engineers through a customizable framework that promotes knowledge sharing, innovation, and seamless adoption of new data science features.
+With a "learn once, deploy anywhere" approach, Seldon Core 2 standardizes model deployment across on-premise, cloud, and hybrid environments, reducing risks and improving productivity. Its unified execution framework supports conventional, foundational, and LLM models, providing a consistent and efficient way to deploy diverse model types. This enhances operational efficiency, fosters innovation, and ensures accuracy, compliance, and seamless scalability. It also strengthens collaboration among MLOps Engineers, Data Scientists, and Software Engineers through a customizable framework that promotes knowledge sharing, innovation, and seamless adoption of new data science features.
 
 ## **Enhanced Observability**
 
