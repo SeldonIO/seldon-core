@@ -6,7 +6,7 @@ Seldon Core 2 is a source-available, Kubernetes-native framework designed to dep
 
 ## **Flexibility: Real-time, your way**
 
-With a "develop in anything, deploy anywhere" approach Seldon Core 2 offers a platform-agnostic, flexible framework for seamless deployment of different types of ML models across on-premise, cloud, and hybrid environments. Its adaptive architecture enables customizable applications, future-proofing MLOps or LLMOps by scaling deployments as data and applications evolve. The modular design enhances resource-efficiency, allowing dynamic scaling, component reuse, and optimized resource allocation. This ensures long-term scalability, operational efficiency, and adaptability to changing demands.
+Seldon Core 2 offers a platform-agnostic, flexible framework for seamless deployment of different types of ML models across on-premise, cloud, and hybrid environments. Its adaptive architecture enables customizable applications, future-proofing MLOps or LLMOps by scaling deployments as data and applications evolve. The modular design enhances resource-efficiency, allowing dynamic scaling, component reuse, and optimized resource allocation. This ensures long-term scalability, operational efficiency, and adaptability to changing demands.
 
 ## **Standardization: Consistency across workflows**
 
@@ -26,7 +26,7 @@ Seldon Core 2 provides flexible metric aggregation, surfacing operational, dat
 
 Seldon Core 2 is built for scalability, efficiency, and cost-effective ML operations, enabling you to deploy only the necessary components while maintaining agility and high performance. Its modular architecture ensures that resources are optimized, infrastructure is consolidated, and deployments remain adaptable to evolving business needs.
 
-**Scaling for Efficiency:** enables dynamic infrastructure [scaling](./kubernetes/scaling.md) based on real-time demand, ensuring that only the required resources are used. With support for scaling to zero, unused resources can be completely deallocated, reducing infrastructure costs when models are not in use. Additionally, scaling to one ensures that at least one replica remains active, preventing cold starts and maintaining responsiveness. By eliminating redundancy and optimizing model deployments, you can balance cost efficiency with performance, ensuring seamless and reliable inference at any scale.
+**Scaling for Efficiency:** enables dynamic infrastructure [scaling](./kubernetes/scaling.md) based on real-time demand, ensuring that only the required resources are used. For always-on real-time use-cases, our auto-scaling functionality increases capacity based on load, while ensuring that at least one replica remains active to prevent cold starts and maintain responsiveness. For use-cases that do not always need to be available, Core 2 provides reslience to scaling to zero, meaning that underlying infrastructure (your nodes or clusters) can be spun down and back up, and Core retains the state of your deployments and can seamlessly re-activate them when they are needed. By eliminating redundancy and optimizing model deployments, you can balance cost efficiency with performance, ensuring reliable inference at any scale.
 
 **Consolidated Serving Infrastructure**: With multi-model serving (MMS) and overcommit capabilities, Seldon Core 2 maximizes resource utilization by intelligently allocating models across available infrastructure. This approach reduces compute overhead while ensuring reliable and efficient model inference.
 
