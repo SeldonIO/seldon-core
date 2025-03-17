@@ -75,7 +75,6 @@
     * [Usage Metrics](operational-monitoring/usage.md)
     * [Local Metrics](operational-monitoring/local-metrics-test.md)
     * [Tracing](kubernetes/tracing.md)
-    * [Performance Tests](performance-tests.md)
     <!-- * Kubernetes Metrics -->
     <!--
     * Performance Tuning -->
