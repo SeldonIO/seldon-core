@@ -18,7 +18,7 @@ With a "learn once, deploy anywhere" approach, Seldon Core 2 standardizes model 
 
 Observability in Seldon Core 2 enables real-time monitoring, analysis, and performance tracking of ML systems, covering data pipelines, models, and deployment environments. Its customizable framework combines operational and data science monitoring, ensuring teams have the key metrics needed for maintenance and decision-making.
 
-Seldon simplifies operational monitoring, allowing real-time ML or LLM deployments to expand across organizations while supporting complex, mission-critical use cases. A [data-centric approach](./concepts/README.md#data-centric-mlops)ensures all prediction data is auditable, maintaining explainability, compliance, and trust in AI-driven decisions.
+Seldon simplifies operational monitoring, allowing real-time ML or LLM deployments to expand across organizations while supporting complex, mission-critical use cases. A [data-centric approach](./concepts/README.md#data-centric-mlops) ensures all prediction data is auditable, maintaining explainability, compliance, and trust in AI-driven decisions.
 
 Seldon Core 2 provides flexible metric aggregation, surfacing operational, data science, and custom metrics for different users. Whether teams need high-level overviews or deep insights, Seldon ensures full transparency. With real-time access, you can register, monitor, and audit models step by step, gaining visibility into data-driven decisions and ensuring accountable, trustworthy AI systems.
 
