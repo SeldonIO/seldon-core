@@ -2,7 +2,7 @@
 
 Seldon Core 2 is a Kubernetes-native framework for deploying and managing machine learning (ML) and Large Language Model (LLM) systems at scale. Its [data-centric approach](./concepts/README.md#data-centric-mlops) and modular [architecture](./architecture/README.md) enable seamless handling of simple models to complex ML applications across on-premise, hybrid, and multi-cloud environments while ensuring flexibility, standardization, observability, and cost efficiency.
 
-![Seldon Core 2 key benefits](./images/seldon_core_2_intro.png)
+![Seldon Core 2 Key Differentiators](./images/seldon_core_2_intro.png)
 
 ## **Flexibility: Real-time, your way**
 
@@ -20,16 +20,15 @@ Observability in Seldon Core 2 enables real-time monitoring, analysis, and pe
 
 Seldon simplifies operational monitoring, allowing real-time ML or LLM deployments to expand across organizations while supporting complex, mission-critical use cases. A [data-centric approach](./concepts/README.md#data-centric-mlops) ensures all prediction data is auditable, maintaining explainability, compliance, and trust in AI-driven decisions.
 
-Seldon Core 2 provides flexible metric aggregation for operational, data science, and custom metrics, that helps you with both high-level overviews and deep insights. With real-time access, you can register, monitor, and audit models step by step, ensuring accountability and transparency in AI-driven decision-making.
 
 ## **Optimization: Modularity to maximize resource efficiency**
 
 Seldon Core 2 is built for scalability, efficiency, and cost-effective ML operations, enabling you to deploy only the necessary components while maintaining agility and high performance. Its modular architecture ensures that resources are optimized, infrastructure is consolidated, and deployments remain adaptable to evolving business needs.
 
-**Scaling for Efficiency:** enables dynamic infrastructure [scaling](./kubernetes/scaling.md) based on real-time demand, ensuring that only the required resources are used. For real-time use-cases, the auto-scaling increases capacity based on load, keeping one active replica to prevent cold starts and ensure responsiveness. For on-demand use cases, Core 2 supports scaling to zero, allowing infrastructure to spin down and back up while retaining deployment state for seamless reactivation. Eliminating redundancy and optimizing deployments balances cost efficiency and performance, ensuring reliable inference at any scale.
+**Scaling for Efficiency:** [scaling](./kubernetes/scaling.md) infrastructure dynamically based on demand, auto-scaling for real-time use cases while scaling to zero for on-demand workloads, preserving deployment state for seamless reactivation. By eliminating redundancy and optimizing deployments, it balances cost efficiency and performance, ensuring reliable inference at any scale.
 
-**Consolidated Serving Infrastructure**: Seldon Core 2 maximizes resource utilization with multi-model serving (MMS) and overcommit, reducing compute overhead while ensuring efficient, reliable inference.
+**Consolidated Serving Infrastructure**: maximizes resource utilization with multi-model serving (MMS) and overcommit, reducing compute overhead while ensuring efficient, reliable inference.
 
-**Extendability & Modular Adaptation**: Seldon Core 2 flexibly integrates with LLMs, Alibi, and other modules, allowing on-demand expansion of ML capabilities. Its modular design lets you purchase and implement features as needed, ensuring your AI platform scales with business demands, maximizes value extraction, and maintains agility and cost efficiency.
+**Extendability & Modular Adaptation**: integrates with LLMs, Alibi, and other modules, enabling on-demand ML expansion. Its modular design ensures scalable AI, maximizing value extraction, agility, and cost efficiency.
 
-**Reusability for Cost Optimization:** Seldon Core 2 offers predictable, fixed pricing, allowing you to experiment, scale, and innovate without unexpected costs. Its scalable, modular design helps lower costs, streamline workflows, and drive AI innovation while maintaining financial transparency and flexibility.
+**Reusability for Cost Optimization:**: provides predictable, fixed pricing, enabling cost-effective scaling and innovation while ensuring financial transparency and flexibility.

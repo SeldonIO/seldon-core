@@ -2,7 +2,7 @@
 
 ## About
 * [Production-ready ML Serving Framework](README.md)
-* [Seldon Core features](core-features.md)
+* [Seldon Core Features](core-features.md)
 * [Concepts](concepts/README.md)
 * [Architecture](architecture/README.md)
 
