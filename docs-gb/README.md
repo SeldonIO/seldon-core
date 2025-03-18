@@ -32,3 +32,9 @@ Seldon Core 2 is built for scalability, efficiency, and cost-effective ML opera
 **Extendability & Modular Adaptation**: integrates with LLMs, Alibi, and other modules, enabling on-demand ML expansion. Its modular design ensures scalable AI, maximizing value extraction, agility, and cost efficiency.
 
 **Reusability for Cost Optimization:**: provides predictable, fixed pricing, enabling cost-effective scaling and innovation while ensuring financial transparency and flexibility.
+
+## Next Steps
+
+- Explore our other [Solutions](https://www.seldon.io/pricing/)
+- Learn about the [feature of Seldon Core 2](./core-features.md)
+- [Join our Slack Community](https://seldondev.slack.com/join/shared_invite/zt-vejg6ttd-ksZiQs3O_HOtPQsen_labg#/shared-invite/email) for updates or for answers to any questions
