@@ -165,6 +165,11 @@ services:
     image: "${RCLONE_IMAGE_AND_TAG}"
     environment:
       - RCLONE_LOG_LEVEL=DEBUG
+    command:
+      - "rcd"
+      - "--rc-no-auth"
+      - "--config=/rclone/rclone.conf"
+      - "--rc-addr=0.0.0.0:${RCLONE_TRITON_HTTP_PORT}"
 
   scheduler:
     user: "${UID_GID}"
