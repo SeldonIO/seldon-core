@@ -15,4 +15,4 @@ To explore this feature of Seldon Core 2, you need to integrate with Kafka. Inte
 
 ### Self-hosted Kafka
 
-Seldon Enterprise Platform and Seldon Core 2 requires Kafka to implement data-centric inference Pipelines. To install Kafka for testing purposed in your Kubernetes cluster, use [Strimzi Operator](https://strimzi.io/docs/operators/latest/deploying). For more information, see [Self Hosted Kafka](/docs-gb/installation/learning-environment/self-hosted-kafka.md)
+Seldon Core 2 requires Kafka to implement data-centric inference Pipelines. To install Kafka for testing purposed in your Kubernetes cluster, use [Strimzi Operator](https://strimzi.io/docs/operators/latest/deploying). For more information, see [Self Hosted Kafka](/docs-gb/installation/learning-environment/self-hosted-kafka.md)
