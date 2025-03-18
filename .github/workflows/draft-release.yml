@@ -95,7 +95,7 @@ jobs:
           make prep-artifacts
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: artifacts
           path: .release/
@@ -133,7 +133,7 @@ jobs:
           fi
 
       - name: Upload release notes
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: release-notes
           path: release-notes.txt
