@@ -1,7 +1,7 @@
 # Table of contents
 
 ## About
-* [Why Seldon Core](README.md)
+* [Production-ready ML Serving Framework](README.md)
 * [Seldon Core features](core-features.md)
 * [Concepts](concepts/README.md)
 * [Architecture](architecture/README.md)
