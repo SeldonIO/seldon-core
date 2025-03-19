@@ -157,9 +157,11 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) (*coordinator.Serve
 		// this is because the latest version might not have been applied properly and therefore
 		// the old version might still be dangling around
 		for _, mv := range model.Versions {
-			_, err := s.store.UnloadVersionModels(modelName, mv.GetVersion())
-			if err != nil {
-				logger.WithError(err).Warnf("Failed to unload model %s version %d", modelName, mv.GetVersion())
+			if mv.HasLiveReplicas() {
+				_, err := s.store.UnloadVersionModels(modelName, mv.GetVersion())
+				if err != nil {
+					logger.WithError(err).Warnf("Failed to unload model %s version %d", modelName, mv.GetVersion())
+				}
 			}
 		}
 
