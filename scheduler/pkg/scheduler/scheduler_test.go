@@ -667,6 +667,9 @@ func TestRemoveAllVersions(t *testing.T) {
 		for i := 1; i <= numVersions; i++ {
 			versions = append(versions, store.NewModelVersion(config, uint32(i), scheduledServer, rmap, false, store.ModelAvailable))
 		}
+		// load a bad version - this should not get unloaded by the test
+		versions = append(versions, store.NewModelVersion(config, uint32(numVersions+1), scheduledServer, map[int]store.ReplicaStatus{}, false, store.ScheduleFailed))
+
 		return &store.ModelSnapshot{
 			Name:     name,
 			Versions: versions,
