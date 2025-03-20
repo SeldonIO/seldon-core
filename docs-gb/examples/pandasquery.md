@@ -107,6 +107,25 @@ spec:
 
 ```
 
+
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ../../models/choice1.yaml -n ${NAMESPACE}
+kubectl apply -f ../../models/choice2.yaml -n ${NAMESPACE}
+kubectl apply -f ../../models/add10.yaml -n ${NAMESPACE}
+kubectl apply -f ../../models/mul10.yaml -n ${NAMESPACE}
+```
+
+```bash
+model.mlops.seldon.io/choice1 created
+model.mlops.seldon.io/choice2 created
+model.mlops.seldon.io/add10 created
+model.mlops.seldon.io/mul10 created
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model load -f ../../models/choice1.yaml
 seldon model load -f ../../models/choice2.yaml
@@ -119,9 +138,30 @@ seldon model load -f ../../models/mul10.yaml
 {}
 {}
 {}
+```
+{% endtab %}
+{% endtabs %}
 
+
+
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl wait --for condition=ready --timeout=300s model choice-is-one -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s model choice-is-two -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s model add10 -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s model mul10 -n ${NAMESPACE}
 ```
 
+```bash
+model.mlops.seldon.io/choice-is-one condition met
+model.mlops.seldon.io/choice-is-two condition met
+model.mlops.seldon.io/add10 condition met
+model.mlops.seldon.io/mul10 condition met
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model status choice-is-one -w ModelAvailable
 seldon model status choice-is-two -w ModelAvailable
@@ -136,6 +176,9 @@ seldon model status mul10 -w ModelAvailable
 {}
 
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ```bash
 cat ../../pipelines/choice.yaml
@@ -168,10 +211,28 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f pipelines/choice.yaml
+```
+```
+pipeline.mlops.seldon.io/choice created
+```
+
+```bash
+kubectl wait --for condition=ready --timeout=300s pipelines choice -n ${NAMESPACE}
+```
+
+```
+pipeline.mlops.seldon.io/choice condition met
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon pipeline load -f ../../pipelines/choice.yaml
 ```
-
 ```bash
 seldon pipeline status choice -w PipelineReady | jq -M .
 ```
@@ -230,8 +291,11 @@ seldon pipeline status choice -w PipelineReady | jq -M .
     }
   ]
 }
-
 ```
+{% endtab %}
+{% endtabs %}
+
+
 
 ```bash
 seldon pipeline infer choice --inference-mode grpc \
@@ -289,6 +353,19 @@ seldon pipeline infer choice --inference-mode grpc \
 
 ```
 
+
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl delete -f ../../models/choice1.yaml -n ${NAMESPACE}
+kubectl delete -f ../../models/choice2.yaml -n ${NAMESPACE}
+kubectl delete -f ../../models/add10.yaml -n ${NAMESPACE}
+kubectl delete -f ../../models/mul10.yaml -n ${NAMESPACE}
+kubectl delete -f ../../pipelines/choice.yaml -n ${NAMESPACE}
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model unload choice-is-one
 seldon model unload choice-is-two
@@ -296,3 +373,7 @@ seldon model unload add10
 seldon model unload mul10
 seldon pipeline unload choice
 ```
+{% endtab %}
+{% endtabs %}
+
+
