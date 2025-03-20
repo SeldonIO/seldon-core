@@ -234,7 +234,7 @@ These are the steps that you need to perform in Azure Portal.
 kubectl create secret generic azure-kafka-secret --from-literal=<password>="Endpoint=sb://<namespace>.servicebus.windows.net/;SharedAccessKeyName=XXXXXX;SharedAccessKey=XXXXXX" -n seldon
 ```
 
-2. Create a secret named `azure-kafka-secret` for Seldon Enterprise Platform in the namespace `seldon-system`. In the following command make sure to replace `<password>` with a password of your choice and `<namespace>` with the namespace form Azure Event Hub.
+2. Create a secret named `azure-kafka-secret` for Seldon Core 2 in the namespace `seldon-system`. In the following command make sure to replace `<password>` with a password of your choice and `<namespace>` with the namespace form Azure Event Hub.
 
 ```
 kubectl create secret generic azure-kafka-secret --from-literal=<password>="Endpoint=sb://<namespace>.servicebus.windows.net/;SharedAccessKeyName=XXXXXX;SharedAccessKey=XXXXXX" -n seldon-system

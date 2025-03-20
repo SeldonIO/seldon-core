@@ -9,7 +9,7 @@ Seldon Core 2 works seamlessly with any service mesh or ingress controller, offe
 
 # Istio
 
-Istio implements the Kubernetes ingress resource to expose a service and make it accessible from outside the cluster. You can install Istio in either a self-hosted Kubernetes cluster or a managed Kubernetes service provided by a cloud provider that is running the Seldon Enterprise Platform.
+Istio implements the Kubernetes ingress resource to expose a service and make it accessible from outside the cluster. You can install Istio in either a self-hosted Kubernetes cluster or a managed Kubernetes service provided by a cloud provider that is running the Seldon Core 2.
 
 ## Prerequisites
 
@@ -18,7 +18,7 @@ Istio implements the Kubernetes ingress resource to expose a service and make it
 
 ## Installing Istio ingress controller
 
-Installing Istio ingress controller in a Kubernetes cluster running Seldon Enterprise Platform involves these tasks:
+Installing Istio ingress controller in a Kubernetes cluster running Seldon Core 2 involves these tasks:
 
 1. [Install Istio](istio.md#install-istio)
 2. [Install Istio Ingress Gateway](istio.md#install-istio-ingress-gateway)

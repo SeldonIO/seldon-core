@@ -29,23 +29,23 @@ By adopting a data-centric approach, Seldon Core 2 enables:
 With data-centricity as a core principle, Seldon Core 2 ensures end-to-end control over ML workflows, enabling you to maximize model performance and reliability in production environments.
 
 ## Open Inference Protocol in Seldon Core 2
-The Open Inference Protocol ensures standardized communication between inference servers and clients, enabling interoperability and flexibility across different model-serving runtimes in Seldon Core 2.
+The Open Inference Protocol (OIP) ensures standardized communication between inference servers and clients, enabling interoperability and flexibility across different model-serving runtimes in Seldon Core 2.
 
 To be compliant, an inference server must implement these three key APIs:
 | **API**            | **Function** |
 |-------------------|-------------|
 | **Health API**    | Ensures the server is *operational and available* for inference requests. |
 | **Metadata API**  | Provides *essential details* about deployed models, including *capabilities and configurations*. |
-| **Inference V2 API** | Facilitates *standardized request and response handling* for model inference. |
+| **V2 Inference Protocol API** | Facilitates *standardized request and response handling* for model inference. |
 
 **Protocol Compatibility**
 * Flexible API Support: A compliant server can implement either HTTP/REST or gRPC APIs, or both.
-* Runtime Compatibility:Users should refer to the model serving runtime table or the protocolVersion field in runtime YAML to confirm V2 protocol support for their serving runtime.
+* Runtime Compatibility:Users should refer to the model serving runtime table or the protocolVersion field in runtime YAML to confirm V2 Inference Protocol support for their serving runtime.
 
 **Case Sensitivity and Extensions**
-All strings are case-sensitive across API descriptions.V2 protocol includes an extension mechanism, though specific extensions are defined separately.
+All strings are case-sensitive across API descriptions. V2 Inference Protocol includes an extension mechanism, though specific extensions are defined separately.
 
-By adopting the Open Inference Protocol, Seldon Core 2 ensures standardized, scalable, and flexible model serving across diverse deployment environments.
+By adopting the V2 Inference Protocol, Seldon Core 2 ensures standardized, scalable, and flexible model serving across diverse deployment environments.
 
 ## Components in Seldon Core 2
 Components are the building blocks of an inference graph, processing data at various stages of the ML inference pipeline. They provide reusable, standardized interfaces, making it easier to maintain and update workflows without disrupting the entire system. Components include ML models, data processors, routers, and supplementary services.

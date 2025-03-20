@@ -1,8 +1,8 @@
 # Table of contents
 
 ## About
-* [Why Seldon Core](README.md)
-* [Seldon Core features](core-features.md)
+* [Production-ready ML Serving Framework](README.md)
+* [Seldon Core Features](core-features.md)
 * [Concepts](concepts/README.md)
 * [Architecture](architecture/README.md)
 
@@ -69,13 +69,13 @@
     * [Drift Detection](drift.md)
     * [Outlier Detection](outlier.md)
     * [Explainability](explainers.md)
-* Operational Monitoring
-    * [Operational Metrics](metrics/operational.md)
-    <!-- * Kubernetes Metrics -->
-    <!--  * [Usage Metrics](metrics/usage.md) -->
+* [Operational Monitoring](operational-monitoring/README.md) 
+    * [Operational Metrics](operational-monitoring/operational.md)
+    * [Observability](operational-monitoring/observability.md)
+    * [Usage Metrics](operational-monitoring/usage.md)
+    * [Local Metrics](operational-monitoring/local-metrics-test.md)
     * [Tracing](kubernetes/tracing.md)
-    <!-- * [Local Metrics](metrics/local-metrics-test.md) -->
-    * [Performance Tests](performance-tests.md)
+    <!-- * Kubernetes Metrics -->
     <!--
     * Performance Tuning -->
 <!--    
