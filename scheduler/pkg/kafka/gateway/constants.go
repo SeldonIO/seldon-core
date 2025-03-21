@@ -20,6 +20,7 @@ const (
 
 	// Topic creation retries
 	TopicCreateTimeout      = time.Minute
+	TopicDeleteTimeout      = time.Minute
 	TopicDescribeTimeout    = time.Second
 	TopicDescribeMaxRetries = 60
 	TopicDescribeRetryDelay = time.Second
