@@ -3,7 +3,7 @@ description: Integrate self-hosted Kafka with Seldon Core 2.
 ---
 # Self-hosted Kafka
 
-You can run Kafka in the same Kubernetes cluster that hosts the Seldon Core 2. Seldon recommends using the [Strimzi operator](https://strimzi.io/docs/operators/latest/deploying) for Kafka installation and maintenance. For more details about configuring Kafka with Seldon Core 2 see the [Configuration](../../getting-started/configuration.md)section.
+You can run Kafka in the same Kubernetes cluster that hosts the Seldon Core 2. Seldon recommends using the [Strimzi operator](https://strimzi.io/docs/operators/latest/deploying) for Kafka installation and maintenance. For more details about configuring Kafka with Seldon Core 2 see the [Configuration](../../getting-started/configuration.md) section.
 
 {% hint style="info" %}
 **Note**: These instructions help you quickly set up a Kafka cluster. For production grade installation consult [Strimzi documentation](https://strimzi.io/documentation/) or use one of [managed solutions](../production-environment/kafka/README.md). 
