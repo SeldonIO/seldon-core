@@ -5,7 +5,7 @@ In the context of machine learning and Seldon Core 2, concepts provide a framewo
 * [Open Inference Protocol](#open-inference-protocol-in-seldon-core-2)
 * [Components](#components-in-seldon-core-2)
 * [Pipelines](#pipelines)
-* [Severs](#servers)
+* [Servers](#servers)
 * [Experiments](#experiments)
 
 ## Data-Centric MLOps
