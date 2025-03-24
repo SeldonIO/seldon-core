@@ -51,7 +51,7 @@ message ModelSpec {
     LlmSpec llm = 10; // optional LLM specific settings
   }
 
-  optional bool CleanTopicOnDelete = 11; // clean up the kafka topic on model delete
+  optional bool CleanTopicsOnDelete = 11; // clean up the kafka topic on model delete
 }
 
 message ParameterSpec {

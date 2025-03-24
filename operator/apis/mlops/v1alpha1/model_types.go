@@ -49,7 +49,7 @@ type ModelSpec struct {
 	// Flag to indicate whether the kafka input/output topics
 	// should be cleaned up when the model is deleted
 	// Default false
-	CleanTopicOnDelete bool `json:"cleanTopicOnDelete,omitempty"`
+	CleanTopicsOnDelete bool `json:"cleanTopicsOnDelete,omitempty"`
 }
 
 func (m *ModelSpec) Validate() error {

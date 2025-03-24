@@ -138,7 +138,7 @@ spec:
                   Model already loaded on a server. Don't schedule.
                   Default false
                 type: boolean
-              cleanTopicOnDelete:
+              cleanTopicsOnDelete:
                 description: |-
                   Flag to indicate whether the kafka input/output topics
                   should be cleaned up when the model is deleted
