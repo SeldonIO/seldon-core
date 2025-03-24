@@ -188,7 +188,8 @@ func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
 			}
 		} else {
 			logger.Infof("Removing model %s", event.ModelName)
-			err := kc.consumerManager.RemoveModel(event.ModelName)
+			cleanTopicOnDeletion := latestVersionStatus.GetModelDefn().GetModelSpec().GetCleanTopicsOnDelete()
+			err := kc.consumerManager.RemoveModel(event.ModelName, cleanTopicOnDeletion)
 			if err != nil {
 				kc.logger.WithError(err).Errorf("Failed to remove model %s", event.ModelName)
 			}
