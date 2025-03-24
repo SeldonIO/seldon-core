@@ -50,6 +50,8 @@ message ModelSpec {
     ExplainerSpec explainer = 7; // optional black box explainer details
     LlmSpec llm = 10; // optional LLM specific settings
   }
+
+  optional bool CleanTopicOnDelete = 11; // clean up the kafka topic on model delete
 }
 
 message ParameterSpec {
