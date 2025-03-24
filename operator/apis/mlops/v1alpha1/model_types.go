@@ -46,6 +46,10 @@ type ModelSpec struct {
 	Parameters []ParameterSpec `json:"parameters,omitempty"`
 	// Llm spec
 	Llm *LlmSpec `json:"llm,omitempty"`
+	// Flag to indicate whether the kafka input/output topics
+	// should be cleaned up when the model is deleted
+	// Default false
+	CleanTopicOnDelete bool `json:"cleanTopicOnDelete,omitempty"`
 }
 
 func (m *ModelSpec) Validate() error {
