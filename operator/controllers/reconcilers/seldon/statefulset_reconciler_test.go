@@ -81,8 +81,8 @@ func TestStatefulSetReconcile(t *testing.T) {
 					{
 						Resources: v1.ResourceRequirements{
 							Limits: v1.ResourceList{
-								v1.ResourceCPU:    resource.MustParse("1"),   // overriden below
-								v1.ResourceMemory: resource.MustParse("1Gi"), // overriden below
+								v1.ResourceCPU:    resource.MustParse("1"),   // overridden below
+								v1.ResourceMemory: resource.MustParse("1Gi"), // overridden below
 							},
 						},
 					},
