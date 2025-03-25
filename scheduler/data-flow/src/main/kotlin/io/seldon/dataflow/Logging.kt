@@ -21,6 +21,7 @@ object Logging {
         appLevel: Level = Level.INFO,
         kafkaLevel: Level = Level.WARN,
     ) = loggingConfiguration {
+        kloggingMinLogLevel(appLevel)
         sink(STDOUT_SINK, RENDER_ISO8601, STDOUT)
         logging {
             fromMinLevel(appLevel) {
