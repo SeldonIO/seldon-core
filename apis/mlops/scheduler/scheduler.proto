@@ -31,6 +31,7 @@ message DeploymentSpec {
   uint32 minReplicas = 2;
   uint32 maxReplicas = 3;
   bool logPayloads = 4;
+  bool CleanTopicsOnDelete = 5; // clean up the kafka topic on model delete
 }
 
 /* ModelDetails
@@ -50,8 +51,6 @@ message ModelSpec {
     ExplainerSpec explainer = 7; // optional black box explainer details
     LlmSpec llm = 10; // optional LLM specific settings
   }
-
-  optional bool CleanTopicsOnDelete = 11; // clean up the kafka topic on model delete
 }
 
 message ParameterSpec {
