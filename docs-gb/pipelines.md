@@ -269,8 +269,6 @@ spec:
 
 This Pipeline runs normally or throws an error based on whether the input tensors have certain values.
 
-This example can be found in the [pipeline examples](examples/pipeline-examples.md#error).
-
 ### Triggers
 
 Sometimes you want to run a step if an output is received from a previous step but not to send the data from
