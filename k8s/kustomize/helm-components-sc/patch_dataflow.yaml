@@ -56,7 +56,7 @@ spec:
         - name: SELDON_LOG_LEVEL_APP
           value: '{{ hasKey .Values.dataflow "logLevel" | ternary .Values.dataflow.logLevel .Values.logging.logLevel | upper }}'
         - name: SELDON_LOG_LEVEL_KAFKA
-          value: '{{ hasKey .Values.dataflow "logLevel" | ternary .Values.dataflow.logLevel .Values.logging.logLevel | upper }}'
+          value: '{{ hasKey .Values.dataflow "logLevelKafka" | ternary .Values.dataflow.logLevelKafka .Values.logging.logLevel | upper }}'
         resources:
           requests:
             cpu: '{{ .Values.dataflow.resources.cpu }}'
