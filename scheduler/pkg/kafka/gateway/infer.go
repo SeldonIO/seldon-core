@@ -346,7 +346,6 @@ func (kc *InferKafkaHandler) RemoveModel(modelName string, cleanTopicsOnDeletion
 		}
 	}
 
-	kc.logger.Debug("cleanTopicsOnDeletion", cleanTopicsOnDeletion)
 	if cleanTopicsOnDeletion {
 		// delete input and output topics from kafka
 		inputTopic := kc.topicNamer.GetModelTopicInputs(modelName)
