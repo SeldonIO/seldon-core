@@ -72,6 +72,7 @@ This section details the key Helm configuration parameters for Envoy, Autoscalin
 | `logging.logLevel` | components | Components wide settings for logging level, if individual component levels are not set. Options are: debug, info, error. | info |
 | `controller.logLevel` | components | check zap log level [here](https://pkg.go.dev/go.uber.org/zap#pkg-constants) | |
 | `dataflow.logLevel` | components | | check klogging level [here](https://dokka.klogging.io/-klogging/io.klogging/-level/index.html) |
+| `dataflow.logLevelKafka` | components | | check klogging level [here](https://dokka.klogging.io/-klogging/io.klogging/-level/index.html) |
 | `scheduler.logLevel` | components | check logrus log level [here](https://pkg.go.dev/github.com/sirupsen/logrus#Level) | |
 | `modelgateway.logLevel` | components | check logrus log level [here](https://pkg.go.dev/github.com/sirupsen/logrus#Level) | |
 | `pipelinegateway.logLevel` | components | check logrus log level [here](https://pkg.go.dev/github.com/sirupsen/logrus#Level) | |
