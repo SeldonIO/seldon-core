@@ -87,6 +87,14 @@ func toStatefulSet(
 	} else {
 		replicas = 1
 	}
+	// Merge specs
+	if override != nil && override.PodSpec != nil {
+		var err error
+		podSpec, err = common.MergePodSpecs(podSpec, override.PodSpec)
+		if err != nil {
+			return nil, err
+		}
+	}
 	metaLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: name}, labels)
 	templateLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: name}, labels)
 	ss := &appsv1.StatefulSet{
