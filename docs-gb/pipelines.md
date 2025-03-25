@@ -105,7 +105,7 @@ flowchart LR
 In the above we rename tensor `OUTPUT0` to `INPUT0` and `OUTPUT1` to `INPUT1`. This allows these models to
 be chained together. The shape and data-type of the tensors needs to match as well.
 
-This example can be found in the [pipeline-examples examples](examples/pipeline-examples.md#model-chaining).
+This example can be found in the [pipeline examples](examples/pipeline-examples.md#model-chaining).
 
 ## Join
 
@@ -165,12 +165,12 @@ Here we pass the pipeline inputs to two models and then take one output tensor f
 final model. We use the same `tensorMap` technique to rename tensors as disucssed in the previous section.
 
 Joins can have a join type which can be specified with `inputsJoinType` and can take the values:
-* `inner` : require all inputs to be available to join.
-* `outer` : wait for `joinWindowMs` to join any inputs. Ignoring any inputs that have not sent any data at that
+* `inner`: require all inputs to be available to join.
+* `outer`: wait for `joinWindowMs` to join any inputs. Ignoring any inputs that have not sent any data at that
 point. This will mean this step of the pipeline is guaranteed to have a latency of at least `joinWindowMs`.
-* `any` : Wait for any of the specified data sources.
+* `any`: wait for any of the specified data sources.
 
-This example can be found in the [pipeline-examples examples](examples/pipeline-examples.md#model-join).
+This example can be found in the [pipeline examples](examples/pipeline-examples.md#model-join).
 
 ## Conditional Logic
 
@@ -248,7 +248,7 @@ Note, we also have a final Pipeline output step that does an `any` join on these
 fron the pipeline whichever data arrives from either model. This type of Pipeline can be used for Multi-Armed bandit
 solutions where you want to route traffic dynamically.
 
-This example can be found in the [pipeline-examples examples](examples/pipeline-examples.md#conditional).
+This example can be found in the [pipeline examples](examples/pipeline-examples.md#conditional).
 
 ### Errors
 
@@ -269,7 +269,7 @@ spec:
 
 This Pipeline runs normally or throws an error based on whether the input tensors have certain values.
 
-This example can be found in the [pipeline-examples examples](examples/pipeline-examples.md#error).
+This example can be found in the [pipeline examples](examples/pipeline-examples.md#error).
 
 ### Triggers
 
@@ -341,7 +341,7 @@ Caption: "*A pipeline with a single trigger. The model **tfsimple3** only runs i
 In this example the last step `tfsimple3` runs only if there are outputs from `tfsimple1` and `tfsimple2` but also
 data from the `check` step. However, if the step `tfsimple3` is run it only receives the join of data from `tfsimple1` and `tfsimple2`.
 
-This example can be found in the [pipeline-examples examples](examples/pipeline-examples.md#model-join-with-trigger).
+This example can be found in the [pipeline examples](examples/pipeline-examples.md#model-join-with-trigger).
 
 ### Trigger Joins
 
