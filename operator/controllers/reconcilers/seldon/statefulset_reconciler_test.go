@@ -19,9 +19,11 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	auth "k8s.io/api/rbac/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/ptr"
 	client2 "sigs.k8s.io/controller-runtime/pkg/client"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
@@ -43,16 +45,69 @@ func TestStatefulSetReconcile(t *testing.T) {
 		override             *mlopsv1alpha1.OverrideSpec
 		seldonConfigMeta     metav1.ObjectMeta
 		error                bool
+		expectedReplicas     int32
+		expectedCPU          resource.Quantity
+		expectedMemory       resource.Quantity
 	}
 
 	tests := []test{
 		{
-			name:             "scheduler",
-			statefulSetName:  mlopsv1alpha1.SchedulerName,
-			podSpec:          &v1.PodSpec{},
+			name:            "without override",
+			statefulSetName: mlopsv1alpha1.SchedulerName,
+			podSpec: &v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Resources: v1.ResourceRequirements{
+							Limits: v1.ResourceList{
+								v1.ResourceCPU:    resource.MustParse("2"),
+								v1.ResourceMemory: resource.MustParse("2Gi"),
+							},
+						},
+					},
+				},
+			},
 			override:         &mlopsv1alpha1.OverrideSpec{},
 			volumeClaims:     []mlopsv1alpha1.PersistentVolumeClaim{},
 			seldonConfigMeta: metav1.ObjectMeta{},
+			expectedReplicas: 1,
+			expectedCPU:      *resource.NewQuantity(2, resource.DecimalSI),
+			expectedMemory:   *resource.NewQuantity(2*1024*1024*1024, resource.BinarySI),
+		},
+		{
+			name:            "with override",
+			statefulSetName: mlopsv1alpha1.SchedulerName,
+			podSpec: &v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Resources: v1.ResourceRequirements{
+							Limits: v1.ResourceList{
+								v1.ResourceCPU:    resource.MustParse("1"),   // overriden below
+								v1.ResourceMemory: resource.MustParse("1Gi"), // overriden below
+							},
+						},
+					},
+				},
+			},
+			override: &mlopsv1alpha1.OverrideSpec{
+				Replicas: ptr.To(int32(3)),
+				PodSpec: &mlopsv1alpha1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Resources: v1.ResourceRequirements{
+								Limits: v1.ResourceList{
+									v1.ResourceCPU:    resource.MustParse("2"),
+									v1.ResourceMemory: resource.MustParse("2Gi"),
+								},
+							},
+						},
+					},
+				},
+			},
+			volumeClaims:     []mlopsv1alpha1.PersistentVolumeClaim{},
+			seldonConfigMeta: metav1.ObjectMeta{},
+			expectedReplicas: 3,
+			expectedCPU:      *resource.NewQuantity(2, resource.DecimalSI),
+			expectedMemory:   *resource.NewQuantity(2*1024*1024*1024, resource.BinarySI),
 		},
 	}
 	for _, test := range tests {
@@ -97,6 +152,16 @@ func TestStatefulSetReconcile(t *testing.T) {
 					Namespace: meta.Namespace,
 				}, sts)
 				g.Expect(err).To(BeNil())
+
+				if test.expectedReplicas != 0 {
+					g.Expect(*sts.Spec.Replicas).To(Equal(test.expectedReplicas))
+				}
+				if test.expectedCPU.Value() != 0 {
+					g.Expect(sts.Spec.Template.Spec.Containers[0].Resources.Limits.Cpu().Value()).To(Equal(test.expectedCPU.Value()))
+				}
+				if test.expectedMemory.Value() != 0 {
+					g.Expect(sts.Spec.Template.Spec.Containers[0].Resources.Limits.Memory().Value()).To(Equal(test.expectedMemory.Value()))
+				}
 			}
 		})
 	}
