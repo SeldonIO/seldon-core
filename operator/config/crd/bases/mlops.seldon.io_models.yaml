@@ -63,6 +63,12 @@ spec:
                   A v2 version folder to select from storage bucket
                 format: int32
                 type: integer
+              cleanTopicsOnDelete:
+                description: |-
+                  Flag to indicate whether the kafka input/output topics
+                  should be cleaned up when the model is deleted
+                  Default false
+                type: boolean
               dedicated:
                 description: |-
                   Dedicated server exclusive to this model
@@ -136,12 +142,6 @@ spec:
               preloaded:
                 description: |-
                   Model already loaded on a server. Don't schedule.
-                  Default false
-                type: boolean
-              cleanTopicsOnDelete:
-                description: |-
-                  Flag to indicate whether the kafka input/output topics
-                  should be cleaned up when the model is deleted
                   Default false
                 type: boolean
               replicas:
