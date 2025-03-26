@@ -46,6 +46,8 @@ type ModelSpec struct {
 	Parameters []ParameterSpec `json:"parameters,omitempty"`
 	// Llm spec
 	Llm *LlmSpec `json:"llm,omitempty"`
+	// Dataflow spec
+	Dataflow *DataflowSpec `json:"dataflow,omitempty"`
 }
 
 func (m *ModelSpec) Validate() error {
@@ -82,6 +84,13 @@ type LlmSpec struct {
 	// Reference to Pipeline
 	// +optional
 	PipelineRef *string `json:"pipelineRef,omitempty"`
+}
+
+type DataflowSpec struct {
+	// Flag to indicate whether the kafka input/output topics
+	// should be cleaned up when the model is deleted
+	// Default false
+	CleanTopicsOnDelete bool `json:"cleanTopicsOnDelete,omitempty"`
 }
 
 type ScalingSpec struct {
@@ -205,6 +214,13 @@ func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
 			},
 		}
 	}
+
+	if m.Spec.Dataflow != nil {
+		md.DataflowSpec = &scheduler.DataflowSpec{
+			CleanTopicsOnDelete: m.Spec.Dataflow.CleanTopicsOnDelete,
+		}
+	}
+
 	if len(m.Spec.Parameters) > 0 {
 		var parameters []*scheduler.ParameterSpec
 		for _, param := range m.Spec.Parameters {
