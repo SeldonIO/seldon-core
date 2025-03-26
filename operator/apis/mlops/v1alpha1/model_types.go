@@ -196,9 +196,6 @@ func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
 		DeploymentSpec: &scheduler.DeploymentSpec{
 			LogPayloads: m.Spec.Logger != nil, // Simple boolean switch at present
 		},
-		DataflowSpec: &scheduler.DataflowSpec{
-			CleanTopicsOnDelete: m.Spec.Dataflow.CleanTopicsOnDelete,
-		},
 	}
 	if m.Spec.Explainer != nil {
 		md.ModelSpec.ModelSpec = &scheduler.ModelSpec_Explainer{
@@ -217,6 +214,13 @@ func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
 			},
 		}
 	}
+
+	if m.Spec.Dataflow != nil {
+		md.DataflowSpec = &scheduler.DataflowSpec{
+			CleanTopicsOnDelete: m.Spec.Dataflow.CleanTopicsOnDelete,
+		}
+	}
+
 	if len(m.Spec.Parameters) > 0 {
 		var parameters []*scheduler.ParameterSpec
 		for _, param := range m.Spec.Parameters {
