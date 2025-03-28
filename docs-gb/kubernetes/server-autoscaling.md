@@ -11,6 +11,12 @@ In fact, in the case of single model serving, where the user is using HPA to aut
 
 ## Requirements
 
+To enable autoscaling of server replicas, the following requirements need to be met:
+1. Setting `minReplicas` and `maxReplicas` in the `Server` CR. This will define the minimum and maximum number of server replicas that can be created.
+2. Setting `autoscaling.autoscalingServerEnabled` to `true` (default) during installation of Core 2. This will enable the autoscaling of server replicas.
+
+An example of a `Server` CR with autoscaling enabled is shown below:
+
 ```yaml
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Server
@@ -20,9 +26,14 @@ metadata:
 spec:
   replicas: 2
   minReplicas: 1
+  maxReplicas: 4
 maxReplicas: 4
   serverConfig: mlserver
 ```
+
+{% hint style="info" %}
+**Note**: Not setting `minReplicas` and/or `maxReplicas` will also effectively disable autoscaling of server replicas. In this case, the user will need to manually scale the server replicas by setting the `replicas` field in the `Server` CR. In this case this allows external autoscaling mechanisms to be used e.g. HPA. 
+{% endhint %}
 
 ## Scale Up
 
