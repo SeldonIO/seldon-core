@@ -1,7 +1,7 @@
-# Server (native) Autoscaling
+# Server _Native_ Autoscaling
 
 ## Overview
-Core 2 runs with long lived server replicas that can host multiple models (MMS). These server replicas can be autoscaled natively to host these dynamically loaded models, allowing users to seamlessly optimise infrastructure cost associated with their deployment. This document outlines the autoscaling policies and mechanisms that are available for server replicas. 
+Core 2 runs with long lived server replicas that can host multiple models (MMS). These server replicas can be autoscaled natively to host these dynamically loaded models, allowing users to seamlessly optimise infrastructure cost associated with their deployment. This document outlines the autoscaling policies and mechanisms that are available for server replicas. These policies are designed to ensure that the server replicas are increased (scaled up) or decreased (scaled down) in response to changes in the number of model replicas that are required. In other words if a given model is scaled up, the system will scale up the server replicas to host these models. Similarly, if a given model is scaled down, the system will scale down the server replicas that are hosting these models.
 
 {% hint style="info" %}
 **Note**: Native autoscaling of servers is required in the case of MMS as the models are dynamically loaded and unloaded onto these server replicas. In this case Core 2 would autoscale server replicas according to changes to the model replicas that are required. This is in contrast to single model serving where the server replicas can be autoscaled using HPA.
@@ -32,12 +32,26 @@ maxReplicas: 4
 ```
 
 {% hint style="info" %}
-**Note**: Not setting `minReplicas` and/or `maxReplicas` will also effectively disable autoscaling of server replicas. In this case, the user will need to manually scale the server replicas by setting the `replicas` field in the `Server` CR. In this case this allows external autoscaling mechanisms to be used e.g. HPA. 
+**Note**: Not setting `minReplicas` and/or `maxReplicas` will also effectively disable autoscaling of server replicas. In this case, the user will need to manually scale the server replicas by setting the `replicas` field in the `Server` CR. In this case this allows external autoscaling mechanisms to be used e.g. HPA. In future versions of Core 2, we might relax this requirement and allow native autoscaling of server replicas without setting both `minReplicas` and `maxReplicas`.
 {% endhint %}
 
-## Scale Up
+## Server Scale Up
 
-## Scale Down
+### Overview
+
+When we want to scale up a model replicas, the associated servers might not have enough capacity (replicas) to host these models. In this case we need to scale up the server replicas to host these models.
+
+### Policies
+There is currently only one policy for scaling up server replicas:
+1. **Model Replica Count**:
+    
+    This policy scales up the server replicas to match the number of model replicas that are required. In other words, if a model is scaled up, the system will scale up the server replicas to host these models. This policy is simple to implement and ensures that the server replicas are scaled up in response to changes in the number of model replicas that are required.
+
+    During the scale up process, the system will create new server replicas to host the new model replicas. The new server replicas will be created with the same configuration as the existing server replicas. This includes the server configuration, resources, etc. The new server replicas will be added to the existing server replicas and will be used to host the new model replicas. 
+
+    There is a period of time where the new server replicas are being created and the new model replicas are being loaded onto these server replicas. During this period, the system will ensure that the existing server replicas are still serving load. This ensures that there is no downtime during the scale up process. This is achieved orthogonally by using partial scheduling of the new model replicas onto the new server replicas. This ensures that the new server replicas are gradually loaded with the new model replicas and that the existing server replicas are still serving load. Check the [Partial Scheduling](../models/scheduling.md) document for more details.
+
+## Server Scale Down
 
 ### Overview
 
@@ -48,13 +62,11 @@ Scaling down servers in sync with models is not straight forward in the case of 
 Therefore we need to define some heuristics that can be used to scale down servers if we think that they are not properly used.
 
 {% hint style="info" %}
-**Note**: Scaling down the number of replicas for a model server does not necessarily mean that the system is going to remove a specific replica that w e want. 
+**Note**: Scaling down the number of replicas for a model server does not necessarily mean that the system is going to remove a specific replica that we want. 
 
-As currently we have the model server deployed as StatefulSets, scaling down the number of replicas will mean that we are removing a pod with the largest idx.
+As currently we have the model server deployed as StatefulSets, scaling down the number of replicas will mean that we are removing a pod with the largest index.
 
-The system will rebalance afterwards, where the models from this draining server replica will be rescheduled but then there is a period of time where this is happening.
-
-This is less critical as by definition we are scaling down and therefore the load in general is not high.
+The system will rebalance afterwards, where the models from this draining server replica will be rescheduled but then there is a period of time where this is happening. This draining process should allows for no downtime as the models are being rescheduled onto other server replicas before the draining server replica is removed.
 {% endhint %}
 
 ### Policies
