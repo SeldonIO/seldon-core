@@ -73,46 +73,52 @@ The system will rebalance afterwards, where the models from this draining server
 
 1. **Empty Server Replica**:
     
-    In the simplest case we can remove a server replica if it doesn't host any more models. This guarantees that there is no load on a particular server replica before removing it.
+    In the simplest case we can remove a server replica if it does not host any models. This guarantees that there is no load on a particular server replica before removing it.
     
-    This policy is simple to implement however it suffers from the following issues:
+    This policy works best in the case of single model serving where the server replicas are only hosting a single model. In this case, if the model is scaled down, the server replica will be empty and can be removed.
+
+    However in the case of MMS it can lead to less optimal packing of models onto server replicas. This is because the system will not pack models onto a fewer set of replicas. This can lead to more server replicas being used than necessary. This can be mitigated by the lightly loaded server replicas policy.    
     
-    - In MMS different model replicas will be hosted on potentially different server replicas and as we scale these models up and down the system can end up in a situation where there the models are not consolidated to the an optimised number of servers. Take for example the case of Models A, B and C. We have 2 server replicas 1 and 2 that can host these models. Assuming that at the start we have only A and B have 1 replica and C has 2 replicas therefore the initial assignment is:
-        - Replica 1: A1, C1
-        - Replica 2: B1, C2
+2. **Lightly Loaded Server Replicas** (Experimental):
+
+    {% hint style="warning" %}
+    **Warning**: This policy is experimental and is not enabled by default. It can be enabled by setting `autoscaling.serverPackingEnabled` to `true` and `autoscaling.serverPackingPercentage` to a value between 0 and 100. This policy is still under development and might in some cases increase latencies. Use with caution.
+    {% endhint %}
+    
+    In MMS different model replicas will be hosted on potentially different server replicas and as we scale these models up and down the system can end up in a situation where the models are not consolidated to the an optimised number of servers. Take for example the case of 3 Models: $A$, $B$ and $C$. We have 1 server $S$ with 2 replicas: $S_1$ and $S_2$ that can host these models. Assuming that at the start we have only $A$ and $B$ have 1 replica and $C$ has 2 replicas therefore the initial assignment is:
         
-        Now if the user unloads Model C the assignment is:
+    Initial assignment:
+
+    - $S_1$: $A_1$, $C_1$
+    - $S_2$: $B_1$, $C_2$
         
-        - Replica 1: A1
-        - Replica 2: B1
+    Now if the user unloads Model $C$ the assignment is:
         
-        There is a strong argument that this is not optimised and in MMS the assignment should really be:
+    - $S_1$: $A_1$
+    - $S_2$: $B_1$
         
-        - Replica 1: A1, B1
-        - Replica 1 removed
+    There is a strong argument that this is not optimised and in MMS the assignment should really be:
+        
+    - $S_1$: $A_1$, $B_1$
+    - $S_2$: removed
     
     As the system evolves this imbalance can get bigger and will could cause the serving infrastructure to be less optimised. 
     
-    In fact this is not directly related to autoscaling per se  as the example above is actually not related to autoscaling. However autoscaling will aggravate the issue causing more imbalance.
-    
-2. **Lightly Loaded Server Replicas**
-    
+    In fact this is not directly related to autoscaling per se as the example above is actually not related to autoscaling. However autoscaling will aggravate the issue causing more imbalance.
+
     The above imbalance can be mitigated by making by the following observation: If the max number of replicas of any given model (assigned to a server from a logical point of view) is less than the number of replicas for this server, then we can pack the models hosted onto a smaller set of replicas.
     
-    In other words consider the following example, for models A and B having 2 replicas each and we have 3 server replicas, the following assignment is not potentially optimised.
+    In other words consider the following example, for models $A$ and $B$ having 2 replicas each and we have 3 server $S$ replicas, the following assignment is not potentially optimised.
     
-    - Replica  1: A1, B1
-    - Replica 2: A2
-    - Replica 3: B2
+
+    - $S_1$: $A_1$, $B_1$
+    - $S_2$: $A_2$
+    - $S_3$: $B_2$
     
-    In this case we could trigger removal of Replica 3 for the server which could pack the models more appropriately
+    In this case we could trigger removal of $S_3$ for the server which could pack the models more appropriately
     
-    - Replica 1: A1, B1
-    - Replica 2: A2, B2
-    - Replica 3: removed
+    - $S_1$: $A_1$, $B_1$
+    - $S_2$: $A_2$, $B_2$
+    - $S_3$: removed
     
-    While this heuristic is going to pack models onto a fewer set of replicas, which allows us to scale models down, there is still the risk that the packing could increase latencies, trigger a later scale up. We need to make sure that we are not flip-flopping between these states. 
-    
-    This packing process can be triggered on the following:
-    
-    - Scale down event for a model
+    While this heuristic is going to pack models onto a fewer set of replicas, which allows us to scale models down, there is still the risk that the packing could increase latencies, trigger a later scale up. Core 2 tries to make sure that we are not flip-flopping between these states. This can be done by setting `autoscaling.serverPackingPercentage`.
