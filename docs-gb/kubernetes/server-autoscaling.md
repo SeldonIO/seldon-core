@@ -113,7 +113,7 @@ In other words, consider the following example - for models $$A$$ and $$B$$ havi
 - $$S_2$$: $$A_2$$
 - $$S_3$$: $$B_2$$
 
-In this case we could trigger removal of $S_3$ for the server which could pack the models more appropriately
+In this case we could trigger removal of $$S_3$$ for the server which could pack the models more appropriately
 
 - $$S_1$$: $$A_1$$, $$B_1$$
 - $$S_2$$: $$A_2$$, $$B_2$$
