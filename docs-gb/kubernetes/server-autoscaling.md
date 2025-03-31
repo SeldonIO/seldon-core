@@ -55,7 +55,7 @@ There is a period of time where the new server replicas are being created and th
 
 ### Overview
 
-When we want to scale down a model replicas, the associated servers might be left unused. In this case, extra server pods (especially if they use GPUs) are wasted causing infrastructure cost for the user.
+Once we have scaled down the number of replicas for a model, some of the corresponding server replicas might be left unused (depending on whether those replicas also hosted other models or not). In this case, the extra server pods are wasting resources and causing additional infrastructure cost (especially if they have expensive resources such as GPUs attached)
 
 Scaling down servers in sync with models is not straight forward in the case of multi-model serving. Scaling down one model does not necessarily mean that we also need to scale down the corresponding server replica as this server replica might be still serving load for other models. 
 
