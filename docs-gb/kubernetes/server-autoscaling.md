@@ -66,7 +66,7 @@ Therefore we need to define some heuristics that can be used to scale down serve
 
 As currently we have the model server deployed as StatefulSets, scaling down the number of replicas will mean that we are removing a pod with the largest index.
 
-The system will rebalance afterwards, where the models from this draining server replica will be rescheduled but this requires some wait time to achieve. This draining process should allow for no downtime as models are being rescheduled onto other server replicas before the draining server replica is removed.
+The system will rebalance afterwards, where the models from this draining server replica will be rescheduled but this requires some wait time to achieve. This draining process is done without incurring downtime as models are being rescheduled onto other server replicas _before_ the draining server replica is removed.
 {% endhint %}
 
 ### Policies
