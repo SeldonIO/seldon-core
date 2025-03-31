@@ -39,7 +39,7 @@ maxReplicas: 4
 
 ### Overview
 
-When we want to scale up a model replicas, the associated servers might not have enough capacity (replicas) available. In this case we need to scale up the server replicas to match the number required by our models.
+When we want to scale up the number of replicas for a model, the associated servers might not have enough capacity (replicas) available. In this case we need to scale up the server replicas to match the number required by our models.
 
 ### Policies
 There is currently only one policy for scaling up server replicas:
