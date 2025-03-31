@@ -95,7 +95,7 @@ Now if the user unloads Model $C$ the assignment is:
 - $S_1$: $A_1$
 - $S_2$: $B_1$
     
-There is an argument that this is might not be optimised and in MMS the assignment could be:
+There is an argument that this is might not be optimized and in MMS the assignment could be:
     
 - $S_1$: $A_1$, $B_1$
 - $S_2$: removed
@@ -106,7 +106,7 @@ The behavior above is actually not limited to autoscaling, however autoscaling w
 
 This imbalance can be mitigated by making by the following observation: If the max number of replicas of any given model (assigned to a server from a logical point of view) is less than the number of replicas for this server, then we can pack the models hosted onto a smaller set of replicas. Note in Core 2 a server replica can host only 1 replica of a given model.
 
-In other words, consider the following example - for models $A$ and $B$ having 2 replicas each and we have 3 server $S$ replicas, the following assignment is not potentially optimised:
+In other words, consider the following example - for models $A$ and $B$ having 2 replicas each and we have 3 server $S$ replicas, the following assignment is not potentially optimized:
 
 
 - $S_1$: $A_1$, $B_1$
