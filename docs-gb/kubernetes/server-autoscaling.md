@@ -27,7 +27,6 @@ spec:
   replicas: 2
   minReplicas: 1
   maxReplicas: 4
-maxReplicas: 4
   serverConfig: mlserver
 ```
 
