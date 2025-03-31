@@ -77,7 +77,7 @@ In the simplest case we can remove a server replica if it does not host any mode
 
 This policy works best in the case of single model serving where the server replicas are only hosting a single model. In this case, if the model is scaled down, the server replica will be empty and can be removed.
 
-However in the case of MMS it can lead to less optimal packing of models onto server replicas. This is because the system will not automatically pack models onto the smaller set of replicas. This can lead to more server replicas being used than necessary. This can be mitigated by the lightly loaded server replicas policy.    
+However in the case of MMS, only reducing the number of server replicas when one of the replicas no longer hosts any models can lead to a suboptimal packing of models onto server replicas. This is because the system will not automatically pack models onto the smaller set of replicas. This can lead to more server replicas being used than necessary. This can be mitigated by the lightly loaded server replicas policy.    
     
 2. **Lightly Loaded Server Replicas** (Experimental):
 
