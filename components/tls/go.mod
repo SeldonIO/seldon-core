@@ -2,7 +2,7 @@ module github.com/seldonio/seldon-core/components/tls/v2
 
 go 1.23.0
 
-toolchain go1.23.4
+toolchain go1.24.1
 
 require (
 	github.com/onsi/gomega v1.36.2
@@ -14,7 +14,7 @@ require (
 	k8s.io/api v0.32.1
 	k8s.io/apimachinery v0.32.1
 	k8s.io/client-go v0.32.1
-	sigs.k8s.io/controller-runtime v0.20.1
+	sigs.k8s.io/controller-runtime v0.20.4
 )
 
 require (
