@@ -58,7 +58,8 @@
   <!-- 
   * Server Scaling
   * Component Scaling -->
-  * [Autoscaling](kubernetes/autoscaling.md)
+  * [Model Autoscaling](kubernetes/autoscaling.md)
+  * [Server Autoscaling](kubernetes/server-autoscaling.md)
   <!--
   * Multi-Component Serving and Overcommit -->
   * [HPA Autoscaling in single-model serving](kubernetes/hpa-rps-autoscaling.md)
