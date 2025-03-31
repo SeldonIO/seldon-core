@@ -62,7 +62,7 @@ Scaling down servers in sync with models is not straight forward in the case of 
 Therefore we need to define some heuristics that can be used to scale down servers if we think that they are not properly used.
 
 {% hint style="info" %}
-**Note**: Scaling down the number of replicas for a model server does not necessarily mean that the system is going to remove a specific replica that we want. 
+**Note**: Scaling down the number of replicas for an inference server does not necessarily mean that the system is going to remove a specific replica that we want. 
 
 As currently we have the model server deployed as StatefulSets, scaling down the number of replicas will mean that we are removing a pod with the largest index.
 
