@@ -13,7 +13,7 @@ This document outlines the autoscaling policies and mechanisms that are availabl
 
 To enable autoscaling of server replicas, the following requirements need to be met:
 1. Setting `minReplicas` and `maxReplicas` in the `Server` CR. This will define the minimum and maximum number of server replicas that can be created.
-2. Setting `autoscaling.autoscalingServerEnabled` to `true` (default) during installation of Core 2. This will enable the autoscaling of server replicas.
+2. Setting the `autoscaling.autoscalingServerEnabled` value to `true` (default) during installation of the Core 2 `seldon-core-v2-setup` helm chart. If not installing via helm, setting the `ENABLE_SERVER_AUTOSCALING` environment variable to `true` in the `seldon-scheduler` podSpec  (via either SeldonConfig or a SeldonRuntime podSpec override) will have the same effect. This will enable the autoscaling of server replicas.
 
 An example of a `Server` CR with autoscaling enabled is shown below:
 
