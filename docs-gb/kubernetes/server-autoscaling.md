@@ -83,22 +83,22 @@ However in the case of MMS it can lead to less optimal packing of models onto se
 **Warning**: This policy is experimental and is not enabled by default. It can be enabled by setting `autoscaling.serverPackingEnabled` to `true` and `autoscaling.serverPackingPercentage` to a value between 0 and 100. This policy is still under development and might in some cases increase latencies, so it's worth testing ahead of time to observer behavior for a given setup.
 {% endhint %}
 
-Using the above policy which MMS enabled, different model replicas will be hosted on potentially different server replicas and as we scale these models up and down the system can end up in a situation where the models are not consolidated to an optimized number of servers. For illustration, take the case of 3 Models: $A$, $B$ and $C$. We have 1 server $S$ with 2 replicas: $S_1$ and $S_2$ that can host these 3 models. Assuming that initially we have $A$ and $B$ with 1 replica and $C$ with 2 replicas therefore the assignment is:
+Using the above policy which MMS enabled, different model replicas will be hosted on potentially different server replicas and as we scale these models up and down the system can end up in a situation where the models are not consolidated to an optimized number of servers. For illustration, take the case of 3 Models: $$A$$, $$B$$ and $$C$$. We have 1 server $$S$$ with 2 replicas: $$S_1$$ and $$S_2$$ that can host these 3 models. Assuming that initially we have $$A$$ and $$B$$ with 1 replica and $C$ with 2 replicas therefore the assignment is:
     
 Initial assignment:
 
-- $S_1$: $A_1$, $C_1$
-- $S_2$: $B_1$, $C_2$
+- $$S_1$$: $$A_1$$, $$C_1$$
+- $$S_2$$: $$B_1$$, $$C_2$$
     
 Now if the user unloads Model $C$ the assignment is:
     
-- $S_1$: $A_1$
-- $S_2$: $B_1$
+- $$S_1$$: $$A_1$$
+- $$S_2$$: $$B_1$$
     
 There is an argument that this is might not be optimized and in MMS the assignment could be:
     
-- $S_1$: $A_1$, $B_1$
-- $S_2$: removed
+- $$S_1$$: $$A_1$$, $$B_1$$
+- $$S_2$$: removed
 
 As the system evolves this imbalance can get larger and could cause the serving infrastructure to be less optimized. 
 
@@ -109,15 +109,15 @@ This imbalance can be mitigated by making by the following observation: If the m
 In other words, consider the following example - for models $A$ and $B$ having 2 replicas each and we have 3 server $S$ replicas, the following assignment is not potentially optimized:
 
 
-- $S_1$: $A_1$, $B_1$
-- $S_2$: $A_2$
-- $S_3$: $B_2$
+- $$S_1$$: $$A_1$$, $$B_1$$
+- $$S_2$$: $$A_2$$
+- $$S_3$$: $$B_2$$
 
 In this case we could trigger removal of $S_3$ for the server which could pack the models more appropriately
 
-- $S_1$: $A_1$, $B_1$
-- $S_2$: $A_2$, $B_2$
-- $S_3$: removed
+- $$S_1$$: $$A_1$$, $$B_1$$
+- $$S_2$$: $$A_2$$, $$B_2$$
+- $$S_3$$: removed
 
 While this heuristic is going to pack models onto a set of fewer replicas, which allows us to scale models down, there is still the risk that the packing could increase latencies, trigger a later scale up. Core 2 tries to make sure that do not flip-flopping between these states. The user can also reduce the number of packing events by setting `autoscaling.serverPackingPercentage` to a lower value.
 
