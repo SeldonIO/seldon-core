@@ -902,7 +902,7 @@ spec:
         - name: SELDON_LOG_LEVEL_APP
           value: 'INFO'
         - name: SELDON_LOG_LEVEL_KAFKA
-          value: 'INFO'
+          value: 'WARN'
         - name: SELDON_UPSTREAM_HOST
           value: seldon-scheduler
         - name: SELDON_UPSTREAM_PORT
