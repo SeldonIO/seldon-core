@@ -83,14 +83,14 @@ However in the case of MMS it can lead to less optimal packing of models onto se
 **Warning**: This policy is experimental and is not enabled by default. It can be enabled by setting `autoscaling.serverPackingEnabled` to `true` and `autoscaling.serverPackingPercentage` to a value between 0 and 100. This policy is still under development and might in some cases increase latencies, so it's worth testing ahead of time to observer behavior for a given setup.
 {% endhint %}
 
-Using the above policy which MMS enabled, different model replicas will be hosted on potentially different server replicas and as we scale these models up and down the system can end up in a situation where the models are not consolidated to an optimized number of servers. For illustration, take the case of 3 Models: $$A$$, $$B$$ and $$C$$. We have 1 server $$S$$ with 2 replicas: $$S_1$$ and $$S_2$$ that can host these 3 models. Assuming that initially we have $$A$$ and $$B$$ with 1 replica and $C$ with 2 replicas therefore the assignment is:
+Using the above policy which MMS enabled, different model replicas will be hosted on potentially different server replicas and as we scale these models up and down the system can end up in a situation where the models are not consolidated to an optimized number of servers. For illustration, take the case of 3 Models: $$A$$, $$B$$ and $$C$$. We have 1 server $$S$$ with 2 replicas: $$S_1$$ and $$S_2$$ that can host these 3 models. Assuming that initially we have $$A$$ and $$B$$ with 1 replica and $$C$$ with 2 replicas therefore the assignment is:
     
 Initial assignment:
 
 - $$S_1$$: $$A_1$$, $$C_1$$
 - $$S_2$$: $$B_1$$, $$C_2$$
     
-Now if the user unloads Model $C$ the assignment is:
+Now if the user unloads Model $$C$$ the assignment is:
     
 - $$S_1$$: $$A_1$$
 - $$S_2$$: $$B_1$$
@@ -106,7 +106,7 @@ The behavior above is actually not limited to autoscaling, however autoscaling w
 
 This imbalance can be mitigated by making by the following observation: If the max number of replicas of any given model (assigned to a server from a logical point of view) is less than the number of replicas for this server, then we can pack the models hosted onto a smaller set of replicas. Note in Core 2 a server replica can host only 1 replica of a given model.
 
-In other words, consider the following example - for models $A$ and $B$ having 2 replicas each and we have 3 server $S$ replicas, the following assignment is not potentially optimized:
+In other words, consider the following example - for models $$A$$ and $$B$$ having 2 replicas each and we have 3 server $$S$$ replicas, the following assignment is not potentially optimized:
 
 
 - $$S_1$$: $$A_1$$, $$B_1$$
