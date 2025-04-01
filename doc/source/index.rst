@@ -1,12 +1,6 @@
 ===========
 Seldon Core
 ===========
-.. Note::
-   **Seldon Core V2 Documentation has moved!**  
-   You can now find it at our new and improved location:  
-   `https://docs.seldon.ai/seldon-core-2 <https://docs.seldon.ai/seldon-core-2>`_
-
-   (Previously: `https://docs.seldon.io/projects/seldon-core/en/v2/index.html`).
 .. image:: ./_static/scv2_banner.png
    :alt: Seldon Core V2 logo
    :align: center
