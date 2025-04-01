@@ -1,12 +1,18 @@
 {# Import the theme's layout. #}
-{%- extends "layout.html" %}
+{%- extends "!layout.html" %}
 
-{% block body %}
-  {{ table_fix(body, pagename) }}
-{% endblock %}
+{% block extrahead %}
+<style>
+    .custom-banner {
+        background-color: #ffcc00;
+        text-align: center;
+        padding: 10px;
+        font-weight: bold;
+        font-size: 1.1em;
+    }
+</style>
 
-{%- block extrahead %}
-{# Adding CSS and JS bundle for swagger#}
+{# Adding CSS and JS bundle for swagger #}
 <link
   rel="stylesheet"
   type="text/css"
@@ -16,6 +22,21 @@
   src="https://unpkg.com/swagger-ui-dist@4.5.0/swagger-ui-bundle.js"
   crossorigin>
 </script>
+
 {# Call the parent block #}
 {{ super() }}
 {%- endblock %}
+
+{% block content %}
+<div class="custom-banner">
+   <strong>Seldon Core V2 Documentation has moved!</strong><br />
+   You can now find it at our new and improved location:<br />
+   <a href="https://docs.seldon.ai/seldon-core-2" target="_blank">https://docs.seldon.ai/seldon-core-2</a><br />
+   <small>(Previously: <a href="https://docs.seldon.io/projects/seldon-core/en/v2/index.html" target="_blank">https://docs.seldon.io/projects/seldon-core/en/v2/index.html</a>)</small>
+</div>
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+  {{ table_fix(body, pagename) }}
+{% endblock %}
