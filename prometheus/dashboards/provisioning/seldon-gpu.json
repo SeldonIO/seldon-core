@@ -31,7 +31,7 @@
   "liveNow": false,
   "panels": [
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -77,7 +77,7 @@
       "pluginVersion": "9.4.7",
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "count (seldon_loaded_model_memory_bytes_gauge{namespace=~\"^$namespace$\"} > 0 )",
@@ -88,7 +88,7 @@
           "refId": "B"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum (seldon_loaded_model_gauge{namespace=~\"^$namespace$\"})",
@@ -104,7 +104,7 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -149,7 +149,7 @@
       "pluginVersion": "9.4.7",
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum by(server) (seldon_loaded_model_gauge{namespace=~\"^$namespace$\"})",
@@ -188,7 +188,7 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -233,7 +233,7 @@
       "pluginVersion": "9.4.7",
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "count by(server) (seldon_loaded_model_memory_bytes_gauge{namespace=~\"^$namespace$\"} > 0)",
@@ -272,7 +272,7 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -327,7 +327,7 @@
       "pluginVersion": "9.4.7",
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum by(server) (seldon_loaded_model_memory_bytes_gauge{namespace=~\"^$namespace$\"}) / sum by(server) (seldon_server_replica_memory_capacity_overcommit_bytes_gauge{namespace=~\"^$namespace$\"})",
@@ -420,7 +420,7 @@
       "type": "gauge"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -494,7 +494,7 @@
       },
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum(rate(seldon_cache_evict_count{namespace=~\"^$namespace$\"}[1m]))",
@@ -506,7 +506,7 @@
           "refId": "A"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum(rate(seldon_cache_miss_count{namespace=~\"^$namespace$\"}[1m]))",
@@ -521,7 +521,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -595,7 +595,7 @@
       },
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum by (server) (rate(seldon_load_model_counter{namespace=~\"^$namespace$\"}[1m]))",
@@ -607,7 +607,7 @@
           "refId": "A"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum by (server) (rate(seldon_unload_model_counter{namespace=~\"^$namespace$\"}[1m]))",
@@ -624,7 +624,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -701,7 +701,7 @@
       "pluginVersion": "9.4.7",
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": false,
           "expr": "DCGM_FI_DEV_FB_USED{namespace=~\"^$namespace$\"}",
@@ -715,7 +715,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -790,7 +790,7 @@
       },
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum(container_memory_working_set_bytes{container=\"mlserver\", namespace=~\"^$namespace$\"}) ",
@@ -800,7 +800,7 @@
           "refId": "A"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum(container_memory_working_set_bytes{container=\"triton\", namespace=~\"^$namespace$\"})",
@@ -815,7 +815,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -893,7 +893,7 @@
       "pluginVersion": "8.4.6",
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum(seldon_server_replica_memory_capacity_bytes_gauge{server=\"triton-gpu\", namespace=~\"^$namespace$\"})",
@@ -904,7 +904,7 @@
           "refId": "B"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum(seldon_loaded_model_memory_bytes_gauge{server=\"triton-gpu\", namespace=~\"^$namespace$\"})",
@@ -915,7 +915,7 @@
           "refId": "C"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum(seldon_server_replica_memory_capacity_overcommit_bytes_gauge{server=\"triton-gpu\", namespace=~\"^$namespace$\"})",
@@ -926,7 +926,7 @@
           "refId": "A"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum(seldon_loaded_model_memory_bytes_gauge{server=\"triton-gpu\", namespace=~\"^$namespace$\"}) + sum(seldon_evicted_model_memory_bytes_gauge{server=\"triton-gpu\", namespace=~\"^$namespace$\"})",
@@ -942,7 +942,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -1020,7 +1020,7 @@
       "pluginVersion": "8.4.6",
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum(seldon_server_replica_memory_capacity_bytes_gauge{server=\"mlserver\", namespace=~\"^$namespace$\"})",
@@ -1031,7 +1031,7 @@
           "refId": "B"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum(seldon_loaded_model_memory_bytes_gauge{server=\"mlserver\", namespace=~\"^$namespace$\"})",
@@ -1042,7 +1042,7 @@
           "refId": "C"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum(seldon_server_replica_memory_capacity_overcommit_bytes_gauge{server=\"mlserver\", namespace=~\"^$namespace$\"})",
@@ -1053,7 +1053,7 @@
           "refId": "A"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "sum(seldon_loaded_model_memory_bytes_gauge{server=\"mlserver\", namespace=~\"^$namespace$\"}) + sum(seldon_evicted_model_memory_bytes_gauge{server=\"mlserver\", namespace=~\"^$namespace$\"})",
@@ -1069,7 +1069,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -1149,7 +1149,7 @@
       "pluginVersion": "8.4.6",
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "avg((rate(seldon_model_aggregate_infer_seconds_total{container=\"agent\", namespace=~\"^$namespace$\"}[1m]) / rate(seldon_model_aggregate_infer_total{container=\"agent\", namespace=~\"^$namespace$\"}[1m])) > 0 ) by (server, method_type)",
@@ -1165,7 +1165,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1239,7 +1239,7 @@
       },
       "targets": [
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "rate (container_cpu_usage_seconds_total{container=\"mlserver\", namespace=~\"^$namespace$\"}[1m])",
@@ -1249,7 +1249,7 @@
           "refId": "A"
         },
         {
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "",
           "editorMode": "code",
           "exemplar": true,
           "expr": "rate (container_cpu_usage_seconds_total{container=\"triton\", namespace=~\"^$namespace$\"}[1m])",
@@ -1277,7 +1277,7 @@
           "text": "seldon-mesh",
           "value": "seldon-mesh"
         },
-        "datasource": "${DS_PROMETHEUS}",
+        "datasource": "",
         "definition": "label_values(namespace)",
         "hide": 0,
         "includeAll": false,
