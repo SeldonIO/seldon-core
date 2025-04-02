@@ -76,7 +76,7 @@ The output of the Pipeline is the output from `tfsimple2`.
 cat ./pipelines/tfsimples.yaml
 ```
 
-{% embed url="../../samples/pipelines/tfsimples.yaml" %}
+{% file src="../../samples/pipelines/tfsimples.yaml" %}
 
 ```bash
 seldon pipeline load -f ./pipelines/tfsimples.yaml
