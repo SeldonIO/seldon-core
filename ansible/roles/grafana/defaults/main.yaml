@@ -5,6 +5,8 @@ grafana_app_version: 11.3.1
 grafana_preloaded_dashboards:
   - name: mms
     json: "{{ lookup('file', playbook_dir + '/../../prometheus/dashboards/provisioning/seldon.json') }}"
+  - name: mms-gpu
+    json: "{{ lookup('file', playbook_dir + '/../../prometheus/dashboards/provisioning/seldon-gpu.json') }}"
   - name: perf
     json: "{{ lookup('file', playbook_dir + '/../../prometheus/dashboards/provisioning/perf_and_scaling.json') }}"
   - name: envoy
