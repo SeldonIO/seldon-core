@@ -66,18 +66,7 @@ This will work out of the box if the output tensor names from a model match the 
 the one being chained to. If they do not then the `tensorMap` construct presently needs to be used to
 define the mapping explicitly, e.g. see below for a simple chained pipeline of two tfsimple example models:
 
-```yaml
-apiVersion: mlops.seldon.io/v1alpha1
-kind: Pipeline
-metadata:
-  name: tfsimple
-spec:
-  steps:
-    - name: tfsimple1
-  output:
-    steps:
-    - tfsimple1
-```
+{% embed url="https://github.com/SeldonIO/seldon-core/blob/v2/samples/pipelines/tfsimples.yaml" %}
 
 ```mermaid
 flowchart LR

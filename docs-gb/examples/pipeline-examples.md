@@ -76,25 +76,7 @@ The output of the Pipeline is the output from `tfsimple2`.
 cat ./pipelines/tfsimples.yaml
 ```
 
-```yaml
-apiVersion: mlops.seldon.io/v1alpha1
-kind: Pipeline
-metadata:
-  name: tfsimples
-spec:
-  steps:
-    - name: tfsimple1
-    - name: tfsimple2
-      inputs:
-      - tfsimple1
-      tensorMap:
-        tfsimple1.outputs.OUTPUT0: INPUT0
-        tfsimple1.outputs.OUTPUT1: INPUT1
-  output:
-    steps:
-    - tfsimple2
-
-```
+{% embed url="https://github.com/SeldonIO/seldon-core/blob/v2/samples/pipelines/tfsimples.yaml" %}
 
 ```bash
 seldon pipeline load -f ./pipelines/tfsimples.yaml
