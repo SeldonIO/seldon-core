@@ -1,18 +1,31 @@
-{%- extends "layout.html" %} 
+{%- extends "layout.html" %}
 
-{%- block content %} 
+{%- block content %}
 {% set nav_bar_tabs = parents or theme_master_doc or theme_nav_links %}
 <div class="md-container">
-  {%- block hero %} {% include "hero.html" %} {% endblock %} {% include
-  "relbar.html" %}
+
+  {# 🚨 Banner injected here, before hero/relbar and main content #}
+  <div class="custom-banner">
+    <div>
+      <strong>Seldon Core 2 Documentation has moved!</strong><br />
+      You can now find it at our new and improved location:<br />
+      <a href="https://docs.seldon.ai/seldon-core-2" target="_blank">
+        https://docs.seldon.ai/seldon-core-2
+      </a>
+    </div>
+  </div>
+
+  {%- block hero %} {% include "hero.html" %} {% endblock %}
+  {% include "relbar.html" %}
+
   <main class="md-main">
-    {% if pagename == 'index' %} {% include 'custom/index.html' %} {% else %}
+    {% if pagename == 'index' %}
+      {% include 'custom/index.html' %}
+    {% else %}
     <div class="md-main__inner md-grid" data-md-component="container">
+
       {% block site_nav %}
-      <div
-        class="md-sidebar md-sidebar--primary"
-        data-md-component="navigation"
-      >
+      <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
         <div class="md-sidebar__scrollwrap">
           <div class="md-sidebar__inner">
             {% include "sidebar.html" %}
@@ -27,9 +40,10 @@
         </div>
       </div>
       {% endblock %}
+
       <div class="md-content">
         <article class="md-content__inner md-typeset" role="main">
-          {% block body %} {{ table_fix(body,pagename) }} {% endblock %}
+          {% block body %} {{ table_fix(body, pagename) }} {% endblock %}
         </article>
       </div>
     </div>
@@ -39,7 +53,31 @@
 {%- endblock %}
 
 {%- block extrahead %}
-{# Adding CSS and JS bundle for swagger#}
+<style>
+  html, body {
+      margin: 0;
+      padding: 0;
+  }
+
+  .custom-banner {
+      background-color: #ffcc00;
+      color: #000;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.1em;
+      line-height: 1.4em;
+      margin: 0;
+      border: none;
+      padding: 0 16px; /* Horizontal only */
+  }
+
+  .custom-banner a {
+      color: #003366;
+      text-decoration: underline;
+  }
+</style>
+
+{# Adding CSS and JS bundle for swagger #}
 <link
   rel="stylesheet"
   type="text/css"
