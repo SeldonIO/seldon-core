@@ -7,8 +7,8 @@
   {# 🚨 Banner injected here, before hero/relbar and main content #}
   <div class="custom-banner">
     <div>
-      <strong>Seldon Core 2 Documentation has moved!</strong><br />
-      You can now find it at our new and improved location:<br />
+      <strong>Core 2 Documentation has moved!</strong><br />
+      Find it here:
       <a href="https://docs.seldon.ai/seldon-core-2" target="_blank">
         https://docs.seldon.ai/seldon-core-2
       </a>
@@ -54,11 +54,6 @@
 
 {%- block extrahead %}
 <style>
-  html, body {
-      margin: 0;
-      padding: 0;
-  }
-
   .custom-banner {
       background-color: #ffcc00;
       color: #000;
@@ -68,24 +63,15 @@
       line-height: 1.4em;
       margin: 0;
       border: none;
-      padding: 0 16px; /* Horizontal only */
+      padding: 0 16px;
   }
 
   .custom-banner a {
+      font-size: 1.3em;
+      font-weight: bold;
       color: #003366;
       text-decoration: underline;
   }
 </style>
-
-{# Adding CSS and JS bundle for swagger #}
-<link
-  rel="stylesheet"
-  type="text/css"
-  href="https://unpkg.com/swagger-ui-dist@3.12.1/swagger-ui.css"
-/>
-<script
-  src="https://unpkg.com/swagger-ui-dist@3.12.1/swagger-ui-bundle.js"
-  charset="UTF-8"
-></script>
-{{ super() }}
 {%- endblock %}
+
