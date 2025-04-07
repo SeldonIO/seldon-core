@@ -13,7 +13,7 @@ require (
 	github.com/seldonio/seldon-core/components/tls/v2 v2.0.0-00010101000000-000000000000
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.10.0
-	google.golang.org/grpc v1.70.0
+	google.golang.org/grpc v1.71.1
 	k8s.io/apimachinery v0.32.1
 	k8s.io/client-go v0.32.1
 )
