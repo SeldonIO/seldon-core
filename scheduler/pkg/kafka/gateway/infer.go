@@ -255,6 +255,42 @@ func (kc *InferKafkaHandler) createTopics(topicNames []string) error {
 	return nil
 }
 
+func (kc *InferKafkaHandler) deleteTopics(topicNames []string) error {
+	logger := kc.logger.WithField("func", "deleteTopics")
+	if kc.adminClient == nil {
+		logger.Warnf("no kafka admin client, can't delete any of the following topics: %v", topicNames)
+		return nil
+	}
+	t1 := time.Now()
+
+	results, err := kc.adminClient.DeleteTopics(
+		context.Background(),
+		topicNames,
+		kafka.SetAdminOperationTimeout(TopicDeleteTimeout),
+	)
+	if err != nil {
+		return err
+	}
+
+	var failedTopics []string
+	for _, result := range results {
+		if result.Error.Code() != kafka.ErrNoError {
+			failedTopics = append(failedTopics, result.Topic)
+			logger.Errorf("failed to delete topic %s: %s", result.Topic, result.Error.Error())
+		} else {
+			logger.Infof("topic %s deleted", result.Topic)
+		}
+	}
+
+	if len(failedTopics) > 0 {
+		return fmt.Errorf("failed to delete topics: %v", failedTopics)
+	}
+
+	t2 := time.Now()
+	logger.Debugf("kafka topics deleted in %d millis", t2.Sub(t1).Milliseconds())
+	return nil
+}
+
 func (kc *InferKafkaHandler) ensureTopicsExist(topicNames []string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), TopicDescribeTimeout)
 	defer cancel()
@@ -296,9 +332,10 @@ func (kc *InferKafkaHandler) AddModel(modelName string) error {
 	return nil
 }
 
-func (kc *InferKafkaHandler) RemoveModel(modelName string) error {
+func (kc *InferKafkaHandler) RemoveModel(modelName string, cleanTopicsOnDeletion bool) error {
 	kc.mu.Lock()
 	defer kc.mu.Unlock()
+
 	delete(kc.loadedModels, modelName)
 	delete(kc.subscribedTopics, kc.topicNamer.GetModelTopicInputs(modelName))
 	if len(kc.subscribedTopics) > 0 {
@@ -308,6 +345,17 @@ func (kc *InferKafkaHandler) RemoveModel(modelName string) error {
 			return nil
 		}
 	}
+
+	if cleanTopicsOnDeletion {
+		// delete input and output topics from kafka
+		inputTopic := kc.topicNamer.GetModelTopicInputs(modelName)
+		outputTopic := kc.topicNamer.GetModelTopicOutputs(modelName)
+		err := kc.deleteTopics([]string{inputTopic, outputTopic})
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
