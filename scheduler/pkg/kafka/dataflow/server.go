@@ -14,21 +14,17 @@ import (
 	"fmt"
 	"net"
 	"sync"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
-
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 
-	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
-	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -38,30 +34,17 @@ const (
 	pipelineEventHandlerName     = "kafka.dataflow.server.pipelines"
 	pendingEventsQueueSize   int = 1000
 	sourceChainerServer          = "chainer-server"
-
-	envDefaultReplicationFactor = "KAFKA_DEFAULT_REPLICATION_FACTOR"
-	envDefaultNumPartitions     = "KAFKA_DEFAULT_NUM_PARTITIONS"
-	defaultReplicationFactor    = 1
-	defaultNumPartitions        = 1
-
-	topicCreateTimeout = time.Minute
-	topicDeleteTimeout = time.Minute
 )
 
 type ChainerServer struct {
-	logger            log.FieldLogger
-	mu                sync.Mutex
-	streams           map[string]*ChainerSubscription
-	eventHub          *coordinator.EventHub
-	pipelineHandler   pipeline.PipelineHandler
-	topicNamer        *kafka2.TopicNamer
-	kafkaConfig       *kafka_config.KafkaConfig
-	loadBalancer      util.LoadBalancer
-	chainerMutex      sync.Map
-	producer          *kafka.Producer
-	adminClient       *kafka.AdminClient
-	replicationFactor int
-	numPartitions     int
+	logger          log.FieldLogger
+	mu              sync.Mutex
+	streams         map[string]*ChainerSubscription
+	eventHub        *coordinator.EventHub
+	pipelineHandler pipeline.PipelineHandler
+	topicNamer      *kafka.TopicNamer
+	loadBalancer    util.LoadBalancer
+	chainerMutex    sync.Map
 	chainer.UnimplementedChainerServer
 }
 
@@ -73,56 +56,18 @@ type ChainerSubscription struct {
 
 func NewChainerServer(logger log.FieldLogger, eventHub *coordinator.EventHub, pipelineHandler pipeline.PipelineHandler,
 	namespace string, loadBalancer util.LoadBalancer, kafkaConfig *kafka_config.KafkaConfig) (*ChainerServer, error) {
-	topicNamer, err := kafka2.NewTopicNamer(namespace, kafkaConfig.TopicPrefix)
+	topicNamer, err := kafka.NewTopicNamer(namespace, kafkaConfig.TopicPrefix)
 	if err != nil {
 		return nil, err
 	}
-
-	producerConfig := kafka_config.CloneKafkaConfigMap(kafkaConfig.Producer)
-	producerConfig["go.delivery.reports"] = true
-	err = config_tls.AddKafkaSSLOptions(producerConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	producerConfigWithoutSecrets := kafka_config.WithoutSecrets(producerConfig)
-	logger.Infof("Creating producer with config %v", producerConfigWithoutSecrets)
-
-	// Create kafka admin client for creating/deleting topics
-	producer, err := kafka.NewProducer(&producerConfig)
-	if err != nil {
-		logger.WithError(err).Error("Failed to create producer")
-		return nil, err
-	}
-	adminClient, err := kafka.NewAdminClientFromProducer(producer)
-	if err != nil {
-		logger.WithError(err).Error("Failed to create admin client")
-		return nil, err
-	}
-
-	// get replication factor and number of partitions
-	replicationFactor, err := util.GetIntEnvar(envDefaultReplicationFactor, defaultReplicationFactor)
-	if err != nil {
-		return nil, err
-	}
-	numPartitions, err := util.GetIntEnvar(envDefaultNumPartitions, defaultNumPartitions)
-	if err != nil {
-		return nil, err
-	}
-
 	c := &ChainerServer{
-		logger:            logger.WithField("source", "dataflow"),
-		streams:           make(map[string]*ChainerSubscription),
-		eventHub:          eventHub,
-		pipelineHandler:   pipelineHandler,
-		topicNamer:        topicNamer,
-		kafkaConfig:       kafkaConfig,
-		loadBalancer:      loadBalancer,
-		chainerMutex:      sync.Map{},
-		producer:          producer,
-		adminClient:       adminClient,
-		replicationFactor: replicationFactor,
-		numPartitions:     numPartitions,
+		logger:          logger.WithField("source", "dataflow"),
+		streams:         make(map[string]*ChainerSubscription),
+		eventHub:        eventHub,
+		pipelineHandler: pipelineHandler,
+		topicNamer:      topicNamer,
+		loadBalancer:    loadBalancer,
+		chainerMutex:    sync.Map{},
 	}
 
 	eventHub.RegisterPipelineEventHandler(
@@ -494,11 +439,6 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 			return
 		}
 
-		topics := []string{
-			c.topicNamer.GetPipelineTopicInputs(pv.Name),
-			c.topicNamer.GetPipelineTopicOutputs(pv.Name),
-		}
-
 		switch pv.State.Status {
 		case pipeline.PipelineCreate:
 			err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineCreating, "", sourceChainerServer)
@@ -506,13 +446,6 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 				logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
 			}
 
-			// Create the topics for the pipeline
-			err = c.createTopics(topics)
-			if err != nil {
-				logger.WithError(err).Errorf("Failed to create topics for pipeline %s. Delegating topic creation to the dataflow engine.", pv.String())
-			}
-
-			// Create and send message to dataflow engine
 			msg := c.createPipelineMessage(pv)
 			c.sendPipelineMsgToSelectedServers(msg, pv)
 
@@ -521,91 +454,8 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to set pipeline state to terminating for %s", pv.String())
 			}
-
-			// Delete the topics for the pipeline
-			err = c.deleteTopics(topics)
-			if err != nil {
-				logger.WithError(err).Errorf("Failed to delete topics for pipeline %s", pv.String())
-			}
-
-			// Create and send message to dataflow engine
 			msg := c.createPipelineMessage(pv) // note pv is a copy and does not include the new change to terminating state
 			c.sendPipelineMsgToSelectedServers(msg, pv)
 		}
 	}()
-}
-
-func (c *ChainerServer) createTopics(topicNames []string) error {
-	c.logger.Debugf("Creating topics %v", topicNames)
-	logger := c.logger.WithField("func", "createTopics")
-	if c.adminClient == nil {
-		logger.Warnf("no kafka admin client, can't create any of the following topics: %v", topicNames)
-		return nil
-	}
-
-	t1 := time.Now()
-
-	var topicSpecs []kafka.TopicSpecification
-	for _, topicName := range topicNames {
-		topicSpecs = append(topicSpecs, kafka.TopicSpecification{
-			Topic:             topicName,
-			NumPartitions:     c.numPartitions,
-			ReplicationFactor: c.replicationFactor,
-		})
-	}
-
-	results, err := c.adminClient.CreateTopics(
-		context.Background(),
-		topicSpecs,
-		kafka.SetAdminOperationTimeout(topicCreateTimeout),
-	)
-	if err != nil {
-		return err
-	} else {
-		logger.Infof("all topics created")
-	}
-
-	for _, result := range results {
-		logger.Debugf("topic result for %s", result.String())
-	}
-
-	t2 := time.Now()
-	logger.Debugf("kafka topics created in %d millis", t2.Sub(t1).Milliseconds())
-	return nil
-}
-
-func (c *ChainerServer) deleteTopics(topicNames []string) error {
-	logger := c.logger.WithField("func", "deleteTopics")
-	if c.adminClient == nil {
-		logger.Warnf("no kafka admin client, can't delete any of the following topics: %v", topicNames)
-		return nil
-	}
-	t1 := time.Now()
-
-	results, err := c.adminClient.DeleteTopics(
-		context.Background(),
-		topicNames,
-		kafka.SetAdminOperationTimeout(topicDeleteTimeout),
-	)
-	if err != nil {
-		return err
-	}
-
-	var failedTopics []string
-	for _, result := range results {
-		if result.Error.Code() != kafka.ErrNoError {
-			failedTopics = append(failedTopics, result.Topic)
-			logger.Errorf("failed to delete topic %s: %s", result.Topic, result.Error.Error())
-		} else {
-			logger.Infof("topic %s deleted", result.Topic)
-		}
-	}
-
-	if len(failedTopics) > 0 {
-		return fmt.Errorf("failed to delete topics: %v", failedTopics)
-	}
-
-	t2 := time.Now()
-	logger.Debugf("kafka topics deleted in %d millis", t2.Sub(t1).Milliseconds())
-	return nil
 }
