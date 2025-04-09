@@ -732,6 +732,53 @@ func (x *MetaData) GetKubernetesMeta() *KubernetesMeta {
 	return nil
 }
 
+type DataflowSpec struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	CleanTopicsOnDelete bool `protobuf:"varint,1,opt,name=cleanTopicsOnDelete,proto3" json:"cleanTopicsOnDelete,omitempty"` // clean up the kafka topic on model delete
+}
+
+func (x *DataflowSpec) Reset() {
+	*x = DataflowSpec{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DataflowSpec) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DataflowSpec) ProtoMessage() {}
+
+func (x *DataflowSpec) ProtoReflect() protoreflect.Message {
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DataflowSpec.ProtoReflect.Descriptor instead.
+func (*DataflowSpec) Descriptor() ([]byte, []int) {
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *DataflowSpec) GetCleanTopicsOnDelete() bool {
+	if x != nil {
+		return x.CleanTopicsOnDelete
+	}
+	return false
+}
+
 type DeploymentSpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -746,7 +793,7 @@ type DeploymentSpec struct {
 func (x *DeploymentSpec) Reset() {
 	*x = DeploymentSpec{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[3]
+		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -759,7 +806,7 @@ func (x *DeploymentSpec) String() string {
 func (*DeploymentSpec) ProtoMessage() {}
 
 func (x *DeploymentSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[3]
+	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -772,7 +819,7 @@ func (x *DeploymentSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeploymentSpec.ProtoReflect.Descriptor instead.
 func (*DeploymentSpec) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{3}
+	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *DeploymentSpec) GetReplicas() uint32 {
@@ -799,53 +846,6 @@ func (x *DeploymentSpec) GetMaxReplicas() uint32 {
 func (x *DeploymentSpec) GetLogPayloads() bool {
 	if x != nil {
 		return x.LogPayloads
-	}
-	return false
-}
-
-type DataflowSpec struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	CleanTopicsOnDelete bool `protobuf:"varint,1,opt,name=cleanTopicsOnDelete,proto3" json:"cleanTopicsOnDelete,omitempty"` // clean up the kafka topic on model delete
-}
-
-func (x *DataflowSpec) Reset() {
-	*x = DataflowSpec{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_mlops_scheduler_scheduler_proto_msgTypes[4]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DataflowSpec) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DataflowSpec) ProtoMessage() {}
-
-func (x *DataflowSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_mlops_scheduler_scheduler_proto_msgTypes[4]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DataflowSpec.ProtoReflect.Descriptor instead.
-func (*DataflowSpec) Descriptor() ([]byte, []int) {
-	return file_mlops_scheduler_scheduler_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *DataflowSpec) GetCleanTopicsOnDelete() bool {
-	if x != nil {
-		return x.CleanTopicsOnDelete
 	}
 	return false
 }
@@ -3302,7 +3302,8 @@ type Pipeline struct {
 	Output         *PipelineOutput `protobuf:"bytes,5,opt,name=output,proto3,oneof" json:"output,omitempty"`
 	KubernetesMeta *KubernetesMeta `protobuf:"bytes,6,opt,name=kubernetesMeta,proto3,oneof" json:"kubernetesMeta,omitempty"`
 	Input          *PipelineInput  `protobuf:"bytes,7,opt,name=input,proto3,oneof" json:"input,omitempty"`
-	AllowCycles    bool            `protobuf:"varint,8,opt,name=allowCycles,proto3" json:"allowCycles,omitempty"` // Allow cycles in the pipeline
+	DataflowSpec   *DataflowSpec   `protobuf:"bytes,8,opt,name=dataflowSpec,proto3,oneof" json:"dataflowSpec,omitempty"` // Dataflow specific config
+	AllowCycles    bool            `protobuf:"varint,9,opt,name=allowCycles,proto3" json:"allowCycles,omitempty"`        // Allow cycles in the pipeline
 }
 
 func (x *Pipeline) Reset() {
@@ -3382,6 +3383,13 @@ func (x *Pipeline) GetKubernetesMeta() *KubernetesMeta {
 func (x *Pipeline) GetInput() *PipelineInput {
 	if x != nil {
 		return x.Input
+	}
+	return nil
+}
+
+func (x *Pipeline) GetDataflowSpec() *DataflowSpec {
+	if x != nil {
+		return x.DataflowSpec
 	}
 	return nil
 }
@@ -4367,20 +4375,20 @@ var file_mlops_scheduler_scheduler_proto_rawDesc = []byte{
 	0x75, 0x62, 0x65, 0x72, 0x6e, 0x65, 0x74, 0x65, 0x73, 0x4d, 0x65, 0x74, 0x61, 0x88, 0x01, 0x01,
 	0x42, 0x07, 0x0a, 0x05, 0x5f, 0x6b, 0x69, 0x6e, 0x64, 0x42, 0x0a, 0x0a, 0x08, 0x5f, 0x76, 0x65,
 	0x72, 0x73, 0x69, 0x6f, 0x6e, 0x42, 0x11, 0x0a, 0x0f, 0x5f, 0x6b, 0x75, 0x62, 0x65, 0x72, 0x6e,
-	0x65, 0x74, 0x65, 0x73, 0x4d, 0x65, 0x74, 0x61, 0x22, 0x92, 0x01, 0x0a, 0x0e, 0x44, 0x65, 0x70,
-	0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x53, 0x70, 0x65, 0x63, 0x12, 0x1a, 0x0a, 0x08, 0x72,
-	0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x08, 0x72,
-	0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x73, 0x12, 0x20, 0x0a, 0x0b, 0x6d, 0x69, 0x6e, 0x52, 0x65,
-	0x70, 0x6c, 0x69, 0x63, 0x61, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x0b, 0x6d, 0x69,
-	0x6e, 0x52, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x73, 0x12, 0x20, 0x0a, 0x0b, 0x6d, 0x61, 0x78,
-	0x52, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x0b,
-	0x6d, 0x61, 0x78, 0x52, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x73, 0x12, 0x20, 0x0a, 0x0b, 0x6c,
-	0x6f, 0x67, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x08,
-	0x52, 0x0b, 0x6c, 0x6f, 0x67, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x73, 0x22, 0x40, 0x0a,
-	0x0c, 0x44, 0x61, 0x74, 0x61, 0x66, 0x6c, 0x6f, 0x77, 0x53, 0x70, 0x65, 0x63, 0x12, 0x30, 0x0a,
-	0x13, 0x63, 0x6c, 0x65, 0x61, 0x6e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x4f, 0x6e, 0x44, 0x65,
-	0x6c, 0x65, 0x74, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x13, 0x63, 0x6c, 0x65, 0x61,
-	0x6e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x4f, 0x6e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x22,
+	0x65, 0x74, 0x65, 0x73, 0x4d, 0x65, 0x74, 0x61, 0x22, 0x40, 0x0a, 0x0c, 0x44, 0x61, 0x74, 0x61,
+	0x66, 0x6c, 0x6f, 0x77, 0x53, 0x70, 0x65, 0x63, 0x12, 0x30, 0x0a, 0x13, 0x63, 0x6c, 0x65, 0x61,
+	0x6e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x4f, 0x6e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x13, 0x63, 0x6c, 0x65, 0x61, 0x6e, 0x54, 0x6f, 0x70, 0x69,
+	0x63, 0x73, 0x4f, 0x6e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x22, 0x92, 0x01, 0x0a, 0x0e, 0x44,
+	0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x53, 0x70, 0x65, 0x63, 0x12, 0x1a, 0x0a,
+	0x08, 0x72, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52,
+	0x08, 0x72, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x73, 0x12, 0x20, 0x0a, 0x0b, 0x6d, 0x69, 0x6e,
+	0x52, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x0b,
+	0x6d, 0x69, 0x6e, 0x52, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x73, 0x12, 0x20, 0x0a, 0x0b, 0x6d,
+	0x61, 0x78, 0x52, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0d,
+	0x52, 0x0b, 0x6d, 0x61, 0x78, 0x52, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x73, 0x12, 0x20, 0x0a,
+	0x0b, 0x6c, 0x6f, 0x67, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x73, 0x18, 0x04, 0x20, 0x01,
+	0x28, 0x08, 0x52, 0x0b, 0x6c, 0x6f, 0x67, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x73, 0x22,
 	0x88, 0x05, 0x0a, 0x09, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x53, 0x70, 0x65, 0x63, 0x12, 0x10, 0x0a,
 	0x03, 0x75, 0x72, 0x69, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75, 0x72, 0x69, 0x12,
 	0x2d, 0x0a, 0x0f, 0x61, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x56, 0x65, 0x72, 0x73, 0x69,
@@ -4798,7 +4806,7 @@ var file_mlops_scheduler_scheduler_proto_rawDesc = []byte{
 	0x72, 0x4e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x73, 0x75, 0x62,
 	0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x72, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x17, 0x0a, 0x04, 0x6e,
 	0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x04, 0x6e, 0x61, 0x6d,
-	0x65, 0x88, 0x01, 0x01, 0x42, 0x07, 0x0a, 0x05, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0xac, 0x03,
+	0x65, 0x88, 0x01, 0x01, 0x42, 0x07, 0x0a, 0x05, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x8c, 0x04,
 	0x0a, 0x08, 0x50, 0x69, 0x70, 0x65, 0x6c, 0x69, 0x6e, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61,
 	0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x10,
 	0x0a, 0x03, 0x75, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75, 0x69, 0x64,
@@ -4821,11 +4829,17 @@ var file_mlops_scheduler_scheduler_proto_rawDesc = []byte{
 	0x25, 0x2e, 0x73, 0x65, 0x6c, 0x64, 0x6f, 0x6e, 0x2e, 0x6d, 0x6c, 0x6f, 0x70, 0x73, 0x2e, 0x73,
 	0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x72, 0x2e, 0x50, 0x69, 0x70, 0x65, 0x6c, 0x69, 0x6e,
 	0x65, 0x49, 0x6e, 0x70, 0x75, 0x74, 0x48, 0x02, 0x52, 0x05, 0x69, 0x6e, 0x70, 0x75, 0x74, 0x88,
-	0x01, 0x01, 0x12, 0x20, 0x0a, 0x0b, 0x61, 0x6c, 0x6c, 0x6f, 0x77, 0x43, 0x79, 0x63, 0x6c, 0x65,
-	0x73, 0x18, 0x08, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0b, 0x61, 0x6c, 0x6c, 0x6f, 0x77, 0x43, 0x79,
-	0x63, 0x6c, 0x65, 0x73, 0x42, 0x09, 0x0a, 0x07, 0x5f, 0x6f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x42,
-	0x11, 0x0a, 0x0f, 0x5f, 0x6b, 0x75, 0x62, 0x65, 0x72, 0x6e, 0x65, 0x74, 0x65, 0x73, 0x4d, 0x65,
-	0x74, 0x61, 0x42, 0x08, 0x0a, 0x06, 0x5f, 0x69, 0x6e, 0x70, 0x75, 0x74, 0x22, 0x9d, 0x04, 0x0a,
+	0x01, 0x01, 0x12, 0x4d, 0x0a, 0x0c, 0x64, 0x61, 0x74, 0x61, 0x66, 0x6c, 0x6f, 0x77, 0x53, 0x70,
+	0x65, 0x63, 0x18, 0x08, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x73, 0x65, 0x6c, 0x64, 0x6f,
+	0x6e, 0x2e, 0x6d, 0x6c, 0x6f, 0x70, 0x73, 0x2e, 0x73, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65,
+	0x72, 0x2e, 0x44, 0x61, 0x74, 0x61, 0x66, 0x6c, 0x6f, 0x77, 0x53, 0x70, 0x65, 0x63, 0x48, 0x03,
+	0x52, 0x0c, 0x64, 0x61, 0x74, 0x61, 0x66, 0x6c, 0x6f, 0x77, 0x53, 0x70, 0x65, 0x63, 0x88, 0x01,
+	0x01, 0x12, 0x20, 0x0a, 0x0b, 0x61, 0x6c, 0x6c, 0x6f, 0x77, 0x43, 0x79, 0x63, 0x6c, 0x65, 0x73,
+	0x18, 0x09, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0b, 0x61, 0x6c, 0x6c, 0x6f, 0x77, 0x43, 0x79, 0x63,
+	0x6c, 0x65, 0x73, 0x42, 0x09, 0x0a, 0x07, 0x5f, 0x6f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x42, 0x11,
+	0x0a, 0x0f, 0x5f, 0x6b, 0x75, 0x62, 0x65, 0x72, 0x6e, 0x65, 0x74, 0x65, 0x73, 0x4d, 0x65, 0x74,
+	0x61, 0x42, 0x08, 0x0a, 0x06, 0x5f, 0x69, 0x6e, 0x70, 0x75, 0x74, 0x42, 0x0f, 0x0a, 0x0d, 0x5f,
+	0x64, 0x61, 0x74, 0x61, 0x66, 0x6c, 0x6f, 0x77, 0x53, 0x70, 0x65, 0x63, 0x22, 0x9d, 0x04, 0x0a,
 	0x0c, 0x50, 0x69, 0x70, 0x65, 0x6c, 0x69, 0x6e, 0x65, 0x53, 0x74, 0x65, 0x70, 0x12, 0x12, 0x0a,
 	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d,
 	0x65, 0x12, 0x16, 0x0a, 0x06, 0x69, 0x6e, 0x70, 0x75, 0x74, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28,
@@ -5171,8 +5185,8 @@ var file_mlops_scheduler_scheduler_proto_goTypes = []any{
 	(*LoadModelRequest)(nil),                  // 9: seldon.mlops.scheduler.LoadModelRequest
 	(*Model)(nil),                             // 10: seldon.mlops.scheduler.Model
 	(*MetaData)(nil),                          // 11: seldon.mlops.scheduler.MetaData
-	(*DeploymentSpec)(nil),                    // 12: seldon.mlops.scheduler.DeploymentSpec
-	(*DataflowSpec)(nil),                      // 13: seldon.mlops.scheduler.DataflowSpec
+	(*DataflowSpec)(nil),                      // 12: seldon.mlops.scheduler.DataflowSpec
+	(*DeploymentSpec)(nil),                    // 13: seldon.mlops.scheduler.DeploymentSpec
 	(*ModelSpec)(nil),                         // 14: seldon.mlops.scheduler.ModelSpec
 	(*ParameterSpec)(nil),                     // 15: seldon.mlops.scheduler.ParameterSpec
 	(*ExplainerSpec)(nil),                     // 16: seldon.mlops.scheduler.ExplainerSpec
@@ -5240,9 +5254,9 @@ var file_mlops_scheduler_scheduler_proto_depIdxs = []int32{
 	10, // 0: seldon.mlops.scheduler.LoadModelRequest.model:type_name -> seldon.mlops.scheduler.Model
 	11, // 1: seldon.mlops.scheduler.Model.meta:type_name -> seldon.mlops.scheduler.MetaData
 	14, // 2: seldon.mlops.scheduler.Model.modelSpec:type_name -> seldon.mlops.scheduler.ModelSpec
-	12, // 3: seldon.mlops.scheduler.Model.deploymentSpec:type_name -> seldon.mlops.scheduler.DeploymentSpec
+	13, // 3: seldon.mlops.scheduler.Model.deploymentSpec:type_name -> seldon.mlops.scheduler.DeploymentSpec
 	23, // 4: seldon.mlops.scheduler.Model.streamSpec:type_name -> seldon.mlops.scheduler.StreamSpec
-	13, // 5: seldon.mlops.scheduler.Model.dataflowSpec:type_name -> seldon.mlops.scheduler.DataflowSpec
+	12, // 5: seldon.mlops.scheduler.Model.dataflowSpec:type_name -> seldon.mlops.scheduler.DataflowSpec
 	22, // 6: seldon.mlops.scheduler.MetaData.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
 	24, // 7: seldon.mlops.scheduler.ModelSpec.storageConfig:type_name -> seldon.mlops.scheduler.StorageConfig
 	15, // 8: seldon.mlops.scheduler.ModelSpec.parameters:type_name -> seldon.mlops.scheduler.ParameterSpec
@@ -5281,61 +5295,62 @@ var file_mlops_scheduler_scheduler_proto_depIdxs = []int32{
 	58, // 41: seldon.mlops.scheduler.Pipeline.output:type_name -> seldon.mlops.scheduler.PipelineOutput
 	22, // 42: seldon.mlops.scheduler.Pipeline.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
 	57, // 43: seldon.mlops.scheduler.Pipeline.input:type_name -> seldon.mlops.scheduler.PipelineInput
-	72, // 44: seldon.mlops.scheduler.PipelineStep.tensorMap:type_name -> seldon.mlops.scheduler.PipelineStep.TensorMapEntry
-	4,  // 45: seldon.mlops.scheduler.PipelineStep.inputsJoin:type_name -> seldon.mlops.scheduler.PipelineStep.JoinOp
-	4,  // 46: seldon.mlops.scheduler.PipelineStep.triggersJoin:type_name -> seldon.mlops.scheduler.PipelineStep.JoinOp
-	56, // 47: seldon.mlops.scheduler.PipelineStep.batch:type_name -> seldon.mlops.scheduler.Batch
-	5,  // 48: seldon.mlops.scheduler.PipelineInput.joinType:type_name -> seldon.mlops.scheduler.PipelineInput.JoinOp
-	5,  // 49: seldon.mlops.scheduler.PipelineInput.triggersJoin:type_name -> seldon.mlops.scheduler.PipelineInput.JoinOp
-	73, // 50: seldon.mlops.scheduler.PipelineInput.tensorMap:type_name -> seldon.mlops.scheduler.PipelineInput.TensorMapEntry
-	6,  // 51: seldon.mlops.scheduler.PipelineOutput.stepsJoin:type_name -> seldon.mlops.scheduler.PipelineOutput.JoinOp
-	74, // 52: seldon.mlops.scheduler.PipelineOutput.tensorMap:type_name -> seldon.mlops.scheduler.PipelineOutput.TensorMapEntry
-	65, // 53: seldon.mlops.scheduler.PipelineStatusResponse.versions:type_name -> seldon.mlops.scheduler.PipelineWithState
-	54, // 54: seldon.mlops.scheduler.PipelineWithState.pipeline:type_name -> seldon.mlops.scheduler.Pipeline
-	66, // 55: seldon.mlops.scheduler.PipelineWithState.state:type_name -> seldon.mlops.scheduler.PipelineVersionState
-	7,  // 56: seldon.mlops.scheduler.PipelineVersionState.status:type_name -> seldon.mlops.scheduler.PipelineVersionState.PipelineStatus
-	75, // 57: seldon.mlops.scheduler.PipelineVersionState.lastChangeTimestamp:type_name -> google.protobuf.Timestamp
-	8,  // 58: seldon.mlops.scheduler.ControlPlaneResponse.event:type_name -> seldon.mlops.scheduler.ControlPlaneResponse.Event
-	32, // 59: seldon.mlops.scheduler.ModelVersionStatus.ModelReplicaStateEntry.value:type_name -> seldon.mlops.scheduler.ModelReplicaStatus
-	38, // 60: seldon.mlops.scheduler.Scheduler.ServerNotify:input_type -> seldon.mlops.scheduler.ServerNotifyRequest
-	9,  // 61: seldon.mlops.scheduler.Scheduler.LoadModel:input_type -> seldon.mlops.scheduler.LoadModelRequest
-	27, // 62: seldon.mlops.scheduler.Scheduler.UnloadModel:input_type -> seldon.mlops.scheduler.UnloadModelRequest
-	52, // 63: seldon.mlops.scheduler.Scheduler.LoadPipeline:input_type -> seldon.mlops.scheduler.LoadPipelineRequest
-	60, // 64: seldon.mlops.scheduler.Scheduler.UnloadPipeline:input_type -> seldon.mlops.scheduler.UnloadPipelineRequest
-	42, // 65: seldon.mlops.scheduler.Scheduler.StartExperiment:input_type -> seldon.mlops.scheduler.StartExperimentRequest
-	48, // 66: seldon.mlops.scheduler.Scheduler.StopExperiment:input_type -> seldon.mlops.scheduler.StopExperimentRequest
-	33, // 67: seldon.mlops.scheduler.Scheduler.ServerStatus:input_type -> seldon.mlops.scheduler.ServerStatusRequest
-	37, // 68: seldon.mlops.scheduler.Scheduler.ModelStatus:input_type -> seldon.mlops.scheduler.ModelStatusRequest
-	62, // 69: seldon.mlops.scheduler.Scheduler.PipelineStatus:input_type -> seldon.mlops.scheduler.PipelineStatusRequest
-	53, // 70: seldon.mlops.scheduler.Scheduler.ExperimentStatus:input_type -> seldon.mlops.scheduler.ExperimentStatusRequest
-	67, // 71: seldon.mlops.scheduler.Scheduler.SchedulerStatus:input_type -> seldon.mlops.scheduler.SchedulerStatusRequest
-	41, // 72: seldon.mlops.scheduler.Scheduler.SubscribeServerStatus:input_type -> seldon.mlops.scheduler.ServerSubscriptionRequest
-	36, // 73: seldon.mlops.scheduler.Scheduler.SubscribeModelStatus:input_type -> seldon.mlops.scheduler.ModelSubscriptionRequest
-	50, // 74: seldon.mlops.scheduler.Scheduler.SubscribeExperimentStatus:input_type -> seldon.mlops.scheduler.ExperimentSubscriptionRequest
-	63, // 75: seldon.mlops.scheduler.Scheduler.SubscribePipelineStatus:input_type -> seldon.mlops.scheduler.PipelineSubscriptionRequest
-	69, // 76: seldon.mlops.scheduler.Scheduler.SubscribeControlPlane:input_type -> seldon.mlops.scheduler.ControlPlaneSubscriptionRequest
-	40, // 77: seldon.mlops.scheduler.Scheduler.ServerNotify:output_type -> seldon.mlops.scheduler.ServerNotifyResponse
-	25, // 78: seldon.mlops.scheduler.Scheduler.LoadModel:output_type -> seldon.mlops.scheduler.LoadModelResponse
-	28, // 79: seldon.mlops.scheduler.Scheduler.UnloadModel:output_type -> seldon.mlops.scheduler.UnloadModelResponse
-	59, // 80: seldon.mlops.scheduler.Scheduler.LoadPipeline:output_type -> seldon.mlops.scheduler.LoadPipelineResponse
-	61, // 81: seldon.mlops.scheduler.Scheduler.UnloadPipeline:output_type -> seldon.mlops.scheduler.UnloadPipelineResponse
-	47, // 82: seldon.mlops.scheduler.Scheduler.StartExperiment:output_type -> seldon.mlops.scheduler.StartExperimentResponse
-	49, // 83: seldon.mlops.scheduler.Scheduler.StopExperiment:output_type -> seldon.mlops.scheduler.StopExperimentResponse
-	34, // 84: seldon.mlops.scheduler.Scheduler.ServerStatus:output_type -> seldon.mlops.scheduler.ServerStatusResponse
-	29, // 85: seldon.mlops.scheduler.Scheduler.ModelStatus:output_type -> seldon.mlops.scheduler.ModelStatusResponse
-	64, // 86: seldon.mlops.scheduler.Scheduler.PipelineStatus:output_type -> seldon.mlops.scheduler.PipelineStatusResponse
-	51, // 87: seldon.mlops.scheduler.Scheduler.ExperimentStatus:output_type -> seldon.mlops.scheduler.ExperimentStatusResponse
-	68, // 88: seldon.mlops.scheduler.Scheduler.SchedulerStatus:output_type -> seldon.mlops.scheduler.SchedulerStatusResponse
-	34, // 89: seldon.mlops.scheduler.Scheduler.SubscribeServerStatus:output_type -> seldon.mlops.scheduler.ServerStatusResponse
-	29, // 90: seldon.mlops.scheduler.Scheduler.SubscribeModelStatus:output_type -> seldon.mlops.scheduler.ModelStatusResponse
-	51, // 91: seldon.mlops.scheduler.Scheduler.SubscribeExperimentStatus:output_type -> seldon.mlops.scheduler.ExperimentStatusResponse
-	64, // 92: seldon.mlops.scheduler.Scheduler.SubscribePipelineStatus:output_type -> seldon.mlops.scheduler.PipelineStatusResponse
-	70, // 93: seldon.mlops.scheduler.Scheduler.SubscribeControlPlane:output_type -> seldon.mlops.scheduler.ControlPlaneResponse
-	77, // [77:94] is the sub-list for method output_type
-	60, // [60:77] is the sub-list for method input_type
-	60, // [60:60] is the sub-list for extension type_name
-	60, // [60:60] is the sub-list for extension extendee
-	0,  // [0:60] is the sub-list for field type_name
+	12, // 44: seldon.mlops.scheduler.Pipeline.dataflowSpec:type_name -> seldon.mlops.scheduler.DataflowSpec
+	72, // 45: seldon.mlops.scheduler.PipelineStep.tensorMap:type_name -> seldon.mlops.scheduler.PipelineStep.TensorMapEntry
+	4,  // 46: seldon.mlops.scheduler.PipelineStep.inputsJoin:type_name -> seldon.mlops.scheduler.PipelineStep.JoinOp
+	4,  // 47: seldon.mlops.scheduler.PipelineStep.triggersJoin:type_name -> seldon.mlops.scheduler.PipelineStep.JoinOp
+	56, // 48: seldon.mlops.scheduler.PipelineStep.batch:type_name -> seldon.mlops.scheduler.Batch
+	5,  // 49: seldon.mlops.scheduler.PipelineInput.joinType:type_name -> seldon.mlops.scheduler.PipelineInput.JoinOp
+	5,  // 50: seldon.mlops.scheduler.PipelineInput.triggersJoin:type_name -> seldon.mlops.scheduler.PipelineInput.JoinOp
+	73, // 51: seldon.mlops.scheduler.PipelineInput.tensorMap:type_name -> seldon.mlops.scheduler.PipelineInput.TensorMapEntry
+	6,  // 52: seldon.mlops.scheduler.PipelineOutput.stepsJoin:type_name -> seldon.mlops.scheduler.PipelineOutput.JoinOp
+	74, // 53: seldon.mlops.scheduler.PipelineOutput.tensorMap:type_name -> seldon.mlops.scheduler.PipelineOutput.TensorMapEntry
+	65, // 54: seldon.mlops.scheduler.PipelineStatusResponse.versions:type_name -> seldon.mlops.scheduler.PipelineWithState
+	54, // 55: seldon.mlops.scheduler.PipelineWithState.pipeline:type_name -> seldon.mlops.scheduler.Pipeline
+	66, // 56: seldon.mlops.scheduler.PipelineWithState.state:type_name -> seldon.mlops.scheduler.PipelineVersionState
+	7,  // 57: seldon.mlops.scheduler.PipelineVersionState.status:type_name -> seldon.mlops.scheduler.PipelineVersionState.PipelineStatus
+	75, // 58: seldon.mlops.scheduler.PipelineVersionState.lastChangeTimestamp:type_name -> google.protobuf.Timestamp
+	8,  // 59: seldon.mlops.scheduler.ControlPlaneResponse.event:type_name -> seldon.mlops.scheduler.ControlPlaneResponse.Event
+	32, // 60: seldon.mlops.scheduler.ModelVersionStatus.ModelReplicaStateEntry.value:type_name -> seldon.mlops.scheduler.ModelReplicaStatus
+	38, // 61: seldon.mlops.scheduler.Scheduler.ServerNotify:input_type -> seldon.mlops.scheduler.ServerNotifyRequest
+	9,  // 62: seldon.mlops.scheduler.Scheduler.LoadModel:input_type -> seldon.mlops.scheduler.LoadModelRequest
+	27, // 63: seldon.mlops.scheduler.Scheduler.UnloadModel:input_type -> seldon.mlops.scheduler.UnloadModelRequest
+	52, // 64: seldon.mlops.scheduler.Scheduler.LoadPipeline:input_type -> seldon.mlops.scheduler.LoadPipelineRequest
+	60, // 65: seldon.mlops.scheduler.Scheduler.UnloadPipeline:input_type -> seldon.mlops.scheduler.UnloadPipelineRequest
+	42, // 66: seldon.mlops.scheduler.Scheduler.StartExperiment:input_type -> seldon.mlops.scheduler.StartExperimentRequest
+	48, // 67: seldon.mlops.scheduler.Scheduler.StopExperiment:input_type -> seldon.mlops.scheduler.StopExperimentRequest
+	33, // 68: seldon.mlops.scheduler.Scheduler.ServerStatus:input_type -> seldon.mlops.scheduler.ServerStatusRequest
+	37, // 69: seldon.mlops.scheduler.Scheduler.ModelStatus:input_type -> seldon.mlops.scheduler.ModelStatusRequest
+	62, // 70: seldon.mlops.scheduler.Scheduler.PipelineStatus:input_type -> seldon.mlops.scheduler.PipelineStatusRequest
+	53, // 71: seldon.mlops.scheduler.Scheduler.ExperimentStatus:input_type -> seldon.mlops.scheduler.ExperimentStatusRequest
+	67, // 72: seldon.mlops.scheduler.Scheduler.SchedulerStatus:input_type -> seldon.mlops.scheduler.SchedulerStatusRequest
+	41, // 73: seldon.mlops.scheduler.Scheduler.SubscribeServerStatus:input_type -> seldon.mlops.scheduler.ServerSubscriptionRequest
+	36, // 74: seldon.mlops.scheduler.Scheduler.SubscribeModelStatus:input_type -> seldon.mlops.scheduler.ModelSubscriptionRequest
+	50, // 75: seldon.mlops.scheduler.Scheduler.SubscribeExperimentStatus:input_type -> seldon.mlops.scheduler.ExperimentSubscriptionRequest
+	63, // 76: seldon.mlops.scheduler.Scheduler.SubscribePipelineStatus:input_type -> seldon.mlops.scheduler.PipelineSubscriptionRequest
+	69, // 77: seldon.mlops.scheduler.Scheduler.SubscribeControlPlane:input_type -> seldon.mlops.scheduler.ControlPlaneSubscriptionRequest
+	40, // 78: seldon.mlops.scheduler.Scheduler.ServerNotify:output_type -> seldon.mlops.scheduler.ServerNotifyResponse
+	25, // 79: seldon.mlops.scheduler.Scheduler.LoadModel:output_type -> seldon.mlops.scheduler.LoadModelResponse
+	28, // 80: seldon.mlops.scheduler.Scheduler.UnloadModel:output_type -> seldon.mlops.scheduler.UnloadModelResponse
+	59, // 81: seldon.mlops.scheduler.Scheduler.LoadPipeline:output_type -> seldon.mlops.scheduler.LoadPipelineResponse
+	61, // 82: seldon.mlops.scheduler.Scheduler.UnloadPipeline:output_type -> seldon.mlops.scheduler.UnloadPipelineResponse
+	47, // 83: seldon.mlops.scheduler.Scheduler.StartExperiment:output_type -> seldon.mlops.scheduler.StartExperimentResponse
+	49, // 84: seldon.mlops.scheduler.Scheduler.StopExperiment:output_type -> seldon.mlops.scheduler.StopExperimentResponse
+	34, // 85: seldon.mlops.scheduler.Scheduler.ServerStatus:output_type -> seldon.mlops.scheduler.ServerStatusResponse
+	29, // 86: seldon.mlops.scheduler.Scheduler.ModelStatus:output_type -> seldon.mlops.scheduler.ModelStatusResponse
+	64, // 87: seldon.mlops.scheduler.Scheduler.PipelineStatus:output_type -> seldon.mlops.scheduler.PipelineStatusResponse
+	51, // 88: seldon.mlops.scheduler.Scheduler.ExperimentStatus:output_type -> seldon.mlops.scheduler.ExperimentStatusResponse
+	68, // 89: seldon.mlops.scheduler.Scheduler.SchedulerStatus:output_type -> seldon.mlops.scheduler.SchedulerStatusResponse
+	34, // 90: seldon.mlops.scheduler.Scheduler.SubscribeServerStatus:output_type -> seldon.mlops.scheduler.ServerStatusResponse
+	29, // 91: seldon.mlops.scheduler.Scheduler.SubscribeModelStatus:output_type -> seldon.mlops.scheduler.ModelStatusResponse
+	51, // 92: seldon.mlops.scheduler.Scheduler.SubscribeExperimentStatus:output_type -> seldon.mlops.scheduler.ExperimentStatusResponse
+	64, // 93: seldon.mlops.scheduler.Scheduler.SubscribePipelineStatus:output_type -> seldon.mlops.scheduler.PipelineStatusResponse
+	70, // 94: seldon.mlops.scheduler.Scheduler.SubscribeControlPlane:output_type -> seldon.mlops.scheduler.ControlPlaneResponse
+	78, // [78:95] is the sub-list for method output_type
+	61, // [61:78] is the sub-list for method input_type
+	61, // [61:61] is the sub-list for extension type_name
+	61, // [61:61] is the sub-list for extension extendee
+	0,  // [0:61] is the sub-list for field type_name
 }
 
 func init() { file_mlops_scheduler_scheduler_proto_init() }
@@ -5381,7 +5396,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[3].Exporter = func(v any, i int) any {
-			switch v := v.(*DeploymentSpec); i {
+			switch v := v.(*DataflowSpec); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5393,7 +5408,7 @@ func file_mlops_scheduler_scheduler_proto_init() {
 			}
 		}
 		file_mlops_scheduler_scheduler_proto_msgTypes[4].Exporter = func(v any, i int) any {
-			switch v := v.(*DataflowSpec); i {
+			switch v := v.(*DeploymentSpec); i {
 			case 0:
 				return &v.state
 			case 1:
