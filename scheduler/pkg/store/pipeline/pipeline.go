@@ -53,6 +53,7 @@ type PipelineVersion struct {
 	Steps          map[string]*PipelineStep
 	State          *PipelineState
 	Output         *PipelineOutput
+	DataflowSepec  *DataflowSpec
 	KubernetesMeta *KubernetesMeta
 	AllowCycles    bool
 }
@@ -135,4 +136,8 @@ type PipelineInput struct {
 	JoinWindowMs     *uint32
 	InputsJoinType   JoinType
 	TriggersJoinType JoinType
+}
+
+type DataflowSpec struct {
+	CleanTopicsOnDelete bool
 }
