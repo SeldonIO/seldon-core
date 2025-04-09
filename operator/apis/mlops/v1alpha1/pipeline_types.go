@@ -56,6 +56,16 @@ type PipelineSpec struct {
 
 	// Synchronous output from this pipeline, optional
 	Output *PipelineOutput `json:"output,omitempty"`
+
+	// Dataflow specs
+	Dataflow *DataflowSpec `json:"dataflow,omitempty"`
+}
+
+type DataflowSpec struct {
+	// Flag to indicate whether the kafka input/output topics
+	// should be cleaned up when the pipeline is deleted
+	// Default false
+	CleanTopicsOnDelete bool `json:"cleanTopicsOnDelete,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=inner;outer;any
@@ -148,6 +158,7 @@ func (p Pipeline) AsSchedulerPipeline() *scheduler.Pipeline {
 	var steps []*scheduler.PipelineStep
 	var output *scheduler.PipelineOutput
 	var input *scheduler.PipelineInput
+	var dataflowSpec *scheduler.DataflowSpec
 	if p.Spec.Input != nil {
 		input = &scheduler.PipelineInput{
 			ExternalInputs:   p.Spec.Input.ExternalInputs,
@@ -239,12 +250,18 @@ func (p Pipeline) AsSchedulerPipeline() *scheduler.Pipeline {
 			}
 		}
 	}
+	if p.Spec.Dataflow != nil {
+		dataflowSpec = &scheduler.DataflowSpec{
+			CleanTopicsOnDelete: p.Spec.Dataflow.CleanTopicsOnDelete,
+		}
+	}
 	return &scheduler.Pipeline{
 		Name:           p.GetName(),
 		Uid:            "", // ID Will be set on scheduler side. IDs don't change on k8s when updates are made so can't use it for each version
 		Input:          input,
 		Steps:          steps,
 		Output:         output,
+		DataflowSpec:   dataflowSpec,
 		KubernetesMeta: &scheduler.KubernetesMeta{Namespace: p.Namespace, Generation: p.Generation},
 	}
 }

@@ -105,7 +105,7 @@ class PipelineSubscriber(
 
                 when (update.op) {
                     PipelineOperation.Create -> handleCreate(metadata, update.updatesList, kafkaConsumerGroupIdPrefix, namespace)
-                    PipelineOperation.Delete -> handleDelete(metadata)
+                    PipelineOperation.Delete -> handleDelete(metadata, update.updatesList)
                     else -> logger.warn("unrecognised pipeline operation (${update.op})")
                 }
             }
@@ -271,7 +271,10 @@ class PipelineSubscriber(
         )
     }
 
-    private suspend fun handleDelete(metadata: PipelineMetadata) {
+    private suspend fun handleDelete(
+        metadata: PipelineMetadata,
+        steps: List<PipelineStepUpdate>,
+    ) {
         logger.info(
             "Delete pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
             metadata.name,
@@ -285,12 +288,22 @@ class PipelineSubscriber(
                     pipeline.stop()
                 }
             }
+
+        var pipelineError: PipelineStatus? = null
+        val errTopics = kafkaAdmin.deleteTopics(steps)
+        if (errTopics != null) {
+            pipelineError =
+                PipelineStatus.Error(null)
+                    .withException(errTopics)
+                    .withMessage("kafka streams topic deletion error")
+        }
+
         client.pipelineUpdateEvent(
             makePipelineUpdateEvent(
                 metadata = metadata,
                 operation = PipelineOperation.Delete,
-                success = true,
-                reason = "pipeline removed",
+                success = pipelineError == null,
+                reason = pipelineError?.getDescription() ?: "pipeline removed",
             ),
         )
     }
