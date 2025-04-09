@@ -318,20 +318,23 @@ func (c *ChainerServer) createPipelineCreationMessage(pv *pipeline.PipelineVersi
 }
 
 func (c *ChainerServer) createPipelineDeletionMessage(pv *pipeline.PipelineVersion) *chainer.PipelineUpdateMessage {
-	var stepUpdates []*chainer.PipelineStepUpdate
-	if pv.Input != nil {
-		stepUpdates = append(stepUpdates, c.createInputStepUpdate(pv))
-	}
-	if pv.Output != nil {
-		stepUpdates = append(stepUpdates, c.createOutputStepUpdate(pv))
-	}
-	return &chainer.PipelineUpdateMessage{
+	message := chainer.PipelineUpdateMessage{
 		Pipeline: pv.Name,
 		Version:  pv.Version,
 		Uid:      pv.UID,
-		Updates:  stepUpdates,
 		Op:       chainer.PipelineUpdateMessage_Delete,
 	}
+	if pv.DataflowSepec != nil && pv.DataflowSepec.CleanTopicsOnDelete {
+		var stepUpdates []*chainer.PipelineStepUpdate
+		if pv.Input != nil {
+			stepUpdates = append(stepUpdates, c.createInputStepUpdate(pv))
+		}
+		if pv.Output != nil {
+			stepUpdates = append(stepUpdates, c.createOutputStepUpdate(pv))
+		}
+		message.Updates = stepUpdates
+	}
+	return &message
 }
 
 func (c *ChainerServer) sendPipelineMsgToSelectedServers(msg *chainer.PipelineUpdateMessage, pv *pipeline.PipelineVersion) {
