@@ -262,39 +262,43 @@ func (c *ChainerServer) createOutputStepUpdate(pv *pipeline.PipelineVersion) *ch
 	return &stepUpdate
 }
 
+func (c *ChainerServer) createStepUpdate(pv *pipeline.PipelineVersion, step *pipeline.PipelineStep) *chainer.PipelineStepUpdate {
+	stepUpdate := chainer.PipelineStepUpdate{
+		Sources:   c.createTopicSources(step.Inputs, pv.Name),
+		Triggers:  c.createTriggerSources(step.Triggers, pv.Name),
+		Sink:      &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetModelTopicInputs(step.Name), Tensor: nil},
+		TensorMap: c.topicNamer.GetFullyQualifiedTensorMap(pv.Name, step.TensorMap),
+	}
+	switch step.InputsJoinType {
+	case pipeline.JoinInner:
+		stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Inner
+	case pipeline.JoinOuter:
+		stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Outer
+	case pipeline.JoinAny:
+		stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Any
+	}
+	switch step.TriggersJoinType {
+	case pipeline.JoinInner:
+		stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Inner
+	case pipeline.JoinOuter:
+		stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Outer
+	case pipeline.JoinAny:
+		stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Any
+	}
+	if step.Batch != nil {
+		stepUpdate.Batch = &chainer.Batch{
+			Size:     step.Batch.Size,
+			WindowMs: step.Batch.WindowMs,
+		}
+	}
+	c.logger.Infof("Adding sources %v to %s", stepUpdate.Sources, stepUpdate.Sink)
+	return &stepUpdate
+}
+
 func (c *ChainerServer) createPipelineCreationMessage(pv *pipeline.PipelineVersion) *chainer.PipelineUpdateMessage {
 	var stepUpdates []*chainer.PipelineStepUpdate
 	for _, step := range pv.Steps {
-		stepUpdate := chainer.PipelineStepUpdate{
-			Sources:   c.createTopicSources(step.Inputs, pv.Name),
-			Triggers:  c.createTriggerSources(step.Triggers, pv.Name),
-			Sink:      &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetModelTopicInputs(step.Name), Tensor: nil},
-			TensorMap: c.topicNamer.GetFullyQualifiedTensorMap(pv.Name, step.TensorMap),
-		}
-		switch step.InputsJoinType {
-		case pipeline.JoinInner:
-			stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Inner
-		case pipeline.JoinOuter:
-			stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Outer
-		case pipeline.JoinAny:
-			stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Any
-		}
-		switch step.TriggersJoinType {
-		case pipeline.JoinInner:
-			stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Inner
-		case pipeline.JoinOuter:
-			stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Outer
-		case pipeline.JoinAny:
-			stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Any
-		}
-		if step.Batch != nil {
-			stepUpdate.Batch = &chainer.Batch{
-				Size:     step.Batch.Size,
-				WindowMs: step.Batch.WindowMs,
-			}
-		}
-		c.logger.Infof("Adding sources %v to %s", stepUpdate.Sources, stepUpdate.Sink)
-		stepUpdates = append(stepUpdates, &stepUpdate)
+		stepUpdates = append(stepUpdates, c.createStepUpdate(pv, step))
 	}
 	if pv.Input != nil {
 		stepUpdates = append(stepUpdates, c.createInputStepUpdate(pv))
@@ -325,14 +329,15 @@ func (c *ChainerServer) createPipelineDeletionMessage(pv *pipeline.PipelineVersi
 		Op:       chainer.PipelineUpdateMessage_Delete,
 	}
 	if pv.DataflowSepec != nil && pv.DataflowSepec.CleanTopicsOnDelete {
-		var stepUpdates []*chainer.PipelineStepUpdate
-		if pv.Input != nil {
-			stepUpdates = append(stepUpdates, c.createInputStepUpdate(pv))
+		// Both topics are always created. The input topic is created
+		// when creating the topics for each step. The output topic
+		// is created when creating the error topic.
+		message.Updates = []*chainer.PipelineStepUpdate{
+			{
+				Sources: []*chainer.PipelineTopic{{PipelineName: pv.Name, TopicName: c.topicNamer.GetPipelineTopicInputs(pv.Name), Tensor: nil}},
+				Sink:    &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetPipelineTopicOutputs(pv.Name), Tensor: nil},
+			},
 		}
-		if pv.Output != nil {
-			stepUpdates = append(stepUpdates, c.createOutputStepUpdate(pv))
-		}
-		message.Updates = stepUpdates
 	}
 	return &message
 }
