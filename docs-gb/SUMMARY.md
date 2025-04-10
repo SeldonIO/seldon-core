@@ -180,10 +180,10 @@
 <!--    
 * Reference
     * Glossary -->
-* [FAQs](faqs.md)          
+* [FAQs](faqs.md)         
  
 * [Development](development/README.md)
   * [License](development/licenses.md)
   * [Release](development/release.md)
-
+* [Release Notes](development/release-notes.md)
 
