@@ -85,7 +85,7 @@
     * Rollout Strategies
         * Progressive Rollouts
         * Rollbacks -->
-    * [Experiments](kubernetes/resources/experiment.md)
+* [Experiments](kubernetes/resources/experiment.md)
       <!--
       * A/B Testing
       * Traffic Splitting
