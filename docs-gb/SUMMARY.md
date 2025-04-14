@@ -35,7 +35,7 @@
     * [Resource allocation](resource-allocation/README.md)
       * [Example: Serving models on dedicated GPU nodes](resource-allocation/example-serving-models-on-dedicated-gpu-nodes.md)
 * [Models](models/README.md)
-  <!-->  
+  <!--  
    * CRD
     * Registration
     * Versioning
