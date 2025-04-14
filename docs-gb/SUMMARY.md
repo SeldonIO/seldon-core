@@ -92,7 +92,8 @@
       * Canary
       * Shadow 
     * CI/CD
-      * Link to Component Versioning -->
+      * Link to Component Versioning 
+-->
 * [Examples](examples/README.md)
   * [Local examples](examples/local-examples.md)
   * [Kubernetes examples](examples/k8s-examples.md)
