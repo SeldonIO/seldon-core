@@ -44,6 +44,7 @@
     * Links to Secret Management -->
     * [Multi-Model Serving](models/mms.md)
     * [Inference Artifacts](models/inference-artifacts.md)
+    * [Scheduling](models/scheduling.md)
     * [rClone](models/rclone.md)
     * [Parameterized Models](models/parameterized-models/README.md)
     * [Pandas Query](models/parameterized-models/pandasquery.md) 
