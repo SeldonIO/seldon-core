@@ -35,8 +35,8 @@
     * [Resource allocation](resource-allocation/README.md)
       * [Example: Serving models on dedicated GPU nodes](resource-allocation/example-serving-models-on-dedicated-gpu-nodes.md)
 * [Models](models/README.md)
-  <!-->  
-   * CRD
+    <!--  
+    * CRD
     * Registration
     * Versioning
     * LLM
@@ -44,6 +44,7 @@
     * Links to Secret Management -->
     * [Multi-Model Serving](models/mms.md)
     * [Inference Artifacts](models/inference-artifacts.md)
+    * [Scheduling](models/scheduling.md)
     * [rClone](models/rclone.md)
     * [Parameterized Models](models/parameterized-models/README.md)
     * [Pandas Query](models/parameterized-models/pandasquery.md) 
@@ -84,14 +85,15 @@
     * Rollout Strategies
         * Progressive Rollouts
         * Rollbacks -->
-    * [Experiments](kubernetes/resources/experiment.md)
-  <!-->
+* [Experiments](kubernetes/resources/experiment.md)
+<!--
       * A/B Testing
       * Traffic Splitting
       * Canary
       * Shadow 
     * CI/CD
-      * Link to Component Versioning -->
+      * Link to Component Versioning 
+-->
 * [Examples](examples/README.md)
   * [Local examples](examples/local-examples.md)
   * [Kubernetes examples](examples/k8s-examples.md)
