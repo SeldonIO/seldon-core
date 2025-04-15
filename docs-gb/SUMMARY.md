@@ -182,10 +182,10 @@
 <!--    
 * Reference
     * Glossary -->
-* [FAQs](faqs.md)          
+* [FAQs](faqs.md)         
  
 * [Development](development/README.md)
   * [License](development/licenses.md)
   * [Release](development/release.md)
-
+* [Release Notes](https://github.com/SeldonIO/seldon-core/releases/tag/v2.9.0)
 
