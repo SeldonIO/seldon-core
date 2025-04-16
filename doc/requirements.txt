@@ -26,7 +26,7 @@ bleach==6.1.0
     # via nbconvert
 build==1.0.3
     # via pip-tools
-certifi==2023.11.17
+certifi==2024.7.4
     # via requests
 charset-normalizer==3.3.2
     # via requests
