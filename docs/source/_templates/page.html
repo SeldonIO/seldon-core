@@ -3,8 +3,33 @@
 {%- block content %} 
 {% set nav_bar_tabs = parents or theme_master_doc or theme_nav_links %}
 <div class="md-container">
+<<<<<<< HEAD
   {%- block hero %} {% include "hero.html" %} {% endblock %} {% include
   "relbar.html" %}
+=======
+
+  {# 🚨 Banner injected here, before hero/relbar and main content #}
+  <div class="custom-banner" style="padding: 1rem;">
+    <div>
+      <strong>
+        <img 
+          src="https://img.icons8.com/?size=100&id=360&format=png&color=FA5252" 
+          alt="alert" 
+          style="width: 25px; height: 25px; vertical-align: middle; margin-right: 8px;" 
+        />
+        Seldon Core 2 Documentation Update
+      </strong><br />
+      For version 2.8 and later visit:
+      <a href="https://docs.seldon.ai/seldon-core-2" target="_blank">
+        https://docs.seldon.ai/seldon-core-2
+      </a>. Continue viewing legacy docs here.
+    </div>
+  </div>
+
+  {%- block hero %} {% include "hero.html" %} {% endblock %}
+  {% include "relbar.html" %}
+
+>>>>>>> 266da4aef (docs added a banner (#6390))
   <main class="md-main">
     {% if pagename == 'index' %} {% include 'custom/index.html' %} {% else %}
     <div class="md-main__inner md-grid" data-md-component="container">
@@ -39,6 +64,7 @@
 {%- endblock %}
 
 {%- block extrahead %}
+<<<<<<< HEAD
 {# Adding CSS and JS bundle for swagger#}
 <link
   rel="stylesheet"
@@ -51,3 +77,27 @@
 ></script>
 {{ super() }}
 {%- endblock %}
+=======
+<style>
+  .custom-banner {
+      background-color: #fff9c4;
+      color: #000;
+      text-align: left;
+      font-weight: normal;
+      font-size: 1.1em;
+      line-height: 1.4em;
+      margin: 0;
+      border: none;
+      padding: 0 16px;
+  }
+
+  .custom-banner a {
+      font-size: 1.1em;
+      font-weight: bold;
+      color: #5159ff;
+      text-decoration: underline;
+  }
+</style>
+{%- endblock %}
+
+>>>>>>> 266da4aef (docs added a banner (#6390))
