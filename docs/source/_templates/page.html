@@ -5,13 +5,20 @@
 <div class="md-container">
 
   {# 🚨 Banner injected here, before hero/relbar and main content #}
-  <div class="custom-banner">
+  <div class="custom-banner" style="padding: 1rem;">
     <div>
-      <strong>Core 2 Documentation has moved!</strong><br />
-      Find it here:
+      <strong>
+        <img 
+          src="https://img.icons8.com/?size=100&id=360&format=png&color=FA5252" 
+          alt="alert" 
+          style="width: 25px; height: 25px; vertical-align: middle; margin-right: 8px;" 
+        />
+        Seldon Core 2 Documentation Update
+      </strong><br />
+      For version 2.8 and later visit:
       <a href="https://docs.seldon.ai/seldon-core-2" target="_blank">
         https://docs.seldon.ai/seldon-core-2
-      </a>
+      </a>. Continue viewing legacy docs here.
     </div>
   </div>
 
@@ -55,10 +62,10 @@
 {%- block extrahead %}
 <style>
   .custom-banner {
-      background-color: #ffcc00;
+      background-color: #fff9c4;
       color: #000;
-      text-align: center;
-      font-weight: bold;
+      text-align: left;
+      font-weight: normal;
       font-size: 1.1em;
       line-height: 1.4em;
       margin: 0;
@@ -67,9 +74,9 @@
   }
 
   .custom-banner a {
-      font-size: 1.3em;
+      font-size: 1.1em;
       font-weight: bold;
-      color: #003366;
+      color: #5159ff;
       text-decoration: underline;
   }
 </style>
