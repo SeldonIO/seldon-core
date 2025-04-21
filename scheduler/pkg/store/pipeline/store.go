@@ -351,6 +351,7 @@ func (ps *PipelineStore) terminateOldUnterminatedPipelinesIfNeeded(pipeline *Pip
 					PipelineName:    pv.Name,
 					PipelineVersion: pv.Version,
 					UID:             pv.UID,
+					KeepTopics:      true,
 				})
 			}
 		}

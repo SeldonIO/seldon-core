@@ -321,14 +321,14 @@ func (c *ChainerServer) createPipelineCreationMessage(pv *pipeline.PipelineVersi
 	}
 }
 
-func (c *ChainerServer) createPipelineDeletionMessage(pv *pipeline.PipelineVersion) *chainer.PipelineUpdateMessage {
+func (c *ChainerServer) createPipelineDeletionMessage(pv *pipeline.PipelineVersion, keepTopics bool) *chainer.PipelineUpdateMessage {
 	message := chainer.PipelineUpdateMessage{
 		Pipeline: pv.Name,
 		Version:  pv.Version,
 		Uid:      pv.UID,
 		Op:       chainer.PipelineUpdateMessage_Delete,
 	}
-	if pv.DataflowSepec != nil && pv.DataflowSepec.CleanTopicsOnDelete {
+	if !keepTopics && pv.DataflowSepec != nil && pv.DataflowSepec.CleanTopicsOnDelete {
 		// Both topics are always created. The input topic is created
 		// when creating the topics for each step. The output topic
 		// is created when creating the error topic.
@@ -401,7 +401,7 @@ func (c *ChainerServer) rebalance() {
 				if contains(servers, server) {
 					// we do not need to set pipeline state to creating if it is already in terminating state, and we need to delete it
 					if pv.State.Status == pipeline.PipelineTerminating {
-						msg = c.createPipelineDeletionMessage(pv)
+						msg = c.createPipelineDeletionMessage(pv, false)
 					} else {
 						msg = c.createPipelineCreationMessage(pv)
 						pipelineState := pipeline.PipelineCreating
@@ -413,7 +413,7 @@ func (c *ChainerServer) rebalance() {
 						logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.String())
 					}
 				} else {
-					msg = c.createPipelineDeletionMessage(pv)
+					msg = c.createPipelineDeletionMessage(pv, true)
 					if err := subscription.stream.Send(msg); err != nil {
 						logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.String())
 					}
@@ -466,7 +466,6 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 
 			return
 		}
-
 		switch pv.State.Status {
 		case pipeline.PipelineCreate:
 			err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineCreating, "", sourceChainerServer)
@@ -482,7 +481,7 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to set pipeline state to terminating for %s", pv.String())
 			}
-			msg := c.createPipelineDeletionMessage(pv) // note pv is a copy and does not include the new change to terminating state
+			msg := c.createPipelineDeletionMessage(pv, event.KeepTopics) // note pv is a copy and does not include the new change to terminating state
 			c.sendPipelineMsgToSelectedServers(msg, pv)
 		}
 	}()
