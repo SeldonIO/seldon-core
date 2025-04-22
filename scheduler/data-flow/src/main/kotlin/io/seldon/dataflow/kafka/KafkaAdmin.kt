@@ -107,7 +107,7 @@ class KafkaAdmin(
     suspend fun deleteTopics(steps: List<PipelineStepUpdate>): Exception? {
         try {
             steps
-                .flatMap { step -> step.sourcesList + step.sink + step.triggersList }
+                .flatMap { step -> step.sourcesList + step.sink }
                 .map { topicName -> parseSource(topicName).first }
                 .toSet()
                 .also {
