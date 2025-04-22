@@ -17,6 +17,7 @@ message Model {
   ModelSpec modelSpec = 2;
   DeploymentSpec deploymentSpec = 3;
   StreamSpec streamSpec = 4;
+  DataflowSpec dataflowSpec = 5;
 }
 
 message MetaData {
@@ -31,6 +32,10 @@ message DeploymentSpec {
   uint32 minReplicas = 2;
   uint32 maxReplicas = 3;
   bool logPayloads = 4;
+}
+
+message DataflowSpec {
+  bool cleanTopicsOnDelete = 1; // clean up the kafka topic on model delete
 }
 
 /* ModelDetails

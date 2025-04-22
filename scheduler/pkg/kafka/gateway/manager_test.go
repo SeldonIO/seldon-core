@@ -77,7 +77,7 @@ func TestAddRemoveModel(t *testing.T) {
 			g.Expect(len(cm.consumers)).To(Equal(test.runningConsumers))
 
 			for _, model := range test.models {
-				err := cm.RemoveModel(model)
+				err := cm.RemoveModel(model, false)
 				g.Expect(err).To(BeNil())
 			}
 			g.Expect(cm.GetNumModels()).To(Equal(0))
