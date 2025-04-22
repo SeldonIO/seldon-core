@@ -63,6 +63,9 @@ spec:
           spec:
             description: PipelineSpec defines the desired state of Pipeline
             properties:
+              allowCycles:
+                description: Allow cyclic pipeline
+                type: boolean
               input:
                 description: External inputs to this pipeline, optional
                 properties:

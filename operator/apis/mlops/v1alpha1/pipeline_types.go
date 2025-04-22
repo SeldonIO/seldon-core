@@ -56,6 +56,9 @@ type PipelineSpec struct {
 
 	// Synchronous output from this pipeline, optional
 	Output *PipelineOutput `json:"output,omitempty"`
+
+	// Allow cyclic pipeline
+	AllowCycles bool `json:"allowCycles,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=inner;outer;any
@@ -246,6 +249,7 @@ func (p Pipeline) AsSchedulerPipeline() *scheduler.Pipeline {
 		Steps:          steps,
 		Output:         output,
 		KubernetesMeta: &scheduler.KubernetesMeta{Namespace: p.Namespace, Generation: p.Generation},
+		AllowCycles:    p.Spec.AllowCycles,
 	}
 }
 
