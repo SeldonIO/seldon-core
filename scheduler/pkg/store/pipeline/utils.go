@@ -215,6 +215,7 @@ func CreatePipelineVersionFromProto(pipelineProto *scheduler.Pipeline) (*Pipelin
 		State:          &PipelineState{},
 		Output:         output,
 		KubernetesMeta: kubernetesMeta,
+		AllowCycles:    pipelineProto.AllowCycles,
 	}
 	// Ensure we have a UID
 	if pv.UID == "" {

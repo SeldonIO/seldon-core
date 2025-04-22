@@ -54,6 +54,7 @@ type PipelineVersion struct {
 	State          *PipelineState
 	Output         *PipelineOutput
 	KubernetesMeta *KubernetesMeta
+	AllowCycles    bool
 }
 
 func (pv *PipelineVersion) String() string {

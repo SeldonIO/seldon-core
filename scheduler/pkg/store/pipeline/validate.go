@@ -133,6 +133,10 @@ func checkForCyclesFromStep(step *PipelineStep, pv *PipelineVersion, visited map
 }
 
 func checkForCycles(pv *PipelineVersion) error {
+	if pv.AllowCycles {
+		return nil
+	}
+
 	checked := make(map[string]bool)
 	for k, v := range pv.Steps {
 		if _, ok := checked[k]; ok {
