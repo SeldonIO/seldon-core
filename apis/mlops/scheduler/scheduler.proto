@@ -322,6 +322,7 @@ message Pipeline {
   optional PipelineOutput output = 5;
   optional KubernetesMeta kubernetesMeta = 6;
   optional PipelineInput input = 7;
+  bool allowCycles = 8; // Allow cycles in the pipeline
 }
 
 message PipelineStep {
