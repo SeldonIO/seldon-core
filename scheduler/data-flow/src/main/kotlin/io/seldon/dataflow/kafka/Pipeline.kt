@@ -194,6 +194,7 @@ class Pipeline(
                             it.sink,
                             it.inputJoinTy,
                             it.triggersJoinTy,
+                            it.joinWindowMs.toLong(),
                             it.batch,
                             kafkaDomainParams,
                         )

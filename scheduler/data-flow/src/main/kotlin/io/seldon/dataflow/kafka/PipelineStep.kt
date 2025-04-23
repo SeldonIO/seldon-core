@@ -37,10 +37,19 @@ fun stepFor(
     sink: PipelineTopic,
     joinType: PipelineJoinType,
     triggerJoinType: PipelineJoinType,
+    joinWindowMillis: Long,
     batchProperties: Batch,
     kafkaDomainParams: KafkaDomainParams,
 ): PipelineStep? {
     val triggerTopicsToTensors = parseTriggers(triggerSources)
+    val effectiveKafkaDomainParams =
+        if (joinWindowMillis != 0L) {
+            kafkaDomainParams.copy(
+                joinWindowMillis = joinWindowMillis,
+            )
+        } else {
+            kafkaDomainParams
+        }
     return when (val result = parseSources(sources)) {
         is SourceProjection.Empty -> null
         is SourceProjection.Single ->
@@ -53,7 +62,7 @@ fun stepFor(
                 pipelineVersion,
                 tensorMap,
                 batchProperties,
-                kafkaDomainParams,
+                effectiveKafkaDomainParams,
                 triggerTopicsToTensors.keys,
                 triggerJoinType,
                 triggerTopicsToTensors,
@@ -68,7 +77,7 @@ fun stepFor(
                 pipelineVersion,
                 tensorMap,
                 batchProperties,
-                kafkaDomainParams,
+                effectiveKafkaDomainParams,
                 triggerTopicsToTensors.keys,
                 triggerJoinType,
                 triggerTopicsToTensors,
@@ -82,7 +91,7 @@ fun stepFor(
                 pipelineName,
                 pipelineVersion,
                 tensorMap,
-                kafkaDomainParams,
+                effectiveKafkaDomainParams,
                 joinType,
                 triggerTopicsToTensors.keys,
                 triggerJoinType,
@@ -97,7 +106,7 @@ fun stepFor(
                 pipelineName,
                 pipelineVersion,
                 tensorMap,
-                kafkaDomainParams,
+                effectiveKafkaDomainParams,
                 joinType,
                 triggerTopicsToTensors.keys,
                 triggerJoinType,
