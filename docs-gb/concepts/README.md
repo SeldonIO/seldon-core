@@ -36,7 +36,7 @@ Some of the features of Open Inference Protocol includes:
 - **Transport Agnostic**: Servers can implement HTTP/REST or  gRPC protocols.
 - **Runtime Awareness**: Use the `protocolVersion` field in your runtime YAML or consult the supported runtimes table to verify compatibility.
 
-By adopting OIP, Seldon Core 2 promotes a  ****consistent experience across a diverse set of model deployments.
+By adopting OIP, Seldon Core 2 promotes a  **consistent** experience across a diverse set of model deployments.
 
 ## Components in Seldon Core 2
 Components are the building blocks of an inference graph, processing data at various stages of the ML inference pipeline. They provide reusable, standardized interfaces, making it easier to maintain and update workflows without disrupting the entire system. Components include ML models, data processors, routers, and supplementary services.
