@@ -217,82 +217,94 @@ func (c *ChainerServer) createTriggerSources(inputs []string, pipelineName strin
 	return sources
 }
 
-func (c *ChainerServer) createPipelineMessage(pv *pipeline.PipelineVersion) *chainer.PipelineUpdateMessage {
+func (c *ChainerServer) createInputStepUpdate(pv *pipeline.PipelineVersion) *chainer.PipelineStepUpdate {
+	stepUpdate := chainer.PipelineStepUpdate{
+		Sources:   c.createPipelineTopicSources(pv.Input.ExternalInputs),
+		Sink:      &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetPipelineTopicInputs(pv.Name), Tensor: nil},
+		Triggers:  c.createPipelineTopicSources(pv.Input.ExternalTriggers),
+		TensorMap: c.topicNamer.GetFullyQualifiedPipelineTensorMap(pv.Input.TensorMap),
+	}
+	switch pv.Input.InputsJoinType {
+	case pipeline.JoinInner:
+		stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Inner
+	case pipeline.JoinOuter:
+		stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Outer
+	case pipeline.JoinAny:
+		stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Any
+	}
+	switch pv.Input.TriggersJoinType {
+	case pipeline.JoinInner:
+		stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Inner
+	case pipeline.JoinOuter:
+		stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Outer
+	case pipeline.JoinAny:
+		stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Any
+	}
+	c.logger.Infof("Adding input sources %v with tensorMap %v to %s", stepUpdate.Sources, stepUpdate.TensorMap, stepUpdate.Sink)
+	return &stepUpdate
+}
+
+func (c *ChainerServer) createOutputStepUpdate(pv *pipeline.PipelineVersion) *chainer.PipelineStepUpdate {
+	stepUpdate := chainer.PipelineStepUpdate{
+		Sources:   c.createTopicSources(pv.Output.Steps, pv.Name),
+		Sink:      &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetPipelineTopicOutputs(pv.Name), Tensor: nil},
+		TensorMap: c.topicNamer.GetFullyQualifiedTensorMap(pv.Name, pv.Output.TensorMap),
+	}
+	switch pv.Output.StepsJoinType {
+	case pipeline.JoinInner:
+		stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Inner
+	case pipeline.JoinOuter:
+		stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Outer
+	case pipeline.JoinAny:
+		stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Any
+	}
+	c.logger.Infof("Adding sources %v to %s", stepUpdate.Sources, stepUpdate.Sink)
+	return &stepUpdate
+}
+
+func (c *ChainerServer) createStepUpdate(pv *pipeline.PipelineVersion, step *pipeline.PipelineStep) *chainer.PipelineStepUpdate {
+	stepUpdate := chainer.PipelineStepUpdate{
+		Sources:   c.createTopicSources(step.Inputs, pv.Name),
+		Triggers:  c.createTriggerSources(step.Triggers, pv.Name),
+		Sink:      &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetModelTopicInputs(step.Name), Tensor: nil},
+		TensorMap: c.topicNamer.GetFullyQualifiedTensorMap(pv.Name, step.TensorMap),
+	}
+	switch step.InputsJoinType {
+	case pipeline.JoinInner:
+		stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Inner
+	case pipeline.JoinOuter:
+		stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Outer
+	case pipeline.JoinAny:
+		stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Any
+	}
+	switch step.TriggersJoinType {
+	case pipeline.JoinInner:
+		stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Inner
+	case pipeline.JoinOuter:
+		stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Outer
+	case pipeline.JoinAny:
+		stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Any
+	}
+	if step.Batch != nil {
+		stepUpdate.Batch = &chainer.Batch{
+			Size:     step.Batch.Size,
+			WindowMs: step.Batch.WindowMs,
+		}
+	}
+	c.logger.Infof("Adding sources %v to %s", stepUpdate.Sources, stepUpdate.Sink)
+	return &stepUpdate
+}
+
+func (c *ChainerServer) createPipelineCreationMessage(pv *pipeline.PipelineVersion) *chainer.PipelineUpdateMessage {
 	var stepUpdates []*chainer.PipelineStepUpdate
 	for _, step := range pv.Steps {
-		stepUpdate := chainer.PipelineStepUpdate{
-			Sources:   c.createTopicSources(step.Inputs, pv.Name),
-			Triggers:  c.createTriggerSources(step.Triggers, pv.Name),
-			Sink:      &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetModelTopicInputs(step.Name), Tensor: nil},
-			TensorMap: c.topicNamer.GetFullyQualifiedTensorMap(pv.Name, step.TensorMap),
-		}
-		switch step.InputsJoinType {
-		case pipeline.JoinInner:
-			stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Inner
-		case pipeline.JoinOuter:
-			stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Outer
-		case pipeline.JoinAny:
-			stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Any
-		}
-		switch step.TriggersJoinType {
-		case pipeline.JoinInner:
-			stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Inner
-		case pipeline.JoinOuter:
-			stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Outer
-		case pipeline.JoinAny:
-			stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Any
-		}
-		if step.Batch != nil {
-			stepUpdate.Batch = &chainer.Batch{
-				Size:     step.Batch.Size,
-				WindowMs: step.Batch.WindowMs,
-			}
-		}
-		c.logger.Infof("Adding sources %v to %s", stepUpdate.Sources, stepUpdate.Sink)
-		stepUpdates = append(stepUpdates, &stepUpdate)
+		stepUpdates = append(stepUpdates, c.createStepUpdate(pv, step))
 	}
 	if pv.Input != nil {
-		stepUpdate := chainer.PipelineStepUpdate{
-			Sources:   c.createPipelineTopicSources(pv.Input.ExternalInputs),
-			Sink:      &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetPipelineTopicInputs(pv.Name), Tensor: nil},
-			Triggers:  c.createPipelineTopicSources(pv.Input.ExternalTriggers),
-			TensorMap: c.topicNamer.GetFullyQualifiedPipelineTensorMap(pv.Input.TensorMap),
-		}
-		switch pv.Input.InputsJoinType {
-		case pipeline.JoinInner:
-			stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Inner
-		case pipeline.JoinOuter:
-			stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Outer
-		case pipeline.JoinAny:
-			stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Any
-		}
-		switch pv.Input.TriggersJoinType {
-		case pipeline.JoinInner:
-			stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Inner
-		case pipeline.JoinOuter:
-			stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Outer
-		case pipeline.JoinAny:
-			stepUpdate.TriggersJoinTy = chainer.PipelineStepUpdate_Any
-		}
-		c.logger.Infof("Adding input sources %v with tensorMap %v to %s", stepUpdate.Sources, stepUpdate.TensorMap, stepUpdate.Sink)
-		stepUpdates = append(stepUpdates, &stepUpdate)
+		stepUpdates = append(stepUpdates, c.createInputStepUpdate(pv))
 	}
 	if pv.Output != nil {
-		stepUpdate := chainer.PipelineStepUpdate{
-			Sources:   c.createTopicSources(pv.Output.Steps, pv.Name),
-			Sink:      &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetPipelineTopicOutputs(pv.Name), Tensor: nil},
-			TensorMap: c.topicNamer.GetFullyQualifiedTensorMap(pv.Name, pv.Output.TensorMap),
-		}
-		switch pv.Output.StepsJoinType {
-		case pipeline.JoinInner:
-			stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Inner
-		case pipeline.JoinOuter:
-			stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Outer
-		case pipeline.JoinAny:
-			stepUpdate.InputJoinTy = chainer.PipelineStepUpdate_Any
-		}
-		c.logger.Infof("Adding sources %v to %s", stepUpdate.Sources, stepUpdate.Sink)
-		stepUpdates = append(stepUpdates, &stepUpdate)
+		stepUpdates = append(stepUpdates, c.createOutputStepUpdate(pv))
 	}
 	//Append an error step to send any errors to pipeline output
 	stepUpdates = append(stepUpdates, &chainer.PipelineStepUpdate{
@@ -300,18 +312,34 @@ func (c *ChainerServer) createPipelineMessage(pv *pipeline.PipelineVersion) *cha
 		Sink:        &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetPipelineTopicOutputs(pv.Name), Tensor: nil},
 		InputJoinTy: chainer.PipelineStepUpdate_Inner,
 	})
-
-	op := chainer.PipelineUpdateMessage_Create
-	if pv.State.Status == pipeline.PipelineTerminate {
-		op = chainer.PipelineUpdateMessage_Delete
-	}
 	return &chainer.PipelineUpdateMessage{
 		Pipeline: pv.Name,
 		Version:  pv.Version,
 		Uid:      pv.UID,
 		Updates:  stepUpdates,
-		Op:       op,
+		Op:       chainer.PipelineUpdateMessage_Create,
 	}
+}
+
+func (c *ChainerServer) createPipelineDeletionMessage(pv *pipeline.PipelineVersion, keepTopics bool) *chainer.PipelineUpdateMessage {
+	message := chainer.PipelineUpdateMessage{
+		Pipeline: pv.Name,
+		Version:  pv.Version,
+		Uid:      pv.UID,
+		Op:       chainer.PipelineUpdateMessage_Delete,
+	}
+	if !keepTopics && pv.DataflowSepec != nil && pv.DataflowSepec.CleanTopicsOnDelete {
+		// Both topics are always created. The input topic is created
+		// when creating the topics for each step. The output topic
+		// is created when creating the error topic.
+		message.Updates = []*chainer.PipelineStepUpdate{
+			{
+				Sources: []*chainer.PipelineTopic{{PipelineName: pv.Name, TopicName: c.topicNamer.GetPipelineTopicInputs(pv.Name), Tensor: nil}},
+				Sink:    &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetPipelineTopicOutputs(pv.Name), Tensor: nil},
+			},
+		}
+	}
+	return &message
 }
 
 func (c *ChainerServer) sendPipelineMsgToSelectedServers(msg *chainer.PipelineUpdateMessage, pv *pipeline.PipelineVersion) {
@@ -367,15 +395,15 @@ func (c *ChainerServer) rebalance() {
 				logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
 			}
 		} else {
-			msg := c.createPipelineMessage(pv)
+			var msg *chainer.PipelineUpdateMessage
 			servers := c.loadBalancer.GetServersForKey(pv.UID)
 			for server, subscription := range c.streams {
 				if contains(servers, server) {
-					msg.Op = chainer.PipelineUpdateMessage_Create
 					// we do not need to set pipeline state to creating if it is already in terminating state, and we need to delete it
 					if pv.State.Status == pipeline.PipelineTerminating {
-						msg.Op = chainer.PipelineUpdateMessage_Delete
+						msg = c.createPipelineDeletionMessage(pv, false)
 					} else {
+						msg = c.createPipelineCreationMessage(pv)
 						pipelineState := pipeline.PipelineCreating
 						if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipelineState, "Rebalance", sourceChainerServer); err != nil {
 							logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
@@ -385,7 +413,7 @@ func (c *ChainerServer) rebalance() {
 						logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.String())
 					}
 				} else {
-					msg.Op = chainer.PipelineUpdateMessage_Delete
+					msg = c.createPipelineDeletionMessage(pv, true)
 					if err := subscription.stream.Send(msg); err != nil {
 						logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.String())
 					}
@@ -438,7 +466,6 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 
 			return
 		}
-
 		switch pv.State.Status {
 		case pipeline.PipelineCreate:
 			err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineCreating, "", sourceChainerServer)
@@ -446,7 +473,7 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 				logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
 			}
 
-			msg := c.createPipelineMessage(pv)
+			msg := c.createPipelineCreationMessage(pv)
 			c.sendPipelineMsgToSelectedServers(msg, pv)
 
 		case pipeline.PipelineTerminate:
@@ -454,7 +481,7 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to set pipeline state to terminating for %s", pv.String())
 			}
-			msg := c.createPipelineMessage(pv) // note pv is a copy and does not include the new change to terminating state
+			msg := c.createPipelineDeletionMessage(pv, event.KeepTopics) // note pv is a copy and does not include the new change to terminating state
 			c.sendPipelineMsgToSelectedServers(msg, pv)
 		}
 	}()

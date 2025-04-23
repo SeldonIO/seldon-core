@@ -472,6 +472,16 @@ spec:
               allowCycles:
                 description: Allow cyclic pipeline
                 type: boolean
+              dataflow:
+                description: Dataflow specs
+                properties:
+                  cleanTopicsOnDelete:
+                    description: |-
+                      Flag to indicate whether the kafka input/output topics
+                      should be cleaned up when the model is deleted
+                      Default false
+                    type: boolean
+                type: object
               input:
                 description: External inputs to this pipeline, optional
                 properties:

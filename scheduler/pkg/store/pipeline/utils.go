@@ -205,6 +205,12 @@ func CreatePipelineVersionFromProto(pipelineProto *scheduler.Pipeline) (*Pipelin
 			Generation: pipelineProto.KubernetesMeta.Generation,
 		}
 	}
+	var dataflowSpec *DataflowSpec
+	if pipelineProto.DataflowSpec != nil {
+		dataflowSpec = &DataflowSpec{
+			CleanTopicsOnDelete: pipelineProto.DataflowSpec.CleanTopicsOnDelete,
+		}
+	}
 
 	pv := &PipelineVersion{
 		Name:           pipelineProto.Name,
@@ -214,6 +220,7 @@ func CreatePipelineVersionFromProto(pipelineProto *scheduler.Pipeline) (*Pipelin
 		Steps:          steps,
 		State:          &PipelineState{},
 		Output:         output,
+		DataflowSepec:  dataflowSpec,
 		KubernetesMeta: kubernetesMeta,
 		AllowCycles:    pipelineProto.AllowCycles,
 	}
