@@ -61,9 +61,9 @@ In a model serving platform like Seldon Core 2, a **pipeline** refers to an or
 This use of "pipeline" is distinct from how the term is used in MLOps for **CI/CD pipelines**, which automate workflows for building, testing, and deploying models. In contrast, Core 2 pipelines operate at runtime and focus on the **live composition and orchestration** of inference systems in production.
 
 ## Servers
-In Core 2, servers are responsible for hosting and serving machine learning models, handling inference requests, and ensuring scalability, efficiency, and observability in production. Core 2 supports multiple inference servers, including MLServer, and NVIDIA Triton, enabling flexible and optimized model deployments.
+In Core 2, servers are responsible for hosting and serving machine learning models, handling inference requests, and ensuring scalability, efficiency, and observability in production. Core 2 supports multiple inference servers, including MLServer, and NVIDIA Triton Inference Server, enabling flexible and optimized model deployments.
 
-**MLServer** : A lightweight, extensible inference server designed to work with multiple ML frameworks, including *scikit-learn, XGBoost, TensorFlow, and PyTorch*. It supports *custom Python models* and integrates well with *MLOps workflows*. It is built for *General-purpose model serving, custom model wrappers, multi-framework support.
+**MLServer**: A lightweight, extensible inference server designed to work with multiple ML frameworks, including *scikit-learn, XGBoost, TensorFlow, and PyTorch*. It supports *custom Python models* and integrates well with *MLOps workflows*. It is built for *General-purpose model serving, custom model wrappers, multi-framework support.
 
 ## Experiments
 
