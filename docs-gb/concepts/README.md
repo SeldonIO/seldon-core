@@ -77,6 +77,6 @@ In Seldon Core 2, experiments enable controlled A/B testing, model comparisons, 
 Some of the advantages of using Experiments:
 - A/B Testing & Model comparison: Compare different models under real-world conditions without full deployment.
 - Risk-Free model validation: Test a new model or pipeline in parallel without affecting live predictions.
-- Performance & Drift monitoring: Assess latency, accuracy, and reliability before a full rollout.
+- Performance monitoring: Assess latency, accuracy, and reliability before a full rollout.
 - Continuous improvement: Make data-driven deployment decisions based on real-time model performance.
 
