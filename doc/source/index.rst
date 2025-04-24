@@ -1,5 +1,5 @@
 ===========
-Seldon Core
+Seldon Core 1
 ===========
 .. Note::
    **Seldon Core V2 Documentation has moved!**  
@@ -23,7 +23,7 @@ Seldon Core
    :alt: Seldon logo
    :align: center
 
-A platform to deploy your machine learning models on Kubernetes at massive scale.
+A source available framework to deploy your machine learning models on Kubernetes at scale.
 
 Overview
 --------
