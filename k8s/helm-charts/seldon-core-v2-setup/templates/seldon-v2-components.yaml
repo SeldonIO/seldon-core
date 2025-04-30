@@ -183,7 +183,7 @@ rules:
   - list
   - watch
 ---
-{{- if .Values.controller.clusterwide -}}
+{{- if or .Values.controller.clusterwide .Values.controller.watchNamespaces -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -351,7 +351,7 @@ subjects:
   name: seldon-v2-controller-manager
   namespace: '{{ .Release.Namespace }}'
 ---
-{{- if .Values.controller.clusterwide -}}
+{{- if or .Values.controller.clusterwide .Values.controller.watchNamespaces -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -408,7 +408,11 @@ spec:
       - args:
         - --health-probe-bind-address=:8081
         - --leader-elect
-        - --namespace=$(POD_NAMESPACE)
+        {{- if .Values.controller.watchNamespaces }}
+        - --watch-namespaces={{ join "," .Values.controller.watchNamespaces }}
+        {{- else }}
+         - --namespace=$(POD_NAMESPACE)
+        {{- end }}
         - --clusterwide=$(CLUSTERWIDE)
         - --log-level=$(LOG_LEVEL)
         command:
