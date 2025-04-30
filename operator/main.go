@@ -58,34 +58,14 @@ func getLogLevel(l string) zap2.AtomicLevel {
 	return level
 }
 
-func validateNamespaceArgs(namespace, watchNamespaces string, clusterwide bool) {
-	if !clusterwide {
-		if namespace == "" && watchNamespaces == "" {
-			setupLog.Error(nil, "namespace or watch-namespaces must be set when clusterwide is false")
-			os.Exit(1)
-		}
-
-		if namespace != "" && watchNamespaces != "" {
-			setupLog.Error(nil, "namespace and watch-namespaces cannot be set at the same time when clusterwide is false")
-			os.Exit(1)
-		}
-
-		if namespace != "" {
-			setupLog.Info("Using namespace", "namespace", namespace)
-		} else {
-			setupLog.Info("Using watch-namespaces", "watch-namespaces", watchNamespaces)
-		}
-	} else {
-		setupLog.Info("Clusterwide mode enabled, watching all namespaces")
-	}
-}
-
 func getWatchNamespaceConfig(namespace, watchNamespaces string, clusterwide bool) map[string]cache.Config {
 	if clusterwide {
+		setupLog.Info("Clusterwide mode enabled, watching all namespaces")
 		return map[string]cache.Config{} // unset namespace so manager watches all namespaces
 	}
 
 	if watchNamespaces != "" {
+		setupLog.Info("Using watch-namespaces", "watch-namespaces", watchNamespaces)
 		namespaces := strings.Split(watchNamespaces, ",")
 		watchNamespaceConfig := make(map[string]cache.Config)
 		for _, ns := range namespaces {
@@ -94,6 +74,7 @@ func getWatchNamespaceConfig(namespace, watchNamespaces string, clusterwide bool
 		return watchNamespaceConfig
 	}
 
+	setupLog.Info("Using namespace", "namespace", namespace)
 	return map[string]cache.Config{namespace: {}}
 }
 
@@ -134,10 +115,7 @@ func main() {
 
 	setupLog.Info("Setting log level", "level", logLevel)
 
-	// Validate namespace args
-	validateNamespaceArgs(namespace, watchNamespaces, clusterwide)
 	watchNamespaceConfig := getWatchNamespaceConfig(namespace, watchNamespaces, clusterwide)
-
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		Metrics:                metricsserver.Options{BindAddress: metricsAddr},

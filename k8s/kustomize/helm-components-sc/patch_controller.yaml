@@ -35,3 +35,5 @@ spec:
             value: '{{ .Values.security.controlplane.ssl.client.serverCaPath }}'
           - name: LOG_LEVEL
             value: '{{ hasKey .Values.controller "logLevel" | ternary .Values.controller.logLevel .Values.logging.logLevel }}'
+          - name: WATCH_NAMESPACES
+            value: '{{ join "," .Values.controller.watchNamespaces }}'

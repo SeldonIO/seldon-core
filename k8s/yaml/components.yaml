@@ -265,6 +265,7 @@ spec:
       - args:
         - --health-probe-bind-address=:8081
         - --leader-elect
+        - --watch-namespaces=$(WATCH_NAMESPACES)
         - --namespace=$(POD_NAMESPACE)
         - --clusterwide=$(CLUSTERWIDE)
         - --log-level=$(LOG_LEVEL)
@@ -289,6 +290,8 @@ spec:
           value: '/tmp/certs/cps/ca.crt'
         - name: LOG_LEVEL
           value: 'info'
+        - name: WATCH_NAMESPACES
+          value: ''
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
