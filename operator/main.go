@@ -59,23 +59,22 @@ func getLogLevel(l string) zap2.AtomicLevel {
 }
 
 func getWatchNamespaceConfig(namespace, watchNamespaces string, clusterwide bool) map[string]cache.Config {
-	if clusterwide {
+	if !clusterwide {
+		setupLog.Info("Watching namespace", "namespace", namespace)
+		return map[string]cache.Config{namespace: {}}
+	}
+
+	if watchNamespaces == "" {
 		setupLog.Info("Clusterwide mode enabled, watching all namespaces")
-		return map[string]cache.Config{} // unset namespace so manager watches all namespaces
+		return map[string]cache.Config{}
 	}
 
-	if watchNamespaces != "" {
-		setupLog.Info("Using watch-namespaces", "watch-namespaces", watchNamespaces)
-		namespaces := strings.Split(watchNamespaces, ",")
-		watchNamespaceConfig := make(map[string]cache.Config)
-		for _, ns := range namespaces {
-			watchNamespaceConfig[ns] = cache.Config{}
-		}
-		return watchNamespaceConfig
+	setupLog.Info("Clusterwide mode enabled, watching namespaces", "namespaces", watchNamespaces)
+	watchNamespaceConfig := make(map[string]cache.Config)
+	for _, ns := range strings.Split(watchNamespaces, ",") {
+		watchNamespaceConfig[ns] = cache.Config{}
 	}
-
-	setupLog.Info("Using namespace", "namespace", namespace)
-	return map[string]cache.Config{namespace: {}}
+	return watchNamespaceConfig
 }
 
 func main() {
