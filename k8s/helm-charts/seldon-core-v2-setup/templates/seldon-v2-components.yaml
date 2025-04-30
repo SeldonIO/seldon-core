@@ -411,7 +411,7 @@ spec:
         {{- if .Values.controller.watchNamespaces }}
         - --watch-namespaces={{ join "," .Values.controller.watchNamespaces }}
         {{- else }}
-         - --namespace=$(POD_NAMESPACE)
+        - --namespace=$(POD_NAMESPACE)
         {{- end }}
         - --clusterwide=$(CLUSTERWIDE)
         - --log-level=$(LOG_LEVEL)
