@@ -58,12 +58,52 @@ func getLogLevel(l string) zap2.AtomicLevel {
 	return level
 }
 
+func validateNamespaceArgs(namespace, watchNamespaces string, clusterwide bool) {
+	if !clusterwide {
+		if namespace == "" && watchNamespaces == "" {
+			setupLog.Error(nil, "namespace or watch-namespaces must be set when clusterwide is false")
+			os.Exit(1)
+		}
+
+		if namespace != "" && watchNamespaces != "" {
+			setupLog.Error(nil, "namespace and watch-namespaces cannot be set at the same time when clusterwide is false")
+			os.Exit(1)
+		}
+
+		if namespace != "" {
+			setupLog.Info("Using namespace", "namespace", namespace)
+		} else {
+			setupLog.Info("Using watch-namespaces", "watch-namespaces", watchNamespaces)
+		}
+	} else {
+		setupLog.Info("Clusterwide mode enabled, watching all namespaces")
+	}
+}
+
+func getWatchNamespaceConfig(namespace, watchNamespaces string, clusterwide bool) map[string]cache.Config {
+	if clusterwide {
+		return map[string]cache.Config{} // unset namespace so manager watches all namespaces
+	}
+
+	if watchNamespaces != "" {
+		namespaces := strings.Split(watchNamespaces, ",")
+		watchNamespaceConfig := make(map[string]cache.Config)
+		for _, ns := range namespaces {
+			watchNamespaceConfig[ns] = cache.Config{}
+		}
+		return watchNamespaceConfig
+	}
+
+	return map[string]cache.Config{namespace: {}}
+}
+
 func main() {
 	var (
 		metricsAddr          string
 		enableLeaderElection bool
 		probeAddr            string
 		namespace            string
+		watchNamespaces      string
 		clusterwide          bool
 		logLevel             string
 	)
@@ -71,6 +111,10 @@ func main() {
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":4000", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":4001", "The address the probe endpoint binds to.")
 	flag.StringVar(&namespace, "namespace", "", "The namespace to restrict the operator.")
+	flag.StringVar(&watchNamespaces, "watch-namespaces", "",
+		"Comma separated list of namespaces to watch. "+
+			"If not set, the operator will watch only the namespace of the operator if `clusterwide` is false."+
+			"Otherwise, if `clusterwide` is true, the operator will watch all namespaces.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -85,17 +129,14 @@ func main() {
 	flag.Parse()
 
 	opts.Level = getLogLevel(logLevel)
-
 	logger := zap.New(zap.UseFlagOptions(&opts))
 	ctrl.SetLogger(logger)
 
-	watchNamespaceConfig := map[string]cache.Config{namespace: {}}
-	if clusterwide {
-		watchNamespaceConfig = map[string]cache.Config{} // unset namespace so manager watches all namespaces
-	}
-	setupLog.Info("Starting manager", "clusterwide", clusterwide)
-
 	setupLog.Info("Setting log level", "level", logLevel)
+
+	// Validate namespace args
+	validateNamespaceArgs(namespace, watchNamespaces, clusterwide)
+	watchNamespaceConfig := getWatchNamespaceConfig(namespace, watchNamespaces, clusterwide)
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
