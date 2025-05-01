@@ -55,6 +55,7 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 	sed -i 's/ClusterRole/Role/' config/rbac/namespace_role.yaml
 	cp config/rbac/role_binding.yaml config/rbac/namespace_role_binding.yaml
 	sed -i 's/ClusterRole/Role/' config/rbac/namespace_role_binding.yaml
+	sed -i 's/-{{[[:space:]]*\.Release\.Namespace[[:space:]]*}}//' config/rbac/namespace_role_binding.yaml
 
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
