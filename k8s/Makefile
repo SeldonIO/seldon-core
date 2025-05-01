@@ -22,7 +22,7 @@ create-helm-charts: kustomize
 	sed 's/labelz:/labels:\n\ \ \ /' ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml > ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml
 	sed -i 's/annotationz:/annotations:\n\ \ \ /' ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml
 	sed -i 's/HACK_REMOVE_ME//' ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml
-	sed -zi 's#\(apiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole.*\- get\n\-\-\-\)#{{- if or .Values.controller.clusterwide .Values.controller.watchNamespaces -}}\n\1\n{{- end }}#' ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
+	sed -zi 's#\(apiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole.*\- get\n\-\-\-\)#{{- if and (not .Values.controller.skipClusterRoleCreation) (or .Values.controller.clusterwide .Values.controller.watchNamespaces) -}}\n\1\n{{- end }}#' ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
 	sed -zi 's#\(apiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRoleBinding.*ServiceAccount\n  name: seldon-v2-controller-manager\n  namespace:[^-]\{27\}\n\-\-\-\)#{{- if or .Values.controller.clusterwide .Values.controller.watchNamespaces -}}\n\1\n{{- end }}#' ${HELM_COMPONENTS_BASE}/seldon-v2-components.yaml
 	mv ${HELM_SERVERS_BASE}/.seldon-v2-servers.yaml ${HELM_SERVERS_BASE}/seldon-v2-servers.yaml
 
