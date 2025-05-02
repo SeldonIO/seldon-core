@@ -175,7 +175,7 @@ dataflow:
 
 controller:
   clusterwide: false
-  skipClusterRoleCreation: false
+  skipOperatorClusterRoleCreation: false
   image:
     pullPolicy: IfNotPresent
     registry: docker.io
