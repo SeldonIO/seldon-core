@@ -106,8 +106,8 @@ func main() {
 	flag.StringVar(&namespace, "namespace", "", "The namespace to restrict the operator.")
 	flag.StringVar(&watchNamespaces, "watch-namespaces", "",
 		"Comma separated list of namespaces to watch. "+
-			"If not set, the operator will watch only the namespace of the operator if `clusterwide` is false."+
-			"Otherwise, if `clusterwide` is true, the operator will watch all namespaces.")
+			"Only used when --clusterwide is set to true. "+
+			"Defaults to all namespaces if not set and --clusterwide is true.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
