@@ -42,6 +42,7 @@ internal class PipelineStepTest {
                 defaultPipelineTopic,
                 ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner,
                 ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner,
+                0L,
                 ChainerOuterClass.Batch.getDefaultInstance(),
                 kafkaDomainParams,
             )

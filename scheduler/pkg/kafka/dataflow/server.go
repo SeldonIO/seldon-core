@@ -219,10 +219,11 @@ func (c *ChainerServer) createTriggerSources(inputs []string, pipelineName strin
 
 func (c *ChainerServer) createInputStepUpdate(pv *pipeline.PipelineVersion) *chainer.PipelineStepUpdate {
 	stepUpdate := chainer.PipelineStepUpdate{
-		Sources:   c.createPipelineTopicSources(pv.Input.ExternalInputs),
-		Sink:      &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetPipelineTopicInputs(pv.Name), Tensor: nil},
-		Triggers:  c.createPipelineTopicSources(pv.Input.ExternalTriggers),
-		TensorMap: c.topicNamer.GetFullyQualifiedPipelineTensorMap(pv.Input.TensorMap),
+		Sources:      c.createPipelineTopicSources(pv.Input.ExternalInputs),
+		Sink:         &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetPipelineTopicInputs(pv.Name), Tensor: nil},
+		Triggers:     c.createPipelineTopicSources(pv.Input.ExternalTriggers),
+		TensorMap:    c.topicNamer.GetFullyQualifiedPipelineTensorMap(pv.Input.TensorMap),
+		JoinWindowMs: pv.Input.JoinWindowMs,
 	}
 	switch pv.Input.InputsJoinType {
 	case pipeline.JoinInner:
@@ -246,9 +247,10 @@ func (c *ChainerServer) createInputStepUpdate(pv *pipeline.PipelineVersion) *cha
 
 func (c *ChainerServer) createOutputStepUpdate(pv *pipeline.PipelineVersion) *chainer.PipelineStepUpdate {
 	stepUpdate := chainer.PipelineStepUpdate{
-		Sources:   c.createTopicSources(pv.Output.Steps, pv.Name),
-		Sink:      &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetPipelineTopicOutputs(pv.Name), Tensor: nil},
-		TensorMap: c.topicNamer.GetFullyQualifiedTensorMap(pv.Name, pv.Output.TensorMap),
+		Sources:      c.createTopicSources(pv.Output.Steps, pv.Name),
+		Sink:         &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetPipelineTopicOutputs(pv.Name), Tensor: nil},
+		TensorMap:    c.topicNamer.GetFullyQualifiedTensorMap(pv.Name, pv.Output.TensorMap),
+		JoinWindowMs: &pv.Output.JoinWindowMs,
 	}
 	switch pv.Output.StepsJoinType {
 	case pipeline.JoinInner:
@@ -264,10 +266,11 @@ func (c *ChainerServer) createOutputStepUpdate(pv *pipeline.PipelineVersion) *ch
 
 func (c *ChainerServer) createStepUpdate(pv *pipeline.PipelineVersion, step *pipeline.PipelineStep) *chainer.PipelineStepUpdate {
 	stepUpdate := chainer.PipelineStepUpdate{
-		Sources:   c.createTopicSources(step.Inputs, pv.Name),
-		Triggers:  c.createTriggerSources(step.Triggers, pv.Name),
-		Sink:      &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetModelTopicInputs(step.Name), Tensor: nil},
-		TensorMap: c.topicNamer.GetFullyQualifiedTensorMap(pv.Name, step.TensorMap),
+		Sources:      c.createTopicSources(step.Inputs, pv.Name),
+		Triggers:     c.createTriggerSources(step.Triggers, pv.Name),
+		Sink:         &chainer.PipelineTopic{PipelineName: pv.Name, TopicName: c.topicNamer.GetModelTopicInputs(step.Name), Tensor: nil},
+		TensorMap:    c.topicNamer.GetFullyQualifiedTensorMap(pv.Name, step.TensorMap),
+		JoinWindowMs: step.JoinWindowMs,
 	}
 	switch step.InputsJoinType {
 	case pipeline.JoinInner:
