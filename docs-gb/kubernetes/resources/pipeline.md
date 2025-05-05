@@ -10,6 +10,25 @@ The `steps` list shows three models: `tfsimple1`, `tfsimple2` and `tfsimple3`. T
 
 The output of the Pipeline is the output from the `tfsimple3` model.
 
+## Support for Cyclic Pipelines
+
+Seldon Core 2 supports cyclic pipelines, allowing feedback loops within the inference graph. However, this feature should be used with caution, as improper use may result in infinite loops and unexpected behavior.
+
+The risk of infinite loops arises from the way Kafka Streams performs stream joins. If a feedback message enters the pipeline within the join window interval, and reaches a step that already holds messages from a previous iteration, Kafka Streams may perform a join between messages from different iterations. This can lead to unintended message propagation and potentially an unbounded flow of messages through your Kafka topics.
+
+For more details on how Kafka Streams handles joins and the implications for feedback loops, refer to this [Confluent blog post](https://www.confluent.io/blog/crossing-streams-joins-apache-kafka/).
+
+To enable a cyclic pipeline, set the `allowCycles` flag in your pipeline manifest:
+```yaml
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: pipeline
+spec:
+  allowCycles: true
+  ...
+```
+
 ## Detailed Specification
 
 The full GoLang specification for a Pipeline is shown below:
@@ -24,6 +43,19 @@ type PipelineSpec struct {
 
 	// Synchronous output from this pipeline, optional
 	Output *PipelineOutput `json:"output,omitempty"`
+
+	// Dataflow specs
+	Dataflow *DataflowSpec `json:"dataflow,omitempty"`
+
+	// Allow cyclic pipeline
+	AllowCycles bool `json:"allowCycles,omitempty"`
+}
+
+type DataflowSpec struct {
+	// Flag to indicate whether the kafka input/output topics
+	// should be cleaned up when the model is deleted
+	// Default false
+	CleanTopicsOnDelete bool `json:"cleanTopicsOnDelete,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=inner;outer;any

@@ -44,6 +44,7 @@ models, experiments, pipelines and explainers.
 
 * [Pipeline examples](pipeline-examples.md)
 * [Pipeline to pipeline examples](pipeline-to-pipeline.md)
+* [Cyclic Pipeline](pipeline-cyclic.md)
 
 ## Explainers
 
