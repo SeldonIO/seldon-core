@@ -1,6 +1,6 @@
 # Cyclic Pipeline
 
-This notebook demonstrates how to deploy a cyclic pipeline with Core 2. In this example we will create a simple counter which counts from a given number up to 10 and then it stops. If the number provided by the user is already greater than 10, the pipeline will stop.
+This notebook shows how to deploy a cyclic pipeline using Core 2. In this example, we build a simple counter that starts from a user-provided number and counts up to 10 before stopping. If the starting number is already greater than 10, the pipeline stops immediately.
 
 ## Models
 
@@ -37,7 +37,7 @@ class Counter(MLModel):
         )
 ```
 
-The model above returns two output tensors, one containing the incremented number, while the second one is an empty tensor with the name set to `contiune` or `stop`. The later tensor is used as a triggering tensor to route the data flow either through the feedback loop path or the output path. For more details on triggering tensors, see the [intro to pipelines page](../pipelines.md).
+The model above returns two output tensors, one containing the incremented number, while the second one is an empty tensor with the name set to `continue` or `stop`. The later tensor is used as a triggering tensor to route the data flow either through the feedback loop path or the output path. For more details on triggering tensors, see the [intro to pipelines page](../pipelines.md).
 
 The second model we define is an identity model:
 
@@ -85,7 +85,7 @@ The identity model only forwards the input tensors to the output and adds a dela
 
 ## Pipeline
 
-Our pipeline for the counter application will be composed of 3 models: the counter model, a identity feedback loop model, and an identity output model. The schema for the pipeline is the following:
+Our pipeline for the counter application will be composed of 3 models: the counter model, an identity feedback loop model, and an identity output model. The schema for the pipeline is the following:
 
 ```mermaid
 flowchart LR
@@ -140,7 +140,7 @@ For the identity loop model, we will use the same `model-settings.json` file, bu
     }
 }
 ```
-The one millisecond delay is important to avoid infinite loops in our pipeline and that is the joining window for the any input type to our counter model, and the joining window for our identity model, which we will define in our pipeline. 
+The one-millisecond delay is important to avoid infinite loops in our pipeline and that is the joining window for any input type to our counter model, and the joining window for our identity model, which we will define in our pipeline. 
 
 Similarly, for the identity output model, we will use the same `model-settings.json` file, but we will not add any delay:
 
@@ -268,6 +268,8 @@ spec:
     - identity-output.outputs
 ```
 
+Please note that the `joinWindowMs` parameter is set to 1 millisecond for both the identity loop and identity output models. This is important to avoid infinite loops in our pipeline due to the joining interval used by Kafka Streams.
+
 To deploy the pipeline, we can use the following command:
 
 ```bash
@@ -322,7 +324,7 @@ seldon pipeline infer counter-pipeline \
 }
 ```
 
-The request above starts the pipeline with the input value of 0. The pipeline then increments the value until it reaches 10, at which point it will stop. The response will contain the final value of the counter and a message indicating that the pipeline has stopped.
+The request above starts the pipeline with the input value of 0. The pipeline then increments the value until it reaches 10, at which point it will stop. The response contains the value of the counter, 10, and a message indicating that the pipeline has stopped.
 
 ## Cleanup
 To clean up the models and the pipeline, we can use the following commands:
