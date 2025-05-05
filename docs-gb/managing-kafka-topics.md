@@ -8,7 +8,7 @@ If Kafka is installed in your cluster, Seldon Core will automatically create an 
 
 By default, when a model is unloaded, its associated Kafka topics are retained. This behavior supports use cases such as auditing, but it also consumes additional Kafka resources and may incur unnecessary costs for workloads that do not require persistent topics.
 
-To manage this behavior, you can configure the dataflow section of the model specification. In addition to the required `storageUri` and `requirements` fields, you can optionally specify `cleanTopicsOnDelete` under `dataflow`. This boolean flag controls whether the Kafka topics should be deleted when the model is unloaded:
+To manage this behavior, you can configure the `dataflow` section of the model specification. In addition to the required `storageUri` and `requirements` fields, you can optionally specify `cleanTopicsOnDelete` under `dataflow`. This boolean flag controls whether the Kafka topics should be deleted when the model is unloaded:
 
 * If set to `false` (default), topics are retained after the model is deleted.
 
@@ -108,7 +108,7 @@ Apply the pipeline manifest with topic cleanup enabled:
 kubectl apply -f pipeline.yaml -n seldon-mesh
 ```
 
-Once the pipeline is deployed, you can list the Kafka topics from inside the kafka-busybox pod to confirm that they have been created:
+Once the pipeline is deployed, you can list the Kafka topics from inside the `kafka-busybox` pod to confirm that they have been created:
 ```bash
 __consumer_offsets
 seldon.seldon-mesh.errors.errors
@@ -132,5 +132,5 @@ seldon.seldon-mesh.model.iris.outputs
 ```
 
 {% hint style="info" %}
-Note: Topics associated with models used inside the pipeline are not deleted unless the corresponding models are also unloaded and the cleanTopicsOnDelete flag was set to true in their specification.
+Note: Topics associated with models used inside the pipeline are not deleted unless the corresponding models are also unloaded and the `cleanTopicsOnDelete` flag was set to `true` in their specification.
 {% endhint %}
