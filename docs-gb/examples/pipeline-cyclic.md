@@ -233,6 +233,9 @@ seldon model load -f ./models/identity-output.yaml
 ```bash
 {}
 ```
+```bash
+seldon model status identity-output -w ModelAvailable | jq -M .
+```
 
 ## Pipeline deployment
 
