@@ -21,7 +21,8 @@
   * [Server Config](kubernetes/resources/serverconfig.md)
   * [Server Runtime](kubernetes/resources/seldonruntime.md)
   * [Seldon Config](kubernetes/resources/seldonconfig.md)
-  * [Pipeline Config](kubernetes/resources/pipeline.md)  
+  * [Pipeline Config](kubernetes/resources/pipeline.md)
+  * [Managing Kafka Topics](managing-kafka-topics.md)
 * [Upgrading](upgrading.md) 
 
 ## User Guide
