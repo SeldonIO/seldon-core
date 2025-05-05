@@ -16,7 +16,7 @@ require (
 	github.com/onsi/gomega v1.27.10
 	go.uber.org/automaxprocs v1.4.0
 	go.uber.org/zap v1.25.0
-	google.golang.org/protobuf v1.31.0
+	google.golang.org/protobuf v1.33.0
 	gopkg.in/yaml.v2 v2.4.0
 	istio.io/api v0.0.0-20230125212921-f04847bedb29
 	istio.io/client-go v1.16.2
