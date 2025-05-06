@@ -441,7 +441,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: '{{ .Values.controller.image.registry }}/{{ .Values.controller.image.repository
+        image: '{{ .Values.controller.image.repository
           }}:{{ .Values.controller.image.tag }}'
         imagePullPolicy: '{{ .Values.controller.image.pullPolicy }}'
         livenessProbe:
@@ -1184,9 +1184,6 @@ spec:
         requests:
           cpu: '{{ .Values.serverConfig.rclone.resources.cpu }}'
           memory: '{{ .Values.serverConfig.rclone.resources.memory }}'
-      volumeMounts:
-      - mountPath: /mnt/agent
-        name: mlserver-models
     - args:
       - --tracing-config-path=/mnt/tracing/tracing.json
       command:
@@ -1321,13 +1318,6 @@ spec:
         requests:
           cpu: '{{ .Values.serverConfig.agent.resources.cpu }}'
           memory: '{{ .Values.serverConfig.agent.resources.memory }}'
-      volumeMounts:
-      - mountPath: /mnt/agent
-        name: mlserver-models
-      - mountPath: /mnt/config
-        name: config-volume
-      - mountPath: /mnt/tracing
-        name: tracing-config-volume
     - env:
       - name: MLSERVER_HTTP_PORT
         value: "9000"
@@ -1381,13 +1371,6 @@ spec:
           path: /v2/health/live
           port: server-http
         periodSeconds: 10
-      volumeMounts:
-      - mountPath: /mnt/agent
-        name: mlserver-models
-        readOnly: true
-      - mountPath: /mnt/certs
-        name: downstream-ca-certs
-        readOnly: true
 {{- with .Values.imagePullSecrets }}
     imagePullSecrets:
     {{- toYaml . | nindent 8 }}
