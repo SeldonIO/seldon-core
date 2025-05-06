@@ -178,8 +178,7 @@ controller:
   clusterwide: false
   skipOperatorClusterRoleCreation: false
   image:
-    pullPolicy: IfNotPresent
-    registry: docker.io
+    pullPolicy: Never
     repository: seldonio/seldonv2-controller
     tag: latest
   resources:

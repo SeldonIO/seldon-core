@@ -112,6 +112,10 @@ func (s *ServerSpec) Default() {
 }
 
 const (
+	DeploymentReady apis.ConditionType = "DeploymentReady"
+)
+
+const (
 	StatefulSetReady apis.ConditionType = "StatefulSetReady"
 )
 
