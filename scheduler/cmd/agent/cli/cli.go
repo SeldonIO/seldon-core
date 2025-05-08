@@ -10,9 +10,9 @@ the Change License after the Change Date as each is defined in accordance with t
 package cli
 
 import (
+	"math/big"
 	"math/rand"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -491,30 +491,32 @@ func setServerNameAndIdxFromPodName() {
 
 	podName := os.Getenv(envPodName)
 	if podName != "" {
-		lastDashIdx := strings.LastIndex(podName, "-")
-		if lastDashIdx == -1 {
-			log.Infof("Can't decypher pod name to find last dash and index. %s", podName)
-		} else {
-			serverIdxStr := podName[lastDashIdx+1:]
-			var err error
-			serverIdx, err := strconv.Atoi(serverIdxStr)
-			if err != nil {
-				log.
-					WithError(err).
-					Fatalf("Failed to parse to integer %s with value %s", envPodName, serverIdxStr)
-			} else {
-				ReplicaIdx = uint(serverIdx)
-				ServerName = podName[0:lastDashIdx]
+		parts := strings.Split(podName, "-")
 
-				log.Infof(
-					"Got server name and index from %s with value %s. Server name:%s Replica Idx:%d",
-					envPodName,
-					podName,
-					ServerName,
-					ReplicaIdx,
-				)
-			}
+		if len(parts) < 2 {
+			log.Fatalf("Invalid pod name format: %s. Expected format: <server-name>-<index>", podName)
+			return
 		}
+
+		serverName := parts[0]                        // first part is the server name
+		suffix := parts[2]                            // third part is the random suffix
+		num, ok := new(big.Int).SetString(suffix, 36) // base-36 decoding
+
+		if !ok {
+			log.Fatalf("Failed to parse index from pod name: %s", podName)
+		} else {
+			ReplicaIdx = uint(num.Uint64())
+			ServerName = serverName
+
+			log.Infof(
+				"Got server name and index from %s with value %s. Server name:%s Replica Idx:%d",
+				envPodName,
+				podName,
+				ServerName,
+				ReplicaIdx,
+			)
+		}
+
 	}
 }
 

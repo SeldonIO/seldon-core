@@ -266,7 +266,6 @@ serverConfig:
   agent:
     image:
       pullPolicy: IfNotPresent
-      registry: docker.io
       repository: seldonio/seldon-agent
       tag: latest
     overcommitPercentage: "10"

@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
@@ -29,6 +30,7 @@ func NewServerDeploymentReconcilerTest(
 	common common.ReconcilerConfig,
 	meta metav1.ObjectMeta,
 	podSpec *v1.PodSpec,
+	volumeClaimTeplates []mlopsv1alpha1.PersistentVolumeClaim,
 	scaling *mlopsv1alpha1.ScalingSpec,
 	serverConfigMeta metav1.ObjectMeta,
 	annotator *patch.Annotator,
@@ -37,7 +39,7 @@ func NewServerDeploymentReconcilerTest(
 	annotations := utils.MergeMaps(meta.Annotations, serverConfigMeta.Annotations)
 	return &ServerDeploymentReconcilerTest{
 		ReconcilerConfig: common,
-		Deployment:       toDeploymentTest(meta, podSpec, scaling, labels, annotations),
+		Deployment:       toDeploymentTest(meta, podSpec, volumeClaimTeplates, scaling, labels, annotations),
 		Annotator:        annotator,
 	}
 }
@@ -46,9 +48,14 @@ func (s *ServerDeploymentReconcilerTest) GetResources() []client.Object {
 	return []client.Object{s.Deployment}
 }
 
+func (s *ServerDeploymentReconcilerTest) GetLabelSelector() string {
+	return fmt.Sprintf("%s=%s", constants.ServerLabelNameKey, s.Deployment.GetName())
+}
+
 func toDeploymentTest(
 	meta metav1.ObjectMeta,
 	podSpec *v1.PodSpec,
+	volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim,
 	scaling *mlopsv1alpha1.ScalingSpec,
 	labels map[string]string,
 	annotations map[string]string,
@@ -58,6 +65,44 @@ func toDeploymentTest(
 	metaLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: constants.ServerLabelValue}, labels)
 	templateLabels := utils.MergeMaps(map[string]string{constants.ServerLabelNameKey: meta.Name, constants.KubernetesNameLabelKey: constants.ServerLabelValue}, labels)
 
+	// Start with any PVC volumes
+	var volumes []v1.Volume
+	for _, vct := range volumeClaimTemplates {
+		volumes = append(volumes, v1.Volume{
+			Name: vct.Name,
+			VolumeSource: v1.VolumeSource{
+				PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
+					ClaimName: vct.Name,
+				},
+			},
+		})
+	}
+
+	// Add required volumes explicitly
+	volumes = append(volumes,
+		v1.Volume{
+			Name: "config-volume",
+			VolumeSource: v1.VolumeSource{
+				ConfigMap: &v1.ConfigMapVolumeSource{
+					LocalObjectReference: v1.LocalObjectReference{
+						Name: "seldon-agent", // adjust to your actual ConfigMap name
+					},
+				},
+			},
+		},
+		v1.Volume{
+			Name: "tracing-config-volume",
+			VolumeSource: v1.VolumeSource{
+				ConfigMap: &v1.ConfigMapVolumeSource{
+					LocalObjectReference: v1.LocalObjectReference{
+						Name: "seldon-tracing", // adjust to your actual ConfigMap name
+					},
+				},
+			},
+		},
+	)
+
+	podSpec.Volumes = volumes
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        meta.Name,
