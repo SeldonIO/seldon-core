@@ -27,6 +27,7 @@ const (
 	envDebugGrpcPort                                   = "SELDON_DEBUG_GRPC_PORT"
 	envMetricsPort                                     = "SELDON_METRICS_PORT"
 	envPodName                                         = "POD_NAME"
+	envPodIP                                           = "POD_IP"
 	envSchedulerHost                                   = "SELDON_SCHEDULER_HOST"
 	envSchedulerPort                                   = "SELDON_SCHEDULER_PORT"
 	envSchedulerTlsPort                                = "SELDON_SCHEDULER_TLS_PORT"
@@ -576,9 +577,10 @@ func updateNamespace() {
 }
 
 func setInferenceSvcName() {
-	podName := os.Getenv(envPodName)
-	if podName != "" {
-		InferenceSvcName = podName
+	// podName := os.Getenv(envPodName)
+	podIp := os.Getenv(envPodIP)
+	if podIp != "" {
+		InferenceSvcName = podIp
 	} else {
 		InferenceSvcName = agentHost
 	}

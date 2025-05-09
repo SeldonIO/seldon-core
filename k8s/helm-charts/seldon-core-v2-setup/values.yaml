@@ -220,7 +220,6 @@ envoy:
 scheduler:
   image:
     pullPolicy: IfNotPresent
-    registry: docker.io
     repository: seldonio/seldon-scheduler
     tag: latest
   resources:

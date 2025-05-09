@@ -120,7 +120,7 @@ const (
 )
 
 var serverConditionSet = apis.NewLivingConditionSet(
-	StatefulSetReady,
+	DeploymentReady,
 )
 
 var _ apis.ConditionsAccessor = (*ServerStatus)(nil)
