@@ -15,7 +15,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"knative.dev/pkg/apis"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -60,8 +59,8 @@ func toDeploymentTest(
 	labels map[string]string,
 	annotations map[string]string,
 ) *appsv1.Deployment {
-	revisionHistoryLimit := int32(10)
-	progressDeadlineSeconds := int32(600)
+	// revisionHistoryLimit := int32(10)
+	// progressDeadlineSeconds := int32(600)
 	metaLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: constants.ServerLabelValue}, labels)
 	templateLabels := utils.MergeMaps(map[string]string{constants.ServerLabelNameKey: meta.Name, constants.KubernetesNameLabelKey: constants.ServerLabelValue}, labels)
 
@@ -118,22 +117,22 @@ func toDeploymentTest(
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels:      templateLabels,
-					Annotations: annotations,
+					Annotations: common.CopyMap(annotations),
 					Name:        meta.Name,
 					Namespace:   meta.Namespace,
 				},
 				Spec: *podSpec,
 			},
-			Strategy: appsv1.DeploymentStrategy{
-				Type: appsv1.RollingUpdateDeploymentStrategyType,
-				RollingUpdate: &appsv1.RollingUpdateDeployment{
-					MaxUnavailable: &intstr.IntOrString{IntVal: 1},
-					MaxSurge:       &intstr.IntOrString{IntVal: 1},
-				},
-			},
-			MinReadySeconds:         10,
-			RevisionHistoryLimit:    &revisionHistoryLimit,
-			ProgressDeadlineSeconds: &progressDeadlineSeconds,
+			// Strategy: appsv1.DeploymentStrategy{
+			// 	Type: appsv1.RollingUpdateDeploymentStrategyType,
+			// 	RollingUpdate: &appsv1.RollingUpdateDeployment{
+			// 		MaxUnavailable: &intstr.IntOrString{IntVal: 1},
+			// 		MaxSurge:       &intstr.IntOrString{IntVal: 1},
+			// 	},
+			// },
+			// MinReadySeconds:         10,
+			// RevisionHistoryLimit:    &revisionHistoryLimit,
+			// ProgressDeadlineSeconds: &progressDeadlineSeconds,
 		},
 	}
 }
@@ -174,7 +173,6 @@ func (s *ServerDeploymentReconcilerTest) getReconcileOperation() (constants.Reco
 	}
 	s.Deployment.Status = found.Status
 	if patchResult.IsEmpty() {
-		// Update our version so we have Status which can be used
 		s.Deployment = found
 		return constants.ReconcileNoChange, nil
 	}
