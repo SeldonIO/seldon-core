@@ -33,13 +33,66 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+
+```bash
+kubectl apply -f ./models/sklearn-iris-gs.yaml -n ${NAMESPACE}
+```
+```
+model.mlops.seldon.io/iris created
+```
+
+```bash
+kubectl wait --for condition=ready --timeout=300s model iris -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/iris condition met
+```
+
+```bash
+curl --location 'http://${SELDON_INFER_HOST}/v2/models/iris/infer' \
+	--header 'Content-Type: application/json'  \
+    --data '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
+```
+
+```json
+{
+	"model_name": "iris_1",
+	"model_version": "1",
+	"id": "09263298-ca66-49c5-acb9-0ca75b06f825",
+	"parameters": {},
+	"outputs": [
+		{
+			"name": "predict",
+			"shape": [
+				1,
+				1
+			],
+			"datatype": "INT64",
+			"data": [
+				2
+			]
+		}
+	]
+}
+
+```
+
+```bash
+kubectl delete -f ./models/sklearn-iris-gs.yaml -n ${NAMESPACE}
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+
 ```bash
 seldon model load -f ./models/sklearn-iris-gs.yaml
 ```
 
 ```json
 {}
-
 ```
 
 ```bash
@@ -48,7 +101,6 @@ seldon model status iris -w ModelAvailable | jq -M .
 
 ```json
 {}
-
 ```
 
 ```bash
@@ -87,6 +139,9 @@ seldon model unload iris
 {}
 
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ### Tensorflow CIFAR10 Image Classification Model
 
@@ -175,23 +230,37 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ./models/cifar10-no-config.yaml -n ${NAMESPACE}
+```
+```
+model.mlops.seldon.io/cifar10 created
+```
+```bash
+kubectl wait --for condition=ready --timeout=300s model cifar10 -n ${NAMESPACE}
+```
+```
+model.mlops.seldon.io/cifar10 condition met
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model load -f ./models/cifar10-no-config.yaml
 ```
-
 ```json
 {}
-
 ```
-
 ```bash
 seldon model status cifar10 -w ModelAvailable | jq -M .
 ```
-
 ```json
 {}
-
 ```
+{% endtab %}
+{% endtabs %}
 
 ```python
 infer("cifar10",4)
@@ -205,14 +274,23 @@ car
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash 
+kubectl delete -f ./models/cifar10-no-config.yaml -n ${NAMESPACE}
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model unload cifar10
 ```
-
 ```json
 {}
-
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ### XGBoost Model
 
@@ -234,13 +312,66 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+
+```bash
+kubectl apply -f ./models/income-xgb.yaml -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/income-xgb is created
+```
+
+```bash
+kubectl wait --for condition=ready --timeout=300s model income-xgb -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/income-xgb condition met
+```
+
+```bash
+curl --location 'http://${SELDON_INFER_HOST}/v2/models/income-xgb/infer' \
+	--header 'Content-Type: application/json'  \
+    --data '{ "parameters": {"content_type": "pd"}, "inputs": [{"name": "Age", "shape": [1, 1], "datatype": "INT64", "data": [47]},{"name": "Workclass", "shape": [1, 1], "datatype": "INT64", "data": [4]},{"name": "Education", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Marital Status", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Occupation", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Relationship", "shape": [1, 1], "datatype": "INT64", "data": [3]},{"name": "Race", "shape": [1, 1], "datatype": "INT64", "data": [4]},{"name": "Sex", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Capital Gain", "shape": [1, 1], "datatype": "INT64", "data": [0]},{"name": "Capital Loss", "shape": [1, 1], "datatype": "INT64", "data": [0]},{"name": "Hours per week", "shape": [1, 1], "datatype": "INT64", "data": [40]},{"name": "Country", "shape": [1, 1], "datatype": "INT64", "data": [9]}]}'
+```
+
+```json
+{
+	"model_name": "income-lgb_1",
+	"model_version": "1",
+	"id": "4437a71e-9af1-4e3b-aa4b-cb95d2cd86b9",
+	"parameters": {},
+	"outputs": [
+		{
+			"name": "predict",
+			"shape": [
+				1,
+				1
+			],
+			"datatype": "FP64",
+			"data": [
+				0.06279460120044741
+			]
+		}
+	]
+}
+```
+
+```bash
+kubectl delete -f ./models/income-xgb.yaml -n ${NAMESPACE}
+```
+
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model load -f ./models/income-xgb.yaml
 ```
 
 ```json
 {}
-
 ```
 
 ```bash
@@ -249,9 +380,7 @@ seldon model status income-xgb -w ModelAvailable | jq -M .
 
 ```json
 {}
-
 ```
-
 ```bash
 seldon model infer income-xgb \
   '{ "parameters": {"content_type": "pd"}, "inputs": [{"name": "Age", "shape": [1, 1], "datatype": "INT64", "data": [47]},{"name": "Workclass", "shape": [1, 1], "datatype": "INT64", "data": [4]},{"name": "Education", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Marital Status", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Occupation", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Relationship", "shape": [1, 1], "datatype": "INT64", "data": [3]},{"name": "Race", "shape": [1, 1], "datatype": "INT64", "data": [4]},{"name": "Sex", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Capital Gain", "shape": [1, 1], "datatype": "INT64", "data": [0]},{"name": "Capital Loss", "shape": [1, 1], "datatype": "INT64", "data": [0]},{"name": "Hours per week", "shape": [1, 1], "datatype": "INT64", "data": [40]},{"name": "Country", "shape": [1, 1], "datatype": "INT64", "data": [9]}]}'
@@ -279,15 +408,16 @@ seldon model infer income-xgb \
 }
 
 ```
-
 ```bash
 seldon model unload income-xgb
 ```
 
 ```json
 {}
-
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ## ONNX MNIST Model
 
@@ -353,23 +483,37 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ./models/mnist-onnx.yaml -n ${NAMESPACE}
+```
+```
+model.mlops.seldon.io/mnist-onnx created
+```
+```bash
+kubectl wait --for condition=ready --timeout=300s model mnist-onnx -n ${NAMESPACE}
+```
+```
+model.mlops.seldon.io/mnist-onnx condition met
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model load -f ./models/mnist-onnx.yaml
 ```
-
 ```json
 {}
-
 ```
-
 ```bash
 seldon model status mnist-onnx -w ModelAvailable | jq -M .
 ```
-
 ```json
 {}
-
 ```
+{% endtab %}
+{% endtabs %}
 
 ```python
 infer_mnist()
@@ -383,14 +527,24 @@ infer_mnist()
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl delete -f ./models/mnist-onnx.yaml -n ${NAMESPACE}
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+
 ```bash
 seldon model unload mnist-onnx
 ```
-
 ```json
 {}
-
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ### LightGBM Model
 
@@ -411,14 +565,63 @@ spec:
   - lightgbm
 
 ```
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ./models/income-lgb.yaml -n ${NAMESPACE}
+```
+```
+model.mlops.seldon.io/income-lgb created
+```
 
+```bash
+kubectl wait --for condition=ready --timeout=300s model income-lgb -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/income-lgb condition met
+```
+
+```bash
+curl --location 'http://${SELDON_INFER_HOST}/v2/models/income-lgb/infer' \
+	--header 'Content-Type: application/json'  \
+    --data '{ "parameters": {"content_type": "pd"}, "inputs": [{"name": "Age", "shape": [1, 1], "datatype": "INT64", "data": [47]},{"name": "Workclass", "shape": [1, 1], "datatype": "INT64", "data": [4]},{"name": "Education", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Marital Status", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Occupation", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Relationship", "shape": [1, 1], "datatype": "INT64", "data": [3]},{"name": "Race", "shape": [1, 1], "datatype": "INT64", "data": [4]},{"name": "Sex", "shape": [1, 1], "datatype": "INT64", "data": [1]},{"name": "Capital Gain", "shape": [1, 1], "datatype": "INT64", "data": [0]},{"name": "Capital Loss", "shape": [1, 1], "datatype": "INT64", "data": [0]},{"name": "Hours per week", "shape": [1, 1], "datatype": "INT64", "data": [40]},{"name": "Country", "shape": [1, 1], "datatype": "INT64", "data": [9]}]}'
+```
+
+```json
+{
+	"model_name": "income-lgb_1",
+	"model_version": "1",
+	"id": "4437a71e-9af1-4e3b-aa4b-cb95d2cd86b9",
+	"parameters": {},
+	"outputs": [
+		{
+			"name": "predict",
+			"shape": [
+				1,
+				1
+			],
+			"datatype": "FP64",
+			"data": [
+				0.06279460120044741
+			]
+		}
+	]
+}
+```
+
+```bash
+kubectl delete -f ./models/income-lgb.yaml -n ${NAMESPACE}
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model load -f ./models/income-lgb.yaml
 ```
 
 ```json
 {}
-
 ```
 
 ```bash
@@ -427,7 +630,6 @@ seldon model status income-lgb -w ModelAvailable | jq -M .
 
 ```json
 {}
-
 ```
 
 ```bash
@@ -455,17 +657,17 @@ seldon model infer income-lgb \
 		}
 	]
 }
-
 ```
 
 ```bash
 seldon model unload income-lgb
 ```
-
 ```json
 {}
-
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ### MLFlow Wine Model
 
@@ -487,13 +689,35 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+
+```bash
+kubectl apply -f ./models/wine-mlflow.yaml -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/wine created
+```
+
+```bash
+kubectl wait --for condition=ready --timeout=300s model wine -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/wine condition met
+```
+
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+
 ```bash
 seldon model load -f ./models/wine-mlflow.yaml
 ```
 
 ```json
 {}
-
 ```
 
 ```bash
@@ -502,8 +726,10 @@ seldon model status wine -w ModelAvailable | jq -M .
 
 ```json
 {}
-
 ```
+
+{% endtab %}
+{% endtabs %}
 
 ```python
 import requests
@@ -588,14 +814,28 @@ print(response_raw.json())
 
 ```
 
+
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl delete model wine -n ${NAMESPACE}
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model unload wine
 ```
-
 ```json
 {}
 
 ```
+{% endtab %}
+{% endtabs %}
+
+
+
+
 
 ## Pytorch MNIST Model
 
@@ -661,6 +901,27 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ./models/mnist-pytorch.yaml -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/mnist-pytorch created
+```
+
+```bash
+kubectl wait --for condition=ready --timeout=300s model mnist-pytorch -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/mnist-pytorch condition met
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+
 ```bash
 seldon model load -f ./models/mnist-pytorch.yaml
 ```
@@ -678,6 +939,8 @@ seldon model status mnist-pytorch -w ModelAvailable | jq -M .
 {}
 
 ```
+{% endtab %}
+{% endtabs %}
 
 ```python
 infer_mnist()
@@ -691,11 +954,25 @@ infer_mnist()
 
 ```
 
+
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl delete -f ./models/mnist-pytorch.yaml -n ${NAMESPACE}
+```
+```
+model.mlops.seldon.io "mnist-pytorch" deleted
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model unload mnist-pytorch
 ```
-
 ```json
 {}
 
 ```
+{% endtab %}
+{% endtabs %}
+

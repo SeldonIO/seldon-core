@@ -79,6 +79,33 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+
+```bash
+kubectl apply -f ../../models/hf-whisper.yaml -n ${NAMESPACE}
+kubectl apply -f ../../models/hf-sentiment.yaml -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/whisper created
+model.mlops.seldon.io/sentiment created
+```
+
+```bash
+kubectl wait --for condition=ready --timeout=300s model whisper -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s model sentiment -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/whisper condition met
+model.mlops.seldon.io/sentiment condition met
+```
+
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+
 ```bash
 seldon model load -f ../../models/hf-whisper.yaml
 seldon model load -f ../../models/hf-sentiment.yaml
@@ -100,6 +127,8 @@ seldon model status sentiment -w ModelAvailable | jq -M .
 {}
 
 ```
+{% endtab %}
+{% endtabs %}
 
 ### Create Explain Pipeline
 
@@ -233,27 +262,51 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ../../models/hf-sentiment-input-transform.yaml -n ${NAMESPACE}
+kubectl apply -f ../../models/hf-sentiment-output-transform.yaml -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/sentiment-input-transform created
+model.mlops.seldon.io/sentiment-output-transform created
+```
+
+```bash
+kubectl wait --for condition=ready --timeout=300s model sentiment-input-transform -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s model sentiment-output-transform -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/sentiment-input-transform condition met
+model.mlops.seldon.io/sentiment-output-transform condition met
+```
+
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model load -f ../../models/hf-sentiment-input-transform.yaml
 seldon model load -f ../../models/hf-sentiment-output-transform.yaml
 ```
-
 ```json
 {}
 {}
 
 ```
-
 ```bash
 seldon model status sentiment-input-transform -w ModelAvailable | jq -M .
 seldon model status sentiment-output-transform -w ModelAvailable | jq -M .
 ```
-
 ```json
 {}
 {}
-
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ```bash
 cat ../../pipelines/sentiment-explain.yaml
@@ -278,6 +331,27 @@ spec:
 
 ```
 
+
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ../../models/sentiment-explain.yaml -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/sentiment-explain created
+```
+
+```bash
+kubectl wait --for condition=ready --timeout=300s model sentiment-explain -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/sentiment-explain condition met
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon pipeline load -f ../../pipelines/sentiment-explain.yaml
 ```
@@ -328,6 +402,10 @@ seldon pipeline status sentiment-explain -w PipelineReady | jq -M .
 }
 
 ```
+{% endtab %}
+{% endtabs %}
+
+
 
 ```bash
 cat ../../models/hf-sentiment-explainer.yaml
@@ -346,6 +424,26 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f .../../pipelines/hf-sentiment-explainer.yaml -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/hf-sentiment-explainer created
+```
+
+```bash
+kubectl wait --for condition=ready --timeout=300s model hf-sentiment-explainer -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/hf-sentiment-explainer condition met
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model load -f ../../models/hf-sentiment-explainer.yaml
 ```
@@ -361,8 +459,10 @@ seldon model status sentiment-explainer -w ModelAvailable | jq -M .
 
 ```
 Error: Model wait status timeout
-
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ### Speech to Sentiment Pipeline with Explanation
 
@@ -398,6 +498,28 @@ spec:
 
 ```
 
+
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f .../../pipelines/speech-to-sentiment.yaml -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/speech-to-sentiment created
+```
+
+```bash
+kubectl wait --for condition=ready --timeout=300s model speech-to-sentiment -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/speech-to-sentiment condition met
+```
+
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon pipeline load -f ../../pipelines/speech-to-sentiment.yaml
 ```
@@ -461,6 +583,10 @@ seldon pipeline status speech-to-sentiment -w PipelineReady | jq -M .
 }
 
 ```
+{% endtab %}
+{% endtabs %}
+
+
 
 ### Test
 
@@ -514,6 +640,22 @@ Explanation anchors: ['great']
 
 ### Cleanup
 
+
+{% tabs %}
+{% tab title="kubectl" %}
+
+```bash
+kubectl delete -f ../../pipelines/speech-to-sentiment.yaml -n ${NAMESPACE}
+kubectl delete -f ../../pipelines/sentiment-explain.yaml -n ${NAMESPACE}
+kubectl delete -f ../../models/hf-whisper.yaml -n ${NAMESPACE}
+kubectl delete -f ../../models/hf-sentiment.yaml -n ${NAMESPACE}
+kubectl delete -f ../../models/hf-sentiment-input-transform.yaml -n ${NAMESPACE}
+kubectl delete -f ../../models/hf-sentiment-output-transform.yaml -n ${NAMESPACE}
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+
 ```bash
 seldon pipeline unload speech-to-sentiment
 seldon pipeline unload sentiment-explain
@@ -526,3 +668,6 @@ seldon model unload sentiment-explainer
 seldon model unload sentiment-output-transform
 seldon model unload sentiment-input-transform
 ```
+{% endtab %}
+{% endtabs %}
+

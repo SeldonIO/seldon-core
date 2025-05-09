@@ -93,6 +93,40 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ../../models/income-preprocess.yaml -n ${NAMESPACE}
+kubectl apply -f ../../models/income.yaml -n ${NAMESPACE}
+kubectl apply -f ../../models/income-drift.yaml -n ${NAMESPACE}
+kubectl apply -f ../../models/income-outlier.yaml -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/income-preprocess created
+model.mlops.seldon.io/income created
+model.mlops.seldon.io/income-drift created
+model.mlops.seldon.io/income-outlier created
+```
+
+```bash
+kubectl wait --for condition=ready --timeout=300s model income-preprocess -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s model income -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s model income-drift -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s model income-outlier -n ${NAMESPACE}
+```
+
+```
+model.mlops.seldon.io/income-preprocess condition met
+model.mlops.seldon.io/income condition met
+model.mlops.seldon.io/income-drift condition met
+model.mlops.seldon.io/income-outlier condition met
+```
+
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+
 ```bash
 seldon model load -f ../../models/income-preprocess.yaml
 seldon model load -f ../../models/income.yaml
@@ -105,7 +139,6 @@ seldon model load -f ../../models/income-outlier.yaml
 {}
 {}
 {}
-
 ```
 
 ```bash
@@ -120,8 +153,12 @@ seldon model status income-outlier -w ModelAvailable | jq .
 {}
 {}
 {}
-
 ```
+{% endtab %}
+{% endtabs %}
+
+
+
 
 ```bash
 cat ../../pipelines/income.yaml
@@ -149,6 +186,24 @@ spec:
 
 ```
 
+
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ../../pipelines/income.yaml -n ${NAMESPACE}
+```
+```
+pipeline.mlops.seldon.io/income created
+```
+```bash
+kubectl wait --for condition=ready --timeout=300s pipelines income -n ${NAMESPACE}
+```
+```
+pipeline.mlops.seldon.io/choice condition met
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon pipeline load -f ../../pipelines/income.yaml
 ```
@@ -206,6 +261,9 @@ seldon pipeline status income-production -w PipelineReady | jq -M .
 }
 
 ```
+{% endtab %}
+{% endtabs %}
+
 
 Show predictions from reference set. Should not be drift or outliers.
 
@@ -298,23 +356,38 @@ spec:
 
 ```
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl apply -f ../../models/income-explainer.yaml -n ${NAMESPACE}
+```
+```
+pipeline.mlops.seldon.io/income-explainer created
+```
+```bash
+kubectl wait --for condition=ready --timeout=300s pipelines income-explainer -n ${NAMESPACE}
+```
+```
+pipeline.mlops.seldon.io/income-explainer condition met
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
 seldon model load -f ../../models/income-explainer.yaml
 ```
-
 ```json
 {}
-
 ```
-
 ```bash
 seldon model status income-explainer -w ModelAvailable | jq .
 ```
-
 ```json
 {}
-
 ```
+{% endtab %}
+{% endtabs %}
+
 
 ```python
 batchSz=1
@@ -331,6 +404,18 @@ infer("income-explainer",batchSz,"normal")
 
 ### Cleanup
 
+{% tabs %}
+{% tab title="kubectl" %}
+```bash
+kubectl delete -f ../../piplines/income-production.yaml -n ${NAMESPACE}
+kubectl delete -f ../../models/income-preprocess.yaml -n ${NAMESPACE}
+kubectl delete -f ../../models/income.yaml -n ${NAMESPACE}
+kubectl delete -f ../../models/income-drift.yaml -n ${NAMESPACE}
+kubectl delete -f ../../models/income-outlier.yaml -n ${NAMESPACE}
+kubectl delete -f ../../models/income-explainer.yaml -n ${NAMESPACE}
+```
+{% endtab %}
+{% tab title="seldon-cli" %}
 ```bash
 seldon pipeline unload income-production
 seldon model unload income-preprocess
@@ -339,3 +424,5 @@ seldon model unload income-drift
 seldon model unload income-outlier
 seldon model unload income-explainer
 ```
+{% endtab %}
+{% endtabs %}
