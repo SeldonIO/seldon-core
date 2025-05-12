@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mlserver-models
+  name: triton-models
 spec:
   accessModes:
     - ReadWriteOnce
@@ -15,7 +15,6 @@ kind: Deployment
 metadata:
   name: triton
 spec:
-  serviceName: "triton"
   replicas: 1
   selector:
     matchLabels:
@@ -147,3 +146,6 @@ spec:
       - name: config-volume
         configMap:
           name: seldon-agent
+      - name: triton-models
+        persistentVolumeClaim:
+          claimName: triton-models

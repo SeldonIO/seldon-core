@@ -15,7 +15,6 @@ kind: Deployment
 metadata:
   name: mlserver
 spec:
-  serviceName: "mlserver"
   replicas: 1
   selector:
     matchLabels:
@@ -143,3 +142,6 @@ spec:
       - name: config-volume
         configMap:
           name: seldon-agent
+      - name: mlserver-models
+        persistentVolumeClaim:
+          claimName: mlserver-models
