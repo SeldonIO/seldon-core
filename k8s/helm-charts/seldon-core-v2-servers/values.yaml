@@ -2,14 +2,8 @@ mlserver:
   replicas: 1
   minReplicas: 1
   maxReplicas: 1
-  statefulSetPersistentVolumeClaimRetentionPolicy:
-    whenDeleted: Retain
-    whenScaled: Retain
 
 triton:
   replicas: 1
   minReplicas: 1
   maxReplicas: 1
-  statefulSetPersistentVolumeClaimRetentionPolicy:
-    whenDeleted: Retain
-    whenScaled: Retain

@@ -93,11 +93,3 @@ spec:
           memory: '{{ .Values.serverConfig.triton.resources.memory }}'
         limits:
           memory: '{{ .Values.serverConfig.triton.resources.memory }}'
-  volumeClaimTemplates:
-  - name: triton-models
-    spec:
-      accessModes:
-      - ReadWriteOnce
-      resources:
-        requests:
-          storage: '{{ .Values.serverConfig.triton.modelVolumeStorage }}'

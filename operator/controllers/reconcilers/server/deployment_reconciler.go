@@ -30,7 +30,6 @@ func NewServerDeploymentReconciler(
 	common common.ReconcilerConfig,
 	meta metav1.ObjectMeta,
 	podSpec *v1.PodSpec,
-	volumeClaimTeplates []mlopsv1alpha1.PersistentVolumeClaim,
 	scaling *mlopsv1alpha1.ScalingSpec,
 	serverConfigMeta metav1.ObjectMeta,
 	annotator *patch.Annotator,
@@ -39,7 +38,7 @@ func NewServerDeploymentReconciler(
 	annotations := utils.MergeMaps(meta.Annotations, serverConfigMeta.Annotations)
 	return &ServerDeploymentReconciler{
 		ReconcilerConfig: common,
-		Deployment:       toDeploymentTest(meta, podSpec, volumeClaimTeplates, scaling, labels, annotations),
+		Deployment:       toDeploymentTest(meta, podSpec, scaling, labels, annotations),
 		Annotator:        annotator,
 	}
 }
@@ -55,7 +54,6 @@ func (s *ServerDeploymentReconciler) GetLabelSelector() string {
 func toDeploymentTest(
 	meta metav1.ObjectMeta,
 	podSpec *v1.PodSpec,
-	volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim,
 	scaling *mlopsv1alpha1.ScalingSpec,
 	labels map[string]string,
 	annotations map[string]string,
@@ -65,16 +63,6 @@ func toDeploymentTest(
 
 	// Start with any PVC volumes
 	var volumes []v1.Volume
-	for _, vct := range volumeClaimTemplates {
-		volumes = append(volumes, v1.Volume{
-			Name: vct.Name,
-			VolumeSource: v1.VolumeSource{
-				PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
-					ClaimName: vct.Name,
-				},
-			},
-		})
-	}
 
 	// Add required volumes explicitly
 	volumes = append(volumes,

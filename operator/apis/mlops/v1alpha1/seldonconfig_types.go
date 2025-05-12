@@ -90,6 +90,12 @@ type ComponentDefn struct {
 	VolumeClaimTemplates []PersistentVolumeClaim `json:"volumeClaimTemplates,omitempty"`
 }
 
+// We use our own type rather than v1.PersistentVolumeClaim as metadata inlined is not handled correctly by CRDs
+type PersistentVolumeClaim struct {
+	Name string                       `json:"name"`
+	Spec v1.PersistentVolumeClaimSpec `json:"spec"`
+}
+
 // SeldonConfigStatus defines the observed state of SeldonConfig
 type SeldonConfigStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster

@@ -132,7 +132,6 @@ func (s *ServerReconciler) createDeploymentReconciler(server *mlopsv1alpha1.Serv
 	deploymentReconciler := NewServerDeploymentReconciler(s.ReconcilerConfig,
 		server.ObjectMeta,
 		podSpec,
-		serverConfig.Spec.VolumeClaimTemplates,
 		&server.Spec.ScalingSpec,
 		serverConfig.ObjectMeta,
 		annotator)

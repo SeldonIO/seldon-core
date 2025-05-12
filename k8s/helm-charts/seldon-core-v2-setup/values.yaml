@@ -178,7 +178,8 @@ controller:
   clusterwide: false
   skipOperatorClusterRoleCreation: false
   image:
-    pullPolicy: Never
+    pullPolicy: IfNotPresent
+    registry: docker.io
     repository: seldonio/seldonv2-controller
     tag: latest
   resources:
@@ -220,6 +221,7 @@ envoy:
 scheduler:
   image:
     pullPolicy: IfNotPresent
+    registry: docker.io
     repository: seldonio/seldon-scheduler
     tag: latest
   resources:
@@ -265,6 +267,7 @@ serverConfig:
   agent:
     image:
       pullPolicy: IfNotPresent
+      registry: docker.io
       repository: seldonio/seldon-agent
       tag: latest
     overcommitPercentage: "10"

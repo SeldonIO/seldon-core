@@ -205,10 +205,4 @@ spec:
       emptyDir:
         medium: Memory
         sizeLimit: "256Mi"
-  volumeClaimTemplates:
-  - name: triton-models
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 1Gi
+
