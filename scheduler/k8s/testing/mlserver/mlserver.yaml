@@ -1,10 +1,20 @@
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mlserver-models
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mlserver
 spec:
-  serviceName: "mlserver"
   replicas: 3
   selector:
     matchLabels:
@@ -120,6 +130,10 @@ spec:
           name: mlserver-models
       securityContext:
         runAsUser: 8888
+      volumes:
+      - name: mlserver-models
+        persistentVolumeClaim:
+          claimName: mlserver-models
 ---
 apiVersion: keda.sh/mesh
 kind: ScaledObject
