@@ -31,6 +31,7 @@ func NewServerDeploymentReconciler(
 	meta metav1.ObjectMeta,
 	podSpec *v1.PodSpec,
 	scaling *mlopsv1alpha1.ScalingSpec,
+	deploymentStrategy *appsv1.DeploymentStrategy,
 	serverConfigMeta metav1.ObjectMeta,
 	annotator *patch.Annotator,
 ) *ServerDeploymentReconciler {
@@ -38,7 +39,7 @@ func NewServerDeploymentReconciler(
 	annotations := utils.MergeMaps(meta.Annotations, serverConfigMeta.Annotations)
 	return &ServerDeploymentReconciler{
 		ReconcilerConfig: common,
-		Deployment:       toDeploymentTest(meta, podSpec, scaling, labels, annotations),
+		Deployment:       toDeploymentTest(meta, podSpec, scaling, deploymentStrategy, labels, annotations),
 		Annotator:        annotator,
 	}
 }
@@ -55,6 +56,7 @@ func toDeploymentTest(
 	meta metav1.ObjectMeta,
 	podSpec *v1.PodSpec,
 	scaling *mlopsv1alpha1.ScalingSpec,
+	deploymentStrategy *appsv1.DeploymentStrategy,
 	labels map[string]string,
 	annotations map[string]string,
 ) *appsv1.Deployment {
@@ -81,6 +83,7 @@ func toDeploymentTest(
 				},
 				Spec: *podSpec,
 			},
+			Strategy: *deploymentStrategy,
 		},
 	}
 }
