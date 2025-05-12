@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package v1alpha1
 
 import (
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
@@ -39,6 +40,8 @@ type ServerSpec struct {
 	PodSpec *PodSpec `json:"podSpec,omitempty"`
 	// Scaling spec
 	ScalingSpec `json:",inline"`
+	// Deployment strategy
+	DeploymentStrategy appsv1.DeploymentStrategy `json:"deploymentStrategy,omitempty"`
 	// +Optional
 	// If set then when the referenced ServerConfig changes we will NOT update the Server immediately.
 	// Explicit changes to the Server itself will force a reconcile though

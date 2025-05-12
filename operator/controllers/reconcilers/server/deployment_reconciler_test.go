@@ -45,6 +45,7 @@ func TestServerDeploymentReconcile(t *testing.T) {
 		metaServerConfig    metav1.ObjectMeta
 		podSpec             *v1.PodSpec
 		scaling             *mlopsv1alpha1.ScalingSpec
+		deploymentStrategy  *appsv1.DeploymentStrategy
 		existing            *appsv1.Deployment
 		expectedReconcileOp constants.ReconcileOperation
 	}
@@ -77,6 +78,7 @@ func TestServerDeploymentReconcile(t *testing.T) {
 			scaling: &mlopsv1alpha1.ScalingSpec{
 				Replicas: getIntPtr(2),
 			},
+			deploymentStrategy:  &appsv1.DeploymentStrategy{},
 			expectedReconcileOp: constants.ReconcileCreateNeeded,
 		},
 		{
@@ -93,6 +95,7 @@ func TestServerDeploymentReconcile(t *testing.T) {
 			scaling: &mlopsv1alpha1.ScalingSpec{
 				Replicas: getIntPtr(2),
 			},
+			deploymentStrategy:  &appsv1.DeploymentStrategy{},
 			existing:            &sts,
 			expectedReconcileOp: constants.ReconcileUpdateNeeded,
 		},
@@ -136,6 +139,7 @@ func TestServerDeploymentReconcile(t *testing.T) {
 			scaling: &mlopsv1alpha1.ScalingSpec{
 				Replicas: getIntPtr(2),
 			},
+			deploymentStrategy: &appsv1.DeploymentStrategy{},
 			existing: &appsv1.Deployment{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
@@ -205,6 +209,7 @@ func TestServerDeploymentReconcile(t *testing.T) {
 			scaling: &mlopsv1alpha1.ScalingSpec{
 				Replicas: getIntPtr(2),
 			},
+			deploymentStrategy: &appsv1.DeploymentStrategy{},
 			existing: &appsv1.Deployment{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
@@ -261,6 +266,7 @@ func TestServerDeploymentReconcile(t *testing.T) {
 				test.metaServer,
 				test.podSpec,
 				test.scaling,
+				test.deploymentStrategy,
 				test.metaServerConfig,
 				annotator)
 			rop, err := r.getReconcileOperation()
@@ -282,13 +288,14 @@ func TestToDeployment(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name        string
-		meta        metav1.ObjectMeta
-		podSpec     *v1.PodSpec
-		labels      map[string]string
-		annotations map[string]string
-		scaling     *mlopsv1alpha1.ScalingSpec
-		deployment  *appsv1.Deployment
+		name               string
+		meta               metav1.ObjectMeta
+		podSpec            *v1.PodSpec
+		labels             map[string]string
+		annotations        map[string]string
+		scaling            *mlopsv1alpha1.ScalingSpec
+		deploymentStrategy *appsv1.DeploymentStrategy
+		deployment         *appsv1.Deployment
 	}
 
 	getIntPtr := func(i int32) *int32 {
@@ -316,6 +323,7 @@ func TestToDeployment(t *testing.T) {
 			scaling: &mlopsv1alpha1.ScalingSpec{
 				Replicas: getIntPtr(2),
 			},
+			deploymentStrategy: &appsv1.DeploymentStrategy{},
 			deployment: &appsv1.Deployment{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
@@ -360,6 +368,7 @@ func TestToDeployment(t *testing.T) {
 			statefulSet := toDeploymentTest(test.meta,
 				test.podSpec,
 				test.scaling,
+				test.deploymentStrategy,
 				test.labels,
 				test.annotations)
 			g.Expect(equality.Semantic.DeepEqual(statefulSet, test.deployment)).To(BeTrue())
@@ -420,6 +429,7 @@ func TestLabelsAnnotations(t *testing.T) {
 				test.metaServer,
 				&v1.PodSpec{},
 				&mlopsv1alpha1.ScalingSpec{},
+				&appsv1.DeploymentStrategy{},
 				test.metaServerConfig,
 				annotator)
 			for k, v := range test.expectedLabels {

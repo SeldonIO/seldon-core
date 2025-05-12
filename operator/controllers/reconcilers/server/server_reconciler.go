@@ -133,6 +133,7 @@ func (s *ServerReconciler) createDeploymentReconciler(server *mlopsv1alpha1.Serv
 		server.ObjectMeta,
 		podSpec,
 		&server.Spec.ScalingSpec,
+		&server.Spec.DeploymentStrategy,
 		serverConfig.ObjectMeta,
 		annotator)
 	return deploymentReconciler, nil
