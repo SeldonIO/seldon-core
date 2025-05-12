@@ -1,70 +1,6 @@
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: mlserver
-  labels:
-    app: mlserver
-spec:
-  ports:
-  - port: 9000
-    name: http
-  - port: 9500
-    name: grpc
-  clusterIP: None    
-  selector:
-    app: mlserver
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mlserver-0
-  labels:
-    app: mlserver-0
-spec:
-  ports:
-  - port: 9000
-    name: http
-  - port: 9500
-    name: grpc
-  clusterIP: None
-  selector:
-    statefulset.kubernetes.io/pod-name: seldon-mlserver-0
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mlserver-1
-  labels:
-    app: mlserver-1
-spec:
-  ports:
-  - port: 9000
-    name: http
-  - port: 9500
-    name: grpc
-  clusterIP: None
-  selector:
-    statefulset.kubernetes.io/pod-name: seldon-mlserver-1
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mlserver-2
-  labels:
-    app: mlserver-2
-spec:
-  ports:
-  - port: 9000
-    name: http
-  - port: 9500
-    name: grpc
-  clusterIP: None
-  selector:
-    statefulset.kubernetes.io/pod-name: seldon-mlserver-2
----
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: mlserver
 spec:
@@ -184,14 +120,6 @@ spec:
           name: mlserver-models
       securityContext:
         runAsUser: 8888
-  volumeClaimTemplates:
-  - metadata:
-      name: mlserver-models
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 1Gi
 ---
 apiVersion: keda.sh/mesh
 kind: ScaledObject
@@ -200,7 +128,7 @@ metadata:
   namespace: seldon
 spec:
   scaleTargetRef:
-    kind: StatefulSet    
+    kind: Deployment
     name: mlserver
   triggers:
   - type: cpu
