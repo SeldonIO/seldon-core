@@ -25,6 +25,30 @@ metadata:
   name: seldon-manager-config
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mlserver-models
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: triton-models
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -1250,6 +1274,9 @@ spec:
     - configMap:
         name: seldon-tracing
       name: tracing-config-volume
+    - name: mlserver-models
+      persistentVolumeClaim:
+        claimName: mlserver-models
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: mlops.seldon.io/v1alpha1
@@ -1514,3 +1541,6 @@ spec:
         medium: Memory
         sizeLimit: 256Mi
       name: dshm
+    - name: triton-models
+      persistentVolumeClaim:
+        claimName: triton-models

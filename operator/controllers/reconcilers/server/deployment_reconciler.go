@@ -60,35 +60,6 @@ func toDeploymentTest(
 ) *appsv1.Deployment {
 	metaLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: constants.ServerLabelValue}, labels)
 	templateLabels := utils.MergeMaps(map[string]string{constants.ServerLabelNameKey: meta.Name, constants.KubernetesNameLabelKey: constants.ServerLabelValue}, labels)
-
-	// Start with any PVC volumes
-	var volumes []v1.Volume
-
-	// Add required volumes explicitly
-	volumes = append(volumes,
-		v1.Volume{
-			Name: "config-volume",
-			VolumeSource: v1.VolumeSource{
-				ConfigMap: &v1.ConfigMapVolumeSource{
-					LocalObjectReference: v1.LocalObjectReference{
-						Name: "seldon-agent", // adjust to your actual ConfigMap name
-					},
-				},
-			},
-		},
-		v1.Volume{
-			Name: "tracing-config-volume",
-			VolumeSource: v1.VolumeSource{
-				ConfigMap: &v1.ConfigMapVolumeSource{
-					LocalObjectReference: v1.LocalObjectReference{
-						Name: "seldon-tracing", // adjust to your actual ConfigMap name
-					},
-				},
-			},
-		},
-	)
-
-	podSpec.Volumes = volumes
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        meta.Name,

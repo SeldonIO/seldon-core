@@ -1,3 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: triton-models
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
 ---
 apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig
@@ -205,4 +215,7 @@ spec:
       emptyDir:
         medium: Memory
         sizeLimit: "256Mi"
+    - name: triton-models
+      persistentVolumeClaim:
+        claimName: triton-models
 
