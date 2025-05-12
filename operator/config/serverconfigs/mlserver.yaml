@@ -194,10 +194,3 @@ spec:
       secret:
         secretName: seldon-downstream-server
         optional: true
-  volumeClaimTemplates:
-  - name: mlserver-models
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 1Gi
