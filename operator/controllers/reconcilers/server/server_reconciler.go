@@ -112,7 +112,7 @@ func updateCapabilities(capabilities []string, extraCapabilities []string, podSp
 	}
 }
 
-func (s *ServerReconciler) createStatefulSetReconciler(server *mlopsv1alpha1.Server, annotator *patch.Annotator) (*ServerStatefulSetReconciler, error) {
+func (s *ServerReconciler) createDeploymentReconciler(server *mlopsv1alpha1.Server, annotator *patch.Annotator) (*ServerDeploymentReconciler, error) {
 	//Get ServerConfig
 	serverConfig, err := mlopsv1alpha1.GetServerConfigForServer(server.Spec.ServerConfig, s.Client)
 	if err != nil {
@@ -129,35 +129,7 @@ func (s *ServerReconciler) createStatefulSetReconciler(server *mlopsv1alpha1.Ser
 	updateCapabilities(server.Spec.Capabilities, server.Spec.ExtraCapabilities, podSpec)
 
 	// Reconcile ReplicaSet
-	statefulSetReconciler := NewServerStatefulSetReconciler(s.ReconcilerConfig,
-		server.ObjectMeta,
-		podSpec,
-		serverConfig.Spec.VolumeClaimTemplates,
-		&server.Spec.ScalingSpec,
-		server.Spec.StatefulSetPersistentVolumeClaimRetentionPolicy,
-		serverConfig.ObjectMeta,
-		annotator)
-	return statefulSetReconciler, nil
-}
-
-func (s *ServerReconciler) createDeploymentReconciler(server *mlopsv1alpha1.Server, annotator *patch.Annotator) (*ServerDeploymentReconcilerTest, error) {
-	//Get ServerConfig
-	serverConfig, err := mlopsv1alpha1.GetServerConfigForServer(server.Spec.ServerConfig, s.Client)
-	if err != nil {
-		return nil, err
-	}
-
-	//Merge specs
-	podSpec, err := common.MergePodSpecs(&serverConfig.Spec.PodSpec, server.Spec.PodSpec)
-	if err != nil {
-		return nil, err
-	}
-
-	// Update capabilities
-	updateCapabilities(server.Spec.Capabilities, server.Spec.ExtraCapabilities, podSpec)
-
-	// Reconcile ReplicaSet
-	deploymentReconciler := NewServerDeploymentReconcilerTest(s.ReconcilerConfig,
+	deploymentReconciler := NewServerDeploymentReconciler(s.ReconcilerConfig,
 		server.ObjectMeta,
 		podSpec,
 		serverConfig.Spec.VolumeClaimTemplates,

@@ -6,10 +6,6 @@ import (
 	"fmt"
 
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
-	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
-	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
-	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
-	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -17,15 +13,20 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"knative.dev/pkg/apis"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 )
 
-type ServerDeploymentReconcilerTest struct {
+type ServerDeploymentReconciler struct {
 	common.ReconcilerConfig
 	Deployment *appsv1.Deployment
 	Annotator  *patch.Annotator
 }
 
-func NewServerDeploymentReconcilerTest(
+func NewServerDeploymentReconciler(
 	common common.ReconcilerConfig,
 	meta metav1.ObjectMeta,
 	podSpec *v1.PodSpec,
@@ -33,21 +34,21 @@ func NewServerDeploymentReconcilerTest(
 	scaling *mlopsv1alpha1.ScalingSpec,
 	serverConfigMeta metav1.ObjectMeta,
 	annotator *patch.Annotator,
-) *ServerDeploymentReconcilerTest {
+) *ServerDeploymentReconciler {
 	labels := utils.MergeMaps(meta.Labels, serverConfigMeta.Labels)
 	annotations := utils.MergeMaps(meta.Annotations, serverConfigMeta.Annotations)
-	return &ServerDeploymentReconcilerTest{
+	return &ServerDeploymentReconciler{
 		ReconcilerConfig: common,
 		Deployment:       toDeploymentTest(meta, podSpec, volumeClaimTeplates, scaling, labels, annotations),
 		Annotator:        annotator,
 	}
 }
 
-func (s *ServerDeploymentReconcilerTest) GetResources() []client.Object {
+func (s *ServerDeploymentReconciler) GetResources() []client.Object {
 	return []client.Object{s.Deployment}
 }
 
-func (s *ServerDeploymentReconcilerTest) GetLabelSelector() string {
+func (s *ServerDeploymentReconciler) GetLabelSelector() string {
 	return fmt.Sprintf("%s=%s", constants.ServerLabelNameKey, s.Deployment.GetName())
 }
 
@@ -59,8 +60,6 @@ func toDeploymentTest(
 	labels map[string]string,
 	annotations map[string]string,
 ) *appsv1.Deployment {
-	// revisionHistoryLimit := int32(10)
-	// progressDeadlineSeconds := int32(600)
 	metaLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: constants.ServerLabelValue}, labels)
 	templateLabels := utils.MergeMaps(map[string]string{constants.ServerLabelNameKey: meta.Name, constants.KubernetesNameLabelKey: constants.ServerLabelValue}, labels)
 
@@ -123,21 +122,11 @@ func toDeploymentTest(
 				},
 				Spec: *podSpec,
 			},
-			// Strategy: appsv1.DeploymentStrategy{
-			// 	Type: appsv1.RollingUpdateDeploymentStrategyType,
-			// 	RollingUpdate: &appsv1.RollingUpdateDeployment{
-			// 		MaxUnavailable: &intstr.IntOrString{IntVal: 1},
-			// 		MaxSurge:       &intstr.IntOrString{IntVal: 1},
-			// 	},
-			// },
-			// MinReadySeconds:         10,
-			// RevisionHistoryLimit:    &revisionHistoryLimit,
-			// ProgressDeadlineSeconds: &progressDeadlineSeconds,
 		},
 	}
 }
 
-func (s *ServerDeploymentReconcilerTest) getReconcileOperation() (constants.ReconcileOperation, error) {
+func (s *ServerDeploymentReconciler) getReconcileOperation() (constants.ReconcileOperation, error) {
 	found := &appsv1.Deployment{}
 	err := s.Client.Get(
 		context.TODO(),
@@ -186,7 +175,7 @@ func (s *ServerDeploymentReconcilerTest) getReconcileOperation() (constants.Reco
 	return constants.ReconcileUpdateNeeded, nil
 }
 
-func (s *ServerDeploymentReconcilerTest) Reconcile() error {
+func (s *ServerDeploymentReconciler) Reconcile() error {
 	logger := s.Logger.WithName("DeploymentReconcile")
 	op, err := s.getReconcileOperation()
 
@@ -224,7 +213,7 @@ const (
 	DeploymentReplicasNil    = "[BUG] Deployment replicas is nil"
 )
 
-func (s *ServerDeploymentReconcilerTest) GetConditions() []*apis.Condition {
+func (s *ServerDeploymentReconciler) GetConditions() []*apis.Condition {
 	// Replicas should never be nil as it is set to a default when not given explicitly
 	// Check to defend against programmatic setting to nil (i.e a bug in the code)
 	if s.Deployment.Spec.Replicas == nil {
