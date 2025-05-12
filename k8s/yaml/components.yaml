@@ -1139,6 +1139,12 @@ spec:
         value: seldon-mesh
       - name: SELDON_ENVOY_PORT
         value: "80"
+      - name: SERVER_NAME
+        value: mlserver
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
       - name: POD_NAME
         valueFrom:
           fieldRef:
@@ -1403,6 +1409,12 @@ spec:
         value: "9008"
       - name: SELDON_SERVER_TYPE
         value: triton
+      - name: SERVER_NAME
+        value: triton
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
       - name: POD_NAME
         valueFrom:
           fieldRef:

@@ -95,6 +95,12 @@ spec:
         value: "80"
       - name: SELDON_LOG_LEVEL
         value: "warn"
+      - name: SERVER_NAME
+        value: "mlserver"
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
       - name: POD_NAME
         valueFrom:
           fieldRef:

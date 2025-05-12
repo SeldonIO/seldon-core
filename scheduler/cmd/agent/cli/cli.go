@@ -10,7 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package cli
 
 import (
-	"math/big"
+	"hash/fnv"
 	"math/rand"
 	"os"
 	"strings"
@@ -26,6 +26,7 @@ const (
 	envReverseProxyGrpcPort                            = "SELDON_REVERSE_PROXY_GRPC_PORT"
 	envDebugGrpcPort                                   = "SELDON_DEBUG_GRPC_PORT"
 	envMetricsPort                                     = "SELDON_METRICS_PORT"
+	envServerName                                      = "SERVER_NAME"
 	envPodName                                         = "POD_NAME"
 	envPodIP                                           = "POD_IP"
 	envSchedulerHost                                   = "SELDON_SCHEDULER_HOST"
@@ -484,41 +485,19 @@ func maybeUpdateServerNameAndIndex() {
 		return
 	}
 
-	setServerNameAndIdxFromPodName()
+	setServerNameAndIdx()
 }
 
-func setServerNameAndIdxFromPodName() {
-	log.Infof("Trying to set server name and replica index from pod name")
+func stringToUint(s string) uint {
+	h := fnv.New32a()
+	h.Write([]byte(s))
+	return uint(h.Sum32())
+}
 
-	podName := os.Getenv(envPodName)
-	if podName != "" {
-		parts := strings.Split(podName, "-")
-
-		if len(parts) < 2 {
-			log.Fatalf("Invalid pod name format: %s. Expected format: <server-name>-<index>", podName)
-			return
-		}
-
-		serverName := parts[0]                        // first part is the server name
-		suffix := parts[2]                            // third part is the random suffix
-		num, ok := new(big.Int).SetString(suffix, 36) // base-36 decoding
-
-		if !ok {
-			log.Fatalf("Failed to parse index from pod name: %s", podName)
-		} else {
-			ReplicaIdx = uint(num.Uint64())
-			ServerName = serverName
-
-			log.Infof(
-				"Got server name and index from %s with value %s. Server name:%s Replica Idx:%d",
-				envPodName,
-				podName,
-				ServerName,
-				ReplicaIdx,
-			)
-		}
-
-	}
+func setServerNameAndIdx() {
+	ServerName = os.Getenv(envServerName)
+	ReplicaIdx = stringToUint(os.Getenv(envPodName))
+	log.Infof("Server name:%s Replica Idx:%d", ServerName, ReplicaIdx)
 }
 
 func maybeUpdateReplicaConfig() {
@@ -577,7 +556,6 @@ func updateNamespace() {
 }
 
 func setInferenceSvcName() {
-	// podName := os.Getenv(envPodName)
 	podIp := os.Getenv(envPodIP)
 	if podIp != "" {
 		InferenceSvcName = podIp
