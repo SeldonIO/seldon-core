@@ -89,8 +89,6 @@ spec:
         value: "triton"
       - name: SELDON_LOG_LEVEL
         value: "warn"
-      - name: SERVER_NAME
-        value: "triton"
       - name: POD_IP
         valueFrom:
           fieldRef:

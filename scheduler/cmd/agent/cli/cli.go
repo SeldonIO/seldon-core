@@ -26,7 +26,6 @@ const (
 	envReverseProxyGrpcPort                            = "SELDON_REVERSE_PROXY_GRPC_PORT"
 	envDebugGrpcPort                                   = "SELDON_DEBUG_GRPC_PORT"
 	envMetricsPort                                     = "SELDON_METRICS_PORT"
-	envServerName                                      = "SERVER_NAME"
 	envPodName                                         = "POD_NAME"
 	envPodIP                                           = "POD_IP"
 	envSchedulerHost                                   = "SELDON_SCHEDULER_HOST"
@@ -495,9 +494,26 @@ func stringToUint(s string) uint {
 }
 
 func setServerNameAndIdx() {
-	ServerName = os.Getenv(envServerName)
-	ReplicaIdx = stringToUint(os.Getenv(envPodName))
-	log.Infof("Server name:%s Replica Idx:%d", ServerName, ReplicaIdx)
+	log.Infof("Trying to set server name and replica index from pod name")
+	podName := os.Getenv(envPodName)
+
+	if podName != "" {
+		// pod name is in the format deploymentName-replicaSetHash-randomTermination
+		tokens := strings.Split(podName, "-")
+		if len(tokens) < 3 {
+			log.Infof("Can't decypher pod name to find server name and index. %s", podName)
+		} else {
+			ReplicaIdx = stringToUint(strings.Join(tokens[len(tokens)-2:], "-"))
+			ServerName = strings.Join(tokens[:len(tokens)-2], "-")
+			log.Infof(
+				"Got server name and index from %s with value %s. Server name:%s Replica Idx:%d",
+				envPodName,
+				podName,
+				ServerName,
+				ReplicaIdx,
+			)
+		}
+	}
 }
 
 func maybeUpdateReplicaConfig() {
