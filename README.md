@@ -78,7 +78,7 @@ make undeploy-k8s
 
 ## Documentation
 
-[Seldon Core 2 docs](https://docs.seldon.io/projects/seldon-core/en/v2/)
+[Seldon Core 2 docs](https://docs.seldon.ai/seldon-core-2)
 
 ## License
 
