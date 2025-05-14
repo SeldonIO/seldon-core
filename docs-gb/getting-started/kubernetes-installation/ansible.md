@@ -2,7 +2,7 @@
 
 {% hint style="warning" %}
 **Warning**: The Ansible installation of a Seldon Core and associated ecosystem is meant for **dev/testing** purposes.
-For production use cases follow [Helm installation](https://docs.seldon.io/projects/seldon-core/en/v2/contents/getting-started/kubernetes-installation/helm.html).
+For production use cases follow [Helm installation](https://docs.seldon.ai/seldon-core-2/installation/production-environment).
 {% endhint %}
 
 ## Installing Ansible
@@ -241,5 +241,4 @@ rm -rf ~/.cache/seldon/
 
 {% hint style="info" %}
 If you used Ansible to install Seldon Core 2 and its ecosystem into K8s cluster other than Kind you need to manually remove all the components.
-Notes on how to remove Seldon Core 2 Helm installation itself you can find [here](https://docs.seldon.io/projects/seldon-core/en/v2/contents/getting-started/kubernetes-installation/helm.html#uninstall).
 {% endhint %}
