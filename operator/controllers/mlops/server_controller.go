@@ -101,11 +101,20 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return reconcile.Result{}, err
 	}
 
-	sr, err := serverreconcile.NewServerReconciler(server, common.ReconcilerConfig{
-		Ctx:    ctx,
-		Logger: logger,
-		Client: r.Client,
-	})
+	var sr common.Reconciler
+	if true {
+		sr, err = serverreconcile.NewServerReconciler(server, common.ReconcilerConfig{
+			Ctx:    ctx,
+			Logger: logger,
+			Client: r.Client,
+		})
+	} else {
+		sr, err = serverreconcile.NewServerReconcilerWithDeployment(server, common.ReconcilerConfig{
+			Ctx:    ctx,
+			Logger: logger,
+			Client: r.Client,
+		})
+	}
 	if err != nil {
 		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err

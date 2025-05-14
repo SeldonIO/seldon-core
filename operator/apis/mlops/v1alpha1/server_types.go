@@ -38,6 +38,8 @@ type ServerSpec struct {
 	// PodSpec overrides
 	// Slices such as containers would be appended not overridden
 	PodSpec *PodSpec `json:"podSpec,omitempty"`
+	// StatefulSetPersistentVolumeClaimRetentionPolicy policy for stateful set pvc
+	StatefulSetPersistentVolumeClaimRetentionPolicy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy `json:"statefulSetPersistentVolumeClaimRetentionPolicy,omitempty"`
 	// Scaling spec
 	ScalingSpec `json:",inline"`
 	// Deployment strategy
@@ -120,6 +122,7 @@ const (
 )
 
 var serverConditionSet = apis.NewLivingConditionSet(
+	StatefulSetReady,
 	DeploymentReady,
 )
 

@@ -1,11 +1,11 @@
-// /*
-// Copyright (c) 2024 Seldon Technologies Ltd.
+/*
+Copyright (c) 2024 Seldon Technologies Ltd.
 
-// Use of this software is governed by
-// (1) the license included in the LICENSE file or
-// (2) if the license included in the LICENSE file is the Business Source License 1.1,
-// the Change License after the Change Date as each is defined in accordance with the LICENSE file.
-// */
+Use of this software is governed by
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
+*/
 
 package server
 
@@ -33,11 +33,12 @@ func TestServerReconcile(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name                   string
-		serverConfig           *mlopsv1alpha1.ServerConfig
-		server                 *mlopsv1alpha1.Server
-		error                  bool
-		expectedDeploymentName string
+		name                    string
+		serverConfig            *mlopsv1alpha1.ServerConfig
+		server                  *mlopsv1alpha1.Server
+		error                   bool
+		expectedSvcNames        []string
+		expectedStatefulSetName string
 	}
 	mlserverConfigName := "mlserver-config"
 	tests := []test{
@@ -68,7 +69,42 @@ func TestServerReconcile(t *testing.T) {
 					ServerConfig: mlserverConfigName,
 				},
 			},
-			expectedDeploymentName: "myserver",
+			expectedSvcNames:        []string{"myserver-0"},
+			expectedStatefulSetName: "myserver",
+		},
+		{
+			name: "Test StatefulSetPersistentVolumeClaimRetentionPolicy",
+			serverConfig: &mlopsv1alpha1.ServerConfig{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      mlserverConfigName,
+					Namespace: constants.SeldonNamespace,
+				},
+				Spec: mlopsv1alpha1.ServerConfigSpec{
+					PodSpec: v1.PodSpec{
+						Containers: []v1.Container{
+							{
+								Name:  "mlserver",
+								Image: "seldonio/mlserver:0.5",
+							},
+						},
+					},
+				},
+			},
+			server: &mlopsv1alpha1.Server{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "myserver",
+					Namespace: constants.SeldonNamespace,
+				},
+				Spec: mlopsv1alpha1.ServerSpec{
+					ServerConfig: mlserverConfigName,
+					StatefulSetPersistentVolumeClaimRetentionPolicy: &appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{
+						WhenDeleted: appsv1.RetainPersistentVolumeClaimRetentionPolicyType,
+						WhenScaled:  appsv1.RetainPersistentVolumeClaimRetentionPolicyType,
+					},
+				},
+			},
+			expectedSvcNames:        []string{"myserver-0"},
+			expectedStatefulSetName: "myserver",
 		},
 	}
 	for _, test := range tests {
@@ -95,11 +131,19 @@ func TestServerReconcile(t *testing.T) {
 				g.Expect(err).ToNot(BeNil())
 			} else {
 				g.Expect(err).To(BeNil())
-				deployment := &appsv1.Deployment{}
+				for _, svcName := range test.expectedSvcNames {
+					svc := &v1.Service{}
+					err := client.Get(context.TODO(), types.NamespacedName{
+						Name:      svcName,
+						Namespace: test.server.GetNamespace(),
+					}, svc)
+					g.Expect(err).To(BeNil())
+				}
+				ss := &appsv1.StatefulSet{}
 				err := client.Get(context.TODO(), types.NamespacedName{
-					Name:      test.expectedDeploymentName,
+					Name:      test.expectedStatefulSetName,
 					Namespace: test.server.GetNamespace(),
-				}, deployment)
+				}, ss)
 				g.Expect(err).To(BeNil())
 			}
 		})

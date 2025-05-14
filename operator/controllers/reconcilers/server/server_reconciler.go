@@ -29,63 +29,66 @@ const (
 
 type ServerReconciler struct {
 	common.ReconcilerConfig
-	DeploymentReconciler common.Reconciler
-
-	// StatefulSetReconciler common.Reconciler
-	// ServiceReconciler     common.Reconciler
+	StatefulSetReconciler common.Reconciler
+	ServiceReconciler     common.Reconciler
 }
 
-func NewServerReconciler(
-	server *mlopsv1alpha1.Server,
-	common common.ReconcilerConfig,
-) (common.Reconciler, error) {
+func NewServerReconciler(server *mlopsv1alpha1.Server,
+	common common.ReconcilerConfig) (common.Reconciler, error) {
 	// Ensure defaults added to server
 	server.Default()
 
 	var err error
-	sr := &ServerReconciler{ReconcilerConfig: common}
+	sr := &ServerReconciler{
+		ReconcilerConfig: common,
+	}
+
 	annotator := patch.NewAnnotator(constants.LastAppliedConfig)
 
-	sr.DeploymentReconciler, err = sr.createDeploymentReconciler(server, annotator)
+	sr.StatefulSetReconciler, err = sr.createStatefulSetReconciler(server, annotator)
 	if err != nil {
 		return nil, err
 	}
 
 	// Add last applied annotation to all resources
-	for _, res := range sr.DeploymentReconciler.GetResources() {
+	for _, res := range sr.StatefulSetReconciler.GetResources() {
 		if err := annotator.SetLastAppliedAnnotation(res); err != nil {
 			return nil, err
 		}
 	}
 
-	// sr.ServiceReconciler = NewServerServiceReconciler(common, server.ObjectMeta, &server.Spec.ScalingSpec)
+	sr.ServiceReconciler = NewServerServiceReconciler(common, server.ObjectMeta, &server.Spec.ScalingSpec)
 	return sr, nil
 }
 
 func (s *ServerReconciler) GetLabelSelector() string {
-	return s.DeploymentReconciler.(common.LabelHandler).GetLabelSelector()
+	return s.StatefulSetReconciler.(common.LabelHandler).GetLabelSelector()
 }
 
 func (s *ServerReconciler) GetReplicas() (int32, error) {
-	return s.DeploymentReconciler.(common.ReplicaHandler).GetReplicas()
+	return s.StatefulSetReconciler.(common.ReplicaHandler).GetReplicas()
 }
 
 func (s *ServerReconciler) GetResources() []client.Object {
-	objs := s.DeploymentReconciler.GetResources()
-	// objs = append(objs, s.ServiceReconciler.GetResources()...)
+	objs := s.StatefulSetReconciler.GetResources()
+	objs = append(objs, s.ServiceReconciler.GetResources()...)
 	return objs
 }
 
 func (s *ServerReconciler) GetConditions() []*apis.Condition {
-	conditions := s.DeploymentReconciler.GetConditions()
-	// conditions = append(conditions, s.ServiceReconciler.GetConditions()...)
+	conditions := s.StatefulSetReconciler.GetConditions()
+	conditions = append(conditions, s.ServiceReconciler.GetConditions()...)
 	return conditions
 }
 
 func (s *ServerReconciler) Reconcile() error {
-
-	// Reconcile Deployment
-	err := s.DeploymentReconciler.Reconcile()
+	// Reconcile Services
+	err := s.ServiceReconciler.Reconcile()
+	if err != nil {
+		return err
+	}
+	// Reconcile StatefulSet
+	err = s.StatefulSetReconciler.Reconcile()
 	if err != nil {
 		return err
 	}
@@ -112,7 +115,7 @@ func updateCapabilities(capabilities []string, extraCapabilities []string, podSp
 	}
 }
 
-func (s *ServerReconciler) createDeploymentReconciler(server *mlopsv1alpha1.Server, annotator *patch.Annotator) (*ServerDeploymentReconciler, error) {
+func (s *ServerReconciler) createStatefulSetReconciler(server *mlopsv1alpha1.Server, annotator *patch.Annotator) (*ServerStatefulSetReconciler, error) {
 	//Get ServerConfig
 	serverConfig, err := mlopsv1alpha1.GetServerConfigForServer(server.Spec.ServerConfig, s.Client)
 	if err != nil {
@@ -129,12 +132,13 @@ func (s *ServerReconciler) createDeploymentReconciler(server *mlopsv1alpha1.Serv
 	updateCapabilities(server.Spec.Capabilities, server.Spec.ExtraCapabilities, podSpec)
 
 	// Reconcile ReplicaSet
-	deploymentReconciler := NewServerDeploymentReconciler(s.ReconcilerConfig,
+	statefulSetReconciler := NewServerStatefulSetReconciler(s.ReconcilerConfig,
 		server.ObjectMeta,
 		podSpec,
+		serverConfig.Spec.VolumeClaimTemplates,
 		&server.Spec.ScalingSpec,
-		&server.Spec.DeploymentStrategy,
+		server.Spec.StatefulSetPersistentVolumeClaimRetentionPolicy,
 		serverConfig.ObjectMeta,
 		annotator)
-	return deploymentReconciler, nil
+	return statefulSetReconciler, nil
 }

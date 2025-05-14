@@ -20,6 +20,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -31,28 +32,30 @@ import (
 	testing2 "github.com/seldonio/seldon-core/operator/v2/pkg/utils/testing"
 )
 
-func TestServerDeploymentReconcile(t *testing.T) {
+func TestStatefulSetReconcile(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	stsJson := `{"metadata":{"name":"mlserver","namespace":"ns1","creationTimestamp":null,"labels":{"app.kubernetes.io/name":"seldon-server","app.kubernetes.io/managed-by":"Helm"},"ownerReferences":[{"apiVersion":"mlops.seldon.io/v1alpha1","kind":"Server","name":"mlserver","uid":"7a9dc74b-552c-49da-8e45-09a6af752319","controller":true,"blockOwnerDeletion":true}]},"spec":{"replicas":1,"selector":{"matchLabels":{"seldon-server-name":"mlserver"}},"template":{"metadata":{"name":"mlserver","namespace":"ns1","creationTimestamp":null,"labels":{"app":"seldon-server","app.kubernetes.io/managed-by":"Helm","seldon-server-name":"mlserver"}},"spec":{"volumes":[{"name":"downstream-ca-certs","secret":{"secretName":"seldon-downstream-server","optional":true}},{"name":"config-volume","configMap":{"name":"seldon-agent"}},{"name":"tracing-config-volume","configMap":{"name":"seldon-tracing"}}],"containers":[{"name":"rclone","image":"docker.io/seldonio/seldon-rclone:latest","ports":[{"name":"rclone","containerPort":5572,"protocol":"TCP"}],"resources":{"limits":{"memory":"128Mi"},"requests":{"cpu":"50m","memory":"128Mi"}},"volumeMounts":[{"name":"mlserver-models","mountPath":"/mnt/agent"}],"readinessProbe":{"tcpSocket":{"port":5572},"initialDelaySeconds":5,"timeoutSeconds":1,"periodSeconds":5,"successThreshold":1,"failureThreshold":3},"lifecycle":{"preStop":{"httpGet":{"path":"terminate","port":9007}}},"imagePullPolicy":"IfNotPresent"}],"terminationGracePeriodSeconds":120,"serviceAccountName":"seldon-server","securityContext":{"runAsUser":1000,"runAsGroup":1000,"runAsNonRoot":true,"fsGroup":1000}}},"volumeClaimTemplates":[{"metadata":{"name":"mlserver-models","creationTimestamp":null},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}},"status":{}}],"serviceName":"mlserver","podManagementPolicy":"Parallel","updateStrategy":{}},"status":{"replicas":0,"availableReplicas":0}}`
-	sts := appsv1.Deployment{}
+	sts := appsv1.StatefulSet{}
 	err := json.Unmarshal([]byte(stsJson), &sts)
 	g.Expect(err).To(BeNil())
 
 	type test struct {
-		name                string
-		metaServer          metav1.ObjectMeta
-		metaServerConfig    metav1.ObjectMeta
-		podSpec             *v1.PodSpec
-		scaling             *mlopsv1alpha1.ScalingSpec
-		deploymentStrategy  *appsv1.DeploymentStrategy
-		existing            *appsv1.Deployment
-		expectedReconcileOp constants.ReconcileOperation
+		name                                            string
+		metaServer                                      metav1.ObjectMeta
+		metaServerConfig                                metav1.ObjectMeta
+		podSpec                                         *v1.PodSpec
+		volumeClaimTemplates                            []mlopsv1alpha1.PersistentVolumeClaim
+		scaling                                         *mlopsv1alpha1.ScalingSpec
+		statefulSetPersistentVolumeClaimRetentionPolicy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy
+		existing                                        *appsv1.StatefulSet
+		expectedReconcileOp                             constants.ReconcileOperation
 	}
 
 	getIntPtr := func(i int32) *int32 {
 		return &i
 	}
+	oneG, err := resource.ParseQuantity("1G")
 	g.Expect(err).To(BeNil())
 	tests := []test{
 		{
@@ -75,10 +78,22 @@ func TestServerDeploymentReconcile(t *testing.T) {
 				},
 				NodeName: "node",
 			},
+			volumeClaimTemplates: []mlopsv1alpha1.PersistentVolumeClaim{
+				{
+					Name: "model-repository",
+					Spec: v1.PersistentVolumeClaimSpec{
+						AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+						Resources: v1.VolumeResourceRequirements{
+							Requests: v1.ResourceList{
+								v1.ResourceStorage: oneG,
+							},
+						},
+					},
+				},
+			},
 			scaling: &mlopsv1alpha1.ScalingSpec{
 				Replicas: getIntPtr(2),
 			},
-			deploymentStrategy:  &appsv1.DeploymentStrategy{},
 			expectedReconcileOp: constants.ReconcileCreateNeeded,
 		},
 		{
@@ -92,10 +107,22 @@ func TestServerDeploymentReconcile(t *testing.T) {
 				Namespace: "ns1",
 			},
 			podSpec: sts.Spec.Template.Spec.DeepCopy(),
+			volumeClaimTemplates: []mlopsv1alpha1.PersistentVolumeClaim{
+				{
+					Name: "model-repository",
+					Spec: v1.PersistentVolumeClaimSpec{
+						AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+						Resources: v1.VolumeResourceRequirements{
+							Requests: v1.ResourceList{
+								v1.ResourceStorage: oneG,
+							},
+						},
+					},
+				},
+			},
 			scaling: &mlopsv1alpha1.ScalingSpec{
 				Replicas: getIntPtr(2),
 			},
-			deploymentStrategy:  &appsv1.DeploymentStrategy{},
 			existing:            &sts,
 			expectedReconcileOp: constants.ReconcileUpdateNeeded,
 		},
@@ -136,11 +163,23 @@ func TestServerDeploymentReconcile(t *testing.T) {
 				},
 				NodeName: "node",
 			},
+			volumeClaimTemplates: []mlopsv1alpha1.PersistentVolumeClaim{
+				{
+					Name: "model-repository",
+					Spec: v1.PersistentVolumeClaimSpec{
+						AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+						Resources: v1.VolumeResourceRequirements{
+							Requests: v1.ResourceList{
+								v1.ResourceStorage: oneG,
+							},
+						},
+					},
+				},
+			},
 			scaling: &mlopsv1alpha1.ScalingSpec{
 				Replicas: getIntPtr(2),
 			},
-			deploymentStrategy: &appsv1.DeploymentStrategy{},
-			existing: &appsv1.Deployment{
+			existing: &appsv1.StatefulSet{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",
@@ -148,7 +187,7 @@ func TestServerDeploymentReconcile(t *testing.T) {
 						"l1": "label1",
 					},
 				},
-				Spec: appsv1.DeploymentSpec{
+				Spec: appsv1.StatefulSetSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
 							"a": "b",
@@ -206,18 +245,31 @@ func TestServerDeploymentReconcile(t *testing.T) {
 				},
 				NodeName: "node",
 			},
+			volumeClaimTemplates: []mlopsv1alpha1.PersistentVolumeClaim{
+				{
+					Name: "model-repository",
+					Spec: v1.PersistentVolumeClaimSpec{
+						AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+						Resources: v1.VolumeResourceRequirements{
+							Requests: v1.ResourceList{
+								v1.ResourceStorage: oneG,
+							},
+						},
+					},
+				},
+			},
 			scaling: &mlopsv1alpha1.ScalingSpec{
 				Replicas: getIntPtr(2),
 			},
-			deploymentStrategy: &appsv1.DeploymentStrategy{},
-			existing: &appsv1.Deployment{
+			existing: &appsv1.StatefulSet{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",
 					Labels:    map[string]string{constants.KubernetesNameLabelKey: constants.ServerLabelValue},
 				},
-				Spec: appsv1.DeploymentSpec{
-					Replicas: getIntPtr(2),
+				Spec: appsv1.StatefulSetSpec{
+					ServiceName: "foo",
+					Replicas:    getIntPtr(2),
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{constants.ServerLabelNameKey: "foo"},
 					},
@@ -236,6 +288,22 @@ func TestServerDeploymentReconcile(t *testing.T) {
 								},
 							},
 							NodeName: "node",
+						},
+					},
+					PodManagementPolicy: appsv1.ParallelPodManagement,
+					VolumeClaimTemplates: []v1.PersistentVolumeClaim{
+						{
+							ObjectMeta: metav1.ObjectMeta{
+								Name: "model-repository",
+							},
+							Spec: v1.PersistentVolumeClaimSpec{
+								AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+								Resources: v1.VolumeResourceRequirements{
+									Requests: v1.ResourceList{
+										v1.ResourceStorage: oneG,
+									},
+								},
+							},
 						},
 					},
 				},
@@ -258,15 +326,16 @@ func TestServerDeploymentReconcile(t *testing.T) {
 			}
 			g.Expect(err).To(BeNil())
 			annotator := patch.NewAnnotator(constants.LastAppliedConfig)
-			r := NewServerDeploymentReconciler(
+			r := NewServerStatefulSetReconciler(
 				common.ReconcilerConfig{
 					Ctx:    context.TODO(),
 					Logger: logger,
 					Client: client},
 				test.metaServer,
 				test.podSpec,
+				test.volumeClaimTemplates,
 				test.scaling,
-				test.deploymentStrategy,
+				test.statefulSetPersistentVolumeClaimRetentionPolicy,
 				test.metaServerConfig,
 				annotator)
 			rop, err := r.getReconcileOperation()
@@ -274,33 +343,36 @@ func TestServerDeploymentReconcile(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			err = r.Reconcile()
 			g.Expect(err).To(BeNil())
-			found := &appsv1.Deployment{}
+			found := &appsv1.StatefulSet{}
 			err = client.Get(context.TODO(), types.NamespacedName{
-				Name:      r.Deployment.GetName(),
-				Namespace: r.Deployment.GetNamespace()}, found)
+				Name:      r.StatefulSet.GetName(),
+				Namespace: r.StatefulSet.GetNamespace()}, found)
 			g.Expect(err).To(BeNil())
-			g.Expect(equality.Semantic.DeepEqual(found.Spec, r.Deployment.Spec))
+			g.Expect(equality.Semantic.DeepEqual(found.Spec, r.StatefulSet.Spec))
 		})
 	}
 }
 
-func TestToDeployment(t *testing.T) {
+func TestToStatefulSet(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name               string
-		meta               metav1.ObjectMeta
-		podSpec            *v1.PodSpec
-		labels             map[string]string
-		annotations        map[string]string
-		scaling            *mlopsv1alpha1.ScalingSpec
-		deploymentStrategy *appsv1.DeploymentStrategy
-		deployment         *appsv1.Deployment
+		name                                            string
+		meta                                            metav1.ObjectMeta
+		podSpec                                         *v1.PodSpec
+		labels                                          map[string]string
+		annotations                                     map[string]string
+		volumeClaimTemplates                            []mlopsv1alpha1.PersistentVolumeClaim
+		statefulSetPersistentVolumeClaimRetentionPolicy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy
+		scaling                                         *mlopsv1alpha1.ScalingSpec
+		statefulSet                                     *appsv1.StatefulSet
 	}
 
 	getIntPtr := func(i int32) *int32 {
 		return &i
 	}
+	oneG, err := resource.ParseQuantity("1G")
+	g.Expect(err).To(BeNil())
 	tests := []test{
 		{
 			name: "Basic",
@@ -320,11 +392,23 @@ func TestToDeployment(t *testing.T) {
 			},
 			labels:      map[string]string{"l1": "l1val"},
 			annotations: map[string]string{"a1": "a1val"},
+			volumeClaimTemplates: []mlopsv1alpha1.PersistentVolumeClaim{
+				{
+					Name: "model-repository",
+					Spec: v1.PersistentVolumeClaimSpec{
+						AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+						Resources: v1.VolumeResourceRequirements{
+							Requests: v1.ResourceList{
+								v1.ResourceStorage: oneG,
+							},
+						},
+					},
+				},
+			},
 			scaling: &mlopsv1alpha1.ScalingSpec{
 				Replicas: getIntPtr(2),
 			},
-			deploymentStrategy: &appsv1.DeploymentStrategy{},
-			deployment: &appsv1.Deployment{
+			statefulSet: &appsv1.StatefulSet{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",
@@ -333,8 +417,9 @@ func TestToDeployment(t *testing.T) {
 						"l1":                             "l1val"},
 					Annotations: map[string]string{"a1": "a1val"},
 				},
-				Spec: appsv1.DeploymentSpec{
-					Replicas: getIntPtr(2),
+				Spec: appsv1.StatefulSetSpec{
+					ServiceName: "foo",
+					Replicas:    getIntPtr(2),
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{constants.ServerLabelNameKey: "foo"},
 					},
@@ -358,6 +443,118 @@ func TestToDeployment(t *testing.T) {
 							NodeName: "node",
 						},
 					},
+					PodManagementPolicy: appsv1.ParallelPodManagement,
+					VolumeClaimTemplates: []v1.PersistentVolumeClaim{
+						{
+							ObjectMeta: metav1.ObjectMeta{
+								Name: "model-repository",
+							},
+							Spec: v1.PersistentVolumeClaimSpec{
+								AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+								Resources: v1.VolumeResourceRequirements{
+									Requests: v1.ResourceList{
+										v1.ResourceStorage: oneG,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Basic",
+			meta: metav1.ObjectMeta{
+				Name:      "foo",
+				Namespace: "default",
+			},
+			podSpec: &v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Name:    "c1",
+						Image:   "myimagec1:1",
+						Command: []string{"cmd"},
+					},
+				},
+				NodeName: "node",
+			},
+			labels:      map[string]string{"l1": "l1val"},
+			annotations: map[string]string{"a1": "a1val"},
+			volumeClaimTemplates: []mlopsv1alpha1.PersistentVolumeClaim{
+				{
+					Name: "model-repository",
+					Spec: v1.PersistentVolumeClaimSpec{
+						AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+						Resources: v1.VolumeResourceRequirements{
+							Requests: v1.ResourceList{
+								v1.ResourceStorage: oneG,
+							},
+						},
+					},
+				},
+			},
+			scaling: &mlopsv1alpha1.ScalingSpec{
+				Replicas: getIntPtr(2),
+			},
+			statefulSetPersistentVolumeClaimRetentionPolicy: &appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{
+				WhenDeleted: "Delete",
+				WhenScaled:  "Delete",
+			},
+			statefulSet: &appsv1.StatefulSet{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "foo",
+					Namespace: "default",
+					Labels: map[string]string{
+						constants.KubernetesNameLabelKey: constants.ServerLabelValue,
+						"l1":                             "l1val"},
+					Annotations: map[string]string{"a1": "a1val"},
+				},
+				Spec: appsv1.StatefulSetSpec{
+					ServiceName: "foo",
+					Replicas:    getIntPtr(2),
+					Selector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{constants.ServerLabelNameKey: "foo"},
+					},
+					Template: v1.PodTemplateSpec{
+						ObjectMeta: metav1.ObjectMeta{
+							Labels: map[string]string{constants.ServerLabelNameKey: "foo",
+								constants.KubernetesNameLabelKey: constants.ServerLabelValue,
+								"l1":                             "l1val"},
+							Annotations: map[string]string{"a1": "a1val"},
+							Name:        "foo",
+							Namespace:   "default",
+						},
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								{
+									Name:    "c1",
+									Image:   "myimagec1:1",
+									Command: []string{"cmd"},
+								},
+							},
+							NodeName: "node",
+						},
+					},
+					PodManagementPolicy: appsv1.ParallelPodManagement,
+					VolumeClaimTemplates: []v1.PersistentVolumeClaim{
+						{
+							ObjectMeta: metav1.ObjectMeta{
+								Name: "model-repository",
+							},
+							Spec: v1.PersistentVolumeClaimSpec{
+								AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
+								Resources: v1.VolumeResourceRequirements{
+									Requests: v1.ResourceList{
+										v1.ResourceStorage: oneG,
+									},
+								},
+							},
+						},
+					},
+					PersistentVolumeClaimRetentionPolicy: &appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{
+						WhenDeleted: "Delete",
+						WhenScaled:  "Delete",
+					},
 				},
 			},
 		},
@@ -365,18 +562,19 @@ func TestToDeployment(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			statefulSet := toDeploymentTest(test.meta,
+			statefulSet := toStatefulSet(test.meta,
 				test.podSpec,
+				test.volumeClaimTemplates,
 				test.scaling,
-				test.deploymentStrategy,
+				test.statefulSetPersistentVolumeClaimRetentionPolicy,
 				test.labels,
 				test.annotations)
-			g.Expect(equality.Semantic.DeepEqual(statefulSet, test.deployment)).To(BeTrue())
+			g.Expect(equality.Semantic.DeepEqual(statefulSet, test.statefulSet)).To(BeTrue())
 		})
 	}
 }
 
-func TestLabelsAnnotationsDeployment(t *testing.T) {
+func TestLabelsAnnotations(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -421,22 +619,23 @@ func TestLabelsAnnotationsDeployment(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			client = testing2.NewFakeClient(scheme)
 			annotator := patch.NewAnnotator(constants.LastAppliedConfig)
-			r := NewServerDeploymentReconciler(
+			r := NewServerStatefulSetReconciler(
 				common.ReconcilerConfig{
 					Ctx:    context.TODO(),
 					Logger: logger,
 					Client: client},
 				test.metaServer,
 				&v1.PodSpec{},
+				[]mlopsv1alpha1.PersistentVolumeClaim{},
 				&mlopsv1alpha1.ScalingSpec{},
-				&appsv1.DeploymentStrategy{},
+				&appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{},
 				test.metaServerConfig,
 				annotator)
 			for k, v := range test.expectedLabels {
-				g.Expect(r.Deployment.Labels[k]).To(Equal(v))
+				g.Expect(r.StatefulSet.Labels[k]).To(Equal(v))
 			}
 			for k, v := range test.expectedAnnotations {
-				g.Expect(r.Deployment.Annotations[k]).To(Equal(v))
+				g.Expect(r.StatefulSet.Annotations[k]).To(Equal(v))
 			}
 		})
 	}
