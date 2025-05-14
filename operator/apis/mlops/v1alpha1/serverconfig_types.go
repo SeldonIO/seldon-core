@@ -27,7 +27,14 @@ import (
 // ServerConfigSpec defines the desired state of ServerConfig
 type ServerConfigSpec struct {
 	// PodSpec
-	PodSpec v1.PodSpec `json:"podSpec"`
+	PodSpec              v1.PodSpec              `json:"podSpec"`
+	VolumeClaimTemplates []PersistentVolumeClaim `json:"volumeClaimTemplates"`
+}
+
+// We use our own type rather than v1.PersistentVolumeClaim as metadata inlined is not handled correctly by CRDs
+type PersistentVolumeClaim struct {
+	Name string                       `json:"name"`
+	Spec v1.PersistentVolumeClaimSpec `json:"spec"`
 }
 
 // ServerConfigStatus defines the observed state of ServerConfig
