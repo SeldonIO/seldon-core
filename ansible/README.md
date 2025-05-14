@@ -236,7 +236,4 @@ You may want to also remove cache resources used for the installation with
 rm -rf ~/.cache/seldon/
 ```
 
-```{note}
 If you used Ansible to install Seldon Core 2 and its ecosystem into K8s cluster other than Kind you need to manually remove all the components.
-Notes on how to remove Seldon Core 2 Helm installation itself you can find [here](https://docs.seldon.io/projects/seldon-core/en/v2/contents/getting-started/kubernetes-installation/helm.html#uninstall).
-```
