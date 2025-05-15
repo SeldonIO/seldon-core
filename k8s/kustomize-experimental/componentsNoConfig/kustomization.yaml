@@ -1,0 +1,4 @@
+bases:
+- ../../../operator/config/default
+- ../../../operator/config/serverconfigs-experimental
+- ../../../operator/config/seldonconfigs
