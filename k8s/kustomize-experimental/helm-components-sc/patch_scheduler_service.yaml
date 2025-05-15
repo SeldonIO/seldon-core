@@ -1,0 +1,21 @@
+- op: replace
+  path: /spec/type
+  value: "{{ .Values.scheduler.service.type }}"
+- op: replace
+  path: /spec/ports/0/name
+  value: "{{ .Values.serviceGRPCPrefix }}xds"
+- op: replace
+  path: /spec/ports/1/name
+  value: "{{ .Values.serviceGRPCPrefix }}scheduler"
+- op: replace
+  path: /spec/ports/2/name
+  value: "{{ .Values.serviceGRPCPrefix }}scheduler-mtls"
+- op: replace
+  path: /spec/ports/3/name
+  value: "{{ .Values.serviceGRPCPrefix }}agent"
+- op: replace
+  path: /spec/ports/4/name
+  value: "{{ .Values.serviceGRPCPrefix }}agent-mtls"
+- op: replace
+  path: /spec/ports/5/name
+  value: "{{ .Values.serviceGRPCPrefix }}dataflow"

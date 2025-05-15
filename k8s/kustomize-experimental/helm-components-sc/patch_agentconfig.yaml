@@ -1,0 +1,9 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: SeldonConfig
+metadata:
+  name: default
+spec:
+  config:
+    agentConfig:
+      rclone: 
+        config_secrets: ["seldon-rclone-gs-public"]

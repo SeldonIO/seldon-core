@@ -1,0 +1,13 @@
+# index based on position of envoy in list of seldonconfig components
+- op: replace
+  path: /spec/components/4/podSpec/securityContext
+  value: HACK_REMOVE_ME{{- toYaml .Values.envoy.securityContext | nindent 8 }}
+- op: replace
+  path: /spec/components/4/labels
+  value: HACK_REMOVE_ME{{- toYaml .Values.envoy.labels | nindent 8 }}
+- op: replace
+  path: /spec/components/4/annotations
+  value: HACK_REMOVE_ME{{- toYaml .Values.envoy.annotations | nindent 8 }}
+- op: replace
+  path: /spec/components/4/podSpec/terminationGracePeriodSeconds
+  value: HACK_REMOVE_ME{{ .Values.envoy.terminationGracePeriodSeconds }}
