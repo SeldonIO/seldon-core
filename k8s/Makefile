@@ -8,7 +8,7 @@ HELM_RUNTIME_BASE := helm-charts/seldon-core-v2-runtime/templates
 HELM_SERVERS_BASE := helm-charts/seldon-core-v2-servers/templates
 
 .PHONY: create
-create: create-helm-charts create-helm-charts-experimental merge-configs # create-yaml
+create: create-helm-charts create-helm-charts-experimental merge-configs create-yaml
 
 .PHONY: create-helm-charts
 create-helm-charts: kustomize
