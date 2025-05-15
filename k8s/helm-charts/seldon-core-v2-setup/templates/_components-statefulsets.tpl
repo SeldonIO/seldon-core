@@ -1259,6 +1259,8 @@ spec:
       - name: SELDON_LOG_LEVEL
         value: '{{ hasKey .Values.serverConfig.agent "logLevel" | ternary .Values.serverConfig.agent.logLevel
           .Values.logging.logLevel }}'
+      - name: SELDON_USE_SERVER_WITH_DEPLOYMENT
+        value: '{{ .Values.useServerWithDeployment }}'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -1530,6 +1532,8 @@ spec:
       - name: SELDON_LOG_LEVEL
         value: '{{ hasKey .Values.serverConfig.agent "logLevel" | ternary .Values.serverConfig.agent.logLevel
           .Values.logging.logLevel }}'
+      - name: SELDON_USE_SERVER_WITH_DEPLOYMENT
+        value: '{{ .Values.useServerWithDeployment }}'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT

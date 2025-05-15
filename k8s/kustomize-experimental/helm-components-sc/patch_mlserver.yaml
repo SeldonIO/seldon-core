@@ -77,6 +77,8 @@ spec:
         value: '{{ .Values.opentelemetry.endpoint }}'
       - name: SELDON_LOG_LEVEL
         value: '{{ hasKey .Values.serverConfig.agent "logLevel" | ternary .Values.serverConfig.agent.logLevel .Values.logging.logLevel }}'
+      - name: SELDON_USE_SERVER_WITH_DEPLOYMENT
+        value: '{{ .Values.useServerWithDeployment }}'
       image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository }}:{{ .Values.serverConfig.agent.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.agent.image.pullPolicy }}'
       name: agent
