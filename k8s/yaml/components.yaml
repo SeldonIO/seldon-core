@@ -25,30 +25,6 @@ metadata:
   name: seldon-manager-config
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mlserver-models
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: triton-models
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
-# Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -293,6 +269,7 @@ spec:
         - --namespace=$(POD_NAMESPACE)
         - --clusterwide=$(CLUSTERWIDE)
         - --log-level=$(LOG_LEVEL)
+        - --use-server-with-deployment=$(USE_SERVER_WITH_DEPLOYMENT)
         command:
         - /manager
         env:
@@ -316,6 +293,8 @@ spec:
           value: 'info'
         - name: WATCH_NAMESPACES
           value: ''
+        - name: USE_SERVER_WITH_DEPLOYMENT
+          value: 'false'
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -1109,6 +1088,8 @@ spec:
         value: 'seldon-collector.seldon-mesh:4317'
       - name: SELDON_LOG_LEVEL
         value: 'info'
+      - name: SELDON_USE_SERVER_WITH_DEPLOYMENT
+        value: 'false'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -1139,10 +1120,6 @@ spec:
         value: seldon-mesh
       - name: SELDON_ENVOY_PORT
         value: "80"
-      - name: POD_IP
-        valueFrom:
-          fieldRef:
-            fieldPath: status.podIP
       - name: POD_NAME
         valueFrom:
           fieldRef:
@@ -1278,9 +1255,14 @@ spec:
     - configMap:
         name: seldon-tracing
       name: tracing-config-volume
-    - name: mlserver-models
-      persistentVolumeClaim:
-        claimName: mlserver-models
+  volumeClaimTemplates:
+  - name: mlserver-models
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: '1Gi'
 ---
 # Source: seldon-core-v2-setup/templates/seldon-v2-components.yaml
 apiVersion: mlops.seldon.io/v1alpha1
@@ -1383,6 +1365,8 @@ spec:
         value: '/tmp/certs/duc/ca.crt'
       - name: SELDON_LOG_LEVEL
         value: 'info'
+      - name: SELDON_USE_SERVER_WITH_DEPLOYMENT
+        value: 'false'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -1407,10 +1391,6 @@ spec:
         value: "9008"
       - name: SELDON_SERVER_TYPE
         value: triton
-      - name: POD_IP
-        valueFrom:
-          fieldRef:
-            fieldPath: status.podIP
       - name: POD_NAME
         valueFrom:
           fieldRef:
@@ -1549,6 +1529,11 @@ spec:
         medium: Memory
         sizeLimit: 256Mi
       name: dshm
-    - name: triton-models
-      persistentVolumeClaim:
-        claimName: triton-models
+  volumeClaimTemplates:
+  - name: triton-models
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: '1Gi'
