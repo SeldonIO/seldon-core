@@ -8237,7 +8237,6 @@ spec:
                 type: array
             required:
             - podSpec
-            - volumeClaimTemplates
             type: object
           status:
             description: ServerConfigStatus defines the observed state of ServerConfig
