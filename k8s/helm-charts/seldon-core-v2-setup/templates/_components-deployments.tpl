@@ -386,30 +386,6 @@ metadata:
   name: seldon-manager-config
   namespace: '{{ .Release.Namespace }}'
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mlserver-models
-  namespace: '{{ .Release.Namespace }}'
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: triton-models
-  namespace: '{{ .Release.Namespace }}'
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1443,9 +1419,8 @@ spec:
     - configMap:
         name: seldon-tracing
       name: tracing-config-volume
-    - name: mlserver-models
-      persistentVolumeClaim:
-        claimName: mlserver-models
+    - emptyDir: {}
+      name: mlserver-models
 ---
 apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig
@@ -1711,7 +1686,6 @@ spec:
         medium: Memory
         sizeLimit: 256Mi
       name: dshm
-    - name: triton-models
-      persistentVolumeClaim:
-        claimName: triton-models
+    - emptyDir: {}
+      name: triton-models
 {{- end }}
