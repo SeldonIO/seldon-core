@@ -92,13 +92,14 @@ func getWatchNamespaceConfig(namespace, watchNamespaces string, clusterwide bool
 
 func main() {
 	var (
-		metricsAddr          string
-		enableLeaderElection bool
-		probeAddr            string
-		namespace            string
-		watchNamespaces      string
-		clusterwide          bool
-		logLevel             string
+		metricsAddr             string
+		enableLeaderElection    bool
+		probeAddr               string
+		namespace               string
+		watchNamespaces         string
+		clusterwide             bool
+		logLevel                string
+		useServerWithDeployment bool
 	)
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":4000", "The address the metric endpoint binds to.")
@@ -113,6 +114,7 @@ func main() {
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.BoolVar(&clusterwide, "clusterwide", false, "Allow clusterwide operations")
 	flag.StringVar(&logLevel, "log-level", "debug", "The log level to use for the operator.")
+	flag.BoolVar(&useServerWithDeployment, "use-server-with-deployment", false, "Use server with deployment instead of statefulset.")
 
 	opts := zap.Options{
 		Development: true,
@@ -157,10 +159,11 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&mlopscontrollers.ServerReconciler{
-		Client:    mgr.GetClient(),
-		Scheme:    mgr.GetScheme(),
-		Scheduler: schedulerClient,
-		Recorder:  mgr.GetEventRecorderFor("server-controller"),
+		Client:                  mgr.GetClient(),
+		Scheme:                  mgr.GetScheme(),
+		Scheduler:               schedulerClient,
+		Recorder:                mgr.GetEventRecorderFor("server-controller"),
+		UseServerWithDeployment: useServerWithDeployment,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Server")
 		os.Exit(1)

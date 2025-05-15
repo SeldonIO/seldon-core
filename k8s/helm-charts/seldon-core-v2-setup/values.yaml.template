@@ -1,3 +1,5 @@
+useServerWithDeployment: false
+
 # Security settings
 security:
   controlplane:

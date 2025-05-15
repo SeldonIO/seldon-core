@@ -40,9 +40,10 @@ import (
 // ServerReconciler reconciles a Server object
 type ServerReconciler struct {
 	client.Client
-	Scheme    *runtime.Scheme
-	Scheduler *scheduler.SchedulerClient
-	Recorder  record.EventRecorder
+	Scheme                  *runtime.Scheme
+	Scheduler               *scheduler.SchedulerClient
+	Recorder                record.EventRecorder
+	UseServerWithDeployment bool
 }
 
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=servers,verbs=get;list;watch;create;update;patch;delete
@@ -102,14 +103,14 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	var sr common.Reconciler
-	if true {
-		sr, err = serverreconcile.NewServerReconciler(server, common.ReconcilerConfig{
+	if r.UseServerWithDeployment {
+		sr, err = serverreconcile.NewServerReconcilerWithDeployment(server, common.ReconcilerConfig{
 			Ctx:    ctx,
 			Logger: logger,
 			Client: r.Client,
 		})
 	} else {
-		sr, err = serverreconcile.NewServerReconcilerWithDeployment(server, common.ReconcilerConfig{
+		sr, err = serverreconcile.NewServerReconciler(server, common.ReconcilerConfig{
 			Ctx:    ctx,
 			Logger: logger,
 			Client: r.Client,

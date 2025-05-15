@@ -37,3 +37,5 @@ spec:
             value: '{{ hasKey .Values.controller "logLevel" | ternary .Values.controller.logLevel .Values.logging.logLevel }}'
           - name: WATCH_NAMESPACES
             value: '{{ join "," .Values.controller.watchNamespaces }}'
+          - name: USE_SERVER_WITH_DEPLOYMENT
+            value: '{{ .Values.useServerWithDeployment }}'
