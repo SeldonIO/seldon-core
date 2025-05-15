@@ -244,6 +244,7 @@ autoscaling:
   serverPackingPercentage: 0.0
 
 serverConfig:
+  useServerWithDeployment: false
   terminationGracePeriodSeconds: 120
 
   securityContext:

@@ -1,3 +1,4 @@
+{{- define "serverconfig.statefulsets" }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -567,8 +568,6 @@ spec:
         - name: LOG_LEVEL
           value: '{{ hasKey .Values.scheduler "logLevel" | ternary .Values.scheduler.logLevel
             .Values.logging.logLevel }}'
-        - name: MODELGATEWAY_MAX_NUM_CONSUMERS
-          value: '{{ .Values.modelgateway.maxNumConsumers }}'
         - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE
@@ -856,16 +855,12 @@ spec:
         - name: LOG_LEVEL
           value: '{{ hasKey .Values.modelgateway "logLevel" | ternary .Values.modelgateway.logLevel
             .Values.logging.logLevel }}'
-        - name: MODELGATEWAY_MAX_NUM_CONSUMERS
-          value: '{{ .Values.modelgateway.maxNumConsumers }}'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
           value: "9044"
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
+        - name: MODELGATEWAY_MAX_NUM_CONSUMERS
+          value: "100"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -1142,9 +1137,6 @@ spec:
         linger.ms: '{{ .Values.kafka.producer.lingerMs }}'
         message.max.bytes: '{{ int .Values.kafka.producer.messageMaxBytes }}'
       topicPrefix: '{{ .Values.kafka.topicPrefix }}'
-      topics:
-        numPartitions: '{{ .Values.kafka.topics.numPartitions }}'
-        replicationFactor: '{{ .Values.kafka.topics.replicationFactor }}'
     serviceConfig:
       grpcServicePrefix: '{{ .Values.services.serviceGRPCPrefix }}'
       serviceType: '{{ .Values.services.defaultServiceType }}'
@@ -1282,8 +1274,6 @@ spec:
         value: "9006"
       - name: SELDON_DRAINER_PORT
         value: "9007"
-      - name: SELDON_READINESS_PORT
-        value: "9008"
       - name: AGENT_TLS_SECRET_NAME
         value: ""
       - name: AGENT_TLS_FOLDER_PATH
@@ -1326,26 +1316,12 @@ spec:
       - containerPort: 9006
         name: metrics
         protocol: TCP
-      - containerPort: 9008
-        name: readiness-port
-      readinessProbe:
-        failureThreshold: 1
-        httpGet:
-          path: /ready
-          port: 9008
-        periodSeconds: 5
       resources:
         limits:
           memory: '{{ .Values.serverConfig.agent.resources.memory }}'
         requests:
           cpu: '{{ .Values.serverConfig.agent.resources.cpu }}'
           memory: '{{ .Values.serverConfig.agent.resources.memory }}'
-      startupProbe:
-        failureThreshold: 60
-        httpGet:
-          path: /ready
-          port: 9008
-        periodSeconds: 15
       volumeMounts:
       - mountPath: /mnt/agent
         name: mlserver-models
@@ -1571,8 +1547,6 @@ spec:
         value: "9006"
       - name: SELDON_DRAINER_PORT
         value: "9007"
-      - name: SELDON_READINESS_PORT
-        value: "9008"
       - name: SELDON_SERVER_TYPE
         value: triton
       - name: POD_NAME
@@ -1607,26 +1581,12 @@ spec:
       - containerPort: 9006
         name: metrics
         protocol: TCP
-      - containerPort: 9008
-        name: readiness-port
-      readinessProbe:
-        failureThreshold: 1
-        httpGet:
-          path: /ready
-          port: 9008
-        periodSeconds: 5
       resources:
         limits:
           memory: '{{ .Values.serverConfig.agent.resources.memory }}'
         requests:
           cpu: '{{ .Values.serverConfig.agent.resources.cpu }}'
           memory: '{{ .Values.serverConfig.agent.resources.memory }}'
-      startupProbe:
-        failureThreshold: 60
-        httpGet:
-          path: /ready
-          port: 9008
-        periodSeconds: 15
       volumeMounts:
       - mountPath: /mnt/agent
         name: triton-models
@@ -1725,3 +1685,4 @@ spec:
       resources:
         requests:
           storage: '{{ .Values.serverConfig.triton.modelVolumeStorage }}'
+{{- end }}
