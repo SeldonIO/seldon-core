@@ -30,8 +30,8 @@ create-helm-charts: kustomize
 
 .PHONY: create-helm-charts-experimental
 create-helm-charts-experimental: kustomize
-	$(KUSTOMIZE) build kustomize-experimental/helm-components-ns/ > ${HELM_COMPONENTS_BASE}/_components-deployments.tpl
-	$(KUSTOMIZE) build kustomize-experimental/helm-servers/ > ${HELM_SERVERS_BASE}/_servers-deployments.tpl
+	$(KUSTOMIZE) build --load-restrictor LoadRestrictionsNone kustomize-experimental/helm-components-ns/ > ${HELM_COMPONENTS_BASE}/_components-deployments.tpl
+	$(KUSTOMIZE) build --load-restrictor LoadRestrictionsNone kustomize-experimental/helm-servers/ > ${HELM_SERVERS_BASE}/_servers-deployments.tpl
 	sed -i 's/\(.*\)\(imagePullSecrets:\).*/{{- with .Values.imagePullSecrets }}\n\1\2\n\1{{- toYaml . | nindent 8 }}\n{{- end }}/g' ${HELM_COMPONENTS_BASE}/_components-deployments.tpl
 	sed -i 's/HACK_REMOVE_ME//' ${HELM_COMPONENTS_BASE}/_components-deployments.tpl
 	sed 's/labelz:/labels:\n\ \ \ /' ${HELM_SERVERS_BASE}/_servers-deployments.tpl > ${HELM_SERVERS_BASE}/._servers-deployments.tpl

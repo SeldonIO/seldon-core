@@ -6,70 +6,70 @@ bases:
 
 # May need to add x-kubernetes-patch values for new things you want to patch if missing
 openapi:
-  path: crd-schema.json
+  path: ../../kustomize/helm-components-sc/crd-schema.json
 
 patchesStrategicMerge:
-- patch_controller.yaml
-- patch_dataflow.yaml
-- patch_envoy.yaml
-- patch_hodometer.yaml
-- patch_modelgateway.yaml
+- ../../kustomize/helm-components-sc/patch_controller.yaml
+- ../../kustomize/helm-components-sc/patch_dataflow.yaml
+- ../../kustomize/helm-components-sc/patch_envoy.yaml
+- ../../kustomize/helm-components-sc/patch_hodometer.yaml
+- ../../kustomize/helm-components-sc/patch_modelgateway.yaml
+- ../../kustomize/helm-components-sc/patch_pipelinegateway.yaml
+- ../../kustomize/helm-components-sc/patch_scheduler.yaml
+- ../../kustomize/helm-components-sc/patch_kafkaconfig.yaml
+- ../../kustomize/helm-components-sc/patch_tracingconfig.yaml
+- ../../kustomize/helm-components-sc/patch_agentconfig.yaml
+- ../../kustomize/helm-components-sc/patch_serviceconfig.yaml
 - patch_mlserver.yaml
-- patch_pipelinegateway.yaml
-- patch_scheduler.yaml
 - patch_triton.yaml
-- patch_kafkaconfig.yaml
-- patch_tracingconfig.yaml
-- patch_agentconfig.yaml
-- patch_serviceconfig.yaml
 
 patches:
-- path: patch_scheduler_service.yaml
+- path: ../../kustomize/helm-components-sc/patch_scheduler_service.yaml
   target:
     version: v1
     kind: Service
     name: scheduler
-- path: patch_controller_json6902.yaml
+- path: ../../kustomize/helm-components-sc/patch_controller_json6902.yaml
   target:
     version: v1
     kind: Deployment
     name: seldon-v2-controller-manager
-- path: patch_envoy_json6902.yaml
+- path: ../../kustomize/helm-components-sc/patch_envoy_json6902.yaml
   target:
     version: v1alpha1
     kind: SeldonConfig
     name: default
-- path: patch_scheduler_json6902.yaml
+- path: ../../kustomize/helm-components-sc/patch_scheduler_json6902.yaml
   target:
     version: v1alpha1
     kind: SeldonConfig
     name: default
-- path: patch_dataflow_json6902.yaml
+- path: ../../kustomize/helm-components-sc/patch_dataflow_json6902.yaml
   target:
     version: v1alpha1
     kind: SeldonConfig
     name: default
-- path: patch_hodometer_json6902.yaml
+- path: ../../kustomize/helm-components-sc/patch_hodometer_json6902.yaml
   target:
     version: v1alpha1
     kind: SeldonConfig
     name: default
-- path: patch_modelgateway_json6902.yaml
+- path: ../../kustomize/helm-components-sc/patch_modelgateway_json6902.yaml
   target:
     version: v1alpha1
     kind: SeldonConfig
     name: default
-- path: patch_pipelinegateway_json6902.yaml
+- path: ../../kustomize/helm-components-sc/patch_pipelinegateway_json6902.yaml
   target:
     version: v1alpha1
     kind: SeldonConfig
     name: default
-- path: patch_triton_serverconfig_json6902.yaml
+- path: ../../kustomize/helm-components-sc/patch_triton_serverconfig_json6902.yaml
   target:
     version: v1alpha1
     kind: ServerConfig
     name: triton
-- path: patch_mlserver_serverconfig_json6902.yaml
+- path: ../../kustomize/helm-components-sc/patch_mlserver_serverconfig_json6902.yaml
   target:
     version: v1alpha1
     kind: ServerConfig
