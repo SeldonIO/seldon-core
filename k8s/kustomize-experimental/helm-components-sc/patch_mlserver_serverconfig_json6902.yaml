@@ -1,0 +1,6 @@
+- op: replace
+  path: /spec/podSpec/securityContext
+  value: HACK_REMOVE_ME{{- toYaml .Values.serverConfig.securityContext | nindent 6 }}
+- op: add
+  path: /spec/podSpec/terminationGracePeriodSeconds
+  value: HACK_REMOVE_ME{{ .Values.serverConfig.terminationGracePeriodSeconds }}
