@@ -1,4 +1,4 @@
-{{- define "serverconfig.deployments" }}
+{{- define "setup.deployments" }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -437,6 +437,7 @@ spec:
         - --namespace=$(POD_NAMESPACE)
         - --clusterwide=$(CLUSTERWIDE)
         - --log-level=$(LOG_LEVEL)
+        - --use-server-with-deployment=$(USE_SERVER_WITH_DEPLOYMENT)
         command:
         - /manager
         env:
@@ -462,6 +463,8 @@ spec:
             .Values.logging.logLevel }}'
         - name: WATCH_NAMESPACES
           value: '{{ join "," .Values.controller.watchNamespaces }}'
+        - name: USE_SERVER_WITH_DEPLOYMENT
+          value: '{{ .Values.useServerWithDeployment }}'
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
