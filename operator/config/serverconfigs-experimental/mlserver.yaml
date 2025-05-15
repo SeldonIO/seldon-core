@@ -1,8 +1,18 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mlserver-models
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
 ---
 apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig
 metadata:
-  name: triton
+  name: mlserver
 spec:
   podSpec:
     terminationGracePeriodSeconds: 120
@@ -34,17 +44,17 @@ spec:
         timeoutSeconds: 1
       volumeMounts:
       - mountPath: /mnt/agent
-        name: triton-models
+        name: mlserver-models
     - image: agent:latest
       imagePullPolicy: IfNotPresent
-      name: agent
       command:
         - /bin/agent
       args:
-        - --tracing-config-path=/mnt/tracing/tracing.json 
+        - --tracing-config-path=/mnt/tracing/tracing.json
+      name: agent
       env:
       - name: SELDON_SERVER_CAPABILITIES
-        value: "triton,dali,fil,onnx,openvino,python,pytorch,tensorflow,tensorrt"
+        value: "mlserver,alibi-detect,alibi-explain,huggingface,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: "10"
       - name: SELDON_MODEL_INFERENCE_LAG_THRESHOLD
@@ -60,25 +70,33 @@ spec:
       - name: SELDON_REVERSE_PROXY_HTTP_PORT
         value: "9001"
       - name: SELDON_REVERSE_PROXY_GRPC_PORT
-        value: "9501"          
-      - name: AGENT_TLS_SECRET_NAME
-        value: ""
-      - name: AGENT_TLS_FOLDER_PATH
-        value: ""
+        value: "9501"
       - name: SELDON_SCHEDULER_HOST
         value: "seldon-scheduler"
       - name: SELDON_SCHEDULER_PORT
         value: "9005"
+      - name: SELDON_SCHEDULER_TLS_PORT
+        value: "9055"
       - name: SELDON_METRICS_PORT
         value: "9006"
       - name: SELDON_DRAINER_PORT
         value: "9007"
-      - name: SELDON_READINESS_PORT
-        value: "9008"
+      - name: AGENT_TLS_SECRET_NAME
+        value: ""
+      - name: AGENT_TLS_FOLDER_PATH
+        value: ""
       - name: SELDON_SERVER_TYPE
-        value: "triton"
+        value: "mlserver"
+      - name: SELDON_ENVOY_HOST
+        value: "seldon-mesh"
+      - name: SELDON_ENVOY_PORT
+        value: "80"
       - name: SELDON_LOG_LEVEL
         value: "warn"
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
       - name: POD_NAME
         valueFrom:
           fieldRef:
@@ -90,7 +108,7 @@ spec:
       - name: MEMORY_REQUEST
         valueFrom:
           resourceFieldRef:
-            containerName: triton
+            containerName: mlserver
             resource: requests.memory
       ports:
       - containerPort: 9501
@@ -102,56 +120,46 @@ spec:
       - containerPort: 9006
         name: metrics
         protocol: TCP
-      - containerPort: 9008
-        name: readiness-port
       lifecycle:
         preStop:
           httpGet:
             port: 9007
             path: terminate
-      readinessProbe:
-        httpGet:
-          path: /ready
-          port: 9008
-        failureThreshold: 1
-        periodSeconds: 5
-      startupProbe:
-        httpGet:
-          path: /ready
-          port: 9008
-        failureThreshold: 60
-        periodSeconds: 15
       resources:
         requests:
           cpu: "500m"
           memory: '500M'
       volumeMounts:
       - mountPath: /mnt/agent
-        name: triton-models
+        name: mlserver-models
       - name: config-volume
         mountPath: /mnt/config
       - name: tracing-config-volume
         mountPath: /mnt/tracing
-    - image: triton:latest
-      command:
-      - bash
-      args:
-      - -c
-      - tritonserver --model-repository=$(SERVER_MODELS_DIR) --http-port=$(SERVER_HTTP_PORT) --grpc-port=$(SERVER_GRPC_PORT) --log-verbose=1 --model-control-mode=explicit --backend-config=python,shm-default-byte-size=16777216
+    - image: mlserver:latest
       imagePullPolicy: IfNotPresent
       env:
-      - name: SERVER_HTTP_PORT
+      - name: MLSERVER_HTTP_PORT
         value: "9000"
-      - name: SERVER_GRPC_PORT
+      - name: MLSERVER_GRPC_PORT
         value: "9500"
-      - name: SERVER_MODELS_DIR
+      - name: MLSERVER_MODELS_DIR
         value: "/mnt/agent/models"
-      - name: LD_PRELOAD
-        value: /usr/lib/x86_64-linux-gnu/libtcmalloc.so.4
+      - name: MLSERVER_MODEL_PARALLEL_WORKERS
+        value: "1"
+      - name: MLSERVER_LOAD_MODELS_AT_STARTUP
+        value: "false"
+      - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH
+        value: "1048576000" # 100MB (100 * 1024 * 1024)
       resources:
         requests:
           cpu: 1
           memory: '1G'
+      lifecycle:
+        preStop:
+          httpGet:
+            port: 9007
+            path: terminate
       livenessProbe:
         httpGet:
           path: /v2/health/live
@@ -161,14 +169,14 @@ spec:
           path: /v2/health/live
           port: server-http
         initialDelaySeconds: 5
-        periodSeconds: 5          
+        periodSeconds: 5
       startupProbe:
         httpGet:
           path: /v2/health/live
           port: server-http
         failureThreshold: 10
         periodSeconds: 10
-      name: triton
+      name: mlserver
       ports:
       - containerPort: 9500
         name: server-grpc
@@ -176,20 +184,15 @@ spec:
       - containerPort: 9000
         name: server-http
         protocol: TCP
-      - containerPort: 8002
+      - containerPort: 8082
         name: server-metrics
-      lifecycle:
-        preStop:
-          httpGet:
-            port: 9007
-            path: terminate
       volumeMounts:
       - mountPath: /mnt/agent
-        name: triton-models
+        name: mlserver-models
         readOnly: true
-      - mountPath: /dev/shm
-        name: dshm
-        readOnly: false
+      - mountPath: /mnt/certs
+        name: downstream-ca-certs
+        readOnly: true
     securityContext:
       fsGroup: 2000
       runAsUser: 1000
@@ -201,14 +204,10 @@ spec:
     - name: tracing-config-volume
       configMap:
         name: seldon-tracing
-    - name: dshm
-      emptyDir:
-        medium: Memory
-        sizeLimit: "256Mi"
-  volumeClaimTemplates:
-  - name: triton-models
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 1Gi
+    - name: downstream-ca-certs
+      secret:
+        secretName: seldon-downstream-server
+        optional: true
+    - name: mlserver-models
+      persistentVolumeClaim:
+        claimName: mlserver-models
