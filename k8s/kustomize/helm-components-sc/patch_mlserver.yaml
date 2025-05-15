@@ -100,3 +100,11 @@ spec:
       secret:
         secretName: '{{ .Values.security.envoy.ssl.downstream.client.serverValidationSecret }}'
         optional: true
+  volumeClaimTemplates:
+  - name: mlserver-models
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: '{{ .Values.serverConfig.mlserver.modelVolumeStorage }}'
