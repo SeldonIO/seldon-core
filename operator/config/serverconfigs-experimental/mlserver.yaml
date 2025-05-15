@@ -1,3 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mlserver-models
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
 ---
 apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig
@@ -83,6 +93,10 @@ spec:
         value: "80"
       - name: SELDON_LOG_LEVEL
         value: "warn"
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
       - name: POD_NAME
         valueFrom:
           fieldRef:
@@ -194,10 +208,6 @@ spec:
       secret:
         secretName: seldon-downstream-server
         optional: true
-  volumeClaimTemplates:
-  - name: mlserver-models
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 1Gi
+    - name: mlserver-models
+      persistentVolumeClaim:
+        claimName: mlserver-models
