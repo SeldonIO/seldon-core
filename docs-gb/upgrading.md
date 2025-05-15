@@ -1,5 +1,15 @@
 # Upgrading
 
+## Upgrading from 2.8 - 2.9 
+Though there are no breaking changes between 2.8 and 2.9, there are some new functionalties offered that require changes to fields in our CRDs:
+* In Core 2.9 you can now set `minReplicas` to enable [partial scheduling](models/scheduling.md#partial-scheduling) of Models. This means that users will no longer have to wait for the full set of desired replicas before loading models onto servers (e.g. when scaling up).
+* We've also added a `spec.llm` field to the Model CRD . The field is used by the PromptRuntime in Seldon's [LLM Module](https://docs.seldon.ai/llm-module) to reference a LLM model. Only one of spec.llm and spec.explainer should be set at a given time. This allows the deployment of multiple "models" acting as prompt generators for the same LLM.
+* Due to the introduction of Server-autoscaling, it is important to understand what type of autoscaling you want to leverage, and how that can be configured. Below are configuratation that help set autoscaling behaviour. All options here have corresponding command-line arguments that can be passed to seldon-scheduler when not using helm as the install method. The following helm values can be set
+    * `autoscaling.autoscalingModelEnabled`, with corresponding cmd line arg: `--enable-model-autoscaling` (defaults to false): enable or disable native model autoscaling based on lag thresholds. Enabling this assumes that lag (number of inference requests "in-flight") is a representative metric based on which to scale your models in a way that makes efficient use of resources.
+    * `autoscaling.autoscalingServerEnabled` with corresponding cmd line arg: `--enable-server-autoscaling` (defaults to "true"): enable to use native server autoscaling, where the number of server replicas is set according to the number of replicas required by the models loaded onto that server.
+    * `autoscaling.serverPackingEnabled` with corresponding cmd line arg: `--server-packing-enabled` (experimental, defaults to "false"): enable server packing to try and reduce the number of server replicas on model scale-down.
+    * `autoscaling.serverPackingPercentage` with corresponding cmd line arg: `--server-packing-percentage` (experimental, defaults to "0.0"): controls the percentage of model replica removals (due to model scale-down or deletion) that should trigger packing
+
 ## Upgrading from 2.7 - 2.8
 
 Core 2.8 introduces several new fields in our CRDs:
@@ -18,7 +28,7 @@ Previously, the labelling has been inconsistent across different versions of Sel
 mixture of `app` and `app.kubernetes.io/name` used.
 
 If using the Prometheus operator ("Kube Prometheus"), please apply the v2.7.0 manifests for Seldon Core 2
-according to the [metrics documentation](kubernetes/metrics.md).
+according to the [metrics documentation](/kubernetes/metrics.md).
 
 Note that these manifests need to be adjusted to discover metrics endpoints based on the existing setup.
 
@@ -42,5 +52,4 @@ while the pods are being recreated. Alternatively  users can have an external se
 means to be used over multiple namespaces to bring up the system in a new namespace and redeploy models
 before switch traffic between them.
 
-If the new 2.6 charts are used to upgrade in an existing namespace models will eventually be redeloyed
-but there will be service downtime as the core components are redeployed.
+If the new 2.6 charts are used to upgrade in an existing namespace models will eventually be redeloyed but there will be service downtime as the core components are redeployed.
