@@ -2,7 +2,7 @@
 
 ## Upgrading from 2.8 - 2.9 
 Though there are no breaking changes between 2.8 and 2.9, there are some new functionalties offered that require changes to fields in our CRDs:
-* In Core 2.9 you can now set `minReplicas` to enable [partial scheduling](/models/scheduling#partial-scheduling) of Models. This means that users will no longer have to wait for the full set of desired replicas before loading models onto servers (e.g. when scaling up).
+* In Core 2.9 you can now set `minReplicas` to enable [partial scheduling](models/scheduling.md#partial-scheduling) of Models. This means that users will no longer have to wait for the full set of desired replicas before loading models onto servers (e.g. when scaling up).
 * We've also added a `spec.llm` field to the Model CRD . The field is used by the PromptRuntime in Seldon's [LLM Module](https://docs.seldon.ai/llm-module) to reference a LLM model. Only one of spec.llm and spec.explainer should be set at a given time. This allows the deployment of multiple "models" acting as prompt generators for the same LLM.
 * Autoscaling is also configurable (you can look at the "Native autoscaling features control part" from here), and it would be good for end-users to be aware of that in order to avoid surprises. The defaults are matching the previous behaviour.
 * It is important to understand what type of autoscaling you want to leverage, and how that can be configured. Below are configuratation that help set autoscaling behaviour. All options here have corresponding command-line arguments that can be passed to seldon-scheduler when not using helm as the install method. The following helm values can be set
