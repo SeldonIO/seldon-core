@@ -29,7 +29,7 @@ spec:
   memory: 100Ki
 ```
 
-To inspect existing Kafka topics in your cluster, you can deploy a temporary pod:
+To inspect existing Kafka topics in your cluster, you can deploy a temporary Pod:
 ```yaml
 apiVersion: v1
 kind: Pod
