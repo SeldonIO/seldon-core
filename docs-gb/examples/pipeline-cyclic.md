@@ -37,7 +37,8 @@ class Counter(MLModel):
         )
 ```
 
-The model above returns two output tensors, one containing the incremented number, while the second one is an empty tensor with the name set to `continue` or `stop`. The later tensor is used as a triggering tensor to route the data flow either through the feedback loop path or the output path. For more details on triggering tensors, see the [intro to pipelines page](../pipelines.md).
+This model produces two output tensors. The first contains the incremented number, while the second is an empty tensor labeled either continue or stop. This second tensor acts as a trigger, directing the data flow through either the feedback loop or the output path.
+For more information on triggering tensors, see the [intro to pipelines page](../pipelines.md).
 
 The second model we define is an identity model:
 
