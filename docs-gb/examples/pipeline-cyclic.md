@@ -1,6 +1,6 @@
 # Cyclic Pipeline
 
-This notebook shows how to deploy a cyclic pipeline using Core 2. In this example, we build a simple counter that starts from a user-provided number and counts up to 10 before stopping. If the starting number is already greater than 10, the pipeline stops immediately.
+Learn how to deploy a cyclic pipeline using Core 2. In this example, you'll build a simple counter that begins at a user-defined starting value and increments by one until it reaches 10. If the starting value is already greater than 10, the pipeline terminates immediately without running.
 
 ## Models
 
