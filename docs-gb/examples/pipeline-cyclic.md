@@ -272,7 +272,7 @@ spec:
     - identity-output.outputs
 ```
 
-Please note that the `joinWindowMs` parameter is set to 1 millisecond for both the identity loop and identity output models. This is important to avoid infinite loops in our pipeline due to the joining interval used by Kafka Streams.
+**Note**: that the `joinWindowMs` parameter is set to 1 millisecond for both the identity loop and identity output models. This setting is essential to prevent infinite loops caused by the join interval behavior in Kafka Streams.
 
 To deploy the pipeline, we can use the following command:
 
