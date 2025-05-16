@@ -131,5 +131,5 @@ seldon.seldon-mesh.model.iris.outputs
 ```
 
 {% hint style="info" %}
-Note: Topics associated with models used inside the pipeline are not deleted unless the corresponding models are also unloaded and the `cleanTopicsOnDelete` flag was set to `true` in their specification.
+Note: Topics linked to models within a pipeline are not deleted unless those models are explicitly unloaded and their specifications have `cleanTopicsOnDelete` set to true.
 {% endhint %}
