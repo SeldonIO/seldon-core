@@ -285,7 +285,7 @@ seldon pipeline status counter-pipeline -w PipelineReady | jq -M .
 
 ## Testing the pipeline
 
-To send a request to the pipeline, we can use the following command:
+To send a request to the pipeline, use the following command:
 
 ```bash
 seldon pipeline infer counter-pipeline \
