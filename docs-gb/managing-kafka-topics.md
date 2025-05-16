@@ -8,7 +8,7 @@ If Kafka is installed in your cluster, Seldon Core automatically creates dedicat
 
 By default, when a model is unloaded, the associated Kafka topics are preserved. This supports use cases like auditing, but can also lead to increased Kafka resource usage and unnecessary costs for workloads that don't require persistent topics.
 
-To manage this behavior, you can configure the `dataflow` section of the model specification. In addition to the required `storageUri` and `requirements` fields, you can optionally specify `cleanTopicsOnDelete` under `dataflow`. This boolean flag controls whether the Kafka topics should be deleted when the model is unloaded:
+You can control this behavior by configuring the `dataflow` section of the model specification. Alongside the required `storageUri`, and `requirements` fields, you can optionally include the `cleanTopicsOnDelete` flag. This boolean setting determines whether the associated Kafka topics should be deleted when the model is unloaded:
 
 * If set to `false` (default), topics are retained after the model is deleted.
 
