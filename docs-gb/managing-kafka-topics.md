@@ -4,7 +4,7 @@
 
 A [Model](./kubernetes/resources/model.md) in Seldon Core 2 represents the fundamental unit for serving a machine learning artifact within a running server instance.
 
-If Kafka is installed in your cluster, Seldon Core will automatically create an input and output topic for each model upon loading. These topics enable asynchronous messaging—allowing clients to produce input messages and consume output responses at a later time.
+If Kafka is installed in your cluster, Seldon Core automatically creates dedicated input and output topics for each model as it is loaded. These topics facilitate asynchronous messaging, enabling clients to send input messages and retrieve output responses independently and at a later time.
 
 By default, when a model is unloaded, its associated Kafka topics are retained. This behavior supports use cases such as auditing, but it also consumes additional Kafka resources and may incur unnecessary costs for workloads that do not require persistent topics.
 
