@@ -143,7 +143,7 @@ For the identity feedback loop model, reuse the `model-settings.json` file and c
 ```
 The one-millisecond delay is crucial to prevent infinite loops in the pipeline. It aligns with the join window applied to all input types for the counter model, as well as the join window configured for the identity model, which is specified in the pipeline definition.
 
-Similarly, for the identity output model, we will use the same `model-settings.json` file, but we will not add any delay:
+Similarly, for the identity output model, reuse the same `model-settings.json` file without introducing any delay.
 
 ```json
 {
