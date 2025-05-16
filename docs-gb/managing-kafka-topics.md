@@ -107,7 +107,7 @@ Apply the pipeline manifest with topic cleanup enabled:
 kubectl apply -f pipeline.yaml -n seldon-mesh
 ```
 
-Once the pipeline is deployed, you can list the Kafka topics from inside the `kafka-busybox` pod to confirm that they have been created:
+After the pipeline is deployed, you can list the Kafka topics from inside the `kafka-busybox` pod to confirm that they have been created:
 ```bash
 __consumer_offsets
 seldon.seldon-mesh.errors.errors
