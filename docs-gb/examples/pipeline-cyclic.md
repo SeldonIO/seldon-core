@@ -115,7 +115,7 @@ flowchart LR
 
 ## Models deployment
 
-To deploy the pipeline above, we first need to load the models into our cluster. The `model-settings.json` file for the counter model is as follows:
+To deploy the pipeline, you need to load each model into the cluster. The `model-settings.json` configuration for the counter model is as follows:
 
 ```json
 {
