@@ -240,7 +240,7 @@ seldon model status identity-output -w ModelAvailable | jq -M .
 
 ## Pipeline deployment
 
-With the models deployed, we can now deploy the pipeline. The manifest file for the pipeline is as follows:
+After the models are deployed, proceed to deploy the pipeline. The pipeline manifest file is defined as follows:
 
 ```yaml
 apiVersion: mlops.seldon.io/v1alpha1
