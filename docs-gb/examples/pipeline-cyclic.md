@@ -226,7 +226,7 @@ seldon model load -f ./models/identity-loop.yaml
 seldon model status identity-loop -w ModelAvailable | jq -M .
 ```
 
-To deploy the identity output model, we can use the following command:
+To deploy the identity output model, use the following command:
 
 ```bash
 seldon model load -f ./models/identity-output.yaml
