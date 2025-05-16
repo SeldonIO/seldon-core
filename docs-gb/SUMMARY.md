@@ -103,6 +103,7 @@
   * [Artifact versions](examples/multi-version.md)
   * [Pipeline examples](examples/pipeline-examples.md)
   * [Pipeline to pipeline examples](examples/pipeline-to-pipeline.md)
+  * [Cyclic Pipeline](examples/pipeline-cyclic.md)
   * [Explainer examples](examples/explainer-examples.md)
   * [Custom Servers](examples/custom-servers.md)
   * [Local experiments](examples/local-experiments.md)
