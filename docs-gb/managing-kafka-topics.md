@@ -44,7 +44,7 @@ spec:
   restartPolicy: Always
 ```
 
-After the pod is running, you can access it and list topics with the following command:
+After the Pod is running, you can access it and list topics with the following command:
 
 ```bash
 kafka-busybox:/opt/kafka/bin$ ./kafka-topics.sh --list --bootstrap-server $SELDON_KAFKA_BOOTSTRAP_PORT_9092_TCP
