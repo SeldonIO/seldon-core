@@ -10,9 +10,8 @@ By default, when a model is unloaded, the associated Kafka topics are preserved.
 
 You can control this behavior by configuring the `dataflow` section of the model specification. Alongside the required `storageUri`, and `requirements` fields, you can optionally include the `cleanTopicsOnDelete` flag. This boolean setting determines whether the associated Kafka topics should be deleted when the model is unloaded:
 
-* If set to `false` (default), topics are retained after the model is deleted.
-
-* If set to `true`, the input and output topics are deleted along with the model.
+* When set to `false` (the default), the topics remain after the model is deleted.
+* When set to `true`, both the input and output topics are removed when the model is unloaded.
 
 Here is an example of a manifest file that enables topic cleanup on deletion:
 ```yaml
