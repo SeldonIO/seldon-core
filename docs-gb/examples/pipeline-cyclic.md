@@ -4,7 +4,7 @@ Learn how to deploy a cyclic pipeline using Core 2. In this example, you'll buil
 
 ## Models
 
-We begin by defining our custom MLServer model. The first model we define is the counter:
+Start by implementing the first model: a simple counter.
 
 ```python
 from mlserver.model import MLModel
