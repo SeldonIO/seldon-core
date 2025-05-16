@@ -82,7 +82,7 @@ As with models, the `cleanTopicsOnDelete` flag controls whether these topics are
 
 * By default, topics are retained after the pipeline is unloaded.
 
-* If `cleanTopicsOnDelete` is set to `true`, the input and output topics associated with the pipeline are deleted.
+* When `cleanTopicsOnDelete` is set to `true`, the input and output topics associated with the pipeline are deleted.
 
 Below is an example of a pipeline manifest that wraps the previously defined model and enables topic cleanup:
 ```yaml
