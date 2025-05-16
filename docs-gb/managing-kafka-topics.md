@@ -84,7 +84,7 @@ As with models, the `cleanTopicsOnDelete` flag controls whether these topics are
 
 * When `cleanTopicsOnDelete` is set to `true`, the input and output topics associated with the pipeline are deleted.
 
-Below is an example of a pipeline manifest that wraps the previously defined model and enables topic cleanup:
+Here is an example of a pipeline manifest that wraps the previously defined model and enables topic cleanup:
 ```yaml
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Pipeline
