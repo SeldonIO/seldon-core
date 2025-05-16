@@ -202,7 +202,7 @@ spec:
   - mlserver
 ```
 
-To deploy the counter model, we can use the following command:
+To deploy the counter model, use the following command:
 
 ```bash
 seldon model load -f ./models/counter.yaml
