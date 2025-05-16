@@ -40,7 +40,7 @@ class Counter(MLModel):
 This model produces two output tensors. The first contains the incremented number, while the second is an empty tensor labeled either continue or stop. This second tensor acts as a trigger, directing the data flow through either the feedback loop or the output path.
 For more information on triggering tensors, see the [intro to pipelines page](../pipelines.md).
 
-The second model we define is an identity model:
+Next, define the second model — an identity model:
 
 ```python
 import time
