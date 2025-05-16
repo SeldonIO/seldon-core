@@ -86,7 +86,7 @@ The identity model simply passes the input tensors through to the output while i
 
 ## Pipeline
 
-Our pipeline for the counter application will be composed of 3 models: the counter model, an identity feedback loop model, and an identity output model. The schema for the pipeline is the following:
+This counter application pipeline consists of three models: the counter model, an identity model for the feedback loop, and another identity model for the output. The structure of the pipeline is illustrated as follows:
 
 ```mermaid
 flowchart LR
