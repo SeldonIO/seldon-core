@@ -82,7 +82,7 @@ class IdentityModel(MLModel):
         )
 ```
 
-The identity model only forwards the input tensors to the output and adds a delay. The delay added by the identity model is important to avoid infinite loops in our pipeline due to the joining interval used by Kafka Streams. Please check this documentation for more details.
+The identity model simply passes the input tensors through to the output while introducing a delay. This delay is crucial for preventing infinite loops in the pipeline, which can occur due to the join interval behavior in Kafka Streams. For further details, see [Kafka documentation](https://kafka.apache.org/documentation/).
 
 ## Pipeline
 
