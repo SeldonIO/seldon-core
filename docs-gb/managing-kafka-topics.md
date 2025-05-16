@@ -2,7 +2,7 @@
 
 ## Model Kafka topics
 
-A [Model](./kubernetes/resources/model.md) in Seldon Core 2 is an atomic unit that defines a machine learning artifact to be served by a running server.
+A [Model](./kubernetes/resources/model.md) in Seldon Core 2 represents the fundamental unit for serving a machine learning artifact within a running server instance.
 
 If Kafka is installed in your cluster, Seldon Core will automatically create an input and output topic for each model upon loading. These topics enable asynchronous messaging—allowing clients to produce input messages and consume output responses at a later time.
 
