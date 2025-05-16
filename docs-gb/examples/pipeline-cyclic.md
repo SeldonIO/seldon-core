@@ -127,7 +127,7 @@ To deploy the pipeline, you need to load each model into the cluster. The `model
 }
 ```
 
-For the identity loop model, we will use the same `model-settings.json` file, but we will add a delay of 1 millisecond to the feedback loop model:
+For the identity feedback loop model, reuse the `model-settings.json` file and configure it to include a 1-millisecond delay:
 
 ```json
 {
