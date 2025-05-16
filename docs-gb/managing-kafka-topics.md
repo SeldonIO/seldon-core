@@ -6,7 +6,7 @@ A [Model](./kubernetes/resources/model.md) in Seldon Core 2 represents the funda
 
 If Kafka is installed in your cluster, Seldon Core automatically creates dedicated input and output topics for each model as it is loaded. These topics facilitate asynchronous messaging, enabling clients to send input messages and retrieve output responses independently and at a later time.
 
-By default, when a model is unloaded, its associated Kafka topics are retained. This behavior supports use cases such as auditing, but it also consumes additional Kafka resources and may incur unnecessary costs for workloads that do not require persistent topics.
+By default, when a model is unloaded, the associated Kafka topics are preserved. This supports use cases like auditing, but can also lead to increased Kafka resource usage and unnecessary costs for workloads that don't require persistent topics.
 
 To manage this behavior, you can configure the `dataflow` section of the model specification. In addition to the required `storageUri` and `requirements` fields, you can optionally specify `cleanTopicsOnDelete` under `dataflow`. This boolean flag controls whether the Kafka topics should be deleted when the model is unloaded:
 
