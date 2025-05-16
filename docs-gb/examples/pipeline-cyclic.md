@@ -214,7 +214,7 @@ seldon model load -f ./models/counter.yaml
 seldon model status counter -w ModelAvailable | jq -M .
 ```
 
-To deploy the identity loop model, we can use the following command:
+To deploy the identity loop model, use the following command:
 
 ```bash
 seldon model load -f ./models/identity-loop.yaml
