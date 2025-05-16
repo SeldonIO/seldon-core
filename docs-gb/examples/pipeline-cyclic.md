@@ -328,7 +328,7 @@ seldon pipeline infer counter-pipeline \
 }
 ```
 
-The request above starts the pipeline with the input value of 0. The pipeline then increments the value until it reaches 10, at which point it will stop. The response contains the value of the counter, 10, and a message indicating that the pipeline has stopped.
+This request initiates the pipeline with an input value of 0. The pipeline increments this value step by step until it reaches 10, at which point it stops. The response includes the final counter value, 10, along with a message indicating that the pipeline has terminated.
 
 ## Cleanup
 To clean up the models and the pipeline, we can use the following commands:
