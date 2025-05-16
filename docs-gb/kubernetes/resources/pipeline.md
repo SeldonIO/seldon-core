@@ -14,7 +14,7 @@ The output of the Pipeline is the output from the `tfsimple3` model.
 
 Seldon Core 2 supports cyclic pipelines, enabling the creation of feedback loops within the inference graph. However, the cyclic pipelines should be used carefully, as incorrect configurations can lead to infinite loops or unintended behavior.
 
-The risk of infinite loops arises from the way Kafka Streams performs stream joins. If a feedback message enters the pipeline within the join window interval, and reaches a step that already holds messages from a previous iteration, Kafka Streams may perform a join between messages from different iterations. This can lead to unintended message propagation and potentially an unbounded flow of messages through your Kafka topics.
+The risk of infinite loops stems from how Kafka Streams handles stream joins. If a feedback message re-enters the pipeline within the join window and reaches a step already holding messages from a previous iteration, Kafka Streams may join messages across iterations. This can trigger unintended message propagation, potentially resulting in an unbounded flow through your Kafka topics.
 
 For more details on how Kafka Streams handles joins and the implications for feedback loops, refer to this [Confluent blog post](https://www.confluent.io/blog/crossing-streams-joins-apache-kafka/).
 
