@@ -76,7 +76,7 @@ __consumer_offsets
 
 ## Pipeline Kafka topics
 
-Similarly to models, when a [Pipeline](./kubernetes/resources/pipeline.md) is deployed in Seldon Core 2, Kafka input and output topics are automatically created for it. These topics enable asynchronous processing across pipeline steps.
+Similar to models, when a [Pipeline](./kubernetes/resources/pipeline.md) is deployed in Seldon Core 2, Kafka input and output topics are automatically created for it. These topics enable asynchronous processing across pipeline steps.
 
 As with models, the `cleanTopicsOnDelete` flag controls whether these topics are retained or removed when the pipeline is deleted:
 
