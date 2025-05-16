@@ -141,7 +141,7 @@ For the identity feedback loop model, reuse the `model-settings.json` file and c
     }
 }
 ```
-The one-millisecond delay is important to avoid infinite loops in our pipeline and that is the joining window for any input type to our counter model, and the joining window for our identity model, which we will define in our pipeline. 
+The one-millisecond delay is crucial to prevent infinite loops in the pipeline. It aligns with the join window applied to all input types for the counter model, as well as the join window configured for the identity model, which is specified in the pipeline definition.
 
 Similarly, for the identity output model, we will use the same `model-settings.json` file, but we will not add any delay:
 
