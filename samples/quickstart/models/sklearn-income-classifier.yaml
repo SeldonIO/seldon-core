@@ -1,0 +1,9 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: income-classifier
+spec:
+  storageUri: "gs://seldon-models/scv2/samples/mlserver_1.4.0/income-sklearn/classifier"
+  requirements:
+  - income-classifier-deps
+  memory: 100Ki

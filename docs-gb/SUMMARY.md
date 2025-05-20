@@ -26,6 +26,7 @@
 * [Upgrading](upgrading.md) 
 
 ## User Guide
+* [Quickstart](getting-started/quickstart/quickstart.md)
 <!-- * Getting Started -->
 <!-- * Deploy Model (OIP+MLServer Link) -->
 <!-- * Pipeline -->
