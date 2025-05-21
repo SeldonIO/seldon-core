@@ -183,6 +183,23 @@ public object PipelineUpdateMessageKt {
       _builder.clearUpdates()
     }
 
+
+    /**
+     * `string errorTopic = 6;`
+     */
+    public var errorTopic: kotlin.String
+      @JvmName("getErrorTopic")
+      get() = _builder.getErrorTopic()
+      @JvmName("setErrorTopic")
+      set(value) {
+        _builder.setErrorTopic(value)
+      }
+    /**
+     * `string errorTopic = 6;`
+     */
+    public fun clearErrorTopic() {
+      _builder.clearErrorTopic()
+    }
   }
 }
 @kotlin.jvm.JvmSynthetic
