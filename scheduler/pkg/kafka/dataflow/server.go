@@ -316,11 +316,12 @@ func (c *ChainerServer) createPipelineCreationMessage(pv *pipeline.PipelineVersi
 		InputJoinTy: chainer.PipelineStepUpdate_Inner,
 	})
 	return &chainer.PipelineUpdateMessage{
-		Pipeline: pv.Name,
-		Version:  pv.Version,
-		Uid:      pv.UID,
-		Updates:  stepUpdates,
-		Op:       chainer.PipelineUpdateMessage_Create,
+		Pipeline:   pv.Name,
+		Version:    pv.Version,
+		Uid:        pv.UID,
+		Updates:    stepUpdates,
+		Op:         chainer.PipelineUpdateMessage_Create,
+		ErrorTopic: c.topicNamer.GetModelErrorTopic(),
 	}
 }
 
