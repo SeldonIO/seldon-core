@@ -101,6 +101,7 @@ class PipelineSubscriber(
                         id = update.uid,
                         name = update.pipeline,
                         version = update.version,
+                        errorTopic = update.errorTopic,
                     )
 
                 when (update.op) {

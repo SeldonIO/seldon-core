@@ -14,6 +14,10 @@ import io.seldon.mlops.chainer.ChainerOuterClass
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping
 import org.apache.kafka.streams.StreamsBuilder
 
+fun isError(value: ByteArray): Boolean {
+    return String(value).contains("ERROR:")
+}
+
 /**
  * A *step* for a single input stream to a single output stream.
  */
@@ -21,6 +25,7 @@ class Chainer(
     builder: StreamsBuilder,
     internal val inputTopic: TopicForPipeline,
     internal val outputTopic: TopicForPipeline,
+    internal val errorTopic: String,
     internal val tensors: Set<TensorName>?,
     internal val pipelineName: String,
     internal val pipelineVersion: String,
@@ -51,41 +56,80 @@ class Chainer(
     }
 
     private fun buildPassThroughStream(builder: StreamsBuilder) {
-        val s1 =
-            builder
-                .stream(inputTopic.topicName, consumerSerde)
-                .filterForPipeline(inputTopic.pipelineName)
-        addTriggerTopology(
-            kafkaDomainParams,
-            builder,
-            inputTriggerTopics,
-            triggerTensorsByTopic,
-            triggerJoinType,
-            s1,
-            null,
-        )
-            .headerRemover()
-            .headerSetter(pipelineName, pipelineVersion)
-            .to(outputTopic.topicName, producerSerde)
+        var s1 = builder.stream(inputTopic.topicName, consumerSerde)
+
+        if (inputTopic.topicName != errorTopic) {
+            s1 =
+                s1.processValues(
+                    { CycleTrackingProcessor(errorTopic) },
+                    "cycle-store",
+                )
+            val branches =
+                s1.branch(
+                    { _, value -> !isError(value) },
+                    { _, value -> isError(value) },
+                )
+
+            branches[1]
+                .to(errorTopic, producerSerde)
+
+            addTriggerTopology(
+                kafkaDomainParams,
+                builder,
+                inputTriggerTopics,
+                triggerTensorsByTopic,
+                triggerJoinType,
+                branches[0],
+                null,
+            )
+                .headerRemover()
+                .headerSetter(pipelineName, pipelineVersion)
+                .to(outputTopic.topicName, producerSerde)
+        } else {
+            addTriggerTopology(
+                kafkaDomainParams,
+                builder,
+                inputTriggerTopics,
+                triggerTensorsByTopic,
+                triggerJoinType,
+                s1,
+                null,
+            )
+                .headerRemover()
+                .headerSetter(pipelineName, pipelineVersion)
+                .to(outputTopic.topicName, producerSerde)
+        }
     }
 
     private fun buildInputOutputStream(builder: StreamsBuilder) {
         val s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
-                .filterForPipeline(inputTopic.pipelineName)
-                .unmarshallInferenceV2Request()
-                .convertToResponse(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
-                // handle cases where there are no tensors we want
-                .filter { _, value -> value.outputsList.size != 0 }
-                .marshallInferenceV2Response()
+                .processValues({ CycleTrackingProcessor(errorTopic) }, "cycle-store")
+
+        val branches =
+            s1.branch(
+                { _, value -> !isError(value) },
+                { _, value -> isError(value) },
+            )
+
+        branches[0]
+            .filterForPipeline(inputTopic.pipelineName)
+            .unmarshallInferenceV2Request()
+            .convertToResponse(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
+            // handle cases where there are no tensors we want
+            .filter { _, value -> value.outputsList.size != 0 }
+            .marshallInferenceV2Response()
+        branches[1]
+            .to(errorTopic, producerSerde)
+
         addTriggerTopology(
             kafkaDomainParams,
             builder,
             inputTriggerTopics,
             triggerTensorsByTopic,
             triggerJoinType,
-            s1,
+            branches[0],
             null,
         )
             .headerRemover()
@@ -97,19 +141,31 @@ class Chainer(
         val s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
-                .filterForPipeline(inputTopic.pipelineName)
-                .unmarshallInferenceV2Response()
-                .filterResponses(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
-                // handle cases where there are no tensors we want
-                .filter { _, value -> value.outputsList.size != 0 }
-                .marshallInferenceV2Response()
+                .processValues({ CycleTrackingProcessor(errorTopic) }, "cycle-store")
+
+        val branches =
+            s1.branch(
+                { _, value -> !isError(value) },
+                { _, value -> isError(value) },
+            )
+
+        branches[0]
+            .filterForPipeline(inputTopic.pipelineName)
+            .unmarshallInferenceV2Response()
+            .filterResponses(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
+            // handle cases where there are no tensors we want
+            .filter { _, value -> value.outputsList.size != 0 }
+            .marshallInferenceV2Response()
+        branches[1]
+            .to(errorTopic, producerSerde)
+
         addTriggerTopology(
             kafkaDomainParams,
             builder,
             inputTriggerTopics,
             triggerTensorsByTopic,
             triggerJoinType,
-            s1,
+            branches[0],
             null,
         )
             .headerRemover()
@@ -121,20 +177,32 @@ class Chainer(
         val s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
-                .filterForPipeline(inputTopic.pipelineName)
-                .unmarshallInferenceV2Response()
-                .convertToRequest(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
-                // handle cases where there are no tensors we want
-                .filter { _, value -> value.inputsList.size != 0 }
-                .batchMessages(batchProperties)
-                .marshallInferenceV2Request()
+                .processValues({ CycleTrackingProcessor(errorTopic) }, "cycle-store")
+
+        val branches =
+            s1.branch(
+                { _, value -> !isError(value) },
+                { _, value -> isError(value) },
+            )
+
+        branches[0]
+            .filterForPipeline(inputTopic.pipelineName)
+            .unmarshallInferenceV2Response()
+            .convertToRequest(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
+            // handle cases where there are no tensors we want
+            .filter { _, value -> value.inputsList.size != 0 }
+            .batchMessages(batchProperties)
+            .marshallInferenceV2Request()
+        branches[1]
+            .to(errorTopic, producerSerde)
+
         addTriggerTopology(
             kafkaDomainParams,
             builder,
             inputTriggerTopics,
             triggerTensorsByTopic,
             triggerJoinType,
-            s1,
+            branches[0],
             null,
         )
             .headerRemover()
@@ -146,20 +214,32 @@ class Chainer(
         val s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
-                .filterForPipeline(inputTopic.pipelineName)
-                .unmarshallInferenceV2Request()
-                .filterRequests(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
-                // handle cases where there are no tensors we want
-                .filter { _, value -> value.inputsList.size != 0 }
-                .batchMessages(batchProperties)
-                .marshallInferenceV2Request()
+                .processValues({ CycleTrackingProcessor(errorTopic) }, "cycle-store")
+
+        val branches =
+            s1.branch(
+                { _, value -> !isError(value) },
+                { _, value -> isError(value) },
+            )
+
+        branches[0]
+            .filterForPipeline(inputTopic.pipelineName)
+            .unmarshallInferenceV2Request()
+            .filterRequests(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
+            // handle cases where there are no tensors we want
+            .filter { _, value -> value.inputsList.size != 0 }
+            .batchMessages(batchProperties)
+            .marshallInferenceV2Request()
+        branches[1]
+            .to(errorTopic, producerSerde)
+
         addTriggerTopology(
             kafkaDomainParams,
             builder,
             inputTriggerTopics,
             triggerTensorsByTopic,
             triggerJoinType,
-            s1,
+            branches[0],
             null,
         )
             .headerRemover()
