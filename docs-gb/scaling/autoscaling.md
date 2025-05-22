@@ -47,9 +47,7 @@ discussed below.
 
 ## Model autoscaling
 
-As each model server can serve multiple models, models can scale across the available replicas of the
-server according to load. Autoscaling of models is enabled if at least `MinReplicas` or `MaxReplicas` is set in the model custom
-resource. Then according to load the system will scale the number of `Replicas` within this range.
+As each model server can serve multiple models, models can scale across the available replicas of the server according to load. Autoscaling of models is enabled if at least `MinReplicas` or `MaxReplicas` is set in the model custom resource. Then according to load the system will scale the number of `Replicas` within this range.
 
 {% hint style="warning" %}
 **Warning**: When using server autoscaling, do not set `minReplicas` or `maxReplicas` in your Model CRDs. These settings will conflict with the server autoscaling approach and may lead to unexpected behavior. Choose either model autoscaling (via `minReplicas`/`maxReplicas`) or server autoscaling, but not both simultaneously.
