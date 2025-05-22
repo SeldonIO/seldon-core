@@ -52,7 +52,23 @@ class Chainer(
     }
 
     private fun buildPassThroughStream(builder: StreamsBuilder) {
-        var s1 = builder.stream(inputTopic.topicName, consumerSerde)
+        var s1 =
+            builder
+                .stream(inputTopic.topicName, consumerSerde)
+                .filterForPipeline(inputTopic.pipelineName)
+
+        s1 =
+            addTriggerTopology(
+                kafkaDomainParams,
+                builder,
+                inputTriggerTopics,
+                triggerTensorsByTopic,
+                triggerJoinType,
+                s1,
+                null,
+            )
+                .headerRemover()
+                .headerSetter(pipelineName, pipelineVersion)
 
         if (inputTopic.topicName != errorTopic) {
             s1 =
@@ -62,158 +78,145 @@ class Chainer(
                 )
 
             val (defaultBranch, errorBranch) = createVisitingCounterBranches(s1)
+            defaultBranch.to(outputTopic.topicName, producerSerde)
             errorBranch.to(errorTopic, producerSerde)
-            s1 = defaultBranch
+        } else {
+            s1.to(outputTopic.topicName, producerSerde)
         }
-
-        addTriggerTopology(
-            kafkaDomainParams,
-            builder,
-            inputTriggerTopics,
-            triggerTensorsByTopic,
-            triggerJoinType,
-            s1,
-            null,
-        )
-            .headerRemover()
-            .headerSetter(pipelineName, pipelineVersion)
-            .to(outputTopic.topicName, producerSerde)
     }
 
     private fun buildInputOutputStream(builder: StreamsBuilder) {
-        val s1 =
+        var s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
+                .filterForPipeline(inputTopic.pipelineName)
+                .unmarshallInferenceV2Request()
+                .convertToResponse(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
+                // handle cases where there are no tensors we want
+                .filter { _, value -> value.outputsList.size != 0 }
+                .marshallInferenceV2Response()
+
+        s1 =
+            addTriggerTopology(
+                kafkaDomainParams,
+                builder,
+                inputTriggerTopics,
+                triggerTensorsByTopic,
+                triggerJoinType,
+                s1,
+                null,
+            )
+                .headerRemover()
+                .headerSetter(pipelineName, pipelineVersion)
                 .processValues(
                     { VisitingCounterProcessor(outputTopic) },
                     VISITING_COUNTER_STORE,
                 )
+
         val (defaultBranch, errorBranch) = createVisitingCounterBranches(s1)
+        defaultBranch.to(outputTopic.topicName, producerSerde)
         errorBranch.to(errorTopic, producerSerde)
-
-        defaultBranch
-            .filterForPipeline(inputTopic.pipelineName)
-            .unmarshallInferenceV2Request()
-            .convertToResponse(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
-            // handle cases where there are no tensors we want
-            .filter { _, value -> value.outputsList.size != 0 }
-            .marshallInferenceV2Response()
-
-        addTriggerTopology(
-            kafkaDomainParams,
-            builder,
-            inputTriggerTopics,
-            triggerTensorsByTopic,
-            triggerJoinType,
-            defaultBranch,
-            null,
-        )
-            .headerRemover()
-            .headerSetter(pipelineName, pipelineVersion)
-            .to(outputTopic.topicName, producerSerde)
     }
 
     private fun buildOutputOutputStream(builder: StreamsBuilder) {
-        val s1 =
+        var s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
+                .filterForPipeline(inputTopic.pipelineName)
+                .unmarshallInferenceV2Response()
+                .filterResponses(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
+                // handle cases where there are no tensors we want
+                .filter { _, value -> value.outputsList.size != 0 }
+                .marshallInferenceV2Response()
+
+        s1 =
+            addTriggerTopology(
+                kafkaDomainParams,
+                builder,
+                inputTriggerTopics,
+                triggerTensorsByTopic,
+                triggerJoinType,
+                s1,
+                null,
+            )
+                .headerRemover()
+                .headerSetter(pipelineName, pipelineVersion)
                 .processValues(
                     { VisitingCounterProcessor(outputTopic) },
                     VISITING_COUNTER_STORE,
                 )
+
         val (defaultBranch, errorBranch) = createVisitingCounterBranches(s1)
+        defaultBranch.to(outputTopic.topicName, producerSerde)
         errorBranch.to(errorTopic, producerSerde)
-
-        defaultBranch
-            .filterForPipeline(inputTopic.pipelineName)
-            .unmarshallInferenceV2Response()
-            .filterResponses(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
-            // handle cases where there are no tensors we want
-            .filter { _, value -> value.outputsList.size != 0 }
-            .marshallInferenceV2Response()
-
-        addTriggerTopology(
-            kafkaDomainParams,
-            builder,
-            inputTriggerTopics,
-            triggerTensorsByTopic,
-            triggerJoinType,
-            defaultBranch,
-            null,
-        )
-            .headerRemover()
-            .headerSetter(pipelineName, pipelineVersion)
-            .to(outputTopic.topicName, producerSerde)
     }
 
     private fun buildOutputInputStream(builder: StreamsBuilder) {
-        val s1 =
+        var s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
+                .filterForPipeline(inputTopic.pipelineName)
+                .unmarshallInferenceV2Response()
+                .convertToRequest(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
+                // handle cases where there are no tensors we want
+                .filter { _, value -> value.inputsList.size != 0 }
+                .batchMessages(batchProperties)
+                .marshallInferenceV2Request()
+
+        s1 =
+            addTriggerTopology(
+                kafkaDomainParams,
+                builder,
+                inputTriggerTopics,
+                triggerTensorsByTopic,
+                triggerJoinType,
+                s1,
+                null,
+            )
+                .headerRemover()
+                .headerSetter(pipelineName, pipelineVersion)
                 .processValues(
                     { VisitingCounterProcessor(outputTopic) },
                     VISITING_COUNTER_STORE,
                 )
 
         val (defaultBranch, errorBranch) = createVisitingCounterBranches(s1)
+        defaultBranch.to(outputTopic.topicName, producerSerde)
         errorBranch.to(errorTopic, producerSerde)
-
-        defaultBranch
-            .filterForPipeline(inputTopic.pipelineName)
-            .unmarshallInferenceV2Response()
-            .convertToRequest(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
-            // handle cases where there are no tensors we want
-            .filter { _, value -> value.inputsList.size != 0 }
-            .batchMessages(batchProperties)
-            .marshallInferenceV2Request()
-
-        addTriggerTopology(
-            kafkaDomainParams,
-            builder,
-            inputTriggerTopics,
-            triggerTensorsByTopic,
-            triggerJoinType,
-            defaultBranch,
-            null,
-        )
-            .headerRemover()
-            .headerSetter(pipelineName, pipelineVersion)
-            .to(outputTopic.topicName, producerSerde)
     }
 
     private fun buildInputInputStream(builder: StreamsBuilder) {
-        val s1 =
+        var s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
+                .filterForPipeline(inputTopic.pipelineName)
+                .unmarshallInferenceV2Request()
+                .filterRequests(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
+                // handle cases where there are no tensors we want
+                .filter { _, value -> value.inputsList.size != 0 }
+                .batchMessages(batchProperties)
+                .marshallInferenceV2Request()
+
+        s1 =
+            addTriggerTopology(
+                kafkaDomainParams,
+                builder,
+                inputTriggerTopics,
+                triggerTensorsByTopic,
+                triggerJoinType,
+                s1,
+                null,
+            )
+                .headerRemover()
+                .headerSetter(pipelineName, pipelineVersion)
                 .processValues(
                     { VisitingCounterProcessor(outputTopic) },
                     VISITING_COUNTER_STORE,
                 )
 
         val (defaultBranch, errorBranch) = createVisitingCounterBranches(s1)
+        defaultBranch.to(outputTopic.topicName, producerSerde)
         errorBranch.to(errorTopic, producerSerde)
-
-        defaultBranch
-            .filterForPipeline(inputTopic.pipelineName)
-            .unmarshallInferenceV2Request()
-            .filterRequests(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
-            // handle cases where there are no tensors we want
-            .filter { _, value -> value.inputsList.size != 0 }
-            .batchMessages(batchProperties)
-            .marshallInferenceV2Request()
-
-        addTriggerTopology(
-            kafkaDomainParams,
-            builder,
-            inputTriggerTopics,
-            triggerTensorsByTopic,
-            triggerJoinType,
-            defaultBranch,
-            null,
-        )
-            .headerRemover()
-            .headerSetter(pipelineName, pipelineVersion)
-            .to(outputTopic.topicName, producerSerde)
     }
 
     companion object {

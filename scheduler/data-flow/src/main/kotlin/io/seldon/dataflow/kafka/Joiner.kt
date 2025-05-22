@@ -37,19 +37,27 @@ class Joiner(
     internal val triggerTensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
 ) : PipelineStep {
     init {
-        val dataStream = buildTopology(builder, inputTopics)
-        addTriggerTopology(
-            kafkaDomainParams,
-            builder,
-            inputTriggerTopics,
-            triggerTensorsByTopic,
-            triggerJoinType,
-            dataStream,
-            null,
-        )
-            .headerRemover()
-            .headerSetter(pipelineName, pipelineVersion)
-            .to(outputTopic.topicName, producerSerde)
+        var dataStream = buildTopology(builder, inputTopics)
+        dataStream =
+            addTriggerTopology(
+                kafkaDomainParams,
+                builder,
+                inputTriggerTopics,
+                triggerTensorsByTopic,
+                triggerJoinType,
+                dataStream,
+                null,
+            )
+                .headerRemover()
+                .headerSetter(pipelineName, pipelineVersion)
+                .processValues(
+                    { VisitingCounterProcessor(outputTopic) },
+                    VISITING_COUNTER_STORE,
+                )
+
+        val (defaultBranch, errorBranch) = createVisitingCounterBranches(dataStream)
+        defaultBranch.to(outputTopic.topicName, producerSerde)
+        errorBranch.to(errorTopic, producerSerde)
     }
 
     private fun buildTopology(
@@ -139,30 +147,18 @@ class Joiner(
         topic: TopicForPipeline,
         builder: StreamsBuilder,
     ): KStream<RequestId, TRecord> {
-        val stream =
-            builder
-                .stream(topic.topicName, consumerSerde)
-                .filterForPipeline(topic.pipelineName)
-
-        val (defaultBranch, errorBranch) = createVisitingCounterBranches(stream)
-        errorBranch.to(errorTopic, producerSerde)
-
-        return defaultBranch
+        return builder
+            .stream(topic.topicName, consumerSerde)
+            .filterForPipeline(topic.pipelineName)
     }
 
     private fun buildInputOutputStream(
         topic: TopicForPipeline,
         builder: StreamsBuilder,
     ): KStream<RequestId, TRecord> {
-        val stream =
-            builder
-                .stream(topic.topicName, consumerSerde)
-                .filterForPipeline(topic.pipelineName)
-
-        val (defaultBranch, errorBranch) = createVisitingCounterBranches(stream)
-        errorBranch.to(errorTopic, producerSerde)
-
-        return defaultBranch
+        return builder
+            .stream(topic.topicName, consumerSerde)
+            .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Request()
             .convertToResponse(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
             // handle cases where there are no tensors we want
@@ -174,15 +170,9 @@ class Joiner(
         topic: TopicForPipeline,
         builder: StreamsBuilder,
     ): KStream<RequestId, TRecord> {
-        val stream =
-            builder
-                .stream(topic.topicName, consumerSerde)
-                .filterForPipeline(topic.pipelineName)
-
-        val (defaultBranch, errorBranch) = createVisitingCounterBranches(stream)
-        errorBranch.to(errorTopic, producerSerde)
-
-        return defaultBranch
+        return builder
+            .stream(topic.topicName, consumerSerde)
+            .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Response()
             .filterResponses(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
             // handle cases where there are no tensors we want
@@ -194,15 +184,9 @@ class Joiner(
         topic: TopicForPipeline,
         builder: StreamsBuilder,
     ): KStream<RequestId, TRecord> {
-        val stream =
-            builder
-                .stream(topic.topicName, consumerSerde)
-                .filterForPipeline(topic.pipelineName)
-
-        val (defaultBranch, errorBranch) = createVisitingCounterBranches(stream)
-        errorBranch.to(errorTopic, producerSerde)
-
-        return defaultBranch
+        return builder
+            .stream(topic.topicName, consumerSerde)
+            .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Response()
             .convertToRequest(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
             // handle cases where there are no tensors we want
@@ -214,15 +198,9 @@ class Joiner(
         topic: TopicForPipeline,
         builder: StreamsBuilder,
     ): KStream<RequestId, TRecord> {
-        val stream =
-            builder
-                .stream(topic.topicName, consumerSerde)
-                .filterForPipeline(topic.pipelineName)
-
-        val (defaultBranch, errorBranch) = createVisitingCounterBranches(stream)
-        errorBranch.to(errorTopic, producerSerde)
-
-        return defaultBranch
+        return builder
+            .stream(topic.topicName, consumerSerde)
+            .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Request()
             .filterRequests(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
             // handle cases where there are no tensors we want

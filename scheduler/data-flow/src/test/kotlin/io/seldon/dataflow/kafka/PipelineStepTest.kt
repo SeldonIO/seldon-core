@@ -218,6 +218,7 @@ internal class PipelineStepTest {
                 StreamsBuilder(),
                 inputTopics = inputTopics,
                 tensorsByTopic = tensorsByTopic,
+                errorTopic = "error-topic",
                 pipelineName = DEFAULT_PIPELINE_NAME,
                 pipelineVersion = DEFAULT_PIPELINE_VERSION,
                 outputTopic = defaultSink,
