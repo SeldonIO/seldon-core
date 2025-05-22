@@ -53,6 +53,6 @@ For detailed configuration options, refer to the specific documentation for each
 - Server packing policies are experimental and should be tested before production use
 
 For more detailed information about each scaling approach, refer to the specific documentation:
-- [Manual Scaling](manual-scaling.md)
-- [Server Autoscaling](server-autoscaling.md)
-- [Model Autoscaling](autoscaling.md)
+- [Manual Scaling](./manual-scaling.md)
+- [Server Autoscaling](./server-autoscaling.md)
+- [Model Autoscaling](./autoscaling.md)
