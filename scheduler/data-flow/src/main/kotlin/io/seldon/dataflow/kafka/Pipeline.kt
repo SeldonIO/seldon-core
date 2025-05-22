@@ -22,10 +22,6 @@ import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
-import org.apache.kafka.streams.processor.api.FixedKeyProcessor
-import org.apache.kafka.streams.processor.api.FixedKeyProcessorContext
-import org.apache.kafka.streams.processor.api.FixedKeyRecord
-import org.apache.kafka.streams.state.KeyValueStore
 import org.apache.kafka.streams.state.Stores
 import java.util.concurrent.CountDownLatch
 import kotlin.math.floor
@@ -251,57 +247,5 @@ class Pipeline(
             val scale = floor(log2(numSteps.toFloat()))
             return max(1, scale.toInt())
         }
-    }
-}
-
-class CycleTrackingProcessor(
-    private val errorTopic: String,
-) : FixedKeyProcessor<RequestId, TRecord, TRecord> {
-    private lateinit var cycleStore: KeyValueStore<String, Long> // Key: "topic:requestId", Value: cycle count
-    private lateinit var context: FixedKeyProcessorContext<RequestId, TRecord>
-
-    override fun init(context: FixedKeyProcessorContext<RequestId, TRecord>) {
-        this.context = context
-        this.cycleStore = context.getStateStore("cycle-store") as KeyValueStore<String, Long>
-    }
-
-    override fun process(record: FixedKeyRecord<RequestId, TRecord>) {
-        val requestId = record.key().toString()
-        val inputTopic =
-            context.recordMetadata()
-                .map { it.topic() }
-                .orElse("unknown") // or handle this case more explicitly if needed
-        val compositeKey = "$inputTopic:$requestId"
-
-        val currentCount = cycleStore.get(compositeKey) ?: 0L
-        val newCount = currentCount + 1
-
-        cycleStore.put(compositeKey, newCount)
-
-        if (newCount > MAX_CYCLES) {
-            val message = "ERROR: Max cycles ($MAX_CYCLES) exceeded for request $requestId in topic $inputTopic"
-            logger.warn { message }
-            context.forward(
-                record
-                    .withHeaders(
-                        record.headers()
-                            .add("seldon-pipeline-errors", "pipeline".toByteArray()),
-                    )
-                    .withValue(
-                        message.toByteArray(),
-                    ),
-            )
-        } else {
-            context.forward(record)
-        }
-    }
-
-    override fun close() {
-        // Cleanup if needed
-    }
-
-    companion object {
-        const val MAX_CYCLES = 2L // Adjust as needed
-        private val logger = noCoLogger(CycleTrackingProcessor::class)
     }
 }

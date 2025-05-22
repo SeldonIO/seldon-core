@@ -61,7 +61,7 @@ class Chainer(
         if (inputTopic.topicName != errorTopic) {
             s1 =
                 s1.processValues(
-                    { CycleTrackingProcessor(errorTopic) },
+                    { VisitingCounterProcessor(outputTopic) },
                     "cycle-store",
                 )
             val branches =
@@ -105,7 +105,7 @@ class Chainer(
         val s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
-                .processValues({ CycleTrackingProcessor(errorTopic) }, "cycle-store")
+                .processValues({ VisitingCounterProcessor(errorTopic) }, "cycle-store")
 
         val branches =
             s1.branch(
@@ -141,7 +141,7 @@ class Chainer(
         val s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
-                .processValues({ CycleTrackingProcessor(errorTopic) }, "cycle-store")
+                .processValues({ VisitingCounterProcessor(errorTopic) }, "cycle-store")
 
         val branches =
             s1.branch(
@@ -177,7 +177,7 @@ class Chainer(
         val s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
-                .processValues({ CycleTrackingProcessor(errorTopic) }, "cycle-store")
+                .processValues({ VisitingCounterProcessor(errorTopic) }, "cycle-store")
 
         val branches =
             s1.branch(
@@ -214,7 +214,7 @@ class Chainer(
         val s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
-                .processValues({ CycleTrackingProcessor(errorTopic) }, "cycle-store")
+                .processValues({ VisitingCounterProcessor(errorTopic) }, "cycle-store")
 
         val branches =
             s1.branch(
