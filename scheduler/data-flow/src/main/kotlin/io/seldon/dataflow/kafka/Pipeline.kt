@@ -188,12 +188,12 @@ class Pipeline(
             // add state store for the pipeline
             builder.addStateStore(
                 Stores.keyValueStoreBuilder(
-                    Stores.persistentKeyValueStore("cycle-store"),
+                    Stores.persistentKeyValueStore(VISITING_COUNTER_STORE),
                     Serdes.String(),
-                    Serdes.Long(),
+                    Serdes.Integer(),
                 ).withLoggingEnabled(
                     // Enables changelog topic with TTL
-                    mapOf("retention.ms" to "3600000"),
+                    mapOf("retention.ms" to VISITING_COUNTER_RETENTION),
                 ),
             )
 
