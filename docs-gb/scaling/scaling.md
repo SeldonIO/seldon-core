@@ -22,9 +22,7 @@ This approach is useful when you have predictable workloads or specific resource
 
 ## HPA Scaling of Models with Server Autoscaling
 
-Server autoscaling is particularly important for Multi-Model Serving (MMS) deployments. It automatically adjusts the number of server replicas based on model requirements, even if there are multiple Models on shared Servers.
-
-### Key Features:
+Server autoscaling is particularly important for Multi-Model Serving (MMS) deployments. It automatically adjusts the number of server replicas based on model requirements, even if there are multiple Models on shared Servers. **Key Features**:
 - Automatically scales server replicas in response to model replica changes
 - Supports both scale-up and scale-down operations
 - Includes policies for empty server removal and lightly loaded server consolidation
@@ -32,19 +30,11 @@ Server autoscaling is particularly important for Multi-Model Serving (MMS) deplo
 
 ## Model Autoscaling with HPA for Servers
 
-Model autoscaling dynamically adjusts the number of model replicas based on inference load.
-
-### Key Features:
+Model autoscaling dynamically adjusts the number of model replicas based on inference load. **Key Features**:
 - Scales models based on inference lag and inactivity. This cannot be configured.
 - Works within defined minimum and maximum replica bounds
 - Integrates with server autoscaling for complete resource management
 - Supports memory overcommit for efficient resource utilization
-
-### Architecture:
-- Uses agents to collect scaling statistics
-- Implements scale-up logic based on request lag
-- Implements scale-down logic based on model inactivity
-- Scheduler manages the autoscaling state and decisions
 
 ## Configuration
 
