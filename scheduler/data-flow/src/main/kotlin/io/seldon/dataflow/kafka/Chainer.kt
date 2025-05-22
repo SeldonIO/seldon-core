@@ -13,6 +13,7 @@ import io.klogging.noCoLogger
 import io.seldon.mlops.chainer.ChainerOuterClass
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping
 import org.apache.kafka.streams.StreamsBuilder
+import org.apache.kafka.streams.kstream.KStream
 
 /**
  * A *step* for a single input stream to a single output stream.
@@ -39,54 +40,53 @@ class Chainer(
             }
         }
 
-        when (ChainType.create(inputTopic.topicName, outputTopic.topicName)) {
-            ChainType.OUTPUT_INPUT -> buildOutputInputStream(builder)
-            ChainType.INPUT_INPUT -> buildInputInputStream(builder)
-            ChainType.OUTPUT_OUTPUT -> buildOutputOutputStream(builder)
-            ChainType.INPUT_OUTPUT -> buildInputOutputStream(builder)
-            else -> buildPassThroughStream(builder)
+        val chainType = ChainType.create(inputTopic.topicName, outputTopic.topicName)
+        var dataStream =
+            when (chainType) {
+                ChainType.OUTPUT_INPUT -> buildOutputInputStream(builder)
+                ChainType.INPUT_INPUT -> buildInputInputStream(builder)
+                ChainType.OUTPUT_OUTPUT -> buildOutputOutputStream(builder)
+                ChainType.INPUT_OUTPUT -> buildInputOutputStream(builder)
+                else -> buildPassThroughStream(builder)
+            }
+
+        if (chainType == ChainType.PASSTHROUGH && inputTopic.topicName == errorTopic) {
+            dataStream.to(outputTopic.topicName, producerSerde)
+        } else {
+            dataStream =
+                dataStream.processValues(
+                    { VisitingCounterProcessor(outputTopic) },
+                    VISITING_COUNTER_STORE,
+                )
+            val (defaultBranch, errorBranch) = createVisitingCounterBranches(dataStream)
+            defaultBranch.to(outputTopic.topicName, producerSerde)
+            errorBranch.to(errorTopic, producerSerde)
         }
 
         // TODO - when does K-Streams send an ack?  On consuming or only once a new value has been produced?
         // TODO - wait until streams exists, if it does not already
     }
 
-    private fun buildPassThroughStream(builder: StreamsBuilder) {
-        var s1 =
+    private fun buildPassThroughStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
+        val s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
                 .filterForPipeline(inputTopic.pipelineName)
-
-        s1 =
-            addTriggerTopology(
-                kafkaDomainParams,
-                builder,
-                inputTriggerTopics,
-                triggerTensorsByTopic,
-                triggerJoinType,
-                s1,
-                null,
-            )
-                .headerRemover()
-                .headerSetter(pipelineName, pipelineVersion)
-
-        if (inputTopic.topicName != errorTopic) {
-            s1 =
-                s1.processValues(
-                    { VisitingCounterProcessor(outputTopic) },
-                    VISITING_COUNTER_STORE,
-                )
-
-            val (defaultBranch, errorBranch) = createVisitingCounterBranches(s1)
-            defaultBranch.to(outputTopic.topicName, producerSerde)
-            errorBranch.to(errorTopic, producerSerde)
-        } else {
-            s1.to(outputTopic.topicName, producerSerde)
-        }
+        return addTriggerTopology(
+            kafkaDomainParams,
+            builder,
+            inputTriggerTopics,
+            triggerTensorsByTopic,
+            triggerJoinType,
+            s1,
+            null,
+        )
+            .headerRemover()
+            .headerSetter(pipelineName, pipelineVersion)
     }
 
-    private fun buildInputOutputStream(builder: StreamsBuilder) {
-        var s1 =
+    private fun buildInputOutputStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
+        val s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
                 .filterForPipeline(inputTopic.pipelineName)
@@ -95,31 +95,21 @@ class Chainer(
                 // handle cases where there are no tensors we want
                 .filter { _, value -> value.outputsList.size != 0 }
                 .marshallInferenceV2Response()
-
-        s1 =
-            addTriggerTopology(
-                kafkaDomainParams,
-                builder,
-                inputTriggerTopics,
-                triggerTensorsByTopic,
-                triggerJoinType,
-                s1,
-                null,
-            )
-                .headerRemover()
-                .headerSetter(pipelineName, pipelineVersion)
-                .processValues(
-                    { VisitingCounterProcessor(outputTopic) },
-                    VISITING_COUNTER_STORE,
-                )
-
-        val (defaultBranch, errorBranch) = createVisitingCounterBranches(s1)
-        defaultBranch.to(outputTopic.topicName, producerSerde)
-        errorBranch.to(errorTopic, producerSerde)
+        return addTriggerTopology(
+            kafkaDomainParams,
+            builder,
+            inputTriggerTopics,
+            triggerTensorsByTopic,
+            triggerJoinType,
+            s1,
+            null,
+        )
+            .headerRemover()
+            .headerSetter(pipelineName, pipelineVersion)
     }
 
-    private fun buildOutputOutputStream(builder: StreamsBuilder) {
-        var s1 =
+    private fun buildOutputOutputStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
+        val s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
                 .filterForPipeline(inputTopic.pipelineName)
@@ -128,31 +118,21 @@ class Chainer(
                 // handle cases where there are no tensors we want
                 .filter { _, value -> value.outputsList.size != 0 }
                 .marshallInferenceV2Response()
-
-        s1 =
-            addTriggerTopology(
-                kafkaDomainParams,
-                builder,
-                inputTriggerTopics,
-                triggerTensorsByTopic,
-                triggerJoinType,
-                s1,
-                null,
-            )
-                .headerRemover()
-                .headerSetter(pipelineName, pipelineVersion)
-                .processValues(
-                    { VisitingCounterProcessor(outputTopic) },
-                    VISITING_COUNTER_STORE,
-                )
-
-        val (defaultBranch, errorBranch) = createVisitingCounterBranches(s1)
-        defaultBranch.to(outputTopic.topicName, producerSerde)
-        errorBranch.to(errorTopic, producerSerde)
+        return addTriggerTopology(
+            kafkaDomainParams,
+            builder,
+            inputTriggerTopics,
+            triggerTensorsByTopic,
+            triggerJoinType,
+            s1,
+            null,
+        )
+            .headerRemover()
+            .headerSetter(pipelineName, pipelineVersion)
     }
 
-    private fun buildOutputInputStream(builder: StreamsBuilder) {
-        var s1 =
+    private fun buildOutputInputStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
+        val s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
                 .filterForPipeline(inputTopic.pipelineName)
@@ -162,31 +142,21 @@ class Chainer(
                 .filter { _, value -> value.inputsList.size != 0 }
                 .batchMessages(batchProperties)
                 .marshallInferenceV2Request()
-
-        s1 =
-            addTriggerTopology(
-                kafkaDomainParams,
-                builder,
-                inputTriggerTopics,
-                triggerTensorsByTopic,
-                triggerJoinType,
-                s1,
-                null,
-            )
-                .headerRemover()
-                .headerSetter(pipelineName, pipelineVersion)
-                .processValues(
-                    { VisitingCounterProcessor(outputTopic) },
-                    VISITING_COUNTER_STORE,
-                )
-
-        val (defaultBranch, errorBranch) = createVisitingCounterBranches(s1)
-        defaultBranch.to(outputTopic.topicName, producerSerde)
-        errorBranch.to(errorTopic, producerSerde)
+        return addTriggerTopology(
+            kafkaDomainParams,
+            builder,
+            inputTriggerTopics,
+            triggerTensorsByTopic,
+            triggerJoinType,
+            s1,
+            null,
+        )
+            .headerRemover()
+            .headerSetter(pipelineName, pipelineVersion)
     }
 
-    private fun buildInputInputStream(builder: StreamsBuilder) {
-        var s1 =
+    private fun buildInputInputStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
+        val s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
                 .filterForPipeline(inputTopic.pipelineName)
@@ -196,27 +166,17 @@ class Chainer(
                 .filter { _, value -> value.inputsList.size != 0 }
                 .batchMessages(batchProperties)
                 .marshallInferenceV2Request()
-
-        s1 =
-            addTriggerTopology(
-                kafkaDomainParams,
-                builder,
-                inputTriggerTopics,
-                triggerTensorsByTopic,
-                triggerJoinType,
-                s1,
-                null,
-            )
-                .headerRemover()
-                .headerSetter(pipelineName, pipelineVersion)
-                .processValues(
-                    { VisitingCounterProcessor(outputTopic) },
-                    VISITING_COUNTER_STORE,
-                )
-
-        val (defaultBranch, errorBranch) = createVisitingCounterBranches(s1)
-        defaultBranch.to(outputTopic.topicName, producerSerde)
-        errorBranch.to(errorTopic, producerSerde)
+        return addTriggerTopology(
+            kafkaDomainParams,
+            builder,
+            inputTriggerTopics,
+            triggerTensorsByTopic,
+            triggerJoinType,
+            s1,
+            null,
+        )
+            .headerRemover()
+            .headerSetter(pipelineName, pipelineVersion)
     }
 
     companion object {

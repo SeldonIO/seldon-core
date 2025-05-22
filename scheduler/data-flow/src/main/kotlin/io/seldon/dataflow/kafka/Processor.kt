@@ -33,8 +33,7 @@ class VisitingCounterProcessor(
 
     override fun process(record: FixedKeyRecord<RequestId, TRecord>) {
         val requestId = record.key().toString()
-        val compositeKey = "$outputTopic:$requestId"
-
+        val compositeKey = "${outputTopic.pipelineName}:${outputTopic.topicName}:$requestId"
         val newCount = (visitingCounterStore.get(compositeKey) ?: 0) + 1
         visitingCounterStore.put(compositeKey, newCount)
 
