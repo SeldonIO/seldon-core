@@ -22,15 +22,15 @@ This approach is useful when you have predictable workloads or specific resource
 
 ## HPA Scaling of Models with Server Autoscaling
 
-Server autoscaling is particularly important for Multi-Model Serving (MMS) deployments. It automatically adjusts the number of server replicas based on model requirements, even if there are multiple Models on shared Servers. **Key Features**:
+This approach enables users to configure scaling logic for models (based on Kubernetes-native metrics *or* custom metrics), while then automating the server scaling in the background. Server autoscaling is particularly important for Multi-Model Serving (MMS) deployments. It automatically adjusts the number of server replicas based on model requirements, even if there are multiple Models on shared Servers. Some key features are:
 - Automatically scales server replicas in response to model replica changes
 - Supports both scale-up and scale-down operations
-- Includes policies for empty server removal and lightly loaded server consolidation
 - Ensures efficient resource utilization through model packing
 
 ## Model Autoscaling with HPA for Servers
 
-Model autoscaling dynamically adjusts the number of model replicas based on inference load. **Key Features**:
+Model autoscaling dynamically adjusts the number of model replicas based on inference load. 
+Some key features are:
 - Scales models based on inference lag and inactivity. This cannot be configured.
 - Works within defined minimum and maximum replica bounds
 - Integrates with server autoscaling for complete resource management
