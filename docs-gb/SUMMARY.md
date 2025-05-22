@@ -56,12 +56,10 @@
     * [OIP](apis/inference/v2.md)
     * [Batch](examples/batch-examples-k8s.md) and (examples/batch-examples-local.md)
 * [Pipelines](pipelines.md)
-* [Scaling](kubernetes/scaling.md)
-  <!-- 
-  * Server Scaling
-  * Component Scaling -->
-  * [Model Autoscaling](kubernetes/autoscaling.md)
-  * [Server Autoscaling](kubernetes/server-autoscaling.md)
+* [Scaling](scaling/scaling.md)
+  * [Manual Scaling](scaling/manual-scaling.md)
+  * [Model Autoscaling](scaling/autoscaling.md)
+  * [Server Autoscaling](scaling/server-autoscaling.md)
   <!--
   * Multi-Component Serving and Overcommit -->
   * [HPA Autoscaling in single-model serving](kubernetes/hpa-rps-autoscaling.md)

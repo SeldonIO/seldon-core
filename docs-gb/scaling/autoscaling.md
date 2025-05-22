@@ -26,8 +26,7 @@ In this case, according to load, the system will add / remove server replicas to
 
 It is worth considering the following points:
 
-- If HPA adds a new server replica, this new replica will be included in any **future** scheduling decisions.
-  In other words, when deploying a new model or rescheduling failed models this new replica will be considered.
+- If HPA adds a new server replica, this new replica will be included in any **future** scheduling decisions. In other words, when deploying a new model or rescheduling failed models this new replica will be considered.
 - If HPA deletes an existing server replica, the scheduler will first attempt to drain any loaded model
 on this server replica before the server replica gets actually deleted. This is achieved by leveraging a
 `PreStop` hook on the server replica pod that triggers a process before receiving the termination signal.
@@ -48,11 +47,11 @@ discussed below.
 
 ## Model autoscaling
 
-As each model server can serve multiple models, models can scale across the available replicas of the
-server according to load.
+As each model server can serve multiple models, models can scale across the available replicas of the server according to load. Autoscaling of models is enabled if at least `MinReplicas` or `MaxReplicas` is set in the model custom resource. Then according to load the system will scale the number of `Replicas` within this range.
 
-Autoscaling of models is enabled if at least `MinReplicas` or `MaxReplicas` is set in the model custom
-resource. Then according to load the system will scale the number of `Replicas` within this range.
+{% hint style="warning" %}
+**Warning**: When using server autoscaling, do not set `minReplicas` or `maxReplicas` in your Model CRDs. These settings will conflict with the server autoscaling approach and may lead to unexpected behavior. Choose either model autoscaling (via `minReplicas`/`maxReplicas`) or server autoscaling, but not both simultaneously.
+{% endhint %}
 
 For example the following model will be deployed at first with 1 replica and it can scale up according to load.
 
