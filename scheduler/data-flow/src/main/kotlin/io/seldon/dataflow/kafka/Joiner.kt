@@ -25,6 +25,7 @@ class Joiner(
     builder: StreamsBuilder,
     internal val inputTopics: Set<TopicForPipeline>,
     internal val outputTopic: TopicForPipeline,
+    internal val errorTopic: String,
     internal val tensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
     internal val pipelineName: String,
     internal val pipelineVersion: String,
@@ -138,18 +139,30 @@ class Joiner(
         topic: TopicForPipeline,
         builder: StreamsBuilder,
     ): KStream<RequestId, TRecord> {
-        return builder
-            .stream(topic.topicName, consumerSerde)
-            .filterForPipeline(topic.pipelineName)
+        val stream =
+            builder
+                .stream(topic.topicName, consumerSerde)
+                .filterForPipeline(topic.pipelineName)
+
+        val (defaultBranch, errorBranch) = createVisitingCounterBranches(stream)
+        errorBranch.to(errorTopic, producerSerde)
+
+        return defaultBranch
     }
 
     private fun buildInputOutputStream(
         topic: TopicForPipeline,
         builder: StreamsBuilder,
     ): KStream<RequestId, TRecord> {
-        return builder
-            .stream(topic.topicName, consumerSerde)
-            .filterForPipeline(topic.pipelineName)
+        val stream =
+            builder
+                .stream(topic.topicName, consumerSerde)
+                .filterForPipeline(topic.pipelineName)
+
+        val (defaultBranch, errorBranch) = createVisitingCounterBranches(stream)
+        errorBranch.to(errorTopic, producerSerde)
+
+        return defaultBranch
             .unmarshallInferenceV2Request()
             .convertToResponse(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
             // handle cases where there are no tensors we want
@@ -161,9 +174,15 @@ class Joiner(
         topic: TopicForPipeline,
         builder: StreamsBuilder,
     ): KStream<RequestId, TRecord> {
-        return builder
-            .stream(topic.topicName, consumerSerde)
-            .filterForPipeline(topic.pipelineName)
+        val stream =
+            builder
+                .stream(topic.topicName, consumerSerde)
+                .filterForPipeline(topic.pipelineName)
+
+        val (defaultBranch, errorBranch) = createVisitingCounterBranches(stream)
+        errorBranch.to(errorTopic, producerSerde)
+
+        return defaultBranch
             .unmarshallInferenceV2Response()
             .filterResponses(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
             // handle cases where there are no tensors we want
@@ -175,9 +194,15 @@ class Joiner(
         topic: TopicForPipeline,
         builder: StreamsBuilder,
     ): KStream<RequestId, TRecord> {
-        return builder
-            .stream(topic.topicName, consumerSerde)
-            .filterForPipeline(topic.pipelineName)
+        val stream =
+            builder
+                .stream(topic.topicName, consumerSerde)
+                .filterForPipeline(topic.pipelineName)
+
+        val (defaultBranch, errorBranch) = createVisitingCounterBranches(stream)
+        errorBranch.to(errorTopic, producerSerde)
+
+        return defaultBranch
             .unmarshallInferenceV2Response()
             .convertToRequest(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
             // handle cases where there are no tensors we want
@@ -189,9 +214,15 @@ class Joiner(
         topic: TopicForPipeline,
         builder: StreamsBuilder,
     ): KStream<RequestId, TRecord> {
-        return builder
-            .stream(topic.topicName, consumerSerde)
-            .filterForPipeline(topic.pipelineName)
+        val stream =
+            builder
+                .stream(topic.topicName, consumerSerde)
+                .filterForPipeline(topic.pipelineName)
+
+        val (defaultBranch, errorBranch) = createVisitingCounterBranches(stream)
+        errorBranch.to(errorTopic, producerSerde)
+
+        return defaultBranch
             .unmarshallInferenceV2Request()
             .filterRequests(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
             // handle cases where there are no tensors we want
