@@ -56,10 +56,8 @@
     * [OIP](apis/inference/v2.md)
     * [Batch](examples/batch-examples-k8s.md) and (examples/batch-examples-local.md)
 * [Pipelines](pipelines.md)
-* [Scaling](kubernetes/scaling.md)
-  <!-- 
-  * Server Scaling
-  * Component Scaling -->
+* Scaling
+  * [Manual Scaling](kubernetes/scaling.md)
   * [Model Autoscaling](kubernetes/autoscaling.md)
   * [Server Autoscaling](kubernetes/server-autoscaling.md)
   <!--
