@@ -223,6 +223,7 @@ func CreatePipelineVersionFromProto(pipelineProto *scheduler.Pipeline) (*Pipelin
 		DataflowSepec:  dataflowSpec,
 		KubernetesMeta: kubernetesMeta,
 		AllowCycles:    pipelineProto.AllowCycles,
+		MaxNumCycles:   pipelineProto.MaxNumCycles,
 	}
 	// Ensure we have a UID
 	if pv.UID == "" {

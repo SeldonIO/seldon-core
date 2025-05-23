@@ -217,6 +217,40 @@ public object PipelineUpdateMessageKt {
     public fun clearPipelineErrorTopic() {
       _builder.clearPipelineErrorTopic()
     }
+
+    /**
+     * `bool allowCycles = 8;`
+     */
+    public var allowCycles: kotlin.Boolean
+      @JvmName("getAllowCycles")
+      get() = _builder.getAllowCycles()
+      @JvmName("setAllowCycles")
+      set(value) {
+        _builder.setAllowCycles(value)
+      }
+    /**
+     * `bool allowCycles = 8;`
+     */
+    public fun clearAllowCycles() {
+      _builder.clearAllowCycles()
+    }
+
+    /**
+     * `uint32 maxNumCycles = 9;`
+     */
+    public var maxNumCycles: kotlin.Int
+      @JvmName("getMaxNumCycles")
+      get() = _builder.getMaxNumCycles()
+      @JvmName("setMaxNumCycles")
+      set(value) {
+        _builder.setMaxNumCycles(value)
+      }
+    /**
+     * `uint32 maxNumCycles = 9;`
+     */
+    public fun clearMaxNumCycles() {
+      _builder.clearMaxNumCycles()
+    }
   }
 }
 @kotlin.jvm.JvmSynthetic

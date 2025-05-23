@@ -56,6 +56,7 @@ type PipelineVersion struct {
 	DataflowSepec  *DataflowSpec
 	KubernetesMeta *KubernetesMeta
 	AllowCycles    bool
+	MaxNumCycles   uint32
 }
 
 func (pv *PipelineVersion) String() string {

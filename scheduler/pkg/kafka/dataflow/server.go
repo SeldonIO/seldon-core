@@ -323,6 +323,8 @@ func (c *ChainerServer) createPipelineCreationMessage(pv *pipeline.PipelineVersi
 		Op:                  chainer.PipelineUpdateMessage_Create,
 		PipelineOutputTopic: c.topicNamer.GetPipelineTopicOutputs(pv.Name),
 		PipelineErrorTopic:  c.topicNamer.GetModelErrorTopic(),
+		AllowCycles:         pv.AllowCycles,
+		MaxNumCycles:        pv.MaxNumCycles,
 	}
 }
 

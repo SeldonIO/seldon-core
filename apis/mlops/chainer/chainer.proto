@@ -22,6 +22,8 @@ message PipelineUpdateMessage {
   repeated PipelineStepUpdate updates = 5;
   string pipelineOutputTopic = 6;
   string pipelineErrorTopic = 7;
+  bool allowCycles = 8;
+  uint32 maxNumCycles = 9;
 }
 
 message PipelineStepUpdate {
