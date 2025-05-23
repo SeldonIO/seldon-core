@@ -36,8 +36,8 @@ internal class PipelineStepTest {
                 StreamsBuilder(),
                 DEFAULT_PIPELINE_NAME,
                 DEFAULT_PIPELINE_VERSION,
-                "output-topic",
-                "error-topic",
+                PIPELINE_OUTPUT_TOPIC,
+                PIPELINE_ERROR_TOPIC,
                 false,
                 0,
                 sources,
@@ -62,6 +62,8 @@ internal class PipelineStepTest {
     companion object {
         private const val DEFAULT_PIPELINE_NAME = "some-pipeline"
         private const val DEFAULT_PIPELINE_VERSION = "1"
+        private const val PIPELINE_OUTPUT_TOPIC = "seldon.namespace.pipeline.$DEFAULT_PIPELINE_NAME.outputs"
+        private const val PIPELINE_ERROR_TOPIC = "seldon.namespace.errors.errors"
         private val defaultPipelineTopic =
             PipelineTopic.newBuilder()
                 .setTopicName("seldon.namespace.sinkModel.inputs")
@@ -201,8 +203,8 @@ internal class PipelineStepTest {
                 StreamsBuilder(),
                 inputTopic = inputTopic,
                 outputTopic = defaultSink,
-                pipelineOutputTopic = "output-topic",
-                pipelineErrorTopic = "error-topic",
+                pipelineOutputTopic = PIPELINE_OUTPUT_TOPIC,
+                pipelineErrorTopic = PIPELINE_ERROR_TOPIC,
                 allowCycles = false,
                 maxNumCycles = 0,
                 tensors = tensors,
@@ -224,8 +226,8 @@ internal class PipelineStepTest {
                 StreamsBuilder(),
                 inputTopics = inputTopics,
                 tensorsByTopic = tensorsByTopic,
-                pipelineOutputTopic = "output-topic",
-                pipelineErrorTopic = "error-topic",
+                pipelineOutputTopic = PIPELINE_OUTPUT_TOPIC,
+                pipelineErrorTopic = PIPELINE_ERROR_TOPIC,
                 allowCycles = false,
                 maxNumCycles = 0,
                 pipelineName = DEFAULT_PIPELINE_NAME,
