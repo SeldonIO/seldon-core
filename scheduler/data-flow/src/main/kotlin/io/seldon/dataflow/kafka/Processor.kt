@@ -41,7 +41,6 @@ class VisitingCounterProcessor(
 
     override fun process(record: FixedKeyRecord<RequestId, TRecord>) {
         val requestId = record.key().toString()
-        logger.info("[BOS] ${outputTopic.topicName} - $pipelineOutputTopic [EOS]")
 
         if (outputTopic.topicName == pipelineOutputTopic) {
             val iterator = visitingCounterStore.all()
@@ -49,7 +48,6 @@ class VisitingCounterProcessor(
                 while (iterator.hasNext()) {
                     val key = iterator.next().key
                     if (key.startsWith(requestId)) {
-                        logger.info("Removing key: $key")
                         visitingCounterStore.delete(key)
                     }
                 }
