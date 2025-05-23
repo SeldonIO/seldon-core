@@ -22,7 +22,8 @@ class Chainer(
     builder: StreamsBuilder,
     internal val inputTopic: TopicForPipeline,
     internal val outputTopic: TopicForPipeline,
-    internal val errorTopic: String,
+    internal val pipelineOutputTopic: String,
+    internal val pipelineErrorTopic: String,
     internal val tensors: Set<TensorName>?,
     internal val pipelineName: String,
     internal val pipelineVersion: String,
@@ -50,19 +51,19 @@ class Chainer(
                 else -> buildPassThroughStream(builder)
             }
 
-        if (chainType == ChainType.PASSTHROUGH && inputTopic.topicName == errorTopic) {
+        dataStream =
+            dataStream.processValues(
+                { VisitingCounterProcessor(outputTopic, pipelineOutputTopic) },
+                VISITING_COUNTER_STORE,
+            )
+
+        if (inputTopic.topicName == pipelineErrorTopic) {
             dataStream.to(outputTopic.topicName, producerSerde)
         } else {
-            dataStream =
-                dataStream.processValues(
-                    { VisitingCounterProcessor(outputTopic) },
-                    VISITING_COUNTER_STORE,
-                )
             val (defaultBranch, errorBranch) = createVisitingCounterBranches(dataStream)
             defaultBranch.to(outputTopic.topicName, producerSerde)
-            errorBranch.to(errorTopic, producerSerde)
+            errorBranch.to(pipelineErrorTopic, producerSerde)
         }
-
         // TODO - when does K-Streams send an ack?  On consuming or only once a new value has been produced?
         // TODO - wait until streams exists, if it does not already
     }

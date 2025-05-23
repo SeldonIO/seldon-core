@@ -25,7 +25,8 @@ class Joiner(
     builder: StreamsBuilder,
     internal val inputTopics: Set<TopicForPipeline>,
     internal val outputTopic: TopicForPipeline,
-    internal val errorTopic: String,
+    internal val pipelineOutputTopic: String,
+    internal val pipelineErrorTopic: String,
     internal val tensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
     internal val pipelineName: String,
     internal val pipelineVersion: String,
@@ -51,13 +52,13 @@ class Joiner(
                 .headerRemover()
                 .headerSetter(pipelineName, pipelineVersion)
                 .processValues(
-                    { VisitingCounterProcessor(outputTopic) },
+                    { VisitingCounterProcessor(outputTopic, pipelineOutputTopic) },
                     VISITING_COUNTER_STORE,
                 )
 
         val (defaultBranch, errorBranch) = createVisitingCounterBranches(dataStream)
         defaultBranch.to(outputTopic.topicName, producerSerde)
-        errorBranch.to(errorTopic, producerSerde)
+        errorBranch.to(pipelineErrorTopic, producerSerde)
     }
 
     private fun buildTopology(

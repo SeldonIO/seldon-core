@@ -1,3 +1,12 @@
+/*
+Copyright (c) 2024 Seldon Technologies Ltd.
+
+Use of this software is governed BY
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
+*/
+
 package io.seldon.dataflow.kafka
 
 import io.klogging.noCoLogger
@@ -21,6 +30,7 @@ const val VISITING_DEFAULT_BRANCH = "default"
 
 class VisitingCounterProcessor(
     private val outputTopic: TopicForPipeline,
+    private val pipelineOutputTopic: String,
     private val maxCycles: Int = 2,
 ) : FixedKeyProcessor<RequestId, TRecord, TRecord> {
     private lateinit var visitingCounterStore: KeyValueStore<String, Int>
@@ -33,7 +43,24 @@ class VisitingCounterProcessor(
 
     override fun process(record: FixedKeyRecord<RequestId, TRecord>) {
         val requestId = record.key().toString()
-        val compositeKey = "${outputTopic.pipelineName}:${outputTopic.topicName}:$requestId"
+        logger.info("[BOS] ${outputTopic.topicName} - $pipelineOutputTopic [EOS]")
+
+        if (outputTopic.topicName == pipelineOutputTopic) {
+            val iterator = visitingCounterStore.all()
+            iterator.use {
+                while (iterator.hasNext()) {
+                    val key = iterator.next().key
+                    if (key.startsWith(requestId)) {
+                        logger.info("Removing key: $key")
+                        visitingCounterStore.delete(key)
+                    }
+                }
+            }
+            context.forward(record)
+            return
+        }
+
+        val compositeKey = "$requestId:${outputTopic.topicName}"
         val newCount = (visitingCounterStore.get(compositeKey) ?: 0) + 1
         visitingCounterStore.put(compositeKey, newCount)
 

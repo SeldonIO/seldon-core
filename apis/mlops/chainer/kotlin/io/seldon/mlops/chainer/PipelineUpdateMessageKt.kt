@@ -185,20 +185,37 @@ public object PipelineUpdateMessageKt {
 
 
     /**
-     * `string errorTopic = 6;`
+     * `string pipelineOutputTopic = 6;`
      */
-    public var errorTopic: kotlin.String
-      @JvmName("getErrorTopic")
-      get() = _builder.getErrorTopic()
-      @JvmName("setErrorTopic")
+    public var pipelineOutputTopic: kotlin.String
+      @JvmName("getPipelineOutputTopic")
+      get() = _builder.getPipelineOutputTopic()
+      @JvmName("setPipelineOutputTopic")
       set(value) {
-        _builder.setErrorTopic(value)
+        _builder.setPipelineOutputTopic(value)
       }
     /**
-     * `string errorTopic = 6;`
+     * `string pipelineOutputTopic = 6;`
      */
-    public fun clearErrorTopic() {
-      _builder.clearErrorTopic()
+    public fun clearPipelineOutputTopic() {
+      _builder.clearPipelineOutputTopic()
+    }
+
+    /**
+     * `string pipelineErrorTopic = 7;`
+     */
+    public var pipelineErrorTopic: kotlin.String
+      @JvmName("getPipelineErrorTopic")
+      get() = _builder.getPipelineErrorTopic()
+      @JvmName("setPipelineErrorTopic")
+      set(value) {
+        _builder.setPipelineErrorTopic(value)
+      }
+    /**
+     * `string pipelineErrorTopic = 7;`
+     */
+    public fun clearPipelineErrorTopic() {
+      _builder.clearPipelineErrorTopic()
     }
   }
 }

@@ -605,16 +605,28 @@ public final class ChainerOuterClass {
         int index);
 
     /**
-     * <code>string errorTopic = 6;</code>
-     * @return The errorTopic.
+     * <code>string pipelineOutputTopic = 6;</code>
+     * @return The pipelineOutputTopic.
      */
-    java.lang.String getErrorTopic();
+    java.lang.String getPipelineOutputTopic();
     /**
-     * <code>string errorTopic = 6;</code>
-     * @return The bytes for errorTopic.
+     * <code>string pipelineOutputTopic = 6;</code>
+     * @return The bytes for pipelineOutputTopic.
      */
     com.google.protobuf.ByteString
-        getErrorTopicBytes();
+        getPipelineOutputTopicBytes();
+
+    /**
+     * <code>string pipelineErrorTopic = 7;</code>
+     * @return The pipelineErrorTopic.
+     */
+    java.lang.String getPipelineErrorTopic();
+    /**
+     * <code>string pipelineErrorTopic = 7;</code>
+     * @return The bytes for pipelineErrorTopic.
+     */
+    com.google.protobuf.ByteString
+        getPipelineErrorTopicBytes();
   }
   /**
    * Protobuf type {@code seldon.mlops.chainer.PipelineUpdateMessage}
@@ -642,7 +654,8 @@ public final class ChainerOuterClass {
       pipeline_ = "";
       uid_ = "";
       updates_ = java.util.Collections.emptyList();
-      errorTopic_ = "";
+      pipelineOutputTopic_ = "";
+      pipelineErrorTopic_ = "";
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor
@@ -932,39 +945,78 @@ public final class ChainerOuterClass {
       return updates_.get(index);
     }
 
-    public static final int ERRORTOPIC_FIELD_NUMBER = 6;
+    public static final int PIPELINEOUTPUTTOPIC_FIELD_NUMBER = 6;
     @SuppressWarnings("serial")
-    private volatile java.lang.Object errorTopic_ = "";
+    private volatile java.lang.Object pipelineOutputTopic_ = "";
     /**
-     * <code>string errorTopic = 6;</code>
-     * @return The errorTopic.
+     * <code>string pipelineOutputTopic = 6;</code>
+     * @return The pipelineOutputTopic.
      */
     @java.lang.Override
-    public java.lang.String getErrorTopic() {
-      java.lang.Object ref = errorTopic_;
+    public java.lang.String getPipelineOutputTopic() {
+      java.lang.Object ref = pipelineOutputTopic_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        errorTopic_ = s;
+        pipelineOutputTopic_ = s;
         return s;
       }
     }
     /**
-     * <code>string errorTopic = 6;</code>
-     * @return The bytes for errorTopic.
+     * <code>string pipelineOutputTopic = 6;</code>
+     * @return The bytes for pipelineOutputTopic.
      */
     @java.lang.Override
     public com.google.protobuf.ByteString
-        getErrorTopicBytes() {
-      java.lang.Object ref = errorTopic_;
+        getPipelineOutputTopicBytes() {
+      java.lang.Object ref = pipelineOutputTopic_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        errorTopic_ = b;
+        pipelineOutputTopic_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int PIPELINEERRORTOPIC_FIELD_NUMBER = 7;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object pipelineErrorTopic_ = "";
+    /**
+     * <code>string pipelineErrorTopic = 7;</code>
+     * @return The pipelineErrorTopic.
+     */
+    @java.lang.Override
+    public java.lang.String getPipelineErrorTopic() {
+      java.lang.Object ref = pipelineErrorTopic_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        pipelineErrorTopic_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string pipelineErrorTopic = 7;</code>
+     * @return The bytes for pipelineErrorTopic.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getPipelineErrorTopicBytes() {
+      java.lang.Object ref = pipelineErrorTopic_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        pipelineErrorTopic_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -1000,8 +1052,11 @@ public final class ChainerOuterClass {
       for (int i = 0; i < updates_.size(); i++) {
         output.writeMessage(5, updates_.get(i));
       }
-      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(errorTopic_)) {
-        com.google.protobuf.GeneratedMessage.writeString(output, 6, errorTopic_);
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(pipelineOutputTopic_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 6, pipelineOutputTopic_);
+      }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(pipelineErrorTopic_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 7, pipelineErrorTopic_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -1030,8 +1085,11 @@ public final class ChainerOuterClass {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(5, updates_.get(i));
       }
-      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(errorTopic_)) {
-        size += com.google.protobuf.GeneratedMessage.computeStringSize(6, errorTopic_);
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(pipelineOutputTopic_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(6, pipelineOutputTopic_);
+      }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(pipelineErrorTopic_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(7, pipelineErrorTopic_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -1057,8 +1115,10 @@ public final class ChainerOuterClass {
           .equals(other.getUid())) return false;
       if (!getUpdatesList()
           .equals(other.getUpdatesList())) return false;
-      if (!getErrorTopic()
-          .equals(other.getErrorTopic())) return false;
+      if (!getPipelineOutputTopic()
+          .equals(other.getPipelineOutputTopic())) return false;
+      if (!getPipelineErrorTopic()
+          .equals(other.getPipelineErrorTopic())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -1082,8 +1142,10 @@ public final class ChainerOuterClass {
         hash = (37 * hash) + UPDATES_FIELD_NUMBER;
         hash = (53 * hash) + getUpdatesList().hashCode();
       }
-      hash = (37 * hash) + ERRORTOPIC_FIELD_NUMBER;
-      hash = (53 * hash) + getErrorTopic().hashCode();
+      hash = (37 * hash) + PIPELINEOUTPUTTOPIC_FIELD_NUMBER;
+      hash = (53 * hash) + getPipelineOutputTopic().hashCode();
+      hash = (37 * hash) + PIPELINEERRORTOPIC_FIELD_NUMBER;
+      hash = (53 * hash) + getPipelineErrorTopic().hashCode();
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -1226,7 +1288,8 @@ public final class ChainerOuterClass {
           updatesBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000010);
-        errorTopic_ = "";
+        pipelineOutputTopic_ = "";
+        pipelineErrorTopic_ = "";
         return this;
       }
 
@@ -1286,7 +1349,10 @@ public final class ChainerOuterClass {
           result.uid_ = uid_;
         }
         if (((from_bitField0_ & 0x00000020) != 0)) {
-          result.errorTopic_ = errorTopic_;
+          result.pipelineOutputTopic_ = pipelineOutputTopic_;
+        }
+        if (((from_bitField0_ & 0x00000040) != 0)) {
+          result.pipelineErrorTopic_ = pipelineErrorTopic_;
         }
       }
 
@@ -1344,9 +1410,14 @@ public final class ChainerOuterClass {
             }
           }
         }
-        if (!other.getErrorTopic().isEmpty()) {
-          errorTopic_ = other.errorTopic_;
+        if (!other.getPipelineOutputTopic().isEmpty()) {
+          pipelineOutputTopic_ = other.pipelineOutputTopic_;
           bitField0_ |= 0x00000020;
+          onChanged();
+        }
+        if (!other.getPipelineErrorTopic().isEmpty()) {
+          pipelineErrorTopic_ = other.pipelineErrorTopic_;
+          bitField0_ |= 0x00000040;
           onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
@@ -1409,10 +1480,15 @@ public final class ChainerOuterClass {
                 break;
               } // case 42
               case 50: {
-                errorTopic_ = input.readStringRequireUtf8();
+                pipelineOutputTopic_ = input.readStringRequireUtf8();
                 bitField0_ |= 0x00000020;
                 break;
               } // case 50
+              case 58: {
+                pipelineErrorTopic_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000040;
+                break;
+              } // case 58
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -1899,74 +1975,146 @@ public final class ChainerOuterClass {
         return updatesBuilder_;
       }
 
-      private java.lang.Object errorTopic_ = "";
+      private java.lang.Object pipelineOutputTopic_ = "";
       /**
-       * <code>string errorTopic = 6;</code>
-       * @return The errorTopic.
+       * <code>string pipelineOutputTopic = 6;</code>
+       * @return The pipelineOutputTopic.
        */
-      public java.lang.String getErrorTopic() {
-        java.lang.Object ref = errorTopic_;
+      public java.lang.String getPipelineOutputTopic() {
+        java.lang.Object ref = pipelineOutputTopic_;
         if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
-          errorTopic_ = s;
+          pipelineOutputTopic_ = s;
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>string errorTopic = 6;</code>
-       * @return The bytes for errorTopic.
+       * <code>string pipelineOutputTopic = 6;</code>
+       * @return The bytes for pipelineOutputTopic.
        */
       public com.google.protobuf.ByteString
-          getErrorTopicBytes() {
-        java.lang.Object ref = errorTopic_;
+          getPipelineOutputTopicBytes() {
+        java.lang.Object ref = pipelineOutputTopic_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          errorTopic_ = b;
+          pipelineOutputTopic_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>string errorTopic = 6;</code>
-       * @param value The errorTopic to set.
+       * <code>string pipelineOutputTopic = 6;</code>
+       * @param value The pipelineOutputTopic to set.
        * @return This builder for chaining.
        */
-      public Builder setErrorTopic(
+      public Builder setPipelineOutputTopic(
           java.lang.String value) {
         if (value == null) { throw new NullPointerException(); }
-        errorTopic_ = value;
+        pipelineOutputTopic_ = value;
         bitField0_ |= 0x00000020;
         onChanged();
         return this;
       }
       /**
-       * <code>string errorTopic = 6;</code>
+       * <code>string pipelineOutputTopic = 6;</code>
        * @return This builder for chaining.
        */
-      public Builder clearErrorTopic() {
-        errorTopic_ = getDefaultInstance().getErrorTopic();
+      public Builder clearPipelineOutputTopic() {
+        pipelineOutputTopic_ = getDefaultInstance().getPipelineOutputTopic();
         bitField0_ = (bitField0_ & ~0x00000020);
         onChanged();
         return this;
       }
       /**
-       * <code>string errorTopic = 6;</code>
-       * @param value The bytes for errorTopic to set.
+       * <code>string pipelineOutputTopic = 6;</code>
+       * @param value The bytes for pipelineOutputTopic to set.
        * @return This builder for chaining.
        */
-      public Builder setErrorTopicBytes(
+      public Builder setPipelineOutputTopicBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) { throw new NullPointerException(); }
         checkByteStringIsUtf8(value);
-        errorTopic_ = value;
+        pipelineOutputTopic_ = value;
         bitField0_ |= 0x00000020;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object pipelineErrorTopic_ = "";
+      /**
+       * <code>string pipelineErrorTopic = 7;</code>
+       * @return The pipelineErrorTopic.
+       */
+      public java.lang.String getPipelineErrorTopic() {
+        java.lang.Object ref = pipelineErrorTopic_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          pipelineErrorTopic_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string pipelineErrorTopic = 7;</code>
+       * @return The bytes for pipelineErrorTopic.
+       */
+      public com.google.protobuf.ByteString
+          getPipelineErrorTopicBytes() {
+        java.lang.Object ref = pipelineErrorTopic_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          pipelineErrorTopic_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string pipelineErrorTopic = 7;</code>
+       * @param value The pipelineErrorTopic to set.
+       * @return This builder for chaining.
+       */
+      public Builder setPipelineErrorTopic(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        pipelineErrorTopic_ = value;
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string pipelineErrorTopic = 7;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearPipelineErrorTopic() {
+        pipelineErrorTopic_ = getDefaultInstance().getPipelineErrorTopic();
+        bitField0_ = (bitField0_ & ~0x00000040);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string pipelineErrorTopic = 7;</code>
+       * @param value The bytes for pipelineErrorTopic to set.
+       * @return This builder for chaining.
+       */
+      public Builder setPipelineErrorTopicBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        pipelineErrorTopic_ = value;
+        bitField0_ |= 0x00000040;
         onChanged();
         return this;
       }
@@ -8364,48 +8512,49 @@ public final class ChainerOuterClass {
     java.lang.String[] descriptorData = {
       "\n\rchainer.proto\022\024seldon.mlops.chainer\"+\n" +
       "\033PipelineSubscriptionRequest\022\014\n\004name\030\001 \001" +
-      "(\t\"\233\002\n\025PipelineUpdateMessage\022I\n\002op\030\001 \001(\016" +
+      "(\t\"\300\002\n\025PipelineUpdateMessage\022I\n\002op\030\001 \001(\016" +
       "2=.seldon.mlops.chainer.PipelineUpdateMe" +
       "ssage.PipelineOperation\022\020\n\010pipeline\030\002 \001(" +
       "\t\022\017\n\007version\030\003 \001(\r\022\013\n\003uid\030\004 \001(\t\0229\n\007updat" +
       "es\030\005 \003(\0132(.seldon.mlops.chainer.Pipeline" +
-      "StepUpdate\022\022\n\nerrorTopic\030\006 \001(\t\"8\n\021Pipeli" +
-      "neOperation\022\013\n\007Unknown\020\000\022\n\n\006Create\020\001\022\n\n\006" +
-      "Delete\020\002\"\313\004\n\022PipelineStepUpdate\0224\n\007sourc" +
-      "es\030\001 \003(\0132#.seldon.mlops.chainer.Pipeline" +
-      "Topic\0225\n\010triggers\030\002 \003(\0132#.seldon.mlops.c" +
-      "hainer.PipelineTopic\0221\n\004sink\030\003 \001(\0132#.sel" +
-      "don.mlops.chainer.PipelineTopic\022N\n\013input" +
-      "JoinTy\030\004 \001(\01629.seldon.mlops.chainer.Pipe" +
-      "lineStepUpdate.PipelineJoinType\022Q\n\016trigg" +
-      "ersJoinTy\030\005 \001(\01629.seldon.mlops.chainer.P" +
-      "ipelineStepUpdate.PipelineJoinType\022\032\n\022pa" +
-      "ssEmptyResponses\030\006 \001(\010\022\031\n\014joinWindowMs\030\007" +
-      " \001(\rH\000\210\001\001\022>\n\ttensorMap\030\010 \003(\0132+.seldon.ml" +
-      "ops.chainer.PipelineTensorMapping\022*\n\005bat" +
-      "ch\030\t \001(\0132\033.seldon.mlops.chainer.Batch\">\n" +
-      "\020PipelineJoinType\022\013\n\007Unknown\020\000\022\t\n\005Inner\020" +
-      "\001\022\t\n\005Outer\020\002\022\007\n\003Any\020\003B\017\n\r_joinWindowMs\"Y" +
-      "\n\025PipelineTensorMapping\022\024\n\014pipelineName\030" +
-      "\001 \001(\t\022\026\n\016topicAndTensor\030\002 \001(\t\022\022\n\ntensorN" +
-      "ame\030\003 \001(\t\"X\n\rPipelineTopic\022\024\n\014pipelineNa" +
-      "me\030\001 \001(\t\022\021\n\ttopicName\030\002 \001(\t\022\023\n\006tensor\030\003 " +
-      "\001(\tH\000\210\001\001B\t\n\007_tensor\"X\n\005Batch\022\021\n\004size\030\001 \001" +
-      "(\rH\000\210\001\001\022\025\n\010windowMs\030\002 \001(\rH\001\210\001\001\022\017\n\007rollin" +
-      "g\030\003 \001(\010B\007\n\005_sizeB\013\n\t_windowMs\"{\n\033Pipelin" +
-      "eUpdateStatusMessage\022;\n\006update\030\001 \001(\0132+.s" +
-      "eldon.mlops.chainer.PipelineUpdateMessag" +
-      "e\022\017\n\007success\030\002 \001(\010\022\016\n\006reason\030\003 \001(\t\"\036\n\034Pi" +
-      "pelineUpdateStatusResponse2\211\002\n\007Chainer\022~" +
-      "\n\030SubscribePipelineUpdates\0221.seldon.mlop" +
-      "s.chainer.PipelineSubscriptionRequest\032+." +
-      "seldon.mlops.chainer.PipelineUpdateMessa" +
-      "ge\"\0000\001\022~\n\023PipelineUpdateEvent\0221.seldon.m" +
-      "lops.chainer.PipelineUpdateStatusMessage" +
-      "\0322.seldon.mlops.chainer.PipelineUpdateSt" +
-      "atusResponse\"\000BS\n\027io.seldon.mlops.chaine" +
-      "rZ8github.com/seldonio/seldon-core/apis/" +
-      "go/v2/mlops/chainerb\006proto3"
+      "StepUpdate\022\033\n\023pipelineOutputTopic\030\006 \001(\t\022" +
+      "\032\n\022pipelineErrorTopic\030\007 \001(\t\"8\n\021PipelineO" +
+      "peration\022\013\n\007Unknown\020\000\022\n\n\006Create\020\001\022\n\n\006Del" +
+      "ete\020\002\"\313\004\n\022PipelineStepUpdate\0224\n\007sources\030" +
+      "\001 \003(\0132#.seldon.mlops.chainer.PipelineTop" +
+      "ic\0225\n\010triggers\030\002 \003(\0132#.seldon.mlops.chai" +
+      "ner.PipelineTopic\0221\n\004sink\030\003 \001(\0132#.seldon" +
+      ".mlops.chainer.PipelineTopic\022N\n\013inputJoi" +
+      "nTy\030\004 \001(\01629.seldon.mlops.chainer.Pipelin" +
+      "eStepUpdate.PipelineJoinType\022Q\n\016triggers" +
+      "JoinTy\030\005 \001(\01629.seldon.mlops.chainer.Pipe" +
+      "lineStepUpdate.PipelineJoinType\022\032\n\022passE" +
+      "mptyResponses\030\006 \001(\010\022\031\n\014joinWindowMs\030\007 \001(" +
+      "\rH\000\210\001\001\022>\n\ttensorMap\030\010 \003(\0132+.seldon.mlops" +
+      ".chainer.PipelineTensorMapping\022*\n\005batch\030" +
+      "\t \001(\0132\033.seldon.mlops.chainer.Batch\">\n\020Pi" +
+      "pelineJoinType\022\013\n\007Unknown\020\000\022\t\n\005Inner\020\001\022\t" +
+      "\n\005Outer\020\002\022\007\n\003Any\020\003B\017\n\r_joinWindowMs\"Y\n\025P" +
+      "ipelineTensorMapping\022\024\n\014pipelineName\030\001 \001" +
+      "(\t\022\026\n\016topicAndTensor\030\002 \001(\t\022\022\n\ntensorName" +
+      "\030\003 \001(\t\"X\n\rPipelineTopic\022\024\n\014pipelineName\030" +
+      "\001 \001(\t\022\021\n\ttopicName\030\002 \001(\t\022\023\n\006tensor\030\003 \001(\t" +
+      "H\000\210\001\001B\t\n\007_tensor\"X\n\005Batch\022\021\n\004size\030\001 \001(\rH" +
+      "\000\210\001\001\022\025\n\010windowMs\030\002 \001(\rH\001\210\001\001\022\017\n\007rolling\030\003" +
+      " \001(\010B\007\n\005_sizeB\013\n\t_windowMs\"{\n\033PipelineUp" +
+      "dateStatusMessage\022;\n\006update\030\001 \001(\0132+.seld" +
+      "on.mlops.chainer.PipelineUpdateMessage\022\017" +
+      "\n\007success\030\002 \001(\010\022\016\n\006reason\030\003 \001(\t\"\036\n\034Pipel" +
+      "ineUpdateStatusResponse2\211\002\n\007Chainer\022~\n\030S" +
+      "ubscribePipelineUpdates\0221.seldon.mlops.c" +
+      "hainer.PipelineSubscriptionRequest\032+.sel" +
+      "don.mlops.chainer.PipelineUpdateMessage\"" +
+      "\0000\001\022~\n\023PipelineUpdateEvent\0221.seldon.mlop" +
+      "s.chainer.PipelineUpdateStatusMessage\0322." +
+      "seldon.mlops.chainer.PipelineUpdateStatu" +
+      "sResponse\"\000BS\n\027io.seldon.mlops.chainerZ8" +
+      "github.com/seldonio/seldon-core/apis/go/" +
+      "v2/mlops/chainerb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -8422,7 +8571,7 @@ public final class ChainerOuterClass {
     internal_static_seldon_mlops_chainer_PipelineUpdateMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_seldon_mlops_chainer_PipelineUpdateMessage_descriptor,
-        new java.lang.String[] { "Op", "Pipeline", "Version", "Uid", "Updates", "ErrorTopic", });
+        new java.lang.String[] { "Op", "Pipeline", "Version", "Uid", "Updates", "PipelineOutputTopic", "PipelineErrorTopic", });
     internal_static_seldon_mlops_chainer_PipelineStepUpdate_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_seldon_mlops_chainer_PipelineStepUpdate_fieldAccessorTable = new

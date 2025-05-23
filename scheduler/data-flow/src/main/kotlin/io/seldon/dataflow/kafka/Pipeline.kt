@@ -34,7 +34,8 @@ data class PipelineMetadata(
     val id: PipelineId,
     val name: String,
     val version: Int,
-    val errorTopic: String,
+    val pipelineOutputTopic: String,
+    val pipelineErrorTopic: String,
 )
 
 class Pipeline(
@@ -188,12 +189,9 @@ class Pipeline(
             // add state store for the pipeline
             builder.addStateStore(
                 Stores.keyValueStoreBuilder(
-                    Stores.persistentKeyValueStore(VISITING_COUNTER_STORE),
+                    Stores.inMemoryKeyValueStore(VISITING_COUNTER_STORE),
                     Serdes.String(),
                     Serdes.Integer(),
-                ).withLoggingEnabled(
-                    // Enables changelog topic with TTL
-                    mapOf("retention.ms" to VISITING_COUNTER_RETENTION),
                 ),
             )
 
@@ -204,7 +202,8 @@ class Pipeline(
                             builder,
                             metadata.name,
                             metadata.version.toString(),
-                            metadata.errorTopic,
+                            metadata.pipelineOutputTopic,
+                            metadata.pipelineErrorTopic,
                             it.sourcesList,
                             it.triggersList,
                             it.tensorMapList,

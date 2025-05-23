@@ -20,7 +20,8 @@ message PipelineUpdateMessage {
   uint32 version = 3;
   string uid = 4;
   repeated PipelineStepUpdate updates = 5;
-  string errorTopic = 6;
+  string pipelineOutputTopic = 6;
+  string pipelineErrorTopic = 7;
 }
 
 message PipelineStepUpdate {
