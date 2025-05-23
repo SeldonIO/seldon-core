@@ -28,6 +28,7 @@ spec:
         - --namespace=$(POD_NAMESPACE)
         - --clusterwide=$(CLUSTERWIDE)
         - --log-level=$(LOG_LEVEL)
+        - --use-server-with-deployment=$(USE_SERVER_WITH_DEPLOYMENT)
         image: controller:latest
         imagePullPolicy: IfNotPresent
         name: manager
@@ -42,6 +43,8 @@ spec:
             value: "warn"
           - name: WATCH_NAMESPACES
             value: ""
+          - name: USE_SERVER_WITH_DEPLOYMENT
+            value: "false"
         securityContext:
           allowPrivilegeEscalation: false
         livenessProbe:
