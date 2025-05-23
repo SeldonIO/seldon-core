@@ -101,6 +101,10 @@ class PipelineSubscriber(
                         id = update.uid,
                         name = update.pipeline,
                         version = update.version,
+                        pipelineOutputTopic = update.pipelineOutputTopic,
+                        pipelineErrorTopic = update.pipelineErrorTopic,
+                        allowCycles = update.allowCycles,
+                        maxNumCycles = update.maxNumCycles,
                     )
 
                 when (update.op) {
