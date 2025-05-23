@@ -62,6 +62,9 @@ type PipelineSpec struct {
 
 	// Allow cyclic pipeline
 	AllowCycles bool `json:"allowCycles,omitempty"`
+
+	// Maximum number of cycles allowed
+	MaxNumCycles uint32 `json:"maxNumCycles,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=inner;outer;any
@@ -260,6 +263,7 @@ func (p Pipeline) AsSchedulerPipeline() *scheduler.Pipeline {
 		DataflowSpec:   dataflowSpec,
 		KubernetesMeta: &scheduler.KubernetesMeta{Namespace: p.Namespace, Generation: p.Generation},
 		AllowCycles:    p.Spec.AllowCycles,
+		MaxNumCycles:   p.Spec.MaxNumCycles,
 	}
 }
 
