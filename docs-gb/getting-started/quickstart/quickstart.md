@@ -14,11 +14,15 @@ In this notebook, we will demonstrate how to deploy a production-ready AI applic
 To do this we will:
 
 1. Set up a **Server** resource to deploy our models
-2. Deploy an sklearn **Model** 
-3. Deploy a multi-model **Pipeline**, including a preprocessing step that will be run before calling or model
+2. Deploy an sklearn **Model**
+3. Deploy a multi-step **Pipeline**, including a preprocessing step that will be run before calling our model.
 5. Call our inference endpoint, and observe data within our pipeline
 
-## Servers
+{% hint style="info" %}
+**Setup**: In order to run this demo, you need to connect to a cluster set up with an installation of Core 2 (see [here](../../docs-gb/installation/README.md)). We will be using the `kubectl` command line tool to interact with the Kubernetes cluster's control plane. Once you are set up, you can run this demo as a pre-built jupyter notebook by accessing it in our github repo (the v2 branch), under `docs-gb/getting-started/quickstart/quickstart.ipynb`
+{% endhint %}
+
+## Step 1: Deploy a Custom Server
 
 As part of the Core 2 installation, you will have install MLServer and Triton Servers:
 
@@ -63,7 +67,7 @@ In this example, we will create a new custom MLServer that we will tag with `inc
     server.mlops.seldon.io/mlserver-custom unchanged
 
 
-## Models
+## Step 2: Deploy Models
 
 Now we will deploy a model - in this case, we are deploying a categorical model that has been trained to take 12 features as input, and output **[0]** or **[1]**, representing a **[Yes]** or **[No]** prediction of whether or not an adult with certain values for the 12 features is making more than $50K/yr. This model was trained using the Census Income (or "Adult") Dataset. Extraction was done by Barry Becker from the 1994 Census database. See [here](https://archive.ics.uci.edu/dataset/20/census+income) for more details. 
 
@@ -123,7 +127,7 @@ In order to deploy the model, we will apply the manifest to our cluster:
 
 We now have a deployed model, with an associated endpoint.
 
-### Making Requests
+### Make Requests
 The endpoint that has been exposed by the above deployment will use an IP from our service mesh that we can obtain as follows:
 
 
@@ -190,11 +194,11 @@ response.json()
 
 We can see above that the model returned a `'data': [0]` in the output. This is the prediction of the model, indicating that an individual with the attributes provided is most likely making more than $50K/yr.
 
-## Pipelines
+## Step 3: Create and Deploy a 2-step Pipeline
 
 Often we'd like to deploy AI applications that are more complex than just an individual model. For example, around our model we could consider deploying pre or post-processing steps, custom logic, other ML models, or drift and outlier detectors. 
 
-### Deploying a Preprocessor
+### Deploy a Preprocessing step written in Python
 
 In this example, we will create a preprocessing step that extracts numerical values from a text file for the model to use as input. This will be implemented with custom logic using Python, and deployed as **custom model with MLServer**:
 
@@ -344,7 +348,7 @@ response.json()
 
 
 
-### Pipeline
+### Create and Deploy a Pipeline connecting our deployed Models
 
 Now that we have our preprocessor and model deployed, we will chain them together with a pipeline.
 
