@@ -51,8 +51,10 @@
     * [Pandas Query](models/parameterized-models/pandasquery.md) 
     * [Storage Secrets](kubernetes/storage-secrets.md)
 * Inference
+    <!--
     * [Inference Server](https://docs.seldon.io/projects/seldon-core/en/v2/contents/about/index.html#inference-servers)
     * [Run Inference](https://docs.seldon.io/projects/seldon-core/en/v2/contents/inference/index.html)
+    -->
     * [OIP](apis/inference/v2.md)
     * [Batch](examples/batch-examples-k8s.md) and (examples/batch-examples-local.md)
 * [Pipelines](pipelines.md)
