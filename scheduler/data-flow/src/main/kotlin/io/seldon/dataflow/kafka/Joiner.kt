@@ -53,14 +53,21 @@ class Joiner(
             )
                 .headerRemover()
                 .headerSetter(pipelineName, pipelineVersion)
-                .processValues(
-                    { VisitingCounterProcessor(outputTopic, pipelineOutputTopic, maxNumCycles) },
-                    VISITING_COUNTER_STORE,
-                )
 
-        val (defaultBranch, errorBranch) = createVisitingCounterBranches(dataStream)
-        defaultBranch.to(outputTopic.topicName, producerSerde)
-        errorBranch.to(pipelineErrorTopic, producerSerde)
+        if (allowCycles) {
+            dataStream =
+                dataStream
+                    .processValues(
+                        { VisitingCounterProcessor(outputTopic, pipelineOutputTopic, maxNumCycles) },
+                        VISITING_COUNTER_STORE,
+                    )
+
+            val (defaultBranch, errorBranch) = createVisitingCounterBranches(dataStream)
+            defaultBranch.to(outputTopic.topicName, producerSerde)
+            errorBranch.to(pipelineErrorTopic, producerSerde)
+        } else {
+            dataStream.to(outputTopic.topicName, producerSerde)
+        }
     }
 
     private fun buildTopology(

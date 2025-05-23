@@ -178,6 +178,9 @@ class Pipeline(
                 metadata.version,
                 pipelineProperties[StreamsConfig.APPLICATION_ID_CONFIG],
             )
+            logger.info(
+                "AllowCycles: ${metadata.allowCycles}; MaxNumCycles: ${metadata.maxNumCycles}",
+            )
             return Pipeline(metadata, topology, streamsApp, kafkaDomainParams, numSteps) to null
         }
 
@@ -188,14 +191,15 @@ class Pipeline(
         ): Pair<Topology, Int> {
             val builder = StreamsBuilder()
 
-            // add state store for the pipeline
-            builder.addStateStore(
-                Stores.keyValueStoreBuilder(
-                    Stores.inMemoryKeyValueStore(VISITING_COUNTER_STORE),
-                    Serdes.String(),
-                    Serdes.Integer(),
-                ),
-            )
+            if (metadata.allowCycles) {
+                builder.addStateStore(
+                    Stores.keyValueStoreBuilder(
+                        Stores.inMemoryKeyValueStore(VISITING_COUNTER_STORE),
+                        Serdes.String(),
+                        Serdes.Integer(),
+                    ),
+                )
+            }
 
             val topologySteps =
                 steps
