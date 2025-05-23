@@ -23,15 +23,13 @@ const val ERROR_HEADER_KEY = "seldon-pipeline-errors"
 const val ERROR_PREFIX = "ERROR:"
 
 const val VISITING_COUNTER_STORE = "visiting-counter-store"
-const val VISITING_COUNTER_RETENTION = "120000"
-
 const val VISITING_ERROR_BRANCH = "error"
 const val VISITING_DEFAULT_BRANCH = "default"
 
 class VisitingCounterProcessor(
     private val outputTopic: TopicForPipeline,
     private val pipelineOutputTopic: String,
-    private val maxCycles: Int = 2,
+    private val maxCycles: Int,
 ) : FixedKeyProcessor<RequestId, TRecord, TRecord> {
     private lateinit var visitingCounterStore: KeyValueStore<String, Int>
     private lateinit var context: FixedKeyProcessorContext<RequestId, TRecord>
@@ -61,8 +59,7 @@ class VisitingCounterProcessor(
         }
 
         val compositeKey = "$requestId:${outputTopic.topicName}"
-        val newCount = (visitingCounterStore.get(compositeKey) ?: 0) + 1
-        visitingCounterStore.put(compositeKey, newCount)
+        val newCount = (visitingCounterStore.get(compositeKey) ?: 0)
 
         if (newCount > maxCycles) {
             val message = "$ERROR_PREFIX Max cycles ($maxCycles) exceeded for request $requestId in topic $outputTopic"
@@ -83,6 +80,8 @@ class VisitingCounterProcessor(
         } else {
             context.forward(record)
         }
+
+        visitingCounterStore.put(compositeKey, newCount + 1)
     }
 
     override fun close() {}

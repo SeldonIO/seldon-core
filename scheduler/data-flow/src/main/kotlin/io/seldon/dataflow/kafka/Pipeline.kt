@@ -36,6 +36,8 @@ data class PipelineMetadata(
     val version: Int,
     val pipelineOutputTopic: String,
     val pipelineErrorTopic: String,
+    val allowCycles: Boolean,
+    val maxNumCycles: Int,
 )
 
 class Pipeline(
@@ -204,6 +206,8 @@ class Pipeline(
                             metadata.version.toString(),
                             metadata.pipelineOutputTopic,
                             metadata.pipelineErrorTopic,
+                            metadata.allowCycles,
+                            metadata.maxNumCycles,
                             it.sourcesList,
                             it.triggersList,
                             it.tensorMapList,

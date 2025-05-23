@@ -24,6 +24,8 @@ class Chainer(
     internal val outputTopic: TopicForPipeline,
     internal val pipelineOutputTopic: String,
     internal val pipelineErrorTopic: String,
+    internal val allowCycles: Boolean,
+    internal val maxNumCycles: Int,
     internal val tensors: Set<TensorName>?,
     internal val pipelineName: String,
     internal val pipelineVersion: String,
@@ -53,7 +55,7 @@ class Chainer(
 
         dataStream =
             dataStream.processValues(
-                { VisitingCounterProcessor(outputTopic, pipelineOutputTopic) },
+                { VisitingCounterProcessor(outputTopic, pipelineOutputTopic, maxNumCycles) },
                 VISITING_COUNTER_STORE,
             )
 

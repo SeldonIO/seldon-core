@@ -27,6 +27,8 @@ class Joiner(
     internal val outputTopic: TopicForPipeline,
     internal val pipelineOutputTopic: String,
     internal val pipelineErrorTopic: String,
+    internal val allowCycles: Boolean,
+    internal val maxNumCycles: Int,
     internal val tensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
     internal val pipelineName: String,
     internal val pipelineVersion: String,
@@ -52,7 +54,7 @@ class Joiner(
                 .headerRemover()
                 .headerSetter(pipelineName, pipelineVersion)
                 .processValues(
-                    { VisitingCounterProcessor(outputTopic, pipelineOutputTopic) },
+                    { VisitingCounterProcessor(outputTopic, pipelineOutputTopic, maxNumCycles) },
                     VISITING_COUNTER_STORE,
                 )
 
