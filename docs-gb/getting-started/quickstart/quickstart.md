@@ -19,7 +19,7 @@ To do this we will:
 5. Call our inference endpoint, and observe data within our pipeline
 
 {% hint style="info" %}
-**Setup**: In order to run this demo, you need to connect to a cluster set up with an installation of Core 2 (see [here](../docs-gb/installation/README.md)). We will be using the `kubectl` command line tool to interact with the Kubernetes cluster's control plane. Lastly, we will be using the gcloud CLI to pull models from Seldon's cloud storage, where we provide sample models and files.. Once you are set up, you can run this demo as a pre-built jupyter notebook by accessing it in our github repo (the v2 branch), under `docs-gb/getting-started/quickstart/quickstart.ipynb`
+**Setup**: In order to run this demo, you need to connect to a cluster set up with an installation of Core 2 (see [here](../../docs-gb/installation/README.md)). We will be using the `kubectl` command line tool to interact with the Kubernetes cluster's control plane. Lastly, we will be using the `gcloud` CLI to pull models from Seldon's cloud storage, where we provide sample models and files. Once you are set up, you can run this demo as a pre-built jupyter notebook by accessing it in our github repo (the v2 branch), under `docs-gb/getting-started/quickstart/quickstart.ipynb`
 {% endhint %}
 
 ## Step 1: Deploy a Custom Server
