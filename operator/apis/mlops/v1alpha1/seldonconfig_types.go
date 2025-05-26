@@ -59,6 +59,7 @@ type KafkaConfig struct {
 	Consumer              map[string]intstr.IntOrString `json:"consumer,omitempty"`
 	Producer              map[string]intstr.IntOrString `json:"producer,omitempty"`
 	Streams               map[string]intstr.IntOrString `json:"streams,omitempty"`
+	Topics                map[string]intstr.IntOrString `json:"topics,omitempty"`
 	TopicPrefix           string                        `json:"topicPrefix,omitempty"`
 }
 
