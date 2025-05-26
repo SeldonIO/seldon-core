@@ -123,6 +123,17 @@ func (r *SeldonRuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	ctx, cancel := context.WithTimeout(ctx, constants.ReconcileTimeout)
 	defer cancel()
 
+	var pipelineList mlopsv1alpha1.PipelineList
+	if err := r.List(ctx, &pipelineList, &client.ListOptions{
+		Namespace: req.Namespace,
+	}); err != nil {
+		logger.Error(err, "Failed to list Pipeline resources")
+		return ctrl.Result{}, err
+	}
+
+	count := len(pipelineList.Items)
+	logger.Info("Number of Pipeline resources", "namespace", req.Namespace, "count", count)
+
 	seldonRuntime := &mlopsv1alpha1.SeldonRuntime{}
 	if err := r.Get(ctx, req.NamespacedName, seldonRuntime); err != nil {
 		if errors.IsNotFound(err) {
