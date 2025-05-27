@@ -81,7 +81,7 @@
     <!-- * Kubernetes Metrics -->
     
 * [Performance Tuning](performance-tuning/readme.md)
-    * Models
+    * Models 
         * [Model Artefacts](performance-tuning/models/model-artefacts.md)
         * [Inference](performance-tuning/models/inference.md)
         * [Load Testing](performance-tuning/models/load-testing.md)
