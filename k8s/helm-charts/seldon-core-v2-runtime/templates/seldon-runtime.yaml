@@ -54,6 +54,10 @@ spec:
         {{- with .Values.config.kafkaConfig.streams }}
            {{- toYaml . | nindent 8 }}
         {{- end }}
+      topics:
+        {{- with .Values.config.kafkaConfig.topics }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
       topicPrefix: {{ .Values.config.kafkaConfig.topicPrefix }}
     serviceConfig:
       grpcServicePrefix: {{ .Values.config.serviceConfig.serviceGRPCPrefix }}

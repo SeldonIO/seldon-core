@@ -39,6 +39,7 @@ config:
     consumer:
     producer:
     streams:
+    topics:
   tracingConfig:
     disable:
     otelExporterEndpoint:
