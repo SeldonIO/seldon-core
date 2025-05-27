@@ -53,21 +53,7 @@ func (lb *RingLoadBalancer) RemoveServer(serverName string) {
 	lb.replicationFactor = min(len(lb.nodes), lb.numPartitions)
 }
 
-func (lb *RingLoadBalancer) allKeys() []string {
-	keys := make([]string, len(lb.nodes))
-	i := 0
-	for k := range lb.nodes {
-		keys[i] = k
-		i++
-	}
-	return keys
-}
-
 func (lb *RingLoadBalancer) GetServersForKey(key string) []string {
-	if len(lb.nodes) < lb.replicationFactor {
-		return lb.allKeys()
-	} else {
-		nodes, _ := lb.ring.GetNodes(key, lb.replicationFactor)
-		return nodes
-	}
+	nodes, _ := lb.ring.GetNodes(key, lb.replicationFactor)
+	return nodes
 }
