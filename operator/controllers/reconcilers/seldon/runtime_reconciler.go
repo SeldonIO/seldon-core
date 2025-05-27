@@ -127,7 +127,6 @@ func NewSeldonRuntimeReconciler(
 					return nil, err
 				}
 				componentReconcilers = append(componentReconcilers, statefulSetReconcilor)
-
 			} else {
 				deploymentReconcilor, err := NewComponentDeploymentReconciler(
 					c.Name,
