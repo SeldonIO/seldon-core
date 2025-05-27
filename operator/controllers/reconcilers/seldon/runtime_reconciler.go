@@ -38,8 +38,6 @@ func NewSeldonRuntimeReconciler(
 		return nil, err
 	}
 
-	// seldonConfig.Spec.Config.KafkaConfig.Streams
-
 	overrides := make(map[string]*mlopsv1alpha1.OverrideSpec)
 	for _, o := range runtime.Spec.Overrides {
 		overrides[o.Name] = o
