@@ -23,24 +23,34 @@ type RingLoadBalancer struct {
 	ring              *hashring.HashRing
 	nodes             map[string]bool
 	replicationFactor int
+	numPartitions     int
 }
 
-func NewRingLoadBalancer(replicationFactor int) *RingLoadBalancer {
+func NewRingLoadBalancer(numPartitions int) *RingLoadBalancer {
 	return &RingLoadBalancer{
-		ring:              hashring.New([]string{}),
-		replicationFactor: replicationFactor,
-		nodes:             make(map[string]bool),
+		ring:          hashring.New([]string{}),
+		nodes:         make(map[string]bool),
+		numPartitions: numPartitions,
 	}
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func (lb *RingLoadBalancer) AddServer(serverName string) {
 	lb.ring = lb.ring.AddNode(serverName)
 	lb.nodes[serverName] = true
+	lb.replicationFactor = min(len(lb.nodes), lb.numPartitions)
 }
 
 func (lb *RingLoadBalancer) RemoveServer(serverName string) {
 	lb.ring = lb.ring.RemoveNode(serverName)
 	delete(lb.nodes, serverName)
+	lb.replicationFactor = min(len(lb.nodes), lb.numPartitions)
 }
 
 func (lb *RingLoadBalancer) allKeys() []string {
