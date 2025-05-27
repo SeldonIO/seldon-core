@@ -18,5 +18,5 @@ spec:
         linger.ms: '{{ .Values.kafka.producer.lingerMs }}'
         message.max.bytes: '{{ int .Values.kafka.producer.messageMaxBytes }}'
       topics:
-        replicationFactor: '{{ .Values.kafka.topics.replicationFactor }}'
-        numPartitions: '{{ .Values.kafka.topics.numPartitions }}'
+        replicationFactor: '{{ int .Values.kafka.topics.replicationFactor }}'
+        numPartitions: '{{ int .Values.kafka.topics.numPartitions }}'
