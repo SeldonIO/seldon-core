@@ -39,10 +39,10 @@ func NewComponentDeploymentReconciler(
 	name string,
 	common common.ReconcilerConfig,
 	meta metav1.ObjectMeta,
+	replicas int32,
 	podSpec *v1.PodSpec,
 	componentLabels map[string]string,
 	componentAnnotations map[string]string,
-	override *mlopsv1alpha1.OverrideSpec,
 	seldonConfigMeta metav1.ObjectMeta,
 	annotator *patch.Annotator,
 ) (*ComponentDeploymentReconciler, error) {
@@ -50,7 +50,7 @@ func NewComponentDeploymentReconciler(
 	labels = utils.MergeMaps(componentLabels, labels)
 	annotations := utils.MergeMaps(meta.Annotations, seldonConfigMeta.Annotations)
 	annotations = utils.MergeMaps(componentAnnotations, annotations)
-	deployment, err := toDeployment(name, meta, podSpec, override, labels, annotations)
+	deployment, err := toDeployment(name, meta, replicas, podSpec, labels, annotations)
 	if err != nil {
 		return nil, err
 	}
@@ -69,25 +69,11 @@ func (s *ComponentDeploymentReconciler) GetResources() []client.Object {
 func toDeployment(
 	name string,
 	meta metav1.ObjectMeta,
+	replicas int32,
 	podSpec *v1.PodSpec,
-	override *mlopsv1alpha1.OverrideSpec,
 	labels map[string]string,
 	annotations map[string]string,
 ) (*appsv1.Deployment, error) {
-	var replicas int32
-	if override != nil && override.Replicas != nil {
-		replicas = *override.Replicas
-	} else {
-		replicas = 1
-	}
-	// Merge specs
-	if override != nil && override.PodSpec != nil {
-		var err error
-		podSpec, err = common.MergePodSpecs(podSpec, override.PodSpec)
-		if err != nil {
-			return nil, err
-		}
-	}
 	metaLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: name}, labels)
 	templateLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: name}, labels)
 	d := &appsv1.Deployment{
