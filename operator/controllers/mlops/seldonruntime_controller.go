@@ -140,11 +140,15 @@ func (r *SeldonRuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return reconcile.Result{}, err
 	}
 
-	sr, err := seldonreconcile.NewSeldonRuntimeReconciler(seldonRuntime, common.ReconcilerConfig{
-		Ctx:    ctx,
-		Logger: logger,
-		Client: r.Client,
-	})
+	sr, err := seldonreconcile.NewSeldonRuntimeReconciler(
+		seldonRuntime,
+		common.ReconcilerConfig{
+			Ctx:    ctx,
+			Logger: logger,
+			Client: r.Client,
+		},
+		req.Namespace,
+	)
 	if err != nil {
 		return reconcile.Result{}, err
 	}

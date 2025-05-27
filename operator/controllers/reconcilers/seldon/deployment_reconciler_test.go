@@ -119,14 +119,22 @@ func TestDeploymentReconcile(t *testing.T) {
 				Namespace: "default",
 			}
 			client = testing2.NewFakeClient(scheme)
+			component := &mlopsv1alpha1.ComponentDefn{
+				Name:        test.deploymentName,
+				Labels:      make(map[string]string),
+				Annotations: make(map[string]string),
+				Replicas:    ptr.To(int32(1)),
+				PodSpec:     test.podSpec,
+			}
+			component, _ = ComponentOverride(component, test.override)
 			sr, err := NewComponentDeploymentReconciler(
 				test.deploymentName,
 				common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client},
 				meta,
-				test.podSpec,
-				make(map[string]string),
-				make(map[string]string),
-				test.override,
+				*component.Replicas,
+				component.PodSpec,
+				component.Labels,
+				component.Annotations,
 				test.seldonConfigMeta,
 				annotator)
 			g.Expect(err).To(BeNil())
@@ -222,14 +230,22 @@ func TestDeploymentOverride(t *testing.T) {
 				Namespace: "default",
 			}
 			client = testing2.NewFakeClient(scheme)
+			component := &mlopsv1alpha1.ComponentDefn{
+				Name:        test.deploymentName,
+				Labels:      make(map[string]string),
+				Annotations: make(map[string]string),
+				Replicas:    ptr.To(int32(1)),
+				PodSpec:     test.podSpec,
+			}
+			component, _ = ComponentOverride(component, test.override)
 			sr, err := NewComponentDeploymentReconciler(
 				test.deploymentName,
 				common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client},
 				meta,
-				test.podSpec,
-				make(map[string]string),
-				make(map[string]string),
-				test.override,
+				*component.Replicas,
+				component.PodSpec,
+				component.Labels,
+				component.Annotations,
 				metav1.ObjectMeta{},
 				annotator)
 			g.Expect(err).To(BeNil())
