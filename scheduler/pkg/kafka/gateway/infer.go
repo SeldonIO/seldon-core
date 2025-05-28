@@ -74,16 +74,14 @@ func NewInferKafkaHandler(
 	topicsConfigMap kafka.ConfigMap,
 	consumerName string,
 ) (*InferKafkaHandler, error) {
-	replicationFactor, err := util.GetIntConfigMapValue(consumerConfigMap, replicationFactorKey, defaultReplicationFactor)
+	replicationFactor, err := util.GetIntConfigMapValue(topicsConfigMap, replicationFactorKey, defaultReplicationFactor)
 	if err != nil {
 		return nil, err
 	}
-	logger.Debug("Using replication factor ", replicationFactor)
-	numPartitions, err := util.GetIntConfigMapValue(consumerConfigMap, numPartitionsKey, defaultNumPartitions)
+	numPartitions, err := util.GetIntConfigMapValue(topicsConfigMap, numPartitionsKey, defaultNumPartitions)
 	if err != nil {
 		return nil, err
 	}
-	logger.Debug("Using number of partitions ", numPartitions)
 	tlsClientOptions, err := util.CreateTLSClientOptions()
 	if err != nil {
 		return nil, err
