@@ -48,16 +48,9 @@ func ValidateDataflowScaleSpec(
 	}
 
 	logger.Info("Maximum replicas for dataflow engine", "max_replicas", maxReplicas)
-
-	if component.Replicas == nil {
-		return fmt.Errorf("%s component must have replicas defined", mlopsv1alpha1.DataflowEngineName)
-	}
-	replicas := *component.Replicas
-	logger.Info("Seldon dataflow engine replicas", "replicas", replicas)
-
-	// Validate that the number of replicas is less than or equal to the number of partitions
-	if replicas > maxReplicas {
-		return fmt.Errorf("%s replicas %d cannot be greater than %d", mlopsv1alpha1.DataflowEngineName, replicas, maxReplicas)
+	if component.Replicas != nil && *component.Replicas > maxReplicas {
+		component.Replicas = &maxReplicas
+		logger.Info("Adjusted dataflow engine replicas to max", "replicas", maxReplicas)
 	}
 
 	return nil
