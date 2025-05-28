@@ -84,7 +84,7 @@
         * [Load Testing](performance-tuning/models/load-testing.md)
         * [Inference](performance-tuning/models/inference.md)
         * [Infrastructure Setup](performance-tuning/models/infrastructure-setup.md)
-    * [Pipelines] 
+    * [Pipelines](performance-tuning/pipelines/README.md)
         * [Testing Pipelines](performance-tuning/pipelines/testing-pipelines.md)
         * [Core 2 Configuration](performance-tuning/pipelines/core-2-configuration.md)
 
