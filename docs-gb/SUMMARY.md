@@ -85,8 +85,8 @@
         * [Inference](performance-tuning/models/inference.md)
         * [Infrastructure Setup](performance-tuning/models/infrastructure-setup.md)
     * **Pipelines** <!-- No link, won't be clickable -->
-        * [Core 2 Configuration](performance-tuning/pipelines/core-2-configuration.md)
         * [Testing Pipelines](performance-tuning/pipelines/testing-pipelines.md)
+        * [Core 2 Configuration](performance-tuning/pipelines/core-2-configuration.md)
 
 <!--    
 * Rollouts & Experiments
