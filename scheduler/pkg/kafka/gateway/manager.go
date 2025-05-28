@@ -38,6 +38,7 @@ type ConsumerManager struct {
 	maxNumConsumers   int
 	consumerConfigMap kafka.ConfigMap
 	producerConfigMap kafka.ConfigMap
+	topicsConfigMap   kafka.ConfigMap
 }
 
 type ManagerConfig struct {
@@ -110,6 +111,7 @@ func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error 
 
 	cm.consumerConfigMap = consumerConfig
 	cm.producerConfigMap = producerConfig
+	cm.topicsConfigMap = kafka_config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Topics)
 	return nil
 }
 
@@ -134,6 +136,7 @@ func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) 
 			cm.managerConfig,
 			cloneKafkaConfigMap(cm.consumerConfigMap),
 			cloneKafkaConfigMap(cm.producerConfigMap),
+			cloneKafkaConfigMap(cm.topicsConfigMap),
 			consumerBucketId)
 		if err != nil {
 			return nil, err
