@@ -32,13 +32,13 @@ import (
 )
 
 const (
-	pollTimeoutMillisecs        = 10000
-	DefaultNumWorkers           = 8
-	EnvVarNumWorkers            = "MODELGATEWAY_NUM_WORKERS"
-	envDefaultReplicationFactor = "KAFKA_DEFAULT_REPLICATION_FACTOR"
-	envDefaultNumPartitions     = "KAFKA_DEFAULT_NUM_PARTITIONS"
-	defaultReplicationFactor    = 1
-	defaultNumPartitions        = 1
+	pollTimeoutMillisecs     = 10000
+	DefaultNumWorkers        = 8
+	EnvVarNumWorkers         = "MODELGATEWAY_NUM_WORKERS"
+	replicationFactorKey     = "replicationFactor"
+	numPartitionsKey         = "numPartitions"
+	defaultReplicationFactor = 1
+	defaultNumPartitions     = 1
 )
 
 type InferKafkaHandler struct {
@@ -67,16 +67,19 @@ func NewInferKafkaHandler(
 	consumerConfig *ManagerConfig,
 	consumerConfigMap kafka.ConfigMap,
 	producerConfigMap kafka.ConfigMap,
+	topicsConfigMap kafka.ConfigMap,
 	consumerName string,
 ) (*InferKafkaHandler, error) {
-	replicationFactor, err := util.GetIntEnvar(envDefaultReplicationFactor, defaultReplicationFactor)
+	replicationFactor, err := util.GetIntConfigMapValue(consumerConfigMap, replicationFactorKey, defaultReplicationFactor)
 	if err != nil {
 		return nil, err
 	}
-	numPartitions, err := util.GetIntEnvar(envDefaultNumPartitions, defaultNumPartitions)
+	logger.Debug("Using replication factor ", replicationFactor)
+	numPartitions, err := util.GetIntConfigMapValue(consumerConfigMap, numPartitionsKey, defaultNumPartitions)
 	if err != nil {
 		return nil, err
 	}
+	logger.Debug("Using number of partitions ", numPartitions)
 	tlsClientOptions, err := util.CreateTLSClientOptions()
 	if err != nil {
 		return nil, err
