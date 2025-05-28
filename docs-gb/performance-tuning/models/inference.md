@@ -24,4 +24,3 @@ If optimizing for speed, the model artefact itself can have a big impact on perf
 - **Dimensionality reduction** of inputs to reduce the complexity of computation.
 - **Efficient model architectures** such as MobileNet, EfficientNet, or DistilBERT, which are designed for faster inference with minimal accuracy loss.
 - **Optimized model formats and runtimes** like ONNX Runtime, TensorRT, or OpenVINO, which leverage hardware-specific acceleration for improved performance.
-

@@ -80,11 +80,11 @@
     <!-- * Kubernetes Metrics -->
     
 * [Performance Tuning](performance-tuning/readme.md)
-    * **Models** <!-- No link, won't be clickable -->
+    * [Models](performance-tuning/models/README.md)
         * [Load Testing](performance-tuning/models/load-testing.md)
         * [Inference](performance-tuning/models/inference.md)
         * [Infrastructure Setup](performance-tuning/models/infrastructure-setup.md)
-    * **Pipelines** <!-- No link, won't be clickable -->
+    * [Pipelines] 
         * [Testing Pipelines](performance-tuning/pipelines/testing-pipelines.md)
         * [Core 2 Configuration](performance-tuning/pipelines/core-2-configuration.md)
 
