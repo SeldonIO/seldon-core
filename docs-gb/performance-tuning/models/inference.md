@@ -3,11 +3,15 @@
 When looking at optimizing the latency or throughput of deployed models or pipelines, it is important to consider different approaches to the execution of inference workloads. Below are some tips on different approaches that may be relevant depending on the requirements of a given use-case:
 
 - gRPC may be more efficient than REST when your inference request payload benefits from a binary serialization format.
-- Grouping multiple real-time requests into small batches can improve throughput while maintaining acceptable latency. For more information on adaptive batching in MLServer, see [here](https://mlserver.readthedocs.io/en/latest/user-guide/adaptive-batching.html).
+- Grouping multiple real-time requests into small batches can improve throughput while maintaining acceptable latency. For more information on adaptive batching in MLServer, see [here](https://docs.seldon.ai/mlserver/user-guide/adaptive-batching).
 - Reducing input size by reducing the dimensions of your inputs can speed up processing. This also reduces (de)serialization overhead that might be needed around model deployments.
 - For models deployed with MLServer, adjust `parallel_workers` in line with the number of CPU cores assigned to the Server pod. This is most effective for synchronous models, CPU-bound asynchronous models, and I/O-bound asynchronous models with high throughput. Proper tuning here can improve throughput, stabilize latency distribution, and potentially reduce overall latency due to reduced queuing. This is outlined in more detail in section below.
 
 ### Configuring Parallel Processing
+
+When deploying models using MLServer, it is possible to execute inference workloads via a pool of workers running in separate processes (see in MLServer docs [here](https://docs.seldon.ai/mlserver/user-guide/parallel-inference)).
+
+![Parallel Inference](multiprocessing.png)
 
 To assess the throughput behavior of individual model(s) it is first helpful to identify the maximum throughput possible with one worker (`one-worker max throughput`) and then the maximum throughput possible with *N* workers (`n_workers max throughput`). It is important to note that the `n_workers max throughput` is not simply `n_workers` × `one-worker max throughput` because workers run in separate processes, and the OS can only run as many processes in parallel as there are available CPUs. If all workers are CPU-bound, then setting `n_workers` higher than the number of CPU cores will be ineffective, as the OS will be limited by the number of CPU cores in terms of processes available to parallelize. 
 
