@@ -11,7 +11,7 @@ The performance behavior of Seldon Core 2 pipelines is more complex compared to 
 
 To simplify, first, we can consider a **linear pipeline** that consists of a chain of sequential components:
 
-![Screenshot 2025-05-27 at 11.07.50.png](Performance%20Tuning%20Docs%201bc6a4c8852080ce94c4eb1dcd725b9f/Screenshot_2025-05-27_at_11.07.50.png)
+![Linear pipeline (chain)](pipeline-chain.png)
 
 The maximum throughput achievable through the pipeline is the minimum of the maximum throughputs achievable by each individual model in the pipeline, given a number of workers. Exceeding this maximum will create a bottleneck in processing, degrading performance for the pipeline. To prevent bottlenecking from a given step in your pipeline, you can:
 
@@ -20,4 +20,4 @@ The maximum throughput achievable through the pipeline is the minimum of the max
 
 In the case of a more complex, **non-linear pipeline**, the first step would be to identify the critical path within the pipeline (the path containing the model that gets it’s throughput saturated first), and then, based on that critical path, follow the same steps above for any model in that path that creates a bottleneck. There will *always* be a bottleneck model in a pipeline; the goal is to balance the number of replicas of each model and/or the MLServer resources together with the number of workers so that each stage in the pipeline is able to handle the request throughput with as little queueing as possible happening **between the pipeline stages,** therefore reducing overall latency.
 
-![Screenshot 2025-05-27 at 11.00.17.png](Performance%20Tuning%20Docs%201bc6a4c8852080ce94c4eb1dcd725b9f/Screenshot_2025-05-27_at_11.00.17.png)
+![Critical Path in a complex pipeline](critical-path.png)

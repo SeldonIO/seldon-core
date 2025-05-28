@@ -10,7 +10,7 @@ There are many different levers that can be considered to tune performance for M
 
 1. [**Load testing**](models/load-testing.md) to understand latency and throughput behaviour for one model replica
 2. Tuning performance for models. This can be done via changes to:
-    1. [**Infrastructure](models/infrastructure-setup.md)** - choosing the right hardware, and configurations in Core related to CPUs, GPUs and memory.
+    1. [**Infrastructure**](models/infrastructure-setup.md) - choosing the right hardware, and configurations in Core related to CPUs, GPUs and memory.
     2. [**Models**](models/model-artefacts.md) - optimizing model artefacts in how they are structured, configured, stored. This can include model pruning, quantization, consideration of different model frameworks, and making sure that the model can achieve a high utilisation of the allocated resources.
     3. [**Inference**](models/model-artefacts.md) - the way in which inference is executed. This can include the choice of communication protocols (REST, gRPC),  payload configuration, batching, and efficient  execution of concurrent requests.
 
