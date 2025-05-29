@@ -1,4 +1,8 @@
-# Verify the Installation of Seldon Core 2
+---
+description: Learn how to verify your Seldon Core installation by running tests and checking component functionality.
+---
+
+# Testing Installation
 
 To confirm the successful installation of [Seldon Core 2](/docs-gb/installation/production-environment/README.md), [Kafka](/docs-gb/installation/production-environment/kafka/), and the [service mesh](/docs-gb/installation/production-environment/ingress-controller/istio.md), deploy a sample model and perform an inference test. Follow these steps:
 

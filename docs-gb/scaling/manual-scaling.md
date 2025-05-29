@@ -1,3 +1,7 @@
+---
+description: Learn how to manually scale Seldon Core resources, including model replicas and server configurations.
+---
+
 # Manual Scaling
 
 ## Models

@@ -1,3 +1,7 @@
+---
+description: Learn how to configure and manage inference servers in Seldon Core 2, including MLServer and Triton server farms, model scheduling, and capability management.
+---
+
 # Servers
 
 By default Seldon installs two server farms using MLServer and Triton with 1 replica each. Models

@@ -1,3 +1,6 @@
+---
+---
+
 # Scaling in Seldon Core 2
 
 Seldon Core 2 provides multiple approaches to scaling your machine learning deployments, allowing you to optimize resource utilization and handle varying workloads efficiently. This document provides an overview of the different scaling mechanisms available.

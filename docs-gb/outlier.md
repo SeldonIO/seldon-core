@@ -1,3 +1,7 @@
+---
+description: Learn how to implement outlier detection in Seldon Core using Alibi-Detect integration for model monitoring and anomaly detection.
+---
+
 # Outlier Detection
 
 Outlier detection models are treated as any other Model. You can run any saved

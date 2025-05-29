@@ -1,5 +1,5 @@
 ---
-description: Integrate self-hosted Kafka with Seldon Core 2.
+description: Learn how to set up a self-hosted Kafka cluster for Seldon Core in development and learning environments.
 ---
 # Self-hosted Kafka
 
@@ -257,7 +257,7 @@ If you are using a shared Kafka cluster with other applications, it is advisable
 * `topicPrefix`: set a prefix for all topics
 * `consumerGroupIdPrefix`: set a prefix for all consumer groups
 
-Here’s an example of how to configure topic name and consumer group ID isolation during a Helm installation for an application named `myorg`:
+Here's an example of how to configure topic name and consumer group ID isolation during a Helm installation for an application named `myorg`:
 
 ```bash
 helm upgrade --install seldon-core-v2-setup seldon-charts/seldon-core-v2-setup \

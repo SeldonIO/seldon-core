@@ -1,3 +1,6 @@
+---
+---
+
 # Huggingface speech to sentiment pipeline
 
 In this example we create a Pipeline to chain two huggingface models to allow speech to

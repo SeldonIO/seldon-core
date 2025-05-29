@@ -1,3 +1,7 @@
+---
+description: Explore the enterprise MLOps capabilities of Core 2 for production ML deployment, featuring model serving, pipeline orchestration, and intelligent resource management for scalable ML systems.
+---
+
 # Features
 
  After the models are deployed, Core 2 enables the monitoring and experimentation on those systems in production. With support for a wide range of model types, and design patterns to build around those models, you can standardize ML deployment across a range of use-cases in the cloud or on-premise serving infrastructure of your choice. 
@@ -10,7 +14,7 @@ Seldon Core 2 orchestrates and scales machine learning components running as pro
 
 ## Complex Applications & Orchestration
 
-Machine learning applications are increasingly complex. They’ve evolved from individual models deployed as services, to complex applications that can consist of multiple models, processing steps, custom logic, and asynchronous monitoring components. With Core you can build  Pipelines that connect any of these components to make data-centric applications. Core 2 handles orchestration and scaling of the underlying components of such an application, and exposes the data streamed through the application in real time using Kafka. 
+Machine learning applications are increasingly complex. They've evolved from individual models deployed as services, to complex applications that can consist of multiple models, processing steps, custom logic, and asynchronous monitoring components. With Core you can build  Pipelines that connect any of these components to make data-centric applications. Core 2 handles orchestration and scaling of the underlying components of such an application, and exposes the data streamed through the application in real time using Kafka. 
 
 {% hint style="info" %}
 Data-centricity is an approach that places the management, integrity, and flow of data at the core of the machine learning deployment framework. 

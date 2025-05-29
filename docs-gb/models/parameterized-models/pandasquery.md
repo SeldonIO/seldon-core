@@ -1,3 +1,7 @@
+---
+description: Learn how to use PandasQuery for data transformation in Seldon Core, including query configuration and parameter handling.
+---
+
 # Pandas Query Model
 
 This model allows a [Pandas](https://pandas.pydata.org/)  query to be run in the input to select rows. An example is shown below:

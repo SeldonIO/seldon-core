@@ -1,3 +1,7 @@
+---
+description: Learn how to configure Seldon Core 2 components, including Kafka integration, tracing setup, and ConfigMap management for production deployments.
+---
+
 # Configuration
 
 Seldon can be configured via various config files.

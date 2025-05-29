@@ -1,3 +1,7 @@
+---
+description: Learn how to implement model explainability in Seldon Core using Alibi-Explain integration for black box model explanations and pipeline insights.
+---
+
 # Explainers
 
 Explainers are Model resources with some extra settings. They allow a range of explainers

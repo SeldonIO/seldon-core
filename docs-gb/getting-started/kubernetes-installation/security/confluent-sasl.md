@@ -1,4 +1,8 @@
-# Confluent Cloud SASL Example
+---
+description: Learn how to configure SASL authentication between Seldon Core 2 and Confluent Cloud for secure Kafka communication.
+---
+
+# Confluent Cloud SASL Authentication
 
 > New in Seldon Core 2.5.0
 

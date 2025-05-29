@@ -1,3 +1,7 @@
+---
+description: Learn how to configure automatic scaling for Seldon Core deployments using Kubernetes HPA and custom metrics.
+---
+
 # Autoscaling
 
 Autoscaling in Seldon applies to various concerns:

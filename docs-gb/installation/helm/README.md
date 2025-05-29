@@ -1,3 +1,7 @@
+---
+description: Learn how to install and configure Seldon Core using Helm charts, including component setup and customization options.
+---
+
 # Helm Configuration Options
 
 Seldon Core 2 provides a highly configurable deployment framework that allows you to fine-tune various components using Helm configuration options. These options offer control over deployment behavior, resource management, logging, autoscaling, and model lifecycle policies to optimize the performance and scalability of machine learning deployments.

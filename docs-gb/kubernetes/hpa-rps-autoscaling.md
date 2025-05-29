@@ -1,3 +1,6 @@
+---
+description: Learn how to implement request-per-second (RPS) based autoscaling in Seldon Core 2 using Kubernetes HPA and Prometheus metrics.
+---
 
 # HPA Autoscaling in single-model serving
 
@@ -285,9 +288,9 @@ For every (Model, Server) pair you want to autoscale, you need to apply 2 HPA ma
 the same metric: one scaling the Model, the other the Server. The example below only works if
 the mapping between Models and Servers is 1-to-1 (i.e no multi-model serving).
 
-Consider a model named `irisa0` with the following manifest. Please note we don’t set
+Consider a model named `irisa0` with the following manifest. Please note we don't set
 `minReplicas/maxReplicas`. This disables the seldon lag-based autoscaling so that it
-doesn’t interact with HPA (separate `minReplicas/maxReplicas` configs will be set on the HPA
+doesn't interact with HPA (separate `minReplicas/maxReplicas` configs will be set on the HPA
 side)
 
 You must also explicitly define a value for `spec.replicas`. This is the key modified by HPA
@@ -310,7 +313,7 @@ spec:
 ```
 {% endcode %}
 
-Let’s scale this model when it is deployed on a server named `mlserver`, with a target RPS **per
+Let's scale this model when it is deployed on a server named `mlserver`, with a target RPS **per
 replica** of 3 RPS (higher RPS would trigger scale-up, lower would trigger scale-down):
 
 {% code title="irisa0-hpa.yaml" lineNumbers="true" %}
@@ -512,17 +515,17 @@ inspecting the corresponding Server HPA CR, or by fetching the metric directly v
 
     ```c-like
     seldon_model_infer_total{
-        code="200", 
-        container="agent", 
-        endpoint="metrics", 
-        instance="10.244.0.39:9006", 
-        job="seldon-mesh/agent", 
-        method_type="rest", 
-        model="irisa0", 
-        model_internal="irisa0_1", 
-        namespace="seldon-mesh", 
-        pod="mlserver-0", 
-        server="mlserver", 
+        code="200", 
+        container="agent", 
+        endpoint="metrics", 
+        instance="10.244.0.39:9006", 
+        job="seldon-mesh/agent", 
+        method_type="rest", 
+        model="irisa0", 
+        model_internal="irisa0_1", 
+        namespace="seldon-mesh", 
+        pod="mlserver-0", 
+        server="mlserver", 
         server_replica="0"
     }
     ```

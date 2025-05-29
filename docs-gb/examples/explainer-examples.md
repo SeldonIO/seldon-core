@@ -1,3 +1,9 @@
+---
+description: Learn how to implement model explainability in Seldon Core using Anchor explainers for both tabular and text data
+---
+
+# Explainer Examples
+
 # Anchor Tabular Explainer for SKLearn Income Model
 
 ```bash
@@ -189,7 +195,6 @@ kubectl delete -f ./models/income-explainer.yaml -n ${NAMESPACE}
 kubectl delete -f ./models/income.yaml -n ${NAMESPACE}
 
 ```
-
 {% endtab %}
 
 {% tab title="seldon-cli" %}

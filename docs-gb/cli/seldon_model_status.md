@@ -1,3 +1,6 @@
+---
+---
+
 ## seldon model status
 
 get status for model

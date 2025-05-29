@@ -1,3 +1,7 @@
+---
+description: Learn how to perform model inference in Seldon Core using REST and gRPC protocols, including request/response formats and client examples.
+---
+
 # Inference
 
 This section will discuss how to make inference calls against your Seldon models or pipelines.

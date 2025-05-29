@@ -1,3 +1,7 @@
+---
+description: Find answers to common questions about Seldon Core, including installation, configuration, model deployment, and troubleshooting.
+---
+
 # FAQs
 
 ## Can Seldon Core 2 be used with Seldon Core V1
