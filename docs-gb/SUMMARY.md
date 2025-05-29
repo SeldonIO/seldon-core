@@ -28,7 +28,6 @@
 ## User Guide
 <!-- * Getting Started -->
 <!-- * Deploy Model (OIP+MLServer Link) -->
-<!-- * Pipeline -->
 <!-- * Inference Server -->
 <!-- * Run Inference -->
 * [Kubernetes Resources](kubernetes/resources/README.md) 
@@ -79,8 +78,16 @@
     * [Local Metrics](operational-monitoring/local-metrics-test.md)
     * [Tracing](kubernetes/tracing.md)
     <!-- * Kubernetes Metrics -->
-    <!--
-    * Performance Tuning -->
+    
+* [Performance Tuning](performance-tuning/readme.md)
+    * [Models](performance-tuning/models/README.md)
+        * [Load Testing](performance-tuning/models/load-testing.md)
+        * [Inference](performance-tuning/models/inference.md)
+        * [Infrastructure Setup](performance-tuning/models/infrastructure-setup.md)
+    * [Pipelines](performance-tuning/pipelines/README.md)
+        * [Testing Pipelines](performance-tuning/pipelines/testing-pipelines.md)
+        * [Core 2 Configuration](performance-tuning/pipelines/core-2-configuration.md)
+
 <!--    
 * Rollouts & Experiments
     * Rollout Strategies
