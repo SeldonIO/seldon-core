@@ -1,5 +1,4 @@
 ---
-description: Master Seldon Core deployment on Kubernetes with comprehensive examples covering model serving, A/B testing, ML pipelines, and model explainability. Learn how to deploy scikit-learn and TensorFlow models, create model chains, implement experiments, and add explainers using Kubernetes manifests and kubectl commands.
 ---
 
 # Kubernetes examples

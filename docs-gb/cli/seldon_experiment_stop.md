@@ -1,5 +1,4 @@
 ---
-description: Terminate and halt Seldon Core experiments using the seldon experiment stop CLI command. This command allows you to safely stop running experiments, manage control plane operations, and clean up experiment resources in your Seldon Core deployment.
 ---
 
 ## seldon experiment stop

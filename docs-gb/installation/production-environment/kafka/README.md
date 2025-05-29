@@ -1,8 +1,8 @@
 ---
-description: Learn how to integrate Kafka with Seldon Core 2 for scalable ML model deployment. Discover managed cloud and self-hosted options for implementing reliable, high-throughput machine learning inference pipelines.
+description: Learn how to set up and configure Kafka for Seldon Core in production environments, including cluster setup and security configuration.
 ---
 
-# Kafka Integration
+# Kafka Setup
 
 [Kafka](https://kafka.apache.org/) is a component in the Seldon Core 2 ecosystem, that provides scalable, reliable, and flexible communication for machine learning deployments. It serves as a strong backbone for building complex inference pipelines, managing high-throughput asynchronous predictions, and seamlessly integrating with event-driven systems—key features needed for contemporary enterprise-grade ML platforms.
 

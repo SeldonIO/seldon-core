@@ -1,5 +1,4 @@
 ---
-description: Learn how to deploy and manage multiple versions of ML models in Seldon Core V2. This guide demonstrates version control for model artifacts, A/B testing capabilities, and model versioning best practices using Triton inference server with practical examples of model version deployment and inference.
 ---
 
 # Artifact versions

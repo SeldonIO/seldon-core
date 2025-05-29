@@ -1,5 +1,5 @@
 ---
-description: Learn how to install and deploy Seldon Core 2 using Docker Compose, including GPU support, local model deployment, and version management. This comprehensive guide covers Docker setup, Triton and MLServer integration, Jaeger tracing, Grafana metrics, and best practices for local development environments.
+description: Learn how to install and deploy Seldon Core 2 using Docker Compose, including GPU support, local model deployment, and monitoring setup.
 ---
 
 # Docker Installation

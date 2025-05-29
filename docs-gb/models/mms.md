@@ -1,5 +1,5 @@
 ---
-description: Learn how to implement multi-model serving (MMS) and memory overcommit in Seldon Core 2 using Triton and MLServer. This comprehensive guide covers shared hardware resource management, GPU optimization, LRU cache-based model eviction, dynamic model loading, and efficient memory utilization for high-density ML model deployment.
+description: Learn how to configure multi-model serving in Seldon Core, including resource optimization and model co-location.
 ---
 
 # Multi-model Serving with Overcommit

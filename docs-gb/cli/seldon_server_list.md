@@ -1,5 +1,4 @@
 ---
-description: View and enumerate all available Seldon Core inference servers using the seldon server list CLI command. This command provides a comprehensive overview of deployed servers, their replicas, and currently loaded machine learning models in your Seldon Core environment.
 ---
 
 ## seldon server list

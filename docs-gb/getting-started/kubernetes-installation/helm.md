@@ -1,5 +1,5 @@
 ---
-description: Learn how to install Seldon Core 2 using Helm charts, including CRDs, core components, runtime, and example servers. This comprehensive guide covers namespace and cluster-wide deployments, custom resource management, and integration with ecosystem components like Jaeger, Prometheus, and Kafka.
+description: Learn how to install Seldon Core 2 using Helm charts, including CRDs, core components, runtimes, and integration with monitoring tools.
 ---
 
 # Helm Installation

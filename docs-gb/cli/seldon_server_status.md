@@ -1,5 +1,4 @@
 ---
-description: Monitor and check the deployment status of your Seldon Core inference servers using the seldon server status CLI command. This command provides real-time status updates, server health information, and detailed deployment state for your machine learning inference infrastructure.
 ---
 
 ## seldon server status

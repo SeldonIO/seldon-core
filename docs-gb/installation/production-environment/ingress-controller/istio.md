@@ -1,5 +1,5 @@
 ---
-description: Learn how to install and configure Istio ingress controller for Seldon Core 2 in Kubernetes, including service mesh integration, traffic routing, and load balancing. This comprehensive guide covers Istio installation, ingress gateway setup, virtual service configuration, and exposing ML model services for production deployment.
+description: Learn how to configure Istio as an ingress controller for Seldon Core, including traffic management and security policies.
 ---
 
 An ingress controller functions as a reverse proxy and load balancer, implementing a Kubernetes Ingress. It adds an abstraction layer for traffic routing by receiving traffic from outside the Kubernetes platform and load balancing it to Pods running within the Kubernetes cluster. 

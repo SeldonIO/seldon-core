@@ -3,7 +3,7 @@ description: "Learn how to install Seldon Core 2 in various environments - from 
 keywords: ["Seldon Core", "MLOps", "Kubernetes", "Docker Compose", "installation guide", "Helm charts", "machine learning deployment"]
 ---
 
-# Installation
+# Installation Guide
 Seldon Core 2 can be installed in various setups to suit different stages of the development lifecycle. The most common modes include:
 
 ## Local Environment

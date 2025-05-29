@@ -1,5 +1,5 @@
 ---
-description: Learn how to build and manage ML pipelines in Seldon Core 2, including model chaining, data transformations, and monitoring components. This comprehensive guide covers pipeline creation, conditional logic, data flow management, Kafka integration, tracing, and best practices for deploying complex ML workflows in production environments.
+description: Learn how to create and manage ML inference pipelines in Seldon Core, including model chaining, tensor mapping, and conditional logic.
 ---
 
 # Pipelines

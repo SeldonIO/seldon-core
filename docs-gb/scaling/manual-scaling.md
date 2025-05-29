@@ -1,5 +1,5 @@
 ---
-description: Learn how to manually scale your Seldon Core 2 deployments by controlling replica counts for models, servers, and internal components. This guide covers configuration examples, scaling limitations, and details about scaling various control and dataplane components.
+description: Learn how to manually scale Seldon Core resources, including model replicas and server configurations.
 ---
 
 # Manual Scaling

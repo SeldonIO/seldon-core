@@ -1,5 +1,5 @@
 ---
-description: Learn how to implement request-per-second (RPS) based autoscaling in Seldon Core 2 using Kubernetes HPA and Prometheus metrics. This comprehensive guide covers custom metrics configuration, Prometheus Adapter setup, HPA manifest creation, and best practices for scaling ML models and inference servers based on inference load.
+description: Learn how to implement request-per-second (RPS) based autoscaling in Seldon Core 2 using Kubernetes HPA and Prometheus metrics.
 ---
 
 # HPA Autoscaling in single-model serving
@@ -515,17 +515,17 @@ inspecting the corresponding Server HPA CR, or by fetching the metric directly v
 
     ```c-like
     seldon_model_infer_total{
-        code="200", 
-        container="agent", 
-        endpoint="metrics", 
-        instance="10.244.0.39:9006", 
-        job="seldon-mesh/agent", 
-        method_type="rest", 
-        model="irisa0", 
-        model_internal="irisa0_1", 
-        namespace="seldon-mesh", 
-        pod="mlserver-0", 
-        server="mlserver", 
+        code="200", 
+        container="agent", 
+        endpoint="metrics", 
+        instance="10.244.0.39:9006", 
+        job="seldon-mesh/agent", 
+        method_type="rest", 
+        model="irisa0", 
+        model_internal="irisa0_1", 
+        namespace="seldon-mesh", 
+        pod="mlserver-0", 
+        server="mlserver", 
         server_replica="0"
     }
     ```

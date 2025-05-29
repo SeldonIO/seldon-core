@@ -1,6 +1,8 @@
 ---
-description: Learn how to implement model explainability in Seldon Core using Anchor explainers for both tabular and text data. This guide demonstrates deploying and using explainable AI models with scikit-learn, including income prediction and sentiment analysis examples with detailed model explanations.
+description: Learn how to implement model explainability in Seldon Core using Anchor explainers for both tabular and text data
 ---
+
+# Explainer Examples
 
 # Anchor Tabular Explainer for SKLearn Income Model
 

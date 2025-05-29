@@ -1,5 +1,5 @@
 ---
-description: Find answers to frequently asked questions about Seldon Core 2, including version compatibility, API selection criteria, payload logging capabilities, and key differences between V1 and V2. This guide helps you make informed decisions about model serving, pipeline deployment, and integration with service meshes and Kafka.
+description: Find answers to common questions about Seldon Core, including installation, configuration, model deployment, and troubleshooting.
 ---
 
 # FAQs

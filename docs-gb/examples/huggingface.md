@@ -1,5 +1,4 @@
 ---
-description: Learn how to deploy and serve Huggingface text generation models in Seldon Core with step-by-step examples. This guide demonstrates loading, testing, and managing text generation models, including custom model configurations and inference using both REST and gRPC protocols.
 ---
 
 # Huggingface Examples

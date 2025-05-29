@@ -1,5 +1,4 @@
 ---
-description: Manage Seldon Core pipeline with the seldon pipeline CLI command. Learn how to create, deploy, and manage inference graphs by connecting multiple models. Essential guide for building, monitoring, and executing complex machine learning pipelines in Seldon Core.
 ---
 
 ## seldon pipeline

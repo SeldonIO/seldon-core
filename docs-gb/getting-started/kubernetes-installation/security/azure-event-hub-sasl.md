@@ -1,8 +1,8 @@
 ---
-description: Learn how to integrate Seldon Core 2.5.0+ with Azure Event Hub using Kafka protocol and SASL authentication. This comprehensive guide covers Azure Event Hub namespace setup, connection string configuration, Kubernetes secrets management, and Helm configuration for secure communication, including SASL_SSL protocol and PLAIN mechanism implementation.
+description: Learn how to integrate Seldon Core 2 with Azure Event Hub using Kafka protocol and SASL authentication for secure communication.
 ---
 
-# Azure Event Hub SASL Example
+# Azure Event Hub SASL Integration
 
 > New in Seldon Core 2.5.0
 

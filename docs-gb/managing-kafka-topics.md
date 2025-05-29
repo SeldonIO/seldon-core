@@ -1,3 +1,7 @@
+---
+description: Learn how to manage Kafka topics in Seldon Core 2, including topic creation, configuration, and monitoring for model inference and event streaming.
+---
+
 # Managing Kafka Topics in Seldon Core 2
 
 ## Model Kafka topics
@@ -122,7 +126,7 @@ To delete the pipeline, run:
 kubectl delete -f pipeline.yaml -n seldon-mesh
 ```
 
-After deletion, list the Kafka topics again. You should observe that the pipeline’s input and output topics have been removed:
+After deletion, list the Kafka topics again. You should observe that the pipeline's input and output topics have been removed:
 ```bash
 __consumer_offsets
 seldon.seldon-mesh.errors.errors

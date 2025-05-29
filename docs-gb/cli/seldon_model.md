@@ -1,5 +1,4 @@
 ---
-description: Manage Seldon Core model with the seldon model CLI command. Learn how to load, unload, monitor, and run inference on machine learning models. Essential guide for managing model lifecycle, deployment, and inference operations in Seldon Core.
 ---
 
 ## seldon model

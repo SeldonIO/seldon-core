@@ -1,5 +1,5 @@
 ---
-description: Learn how to configure Seldon Core 2 components, including Kafka integration settings, topic and consumer isolation, and tracing configuration. This comprehensive guide covers ConfigMap management, Helm customization, OpenTelemetry integration, and best practices for shared Kafka clusters in Kubernetes environments.
+description: Learn how to configure Seldon Core 2 components, including Kafka integration, tracing setup, and ConfigMap management for production deployments.
 ---
 
 # Configuration

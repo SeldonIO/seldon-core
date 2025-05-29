@@ -1,5 +1,4 @@
 ---
-description: Manage Seldon Core experiment with the seldon experiment CLI command. Learn how to start, stop, monitor, and manage A/B testing experiments by splitting traffic between model candidates. Essential guide for running and controlling machine learning experiments in Seldon Core.
 ---
 
 ## seldon experiment

@@ -1,5 +1,4 @@
 ---
-description: Learn how to create complex ML pipelines in Seldon Core V2 by chaining multiple pipelines together. This comprehensive guide demonstrates pipeline-to-pipeline data flow, tensor mapping, external inputs, and trigger-based execution with practical examples using TensorFlow models and Triton inference server.
 ---
 
 # Seldon V2 Pipeline to Pipeline Examples

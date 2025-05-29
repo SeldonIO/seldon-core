@@ -1,5 +1,4 @@
 ---
-description: Explore Seldon Core configuration management with the seldon config CLI command. Learn how to add, activate, deactivate, list, and remove configuration profiles for your Seldon Core deployment. Essential guide for managing CLI settings and environment configurations.
 ---
 
 ## seldon config

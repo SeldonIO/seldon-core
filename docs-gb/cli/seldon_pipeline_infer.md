@@ -1,5 +1,4 @@
 ---
-description: Execute pipeline inference and get predictions using the seldon pipeline infer CLI command. This command allows you to run inference requests on Seldon Core pipelines, supporting both REST and gRPC protocols, with options for batch processing, sticky sessions, and custom headers.
 ---
 
 ## seldon pipeline infer

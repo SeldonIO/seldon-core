@@ -1,8 +1,8 @@
 ---
-description: Learn how to configure mutual TLS (mTLS) authentication between Seldon Core and Strimzi-managed Kafka clusters. This comprehensive guide covers Kafka cluster setup with TLS enabled, Kafka user creation, certificate management, and Helm configuration for secure communication in Kubernetes environments.
+description: Learn how to configure mutual TLS (mTLS) authentication between Seldon Core and Strimzi-managed Kafka clusters for secure communication.
 ---
 
-# Strimzi mTLS Example
+# Strimzi mTLS Authentication
 
 ## Cluster Setup
 

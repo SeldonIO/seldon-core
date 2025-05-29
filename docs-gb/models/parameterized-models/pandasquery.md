@@ -1,5 +1,5 @@
 ---
-description: Learn how to implement conditional data filtering in Seldon Core 2 using Pandas Query models. This guide demonstrates how to create dynamic data selection models with MLServer, build conditional pipelines with query-based routing, and implement complex inference workflows with status-based triggers.
+description: Learn how to use PandasQuery for data transformation in Seldon Core, including query configuration and parameter handling.
 ---
 
 # Pandas Query Model

@@ -1,8 +1,8 @@
 ---
-description: Learn how to deploy ML models in Seldon Core 2 using MLServer and Triton inference servers. This comprehensive guide covers supported model frameworks including TensorFlow, PyTorch, ONNX, XGBoost, LightGBM, SKLearn, Huggingface, and custom Python models, with detailed instructions for model artifact preparation, configuration files, and deployment requirements.
+description: Learn how to manage model artifacts in Seldon Core, including storage, versioning, and deployment workflows.
 ---
 
-# Inference Artifacts
+# Model Artifacts
 
 To run your model inside Seldon you must supply an inference artifact that can be downloaded and run
 on one of MLServer or Triton inference servers. We list artifacts below by alphabetical order below.

@@ -1,5 +1,5 @@
 ---
-description: Learn how to integrate Seldon Core 2 with Traefik for service mesh and ingress management. This comprehensive guide covers service configuration, IngressRoute setup, middleware implementation, and REST/gRPC endpoint management for ML model deployment in Kubernetes environments.
+description: Learn how to integrate Seldon Core 2 with Traefik for service mesh and ingress management, including service configuration and middleware implementation.
 ---
 
 # Traefik

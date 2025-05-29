@@ -1,8 +1,8 @@
 ---
-description: Learn how to integrate Seldon Core 2.7.0+ with Confluent Cloud using OAuth 2.0 authentication. This comprehensive guide covers identity provider configuration, identity pool setup, Kubernetes secrets management, and Helm configuration for secure communication, including SASL_SSL protocol and OAUTHBEARER mechanism implementation with Confluent Cloud managed Kafka.
+description: Learn how to integrate Seldon Core 2 with Confluent Cloud using OAuth 2.0 authentication for secure Kafka communication.
 ---
 
-# Confluent Cloud Oauth 2.0 Example
+# Confluent OAuth Integration
 
 > New in Seldon Core 2.7.0
 

@@ -1,5 +1,5 @@
 ---
-description: Learn how to configure storage secrets in Seldon Core 2 for secure model artifact access using Rclone. This comprehensive guide covers storage backend configuration for AWS S3, Google Cloud Storage (GCS), MinIO, and other Rclone-supported storage systems, including Kubernetes secrets management, preloaded secrets, and service account authentication.
+description: Learn how to configure storage secrets in Seldon Core 2 for secure model artifact access using Rclone, including AWS S3, GCS, and MinIO integration.
 ---
 
 # Storage Secrets

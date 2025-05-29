@@ -1,5 +1,4 @@
 ---
-description: View and monitor your Seldon Core experiments using the seldon experiment list CLI command. This command displays all available experiments and their active status, helping you track and manage your machine learning experiments in Seldon Core.
 ---
 
 ## seldon experiment list

@@ -1,5 +1,4 @@
 ---
-description: Remove and undeploy Seldon Core pipelines using the seldon pipeline unload CLI command. This command helps you safely unload pipelines, clean up pipeline resources, and manage pipeline lifecycle in your Seldon Core deployment.
 ---
 
 ## seldon pipeline unload

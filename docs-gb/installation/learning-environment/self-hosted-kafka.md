@@ -1,5 +1,5 @@
 ---
-description: Learn how to set up and configure self-hosted Kafka with Seldon Core 2 using Strimzi operator in Kubernetes. This comprehensive guide covers Kafka cluster deployment, node pool configuration, TLS encryption, topic isolation, and Helm customization for production-ready ML model serving.
+description: Learn how to set up a self-hosted Kafka cluster for Seldon Core in development and learning environments.
 ---
 # Self-hosted Kafka
 

@@ -1,5 +1,4 @@
 ---
-description: Learn about Seldon Core server configurations for creating custom inference servers. Understand how to configure MLServer with Open Inference Protocol support, including Kubernetes ReplicaSet setup with Seldon Agent proxy and Rclone server for artifact management.
 ---
 
 # Server Config

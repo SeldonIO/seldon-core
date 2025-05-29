@@ -1,5 +1,4 @@
 ---
-description: Learn how to configure SASL/SCRAM authentication between Seldon Core 2.5.0+ and AWS MSK (Managed Streaming for Kafka). This guide covers AWS Secrets Manager integration, Kubernetes secrets setup, and Helm configuration for secure communication, including SASL_SSL protocol and SCRAM-SHA-512 mechanism implementation.
 ---
 
 # AWS MSK SASL

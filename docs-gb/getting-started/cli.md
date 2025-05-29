@@ -1,5 +1,5 @@
 ---
-description: Learn how to install and use the Seldon CLI tool for managing Seldon Core 2 resources in non-Kubernetes environments. This guide covers installation methods for Linux, macOS ARM, and local builds, including Go dependencies, binary setup, and PATH configuration.
+description: Learn how to install and use the Seldon CLI tool for managing Seldon Core 2 resources in non-Kubernetes environments.
 ---
 
 # Seldon CLI

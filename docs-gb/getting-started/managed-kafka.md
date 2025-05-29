@@ -1,5 +1,4 @@
 ---
-description: Learn how to integrate and secure Seldon Core 2 with managed Kafka services, including Azure Event Hub and Confluent Cloud. This comprehensive guide covers TLS encryption, authentication methods (SASL, mTLS, OAuth 2.0), Kubernetes secrets management, and Helm configuration for production-ready Kafka integration.
 ---
 
 # Managed Kafka

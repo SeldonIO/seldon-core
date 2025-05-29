@@ -1,8 +1,8 @@
 ---
-description: Learn about Scheduler API of Seldon Core, a gRPC service that enables management of ML Models, Servers, Experiments, and Pipelines. Discover how it integrates with Kubernetes and provides direct resource control in non-Kubernetes environments.
+description: Learn about the Scheduler API in Seldon Core, including gRPC service definitions, pipeline management, and model deployment.
 ---
 
-# Scheduler
+# Scheduler API
 
 The Seldon scheduler API provides a gRPC service to allow Models, Servers, Experiments, and Pipelines to be managed. In Kubernetes the manager deployed by Seldon translates Kubernetes custom resource definitions into calls to the Seldon Scheduler.
 

@@ -1,5 +1,5 @@
 ---
-description: Comprehensive guide to the Helm configuration options in Core 2. Learn how to customize deployments with detailed parameters for Envoy, Autoscaling, Server settings, and Logging configurations to optimize your machine learning model deployments.
+description: Learn how to install and configure Seldon Core using Helm charts, including component setup and customization options.
 ---
 
 # Helm Configuration Options

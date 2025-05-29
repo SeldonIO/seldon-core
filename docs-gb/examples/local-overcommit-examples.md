@@ -1,5 +1,4 @@
 ---
-description: Learn how to implement efficient multi-model serving with memory overcommit in Seldon Core V2. This comprehensive guide demonstrates dynamic model loading, memory management, and automatic model eviction for scikit-learn and TensorFlow models, with examples of handling model memory slots and overcommit budgets.
 ---
 
 # Local Multi-model Serving with Overcommit Examples

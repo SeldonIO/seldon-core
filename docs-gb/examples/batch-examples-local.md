@@ -1,5 +1,4 @@
 ---
-description: Learn how to run batch inference locally with Seldon Core using step-by-step examples. This guide demonstrates deploying and testing scikit-learn and TensorFlow models, creating inference pipelines, and processing batch predictions using MLServer for efficient local model serving.
 ---
 
 # Local Batch Inference Example

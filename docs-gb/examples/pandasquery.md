@@ -1,5 +1,4 @@
 ---
-description: Learn how to implement conditional ML pipelines in Seldon Core using Pandas Query models. This guide demonstrates dynamic data filtering, custom runtime implementation with MLServer, and building complex inference workflows with conditional branching based on data conditions.
 ---
 
 # Conditional Pipeline with Pandas Query Model

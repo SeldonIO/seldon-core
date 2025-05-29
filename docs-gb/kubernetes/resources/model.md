@@ -1,8 +1,8 @@
 ---
-description: Learn how to define and deploy ML models in Seldon Core 2, including TensorFlow, PyTorch, scikit-learn models, and custom inference components. This comprehensive guide covers model artifact management, storage URI configuration, server requirements, and integration with monitoring and explainability tools like Alibi-Explain.
+description: Learn how to deploy and manage ML models in Seldon Core using Kubernetes custom resources, including model configuration, scaling, and monitoring.
 ---
 
-# Model
+# Model Resource
 
 A Model is the core atomic building block. It specifies a machine learning artifact that will be loaded onto one of the running Servers. A model could be a standard machine learning inference component such as
 

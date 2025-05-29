@@ -1,5 +1,4 @@
 ---
-description: Learn how to use Tritonclient with Seldon Core V2 for model inference. This comprehensive guide demonstrates HTTP and gRPC transport protocols, binary data handling, and integration with both MLServer and Tritonserver backends, including practical examples for model and pipeline inference with scikit-learn and TensorFlow models.
 ---
 
 # Tritonclient examples

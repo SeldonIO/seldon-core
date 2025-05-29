@@ -1,5 +1,4 @@
 ---
-description: Learn how to implement batch inference in Seldon Core on Kubernetes with step-by-step examples. This guide covers deploying models and pipelines, running batch predictions, and processing large datasets using MLServer for both scikit-learn and TensorFlow models.
 ---
 
 # Batch Inference examples (kubernetes)

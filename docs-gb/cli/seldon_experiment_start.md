@@ -1,5 +1,4 @@
 ---
-description: Launch and initialize new Seldon Core experiments using the seldon experiment start CLI command. This command helps you begin new machine learning experiments by loading experiment manifests, managing control plane operations, and configuring experiment parameters in Seldon Core.
 ---
 
 ## seldon experiment start

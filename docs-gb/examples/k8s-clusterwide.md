@@ -1,5 +1,4 @@
 ---
-description: Learn how to deploy and manage Seldon Core across multiple Kubernetes namespaces with cluster-wide configuration. This guide demonstrates setting up isolated model serving environments, configuring Kafka for multi-tenant deployments, and managing models and pipelines across different namespaces with Helm charts.
 ---
 
 # Multi-Namespace Kubernetes

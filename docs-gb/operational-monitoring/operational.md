@@ -1,8 +1,8 @@
 ---
-description: Learn how to monitor and analyze operational metrics in Seldon Core 2 using Prometheus and Grafana. This comprehensive guide covers model and pipeline performance metrics, resource utilization tracking, cache management, memory monitoring, and best practices for collecting and visualizing ML serving metrics in production environments.
+description: Learn how to monitor operational metrics in Seldon Core, including model performance, pipeline health, and system resource usage.
 ---
 
-# Operational Metrics
+# Operational Monitoring
 
 While the system runs, Prometheus collects metrics that enable you to observe various aspects of Seldon Core 2, including throughput, latency, memory, and CPU usage. In addition to the standard Kubernetes metrics scraped by Prometheus, a [Grafana dashboard](observability.md/#grafana) provides a comprehensive system overview.
 

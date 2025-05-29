@@ -1,5 +1,4 @@
 ---
-description: Learn how to configure and deploy custom model servers in Seldon Core with specific capabilities and requirements. This guide demonstrates server customization, MLServer configuration, and model deployment with custom server specifications for advanced model serving scenarios.
 ---
 
 # Custom Servers

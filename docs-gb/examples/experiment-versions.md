@@ -1,5 +1,4 @@
 ---
-description: Master A/B testing and model experimentation in Seldon Core with this comprehensive guide. Learn how to run, update, and manage model experiments with traffic splitting, version control, and real-time model switching for machine learning model validation and deployment.
 ---
 
 # Seldon V2 Experiment Version Tests

@@ -1,5 +1,5 @@
 ---
-description: The Chainer API enables seamless pipeline management in Seldon Core by facilitating communication between the Scheduler and dataflow components. This internal API orchestrates ML model chains and handles pipeline data routing efficiently.
+description: Learn about the internal Chainer API in Seldon Core, including model chaining, tensor mapping, and pipeline configuration.
 ---
 
 # Chainer API

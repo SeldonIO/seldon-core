@@ -1,5 +1,5 @@
 ---
-description: Learn how to integrate Seldon Core 2 with Istio service mesh for advanced traffic management and ML model deployment. This comprehensive guide covers gateway configuration, virtual service setup, traffic splitting, and REST/gRPC endpoint management for production ML inference services.
+description: Learn how to integrate Seldon Core 2 with Istio service mesh for traffic management and ML model deployment, including gateway configuration and virtual service setup.
 ---
 
 # Istio

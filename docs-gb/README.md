@@ -1,5 +1,5 @@
 ---
-description: Discover Seldon Core 2, a Kubernetes-native MLOps framework for deploying ML and LLM systems at scale. Features flexible architecture, standardized workflows, enhanced observability, and cost-efficient resource management.
+description: Discover Seldon Core 2, a Kubernetes-native MLOps framework for deploying ML and LLM systems at scale. Features flexible architecture, standardized workflows, and enhanced observability.
 ---
 
 # Production-ready Machine Learning Serving Framework

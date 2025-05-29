@@ -1,5 +1,4 @@
 ---
-description: Learn about the different scaling approaches in Seldon Core 2, including manual scaling, HPA-based model scaling with server autoscaling, and dynamic model autoscaling. Understand how to optimize resource utilization and handle varying workloads efficiently in your ML deployments.
 ---
 
 # Scaling in Seldon Core 2
