@@ -1,6 +1,6 @@
 # Pipelines
 
-In order to understand how pipelines will behave in a production setting, it is first helpful to isolate testing to the individual models within the pipeline. By obtaining the maximum throughput for each model given the infrastructure each are running on (e.g. GPU specs) and their configurations (e.g. how many workers are used), users will gain a better understanding of which models might be limiting to the performance of the pipeline around it. Given the performance profiles of models within a pipeline, it is recommended to optimize for the desired performance of those individual models first (see [here](https://www.notion.so/Performance-Tuning-Docs-1bc6a4c8852080ce94c4eb1dcd725b9f?pvs=21)), ensuring they have the right number of replicas and are running on the right infrastructure in order to achieve the right level of performance.
+In order to understand how pipelines will behave in a production setting, it is first helpful to isolate testing to the individual models within the pipeline. By obtaining the maximum throughput for each model given the infrastructure each are running on (e.g. GPU specs) and their configurations (e.g. how many workers are used), users will gain a better understanding of which models might be limiting to the performance of the pipeline around it. Given the performance profiles of models within a pipeline, it is recommended to optimize for the desired performance of those individual models first (see [here](../models/README.md)), ensuring they have the right number of replicas and are running on the right infrastructure in order to achieve the right level of performance. Similarly, once a model within a pipeline is identified as a bottleneck, refer back to the [models](../models/README.md) section to optimize the performance of that model.
 
 The performance behavior of Seldon Core 2 pipelines is more complex compared to individual models. Inference request latency can be broken down into:
 
@@ -13,7 +13,7 @@ To simplify, first, we can consider a **linear pipeline** that consists of a cha
 
 ![Linear pipeline (chain)](pipeline-chain.png)
 
-The maximum throughput achievable through the pipeline is the minimum of the maximum throughputs achievable by each individual model in the pipeline, given a number of workers. Exceeding this maximum will create a bottleneck in processing, degrading performance for the pipeline. To prevent bottlenecking from a given step in your pipeline, you can:
+The maximum throughput achievable through the pipeline is the minimum of the maximum throughputs achievable by each individual model in the pipeline, given a number of workers. Exceeding this maximum will create a bottleneck in processing, degrading performance for the pipeline. To prevent bottlenecking from a given step in your pipeline, refer back to the [models](../models/README.md) section to optimize the performance of that model. For example, you can:
 
 - Increase the resources available to a model’s server, as well as the number of workers
 - Increase the number of model replicas among which the load is balanced (autoscaling can help set the correct number)

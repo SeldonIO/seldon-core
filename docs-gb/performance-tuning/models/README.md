@@ -6,6 +6,7 @@ This section covers various aspects of optimizing model performance in Seldon Co
 Learn how to conduct effective load testing to understand your model's performance characteristics:
 - Determining load saturation points
 - Understanding closed-loop vs. open-loop testing
+- Determining the right number of replicas based on your configuration (model, infrastructure, etc.)
 - Setting up reproducible test environments
 - Interpreting test results for autoscaling configuration
 
