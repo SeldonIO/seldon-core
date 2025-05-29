@@ -1,3 +1,7 @@
+---
+description: Learn how to implement native server autoscaling in Seldon Core 2 for multi-model serving (MMS) and single-model deployments. This comprehensive guide covers server replica scaling policies, model replica count management, empty server detection, and experimental lightly loaded server optimization for efficient resource utilization and cost optimization.
+---
+
 # Server _Native_ Autoscaling
 
 ## Overview

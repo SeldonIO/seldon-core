@@ -1,3 +1,7 @@
+---
+description: Control and administer Seldon Core inference servers with the seldon server CLI command. Discover how to track server health, view deployed models, and manage server infrastructure. Complete reference for operating and maintaining your ML inference servers in Seldon Core.
+---
+
 ## seldon server
 
 manage servers
@@ -7,18 +11,3 @@ manage servers
 get status for servers
 
 ```
-seldon server <subcomand> [flags]
-```
-
-### Options
-
-```
-  -h, --help   help for server
-```
-
-### SEE ALSO
-
-* [seldon](seldon.md)	 - 
-* [seldon server list](seldon_server_list.md)	 - get list of servers
-* [seldon server status](seldon_server_status.md)	 - get status for server
-

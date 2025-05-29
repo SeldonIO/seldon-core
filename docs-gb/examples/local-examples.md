@@ -1,3 +1,7 @@
+---
+description: Learn how to deploy and serve machine learning models locally with Seldon Core V2 without Kubernetes. This comprehensive guide demonstrates model serving for scikit-learn and TensorFlow models, A/B testing experiments, and inference using both REST and gRPC protocols with detailed examples and CLI commands.
+---
+
 # Seldon V2 Non Kubernetes Local Examples
 
 ### SKLearn Model

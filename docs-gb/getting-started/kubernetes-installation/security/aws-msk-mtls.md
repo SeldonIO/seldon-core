@@ -1,3 +1,7 @@
+---
+description: Learn how to configure mutual TLS (mTLS) authentication between Seldon Core and AWS MSK (Managed Streaming for Kafka). This comprehensive guide covers certificate management, Kubernetes secrets setup, Kafka ACLs configuration, and troubleshooting for secure communication between your Kubernetes cluster and AWS MSK, including both public and private endpoint scenarios.
+---
+
 # AWS MSK mTLS
 
 Seldon will run with [AWS MSK](https://aws.amazon.com/msk/).

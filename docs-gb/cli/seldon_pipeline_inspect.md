@@ -1,3 +1,7 @@
+---
+description: Analyze and debug pipeline data flow using the seldon pipeline inspect CLI command. This command allows you to examine pipeline inputs, outputs, and intermediate step data, with support for Kafka message inspection, request tracking, and detailed data visualization in Seldon Core.
+---
+
 ## seldon pipeline inspect
 
 inspect data in a pipeline

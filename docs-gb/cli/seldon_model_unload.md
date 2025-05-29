@@ -1,3 +1,7 @@
+---
+description: Remove and undeploy machine learning models from Seldon Core using the seldon model unload CLI command. This command helps you safely unload models, clean up model resources, and manage model lifecycle in your Seldon Core deployment.
+---
+
 ## seldon model unload
 
 unload a model

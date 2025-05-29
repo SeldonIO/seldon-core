@@ -1,3 +1,7 @@
+---
+description: Learn how to implement drift detection in Seldon Core 2 using Alibi-Detect integration. This guide covers model drift monitoring, batch processing for drift detection, asynchronous pipeline integration, Kafka-based drift alerts, and best practices for monitoring ML model performance in production environments.
+---
+
 # Drift Detection
 
 Drift detection models are treated as any other Model. You can run any saved

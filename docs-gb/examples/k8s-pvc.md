@@ -1,3 +1,7 @@
+---
+description: Learn how to configure and deploy Seldon Core model servers with Persistent Volume Claims (PVC) in Kubernetes. This guide demonstrates setting up local storage for ML models, configuring Kind clusters with volume mounts, and deploying scikit-learn models with PVC requirements for efficient model serving.
+---
+
 # Kubernetes Server with PVC
 
 {% hint style="info" %}

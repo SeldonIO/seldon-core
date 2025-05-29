@@ -1,3 +1,7 @@
+---
+description: Learn how to verify your Seldon Core 2 installation by deploying a sample Iris model, creating a pipeline, and performing inference tests. This step-by-step guide ensures your MLOps infrastructure is correctly set up and ready for production use.
+---
+
 # Verify the Installation of Seldon Core 2
 
 To confirm the successful installation of [Seldon Core 2](/docs-gb/installation/production-environment/README.md), [Kafka](/docs-gb/installation/production-environment/kafka/), and the [service mesh](/docs-gb/installation/production-environment/ingress-controller/istio.md), deploy a sample model and perform an inference test. Follow these steps:

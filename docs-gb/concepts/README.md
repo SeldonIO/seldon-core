@@ -1,3 +1,6 @@
+---
+description: Learn how Seldon Core is different from a centralized orchestrator to a data flow architecture, enabling more efficient ML model deployment through stream processing and improved data handling.
+---
 
 In the context of machine learning and Seldon Core 2, concepts provide a framework for understanding key functionalities, architectures, and workflows within the system. Some of the key concepts in Seldon Core 2 are:
 

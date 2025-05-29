@@ -1,3 +1,6 @@
+---
+description: Learn how to implement request-per-second (RPS) based autoscaling in Seldon Core 2 using Kubernetes HPA and Prometheus metrics. This comprehensive guide covers custom metrics configuration, Prometheus Adapter setup, HPA manifest creation, and best practices for scaling ML models and inference servers based on inference load.
+---
 
 # HPA Autoscaling in single-model serving
 
@@ -285,9 +288,9 @@ For every (Model, Server) pair you want to autoscale, you need to apply 2 HPA ma
 the same metric: one scaling the Model, the other the Server. The example below only works if
 the mapping between Models and Servers is 1-to-1 (i.e no multi-model serving).
 
-Consider a model named `irisa0` with the following manifest. Please note we don’t set
+Consider a model named `irisa0` with the following manifest. Please note we don't set
 `minReplicas/maxReplicas`. This disables the seldon lag-based autoscaling so that it
-doesn’t interact with HPA (separate `minReplicas/maxReplicas` configs will be set on the HPA
+doesn't interact with HPA (separate `minReplicas/maxReplicas` configs will be set on the HPA
 side)
 
 You must also explicitly define a value for `spec.replicas`. This is the key modified by HPA
@@ -310,7 +313,7 @@ spec:
 ```
 {% endcode %}
 
-Let’s scale this model when it is deployed on a server named `mlserver`, with a target RPS **per
+Let's scale this model when it is deployed on a server named `mlserver`, with a target RPS **per
 replica** of 3 RPS (higher RPS would trigger scale-up, lower would trigger scale-down):
 
 {% code title="irisa0-hpa.yaml" lineNumbers="true" %}

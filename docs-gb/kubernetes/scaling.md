@@ -1,3 +1,7 @@
+---
+description: Learn how to scale Seldon Core 2 components including ML models, inference servers, and internal components. This comprehensive guide covers model replication, server scaling, pipeline gateway, model gateway, dataflow engine, scheduler, Kubernetes controller, and Envoy scaling configurations for optimal ML serving performance.
+---
+
 # Scaling
 
 ## Models

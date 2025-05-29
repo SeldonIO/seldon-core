@@ -1,3 +1,7 @@
+---
+description: Deploy and initialize machine learning models in Seldon Core using the seldon model load CLI command. This command helps you load model manifests, manage model deployment in the control plane, and prepare models for inference in your Seldon Core environment.
+---
+
 ## seldon model load
 
 load a model

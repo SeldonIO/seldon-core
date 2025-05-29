@@ -1,3 +1,7 @@
+---
+description: Learn how to implement A/B testing and traffic splitting in Seldon Core 2 using Experiments. This comprehensive guide covers model and pipeline experiments, traffic weight distribution, mirror experiments, sticky sessions, and service mesh integration for ML model testing and deployment.
+---
+
 # Experiment
 
 An Experiment defines a traffic split between Models or Pipelines. This allows new versions of models and pipelines to be tested.

@@ -1,5 +1,5 @@
 ---
-description: Integrate self-hosted Kafka with Seldon Core 2.
+description: Learn how to set up and configure self-hosted Kafka with Seldon Core 2 using Strimzi operator in Kubernetes. This comprehensive guide covers Kafka cluster deployment, node pool configuration, TLS encryption, topic isolation, and Helm customization for production-ready ML model serving.
 ---
 # Self-hosted Kafka
 
@@ -257,7 +257,7 @@ If you are using a shared Kafka cluster with other applications, it is advisable
 * `topicPrefix`: set a prefix for all topics
 * `consumerGroupIdPrefix`: set a prefix for all consumer groups
 
-Here’s an example of how to configure topic name and consumer group ID isolation during a Helm installation for an application named `myorg`:
+Here's an example of how to configure topic name and consumer group ID isolation during a Helm installation for an application named `myorg`:
 
 ```bash
 helm upgrade --install seldon-core-v2-setup seldon-charts/seldon-core-v2-setup \

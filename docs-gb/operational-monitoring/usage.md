@@ -1,3 +1,7 @@
+---
+description: Learn how to configure and manage usage metrics in Seldon Core 2 using the Hodometer component. This comprehensive guide covers anonymous usage tracking, privacy-focused metrics collection, Kubernetes and Docker deployment options, and best practices for monitoring system adoption and feature utilization in production environments.
+---
+
 # Usage Metrics
 
 There are various interesting system metrics about how Seldon Core 2 is used. These metrics can be recorded **anonymously** and sent to Seldon by a lightweight, optional, stand-alone component called Hodometer.

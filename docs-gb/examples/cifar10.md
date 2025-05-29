@@ -1,3 +1,7 @@
+---
+description: Learn how to deploy a production-ready CIFAR10 image classifier with Seldon Core, featuring real-time drift detection and outlier monitoring. This comprehensive guide demonstrates model serving, data drift detection using KS tests, and anomaly detection with VAE for robust ML model monitoring in production.
+---
+
 # Production image classifier with drift and outlier monitoring
 
 Run these examples from the `samples/examples/image_classifier` folder.

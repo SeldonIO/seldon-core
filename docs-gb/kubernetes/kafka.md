@@ -1,3 +1,7 @@
+---
+description: Learn how to integrate Kafka with Seldon Core 2 for data-centric inference pipelines. This comprehensive guide covers managed Kafka solutions (Confluent Cloud, Amazon MSK, Azure Event Hub), self-hosted Kafka using Strimzi Operator, and security configurations including SASL/PLAIN, SASL/OAUTHBEARER, mTLS, and SASL/SCRAM authentication.
+---
+
 # Kafka
 
 Seldon Core 2 requires [Kafka](https://kafka.apache.org/) to implement data-centric inference Pipelines.

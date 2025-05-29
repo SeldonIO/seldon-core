@@ -1,3 +1,7 @@
+---
+description: View and enumerate all deployed machine learning models in Seldon Core using the seldon model list CLI command. This command provides a comprehensive overview of model deployments, their current status, and configuration details in your Seldon Core environment.
+---
+
 ## seldon model list
 
 get list of models

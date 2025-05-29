@@ -1,3 +1,7 @@
+---
+description: Learn how to implement model explainability in Seldon Core 2 using Alibi-Explain integration with MLServer. This comprehensive guide covers black box model explanations, pipeline explanations, anchor-based explainers for tabular and text data, and best practices for deploying explainable AI models in production environments.
+---
+
 # Explainers
 
 Explainers are Model resources with some extra settings. They allow a range of explainers

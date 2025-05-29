@@ -1,3 +1,7 @@
+---
+description: Learn how Seldon Core 2 implements intelligent model scheduling for multi-model serving deployments. This comprehensive guide covers server selection algorithms, resource-based scheduling, partial model scheduling, replica management, and best practices for optimizing model deployment across server pods in Kubernetes environments.
+---
+
 # Model Scheduling
 
 Core 2 architecture is built around decoupling `Model` and `Server` CRs to allow for multi-model deployment, 

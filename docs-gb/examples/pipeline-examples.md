@@ -1,3 +1,7 @@
+---
+description: Explore comprehensive examples of Seldon Core V2 pipelines demonstrating model chaining, conditional logic, and data flow orchestration. Learn how to implement model joins, conditional branching, tensor mapping, and trigger-based execution with practical examples using TensorFlow and Triton inference server.
+---
+
 # Seldon V2 Pipeline Examples
 
 This notebook illustrates a series of Pipelines showing of different ways of combining flows of

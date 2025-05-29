@@ -1,3 +1,7 @@
+---
+description: Retrieve and view model metadata information using the seldon model metadata CLI command. This command allows you to access detailed model specifications, configurations, and properties for your deployed models in Seldon Core.
+---
+
 ## seldon model metadata
 
 get model metadata

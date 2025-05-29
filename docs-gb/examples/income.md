@@ -1,3 +1,7 @@
+---
+description: Learn how to deploy a production-ready income classifier with Seldon Core, featuring real-time drift detection, outlier monitoring, and model explainability. This comprehensive guide demonstrates end-to-end ML pipeline deployment with preprocessing, model serving, drift detection using KS tests, and Anchor explainers for model interpretability.
+---
+
 # Tabular Income Classifier Production Deployment
 
 To run this notebook you need the inference data. This can be acquired in two ways:

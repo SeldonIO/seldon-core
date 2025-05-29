@@ -1,3 +1,7 @@
+---
+description: Learn how to configure and customize inference servers in Seldon Core. This guide covers server definitions, custom server configurations, persistent volume integration, and advanced capabilities for ML model deployment in Kubernetes environments.
+---
+
 # Server
 
 {% hint style="info" %}

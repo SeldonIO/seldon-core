@@ -1,3 +1,7 @@
+---
+description: Learn how to integrate Seldon Core 2 with Ambassador (Emissary) for service mesh and ingress management. This comprehensive guide covers REST and gRPC endpoint configuration, traffic routing, model deployment, and integration with ML inference services in Kubernetes environments.
+---
+
 # Ambassador
 
 [Ambassador](https://www.getambassador.io/) provides service mesh and ingress products. Our

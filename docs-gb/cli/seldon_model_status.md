@@ -1,3 +1,7 @@
+---
+description: Monitor and check the deployment status of your Seldon Core models using the seldon model status CLI command. This command provides real-time status updates, allows waiting for specific model conditions, and displays detailed deployment state information for your machine learning models.
+---
+
 ## seldon model status
 
 get status for model

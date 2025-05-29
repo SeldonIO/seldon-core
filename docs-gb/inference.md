@@ -1,3 +1,7 @@
+---
+description: Learn how to make inference requests in Seldon Core 2 using REST, gRPC, and Kafka protocols. This comprehensive guide covers synchronous and asynchronous inference, request routing, pipeline metadata handling, request ID tracking, and best practices for deploying ML models and pipelines in production environments.
+---
+
 # Inference
 
 This section will discuss how to make inference calls against your Seldon models or pipelines.

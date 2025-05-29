@@ -1,3 +1,7 @@
+---
+description: Explore Seldon Core's comprehensive model zoo featuring ready-to-deploy examples across multiple ML frameworks including scikit-learn, TensorFlow, XGBoost, ONNX, LightGBM, MLFlow, and PyTorch. Learn how to deploy and serve models with step-by-step examples for image classification, income prediction, and MNIST digit recognition.
+---
+
 # Seldon Model Zoo
 
 Examples of various model artifact types from various frameworks running under Seldon Core 2.

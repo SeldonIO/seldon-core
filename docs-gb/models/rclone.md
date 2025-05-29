@@ -1,3 +1,7 @@
+---
+description: Learn how to use Rclone in Seldon Core 2 for efficient model artifact management across 40+ cloud storage backends. This guide covers model artifact distribution, cloud storage integration with Amazon S3 and Google Storage, local development storage, and secure cloud storage authorization in Kubernetes environments.
+---
+
 # Rclone
 
 We utilize [Rclone](https://rclone.org/) to copy model artifacts from a storage location

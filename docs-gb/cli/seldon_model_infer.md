@@ -1,3 +1,7 @@
+---
+description: Execute model inference and get predictions using the seldon model infer CLI command. This command allows you to run inference requests on Seldon Core models, supporting both REST and gRPC protocols, with options for batch processing, sticky sessions, and custom headers.
+---
+
 ## seldon model infer
 
 run inference on a model

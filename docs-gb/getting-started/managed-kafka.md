@@ -1,3 +1,7 @@
+---
+description: Learn how to integrate and secure Seldon Core 2 with managed Kafka services, including Azure Event Hub and Confluent Cloud. This comprehensive guide covers TLS encryption, authentication methods (SASL, mTLS, OAuth 2.0), Kubernetes secrets management, and Helm configuration for production-ready Kafka integration.
+---
+
 # Managed Kafka
 
 Seldon recommends managed Kafka for production installation. On this page we will demonstrate how you can integrate and configure your managed Kafka with Seldon Core 2. 
@@ -11,12 +15,12 @@ You can secure your Seldon Core 2 integration with managed Kafka services by set
 In production settings, always set up TLS encryption with Kafka. This ensures that neither the credentials nor the payloads are transported in plaintext.
 
 {% hint style="info" %}
-**Note**: TLS encryption involves only single-sided TLS. This means that the contents are encrypted and sent to the server, but the client won’t send any form of certificate. Therefore, it does not take care of authenticating the client. Client authentication can be configured through mutual TLS (mTLS) or SASL mechanism, which are covered in the [Kafka Authentication](https://docs.seldon.ai/seldon-enterprise-platform/production-environment/kafka/managed-kafka#kafka-authentication) section .
+**Note**: TLS encryption involves only single-sided TLS. This means that the contents are encrypted and sent to the server, but the client won't send any form of certificate. Therefore, it does not take care of authenticating the client. Client authentication can be configured through mutual TLS (mTLS) or SASL mechanism, which are covered in the [Kafka Authentication](https://docs.seldon.ai/seldon-enterprise-platform/production-environment/kafka/managed-kafka#kafka-authentication) section .
 {% endhint %}
 
-When TLS is enabled, the client needs to know the root CA certificate used to create the server’s certificate. This is used to validate the certificate sent back by the Kafka server.
+When TLS is enabled, the client needs to know the root CA certificate used to create the server's certificate. This is used to validate the certificate sent back by the Kafka server.
 
-1. Create a certificate named `ca.crt` that is encoded as a PEM certificate. It is important that the certificate is saved as `ca.crt`. Otherwise, Seldon Core 2 may not be able to find the certificate. Within the cluster, you can provide the server’s root CA certificate through a secret. For example, a secret named `kafka-broker-tls` with a certificate.
+1. Create a certificate named `ca.crt` that is encoded as a PEM certificate. It is important that the certificate is saved as `ca.crt`. Otherwise, Seldon Core 2 may not be able to find the certificate. Within the cluster, you can provide the server's root CA certificate through a secret. For example, a secret named `kafka-broker-tls` with a certificate.
 
 ```
 kubectl create secret generic kafka-broker-tls -n seldon --from-file ./ca.crt
@@ -77,7 +81,7 @@ security:
         brokerValidationSecret: kafka-broker-tls  # NOTE: Optional
 ```
 
-The `security.kafka.ssl.client.brokerValidationSecret` field is optional. Leave it empty if your brokers use well known Certificate Authority such as Let’s Encrypt.
+The `security.kafka.ssl.client.brokerValidationSecret` field is optional. Leave it empty if your brokers use well known Certificate Authority such as Let's Encrypt.
 {% endtab %}
 
 {% tab title="OAuth2.0" %}
@@ -133,7 +137,7 @@ security:
         brokerValidationSecret: kafka-broker-tls  # NOTE: Optional
 ```
 
-The `security.kafka.ssl.client.brokerValidationSecret` field is optional. Leave it empty if your brokers use well known Certificate Authority such as Let’s Encrypt.
+The `security.kafka.ssl.client.brokerValidationSecret` field is optional. Leave it empty if your brokers use well known Certificate Authority such as Let's Encrypt.
 {% endtab %}
 
 {% tab title="mTLS" %}
@@ -175,7 +179,7 @@ security:
         brokerValidationSecret: kafka-broker-tls  # NOTE: Optional
 ```
 
-The `security.kafka.ssl.client.brokerValidationSecret` field is optional. Leave it empty if your brokers use well known Certificate Authority such as Let’s Encrypt.
+The `security.kafka.ssl.client.brokerValidationSecret` field is optional. Leave it empty if your brokers use well known Certificate Authority such as Let's Encrypt.
 
 {% endtab %}
 {% endtabs %}
@@ -196,7 +200,7 @@ Here are some examples to create secrets for managed Kafka services such as Azur
 These are the steps that you need to perform in Azure Portal.
 
 1. Create an Azure Event Hub namespace. You need to have an Azure Event Hub namespace. Follow the [Azure quickstart documentation](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-create#create-an-event-hubs-namespace) to create one. **Note**: You do not need to create individual Event Hubs (topics) as Seldon Core 2 automatically creates all necessary topics.
-2. Connection string for Kafka Integration. To connect to the Azure Event Hub using the Kafka API, you need to obtain Kafka endpoint and Connection string. For more information, see [Get an Event Hubs connection string](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string?utm\_source=pocket\_saves#connection-string-for-a-namespace)
+2. Connection string for Kafka Integration. To connect to the Azure Event Hub using the Kafka API, you need to obtain Kafka endpoint and Connection string. For more information, see [Get an Event Hubs connection string](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string?utm_source=pocket_saves#connection-string-for-a-namespace)
 
     **Note**: Ensure you get the Connection string at the namespace level, as it is needed to dynamically create new topics. The format of the Connection string should be:
 

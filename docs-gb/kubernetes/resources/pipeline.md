@@ -1,3 +1,7 @@
+---
+description: Learn how to create and manage ML inference pipelines in Seldon Core 2 using directed acyclic graphs (DAGs). This comprehensive guide covers model chaining, tensor mapping, join types, batch processing, triggers, and pipeline input/output configuration for complex ML workflows.
+---
+
 # Pipeline
 
 Pipelines allow one to connect flows of inference data transformed by `Model` components. A directed acyclic graph (DAG) of steps can be defined to join Models together. Each Model will need to be capable of receiving a V2 inference request and respond with a V2 inference response. An example Pipeline is shown below:

@@ -1,3 +1,7 @@
+---
+description: Learn how to build an end-to-end speech-to-sentiment pipeline in Seldon Core V2 using Huggingface models. This comprehensive guide demonstrates speech-to-text conversion with Whisper, sentiment analysis, and model explainability using Alibi-Explain, with practical examples of audio processing, model chaining, and explanation generation.
+---
+
 # Huggingface speech to sentiment pipeline
 
 In this example we create a Pipeline to chain two huggingface models to allow speech to

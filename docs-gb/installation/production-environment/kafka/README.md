@@ -1,3 +1,7 @@
+---
+description: Learn how to integrate Kafka with Seldon Core 2 for scalable ML model deployment. Discover managed cloud and self-hosted options for implementing reliable, high-throughput machine learning inference pipelines.
+---
+
 # Kafka Integration
 
 [Kafka](https://kafka.apache.org/) is a component in the Seldon Core 2 ecosystem, that provides scalable, reliable, and flexible communication for machine learning deployments. It serves as a strong backbone for building complex inference pipelines, managing high-throughput asynchronous predictions, and seamlessly integrating with event-driven systems—key features needed for contemporary enterprise-grade ML platforms.
@@ -7,7 +11,7 @@ An inference request is a request sent to a machine learning model to make a pre
 To explore this feature of Seldon Core 2, you need to integrate with Kafka. Integrate Kafka through [managed cloud services](managed-kafka.md) or by deploying it [directly within a Kubernetes cluster](#self-hosted-kafka).
 
 {% hint style="info" %}
-**Note**: Kafka is an external component outside of the main Seldon stack. Therefore, it is the cluster administrator’s responsibility to administrate and manage the Kafka instance used by Seldon. For production installation it is highly recommended to use managed Kafka instance.
+**Note**: Kafka is an external component outside of the main Seldon stack. Therefore, it is the cluster administrator's responsibility to administrate and manage the Kafka instance used by Seldon. For production installation it is highly recommended to use managed Kafka instance.
 {% endhint %}
 
 * [Securing Kafka](managed-kafka.md#securing-managed-kafka-services) provides more information about the encrytion and authentication.

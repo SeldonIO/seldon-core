@@ -1,3 +1,7 @@
+---
+description: View and enumerate all available Seldon Core pipelines using the seldon pipeline list CLI command. This command provides a comprehensive overview of deployed pipelines, their status, and configuration in your Seldon Core environment.
+---
+
 ## seldon pipeline list
 
 list pipelines

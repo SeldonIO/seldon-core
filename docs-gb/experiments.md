@@ -1,3 +1,7 @@
+---
+description: Learn how to implement A/B testing and traffic splitting in Seldon Core 2 for ML models and pipelines. This guide covers HTTP traffic distribution, model mirroring for testing, percentage-based traffic routing, and best practices for conducting ML model experiments in production environments.
+---
+
 # Experiments
 
 An Experiment defines an http traffic split between Models or Pipelines.

@@ -1,3 +1,7 @@
+---
+description: Learn how to configure SASL/SCRAM authentication between Seldon Core and Strimzi-managed Kafka clusters. This comprehensive guide covers Kafka cluster setup with SASL_SSL enabled, SCRAM-SHA-512 mechanism implementation, Kubernetes secrets management, and Helm configuration for secure communication in Kubernetes environments.
+---
+
 # Strimzi SASL Example
 
 Create a Strimzi Kafka cluster with SASL_SSL enabled.

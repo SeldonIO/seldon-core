@@ -1,3 +1,7 @@
+---
+description: Learn how to integrate Seldon Core 2.5.0+ with Confluent Cloud using SASL authentication. This comprehensive guide covers API key generation, Kubernetes secrets setup, and Helm configuration for secure communication with Confluent Cloud managed Kafka, including SASL_SSL protocol and PLAIN mechanism implementation.
+---
+
 # Confluent Cloud SASL Example
 
 > New in Seldon Core 2.5.0

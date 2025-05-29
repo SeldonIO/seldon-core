@@ -1,3 +1,7 @@
+---
+description: Monitor and check the deployment status of your Seldon Core pipelines using the seldon pipeline status CLI command. This command provides real-time status updates, allows waiting for specific pipeline conditions, and displays detailed deployment state information for your data processing pipelines.
+---
+
 ## seldon pipeline status
 
 status of a pipeline

@@ -1,3 +1,7 @@
+---
+description: Comprehensive reference guide for Seldon Core security settings, covering Helm configuration, environment variables, and TLS/mTLS setup for Control Plane, Kafka, and Envoy components. Learn about SSL/TLS protocols, SASL mechanisms, certificate management, and security protocols for secure communication in Kubernetes deployments.
+---
+
 # Security Settings Reference
 
 ## Helm Settings

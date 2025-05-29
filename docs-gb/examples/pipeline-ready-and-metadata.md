@@ -1,3 +1,7 @@
+---
+description: Learn how to monitor and verify pipeline readiness in Seldon Core V2. This guide covers pipeline status checks, model availability verification, and metadata management using both REST and gRPC endpoints, with examples for both local development and Kubernetes deployments.
+---
+
 # Checking Pipeline readiness
 
 Local example settings.

@@ -1,3 +1,7 @@
+---
+description: Learn how to implement model explainability in Seldon Core using Anchor explainers for both tabular and text data. This guide demonstrates deploying and using explainable AI models with scikit-learn, including income prediction and sentiment analysis examples with detailed model explanations.
+---
+
 # Anchor Tabular Explainer for SKLearn Income Model
 
 ```bash
@@ -189,7 +193,6 @@ kubectl delete -f ./models/income-explainer.yaml -n ${NAMESPACE}
 kubectl delete -f ./models/income.yaml -n ${NAMESPACE}
 
 ```
-
 {% endtab %}
 
 {% tab title="seldon-cli" %}

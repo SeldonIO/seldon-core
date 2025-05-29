@@ -1,3 +1,7 @@
+---
+description: Master A/B testing and model experimentation in Seldon Core V2 without Kubernetes. This comprehensive guide demonstrates model experiments, pipeline experiments, and mirror experiments using scikit-learn models, with detailed examples of traffic splitting, sticky sessions, and request mirroring for ML model validation.
+---
+
 # Seldon V2 Non Kubernetes Local Experiment Examples
 
 ### Model Experiment

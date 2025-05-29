@@ -1,3 +1,7 @@
+---
+description: Learn how to run comprehensive performance tests for Seldon Core 2 deployments using k6 load testing. This guide covers synchronous and asynchronous inference testing, pipeline performance benchmarking, server load testing, and best practices for measuring and optimizing ML model serving performance in production environments.
+---
+
 # Performance tests
 This section describes how a user can run performance tests to understand the limits of a particular SCv2 deployment.
 

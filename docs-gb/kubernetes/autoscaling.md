@@ -1,3 +1,7 @@
+---
+description: Learn how to implement comprehensive autoscaling in Seldon Core 2 for ML model serving, including inference server scaling, model replication, and memory overcommit. This guide covers HorizontalPodAutoscaler (HPA) configuration, model scaling thresholds, agent-based scaling logic, and memory optimization for multi-model serving.
+---
+
 # Autoscaling
 
 Autoscaling in Seldon applies to various concerns:

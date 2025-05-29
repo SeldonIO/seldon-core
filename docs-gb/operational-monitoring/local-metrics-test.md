@@ -1,3 +1,7 @@
+---
+description: Learn how to monitor and test ML model metrics in Seldon Core 2 using Prometheus integration. This comprehensive guide covers model inference metrics, pipeline monitoring, REST/gRPC endpoint tracking, and best practices for collecting operational metrics from MLServer and Triton inference servers in local development environments.
+---
+
 # Local Metrics
 
 Run these examples from the `samples` folder at the root of the repo.

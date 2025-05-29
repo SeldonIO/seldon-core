@@ -1,3 +1,7 @@
+---
+description: Deploy and initialize Seldon Core pipelines using the seldon pipeline load CLI command. This command helps you load pipeline manifests, manage pipeline deployment in the control plane, and prepare data processing pipelines for execution in your Seldon Core environment.
+---
+
 ## seldon pipeline load
 
 load a pipeline

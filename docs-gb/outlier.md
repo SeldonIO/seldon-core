@@ -1,3 +1,7 @@
+---
+description: Learn how to implement outlier detection in Seldon Core 2 using Alibi-Detect integration. This guide covers anomaly detection for ML models, image classification outlier detection, tabular data anomaly detection, and best practices for deploying and monitoring outlier detection models in production environments.
+---
+
 # Outlier Detection
 
 Outlier detection models are treated as any other Model. You can run any saved

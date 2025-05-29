@@ -1,3 +1,7 @@
+---
+description: Learn how to implement distributed tracing in Seldon Core 2 using OpenTelemetry and Jaeger. This guide covers OLTP event collection, OpenTelemetry collector setup, Jaeger integration, and trace visualization for monitoring and debugging ML model serving pipelines.
+---
+
 # Tracing
 
 We support Open Telemetry tracing. By default all components will attempt to send OLTP events to

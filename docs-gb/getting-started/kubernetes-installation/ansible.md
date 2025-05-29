@@ -1,3 +1,7 @@
+---
+description: Learn how to install Seldon Core 2 and its ecosystem components using Ansible playbooks for development and testing environments. This comprehensive guide covers Kind cluster setup, ecosystem configuration (Kafka, Prometheus, OpenTelemetry, Jaeger), custom image management, private registry integration, and Helm chart customization.
+---
+
 # Ansible Installation
 
 {% hint style="warning" %}

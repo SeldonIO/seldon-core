@@ -1,3 +1,7 @@
+---
+description: Learn how to add new configurations to Seldon Core using the seldon config add CLI command. This command allows you to create and store new configuration profiles for your Seldon Core deployment.
+---
+
 ## seldon config add
 
 add config

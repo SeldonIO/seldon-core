@@ -1,3 +1,7 @@
+---
+description: Master model inference in Seldon Core with comprehensive examples for both REST and gRPC protocols. Learn how to perform inference on TensorFlow models and ML pipelines using seldon CLI, curl, and grpcurl commands with detailed request/response examples.
+---
+
 # Inference Examples
 
 We will show:
