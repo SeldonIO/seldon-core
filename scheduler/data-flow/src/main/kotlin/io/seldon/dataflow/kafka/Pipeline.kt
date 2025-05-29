@@ -180,9 +180,10 @@ class Pipeline(
             steps: List<PipelineStepUpdate>,
             kafkaDomainParams: KafkaDomainParams,
         ): Pair<Topology, Int> {
+            val sortedSteps = steps.sortedBy { it.sink.topicName }
             val builder = StreamsBuilder()
             val topologySteps =
-                steps
+                sortedSteps
                     .mapNotNull {
                         stepFor(
                             builder,

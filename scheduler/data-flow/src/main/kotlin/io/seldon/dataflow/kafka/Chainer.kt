@@ -21,15 +21,15 @@ class Chainer(
     builder: StreamsBuilder,
     internal val inputTopic: TopicForPipeline,
     internal val outputTopic: TopicForPipeline,
-    internal val tensors: Set<TensorName>?,
+    internal val tensors: List<TensorName>?,
     internal val pipelineName: String,
     internal val pipelineVersion: String,
     internal val tensorRenaming: List<PipelineTensorMapping>,
     internal val batchProperties: ChainerOuterClass.Batch,
     private val kafkaDomainParams: KafkaDomainParams,
-    internal val inputTriggerTopics: Set<TopicForPipeline>,
+    internal val inputTriggerTopics: List<TopicForPipeline>,
     internal val triggerJoinType: ChainerOuterClass.PipelineStepUpdate.PipelineJoinType,
-    internal val triggerTensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
+    internal val triggerTensorsByTopic: Map<TopicForPipeline, List<TensorName>>?,
 ) : PipelineStep {
     init {
         builder.apply {
