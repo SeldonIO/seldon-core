@@ -52,7 +52,39 @@ Seldon publishes the [Helm charts](https://github.com/SeldonIO/helm-charts) that
     ```
     This configuration installs the Seldon Core 2 operator across an entire Kubernetes cluster. To perform cluster-wide operations, create `ClusterRoles` and ensure your user has the necessary permissions during deployment. With cluster-wide operations, you can create `SeldonRuntimes` in any namespace.
 
-    You can configure the installation to deploy the Seldon Core 2 operator in a specific namespace so that it control resources in the provided namespace. To do this, set `controller.clusterwide` to `false`.    
+    With cluster-wide installation, you can specify the namespaces to watch by setting `controller.watchNamespaces` to a comma-separated list of namespaces (e.g., `{ns1, ns2}`). This allows the Seldon Core 2 operator to monitor and manage resources in those namespaces.
+
+    You can also install multiple operators in different namespaces, and configure them to watch a disjoint set of namespaces. For example, you can install two operators in `op-ns1` and `op-ns2`, and configure them to watch `ns1, ns2` and `ns3, ns4`, respectively, using the following commands:
+
+    ```bash
+    for ns in op-ns1 op-ns2 ns1 ns2 ns3 ns4; do kubectl create ns "$ns"; done
+    ```
+
+    We now install the first operator in `op-ns1` and configure it to watch `ns1` and `ns2`:
+
+    ```bash
+    helm upgrade seldon-core-v2-setup seldon-charts/seldon-core-v2-setup \
+    --namespace op-ns1 \
+    --set controller.clusterwide=true \
+    --set "controller.watchNamespaces={ns1,ns2}" \
+    --install
+    ```
+
+    Next, we install the second operator in `op-ns2` and configure it to watch `ns3` and `ns4`:
+
+    ```bash
+    helm upgrade seldon-core-v2-setup seldon-charts/seldon-core-v2-setup \
+    --namespace op-ns2 \
+    --set controller.clusterwide=true \
+    --set "controller.watchNamespaces={ns3,ns4}" \
+    --set controller.skipClusterRoleCreation=true \
+    --install
+    ```
+
+    Note that the second operator is installed with `skipClusterRoleCreation=true` to avoid re-creating the `ClusterRole` and `ClusterRoleBinding` that were created by the first operator. 
+
+    Finally, you can configure the installation to deploy the Seldon Core 2 operator in a specific namespace so that it control resources in the provided namespace. To do this, set `controller.clusterwide` to `false`.
+
 4.  Install Seldon Core 2 runtimes in the namespace `seldon-mesh`.
 
     ```bash

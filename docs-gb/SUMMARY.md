@@ -21,7 +21,8 @@
   * [Server Config](kubernetes/resources/serverconfig.md)
   * [Server Runtime](kubernetes/resources/seldonruntime.md)
   * [Seldon Config](kubernetes/resources/seldonconfig.md)
-  * [Pipeline Config](kubernetes/resources/pipeline.md)  
+  * [Pipeline Config](kubernetes/resources/pipeline.md)
+  * [Managing Kafka Topics](managing-kafka-topics.md)
 * [Upgrading](upgrading.md) 
 
 ## User Guide
@@ -50,17 +51,17 @@
     * [Pandas Query](models/parameterized-models/pandasquery.md) 
     * [Storage Secrets](kubernetes/storage-secrets.md)
 * Inference
+    <!--
     * [Inference Server](https://docs.seldon.io/projects/seldon-core/en/v2/contents/about/index.html#inference-servers)
     * [Run Inference](https://docs.seldon.io/projects/seldon-core/en/v2/contents/inference/index.html)
+    -->
     * [OIP](apis/inference/v2.md)
     * [Batch](examples/batch-examples-k8s.md) and (examples/batch-examples-local.md)
 * [Pipelines](pipelines.md)
-* [Scaling](kubernetes/scaling.md)
-  <!-- 
-  * Server Scaling
-  * Component Scaling -->
-  * [Model Autoscaling](kubernetes/autoscaling.md)
-  * [Server Autoscaling](kubernetes/server-autoscaling.md)
+* [Scaling](scaling/scaling.md)
+  * [Manual Scaling](scaling/manual-scaling.md)
+  * [Model Autoscaling](scaling/autoscaling.md)
+  * [Server Autoscaling](scaling/server-autoscaling.md)
   <!--
   * Multi-Component Serving and Overcommit -->
   * [HPA Autoscaling in single-model serving](kubernetes/hpa-rps-autoscaling.md)
@@ -102,6 +103,7 @@
   * [Artifact versions](examples/multi-version.md)
   * [Pipeline examples](examples/pipeline-examples.md)
   * [Pipeline to pipeline examples](examples/pipeline-to-pipeline.md)
+  * [Cyclic Pipeline](examples/pipeline-cyclic.md)
   * [Explainer examples](examples/explainer-examples.md)
   * [Custom Servers](examples/custom-servers.md)
   * [Local experiments](examples/local-experiments.md)
