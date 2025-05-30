@@ -18,8 +18,8 @@ import java.time.Duration
 fun addTriggerTopology(
     kafkaDomainParams: KafkaDomainParams,
     builder: StreamsBuilder,
-    inputTopics: List<TopicForPipeline>,
-    tensorsByTopic: Map<TopicForPipeline, List<TensorName>>?,
+    inputTopics: Set<TopicForPipeline>,
+    tensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
     joinType: ChainerOuterClass.PipelineStepUpdate.PipelineJoinType,
     lastStream: KStream<RequestId, TRecord>,
     pending: KStream<RequestId, TRecord>? = null,

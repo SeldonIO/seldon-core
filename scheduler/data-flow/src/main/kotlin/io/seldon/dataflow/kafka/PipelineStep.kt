@@ -19,7 +19,7 @@ interface PipelineStep
 
 data class TopicTensors(
     val topicForPipeline: TopicForPipeline,
-    val tensors: List<TensorName>,
+    val tensors: Set<TensorName>,
 )
 
 data class TopicForPipeline(
@@ -63,10 +63,7 @@ fun stepFor(
                 tensorMap,
                 batchProperties,
                 effectiveKafkaDomainParams,
-                triggerTopicsToTensors
-                    .keys
-                    .toList()
-                    .sortedWith(compareBy<TopicForPipeline> { it.topicName }.thenBy { it.pipelineName }),
+                triggerTopicsToTensors.keys,
                 triggerJoinType,
                 triggerTopicsToTensors,
             )
@@ -81,10 +78,7 @@ fun stepFor(
                 tensorMap,
                 batchProperties,
                 effectiveKafkaDomainParams,
-                triggerTopicsToTensors
-                    .keys
-                    .toList()
-                    .sortedWith(compareBy<TopicForPipeline> { it.topicName }.thenBy { it.pipelineName }),
+                triggerTopicsToTensors.keys,
                 triggerJoinType,
                 triggerTopicsToTensors,
             )
@@ -99,21 +93,14 @@ fun stepFor(
                 tensorMap,
                 effectiveKafkaDomainParams,
                 joinType,
-                triggerTopicsToTensors
-                    .keys
-                    .toList()
-                    .sortedWith(compareBy<TopicForPipeline> { it.topicName }.thenBy { it.pipelineName }),
+                triggerTopicsToTensors.keys,
                 triggerJoinType,
                 triggerTopicsToTensors,
             )
         is SourceProjection.ManySubsets ->
             Joiner(
                 builder,
-                result
-                    .tensorsByTopic
-                    .keys
-                    .toList()
-                    .sortedWith(compareBy<TopicForPipeline> { it.topicName }.thenBy { it.pipelineName }),
+                result.tensorsByTopic.keys,
                 TopicForPipeline(topicName = sink.topicName, pipelineName = sink.pipelineName),
                 result.tensorsByTopic,
                 pipelineName,
@@ -121,10 +108,7 @@ fun stepFor(
                 tensorMap,
                 effectiveKafkaDomainParams,
                 joinType,
-                triggerTopicsToTensors
-                    .keys
-                    .toList()
-                    .sortedWith(compareBy<TopicForPipeline> { it.topicName }.thenBy { it.pipelineName }),
+                triggerTopicsToTensors.keys,
                 triggerJoinType,
                 triggerTopicsToTensors,
             )
@@ -136,22 +120,20 @@ sealed class SourceProjection {
 
     data class Single(val topicForPipeline: TopicForPipeline) : SourceProjection()
 
-    data class SingleSubset(val topicForPipeline: TopicForPipeline, val tensors: List<TensorName>) : SourceProjection()
+    data class SingleSubset(val topicForPipeline: TopicForPipeline, val tensors: Set<TensorName>) : SourceProjection()
 
-    data class Many(val topicNames: List<TopicForPipeline>) : SourceProjection()
+    data class Many(val topicNames: Set<TopicForPipeline>) : SourceProjection()
 
-    data class ManySubsets(val tensorsByTopic: Map<TopicForPipeline, List<TensorName>>) : SourceProjection()
+    data class ManySubsets(val tensorsByTopic: Map<TopicForPipeline, Set<TensorName>>) : SourceProjection()
 }
 
-fun parseTriggers(sources: List<PipelineTopic>): Map<TopicForPipeline, List<TensorName>> {
+fun parseTriggers(sources: List<PipelineTopic>): Map<TopicForPipeline, Set<TensorName>> {
     return sources
         .map { parseSource(it) }
         .groupBy(keySelector = { it.first + ":" + it.third }, valueTransform = { it.second })
-        .mapValues { it.value.filterNotNull() }
+        .mapValues { it.value.filterNotNull().toSet() }
         .map { TopicTensors(TopicForPipeline(topicName = it.key.split(":")[0], pipelineName = it.key.split(":")[1]), it.value) }
         .associate { it.topicForPipeline to it.tensors }
-        .toSortedMap(compareBy<TopicForPipeline> { it.topicName }.thenBy { it.pipelineName })
-        .mapValues { it.value.sorted().toList() }
 }
 
 fun parseSources(sources: List<PipelineTopic>): SourceProjection {
@@ -159,9 +141,8 @@ fun parseSources(sources: List<PipelineTopic>): SourceProjection {
         sources
             .map { parseSource(it) }
             .groupBy(keySelector = { it.first + ":" + it.third }, valueTransform = { it.second })
-            .mapValues { it.value.filterNotNull().toList().sorted() }
+            .mapValues { it.value.filterNotNull().toSet() }
             .map { TopicTensors(TopicForPipeline(topicName = it.key.split(":")[0], pipelineName = it.key.split(":")[1]), it.value) }
-            .sortedWith(compareBy<TopicTensors> { it.topicForPipeline.topicName }.thenBy { it.topicForPipeline.pipelineName })
 
     return when {
         topicsAndTensors.isEmpty() -> SourceProjection.Empty
@@ -173,7 +154,7 @@ fun parseSources(sources: List<PipelineTopic>): SourceProjection {
                 topicsAndTensors.first().tensors,
             )
         topicsAndTensors.all { it.tensors.isEmpty() } ->
-            SourceProjection.Many(topicsAndTensors.map { it.topicForPipeline })
+            SourceProjection.Many(topicsAndTensors.map { it.topicForPipeline }.toSet())
         else ->
             SourceProjection.ManySubsets(
                 topicsAndTensors.associate { it.topicForPipeline to it.tensors },

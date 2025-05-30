@@ -53,8 +53,6 @@ class KafkaAdmin(
                 .flatMap { step -> step.sourcesList + step.sink + step.triggersList }
                 .map { topicName -> parseSource(topicName).first }
                 .toSet()
-                .toList()
-                .sorted()
                 .also {
                     logger.info("Topics found are $it")
                 }
@@ -112,8 +110,6 @@ class KafkaAdmin(
                 .flatMap { step -> step.sourcesList + step.sink }
                 .map { topicName -> parseSource(topicName).first }
                 .toSet()
-                .toList()
-                .sorted()
                 .also {
                     logger.info("Topics to delete are $it")
                 }

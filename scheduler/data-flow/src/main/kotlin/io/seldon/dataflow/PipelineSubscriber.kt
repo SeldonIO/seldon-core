@@ -298,14 +298,14 @@ class PipelineSubscriber(
                     .withMessage("kafka streams topic deletion error")
         }
 
-//        client.pipelineUpdateEvent(
-//            makePipelineUpdateEvent(
-//                metadata = metadata,
-//                operation = PipelineOperation.Delete,
-//                success = pipelineError == null,
-//                reason = pipelineError?.getDescription() ?: "pipeline removed",
-//            ),
-//        )
+        client.pipelineUpdateEvent(
+            makePipelineUpdateEvent(
+                metadata = metadata,
+                operation = PipelineOperation.Delete,
+                success = pipelineError == null,
+                reason = pipelineError?.getDescription() ?: "pipeline removed",
+            ),
+        )
     }
 
     fun cancelPipelines(reason: String) {

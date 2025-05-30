@@ -23,17 +23,17 @@ import java.time.Duration
  */
 class Joiner(
     builder: StreamsBuilder,
-    internal val inputTopics: List<TopicForPipeline>,
+    internal val inputTopics: Set<TopicForPipeline>,
     internal val outputTopic: TopicForPipeline,
-    internal val tensorsByTopic: Map<TopicForPipeline, List<TensorName>>?,
+    internal val tensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
     internal val pipelineName: String,
     internal val pipelineVersion: String,
     internal val tensorRenaming: List<PipelineTensorMapping>,
     internal val kafkaDomainParams: KafkaDomainParams,
     internal val joinType: PipelineJoinType,
-    internal val inputTriggerTopics: List<TopicForPipeline>,
+    internal val inputTriggerTopics: Set<TopicForPipeline>,
     internal val triggerJoinType: PipelineJoinType,
-    internal val triggerTensorsByTopic: Map<TopicForPipeline, List<TensorName>>?,
+    internal val triggerTensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
 ) : PipelineStep {
     init {
         val dataStream = buildTopology(builder, inputTopics)
@@ -53,7 +53,7 @@ class Joiner(
 
     private fun buildTopology(
         builder: StreamsBuilder,
-        inputTopics: List<TopicForPipeline>,
+        inputTopics: Set<TopicForPipeline>,
         pending: KStream<RequestId, TRecord>? = null,
     ): KStream<RequestId, TRecord> {
         if (inputTopics.isEmpty()) {

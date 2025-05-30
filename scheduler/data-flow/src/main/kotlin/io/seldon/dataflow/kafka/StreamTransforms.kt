@@ -61,22 +61,24 @@ fun <T> KStream<T, ModelInferResponse>.marshallInferenceV2Response(): KStream<T,
 fun <T> KStream<T, ModelInferResponse>.convertToRequest(
     inputPipeline: String,
     inputTopic: TopicName,
-    desiredTensors: List<TensorName>?,
+    desiredTensors: Set<TensorName>?,
     tensorRenamingList: List<PipelineTensorMapping>,
 ): KStream<T, ModelInferRequest> {
     val tensorRenaming =
         tensorRenamingList.filter {
-            it.pipelineName.equals(inputPipeline)
+            it.pipelineName.equals(
+                inputPipeline,
+            )
         }.map { it.topicAndTensor to it.tensorName }.toMap()
-
-    return this.mapValues { inferResponse ->
-        convertToRequest(
-            inferResponse,
-            desiredTensors,
-            tensorRenaming,
-            inputTopic,
-        )
-    }
+    return this
+        .mapValues { inferResponse ->
+            convertToRequest(
+                inferResponse,
+                desiredTensors,
+                tensorRenaming,
+                inputTopic,
+            )
+        }
 }
 
 /**
@@ -96,7 +98,7 @@ fun KStream<String, ModelInferRequest>.batchMessages(batchProperties: Batch): KS
  */
 private fun convertToRequest(
     response: ModelInferResponse,
-    desiredTensors: List<TensorName>?,
+    desiredTensors: Set<TensorName>?,
     tensorRenaming: Map<TensorName, TensorName>,
     inputTopic: TopicName,
 ): ModelInferRequest {
@@ -108,7 +110,7 @@ private fun convertToRequest(
             // Loop instead of `addAllInputs` to minimise intermediate memory usage, as tensors can be large
             response.outputsList
                 .forEachIndexed { idx, tensor ->
-                    if (desiredTensors?.contains(tensor.name) == true || desiredTensors == null || desiredTensors.isEmpty()) {
+                    if (tensor.name in desiredTensors || desiredTensors == null || desiredTensors.isEmpty()) {
                         val newName =
                             tensorRenaming
                                 .getOrDefault(
@@ -151,7 +153,7 @@ private fun convertOutputToInputTensor(
 fun <T> KStream<T, ModelInferRequest>.filterRequests(
     inputPipeline: String,
     inputTopic: TopicName,
-    desiredTensors: List<TensorName>?,
+    desiredTensors: Set<TensorName>?,
     tensorRenamingList: List<PipelineTensorMapping>,
 ): KStream<T, ModelInferRequest> {
     val tensorRenaming =
@@ -173,7 +175,7 @@ fun <T> KStream<T, ModelInferRequest>.filterRequests(
 
 private fun filterRequest(
     request: ModelInferRequest,
-    desiredTensors: List<TensorName>?,
+    desiredTensors: Set<TensorName>?,
     tensorRenaming: Map<TensorName, TensorName>,
     inputTopic: TopicName,
 ): ModelInferRequest {
@@ -185,7 +187,7 @@ private fun filterRequest(
             // Loop instead of `addAllInputs` to minimise intermediate memory usage, as tensors can be large
             request.inputsList
                 .forEachIndexed { idx, tensor ->
-                    if (desiredTensors?.contains(tensor.name) == true || desiredTensors == null || desiredTensors.isEmpty()) {
+                    if (tensor.name in desiredTensors || desiredTensors == null || desiredTensors.isEmpty()) {
                         val newName =
                             tensorRenaming
                                 .getOrDefault(
@@ -228,7 +230,7 @@ private fun createInputTensor(
 fun <T> KStream<T, ModelInferResponse>.filterResponses(
     inputPipeline: String,
     inputTopic: TopicName,
-    desiredTensors: List<TensorName>?,
+    desiredTensors: Set<TensorName>?,
     tensorRenamingList: List<PipelineTensorMapping>,
 ): KStream<T, ModelInferResponse> {
     val tensorRenaming =
@@ -250,7 +252,7 @@ fun <T> KStream<T, ModelInferResponse>.filterResponses(
 
 private fun filterResponse(
     response: ModelInferResponse,
-    desiredTensors: List<TensorName>?,
+    desiredTensors: Set<TensorName>?,
     tensorRenaming: Map<TensorName, TensorName>,
     inputTopic: TopicName,
 ): ModelInferResponse {
@@ -262,7 +264,7 @@ private fun filterResponse(
             // Loop instead of `addAllInputs` to minimise intermediate memory usage, as tensors can be large
             response.outputsList
                 .forEachIndexed { idx, tensor ->
-                    if (desiredTensors?.contains(tensor.name) == true || desiredTensors == null || desiredTensors.isEmpty()) {
+                    if (tensor.name in desiredTensors || desiredTensors == null || desiredTensors.isEmpty()) {
                         val newName =
                             tensorRenaming
                                 .getOrDefault(
@@ -305,7 +307,7 @@ private fun createOutputTensor(
 fun <T> KStream<T, ModelInferRequest>.convertToResponse(
     inputPipeline: String,
     inputTopic: TopicName,
-    desiredTensors: List<TensorName>?,
+    desiredTensors: Set<TensorName>?,
     tensorRenamingList: List<PipelineTensorMapping>,
 ): KStream<T, ModelInferResponse> {
     val tensorRenaming =
@@ -330,7 +332,7 @@ fun <T> KStream<T, ModelInferRequest>.convertToResponse(
  */
 private fun convertToResponse(
     request: ModelInferRequest,
-    desiredTensors: List<TensorName>?,
+    desiredTensors: Set<TensorName>?,
     tensorRenaming: Map<TensorName, TensorName>,
     inputTopic: TopicName,
 ): ModelInferResponse {
@@ -342,7 +344,7 @@ private fun convertToResponse(
             // Loop instead of `addAllInputs` to minimise intermediate memory usage, as tensors can be large
             request.inputsList
                 .forEachIndexed { idx, tensor ->
-                    if (desiredTensors?.contains(tensor.name) == true || desiredTensors == null || desiredTensors.isEmpty()) {
+                    if (tensor.name in desiredTensors || desiredTensors == null || desiredTensors.isEmpty()) {
                         val newName =
                             tensorRenaming
                                 .getOrDefault(
