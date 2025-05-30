@@ -15,6 +15,7 @@ import (
 	"net"
 	"sync"
 
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -44,6 +45,8 @@ type ChainerServer struct {
 	pipelineHandler pipeline.PipelineHandler
 	topicNamer      *kafka.TopicNamer
 	loadBalancer    util.LoadBalancer
+	rebalanceUUID   string
+	streamTracker   map[string]map[string]pipeline.PipelineStatus // Map of streams that this pipeline is subscribed to
 	chainerMutex    sync.Map
 	chainer.UnimplementedChainerServer
 }
@@ -67,6 +70,7 @@ func NewChainerServer(logger log.FieldLogger, eventHub *coordinator.EventHub, pi
 		pipelineHandler: pipelineHandler,
 		topicNamer:      topicNamer,
 		loadBalancer:    loadBalancer,
+		streamTracker:   make(map[string]map[string]pipeline.PipelineStatus),
 		chainerMutex:    sync.Map{},
 	}
 
@@ -97,6 +101,11 @@ func (c *ChainerServer) StartGrpcServer(agentPort uint) error {
 }
 
 func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
+	// TODO: implement case when create/deleate after while rebalancing still happens
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	logger := c.logger.WithField("func", "PipelineUpdateEvent")
 	var statusVal pipeline.PipelineStatus
 	switch message.Update.Op {
@@ -114,10 +123,56 @@ func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chaine
 		}
 	}
 
-	if !message.Success {
-		statusVal = pipeline.PipelineFailed
+	streamRebalanceUUID := message.Update.RebalanceUUID
+	if streamRebalanceUUID != "" && streamRebalanceUUID != c.rebalanceUUID {
+		logger.Infof("Rebalance UUID %s does not match current rebalance UUID %s, ignoring message", streamRebalanceUUID, c.rebalanceUUID)
+		return &chainer.PipelineUpdateStatusResponse{}, nil
 	}
-	err := c.pipelineHandler.SetPipelineState(message.Update.Pipeline, message.Update.Version, message.Update.Uid, statusVal, message.Reason, sourceChainerServer)
+
+	if _, ok := c.streamTracker[message.Update.Pipeline][message.Update.Stream]; !ok {
+		logger.Infof("Ignoring message for pipeline %s:%d (%s) as no stream found for %s", message.Update.Pipeline, message.Update.Version, message.Update.Uid, message.Update.Stream)
+		return &chainer.PipelineUpdateStatusResponse{}, nil
+	}
+
+	logger.Info("Received pipeline update event ", message.Update.Pipeline, ":", message.Update.Stream)
+	c.streamTracker[message.Update.Pipeline][message.Update.Stream] = statusVal
+
+	allResponsesReceived := true
+	for _, status := range c.streamTracker[message.Update.Pipeline] {
+		if status == pipeline.PipelineStatusUnknown {
+			allResponsesReceived = false
+			break
+		}
+	}
+
+	if !allResponsesReceived {
+		logger.Infof("Not all responses received for pipeline %s:%d (%s), waiting for more updates", message.Update.Pipeline, message.Update.Version, message.Update.Uid)
+		return &chainer.PipelineUpdateStatusResponse{}, nil
+	} else {
+		logger.Infof("All responses received for pipeline %s:%d (%s), updating status", message.Update.Pipeline, message.Update.Version, message.Update.Uid)
+	}
+
+	var finalStatusVal pipeline.PipelineStatus
+	switch message.Update.Op {
+	case chainer.PipelineUpdateMessage_Create:
+		for _, status := range c.streamTracker[message.Update.Pipeline] {
+			if status != pipeline.PipelineReady {
+				finalStatusVal = pipeline.PipelineFailed
+				break
+			}
+		}
+		finalStatusVal = pipeline.PipelineReady
+	case chainer.PipelineUpdateMessage_Delete:
+		for _, status := range c.streamTracker[message.Update.Pipeline] {
+			if status != pipeline.PipelineTerminated {
+				finalStatusVal = pipeline.PipelineFailed
+				break
+			}
+		}
+		finalStatusVal = pipeline.PipelineTerminated
+	}
+
+	err := c.pipelineHandler.SetPipelineState(message.Update.Pipeline, message.Update.Version, message.Update.Uid, finalStatusVal, "Unknown", sourceChainerServer)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to update pipeline status for %s:%d (%s)", message.Update.Pipeline, message.Update.Version, message.Update.Uid)
 		return nil, status.Error(codes.Internal, err.Error())
@@ -348,6 +403,13 @@ func (c *ChainerServer) createPipelineDeletionMessage(pv *pipeline.PipelineVersi
 func (c *ChainerServer) sendPipelineMsgToSelectedServers(msg *chainer.PipelineUpdateMessage, pv *pipeline.PipelineVersion) {
 	logger := c.logger.WithField("func", "sendPipelineMsg")
 	servers := c.loadBalancer.GetServersForKey(pv.UID)
+
+	c.streamTracker[pv.Name] = make(map[string]pipeline.PipelineStatus)
+	for _, server := range servers {
+		logger.Info("Creating entry for pipeline stream ", pv.Name, ":", server)
+		c.streamTracker[pv.Name][server] = pipeline.PipelineStatusUnknown
+	}
+
 	for _, serverId := range servers {
 		if subscription, ok := c.streams[serverId]; ok {
 			if err := subscription.stream.Send(msg); err != nil {
@@ -369,6 +431,10 @@ func contains(slice []string, val string) bool {
 }
 
 func (c *ChainerServer) rebalance() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.rebalanceUUID = uuid.New().String()
+
 	logger := c.logger.WithField("func", "rebalance")
 	// note that we are not retrying PipelineFailed pipelines, consider adding this
 	evts := c.pipelineHandler.GetAllRunningPipelineVersions()
@@ -379,7 +445,6 @@ func (c *ChainerServer) rebalance() {
 			continue
 		}
 		c.logger.Debugf("Rebalancing pipeline %s:%d with state %s", event.PipelineName, event.PipelineVersion, pv.State.Status.String())
-		c.mu.Lock()
 		if len(c.streams) == 0 {
 			pipelineState := pipeline.PipelineCreate
 			// if no dataflow engines available then we think we can terminate pipelines.
@@ -400,30 +465,35 @@ func (c *ChainerServer) rebalance() {
 		} else {
 			var msg *chainer.PipelineUpdateMessage
 			servers := c.loadBalancer.GetServersForKey(pv.UID)
+
+			// update the streams where the pipeline is running
+			c.streamTracker[pv.Name] = make(map[string]pipeline.PipelineStatus)
+			for _, server := range servers {
+				c.streamTracker[pv.Name][server] = pipeline.PipelineStatusUnknown
+			}
+			if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineCreating, "Rebalance", sourceChainerServer); err != nil {
+				logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
+			}
 			for server, subscription := range c.streams {
 				if contains(servers, server) {
-					// we do not need to set pipeline state to creating if it is already in terminating state, and we need to delete it
-					if pv.State.Status == pipeline.PipelineTerminating {
-						msg = c.createPipelineDeletionMessage(pv, false)
-					} else {
-						msg = c.createPipelineCreationMessage(pv)
-						pipelineState := pipeline.PipelineCreating
-						if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipelineState, "Rebalance", sourceChainerServer); err != nil {
-							logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
-						}
+					// don't need to resend deletion messages for pipelines are terminating or terminated
+					if pv.State.Status == pipeline.PipelineTerminating || pv.State.Status == pipeline.PipelineTerminated {
+						continue
 					}
+					msg = c.createPipelineCreationMessage(pv)
+					msg.RebalanceUUID = c.rebalanceUUID
 					if err := subscription.stream.Send(msg); err != nil {
 						logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.String())
 					}
 				} else {
 					msg = c.createPipelineDeletionMessage(pv, true)
+					msg.RebalanceUUID = c.rebalanceUUID
 					if err := subscription.stream.Send(msg); err != nil {
 						logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.String())
 					}
 				}
 			}
 		}
-		c.mu.Unlock()
 	}
 }
 
@@ -476,6 +546,7 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 				logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
 			}
 
+			logger.Info("Sending pipeline creation message for ", pv.String())
 			msg := c.createPipelineCreationMessage(pv)
 			c.sendPipelineMsgToSelectedServers(msg, pv)
 

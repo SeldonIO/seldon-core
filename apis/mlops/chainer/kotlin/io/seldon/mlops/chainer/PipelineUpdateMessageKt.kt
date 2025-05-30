@@ -183,6 +183,40 @@ public object PipelineUpdateMessageKt {
       _builder.clearUpdates()
     }
 
+
+    /**
+     * `string rebalanceUUID = 6;`
+     */
+    public var rebalanceUUID: kotlin.String
+      @JvmName("getRebalanceUUID")
+      get() = _builder.getRebalanceUUID()
+      @JvmName("setRebalanceUUID")
+      set(value) {
+        _builder.setRebalanceUUID(value)
+      }
+    /**
+     * `string rebalanceUUID = 6;`
+     */
+    public fun clearRebalanceUUID() {
+      _builder.clearRebalanceUUID()
+    }
+
+    /**
+     * `string stream = 7;`
+     */
+    public var stream: kotlin.String
+      @JvmName("getStream")
+      get() = _builder.getStream()
+      @JvmName("setStream")
+      set(value) {
+        _builder.setStream(value)
+      }
+    /**
+     * `string stream = 7;`
+     */
+    public fun clearStream() {
+      _builder.clearStream()
+    }
   }
 }
 @kotlin.jvm.JvmSynthetic

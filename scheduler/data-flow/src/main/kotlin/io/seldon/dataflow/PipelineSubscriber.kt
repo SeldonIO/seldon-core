@@ -104,8 +104,15 @@ class PipelineSubscriber(
                     )
 
                 when (update.op) {
-                    PipelineOperation.Create -> handleCreate(metadata, update.updatesList, kafkaConsumerGroupIdPrefix, namespace)
-                    PipelineOperation.Delete -> handleDelete(metadata, update.updatesList)
+                    PipelineOperation.Delete -> handleDelete(metadata, update.updatesList, update.rebalanceUUID)
+                    PipelineOperation.Create ->
+                        handleCreate(
+                            metadata,
+                            update.updatesList,
+                            update.rebalanceUUID,
+                            kafkaConsumerGroupIdPrefix,
+                            namespace,
+                        )
                     else -> logger.warn("unrecognised pipeline operation (${update.op})")
                 }
             }
@@ -142,6 +149,7 @@ class PipelineSubscriber(
     private suspend fun handleCreate(
         metadata: PipelineMetadata,
         steps: List<PipelineStepUpdate>,
+        rebalanceUUID: String,
         kafkaConsumerGroupIdPrefix: String,
         namespace: String,
     ) {
@@ -162,6 +170,8 @@ class PipelineSubscriber(
                         operation = PipelineOperation.Create,
                         success = true,
                         reason = previous.status.getDescription() ?: defaultReason,
+                        rebalanceUUID = rebalanceUUID,
+                        stream = name,
                     ),
                 )
                 logger.debug(
@@ -218,6 +228,8 @@ class PipelineSubscriber(
                     operation = PipelineOperation.Create,
                     success = false,
                     reason = err.getDescription() ?: "failed to initialize dataflow engine",
+                    rebalanceUUID = rebalanceUUID,
+                    stream = name,
                 ),
             )
             return
@@ -232,6 +244,8 @@ class PipelineSubscriber(
                     operation = PipelineOperation.Create,
                     success = false,
                     reason = "failed to create all pipeline steps",
+                    rebalanceUUID = rebalanceUUID,
+                    stream = name,
                 ),
             )
 
@@ -267,6 +281,8 @@ class PipelineSubscriber(
                 operation = PipelineOperation.Create,
                 success = !pipelineStatus.isError(),
                 reason = pipelineStatus.getDescription() ?: defaultReason,
+                rebalanceUUID = rebalanceUUID,
+                stream = name,
             ),
         )
     }
@@ -274,6 +290,7 @@ class PipelineSubscriber(
     private suspend fun handleDelete(
         metadata: PipelineMetadata,
         steps: List<PipelineStepUpdate>,
+        rebalanceUUID: String,
     ) {
         logger.info(
             "Delete pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
@@ -304,6 +321,8 @@ class PipelineSubscriber(
                 operation = PipelineOperation.Delete,
                 success = pipelineError == null,
                 reason = pipelineError?.getDescription() ?: "pipeline removed",
+                rebalanceUUID = rebalanceUUID,
+                stream = name,
             ),
         )
     }
@@ -324,6 +343,8 @@ class PipelineSubscriber(
         operation: PipelineOperation,
         success: Boolean,
         reason: String = "",
+        rebalanceUUID: String,
+        stream: String,
     ): PipelineUpdateStatusMessage {
         return PipelineUpdateStatusMessage
             .newBuilder()
@@ -336,6 +357,8 @@ class PipelineSubscriber(
                     .setPipeline(metadata.name)
                     .setVersion(metadata.version)
                     .setUid(metadata.id)
+                    .setRebalanceUUID(rebalanceUUID)
+                    .setStream(stream)
                     .build(),
             )
             .build()
