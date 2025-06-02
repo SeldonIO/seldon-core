@@ -185,20 +185,20 @@ public object PipelineUpdateMessageKt {
 
 
     /**
-     * `string rebalanceUUID = 6;`
+     * `uint64 timestamp = 6;`
      */
-    public var rebalanceUUID: kotlin.String
-      @JvmName("getRebalanceUUID")
-      get() = _builder.getRebalanceUUID()
-      @JvmName("setRebalanceUUID")
+    public var timestamp: kotlin.Long
+      @JvmName("getTimestamp")
+      get() = _builder.getTimestamp()
+      @JvmName("setTimestamp")
       set(value) {
-        _builder.setRebalanceUUID(value)
+        _builder.setTimestamp(value)
       }
     /**
-     * `string rebalanceUUID = 6;`
+     * `uint64 timestamp = 6;`
      */
-    public fun clearRebalanceUUID() {
-      _builder.clearRebalanceUUID()
+    public fun clearTimestamp() {
+      _builder.clearTimestamp()
     }
 
     /**

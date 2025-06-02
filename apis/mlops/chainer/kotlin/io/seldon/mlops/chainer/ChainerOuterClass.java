@@ -605,16 +605,10 @@ public final class ChainerOuterClass {
         int index);
 
     /**
-     * <code>string rebalanceUUID = 6;</code>
-     * @return The rebalanceUUID.
+     * <code>uint64 timestamp = 6;</code>
+     * @return The timestamp.
      */
-    java.lang.String getRebalanceUUID();
-    /**
-     * <code>string rebalanceUUID = 6;</code>
-     * @return The bytes for rebalanceUUID.
-     */
-    com.google.protobuf.ByteString
-        getRebalanceUUIDBytes();
+    long getTimestamp();
 
     /**
      * <code>string stream = 7;</code>
@@ -654,7 +648,6 @@ public final class ChainerOuterClass {
       pipeline_ = "";
       uid_ = "";
       updates_ = java.util.Collections.emptyList();
-      rebalanceUUID_ = "";
       stream_ = "";
     }
 
@@ -945,43 +938,15 @@ public final class ChainerOuterClass {
       return updates_.get(index);
     }
 
-    public static final int REBALANCEUUID_FIELD_NUMBER = 6;
-    @SuppressWarnings("serial")
-    private volatile java.lang.Object rebalanceUUID_ = "";
+    public static final int TIMESTAMP_FIELD_NUMBER = 6;
+    private long timestamp_ = 0L;
     /**
-     * <code>string rebalanceUUID = 6;</code>
-     * @return The rebalanceUUID.
+     * <code>uint64 timestamp = 6;</code>
+     * @return The timestamp.
      */
     @java.lang.Override
-    public java.lang.String getRebalanceUUID() {
-      java.lang.Object ref = rebalanceUUID_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        rebalanceUUID_ = s;
-        return s;
-      }
-    }
-    /**
-     * <code>string rebalanceUUID = 6;</code>
-     * @return The bytes for rebalanceUUID.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getRebalanceUUIDBytes() {
-      java.lang.Object ref = rebalanceUUID_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        rebalanceUUID_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public long getTimestamp() {
+      return timestamp_;
     }
 
     public static final int STREAM_FIELD_NUMBER = 7;
@@ -1052,8 +1017,8 @@ public final class ChainerOuterClass {
       for (int i = 0; i < updates_.size(); i++) {
         output.writeMessage(5, updates_.get(i));
       }
-      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(rebalanceUUID_)) {
-        com.google.protobuf.GeneratedMessage.writeString(output, 6, rebalanceUUID_);
+      if (timestamp_ != 0L) {
+        output.writeUInt64(6, timestamp_);
       }
       if (!com.google.protobuf.GeneratedMessage.isStringEmpty(stream_)) {
         com.google.protobuf.GeneratedMessage.writeString(output, 7, stream_);
@@ -1085,8 +1050,9 @@ public final class ChainerOuterClass {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(5, updates_.get(i));
       }
-      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(rebalanceUUID_)) {
-        size += com.google.protobuf.GeneratedMessage.computeStringSize(6, rebalanceUUID_);
+      if (timestamp_ != 0L) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(6, timestamp_);
       }
       if (!com.google.protobuf.GeneratedMessage.isStringEmpty(stream_)) {
         size += com.google.protobuf.GeneratedMessage.computeStringSize(7, stream_);
@@ -1115,8 +1081,8 @@ public final class ChainerOuterClass {
           .equals(other.getUid())) return false;
       if (!getUpdatesList()
           .equals(other.getUpdatesList())) return false;
-      if (!getRebalanceUUID()
-          .equals(other.getRebalanceUUID())) return false;
+      if (getTimestamp()
+          != other.getTimestamp()) return false;
       if (!getStream()
           .equals(other.getStream())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
@@ -1142,8 +1108,9 @@ public final class ChainerOuterClass {
         hash = (37 * hash) + UPDATES_FIELD_NUMBER;
         hash = (53 * hash) + getUpdatesList().hashCode();
       }
-      hash = (37 * hash) + REBALANCEUUID_FIELD_NUMBER;
-      hash = (53 * hash) + getRebalanceUUID().hashCode();
+      hash = (37 * hash) + TIMESTAMP_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+          getTimestamp());
       hash = (37 * hash) + STREAM_FIELD_NUMBER;
       hash = (53 * hash) + getStream().hashCode();
       hash = (29 * hash) + getUnknownFields().hashCode();
@@ -1288,7 +1255,7 @@ public final class ChainerOuterClass {
           updatesBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000010);
-        rebalanceUUID_ = "";
+        timestamp_ = 0L;
         stream_ = "";
         return this;
       }
@@ -1349,7 +1316,7 @@ public final class ChainerOuterClass {
           result.uid_ = uid_;
         }
         if (((from_bitField0_ & 0x00000020) != 0)) {
-          result.rebalanceUUID_ = rebalanceUUID_;
+          result.timestamp_ = timestamp_;
         }
         if (((from_bitField0_ & 0x00000040) != 0)) {
           result.stream_ = stream_;
@@ -1410,10 +1377,8 @@ public final class ChainerOuterClass {
             }
           }
         }
-        if (!other.getRebalanceUUID().isEmpty()) {
-          rebalanceUUID_ = other.rebalanceUUID_;
-          bitField0_ |= 0x00000020;
-          onChanged();
+        if (other.getTimestamp() != 0L) {
+          setTimestamp(other.getTimestamp());
         }
         if (!other.getStream().isEmpty()) {
           stream_ = other.stream_;
@@ -1479,11 +1444,11 @@ public final class ChainerOuterClass {
                 }
                 break;
               } // case 42
-              case 50: {
-                rebalanceUUID_ = input.readStringRequireUtf8();
+              case 48: {
+                timestamp_ = input.readUInt64();
                 bitField0_ |= 0x00000020;
                 break;
-              } // case 50
+              } // case 48
               case 58: {
                 stream_ = input.readStringRequireUtf8();
                 bitField0_ |= 0x00000040;
@@ -1975,74 +1940,34 @@ public final class ChainerOuterClass {
         return updatesBuilder_;
       }
 
-      private java.lang.Object rebalanceUUID_ = "";
+      private long timestamp_ ;
       /**
-       * <code>string rebalanceUUID = 6;</code>
-       * @return The rebalanceUUID.
+       * <code>uint64 timestamp = 6;</code>
+       * @return The timestamp.
        */
-      public java.lang.String getRebalanceUUID() {
-        java.lang.Object ref = rebalanceUUID_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          rebalanceUUID_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      @java.lang.Override
+      public long getTimestamp() {
+        return timestamp_;
       }
       /**
-       * <code>string rebalanceUUID = 6;</code>
-       * @return The bytes for rebalanceUUID.
-       */
-      public com.google.protobuf.ByteString
-          getRebalanceUUIDBytes() {
-        java.lang.Object ref = rebalanceUUID_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          rebalanceUUID_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>string rebalanceUUID = 6;</code>
-       * @param value The rebalanceUUID to set.
+       * <code>uint64 timestamp = 6;</code>
+       * @param value The timestamp to set.
        * @return This builder for chaining.
        */
-      public Builder setRebalanceUUID(
-          java.lang.String value) {
-        if (value == null) { throw new NullPointerException(); }
-        rebalanceUUID_ = value;
+      public Builder setTimestamp(long value) {
+
+        timestamp_ = value;
         bitField0_ |= 0x00000020;
         onChanged();
         return this;
       }
       /**
-       * <code>string rebalanceUUID = 6;</code>
+       * <code>uint64 timestamp = 6;</code>
        * @return This builder for chaining.
        */
-      public Builder clearRebalanceUUID() {
-        rebalanceUUID_ = getDefaultInstance().getRebalanceUUID();
+      public Builder clearTimestamp() {
         bitField0_ = (bitField0_ & ~0x00000020);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string rebalanceUUID = 6;</code>
-       * @param value The bytes for rebalanceUUID to set.
-       * @return This builder for chaining.
-       */
-      public Builder setRebalanceUUIDBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) { throw new NullPointerException(); }
-        checkByteStringIsUtf8(value);
-        rebalanceUUID_ = value;
-        bitField0_ |= 0x00000020;
+        timestamp_ = 0L;
         onChanged();
         return this;
       }
@@ -8512,49 +8437,49 @@ public final class ChainerOuterClass {
     java.lang.String[] descriptorData = {
       "\n\rchainer.proto\022\024seldon.mlops.chainer\"+\n" +
       "\033PipelineSubscriptionRequest\022\014\n\004name\030\001 \001" +
-      "(\t\"\256\002\n\025PipelineUpdateMessage\022I\n\002op\030\001 \001(\016" +
+      "(\t\"\252\002\n\025PipelineUpdateMessage\022I\n\002op\030\001 \001(\016" +
       "2=.seldon.mlops.chainer.PipelineUpdateMe" +
       "ssage.PipelineOperation\022\020\n\010pipeline\030\002 \001(" +
       "\t\022\017\n\007version\030\003 \001(\r\022\013\n\003uid\030\004 \001(\t\0229\n\007updat" +
       "es\030\005 \003(\0132(.seldon.mlops.chainer.Pipeline" +
-      "StepUpdate\022\025\n\rrebalanceUUID\030\006 \001(\t\022\016\n\006str" +
-      "eam\030\007 \001(\t\"8\n\021PipelineOperation\022\013\n\007Unknow" +
-      "n\020\000\022\n\n\006Create\020\001\022\n\n\006Delete\020\002\"\313\004\n\022Pipeline" +
-      "StepUpdate\0224\n\007sources\030\001 \003(\0132#.seldon.mlo" +
-      "ps.chainer.PipelineTopic\0225\n\010triggers\030\002 \003" +
-      "(\0132#.seldon.mlops.chainer.PipelineTopic\022" +
-      "1\n\004sink\030\003 \001(\0132#.seldon.mlops.chainer.Pip" +
-      "elineTopic\022N\n\013inputJoinTy\030\004 \001(\01629.seldon" +
-      ".mlops.chainer.PipelineStepUpdate.Pipeli" +
-      "neJoinType\022Q\n\016triggersJoinTy\030\005 \001(\01629.sel" +
-      "don.mlops.chainer.PipelineStepUpdate.Pip" +
-      "elineJoinType\022\032\n\022passEmptyResponses\030\006 \001(" +
-      "\010\022\031\n\014joinWindowMs\030\007 \001(\rH\000\210\001\001\022>\n\ttensorMa" +
-      "p\030\010 \003(\0132+.seldon.mlops.chainer.PipelineT" +
-      "ensorMapping\022*\n\005batch\030\t \001(\0132\033.seldon.mlo" +
-      "ps.chainer.Batch\">\n\020PipelineJoinType\022\013\n\007" +
-      "Unknown\020\000\022\t\n\005Inner\020\001\022\t\n\005Outer\020\002\022\007\n\003Any\020\003" +
-      "B\017\n\r_joinWindowMs\"Y\n\025PipelineTensorMappi" +
-      "ng\022\024\n\014pipelineName\030\001 \001(\t\022\026\n\016topicAndTens" +
-      "or\030\002 \001(\t\022\022\n\ntensorName\030\003 \001(\t\"X\n\rPipeline" +
-      "Topic\022\024\n\014pipelineName\030\001 \001(\t\022\021\n\ttopicName" +
-      "\030\002 \001(\t\022\023\n\006tensor\030\003 \001(\tH\000\210\001\001B\t\n\007_tensor\"X" +
-      "\n\005Batch\022\021\n\004size\030\001 \001(\rH\000\210\001\001\022\025\n\010windowMs\030\002" +
-      " \001(\rH\001\210\001\001\022\017\n\007rolling\030\003 \001(\010B\007\n\005_sizeB\013\n\t_" +
-      "windowMs\"{\n\033PipelineUpdateStatusMessage\022" +
-      ";\n\006update\030\001 \001(\0132+.seldon.mlops.chainer.P" +
-      "ipelineUpdateMessage\022\017\n\007success\030\002 \001(\010\022\016\n" +
-      "\006reason\030\003 \001(\t\"\036\n\034PipelineUpdateStatusRes" +
-      "ponse2\211\002\n\007Chainer\022~\n\030SubscribePipelineUp" +
-      "dates\0221.seldon.mlops.chainer.PipelineSub" +
-      "scriptionRequest\032+.seldon.mlops.chainer." +
-      "PipelineUpdateMessage\"\0000\001\022~\n\023PipelineUpd" +
-      "ateEvent\0221.seldon.mlops.chainer.Pipeline" +
-      "UpdateStatusMessage\0322.seldon.mlops.chain" +
-      "er.PipelineUpdateStatusResponse\"\000BS\n\027io." +
-      "seldon.mlops.chainerZ8github.com/seldoni" +
-      "o/seldon-core/apis/go/v2/mlops/chainerb\006" +
-      "proto3"
+      "StepUpdate\022\021\n\ttimestamp\030\006 \001(\004\022\016\n\006stream\030" +
+      "\007 \001(\t\"8\n\021PipelineOperation\022\013\n\007Unknown\020\000\022" +
+      "\n\n\006Create\020\001\022\n\n\006Delete\020\002\"\313\004\n\022PipelineStep" +
+      "Update\0224\n\007sources\030\001 \003(\0132#.seldon.mlops.c" +
+      "hainer.PipelineTopic\0225\n\010triggers\030\002 \003(\0132#" +
+      ".seldon.mlops.chainer.PipelineTopic\0221\n\004s" +
+      "ink\030\003 \001(\0132#.seldon.mlops.chainer.Pipelin" +
+      "eTopic\022N\n\013inputJoinTy\030\004 \001(\01629.seldon.mlo" +
+      "ps.chainer.PipelineStepUpdate.PipelineJo" +
+      "inType\022Q\n\016triggersJoinTy\030\005 \001(\01629.seldon." +
+      "mlops.chainer.PipelineStepUpdate.Pipelin" +
+      "eJoinType\022\032\n\022passEmptyResponses\030\006 \001(\010\022\031\n" +
+      "\014joinWindowMs\030\007 \001(\rH\000\210\001\001\022>\n\ttensorMap\030\010 " +
+      "\003(\0132+.seldon.mlops.chainer.PipelineTenso" +
+      "rMapping\022*\n\005batch\030\t \001(\0132\033.seldon.mlops.c" +
+      "hainer.Batch\">\n\020PipelineJoinType\022\013\n\007Unkn" +
+      "own\020\000\022\t\n\005Inner\020\001\022\t\n\005Outer\020\002\022\007\n\003Any\020\003B\017\n\r" +
+      "_joinWindowMs\"Y\n\025PipelineTensorMapping\022\024" +
+      "\n\014pipelineName\030\001 \001(\t\022\026\n\016topicAndTensor\030\002" +
+      " \001(\t\022\022\n\ntensorName\030\003 \001(\t\"X\n\rPipelineTopi" +
+      "c\022\024\n\014pipelineName\030\001 \001(\t\022\021\n\ttopicName\030\002 \001" +
+      "(\t\022\023\n\006tensor\030\003 \001(\tH\000\210\001\001B\t\n\007_tensor\"X\n\005Ba" +
+      "tch\022\021\n\004size\030\001 \001(\rH\000\210\001\001\022\025\n\010windowMs\030\002 \001(\r" +
+      "H\001\210\001\001\022\017\n\007rolling\030\003 \001(\010B\007\n\005_sizeB\013\n\t_wind" +
+      "owMs\"{\n\033PipelineUpdateStatusMessage\022;\n\006u" +
+      "pdate\030\001 \001(\0132+.seldon.mlops.chainer.Pipel" +
+      "ineUpdateMessage\022\017\n\007success\030\002 \001(\010\022\016\n\006rea" +
+      "son\030\003 \001(\t\"\036\n\034PipelineUpdateStatusRespons" +
+      "e2\211\002\n\007Chainer\022~\n\030SubscribePipelineUpdate" +
+      "s\0221.seldon.mlops.chainer.PipelineSubscri" +
+      "ptionRequest\032+.seldon.mlops.chainer.Pipe" +
+      "lineUpdateMessage\"\0000\001\022~\n\023PipelineUpdateE" +
+      "vent\0221.seldon.mlops.chainer.PipelineUpda" +
+      "teStatusMessage\0322.seldon.mlops.chainer.P" +
+      "ipelineUpdateStatusResponse\"\000BS\n\027io.seld" +
+      "on.mlops.chainerZ8github.com/seldonio/se" +
+      "ldon-core/apis/go/v2/mlops/chainerb\006prot" +
+      "o3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -8571,7 +8496,7 @@ public final class ChainerOuterClass {
     internal_static_seldon_mlops_chainer_PipelineUpdateMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_seldon_mlops_chainer_PipelineUpdateMessage_descriptor,
-        new java.lang.String[] { "Op", "Pipeline", "Version", "Uid", "Updates", "RebalanceUUID", "Stream", });
+        new java.lang.String[] { "Op", "Pipeline", "Version", "Uid", "Updates", "Timestamp", "Stream", });
     internal_static_seldon_mlops_chainer_PipelineStepUpdate_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_seldon_mlops_chainer_PipelineStepUpdate_fieldAccessorTable = new

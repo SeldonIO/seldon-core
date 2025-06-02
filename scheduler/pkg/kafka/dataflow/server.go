@@ -15,7 +15,6 @@ import (
 	"net"
 	"sync"
 
-	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -38,16 +37,15 @@ const (
 )
 
 type ChainerServer struct {
-	logger          log.FieldLogger
-	mu              sync.Mutex
-	streams         map[string]*ChainerSubscription
-	eventHub        *coordinator.EventHub
-	pipelineHandler pipeline.PipelineHandler
-	topicNamer      *kafka.TopicNamer
-	loadBalancer    util.LoadBalancer
-	rebalanceUUID   string
-	streamTracker   map[string]map[string]pipeline.PipelineStatus // Map of streams that this pipeline is subscribed to
-	chainerMutex    sync.Map
+	logger               log.FieldLogger
+	mu                   sync.Mutex
+	streams              map[string]*ChainerSubscription
+	eventHub             *coordinator.EventHub
+	pipelineHandler      pipeline.PipelineHandler
+	topicNamer           *kafka.TopicNamer
+	loadBalancer         util.LoadBalancer
+	conflictResolutioner *ConflictResolutioner
+	chainerMutex         sync.Map
 	chainer.UnimplementedChainerServer
 }
 
@@ -59,19 +57,21 @@ type ChainerSubscription struct {
 
 func NewChainerServer(logger log.FieldLogger, eventHub *coordinator.EventHub, pipelineHandler pipeline.PipelineHandler,
 	namespace string, loadBalancer util.LoadBalancer, kafkaConfig *kafka_config.KafkaConfig) (*ChainerServer, error) {
+	conflictResolutioner := NewConflictResolution(logger)
 	topicNamer, err := kafka.NewTopicNamer(namespace, kafkaConfig.TopicPrefix)
 	if err != nil {
 		return nil, err
 	}
+
 	c := &ChainerServer{
-		logger:          logger.WithField("source", "dataflow"),
-		streams:         make(map[string]*ChainerSubscription),
-		eventHub:        eventHub,
-		pipelineHandler: pipelineHandler,
-		topicNamer:      topicNamer,
-		loadBalancer:    loadBalancer,
-		streamTracker:   make(map[string]map[string]pipeline.PipelineStatus),
-		chainerMutex:    sync.Map{},
+		logger:               logger.WithField("source", "dataflow"),
+		streams:              make(map[string]*ChainerSubscription),
+		eventHub:             eventHub,
+		pipelineHandler:      pipelineHandler,
+		topicNamer:           topicNamer,
+		loadBalancer:         loadBalancer,
+		conflictResolutioner: conflictResolutioner,
+		chainerMutex:         sync.Map{},
 	}
 
 	eventHub.RegisterPipelineEventHandler(
@@ -101,8 +101,6 @@ func (c *ChainerServer) StartGrpcServer(agentPort uint) error {
 }
 
 func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
-	// TODO: implement case when create/deleate after while rebalancing still happens
-
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -123,56 +121,27 @@ func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chaine
 		}
 	}
 
-	streamRebalanceUUID := message.Update.RebalanceUUID
-	if streamRebalanceUUID != "" && streamRebalanceUUID != c.rebalanceUUID {
-		logger.Infof("Rebalance UUID %s does not match current rebalance UUID %s, ignoring message", streamRebalanceUUID, c.rebalanceUUID)
+	pipelineName := message.Update.Pipeline
+	pipelineVersion := message.Update.Version
+	stream := message.Update.Stream
+	logger.Debugf(
+		"Received pipeline update event from %s for pipeline %s:%d with status %s",
+		stream, pipelineName, pipelineVersion, statusVal.String(),
+	)
+
+	if c.conflictResolutioner.IsMessageOutdated(message) {
+		// Maybe in the future we can process the outdated message in case of an error
+		logger.Debugf("Message for pipeline %s:%d is outdated, ignoring", pipelineName, pipelineVersion)
 		return &chainer.PipelineUpdateStatusResponse{}, nil
 	}
 
-	if _, ok := c.streamTracker[message.Update.Pipeline][message.Update.Stream]; !ok {
-		logger.Infof("Ignoring message for pipeline %s:%d (%s) as no stream found for %s", message.Update.Pipeline, message.Update.Version, message.Update.Uid, message.Update.Stream)
-		return &chainer.PipelineUpdateStatusResponse{}, nil
+	c.conflictResolutioner.UpdatePipelineStatus(pipelineName, stream, statusVal)
+	pipelineStatusVal, reason := c.conflictResolutioner.GetPipelineStatus(pipelineName, message)
+	if pipelineStatusVal == pipeline.PipelineTerminated {
+		c.conflictResolutioner.DeletePipeline(pipelineName)
 	}
 
-	logger.Info("Received pipeline update event ", message.Update.Pipeline, ":", message.Update.Stream)
-	c.streamTracker[message.Update.Pipeline][message.Update.Stream] = statusVal
-
-	allResponsesReceived := true
-	for _, status := range c.streamTracker[message.Update.Pipeline] {
-		if status == pipeline.PipelineStatusUnknown {
-			allResponsesReceived = false
-			break
-		}
-	}
-
-	if !allResponsesReceived {
-		logger.Infof("Not all responses received for pipeline %s:%d (%s), waiting for more updates", message.Update.Pipeline, message.Update.Version, message.Update.Uid)
-		return &chainer.PipelineUpdateStatusResponse{}, nil
-	} else {
-		logger.Infof("All responses received for pipeline %s:%d (%s), updating status", message.Update.Pipeline, message.Update.Version, message.Update.Uid)
-	}
-
-	var finalStatusVal pipeline.PipelineStatus
-	switch message.Update.Op {
-	case chainer.PipelineUpdateMessage_Create:
-		for _, status := range c.streamTracker[message.Update.Pipeline] {
-			if status != pipeline.PipelineReady {
-				finalStatusVal = pipeline.PipelineFailed
-				break
-			}
-		}
-		finalStatusVal = pipeline.PipelineReady
-	case chainer.PipelineUpdateMessage_Delete:
-		for _, status := range c.streamTracker[message.Update.Pipeline] {
-			if status != pipeline.PipelineTerminated {
-				finalStatusVal = pipeline.PipelineFailed
-				break
-			}
-		}
-		finalStatusVal = pipeline.PipelineTerminated
-	}
-
-	err := c.pipelineHandler.SetPipelineState(message.Update.Pipeline, message.Update.Version, message.Update.Uid, finalStatusVal, "Unknown", sourceChainerServer)
+	err := c.pipelineHandler.SetPipelineState(message.Update.Pipeline, message.Update.Version, message.Update.Uid, pipelineStatusVal, reason, sourceChainerServer)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to update pipeline status for %s:%d (%s)", message.Update.Pipeline, message.Update.Version, message.Update.Uid)
 		return nil, status.Error(codes.Internal, err.Error())
@@ -403,12 +372,8 @@ func (c *ChainerServer) createPipelineDeletionMessage(pv *pipeline.PipelineVersi
 func (c *ChainerServer) sendPipelineMsgToSelectedServers(msg *chainer.PipelineUpdateMessage, pv *pipeline.PipelineVersion) {
 	logger := c.logger.WithField("func", "sendPipelineMsg")
 	servers := c.loadBalancer.GetServersForKey(pv.UID)
-
-	c.streamTracker[pv.Name] = make(map[string]pipeline.PipelineStatus)
-	for _, server := range servers {
-		logger.Info("Creating entry for pipeline stream ", pv.Name, ":", server)
-		c.streamTracker[pv.Name][server] = pipeline.PipelineStatusUnknown
-	}
+	c.conflictResolutioner.CreateNewIteration(pv.Name, servers)
+	msg.Timestamp = c.conflictResolutioner.vectorClock[pv.Name]
 
 	for _, serverId := range servers {
 		if subscription, ok := c.streams[serverId]; ok {
@@ -433,7 +398,6 @@ func contains(slice []string, val string) bool {
 func (c *ChainerServer) rebalance() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	c.rebalanceUUID = uuid.New().String()
 
 	logger := c.logger.WithField("func", "rebalance")
 	// note that we are not retrying PipelineFailed pipelines, consider adding this
@@ -465,12 +429,7 @@ func (c *ChainerServer) rebalance() {
 		} else {
 			var msg *chainer.PipelineUpdateMessage
 			servers := c.loadBalancer.GetServersForKey(pv.UID)
-
-			// update the streams where the pipeline is running
-			c.streamTracker[pv.Name] = make(map[string]pipeline.PipelineStatus)
-			for _, server := range servers {
-				c.streamTracker[pv.Name][server] = pipeline.PipelineStatusUnknown
-			}
+			c.conflictResolutioner.CreateNewIteration(pv.Name, servers)
 			if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineCreating, "Rebalance", sourceChainerServer); err != nil {
 				logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
 			}
@@ -481,13 +440,13 @@ func (c *ChainerServer) rebalance() {
 						continue
 					}
 					msg = c.createPipelineCreationMessage(pv)
-					msg.RebalanceUUID = c.rebalanceUUID
+					msg.Timestamp = c.conflictResolutioner.vectorClock[pv.Name]
 					if err := subscription.stream.Send(msg); err != nil {
 						logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.String())
 					}
 				} else {
 					msg = c.createPipelineDeletionMessage(pv, true)
-					msg.RebalanceUUID = c.rebalanceUUID
+					msg.Timestamp = c.conflictResolutioner.vectorClock[pv.Name]
 					if err := subscription.stream.Send(msg); err != nil {
 						logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.String())
 					}
