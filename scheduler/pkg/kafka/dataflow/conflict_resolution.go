@@ -117,9 +117,8 @@ func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *
 		}
 		if readyCount > 0 {
 			return pipeline.PipelineReady, message
-		} else {
-			return pipeline.PipelineCreating, message
 		}
+		return pipeline.PipelineCreating, message
 	}
 
 	if message.Update.Op == chainer.PipelineUpdateMessage_Delete {
@@ -136,9 +135,8 @@ func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *
 		}
 		if terminatedCount == len(streams) {
 			return pipeline.PipelineTerminated, message
-		} else {
-			return pipeline.PipelineTerminating, message
 		}
+		return pipeline.PipelineTerminating, message
 	}
 
 	return pipeline.PipelineStatusUnknown, "Unknown operation or status"
