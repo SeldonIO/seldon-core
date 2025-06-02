@@ -35,7 +35,7 @@ func ValidateComponent(
 	clt client.Client,
 	component *mlopsv1alpha1.ComponentDefn,
 	kafkaConfig *mlopsv1alpha1.KafkaConfig,
-	namespace string,
+	namespace *string,
 	logger logr.Logger,
 ) error {
 	if component.Name == mlopsv1alpha1.DataflowEngineName {
@@ -103,7 +103,7 @@ func NewSeldonRuntimeReconciler(
 				commonConfig.Client,
 				c,
 				&seldonConfig.Spec.Config.KafkaConfig,
-				namespace,
+				&namespace,
 				commonConfig.Logger,
 			)
 			if err != nil {
