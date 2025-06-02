@@ -106,7 +106,12 @@ func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *
 			unknownCount, len(streams),
 			failedCount, len(streams),
 		)
-		logger.Debugf("Pipeline %s status message: %s", pipelineName, message)
+		// We log info this cause the reason doesn't not display in case of
+		// success in the message column of k9s
+		//
+		// TODO: Implement something similar to models to display the numbers
+		// of available replicas
+		logger.Infof("Pipeline %s status message: %s", pipelineName, message)
 		if failedCount == len(streams) {
 			return pipeline.PipelineFailed, message
 		}
@@ -125,7 +130,7 @@ func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *
 			unknownCount, len(streams),
 			failedCount, len(streams),
 		)
-		logger.Debugf("Pipeline %s status message: %s", pipelineName, message)
+		logger.Infof("Pipeline %s status message: %s", pipelineName, message)
 		if failedCount > 0 {
 			return pipeline.PipelineFailed, message
 		}
