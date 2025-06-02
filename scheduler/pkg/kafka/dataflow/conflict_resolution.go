@@ -72,16 +72,6 @@ func (cr *ConflictResolutioner) CreateNewIteration(pipelineName string, servers 
 	}
 }
 
-func (cr *ConflictResolutioner) GetFailedPipelines(pipelineName string) int {
-	count := 0
-	for _, status := range cr.vectorResponseStatus[pipelineName] {
-		if status == pipeline.PipelineFailed {
-			count++
-		}
-	}
-	return count
-}
-
 func (cr *ConflictResolutioner) GetCountPipelineWithStatus(pipelineName string, status pipeline.PipelineStatus) int {
 	count := 0
 	for _, streamStatus := range cr.vectorResponseStatus[pipelineName] {
@@ -95,11 +85,11 @@ func (cr *ConflictResolutioner) GetCountPipelineWithStatus(pipelineName string, 
 func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *chainer.PipelineUpdateStatusMessage) (pipeline.PipelineStatus, string) {
 	logger := cr.logger.WithField("func", "GetPipelineStatus")
 	streams := cr.vectorResponseStatus[pipelineName]
-	failedCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineFailed)
 	unknownCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineStatusUnknown)
 
 	if message.Update.Op == chainer.PipelineUpdateMessage_Create {
 		readyCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineReady)
+		failedCount := len(streams) - readyCount - unknownCount
 		message := fmt.Sprintf(
 			"%d/%d streams are ready, %d/%d still creating, %d/%d streams failed",
 			readyCount, len(streams),
@@ -123,6 +113,7 @@ func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *
 
 	if message.Update.Op == chainer.PipelineUpdateMessage_Delete {
 		terminatedCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineTerminated)
+		failedCount := len(streams) - terminatedCount - unknownCount
 		message := fmt.Sprintf(
 			"%d/%d streams terminated, %d/%d still terminating, %d/%d streams failed to terminate",
 			terminatedCount, len(streams),
