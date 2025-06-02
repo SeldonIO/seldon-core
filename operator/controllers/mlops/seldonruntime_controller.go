@@ -244,6 +244,37 @@ func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromSeldonConfig(_ context.Co
 	return req
 }
 
+func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromPipeline(_ context.Context, obj client.Object) []reconcile.Request {
+	ctx, cancel := context.WithTimeout(context.Background(), constants.K8sAPICallsTxTimeout)
+	defer cancel()
+	logger := log.FromContext(ctx).WithName("mapSeldonRuntimesFromPipeline")
+
+	pipeline, ok := obj.(*mlopsv1alpha1.Pipeline)
+	if !ok {
+		logger.Error(fmt.Errorf("unexpected type %T", obj), "expected Pipeline")
+		return nil
+	}
+
+	var seldonRuntimes mlopsv1alpha1.SeldonRuntimeList
+	if err := r.Client.List(ctx, &seldonRuntimes); err != nil {
+		logger.Error(err, "error listing seldonRuntimes")
+		return nil
+	}
+
+	var reqs []reconcile.Request
+	for _, sr := range seldonRuntimes.Items {
+		if sr.Namespace == pipeline.Namespace {
+			reqs = append(reqs, reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Namespace: sr.Namespace,
+					Name:      sr.Name,
+				},
+			})
+		}
+	}
+	return reqs
+}
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *SeldonRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	//pred := predicate.GenerationChangedPredicate{}
@@ -257,6 +288,10 @@ func (r *SeldonRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&auth.RoleBinding{}).
 		Owns(&v1.ServiceAccount{}).
 		Owns(&v1.ConfigMap{}).
+		Watches(
+			&mlopsv1alpha1.Pipeline{},
+			handler.EnqueueRequestsFromMapFunc(r.mapSeldonRuntimesFromPipeline),
+		).
 		Watches(
 			&mlopsv1alpha1.SeldonConfig{},
 			handler.EnqueueRequestsFromMapFunc(r.mapSeldonRuntimesFromSeldonConfig),

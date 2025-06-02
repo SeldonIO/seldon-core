@@ -55,11 +55,10 @@ func (r *SeldonConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, nil
 	}
 
-	// TODO(user): your logic here
 	err := ValidateSeldonConfig(
 		ctx, r.Client,
 		seldonConfig,
-		req.Namespace,
+		nil,
 		logr.FromContextOrDiscard(ctx),
 	)
 	return ctrl.Result{}, err
@@ -76,7 +75,7 @@ func ValidateSeldonConfig(
 	ctx context.Context,
 	clt client.Client,
 	seldonConfig *mlopsv1alpha1.SeldonConfig,
-	namespace string,
+	namespace *string,
 	logger logr.Logger,
 ) error {
 	for _, component := range seldonConfig.Spec.Components {
