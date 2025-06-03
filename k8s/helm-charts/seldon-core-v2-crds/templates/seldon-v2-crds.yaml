@@ -522,6 +522,10 @@ spec:
                     - any
                     type: string
                 type: object
+              maxNumCycles:
+                description: Maximum number of cycles allowed
+                format: int32
+                type: integer
               output:
                 description: Synchronous output from this pipeline, optional
                 properties:
