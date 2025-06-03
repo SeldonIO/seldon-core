@@ -183,6 +183,40 @@ public object PipelineUpdateMessageKt {
       _builder.clearUpdates()
     }
 
+
+    /**
+     * `uint64 timestamp = 6;`
+     */
+    public var timestamp: kotlin.Long
+      @JvmName("getTimestamp")
+      get() = _builder.getTimestamp()
+      @JvmName("setTimestamp")
+      set(value) {
+        _builder.setTimestamp(value)
+      }
+    /**
+     * `uint64 timestamp = 6;`
+     */
+    public fun clearTimestamp() {
+      _builder.clearTimestamp()
+    }
+
+    /**
+     * `string stream = 7;`
+     */
+    public var stream: kotlin.String
+      @JvmName("getStream")
+      get() = _builder.getStream()
+      @JvmName("setStream")
+      set(value) {
+        _builder.setStream(value)
+      }
+    /**
+     * `string stream = 7;`
+     */
+    public fun clearStream() {
+      _builder.clearStream()
+    }
   }
 }
 @kotlin.jvm.JvmSynthetic

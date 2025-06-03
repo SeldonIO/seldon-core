@@ -603,6 +603,24 @@ public final class ChainerOuterClass {
      */
     io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdateOrBuilder getUpdatesOrBuilder(
         int index);
+
+    /**
+     * <code>uint64 timestamp = 6;</code>
+     * @return The timestamp.
+     */
+    long getTimestamp();
+
+    /**
+     * <code>string stream = 7;</code>
+     * @return The stream.
+     */
+    java.lang.String getStream();
+    /**
+     * <code>string stream = 7;</code>
+     * @return The bytes for stream.
+     */
+    com.google.protobuf.ByteString
+        getStreamBytes();
   }
   /**
    * Protobuf type {@code seldon.mlops.chainer.PipelineUpdateMessage}
@@ -630,6 +648,7 @@ public final class ChainerOuterClass {
       pipeline_ = "";
       uid_ = "";
       updates_ = java.util.Collections.emptyList();
+      stream_ = "";
     }
 
     public static final com.google.protobuf.Descriptors.Descriptor
@@ -919,6 +938,56 @@ public final class ChainerOuterClass {
       return updates_.get(index);
     }
 
+    public static final int TIMESTAMP_FIELD_NUMBER = 6;
+    private long timestamp_ = 0L;
+    /**
+     * <code>uint64 timestamp = 6;</code>
+     * @return The timestamp.
+     */
+    @java.lang.Override
+    public long getTimestamp() {
+      return timestamp_;
+    }
+
+    public static final int STREAM_FIELD_NUMBER = 7;
+    @SuppressWarnings("serial")
+    private volatile java.lang.Object stream_ = "";
+    /**
+     * <code>string stream = 7;</code>
+     * @return The stream.
+     */
+    @java.lang.Override
+    public java.lang.String getStream() {
+      java.lang.Object ref = stream_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        stream_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string stream = 7;</code>
+     * @return The bytes for stream.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getStreamBytes() {
+      java.lang.Object ref = stream_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        stream_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -948,6 +1017,12 @@ public final class ChainerOuterClass {
       for (int i = 0; i < updates_.size(); i++) {
         output.writeMessage(5, updates_.get(i));
       }
+      if (timestamp_ != 0L) {
+        output.writeUInt64(6, timestamp_);
+      }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(stream_)) {
+        com.google.protobuf.GeneratedMessage.writeString(output, 7, stream_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -975,6 +1050,13 @@ public final class ChainerOuterClass {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(5, updates_.get(i));
       }
+      if (timestamp_ != 0L) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(6, timestamp_);
+      }
+      if (!com.google.protobuf.GeneratedMessage.isStringEmpty(stream_)) {
+        size += com.google.protobuf.GeneratedMessage.computeStringSize(7, stream_);
+      }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
@@ -999,6 +1081,10 @@ public final class ChainerOuterClass {
           .equals(other.getUid())) return false;
       if (!getUpdatesList()
           .equals(other.getUpdatesList())) return false;
+      if (getTimestamp()
+          != other.getTimestamp()) return false;
+      if (!getStream()
+          .equals(other.getStream())) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -1022,6 +1108,11 @@ public final class ChainerOuterClass {
         hash = (37 * hash) + UPDATES_FIELD_NUMBER;
         hash = (53 * hash) + getUpdatesList().hashCode();
       }
+      hash = (37 * hash) + TIMESTAMP_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+          getTimestamp());
+      hash = (37 * hash) + STREAM_FIELD_NUMBER;
+      hash = (53 * hash) + getStream().hashCode();
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -1164,6 +1255,8 @@ public final class ChainerOuterClass {
           updatesBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000010);
+        timestamp_ = 0L;
+        stream_ = "";
         return this;
       }
 
@@ -1222,6 +1315,12 @@ public final class ChainerOuterClass {
         if (((from_bitField0_ & 0x00000008) != 0)) {
           result.uid_ = uid_;
         }
+        if (((from_bitField0_ & 0x00000020) != 0)) {
+          result.timestamp_ = timestamp_;
+        }
+        if (((from_bitField0_ & 0x00000040) != 0)) {
+          result.stream_ = stream_;
+        }
       }
 
       @java.lang.Override
@@ -1277,6 +1376,14 @@ public final class ChainerOuterClass {
               updatesBuilder_.addAllMessages(other.updates_);
             }
           }
+        }
+        if (other.getTimestamp() != 0L) {
+          setTimestamp(other.getTimestamp());
+        }
+        if (!other.getStream().isEmpty()) {
+          stream_ = other.stream_;
+          bitField0_ |= 0x00000040;
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
@@ -1337,6 +1444,16 @@ public final class ChainerOuterClass {
                 }
                 break;
               } // case 42
+              case 48: {
+                timestamp_ = input.readUInt64();
+                bitField0_ |= 0x00000020;
+                break;
+              } // case 48
+              case 58: {
+                stream_ = input.readStringRequireUtf8();
+                bitField0_ |= 0x00000040;
+                break;
+              } // case 58
               default: {
                 if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                   done = true; // was an endgroup tag
@@ -1821,6 +1938,110 @@ public final class ChainerOuterClass {
           updates_ = null;
         }
         return updatesBuilder_;
+      }
+
+      private long timestamp_ ;
+      /**
+       * <code>uint64 timestamp = 6;</code>
+       * @return The timestamp.
+       */
+      @java.lang.Override
+      public long getTimestamp() {
+        return timestamp_;
+      }
+      /**
+       * <code>uint64 timestamp = 6;</code>
+       * @param value The timestamp to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTimestamp(long value) {
+
+        timestamp_ = value;
+        bitField0_ |= 0x00000020;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>uint64 timestamp = 6;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearTimestamp() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        timestamp_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object stream_ = "";
+      /**
+       * <code>string stream = 7;</code>
+       * @return The stream.
+       */
+      public java.lang.String getStream() {
+        java.lang.Object ref = stream_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          stream_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>string stream = 7;</code>
+       * @return The bytes for stream.
+       */
+      public com.google.protobuf.ByteString
+          getStreamBytes() {
+        java.lang.Object ref = stream_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          stream_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string stream = 7;</code>
+       * @param value The stream to set.
+       * @return This builder for chaining.
+       */
+      public Builder setStream(
+          java.lang.String value) {
+        if (value == null) { throw new NullPointerException(); }
+        stream_ = value;
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string stream = 7;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearStream() {
+        stream_ = getDefaultInstance().getStream();
+        bitField0_ = (bitField0_ & ~0x00000040);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string stream = 7;</code>
+       * @param value The bytes for stream to set.
+       * @return This builder for chaining.
+       */
+      public Builder setStreamBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) { throw new NullPointerException(); }
+        checkByteStringIsUtf8(value);
+        stream_ = value;
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:seldon.mlops.chainer.PipelineUpdateMessage)
@@ -8216,48 +8437,49 @@ public final class ChainerOuterClass {
     java.lang.String[] descriptorData = {
       "\n\rchainer.proto\022\024seldon.mlops.chainer\"+\n" +
       "\033PipelineSubscriptionRequest\022\014\n\004name\030\001 \001" +
-      "(\t\"\207\002\n\025PipelineUpdateMessage\022I\n\002op\030\001 \001(\016" +
+      "(\t\"\252\002\n\025PipelineUpdateMessage\022I\n\002op\030\001 \001(\016" +
       "2=.seldon.mlops.chainer.PipelineUpdateMe" +
       "ssage.PipelineOperation\022\020\n\010pipeline\030\002 \001(" +
       "\t\022\017\n\007version\030\003 \001(\r\022\013\n\003uid\030\004 \001(\t\0229\n\007updat" +
       "es\030\005 \003(\0132(.seldon.mlops.chainer.Pipeline" +
-      "StepUpdate\"8\n\021PipelineOperation\022\013\n\007Unkno" +
-      "wn\020\000\022\n\n\006Create\020\001\022\n\n\006Delete\020\002\"\313\004\n\022Pipelin" +
-      "eStepUpdate\0224\n\007sources\030\001 \003(\0132#.seldon.ml" +
-      "ops.chainer.PipelineTopic\0225\n\010triggers\030\002 " +
-      "\003(\0132#.seldon.mlops.chainer.PipelineTopic" +
-      "\0221\n\004sink\030\003 \001(\0132#.seldon.mlops.chainer.Pi" +
-      "pelineTopic\022N\n\013inputJoinTy\030\004 \001(\01629.seldo" +
-      "n.mlops.chainer.PipelineStepUpdate.Pipel" +
-      "ineJoinType\022Q\n\016triggersJoinTy\030\005 \001(\01629.se" +
-      "ldon.mlops.chainer.PipelineStepUpdate.Pi" +
-      "pelineJoinType\022\032\n\022passEmptyResponses\030\006 \001" +
-      "(\010\022\031\n\014joinWindowMs\030\007 \001(\rH\000\210\001\001\022>\n\ttensorM" +
-      "ap\030\010 \003(\0132+.seldon.mlops.chainer.Pipeline" +
-      "TensorMapping\022*\n\005batch\030\t \001(\0132\033.seldon.ml" +
-      "ops.chainer.Batch\">\n\020PipelineJoinType\022\013\n" +
-      "\007Unknown\020\000\022\t\n\005Inner\020\001\022\t\n\005Outer\020\002\022\007\n\003Any\020" +
-      "\003B\017\n\r_joinWindowMs\"Y\n\025PipelineTensorMapp" +
-      "ing\022\024\n\014pipelineName\030\001 \001(\t\022\026\n\016topicAndTen" +
-      "sor\030\002 \001(\t\022\022\n\ntensorName\030\003 \001(\t\"X\n\rPipelin" +
-      "eTopic\022\024\n\014pipelineName\030\001 \001(\t\022\021\n\ttopicNam" +
-      "e\030\002 \001(\t\022\023\n\006tensor\030\003 \001(\tH\000\210\001\001B\t\n\007_tensor\"" +
-      "X\n\005Batch\022\021\n\004size\030\001 \001(\rH\000\210\001\001\022\025\n\010windowMs\030" +
-      "\002 \001(\rH\001\210\001\001\022\017\n\007rolling\030\003 \001(\010B\007\n\005_sizeB\013\n\t" +
-      "_windowMs\"{\n\033PipelineUpdateStatusMessage" +
-      "\022;\n\006update\030\001 \001(\0132+.seldon.mlops.chainer." +
-      "PipelineUpdateMessage\022\017\n\007success\030\002 \001(\010\022\016" +
-      "\n\006reason\030\003 \001(\t\"\036\n\034PipelineUpdateStatusRe" +
-      "sponse2\211\002\n\007Chainer\022~\n\030SubscribePipelineU" +
-      "pdates\0221.seldon.mlops.chainer.PipelineSu" +
-      "bscriptionRequest\032+.seldon.mlops.chainer" +
-      ".PipelineUpdateMessage\"\0000\001\022~\n\023PipelineUp" +
-      "dateEvent\0221.seldon.mlops.chainer.Pipelin" +
-      "eUpdateStatusMessage\0322.seldon.mlops.chai" +
-      "ner.PipelineUpdateStatusResponse\"\000BS\n\027io" +
-      ".seldon.mlops.chainerZ8github.com/seldon" +
-      "io/seldon-core/apis/go/v2/mlops/chainerb" +
-      "\006proto3"
+      "StepUpdate\022\021\n\ttimestamp\030\006 \001(\004\022\016\n\006stream\030" +
+      "\007 \001(\t\"8\n\021PipelineOperation\022\013\n\007Unknown\020\000\022" +
+      "\n\n\006Create\020\001\022\n\n\006Delete\020\002\"\313\004\n\022PipelineStep" +
+      "Update\0224\n\007sources\030\001 \003(\0132#.seldon.mlops.c" +
+      "hainer.PipelineTopic\0225\n\010triggers\030\002 \003(\0132#" +
+      ".seldon.mlops.chainer.PipelineTopic\0221\n\004s" +
+      "ink\030\003 \001(\0132#.seldon.mlops.chainer.Pipelin" +
+      "eTopic\022N\n\013inputJoinTy\030\004 \001(\01629.seldon.mlo" +
+      "ps.chainer.PipelineStepUpdate.PipelineJo" +
+      "inType\022Q\n\016triggersJoinTy\030\005 \001(\01629.seldon." +
+      "mlops.chainer.PipelineStepUpdate.Pipelin" +
+      "eJoinType\022\032\n\022passEmptyResponses\030\006 \001(\010\022\031\n" +
+      "\014joinWindowMs\030\007 \001(\rH\000\210\001\001\022>\n\ttensorMap\030\010 " +
+      "\003(\0132+.seldon.mlops.chainer.PipelineTenso" +
+      "rMapping\022*\n\005batch\030\t \001(\0132\033.seldon.mlops.c" +
+      "hainer.Batch\">\n\020PipelineJoinType\022\013\n\007Unkn" +
+      "own\020\000\022\t\n\005Inner\020\001\022\t\n\005Outer\020\002\022\007\n\003Any\020\003B\017\n\r" +
+      "_joinWindowMs\"Y\n\025PipelineTensorMapping\022\024" +
+      "\n\014pipelineName\030\001 \001(\t\022\026\n\016topicAndTensor\030\002" +
+      " \001(\t\022\022\n\ntensorName\030\003 \001(\t\"X\n\rPipelineTopi" +
+      "c\022\024\n\014pipelineName\030\001 \001(\t\022\021\n\ttopicName\030\002 \001" +
+      "(\t\022\023\n\006tensor\030\003 \001(\tH\000\210\001\001B\t\n\007_tensor\"X\n\005Ba" +
+      "tch\022\021\n\004size\030\001 \001(\rH\000\210\001\001\022\025\n\010windowMs\030\002 \001(\r" +
+      "H\001\210\001\001\022\017\n\007rolling\030\003 \001(\010B\007\n\005_sizeB\013\n\t_wind" +
+      "owMs\"{\n\033PipelineUpdateStatusMessage\022;\n\006u" +
+      "pdate\030\001 \001(\0132+.seldon.mlops.chainer.Pipel" +
+      "ineUpdateMessage\022\017\n\007success\030\002 \001(\010\022\016\n\006rea" +
+      "son\030\003 \001(\t\"\036\n\034PipelineUpdateStatusRespons" +
+      "e2\211\002\n\007Chainer\022~\n\030SubscribePipelineUpdate" +
+      "s\0221.seldon.mlops.chainer.PipelineSubscri" +
+      "ptionRequest\032+.seldon.mlops.chainer.Pipe" +
+      "lineUpdateMessage\"\0000\001\022~\n\023PipelineUpdateE" +
+      "vent\0221.seldon.mlops.chainer.PipelineUpda" +
+      "teStatusMessage\0322.seldon.mlops.chainer.P" +
+      "ipelineUpdateStatusResponse\"\000BS\n\027io.seld" +
+      "on.mlops.chainerZ8github.com/seldonio/se" +
+      "ldon-core/apis/go/v2/mlops/chainerb\006prot" +
+      "o3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -8274,7 +8496,7 @@ public final class ChainerOuterClass {
     internal_static_seldon_mlops_chainer_PipelineUpdateMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_seldon_mlops_chainer_PipelineUpdateMessage_descriptor,
-        new java.lang.String[] { "Op", "Pipeline", "Version", "Uid", "Updates", });
+        new java.lang.String[] { "Op", "Pipeline", "Version", "Uid", "Updates", "Timestamp", "Stream", });
     internal_static_seldon_mlops_chainer_PipelineStepUpdate_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_seldon_mlops_chainer_PipelineStepUpdate_fieldAccessorTable = new

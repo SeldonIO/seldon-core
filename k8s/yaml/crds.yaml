@@ -9031,6 +9031,13 @@ spec:
                         type: object
                       topicPrefix:
                         type: string
+                      topics:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          x-kubernetes-int-or-string: true
+                        type: object
                     type: object
                   serviceConfig:
                     properties:
@@ -9151,6 +9158,13 @@ spec:
                         type: object
                       topicPrefix:
                         type: string
+                      topics:
+                        additionalProperties:
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          x-kubernetes-int-or-string: true
+                        type: object
                     type: object
                   serviceConfig:
                     properties:

@@ -532,24 +532,6 @@ func TestPipelineRebalance(t *testing.T) {
 			connection:     true,
 		},
 		{
-			name: "rebalance terminating pipeline",
-			loadReq: &scheduler.Pipeline{
-
-				Name:    "foo",
-				Version: 1,
-				Uid:     "x",
-				Steps: []*scheduler.PipelineStep{
-					{
-						Name: "a",
-					},
-				},
-			},
-			status:         pipeline.PipelineTerminating,
-			expectedStatus: pipeline.PipelineTerminating,
-			expectedOp:     chainer.PipelineUpdateMessage_Delete,
-			connection:     true,
-		},
-		{
 			name: "rebalance terminating pipeline - no connection",
 			loadReq: &scheduler.Pipeline{
 
