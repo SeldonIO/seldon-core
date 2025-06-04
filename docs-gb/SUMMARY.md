@@ -58,13 +58,12 @@
     * [Batch](examples/batch-examples-k8s.md) and (examples/batch-examples-local.md)
 * [Pipelines](pipelines.md)
 * [Autoscaling](scaling/README.md)
-  * [Scaling Models](scaling/autoscaling.md)
-  * [Scaling Servers](scaling/hpa-rps-autoscaling.md)
+  * [Autoscaling](scaling/autoscaling.md)
+  * [Custom Autoscaling with HPA](scaling/hpa-rps-autoscaling.md)
   * [Scaling Seldon Services](scaling/scaling-core-services.md)
 
   <!--
   * Multi-Component Serving and Overcommit -->
-  * [HPA Autoscaling in single-model serving](kubernetes/hpa-rps-autoscaling.md)
 * Data Science Monitoring
     * [Dataflow with Kafka](architecture/dataflow.md)
     <!-- * Request & Response Logging  -->
