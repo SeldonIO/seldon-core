@@ -10,7 +10,11 @@ In order to set up autoscaling, users should first identify which metric they wo
 
 Seldon Core offers an out-of-the-box approach (managed by the Core scheduler) to scaling models based on a metric we will refer to as **Inference Lag** - the difference in incoming vs. outgoing requests in a given period of time. If choosing this approach, it is recommended to configure autoscaling for Servers, so that Models scale on Inference Lag, and in turn Servers scale based on model needs:
 
-![Seldon Core Autoscaling](core-model-server-autoscaling.png){width=50%}
+<div align="center">
+
+![Seldon Core Autoscaling](core-model-server-autoscaling.png){: style="width: 50%;"}
+
+</div>
 
 This implementation of autoscaling is enabled if at least `MinReplicas` or `MaxReplicas` is set in the Model Custom Resource. Then according to load the system will scale the number of `Replicas` within this range. As an example the following model will be deployed at first with 1 replica and will autoscale according to load.
 
