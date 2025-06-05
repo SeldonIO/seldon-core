@@ -4,7 +4,7 @@ description: Learn how to configure autoscaling for Models and Servers
 
 # Autoscaling Models
 
-In order to set up autoscaling, users should first identify which metric they would want to scale their models on. Seldon Core provides an out-of-the-box approach to autoscaling models based on **Inference Lag** (described below), or supports more custom scaling logic based on HPA, (or [Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)), whereby you can use custom metrics to automatically scale Kubernetes resources. This page will go through the 
+In order to set up autoscaling, users should first identify which metric they would want to scale their models on. Seldon Core provides an out-of-the-box approach to autoscaling models based on **Inference Lag** (described below), or supports more custom scaling logic based on HPA, (or [Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)), whereby you can use custom metrics to automatically scale Kubernetes resources. This page will go through the first approach. To 
 
 ## Autoscaling Models based on Inference Lag
 
@@ -41,7 +41,7 @@ Based on the logic above, the scheduler will trigger model autoscaling if:
 * For scaling up, there is enough capacity for the new model replica.
 
 {% hint style="danger" %}
-If autoscaling models with the approach above, it is recommended to autoscale servers based on using Seldon's Server autoscaling (configured by setting `MinReplicas` and `MaxReplicas` for the Server CR - see below). Without Server autoscaling configured, the required number of servers will not necessarily spin up, even if the desired number of model replicas cannot be currently fulfilled by the current provisioned number of servers. Setting up Server Autoscaling is described in more detail [here]().
+If autoscaling models with the approach above, it is recommended to autoscale servers based on using Seldon's Server autoscaling (configured by setting `MinReplicas` and `MaxReplicas` for the Server CR - see below). Without Server autoscaling configured, the required number of servers will not necessarily spin up, even if the desired number of model replicas cannot be currently fulfilled by the current provisioned number of servers. Setting up Server Autoscaling is described in more detail below.
 {% endhint %}
 
 # Autoscaling Servers
