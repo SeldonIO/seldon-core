@@ -84,12 +84,6 @@ spec:
 ```
 {% endcode %}
 
-### Coordinated Scaling
-
-{% hint style="info" %}
-**Note**: If a Model gets scaled up slightly before its corresponding Server, the model is currently marked with the condition ModelReady "Status: False" with a "ScheduleFailed" message until new Server replicas become available. However, the existing replicas of that model remain available and will continue to serve inference load.
-{% endhint %}
-
 ## Scaling Behavior
 
 In order to ensure similar scaling behaviour between Models and Servers, the number of `minReplicas` and `maxReplicas`, as well as any other configured scaling policies should be kept in sync across the HPA for the model and the server.
@@ -97,9 +91,11 @@ In order to ensure similar scaling behaviour between Models and Servers, the num
 
 Each HPA CR has it's own timer on which it samples the specified custom metrics. This timer starts when the CR is created, with sampling of the metric being done at regular intervals (by default, 15 seconds).
 
-As a side effect of this, creating the Model HPA and the Server HPA (for a given model) at different times will mean that the scaling decisions on the two are taken at different times. Even when creating the two CRs together as part of the same manifest, there will usually be a small delay between the point where the Model and Server `spec.replicas` values are changed.
+As a side effect of this, creating the Model HPA and the Server HPA (for a given model) at different times will mean that the scaling decisions on the two are taken at different times. Even when creating the two CRs together as part of the same manifest, there will usually be a small delay between the point where the Model and Server `spec.replicas` values are changed. Despite this delay, the two will converge to the same number when the decisions are taken based on the same metric (as in the previous examples).
 
-Despite this delay, the two will converge to the same number when the decisions are taken based on the same metric (as in the previous examples).
+{% hint style="info" %}
+**Note**: If a Model gets scaled up slightly before its corresponding Server, the model is currently marked with the condition ModelReady "Status: False" with a "ScheduleFailed" message until new Server replicas become available. However, the existing replicas of that model remain available and will continue to serve inference load.
+{% endhint %}
 
 ## Monitoring Scaling
 
@@ -115,7 +111,7 @@ As a result, for the k8s versions displaying `[per pod metric value]`, the infor
 
 ## Limitations
 
-- In this implementation, the scheduler itself does not create new Server replicas when the existing replicas are not sufficient for loading a Model's replicas (one Model replica per Server replica). Whenever a Model requests more replicas than available on any of the available Servers, its `ModelReady` condition transitions to `Status: False` with a `ScheduleFailed` message. However, any replicas of that Model that are already loaded at that point remain available for servicing inference load.
+In this implementation, the scheduler itself does not create new Server replicas when the existing replicas are not sufficient for loading a Model's replicas (one Model replica per Server replica). Whenever a Model requests more replicas than available on any of the available Servers, its `ModelReady` condition transitions to `Status: False` with a `ScheduleFailed` message. However, any replicas of that Model that are already loaded at that point remain available for servicing inference load.
 
 ## Best Practices
 

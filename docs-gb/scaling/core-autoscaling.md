@@ -141,19 +141,3 @@ In this case we could trigger removal of $$S_3$$ for the server which could pack
 While this heuristic is going to pack models onto a set of fewer replicas, which allows us to scale models down, there is still the risk that the packing could increase latencies, trigger a later scale up. Core 2 tries to make sure that do not flip-flopping between these states. The user can also reduce the number of packing events by setting `autoscaling.serverPackingPercentage` to a lower value.
 
 Currently Core 2 triggers the packing logic only when there is model replica being removed, either from a model scale down or a model being deleted. In the future we might trigger this logic more frequently to ensure that the models are packed onto a fewer set of replicas.
-
-
-### Architecture
-
-The model autoscaling architecture is designed such as each agent decides on which models to scale up / down according to some defined internal metrics (Inference Lag in this case) and then sends a triggering message to the scheduler. The current metrics are collected from the data plane (inference path), representing a proxy on how loaded is a given model with fulfilling inference requests.
-
-![architecture](../images/autoscaling_architecture.png)
-
-### Scheduler autoscaling
-
-![state](../images/scheduler_autoscaling_state_diagram.png)
-
-
-<!-- ## Model memory overcommit
-
-Servers can hold more models than available memory if overcommit is swictched on (default yes). This allows under utilized models to be moved from inference server memory to allow for other models to take their place. Note that these evicted models are still registered and in the case future inference requests arrive, the system will reload the models back to memory before serving the requests. If traffic patterns for inference of models vary then this can allow more models than available server memory to be run on the system. -->
