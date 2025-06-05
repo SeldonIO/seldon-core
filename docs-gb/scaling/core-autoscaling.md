@@ -2,19 +2,11 @@
 description: Learn how to configure autoscaling for Models and Servers
 ---
 
-# Autoscaling Models
+# Autoscaling Models based on Inference Lag
 
-In order to set up autoscaling, users should first identify which metric they would want to scale their models on. Seldon Core provides an out-of-the-box approach to autoscaling models based on **Inference Lag** (described below), or supports more custom scaling logic based on HPA, (or [Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)), whereby you can use custom metrics to automatically scale Kubernetes resources. This page will go through the first approach. 
+In order to set up autoscaling, users should first identify which metric they would want to scale their models on. Seldon Core provides an approach to autoscale models based on **Inference Lag**, or supports more custom scaling logic by leveraging HPA, (or [Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)), whereby you can use custom metrics to automatically scale Kubernetes resources. This page will go through the first approach. **Inference Lag** refers to the difference in incoming vs. outgoing requests in a given period of time. If choosing this approach, it is recommended to configure autoscaling for Servers, so that Models scale on Inference Lag, and in turn set up autoscaling for Servers to scale based on model needs:
 
-## Autoscaling Models based on Inference Lag
-
-Seldon Core offers an out-of-the-box approach (managed by the Core scheduler) to scaling models based on a metric we will refer to as **Inference Lag** - the difference in incoming vs. outgoing requests in a given period of time. If choosing this approach, it is recommended to configure autoscaling for Servers, so that Models scale on Inference Lag, and in turn Servers scale based on model needs:
-
-<div align="center">
-
-![Seldon Core Autoscaling](core-model-server-autoscaling.png){: style="width: 50%;"}
-
-</div>
+![Seldon Core Autoscaling](core-model-server-autoscaling.png)
 
 This implementation of autoscaling is enabled if at least `MinReplicas` or `MaxReplicas` is set in the Model Custom Resource. Then according to load the system will scale the number of `Replicas` within this range. As an example the following model will be deployed at first with 1 replica and will autoscale according to load.
 
@@ -151,42 +143,9 @@ While this heuristic is going to pack models onto a set of fewer replicas, which
 Currently Core 2 triggers the packing logic only when there is model replica being removed, either from a model scale down or a model being deleted. In the future we might trigger this logic more frequently to ensure that the models are packed onto a fewer set of replicas.
 
 
-
-
-
-
-
-
-
-<!-- ## Inference servers autoscaling
-
-Autoscaling of servers can be done via `HorizontalPodAutoscaler` (HPA).
-
-HPA can be applied to any deployed `Server` resource. In this case HPA will manage the number of server replicas in the corresponding statefulset according to utilisation metrics  (e.g. CPU or memory).
-
-For example assuming that a `triton` server is deployed, then the user can attach an HPA based on cpu utilisation as follows:
-
-```sh
-kubectl autoscale server triton --cpu-percent=50 --min=1 --max=5
-```
-
-In this case, according to load, the system will add / remove server replicas to / from the `triton` statefulset.
-
-It is worth considering the following points:
-
-- If HPA adds a new server replica, this new replica will be included in any **future** scheduling decisions. In other words, when deploying a new model or rescheduling failed models this new replica will be considered.
-- If HPA deletes an existing server replica, the scheduler will first attempt to drain any loaded model on this server replica before the server replica gets actually deleted. This is achieved by leveraging a `PreStop` hook on the server replica pod that triggers a process before receiving the termination signal. This draining process is capped by `terminationGracePeriodSeconds`, which the user can set (default is 2 minutes).
-
-Therefore there should generally be minimal disruption to the inference workload during scaling.
-
-For more details on HPA check this [Kubernetes walk-through](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/).
-
-
-Autoscaling both Models and Servers using HPA and custom metrics is possible for the special case of single model serving (i.e. single model per server). Check the detailed documentation [here](hpa-rps-autoscaling.md). For multi-model serving (MMS), a different solution is needed as discussed below. -->
-
 ### Architecture
 
-The model autoscaling architecture is designed such as each agent decides on which models to scale up / down according to some defined internal metrics and then sends a triggering message to the scheduler. The current metrics are collected from the data plane (inference path), representing a proxy on how loaded is a given model with fulfilling inference requests.
+The model autoscaling architecture is designed such as each agent decides on which models to scale up / down according to some defined internal metrics (Inference Lag in this case) and then sends a triggering message to the scheduler. The current metrics are collected from the data plane (inference path), representing a proxy on how loaded is a given model with fulfilling inference requests.
 
 ![architecture](../images/autoscaling_architecture.png)
 
