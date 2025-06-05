@@ -1,4 +1,5 @@
 ---
+Description: This page provides an overview of the appraoches to achieving autoscaling with Core 2.
 ---
 
 # Autoscaling in Seldon Core 2
@@ -14,11 +15,13 @@ Seldon Core 2 provides multiple approaches to scaling your machine learning depl
 
 The above options result in the following three options for coordinated autoscaling of Models and Servers:
 
-![Seldon Core Autoscaling](core-model-server-autoscaling.png) ![HPA Autoscaling for Single-Model Serving](model-server-hpa-scaling.png) ![HPA Autoscaling for Models, Servers Autoscaled by Seldon Core](model-hpa-server-autscaled.png)
-
+| Scaling Approach | Scaling Metric - Models | Multi-Model Serving | Pros | Cons |
+|-----------------|------------------------|---------------------|------|------|
+| Seldon Core Autoscaling | Inference lag | ✅ | - Simplest Implementation<br>- One metric across models | - Potentially suboptimal Server packing on scale down |
+| Custom Model Autoscaling with HPA | User-defined (HPA) | ✅ | - Custom scaling metric | - Requires Metrics store integration (e.g. Prometheus)<br>- Potentially suboptimal Server packing on scale down |
+| Scaling Models and Servers with HPA | User-defined (HPA) | ❌ | - Coordinated Model and Server scaling | - Requires Metrics store integration (e.g. Prometheus)<br>- No Multi-Model Serving |
 
 # Scaling Seldon Services
 
 When running Core 2 at scale, it is important to understand the scaling behaviour of Seldon's services as well as the scaling of the Models and Servers themselves. This is outlined in the [Scaling Core Services](scaling-core-services.md) page.
-
 

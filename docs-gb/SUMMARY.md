@@ -58,8 +58,9 @@
     * [Batch](examples/batch-examples-k8s.md) and (examples/batch-examples-local.md)
 * [Pipelines](pipelines.md)
 * [Autoscaling](scaling/README.md)
-  * [Seldon Core Autoscaling](scaling/autoscaling.md)
-  * [Custom Autoscaling with HPA](scaling/hpa-rps-autoscaling.md)
+  * [Seldon Core Autoscaling](scaling/core-autoscaling.md)
+  * [Custom Model Autoscaling with HPA](scaling/custom-hpa-autoscaling.md)
+  * [Scaling Models and Servers with HPA](scaling/single-model-serving-hpa.md)
   * [Scaling Seldon Services](scaling/scaling-core-services.md)
 
   <!--

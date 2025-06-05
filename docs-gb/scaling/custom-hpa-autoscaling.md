@@ -2,7 +2,13 @@
 description: Learn how to implement request-per-second (RPS) based autoscaling in Seldon Core 2 using Kubernetes HPA and Prometheus metrics.
 ---
 
-Given Seldon Core 2 is predominantly for serving ML in Kubernetes, it is possible to leverage `HorizontalPodAutoscaler` or [HPA](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) to define scaling logic automatically scale up and down Kubernetes resources. This requires exposing the right metrics such that they can be used by HPA. In this tutorial, we will explain how to expose a requests per secong (RPS) metric associated to models using Prometheus, and then targetting that metrics for autoscaling models. Once scaling for models is set up in this way, autoscaling for servers can be achieved through either Seldon Core autoscaling of Servers [here](./autoscaling.md#autoscaling-servers) or in the case of single-model serving, by setting up HPA manifests for each Servers that matches the ones for their associated models (explained [here](./single-model-serving-hpa.md)).
+Given Seldon Core 2 is predominantly for serving ML in Kubernetes, it is possible to leverage `HorizontalPodAutoscaler` or [HPA](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) to define scaling logic automatically scale up and down Kubernetes resources. This requires exposing the right metrics such that they can be used by HPA. In this tutorial, we will explain how to expose a requests per secong (RPS) metric associated to models using Prometheus, and then targetting that metrics for autoscaling models. Once scaling for models is set up in this way, autoscaling for servers can be achieved through either Seldon Core autoscaling of Servers [here](./autoscaling.md#autoscaling-servers) as shown below:
+
+![Custom Model Autoscaling, with Servers Autoscaled](model-hpa-server-autoscaled.png)
+
+In the case of single-model serving, by setting up HPA manifests for each Servers that matches the ones for their associated models (explained [here](./single-model-serving-hpa.md)).
+
+# Setting up HPA to Autoscale Models
 
 The following workflow will require: 
 
