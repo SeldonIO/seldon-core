@@ -1,5 +1,5 @@
 <div align="center">
-<img src="model-server-hpa-scaling.png" alt="HPA Autoscaling for Single-Model Serving" width="75%"/>
+<img src="model-server-hpa-scaling.png" alt="HPA Autoscaling for Single-Model Serving" width="60%"/>
 </div>
 
 - **Only custom metrics** from Prometheus are supported. Native Kubernetes resource metrics such as CPU or memory are not. This limitation exists because of HPA's design: In order to prevent multiple HPA CRs from issuing conflicting scaling instructions, each HPA CR must exclusively control a set of pods which is disjoint from the pods controlled by other HPA CRs. In Seldon Core 2, CPU/memory metrics can be used to scale the number of Server replicas via HPA. However, this also means that the CPU/memory metrics from the same set of pods can no longer be used to scale the number of model replicas.
