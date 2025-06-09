@@ -105,7 +105,7 @@ func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *
 		if failedCount == len(streams) {
 			return pipeline.PipelineFailed, message
 		}
-		if readyCount > 0 {
+		if readyCount > 0 && unknownCount == 0 {
 			return pipeline.PipelineReady, message
 		}
 		return pipeline.PipelineCreating, message
