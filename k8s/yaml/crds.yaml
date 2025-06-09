@@ -526,8 +526,8 @@ spec:
                     - any
                     type: string
                 type: object
-              maxNumCycles:
-                description: Maximum number of cycles allowed
+              maxStepRevisits:
+                description: Maximum number of times a step can be revisited
                 format: int32
                 type: integer
               output:
