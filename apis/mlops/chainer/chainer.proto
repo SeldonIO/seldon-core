@@ -24,6 +24,8 @@ message PipelineUpdateMessage {
   string pipelineErrorTopic = 7;
   bool allowCycles = 8;
   uint32 maxStepRevisits = 9;
+  uint64 timestamp = 10;
+  string stream = 11;
 }
 
 message PipelineStepUpdate {
