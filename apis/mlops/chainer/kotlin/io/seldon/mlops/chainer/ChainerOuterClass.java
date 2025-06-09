@@ -635,10 +635,10 @@ public final class ChainerOuterClass {
     boolean getAllowCycles();
 
     /**
-     * <code>uint32 maxNumCycles = 9;</code>
-     * @return The maxNumCycles.
+     * <code>uint32 maxStepRevisits = 9;</code>
+     * @return The maxStepRevisits.
      */
-    int getMaxNumCycles();
+    int getMaxStepRevisits();
   }
   /**
    * Protobuf type {@code seldon.mlops.chainer.PipelineUpdateMessage}
@@ -1046,15 +1046,15 @@ public final class ChainerOuterClass {
       return allowCycles_;
     }
 
-    public static final int MAXNUMCYCLES_FIELD_NUMBER = 9;
-    private int maxNumCycles_ = 0;
+    public static final int MAXSTEPREVISITS_FIELD_NUMBER = 9;
+    private int maxStepRevisits_ = 0;
     /**
-     * <code>uint32 maxNumCycles = 9;</code>
-     * @return The maxNumCycles.
+     * <code>uint32 maxStepRevisits = 9;</code>
+     * @return The maxStepRevisits.
      */
     @java.lang.Override
-    public int getMaxNumCycles() {
-      return maxNumCycles_;
+    public int getMaxStepRevisits() {
+      return maxStepRevisits_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -1095,8 +1095,8 @@ public final class ChainerOuterClass {
       if (allowCycles_ != false) {
         output.writeBool(8, allowCycles_);
       }
-      if (maxNumCycles_ != 0) {
-        output.writeUInt32(9, maxNumCycles_);
+      if (maxStepRevisits_ != 0) {
+        output.writeUInt32(9, maxStepRevisits_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -1135,9 +1135,9 @@ public final class ChainerOuterClass {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(8, allowCycles_);
       }
-      if (maxNumCycles_ != 0) {
+      if (maxStepRevisits_ != 0) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(9, maxNumCycles_);
+          .computeUInt32Size(9, maxStepRevisits_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
@@ -1169,8 +1169,8 @@ public final class ChainerOuterClass {
           .equals(other.getPipelineErrorTopic())) return false;
       if (getAllowCycles()
           != other.getAllowCycles()) return false;
-      if (getMaxNumCycles()
-          != other.getMaxNumCycles()) return false;
+      if (getMaxStepRevisits()
+          != other.getMaxStepRevisits()) return false;
       if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
@@ -1201,8 +1201,8 @@ public final class ChainerOuterClass {
       hash = (37 * hash) + ALLOWCYCLES_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
           getAllowCycles());
-      hash = (37 * hash) + MAXNUMCYCLES_FIELD_NUMBER;
-      hash = (53 * hash) + getMaxNumCycles();
+      hash = (37 * hash) + MAXSTEPREVISITS_FIELD_NUMBER;
+      hash = (53 * hash) + getMaxStepRevisits();
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -1348,7 +1348,7 @@ public final class ChainerOuterClass {
         pipelineOutputTopic_ = "";
         pipelineErrorTopic_ = "";
         allowCycles_ = false;
-        maxNumCycles_ = 0;
+        maxStepRevisits_ = 0;
         return this;
       }
 
@@ -1417,7 +1417,7 @@ public final class ChainerOuterClass {
           result.allowCycles_ = allowCycles_;
         }
         if (((from_bitField0_ & 0x00000100) != 0)) {
-          result.maxNumCycles_ = maxNumCycles_;
+          result.maxStepRevisits_ = maxStepRevisits_;
         }
       }
 
@@ -1488,8 +1488,8 @@ public final class ChainerOuterClass {
         if (other.getAllowCycles() != false) {
           setAllowCycles(other.getAllowCycles());
         }
-        if (other.getMaxNumCycles() != 0) {
-          setMaxNumCycles(other.getMaxNumCycles());
+        if (other.getMaxStepRevisits() != 0) {
+          setMaxStepRevisits(other.getMaxStepRevisits());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
@@ -1566,7 +1566,7 @@ public final class ChainerOuterClass {
                 break;
               } // case 64
               case 72: {
-                maxNumCycles_ = input.readUInt32();
+                maxStepRevisits_ = input.readUInt32();
                 bitField0_ |= 0x00000100;
                 break;
               } // case 72
@@ -2232,34 +2232,34 @@ public final class ChainerOuterClass {
         return this;
       }
 
-      private int maxNumCycles_ ;
+      private int maxStepRevisits_ ;
       /**
-       * <code>uint32 maxNumCycles = 9;</code>
-       * @return The maxNumCycles.
+       * <code>uint32 maxStepRevisits = 9;</code>
+       * @return The maxStepRevisits.
        */
       @java.lang.Override
-      public int getMaxNumCycles() {
-        return maxNumCycles_;
+      public int getMaxStepRevisits() {
+        return maxStepRevisits_;
       }
       /**
-       * <code>uint32 maxNumCycles = 9;</code>
-       * @param value The maxNumCycles to set.
+       * <code>uint32 maxStepRevisits = 9;</code>
+       * @param value The maxStepRevisits to set.
        * @return This builder for chaining.
        */
-      public Builder setMaxNumCycles(int value) {
+      public Builder setMaxStepRevisits(int value) {
 
-        maxNumCycles_ = value;
+        maxStepRevisits_ = value;
         bitField0_ |= 0x00000100;
         onChanged();
         return this;
       }
       /**
-       * <code>uint32 maxNumCycles = 9;</code>
+       * <code>uint32 maxStepRevisits = 9;</code>
        * @return This builder for chaining.
        */
-      public Builder clearMaxNumCycles() {
+      public Builder clearMaxStepRevisits() {
         bitField0_ = (bitField0_ & ~0x00000100);
-        maxNumCycles_ = 0;
+        maxStepRevisits_ = 0;
         onChanged();
         return this;
       }
@@ -8657,50 +8657,50 @@ public final class ChainerOuterClass {
     java.lang.String[] descriptorData = {
       "\n\rchainer.proto\022\024seldon.mlops.chainer\"+\n" +
       "\033PipelineSubscriptionRequest\022\014\n\004name\030\001 \001" +
-      "(\t\"\353\002\n\025PipelineUpdateMessage\022I\n\002op\030\001 \001(\016" +
+      "(\t\"\356\002\n\025PipelineUpdateMessage\022I\n\002op\030\001 \001(\016" +
       "2=.seldon.mlops.chainer.PipelineUpdateMe" +
       "ssage.PipelineOperation\022\020\n\010pipeline\030\002 \001(" +
       "\t\022\017\n\007version\030\003 \001(\r\022\013\n\003uid\030\004 \001(\t\0229\n\007updat" +
       "es\030\005 \003(\0132(.seldon.mlops.chainer.Pipeline" +
       "StepUpdate\022\033\n\023pipelineOutputTopic\030\006 \001(\t\022" +
       "\032\n\022pipelineErrorTopic\030\007 \001(\t\022\023\n\013allowCycl" +
-      "es\030\010 \001(\010\022\024\n\014maxNumCycles\030\t \001(\r\"8\n\021Pipeli" +
-      "neOperation\022\013\n\007Unknown\020\000\022\n\n\006Create\020\001\022\n\n\006" +
-      "Delete\020\002\"\313\004\n\022PipelineStepUpdate\0224\n\007sourc" +
-      "es\030\001 \003(\0132#.seldon.mlops.chainer.Pipeline" +
-      "Topic\0225\n\010triggers\030\002 \003(\0132#.seldon.mlops.c" +
-      "hainer.PipelineTopic\0221\n\004sink\030\003 \001(\0132#.sel" +
-      "don.mlops.chainer.PipelineTopic\022N\n\013input" +
-      "JoinTy\030\004 \001(\01629.seldon.mlops.chainer.Pipe" +
-      "lineStepUpdate.PipelineJoinType\022Q\n\016trigg" +
-      "ersJoinTy\030\005 \001(\01629.seldon.mlops.chainer.P" +
-      "ipelineStepUpdate.PipelineJoinType\022\032\n\022pa" +
-      "ssEmptyResponses\030\006 \001(\010\022\031\n\014joinWindowMs\030\007" +
-      " \001(\rH\000\210\001\001\022>\n\ttensorMap\030\010 \003(\0132+.seldon.ml" +
-      "ops.chainer.PipelineTensorMapping\022*\n\005bat" +
-      "ch\030\t \001(\0132\033.seldon.mlops.chainer.Batch\">\n" +
-      "\020PipelineJoinType\022\013\n\007Unknown\020\000\022\t\n\005Inner\020" +
-      "\001\022\t\n\005Outer\020\002\022\007\n\003Any\020\003B\017\n\r_joinWindowMs\"Y" +
-      "\n\025PipelineTensorMapping\022\024\n\014pipelineName\030" +
-      "\001 \001(\t\022\026\n\016topicAndTensor\030\002 \001(\t\022\022\n\ntensorN" +
-      "ame\030\003 \001(\t\"X\n\rPipelineTopic\022\024\n\014pipelineNa" +
-      "me\030\001 \001(\t\022\021\n\ttopicName\030\002 \001(\t\022\023\n\006tensor\030\003 " +
-      "\001(\tH\000\210\001\001B\t\n\007_tensor\"X\n\005Batch\022\021\n\004size\030\001 \001" +
-      "(\rH\000\210\001\001\022\025\n\010windowMs\030\002 \001(\rH\001\210\001\001\022\017\n\007rollin" +
-      "g\030\003 \001(\010B\007\n\005_sizeB\013\n\t_windowMs\"{\n\033Pipelin" +
-      "eUpdateStatusMessage\022;\n\006update\030\001 \001(\0132+.s" +
-      "eldon.mlops.chainer.PipelineUpdateMessag" +
-      "e\022\017\n\007success\030\002 \001(\010\022\016\n\006reason\030\003 \001(\t\"\036\n\034Pi" +
-      "pelineUpdateStatusResponse2\211\002\n\007Chainer\022~" +
-      "\n\030SubscribePipelineUpdates\0221.seldon.mlop" +
-      "s.chainer.PipelineSubscriptionRequest\032+." +
-      "seldon.mlops.chainer.PipelineUpdateMessa" +
-      "ge\"\0000\001\022~\n\023PipelineUpdateEvent\0221.seldon.m" +
-      "lops.chainer.PipelineUpdateStatusMessage" +
-      "\0322.seldon.mlops.chainer.PipelineUpdateSt" +
-      "atusResponse\"\000BS\n\027io.seldon.mlops.chaine" +
-      "rZ8github.com/seldonio/seldon-core/apis/" +
-      "go/v2/mlops/chainerb\006proto3"
+      "es\030\010 \001(\010\022\027\n\017maxStepRevisits\030\t \001(\r\"8\n\021Pip" +
+      "elineOperation\022\013\n\007Unknown\020\000\022\n\n\006Create\020\001\022" +
+      "\n\n\006Delete\020\002\"\313\004\n\022PipelineStepUpdate\0224\n\007so" +
+      "urces\030\001 \003(\0132#.seldon.mlops.chainer.Pipel" +
+      "ineTopic\0225\n\010triggers\030\002 \003(\0132#.seldon.mlop" +
+      "s.chainer.PipelineTopic\0221\n\004sink\030\003 \001(\0132#." +
+      "seldon.mlops.chainer.PipelineTopic\022N\n\013in" +
+      "putJoinTy\030\004 \001(\01629.seldon.mlops.chainer.P" +
+      "ipelineStepUpdate.PipelineJoinType\022Q\n\016tr" +
+      "iggersJoinTy\030\005 \001(\01629.seldon.mlops.chaine" +
+      "r.PipelineStepUpdate.PipelineJoinType\022\032\n" +
+      "\022passEmptyResponses\030\006 \001(\010\022\031\n\014joinWindowM" +
+      "s\030\007 \001(\rH\000\210\001\001\022>\n\ttensorMap\030\010 \003(\0132+.seldon" +
+      ".mlops.chainer.PipelineTensorMapping\022*\n\005" +
+      "batch\030\t \001(\0132\033.seldon.mlops.chainer.Batch" +
+      "\">\n\020PipelineJoinType\022\013\n\007Unknown\020\000\022\t\n\005Inn" +
+      "er\020\001\022\t\n\005Outer\020\002\022\007\n\003Any\020\003B\017\n\r_joinWindowM" +
+      "s\"Y\n\025PipelineTensorMapping\022\024\n\014pipelineNa" +
+      "me\030\001 \001(\t\022\026\n\016topicAndTensor\030\002 \001(\t\022\022\n\ntens" +
+      "orName\030\003 \001(\t\"X\n\rPipelineTopic\022\024\n\014pipelin" +
+      "eName\030\001 \001(\t\022\021\n\ttopicName\030\002 \001(\t\022\023\n\006tensor" +
+      "\030\003 \001(\tH\000\210\001\001B\t\n\007_tensor\"X\n\005Batch\022\021\n\004size\030" +
+      "\001 \001(\rH\000\210\001\001\022\025\n\010windowMs\030\002 \001(\rH\001\210\001\001\022\017\n\007rol" +
+      "ling\030\003 \001(\010B\007\n\005_sizeB\013\n\t_windowMs\"{\n\033Pipe" +
+      "lineUpdateStatusMessage\022;\n\006update\030\001 \001(\0132" +
+      "+.seldon.mlops.chainer.PipelineUpdateMes" +
+      "sage\022\017\n\007success\030\002 \001(\010\022\016\n\006reason\030\003 \001(\t\"\036\n" +
+      "\034PipelineUpdateStatusResponse2\211\002\n\007Chaine" +
+      "r\022~\n\030SubscribePipelineUpdates\0221.seldon.m" +
+      "lops.chainer.PipelineSubscriptionRequest" +
+      "\032+.seldon.mlops.chainer.PipelineUpdateMe" +
+      "ssage\"\0000\001\022~\n\023PipelineUpdateEvent\0221.seldo" +
+      "n.mlops.chainer.PipelineUpdateStatusMess" +
+      "age\0322.seldon.mlops.chainer.PipelineUpdat" +
+      "eStatusResponse\"\000BS\n\027io.seldon.mlops.cha" +
+      "inerZ8github.com/seldonio/seldon-core/ap" +
+      "is/go/v2/mlops/chainerb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -8717,7 +8717,7 @@ public final class ChainerOuterClass {
     internal_static_seldon_mlops_chainer_PipelineUpdateMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_seldon_mlops_chainer_PipelineUpdateMessage_descriptor,
-        new java.lang.String[] { "Op", "Pipeline", "Version", "Uid", "Updates", "PipelineOutputTopic", "PipelineErrorTopic", "AllowCycles", "MaxNumCycles", });
+        new java.lang.String[] { "Op", "Pipeline", "Version", "Uid", "Updates", "PipelineOutputTopic", "PipelineErrorTopic", "AllowCycles", "MaxStepRevisits", });
     internal_static_seldon_mlops_chainer_PipelineStepUpdate_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_seldon_mlops_chainer_PipelineStepUpdate_fieldAccessorTable = new

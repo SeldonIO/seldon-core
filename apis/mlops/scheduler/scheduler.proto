@@ -329,7 +329,7 @@ message Pipeline {
   optional PipelineInput input = 7;
   optional DataflowSpec dataflowSpec = 8; // Dataflow specific config
   bool allowCycles = 9; // Allow cycles in the pipeline
-  uint32 maxNumCycles = 10; // Max number of cycles allowed in the pipeline
+  uint32 maxStepRevisits = 10; // Max number of times a step can be revisited
 }
 
 message PipelineStep {

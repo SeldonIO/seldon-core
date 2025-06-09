@@ -236,20 +236,20 @@ public object PipelineUpdateMessageKt {
     }
 
     /**
-     * `uint32 maxNumCycles = 9;`
+     * `uint32 maxStepRevisits = 9;`
      */
-    public var maxNumCycles: kotlin.Int
-      @JvmName("getMaxNumCycles")
-      get() = _builder.getMaxNumCycles()
-      @JvmName("setMaxNumCycles")
+    public var maxStepRevisits: kotlin.Int
+      @JvmName("getMaxStepRevisits")
+      get() = _builder.getMaxStepRevisits()
+      @JvmName("setMaxStepRevisits")
       set(value) {
-        _builder.setMaxNumCycles(value)
+        _builder.setMaxStepRevisits(value)
       }
     /**
-     * `uint32 maxNumCycles = 9;`
+     * `uint32 maxStepRevisits = 9;`
      */
-    public fun clearMaxNumCycles() {
-      _builder.clearMaxNumCycles()
+    public fun clearMaxStepRevisits() {
+      _builder.clearMaxStepRevisits()
     }
   }
 }
