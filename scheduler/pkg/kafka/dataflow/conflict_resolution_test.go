@@ -157,11 +157,29 @@ func TestGetPipelineStatus(t *testing.T) {
 		expected pipeline.PipelineStatus
 	}{
 		{
-			name: "create ready",
+			name: "create creating",
 			op:   chainer.PipelineUpdateMessage_Create,
 			statuses: map[string]pipeline.PipelineStatus{
 				"a": pipeline.PipelineReady,
 				"b": pipeline.PipelineStatusUnknown,
+			},
+			expected: pipeline.PipelineCreating,
+		},
+		{
+			name: "create ready (all ready)",
+			op:   chainer.PipelineUpdateMessage_Create,
+			statuses: map[string]pipeline.PipelineStatus{
+				"a": pipeline.PipelineReady,
+				"b": pipeline.PipelineReady,
+			},
+			expected: pipeline.PipelineReady,
+		},
+		{
+			name: "create creating (some ready)",
+			op:   chainer.PipelineUpdateMessage_Create,
+			statuses: map[string]pipeline.PipelineStatus{
+				"a": pipeline.PipelineReady,
+				"b": pipeline.PipelineFailed,
 			},
 			expected: pipeline.PipelineReady,
 		},
