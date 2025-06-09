@@ -65,7 +65,7 @@ internal class PipelineStepTest {
         private const val PIPELINE_OUTPUT_TOPIC = "seldon.namespace.pipeline.$DEFAULT_PIPELINE_NAME.outputs"
         private const val PIPELINE_ERROR_TOPIC = "seldon.namespace.errors.errors"
         private const val ALLOW_CYCLES_DEFAULT = false
-        private const val MAX_NUM_CYCLES_DEFAULT = 0
+        private const val MAX_STEP_REVISITS_DEFAULT = 0
         private val defaultPipelineTopic =
             PipelineTopic.newBuilder()
                 .setTopicName("seldon.namespace.sinkModel.inputs")
@@ -208,7 +208,7 @@ internal class PipelineStepTest {
                 pipelineOutputTopic = PIPELINE_OUTPUT_TOPIC,
                 pipelineErrorTopic = PIPELINE_ERROR_TOPIC,
                 allowCycles = ALLOW_CYCLES_DEFAULT,
-                maxNumCycles = MAX_NUM_CYCLES_DEFAULT,
+                maxStepRevisits = MAX_STEP_REVISITS_DEFAULT,
                 tensors = tensors,
                 pipelineName = DEFAULT_PIPELINE_NAME,
                 pipelineVersion = DEFAULT_PIPELINE_VERSION,
@@ -231,7 +231,7 @@ internal class PipelineStepTest {
                 pipelineOutputTopic = PIPELINE_OUTPUT_TOPIC,
                 pipelineErrorTopic = PIPELINE_ERROR_TOPIC,
                 allowCycles = ALLOW_CYCLES_DEFAULT,
-                maxNumCycles = MAX_NUM_CYCLES_DEFAULT,
+                maxStepRevisits = MAX_STEP_REVISITS_DEFAULT,
                 pipelineName = DEFAULT_PIPELINE_NAME,
                 pipelineVersion = DEFAULT_PIPELINE_VERSION,
                 outputTopic = defaultSink,

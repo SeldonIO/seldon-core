@@ -104,7 +104,7 @@ class PipelineSubscriber(
                         pipelineOutputTopic = update.pipelineOutputTopic,
                         pipelineErrorTopic = update.pipelineErrorTopic,
                         allowCycles = update.allowCycles,
-                        maxNumCycles = update.maxNumCycles,
+                        maxStepRevisits = update.maxStepRevisits,
                     )
 
                 when (update.op) {

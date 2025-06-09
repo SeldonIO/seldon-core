@@ -28,7 +28,7 @@ class Joiner(
     internal val pipelineOutputTopic: String,
     internal val pipelineErrorTopic: String,
     internal val allowCycles: Boolean,
-    internal val maxNumCycles: Int,
+    internal val maxStepRevisits: Int,
     internal val tensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
     internal val pipelineName: String,
     internal val pipelineVersion: String,
@@ -58,7 +58,7 @@ class Joiner(
             dataStream =
                 dataStream
                     .processValues(
-                        { VisitingCounterProcessor(outputTopic, pipelineOutputTopic, maxNumCycles) },
+                        { VisitingCounterProcessor(outputTopic, pipelineOutputTopic, maxStepRevisits) },
                         VISITING_COUNTER_STORE,
                     )
 

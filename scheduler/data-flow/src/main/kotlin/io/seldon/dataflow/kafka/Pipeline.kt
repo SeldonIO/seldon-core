@@ -37,7 +37,7 @@ data class PipelineMetadata(
     val pipelineOutputTopic: String,
     val pipelineErrorTopic: String,
     val allowCycles: Boolean,
-    val maxNumCycles: Int,
+    val maxStepRevisits: Int,
 )
 
 class Pipeline(
@@ -179,7 +179,7 @@ class Pipeline(
                 pipelineProperties[StreamsConfig.APPLICATION_ID_CONFIG],
             )
             logger.info(
-                "AllowCycles: ${metadata.allowCycles}; MaxNumCycles: ${metadata.maxNumCycles}",
+                "AllowCycles: ${metadata.allowCycles}; maxStepRevisits: ${metadata.maxStepRevisits}",
             )
             return Pipeline(metadata, topology, streamsApp, kafkaDomainParams, numSteps) to null
         }
@@ -211,7 +211,7 @@ class Pipeline(
                             metadata.pipelineOutputTopic,
                             metadata.pipelineErrorTopic,
                             metadata.allowCycles,
-                            metadata.maxNumCycles,
+                            metadata.maxStepRevisits,
                             it.sourcesList,
                             it.triggersList,
                             it.tensorMapList,
