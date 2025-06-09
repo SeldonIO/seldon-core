@@ -13,6 +13,7 @@ import io.klogging.noCoLogger
 import io.seldon.mlops.chainer.ChainerOuterClass
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping
 import org.apache.kafka.streams.StreamsBuilder
+import org.apache.kafka.streams.kstream.KStream
 
 /**
  * A *step* for a single input stream to a single output stream.
@@ -21,6 +22,10 @@ class Chainer(
     builder: StreamsBuilder,
     internal val inputTopic: TopicForPipeline,
     internal val outputTopic: TopicForPipeline,
+    internal val pipelineOutputTopic: String,
+    internal val pipelineErrorTopic: String,
+    internal val allowCycles: Boolean,
+    internal val maxStepRevisits: Int,
     internal val tensors: Set<TensorName>?,
     internal val pipelineName: String,
     internal val pipelineVersion: String,
@@ -38,24 +43,44 @@ class Chainer(
             }
         }
 
-        when (ChainType.create(inputTopic.topicName, outputTopic.topicName)) {
-            ChainType.OUTPUT_INPUT -> buildOutputInputStream(builder)
-            ChainType.INPUT_INPUT -> buildInputInputStream(builder)
-            ChainType.OUTPUT_OUTPUT -> buildOutputOutputStream(builder)
-            ChainType.INPUT_OUTPUT -> buildInputOutputStream(builder)
-            else -> buildPassThroughStream(builder)
+        val chainType = ChainType.create(inputTopic.topicName, outputTopic.topicName)
+        var dataStream =
+            when (chainType) {
+                ChainType.OUTPUT_INPUT -> buildOutputInputStream(builder)
+                ChainType.INPUT_INPUT -> buildInputInputStream(builder)
+                ChainType.OUTPUT_OUTPUT -> buildOutputOutputStream(builder)
+                ChainType.INPUT_OUTPUT -> buildInputOutputStream(builder)
+                else -> buildPassThroughStream(builder)
+            }
+
+        if (allowCycles) {
+            dataStream =
+                dataStream.processValues(
+                    { VisitingCounterProcessor(outputTopic, pipelineOutputTopic, maxStepRevisits) },
+                    VISITING_COUNTER_STORE,
+                )
+
+            if (inputTopic.topicName == pipelineErrorTopic) {
+                dataStream.to(outputTopic.topicName, producerSerde)
+            } else {
+                val (defaultBranch, errorBranch) = createVisitingCounterBranches(dataStream)
+                defaultBranch.to(outputTopic.topicName, producerSerde)
+                errorBranch.to(pipelineErrorTopic, producerSerde)
+            }
+        } else {
+            dataStream.to(outputTopic.topicName, producerSerde)
         }
 
         // TODO - when does K-Streams send an ack?  On consuming or only once a new value has been produced?
         // TODO - wait until streams exists, if it does not already
     }
 
-    private fun buildPassThroughStream(builder: StreamsBuilder) {
+    private fun buildPassThroughStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
         val s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
                 .filterForPipeline(inputTopic.pipelineName)
-        addTriggerTopology(
+        return addTriggerTopology(
             kafkaDomainParams,
             builder,
             inputTriggerTopics,
@@ -66,10 +91,9 @@ class Chainer(
         )
             .headerRemover()
             .headerSetter(pipelineName, pipelineVersion)
-            .to(outputTopic.topicName, producerSerde)
     }
 
-    private fun buildInputOutputStream(builder: StreamsBuilder) {
+    private fun buildInputOutputStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
         val s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
@@ -79,7 +103,7 @@ class Chainer(
                 // handle cases where there are no tensors we want
                 .filter { _, value -> value.outputsList.size != 0 }
                 .marshallInferenceV2Response()
-        addTriggerTopology(
+        return addTriggerTopology(
             kafkaDomainParams,
             builder,
             inputTriggerTopics,
@@ -90,10 +114,9 @@ class Chainer(
         )
             .headerRemover()
             .headerSetter(pipelineName, pipelineVersion)
-            .to(outputTopic.topicName, producerSerde)
     }
 
-    private fun buildOutputOutputStream(builder: StreamsBuilder) {
+    private fun buildOutputOutputStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
         val s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
@@ -103,7 +126,7 @@ class Chainer(
                 // handle cases where there are no tensors we want
                 .filter { _, value -> value.outputsList.size != 0 }
                 .marshallInferenceV2Response()
-        addTriggerTopology(
+        return addTriggerTopology(
             kafkaDomainParams,
             builder,
             inputTriggerTopics,
@@ -114,10 +137,9 @@ class Chainer(
         )
             .headerRemover()
             .headerSetter(pipelineName, pipelineVersion)
-            .to(outputTopic.topicName, producerSerde)
     }
 
-    private fun buildOutputInputStream(builder: StreamsBuilder) {
+    private fun buildOutputInputStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
         val s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
@@ -128,7 +150,7 @@ class Chainer(
                 .filter { _, value -> value.inputsList.size != 0 }
                 .batchMessages(batchProperties)
                 .marshallInferenceV2Request()
-        addTriggerTopology(
+        return addTriggerTopology(
             kafkaDomainParams,
             builder,
             inputTriggerTopics,
@@ -139,10 +161,9 @@ class Chainer(
         )
             .headerRemover()
             .headerSetter(pipelineName, pipelineVersion)
-            .to(outputTopic.topicName, producerSerde)
     }
 
-    private fun buildInputInputStream(builder: StreamsBuilder) {
+    private fun buildInputInputStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
         val s1 =
             builder
                 .stream(inputTopic.topicName, consumerSerde)
@@ -153,7 +174,7 @@ class Chainer(
                 .filter { _, value -> value.inputsList.size != 0 }
                 .batchMessages(batchProperties)
                 .marshallInferenceV2Request()
-        addTriggerTopology(
+        return addTriggerTopology(
             kafkaDomainParams,
             builder,
             inputTriggerTopics,
@@ -164,7 +185,6 @@ class Chainer(
         )
             .headerRemover()
             .headerSetter(pipelineName, pipelineVersion)
-            .to(outputTopic.topicName, producerSerde)
     }
 
     companion object {

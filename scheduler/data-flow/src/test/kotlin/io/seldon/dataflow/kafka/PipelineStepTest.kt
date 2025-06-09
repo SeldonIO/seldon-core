@@ -36,6 +36,10 @@ internal class PipelineStepTest {
                 StreamsBuilder(),
                 DEFAULT_PIPELINE_NAME,
                 DEFAULT_PIPELINE_VERSION,
+                PIPELINE_OUTPUT_TOPIC,
+                PIPELINE_ERROR_TOPIC,
+                false,
+                0,
                 sources,
                 emptyList(),
                 emptyList(),
@@ -58,6 +62,10 @@ internal class PipelineStepTest {
     companion object {
         private const val DEFAULT_PIPELINE_NAME = "some-pipeline"
         private const val DEFAULT_PIPELINE_VERSION = "1"
+        private const val PIPELINE_OUTPUT_TOPIC = "seldon.namespace.pipeline.$DEFAULT_PIPELINE_NAME.outputs"
+        private const val PIPELINE_ERROR_TOPIC = "seldon.namespace.errors.errors"
+        private const val ALLOW_CYCLES_DEFAULT = false
+        private const val MAX_STEP_REVISITS_DEFAULT = 0
         private val defaultPipelineTopic =
             PipelineTopic.newBuilder()
                 .setTopicName("seldon.namespace.sinkModel.inputs")
@@ -196,10 +204,14 @@ internal class PipelineStepTest {
             Chainer(
                 StreamsBuilder(),
                 inputTopic = inputTopic,
+                outputTopic = defaultSink,
+                pipelineOutputTopic = PIPELINE_OUTPUT_TOPIC,
+                pipelineErrorTopic = PIPELINE_ERROR_TOPIC,
+                allowCycles = ALLOW_CYCLES_DEFAULT,
+                maxStepRevisits = MAX_STEP_REVISITS_DEFAULT,
                 tensors = tensors,
                 pipelineName = DEFAULT_PIPELINE_NAME,
                 pipelineVersion = DEFAULT_PIPELINE_VERSION,
-                outputTopic = defaultSink,
                 tensorRenaming = emptyList(),
                 kafkaDomainParams = kafkaDomainParams,
                 inputTriggerTopics = emptySet(),
@@ -216,6 +228,10 @@ internal class PipelineStepTest {
                 StreamsBuilder(),
                 inputTopics = inputTopics,
                 tensorsByTopic = tensorsByTopic,
+                pipelineOutputTopic = PIPELINE_OUTPUT_TOPIC,
+                pipelineErrorTopic = PIPELINE_ERROR_TOPIC,
+                allowCycles = ALLOW_CYCLES_DEFAULT,
+                maxStepRevisits = MAX_STEP_REVISITS_DEFAULT,
                 pipelineName = DEFAULT_PIPELINE_NAME,
                 pipelineVersion = DEFAULT_PIPELINE_VERSION,
                 outputTopic = defaultSink,

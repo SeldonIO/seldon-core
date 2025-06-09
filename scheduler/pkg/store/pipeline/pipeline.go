@@ -46,16 +46,17 @@ func (p *Pipeline) GetPreviousPipelineVersion() *PipelineVersion {
 }
 
 type PipelineVersion struct {
-	Name           string
-	Version        uint32
-	UID            string
-	Input          *PipelineInput
-	Steps          map[string]*PipelineStep
-	State          *PipelineState
-	Output         *PipelineOutput
-	DataflowSepec  *DataflowSpec
-	KubernetesMeta *KubernetesMeta
-	AllowCycles    bool
+	Name            string
+	Version         uint32
+	UID             string
+	Input           *PipelineInput
+	Steps           map[string]*PipelineStep
+	State           *PipelineState
+	Output          *PipelineOutput
+	DataflowSepec   *DataflowSpec
+	KubernetesMeta  *KubernetesMeta
+	AllowCycles     bool
+	MaxStepRevisits uint32
 }
 
 func (pv *PipelineVersion) String() string {

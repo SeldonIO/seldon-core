@@ -183,6 +183,74 @@ public object PipelineUpdateMessageKt {
       _builder.clearUpdates()
     }
 
+
+    /**
+     * `string pipelineOutputTopic = 6;`
+     */
+    public var pipelineOutputTopic: kotlin.String
+      @JvmName("getPipelineOutputTopic")
+      get() = _builder.getPipelineOutputTopic()
+      @JvmName("setPipelineOutputTopic")
+      set(value) {
+        _builder.setPipelineOutputTopic(value)
+      }
+    /**
+     * `string pipelineOutputTopic = 6;`
+     */
+    public fun clearPipelineOutputTopic() {
+      _builder.clearPipelineOutputTopic()
+    }
+
+    /**
+     * `string pipelineErrorTopic = 7;`
+     */
+    public var pipelineErrorTopic: kotlin.String
+      @JvmName("getPipelineErrorTopic")
+      get() = _builder.getPipelineErrorTopic()
+      @JvmName("setPipelineErrorTopic")
+      set(value) {
+        _builder.setPipelineErrorTopic(value)
+      }
+    /**
+     * `string pipelineErrorTopic = 7;`
+     */
+    public fun clearPipelineErrorTopic() {
+      _builder.clearPipelineErrorTopic()
+    }
+
+    /**
+     * `bool allowCycles = 8;`
+     */
+    public var allowCycles: kotlin.Boolean
+      @JvmName("getAllowCycles")
+      get() = _builder.getAllowCycles()
+      @JvmName("setAllowCycles")
+      set(value) {
+        _builder.setAllowCycles(value)
+      }
+    /**
+     * `bool allowCycles = 8;`
+     */
+    public fun clearAllowCycles() {
+      _builder.clearAllowCycles()
+    }
+
+    /**
+     * `uint32 maxStepRevisits = 9;`
+     */
+    public var maxStepRevisits: kotlin.Int
+      @JvmName("getMaxStepRevisits")
+      get() = _builder.getMaxStepRevisits()
+      @JvmName("setMaxStepRevisits")
+      set(value) {
+        _builder.setMaxStepRevisits(value)
+      }
+    /**
+     * `uint32 maxStepRevisits = 9;`
+     */
+    public fun clearMaxStepRevisits() {
+      _builder.clearMaxStepRevisits()
+    }
   }
 }
 @kotlin.jvm.JvmSynthetic

@@ -25,6 +25,10 @@ class Joiner(
     builder: StreamsBuilder,
     internal val inputTopics: Set<TopicForPipeline>,
     internal val outputTopic: TopicForPipeline,
+    internal val pipelineOutputTopic: String,
+    internal val pipelineErrorTopic: String,
+    internal val allowCycles: Boolean,
+    internal val maxStepRevisits: Int,
     internal val tensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
     internal val pipelineName: String,
     internal val pipelineVersion: String,
@@ -36,19 +40,34 @@ class Joiner(
     internal val triggerTensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
 ) : PipelineStep {
     init {
-        val dataStream = buildTopology(builder, inputTopics)
-        addTriggerTopology(
-            kafkaDomainParams,
-            builder,
-            inputTriggerTopics,
-            triggerTensorsByTopic,
-            triggerJoinType,
-            dataStream,
-            null,
-        )
-            .headerRemover()
-            .headerSetter(pipelineName, pipelineVersion)
-            .to(outputTopic.topicName, producerSerde)
+        var dataStream = buildTopology(builder, inputTopics)
+        dataStream =
+            addTriggerTopology(
+                kafkaDomainParams,
+                builder,
+                inputTriggerTopics,
+                triggerTensorsByTopic,
+                triggerJoinType,
+                dataStream,
+                null,
+            )
+                .headerRemover()
+                .headerSetter(pipelineName, pipelineVersion)
+
+        if (allowCycles) {
+            dataStream =
+                dataStream
+                    .processValues(
+                        { VisitingCounterProcessor(outputTopic, pipelineOutputTopic, maxStepRevisits) },
+                        VISITING_COUNTER_STORE,
+                    )
+
+            val (defaultBranch, errorBranch) = createVisitingCounterBranches(dataStream)
+            defaultBranch.to(outputTopic.topicName, producerSerde)
+            errorBranch.to(pipelineErrorTopic, producerSerde)
+        } else {
+            dataStream.to(outputTopic.topicName, producerSerde)
+        }
     }
 
     private fun buildTopology(

@@ -20,6 +20,10 @@ message PipelineUpdateMessage {
   uint32 version = 3;
   string uid = 4;
   repeated PipelineStepUpdate updates = 5;
+  string pipelineOutputTopic = 6;
+  string pipelineErrorTopic = 7;
+  bool allowCycles = 8;
+  uint32 maxStepRevisits = 9;
 }
 
 message PipelineStepUpdate {
