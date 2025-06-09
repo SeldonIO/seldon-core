@@ -132,3 +132,11 @@ func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *
 
 	return pipeline.PipelineStatusUnknown, "Unknown operation or status"
 }
+
+func (cr *ConflictResolutioner) GetTimestamp(pipelineName string) uint64 {
+	if timestamp, ok := cr.vectorClock[pipelineName]; ok {
+		return timestamp
+	}
+	cr.logger.Warnf("Timestamp for pipeline %s not found, returning 0", pipelineName)
+	return 0
+}
