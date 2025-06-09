@@ -29,7 +29,7 @@ const val VISITING_DEFAULT_BRANCH = "default"
 class VisitingCounterProcessor(
     private val outputTopic: TopicForPipeline,
     private val pipelineOutputTopic: String,
-    private val maxCycles: Int,
+    private val maxStepRevisits: Int,
 ) : FixedKeyProcessor<RequestId, TRecord, TRecord> {
     private lateinit var visitingCounterStore: KeyValueStore<String, Int>
     private lateinit var context: FixedKeyProcessorContext<RequestId, TRecord>
@@ -59,8 +59,8 @@ class VisitingCounterProcessor(
         val compositeKey = "$requestId:${outputTopic.topicName}"
         val newCount = (visitingCounterStore.get(compositeKey) ?: 0)
 
-        if (newCount > maxCycles) {
-            val message = "$ERROR_PREFIX Max cycles ($maxCycles) exceeded for request $requestId in topic $outputTopic"
+        if (newCount > maxStepRevisits) {
+            val message = "$ERROR_PREFIX Max step revisits ($maxStepRevisits) exceeded for request $requestId in topic $outputTopic"
             logger.warn { message }
             context.forward(
                 record
