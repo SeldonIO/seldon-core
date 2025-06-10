@@ -43,6 +43,8 @@ const (
 	envDefaultNumPartitions     = "KAFKA_DEFAULT_NUM_PARTITIONS"
 	defaultReplicationFactor    = 1
 	defaultNumPartitions        = 1
+	replicationFactorKey        = "replicationFactor"
+	numPartitionsKey            = "numPartitions"
 )
 
 type InferKafkaHandler struct {
@@ -71,13 +73,22 @@ func NewInferKafkaHandler(
 	consumerConfig *ManagerConfig,
 	consumerConfigMap kafka.ConfigMap,
 	producerConfigMap kafka.ConfigMap,
+	topicsConfigMap kafka.ConfigMap,
 	consumerName string,
 ) (*InferKafkaHandler, error) {
-	replicationFactor, err := util.GetIntEnvar(envDefaultReplicationFactor, defaultReplicationFactor)
+	defaultReplicationFactor, err := util.GetIntEnvar(envDefaultReplicationFactor, defaultReplicationFactor)
 	if err != nil {
 		return nil, err
 	}
-	numPartitions, err := util.GetIntEnvar(envDefaultNumPartitions, defaultNumPartitions)
+	replicationFactor, err := util.GetIntConfigMapValue(topicsConfigMap, replicationFactorKey, defaultReplicationFactor)
+	if err != nil {
+		return nil, err
+	}
+	defaultNumPartitions, err := util.GetIntEnvar(envDefaultNumPartitions, defaultNumPartitions)
+	if err != nil {
+		return nil, err
+	}
+	numPartitions, err := util.GetIntConfigMapValue(topicsConfigMap, numPartitionsKey, defaultNumPartitions)
 	if err != nil {
 		return nil, err
 	}
