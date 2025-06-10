@@ -256,18 +256,18 @@ func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromPipeline(_ context.Contex
 		return nil
 	}
 
-	var seldonRuntime mlopsv1alpha1.SeldonRuntime
-	pipelineNamespace := types.NamespacedName{Namespace: pipeline.Namespace, Name: pipeline.Name}
-	if err := r.Client.Get(ctx, pipelineNamespace, &seldonRuntime); err != nil {
+	var seldonRuntimes mlopsv1alpha1.SeldonRuntimeList
+	if err := r.Client.List(ctx, &seldonRuntimes, client.InNamespace(pipeline.Namespace)); err != nil {
 		logger.Error(err, "error listing seldonRuntimes")
 		return nil
 	}
 
+	// should be only one SeldonRuntime per namespace
 	return []reconcile.Request{
 		{
 			NamespacedName: types.NamespacedName{
-				Namespace: seldonRuntime.Namespace,
-				Name:      seldonRuntime.Name,
+				Namespace: seldonRuntimes.Items[0].Namespace,
+				Name:      seldonRuntimes.Items[0].Name,
 			},
 		},
 	}
