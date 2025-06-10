@@ -255,24 +255,21 @@ func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromPipeline(_ context.Contex
 		return nil
 	}
 
-	var seldonRuntimes mlopsv1alpha1.SeldonRuntimeList
-	if err := r.Client.List(ctx, &seldonRuntimes); err != nil {
+	var seldonRuntime mlopsv1alpha1.SeldonRuntime
+	pipelineNamespace := types.NamespacedName{Namespace: pipeline.Namespace, Name: pipeline.Name}
+	if err := r.Client.Get(ctx, pipelineNamespace, &seldonRuntime); err != nil {
 		logger.Error(err, "error listing seldonRuntimes")
 		return nil
 	}
 
-	var reqs []reconcile.Request
-	for _, sr := range seldonRuntimes.Items {
-		if sr.Namespace == pipeline.Namespace {
-			reqs = append(reqs, reconcile.Request{
-				NamespacedName: types.NamespacedName{
-					Namespace: sr.Namespace,
-					Name:      sr.Name,
-				},
-			})
-		}
+	return []reconcile.Request{
+		{
+			NamespacedName: types.NamespacedName{
+				Namespace: seldonRuntime.Namespace,
+				Name:      seldonRuntime.Name,
+			},
+		},
 	}
-	return reqs
 }
 
 // SetupWithManager sets up the controller with the Manager.
