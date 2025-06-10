@@ -189,6 +189,11 @@ class Pipeline(
             steps: List<PipelineStepUpdate>,
             kafkaDomainParams: KafkaDomainParams,
         ): Pair<Topology, Int> {
+            // Sort the steps by the sink to ensure the same
+            // order when building the topology amongst multiple
+            // replicas. The scheduler doesn't send the same message
+            // because the steps are created from iterating over a map
+            val sortedSteps = steps.sortedBy { it.sink.topicName }
             val builder = StreamsBuilder()
 
             if (metadata.allowCycles) {
@@ -202,7 +207,7 @@ class Pipeline(
             }
 
             val topologySteps =
-                steps
+                sortedSteps
                     .mapNotNull {
                         stepFor(
                             builder,

@@ -251,6 +251,40 @@ public object PipelineUpdateMessageKt {
     public fun clearMaxStepRevisits() {
       _builder.clearMaxStepRevisits()
     }
+
+    /**
+     * `uint64 timestamp = 10;`
+     */
+    public var timestamp: kotlin.Long
+      @JvmName("getTimestamp")
+      get() = _builder.getTimestamp()
+      @JvmName("setTimestamp")
+      set(value) {
+        _builder.setTimestamp(value)
+      }
+    /**
+     * `uint64 timestamp = 10;`
+     */
+    public fun clearTimestamp() {
+      _builder.clearTimestamp()
+    }
+
+    /**
+     * `string stream = 11;`
+     */
+    public var stream: kotlin.String
+      @JvmName("getStream")
+      get() = _builder.getStream()
+      @JvmName("setStream")
+      set(value) {
+        _builder.setStream(value)
+      }
+    /**
+     * `string stream = 11;`
+     */
+    public fun clearStream() {
+      _builder.clearStream()
+    }
   }
 }
 @kotlin.jvm.JvmSynthetic
