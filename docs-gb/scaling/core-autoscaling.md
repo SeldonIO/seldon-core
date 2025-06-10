@@ -2,7 +2,7 @@
 
 Seldon Core provides native autoscaling features for both Models and Servers, enabling automatic scaling based on inference load. The diagram below depicts an autoscaling implementation that uses both Model and Server autoscaling features native to Seldon Core (i.e. this implementation doesn't leverage HPA for autoscaling, an approach we cover [here](./hpa-overview.md)) 
 
-![Core Model Server Autoscaling](../../images/core-model-server-autoscaling.png)
+![Core Model Server Autoscaling](./core-model-server-autoscaling.png)
 
 ## Model Autoscaling
 
