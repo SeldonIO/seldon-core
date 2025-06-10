@@ -71,14 +71,13 @@ func NewInferKafkaHandler(
 	consumerConfig *ManagerConfig,
 	consumerConfigMap kafka.ConfigMap,
 	producerConfigMap kafka.ConfigMap,
-	topicsConfigMap kafka.ConfigMap,
 	consumerName string,
 ) (*InferKafkaHandler, error) {
-	replicationFactor, err := util.GetIntConfigMapValue(topicsConfigMap, replicationFactorKey, defaultReplicationFactor)
+	replicationFactor, err := util.GetIntEnvar(envDefaultReplicationFactor, defaultReplicationFactor)
 	if err != nil {
 		return nil, err
 	}
-	numPartitions, err := util.GetIntConfigMapValue(topicsConfigMap, numPartitionsKey, defaultNumPartitions)
+	numPartitions, err := util.GetIntEnvar(envDefaultNumPartitions, defaultNumPartitions)
 	if err != nil {
 		return nil, err
 	}

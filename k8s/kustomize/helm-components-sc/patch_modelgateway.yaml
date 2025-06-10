@@ -12,6 +12,10 @@ spec:
       - env:
           - name: MODELGATEWAY_NUM_WORKERS
             value: '{{ .Values.modelgateway.workers }}'
+          - name: KAFKA_DEFAULT_REPLICATION_FACTOR
+            value: '{{ .Values.kafka.topics.replicationFactor }}'
+          - name: KAFKA_DEFAULT_NUM_PARTITIONS
+            value: '{{ .Values.kafka.topics.numPartitions }}'
           - name: CONTROL_PLANE_SECURITY_PROTOCOL
             value: '{{ .Values.security.controlplane.protocol }}'
           - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
