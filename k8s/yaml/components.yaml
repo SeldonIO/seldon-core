@@ -633,6 +633,10 @@ spec:
         env:
         - name: MODELGATEWAY_NUM_WORKERS
           value: '8'
+        - name: KAFKA_DEFAULT_REPLICATION_FACTOR
+          value: '1'
+        - name: KAFKA_DEFAULT_NUM_PARTITIONS
+          value: '1'
         - name: CONTROL_PLANE_SECURITY_PROTOCOL
           value: 'PLAINTEXT'
         - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
@@ -960,9 +964,6 @@ spec:
         linger.ms: '0'
         message.max.bytes: '1000000000'
       topicPrefix: 'seldon'
-      topics:
-        numPartitions: '1'
-        replicationFactor: '1'
     serviceConfig:
       grpcServicePrefix: ''
       serviceType: 'LoadBalancer'
