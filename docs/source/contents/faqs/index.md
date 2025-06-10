@@ -1,5 +1,9 @@
 # FAQs
 
+## Can Seldon Core 2 be used with Seldon Core 1
+
+The two projects are able to be run side by side. Existing users of Seldon Core can update to deploy their models using Seldon Core 2 as needed to take advantage of the new functionality. Both will be supported.
+
 ## Can I do payload logging in Seldon Core 2?
 
 By default, the input and output of every step in a pipeline (as well as the pipeline itself) is logged in Kafka.
