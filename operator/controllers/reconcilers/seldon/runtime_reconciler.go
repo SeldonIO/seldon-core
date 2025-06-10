@@ -43,15 +43,11 @@ func ValidateDataflowScaleSpec(
 	kafkaConfig *mlopsv1alpha1.KafkaConfig,
 	namespace *string,
 ) error {
-	ctx, clt, recorder, logger := commonConfig.Ctx, commonConfig.Client, commonConfig.Recorder, commonConfig.Logger
-
-	logger.Info("kafkaConfig.Topics", "Topics", kafkaConfig.Topics)
+	ctx, clt, recorder := commonConfig.Ctx, commonConfig.Client, commonConfig.Recorder
 	numPartitions, err := ParseInt32(kafkaConfig.Topics["numPartitions"].StrVal)
 	if err != nil {
 		return fmt.Errorf("failed to parse numPartitions from KafkaConfig: %w", err)
 	}
-
-	logger.Info("Using numPartitions from KafkaConfig", "numPartitions", numPartitions)
 
 	var pipelineCount int32 = 0
 	if namespace != nil {
@@ -60,9 +56,7 @@ func ValidateDataflowScaleSpec(
 		if err := clt.List(ctx, &pipelineList, client.InNamespace(*namespace)); err != nil {
 			return fmt.Errorf("failed to list Pipeline resources in namespace %s: %w", *namespace, err)
 		}
-
 		pipelineCount = int32(len(pipelineList.Items))
-		logger.Info("Number of Pipeline resources", "namespace", *namespace, "count", pipelineCount)
 	}
 
 	maxReplicas := numPartitions
@@ -70,11 +64,8 @@ func ValidateDataflowScaleSpec(
 		maxReplicas = numPartitions * pipelineCount
 	}
 
-	logger.Info("Maximum replicas for dataflow engine", "max_replicas", maxReplicas)
-
 	if component.Replicas != nil && *component.Replicas > maxReplicas {
 		component.Replicas = &maxReplicas
-		logger.Info("Adjusted dataflow engine replicas to max", "replicas", maxReplicas)
 		recorder.Eventf(
 			runtime,
 			v1.EventTypeWarning,
