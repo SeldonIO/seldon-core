@@ -40,11 +40,10 @@ func ValidateDataflowScaleSpec(
 	component *mlopsv1alpha1.ComponentDefn,
 	runtime *mlopsv1alpha1.SeldonRuntime,
 	commonConfig common.ReconcilerConfig,
-	kafkaConfig *mlopsv1alpha1.KafkaConfig,
 	namespace *string,
 ) error {
 	ctx, clt, recorder := commonConfig.Ctx, commonConfig.Client, commonConfig.Recorder
-	numPartitions, err := ParseInt32(kafkaConfig.Topics["numPartitions"].StrVal)
+	numPartitions, err := ParseInt32(runtime.Spec.Config.KafkaConfig.Topics["numPartitions"].StrVal)
 	if err != nil {
 		return fmt.Errorf("failed to parse numPartitions from KafkaConfig: %w", err)
 	}
@@ -80,7 +79,6 @@ func ValidateComponent(
 	component *mlopsv1alpha1.ComponentDefn,
 	runtime *mlopsv1alpha1.SeldonRuntime,
 	commonConfig common.ReconcilerConfig,
-	kafkaConfig *mlopsv1alpha1.KafkaConfig,
 	namespace *string,
 ) error {
 	if component.Name == mlopsv1alpha1.DataflowEngineName {
@@ -88,7 +86,6 @@ func ValidateComponent(
 			component,
 			runtime,
 			commonConfig,
-			kafkaConfig,
 			namespace,
 		)
 	}
@@ -124,14 +121,16 @@ func NewSeldonRuntimeReconciler(
 		return nil, err
 	}
 
+	runtime.Spec.Config.AddDefaults(seldonConfig.Spec.Config)
+
 	overrides := make(map[string]*mlopsv1alpha1.OverrideSpec)
 	for _, o := range runtime.Spec.Overrides {
 		overrides[o.Name] = o
 	}
 
 	annotator := patch.NewAnnotator(constants.LastAppliedConfig)
-	var componentReconcilers []common.Reconciler
 
+	var componentReconcilers []common.Reconciler
 	for _, c := range seldonConfig.Spec.Components {
 		override := overrides[c.Name]
 		commonConfig.Logger.Info("Creating reconciler", "name", c.Name, "has override", override != nil)
@@ -142,7 +141,6 @@ func NewSeldonRuntimeReconciler(
 				c,
 				runtime,
 				commonConfig,
-				&seldonConfig.Spec.Config.KafkaConfig,
 				&namespace,
 			)
 			if err != nil {
@@ -196,7 +194,6 @@ func NewSeldonRuntimeReconciler(
 		}
 	}
 
-	runtime.Spec.Config.AddDefaults(seldonConfig.Spec.Config)
 	configMapReconciler, err := NewConfigMapReconciler(commonConfig, &runtime.Spec.Config, runtime.ObjectMeta)
 	if err != nil {
 		return nil, err
