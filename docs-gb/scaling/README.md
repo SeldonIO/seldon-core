@@ -25,6 +25,7 @@ Based on the requirements above, one of the following three options for coordina
 | [Scaling Models and Servers with HPA](./single-model-serving-hpa.md) | User-defined (HPA) | ❌ | - Coordinated Model and Server scaling | - Requires Metrics store integration (e.g. Prometheus)<br>- No Multi-Model Serving |
 
 Alternatively, the following decision-tree showcases the approaches we recommend based on users' requirements:
+
 ![Autoscaling Approach Decision-tree](./autoscaling-decision-tree.png)
 
 # Scaling Seldon Services
