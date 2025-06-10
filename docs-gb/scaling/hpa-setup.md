@@ -2,9 +2,7 @@
 description: Learn how to implement request-per-second (RPS) based autoscaling in Seldon Core 2 using Kubernetes HPA and Prometheus metrics.
 ---
 
-Given Seldon Core 2 is predominantly for serving ML in Kubernetes, it is possible to leverage `HorizontalPodAutoscaler` or [HPA](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) to define scaling logic automatically scale up and down Kubernetes resources. This requires exposing the right metrics such that they can be used by HPA. In this tutorial, we will explain how to expose a metric (requests per second) using Prometheus and [Prometheus Adapter](https://github.com/kubernetes-sigs/prometheus-adapter), such that it can be used to autoscale Models or Servers using HPA. 
-
-# Setting up HPA to Autoscale Models
+Given Seldon Core 2 is predominantly for serving ML in Kubernetes, it is possible to leverage `HorizontalPodAutoscaler` or [HPA](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) to define scaling logic automatically scale up and down Kubernetes resources. This requires exposing metrics such that they can be used by HPA. In this tutorial, we will explain how to expose a metric (requests per second) using Prometheus and [Prometheus Adapter](https://github.com/kubernetes-sigs/prometheus-adapter), such that it can be used to autoscale Models or Servers using HPA. 
 
 The following workflow will require: 
 
