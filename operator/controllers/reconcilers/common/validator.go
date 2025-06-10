@@ -66,3 +66,27 @@ func ValidateDataflowScaleSpec(
 	}
 	return nil
 }
+
+func ValidateSeldonConfig(
+	ctx context.Context,
+	clt client.Client,
+	seldonConfig *mlopsv1alpha1.SeldonConfig,
+	namespace *string,
+	logger logr.Logger,
+) error {
+	for _, component := range seldonConfig.Spec.Components {
+		logger.Info("Checking component", "component_name", component.Name)
+
+		if component.Name == mlopsv1alpha1.DataflowEngineName {
+			return ValidateDataflowScaleSpec(
+				ctx,
+				clt,
+				component,
+				&seldonConfig.Spec.Config.KafkaConfig,
+				namespace,
+				logger,
+			)
+		}
+	}
+	return nil
+}
