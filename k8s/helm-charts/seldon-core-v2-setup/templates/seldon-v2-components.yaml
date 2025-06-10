@@ -1136,6 +1136,9 @@ spec:
         linger.ms: '{{ .Values.kafka.producer.lingerMs }}'
         message.max.bytes: '{{ int .Values.kafka.producer.messageMaxBytes }}'
       topicPrefix: '{{ .Values.kafka.topicPrefix }}'
+      topics:
+        numPartitions: '{{ .Values.kafka.topics.numPartitions }}'
+        replicationFactor: '{{ .Values.kafka.topics.replicationFactor }}'
     serviceConfig:
       grpcServicePrefix: '{{ .Values.services.serviceGRPCPrefix }}'
       serviceType: '{{ .Values.services.defaultServiceType }}'
