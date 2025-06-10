@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-logr/logr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/record"
 	"knative.dev/pkg/apis"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -49,7 +50,8 @@ type LabelHandler interface {
 }
 
 type ReconcilerConfig struct {
-	Ctx    context.Context
-	Logger logr.Logger
-	Client client.Client
+	Ctx      context.Context
+	Client   client.Client
+	Recorder record.EventRecorder
+	Logger   logr.Logger
 }
