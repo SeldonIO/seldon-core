@@ -230,7 +230,6 @@ func main() {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
 
-	// logger.Infof("Number of kafka partition %s", kafkaConfigMap.Topics["numPartitions"])
 	numPartitions, err := strconv.Atoi(kafkaConfigMap.Topics["numPartitions"].(string))
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to parse numPartitions from Kafka config. Defaulting to 1")
