@@ -24,6 +24,9 @@ Based on the requirements above, one of the following three options for coordina
 | [Custom Model Autoscaling with HPA](./custom-hpa-autoscaling.md) | User-defined (HPA) | ✅ | - Custom scaling metric | - Requires Metrics store integration (e.g. Prometheus)<br>- Potentially suboptimal Server packing on scale down |
 | [Scaling Models and Servers with HPA](./single-model-serving-hpa.md) | User-defined (HPA) | ❌ | - Coordinated Model and Server scaling | - Requires Metrics store integration (e.g. Prometheus)<br>- No Multi-Model Serving |
 
+Alternatively, the following decision-tree showcases the approaches we recommend based on users' requirements:
+![Autoscaling Approach Decision-tree](./autoscaling-decision-tree.png)
+
 # Scaling Seldon Services
 
 When running Core 2 at scale, it is important to understand the scaling behaviour of Seldon's services as well as the scaling of the Models and Servers themselves. This is outlined in the [Scaling Core Services](scaling-core-services.md) page.
