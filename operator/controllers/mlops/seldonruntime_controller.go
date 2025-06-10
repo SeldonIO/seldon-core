@@ -143,9 +143,10 @@ func (r *SeldonRuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	sr, err := seldonreconcile.NewSeldonRuntimeReconciler(
 		seldonRuntime,
 		common.ReconcilerConfig{
-			Ctx:    ctx,
-			Logger: logger,
-			Client: r.Client,
+			Ctx:      ctx,
+			Logger:   logger,
+			Client:   r.Client,
+			Recorder: r.Recorder,
 		},
 		req.Namespace,
 	)

@@ -10,10 +10,11 @@ the Change License after the Change Date as each is defined in accordance with t
 package server
 
 import (
-	"context"
+	"fmt"
+	"strconv"
 
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
-	"github.com/go-logr/logr"
+	v1 "k8s.io/api/core/v1"
 	"knative.dev/pkg/apis"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -30,22 +31,74 @@ type SeldonRuntimeReconciler struct {
 	configMapReconciler  common.Reconciler
 }
 
-func ValidateComponent(
-	ctx context.Context,
-	clt client.Client,
+func ParseInt32(s string) (int32, error) {
+	i64, err := strconv.ParseInt(s, 10, 32)
+	return int32(i64), err
+}
+
+func ValidateDataflowScaleSpec(
 	component *mlopsv1alpha1.ComponentDefn,
+	runtime *mlopsv1alpha1.SeldonRuntime,
+	commonConfig common.ReconcilerConfig,
 	kafkaConfig *mlopsv1alpha1.KafkaConfig,
 	namespace *string,
-	logger logr.Logger,
+) error {
+	ctx, clt, recorder, logger := commonConfig.Ctx, commonConfig.Client, commonConfig.Recorder, commonConfig.Logger
+
+	logger.Info("kafkaConfig.Topics", "Topics", kafkaConfig.Topics)
+	numPartitions, err := ParseInt32(kafkaConfig.Topics["numPartitions"].StrVal)
+	if err != nil {
+		return fmt.Errorf("failed to parse numPartitions from KafkaConfig: %w", err)
+	}
+
+	logger.Info("Using numPartitions from KafkaConfig", "numPartitions", numPartitions)
+
+	var pipelineCount int32 = 0
+	if namespace != nil {
+		// Get the number of Pipeline resources in the namespace
+		var pipelineList mlopsv1alpha1.PipelineList
+		if err := clt.List(ctx, &pipelineList, client.InNamespace(*namespace)); err != nil {
+			return fmt.Errorf("failed to list Pipeline resources in namespace %s: %w", *namespace, err)
+		}
+
+		pipelineCount = int32(len(pipelineList.Items))
+		logger.Info("Number of Pipeline resources", "namespace", *namespace, "count", pipelineCount)
+	}
+
+	maxReplicas := numPartitions
+	if pipelineCount != 0 {
+		maxReplicas = numPartitions * pipelineCount
+	}
+
+	logger.Info("Maximum replicas for dataflow engine", "max_replicas", maxReplicas)
+
+	if component.Replicas != nil && *component.Replicas > maxReplicas {
+		component.Replicas = &maxReplicas
+		logger.Info("Adjusted dataflow engine replicas to max", "replicas", maxReplicas)
+		recorder.Eventf(
+			runtime,
+			v1.EventTypeWarning,
+			"DataflowEngineReplicasAdjusted",
+			fmt.Sprintf("Dataflow engine replicas adjusted to %d based on KafkaConfig and Pipeline count", maxReplicas),
+		)
+	}
+	return nil
+}
+
+func ValidateComponent(
+	component *mlopsv1alpha1.ComponentDefn,
+	runtime *mlopsv1alpha1.SeldonRuntime,
+	commonConfig common.ReconcilerConfig,
+	kafkaConfig *mlopsv1alpha1.KafkaConfig,
+	namespace *string,
 ) error {
 	if component.Name == mlopsv1alpha1.DataflowEngineName {
-		return common.ValidateDataflowScaleSpec(
-			ctx,
-			clt,
+		return ValidateDataflowScaleSpec(
 			component,
+			runtime,
+			commonConfig,
 			kafkaConfig,
 			namespace,
-			logger,
 		)
 	}
 	return nil
@@ -58,8 +111,6 @@ func ComponentOverride(component *mlopsv1alpha1.ComponentDefn, override *mlopsv1
 		replicas := int32(1)
 		component.Replicas = &replicas
 	}
-
-	// Merge specs
 	if override != nil && override.PodSpec != nil {
 		var err error
 		component.PodSpec, err = common.MergePodSpecs(component.PodSpec, override.PodSpec)
@@ -67,7 +118,6 @@ func ComponentOverride(component *mlopsv1alpha1.ComponentDefn, override *mlopsv1
 			return nil, err
 		}
 	}
-
 	return component, nil
 }
 
@@ -89,7 +139,6 @@ func NewSeldonRuntimeReconciler(
 	}
 
 	annotator := patch.NewAnnotator(constants.LastAppliedConfig)
-
 	var componentReconcilers []common.Reconciler
 
 	for _, c := range seldonConfig.Spec.Components {
@@ -99,12 +148,11 @@ func NewSeldonRuntimeReconciler(
 			commonConfig.Logger.Info("Creating component", "name", c.Name)
 			c, _ = ComponentOverride(c, override)
 			err = ValidateComponent(
-				commonConfig.Ctx,
-				commonConfig.Client,
 				c,
+				runtime,
+				commonConfig,
 				&seldonConfig.Spec.Config.KafkaConfig,
 				&namespace,
-				commonConfig.Logger,
 			)
 			if err != nil {
 				return nil, err
