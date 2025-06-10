@@ -262,15 +262,16 @@ func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromPipeline(_ context.Contex
 		return nil
 	}
 
-	// should be only one SeldonRuntime per namespace
-	return []reconcile.Request{
-		{
+	var req []reconcile.Request
+	for _, seldonRuntime := range seldonRuntimes.Items {
+		req = append(req, reconcile.Request{
 			NamespacedName: types.NamespacedName{
-				Namespace: seldonRuntimes.Items[0].Namespace,
-				Name:      seldonRuntimes.Items[0].Name,
+				Namespace: seldonRuntime.Namespace,
+				Name:      seldonRuntime.Name,
 			},
-		},
+		})
 	}
+	return req
 }
 
 // SetupWithManager sets up the controller with the Manager.
