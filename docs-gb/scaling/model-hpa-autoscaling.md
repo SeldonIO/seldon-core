@@ -1,5 +1,5 @@
 
-# Configuring HPA manifests
+## Configuring HPA manifests
 
 Once metrics for custom autoscaling are configured (see [HPA Setup](hpa-setup.md)), Kubernetes resources, including Models, can be autoscaled using HPA by applying an HPA manifest that targets the chosen scaling metric. 
 
@@ -63,7 +63,7 @@ If a Model gets scaled up slightly before its corresponding Server, the model is
 The Object metric allows for two target value types: `AverageValue` and `Value`. Of the two, only `AverageValue` is supported for the current Seldon Core 2 setup. The `Value` target type is typically used for metrics describing the utilization of a resource and would not be suitable for RPS-based scaling.
 {% endhint %}
 
-### HPA metrics of type Object
+## HPA metrics of type Object
 
 The example HPA manifests use metrics of type "Object" that fetch the data used in scaling decisions by querying k8s metrics associated with a particular k8s object. The endpoints that HPA uses for fetching those metrics are the same ones that were tested in the previous section using `kubectl get --raw ...`. Because you have configured the Prometheus Adapter to expose those k8s metrics based on queries to Prometheus, a mapping exists between the information contained in the HPA Object metric definition and the actual query that is executed against Prometheus. This section aims to give more details on how this mapping works.
 
@@ -114,7 +114,7 @@ Once Model autoscaling is set up (either through HPA, or by Seldon Core), users 
 
 Otherwise, if you want to scale Servers using HPA as well - this only works in a setup where all Models and Servers have a 1-1 maping - you will also need to set up HPA manifests for Servers. This is explained in more detail [here](./single-model-serving-hpa.md). 
 
-### Advanced settings
+## Advanced settings
 
 *   **Filtering metrics by additional labels on the prometheus metric** - The prometheus metric from which the model RPS is computed has the following labels managed by Seldon Core 2:
 
@@ -183,7 +183,7 @@ Not having sufficient cluster resources to serve the number of replicas configur
 
 A similar approach should be taken for setting `minReplicas`, in relation to estimated RPS in the low-load regime. However, it's useful to balance lower resource usage to immediate availability of replicas for inference rate increases from that lowest load point. If low-load regimes only occur for small periods of time, and especially combined with a high rate of increase in RPS when moving out of the low-load regime, it might be worth to set the `minReplicas` floor higher in order to ensure SLAs are met at all times.
 
-## Configuring Scaling Paramters
+### Configuring Scaling Parameters
 
 The following elements are important to take into account when setting the HPA policies for models:
 
