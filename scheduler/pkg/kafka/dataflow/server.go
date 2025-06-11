@@ -482,6 +482,7 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 			return
 		}
 		logger.Debugf("Received event %s with state %s", event.String(), pv.State.Status.String())
+		logger.Infof("Received event %s with state %s", event.String(), pv.State.Status.String())
 
 		// Handle case where we have no subscribers
 		if len(c.streams) == 0 {
@@ -516,6 +517,7 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 			c.sendPipelineMsgToSelectedServers(msg, pv)
 
 		case pipeline.PipelineTerminate:
+			logger.Infof("attempting to change pipeline %s, status to terminating", pv.String())
 			err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineTerminating, "", sourceChainerServer)
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to set pipeline state to terminating for %s", pv.String())
