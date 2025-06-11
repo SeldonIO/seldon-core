@@ -31,8 +31,8 @@
 <!-- * Inference Server -->
 <!-- * Run Inference -->
 * [Kubernetes Resources](kubernetes/resources/README.md) 
-* [Servers](servers.md)
-    * [Resource allocation](resource-allocation/README.md)
+* [Servers](servers/servers.md)
+    * [Resource allocation](servers/resource-allocation.md)
       * [Example: Serving models on dedicated GPU nodes](resource-allocation/example-serving-models-on-dedicated-gpu-nodes.md)
 * [Models](models/README.md)
     <!--  

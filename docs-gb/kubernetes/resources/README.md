@@ -4,7 +4,7 @@ For Kubernetes usage we provide a set of custom resources for interacting with S
 
 * [SeldonRuntime](./seldonruntime.md) - for installing Seldon in a particular namespace.
 * [Servers](./server.md) - for deploying sets of replicas of core inference servers (MLServer or Triton).
-* [Models](./model.md) - for deploying single machine learning models, custom transformation logic, drift detectors, outliers detectors and explainers.
+* [Models](../../models/README.md) - for deploying single machine learning models, custom transformation logic, drift detectors, outliers detectors and explainers.
 * [Experiments](./experiment.md) - for testing new versions of models.
 * [Pipelines](./pipeline.md) - for connecting together flows of data between models.
 

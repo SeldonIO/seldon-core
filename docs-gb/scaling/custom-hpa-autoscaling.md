@@ -1,7 +1,7 @@
 
 # Configuring HPA manifests
 
-For every Model you want to autoscale, you need to apply an HPA manifest based on the chosen scaling metric. If you want to scale Servers using HPA as well - this only works in a setup where all Models and Servers have a 1-1 maping - as opposed to having Seldon's scheduler automatically scale Servers up and down based on Model needs, you will also need to set up HPA manifests for Servers. This is explained in more detail [here](./single-model-serving-hpa.md). 
+Once metrics for custom autoscaling are configured (see [HPA Setup](hpa-setup.md)), Kubernetes resources, including Models, can be autoscaled using HPA by applying an HPA manifest that targets the chosen scaling metric. If you want to scale Servers using HPA as well - this only works in a setup where all Models and Servers have a 1-1 maping - as opposed to having Seldon's scheduler automatically scale Servers up and down based on Model needs, you will also need to set up HPA manifests for Servers. This is explained in more detail [here](./single-model-serving-hpa.md). 
 
 Consider a model named `irisa0` with the following manifest. Please note we don't set `minReplicas/maxReplicas` in order to disable the Seldon inference-lag-based autoscaling so that it doesn't interact with HPA (separate `minReplicas/maxReplicas` configs will be set on the HPA side)
 

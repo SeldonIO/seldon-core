@@ -23,11 +23,11 @@ In single-model serving deployments, you can use HPA to scale both Models and th
 
 ## Implementation
 
-In order to set up HPA Autoscaling for Models and Servers together, metrics need to be exposed in the same way as is explained in the [Custom Model Scaling with HPA](./custom-hpa-autoscaling.md) example. If metrics have not yet been exposed, follow that workflow until you are at the point where you will configure and apply the HPA manifests. 
+In order to set up HPA Autoscaling for Models and Servers together, metrics need to be exposed in the same way as is explained in the [Exposing Metrics](./hpa-setup.md) tutorial. If metrics have not yet been exposed, follow that workflow until you are at the point where you will configure and apply the HPA manifests. 
 
-In this implementation, Servers will _also_ be configured to autoscale with a separate HPA manifest targetting the same metric as Models. In order for the scaling metrics to be in sync, it's important to apply the HPA manifests simultaneously. It is important to keep both the scaling metric and any scaling policies the same across the two HPA manifests. This is to ensure that both the Models and the Servers are scaled up/down at approximately the same time. Small variations in the scale-up time are expected because each HPA samples the metrics independently, at regular intervals.
+In this implementation, Models _and_ Servers will be configured to autoscale with a separate HPA manifest targetting the same metric as Models. In order for the scaling metrics to be in sync, it's important to apply the HPA manifests simultaneously. It is important to keep both the scaling metric and any scaling policies the same across the two HPA manifests. This is to ensure that both the Models and the Servers are scaled up/down at approximately the same time. Small variations in the scale-up time are expected because each HPA samples the metrics independently, at regular intervals.
 
-Here's an example configuration, utilizing the same `infer_rps` metric as was set up in the [previous example](./custom-hpa-autoscaling.md).
+Here's an example configuration, utilizing the same `infer_rps` metric as was set up in the [previous example](./hpa-setup.md).
 
 {% code title="hpa-custom-policy.yaml" lineNumbers="true" %}
 ```yaml
@@ -88,10 +88,7 @@ spec:
 
 In order to ensure similar scaling behaviour between Models and Servers, the number of `minReplicas` and `maxReplicas`, as well as any other configured scaling policies should be kept in sync across the HPA for the model and the server.
 
-
-Each HPA CR has it's own timer on which it samples the specified custom metrics. This timer starts when the CR is created, with sampling of the metric being done at regular intervals (by default, 15 seconds).
-
-As a side effect of this, creating the Model HPA and the Server HPA (for a given model) at different times will mean that the scaling decisions on the two are taken at different times. Even when creating the two CRs together as part of the same manifest, there will usually be a small delay between the point where the Model and Server `spec.replicas` values are changed. Despite this delay, the two will converge to the same number when the decisions are taken based on the same metric (as in the previous examples).
+Each HPA CR has it's own timer on which it samples the specified custom metrics. This timer starts when the CR is created, with sampling of the metric being done at regular intervals (by default, 15 seconds). As a side effect of this, creating the Model HPA and the Server HPA (for a given model) at different times will mean that the scaling decisions on the two are taken at different times. Even when creating the two CRs together as part of the same manifest, there will usually be a small delay between the point where the Model and Server `spec.replicas` values are changed. Despite this delay, the two will converge to the same number when the decisions are taken based on the same metric (as in the previous examples).
 
 {% hint style="info" %}
 **Note**: If a Model gets scaled up slightly before its corresponding Server, the model is currently marked with the condition ModelReady "Status: False" with a "ScheduleFailed" message until new Server replicas become available. However, the existing replicas of that model remain available and will continue to serve inference load.

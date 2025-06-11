@@ -2,6 +2,8 @@
 description: Learn how to implement request-per-second (RPS) based autoscaling in Seldon Core 2 using Kubernetes HPA and Prometheus metrics.
 ---
 
+# Exposing Metrics for HPA
+
 Given Seldon Core 2 is predominantly for serving ML in Kubernetes, it is possible to leverage `HorizontalPodAutoscaler` or [HPA](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) to define scaling logic automatically scale up and down Kubernetes resources. This requires exposing metrics such that they can be used by HPA. In this tutorial, we will explain how to expose a metric (requests per second) using Prometheus and [Prometheus Adapter](https://github.com/kubernetes-sigs/prometheus-adapter), such that it can be used to autoscale Models or Servers using HPA. 
 
 The following workflow will require: 
@@ -97,13 +99,15 @@ If the query result is empty, please adjust it until it consistently returns the
 
 Update the `metricsQuery` in the prometheus-adapter ConfigMap to match any query changes you have made during tests.
 
-A list of all the Prometheus metrics exposed by Seldon Core 2 in relation to Models, Servers and Pipelines is available [here](../metrics/operational.md), and those may be used when customizing the configuration.
+A list of all the Prometheus metrics exposed by Seldon Core 2 in relation to Models, Servers and Pipelines is available [here](../operational-monitoring/operational.md), and those may be used when customizing the configuration.
 
-### Customizing prometheus-adapter rule definitions
+## Customizing prometheus-adapter rule definitions
 
 The rule definition can be broken down in four parts:
 
-1. **Discovery** (the `seriesQuery` and `seriesFilters` keys) controls what Prometheus metrics are considered for exposure via the k8s custom metrics API.
+### Discovery 
+
+**Discovery** (the `seriesQuery` and `seriesFilters` keys) controls what Prometheus metrics are considered for exposure via the k8s custom metrics API.
 
   As an alternative to the example above, all the Seldon Prometheus metrics of the form `seldon_model.*_total` could be considered, followed by excluding metrics pre-aggregated across all models (`.*_aggregate_.*`) as well as the cummulative infer time per model (`.*_seconds_total`):
 
@@ -118,7 +122,8 @@ The rule definition can be broken down in four parts:
 
   For RPS, we are only interested in the model inference count (`seldon_model_infer_total`)
 
-2. **Association** (the `resources` key) controls the Kubernetes resources that a particular metric can be attached to or aggregated over.
+### **Association**
+**Association** (the `resources` key) controls the Kubernetes resources that a particular metric can be attached to or aggregated over.
 
   The resources key defines an association between certain labels from the Prometheus metric and k8s resources. For example, on line 17, `"model": {group: "mlops.seldon.io", resource: "model"}` lets `prometheus-adapter` know that, for the selected Prometheus metrics, the value of the "model" label represents the name of a k8s `model.mlops.seldon.io` CR.
 
@@ -126,7 +131,9 @@ The rule definition can be broken down in four parts:
 
   The labels that *do not* refer to a `namespace` resource generate "namespaced" custom metrics (the label values refer to resources which are part of a namespace) -- this distinction becomes important when needing to fetch the metrics via kubectl, and in understanding how certain Prometheus query template placeholders are replaced.
 
-3. **Naming** (the `name` key) configures the naming of the k8s custom metric.
+### **Naming** 
+
+**Naming** (the `name` key) configures the naming of the k8s custom metric.
 
   In the example ConfigMap, this is configured to take the Prometheus metric named `seldon_model_infer_total` and expose custom metric endpoints named `infer_rps`, which when called return the result of a query over the Prometheus metric. Instead of a literal match, one could also use regex group capture expressions, which can then be referenced in the custom metric name:
 
@@ -136,7 +143,8 @@ The rule definition can be broken down in four parts:
     "as": "${1}_rps"
   ```
 
-4. **Querying** (the `metricsQuery` key) defines how a request for a specific k8s custom metric gets converted into a Prometheus query.
+### **Querying**
+**Querying** (the `metricsQuery` key) defines how a request for a specific k8s custom metric gets converted into a Prometheus query.
 
   The query can make use of the following placeholders:
 
@@ -155,7 +163,7 @@ kubectl replace -f prometheus-adapter.config.yaml
 kubectl rollout restart deployment hpa-metrics-prometheus-adapter -n seldon-monitoring
 ```
 
-### Testing the install using the custom metrics API
+## Testing the install using the custom metrics API
 
 In order to test that the prometheus adapter config works and everything is set up correctly, you can issue raw kubectl requests against the custom metrics API
 
@@ -200,3 +208,5 @@ For example:
     ```sh
     kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/*/metrics/infer_rps
     ```
+
+Once metrics are exposed properly, users can use HPA to trigger autoscaling of Kubernetes resources, including custom resources such as Seldon Core's Models and Servers. Implementing autoscaling with HPA for Models, or for Models and Servers together is explained in the following pages.
