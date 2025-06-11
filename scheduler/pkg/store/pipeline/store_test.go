@@ -420,6 +420,146 @@ func TestRemovePipeline(t *testing.T) {
 	}
 }
 
+// TestPipelineStatusAfterRestart executes a sequence of pipeline functions restarts the db and verifies restart consistency
+func TestPipelineStatusAfterRestart(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type testStep struct {
+		name string
+		call func(handler PipelineHandler) error
+	}
+
+	type test struct {
+		name                  string
+		pipelineName          string
+		store                 *PipelineStore
+		sequence              []testStep
+		wantEndPipelineStatus PipelineStatus
+		err                   error
+	}
+
+	logger := logrus.New()
+
+	tests := []test{
+		{
+			name:         "Unload model flow",
+			pipelineName: "test-pipeline",
+			store:        NewPipelineStore(logrus.New(), nil, nil),
+			sequence: []testStep{
+				{
+					name: "AddPipeline",
+					call: func(handler PipelineHandler) error {
+						p := &scheduler.Pipeline{
+							Name: "test-pipeline",
+							Steps: []*scheduler.PipelineStep{
+								{
+									Name:   "step1",
+									Inputs: []string{},
+								},
+							},
+						}
+						return handler.AddPipeline(p)
+					},
+				},
+				{
+					name: "RemovePipeline",
+					call: func(handler PipelineHandler) error {
+						return handler.RemovePipeline("test-pipeline")
+					},
+				},
+				{
+					name: "Update Pipeline to terminating",
+					call: func(handler PipelineHandler) error {
+						pipeline, err := handler.GetPipeline("test-pipeline")
+						if err != nil {
+							return err
+						}
+
+						pipelineLatestVersion := pipeline.GetLatestPipelineVersion()
+
+						return handler.SetPipelineState("test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineTerminating, "", "test-pipeline")
+					},
+				},
+				{
+					name: "Update Pipeline to terminated",
+					call: func(handler PipelineHandler) error {
+						pipeline, err := handler.GetPipeline("test-pipeline")
+						if err != nil {
+							return err
+						}
+
+						pipelineLatestVersion := pipeline.GetLatestPipelineVersion()
+
+						return handler.SetPipelineState("test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineTerminated, "", "test-pipeline")
+					},
+				},
+			},
+			wantEndPipelineStatus: PipelineTerminated,
+			err:                   nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			path := fmt.Sprintf("%s/db", t.TempDir())
+			db, _ := newPipelineDbManager(getPipelineDbFolder(path), logger, 1000000)
+
+			test.store.db = db
+
+			for _, step := range test.sequence {
+				err := step.call(test.store)
+				if err != nil {
+					t.Errorf("unexpected error in step %s: %v", step.name, err)
+				}
+			}
+
+			pipelines, err := test.store.GetPipelines()
+			if err != nil {
+				t.Errorf("unexpected error in GetPipelines: %v", err)
+				return
+			}
+
+			for _, pipeline := range pipelines {
+				if pipeline.Name == test.pipelineName {
+					g.Expect(pipeline.GetLatestPipelineVersion().State.Status.String()).To(Equal(test.wantEndPipelineStatus.String()))
+
+				}
+			}
+
+			// stop first db
+			_ = db.Stop()
+
+			// simulate restart and restore pipeline
+			pipelineStore := NewPipelineStore(logrus.New(), nil, nil)
+
+			logger := logrus.New()
+			dbAfterRestart, _ := newPipelineDbManager(getPipelineDbFolder(path), logger, 1000000)
+
+			pipelineStore.db = dbAfterRestart
+
+			err = pipelineStore.db.restore(pipelineStore.restorePipeline)
+			if err != nil {
+				t.Errorf("unexpected error in restore: %v", err)
+				return
+			}
+
+			// check status of pipeline is the same as the last time saved
+			pipelines, err = pipelineStore.GetPipelines()
+			if err != nil {
+				t.Errorf("unexpected error in GetPipelines: %v", err)
+				return
+			}
+
+			for _, pipeline := range pipelines {
+				if pipeline.Name == test.pipelineName {
+					g.Expect(pipeline.GetLatestPipelineVersion().State.Status.String()).To(Equal(test.wantEndPipelineStatus.String()))
+				}
+			}
+		})
+	}
+
+}
+
 func TestGetPipelineVersion(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
