@@ -55,7 +55,7 @@ Installing Istio ingress controller in a Kubernetes cluster running Seldon Core 
     helm install istio-ingressgateway istio/gateway -n istio-system
     ```
 
-1.  Verify that Istio Ingress Gateway is installed:
+2.  Verify that Istio Ingress Gateway is installed:
 
     ```
     kubectl get svc istio-ingressgateway -n istio-system
@@ -63,7 +63,7 @@ Installing Istio ingress controller in a Kubernetes cluster running Seldon Core 
 
     This should return details of the Istio Ingress Gateway, including the external IP address.
 
-2. Verify that all Istio Pods are running:
+3. Verify that all Istio Pods are running:
 
     ```
     kubectl get pods -n istio-system
@@ -75,17 +75,7 @@ Installing Istio ingress controller in a Kubernetes cluster running Seldon Core 
     istiod-xxxxxxx-xxxxx          1/1     Running   0          2m
     istio-ingressgateway-xxxxx    1/1     Running   0          2m
     ```
-3. Inject Envoy sidecars into application Pods in the namespace `seldon-mesh`:
-
-    ```
-    kubectl label namespace seldon-mesh istio-injection=enabled
-    ```    
-4.  Verify that the injection happens to the Pods in the namespace `seldon-mesh`:
-
-    ```
-    kubectl get namespace seldon-mesh --show-labels
-    ```
-5.  Find the IP address of the Seldon Core 2 instance running with Istio:
+4.  Find the IP address of the Seldon Core 2 instance running with Istio:
 
     ```
     ISTIO_INGRESS=$(kubectl get svc seldon-mesh -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
