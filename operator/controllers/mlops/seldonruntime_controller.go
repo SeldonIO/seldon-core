@@ -140,11 +140,16 @@ func (r *SeldonRuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return reconcile.Result{}, err
 	}
 
-	sr, err := seldonreconcile.NewSeldonRuntimeReconciler(seldonRuntime, common.ReconcilerConfig{
-		Ctx:    ctx,
-		Logger: logger,
-		Client: r.Client,
-	})
+	sr, err := seldonreconcile.NewSeldonRuntimeReconciler(
+		seldonRuntime,
+		common.ReconcilerConfig{
+			Ctx:      ctx,
+			Logger:   logger,
+			Client:   r.Client,
+			Recorder: r.Recorder,
+		},
+		req.Namespace,
+	)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -240,6 +245,35 @@ func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromSeldonConfig(_ context.Co
 	return req
 }
 
+func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromPipeline(_ context.Context, obj client.Object) []reconcile.Request {
+	ctx, cancel := context.WithTimeout(context.Background(), constants.K8sAPICallsTxTimeout)
+	defer cancel()
+	logger := log.FromContext(ctx).WithName("mapSeldonRuntimesFromPipeline")
+
+	pipeline, ok := obj.(*mlopsv1alpha1.Pipeline)
+	if !ok {
+		logger.Error(fmt.Errorf("unexpected type %T", obj), "expected Pipeline")
+		return nil
+	}
+
+	var seldonRuntimes mlopsv1alpha1.SeldonRuntimeList
+	if err := r.Client.List(ctx, &seldonRuntimes, client.InNamespace(pipeline.Namespace)); err != nil {
+		logger.Error(err, "error listing seldonRuntimes")
+		return nil
+	}
+
+	var req []reconcile.Request
+	for _, seldonRuntime := range seldonRuntimes.Items {
+		req = append(req, reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Namespace: seldonRuntime.Namespace,
+				Name:      seldonRuntime.Name,
+			},
+		})
+	}
+	return req
+}
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *SeldonRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	//pred := predicate.GenerationChangedPredicate{}
@@ -253,6 +287,10 @@ func (r *SeldonRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&auth.RoleBinding{}).
 		Owns(&v1.ServiceAccount{}).
 		Owns(&v1.ConfigMap{}).
+		Watches(
+			&mlopsv1alpha1.Pipeline{},
+			handler.EnqueueRequestsFromMapFunc(r.mapSeldonRuntimesFromPipeline),
+		).
 		Watches(
 			&mlopsv1alpha1.SeldonConfig{},
 			handler.EnqueueRequestsFromMapFunc(r.mapSeldonRuntimesFromSeldonConfig),

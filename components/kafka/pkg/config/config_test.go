@@ -36,7 +36,8 @@ func TestNewKafkaConfig(t *testing.T) {
   "bootstrap.servers":"kafka:9092",
   "consumer":{"session.timeout.ms": 6000, "someBool": true, "someString":"foo"},
   "producer": {"linger.ms":0},
-  "streams": {"replication.factor": 1}
+  "streams": {"replication.factor": 1},
+  "topics": {"replication.factor": 1, "num.partitions": 1}
 }
 `,
 			expected: &KafkaConfig{
@@ -44,23 +45,26 @@ func TestNewKafkaConfig(t *testing.T) {
 				Consumer:         kafka.ConfigMap{"bootstrap.servers": "kafka:9092", "session.timeout.ms": 6000, "someBool": true, "someString": "foo", "log_level": 7},
 				Producer:         kafka.ConfigMap{"bootstrap.servers": "kafka:9092", "linger.ms": 0, "log_level": 7},
 				Streams:          kafka.ConfigMap{"bootstrap.servers": "kafka:9092", "replication.factor": 1},
+				Topics:           kafka.ConfigMap{"replication.factor": 1, "num.partitions": 1},
 			},
 		},
 		{
 			name: "without bootstrap servers override",
 			data: `
-{
-  "bootstrap.servers":"kafka:9092",
-  "consumer":{"bootstrap.servers":"foo","session.timeout.ms": 6000, "someBool": true, "someString":"foo"},
-  "producer": {"bootstrap.servers":"foo","linger.ms":0},
-  "streams": {"bootstrap.servers":"foo","replication.factor": 1}
-}
-`,
+		{
+		  "bootstrap.servers":"kafka:9092",
+		  "consumer":{"bootstrap.servers":"foo","session.timeout.ms": 6000, "someBool": true, "someString":"foo"},
+		  "producer": {"bootstrap.servers":"foo","linger.ms":0},
+		  "streams": {"bootstrap.servers":"foo","replication.factor": 1},
+		  "topics": {"replication.factor": 1, "num.partitions": 1}
+		}
+		`,
 			expected: &KafkaConfig{
 				BootstrapServers: "kafka:9092",
 				Consumer:         kafka.ConfigMap{"bootstrap.servers": "foo", "session.timeout.ms": 6000, "someBool": true, "someString": "foo", "log_level": 7},
 				Producer:         kafka.ConfigMap{"bootstrap.servers": "foo", "linger.ms": 0, "log_level": 7},
 				Streams:          kafka.ConfigMap{"bootstrap.servers": "foo", "replication.factor": 1},
+				Topics:           kafka.ConfigMap{"replication.factor": 1, "num.partitions": 1},
 			},
 		},
 		{

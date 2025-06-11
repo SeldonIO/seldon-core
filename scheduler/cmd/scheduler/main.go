@@ -14,6 +14,7 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -224,11 +225,20 @@ func main() {
 	}
 
 	// scheduler <-> dataflow grpc
-	dataFlowLoadBalancer := util.NewRingLoadBalancer(1)
 	kafkaConfigMap, err := kafka_config.NewKafkaConfig(kafkaConfigPath, logLevel)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
+
+	numPartitions, err := strconv.Atoi(kafkaConfigMap.Topics["numPartitions"].(string))
+	if err != nil {
+		logger.WithError(err).Fatal("Failed to parse numPartitions from Kafka config. Defaulting to 1")
+		numPartitions = 1
+	}
+
+	dataFlowLoadBalancer := util.NewRingLoadBalancer(numPartitions)
+	log.Info("Using ring load balancer for data flow with numPartitions: ", numPartitions)
+
 	cs, err := dataflow.NewChainerServer(logger, eventHub, ps, namespace, dataFlowLoadBalancer, kafkaConfigMap)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to start data engine chainer server")
