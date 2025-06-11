@@ -1,7 +1,7 @@
 
 # Configuring HPA manifests
 
-Once metrics for custom autoscaling are configured (see [HPA Setup](hpa-setup.md)), Kubernetes resources, including Models, can be autoscaled using HPA by applying an HPA manifest that targets the chosen scaling metric. If you want to scale Servers using HPA as well - this only works in a setup where all Models and Servers have a 1-1 maping - as opposed to having Seldon's scheduler automatically scale Servers up and down based on Model needs, you will also need to set up HPA manifests for Servers. This is explained in more detail [here](./single-model-serving-hpa.md). 
+Once metrics for custom autoscaling are configured (see [HPA Setup](hpa-setup.md)), Kubernetes resources, including Models, can be autoscaled using HPA by applying an HPA manifest that targets the chosen scaling metric. 
 
 Consider a model named `irisa0` with the following manifest. Please note we don't set `minReplicas/maxReplicas` in order to disable the Seldon inference-lag-based autoscaling so that it doesn't interact with HPA (separate `minReplicas/maxReplicas` configs will be set on the HPA side)
 
@@ -108,6 +108,11 @@ $$\texttt{utilizationRatio} = \frac{\texttt{custom\_metric\_value}}{\texttt{thre
 As an example, if `threshold_value=100` and `custom_metric_value=200`, the `utilizationRatio` would be 2. HPA deduces from this that the number of active pods associated with the `scaleTargetRef` object should be doubled, and expects that once that target is achieved, the `custom_metric_value` will become equal to the `threshold_value` (`utilizationRatio=1`). However, by using the number of active pods, the HPA CRs for both the Model and the Server also try to take exclusive ownership of the same set of pods, and fail.
 
 Each HPA CR has it's own timer on which it samples the specified custom metrics. This timer starts when the CR is created, with sampling of the metric being done at regular intervals (by default, 15 seconds). When showing the HPA CR information via `kubectl get`, a column of the output will display the current metric value per replica and the target average value in the format `[per replica metric value][target]`. This information is updated in accordance to the sampling rate of each HPA resource. 
+
+## Next Steps: Autoscaling Servers
+Once Model autoscaling is set up (either through HPA, or by Seldon Core), users will need to configure Server autoscaling. You can use Seldon Core's native autoscaling functionality for Servers [here](./core-autoscaling-servers.md).
+
+Otherwise, if you want to scale Servers using HPA as well - this only works in a setup where all Models and Servers have a 1-1 maping - you will also need to set up HPA manifests for Servers. This is explained in more detail [here](./single-model-serving-hpa.md). 
 
 ### Advanced settings
 

@@ -63,7 +63,7 @@
     * [Autoscaling Servers](scaling/core-autoscaling-servers.md)
   * [Using HPA for Autoscaling](scaling/hpa-overview.md)
     * [Exposing Metrics for HPA](scaling/hpa-setup.md)
-    * [Model Autoscaling with HPA](scaling/custom-hpa-autoscaling.md)
+    * [Model Autoscaling with HPA](scaling/model-hpa-autoscaling.md)
     * [Model and Server Autoscaling with HPA](scaling/single-model-serving-hpa.md)
   * [Scaling Seldon Services](scaling/scaling-core-services.md)
 

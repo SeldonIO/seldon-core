@@ -21,7 +21,7 @@ Based on the requirements above, one of the following three options for coordina
 | Scaling Approach | Scaling Metric | Multi-Model Serving | Pros | Cons |
 |-----------------|------------------------|---------------------|------|------|
 | [Seldon Core Autoscaling](./core-autoscaling.md) | Inference lag | ✅ | - Simplest Implementation<br>- One metric across models | - Potentially suboptimal Server packing on scale down |
-| [Model Autoscaling with HPA](./custom-hpa-autoscaling.md) | User-defined (HPA) | ✅ | - Custom scaling metric | - Requires Metrics store integration (e.g. Prometheus)<br>- Potentially suboptimal Server packing on scale down |
+| [Model Autoscaling with HPA](./model-hpa-autoscaling.md) | User-defined (HPA) | ✅ | - Custom scaling metric | - Requires Metrics store integration (e.g. Prometheus)<br>- Potentially suboptimal Server packing on scale down |
 | [Model and Server Autoscaling with HPA](./single-model-serving-hpa.md) | User-defined (HPA) | ❌ | - Coordinated Model and Server scaling | - Requires Metrics store integration (e.g. Prometheus)<br>- No Multi-Model Serving |
 
 Alternatively, the following decision-tree showcases the approaches we recommend based on users' requirements:

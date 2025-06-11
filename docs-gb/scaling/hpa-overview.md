@@ -9,7 +9,7 @@ Given Seldon Core 2 is predominantly for serving ML in Kubernetes, it is possibl
 Seldon Core 2 provides two main approaches to leveraging Kubernetes Horizontal Pod Autoscaler (HPA) for autoscaling. It is important to remember that since in Core 2 Models and Servers are separate, autoscaling of _both_ Models and Servers, in a coordinated way, needs to be accounted for when implementing autoscaling. In order to implement either approach, metrics first need to be exposed - this is explained in the [HPA Setup](./hpa-setup.md) guide which explains the fundamental requirements and configuration needed to enable HPA-based scaling in Seldon Core 2. 
 
 ## 1. Model Autoscaling with HPA
-The [Model Autoscaling with HPA](./custom-hpa-autoscaling.md) approach enables users to scale Models based on custom metrics. This approach, along with [Server Autoscaling](./core-autoscaling-servers.md), enables users to customize the scaling logic for models, and automate the scaling of Servers based on the needs of the Models hosted on them.
+The [Model Autoscaling with HPA](./model-hpa-autoscaling.md) approach enables users to scale Models based on custom metrics. This approach, along with [Server Autoscaling](./core-autoscaling-servers.md), enables users to customize the scaling logic for models, and automate the scaling of Servers based on the needs of the Models hosted on them.
 
 ![Model Autoscaling with HPA, Servers autoscaled by Core 2](./model-hpa-server-autoscaled.png)
 
