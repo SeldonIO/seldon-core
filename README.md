@@ -1,6 +1,11 @@
 # About 
 
-Seldon V2 APIs provide a state of the art solution for machine learning inference which can be run locally on a laptop as well as on Kubernetes for production.
+Seldon Core 2 provides a state of the art solution for machine learning inference which can be run locally on a laptop as well as on Kubernetes for production.
+
+[![Introductory Youtube Video](https://img.youtube.com/vi/r5lSG_idh4/0.jpg)](https://www.youtube.com/watch?v=ar5lSG_idh4)
+
+
+https://www.youtube.com/watch?v=ar5lSG_idh4
 
 ## Features
 
@@ -25,23 +30,6 @@ These features are influenced by our position paper on the next generation of ML
 
 
 ## Getting started
-
-### Local quick-start via `docker-compose`
-
-Deploy via Docker Compose
-
-```
-make deploy-local
-```
-
-Run [local-examples.ipynb](samples/local-examples.ipynb)
-
-
-Undeploy
-
-```
-make undeploy-local
-```
 
 ### Kubernetes quick-start via `KinD`
 
