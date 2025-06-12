@@ -99,9 +99,6 @@ func (pdb *PipelineDBManager) getVersion() (string, error) {
 }
 
 func (pdb *PipelineDBManager) restore(createPipelineCb func(pipeline *Pipeline)) error {
-	logger := pdb.logger.WithFields(logrus.Fields{
-		"func": "restore",
-	})
 	return pdb.db.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
 		it := txn.NewIterator(opts)
@@ -120,14 +117,10 @@ func (pdb *PipelineDBManager) restore(createPipelineCb func(pipeline *Pipeline))
 					return err
 				}
 
-				logger.Infof("the value of the pipeline snapshot for  pipeline %s, with status %s", snapshot.Name, snapshot.Versions[len(snapshot.Versions)-1].State.Status)
-
 				pipeline, err := CreatePipelineFromSnapshot(&snapshot)
 				if err != nil {
 					return err
 				}
-
-				logger.Infof("restored pipeline %s, with pipeline latest version %s", pipeline.Name, pipeline.GetLatestPipelineVersion().State.Status)
 
 				if pipeline.Deleted {
 					pipeline.DeletedAt = utils.GetDeletedAt(item, pdb.deletedResourceTTL)
