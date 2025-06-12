@@ -56,11 +56,6 @@ const (
 	ServerControlPlaneTimeout = time.Second * 5
 )
 
-// inference
-const (
-	InferTimeoutDefault = 10 * time.Minute // TODO: expose this as a config (map)?
-)
-
 const (
 	EnvoyUpdateDefaultBatchWait = 250 * time.Millisecond
 	// note that we keep client and server keepalive times the same
