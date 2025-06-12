@@ -2,10 +2,7 @@
 
 Seldon Core 2 provides a state of the art solution for machine learning inference which can be run locally on a laptop as well as on Kubernetes for production.
 
-[![Introductory Youtube Video](https://img.youtube.com/vi/r5lSG_idh4/0.jpg)](https://www.youtube.com/watch?v=ar5lSG_idh4)
-
-
-https://www.youtube.com/watch?v=ar5lSG_idh4
+[![Introductory Youtube Video](./docs-gb/images/Core-intro-thumbnail.png)](https://www.youtube.com/watch?v=ar5lSG_idh4)
 
 ## Features
 
