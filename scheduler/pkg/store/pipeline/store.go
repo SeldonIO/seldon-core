@@ -107,23 +107,6 @@ func (ps *PipelineStore) InitialiseOrRestoreDB(path string, deletedResourceTTL u
 		}
 	}()
 
-	go func() {
-		logger = ps.logger.WithField("func", "reports")
-		ticker := time.NewTicker(1 * time.Minute)
-		for range ticker.C {
-			logger.Infof("Reports at %s", time.Now().Format(time.RFC3339))
-			pipelines, err := ps.GetPipelines()
-			if err != nil {
-				logger.WithError(err).Error("Failed to get pipelines")
-				continue
-			}
-
-			for _, pipeline := range pipelines {
-				logger.Infof("pipeline %s with status %s", pipeline.Name, pipeline.GetLatestPipelineVersion().State.Status.String())
-			}
-		}
-	}()
-
 	return nil
 }
 
@@ -241,20 +224,17 @@ func (ps *PipelineStore) generationMatches(req *scheduler.Pipeline, lastPipeline
 func (ps *PipelineStore) RemovePipeline(name string) error {
 	logger := ps.logger.WithField("func", "RemovePipeline")
 	logger.Debugf("Attempt to remove pipeline %s", name)
-	logger.Infof("Attempt to remove pipeline %s", name)
 	evt, err := ps.removePipelineImpl(name)
 	if err != nil {
 		return err
 	}
 	if ps.eventHub != nil && evt != nil {
-		logger.Infof("publish pipeline %s event", evt.PipelineName)
 		ps.eventHub.PublishPipelineEvent(removePipelineEventSource, *evt)
 	}
 	return nil
 }
 
 func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineEventMsg, error) {
-	logger := ps.logger.WithField("func", "removePipelineImpl")
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
 	if pipeline, ok := ps.pipelines[name]; ok {
@@ -263,7 +243,6 @@ func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineE
 			return nil, &PipelineVersionNotFoundErr{pipeline: name, version: pipeline.LastVersion - 1}
 		}
 		lastState := lastPipelineVersion.State
-		logger.Infof("Removing pipeline %s from state %s", lastPipelineVersion.Name, lastState.Status)
 		switch lastState.Status {
 		case PipelineTerminating:
 			return nil, &PipelineTerminatingErr{pipeline: name}
@@ -277,7 +256,6 @@ func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineE
 				ps.logger.WithError(err).Errorf("Failed to save pipeline %s", name)
 				return nil, err
 			}
-			logger.Infof("pipeline %s removed from state %s", name, lastState.Status)
 			return &coordinator.PipelineEventMsg{
 				PipelineName:    lastPipelineVersion.Name,
 				PipelineVersion: lastPipelineVersion.Version,
@@ -384,7 +362,6 @@ func (ps *PipelineStore) terminateOldUnterminatedPipelinesIfNeeded(pipeline *Pip
 func (ps *PipelineStore) SetPipelineState(name string, versionNumber uint32, uid string, status PipelineStatus, reason string, source string) error {
 	logger := ps.logger.WithField("func", "SetPipelineState")
 	logger.Debugf("Attempt to set state on pipeline %s:%d status:%s", name, versionNumber, status.String())
-	logger.Infof("Attempt to set state on pipeline %s:%d status:%s and source:%s", name, versionNumber, status.String(), source)
 	evts, err := ps.setPipelineStateImpl(name, versionNumber, uid, status, reason, source)
 	if err != nil {
 		return err
@@ -417,15 +394,8 @@ func (ps *PipelineStore) setPipelineStateImpl(name string, versionNumber uint32,
 					// to set the status of the new version of the pipeline to ready
 					evts = append(evts, ps.terminateOldUnterminatedPipelinesIfNeeded(pipeline)...)
 				}
-				if !pipeline.Deleted && ps.db != nil {
+				if ps.db != nil {
 					ps.logger.Infof("saving pipeline %s to db with status %s", pipeline.Name, status.String())
-					err := ps.db.save(pipeline)
-					if err != nil {
-						return evts, err
-					}
-				}
-
-				if pipeline.Deleted && ps.db != nil && pipeline.GetLatestPipelineVersion().State.Status == PipelineTerminated {
 					err := ps.db.save(pipeline)
 					if err != nil {
 						return evts, err
