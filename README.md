@@ -1,4 +1,11 @@
-# Core 2: Deploy Modular, Data-centric AI applications at scale
+<div align="center">
+
+ <a href="https://www.seldon.io/">
+  <img alt="Core 2 Logo" src="/.images/core-2-logo.png" alt="Core 2 Logo" style="max-width: 100%; height: auto; width: 400px;">
+ </a>
+</div>
+
+# Deploy Modular, Data-centric AI applications at scale
 
 ## 📖 About
 Seldon Core 2 is an MLOps and LLMOps framework for deploying, managing and scaling AI systems in Kubernetes - from singular models, to modular, data-centric applications. With Core 2 you can deploy across a wide range of model types, on-prem or in any cloud, in a standardized way that is production-ready out of the box. 
