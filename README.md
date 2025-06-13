@@ -13,7 +13,7 @@ Seldon Core 2 is an MLOps and LLMOps framework for deploying, managing and scali
 </br>
  <div align="center">
    <a href="https://www.youtube.com/watch?v=ar5lSG_idh4">
-     <img src="./docs-gb/images/Core-intro-thumbnail.png" alt="Introductory Youtube Video" style="max-width: 100%; width: 500px; height: auto;">
+     <img src="/.images/Core-intro-thumbnail.png" alt="Introductory Youtube Video" style="max-width: 100%; width: 500px; height: auto;">
    </a>
  </div>
 </br>
