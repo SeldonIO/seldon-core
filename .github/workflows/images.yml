@@ -176,7 +176,7 @@ jobs:
           s2i: "latest"
 
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: base-wrapper
           path: /tmp
