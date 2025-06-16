@@ -1,85 +1,56 @@
-# About 
+<div align="center">
 
-Seldon V2 APIs provide a state of the art solution for machine learning inference which can be run locally on a laptop as well as on Kubernetes for production.
+ <a href="https://www.seldon.io/solutions/core/">
+  <img alt="Core 2 Logo" src="/.images/core-2-logo.png" alt="Core 2 Logo" style="max-width: 100%; height: auto; width: 400px;">
+ </a>
+</div>
 
-## Features
+# Deploy Modular, Data-centric AI applications at scale
 
- * A single platform for inference of wide range of standard and custom artifacts.
- * Deploy locally in Docker during development and testing of models.
- * Deploy at scale on Kubernetes for production.
- * Deploy single models to multi-step pipelines.
- * Save infrastructure costs by deploying multiple models transparently in inference servers.
- * Overcommit on resources to deploy more models than available memory.
- * Dynamically extended models with pipelines with a data-centric perspective backed by Kafka.
- * Explain individual models and pipelines with state of the art explanation techniques.
- * Deploy drift and outlier detectors alongside models.
- * Kubernetes Service mesh agnostic - use the service mesh of your choice.
+##  💡 About
+Seldon Core 2 is an MLOps and LLMOps framework for deploying, managing and scaling AI systems in Kubernetes - from singular models, to modular and data-centric applications. With Core 2 you can deploy in a standardized way across a wide range of model types, on-prem or in any cloud, and production-ready out of the box. 
 
-## Publication
+</br>
+ <div align="center">
+   <a href="https://www.youtube.com/watch?v=ar5lSG_idh4">
+     <img src="/.images/Core-intro-thumbnail.png" alt="Introductory Youtube Video" style="max-width: 100%; width: 500px; height: auto;">
+   </a>
+ </div>
+</br>
 
-These features are influenced by our position paper on the next generation of ML model serving frameworks:
+To reach out to Seldon regarding commercial use, visit our [website](https://www.seldon.io/).
 
-*Title*: [Desiderata for next generation of ML model serving](http://arxiv.org/abs/2210.14665)
+## 📚 Documentation  
 
-*Workshop*: Challenges in deploying and monitoring ML systems workshop - NeurIPS 2022
+The Seldon Core 2 Docs can be found [here](https://docs.seldon.ai/seldon-core-2). For most specific sections, see here:
 
+<p align="center">
+  <a href="https://docs.seldon.ai/seldon-core-2/installation/installation">🔧 Installation</a>  &nbsp • &nbsp
+  <a href="https://docs.seldon.ai/seldon-core-2/user-guide/servers"> ⛽ Servers</a>  &nbsp • &nbsp
+  <a href="https://docs.seldon.ai/seldon-core-2/user-guide/models">🤖 Models</a>  &nbsp •  &nbsp
+  <a href="https://docs.seldon.ai/seldon-core-2/user-guide/pipelines"> 🔗 Pipelines</a>  &nbsp • &nbsp
+  <a href="https://docs.seldon.ai/seldon-core-2/user-guide/experiment">🧑‍🔬 Experiments</a>  &nbsp • &nbsp
+  <a href="https://docs.seldon.ai/seldon-core-2/user-guide/performance-tuning">📊 Performance Tuning</a>  
+</p>
 
-## Getting started
+## 🧩 Features
 
-### Local quick-start via `docker-compose`
+ * **Pipelines**: Deploy composable AI applications, leveraging Kafka for realtime data streaming between components
+ * **Autoscaling** for models and application components based on native or custom logic
+ * **Multi-Model Serving**: Save infrastructure costs by consolidating multiple models on shared inference servers
+ * **Overcommit**: Deploy more models than available memory allows, saving infrastructure costs for unused models
+ * **Experiments**: Route data between candidate models or pipelines, with support for A/B tests and shadow deployments
+ * **Custom Components**: Implement custom logic, drift & outlier detection, LLMs and more through plug-and-play integrate with the rest of Seldon's ecosytem of ML/AI products!
+ 
+## 🔬 Research
 
-Deploy via Docker Compose
+These features are influenced by our position paper on the next generation of ML model serving frameworks: 
 
-```
-make deploy-local
-```
+👉 [Desiderata for next generation of ML model serving](http://arxiv.org/abs/2210.14665)
 
-Run [local-examples.ipynb](samples/local-examples.ipynb)
+## 📜 License
 
-
-Undeploy
-
-```
-make undeploy-local
-```
-
-### Kubernetes quick-start via `KinD`
-
-Install Seldon ansible collection
-
-```
-pip install ansible openshift docker passlib
-ansible-galaxy collection install git+https://github.com/SeldonIO/ansible-k8s-collection.git
-```
-
-Create a KinD cluster and install dependencies:
-
-```
-cd ansible
-ansible-playbook playbooks/kind-cluster.yaml
-ansible-playbook playbooks/setup-ecosystem.yaml
-```
-
-Deploy Seldon Core 2
-
-```
-cd ..
-make deploy-k8s
-```
-
-Run [k8s-examples.ipynb](samples/k8s-examples.ipynb)
-
-Undeploy Seldon Core 2
-
-```
-make undeploy-k8s
-```
+Seldon is distributed under the terms of the The Business Source License. A complete version of the license is available in the [LICENSE file](LICENSE) in this repository. Any contribution made to this project will be licensed under the Business Source License.
 
 
-## Documentation
 
-[Seldon Core 2 docs](https://docs.seldon.ai/seldon-core-2)
-
-## License
-
-[License](LICENSE)
