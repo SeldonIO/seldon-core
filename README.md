@@ -18,21 +18,19 @@ Seldon Core 2 is an MLOps and LLMOps framework for deploying, managing and scali
  </div>
 </br>
 
-To contact Seldon regarding commercial use:
-  
-👉 [Contact Seldon](https://www.seldon.io/)
+To contact Seldon regarding commercial use [Contact Seldon](https://www.seldon.io/)
 
 ## 📚 Documentation  
 
 The Seldon Core 2 Docs can be found [here](https://docs.seldon.ai/seldon-core-2). For most specific sections, see here:
 
 <p align="center">
-  <a href="https://docs.seldon.ai/seldon-core-2/installation/installation">🔧 Installation</a> •
-  <a href="https://docs.seldon.ai/seldon-core-2/user-guide/servers"> ⛽ Servers</a>
-  <a href="https://docs.seldon.ai/seldon-core-2/user-guide/models">🤖 Models</a> •
-  <a href="https://docs.seldon.ai/seldon-core-2/user-guide/pipelines"> 🔗 Pipelines</a> •
-  <a href="https://docs.seldon.ai/seldon-core-2/user-guide/experiment">🧑‍🔬 Experiments</a>
-  <a href="https://docs.seldon.ai/seldon-core-2/user-guide/performance-tuning">📊 Performance Tuning</a> •
+  <a href="https://docs.seldon.ai/seldon-core-2/installation/installation">🔧 Installation</a>  &nbsp • &nbsp
+  <a href="https://docs.seldon.ai/seldon-core-2/user-guide/servers"> ⛽ Servers</a>  &nbsp • &nbsp
+  <a href="https://docs.seldon.ai/seldon-core-2/user-guide/models">🤖 Models</a>  &nbsp •  &nbsp
+  <a href="https://docs.seldon.ai/seldon-core-2/user-guide/pipelines"> 🔗 Pipelines</a>  &nbsp • &nbsp
+  <a href="https://docs.seldon.ai/seldon-core-2/user-guide/experiment">🧑‍🔬 Experiments</a>  &nbsp • &nbsp
+  <a href="https://docs.seldon.ai/seldon-core-2/user-guide/performance-tuning">📊 Performance Tuning</a>  
 </p>
 
 ## 🧩 Features
