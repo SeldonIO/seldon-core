@@ -18,7 +18,7 @@ Seldon Core 2 is an MLOps and LLMOps framework for deploying, managing and scali
  </div>
 </br>
 
-To contact Seldon regarding commercial use [Contact Seldon](https://www.seldon.io/)
+To reach out to Seldon regarding commercial use, visit our [website](https://www.seldon.io/).
 
 ## 📚 Documentation  
 
