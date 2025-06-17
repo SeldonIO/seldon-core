@@ -114,7 +114,6 @@ func (ps *PipelineStore) InitialiseOrRestoreDB(path string, deletedResourceTTL u
 func (ps *PipelineStore) restorePipeline(pipeline *Pipeline) {
 	logger := ps.logger.WithField("func", "restorePipeline")
 	ps.mu.Lock()
-	logger.Infof("Adding pipeline %s with state %s", pipeline.GetLatestPipelineVersion().String(), pipeline.GetLatestPipelineVersion().State.Status.String())
 	err := ps.modelStatusHandler.addPipelineModelStatus(pipeline)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to set pipeline state for pipeline %s", pipeline.Name)
