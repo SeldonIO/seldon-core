@@ -13,6 +13,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"os"
 	"sync/atomic"
 	"time"
 
@@ -30,7 +31,8 @@ import (
 )
 
 const (
-	SubscriberName = "seldon-modelgateway"
+	SubscriberName   = "seldon-modelgateway"
+	SubscriberEnvVar = "POD_NAME"
 )
 
 type KafkaSchedulerClient struct {
@@ -40,6 +42,7 @@ type KafkaSchedulerClient struct {
 	consumerManager  *ConsumerManager
 	certificateStore *seldontls.CertificateStore
 	stop             atomic.Bool
+	subscriberName   string
 }
 
 func NewKafkaSchedulerClient(logger logrus.FieldLogger, consumerManager *ConsumerManager) *KafkaSchedulerClient {
@@ -48,11 +51,17 @@ func NewKafkaSchedulerClient(logger logrus.FieldLogger, consumerManager *Consume
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
 
+	subscriberName := os.Getenv(SubscriberEnvVar)
+	if subscriberName == "" {
+		subscriberName = SubscriberName
+	}
+
 	return &KafkaSchedulerClient{
 		logger:          logger.WithField("source", "KafkaSchedulerClient"),
 		callOptions:     opts,
 		consumerManager: consumerManager,
 		stop:            atomic.Bool{},
+		subscriberName:  subscriberName,
 	}
 }
 
@@ -134,7 +143,7 @@ func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
 	logger.Info("Subscribing to model status events")
 	stream, errSub := grpcClient.SubscribeModelStatus(
 		context.Background(),
-		&scheduler.ModelSubscriptionRequest{SubscriberName: SubscriberName},
+		&scheduler.ModelSubscriptionRequest{SubscriberName: kc.subscriberName, IsModelGateway: true},
 		grpc_retry.WithMax(util.MaxGRPCRetriesOnStream),
 	)
 	if errSub != nil {
