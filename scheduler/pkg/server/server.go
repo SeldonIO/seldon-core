@@ -13,6 +13,8 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -24,6 +26,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -36,15 +39,18 @@ import (
 )
 
 const (
-	grpcMaxConcurrentStreams        = 1_000_000
-	pendingEventsQueueSize      int = 1000
-	modelEventHandlerName           = "scheduler.server.models"
-	serverEventHandlerName          = "scheduler.server.servers"
-	serverModelEventHandlerName     = "scheduler.server.servers.models"
-	experimentEventHandlerName      = "scheduler.server.experiments"
-	pipelineEventHandlerName        = "scheduler.server.pipelines"
-	defaultBatchWait                = 250 * time.Millisecond
-	sendTimeout                     = 30 * time.Second // Timeout for sending events to subscribers via grpc `sendMsg`
+	grpcMaxConcurrentStreams           = 1_000_000
+	pendingEventsQueueSize         int = 1000
+	modelEventHandlerName              = "scheduler.server.models"
+	serverEventHandlerName             = "scheduler.server.servers"
+	serverModelEventHandlerName        = "scheduler.server.servers.models"
+	experimentEventHandlerName         = "scheduler.server.experiments"
+	pipelineEventHandlerName           = "scheduler.server.pipelines"
+	defaultBatchWait                   = 250 * time.Millisecond
+	sendTimeout                        = 30 * time.Second // Timeout for sending events to subscribers via grpc `sendMsg`
+	modelGatewayConsumerNamePrefix     = "seldon-modelgateway"
+	EnvMaxNumConsumers                 = "MODELGATEWAY_MAX_NUM_CONSUMERS"
+	DefaultMaxNumConsumers             = 100
 )
 
 var ErrAddServerEmptyServerName = status.Errorf(codes.FailedPrecondition, "Empty server name passed")
@@ -65,6 +71,10 @@ type SchedulerServer struct {
 	timeout               time.Duration
 	synchroniser          synchroniser.Synchroniser
 	config                SchedulerServerConfig
+	loadBalancer          *util.RingLoadBalancer
+	namespace             string
+	kafkaConfig           *kafka_config.KafkaConfig
+	maxNumConsumers       int // max number of model gateway consumers
 }
 
 type SchedulerServerConfig struct {
@@ -190,6 +200,20 @@ func (s *SchedulerServer) StartGrpcServers(allowPlainTxt bool, schedulerPort uin
 	return nil
 }
 
+func getEnVar(logger *log.Entry, key string, defaultValue int) int {
+	valStr := os.Getenv(key)
+	if valStr != "" {
+		val, err := strconv.ParseInt(valStr, 10, 64)
+		if err != nil {
+			logger.WithError(err).Fatalf("Failed to parse %s", key)
+		}
+		logger.Infof("Got %s = %d", key, val)
+		return int(val)
+	}
+	logger.Infof("Returning default %s = %d", key, defaultValue)
+	return defaultValue
+}
+
 func NewSchedulerServer(
 	logger log.FieldLogger,
 	modelStore store.ModelStore,
@@ -199,9 +223,19 @@ func NewSchedulerServer(
 	eventHub *coordinator.EventHub,
 	synchroniser synchroniser.Synchroniser,
 	config SchedulerServerConfig,
+	loadBalancer *util.RingLoadBalancer,
+	namespace string,
+	kafkaConfigMap *kafka_config.KafkaConfig,
 ) *SchedulerServer {
+	loggerWithField := logger.WithField("source", "SchedulerServer")
+
+	maxNumConsumers := getEnVar(loggerWithField, EnvMaxNumConsumers, DefaultMaxNumConsumers)
+	if maxNumConsumers <= 0 {
+		maxNumConsumers = DefaultMaxNumConsumers
+	}
+
 	s := &SchedulerServer{
-		logger:           logger.WithField("source", "SchedulerServer"),
+		logger:           loggerWithField,
 		modelStore:       modelStore,
 		experimentServer: experiementServer,
 		pipelineHandler:  pipelineHandler,
@@ -224,9 +258,13 @@ func NewSchedulerServer(
 		controlPlaneStream: ControlPlaneStream{
 			streams: make(map[pb.Scheduler_SubscribeControlPlaneServer]*ControlPlaneSubsription),
 		},
-		timeout:      sendTimeout,
-		synchroniser: synchroniser,
-		config:       config,
+		timeout:         sendTimeout,
+		synchroniser:    synchroniser,
+		config:          config,
+		loadBalancer:    loadBalancer,
+		namespace:       namespace,
+		kafkaConfig:     kafkaConfigMap,
+		maxNumConsumers: maxNumConsumers,
 	}
 
 	eventHub.RegisterModelEventHandler(

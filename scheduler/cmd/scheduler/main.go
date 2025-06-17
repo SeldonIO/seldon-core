@@ -286,12 +286,17 @@ func main() {
 	)
 
 	// scheduler <-> controller grpc
+	modelGwLoadBalancer := util.NewRingLoadBalancer(4)
 	s := schedulerServer.NewSchedulerServer(
 		logger, ss, es, ps, sched, eventHub, sync,
 		schedulerServer.SchedulerServerConfig{
 			PackThreshold:            serverPackingPercentage, // note that if threshold is 0, packing is disabled
 			AutoScalingServerEnabled: autoscalingServerEnabled,
-		})
+		},
+		modelGwLoadBalancer,
+		namespace,
+		kafkaConfigMap,
+	)
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start server gRPC servers")
