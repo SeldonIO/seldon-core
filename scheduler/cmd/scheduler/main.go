@@ -293,9 +293,9 @@ func main() {
 			PackThreshold:            serverPackingPercentage, // note that if threshold is 0, packing is disabled
 			AutoScalingServerEnabled: autoscalingServerEnabled,
 		},
-		modelGwLoadBalancer,
 		namespace,
-		kafkaConfigMap,
+		kafkaConfigMap.ConsumerGroupIdPrefix,
+		modelGwLoadBalancer,
 	)
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {

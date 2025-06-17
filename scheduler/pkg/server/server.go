@@ -26,7 +26,6 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -72,9 +71,7 @@ type SchedulerServer struct {
 	synchroniser          synchroniser.Synchroniser
 	config                SchedulerServerConfig
 	loadBalancer          *util.RingLoadBalancer
-	namespace             string
-	kafkaConfig           *kafka_config.KafkaConfig
-	maxNumConsumers       int // max number of model gateway consumers
+	consumerGroupConfig   *ConsumerGroupConfig
 }
 
 type SchedulerServerConfig struct {
@@ -139,6 +136,29 @@ type ControlPlaneSubsription struct {
 	name   string
 	stream pb.Scheduler_SubscribeControlPlaneServer
 	fin    chan bool
+}
+
+type ConsumerGroupConfig struct {
+	namespace             string
+	consumerGroupIdPrefix string
+	maxNumConsumers       int
+}
+
+func NewConsumerGroupConfig(namespace, consumerGroupIdPrefix string, maxNumConsumers int) *ConsumerGroupConfig {
+	if namespace == "" {
+		namespace = "default"
+	}
+	if consumerGroupIdPrefix == "" {
+		consumerGroupIdPrefix = modelGatewayConsumerNamePrefix
+	}
+	if maxNumConsumers <= 0 {
+		maxNumConsumers = DefaultMaxNumConsumers
+	}
+	return &ConsumerGroupConfig{
+		namespace:             namespace,
+		consumerGroupIdPrefix: consumerGroupIdPrefix,
+		maxNumConsumers:       maxNumConsumers,
+	}
 }
 
 func (s *SchedulerServer) startServer(port uint, secure bool) error {
@@ -223,16 +243,20 @@ func NewSchedulerServer(
 	eventHub *coordinator.EventHub,
 	synchroniser synchroniser.Synchroniser,
 	config SchedulerServerConfig,
-	loadBalancer *util.RingLoadBalancer,
 	namespace string,
-	kafkaConfigMap *kafka_config.KafkaConfig,
+	consumerGroupIdPrefix string,
+	loadBalancer *util.RingLoadBalancer,
 ) *SchedulerServer {
 	loggerWithField := logger.WithField("source", "SchedulerServer")
-
 	maxNumConsumers := getEnVar(loggerWithField, EnvMaxNumConsumers, DefaultMaxNumConsumers)
 	if maxNumConsumers <= 0 {
 		maxNumConsumers = DefaultMaxNumConsumers
 	}
+	consumerGroupConfig := NewConsumerGroupConfig(
+		namespace,
+		consumerGroupIdPrefix,
+		maxNumConsumers,
+	)
 
 	s := &SchedulerServer{
 		logger:           loggerWithField,
@@ -258,13 +282,11 @@ func NewSchedulerServer(
 		controlPlaneStream: ControlPlaneStream{
 			streams: make(map[pb.Scheduler_SubscribeControlPlaneServer]*ControlPlaneSubsription),
 		},
-		timeout:         sendTimeout,
-		synchroniser:    synchroniser,
-		config:          config,
-		loadBalancer:    loadBalancer,
-		namespace:       namespace,
-		kafkaConfig:     kafkaConfigMap,
-		maxNumConsumers: maxNumConsumers,
+		timeout:             sendTimeout,
+		synchroniser:        synchroniser,
+		config:              config,
+		loadBalancer:        loadBalancer,
+		consumerGroupConfig: consumerGroupConfig,
 	}
 
 	eventHub.RegisterModelEventHandler(
