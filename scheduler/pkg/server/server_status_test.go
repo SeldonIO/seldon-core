@@ -751,7 +751,9 @@ func createTestSchedulerImpl(config SchedulerServerConfig) (*SchedulerServer, *c
 	)
 	s := NewSchedulerServer(
 		logger, schedulerStore, experimentServer, pipelineServer, scheduler,
-		eventHub, synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), config)
+		eventHub, synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), config,
+		"", "", nil,
+	)
 
 	return s, eventHub
 }
