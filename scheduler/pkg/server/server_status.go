@@ -38,9 +38,16 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 	}
 	s.modelEventStream.mu.Unlock()
 
-	// rebalance the streams when a new subscription is added
 	if req.IsModelGateway {
+		// rebalance the streams when a new subscription is added
 		s.rebalance()
+	} else {
+		// update controller with current model statuses
+		err := s.sendCurrentModelStatuses(stream)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to send current model statuses to %s", req.GetSubscriberName())
+			return err
+		}
 	}
 
 	ctx := stream.Context()
@@ -66,6 +73,26 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 			return nil
 		}
 	}
+}
+
+func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_SubscribeModelStatusServer) error {
+	modelNames := s.modelStore.GetAllModels()
+	for _, modelName := range modelNames {
+		model, err := s.modelStore.GetModel(modelName)
+		if err != nil {
+			return err
+		}
+		ms, err := s.modelStatusImpl(model, false)
+		if err != nil {
+			return err
+		}
+		// no need to have a lock here as we are in the initial setup
+		_, err = sendWithTimeout(func() error { return stream.Send(ms) }, s.timeout)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func contains(slice []string, val string) bool {
