@@ -45,7 +45,8 @@ For more details on HPA check this [Kubernetes walk-through](https://kubernetes.
 {% endhint %}
 
 Autoscaling both Models and Servers using HPA and custom metrics is possible for the special
-case of single model serving in other words single model per server. For more information, see [HPA Autoscaling in single-model serving](../kubernetes/hpa-rps-autoscaling.md). For multi-model serving (MMS), a different solution is needed as
+case of single model serving (i.e. single model per server). Check the detailed documentation
+[here](hpa-rps-autoscaling.md). For multi-model serving (MMS), a different solution is needed as
 discussed below.
 
 ## Model autoscaling
