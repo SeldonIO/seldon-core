@@ -221,4 +221,3 @@ go-check/check
 go-inf/inf
 natefinch/lumberjack
 go-yaml/yaml
-None
