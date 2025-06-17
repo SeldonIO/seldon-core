@@ -569,6 +569,8 @@ spec:
             .Values.logging.logLevel }}'
         - name: ALLOW_PLAINTXT
           value: "true"
+        - name: MODELGATEWAY_MAX_NUM_CONSUMERS
+          value: "100"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -860,6 +862,10 @@ spec:
           value: "9044"
         - name: MODELGATEWAY_MAX_NUM_CONSUMERS
           value: "100"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
