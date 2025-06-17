@@ -142,6 +142,7 @@ func main() {
 		InferenceServerConfig: inferServerConfig,
 		TraceProvider:         tracer,
 		NumWorkers:            getEnVar(logger, gateway.EnvVarNumWorkers, gateway.DefaultNumWorkers),
+		WorkerTimeout:         getEnVar(logger, gateway.EnvVarWorkerTimeoutMs, gateway.DefaultWorkerTimeoutMs),
 	}
 	kafkaConsumer, err := gateway.NewConsumerManager(logger, &consumerConfig,
 		getEnVar(logger, gateway.EnvMaxNumConsumers, gateway.DefaultMaxNumConsumers))
