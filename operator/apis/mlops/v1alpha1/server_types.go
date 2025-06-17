@@ -42,6 +42,8 @@ type ServerSpec struct {
 	StatefulSetPersistentVolumeClaimRetentionPolicy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy `json:"statefulSetPersistentVolumeClaimRetentionPolicy,omitempty"`
 	// Scaling spec
 	ScalingSpec `json:",inline"`
+	// Deployment strategy
+	DeploymentStrategy appsv1.DeploymentStrategy `json:"deploymentStrategy,omitempty"`
 	// +Optional
 	// If set then when the referenced ServerConfig changes we will NOT update the Server immediately.
 	// Explicit changes to the Server itself will force a reconcile though
@@ -112,11 +114,16 @@ func (s *ServerSpec) Default() {
 }
 
 const (
+	DeploymentReady apis.ConditionType = "DeploymentReady"
+)
+
+const (
 	StatefulSetReady apis.ConditionType = "StatefulSetReady"
 )
 
 var serverConditionSet = apis.NewLivingConditionSet(
 	StatefulSetReady,
+	DeploymentReady,
 )
 
 var _ apis.ConditionsAccessor = (*ServerStatus)(nil)

@@ -28,7 +28,7 @@ import (
 type ServerConfigSpec struct {
 	// PodSpec
 	PodSpec              v1.PodSpec              `json:"podSpec"`
-	VolumeClaimTemplates []PersistentVolumeClaim `json:"volumeClaimTemplates"`
+	VolumeClaimTemplates []PersistentVolumeClaim `json:"volumeClaimTemplates,omitempty"`
 }
 
 // We use our own type rather than v1.PersistentVolumeClaim as metadata inlined is not handled correctly by CRDs
