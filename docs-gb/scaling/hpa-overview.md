@@ -15,7 +15,7 @@ The [Model Autoscaling with HPA](./model-hpa-autoscaling.md) approach enables us
 
 ## 2. Model and Server Autoscaling with HPA
 
-The [Model and Server Autoscaling with HPA](./model-server-hpa-scaling.png) approach leverages HPA to autoscale for Models and Servers in a coordinated way. This requires a **1-1 Mapping of Models and Servers** (no Multi-Model Serving). In this case, setting up HPA can be set up for a Model and its associated Server, targetting the same _custom_ metric (this is possible for Kubernetes-native metrics).  
+The [Model and Server Autoscaling with HPA](./single-model-serving-hpa.md) approach leverages HPA to autoscale for Models and Servers in a coordinated way. This requires a **1-1 Mapping of Models and Servers** (no Multi-Model Serving). In this case, setting up HPA can be set up for a Model and its associated Server, targetting the same _custom_ metric (this is possible for Kubernetes-native metrics).  
 
 ![Model and Server autoscaling with HPA, for single-model serving](./model-server-hpa-scaling.png)
 
