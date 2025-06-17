@@ -223,6 +223,7 @@ message ServerReplicaResources {
 
 message ModelSubscriptionRequest {
   string subscriberName = 1; //Name of the subscription caller
+  bool isModelGateway = 2;
 }
 
 message ModelStatusRequest {
