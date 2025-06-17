@@ -12,450 +12,460 @@ package server
 import (
 	"context"
 	"fmt"
+	"sort"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
+	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	scheduler2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 )
 
 func stringPtr(s string) *string {
 	return &s
 }
 
-// type mockAgentHandler struct {
-// 	numSyncs int
-// }
+type mockAgentHandler struct {
+	numSyncs int
+}
 
-// func (m *mockAgentHandler) SendAgentSync(modelName string) {
-// 	m.numSyncs++
-// }
+func (m *mockAgentHandler) SendAgentSync(modelName string) {
+	m.numSyncs++
+}
 
-// func TestLoadModel(t *testing.T) {
-// 	g := NewGomegaWithT(t)
+func TestLoadModel(t *testing.T) {
+	g := NewGomegaWithT(t)
 
-// 	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler, *coordinator.EventHub) {
-// 		logger := log.New()
-// 		logger.SetLevel(log.WarnLevel)
+	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler, *coordinator.EventHub) {
+		logger := log.New()
+		logger.SetLevel(log.WarnLevel)
 
-// 		eventHub, err := coordinator.NewEventHub(logger)
-// 		g.Expect(err).To(BeNil())
+		eventHub, err := coordinator.NewEventHub(logger)
+		g.Expect(err).To(BeNil())
 
-// 		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
-// 		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
-// 		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
-// 		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10 * time.Millisecond))
-// 		scheduler := scheduler2.NewSimpleScheduler(
-// 			logger,
-// 			schedulerStore,
-// 			scheduler2.DefaultSchedulerConfig(schedulerStore),
-// 			sync,
-// 			eventHub,
-// 		)
-// 		s := NewSchedulerServer(
-// 			logger, schedulerStore, experimentServer, pipelineServer,
-// 			scheduler, eventHub, sync, SchedulerServerConfig{})
-// 		sync.Signals(1)
-// 		mockAgent := &mockAgentHandler{}
+		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
+		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
+		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10 * time.Millisecond))
+		scheduler := scheduler2.NewSimpleScheduler(
+			logger,
+			schedulerStore,
+			scheduler2.DefaultSchedulerConfig(schedulerStore),
+			sync,
+			eventHub,
+		)
+		s := NewSchedulerServer(
+			logger, schedulerStore, experimentServer, pipelineServer,
+			scheduler, eventHub, sync, SchedulerServerConfig{})
+		sync.Signals(1)
+		mockAgent := &mockAgentHandler{}
 
-// 		return s, mockAgent, eventHub
-// 	}
+		return s, mockAgent, eventHub
+	}
 
-// 	smallMemory := uint64(100)
-// 	largeMemory := uint64(2000)
+	smallMemory := uint64(100)
+	largeMemory := uint64(2000)
 
-// 	type test struct {
-// 		name           string
-// 		req            []*pba.AgentSubscribeRequest
-// 		model          *pb.Model
-// 		scheduleFailed bool
-// 	}
+	type test struct {
+		name           string
+		req            []*pba.AgentSubscribeRequest
+		model          *pb.Model
+		scheduleFailed bool
+	}
 
-// 	tests := []test{
-// 		{
-// 			name: "Simple",
-// 			req: []*pba.AgentSubscribeRequest{
-// 				{
-// 					ServerName:           "server1",
-// 					ReplicaIdx:           0,
-// 					Shared:               true,
-// 					AvailableMemoryBytes: 1000,
-// 					ReplicaConfig: &pba.ReplicaConfig{
-// 						InferenceSvc:      "server1",
-// 						InferenceHttpPort: 1,
-// 						MemoryBytes:       1000,
-// 						Capabilities:      []string{"sklearn"},
-// 					},
-// 				},
-// 			},
-// 			model: &pb.Model{
-// 				Meta: &pb.MetaData{Name: "model1"},
-// 				ModelSpec: &pb.ModelSpec{
-// 					Uri:          "gs://model",
-// 					Requirements: []string{"sklearn"},
-// 					MemoryBytes:  &smallMemory,
-// 				},
-// 				DeploymentSpec: &pb.DeploymentSpec{Replicas: 1},
-// 			},
-// 			scheduleFailed: false,
-// 		},
-// 		{
-// 			name: "TooManyReplicas",
-// 			req: []*pba.AgentSubscribeRequest{
-// 				{
-// 					ServerName:           "server1",
-// 					ReplicaIdx:           0,
-// 					Shared:               true,
-// 					AvailableMemoryBytes: 1000,
-// 					ReplicaConfig: &pba.ReplicaConfig{
-// 						InferenceSvc:      "server1",
-// 						InferenceHttpPort: 1,
-// 						MemoryBytes:       1000,
-// 						Capabilities:      []string{"sklearn"},
-// 					},
-// 				},
-// 			},
-// 			model: &pb.Model{
-// 				Meta: &pb.MetaData{Name: "model1"},
-// 				ModelSpec: &pb.ModelSpec{
-// 					Uri:          "gs://model",
-// 					Requirements: []string{"sklearn"},
-// 					MemoryBytes:  &smallMemory,
-// 				},
-// 				DeploymentSpec: &pb.DeploymentSpec{Replicas: 2},
-// 			},
-// 			scheduleFailed: true,
-// 		},
-// 		{
-// 			name: "TooMuchMemory",
-// 			req: []*pba.AgentSubscribeRequest{
-// 				{
-// 					ServerName:           "server1",
-// 					ReplicaIdx:           0,
-// 					Shared:               true,
-// 					AvailableMemoryBytes: 1000,
-// 					ReplicaConfig: &pba.ReplicaConfig{
-// 						InferenceSvc:      "server1",
-// 						InferenceHttpPort: 1,
-// 						MemoryBytes:       1000,
-// 						Capabilities:      []string{"sklearn"},
-// 					},
-// 				},
-// 			},
-// 			model: &pb.Model{
-// 				Meta: &pb.MetaData{Name: "model1"},
-// 				ModelSpec: &pb.ModelSpec{
-// 					Uri:          "gs://model",
-// 					Requirements: []string{"sklearn"},
-// 					MemoryBytes:  &largeMemory,
-// 				},
-// 				DeploymentSpec: &pb.DeploymentSpec{Replicas: 1},
-// 			},
-// 			scheduleFailed: true,
-// 		},
-// 		{
-// 			name: "FailedRequirements",
-// 			req: []*pba.AgentSubscribeRequest{
-// 				{
-// 					ServerName:           "server1",
-// 					ReplicaIdx:           0,
-// 					Shared:               true,
-// 					AvailableMemoryBytes: 1000,
-// 					ReplicaConfig: &pba.ReplicaConfig{
-// 						InferenceSvc:      "server1",
-// 						InferenceHttpPort: 1,
-// 						MemoryBytes:       1000,
-// 						Capabilities:      []string{"sklearn"},
-// 					},
-// 				},
-// 			},
-// 			model: &pb.Model{
-// 				Meta: &pb.MetaData{Name: "model1"},
-// 				ModelSpec: &pb.ModelSpec{
-// 					Uri:          "gs://model",
-// 					Requirements: []string{"xgboost"},
-// 					MemoryBytes:  &smallMemory,
-// 				},
-// 				DeploymentSpec: &pb.DeploymentSpec{Replicas: 1},
-// 			},
-// 			scheduleFailed: true,
-// 		},
-// 		{
-// 			name: "MultipleRequirements",
-// 			req: []*pba.AgentSubscribeRequest{
-// 				{
-// 					ServerName:           "server1",
-// 					ReplicaIdx:           0,
-// 					Shared:               true,
-// 					AvailableMemoryBytes: 1000,
-// 					ReplicaConfig: &pba.ReplicaConfig{
-// 						InferenceSvc:      "server1",
-// 						InferenceHttpPort: 1,
-// 						MemoryBytes:       1000,
-// 						Capabilities:      []string{"sklearn", "xgboost"},
-// 					},
-// 				},
-// 			},
-// 			model: &pb.Model{
-// 				Meta: &pb.MetaData{Name: "model1"},
-// 				ModelSpec: &pb.ModelSpec{
-// 					Uri:          "gs://model",
-// 					Requirements: []string{"sklearn", "xgboost"},
-// 					MemoryBytes:  &smallMemory,
-// 				},
-// 				DeploymentSpec: &pb.DeploymentSpec{Replicas: 1},
-// 			},
-// 			scheduleFailed: false,
-// 		},
-// 		{
-// 			name: "TwoReplicas",
-// 			req: []*pba.AgentSubscribeRequest{
-// 				{
-// 					ServerName:           "server1",
-// 					ReplicaIdx:           0,
-// 					Shared:               true,
-// 					AvailableMemoryBytes: 1000,
-// 					ReplicaConfig: &pba.ReplicaConfig{
-// 						InferenceSvc:      "server1",
-// 						InferenceHttpPort: 1,
-// 						MemoryBytes:       1000,
-// 						Capabilities:      []string{"sklearn"},
-// 					},
-// 				},
-// 				{
-// 					ServerName:           "server1",
-// 					ReplicaIdx:           1,
-// 					Shared:               true,
-// 					AvailableMemoryBytes: 1000,
-// 					ReplicaConfig: &pba.ReplicaConfig{
-// 						InferenceSvc:      "server1",
-// 						InferenceHttpPort: 1,
-// 						MemoryBytes:       1000,
-// 						Capabilities:      []string{"sklearn"},
-// 					},
-// 				},
-// 			},
-// 			model: &pb.Model{
-// 				Meta: &pb.MetaData{Name: "model1"},
-// 				ModelSpec: &pb.ModelSpec{
-// 					Uri:          "gs://model",
-// 					Requirements: []string{"sklearn"},
-// 					MemoryBytes:  &smallMemory,
-// 				},
-// 				DeploymentSpec: &pb.DeploymentSpec{Replicas: 2},
-// 			},
-// 			scheduleFailed: false,
-// 		},
-// 		{
-// 			name: "TwoReplicasFail",
-// 			req: []*pba.AgentSubscribeRequest{
-// 				{
-// 					ServerName:           "server1",
-// 					ReplicaIdx:           0,
-// 					Shared:               true,
-// 					AvailableMemoryBytes: 1000,
-// 					ReplicaConfig: &pba.ReplicaConfig{
-// 						InferenceSvc:      "server1",
-// 						InferenceHttpPort: 1,
-// 						MemoryBytes:       1000,
-// 						Capabilities:      []string{"sklearn"},
-// 					},
-// 				},
-// 				{
-// 					ServerName:           "server1",
-// 					ReplicaIdx:           1,
-// 					Shared:               true,
-// 					AvailableMemoryBytes: 0,
-// 					ReplicaConfig: &pba.ReplicaConfig{
-// 						InferenceSvc:      "server1",
-// 						InferenceHttpPort: 1,
-// 						MemoryBytes:       1000,
-// 						Capabilities:      []string{"foo"},
-// 					},
-// 				},
-// 			},
-// 			model: &pb.Model{
-// 				Meta: &pb.MetaData{Name: "model1"},
-// 				ModelSpec: &pb.ModelSpec{
-// 					Uri:          "gs://model",
-// 					Requirements: []string{"sklearn"},
-// 					MemoryBytes:  &smallMemory,
-// 				},
-// 				DeploymentSpec: &pb.DeploymentSpec{Replicas: 2},
-// 			},
-// 			scheduleFailed: true,
-// 		}, // schedule to 2 replicas but 1 fails
-// 	}
+	tests := []test{
+		{
+			name: "Simple",
+			req: []*pba.AgentSubscribeRequest{
+				{
+					ServerName:           "server1",
+					ReplicaIdx:           0,
+					Shared:               true,
+					AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{
+						InferenceSvc:      "server1",
+						InferenceHttpPort: 1,
+						MemoryBytes:       1000,
+						Capabilities:      []string{"sklearn"},
+					},
+				},
+			},
+			model: &pb.Model{
+				Meta: &pb.MetaData{Name: "model1"},
+				ModelSpec: &pb.ModelSpec{
+					Uri:          "gs://model",
+					Requirements: []string{"sklearn"},
+					MemoryBytes:  &smallMemory,
+				},
+				DeploymentSpec: &pb.DeploymentSpec{Replicas: 1},
+			},
+			scheduleFailed: false,
+		},
+		{
+			name: "TooManyReplicas",
+			req: []*pba.AgentSubscribeRequest{
+				{
+					ServerName:           "server1",
+					ReplicaIdx:           0,
+					Shared:               true,
+					AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{
+						InferenceSvc:      "server1",
+						InferenceHttpPort: 1,
+						MemoryBytes:       1000,
+						Capabilities:      []string{"sklearn"},
+					},
+				},
+			},
+			model: &pb.Model{
+				Meta: &pb.MetaData{Name: "model1"},
+				ModelSpec: &pb.ModelSpec{
+					Uri:          "gs://model",
+					Requirements: []string{"sklearn"},
+					MemoryBytes:  &smallMemory,
+				},
+				DeploymentSpec: &pb.DeploymentSpec{Replicas: 2},
+			},
+			scheduleFailed: true,
+		},
+		{
+			name: "TooMuchMemory",
+			req: []*pba.AgentSubscribeRequest{
+				{
+					ServerName:           "server1",
+					ReplicaIdx:           0,
+					Shared:               true,
+					AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{
+						InferenceSvc:      "server1",
+						InferenceHttpPort: 1,
+						MemoryBytes:       1000,
+						Capabilities:      []string{"sklearn"},
+					},
+				},
+			},
+			model: &pb.Model{
+				Meta: &pb.MetaData{Name: "model1"},
+				ModelSpec: &pb.ModelSpec{
+					Uri:          "gs://model",
+					Requirements: []string{"sklearn"},
+					MemoryBytes:  &largeMemory,
+				},
+				DeploymentSpec: &pb.DeploymentSpec{Replicas: 1},
+			},
+			scheduleFailed: true,
+		},
+		{
+			name: "FailedRequirements",
+			req: []*pba.AgentSubscribeRequest{
+				{
+					ServerName:           "server1",
+					ReplicaIdx:           0,
+					Shared:               true,
+					AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{
+						InferenceSvc:      "server1",
+						InferenceHttpPort: 1,
+						MemoryBytes:       1000,
+						Capabilities:      []string{"sklearn"},
+					},
+				},
+			},
+			model: &pb.Model{
+				Meta: &pb.MetaData{Name: "model1"},
+				ModelSpec: &pb.ModelSpec{
+					Uri:          "gs://model",
+					Requirements: []string{"xgboost"},
+					MemoryBytes:  &smallMemory,
+				},
+				DeploymentSpec: &pb.DeploymentSpec{Replicas: 1},
+			},
+			scheduleFailed: true,
+		},
+		{
+			name: "MultipleRequirements",
+			req: []*pba.AgentSubscribeRequest{
+				{
+					ServerName:           "server1",
+					ReplicaIdx:           0,
+					Shared:               true,
+					AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{
+						InferenceSvc:      "server1",
+						InferenceHttpPort: 1,
+						MemoryBytes:       1000,
+						Capabilities:      []string{"sklearn", "xgboost"},
+					},
+				},
+			},
+			model: &pb.Model{
+				Meta: &pb.MetaData{Name: "model1"},
+				ModelSpec: &pb.ModelSpec{
+					Uri:          "gs://model",
+					Requirements: []string{"sklearn", "xgboost"},
+					MemoryBytes:  &smallMemory,
+				},
+				DeploymentSpec: &pb.DeploymentSpec{Replicas: 1},
+			},
+			scheduleFailed: false,
+		},
+		{
+			name: "TwoReplicas",
+			req: []*pba.AgentSubscribeRequest{
+				{
+					ServerName:           "server1",
+					ReplicaIdx:           0,
+					Shared:               true,
+					AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{
+						InferenceSvc:      "server1",
+						InferenceHttpPort: 1,
+						MemoryBytes:       1000,
+						Capabilities:      []string{"sklearn"},
+					},
+				},
+				{
+					ServerName:           "server1",
+					ReplicaIdx:           1,
+					Shared:               true,
+					AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{
+						InferenceSvc:      "server1",
+						InferenceHttpPort: 1,
+						MemoryBytes:       1000,
+						Capabilities:      []string{"sklearn"},
+					},
+				},
+			},
+			model: &pb.Model{
+				Meta: &pb.MetaData{Name: "model1"},
+				ModelSpec: &pb.ModelSpec{
+					Uri:          "gs://model",
+					Requirements: []string{"sklearn"},
+					MemoryBytes:  &smallMemory,
+				},
+				DeploymentSpec: &pb.DeploymentSpec{Replicas: 2},
+			},
+			scheduleFailed: false,
+		},
+		{
+			name: "TwoReplicasFail",
+			req: []*pba.AgentSubscribeRequest{
+				{
+					ServerName:           "server1",
+					ReplicaIdx:           0,
+					Shared:               true,
+					AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{
+						InferenceSvc:      "server1",
+						InferenceHttpPort: 1,
+						MemoryBytes:       1000,
+						Capabilities:      []string{"sklearn"},
+					},
+				},
+				{
+					ServerName:           "server1",
+					ReplicaIdx:           1,
+					Shared:               true,
+					AvailableMemoryBytes: 0,
+					ReplicaConfig: &pba.ReplicaConfig{
+						InferenceSvc:      "server1",
+						InferenceHttpPort: 1,
+						MemoryBytes:       1000,
+						Capabilities:      []string{"foo"},
+					},
+				},
+			},
+			model: &pb.Model{
+				Meta: &pb.MetaData{Name: "model1"},
+				ModelSpec: &pb.ModelSpec{
+					Uri:          "gs://model",
+					Requirements: []string{"sklearn"},
+					MemoryBytes:  &smallMemory,
+				},
+				DeploymentSpec: &pb.DeploymentSpec{Replicas: 2},
+			},
+			scheduleFailed: true,
+		}, // schedule to 2 replicas but 1 fails
+	}
 
-// 	for _, test := range tests {
-// 		t.Run(test.name, func(t *testing.T) {
-// 			// Given
-// 			s, _, h := createTestScheduler()
-// 			for _, repReq := range test.req {
-// 				err := s.modelStore.AddServerReplica(repReq)
-// 				g.Expect(err).To(BeNil())
-// 			}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// Given
+			s, _, h := createTestScheduler()
+			for _, repReq := range test.req {
+				err := s.modelStore.AddServerReplica(repReq)
+				g.Expect(err).To(BeNil())
+			}
 
-// 			scheduledFailed := atomic.Bool{}
+			scheduledFailed := atomic.Bool{}
 
-// 			// Subscribe to model events
-// 			h.RegisterModelEventHandler(
-// 				"handler-model",
-// 				10,
-// 				log.New(),
-// 				func(event coordinator.ModelEventMsg) {
-// 					if event.ModelName != test.model.Meta.Name {
-// 						return
-// 					}
-// 					model, _ := s.modelStore.GetModel(event.ModelName)
-// 					latest := model.GetLatest()
-// 					if latest.ModelState().State == store.ScheduleFailed {
-// 						scheduledFailed.Store(true)
-// 					} else {
-// 						scheduledFailed.Store(false)
-// 					}
-// 				},
-// 			)
+			// Subscribe to model events
+			h.RegisterModelEventHandler(
+				"handler-model",
+				10,
+				log.New(),
+				func(event coordinator.ModelEventMsg) {
+					if event.ModelName != test.model.Meta.Name {
+						return
+					}
+					model, _ := s.modelStore.GetModel(event.ModelName)
+					latest := model.GetLatest()
+					if latest.ModelState().State == store.ScheduleFailed {
+						scheduledFailed.Store(true)
+					} else {
+						scheduledFailed.Store(false)
+					}
+				},
+			)
 
-// 			// When
-// 			lm := pb.LoadModelRequest{
-// 				Model: test.model,
-// 			}
-// 			r, err := s.LoadModel(context.Background(), &lm)
+			// When
+			lm := pb.LoadModelRequest{
+				Model: test.model,
+			}
+			r, err := s.LoadModel(context.Background(), &lm)
 
-// 			time.Sleep(100 * time.Millisecond)
+			time.Sleep(100 * time.Millisecond)
 
-// 			// Then
-// 			g.Expect(r).ToNot(BeNil())
-// 			g.Expect(err).To(BeNil())
-// 			if test.scheduleFailed {
-// 				g.Expect(scheduledFailed.Load()).To(BeTrueBecause("schedule failed"))
-// 			} else {
-// 				g.Expect(scheduledFailed.Load()).To(BeFalseBecause("schedule ok"))
-// 			}
-// 		})
-// 	}
-// }
+			// Then
+			g.Expect(r).ToNot(BeNil())
+			g.Expect(err).To(BeNil())
+			if test.scheduleFailed {
+				g.Expect(scheduledFailed.Load()).To(BeTrueBecause("schedule failed"))
+			} else {
+				g.Expect(scheduledFailed.Load()).To(BeFalseBecause("schedule ok"))
+			}
+		})
+	}
+}
 
-// func TestUnloadModel(t *testing.T) {
-// 	g := NewGomegaWithT(t)
+func TestUnloadModel(t *testing.T) {
+	g := NewGomegaWithT(t)
 
-// 	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler, *coordinator.EventHub) {
-// 		logger := log.New()
-// 		log.SetLevel(log.DebugLevel)
-// 		eventHub, err := coordinator.NewEventHub(logger)
-// 		g.Expect(err).To(BeNil())
-// 		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
-// 		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
-// 		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
-// 		mockAgent := &mockAgentHandler{}
-// 		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10 * time.Millisecond))
-// 		scheduler := scheduler2.NewSimpleScheduler(logger,
-// 			schedulerStore,
-// 			scheduler2.DefaultSchedulerConfig(schedulerStore),
-// 			sync,
-// 			eventHub,
-// 		)
-// 		s := NewSchedulerServer(
-// 			logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub,
-// 			sync, SchedulerServerConfig{})
-// 		sync.Signals(1)
-// 		return s, mockAgent, eventHub
-// 	}
+	createTestScheduler := func() (*SchedulerServer, *mockAgentHandler, *coordinator.EventHub) {
+		logger := log.New()
+		log.SetLevel(log.DebugLevel)
+		eventHub, err := coordinator.NewEventHub(logger)
+		g.Expect(err).To(BeNil())
+		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
+		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
+		mockAgent := &mockAgentHandler{}
+		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10 * time.Millisecond))
+		scheduler := scheduler2.NewSimpleScheduler(logger,
+			schedulerStore,
+			scheduler2.DefaultSchedulerConfig(schedulerStore),
+			sync,
+			eventHub,
+		)
+		s := NewSchedulerServer(
+			logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub,
+			sync, SchedulerServerConfig{})
+		sync.Signals(1)
+		return s, mockAgent, eventHub
+	}
 
-// 	type test struct {
-// 		name       string
-// 		req        []*pba.AgentSubscribeRequest
-// 		model      *pb.Model
-// 		code       codes.Code
-// 		modelState store.ModelState
-// 	}
-// 	modelName := "model1"
-// 	smallMemory := uint64(100)
-// 	tests := []test{
-// 		{
-// 			name: "Simple",
-// 			req: []*pba.AgentSubscribeRequest{
-// 				{
-// 					ServerName: "server1", ReplicaIdx: 0, Shared: true, AvailableMemoryBytes: 1000,
-// 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}},
-// 				},
-// 			},
-// 			model:      &pb.Model{Meta: &pb.MetaData{Name: "model1"}, ModelSpec: &pb.ModelSpec{Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
-// 			code:       codes.OK,
-// 			modelState: store.ModelTerminated,
-// 		},
-// 		{
-// 			name: "TwoReplicas",
-// 			req: []*pba.AgentSubscribeRequest{
-// 				{
-// 					ServerName: "server1", ReplicaIdx: 0, Shared: true, AvailableMemoryBytes: 1000,
-// 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}},
-// 				},
-// 				{
-// 					ServerName: "server1", ReplicaIdx: 1, Shared: true, AvailableMemoryBytes: 1000,
-// 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}},
-// 				},
-// 			},
-// 			model:      &pb.Model{Meta: &pb.MetaData{Name: "model1"}, ModelSpec: &pb.ModelSpec{Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
-// 			code:       codes.OK,
-// 			modelState: store.ModelTerminated,
-// 		},
-// 		{
-// 			name: "NotExist",
-// 			req: []*pba.AgentSubscribeRequest{
-// 				{
-// 					ServerName: "server1", ReplicaIdx: 0, Shared: true, AvailableMemoryBytes: 1000,
-// 					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}},
-// 				},
-// 			},
-// 			model: nil,
-// 			code:  codes.FailedPrecondition,
-// 		},
-// 	}
-// 	for _, test := range tests {
-// 		t.Run(test.name, func(t *testing.T) {
-// 			s, _, _ := createTestScheduler()
-// 			defer s.StopSendModelEvents()
-// 			defer s.StopSendServerEvents()
+	type test struct {
+		name       string
+		req        []*pba.AgentSubscribeRequest
+		model      *pb.Model
+		code       codes.Code
+		modelState store.ModelState
+	}
+	modelName := "model1"
+	smallMemory := uint64(100)
+	tests := []test{
+		{
+			name: "Simple",
+			req: []*pba.AgentSubscribeRequest{
+				{
+					ServerName: "server1", ReplicaIdx: 0, Shared: true, AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}},
+				},
+			},
+			model:      &pb.Model{Meta: &pb.MetaData{Name: "model1"}, ModelSpec: &pb.ModelSpec{Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
+			code:       codes.OK,
+			modelState: store.ModelTerminated,
+		},
+		{
+			name: "TwoReplicas",
+			req: []*pba.AgentSubscribeRequest{
+				{
+					ServerName: "server1", ReplicaIdx: 0, Shared: true, AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}},
+				},
+				{
+					ServerName: "server1", ReplicaIdx: 1, Shared: true, AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}},
+				},
+			},
+			model:      &pb.Model{Meta: &pb.MetaData{Name: "model1"}, ModelSpec: &pb.ModelSpec{Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+			code:       codes.OK,
+			modelState: store.ModelTerminated,
+		},
+		{
+			name: "NotExist",
+			req: []*pba.AgentSubscribeRequest{
+				{
+					ServerName: "server1", ReplicaIdx: 0, Shared: true, AvailableMemoryBytes: 1000,
+					ReplicaConfig: &pba.ReplicaConfig{InferenceSvc: "server1", InferenceHttpPort: 1, Capabilities: []string{"sklearn"}},
+				},
+			},
+			model: nil,
+			code:  codes.FailedPrecondition,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s, _, _ := createTestScheduler()
+			defer s.StopSendModelEvents()
+			defer s.StopSendServerEvents()
 
-// 			for _, repReq := range test.req {
-// 				err := s.modelStore.AddServerReplica(repReq)
-// 				g.Expect(err).To(BeNil())
-// 			}
+			for _, repReq := range test.req {
+				err := s.modelStore.AddServerReplica(repReq)
+				g.Expect(err).To(BeNil())
+			}
 
-// 			if test.model != nil {
-// 				lm := pb.LoadModelRequest{
-// 					Model: test.model,
-// 				}
-// 				r, err := s.LoadModel(context.Background(), &lm)
-// 				g.Expect(err).To(BeNil())
-// 				g.Expect(r).ToNot(BeNil())
-// 			}
-// 			rm := &pb.UnloadModelRequest{Model: &pb.ModelReference{Name: modelName}}
-// 			r, err := s.UnloadModel(context.Background(), rm)
+			if test.model != nil {
+				lm := pb.LoadModelRequest{
+					Model: test.model,
+				}
+				r, err := s.LoadModel(context.Background(), &lm)
+				g.Expect(err).To(BeNil())
+				g.Expect(r).ToNot(BeNil())
+			}
+			rm := &pb.UnloadModelRequest{Model: &pb.ModelReference{Name: modelName}}
+			r, err := s.UnloadModel(context.Background(), rm)
 
-// 			if test.code != codes.OK {
-// 				g.Expect(err).ToNot(BeNil())
-// 				e, ok := status.FromError(err)
-// 				g.Expect(ok).To(BeTrue())
-// 				g.Expect(e.Code()).To(Equal(test.code))
-// 			} else {
-// 				g.Expect(err).To(BeNil())
-// 				g.Expect(r).ToNot(BeNil())
-// 				ms, err := s.modelStore.GetModel(modelName)
-// 				g.Expect(err).To(BeNil())
-// 				g.Expect(ms.GetLatest().ModelState().State).To(Equal(test.modelState))
+			if test.code != codes.OK {
+				g.Expect(err).ToNot(BeNil())
+				e, ok := status.FromError(err)
+				g.Expect(ok).To(BeTrue())
+				g.Expect(e.Code()).To(Equal(test.code))
+			} else {
+				g.Expect(err).To(BeNil())
+				g.Expect(r).ToNot(BeNil())
+				ms, err := s.modelStore.GetModel(modelName)
+				g.Expect(err).To(BeNil())
+				g.Expect(ms.GetLatest().ModelState().State).To(Equal(test.modelState))
 
-// 			}
-// 		})
-// 	}
-// }
+			}
+		})
+	}
+}
 
 func TestLoadPipeline(t *testing.T) {
 	g := NewGomegaWithT(t)
@@ -682,127 +692,127 @@ func TestPipelineStatus(t *testing.T) {
 	}
 }
 
-// func TestServerNotify(t *testing.T) {
-// 	g := NewGomegaWithT(t)
+func TestServerNotify(t *testing.T) {
+	g := NewGomegaWithT(t)
 
-// 	createTestScheduler := func() (*SchedulerServer, synchroniser.Synchroniser) {
-// 		logger := log.New()
-// 		log.SetLevel(log.DebugLevel)
-// 		eventHub, err := coordinator.NewEventHub(logger)
-// 		g.Expect(err).To(BeNil())
-// 		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
-// 		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10 * time.Millisecond))
-// 		scheduler := scheduler2.NewSimpleScheduler(logger,
-// 			schedulerStore,
-// 			scheduler2.DefaultSchedulerConfig(schedulerStore),
-// 			sync,
-// 			eventHub,
-// 		)
-// 		s := NewSchedulerServer(
-// 			logger, schedulerStore, nil, nil, scheduler, eventHub,
-// 			sync, SchedulerServerConfig{})
-// 		return s, sync
-// 	}
+	createTestScheduler := func() (*SchedulerServer, synchroniser.Synchroniser) {
+		logger := log.New()
+		log.SetLevel(log.DebugLevel)
+		eventHub, err := coordinator.NewEventHub(logger)
+		g.Expect(err).To(BeNil())
+		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10 * time.Millisecond))
+		scheduler := scheduler2.NewSimpleScheduler(logger,
+			schedulerStore,
+			scheduler2.DefaultSchedulerConfig(schedulerStore),
+			sync,
+			eventHub,
+		)
+		s := NewSchedulerServer(
+			logger, schedulerStore, nil, nil, scheduler, eventHub,
+			sync, SchedulerServerConfig{})
+		return s, sync
+	}
 
-// 	type test struct {
-// 		name                 string
-// 		req                  *pb.ServerNotifyRequest
-// 		expectedServerStates []*store.ServerSnapshot
-// 		signalTriggered      bool
-// 	}
-// 	tests := []test{
-// 		{
-// 			name: "Initial sync",
-// 			req: &pb.ServerNotifyRequest{
-// 				Servers: []*pb.ServerNotify{
-// 					{
-// 						Name:             "server1",
-// 						ExpectedReplicas: 2,
-// 						MinReplicas:      1,
-// 						MaxReplicas:      3,
-// 						Shared:           true,
-// 					},
-// 					{
-// 						Name:             "server2",
-// 						ExpectedReplicas: 3,
-// 						Shared:           true,
-// 					},
-// 				},
-// 				IsFirstSync: true,
-// 			},
-// 			expectedServerStates: []*store.ServerSnapshot{
-// 				{
-// 					Name:             "server1",
-// 					ExpectedReplicas: 2,
-// 					MinReplicas:      1,
-// 					MaxReplicas:      3,
-// 					Shared:           true,
-// 					Replicas:         map[int]*store.ServerReplica{},
-// 				},
-// 				{
-// 					Name:             "server2",
-// 					ExpectedReplicas: 3,
-// 					Shared:           true,
-// 					Replicas:         map[int]*store.ServerReplica{},
-// 				},
-// 			},
-// 			signalTriggered: true,
-// 		},
-// 		{
-// 			name: "Initial sync - no servers",
-// 			req: &pb.ServerNotifyRequest{
-// 				Servers:     []*pb.ServerNotify{},
-// 				IsFirstSync: true,
-// 			},
-// 			expectedServerStates: nil,
-// 			signalTriggered:      true,
-// 		},
-// 		{
-// 			// this should not trigger sync.Signal()
-// 			name: "normal sync",
-// 			req: &pb.ServerNotifyRequest{
-// 				Servers: []*pb.ServerNotify{
-// 					{
-// 						Name:             "server1",
-// 						ExpectedReplicas: 2,
-// 						Shared:           true,
-// 					},
-// 				},
-// 				IsFirstSync: false,
-// 			},
-// 			expectedServerStates: []*store.ServerSnapshot{
-// 				{
-// 					Name:             "server1",
-// 					ExpectedReplicas: 2,
-// 					Shared:           true,
-// 					Replicas:         map[int]*store.ServerReplica{},
-// 				},
-// 			},
-// 			signalTriggered: false,
-// 		},
-// 	}
-// 	for _, test := range tests {
-// 		t.Run(test.name, func(t *testing.T) {
-// 			s, sync := createTestScheduler()
+	type test struct {
+		name                 string
+		req                  *pb.ServerNotifyRequest
+		expectedServerStates []*store.ServerSnapshot
+		signalTriggered      bool
+	}
+	tests := []test{
+		{
+			name: "Initial sync",
+			req: &pb.ServerNotifyRequest{
+				Servers: []*pb.ServerNotify{
+					{
+						Name:             "server1",
+						ExpectedReplicas: 2,
+						MinReplicas:      1,
+						MaxReplicas:      3,
+						Shared:           true,
+					},
+					{
+						Name:             "server2",
+						ExpectedReplicas: 3,
+						Shared:           true,
+					},
+				},
+				IsFirstSync: true,
+			},
+			expectedServerStates: []*store.ServerSnapshot{
+				{
+					Name:             "server1",
+					ExpectedReplicas: 2,
+					MinReplicas:      1,
+					MaxReplicas:      3,
+					Shared:           true,
+					Replicas:         map[int]*store.ServerReplica{},
+				},
+				{
+					Name:             "server2",
+					ExpectedReplicas: 3,
+					Shared:           true,
+					Replicas:         map[int]*store.ServerReplica{},
+				},
+			},
+			signalTriggered: true,
+		},
+		{
+			name: "Initial sync - no servers",
+			req: &pb.ServerNotifyRequest{
+				Servers:     []*pb.ServerNotify{},
+				IsFirstSync: true,
+			},
+			expectedServerStates: nil,
+			signalTriggered:      true,
+		},
+		{
+			// this should not trigger sync.Signal()
+			name: "normal sync",
+			req: &pb.ServerNotifyRequest{
+				Servers: []*pb.ServerNotify{
+					{
+						Name:             "server1",
+						ExpectedReplicas: 2,
+						Shared:           true,
+					},
+				},
+				IsFirstSync: false,
+			},
+			expectedServerStates: []*store.ServerSnapshot{
+				{
+					Name:             "server1",
+					ExpectedReplicas: 2,
+					Shared:           true,
+					Replicas:         map[int]*store.ServerReplica{},
+				},
+			},
+			signalTriggered: false,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s, sync := createTestScheduler()
 
-// 			_, _ = s.ServerNotify(context.Background(), test.req)
+			_, _ = s.ServerNotify(context.Background(), test.req)
 
-// 			time.Sleep(50 * time.Millisecond) // allow events to be processed
+			time.Sleep(50 * time.Millisecond) // allow events to be processed
 
-// 			actualServers, err := s.modelStore.GetServers(true, false)
-// 			g.Expect(err).To(BeNil())
-// 			sort.Slice(actualServers, func(i, j int) bool {
-// 				return actualServers[i].Name < actualServers[j].Name
-// 			})
-// 			sort.Slice(test.expectedServerStates, func(i, j int) bool {
-// 				return test.expectedServerStates[i].Name < test.expectedServerStates[j].Name
-// 			})
-// 			g.Expect(actualServers).To(Equal(test.expectedServerStates))
+			actualServers, err := s.modelStore.GetServers(true, false)
+			g.Expect(err).To(BeNil())
+			sort.Slice(actualServers, func(i, j int) bool {
+				return actualServers[i].Name < actualServers[j].Name
+			})
+			sort.Slice(test.expectedServerStates, func(i, j int) bool {
+				return test.expectedServerStates[i].Name < test.expectedServerStates[j].Name
+			})
+			g.Expect(actualServers).To(Equal(test.expectedServerStates))
 
-// 			g.Expect(sync.IsTriggered()).To(Equal(test.signalTriggered))
-// 		})
-// 	}
-// }
+			g.Expect(sync.IsTriggered()).To(Equal(test.signalTriggered))
+		})
+	}
+}
 
 type stubPipelineStatusServer struct {
 	msgs      chan *pb.PipelineStatusResponse
@@ -833,12 +843,12 @@ type stubModelStatusServer struct {
 
 var _ pb.Scheduler_ModelStatusServer = (*stubModelStatusServer)(nil)
 
-// func newStubModelStatusServer(capacity int, sleepTime time.Duration) *stubModelStatusServer {
-// 	return &stubModelStatusServer{
-// 		msgs:      make(chan *pb.ModelStatusResponse, capacity),
-// 		sleepTime: sleepTime,
-// 	}
-// }
+func newStubModelStatusServer(capacity int, sleepTime time.Duration) *stubModelStatusServer {
+	return &stubModelStatusServer{
+		msgs:      make(chan *pb.ModelStatusResponse, capacity),
+		sleepTime: sleepTime,
+	}
+}
 
 func (s *stubModelStatusServer) Send(r *pb.ModelStatusResponse) error {
 	time.Sleep(s.sleepTime)
