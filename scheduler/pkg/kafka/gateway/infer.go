@@ -35,7 +35,7 @@ const (
 	pollTimeoutMillisecs        = 10000
 	DefaultNumWorkers           = 8
 	EnvVarNumWorkers            = "MODELGATEWAY_NUM_WORKERS"
-	DefaultWorkerTimeoutMs      = 10 * 60 * 1000
+	DefaultWorkerTimeoutMs      = 2 * 60 * 1000
 	EnvVarWorkerTimeoutMs       = "MODELGATEWAY_WORKER_TIMEOUT_MS"
 	envDefaultReplicationFactor = "KAFKA_DEFAULT_REPLICATION_FACTOR"
 	envDefaultNumPartitions     = "KAFKA_DEFAULT_NUM_PARTITIONS"
