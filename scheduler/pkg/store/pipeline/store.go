@@ -395,7 +395,7 @@ func (ps *PipelineStore) setPipelineStateImpl(name string, versionNumber uint32,
 					evts = append(evts, ps.terminateOldUnterminatedPipelinesIfNeeded(pipeline)...)
 				}
 				if ps.db != nil {
-					ps.logger.Infof("saving pipeline %s to db with status %s", pipeline.Name, status.String())
+					ps.logger.Debugf("saving pipeline %s to db with status %s", pipeline.Name, status.String())
 					err := ps.db.save(pipeline)
 					if err != nil {
 						return evts, err

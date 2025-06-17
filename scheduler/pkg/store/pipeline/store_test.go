@@ -778,9 +778,7 @@ func TestSetPipelineState(t *testing.T) {
 	}
 }
 
-// TestPipelineStatusAfterRestart executes a sequence of pipeline functions and restarts the db
-// to verify db restart consistency
-func TestPipelineStatusAfterRestart(t *testing.T) {
+func TestPipelineStatusAfterDBRestart(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type testStep struct {
