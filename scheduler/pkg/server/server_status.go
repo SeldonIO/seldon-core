@@ -125,11 +125,11 @@ func (s *SchedulerServer) rebalance() {
 
 		model, _ := s.modelStore.GetModel(modelName)
 		consumerBucketId := util.GetKafkaConsumerName(
-			s.namespace,
-			s.kafkaConfig.ConsumerGroupIdPrefix,
+			s.consumerGroupConfig.namespace,
+			s.consumerGroupConfig.consumerGroupIdPrefix,
 			modelName,
 			modelGatewayConsumerNamePrefix,
-			s.maxNumConsumers,
+			s.consumerGroupConfig.maxNumConsumers,
 		)
 
 		s.logger.Info("Rebalancing model status for model: ", modelName)
