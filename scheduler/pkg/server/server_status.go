@@ -128,12 +128,13 @@ func (s *SchedulerServer) GetAllRunningModels() []string {
 	return runningModels
 }
 
-func (s *SchedulerServer) createModelDeletionMessage(model *store.ModelSnapshot) (*pb.ModelStatusResponse, error) {
+func (s *SchedulerServer) createModelDeletionMessage(model *store.ModelSnapshot, keepTopics bool) (*pb.ModelStatusResponse, error) {
 	ms, err := s.modelStatusImpl(model, false)
 	if err != nil {
 		return nil, err
 	}
 	ms.Versions[0].State.AvailableReplicas = 0
+	ms.KeepTopics = keepTopics
 	return ms, nil
 }
 
@@ -182,7 +183,7 @@ func (s *SchedulerServer) rebalance() {
 
 				if state == store.ModelTerminating {
 					s.logger.Debugf("Model %s is terminating, sending deletion message", modelName)
-					msg, err = s.createModelDeletionMessage(model)
+					msg, err = s.createModelDeletionMessage(model, false)
 				} else {
 					s.logger.Debugf("Model %s is available or progressing, sending creation message", modelName)
 					msg, err = s.createModelCreationMessage(model)
@@ -196,7 +197,7 @@ func (s *SchedulerServer) rebalance() {
 				}
 			} else {
 				s.logger.Debugf("Server %s does not contain model %s, sending deletion message", server, modelName)
-				msg, err := s.createModelDeletionMessage(model)
+				msg, err := s.createModelDeletionMessage(model, true)
 				if err != nil {
 					s.logger.WithError(err).Errorf("Failed to create model deletion message for %s", modelName)
 					continue

@@ -135,6 +135,7 @@ message ModelStatusResponse {
   string modelName = 1;
   repeated ModelVersionStatus versions = 2;
   bool deleted = 3;
+  bool keepTopics = 4;
 }
 
 message ModelVersionStatus {
