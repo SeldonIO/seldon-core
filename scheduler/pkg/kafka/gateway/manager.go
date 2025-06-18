@@ -183,7 +183,7 @@ func (cm *ConsumerManager) stopEmptyConsumer(ic *InferKafkaHandler) {
 	}
 }
 
-func (cm *ConsumerManager) RemoveModel(modelName string, cleanTopicsOnDeletion bool) error {
+func (cm *ConsumerManager) RemoveModel(modelName string, cleanTopicsOnDeletion bool, keepTopics bool) error {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	ic, err := cm.getInferKafkaConsumer(modelName, false)
@@ -193,7 +193,7 @@ func (cm *ConsumerManager) RemoveModel(modelName string, cleanTopicsOnDeletion b
 	if ic == nil {
 		return nil
 	}
-	err = ic.RemoveModel(modelName, cleanTopicsOnDeletion)
+	err = ic.RemoveModel(modelName, cleanTopicsOnDeletion, keepTopics)
 	if err != nil {
 		return err
 	}
