@@ -76,6 +76,9 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 }
 
 func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_SubscribeModelStatusServer) error {
+	s.modelEventStream.mu.Lock()
+	defer s.modelEventStream.mu.Unlock()
+
 	modelNames := s.modelStore.GetAllModels()
 	for _, modelName := range modelNames {
 		model, err := s.modelStore.GetModel(modelName)
@@ -86,7 +89,6 @@ func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_Subscribe
 		if err != nil {
 			return err
 		}
-		// no need to have a lock here as we are in the initial setup
 		_, err = sendWithTimeout(func() error { return stream.Send(ms) }, s.timeout)
 		if err != nil {
 			return err
@@ -229,6 +231,9 @@ func (s *SchedulerServer) StopSendModelEvents() {
 }
 
 func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) error {
+	s.modelEventStream.mu.Lock()
+	defer s.modelEventStream.mu.Unlock()
+
 	logger := s.logger.WithField("func", "sendModelStatusEvent")
 	model, err := s.modelStore.GetModel(evt.ModelName)
 	if err != nil {
@@ -240,8 +245,6 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 			logger.WithError(err).Errorf("Failed to create model status for model %s", evt.String())
 			return err
 		}
-		s.modelEventStream.mu.Lock()
-		defer s.modelEventStream.mu.Unlock()
 		for stream, subscription := range s.modelEventStream.streams {
 			hasExpired, err := sendWithTimeout(func() error { return stream.Send(ms) }, s.timeout)
 			if hasExpired {
