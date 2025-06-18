@@ -198,3 +198,8 @@
   * [Release](development/release.md)
 * [Release Notes](https://github.com/SeldonIO/seldon-core/releases/tag/v2.9.0)
 
+## Documentation Resources
+ * [Home](https://docs.seldon.ai/home)
+
+
+
