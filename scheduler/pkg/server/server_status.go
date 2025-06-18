@@ -161,30 +161,30 @@ func (s *SchedulerServer) rebalance() {
 			s.consumerGroupConfig.maxNumConsumers,
 		)
 
-		s.logger.Info("Rebalancing model status for model: ", modelName)
-		s.logger.Info("Consumer bucket ID: ", consumerBucketId)
+		s.logger.Debug("Rebalancing model status for model: ", modelName)
+		s.logger.Debug("Consumer bucket ID: ", consumerBucketId)
 
 		servers := s.loadBalancer.GetServersForKey(consumerBucketId)
-		s.logger.Infof("Servers for model %s: %v", modelName, servers)
+		s.logger.Debugf("Servers for model %s: %v", modelName, servers)
 
 		for _, modelSubscription := range s.modelEventStream.streams {
-			s.logger.Info("Processing model subscription for: ", modelSubscription.name)
+			s.logger.Debug("Processing model subscription for: ", modelSubscription.name)
 
 			server := modelSubscription.name
 			stream := modelSubscription.stream
 
 			if contains(servers, server) {
-				s.logger.Info("Server contains model, sending status update for: ", server)
+				s.logger.Debug("Server contains model, sending status update for: ", server)
 
 				state := model.GetLatest().ModelState().State
 				var msg *pb.ModelStatusResponse
 				var err error
 
 				if state == store.ModelTerminating {
-					s.logger.Infof("Model %s is terminating, sending deletion message", modelName)
+					s.logger.Debugf("Model %s is terminating, sending deletion message", modelName)
 					msg, err = s.createModelDeletionMessage(model)
 				} else {
-					s.logger.Infof("Model %s is available or progressing, sending creation message", modelName)
+					s.logger.Debugf("Model %s is available or progressing, sending creation message", modelName)
 					msg, err = s.createModelCreationMessage(model)
 				}
 				if err != nil {
@@ -195,13 +195,13 @@ func (s *SchedulerServer) rebalance() {
 					s.logger.WithError(err).Errorf("Failed to send create rebalance msg to model %s", modelName)
 				}
 			} else {
-				s.logger.Infof("Server %s does not contain model %s, sending deletion message", server, modelName)
+				s.logger.Debugf("Server %s does not contain model %s, sending deletion message", server, modelName)
 				msg, err := s.createModelDeletionMessage(model)
 				if err != nil {
 					s.logger.WithError(err).Errorf("Failed to create model deletion message for %s", modelName)
 					continue
 				}
-				s.logger.Infof("Sending deletion message for model %s to server %s", modelName, server)
+				s.logger.Debugf("Sending deletion message for model %s to server %s", modelName, server)
 				if err := stream.Send(msg); err != nil {
 					s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to model %s", modelName)
 				}
