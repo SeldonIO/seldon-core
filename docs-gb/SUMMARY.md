@@ -5,6 +5,11 @@
 * [Quick Start Guide](README.md)
 * [License](LICENSE.md)
 * [Installation]
+    * [Install in Kubernetes](install/installation.md)
+    * [Install Locally](install/kind.md)
+    * [Install on Google Cloud](install/gcp.md)
+    * [Install on Azure](install/azure.md)
+    * [Install on AWS](install/aws.md)
 * [Community](developer/community.md)
 
 ## Concepts
