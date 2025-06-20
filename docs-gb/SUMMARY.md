@@ -4,7 +4,7 @@
 ## Getting Started
 * [Quick Start Guide](README.md)
 * [License](LICENSE.md)
-* [Installation]
+* Installation
     * [Install in Kubernetes](install/installation.md)
     * [Install Locally](install/kind.md)
     * [Install on Google Cloud](install/gcp.md)
