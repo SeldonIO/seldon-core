@@ -13,7 +13,7 @@
 * [Community](developer/community.md)
 
 ## Concepts
-* [Overview of Components] (overview.md)
+* [Overview of Components](overview.md)
   
 ## Configuration
   * [Installation]
