@@ -3,16 +3,16 @@
 Seldon core converts your ML models into production ready REST/gRPC microservices.
 
 These are Seldon Core main components:
-- Reusable and non-reusable [model servers](./overview.html#e2e-serving-with-model-servers)
-- [Language Wrappers](./overview.html#language-wrappers) to containerise models
-- [SeldonDeployment](./overview.html#seldondeployment-crd) CRD and [Seldon Core Operator](./overview.html#seldon-core-operator)
-- [Service Orchestrator](./overview.html#service-orchestrator) for advanced inference graphs
+- Reusable and non-reusable [model servers](#e2e-serving-with-model-servers)
+- [Language Wrappers](#language-wrappers) to containerise models
+- [SeldonDeployment](#seldondeployment-crd) CRD and [Seldon Core Operator](#seldon-core-operator)
+- [Service Orchestrator](#service-orchestrator) for advanced inference graphs
 
 as well as integration with third-party systems:
 - Kubernetes Ingress integration with [Ambassador](https://www.getambassador.io/) and [Istio](https://istio.io/)
-- [Metrics](./overview.html#metrics-with-prometheus) with [Prometheus](https://prometheus.io/)
-- [Tracing](./overview.html#distributed-tracing-with-jaeger) with [Jaeger](https://www.jaegertracing.io/)
-- [Endpoint Documentation](./overview.html#endpoint-documentation) with [OpenApi](https://swagger.io/docs/specification/about/)
+- [Metrics](#metrics-with-prometheus) with [Prometheus](https://prometheus.io/)
+- [Tracing](#distributed-tracing-with-jaeger) with [Jaeger](https://www.jaegertracing.io/)
+- [Endpoint Documentation](#endpoint-documentation) with [OpenApi](https://swagger.io/docs/specification/about/)
 
 Keep reading to learn more!
 
