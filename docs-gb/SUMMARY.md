@@ -13,19 +13,8 @@
 * [Community](developer/community.md)
 
 ## Concepts
-* [Overview of Components]
-    * [E2E Serving with Model Servers]
-    * [Two Types of Model Servers]
-    * [Language Wrappers]
-    * [Seldon Deployment CRD]
-    * [Seldon Core Operator]
-    * [Service Orchestrator] 
-    * [Metadata Provenance] 
-    * [Metrics with Prometheus]
-    * [Distributed Tracing with Jaeger]
-    * [So...why just not wrap my model with Flask]
-    * [Other features of Seldon Core]    
-
+* [Overview of Components] (overview.md)
+  
 ## Configuration
   * [Installation]
   * [Deployments]
