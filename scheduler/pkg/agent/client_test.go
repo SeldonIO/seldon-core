@@ -86,7 +86,7 @@ type FakeDependencyService struct {
 	err error
 }
 
-func (f FakeDependencyService) SetState(state interface{}) {
+func (f FakeDependencyService) SetState(state any) {
 }
 
 func (f FakeDependencyService) Start() error {
@@ -107,7 +107,7 @@ func (f FakeDependencyService) Name() string {
 
 func addVerionToModels(models []string, version uint32) []string {
 	modelsWithVersions := make([]string, len(models))
-	for i := 0; i < len(models); i++ {
+	for i := range len(models) {
 		modelsWithVersions[i] = util.GetVersionedModelName(models[i], version)
 	}
 	return modelsWithVersions
@@ -189,7 +189,7 @@ func TestClientCreate(t *testing.T) {
 	t.Logf("Started")
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
-	g := NewGomegaWithT(t)
+	g := NewWithT(t)
 
 	type test struct {
 		name          string
@@ -215,8 +215,8 @@ func TestClientCreate(t *testing.T) {
 				[]modelscaling.ModelScalingStatsWrapper{}, logger, 10)
 			drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
-			client := NewClient(
-				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
+			client := NewAgentServiceManager(
+				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
 				logger, modelRepository, v2Client,
 				test.replicaConfig, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
@@ -224,9 +224,9 @@ func TestClientCreate(t *testing.T) {
 			conn, err := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(err).To(BeNil())
-			client.conn = conn
+			client.schedulerConn = conn
 			go func() {
-				_ = client.Start()
+				_ = client.StartControlLoop()
 			}()
 			time.Sleep(10 * time.Millisecond)
 			if test.v2Status == 200 && test.modelRepoErr == nil {
@@ -236,7 +236,7 @@ func TestClientCreate(t *testing.T) {
 				g.Eventually(mockAgentV2Server.loaded).Should(Equal(0))
 				g.Eventually(mockAgentV2Server.loadFailed).Should(BeNumerically(">=", 1))
 			}
-			client.Stop()
+			client.StopControlLoop()
 			httpmock.DeactivateAndReset()
 		})
 	}
@@ -246,7 +246,7 @@ func TestLoadModel(t *testing.T) {
 	t.Logf("Started")
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
-	g := NewGomegaWithT(t)
+	g := NewWithT(t)
 
 	type test struct {
 		name                    string
@@ -378,8 +378,8 @@ func TestLoadModel(t *testing.T) {
 			drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
 
-			client := NewClient(
-				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
+			client := NewAgentServiceManager(
+				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
 				logger, modelRepository, v2Client, test.replicaConfig, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
 
@@ -387,10 +387,10 @@ func TestLoadModel(t *testing.T) {
 			conn, cerr := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 
-			client.conn = conn
+			client.schedulerConn = conn
 
 			go func() {
-				err := client.Start()
+				err := client.StartControlLoop()
 				// Regardless if this is/isn't a success test case, the client should've started without error
 				g.Expect(err).To(BeNil())
 			}()
@@ -434,7 +434,7 @@ func TestLoadModel(t *testing.T) {
 				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 				g.Expect(modelRepository.modelRemovals).To(Equal(1))
 			}
-			client.Stop()
+			client.StopControlLoop()
 			httpmock.DeactivateAndReset()
 		})
 	}
@@ -444,7 +444,7 @@ func TestLoadModelWithAuth(t *testing.T) {
 	t.Logf("Started")
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
-	g := NewGomegaWithT(t)
+	g := NewWithT(t)
 
 	type test struct {
 		name                    string
@@ -532,8 +532,8 @@ parameters:
 				[]modelscaling.ModelScalingStatsWrapper{}, logger, 10)
 			drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
-			client := NewClient(
-				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
+			client := NewAgentServiceManager(
+				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
 				logger, modelRepository,
 				v2Client, test.replicaConfig, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService,
@@ -548,9 +548,9 @@ parameters:
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
-			client.conn = conn
+			client.schedulerConn = conn
 			go func() {
-				_ = client.Start()
+				_ = client.StartControlLoop()
 			}()
 			// Give the client time to start (?)
 			time.Sleep(50 * time.Millisecond)
@@ -567,7 +567,7 @@ parameters:
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(0))
 				g.Expect(modelRepository.modelRemovals).To(Equal(1))
 			}
-			client.Stop()
+			client.StopControlLoop()
 			httpmock.DeactivateAndReset()
 		})
 	}
@@ -577,7 +577,7 @@ func TestUnloadModel(t *testing.T) {
 	t.Logf("Started")
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
-	g := NewGomegaWithT(t)
+	g := NewWithT(t)
 
 	type test struct {
 		name                    string
@@ -680,16 +680,16 @@ func TestUnloadModel(t *testing.T) {
 				[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
 			drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
-			client := NewClient(
-				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
+			client := NewAgentServiceManager(
+				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
 				logger, modelRepository, v2Client, test.replicaConfig, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
-			client.conn = conn
+			client.schedulerConn = conn
 			go func() {
-				_ = client.Start()
+				_ = client.StartControlLoop()
 			}()
 			// Give the client time to start (?)
 			time.Sleep(50 * time.Millisecond)
@@ -717,7 +717,7 @@ func TestUnloadModel(t *testing.T) {
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
 				g.Expect(mockAgentV2Server.unloadFailedEvents).To(Equal(1))
 			}
-			client.Stop()
+			client.StopControlLoop()
 			httpmock.DeactivateAndReset()
 		})
 	}
@@ -727,7 +727,7 @@ func TestClientClose(t *testing.T) {
 	t.Logf("Started")
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
-	g := NewGomegaWithT(t)
+	g := NewWithT(t)
 
 	v2Client := createTestV2Client(nil, 200)
 	httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
@@ -740,8 +740,8 @@ func TestClientClose(t *testing.T) {
 		[]modelscaling.ModelScalingStatsWrapper{}, logger, 10)
 	drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 	drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
-	client := NewClient(
-		NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
+	client := NewAgentServiceManager(
+		NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
 		logger, modelRepository, v2Client,
 		&pb.ReplicaConfig{MemoryBytes: 1000}, "default",
 		rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
@@ -749,19 +749,19 @@ func TestClientClose(t *testing.T) {
 	conn, err := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 	g.Expect(err).To(BeNil())
-	client.conn = conn
+	client.schedulerConn = conn
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 
 	go func() {
-		err = client.Start()
+		err = client.StartControlLoop()
 		g.Expect(err).To(BeNil())
 		wg.Done()
 	}()
-	client.Stop()
+	client.StopControlLoop()
 	wg.Wait()
-	g.Expect(client.conn.GetState()).To(Equal(connectivity.Shutdown))
+	g.Expect(client.schedulerConn.GetState()).To(Equal(connectivity.Shutdown))
 	g.Expect(client.stop.Load()).To(BeTrue())
 }
 
@@ -769,7 +769,7 @@ func TestAgentStopOnSubServicesFailure(t *testing.T) {
 	t.Logf("Started")
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
-	g := NewGomegaWithT(t)
+	g := NewWithT(t)
 
 	const (
 		inference string = "inference"
@@ -838,8 +838,8 @@ func TestAgentStopOnSubServicesFailure(t *testing.T) {
 			go func() {
 				_ = drainerService.Start()
 			}()
-			client := NewClient(
-				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, period, maxTimeBeforeStart, maxTimeAfterStart, 1*time.Minute, 1*time.Minute, 1, 1, 1),
+			client := NewAgentServiceManager(
+				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, period, maxTimeBeforeStart, maxTimeAfterStart, 1*time.Minute, 1*time.Minute, 1, 1, 1),
 				logger, modelRepository, v2Client,
 				&pb.ReplicaConfig{MemoryBytes: 1000}, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
@@ -847,7 +847,7 @@ func TestAgentStopOnSubServicesFailure(t *testing.T) {
 			conn, err := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(err).To(BeNil())
-			client.conn = conn
+			client.schedulerConn = conn
 
 			if test.isError {
 				go func() {
@@ -861,16 +861,16 @@ func TestAgentStopOnSubServicesFailure(t *testing.T) {
 						go mockMLServer.Stop()
 					}
 				}()
-				err = client.Start()
+				err = client.StartControlLoop()
 				g.Expect(err).To(BeNil()) //  we are here it means agent has stopped
 				g.Expect(client.stop.Load()).To(BeTrue())
 			} else {
 				go func() {
-					_ = client.Start()
+					_ = client.StartControlLoop()
 				}()
 				time.Sleep(period + maxTimeAfterStart)
 				g.Expect(client.stop.Load()).To(BeFalse())
-				client.Stop()
+				client.StopControlLoop()
 			}
 
 			go mockMLServer.Stop()
@@ -882,7 +882,7 @@ func TestUnloadModelOutOfOrder(t *testing.T) {
 	t.Logf("Started")
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
-	g := NewGomegaWithT(t)
+	g := NewWithT(t)
 
 	type test struct {
 		name        string
@@ -982,16 +982,16 @@ func TestUnloadModelOutOfOrder(t *testing.T) {
 				[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
 			drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
-			client := NewClient(
-				NewClientSettings("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
+			client := NewAgentServiceManager(
+				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
 				logger, modelRepository, v2Client, &pb.ReplicaConfig{MemoryBytes: 1000}, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
-			client.conn = conn
+			client.schedulerConn = conn
 			go func() {
-				_ = client.Start()
+				_ = client.StartControlLoop()
 			}()
 			// Give the client time to start (?)
 			time.Sleep(50 * time.Millisecond)
@@ -1007,7 +1007,7 @@ func TestUnloadModelOutOfOrder(t *testing.T) {
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
 				g.Expect(mockAgentV2Server.unloadedEvents).To(Equal(0))
 			}
-			client.Stop()
+			client.StopControlLoop()
 			httpmock.DeactivateAndReset()
 		})
 	}

@@ -17,7 +17,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	backoff "github.com/cenkalti/backoff/v4"
+	boff "github.com/cenkalti/backoff/v4"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -26,12 +26,10 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/encoding/protojson"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	agent_pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	sched_pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/drainservice"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	k8s "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/k8s"
@@ -41,10 +39,9 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
-type Client struct {
+type AgentServiceManager struct {
 	logger                   log.FieldLogger
-	configChan               chan config.AgentConfiguration
-	replicaConfig            *agent.ReplicaConfig
+	inferenceServerConfig    *agent_pb.ReplicaConfig
 	stateManager             *LocalStateManager
 	rpHTTP                   interfaces.DependencyServiceInterface
 	rpGRPC                   interfaces.DependencyServiceInterface
@@ -54,11 +51,11 @@ type Client struct {
 	metrics                  metrics.AgentMetricsHandler
 	isDraining               atomic.Bool
 	stop                     atomic.Bool
-	modelScalingClientStream agent.AgentService_ModelScalingTriggerClient
-	settings                 *ClientSettings
+	modelScalingClientStream agent_pb.AgentService_ModelScalingTriggerClient
+	agentConfig              *AgentServiceConfig
 	modelTimestamps          sync.Map
 	startTime                time.Time
-	ClientServices
+	StorageManager
 	SchedulerGrpcClientOptions
 	KubernetesOptions
 }
@@ -69,7 +66,7 @@ type SchedulerGrpcClientOptions struct {
 	schedulerTlsPort      int
 	serverName            string
 	replicaIdx            uint32
-	conn                  *grpc.ClientConn
+	schedulerConn         *grpc.ClientConn
 	callOptions           []grpc.CallOption
 	certificateStore      *seldontls.CertificateStore
 }
@@ -79,11 +76,11 @@ type KubernetesOptions struct {
 	namespace      string
 }
 
-type ClientServices struct {
+type StorageManager struct {
 	ModelRepository repository.ModelRepository
 }
 
-type ClientSettings struct {
+type AgentServiceConfig struct {
 	serverName                               string
 	replicaIdx                               uint32
 	schedulerHost                            string
@@ -99,7 +96,7 @@ type ClientSettings struct {
 	unloadGraceTime                          time.Duration
 }
 
-func NewClientSettings(
+func NewAgentServiceConfig(
 	serverName string,
 	replicaIdx uint32,
 	schedulerHost string,
@@ -113,8 +110,8 @@ func NewClientSettings(
 	maxLoadRetryCount,
 	maxUnloadRetryCount uint8,
 	unloadGraceTime time.Duration,
-) *ClientSettings {
-	return &ClientSettings{
+) *AgentServiceConfig {
+	return &AgentServiceConfig{
 		serverName:                               serverName,
 		replicaIdx:                               replicaIdx,
 		schedulerHost:                            schedulerHost,
@@ -131,8 +128,8 @@ func NewClientSettings(
 	}
 }
 
-func ParseReplicaConfig(json string) (*agent.ReplicaConfig, error) {
-	config := agent.ReplicaConfig{}
+func ParseReplicaConfig(json string) (*agent_pb.ReplicaConfig, error) {
+	config := agent_pb.ReplicaConfig{}
 	err := protojson.Unmarshal([]byte(json), &config)
 	if err != nil {
 		return nil, err
@@ -140,12 +137,12 @@ func ParseReplicaConfig(json string) (*agent.ReplicaConfig, error) {
 	return &config, nil
 }
 
-func NewClient(
-	settings *ClientSettings,
+func NewAgentServiceManager(
+	agentConfig *AgentServiceConfig,
 	logger log.FieldLogger,
 	modelRepository repository.ModelRepository,
 	v2Client interfaces.ModelServerControlPlaneClient,
-	replicaConfig *agent.ReplicaConfig,
+	replicaConfig *agent_pb.ReplicaConfig,
 	namespace string,
 	reverseProxyHTTP interfaces.DependencyServiceInterface,
 	reverseProxyGRPC interfaces.DependencyServiceInterface,
@@ -153,7 +150,7 @@ func NewClient(
 	modelScalingService interfaces.DependencyServiceInterface,
 	drainerService interfaces.DependencyServiceInterface,
 	metrics metrics.AgentMetricsHandler,
-) *Client {
+) *AgentServiceManager {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
@@ -167,26 +164,25 @@ func NewClient(
 	reverseProxyHTTP.SetState(stateManager)
 	reverseProxyGRPC.SetState(stateManager)
 
-	return &Client{
-		logger:              logger.WithField("Name", "Client"),
-		configChan:          make(chan config.AgentConfiguration),
-		stateManager:        stateManager,
-		replicaConfig:       replicaConfig,
-		rpHTTP:              reverseProxyHTTP,
-		rpGRPC:              reverseProxyGRPC,
-		agentDebugService:   agentDebugService,
-		modelScalingService: modelScalingService,
-		drainerService:      drainerService,
-		metrics:             metrics,
-		ClientServices: ClientServices{
+	am := AgentServiceManager{
+		logger:                logger.WithField("Name", "AgentServiceManager"),
+		stateManager:          stateManager,
+		inferenceServerConfig: replicaConfig,
+		rpHTTP:                reverseProxyHTTP,
+		rpGRPC:                reverseProxyGRPC,
+		agentDebugService:     agentDebugService,
+		modelScalingService:   modelScalingService,
+		drainerService:        drainerService,
+		metrics:               metrics,
+		StorageManager: StorageManager{
 			ModelRepository: modelRepository,
 		},
 		SchedulerGrpcClientOptions: SchedulerGrpcClientOptions{
-			schedulerHost:         settings.schedulerHost,
-			schedulerPlaintxtPort: settings.schedulerPlaintxtPort,
-			schedulerTlsPort:      settings.schedulerTlsPort,
-			serverName:            settings.serverName,
-			replicaIdx:            settings.replicaIdx,
+			schedulerHost:         agentConfig.schedulerHost,
+			schedulerPlaintxtPort: agentConfig.schedulerPlaintxtPort,
+			schedulerTlsPort:      agentConfig.schedulerTlsPort,
+			serverName:            agentConfig.serverName,
+			replicaIdx:            agentConfig.replicaIdx,
 			callOptions:           opts,
 			certificateStore:      nil, // Needed to stop 1.48.0 lint failing
 		},
@@ -195,17 +191,19 @@ func NewClient(
 		},
 		isDraining:      atomic.Bool{},
 		stop:            atomic.Bool{},
-		settings:        settings,
+		agentConfig:     agentConfig,
 		modelTimestamps: sync.Map{},
 		startTime:       time.Now(),
 	}
+
+	return &am
 }
 
-func (c *Client) Start() error {
-	logger := c.logger.WithField("func", "Start")
+func (am *AgentServiceManager) StartControlLoop() error {
+	logger := am.logger.WithField("func", "StartControlLoop")
 
-	if c.conn == nil {
-		err := c.createConnection()
+	if am.schedulerConn == nil {
+		err := am.createConnection()
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to create connection to scheduler")
 			return err
@@ -213,76 +211,76 @@ func (c *Client) Start() error {
 	}
 
 	// prom metrics
-	go c.metrics.AddServerReplicaMetrics(
-		c.stateManager.totalMainMemoryBytes,
-		float32(c.stateManager.totalMainMemoryBytes)+c.stateManager.GetOverCommitMemoryBytes())
+	go am.metrics.AddServerReplicaMetrics(
+		am.stateManager.totalMainMemoryBytes,
+		float32(am.stateManager.totalMainMemoryBytes)+am.stateManager.GetOverCommitMemoryBytes())
 
 	// model scaling consumption
-	go c.modelScalingEventsConsumer()
+	go am.modelScalingEventsConsumer()
 
 	// periodic subservices checker for readiness
-	go c.startSubServiceChecker()
+	go am.startSubServiceChecker()
 
 	// start wait on trigger to drain, this will also unlock any pending /terminate call before returning
 	go func() {
-		_ = c.drainOnRequest(c.drainerService.(*drainservice.DrainerService))
+		_ = am.drainOnRequest(am.drainerService.(*drainservice.DrainerService))
 	}()
 
 	for {
-		if c.stop.Load() {
+		if am.stop.Load() {
 			logger.Info("Stopping")
 			return nil
 		}
 
 		logFailure := func(err error, delay time.Duration) {
-			c.logger.WithError(err).Errorf("Scheduler not ready")
+			am.logger.WithError(err).Errorf("Scheduler not ready")
 		}
 		backOffExp := util.GetClientExponentialBackoff()
-		err := backoff.RetryNotify(c.StartService, backOffExp, logFailure)
+		err := boff.RetryNotify(am.HandleSchedulerSubscription, backOffExp, logFailure)
 		if err != nil {
-			c.logger.WithError(err).Fatal("Failed to start client")
+			am.logger.WithError(err).Fatal("Failed to connect to the scheduler")
 			return err
 		}
-		logger.Info("Subscribe ended")
+		logger.Info("Scheduler subscription ended")
 	}
 }
 
-func (c *Client) Stop() {
-	c.stop.Store(true)
-	err := c.closeSchedulerConnection()
+func (am *AgentServiceManager) StopControlLoop() {
+	am.stop.Store(true)
+	err := am.closeSchedulerConnection()
 	if err != nil {
-		c.logger.WithError(err).Warn("Cannot close stream connection to scheduler")
+		am.logger.WithError(err).Warn("Cannot close stream connection to scheduler")
 	}
 }
 
-func (c *Client) closeSchedulerConnection() error {
-	logger := c.logger.WithField("func", "StopSchedulerStream")
+func (am *AgentServiceManager) closeSchedulerConnection() error {
+	logger := am.logger.WithField("func", "StopSchedulerStream")
 	logger.Info("Shutting down stream to scheduler")
 
-	if c.conn != nil {
-		return c.conn.Close()
+	if am.schedulerConn != nil {
+		return am.schedulerConn.Close()
 	}
 
 	return nil
 }
 
-func (c *Client) createConnection() error {
-	conn, err := c.getConnection(c.schedulerHost, c.schedulerPlaintxtPort, c.schedulerTlsPort)
+func (am *AgentServiceManager) createConnection() error {
+	conn, err := am.getConnection(am.schedulerHost, am.schedulerPlaintxtPort, am.schedulerTlsPort)
 	if err != nil {
 		return err
 	}
-	c.SchedulerGrpcClientOptions.conn = conn
+	am.SchedulerGrpcClientOptions.schedulerConn = conn
 	return nil
 }
 
-func (c *Client) WaitReadySubServices(isStartup bool) error {
-	logger := c.logger.WithField("func", "waitReady")
+func (am *AgentServiceManager) WaitReadySubServices(isStartup bool) error {
+	logger := am.logger.WithField("func", "waitReady")
 
-	maxElapsedTime := c.settings.maxElapsedTimeReadySubServiceBeforeStart
+	maxElapsedTime := am.agentConfig.maxElapsedTimeReadySubServiceBeforeStart
 	if !isStartup {
-		maxElapsedTime = c.settings.maxElapsedTimeReadySubServiceAfterStart
+		maxElapsedTime = am.agentConfig.maxElapsedTimeReadySubServiceAfterStart
 	}
-	backoffWithMax := backoff.NewExponentialBackOff()
+	backoffWithMax := boff.NewExponentialBackOff()
 	backoffWithMax.MaxElapsedTime = maxElapsedTime
 
 	// Wait for model repo to be ready
@@ -291,7 +289,7 @@ func (c *Client) WaitReadySubServices(isStartup bool) error {
 	}
 
 	// TODO make retry configurable
-	err := backoff.RetryNotify(c.ModelRepository.Ready, backoffWithMax, logFailure)
+	err := boff.RetryNotify(am.ModelRepository.Ready, backoffWithMax, logFailure)
 	if err != nil {
 		logger.WithError(err).Error("Failed to wait for model repository to be ready")
 		return err
@@ -302,7 +300,7 @@ func (c *Client) WaitReadySubServices(isStartup bool) error {
 		logger.WithError(err).Errorf("Inference server not ready")
 	}
 
-	err = backoff.RetryNotify(c.stateManager.v2Client.Live, backoffWithMax, logFailure)
+	err = boff.RetryNotify(am.stateManager.v2Client.Live, backoffWithMax, logFailure)
 	if err != nil {
 		logger.WithError(err).Error("Failed to wait for inference server to be ready")
 		return err
@@ -311,7 +309,7 @@ func (c *Client) WaitReadySubServices(isStartup bool) error {
 	if isStartup {
 		// Unload any existing models on server to ensure we start in a clean state
 		logger.Infof("Unloading any existing models")
-		err = c.UnloadAllModels()
+		err = am.UnloadAllModels()
 		if err != nil {
 			return err
 		}
@@ -319,35 +317,35 @@ func (c *Client) WaitReadySubServices(isStartup bool) error {
 
 	// http reverse proxy
 	if err := isReadyChecker(
-		isStartup, c.rpHTTP, logger, "Rest proxy not ready",
+		isStartup, am.rpHTTP, logger, "Rest proxy not ready",
 		maxElapsedTime,
 	); err != nil {
 		return err
 	}
 
 	// grpc reverse proxy
-	if err := isReadyChecker(isStartup, c.rpGRPC, logger, "Grpc proxy not ready",
+	if err := isReadyChecker(isStartup, am.rpGRPC, logger, "Grpc proxy not ready",
 		maxElapsedTime,
 	); err != nil {
 		return err
 	}
 
 	// agent debug service
-	if err := isReadyChecker(isStartup, c.agentDebugService, logger, "Agent debug service not ready",
+	if err := isReadyChecker(isStartup, am.agentDebugService, logger, "Agent debug service not ready",
 		maxElapsedTime,
 	); err != nil {
 		return err
 	}
 
 	// model scaling service
-	if err := isReadyChecker(isStartup, c.modelScalingService, logger, "Scaling service not ready",
+	if err := isReadyChecker(isStartup, am.modelScalingService, logger, "Scaling service not ready",
 		maxElapsedTime,
 	); err != nil {
 		return err
 	}
 
 	// drainer service
-	if err := isReadyChecker(isStartup, c.drainerService, logger, "Inference server drainer service not ready",
+	if err := isReadyChecker(isStartup, am.drainerService, logger, "Inference server drainer service not ready",
 		maxElapsedTime,
 	); err != nil {
 		return err
@@ -356,10 +354,10 @@ func (c *Client) WaitReadySubServices(isStartup bool) error {
 	return nil
 }
 
-func (c *Client) UnloadAllModels() error {
-	logger := c.logger.WithField("func", "UnloadAllModels")
+func (am *AgentServiceManager) UnloadAllModels() error {
+	logger := am.logger.WithField("func", "UnloadAllModels")
 
-	models, err := c.stateManager.v2Client.GetModels()
+	models, err := am.stateManager.v2Client.GetModels()
 	if err != nil {
 		return err
 	}
@@ -368,32 +366,32 @@ func (c *Client) UnloadAllModels() error {
 		if model.State == interfaces.ServerModelState_READY || model.State == interfaces.ServerModelState_LOADING {
 			logger.Infof("Unloading existing model %s", model)
 
-			v2Err := c.stateManager.v2Client.UnloadModel(model.Name)
+			v2Err := am.stateManager.v2Client.UnloadModel(model.Name)
 			if v2Err != nil {
 				if !v2Err.IsNotFound() {
 					return v2Err.Err
 				} else {
-					c.logger.Warnf("Model %s not found on server", model)
+					am.logger.Warnf("Model %s not found on server", model)
 				}
 			}
 		}
 
-		err := c.ModelRepository.RemoveModelVersion(model.Name)
+		err := am.ModelRepository.RemoveModelVersion(model.Name)
 		if err != nil {
-			c.logger.WithError(err).Errorf("Model %s could not be removed from repository", model)
+			am.logger.WithError(err).Errorf("Model %s could not be removed from repository", model)
 		}
 	}
 
 	return nil
 }
 
-func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grpc.ClientConn, error) {
-	logger := c.logger.WithField("func", "getConnection")
+func (am *AgentServiceManager) getConnection(host string, plainTxtPort int, tlsPort int) (*grpc.ClientConn, error) {
+	logger := am.logger.WithField("func", "getConnection")
 
 	var err error
 	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
 	if protocol == seldontls.SecurityProtocolSSL {
-		c.certificateStore, err = seldontls.NewCertificateStore(
+		am.certificateStore, err = seldontls.NewCertificateStore(
 			seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlaneClient),
 			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixControlPlaneServer),
 		)
@@ -404,13 +402,13 @@ func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grp
 
 	var transCreds credentials.TransportCredentials
 	var port int
-	if c.certificateStore == nil {
+	if am.certificateStore == nil {
 		logger.Info("Starting plaintxt client to agent server")
 		transCreds = insecure.NewCredentials()
 		port = plainTxtPort
 	} else {
 		logger.Info("Starting TLS client to agent server")
-		transCreds = c.certificateStore.CreateClientTransportCredentials()
+		transCreds = am.certificateStore.CreateClientTransportCredentials()
 		port = tlsPort
 	}
 
@@ -431,29 +429,28 @@ func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grp
 	return conn, nil
 }
 
-func (c *Client) StartService() error {
-	logger := c.logger.WithField("func", "StartService")
+func (am *AgentServiceManager) HandleSchedulerSubscription() error {
+	logger := am.logger.WithField("func", "HandleSchedulerSubscription")
 	logger.Info("Call subscribe to scheduler")
 
-	grpcClient := agent.NewAgentServiceClient(c.conn)
+	grpcClient := agent_pb.NewAgentServiceClient(am.schedulerConn)
 
 	// Connect to the scheduler for server-side streaming
 	stream, err := grpcClient.Subscribe(
 		context.Background(),
-		&agent.AgentSubscribeRequest{
-			ServerName:           c.serverName,
-			ReplicaIdx:           c.replicaIdx,
-			ReplicaConfig:        c.replicaConfig,
-			LoadedModels:         c.stateManager.modelVersions.getVersionsForAllModels(),
+		&agent_pb.AgentSubscribeRequest{
+			ServerName:           am.serverName,
+			ReplicaIdx:           am.replicaIdx,
+			ReplicaConfig:        am.inferenceServerConfig,
+			LoadedModels:         am.stateManager.modelVersions.getVersionsForAllModels(),
 			Shared:               true,
-			AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
+			AvailableMemoryBytes: am.stateManager.GetAvailableMemoryBytesWithOverCommit(),
 		},
 		grpc_retry.WithMax(util.MaxGRPCRetriesOnStream),
 	) // TODO make configurable
 	if err != nil {
 		return err
 	}
-
 	logger.Info("Subscribed to scheduler")
 
 	// start model scaling events consumer
@@ -462,14 +459,14 @@ func (c *Client) StartService() error {
 		return err
 	}
 
-	c.modelScalingClientStream = clientStream
+	am.modelScalingClientStream = clientStream
 	defer func() {
 		_, _ = clientStream.CloseAndRecv()
 	}()
 
 	// Start the main control loop for the agent<-scheduler stream
 	for {
-		if c.stop.Load() {
+		if am.stop.Load() {
 			logger.Info("Stopping")
 			break
 		}
@@ -480,19 +477,19 @@ func (c *Client) StartService() error {
 			break
 		}
 
-		c.logger.Infof("Received operation")
+		am.logger.Infof("Received operation")
 
 		// Get the time since the start of the agent, this is monotonic as time.Now contains a monotonic clock
-		ticksSinceStart := time.Since(c.startTime).Milliseconds()
+		ticksSinceStart := time.Since(am.startTime).Milliseconds()
 
 		switch operation.Operation {
-		case agent.ModelOperationMessage_LOAD_MODEL:
-			c.logger.Infof("calling load model")
+		case agent_pb.ModelOperationMessage_LOAD_MODEL:
+			am.logger.Infof("calling load model")
 
 			go func() {
-				err := c.LoadModel(operation, ticksSinceStart)
+				err := am.LoadModel(operation, ticksSinceStart)
 				if err != nil {
-					c.logger.WithError(err).Errorf(
+					am.logger.WithError(err).Errorf(
 						"Failed to handle load model %s:%d",
 						operation.GetModelVersion().GetModel().GetMeta().GetName(),
 						operation.GetModelVersion().GetVersion(),
@@ -500,13 +497,13 @@ func (c *Client) StartService() error {
 				}
 			}()
 
-		case agent.ModelOperationMessage_UNLOAD_MODEL:
-			c.logger.Infof("calling unload model")
+		case agent_pb.ModelOperationMessage_UNLOAD_MODEL:
+			am.logger.Infof("calling unload model")
 
 			go func() {
-				err := c.UnloadModel(operation, ticksSinceStart)
+				err := am.UnloadModel(operation, ticksSinceStart)
 				if err != nil {
-					c.logger.WithError(err).Errorf(
+					am.logger.WithError(err).Errorf(
 						"Failed to handle unload model %s:%d",
 						operation.GetModelVersion().GetModel().GetMeta().GetName(),
 						operation.GetModelVersion().GetVersion(),
@@ -524,34 +521,34 @@ func (c *Client) StartService() error {
 	return nil
 }
 
-func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte, error) {
+func (am *AgentServiceManager) getArtifactConfig(request *agent_pb.ModelOperationMessage) ([]byte, error) {
 	model := request.GetModelVersion().GetModel()
 
 	if model.GetModelSpec().StorageConfig == nil {
 		return nil, nil
 	}
 
-	logger := c.logger.WithField("func", "getArtifactConfig")
+	logger := am.logger.WithField("func", "getArtifactConfig")
 	logger.Infof("Getting Rclone configuration")
 
 	switch x := model.GetModelSpec().GetStorageConfig().GetConfig().(type) {
-	case *pbs.StorageConfig_StorageRcloneConfig:
+	case *sched_pb.StorageConfig_StorageRcloneConfig:
 		return []byte(x.StorageRcloneConfig), nil
-	case *pbs.StorageConfig_StorageSecretName:
-		if c.secretsHandler == nil {
+	case *sched_pb.StorageConfig_StorageSecretName:
+		if am.secretsHandler == nil {
 			secretClientSet, err := k8s.CreateClientset()
 			if err != nil {
 				return nil, err
 			}
 
 			if model.GetMeta().GetKubernetesMeta() != nil {
-				c.KubernetesOptions.secretsHandler = k8s.NewSecretsHandler(
+				am.KubernetesOptions.secretsHandler = k8s.NewSecretsHandler(
 					secretClientSet,
 					model.GetMeta().GetKubernetesMeta().GetNamespace(),
 				)
 			} else {
 				return nil, fmt.Errorf(
-					"Can't load model %s:%dwith k8s secret %s when namespace not set",
+					"can't load model %s:%dwith k8s secret %s when namespace not set",
 					model.GetMeta().GetName(),
 					request.GetModelVersion().GetVersion(),
 					x.StorageSecretName,
@@ -560,7 +557,7 @@ func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte
 
 		}
 
-		config, err := c.secretsHandler.GetSecretConfig(x.StorageSecretName, util.K8sTimeoutDefault)
+		config, err := am.secretsHandler.GetSecretConfig(x.StorageSecretName, util.K8sTimeoutDefault)
 		if err != nil {
 			return nil, err
 		}
@@ -571,52 +568,52 @@ func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte
 	return nil, nil
 }
 
-func (c *Client) LoadModel(request *agent.ModelOperationMessage, timestamp int64) error {
+func (am *AgentServiceManager) LoadModel(request *agent_pb.ModelOperationMessage, timestamp int64) error {
 	if request == nil || request.ModelVersion == nil {
 		return fmt.Errorf("empty request received for load model")
 	}
 
-	logger := c.logger.WithField("func", "LoadModel")
+	logger := am.logger.WithField("func", "LoadModel")
 
 	modelName := request.GetModelVersion().GetModel().GetMeta().GetName()
 	modelVersion := request.GetModelVersion().GetVersion()
 	modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
 	pinnedModelVersion := util.GetPinnedModelVersion()
 
-	c.stateManager.cache.Lock(modelWithVersion)
-	defer c.stateManager.cache.Unlock(modelWithVersion)
+	am.stateManager.cache.Lock(modelWithVersion)
+	defer am.stateManager.cache.Unlock(modelWithVersion)
 
 	logger.Infof("Load model %s:%d", modelName, modelVersion)
 	// if it is out of order message, ignore it
-	ignore := ignoreIfOutOfOrder(modelWithVersion, timestamp, &c.modelTimestamps)
+	ignore := ignoreIfOutOfOrder(modelWithVersion, timestamp, &am.modelTimestamps)
 	if ignore {
 		logger.Warnf("Ignoring out of order message for model %s:%d", modelName, modelVersion)
 		return nil
 	}
-	defer c.modelTimestamps.Store(modelWithVersion, timestamp)
+	defer am.modelTimestamps.Store(modelWithVersion, timestamp)
 
 	// Get Rclone configuration
-	config, err := c.getArtifactConfig(request)
+	config, err := am.getArtifactConfig(request)
 	if err != nil {
-		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
+		am.sendModelEventError(modelName, modelVersion, agent_pb.ModelEventMessage_LOAD_FAILED, err)
 		return err
 	}
 
 	// Copy model artifact
-	chosenVersionPath, err := c.ModelRepository.DownloadModelVersion(
+	chosenVersionPath, err := am.ModelRepository.DownloadModelVersion(
 		modelWithVersion,
 		pinnedModelVersion,
 		request.GetModelVersion().GetModel().GetModelSpec(),
 		config,
 	)
 	if err != nil {
-		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
-		c.cleanup(modelWithVersion)
+		am.sendModelEventError(modelName, modelVersion, agent_pb.ModelEventMessage_LOAD_FAILED, err)
+		am.cleanup(modelWithVersion)
 		return err
 	}
 	logger.Infof("Chose path %s for model %s:%d", *chosenVersionPath, modelName, modelVersion)
 
-	modelConfig, err := c.ModelRepository.GetModelRuntimeInfo(modelWithVersion)
+	modelConfig, err := am.ModelRepository.GetModelRuntimeInfo(modelWithVersion)
 	if err != nil {
 		logger.Errorf("there was a problem getting the config for model: %s", modelName)
 	}
@@ -630,12 +627,12 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage, timestamp int64
 	)
 
 	loaderFn := func() error {
-		return c.stateManager.LoadModelVersion(modifiedModelVersionRequest)
+		return am.stateManager.LoadModelVersion(modifiedModelVersionRequest)
 	}
 
-	if err := backoffWithMaxNumRetry(loaderFn, c.settings.maxLoadRetryCount, c.settings.maxLoadElapsedTime, logger); err != nil {
-		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
-		c.cleanup(modelWithVersion)
+	if err := backoffWithMaxNumRetry(loaderFn, am.agentConfig.maxLoadRetryCount, am.agentConfig.maxLoadElapsedTime, logger); err != nil {
+		am.sendModelEventError(modelName, modelVersion, agent_pb.ModelEventMessage_LOAD_FAILED, err)
+		am.cleanup(modelWithVersion)
 		return err
 	}
 
@@ -644,54 +641,54 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage, timestamp int64
 	// that we have and then call Add on each one of them
 	if request.AutoscalingEnabled {
 		logger.Debugf("Enabling autoscaling checks for model %s", modelWithVersion)
-		if err := c.modelScalingService.(*modelscaling.StatsAnalyserService).AddModel(modelWithVersion); err != nil {
+		if err := am.modelScalingService.(*modelscaling.StatsAnalyserService).AddModel(modelWithVersion); err != nil {
 			logger.WithError(err).Warnf("Cannot add model %s to scaling service", modelWithVersion)
 		}
 	}
 
 	logger.Infof("Load model %s:%d success", modelName, modelVersion)
 
-	return c.sendAgentEvent(modelName, modelVersion, modelConfig, agent.ModelEventMessage_LOADED)
+	return am.sendAgentEvent(modelName, modelVersion, modelConfig, agent_pb.ModelEventMessage_LOADED)
 }
 
-func (c *Client) UnloadModel(request *agent.ModelOperationMessage, timestamp int64) error {
+func (am *AgentServiceManager) UnloadModel(request *agent_pb.ModelOperationMessage, timestamp int64) error {
 	if request == nil || request.GetModelVersion() == nil {
-		return fmt.Errorf("Empty request received for unload model")
+		return fmt.Errorf("empty request received for unload model")
 	}
 
-	logger := c.logger.WithField("func", "UnloadModel")
+	logger := am.logger.WithField("func", "UnloadModel")
 
 	// As envoy is eventually consistent, we need to wait for a grace period before unloading the model
 	// to give envoy time to drain the connections and reflect the cluster changes
 	// this should be ~500ms
-	time.Sleep(c.settings.unloadGraceTime)
+	time.Sleep(am.agentConfig.unloadGraceTime)
 
 	modelName := request.GetModelVersion().GetModel().GetMeta().GetName()
 	modelVersion := request.GetModelVersion().GetVersion()
 	modelWithVersion := util.GetVersionedModelName(modelName, modelVersion)
 	pinnedModelVersion := util.GetPinnedModelVersion()
 
-	c.stateManager.cache.Lock(modelWithVersion)
-	defer c.stateManager.cache.Unlock(modelWithVersion)
+	am.stateManager.cache.Lock(modelWithVersion)
+	defer am.stateManager.cache.Unlock(modelWithVersion)
 
 	logger.Infof("Unload model %s:%d", modelName, modelVersion)
 	// if it is out of order message, ignore it
-	ignore := ignoreIfOutOfOrder(modelWithVersion, timestamp, &c.modelTimestamps)
+	ignore := ignoreIfOutOfOrder(modelWithVersion, timestamp, &am.modelTimestamps)
 	if ignore {
 		logger.Warnf("Ignoring out of order message for model %s:%d", modelName, modelVersion)
 		return nil
 	}
-	defer c.modelTimestamps.Store(modelWithVersion, timestamp)
+	defer am.modelTimestamps.Store(modelWithVersion, timestamp)
 
 	// we do not care about model versions here
 	// model runtime info is retrieved from the existing version, so nil is passed here
 	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, request.GetModelVersion(), nil)
 
 	unloaderFn := func() error {
-		return c.stateManager.UnloadModelVersion(modifiedModelVersionRequest)
+		return am.stateManager.UnloadModelVersion(modifiedModelVersionRequest)
 	}
-	if err := backoffWithMaxNumRetry(unloaderFn, c.settings.maxUnloadRetryCount, c.settings.maxUnloadElapsedTime, logger); err != nil {
-		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
+	if err := backoffWithMaxNumRetry(unloaderFn, am.agentConfig.maxUnloadRetryCount, am.agentConfig.maxUnloadElapsedTime, logger); err != nil {
+		am.sendModelEventError(modelName, modelVersion, agent_pb.ModelEventMessage_UNLOAD_FAILED, err)
 		return err
 	}
 
@@ -699,26 +696,26 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage, timestamp int
 	// we have done it via the scaling service as not to expose here all the model scaling stats that we have and then call Delete on
 	// each one of them
 	// note that we do not check if the model is already enabled for autoscaling, should we?
-	if err := c.modelScalingService.(*modelscaling.StatsAnalyserService).DeleteModel(modelWithVersion); err != nil {
+	if err := am.modelScalingService.(*modelscaling.StatsAnalyserService).DeleteModel(modelWithVersion); err != nil {
 		logger.WithError(err).Warnf(
 			"Cannot delete model %s from scaling service, likely that it was not enabled in the first place",
 			modelWithVersion,
 		)
 	}
 
-	err := c.ModelRepository.RemoveModelVersion(modelWithVersion)
+	err := am.ModelRepository.RemoveModelVersion(modelWithVersion)
 	if err != nil {
-		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_UNLOAD_FAILED, err)
+		am.sendModelEventError(modelName, modelVersion, agent_pb.ModelEventMessage_UNLOAD_FAILED, err)
 		return err
 	}
 
 	logger.Infof("Unload model %s:%d success", modelName, modelVersion)
-	return c.sendAgentEvent(modelName, modelVersion, nil, agent.ModelEventMessage_UNLOADED)
+	return am.sendAgentEvent(modelName, modelVersion, nil, agent_pb.ModelEventMessage_UNLOADED)
 }
 
-func (c *Client) cleanup(modelWithVersion string) {
-	logger := c.logger.WithField("func", "cleanup")
-	err := c.ModelRepository.RemoveModelVersion(modelWithVersion)
+func (am *AgentServiceManager) cleanup(modelWithVersion string) {
+	logger := am.logger.WithField("func", "cleanup")
+	err := am.ModelRepository.RemoveModelVersion(modelWithVersion)
 	if err != nil {
 		logger.Errorf("could not remove model %s - %v", modelWithVersion, err)
 		return
@@ -726,102 +723,102 @@ func (c *Client) cleanup(modelWithVersion string) {
 	logger.Infof("removed model %s", modelWithVersion)
 }
 
-func (c *Client) sendModelEventError(
+func (am *AgentServiceManager) sendModelEventError(
 	modelName string,
 	modelVersion uint32,
-	event agent.ModelEventMessage_Event,
+	event agent_pb.ModelEventMessage_Event,
 	err error,
 ) {
-	c.logger.WithError(err).Errorf("Failed to load model, sending error to scheduler")
-	grpcClient := agent.NewAgentServiceClient(c.conn)
-	modelEventResponse, err := grpcClient.AgentEvent(context.Background(), &agent.ModelEventMessage{
-		ServerName:           c.serverName,
-		ReplicaIdx:           c.replicaIdx,
+	am.logger.WithError(err).Errorf("Failed to load model, sending error to scheduler")
+	grpcClient := agent_pb.NewAgentServiceClient(am.schedulerConn)
+	modelEventResponse, err := grpcClient.AgentEvent(context.Background(), &agent_pb.ModelEventMessage{
+		ServerName:           am.serverName,
+		ReplicaIdx:           am.replicaIdx,
 		ModelName:            modelName,
 		ModelVersion:         modelVersion,
 		Event:                event,
 		Message:              err.Error(),
-		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
+		AvailableMemoryBytes: am.stateManager.GetAvailableMemoryBytesWithOverCommit(),
 	})
 	if err != nil {
-		c.logger.WithError(err).Errorf("Failed to send error back to scheduler on load model")
+		am.logger.WithError(err).Errorf("Failed to send error back to scheduler on load model")
 		return
 	}
-	c.logger.WithField("modelEventResponse", modelEventResponse).Infof("Sent agent model event to scheduler")
+	am.logger.WithField("modelEventResponse", modelEventResponse).Infof("Sent agent model event to scheduler")
 }
 
-func (c *Client) sendAgentEvent(
+func (am *AgentServiceManager) sendAgentEvent(
 	modelName string,
 	modelVersion uint32,
-	modelRuntimeInfo *scheduler.ModelRuntimeInfo,
-	event agent.ModelEventMessage_Event,
+	modelRuntimeInfo *sched_pb.ModelRuntimeInfo,
+	event agent_pb.ModelEventMessage_Event,
 ) error {
 	// if the server is draining and the model load has succeeded, we need to "cancel"
-	if c.isDraining.Load() {
-		if event == agent.ModelEventMessage_LOADED {
-			c.sendModelEventError(
+	if am.isDraining.Load() {
+		if event == agent_pb.ModelEventMessage_LOADED {
+			am.sendModelEventError(
 				modelName,
 				modelVersion,
-				agent.ModelEventMessage_LOAD_FAILED,
+				agent_pb.ModelEventMessage_LOAD_FAILED,
 				fmt.Errorf("server replica is draining"),
 			)
 			return nil
 		}
 	}
 
-	grpcClient := agent.NewAgentServiceClient(c.conn)
-	_, err := grpcClient.AgentEvent(context.Background(), &agent.ModelEventMessage{
-		ServerName:           c.serverName,
-		ReplicaIdx:           c.replicaIdx,
+	grpcClient := agent_pb.NewAgentServiceClient(am.schedulerConn)
+	_, err := grpcClient.AgentEvent(context.Background(), &agent_pb.ModelEventMessage{
+		ServerName:           am.serverName,
+		ReplicaIdx:           am.replicaIdx,
 		ModelName:            modelName,
 		ModelVersion:         modelVersion,
 		Event:                event,
-		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
+		AvailableMemoryBytes: am.stateManager.GetAvailableMemoryBytesWithOverCommit(),
 		RuntimeInfo:          modelRuntimeInfo,
 	})
 	return err
 }
 
-func (c *Client) drainOnRequest(drainer *drainservice.DrainerService) error {
+func (am *AgentServiceManager) drainOnRequest(drainer *drainservice.DrainerService) error {
 	drainer.WaitOnTrigger()
-	c.isDraining.Store(true)
+	am.isDraining.Store(true)
 
-	err := c.sendAgentDrainEvent()
+	err := am.sendAgentDrainEvent()
 	if err != nil {
-		c.logger.WithError(err).Warn("Could not drain agent / server")
+		am.logger.WithError(err).Warn("Could not drain agent / server")
 	}
 
 	drainer.SetSchedulerDone()
 	return err
 }
 
-func (c *Client) sendAgentDrainEvent() error {
-	grpcClient := agent.NewAgentServiceClient(c.conn)
-	response, err := grpcClient.AgentDrain(context.Background(), &agent.AgentDrainRequest{
-		ServerName: c.serverName,
-		ReplicaIdx: c.replicaIdx,
+func (am *AgentServiceManager) sendAgentDrainEvent() error {
+	grpcClient := agent_pb.NewAgentServiceClient(am.schedulerConn)
+	response, err := grpcClient.AgentDrain(context.Background(), &agent_pb.AgentDrainRequest{
+		ServerName: am.serverName,
+		ReplicaIdx: am.replicaIdx,
 	})
 	if response != nil {
-		c.logger.Infof("Agent drain process result %t", response.GetSuccess())
+		am.logger.Infof("Agent drain process result %t", response.GetSuccess())
 	}
 	return err
 }
 
-func (c *Client) sendModelScalingTriggerEvent(
+func (am *AgentServiceManager) sendModelScalingTriggerEvent(
 	modelName string,
 	modelVersion uint32,
 	scalingType modelscaling.ModelScalingEventType,
 	amount uint32,
 	data map[string]uint32,
 ) error {
-	triggerType := agent.ModelScalingTriggerMessage_SCALE_UP
+	triggerType := agent_pb.ModelScalingTriggerMessage_SCALE_UP
 	if scalingType == modelscaling.ScaleDownEvent {
-		triggerType = agent.ModelScalingTriggerMessage_SCALE_DOWN
+		triggerType = agent_pb.ModelScalingTriggerMessage_SCALE_DOWN
 	}
 
-	err := c.modelScalingClientStream.Send(&agent.ModelScalingTriggerMessage{
-		ServerName:   c.serverName,
-		ReplicaIdx:   c.replicaIdx,
+	err := am.modelScalingClientStream.Send(&agent_pb.ModelScalingTriggerMessage{
+		ServerName:   am.serverName,
+		ReplicaIdx:   am.replicaIdx,
 		ModelName:    modelName,
 		ModelVersion: modelVersion,
 		Trigger:      triggerType,
@@ -831,13 +828,13 @@ func (c *Client) sendModelScalingTriggerEvent(
 	return err
 }
 
-func (c *Client) modelScalingEventsConsumer() {
-	ch := c.modelScalingService.(*modelscaling.StatsAnalyserService).GetEventChannel()
-	for c.modelScalingService.Ready() {
+func (am *AgentServiceManager) modelScalingEventsConsumer() {
+	ch := am.modelScalingService.(*modelscaling.StatsAnalyserService).GetEventChannel()
+	for am.modelScalingService.Ready() {
 		e := <-ch
 		modelName, modelVersion, err := util.GetOrignalModelNameAndVersion(e.StatsData.ModelName)
 		if err != nil {
-			c.logger.WithError(err).Warnf(
+			am.logger.WithError(err).Warnf(
 				"Trigger model scaling event %d for model %s failed",
 				e.EventType,
 				e.StatsData.ModelName,
@@ -845,7 +842,7 @@ func (c *Client) modelScalingEventsConsumer() {
 			continue
 		}
 
-		c.logger.Debugf(
+		am.logger.Debugf(
 			"Trigger model scaling event %d for model %s:%d with value %d",
 			e.EventType,
 			modelName,
@@ -853,11 +850,11 @@ func (c *Client) modelScalingEventsConsumer() {
 			e.StatsData.Value,
 		)
 
-		err = c.sendModelScalingTriggerEvent(
+		err = am.sendModelScalingTriggerEvent(
 			modelName, modelVersion, e.EventType, e.StatsData.Value, nil,
 		)
 		if err != nil {
-			c.logger.WithError(err).Warnf(
+			am.logger.WithError(err).Warnf(
 				"Sending model scaling event %d for model %s failed",
 				e.EventType,
 				e.StatsData.ModelName,
@@ -867,13 +864,13 @@ func (c *Client) modelScalingEventsConsumer() {
 	}
 }
 
-func (c *Client) startSubServiceChecker() {
-	ticker := time.NewTicker(c.settings.periodReadySubService)
+func (am *AgentServiceManager) startSubServiceChecker() {
+	ticker := time.NewTicker(am.agentConfig.periodReadySubService)
 	defer ticker.Stop()
-	for !c.stop.Load() {
+	for !am.stop.Load() {
 		<-ticker.C
-		if err := c.WaitReadySubServices(false); err != nil {
-			c.Stop()
+		if err := am.WaitReadySubServices(false); err != nil {
+			am.StopControlLoop()
 		}
 	}
 }

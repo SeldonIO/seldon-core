@@ -252,8 +252,8 @@ func main() {
 	defer func() { _ = drainerService.Stop() }()
 
 	// Create Agent
-	client := agent.NewClient(
-		agent.NewClientSettings(
+	agentService := agent.NewAgentServiceManager(
+		agent.NewAgentServiceConfig(
 			cli.ServerName,
 			uint32(cli.ReplicaIdx),
 			cli.SchedulerHost,
@@ -282,7 +282,7 @@ func main() {
 	)
 
 	// Wait for required services to be ready
-	err = client.WaitReadySubServices(true)
+	err = agentService.WaitReadySubServices(true)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to wait for all agent dependent services to be ready")
 		close(done)
@@ -295,15 +295,15 @@ func main() {
 		close(done)
 	}
 
-	// Start client grpc server
+	// Start grpc connection to scheduler and handle incoming events
 	go func() {
-		err = client.Start()
+		err = agentService.StartControlLoop()
 		if err != nil {
-			logger.WithError(err).Error("Failed to initialise client")
+			logger.WithError(err).Error("agent encountered unrecoverable error")
 		}
 		close(done)
 	}()
-	defer func() { client.Stop() }()
+	defer func() { agentService.StopControlLoop() }()
 
 	// Wait for completion
 	<-done

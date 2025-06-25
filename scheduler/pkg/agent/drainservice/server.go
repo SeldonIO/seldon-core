@@ -67,12 +67,12 @@ func NewDrainerService(logger log.FieldLogger, port uint) *DrainerService {
 	}
 }
 
-func (drainer *DrainerService) SetState(state interface{}) {
+func (drainer *DrainerService) SetState(state any) {
 }
 
 func (drainer *DrainerService) Start() error {
 	rtr := mux.NewRouter()
-	rtr.HandleFunc(terminateEndpoint, drainer.terminate).Methods("GET")
+	rtr.HandleFunc(terminateEndpoint, drainer.handleTerminate).Methods("GET")
 
 	drainer.server = &http.Server{
 		Addr: ":" + strconv.Itoa(int(drainer.port)), Handler: rtr,
@@ -125,7 +125,7 @@ func (drainer *DrainerService) SetSchedulerDone() {
 	drainer.drainingFinishedWg.Done()
 }
 
-func (drainer *DrainerService) terminate(w http.ResponseWriter, _ *http.Request) {
+func (drainer *DrainerService) handleTerminate(w http.ResponseWriter, _ *http.Request) {
 	// this is the crux of this service:
 	// once someone (e.g. kubelet) calls `\terminate` we trigger downstream logic to drain this particular agent/server
 	// the drain logic is defined in pkg/agent/server.go `drainServerReplicaImpl`

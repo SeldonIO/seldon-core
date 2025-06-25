@@ -10,7 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package interfaces
 
 type DependencyServiceInterface interface {
-	SetState(state interface{})
+	SetState(state any)
 	Start() error
 	Ready() bool
 	Stop() error

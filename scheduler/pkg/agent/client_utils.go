@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	backoff "github.com/cenkalti/backoff/v4"
+	boff "github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
 
@@ -50,9 +50,9 @@ func isReady(service interfaces.DependencyServiceInterface, logger *log.Entry, m
 			return fmt.Errorf("Service %s not ready", service.Name())
 		}
 	}
-	backoffWithMax := backoff.NewExponentialBackOff()
+	backoffWithMax := boff.NewExponentialBackOff()
 	backoffWithMax.MaxElapsedTime = maxElapsedTime
-	return backoff.RetryNotify(readyToError, backoffWithMax, logFailure)
+	return boff.RetryNotify(readyToError, backoffWithMax, logFailure)
 }
 
 func getModifiedModelVersion(modelId string, version uint32, originalModelVersion *agent.ModelVersion, modelRuntimeInfo *scheduler.ModelRuntimeInfo) *agent.ModelVersion {
@@ -90,23 +90,23 @@ func isReadyChecker(
 }
 
 func backoffWithMaxNumRetry(fn func() error, count uint8, maxElapsedTime time.Duration, logger log.FieldLogger) error {
-	backoffWithMax := backoff.NewExponentialBackOff(backoff.WithMaxElapsedTime(maxElapsedTime))
+	backoffWithMax := boff.NewExponentialBackOff(boff.WithMaxElapsedTime(maxElapsedTime))
 	i := 0
 	logFailure := func(err error, delay time.Duration) {
 		logger.WithError(err).Errorf("Retry op #%d", i)
 		i++
 	}
-	return backoff.RetryNotify(fn, newBackOffWithMaxCount(count, backoffWithMax), logFailure)
+	return boff.RetryNotify(fn, newBackOffWithMaxCount(count, backoffWithMax), logFailure)
 }
 
 // backOffWithMaxCount is a backoff policy that retries up to a max count
 type backOffWithMaxCount struct {
-	backoffPolicy backoff.BackOff
+	backoffPolicy boff.BackOff
 	maxCount      uint8
 	currentCount  uint8
 }
 
-func newBackOffWithMaxCount(maxCount uint8, backOffPolicy backoff.BackOff) *backOffWithMaxCount {
+func newBackOffWithMaxCount(maxCount uint8, backOffPolicy boff.BackOff) *backOffWithMaxCount {
 	return &backOffWithMaxCount{
 		maxCount:      maxCount,
 		backoffPolicy: backOffPolicy,
@@ -120,7 +120,7 @@ func (b *backOffWithMaxCount) Reset() {
 
 func (b *backOffWithMaxCount) NextBackOff() time.Duration {
 	if b.currentCount >= b.maxCount-1 {
-		return backoff.Stop
+		return boff.Stop
 	} else {
 		b.currentCount++
 		return b.backoffPolicy.NextBackOff()
