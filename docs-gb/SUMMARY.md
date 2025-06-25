@@ -25,7 +25,7 @@
 
 ## Tutorials
  * Notebooks
-    * [Seldon Core Setup](../notebooks/seldon_core_setup.ipynb)
+    * [Seldon Core Setup](install/seldon-core-setup.md)
     * Prepackaged Inference server Examples
     * Python Language Wrapper Examples
     * Specialized Framework Examples
