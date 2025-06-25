@@ -271,6 +271,10 @@ func (rp *reverseHTTPProxy) Name() string {
 	return "Reverse HTTP/REST Proxy"
 }
 
+func (rp *reverseHTTPProxy) GetType() interfaces.SubServiceType {
+	return interfaces.CriticalDataPlaneService
+}
+
 func NewReverseHTTPProxy(
 	logger log.FieldLogger,
 	backendHTTPServerHost string,

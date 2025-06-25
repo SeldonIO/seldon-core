@@ -24,6 +24,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pbad "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent_debug"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 )
 
 const (
@@ -100,6 +102,10 @@ func (ad *agentDebug) Ready() bool {
 
 func (ad *agentDebug) Name() string {
 	return "AgentDebug GRPC service"
+}
+
+func (cd *agentDebug) GetType() interfaces.SubServiceType {
+	return interfaces.OptionalService
 }
 
 func (ad *agentDebug) ReplicaStatus(ctx context.Context, r *pbad.ReplicaStatusRequest) (*pbad.ReplicaStatusResponse, error) {

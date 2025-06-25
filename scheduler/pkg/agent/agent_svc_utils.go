@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package agent
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -21,13 +22,25 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 )
+
+func logSubserviceNotYetReady(logger *log.Entry, subserviceName string) boff.Notify {
+	return func(err error, delay time.Duration) {
+		logger.WithError(err).Infof("Waiting for %s service to become ready... next check in %s", subserviceName, delay.Round(100*time.Millisecond))
+	}
+}
+
+func newAgentServiceStatusRetryBackoff(ctx context.Context) boff.BackOff {
+	expBackoff := boff.NewExponentialBackOff(boff.WithMaxInterval(config.ServiceReadyRetryMaxInterval))
+	return boff.WithContext(expBackoff, ctx)
+}
 
 func startSubService(
 	service interfaces.DependencyServiceInterface,
 	logger *log.Entry,
-	maxElapsedTimeReadySubServiceBeforeStart time.Duration,
+	ctx context.Context,
 ) error {
 	logger.Infof("Starting and waiting for %s", service.Name())
 	err := service.Start()
@@ -35,24 +48,22 @@ func startSubService(
 		return err
 	}
 
-	return isReady(service, logger, maxElapsedTimeReadySubServiceBeforeStart)
+	return isReady(service, logger, ctx)
 }
 
-func isReady(service interfaces.DependencyServiceInterface, logger *log.Entry, maxElapsedTime time.Duration) error {
-	logFailure := func(err error, delay time.Duration) {
-		logger.WithError(err).Errorf("%s service not ready", service.Name())
-	}
+func isReady(service interfaces.DependencyServiceInterface, logger *log.Entry, ctx context.Context) error {
+	backoffWithContext := newAgentServiceStatusRetryBackoff(ctx)
+
+	logFailure := logSubserviceNotYetReady(logger, service.Name())
 
 	readyToError := func() error {
 		if service.Ready() {
 			return nil
 		} else {
-			return fmt.Errorf("Service %s not ready", service.Name())
+			return fmt.Errorf("service %s not ready", service.Name())
 		}
 	}
-	backoffWithMax := boff.NewExponentialBackOff()
-	backoffWithMax.MaxElapsedTime = maxElapsedTime
-	return boff.RetryNotify(readyToError, backoffWithMax, logFailure)
+	return boff.RetryNotify(readyToError, backoffWithContext, logFailure)
 }
 
 func getModifiedModelVersion(modelId string, version uint32, originalModelVersion *agent.ModelVersion, modelRuntimeInfo *scheduler.ModelRuntimeInfo) *agent.ModelVersion {
@@ -72,21 +83,21 @@ func isReadyChecker(
 	isStartup bool,
 	service interfaces.DependencyServiceInterface,
 	logger *log.Entry,
-	logMessage string,
-	maxElapsedTime time.Duration,
-) error {
+	readyNotifications chan<- SubServiceReadinessNotification,
+	ctx context.Context,
+) {
+	var err error
 	if isStartup {
-		if err := startSubService(service, logger, maxElapsedTime); err != nil {
-			logger.WithError(err).Error(logMessage)
-			return err
-		}
+		err = startSubService(service, logger, ctx)
 	} else {
-		if err := isReady(service, logger, maxElapsedTime); err != nil {
-			logger.WithError(err).Error(logMessage + " - after agent start")
-			return err
-		}
+		err = isReady(service, logger, ctx)
 	}
-	return nil
+
+	readyNotifications <- SubServiceReadinessNotification{
+		err:            err,
+		subserviceName: service.Name(),
+		subServiceType: service.GetType(),
+	}
 }
 
 func backoffWithMaxNumRetry(fn func() error, count uint8, maxElapsedTime time.Duration, logger log.FieldLogger) error {

@@ -20,6 +20,7 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
@@ -115,6 +116,10 @@ func (drainer *DrainerService) Stop() error {
 
 func (drainer *DrainerService) Name() string {
 	return "Agent drainer service"
+}
+
+func (drainer *DrainerService) GetType() interfaces.SubServiceType {
+	return interfaces.CriticalControlPlaneService
 }
 
 func (drainer *DrainerService) WaitOnTrigger() {

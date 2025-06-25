@@ -83,13 +83,19 @@ func (f *FakeModelRepository) Ready() error {
 }
 
 type FakeDependencyService struct {
-	err error
+	name           string
+	err            error
+	skipErrOnStart bool
+	subServiceType interfaces.SubServiceType
 }
 
 func (f FakeDependencyService) SetState(state any) {
 }
 
 func (f FakeDependencyService) Start() error {
+	if f.skipErrOnStart {
+		return nil
+	}
 	return f.err
 }
 
@@ -102,7 +108,11 @@ func (f FakeDependencyService) Stop() error {
 }
 
 func (f FakeDependencyService) Name() string {
-	return "FakeService"
+	return fmt.Sprintf("Fake-%s-Service", f.name)
+}
+
+func (f FakeDependencyService) GetType() interfaces.SubServiceType {
+	return f.subServiceType
 }
 
 func addVerionToModels(models []string, version uint32) []string {
@@ -765,6 +775,165 @@ func TestClientClose(t *testing.T) {
 	g.Expect(client.stop.Load()).To(BeTrue())
 }
 
+func TestAgentReadiness(t *testing.T) {
+	t.Logf("Started")
+	logger := log.New()
+	log.SetLevel(log.DebugLevel)
+	g := NewWithT(t)
+
+	serviceStatusCheckEvery := 10 * time.Second
+	maxTimeBeforeStart := 2 * time.Second
+	maxTimeAfterStart := 500 * time.Millisecond
+
+	type test struct {
+		name                 string
+		isFirstStart         bool
+		withErrorSvcCritical bool
+		withErrorSvcAux      bool
+		withErrorSvcOptional bool
+	}
+	baseTests := []test{
+		{
+			name:         "on-startup",
+			isFirstStart: true,
+		},
+		{
+			name:         "periodic-check",
+			isFirstStart: false,
+		},
+	}
+	// Generate matrix tests for all possible combinations of withError* flags.
+	var tests []test
+	for _, baseTest := range baseTests {
+		// errCase from 0 to 7, for which the binary representation covers all the possible
+		// combinations for the presence of the three types of errors.
+		for errCase := range 8 {
+			test := baseTest
+			test.name = fmt.Sprintf("%s-errCritAuxOpt-%03b", baseTest.name, errCase)
+			test.withErrorSvcCritical = (errCase & 0b100) != 0
+			test.withErrorSvcAux = (errCase & 0b010) != 0
+			test.withErrorSvcOptional = (errCase & 0b001) != 0
+			tests = append(tests, test)
+		}
+	}
+
+	mockMLServer := &testing_utils.MockGRPCMLServer{}
+	backEndGRPCPort, err := testing_utils2.GetFreePortForTest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = mockMLServer.Setup(uint(backEndGRPCPort))
+	go func() {
+		_ = mockMLServer.Start()
+	}()
+
+	time.Sleep(50 * time.Millisecond)
+
+	v2Client := oip.NewV2Client(
+		oip.GetV2ConfigWithDefaults("", backEndGRPCPort), log.New())
+
+	// Set up dependencies
+	modelRepository := &FakeModelRepository{}
+	rpHTTP := FakeDependencyService{
+		name:           "HTTP-proxy",
+		skipErrOnStart: true,
+		subServiceType: (&reverseHTTPProxy{}).GetType(),
+	}
+	rpGRPC := FakeDependencyService{
+		name:           "gRPC-proxy",
+		err:            nil,
+		subServiceType: (&reverseGRPCProxy{}).GetType(),
+	}
+	agentDebug := FakeDependencyService{
+		name:           "agentDebug",
+		skipErrOnStart: true,
+		subServiceType: (&agentDebug{}).GetType(),
+	}
+	modelScalingService := FakeDependencyService{
+		name:           "modelScaling",
+		skipErrOnStart: true,
+		subServiceType: (&modelscaling.StatsAnalyserService{}).GetType(),
+	}
+	drainerService := FakeDependencyService{
+		name:           "drainer",
+		err:            nil,
+		subServiceType: (&drainservice.DrainerService{}).GetType(),
+	}
+
+	g.Expect(rpHTTP.GetType()).To(Equal(interfaces.CriticalDataPlaneService))
+	g.Expect(rpGRPC.GetType()).To(Equal(interfaces.CriticalDataPlaneService))
+	g.Expect(agentDebug.GetType()).To(Equal(interfaces.OptionalService))
+	g.Expect(modelScalingService.GetType()).To(Equal(interfaces.AuxControlPlaneService))
+	g.Expect(drainerService.GetType()).To(Equal(interfaces.CriticalControlPlaneService))
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			var maybeCriticalServiceError, maybeOptionalServiceError, maybeAuxServiceError error
+			hasErrors := false
+			if test.withErrorSvcCritical {
+				maybeCriticalServiceError = fmt.Errorf("critical service error")
+				hasErrors = true
+			}
+			if test.withErrorSvcAux {
+				maybeAuxServiceError = fmt.Errorf("auxiliary service error")
+				hasErrors = true
+			}
+			if test.withErrorSvcOptional {
+				maybeOptionalServiceError = fmt.Errorf("optional service error")
+				hasErrors = true
+			}
+			// Test case specific copies, we do not modify the originals so that we can run
+			// tests in parallel
+			rpHTTP := rpHTTP
+			modelScalingService := modelScalingService
+			agentDebug := agentDebug
+
+			rpHTTP.err = maybeCriticalServiceError
+			modelScalingService.err = maybeAuxServiceError
+			agentDebug.err = maybeOptionalServiceError
+
+			asm := NewAgentServiceManager(
+				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, serviceStatusCheckEvery, maxTimeBeforeStart, maxTimeAfterStart, 1*time.Minute, 1*time.Minute, 1, 1, 1),
+				logger, modelRepository,
+				v2Client,
+				&pb.ReplicaConfig{MemoryBytes: 1000}, "default",
+				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService,
+				newFakeMetricsHandler())
+
+			start := time.Now()
+			err := asm.WaitReadySubServices(test.isFirstStart)
+			endTime := time.Now()
+			elapsed := endTime.Sub(start)
+
+			if test.isFirstStart {
+				if test.withErrorSvcAux || test.withErrorSvcCritical {
+					g.Expect(err).ToNot(BeNil(), "Expected agent error when starting with errors in non-optional subservices")
+				} else {
+					g.Expect(err).To(BeNil())
+				}
+			} else {
+				if test.withErrorSvcCritical {
+					g.Expect(err).ToNot(BeNil(), "Expected agent error when starting with critical errors in non-optional subservices")
+				} else {
+					g.Expect(err).To(BeNil())
+				}
+			}
+
+			if hasErrors {
+				if test.isFirstStart {
+					g.Expect(elapsed.Milliseconds()).To(BeNumerically("~", maxTimeBeforeStart.Milliseconds(), 50))
+				} else {
+					g.Expect(elapsed.Milliseconds()).To(BeNumerically("~", maxTimeAfterStart.Milliseconds(), 50))
+				}
+			} else {
+				// If there are no errors, we expect the service to start quickly
+				g.Expect(elapsed.Milliseconds()).To(BeNumerically("<", 50))
+			}
+		})
+	}
+}
+
 func TestAgentStopOnSubServicesFailure(t *testing.T) {
 	t.Logf("Started")
 	logger := log.New()
@@ -794,7 +963,7 @@ func TestAgentStopOnSubServicesFailure(t *testing.T) {
 		},
 		{
 			name:        "error-" + scale,
-			isError:     true,
+			isError:     false, // failure in model scaling service not considered critical
 			serviceName: scale,
 		},
 		{

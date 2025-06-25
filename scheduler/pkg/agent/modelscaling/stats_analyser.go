@@ -135,6 +135,10 @@ func (ss *StatsAnalyserService) Name() string {
 	return "Model Replica Scaling Trigger"
 }
 
+func (ss *StatsAnalyserService) GetType() interfaces.SubServiceType {
+	return interfaces.AuxControlPlaneService
+}
+
 func (ss *StatsAnalyserService) start() error {
 	ticker := time.NewTicker(time.Second * time.Duration(ss.periodSeconds))
 	defer ticker.Stop()

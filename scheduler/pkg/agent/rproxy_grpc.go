@@ -31,6 +31,7 @@ import (
 
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelserver_controlplane/oip"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
@@ -164,6 +165,10 @@ func (rp *reverseGRPCProxy) Ready() bool {
 
 func (rp *reverseGRPCProxy) Name() string {
 	return "Reverse GRPC Proxy"
+}
+
+func (rp *reverseGRPCProxy) GetType() interfaces.SubServiceType {
+	return interfaces.CriticalDataPlaneService
 }
 
 func (rp *reverseGRPCProxy) extractModelNamesFromContext(ctx context.Context) (string, string, error) {

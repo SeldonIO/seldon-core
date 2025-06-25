@@ -13,6 +13,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -39,6 +40,12 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
+type SubServiceReadinessNotification struct {
+	err            error
+	subserviceName string
+	subServiceType interfaces.SubServiceType
+}
+
 type AgentServiceManager struct {
 	logger                   log.FieldLogger
 	inferenceServerConfig    *agent_pb.ReplicaConfig
@@ -50,6 +57,8 @@ type AgentServiceManager struct {
 	drainerService           interfaces.DependencyServiceInterface
 	metrics                  metrics.AgentMetricsHandler
 	isDraining               atomic.Bool
+	criticalSubservicesReady atomic.Bool
+	isStartup                atomic.Bool
 	stop                     atomic.Bool
 	modelScalingClientStream agent_pb.AgentService_ModelScalingTriggerClient
 	agentConfig              *AgentServiceConfig
@@ -189,14 +198,27 @@ func NewAgentServiceManager(
 		KubernetesOptions: KubernetesOptions{
 			namespace: namespace,
 		},
-		isDraining:      atomic.Bool{},
-		stop:            atomic.Bool{},
-		agentConfig:     agentConfig,
-		modelTimestamps: sync.Map{},
-		startTime:       time.Now(),
+		isDraining:               atomic.Bool{},
+		criticalSubservicesReady: atomic.Bool{},
+		isStartup:                atomic.Bool{},
+		stop:                     atomic.Bool{},
+		agentConfig:              agentConfig,
+		modelTimestamps:          sync.Map{},
+		startTime:                time.Now(),
 	}
+	am.isStartup.Store(true)
 
 	return &am
+}
+
+func (am *AgentServiceManager) Ready() bool {
+	// We're never returning ready until the agent connects to the scheduler (isStartup becomes false)
+	// Similarly, we're never returning ready once the draining process has started
+	if am.isStartup.Load() || am.isDraining.Load() {
+		return false
+	}
+
+	return am.criticalSubservicesReady.Load()
 }
 
 func (am *AgentServiceManager) StartControlLoop() error {
@@ -273,84 +295,138 @@ func (am *AgentServiceManager) createConnection() error {
 	return nil
 }
 
+func (am *AgentServiceManager) isCriticalSubserviceFailure(isStartup bool, subServiceType interfaces.SubServiceType) bool {
+	if isStartup {
+		// On startup, any non-optional sub-service that fails will set the agent to not ready.
+		// This is because, beyond critical data-plane and control-plane services, auxiliary
+		// services may be needed on the initial connection to the scheduler. For example, the
+		// scheduler requesting the agent to load an initial set of models requires the model
+		// repository subservice.
+		if subServiceType != interfaces.OptionalService {
+			return true
+		}
+	} else {
+		// During normal operation, we would like to only mark the agent as not ready if data-plane
+		// services fail. We want the agent to continue to function in case of a control-plane
+		// outage.
+		if subServiceType == interfaces.CriticalControlPlaneService ||
+			subServiceType == interfaces.CriticalDataPlaneService {
+			return true
+		}
+	}
+	return false
+}
+
 func (am *AgentServiceManager) WaitReadySubServices(isStartup bool) error {
 	logger := am.logger.WithField("func", "waitReady")
+	wg := &sync.WaitGroup{}
 
 	maxElapsedTime := am.agentConfig.maxElapsedTimeReadySubServiceBeforeStart
 	if !isStartup {
 		maxElapsedTime = am.agentConfig.maxElapsedTimeReadySubServiceAfterStart
 	}
-	backoffWithMax := boff.NewExponentialBackOff()
-	backoffWithMax.MaxElapsedTime = maxElapsedTime
+	readyNotifications := make(chan SubServiceReadinessNotification, 2)
 
-	// Wait for model repo to be ready
-	logFailure := func(err error, delay time.Duration) {
-		logger.WithError(err).Errorf("Rclone not ready")
-	}
+	// The total time we wait for all subservices to be ready is maxElapsedTime. All retries will
+	// stop after this time, when the `allReadyDeadlineCtx` context timeouts.
+	allReadyDeadlineCtx, allReadyDeadlineCancel := context.WithTimeout(context.Background(), maxElapsedTime)
+	defer allReadyDeadlineCancel()
 
-	// TODO make retry configurable
-	err := boff.RetryNotify(am.ModelRepository.Ready, backoffWithMax, logFailure)
-	if err != nil {
-		logger.WithError(err).Error("Failed to wait for model repository to be ready")
-		return err
-	}
+	waitModelRepo := func() {
+		defer wg.Done()
+		subserviceName := "Model Repository (rclone)"
 
-	// Wait for Inference server to be ready
-	logFailure = func(err error, delay time.Duration) {
-		logger.WithError(err).Errorf("Inference server not ready")
-	}
-
-	err = boff.RetryNotify(am.stateManager.v2Client.Live, backoffWithMax, logFailure)
-	if err != nil {
-		logger.WithError(err).Error("Failed to wait for inference server to be ready")
-		return err
-	}
-
-	if isStartup {
-		// Unload any existing models on server to ensure we start in a clean state
-		logger.Infof("Unloading any existing models")
-		err = am.UnloadAllModels()
-		if err != nil {
-			return err
+		backoffWithContext := newAgentServiceStatusRetryBackoff(allReadyDeadlineCtx)
+		err := boff.RetryNotify(am.ModelRepository.Ready, backoffWithContext,
+			logSubserviceNotYetReady(logger, subserviceName))
+		readyNotifications <- SubServiceReadinessNotification{
+			err:            err,
+			subserviceName: subserviceName,
+			// For the purposes of agent readiness, we consider the ModelRepository to be a
+			// control-plane service. If not ready, existing loaded models are able to
+			// continue to work, but new control-plane operations (load, unload) would fail.
+			subServiceType: interfaces.AuxControlPlaneService,
 		}
 	}
 
-	// http reverse proxy
-	if err := isReadyChecker(
-		isStartup, am.rpHTTP, logger, "Rest proxy not ready",
-		maxElapsedTime,
-	); err != nil {
-		return err
+	waitInferenceServer := func() {
+		defer wg.Done()
+		subserviceName := "Inference Server"
+
+		backoffWithContext := newAgentServiceStatusRetryBackoff(allReadyDeadlineCtx)
+		err := boff.RetryNotify(am.stateManager.v2Client.Live, backoffWithContext,
+			logSubserviceNotYetReady(logger, subserviceName))
+
+		if isStartup {
+			// Unload any existing models on server to ensure we start in a clean state
+			logger.Infof("Unloading any existing models")
+			err = am.UnloadAllModels()
+		}
+
+		readyNotifications <- SubServiceReadinessNotification{
+			err:            err,
+			subserviceName: subserviceName,
+			subServiceType: interfaces.CriticalDataPlaneService,
+		}
 	}
 
-	// grpc reverse proxy
-	if err := isReadyChecker(isStartup, am.rpGRPC, logger, "Grpc proxy not ready",
-		maxElapsedTime,
-	); err != nil {
-		return err
+	// wait for subservices from other containers in the pod (rclone, inference server)
+	wg.Add(2)
+	go waitModelRepo()
+	go waitInferenceServer()
+
+	// wait for internal subservices
+	// readinessService not part of the list because it is started outside the AgentServiceManager
+	// and needs to provide responses to readiness checks for the agent itself even if the
+	// AgentServiceManager stops.
+	internalSubServices := []interfaces.DependencyServiceInterface{
+		am.rpHTTP,
+		am.rpGRPC,
+		am.agentDebugService,
+		am.modelScalingService,
+		am.drainerService,
+	}
+	wg.Add(len(internalSubServices))
+
+	for _, subService := range internalSubServices {
+		go func() {
+			defer wg.Done()
+			isReadyChecker(
+				isStartup,
+				subService,
+				logger,
+				readyNotifications,
+				allReadyDeadlineCtx,
+			)
+		}()
 	}
 
-	// agent debug service
-	if err := isReadyChecker(isStartup, am.agentDebugService, logger, "Agent debug service not ready",
-		maxElapsedTime,
-	); err != nil {
-		return err
+	go func() {
+		wg.Wait()
+		close(readyNotifications)
+	}()
+
+	criticalSubservicesNotReady := make([]string, 0)
+	for notification := range readyNotifications {
+		if notification.err != nil {
+			logger.WithError(notification.err).Errorf("Giving up on waiting for %s service to become ready; service marked as failed", notification.subserviceName)
+			if am.isCriticalSubserviceFailure(isStartup, notification.subServiceType) {
+				criticalSubservicesNotReady = append(criticalSubservicesNotReady, notification.subserviceName)
+			} else {
+				logger.Warnf("Non-critical subservice no longer ready: %s", notification.subserviceName)
+			}
+		}
 	}
 
-	// model scaling service
-	if err := isReadyChecker(isStartup, am.modelScalingService, logger, "Scaling service not ready",
-		maxElapsedTime,
-	); err != nil {
-		return err
+	if len(criticalSubservicesNotReady) > 0 {
+		am.criticalSubservicesReady.Store(false)
+		return fmt.Errorf("the following critical subservices are no longer ready: %s", strings.Join(criticalSubservicesNotReady, ", "))
+	} else {
+		if isStartup {
+			logger.Infof("All critical agent subservices ready.")
+		}
+		am.criticalSubservicesReady.Store(true)
 	}
-
-	// drainer service
-	if err := isReadyChecker(isStartup, am.drainerService, logger, "Inference server drainer service not ready",
-		maxElapsedTime,
-	); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -464,6 +540,10 @@ func (am *AgentServiceManager) HandleSchedulerSubscription() error {
 		_, _ = clientStream.CloseAndRecv()
 	}()
 
+	// Mark startup as completed once we have an initial connection to the scheduler
+	// This connection may break and will be retried, but we define the agent as "started"
+	// once we are able to successfully connect once.
+	am.isStartup.Store(false)
 	// Start the main control loop for the agent<-scheduler stream
 	for {
 		if am.stop.Load() {
