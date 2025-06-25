@@ -18,7 +18,7 @@ kubectl config set-context $(kubectl config current-context) --namespace=seldon
 
 ## Install Seldon Core
 
-Follow the [Seldon Core Install documentation](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html).
+Follow the [Seldon Core Install documentation](install/installation.md).
 
 ```bash
 kubectl create namespace seldon-system
