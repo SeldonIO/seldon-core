@@ -21,13 +21,13 @@
   * [Server Config](kubernetes/resources/serverconfig.md)
   * [Server Runtime](kubernetes/resources/seldonruntime.md)
   * [Seldon Config](kubernetes/resources/seldonconfig.md)
-  * [Pipeline Config](kubernetes/resources/pipeline.md)  
+  * [Pipeline Config](kubernetes/resources/pipeline.md)
+  * [Managing Kafka Topics](managing-kafka-topics.md)
 * [Upgrading](upgrading.md) 
 
 ## User Guide
 <!-- * Getting Started -->
 <!-- * Deploy Model (OIP+MLServer Link) -->
-<!-- * Pipeline -->
 <!-- * Inference Server -->
 <!-- * Run Inference -->
 * [Kubernetes Resources](kubernetes/resources/README.md) 
@@ -35,8 +35,8 @@
     * [Resource allocation](resource-allocation/README.md)
       * [Example: Serving models on dedicated GPU nodes](resource-allocation/example-serving-models-on-dedicated-gpu-nodes.md)
 * [Models](models/README.md)
-  <!-->  
-   * CRD
+    <!--  
+    * CRD
     * Registration
     * Versioning
     * LLM
@@ -44,21 +44,23 @@
     * Links to Secret Management -->
     * [Multi-Model Serving](models/mms.md)
     * [Inference Artifacts](models/inference-artifacts.md)
+    * [Scheduling](models/scheduling.md)
     * [rClone](models/rclone.md)
     * [Parameterized Models](models/parameterized-models/README.md)
     * [Pandas Query](models/parameterized-models/pandasquery.md) 
     * [Storage Secrets](kubernetes/storage-secrets.md)
 * Inference
+    <!--
     * [Inference Server](https://docs.seldon.io/projects/seldon-core/en/v2/contents/about/index.html#inference-servers)
     * [Run Inference](https://docs.seldon.io/projects/seldon-core/en/v2/contents/inference/index.html)
+    -->
     * [OIP](apis/inference/v2.md)
     * [Batch](examples/batch-examples-k8s.md) and (examples/batch-examples-local.md)
 * [Pipelines](pipelines.md)
-* [Scaling](kubernetes/scaling.md)
-  <!-- 
-  * Server Scaling
-  * Component Scaling -->
-  * [Autoscaling](kubernetes/autoscaling.md)
+* [Scaling](scaling/scaling.md)
+  * [Manual Scaling](scaling/manual-scaling.md)
+  * [Model Autoscaling](scaling/autoscaling.md)
+  * [Server Autoscaling](scaling/server-autoscaling.md)
   <!--
   * Multi-Component Serving and Overcommit -->
   * [HPA Autoscaling in single-model serving](kubernetes/hpa-rps-autoscaling.md)
@@ -76,21 +78,30 @@
     * [Local Metrics](operational-monitoring/local-metrics-test.md)
     * [Tracing](kubernetes/tracing.md)
     <!-- * Kubernetes Metrics -->
-    <!--
-    * Performance Tuning -->
+    
+* [Performance Tuning](performance-tuning/readme.md)
+    * [Models](performance-tuning/models/README.md)
+        * [Load Testing](performance-tuning/models/load-testing.md)
+        * [Inference](performance-tuning/models/inference.md)
+        * [Infrastructure Setup](performance-tuning/models/infrastructure-setup.md)
+    * [Pipelines](performance-tuning/pipelines/README.md)
+        * [Testing Pipelines](performance-tuning/pipelines/testing-pipelines.md)
+        * [Core 2 Configuration](performance-tuning/pipelines/core-2-configuration.md)
+
 <!--    
 * Rollouts & Experiments
     * Rollout Strategies
         * Progressive Rollouts
         * Rollbacks -->
-    * [Experiments](kubernetes/resources/experiment.md)
-  <!-->
+* [Experiments](kubernetes/resources/experiment.md)
+<!--
       * A/B Testing
       * Traffic Splitting
       * Canary
       * Shadow 
     * CI/CD
-      * Link to Component Versioning -->
+      * Link to Component Versioning 
+-->
 * [Examples](examples/README.md)
   * [Local examples](examples/local-examples.md)
   * [Kubernetes examples](examples/k8s-examples.md)
@@ -99,6 +110,7 @@
   * [Artifact versions](examples/multi-version.md)
   * [Pipeline examples](examples/pipeline-examples.md)
   * [Pipeline to pipeline examples](examples/pipeline-to-pipeline.md)
+  * [Cyclic Pipeline](examples/pipeline-cyclic.md)
   * [Explainer examples](examples/explainer-examples.md)
   * [Custom Servers](examples/custom-servers.md)
   * [Local experiments](examples/local-experiments.md)
@@ -179,10 +191,12 @@
 <!--    
 * Reference
     * Glossary -->
-* [FAQs](faqs.md)          
- 
+* [Seldon Docs Home](https://docs.seldon.ai/home)
+* [FAQs](faqs.md)         
 * [Development](development/README.md)
   * [License](development/licenses.md)
   * [Release](development/release.md)
+* [Release Notes](https://github.com/SeldonIO/seldon-core/releases/tag/v2.9.0)
+
 
 

@@ -465,6 +465,26 @@ func TestCheckForCycles(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "loop allowed",
+			pipelineVersion: &PipelineVersion{
+				Name: "test",
+				Steps: map[string]*PipelineStep{
+					"a": {
+						Name: "a",
+					},
+					"b": {
+						Name:   "b",
+						Inputs: []string{"a.outputs", "c.outputs"},
+					},
+					"c": {
+						Name:   "c",
+						Inputs: []string{"b.outputs"},
+					},
+				},
+				AllowCycles: true,
+			},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

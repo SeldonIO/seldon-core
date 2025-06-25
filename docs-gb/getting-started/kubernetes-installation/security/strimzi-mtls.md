@@ -1,4 +1,8 @@
-# Strimzi mTLS Example
+---
+description: Learn how to configure mutual TLS (mTLS) authentication between Seldon Core and Strimzi-managed Kafka clusters for secure communication.
+---
+
+# Strimzi mTLS Authentication
 
 ## Cluster Setup
 

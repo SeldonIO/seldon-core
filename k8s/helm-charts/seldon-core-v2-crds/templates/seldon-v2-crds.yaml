@@ -219,6 +219,16 @@ spec:
                   A v2 version folder to select from storage bucket
                 format: int32
                 type: integer
+              dataflow:
+                description: Dataflow spec
+                properties:
+                  cleanTopicsOnDelete:
+                    description: |-
+                      Flag to indicate whether the kafka input/output topics
+                      should be cleaned up when the model is deleted
+                      Default false
+                    type: boolean
+                type: object
               dedicated:
                 description: |-
                   Dedicated server exclusive to this model
@@ -459,6 +469,19 @@ spec:
           spec:
             description: PipelineSpec defines the desired state of Pipeline
             properties:
+              allowCycles:
+                description: Allow cyclic pipeline
+                type: boolean
+              dataflow:
+                description: Dataflow specs
+                properties:
+                  cleanTopicsOnDelete:
+                    description: |-
+                      Flag to indicate whether the kafka input/output topics
+                      should be cleaned up when the model is deleted
+                      Default false
+                    type: boolean
+                type: object
               input:
                 description: External inputs to this pipeline, optional
                 properties:
@@ -499,6 +522,10 @@ spec:
                     - any
                     type: string
                 type: object
+              maxStepRevisits:
+                description: Maximum number of times a step can be revisited
+                format: int32
+                type: integer
               output:
                 description: Synchronous output from this pipeline, optional
                 properties:

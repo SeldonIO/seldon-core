@@ -171,10 +171,11 @@ dataflow:
     runAsUser: 1000
     runAsGroup: 1000
     runAsNonRoot: true
-  logLevelKafka: info
+  logLevelKafka: warn
 
 controller:
   clusterwide: false
+  skipOperatorClusterRoleCreation: false
   image:
     pullPolicy: IfNotPresent
     registry: docker.io

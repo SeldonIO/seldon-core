@@ -58,12 +58,45 @@ func getLogLevel(l string) zap2.AtomicLevel {
 	return level
 }
 
+func getWatchNamespaceConfig(namespace, watchNamespaces string, clusterwide bool) map[string]cache.Config {
+	configs := make(map[string]cache.Config)
+
+	if !clusterwide {
+		setupLog.Info("Watching namespace", "namespace", namespace)
+		configs[namespace] = cache.Config{}
+		return configs
+	}
+
+	if watchNamespaces == "" {
+		setupLog.Info("Clusterwide mode enabled, watching all namespaces")
+		return configs
+	}
+
+	setupLog.Info("Clusterwide mode enabled, watching namespaces", "namespaces", watchNamespaces)
+	nsSet := make(map[string]struct{})
+
+	for _, ns := range strings.Split(watchNamespaces, ",") {
+		ns = strings.TrimSpace(ns)
+		if ns != "" {
+			nsSet[ns] = struct{}{}
+		}
+	}
+
+	nsSet[namespace] = struct{}{}
+	for ns := range nsSet {
+		configs[ns] = cache.Config{}
+	}
+
+	return configs
+}
+
 func main() {
 	var (
 		metricsAddr          string
 		enableLeaderElection bool
 		probeAddr            string
 		namespace            string
+		watchNamespaces      string
 		clusterwide          bool
 		logLevel             string
 	)
@@ -71,6 +104,10 @@ func main() {
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":4000", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":4001", "The address the probe endpoint binds to.")
 	flag.StringVar(&namespace, "namespace", "", "The namespace to restrict the operator.")
+	flag.StringVar(&watchNamespaces, "watch-namespaces", "",
+		"Comma separated list of namespaces to watch. "+
+			"Only used when --clusterwide is set to true. "+
+			"Defaults to all namespaces if not set and --clusterwide is true.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -85,18 +122,12 @@ func main() {
 	flag.Parse()
 
 	opts.Level = getLogLevel(logLevel)
-
 	logger := zap.New(zap.UseFlagOptions(&opts))
 	ctrl.SetLogger(logger)
 
-	watchNamespaceConfig := map[string]cache.Config{namespace: {}}
-	if clusterwide {
-		watchNamespaceConfig = map[string]cache.Config{} // unset namespace so manager watches all namespaces
-	}
-	setupLog.Info("Starting manager", "clusterwide", clusterwide)
-
 	setupLog.Info("Setting log level", "level", logLevel)
 
+	watchNamespaceConfig := getWatchNamespaceConfig(namespace, watchNamespaces, clusterwide)
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		Metrics:                metricsserver.Options{BindAddress: metricsAddr},

@@ -1,4 +1,8 @@
-# Seldon Runtime
+---
+description: Learn about SeldonRuntime, a Kubernetes resource for creating and managing Seldon Core instances in specific namespaces with configurable settings.
+---
+
+# SeldonRuntime Resource
 
 The SeldonRuntime resource is used to create an instance of Seldon installed in a particular namespace.
 

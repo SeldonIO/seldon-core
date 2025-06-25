@@ -1,27 +1,17 @@
 # FAQs
 
-## Can Seldon Core 2 be used with Seldon Core V1
+## Should I use Core 1 or Core 2?
+
+We strongly recommend using **Seldon Core 2** for all new and production deployments. Core 1 is now in maintenance mode — it is no longer actively developed, and future improvements will be focused exclusively on Core 2. Core 2 is already being supported for production use by  our enterprise-scale customers.
+
+Seldon Core 2 introduces a more modern, scalable, and flexible architecture designed for production-grade machine learning systems. Key advantages include:
+
+- Data-centric ML pipelines with native support for streaming data via Kafka, enabling real-time inference and observability.
+- Multi-Model Serving and resource overcommit strategies that improve infrastructure efficiency and model utilization.
+
+## Can Seldon Core 2 be used with Seldon Core 1
 
 The two projects are able to be run side by side. Existing users of Seldon Core can update to deploy their models using Seldon Core 2 as needed to take advantage of the new functionality. Both will be supported.
-
-## Should I choose V1 APIs or V2 APIs
-
-This depends on your use case. V2 APIs are not yet at GA so might contain breaking changes in future releases.
-
- Use V1 for:
-
-  * Tight integration to Seldon V1 protocol
-  * Tensorflow Server requirements
-  * Need managed istio integration
-
- Use V2 for:
-
-  * Multi-model serving
-  * More expressive DAG inference pipelines
-  * Data-centric (Kafka)
-  * Service mesh agnostic
-  * Simpler single model usage
-  * V2 Protocol
 
 ## Can I do payload logging in Seldon Core 2?
 

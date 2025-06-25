@@ -1,3 +1,6 @@
+---
+---
+
 ## seldon model metadata
 
 get model metadata

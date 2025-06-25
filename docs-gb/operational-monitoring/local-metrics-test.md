@@ -1,4 +1,8 @@
-# Local Metrics
+---
+description: Learn how to test and validate metrics collection in Seldon Core locally, including Prometheus setup and Grafana dashboards.
+---
+
+# Local Metrics Testing
 
 Run these examples from the `samples` folder at the root of the repo.
 

@@ -183,6 +183,108 @@ public object PipelineUpdateMessageKt {
       _builder.clearUpdates()
     }
 
+
+    /**
+     * `string pipelineOutputTopic = 6;`
+     */
+    public var pipelineOutputTopic: kotlin.String
+      @JvmName("getPipelineOutputTopic")
+      get() = _builder.getPipelineOutputTopic()
+      @JvmName("setPipelineOutputTopic")
+      set(value) {
+        _builder.setPipelineOutputTopic(value)
+      }
+    /**
+     * `string pipelineOutputTopic = 6;`
+     */
+    public fun clearPipelineOutputTopic() {
+      _builder.clearPipelineOutputTopic()
+    }
+
+    /**
+     * `string pipelineErrorTopic = 7;`
+     */
+    public var pipelineErrorTopic: kotlin.String
+      @JvmName("getPipelineErrorTopic")
+      get() = _builder.getPipelineErrorTopic()
+      @JvmName("setPipelineErrorTopic")
+      set(value) {
+        _builder.setPipelineErrorTopic(value)
+      }
+    /**
+     * `string pipelineErrorTopic = 7;`
+     */
+    public fun clearPipelineErrorTopic() {
+      _builder.clearPipelineErrorTopic()
+    }
+
+    /**
+     * `bool allowCycles = 8;`
+     */
+    public var allowCycles: kotlin.Boolean
+      @JvmName("getAllowCycles")
+      get() = _builder.getAllowCycles()
+      @JvmName("setAllowCycles")
+      set(value) {
+        _builder.setAllowCycles(value)
+      }
+    /**
+     * `bool allowCycles = 8;`
+     */
+    public fun clearAllowCycles() {
+      _builder.clearAllowCycles()
+    }
+
+    /**
+     * `uint32 maxStepRevisits = 9;`
+     */
+    public var maxStepRevisits: kotlin.Int
+      @JvmName("getMaxStepRevisits")
+      get() = _builder.getMaxStepRevisits()
+      @JvmName("setMaxStepRevisits")
+      set(value) {
+        _builder.setMaxStepRevisits(value)
+      }
+    /**
+     * `uint32 maxStepRevisits = 9;`
+     */
+    public fun clearMaxStepRevisits() {
+      _builder.clearMaxStepRevisits()
+    }
+
+    /**
+     * `uint64 timestamp = 10;`
+     */
+    public var timestamp: kotlin.Long
+      @JvmName("getTimestamp")
+      get() = _builder.getTimestamp()
+      @JvmName("setTimestamp")
+      set(value) {
+        _builder.setTimestamp(value)
+      }
+    /**
+     * `uint64 timestamp = 10;`
+     */
+    public fun clearTimestamp() {
+      _builder.clearTimestamp()
+    }
+
+    /**
+     * `string stream = 11;`
+     */
+    public var stream: kotlin.String
+      @JvmName("getStream")
+      get() = _builder.getStream()
+      @JvmName("setStream")
+      set(value) {
+        _builder.setStream(value)
+      }
+    /**
+     * `string stream = 11;`
+     */
+    public fun clearStream() {
+      _builder.clearStream()
+    }
   }
 }
 @kotlin.jvm.JvmSynthetic

@@ -104,6 +104,26 @@ class KafkaAdmin(
         return null
     }
 
+    suspend fun deleteTopics(steps: List<PipelineStepUpdate>): Exception? {
+        try {
+            steps
+                .flatMap { step -> step.sourcesList + step.sink }
+                .map { topicName -> parseSource(topicName).first }
+                .toSet()
+                .also {
+                    logger.info("Topics to delete are $it")
+                }
+                .run {
+                    adminClient.deleteTopics(this)
+                }
+        } catch (e: Exception) {
+            return e
+        }
+
+        logger.info("All topics deleted")
+        return null
+    }
+
     companion object {
         private val logger = coLogger(KafkaAdmin::class)
         private val noCoLogger = noCoLogger(KafkaAdmin::class)

@@ -70,6 +70,7 @@ type PipelineEventMsg struct {
 	ExperimentUpdate  bool
 	ModelStatusChange bool
 	Source            string
+	KeepTopics        bool
 }
 
 func (p PipelineEventMsg) String() string {

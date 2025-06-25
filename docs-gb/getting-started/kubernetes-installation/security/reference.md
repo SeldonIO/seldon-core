@@ -1,3 +1,7 @@
+---
+description: Reference guide for Seldon Core security settings, covering Helm configuration, TLS/mTLS setup, and authentication methods for secure communication.
+---
+
 # Security Settings Reference
 
 ## Helm Settings

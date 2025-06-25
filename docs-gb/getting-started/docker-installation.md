@@ -1,3 +1,7 @@
+---
+description: Learn how to install and deploy Seldon Core 2 using Docker Compose, including GPU support, local model deployment, and monitoring setup.
+---
+
 # Docker Installation
 
 ## Preparation

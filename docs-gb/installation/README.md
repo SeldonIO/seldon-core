@@ -1,5 +1,9 @@
+---
+description: "Learn how to install Seldon Core 2 in various environments - from local development with Docker Compose to production-grade Kubernetes clusters."
+keywords: ["Seldon Core", "MLOps", "Kubernetes", "Docker Compose", "installation guide", "Helm charts", "machine learning deployment"]
+---
 
-# Installation
+# Installation Guide
 Seldon Core 2 can be installed in various setups to suit different stages of the development lifecycle. The most common modes include:
 
 ## Local Environment
@@ -42,8 +46,8 @@ Here is a list of components that Seldon Core 2 requires, along with the minimum
 | **Component**              | **Minimum Version** | **Maximum Version** | **Notes**                                                                                                                                               |
 |-----------------------------|---------------------|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Kubernetes**             | 1.27               | 1.33.0               | Required                                                                                                                                                |
-| **Envoy***                 | 1.32.2             | 1.32.2             | Required                                                                                                                                                |
-| **Rclone***                | 1.68.2             | 1.69.0            | Required                                                                                                                                                |
+| **Envoy***                 | 1.32.2             | 1.32.2             | Required. *(Included in Core 2 installation)*                                                                                                                                                |
+| **Rclone***                | 1.68.2             | 1.69.0            | Required. *(Included in Core 2 installation)*                                                                                                                                                |
 | **Kafka**                  | 3.4                | 3.8                | Recommended (only required for operating Seldon Core 2 dataflow Pipelines)                                                                             |
 | **Prometheus**             | 2.0                | 2.x                | Optional                                                                                                                                                |
 | **Grafana**                | 10.0               | ***                | Optional (no hard limit on the maximum version to be used)                                                                                              |

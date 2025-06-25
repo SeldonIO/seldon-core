@@ -1,4 +1,8 @@
-# Inference Artifacts
+---
+description: Learn how to manage model artifacts in Seldon Core, including storage, versioning, and deployment workflows.
+---
+
+# Model Artifacts
 
 To run your model inside Seldon you must supply an inference artifact that can be downloaded and run
 on one of MLServer or Triton inference servers. We list artifacts below by alphabetical order below.

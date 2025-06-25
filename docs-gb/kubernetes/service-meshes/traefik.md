@@ -1,3 +1,7 @@
+---
+description: Learn how to integrate Seldon Core 2 with Traefik for service mesh and ingress management, including service configuration and middleware implementation.
+---
+
 # Traefik
 
 [Traefik](https://doc.traefik.io/) provides a service mesh and ingress solution.

@@ -1,3 +1,7 @@
+---
+description: Learn how to install Seldon Core 2 using Helm charts, including CRDs, core components, runtimes, and integration with monitoring tools.
+---
+
 # Helm Installation
 
 We provide several Helm charts.

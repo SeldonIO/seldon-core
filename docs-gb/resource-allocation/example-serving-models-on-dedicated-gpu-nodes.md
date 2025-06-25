@@ -1,6 +1,5 @@
 ---
-description: >-
-  This example illustrates how to use taints,  tolerations with nodeAffinity or
+description: This example illustrates how to use taints,  tolerations with nodeAffinity or
   nodeSelector to assign GPU nodes to specific models.
 ---
 

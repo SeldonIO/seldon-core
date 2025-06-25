@@ -1,3 +1,7 @@
+---
+description: Learn how to integrate Kafka with Seldon Core 2 for data-centric inference pipelines, including managed solutions and security configurations.
+---
+
 # Kafka
 
 Seldon Core 2 requires [Kafka](https://kafka.apache.org/) to implement data-centric inference Pipelines.

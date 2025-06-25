@@ -1,3 +1,7 @@
+---
+description: Explore how Seldon Core 2 uses data flow paradigm and Kafka-based streaming to improve ML model deployment with better scalability, fault tolerance, and data observability.
+---
+
 # Data flow design paradigm in Seldon Core
 
 Seldon Core 2 is designed around data flow paradigm. Here we will explain what that means and some of the rationals behind this choice.

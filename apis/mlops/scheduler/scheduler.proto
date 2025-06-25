@@ -17,6 +17,7 @@ message Model {
   ModelSpec modelSpec = 2;
   DeploymentSpec deploymentSpec = 3;
   StreamSpec streamSpec = 4;
+  DataflowSpec dataflowSpec = 5;
 }
 
 message MetaData {
@@ -24,6 +25,10 @@ message MetaData {
   optional string kind = 2;
   optional string version = 3;
   optional KubernetesMeta kubernetesMeta = 4; // Kubernetes specific config
+}
+
+message DataflowSpec {
+  bool cleanTopicsOnDelete = 1; // clean up the kafka topic on model delete
 }
 
 message DeploymentSpec {
@@ -322,6 +327,9 @@ message Pipeline {
   optional PipelineOutput output = 5;
   optional KubernetesMeta kubernetesMeta = 6;
   optional PipelineInput input = 7;
+  optional DataflowSpec dataflowSpec = 8; // Dataflow specific config
+  bool allowCycles = 9; // Allow cycles in the pipeline
+  uint32 maxStepRevisits = 10; // Max number of times a step can be revisited
 }
 
 message PipelineStep {

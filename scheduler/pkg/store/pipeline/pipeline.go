@@ -46,14 +46,17 @@ func (p *Pipeline) GetPreviousPipelineVersion() *PipelineVersion {
 }
 
 type PipelineVersion struct {
-	Name           string
-	Version        uint32
-	UID            string
-	Input          *PipelineInput
-	Steps          map[string]*PipelineStep
-	State          *PipelineState
-	Output         *PipelineOutput
-	KubernetesMeta *KubernetesMeta
+	Name            string
+	Version         uint32
+	UID             string
+	Input           *PipelineInput
+	Steps           map[string]*PipelineStep
+	State           *PipelineState
+	Output          *PipelineOutput
+	DataflowSepec   *DataflowSpec
+	KubernetesMeta  *KubernetesMeta
+	AllowCycles     bool
+	MaxStepRevisits uint32
 }
 
 func (pv *PipelineVersion) String() string {
@@ -134,4 +137,8 @@ type PipelineInput struct {
 	JoinWindowMs     *uint32
 	InputsJoinType   JoinType
 	TriggersJoinType JoinType
+}
+
+type DataflowSpec struct {
+	CleanTopicsOnDelete bool
 }

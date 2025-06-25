@@ -1,4 +1,8 @@
-# Azure Event Hub SASL Example
+---
+description: Learn how to integrate Seldon Core 2 with Azure Event Hub using Kafka protocol and SASL authentication for secure communication.
+---
+
+# Azure Event Hub SASL Integration
 
 > New in Seldon Core 2.5.0
 

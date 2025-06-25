@@ -1,3 +1,6 @@
+---
+---
+
 # Local Batch Inference Example
 
 This example runs you through a series of batch inference requests made to both models and pipelines running on Seldon Core locally.

@@ -1,4 +1,8 @@
-# Confluent Cloud Oauth 2.0 Example
+---
+description: Learn how to integrate Seldon Core 2 with Confluent Cloud using OAuth 2.0 authentication for secure Kafka communication.
+---
+
+# Confluent OAuth Integration
 
 > New in Seldon Core 2.7.0
 

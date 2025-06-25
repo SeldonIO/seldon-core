@@ -1,3 +1,6 @@
+---
+---
+
 # Batch Inference examples (kubernetes)
 
 Requires `mlserver` to be installed.

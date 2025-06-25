@@ -1,4 +1,9 @@
-# Seldon Config
+---
+description: Learn how to configure Seldon Core installation components using SeldonConfig resource, including component specifications, Kafka settings, and tracing configuration.
+keywords: [seldon core, kubernetes, configuration, devops, seldonconfig, kafka, tracing, microservices]
+---
+
+# SeldonConfig Resource
 
 {% hint style="info" %}
 **Note**: This section is for advanced usage where you want to define how seldon is installed in each namespace.

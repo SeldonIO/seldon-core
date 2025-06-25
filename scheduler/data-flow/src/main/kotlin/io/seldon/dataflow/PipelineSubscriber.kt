@@ -101,11 +101,22 @@ class PipelineSubscriber(
                         id = update.uid,
                         name = update.pipeline,
                         version = update.version,
+                        pipelineOutputTopic = update.pipelineOutputTopic,
+                        pipelineErrorTopic = update.pipelineErrorTopic,
+                        allowCycles = update.allowCycles,
+                        maxStepRevisits = update.maxStepRevisits,
                     )
 
                 when (update.op) {
-                    PipelineOperation.Create -> handleCreate(metadata, update.updatesList, kafkaConsumerGroupIdPrefix, namespace)
-                    PipelineOperation.Delete -> handleDelete(metadata)
+                    PipelineOperation.Create ->
+                        handleCreate(
+                            metadata,
+                            update.updatesList,
+                            update.timestamp,
+                            kafkaConsumerGroupIdPrefix,
+                            namespace,
+                        )
+                    PipelineOperation.Delete -> handleDelete(metadata, update.updatesList, update.timestamp)
                     else -> logger.warn("unrecognised pipeline operation (${update.op})")
                 }
             }
@@ -142,6 +153,7 @@ class PipelineSubscriber(
     private suspend fun handleCreate(
         metadata: PipelineMetadata,
         steps: List<PipelineStepUpdate>,
+        timestamp: Long,
         kafkaConsumerGroupIdPrefix: String,
         namespace: String,
     ) {
@@ -162,6 +174,8 @@ class PipelineSubscriber(
                         operation = PipelineOperation.Create,
                         success = true,
                         reason = previous.status.getDescription() ?: defaultReason,
+                        timestamp = timestamp,
+                        stream = name,
                     ),
                 )
                 logger.debug(
@@ -218,6 +232,8 @@ class PipelineSubscriber(
                     operation = PipelineOperation.Create,
                     success = false,
                     reason = err.getDescription() ?: "failed to initialize dataflow engine",
+                    timestamp = timestamp,
+                    stream = name,
                 ),
             )
             return
@@ -232,6 +248,8 @@ class PipelineSubscriber(
                     operation = PipelineOperation.Create,
                     success = false,
                     reason = "failed to create all pipeline steps",
+                    timestamp = timestamp,
+                    stream = name,
                 ),
             )
 
@@ -267,11 +285,17 @@ class PipelineSubscriber(
                 operation = PipelineOperation.Create,
                 success = !pipelineStatus.isError(),
                 reason = pipelineStatus.getDescription() ?: defaultReason,
+                timestamp = timestamp,
+                stream = name,
             ),
         )
     }
 
-    private suspend fun handleDelete(metadata: PipelineMetadata) {
+    private suspend fun handleDelete(
+        metadata: PipelineMetadata,
+        steps: List<PipelineStepUpdate>,
+        timestamp: Long,
+    ) {
         logger.info(
             "Delete pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
             metadata.name,
@@ -285,12 +309,24 @@ class PipelineSubscriber(
                     pipeline.stop()
                 }
             }
+
+        var pipelineError: PipelineStatus? = null
+        val errTopics = kafkaAdmin.deleteTopics(steps)
+        if (errTopics != null) {
+            pipelineError =
+                PipelineStatus.Error(null)
+                    .withException(errTopics)
+                    .withMessage("kafka streams topic deletion error")
+        }
+
         client.pipelineUpdateEvent(
             makePipelineUpdateEvent(
                 metadata = metadata,
                 operation = PipelineOperation.Delete,
-                success = true,
-                reason = "pipeline removed",
+                success = pipelineError == null,
+                reason = pipelineError?.getDescription() ?: "pipeline removed",
+                timestamp = timestamp,
+                stream = name,
             ),
         )
     }
@@ -311,6 +347,8 @@ class PipelineSubscriber(
         operation: PipelineOperation,
         success: Boolean,
         reason: String = "",
+        timestamp: Long,
+        stream: String,
     ): PipelineUpdateStatusMessage {
         return PipelineUpdateStatusMessage
             .newBuilder()
@@ -323,6 +361,8 @@ class PipelineSubscriber(
                     .setPipeline(metadata.name)
                     .setVersion(metadata.version)
                     .setUid(metadata.id)
+                    .setTimestamp(timestamp)
+                    .setStream(stream)
                     .build(),
             )
             .build()
