@@ -15,6 +15,8 @@ In the context of machine learning and Seldon Core 2, concepts provide a framewo
 
 Data-centricity is an approach that puts the management, integrity, and flow of data at the core of machine learning deployment. Rather than focusing solely on models, this approach ensures that data quality, consistency, and adaptability drive successful ML operations. In Seldon Core 2, data-centricity is embedded in every stage of the inference workflow.
 
+![Seldon Core 2 Data-Centric Approach](../images/data-centric-approach.png)
+
 | **Key Principle**          | **Description** |
 |---------------------------|---------------|
 | **Flexible Workflows**      | Core 2 supports adaptable and scalable data pathways, accommodating various *use cases and experiments*. This ensures ML pipelines remain agile, allowing you to evolve the inference logic as requirements change.. |
