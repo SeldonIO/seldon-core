@@ -1094,6 +1094,8 @@ spec:
         value: "9006"
       - name: SELDON_DRAINER_PORT
         value: "9007"
+      - name: SELDON_READINESS_PORT
+        value: "9008"
       - name: AGENT_TLS_SECRET_NAME
         value: ""
       - name: AGENT_TLS_FOLDER_PATH
@@ -1135,6 +1137,8 @@ spec:
       - containerPort: 9006
         name: metrics
         protocol: TCP
+      - containerPort: 9008
+        name: readiness-port
       resources:
         limits:
           memory: '1Gi'
@@ -1355,6 +1359,8 @@ spec:
         value: "9006"
       - name: SELDON_DRAINER_PORT
         value: "9007"
+      - name: SELDON_READINESS_PORT
+        value: "9008"
       - name: SELDON_SERVER_TYPE
         value: triton
       - name: POD_NAME
@@ -1388,6 +1394,8 @@ spec:
       - containerPort: 9006
         name: metrics
         protocol: TCP
+      - containerPort: 9008
+        name: readiness-port
       resources:
         limits:
           memory: '1Gi'

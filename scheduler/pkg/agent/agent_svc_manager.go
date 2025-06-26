@@ -55,6 +55,7 @@ type AgentServiceManager struct {
 	agentDebugService        interfaces.DependencyServiceInterface
 	modelScalingService      interfaces.DependencyServiceInterface
 	drainerService           interfaces.DependencyServiceInterface
+	readinessService         interfaces.DependencyServiceInterface
 	metrics                  metrics.AgentMetricsHandler
 	isDraining               atomic.Bool
 	criticalSubservicesReady atomic.Bool
@@ -158,6 +159,7 @@ func NewAgentServiceManager(
 	agentDebugService interfaces.DependencyServiceInterface,
 	modelScalingService interfaces.DependencyServiceInterface,
 	drainerService interfaces.DependencyServiceInterface,
+	readinessService interfaces.DependencyServiceInterface,
 	metrics metrics.AgentMetricsHandler,
 ) *AgentServiceManager {
 	opts := []grpc.CallOption{
@@ -182,6 +184,7 @@ func NewAgentServiceManager(
 		agentDebugService:     agentDebugService,
 		modelScalingService:   modelScalingService,
 		drainerService:        drainerService,
+		readinessService:      readinessService,
 		metrics:               metrics,
 		StorageManager: StorageManager{
 			ModelRepository: modelRepository,
@@ -207,6 +210,7 @@ func NewAgentServiceManager(
 		startTime:                time.Now(),
 	}
 	am.isStartup.Store(true)
+	readinessService.SetState(&am)
 
 	return &am
 }
@@ -223,6 +227,7 @@ func (am *AgentServiceManager) Ready() bool {
 
 func (am *AgentServiceManager) StartControlLoop() error {
 	logger := am.logger.WithField("func", "StartControlLoop")
+	am.readinessService.SetState(am)
 
 	if am.schedulerConn == nil {
 		err := am.createConnection()
@@ -251,6 +256,7 @@ func (am *AgentServiceManager) StartControlLoop() error {
 	for {
 		if am.stop.Load() {
 			logger.Info("Stopping")
+			am.readinessService.SetState(nil)
 			return nil
 		}
 

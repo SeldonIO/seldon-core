@@ -33,6 +33,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
 	controlplane_factory "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelserver_controlplane/factory"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/rclone"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/readyservice"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/mlserver"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton"
@@ -122,6 +123,15 @@ func main() {
 	}
 	logger.Infof("Setting log level to %s", cli.LogLevel)
 	logger.SetLevel(logIntLevel)
+
+	// Start the service responding to readiness probes early in the agent lifecycle
+	readinessService := readyservice.NewReadyService(
+		logger, uint(cli.ReadinessServicePort))
+	err = readinessService.Start()
+	if err != nil {
+		logger.WithError(err).Fatal("Failed to start readiness service, agent will never be marked as ready")
+	}
+	defer func() { _ = readinessService.Stop() }()
 
 	// Make required folders
 	//TODO handle via initContainer?
@@ -278,6 +288,7 @@ func main() {
 		agentDebugService,
 		modelScalingService,
 		drainerService,
+		readinessService,
 		promMetrics,
 	)
 

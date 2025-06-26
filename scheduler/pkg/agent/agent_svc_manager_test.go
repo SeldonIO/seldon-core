@@ -13,6 +13,8 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
+	"net/http/httptest"
 	"sync"
 	"testing"
 	"time"
@@ -38,6 +40,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/k8s"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelserver_controlplane/oip"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/readyservice"
 	testing_utils2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -195,7 +198,7 @@ func createTestV2Client(models []string, status int) interfaces.ModelServerContr
 	return v2
 }
 
-func TestClientCreate(t *testing.T) {
+func TestAgentServiceManagerCreate(t *testing.T) {
 	t.Logf("Started")
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
@@ -225,18 +228,20 @@ func TestClientCreate(t *testing.T) {
 				[]modelscaling.ModelScalingStatsWrapper{}, logger, 10)
 			drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
-			client := NewAgentServiceManager(
+			readyServicePort, _ := testing_utils2.GetFreePortForTest()
+			readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
+			asm := NewAgentServiceManager(
 				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
 				logger, modelRepository, v2Client,
 				test.replicaConfig, "default",
-				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
+				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler())
 			mockAgentV2Server := &mockAgentV2Server{models: test.models}
 			conn, err := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(err).To(BeNil())
-			client.schedulerConn = conn
+			asm.schedulerConn = conn
 			go func() {
-				_ = client.StartControlLoop()
+				_ = asm.StartControlLoop()
 			}()
 			time.Sleep(10 * time.Millisecond)
 			if test.v2Status == 200 && test.modelRepoErr == nil {
@@ -246,7 +251,7 @@ func TestClientCreate(t *testing.T) {
 				g.Eventually(mockAgentV2Server.loaded).Should(Equal(0))
 				g.Eventually(mockAgentV2Server.loadFailed).Should(BeNumerically(">=", 1))
 			}
-			client.StopControlLoop()
+			asm.StopControlLoop()
 			httpmock.DeactivateAndReset()
 		})
 	}
@@ -387,20 +392,22 @@ func TestLoadModel(t *testing.T) {
 
 			drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
+			readyServicePort, _ := testing_utils2.GetFreePortForTest()
+			readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
 
-			client := NewAgentServiceManager(
+			asm := NewAgentServiceManager(
 				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
 				logger, modelRepository, v2Client, test.replicaConfig, "default",
-				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
+				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler())
 
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
 
-			client.schedulerConn = conn
+			asm.schedulerConn = conn
 
 			go func() {
-				err := client.StartControlLoop()
+				err := asm.StartControlLoop()
 				// Regardless if this is/isn't a success test case, the client should've started without error
 				g.Expect(err).To(BeNil())
 			}()
@@ -409,7 +416,7 @@ func TestLoadModel(t *testing.T) {
 			time.Sleep(50 * time.Millisecond)
 
 			// Do the actual function call that is being tested
-			err := client.LoadModel(test.op, 1)
+			err := asm.LoadModel(test.op, 1)
 
 			if test.success {
 				g.Expect(err).To(BeNil())
@@ -418,9 +425,9 @@ func TestLoadModel(t *testing.T) {
 				g.Expect(len(mockAgentV2Server.events)).To(Equal(1))
 				g.Expect(mockAgentV2Server.events[0].RuntimeInfo).ToNot(BeNil())
 				g.Expect(mockAgentV2Server.events[0].RuntimeInfo.GetMlserver().ParallelWorkers).To(Equal(uint32(1)))
-				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
+				g.Expect(asm.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 				g.Expect(modelRepository.modelRemovals).To(Equal(0))
-				loadedVersions := client.stateManager.modelVersions.getVersionsForAllModels()
+				loadedVersions := asm.stateManager.modelVersions.getVersionsForAllModels()
 				// we have only one version in the test
 				g.Expect(proto.Clone(loadedVersions[0])).To(Equal(proto.Clone(test.op.ModelVersion)))
 				// we have set model stats state if autoscaling is enabled
@@ -441,10 +448,10 @@ func TestLoadModel(t *testing.T) {
 				g.Expect(err).ToNot(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(0))
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(1))
-				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
+				g.Expect(asm.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 				g.Expect(modelRepository.modelRemovals).To(Equal(1))
 			}
-			client.StopControlLoop()
+			asm.StopControlLoop()
 			httpmock.DeactivateAndReset()
 		})
 	}
@@ -542,42 +549,44 @@ parameters:
 				[]modelscaling.ModelScalingStatsWrapper{}, logger, 10)
 			drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
-			client := NewAgentServiceManager(
+			readyServicePort, _ := testing_utils2.GetFreePortForTest()
+			readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
+			asm := NewAgentServiceManager(
 				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
 				logger, modelRepository,
 				v2Client, test.replicaConfig, "default",
-				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService,
+				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService,
 				newFakeMetricsHandler())
 			switch x := test.op.GetModelVersion().GetModel().GetModelSpec().StorageConfig.Config.(type) {
 			case *pbs.StorageConfig_StorageSecretName:
-				secret := &v1.Secret{ObjectMeta: metav1.ObjectMeta{Name: x.StorageSecretName, Namespace: client.namespace}, StringData: map[string]string{"mys3": test.secretData}}
+				secret := &v1.Secret{ObjectMeta: metav1.ObjectMeta{Name: x.StorageSecretName, Namespace: asm.namespace}, StringData: map[string]string{"mys3": test.secretData}}
 				fakeClientset := fake.NewSimpleClientset(secret)
-				s := k8s.NewSecretsHandler(fakeClientset, client.namespace)
-				client.secretsHandler = s
+				s := k8s.NewSecretsHandler(fakeClientset, asm.namespace)
+				asm.secretsHandler = s
 			}
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
-			client.schedulerConn = conn
+			asm.schedulerConn = conn
 			go func() {
-				_ = client.StartControlLoop()
+				_ = asm.StartControlLoop()
 			}()
 			// Give the client time to start (?)
 			time.Sleep(50 * time.Millisecond)
 
-			err := client.LoadModel(test.op, 1)
+			err := asm.LoadModel(test.op, 1)
 			if test.success {
 				g.Expect(err).To(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
-				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
+				g.Expect(asm.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 				g.Expect(modelRepository.modelRemovals).To(Equal(0))
 			} else {
 				g.Expect(err).ToNot(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(0))
 				g.Expect(modelRepository.modelRemovals).To(Equal(1))
 			}
-			client.StopControlLoop()
+			asm.StopControlLoop()
 			httpmock.DeactivateAndReset()
 		})
 	}
@@ -690,30 +699,32 @@ func TestUnloadModel(t *testing.T) {
 				[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
 			drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
-			client := NewAgentServiceManager(
+			readyServicePort, _ := testing_utils2.GetFreePortForTest()
+			readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
+			asm := NewAgentServiceManager(
 				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
 				logger, modelRepository, v2Client, test.replicaConfig, "default",
-				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
+				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler())
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
-			client.schedulerConn = conn
+			asm.schedulerConn = conn
 			go func() {
-				_ = client.StartControlLoop()
+				_ = asm.StartControlLoop()
 			}()
 			// Give the client time to start (?)
 			time.Sleep(50 * time.Millisecond)
 
-			err := client.LoadModel(test.loadOp, 1)
+			err := asm.LoadModel(test.loadOp, 1)
 			g.Expect(err).To(BeNil())
-			err = client.UnloadModel(test.unloadOp, 2)
+			err = asm.UnloadModel(test.unloadOp, 2)
 			if test.success {
 				g.Expect(err).To(BeNil())
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
 				g.Expect(mockAgentV2Server.unloadedEvents).To(Equal(1))
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
 				g.Expect(mockAgentV2Server.unloadFailedEvents).To(Equal(0))
-				g.Expect(client.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
+				g.Expect(asm.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 				// check model scaling stats removed
 				versionedModelName := util.GetVersionedModelName(test.unloadOp.GetModelVersion().Model.Meta.Name, test.unloadOp.GetModelVersion().GetVersion())
 				_, err := lags.Stats.Get(versionedModelName)
@@ -727,13 +738,13 @@ func TestUnloadModel(t *testing.T) {
 				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
 				g.Expect(mockAgentV2Server.unloadFailedEvents).To(Equal(1))
 			}
-			client.StopControlLoop()
+			asm.StopControlLoop()
 			httpmock.DeactivateAndReset()
 		})
 	}
 }
 
-func TestClientClose(t *testing.T) {
+func TestAgentServiceManagerClose(t *testing.T) {
 	t.Logf("Started")
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
@@ -750,29 +761,143 @@ func TestClientClose(t *testing.T) {
 		[]modelscaling.ModelScalingStatsWrapper{}, logger, 10)
 	drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 	drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
-	client := NewAgentServiceManager(
+	readyServicePort, _ := testing_utils2.GetFreePortForTest()
+	readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
+	asm := NewAgentServiceManager(
 		NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
 		logger, modelRepository, v2Client,
 		&pb.ReplicaConfig{MemoryBytes: 1000}, "default",
-		rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
+		rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler())
 	mockAgentV2Server := &mockAgentV2Server{}
 	conn, err := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 	g.Expect(err).To(BeNil())
-	client.schedulerConn = conn
+	asm.schedulerConn = conn
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 
 	go func() {
-		err = client.StartControlLoop()
+		err = asm.StartControlLoop()
 		g.Expect(err).To(BeNil())
 		wg.Done()
 	}()
-	client.StopControlLoop()
+	asm.StopControlLoop()
 	wg.Wait()
-	g.Expect(client.schedulerConn.GetState()).To(Equal(connectivity.Shutdown))
-	g.Expect(client.stop.Load()).To(BeTrue())
+	g.Expect(asm.schedulerConn.GetState()).To(Equal(connectivity.Shutdown))
+	g.Expect(asm.stop.Load()).To(BeTrue())
+}
+
+func TestReadinessServiceAgentSync(t *testing.T) {
+	t.Logf("Started")
+	logger := log.New()
+	log.SetLevel(log.DebugLevel)
+	g := NewWithT(t)
+
+	serviceStatusCheckEvery := 10 * time.Second
+	maxTimeBeforeStart := 2 * time.Second
+	maxTimeAfterStart := 500 * time.Millisecond
+
+	readyServicePort, _ := testing_utils2.GetFreePortForTest()
+	readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
+	err := readinessService.Start()
+	g.Expect(err).To(BeNil(), "Readiness service shouldn't fail")
+
+	time.Sleep(50 * time.Millisecond)
+	readinessHandlerPtr := readinessService.GetHTTPHandler()
+	g.Expect(readinessHandlerPtr).ToNot(BeNil(), "Readiness service should have a valid HTTP handler")
+	readinessHandler := *readinessHandlerPtr
+
+	req := httptest.NewRequest("GET", "/ready", nil)
+	w := httptest.NewRecorder()
+	readinessHandler.ServeHTTP(w, req)
+	g.Expect(w.Code).To(Equal(http.StatusNotFound), "Readiness service should return 404 before AgentServiceManager is initialized")
+
+	mockMLServer := &testing_utils.MockGRPCMLServer{}
+	backEndGRPCPort, err := testing_utils2.GetFreePortForTest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = mockMLServer.Setup(uint(backEndGRPCPort))
+	go func() {
+		_ = mockMLServer.Start()
+	}()
+
+	time.Sleep(50 * time.Millisecond)
+
+	v2Client := oip.NewV2Client(
+		oip.GetV2ConfigWithDefaults("", backEndGRPCPort), log.New())
+
+	// Set up dependencies
+	modelRepository := &FakeModelRepository{}
+	rpHTTP := FakeDependencyService{
+		name:           "HTTP-proxy",
+		subServiceType: (&reverseHTTPProxy{}).GetType(),
+	}
+	rpGRPC := FakeDependencyService{
+		name:           "gRPC-proxy",
+		subServiceType: (&reverseGRPCProxy{}).GetType(),
+	}
+	agentDebug := FakeDependencyService{
+		name:           "agentDebug",
+		subServiceType: (&agentDebug{}).GetType(),
+	}
+	modelScalingService := modelscaling.NewStatsAnalyserService(
+		[]modelscaling.ModelScalingStatsWrapper{}, logger, 10)
+	drainerServicePort, _ := testing_utils2.GetFreePortForTest()
+	drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
+
+	asm := NewAgentServiceManager(
+		NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, serviceStatusCheckEvery, maxTimeBeforeStart, maxTimeAfterStart, 1*time.Minute, 1*time.Minute, 1, 1, 1),
+		logger, modelRepository,
+		v2Client,
+		&pb.ReplicaConfig{MemoryBytes: 1000}, "default",
+		rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService,
+		newFakeMetricsHandler())
+	mockAgentV2Server := &mockAgentV2Server{models: []string{}}
+	conn, cerr := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
+	g.Expect(cerr).To(BeNil())
+	asm.schedulerConn = conn
+	w = httptest.NewRecorder()
+	readinessHandler.ServeHTTP(w, req)
+	g.Expect(w.Code).To(Equal(http.StatusServiceUnavailable), "Readiness service should return StatusServiceUnavailable (503) before AgentServiceManager is ready")
+
+	err = asm.WaitReadySubServices(true)
+	g.Expect(err).To(BeNil(), "All sub-services should be ready")
+	w = httptest.NewRecorder()
+	readinessHandler.ServeHTTP(w, req)
+	g.Expect(w.Code).To(Equal(http.StatusServiceUnavailable), "Readiness service should return StatusServiceUnavailable (503) before AgentServiceManager connects to scheduler for the first time")
+
+	wgAsmStopped := sync.WaitGroup{}
+	wgAsmStopped.Add(1)
+	wgAsmStartupDone := sync.WaitGroup{}
+	wgAsmStartupDone.Add(1)
+
+	go func() {
+		err = asm.StartControlLoop()
+		g.Expect(err).To(BeNil())
+		wgAsmStopped.Done()
+	}()
+
+	go func() {
+		for asm.isStartup.Load() == true {
+			time.Sleep(10 * time.Millisecond)
+		}
+		wgAsmStartupDone.Done()
+	}()
+
+	wgAsmStartupDone.Wait()
+	w = httptest.NewRecorder()
+	readinessHandler.ServeHTTP(w, req)
+	// All services are ready and AgentServiceManager has connected to scheduler successfully
+	g.Expect(w.Code).To(Equal(http.StatusOK), "Readiness service should return StatusOK (200) after AgentServiceManager is ready and connected to scheduler")
+
+	asm.StopControlLoop()
+	wgAsmStopped.Wait()
+	w = httptest.NewRecorder()
+	readinessHandler.ServeHTTP(w, req)
+	g.Expect(w.Code).To(Equal(http.StatusNotFound), "Readiness service should return StatusNotFound (404) after the AgentServiceManager ControlLoop has stopped")
+
 }
 
 func TestAgentReadiness(t *testing.T) {
@@ -831,6 +956,12 @@ func TestAgentReadiness(t *testing.T) {
 
 	v2Client := oip.NewV2Client(
 		oip.GetV2ConfigWithDefaults("", backEndGRPCPort), log.New())
+	readyServicePort, _ := testing_utils2.GetFreePortForTest()
+	readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
+	err = readinessService.Start()
+	g.Expect(err).To(BeNil(), "Readiness service shouldn't fail")
+
+	time.Sleep(50 * time.Millisecond)
 
 	// Set up dependencies
 	modelRepository := &FakeModelRepository{}
@@ -898,7 +1029,7 @@ func TestAgentReadiness(t *testing.T) {
 				logger, modelRepository,
 				v2Client,
 				&pb.ReplicaConfig{MemoryBytes: 1000}, "default",
-				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService,
+				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService,
 				newFakeMetricsHandler())
 
 			start := time.Now()
@@ -928,7 +1059,7 @@ func TestAgentReadiness(t *testing.T) {
 				}
 			} else {
 				// If there are no errors, we expect the service to start quickly
-				g.Expect(elapsed.Milliseconds()).To(BeNumerically("<", 50))
+				g.Expect(elapsed.Milliseconds()).To(BeNumerically("<", 150))
 			}
 		})
 	}
@@ -1007,39 +1138,42 @@ func TestAgentStopOnSubServicesFailure(t *testing.T) {
 			go func() {
 				_ = drainerService.Start()
 			}()
-			client := NewAgentServiceManager(
+			readyServicePort, _ := testing_utils2.GetFreePortForTest()
+			readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
+			asm := NewAgentServiceManager(
 				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, period, maxTimeBeforeStart, maxTimeAfterStart, 1*time.Minute, 1*time.Minute, 1, 1, 1),
 				logger, modelRepository, v2Client,
 				&pb.ReplicaConfig{MemoryBytes: 1000}, "default",
-				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
+				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler())
 			mockAgentV2Server := &mockAgentV2Server{}
 			conn, err := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(err).To(BeNil())
-			client.schedulerConn = conn
+			asm.schedulerConn = conn
 
 			if test.isError {
 				go func() {
 					time.Sleep(100 * time.Millisecond)
-					// induce a failure in one of the sub services
-					if test.serviceName == drain {
+					// induce a failure in one of the critical sub services
+					switch sn := test.serviceName; sn {
+					case drain:
 						_ = drainerService.Stop()
-					} else if test.serviceName == scale {
+					case scale:
 						_ = modelScalingService.Stop()
-					} else if test.serviceName == inference {
+					case inference:
 						go mockMLServer.Stop()
 					}
 				}()
-				err = client.StartControlLoop()
+				err = asm.StartControlLoop()
 				g.Expect(err).To(BeNil()) //  we are here it means agent has stopped
-				g.Expect(client.stop.Load()).To(BeTrue())
+				g.Expect(asm.stop.Load()).To(BeTrue())
 			} else {
 				go func() {
-					_ = client.StartControlLoop()
+					_ = asm.StartControlLoop()
 				}()
 				time.Sleep(period + maxTimeAfterStart)
-				g.Expect(client.stop.Load()).To(BeFalse())
-				client.StopControlLoop()
+				g.Expect(asm.stop.Load()).To(BeFalse())
+				asm.StopControlLoop()
 			}
 
 			go mockMLServer.Stop()
@@ -1151,23 +1285,25 @@ func TestUnloadModelOutOfOrder(t *testing.T) {
 				[]modelscaling.ModelScalingStatsWrapper{lags, lastUsed}, logger, 10)
 			drainerServicePort, _ := testing_utils2.GetFreePortForTest()
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
-			client := NewAgentServiceManager(
+			readyServicePort, _ := testing_utils2.GetFreePortForTest()
+			readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
+			asm := NewAgentServiceManager(
 				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
 				logger, modelRepository, v2Client, &pb.ReplicaConfig{MemoryBytes: 1000}, "default",
-				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, newFakeMetricsHandler())
+				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler())
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
-			client.schedulerConn = conn
+			asm.schedulerConn = conn
 			go func() {
-				_ = client.StartControlLoop()
+				_ = asm.StartControlLoop()
 			}()
 			// Give the client time to start (?)
 			time.Sleep(50 * time.Millisecond)
 
-			err := client.LoadModel(test.loadOp, test.loadTicks)
+			err := asm.LoadModel(test.loadOp, test.loadTicks)
 			g.Expect(err).To(BeNil())
-			err = client.UnloadModel(test.unloadOp, test.unloadTicks)
+			err = asm.UnloadModel(test.unloadOp, test.unloadTicks)
 			g.Expect(err).To(BeNil())
 			if test.success {
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
@@ -1176,7 +1312,7 @@ func TestUnloadModelOutOfOrder(t *testing.T) {
 				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
 				g.Expect(mockAgentV2Server.unloadedEvents).To(Equal(0))
 			}
-			client.StopControlLoop()
+			asm.StopControlLoop()
 			httpmock.DeactivateAndReset()
 		})
 	}

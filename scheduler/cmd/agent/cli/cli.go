@@ -39,6 +39,7 @@ const (
 	envEnvoyHost                                       = "SELDON_ENVOY_HOST"
 	envEnvoyPort                                       = "SELDON_ENVOY_PORT"
 	envDrainerServicePort                              = "SELDON_DRAINER_PORT"
+	envReadinessServicePort                            = "SELDON_READINESS_PORT"
 	envModelInferenceLagThreshold                      = "SELDON_MODEL_INFERENCE_LAG_THRESHOLD"
 	envModelInactiveSecondsThreshold                   = "SELDON_MODEL_INACTIVE_SECONDS_THRESHOLD"
 	envScalingStatsPeriodSeconds                       = "SELDON_SCALING_STATS_PERIOD_SECONDS"
@@ -72,6 +73,7 @@ const (
 	flagEnvoyHost                                       = "envoy-host"
 	flagEnvoyPort                                       = "envoy-port"
 	flagDrainerServicePort                              = "drainer-port"
+	flagReadinessServicePort                            = "readiness-port"
 	flagModelInferenceLagThreshold                      = "model-inference-lag-threshold"
 	flagModelInactiveSecondsThreshold                   = "model-inactive-seconds-threshold"
 	flagScalingStatsPeriodSeconds                       = "scaling-stats-period-seconds"
@@ -95,6 +97,7 @@ const (
 	defaultEnvoyHost                                       = "0.0.0.0"
 	defaultEnvoyPort                                       = 9000
 	defaultDrainerServicePort                              = 9007
+	defaultReadinessServicePort                            = 9008
 	statsPeriodSecondsDefault                              = 5
 	lagThresholdDefault                                    = 30
 	lastUsedThresholdSecondsDefault                        = 30
@@ -141,6 +144,7 @@ var (
 	EnvoyHost                                       string
 	EnvoyPort                                       int
 	DrainerServicePort                              int
+	ReadinessServicePort                            int
 	ModelInferenceLagThreshold                      int
 	ModelInactiveSecondsThreshold                   int
 	ScalingStatsPeriodSeconds                       int
@@ -185,6 +189,7 @@ func updateFlagsFromEnv() {
 	maybeUpdateEnvoyHost()
 	maybeUpdateEnvoyPort()
 	maybeUpdateDrainerPort()
+	maybeUpdateReadinessPort()
 	maybeUpdateModelInferenceLagThreshold()
 	maybeUpdateModelInactiveSecondsThreshold()
 	maybeUpdateScalingStatsPeriodSeconds()
@@ -344,6 +349,10 @@ func maybeUpdateEnvoyPort() {
 
 func maybeUpdateDrainerPort() {
 	maybeUpdatePort(flagDrainerServicePort, envDrainerServicePort, &DrainerServicePort)
+}
+
+func maybeUpdateReadinessPort() {
+	maybeUpdatePort(flagReadinessServicePort, envReadinessServicePort, &ReadinessServicePort)
 }
 
 func maybeUpdateInferenceHttpPort() {
