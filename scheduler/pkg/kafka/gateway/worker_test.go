@@ -136,14 +136,14 @@ func TestProcessRequestRest(t *testing.T) {
 			logger := log.New()
 			tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 			g.Expect(err).To(BeNil())
-			config := &ManagerConfig{SeldonKafkaConfig: &kafka_config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
+			config := &ManagerConfig{SeldonKafkaConfig: &kafka_config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0, WorkerTimeout: DefaultWorkerTimeoutMs}
 			ic, err := NewInferKafkaHandler(logger, config, kafka.ConfigMap{}, kafka.ConfigMap{}, "dummy")
 			g.Expect(err).To(BeNil())
 			tn, err := kafka2.NewTopicNamer("default", "seldon")
 			g.Expect(err).To(BeNil())
 			iw, err := NewInferWorker(ic, logger, tp, tn)
 			g.Expect(err).To(BeNil())
-			err = iw.processRequest(context.Background(), &InferWork{modelName: "foo", msg: &kafka.Message{Value: test.data}}, util.InferTimeoutDefault)
+			err = iw.processRequest(context.Background(), &InferWork{modelName: "foo", msg: &kafka.Message{Value: test.data}}, time.Duration(config.WorkerTimeout)*time.Millisecond)
 			g.Expect(err).To(BeNil())
 			ic.Stop()
 			g.Eventually(httpmock.GetTotalCallCount).Should(Equal(1))
@@ -207,7 +207,7 @@ func createInferWorkerWithMockConn(
 	}), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	tp, err := seldontracer.NewTraceProvider("test", nil, logger)
 	g.Expect(err).To(BeNil())
-	config := &ManagerConfig{SeldonKafkaConfig: &kafka_config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: serverConfig, TraceProvider: tp, NumWorkers: 0}
+	config := &ManagerConfig{SeldonKafkaConfig: &kafka_config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: serverConfig, TraceProvider: tp, NumWorkers: 0, WorkerTimeout: DefaultWorkerTimeoutMs}
 	ic, err := NewInferKafkaHandler(logger, config, kafka.ConfigMap{}, kafka.ConfigMap{}, "dummy")
 	g.Expect(err).To(BeNil())
 	topicNamer, err := kafka2.NewTopicNamer("default", "seldon")
@@ -276,7 +276,7 @@ func TestProcessRequestGrpc(t *testing.T) {
 			g.Eventually(check).Should(BeTrue())
 			b, err := proto.Marshal(test.req)
 			g.Expect(err).To(BeNil())
-			err = iw.processRequest(context.Background(), &InferWork{modelName: "foo", msg: &kafka.Message{Value: b}}, util.InferTimeoutDefault)
+			err = iw.processRequest(context.Background(), &InferWork{modelName: "foo", msg: &kafka.Message{Value: b}}, DefaultWorkerTimeoutMs*time.Millisecond)
 			g.Expect(err).To(BeNil())
 			g.Eventually(func() int { return mockMLGrpcServer.recv }).Should(Equal(1))
 			g.Eventually(ic.producer.Len).Should(Equal(1))
@@ -301,6 +301,7 @@ func TestProcessRequest(t *testing.T) {
 		return b
 	}
 
+	InferTimeoutDefault := DefaultWorkerTimeoutMs * time.Millisecond
 	testRequest := &v2.ModelInferRequest{
 		Inputs: []*v2.ModelInferRequest_InferInputTensor{
 			{
@@ -334,7 +335,7 @@ func TestProcessRequest(t *testing.T) {
 				msg:       &kafka.Message{Value: []byte{}, Key: []byte{}},
 			},
 			grpcCalls: 1,
-			timeout:   util.InferTimeoutDefault,
+			timeout:   InferTimeoutDefault,
 		},
 		{
 			name: "empty json request",
@@ -344,7 +345,7 @@ func TestProcessRequest(t *testing.T) {
 				msg:       &kafka.Message{Value: []byte("{}"), Key: []byte{}},
 			},
 			restCalls: 1,
-			timeout:   util.InferTimeoutDefault,
+			timeout:   InferTimeoutDefault,
 		},
 		{
 			name: "json request",
@@ -354,7 +355,7 @@ func TestProcessRequest(t *testing.T) {
 				msg:       &kafka.Message{Value: []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`), Key: []byte{}},
 			},
 			restCalls: 1,
-			timeout:   util.InferTimeoutDefault,
+			timeout:   InferTimeoutDefault,
 		},
 		{
 			name: "chain json request",
@@ -364,7 +365,7 @@ func TestProcessRequest(t *testing.T) {
 				msg:       &kafka.Message{Value: []byte(`{"model_name":"iris_1","model_version":"1","id":"903964e4-2419-41ce-b5d1-3ca0c8df9e0c","parameters":null,"outputs":[{"name":"predict","shape":[1],"datatype":"INT64","parameters":null,"data":[2]}]}`), Key: []byte{}},
 			},
 			restCalls: 1,
-			timeout:   util.InferTimeoutDefault,
+			timeout:   InferTimeoutDefault,
 		},
 		{
 			name: "json request with header",
@@ -374,7 +375,7 @@ func TestProcessRequest(t *testing.T) {
 				msg:       &kafka.Message{Value: []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`), Key: []byte{}},
 			},
 			restCalls: 1,
-			timeout:   util.InferTimeoutDefault,
+			timeout:   InferTimeoutDefault,
 		},
 		{
 			name: "chain json request with header",
@@ -384,7 +385,7 @@ func TestProcessRequest(t *testing.T) {
 				msg:       &kafka.Message{Value: []byte(`{"model_name":"iris_1","model_version":"1","id":"903964e4-2419-41ce-b5d1-3ca0c8df9e0c","parameters":null,"outputs":[{"name":"predict","shape":[1],"datatype":"INT64","parameters":null,"data":[2]}]}`), Key: []byte{}},
 			},
 			restCalls: 1,
-			timeout:   util.InferTimeoutDefault,
+			timeout:   InferTimeoutDefault,
 		},
 		{
 			name: "grpc request without header",
@@ -394,7 +395,7 @@ func TestProcessRequest(t *testing.T) {
 				msg:       &kafka.Message{Value: getProtoBytes(testRequest), Key: []byte{}},
 			},
 			grpcCalls: 1,
-			timeout:   util.InferTimeoutDefault,
+			timeout:   InferTimeoutDefault,
 		},
 		{
 			name: "grpc request with header",
@@ -404,7 +405,7 @@ func TestProcessRequest(t *testing.T) {
 				msg:       &kafka.Message{Value: getProtoBytes(testRequest), Key: []byte{}},
 			},
 			grpcCalls: 1,
-			timeout:   util.InferTimeoutDefault,
+			timeout:   InferTimeoutDefault,
 		},
 		{
 			name: "chained grpc request without header",
@@ -414,7 +415,7 @@ func TestProcessRequest(t *testing.T) {
 				msg:       &kafka.Message{Value: getProtoBytes(testResponse), Key: []byte{}},
 			},
 			grpcCalls: 1,
-			timeout:   util.InferTimeoutDefault,
+			timeout:   InferTimeoutDefault,
 		},
 		{
 			name: "chained grpc request with header",
@@ -424,7 +425,7 @@ func TestProcessRequest(t *testing.T) {
 				msg:       &kafka.Message{Value: getProtoBytes(testResponse), Key: []byte{}},
 			},
 			grpcCalls: 1,
-			timeout:   util.InferTimeoutDefault,
+			timeout:   InferTimeoutDefault,
 		},
 		{
 			name: "json request with proto request header",
@@ -434,7 +435,7 @@ func TestProcessRequest(t *testing.T) {
 				msg:       &kafka.Message{Value: []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`), Key: []byte{}},
 			},
 			error:   true,
-			timeout: util.InferTimeoutDefault,
+			timeout: InferTimeoutDefault,
 		},
 		{
 			name: "json request with proto response header",
@@ -444,7 +445,7 @@ func TestProcessRequest(t *testing.T) {
 				msg:       &kafka.Message{Value: []byte(`{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}`), Key: []byte{}},
 			},
 			error:   true,
-			timeout: util.InferTimeoutDefault,
+			timeout: InferTimeoutDefault,
 		},
 		{
 			name: "grpc request with json header treated as json", // TODO maybe fail in this case as it will fail at server
@@ -454,7 +455,7 @@ func TestProcessRequest(t *testing.T) {
 				msg:       &kafka.Message{Value: getProtoBytes(testRequest), Key: []byte{}},
 			},
 			restCalls: 1,
-			timeout:   util.InferTimeoutDefault,
+			timeout:   InferTimeoutDefault,
 		},
 		{
 			name: "grpc request with header - timeout",

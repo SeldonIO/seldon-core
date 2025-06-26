@@ -159,7 +159,7 @@ func getProtoInferRequest(job *InferWork) (*v2.ModelInferRequest, error) {
 	return &ireq, nil
 }
 
-func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct{}) {
+func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct{}, inferTimeout int) {
 	for {
 		select {
 		case <-cancelChan:
@@ -167,7 +167,7 @@ func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct
 
 		case job := <-jobChan:
 			ctx := createBaseContextFromKafkaMsg(job.msg)
-			err := iw.processRequest(ctx, job, util.InferTimeoutDefault)
+			err := iw.processRequest(ctx, job, time.Duration(inferTimeout)*time.Millisecond)
 			if err != nil {
 				iw.logger.WithError(err).Errorf("Failed to process request for model %s", job.modelName)
 			}

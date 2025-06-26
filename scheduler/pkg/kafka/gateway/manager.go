@@ -46,6 +46,7 @@ type ManagerConfig struct {
 	InferenceServerConfig *InferenceServerConfig
 	TraceProvider         *seldontracer.TracerProvider
 	NumWorkers            int // infer workers
+	WorkerTimeout         int // timeout for workers in ms
 }
 
 func cloneKafkaConfigMap(m kafka.ConfigMap) kafka.ConfigMap {
