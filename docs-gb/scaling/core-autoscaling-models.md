@@ -36,7 +36,7 @@ The scale-up and scale-down logic, and it's configurability is described below:
 Based on the logic above, the scheduler will trigger model autoscaling if:
 * The model is stable (no state change in the last 5 minutes) and available.
 * The desired number of replicas is within range. Note we always have a least 1 replica of any deployed model and we rely on over commit to reduce the resources used further.
-* For scaling up, there is enough capacity for the new model replica.
+* For scaling up the model when autoscaling of the Servers is *not* set up, trigger the scale-up only if there are sufficient server replicas that can load the new model replicas.
 
 {% hint style="danger" %}
 If autoscaling models with the approach above, it is recommended to autoscale servers based on using Seldon's Server autoscaling (configured by setting `MinReplicas` and `MaxReplicas` for the Server CR - see below). Without Server autoscaling configured, the required number of servers will not necessarily spin up, even if the desired number of model replicas cannot be currently fulfilled by the current provisioned number of servers. Setting up Server Autoscaling is described in more detail below.
