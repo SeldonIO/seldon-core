@@ -24,23 +24,8 @@
   * [Integrations]
 
 ## Tutorials
- * Notebooks
-    * [Seldon Core Setup](install/seldon-core-setup.md)
-    * Prepackaged Inference server Examples
-    * Python Language Wrapper Examples
-    * Specialized Framework Examples
-    * Incubating Projects Examples
-    * Cloud Specific Examples
-    * Advanced Machine Learning Monitoring
-    * Batch Processing with Seldon Core
-    * MLOps: Scaling and Monitoring and Observability
-    * Production Configurations and Integrations
-    * AB Tests and Progressive Rollouts
-    * Complex Graph Examples
-    * Ingress
-    * Infrastructure
-    * Benchmarking and Load Tests
-    * Upgrading Examples
+ * [Notebooks](install/notebooks.md)
+    
 ## Reference
 
 ## Contributing
