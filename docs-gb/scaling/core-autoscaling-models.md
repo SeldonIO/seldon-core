@@ -23,7 +23,7 @@ spec:
   replicas: 1
 ```
 
-When the system autoscales, the initial model spec is not changed (e.g. the number of `replicas`) and therefore the user cannot reset the number of replicas back to the initial specified value without an explicit change. If only `replicas` is specified by the user, autoscaling of models is disabled and the system will have exactly the number of replicas of this model deployed regardless of inference load.
+When the system autoscales, the initial model spec is not changed (e.g. the number of `replicas`) and therefore the user cannot reset the number of replicas back to the initial specified value without an explicit change to a different value first. If only `replicas` is specified by the user, autoscaling of models is disabled and the system will have exactly the number of replicas of this model deployed regardless of inference lag.
 
 The scale-up and scale-down logic, and it's configurability is described below:
 
