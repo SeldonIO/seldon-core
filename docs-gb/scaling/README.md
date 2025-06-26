@@ -7,7 +7,7 @@ Description: This page provides an overview of the appraoches to achieving autos
 Seldon Core 2 provides multiple approaches to scaling your machine learning deployments, allowing you to optimize resource utilization and handle varying workloads efficiently. In Core 2, we separate out Models and Servers, and Servers can have multiple Models loaded on them (Multi-Model Serving). Given this, setting up autoscaling requires defining the logic by which you want to scale your Models and _then_ configuring the autoscaling of Servers such that they autoscale in a coordinated way. The following steps can be followed to set up autoscaling based on specific requirements:
 
 1. **Identify metrics** that you want to scale Models on. There are a couple of different options here:
-    1. Core 2 natively supports scaling based on **Inference Lag**, meaning the difference between incoming and outgoing requests for a model in a given period of time. This is done by configuring `minReplicas` or `maxReplicas` in the Model CRDs.
+    1. Core 2 natively supports scaling based on **Inference Lag**, meaning the difference between incoming and outgoing requests for a model in a given period of time. This is done by configuring `minReplicas` or `maxReplicas` in the Model CRDs and making sure you configure the Core 2 install with the `autoscaling.autoscalingModelEnabled` helm value set to `true` (default is `false`).
     2. Users can expose **custom or Kubernetes-native metrics**, and then target the scaling of models based on those metrics by using `HorizontalPodAutoscaler`. This requires exposing the right metrics, using the monitoring tool of your choice (e.g. Prometheus).
 
 Once the approach for Model scaling is implemented, Server scaling needs to be configured. 
