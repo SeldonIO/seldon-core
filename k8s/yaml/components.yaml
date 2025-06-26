@@ -1139,12 +1139,24 @@ spec:
         protocol: TCP
       - containerPort: 9008
         name: readiness-port
+      readinessProbe:
+        failureThreshold: 1
+        httpGet:
+          path: /ready
+          port: 9008
+        periodSeconds: 5
       resources:
         limits:
           memory: '1Gi'
         requests:
           cpu: '200m'
           memory: '1Gi'
+      startupProbe:
+        failureThreshold: 60
+        httpGet:
+          path: /ready
+          port: 9008
+        periodSeconds: 15
       volumeMounts:
       - mountPath: /mnt/agent
         name: mlserver-models
@@ -1396,12 +1408,24 @@ spec:
         protocol: TCP
       - containerPort: 9008
         name: readiness-port
+      readinessProbe:
+        failureThreshold: 1
+        httpGet:
+          path: /ready
+          port: 9008
+        periodSeconds: 5
       resources:
         limits:
           memory: '1Gi'
         requests:
           cpu: '200m'
           memory: '1Gi'
+      startupProbe:
+        failureThreshold: 60
+        httpGet:
+          path: /ready
+          port: 9008
+        periodSeconds: 15
       volumeMounts:
       - mountPath: /mnt/agent
         name: triton-models

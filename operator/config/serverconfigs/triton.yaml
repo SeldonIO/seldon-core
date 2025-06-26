@@ -109,6 +109,18 @@ spec:
           httpGet:
             port: 9007
             path: terminate
+      readinessProbe:
+        httpGet:
+          path: /ready
+          port: 9008
+        failureThreshold: 1
+        periodSeconds: 5
+      startupProbe:
+        httpGet:
+          path: /ready
+          port: 9008
+        failureThreshold: 60
+        periodSeconds: 15
       resources:
         requests:
           cpu: "500m"
