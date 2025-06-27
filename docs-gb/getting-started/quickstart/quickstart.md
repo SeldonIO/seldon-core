@@ -39,7 +39,7 @@ As part of the Core 2 installation, you will have install MLServer and Triton Se
 
 The server resource outlines attributes (dependency requirements, underlying infrastrucuture) for the runtimes that the models you deploy will run on. By default, MLServer supports the following frameworks out of the box: `alibi-detect`, `alibi-explain`, `huggingface`, `lightgbm`, `mlflow`, `python`, `sklearn`, `spark-mlib`, `xgboost`
 
-In this example, we will create a new custom MLServer that we will tag with `income-classifier-deps` under **capabilities** (see docs [here](servers.md)) in order to define which Models will be matched to this Server. In this example, we will deploy both our model (`sklearn`) and our preproccesor (`python`) on the same Server. This is done using the manifest below:
+In this example, we will create a new custom MLServer that we will tag with `income-classifier-deps` under **capabilities** (see docs [here](../../servers/servers.md) in order to define which Models will be matched to this Server. In this example, we will deploy both our model (`sklearn`) and our preproccesor (`python`) on the same Server. This is done using the manifest below:
 
 
 ```python
