@@ -436,7 +436,7 @@ pipeline_response.json()
 
 
 
-Congratulations! You have now deployed a Seldon Pipeline that exposes an endpoint for you ML application 🥳.
+Congratulations! You have now deployed a Seldon Pipeline that exposes an endpoint for you ML application 🥳. For more tutorials on how to use Core 2 for various use-cases and requirements, see [here](https://docs.seldon.ai/seldon-core-2/user-guide/examples).
 
 ## Clean Up
 
