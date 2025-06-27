@@ -39,7 +39,7 @@ As part of the Core 2 installation, you will have install MLServer and Triton Se
 
 The server resource outlines attributes (dependency requirements, underlying infrastrucuture) for the runtimes that the models you deploy will run on. By default, MLServer supports the following frameworks out of the box: `alibi-detect`, `alibi-explain`, `huggingface`, `lightgbm`, `mlflow`, `python`, `sklearn`, `spark-mlib`, `xgboost`
 
-In this example, we will create a new custom MLServer that we will tag with `income-classifier-deps` under **capabilities** (see docs [here](https://docs.seldon.ai/seldon-core-2/user-guide/servers#custom-capabilities)) in order to define which Models will be matched to this Server. In this example, we will deploy both our model (`sklearn`) and our preproccesor (`python`) on the same Server. This is done using the manifest below:
+In this example, we will create a new custom MLServer that we will tag with `income-classifier-deps` under **capabilities** (see docs [here](../../servers.md)) in order to define which Models will be matched to this Server. In this example, we will deploy both our model (`sklearn`) and our preproccesor (`python`) on the same Server. This is done using the manifest below:
 
 
 ```python
@@ -436,7 +436,7 @@ pipeline_response.json()
 
 
 
-Congratulations! You have now deployed a Seldon Pipeline that exposes an endpoint for you ML application 🥳. For more tutorials on how to use Core 2 for various use-cases and requirements, see [here](https://docs.seldon.ai/seldon-core-2/user-guide/examples).
+Congratulations! You have now deployed a Seldon Pipeline that exposes an endpoint for you ML application 🥳. For more tutorials on how to use Core 2 for various use-cases and requirements, see [here](../../examples/README.md).
 
 ## Clean Up
 
