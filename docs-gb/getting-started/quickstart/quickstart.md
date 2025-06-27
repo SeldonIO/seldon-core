@@ -31,14 +31,15 @@ As part of the Core 2 installation, you will have install MLServer and Triton Se
 !kubectl get servers -n seldon-mesh
 ```
 
-    NAME       READY   REPLICAS   LOADED MODELS   AGE
-    mlserver   True    1          0               118d
-    triton     True    1          0               118d
+    NAME              READY   REPLICAS   LOADED MODELS   AGE
+    mlserver          True    1          0               156d
+    mlserver-custom   True    1          0               38d
+    triton            True    1          0               156d
 
 
 The server resource outlines attributes (dependency requirements, underlying infrastrucuture) for the runtimes that the models you deploy will run on. By default, MLServer supports the following frameworks out of the box: `alibi-detect`, `alibi-explain`, `huggingface`, `lightgbm`, `mlflow`, `python`, `sklearn`, `spark-mlib`, `xgboost`
 
-In this example, we will create a new custom MLServer that we will tag with `income-classifier-deps` under **capabilities** in order to define which Models will be matched to this Server. In this example, we will deploy both our model (`sklearn`) and our preproccesor (`python`) on the same Server. This is done using the manifest below:
+In this example, we will create a new custom MLServer that we will tag with `income-classifier-deps` under **capabilities** (see docs [here](https://docs.seldon.ai/seldon-core-2/user-guide/servers#custom-capabilities)) in order to define which Models will be matched to this Server. In this example, we will deploy both our model (`sklearn`) and our preproccesor (`python`) on the same Server. This is done using the manifest below:
 
 
 ```python
@@ -81,6 +82,17 @@ The model artefact is currently stored in Seldon's a Google bucket - the content
     gs://seldon-models/scv2/samples/mlserver_1.4.0/income-sklearn/classifier/:
     gs://seldon-models/scv2/samples/mlserver_1.4.0/income-sklearn/classifier/model-settings.json
     gs://seldon-models/scv2/samples/mlserver_1.4.0/income-sklearn/classifier/model.joblib
+    
+    
+    Updates are available for some Google Cloud CLI components.  To install them,
+    please run:
+      $ gcloud components update
+    
+    
+    
+    To take a quick anonymous survey, run:
+      $ gcloud survey
+    
 
 
 
@@ -122,7 +134,7 @@ In order to deploy the model, we will apply the manifest to our cluster:
 !kubectl apply -f ../../../samples/quickstart/models/sklearn-income-classifier.yaml -n seldon-mesh
 ```
 
-    model.mlops.seldon.io/income-classifier unchanged
+    model.mlops.seldon.io/income-classifier created
 
 
 We now have a deployed model, with an associated endpoint.
@@ -182,7 +194,7 @@ response.json()
 
     {'model_name': 'income-classifier_1',
      'model_version': '1',
-     'id': '1c4c3814-baa2-4721-b553-ec1ee765550e',
+     'id': '626ebe8e-bc95-433f-8f5f-ef296625622a',
      'parameters': {},
      'outputs': [{'name': 'predict',
        'shape': [1, 1],
@@ -299,7 +311,7 @@ As with the ML model deployed above, we have defined `income-classifier-deps` un
 !kubectl apply -f ../../../samples/quickstart/models/preprocessor/preprocessor.yaml -n seldon-mesh
 ```
 
-    model.mlops.seldon.io/preprocessor unchanged
+    model.mlops.seldon.io/preprocessor created
 
 
 We've now deployed the prepocessing step! Let's test it out by calling the endpoint for it:
@@ -338,7 +350,7 @@ response.json()
 
     {'model_name': 'preprocessor_1',
      'model_version': '1',
-     'id': '2bb7bb8f-e774-45a3-9469-99954f49851d',
+     'id': 'b26e49d5-2a4c-488b-8dff-0df850fbed3d',
      'parameters': {},
      'outputs': [{'name': 'output',
        'shape': [1, 12],
@@ -389,7 +401,7 @@ The yaml defines two steps in a pipeline (the preprocessor and model), mapping t
 !kubectl apply -f ../../../samples/quickstart/pipelines/income-classifier-app.yaml -n seldon-mesh
 ```
 
-    pipeline.mlops.seldon.io/income-classifier-app configured
+    pipeline.mlops.seldon.io/income-classifier-app created
 
 
 
