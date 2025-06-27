@@ -1,3 +1,7 @@
+---
+description: Learn how to integrate Seldon Core 2 with Istio service mesh for traffic management and ML model deployment, including gateway configuration and virtual service setup.
+---
+
 # Istio
 
 [Istio](https://istio.io/) provides a service mesh and ingress solution.

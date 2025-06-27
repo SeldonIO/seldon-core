@@ -213,16 +213,17 @@ func CreatePipelineVersionFromProto(pipelineProto *scheduler.Pipeline) (*Pipelin
 	}
 
 	pv := &PipelineVersion{
-		Name:           pipelineProto.Name,
-		UID:            pipelineProto.Uid,
-		Version:        pipelineProto.Version,
-		Input:          input,
-		Steps:          steps,
-		State:          &PipelineState{},
-		Output:         output,
-		DataflowSepec:  dataflowSpec,
-		KubernetesMeta: kubernetesMeta,
-		AllowCycles:    pipelineProto.AllowCycles,
+		Name:            pipelineProto.Name,
+		UID:             pipelineProto.Uid,
+		Version:         pipelineProto.Version,
+		Input:           input,
+		Steps:           steps,
+		State:           &PipelineState{},
+		Output:          output,
+		DataflowSepec:   dataflowSpec,
+		KubernetesMeta:  kubernetesMeta,
+		AllowCycles:     pipelineProto.AllowCycles,
+		MaxStepRevisits: pipelineProto.MaxStepRevisits,
 	}
 	// Ensure we have a UID
 	if pv.UID == "" {

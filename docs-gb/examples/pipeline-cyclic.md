@@ -249,6 +249,7 @@ metadata:
   name: counter-pipeline
 spec:
   allowCycles: true
+  maxStepRevisits: 100
   steps:
   - name: counter
     inputsJoinType: any
@@ -272,7 +273,7 @@ spec:
     - identity-output.outputs
 ```
 
-**Note**: that the `joinWindowMs` parameter is set to 1 millisecond for both the identity loop and identity output models. This setting is essential to prevent infinite loops caused by the join interval behavior in Kafka Streams.
+**Note**: that the `joinWindowMs` parameter is set to 1 millisecond for both the identity loop and identity output models. This setting is essential to prevent messages from different iterations from being joined (e.g., a message from iteration `t` being joined with messages from iterations `t-1, t-2, ..., 1`). Additionally, we limit the number of step revisits to 100 — the maximum number of times the pipeline can revisit a step during execution. While our pipeline behaves deterministically and is guaranteed to terminate, this parameter is especially useful in cyclic pipelines where a terminal state might not be reached (e.g., agentic workflows where control flow is determined by an LLM). It helps safeguard against infinite loops.
 
 To deploy the pipeline, use the following command:
 

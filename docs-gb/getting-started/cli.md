@@ -1,7 +1,5 @@
 ---
-description: >-
-  Learn about installing Seldon command line tool that you can use to manage
-  Seldon Core 2 resources.
+description: Learn how to install and use the Seldon CLI tool for managing Seldon Core 2 resources in non-Kubernetes environments.
 ---
 
 # Seldon CLI

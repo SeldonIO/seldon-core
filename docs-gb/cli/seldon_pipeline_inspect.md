@@ -1,3 +1,6 @@
+---
+---
+
 ## seldon pipeline inspect
 
 inspect data in a pipeline

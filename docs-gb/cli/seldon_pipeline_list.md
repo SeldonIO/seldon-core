@@ -1,3 +1,6 @@
+---
+---
+
 ## seldon pipeline list
 
 list pipelines

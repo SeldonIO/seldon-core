@@ -1,4 +1,8 @@
-# Model
+---
+description: Learn how to deploy and manage ML models in Seldon Core using Kubernetes custom resources, including model configuration, scaling, and monitoring.
+---
+
+# Model Resource
 
 A Model is the core atomic building block. It specifies a machine learning artifact that will be loaded onto one of the running Servers. A model could be a standard machine learning inference component such as
 

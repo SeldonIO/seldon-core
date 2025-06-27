@@ -1,4 +1,8 @@
-# Usage Metrics
+---
+description: Learn how to monitor Seldon Core usage metrics, including request rates, latency, and resource utilization for models and pipelines.
+---
+
+# Usage Monitoring
 
 There are various interesting system metrics about how Seldon Core 2 is used. These metrics can be recorded **anonymously** and sent to Seldon by a lightweight, optional, stand-alone component called Hodometer.
 

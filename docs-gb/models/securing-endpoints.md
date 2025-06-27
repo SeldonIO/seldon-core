@@ -1,4 +1,8 @@
-# Securing model endpoints
+---
+description: Learn how to secure model endpoints in Seldon Core, including authentication, authorization, and TLS configuration.
+---
+
+# Securing Endpoints
 
 In enterprise use cases, you may need to control who can access the endpoints for deployed models or pipelines. You can leverage existing authentication mechanisms in your cluster or environment, such as service mesh-level controls, or use cloud provider solutions like Apigee on GCP, Amazon API Gateway on AWS, or a provider-agnostic gateway like Gravitee. Seldon Core 2 integrates with various [service meshes](../kubernetes/service-meshes/) that support these requirements. Though Seldon Core 2 is service-mesh agnostic, the example on this page demonstrates how to set up authentication and authorization to secure a model endpoint using the Istio service mesh.
 
@@ -18,7 +22,7 @@ Service meshes offer a flexible way of defining authentication and authorization
 In the following example, you can secure the endpoint such that any requests to the endpoint without the access token are denied.
 
 To secure the endpoints of a model, you need to:
-1. Create a `RequestAuthentication` resource named `ingress-jwt-auth` in the `istio-system namespace`. Replace `<OIDC_TOKEN_ISSUER>` and `<OIDC_TOKEN_ISSUER_JWKS>` with your OIDC provider’s specific issuer URL and JWKS (JSON Web Key Set) URI.
+1. Create a `RequestAuthentication` resource named `ingress-jwt-auth` in the `istio-system namespace`. Replace `<OIDC_TOKEN_ISSUER>` and `<OIDC_TOKEN_ISSUER_JWKS>` with your OIDC provider's specific issuer URL and JWKS (JSON Web Key Set) URI.
    
 ```yaml
 apiVersion: security.istio.io/v1beta1

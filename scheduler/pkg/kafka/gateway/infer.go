@@ -35,6 +35,8 @@ const (
 	pollTimeoutMillisecs        = 10000
 	DefaultNumWorkers           = 8
 	EnvVarNumWorkers            = "MODELGATEWAY_NUM_WORKERS"
+	DefaultWorkerTimeoutMs      = 2 * 60 * 1000
+	EnvVarWorkerTimeoutMs       = "MODELGATEWAY_WORKER_TIMEOUT_MS"
 	envDefaultReplicationFactor = "KAFKA_DEFAULT_REPLICATION_FACTOR"
 	envDefaultNumPartitions     = "KAFKA_DEFAULT_NUM_PARTITIONS"
 	defaultReplicationFactor    = 1
@@ -374,7 +376,7 @@ func (kc *InferKafkaHandler) Serve() {
 	jobChan := make(chan *InferWork, kc.consumerConfig.NumWorkers)
 	// Start workers
 	for i := 0; i < kc.consumerConfig.NumWorkers; i++ {
-		go kc.workers[i].Start(jobChan, cancelChan)
+		go kc.workers[i].Start(jobChan, cancelChan, kc.consumerConfig.WorkerTimeout)
 	}
 
 	for run {

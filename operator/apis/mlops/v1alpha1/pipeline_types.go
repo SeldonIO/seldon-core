@@ -62,6 +62,9 @@ type PipelineSpec struct {
 
 	// Allow cyclic pipeline
 	AllowCycles bool `json:"allowCycles,omitempty"`
+
+	// Maximum number of times a step can be revisited
+	MaxStepRevisits uint32 `json:"maxStepRevisits,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=inner;outer;any
@@ -252,14 +255,15 @@ func (p Pipeline) AsSchedulerPipeline() *scheduler.Pipeline {
 		}
 	}
 	return &scheduler.Pipeline{
-		Name:           p.GetName(),
-		Uid:            "", // ID Will be set on scheduler side. IDs don't change on k8s when updates are made so can't use it for each version
-		Input:          input,
-		Steps:          steps,
-		Output:         output,
-		DataflowSpec:   dataflowSpec,
-		KubernetesMeta: &scheduler.KubernetesMeta{Namespace: p.Namespace, Generation: p.Generation},
-		AllowCycles:    p.Spec.AllowCycles,
+		Name:            p.GetName(),
+		Uid:             "", // ID Will be set on scheduler side. IDs don't change on k8s when updates are made so can't use it for each version
+		Input:           input,
+		Steps:           steps,
+		Output:          output,
+		DataflowSpec:    dataflowSpec,
+		KubernetesMeta:  &scheduler.KubernetesMeta{Namespace: p.Namespace, Generation: p.Generation},
+		AllowCycles:     p.Spec.AllowCycles,
+		MaxStepRevisits: p.Spec.MaxStepRevisits,
 	}
 }
 

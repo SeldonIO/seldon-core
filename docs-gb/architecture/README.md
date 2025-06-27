@@ -1,3 +1,7 @@
+---
+description: Learn about the Seldon Core 2 microservice architecture, control plane and data plane components, and how these services work to provide a scalable, fault-tolerant ML model serving and management.
+---
+
 # Architecture
 
 Seldon Core 2 uses a microservice architecture where each service has limited and well-defined responsibilities working together to orchestrate scalable and fault-tolerant ML serving and management. These components communicate internally using gRPC and they can be scaled independently. Seldon Core 2 services can be split into two categories: 

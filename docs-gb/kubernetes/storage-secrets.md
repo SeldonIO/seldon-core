@@ -1,3 +1,7 @@
+---
+description: Learn how to configure storage secrets in Seldon Core 2 for secure model artifact access using Rclone, including AWS S3, GCS, and MinIO integration.
+---
+
 # Storage Secrets
 
 Inference artifacts referenced by Models can be stored in any of the storage backends supported

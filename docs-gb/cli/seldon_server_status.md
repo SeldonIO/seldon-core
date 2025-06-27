@@ -1,3 +1,6 @@
+---
+---
+
 ## seldon server status
 
 get status for server

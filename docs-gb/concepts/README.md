@@ -1,3 +1,6 @@
+---
+description: Learn how Seldon Core is different from a centralized orchestrator to a data flow architecture, enabling more efficient ML model deployment through stream processing and improved data handling.
+---
 
 In the context of machine learning and Seldon Core 2, concepts provide a framework for understanding key functionalities, architectures, and workflows within the system. Some of the key concepts in Seldon Core 2 are:
 
@@ -11,6 +14,8 @@ In the context of machine learning and Seldon Core 2, concepts provide a framewo
 ## Data-Centric MLOps
 
 Data-centricity is an approach that puts the management, integrity, and flow of data at the core of machine learning deployment. Rather than focusing solely on models, this approach ensures that data quality, consistency, and adaptability drive successful ML operations. In Seldon Core 2, data-centricity is embedded in every stage of the inference workflow.
+
+![Seldon Core 2 Data-Centric Approach](../images/data-centric-approach.png)
 
 | **Key Principle**          | **Description** |
 |---------------------------|---------------|

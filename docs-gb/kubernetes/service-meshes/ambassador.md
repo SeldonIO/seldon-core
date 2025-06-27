@@ -1,3 +1,7 @@
+---
+description: Learn how to integrate Seldon Core 2 with Ambassador for service mesh and ingress management, including REST and gRPC endpoint configuration.
+---
+
 # Ambassador
 
 [Ambassador](https://www.getambassador.io/) provides service mesh and ingress products. Our

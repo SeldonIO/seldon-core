@@ -1,3 +1,7 @@
+---
+description: Learn how to set up metrics monitoring for Seldon Core 2 using Prometheus and Grafana, including kube-prometheus installation, RBAC configuration, and PodMonitor setup.
+---
+
 # Metrics
 
 Metrics are exposed for scrapping by [Prometheus](https://prometheus.io/).

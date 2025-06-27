@@ -1,3 +1,7 @@
+---
+description: Learn how to implement drift detection in Seldon Core 2 using Alibi-Detect integration for model monitoring and batch processing.
+---
+
 # Drift Detection
 
 Drift detection models are treated as any other Model. You can run any saved

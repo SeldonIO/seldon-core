@@ -1,4 +1,8 @@
-# AWS MSK mTLS
+---
+description: Learn how to configure mutual TLS (mTLS) authentication between Seldon Core and AWS MSK for secure Kafka communication.
+---
+
+# AWS MSK mTLS Authentication
 
 Seldon will run with [AWS MSK](https://aws.amazon.com/msk/).
 

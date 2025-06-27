@@ -1,3 +1,7 @@
+---
+description: Learn how to install Seldon Core 2 and its ecosystem components using Ansible playbooks for development and testing environments.
+---
+
 # Ansible Installation
 
 {% hint style="warning" %}

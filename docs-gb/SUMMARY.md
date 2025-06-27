@@ -29,12 +29,11 @@
 * [Quickstart](getting-started/quickstart/quickstart.md)
 <!-- * Getting Started -->
 <!-- * Deploy Model (OIP+MLServer Link) -->
-<!-- * Pipeline -->
 <!-- * Inference Server -->
 <!-- * Run Inference -->
 * [Kubernetes Resources](kubernetes/resources/README.md) 
-* [Servers](servers.md)
-    * [Resource allocation](resource-allocation/README.md)
+* [Servers](servers/servers.md)
+    * [Resource allocation](servers/resource-allocation.md)
       * [Example: Serving models on dedicated GPU nodes](resource-allocation/example-serving-models-on-dedicated-gpu-nodes.md)
 * [Models](models/README.md)
     <!--  
@@ -57,15 +56,18 @@
     * [OIP](apis/inference/v2.md)
     * [Batch](examples/batch-examples-k8s.md) and (examples/batch-examples-local.md)
 * [Pipelines](pipelines.md)
-* [Scaling](kubernetes/scaling.md)
-  <!-- 
-  * Server Scaling
-  * Component Scaling -->
-  * [Model Autoscaling](kubernetes/autoscaling.md)
-  * [Server Autoscaling](kubernetes/server-autoscaling.md)
+* [Autoscaling](scaling/README.md)
+  * [Seldon Core Autoscaling](scaling/core-autoscaling.md)
+    * [Autoscaling Models](scaling/core-autoscaling-models.md)
+    * [Autoscaling Servers](scaling/core-autoscaling-servers.md)
+  * [Using HPA for Autoscaling](scaling/hpa-overview.md)
+    * [Exposing Metrics for HPA](scaling/hpa-setup.md)
+    * [Model Autoscaling with HPA](scaling/model-hpa-autoscaling.md)
+    * [Model and Server Autoscaling with HPA](scaling/single-model-serving-hpa.md)
+  * [Scaling Seldon Services](scaling/scaling-core-services.md)
+
   <!--
   * Multi-Component Serving and Overcommit -->
-  * [HPA Autoscaling in single-model serving](kubernetes/hpa-rps-autoscaling.md)
 * Data Science Monitoring
     * [Dataflow with Kafka](architecture/dataflow.md)
     <!-- * Request & Response Logging  -->
@@ -80,8 +82,16 @@
     * [Local Metrics](operational-monitoring/local-metrics-test.md)
     * [Tracing](kubernetes/tracing.md)
     <!-- * Kubernetes Metrics -->
-    <!--
-    * Performance Tuning -->
+    
+* [Performance Tuning](performance-tuning/readme.md)
+    * [Models](performance-tuning/models/README.md)
+        * [Load Testing](performance-tuning/models/load-testing.md)
+        * [Inference](performance-tuning/models/inference.md)
+        * [Infrastructure Setup](performance-tuning/models/infrastructure-setup.md)
+    * [Pipelines](performance-tuning/pipelines/README.md)
+        * [Testing Pipelines](performance-tuning/pipelines/testing-pipelines.md)
+        * [Core 2 Configuration](performance-tuning/pipelines/core-2-configuration.md)
+
 <!--    
 * Rollouts & Experiments
     * Rollout Strategies
@@ -185,10 +195,12 @@
 <!--    
 * Reference
     * Glossary -->
+* [Seldon Docs Home](https://docs.seldon.ai/home)
 * [FAQs](faqs.md)         
- 
 * [Development](development/README.md)
   * [License](development/licenses.md)
   * [Release](development/release.md)
 * [Release Notes](https://github.com/SeldonIO/seldon-core/releases/tag/v2.9.0)
+
+
 

@@ -14,6 +14,7 @@ import io.seldon.dataflow.hashutils.HashUtils
 import io.seldon.dataflow.withException
 import io.seldon.dataflow.withMessage
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate
+import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.KafkaStreams.State
 import org.apache.kafka.streams.KafkaStreams.StateListener
@@ -21,6 +22,7 @@ import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
+import org.apache.kafka.streams.state.Stores
 import java.util.concurrent.CountDownLatch
 import kotlin.math.floor
 import kotlin.math.log2
@@ -32,6 +34,10 @@ data class PipelineMetadata(
     val id: PipelineId,
     val name: String,
     val version: Int,
+    val pipelineOutputTopic: String,
+    val pipelineErrorTopic: String,
+    val allowCycles: Boolean,
+    val maxStepRevisits: Int,
 )
 
 class Pipeline(
@@ -172,6 +178,9 @@ class Pipeline(
                 metadata.version,
                 pipelineProperties[StreamsConfig.APPLICATION_ID_CONFIG],
             )
+            logger.info(
+                "AllowCycles: ${metadata.allowCycles}; maxStepRevisits: ${metadata.maxStepRevisits}",
+            )
             return Pipeline(metadata, topology, streamsApp, kafkaDomainParams, numSteps) to null
         }
 
@@ -180,14 +189,34 @@ class Pipeline(
             steps: List<PipelineStepUpdate>,
             kafkaDomainParams: KafkaDomainParams,
         ): Pair<Topology, Int> {
+            // Sort the steps by the sink to ensure the same
+            // order when building the topology amongst multiple
+            // replicas. The scheduler doesn't send the same message
+            // because the steps are created from iterating over a map
+            val sortedSteps = steps.sortedBy { it.sink.topicName }
             val builder = StreamsBuilder()
+
+            if (metadata.allowCycles) {
+                builder.addStateStore(
+                    Stores.keyValueStoreBuilder(
+                        Stores.inMemoryKeyValueStore(VISITING_COUNTER_STORE),
+                        Serdes.String(),
+                        Serdes.Integer(),
+                    ),
+                )
+            }
+
             val topologySteps =
-                steps
+                sortedSteps
                     .mapNotNull {
                         stepFor(
                             builder,
                             metadata.name,
                             metadata.version.toString(),
+                            metadata.pipelineOutputTopic,
+                            metadata.pipelineErrorTopic,
+                            metadata.allowCycles,
+                            metadata.maxStepRevisits,
                             it.sourcesList,
                             it.triggersList,
                             it.tensorMapList,

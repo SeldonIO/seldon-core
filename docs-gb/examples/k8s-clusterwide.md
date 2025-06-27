@@ -1,3 +1,6 @@
+---
+---
+
 # Multi-Namespace Kubernetes
 
 ```bash

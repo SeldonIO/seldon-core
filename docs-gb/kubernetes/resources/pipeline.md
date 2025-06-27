@@ -1,4 +1,8 @@
-# Pipeline
+---
+description: Learn how to create and manage ML pipelines in Seldon Core using Kubernetes custom resources, including model chaining and tensor mapping.
+---
+
+# Seldon Core Pipelines
 
 Pipelines allow one to connect flows of inference data transformed by `Model` components. A directed acyclic graph (DAG) of steps can be defined to join Models together. Each Model will need to be capable of receiving a V2 inference request and respond with a V2 inference response. An example Pipeline is shown below:
 
@@ -12,11 +16,11 @@ The output of the Pipeline is the output from the `tfsimple3` model.
 
 ## Support for Cyclic Pipelines
 
-Seldon Core 2 supports cyclic pipelines, enabling the creation of feedback loops within the inference graph. However, the cyclic pipelines should be used carefully, as incorrect configurations can lead to infinite loops or unintended behavior.
+Seldon Core 2 supports cyclic pipelines, enabling the creation of feedback loops within the inference graph. However, the cyclic pipelines should be used carefully, as incorrect configurations can lead to unintended behavior.
 
-The risk of infinite loops stems from how Kafka Streams handles stream joins. If a feedback message re-enters the pipeline within the join window and reaches a step already holding messages from a previous iteration, Kafka Streams may join messages across iterations. This can trigger unintended message propagation, potentially resulting in an unbounded flow through your Kafka topics.
+The risk of joining messages from different iterations (i.e., a message from iteration `t` might be joined with messages from `t-1, t-2, ..., 1`). If a feedback message re-enters the pipeline within the join window and reaches a step already holding messages from a previous iteration, Kafka Streams may join messages across iterations. This can trigger unintended message propagation. For more details on how Kafka Streams handles joins and the implications for feedback loops, refer to this [Confluent blog post](https://www.confluent.io/blog/crossing-streams-joins-apache-kafka/).
 
-For more details on how Kafka Streams handles joins and the implications for feedback loops, refer to this [Confluent blog post](https://www.confluent.io/blog/crossing-streams-joins-apache-kafka/).
+Seldon Core 2 provides a `maxStepRevisits` parameter in the pipeline manifest. This parameter limits the number of times a step can be revisited within a single pipeline execution. If the limit is reached, the pipeline execution will terminate, returning an error. This feature is useful in cyclic pipelines, where infinite loops might occur (e.g., in agentic workflows where control flow is determined by an LLM). It helps safeguard against unintended infinite loops. By default, the `maxStepRevisits` is set to 0 (i.e., no cycles), but you can adjust it according to your use case.
 
 To enable a cyclic pipeline, set the `allowCycles` flag in your pipeline manifest:
 ```yaml
@@ -26,6 +30,7 @@ metadata:
   name: pipeline
 spec:
   allowCycles: true
+  maxStepRevisits: 100
   ...
 ```
 
@@ -49,6 +54,9 @@ type PipelineSpec struct {
 
 	// Allow cyclic pipeline
 	AllowCycles bool `json:"allowCycles,omitempty"`
+
+	// Maximum number of times a step can be revisited
+	MaxStepRevisits uint32 `json:"maxStepRevisits,omitempty"` 
 }
 
 type DataflowSpec struct {

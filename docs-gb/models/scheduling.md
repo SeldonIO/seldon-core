@@ -1,3 +1,7 @@
+---
+description: Learn how to configure model scheduling in Seldon Core, including resource allocation, scaling policies, and deployment strategies.
+---
+
 # Model Scheduling
 
 Core 2 architecture is built around decoupling `Model` and `Server` CRs to allow for multi-model deployment, 

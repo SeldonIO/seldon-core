@@ -1,3 +1,7 @@
+---
+description: Learn how to configure multi-model serving in Seldon Core, including resource optimization and model co-location.
+---
+
 # Multi-model Serving with Overcommit
 
 ## Multi-model Serving

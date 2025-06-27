@@ -1,3 +1,7 @@
+---
+description: Learn how to implement A/B testing and model experiments in Seldon Core, including traffic splitting, version control, and real-time model switching.
+---
+
 # Experiments
 
 An Experiment defines an http traffic split between Models or Pipelines.

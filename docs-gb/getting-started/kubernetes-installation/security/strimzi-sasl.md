@@ -1,3 +1,6 @@
+---
+---
+
 # Strimzi SASL Example
 
 Create a Strimzi Kafka cluster with SASL_SSL enabled.

@@ -1,3 +1,6 @@
+---
+---
+
 # Kubernetes examples
 
 {% hint style="info" %}

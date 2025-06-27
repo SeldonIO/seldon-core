@@ -1,3 +1,7 @@
+---
+description: Learn how to create and manage ML inference pipelines in Seldon Core, including model chaining, tensor mapping, and conditional logic.
+---
+
 # Pipelines
 
 Pipelines allow models to be connected into flows of data transformations. This allows more
