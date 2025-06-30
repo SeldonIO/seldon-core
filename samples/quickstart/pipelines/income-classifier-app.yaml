@@ -1,0 +1,13 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: income-classifier-app
+spec:
+  steps:
+    - name: preprocessor
+    - name: income-classifier
+      inputs:
+      - preprocessor
+  output:
+    steps:
+    - income-classifier

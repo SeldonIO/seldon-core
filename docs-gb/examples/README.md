@@ -26,8 +26,7 @@ These steps are shown in the diagram below:
 
 ## Examples & Tutorials
 
-This section will provide some examples to allow operations with Seldon to be tested so you can run your own
-models, experiments, pipelines and explainers.
+This section will provide some examples to allow operations with Seldon to be tested so you can run your own models, experiments, pipelines and explainers.
 
 ## Getting Started Examples
 

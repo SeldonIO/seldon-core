@@ -1,0 +1,12 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  name: mlserver-custom
+spec:
+  serverConfig: mlserver
+  capabilities:
+  - income-classifier-deps
+  podSpec:
+    containers:
+    - image: seldonio/mlserver:1.6.0
+      name: mlserver

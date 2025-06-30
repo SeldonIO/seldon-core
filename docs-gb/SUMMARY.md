@@ -26,6 +26,7 @@
 * [Upgrading](upgrading.md) 
 
 ## User Guide
+* [Quickstart](getting-started/quickstart/quickstart.md)
 <!-- * Getting Started -->
 <!-- * Deploy Model (OIP+MLServer Link) -->
 <!-- * Inference Server -->
@@ -50,10 +51,8 @@
     * [Pandas Query](models/parameterized-models/pandasquery.md) 
     * [Storage Secrets](kubernetes/storage-secrets.md)
 * Inference
-    <!--
-    * [Inference Server](https://docs.seldon.io/projects/seldon-core/en/v2/contents/about/index.html#inference-servers)
-    * [Run Inference](https://docs.seldon.io/projects/seldon-core/en/v2/contents/inference/index.html)
-    -->
+    * [Inference Server](inference.md)
+    * [Run Inference](examples/inference.md)
     * [OIP](apis/inference/v2.md)
     * [Batch](examples/batch-examples-k8s.md) and (examples/batch-examples-local.md)
 * [Pipelines](pipelines.md)
@@ -149,7 +148,7 @@
 <!--
 * Troubleshooting
 * Tutorials -->
-* [Security](/getting-started/kubernetes-installation/security/index.html)
+* [Security](getting-started/kubernetes-installation/security/README.md)
 <!--
   * Authentication
   * Authorization
