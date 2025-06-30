@@ -16,11 +16,11 @@
 * [Overview of Components](overview.md)
   
 ## Configuration
-  * [Installation Parameters]
-   * [Helm Configurations](install/advanced-helm-chart-configuration.md)
-   * [Usage Reporting](install/usage-reporting.md)
-   * [Change Log](https://github.com/SeldonIO/seldon-core/tree/master/CHANGELOG.md)
-   * [Upgrading](upgrading.md)
+  * Installation Parameters
+    * [Helm Configurations](install/advanced-helm-chart-configuration.md)
+    * [Usage Reporting](install/usage-reporting.md)
+    * [Change Log](https://github.com/SeldonIO/seldon-core/tree/master/CHANGELOG.md)
+    * [Upgrading](upgrading.md)
   * [Deployments]
   * [Servers]
   * [Routing]
