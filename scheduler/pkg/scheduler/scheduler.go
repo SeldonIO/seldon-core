@@ -208,20 +208,6 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) (*coordinator.Serve
 	// we also mark the model in this case as failed to schedule so that if the infra changes in the future we can try to reschedule
 
 	// For each server filter and sort replicas and attempt schedule if enough replicas
-	var serverEvent *coordinator.ServerEventMsg
-
-	logger.Infof("model %s with desired replicas %d and minreplicas %d", modelName, desiredReplicas, minReplicas)
-
-	if desiredReplicas == 0 {
-		logger.Infof("Model %s has no desired replicas available", modelName)
-		err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), "", []*store.ServerReplica{})
-		if err != nil {
-			logger.WithError(err).Warnf("Failed to schedule model %s with 0 replicas", modelName)
-		}
-
-		return nil, nil
-	}
-
 	ok := s.findAndUpdateToServers(filteredServers, latestModel, desiredReplicas, desiredReplicas)
 	// Try to scheduler with min replicas if not enough replicas
 	okWithMinReplicas := false
@@ -233,6 +219,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) (*coordinator.Serve
 		}
 	}
 
+	var serverEvent *coordinator.ServerEventMsg
 	if !ok {
 		serverEvent = s.serverScaleUp(latestModel)
 		if !okWithMinReplicas {

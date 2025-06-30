@@ -537,30 +537,6 @@ func TestScheduler(t *testing.T) {
 			scheduledServer:   "server1",
 			scheduledReplicas: []int{1, 3},
 		},
-		{
-			name:  "replicas set to zero and min replicas is 0",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 0, 0, 4, []int{}, false, "", nil),
-			servers: []*store.ServerSnapshot{
-				{
-					Name:             "server1",
-					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"}, "server1", true, false)},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-				{
-					Name: "server2",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 200, []string{"sklearn"}, "server2", true, false), // expect schedule here
-						1: gsr(1, 200, []string{"sklearn"}, "server2", true, false), // expect schedule here
-					},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-			},
-			scheduled:         true,
-			scheduledServer:   "",
-			scheduledReplicas: nil,
-		},
 	}
 
 	newMockStore := func(model *store.ModelSnapshot, servers []*store.ServerSnapshot) *mockStore {
