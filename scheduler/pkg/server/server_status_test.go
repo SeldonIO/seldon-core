@@ -26,6 +26,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func TestModelsStatusStream(t *testing.T) {
@@ -749,11 +750,109 @@ func createTestSchedulerImpl(config SchedulerServerConfig) (*SchedulerServer, *c
 		synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)),
 		eventHub,
 	)
+
+	modelGwLoadBalancer := util.NewRingLoadBalancer(4)
 	s := NewSchedulerServer(
 		logger, schedulerStore, experimentServer, pipelineServer, scheduler,
 		eventHub, synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), config,
-		"", "", nil,
+		"", "", modelGwLoadBalancer,
 	)
 
 	return s, eventHub
+}
+
+func TestModelGwRebalance(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name              string
+		loadReq           *pb.LoadModelRequest
+		modelState        store.ModelState
+		availableReplicas uint32
+		KeepTopics        bool
+	}
+
+	tests := []test{
+		{
+			name: "rebalance model available",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			modelState:        store.ModelAvailable,
+			availableReplicas: 1,
+			KeepTopics:        false,
+		},
+		{
+			name: "rebalance model progressing",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			modelState:        store.ModelProgressing,
+			availableReplicas: 1,
+			KeepTopics:        false,
+		},
+		{
+			name: "rebalance model terminating",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			modelState:        store.ModelTerminating,
+			availableReplicas: 0,
+			KeepTopics:        false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s, _ := createTestScheduler()
+
+			// create modelgw stream
+			stream := newStubModelStatusServer(20, 0)
+			subscription := ModelSubscription{
+				name:   "dummy",
+				stream: stream,
+				fin:    make(chan bool),
+			}
+			s.modelEventStream.streams[stream] = &subscription
+			g.Expect(s.modelEventStream.streams[stream]).ToNot(BeNil())
+
+			// add stream to the load balancer
+			s.loadBalancer.AddServer(subscription.name)
+
+			// add a model to the store
+			err := s.modelStore.UpdateModel(test.loadReq)
+			g.Expect(err).To(BeNil())
+
+			// set the model to available
+			modelName := test.loadReq.Model.Meta.Name
+			model, _ := s.modelStore.GetModel(modelName)
+			model.GetLatest().SetModelState(store.ModelStatus{
+				State:             store.ModelAvailable,
+				AvailableReplicas: test.availableReplicas,
+			})
+
+			// trigger rebalance
+			s.rebalance()
+
+			var msr *pb.ModelStatusResponse
+			select {
+			case next := <-stream.msgs:
+				msr = next
+			default:
+				t.Fail()
+			}
+
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.ModelName).To(Equal(modelName))
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.AvailableReplicas).To(Equal(test.availableReplicas))
+			g.Expect(msr.KeepTopics).To(Equal(test.KeepTopics))
+		})
+	}
 }
