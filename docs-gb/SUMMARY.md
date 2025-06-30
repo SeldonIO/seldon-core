@@ -4,49 +4,41 @@
 ## Getting Started
 * [Quick Start Guide](README.md)
 * [License](LICENSE.md)
-* [Installation]
+* Installation
+    * [Install in Kubernetes](install/installation.md)
+    * [Install Locally](install/kind.md)
+    * [Install on Google Cloud](install/gcp.md)
+    * [Install on Azure](install/azure.md)
+    * [Install on AWS](install/aws.md)
 * [Community](developer/community.md)
 
 ## Concepts
-* [Overview of Components]
-    * [E2E Serving with Model Servers]
-    * [Two Types of Model Servers]
-    * [Language Wrappers]
-    * [Seldon Deployment CRD]
-    * [Seldon Core Operator]
-    * [Service Orchestrator] 
-    * [Metadata Provenance] 
-    * [Metrics with Prometheus]
-    * [Distributed Tracing with Jaeger]
-    * [So...why just not wrap my model with Flask]
-    * [Other features of Seldon Core]    
-
+* [Overview of Components](overview.md)
+  
 ## Configuration
-  * [Installation]
-  * [Deployments]
+  * Installation Parameters
+    * [Helm Configurations](install/advanced-helm-chart-configuration.md)
+    * [Usage Reporting](install/usage-reporting.md)
+    * [Change Log](https://github.com/SeldonIO/seldon-core/tree/master/CHANGELOG.md)
+    * [Upgrading](upgrading.md)
+  * Deployments
+    * [Deployment Techniques](deployments/deploying.md)
+    * [Supported API Protocols](deployments/protocols.md)
+    * [Testing Model Endpoints](deployments/serving.md)
+    * [Replica Scaling](deployments/scaling.md)
+    * [Model Metadata](deployments/metadata.md)
+    * [Budgeting Disruptions](deployments/disruption-budgets.md)
+    * [Graph Deployment Options](deployments/graph-modes.md)
+    * [AB Tests and Progerssive Rollouts](deployments/abtests.md)
+    * [Troubleshooting Deployments](deployments/troubleshooting.md)
   * [Servers]
   * [Routing]
   * [Wrappers and SDKs]
   * [Integrations]
 
 ## Tutorials
- * Notebooks
-    * Seldon Core Setup
-    * Prepackaged Inference server Examples
-    * Python Language Wrapper Examples
-    * Specialized Framework Examples
-    * Incubating Projects Examples
-    * Cloud Specific Examples
-    * Advanced Machine Learning Monitoring
-    * Batch Processing with Seldon Core
-    * MLOps: Scaling and Monitoring and Observability
-    * Production Configurations and Integrations
-    * AB Tests and Progressive Rollouts
-    * Complex Graph Examples
-    * Ingress
-    * Infrastructure
-    * Benchmarking and Load Tests
-    * Upgrading Examples
+ * [Notebooks](install/notebooks.md)
+ 
 ## Reference
 
 ## Contributing
