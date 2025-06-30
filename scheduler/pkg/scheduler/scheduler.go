@@ -213,31 +213,12 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) (*coordinator.Serve
 	logger.Infof("model %s with desired replicas %d and minreplicas %d", modelName, desiredReplicas, minReplicas)
 
 	if desiredReplicas == 0 {
-		// scale down model
-
-		server := ""
-		if latestModel.HasServer() {
-			server = latestModel.Server()
-		}
-
-		logger.Debug("Ensuring deleted model is removed")
-
-		// remove old versions of the model if they exist
-		// this is because the latest version might not have been applied properly and therefore
-		// the old version might still be dangling around
-		for _, mv := range model.Versions {
-			if mv.HasLiveReplicas() {
-				_, err := s.store.UnloadVersionModels(modelName, mv.GetVersion())
-				if err != nil {
-					logger.WithError(err).Warnf("Failed to unload model %s version %d", modelName, mv.GetVersion())
-				}
-			}
-		}
-
-		err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), server, []*store.ServerReplica{})
+		logger.Infof("Model %s has no desired replicas available", modelName)
+		err = s.store.UpdateLoadedModels(modelName, latestModel.GetVersion(), "", []*store.ServerReplica{})
 		if err != nil {
-			logger.WithError(err).WithField("server", server).Warn("Failed to unschedule model replicas from server")
+			logger.WithError(err).Warnf("Failed to schedule model %s with 0 replicas", modelName)
 		}
+
 		return nil, nil
 	}
 
