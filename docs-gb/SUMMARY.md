@@ -21,7 +21,7 @@
     * [Usage Reporting](install/usage-reporting.md)
     * [Change Log](https://github.com/SeldonIO/seldon-core/tree/master/CHANGELOG.md)
     * [Upgrading](upgrading.md)
-  * [Deployments]
+  * Deployments
     * [Deployment Techniques](deployments/deploying.md)
     * [Supported API Protocols](deployments/protocols.md)
     * [Testing Model Endpoints](deployments/serving.md)
