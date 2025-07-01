@@ -32,6 +32,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func stringPtr(s string) *string {
@@ -67,9 +68,10 @@ func TestLoadModel(t *testing.T) {
 			sync,
 			eventHub,
 		)
+		modelGwLoadBalancer := util.NewRingLoadBalancer(1)
 		s := NewSchedulerServer(
 			logger, schedulerStore, experimentServer, pipelineServer,
-			scheduler, eventHub, sync, SchedulerServerConfig{}, "", "", nil)
+			scheduler, eventHub, sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer)
 		sync.Signals(1)
 		mockAgent := &mockAgentHandler{}
 
@@ -371,9 +373,10 @@ func TestUnloadModel(t *testing.T) {
 			sync,
 			eventHub,
 		)
+		modelGwLoadBalancer := util.NewRingLoadBalancer(1)
 		s := NewSchedulerServer(
 			logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub,
-			sync, SchedulerServerConfig{}, "", "", nil)
+			sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer)
 		sync.Signals(1)
 		return s, mockAgent, eventHub
 	}
@@ -708,9 +711,10 @@ func TestServerNotify(t *testing.T) {
 			sync,
 			eventHub,
 		)
+		modelGwLoadBalancer := util.NewRingLoadBalancer(1)
 		s := NewSchedulerServer(
 			logger, schedulerStore, nil, nil, scheduler, eventHub,
-			sync, SchedulerServerConfig{}, "", "", nil)
+			sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer)
 		return s, sync
 	}
 

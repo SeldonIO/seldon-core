@@ -26,6 +26,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func TestStartServerStream(t *testing.T) {
@@ -129,8 +130,8 @@ func TestSubscribeControlPlane(t *testing.T) {
 		g.Expect(err).To(BeNil())
 
 		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10 * time.Millisecond))
-
-		s := NewSchedulerServer(logger, nil, nil, nil, nil, eventHub, sync, SchedulerServerConfig{}, "", "", nil)
+		modelGwLoadBalancer := util.NewRingLoadBalancer(1)
+		s := NewSchedulerServer(logger, nil, nil, nil, nil, eventHub, sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer)
 		sync.Signals(1)
 
 		return s
