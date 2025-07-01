@@ -109,9 +109,10 @@ type ControlPlaneStream struct {
 }
 
 type ModelSubscription struct {
-	name   string
-	stream pb.Scheduler_SubscribeModelStatusServer
-	fin    chan bool
+	name           string
+	stream         pb.Scheduler_SubscribeModelStatusServer
+	fin            chan bool
+	isModelGateway bool // Indicates if this subscription is for the model gateway
 }
 
 type ServerSubscription struct {
