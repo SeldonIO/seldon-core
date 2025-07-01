@@ -11,6 +11,7 @@ package server
 
 import (
 	"context"
+	"sort"
 	"testing"
 	"time"
 
@@ -751,7 +752,7 @@ func createTestSchedulerImpl(config SchedulerServerConfig) (*SchedulerServer, *c
 		eventHub,
 	)
 
-	modelGwLoadBalancer := util.NewRingLoadBalancer(4)
+	modelGwLoadBalancer := util.NewRingLoadBalancer(1)
 	s := NewSchedulerServer(
 		logger, schedulerStore, experimentServer, pipelineServer, scheduler,
 		eventHub, synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), config,
@@ -761,7 +762,18 @@ func createTestSchedulerImpl(config SchedulerServerConfig) (*SchedulerServer, *c
 	return s, eventHub
 }
 
-func TestModelGwRebalance(t *testing.T) {
+func createStream(name string, isModelGateway bool) (*stubModelStatusServer, *ModelSubscription) {
+	stream := newStubModelStatusServer(20, 0)
+	subscription := ModelSubscription{
+		name:           name,
+		stream:         stream,
+		fin:            make(chan bool),
+		isModelGateway: isModelGateway,
+	}
+	return stream, &subscription
+}
+
+func TestModelGwRebalanceMessage(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -810,16 +822,12 @@ func TestModelGwRebalance(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			// create a test scheduler - note it uses a load balancer with 1 partition
 			s, _ := createTestScheduler()
 
 			// create modelgw stream
-			stream := newStubModelStatusServer(20, 0)
-			subscription := ModelSubscription{
-				name:   "dummy",
-				stream: stream,
-				fin:    make(chan bool),
-			}
-			s.modelEventStream.streams[stream] = &subscription
+			stream, subscription := createStream("dummy", true)
+			s.modelEventStream.streams[stream] = subscription
 			g.Expect(s.modelEventStream.streams[stream]).ToNot(BeNil())
 
 			// add stream to the load balancer
@@ -853,6 +861,156 @@ func TestModelGwRebalance(t *testing.T) {
 			g.Expect(msr.Versions).To(HaveLen(1))
 			g.Expect(msr.Versions[0].State.AvailableReplicas).To(Equal(test.availableReplicas))
 			g.Expect(msr.KeepTopics).To(Equal(test.KeepTopics))
+		})
+	}
+}
+
+func TestModelGwRebalance(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name    string
+		loadReq *pb.LoadModelRequest
+	}
+
+	tests := []test{
+		{
+			name: "rebalance model",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// create a test scheduler - note it uses a load balancer with 1 partition
+			s, _ := createTestScheduler()
+
+			// create first modelgw stream
+			firstStream, firstSubscription := createStream("dummy", true)
+			s.modelEventStream.streams[firstStream] = firstSubscription
+			g.Expect(s.modelEventStream.streams[firstStream]).ToNot(BeNil())
+
+			// create second modelgw stream
+			secondStream, secondSubscription := createStream("dummy2", true)
+			s.modelEventStream.streams[secondStream] = secondSubscription
+			g.Expect(s.modelEventStream.streams[secondStream]).ToNot(BeNil())
+
+			// add stream to the load balancer
+			s.loadBalancer.AddServer(firstSubscription.name)
+			s.loadBalancer.AddServer(secondSubscription.name)
+
+			// add a model to the store
+			err := s.modelStore.UpdateModel(test.loadReq)
+			g.Expect(err).To(BeNil())
+
+			// set the model to available
+			modelName := test.loadReq.Model.Meta.Name
+			model, _ := s.modelStore.GetModel(modelName)
+			model.GetLatest().SetModelState(store.ModelStatus{
+				State:             store.ModelAvailable,
+				AvailableReplicas: 1,
+			})
+
+			// trigger rebalance
+			s.rebalance()
+
+			// read message from all streams
+			messages := make([]int, 0, 2)
+			for _, stream := range []*stubModelStatusServer{firstStream, secondStream} {
+				select {
+				case next := <-stream.msgs:
+					messages = append(messages, int(next.Versions[0].State.AvailableReplicas))
+				default:
+					t.Fail()
+				}
+			}
+
+			// sort messages to compare to {0, 1}
+			sort.Ints(messages)
+			g.Expect(messages).To(HaveLen(2))
+			g.Expect(messages[0]).To(Equal(0))
+			g.Expect(messages[1]).To(Equal(1))
+		})
+	}
+}
+
+func TestSendModelStatusEvent(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name    string
+		loadReq *pb.LoadModelRequest
+	}
+
+	tests := []test{
+		{
+			name: "rebalance model",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// create a test scheduler - note it uses a load balancer with 1 partition
+			s, _ := createTestScheduler()
+
+			// create operator stream
+			operatorStream, operatorSubscription := createStream("dummy_operator", false)
+			s.modelEventStream.streams[operatorStream] = operatorSubscription
+			g.Expect(s.modelEventStream.streams[operatorStream]).ToNot(BeNil())
+
+			// create first modelgw stream
+			firstMgwStream, firstMgwSubscription := createStream("dummy_mgw_1", true)
+			s.modelEventStream.streams[firstMgwStream] = firstMgwSubscription
+			g.Expect(s.modelEventStream.streams[firstMgwStream]).ToNot(BeNil())
+
+			// create second modelgw stream
+			secondMgwStream, secondMgwSubscription := createStream("dummy_mgw_2", true)
+			s.modelEventStream.streams[secondMgwStream] = secondMgwSubscription
+			g.Expect(s.modelEventStream.streams[secondMgwStream]).ToNot(BeNil())
+
+			// add modelgw streams to the load balancer
+			s.loadBalancer.AddServer(firstMgwSubscription.name)
+			s.loadBalancer.AddServer(secondMgwSubscription.name)
+
+			// add a model to the store
+			err := s.modelStore.UpdateModel(test.loadReq)
+			g.Expect(err).To(BeNil())
+
+			// set the model to available
+			modelName := test.loadReq.Model.Meta.Name
+			model, _ := s.modelStore.GetModel(modelName)
+			model.GetLatest().SetModelState(store.ModelStatus{
+				State:             store.ModelAvailable,
+				AvailableReplicas: 1,
+			})
+
+			err = s.sendModelStatusEvent(coordinator.ModelEventMsg{
+				ModelName:    modelName,
+				ModelVersion: 1,
+			})
+			g.Expect(err).To(BeNil())
+
+			// read message from all streams
+			messages := make([]*pb.ModelStatusResponse, 0, 3)
+			for _, stream := range []*stubModelStatusServer{operatorStream, firstMgwStream, secondMgwStream} {
+				select {
+				case next := <-stream.msgs:
+					messages = append(messages, next)
+				default:
+				}
+			}
+
+			// we only expect to get message from the operator and one modelgw streams
+			g.Expect(messages).To(HaveLen(2))
 		})
 	}
 }
