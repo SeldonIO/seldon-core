@@ -29,9 +29,10 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 
 	s.modelEventStream.mu.Lock()
 	s.modelEventStream.streams[stream] = &ModelSubscription{
-		name:   req.GetSubscriberName(),
-		stream: stream,
-		fin:    fin,
+		name:           req.GetSubscriberName(),
+		stream:         stream,
+		fin:            fin,
+		isModelGateway: req.IsModelGateway,
 	}
 	if req.IsModelGateway {
 		s.loadBalancer.AddServer(req.GetSubscriberName())
@@ -231,6 +232,25 @@ func (s *SchedulerServer) StopSendModelEvents() {
 	}
 }
 
+func (s *SchedulerServer) sendModelStatusEventToStreams(
+	evt coordinator.ModelEventMsg,
+	ms *pb.ModelStatusResponse,
+	streams map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription,
+) {
+	logger := s.logger.WithField("func", "sendModelStatusEventToStreams")
+	for stream, subscription := range streams {
+		hasExpired, err := sendWithTimeout(func() error { return stream.Send(ms) }, s.timeout)
+		if hasExpired {
+			// this should trigger a reconnect from the client
+			close(subscription.fin)
+			delete(s.modelEventStream.streams, stream)
+		}
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to send model status event to %s for %s", subscription.name, evt.String())
+		}
+	}
+}
+
 func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) error {
 	s.modelEventStream.mu.Lock()
 	defer s.modelEventStream.mu.Unlock()
@@ -246,17 +266,31 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 			logger.WithError(err).Errorf("Failed to create model status for model %s", evt.String())
 			return err
 		}
+
+		// find the modelgw servers that should receive this event
+		consumerBucketId := util.GetKafkaConsumerName(
+			s.consumerGroupConfig.namespace,
+			s.consumerGroupConfig.consumerGroupIdPrefix,
+			evt.ModelName,
+			modelGatewayConsumerNamePrefix,
+			s.consumerGroupConfig.maxNumConsumers,
+		)
+		servers := s.loadBalancer.GetServersForKey(consumerBucketId)
+
+		// split streams into model gateway and other streams
+		modelGwStreams := make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription)
+		otherStreams := make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription)
 		for stream, subscription := range s.modelEventStream.streams {
-			hasExpired, err := sendWithTimeout(func() error { return stream.Send(ms) }, s.timeout)
-			if hasExpired {
-				// this should trigger a reconnect from the client
-				close(subscription.fin)
-				delete(s.modelEventStream.streams, stream)
-			}
-			if err != nil {
-				logger.WithError(err).Errorf("Failed to send model status event to %s for %s", subscription.name, evt.String())
+			if !subscription.isModelGateway {
+				otherStreams[stream] = subscription
+			} else if contains(servers, subscription.name) {
+				modelGwStreams[stream] = subscription
 			}
 		}
+
+		// send to model gateway streams
+		s.sendModelStatusEventToStreams(evt, ms, modelGwStreams)
+		s.sendModelStatusEventToStreams(evt, ms, otherStreams)
 	}
 	return nil
 }
