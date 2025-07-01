@@ -170,8 +170,12 @@ func (s *SchedulerServer) rebalance() {
 		s.logger.Debugf("Servers for model %s: %v", modelName, servers)
 
 		for _, modelSubscription := range s.modelEventStream.streams {
-			s.logger.Debug("Processing model subscription for: ", modelSubscription.name)
+			if !modelSubscription.isModelGateway {
+				s.logger.Debugf("Skipping non-model gateway stream for %s", modelSubscription.name)
+				continue
+			}
 
+			s.logger.Debug("Processing model subscription for: ", modelSubscription.name)
 			server := modelSubscription.name
 			stream := modelSubscription.stream
 
