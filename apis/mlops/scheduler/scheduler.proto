@@ -135,6 +135,7 @@ message ModelStatusResponse {
   string modelName = 1;
   repeated ModelVersionStatus versions = 2;
   bool deleted = 3;
+  bool keepTopics = 4;
 }
 
 message ModelVersionStatus {
@@ -223,6 +224,7 @@ message ServerReplicaResources {
 
 message ModelSubscriptionRequest {
   string subscriberName = 1; //Name of the subscription caller
+  bool isModelGateway = 2;
 }
 
 message ModelStatusRequest {
