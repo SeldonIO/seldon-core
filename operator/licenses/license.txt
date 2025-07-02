@@ -2933,7 +2933,7 @@ compose-spec/compose-go  Apache License 2.0  https://github.com/compose-spec/com
 
    END OF TERMS AND CONDITIONS
 
-   Copyright 2013-2017 Docker, Inc.
+   Copyright 2020 The Compose Specification Authors
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -6461,7 +6461,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
-docker/go-connections  Apache License 2.0  https://github.com/docker/go-connections/blob/master/LICENSE
+docker/go-connections  Apache License 2.0  https://github.com/docker/go-connections/blob/main/LICENSE
 --------------------------------------------------------------------------------
 
                                  Apache License
