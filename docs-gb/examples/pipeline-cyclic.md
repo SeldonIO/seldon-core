@@ -43,7 +43,7 @@ For more information on triggering tensors, see the [intro to pipelines page](..
 Next, define the second model — an identity model:
 
 ```python
-import time
+import asyncio
 from mlserver.logging import logger
 from mlserver import MLModel, ModelSettings
 from mlserver.types import (
@@ -65,7 +65,7 @@ class IdentityModel(MLModel):
 
     async def predict(self, payload: InferenceRequest) -> InferenceResponse:
         if self.delay:
-            time.sleep(self.delay)
+            await asyncio.sleep(self.delay)
         
         return InferenceResponse(
             model_name=self.name,
