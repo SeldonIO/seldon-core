@@ -29,7 +29,7 @@ Seldon simplifies operational monitoring, allowing real-time ML or LLM deploym
 
 Seldon Core 2 is built for scalability, efficiency, and cost-effective ML operations, enabling you to deploy only the necessary components while maintaining agility and high performance. Its modular architecture ensures that resources are optimized, infrastructure is consolidated, and deployments remain adaptable to evolving business needs.
 
-**Scaling for Efficiency:** [scaling](./kubernetes/scaling.md) infrastructure dynamically based on demand, auto-scaling for real-time use cases while scaling to zero for on-demand workloads, preserving deployment state for seamless reactivation. By eliminating redundancy and optimizing deployments, it balances cost efficiency and performance, ensuring reliable inference at any scale.
+**Scaling for Efficiency:** [scaling](./scaling/README.md) infrastructure dynamically based on demand, auto-scaling for real-time use cases while scaling to zero for on-demand workloads, preserving deployment state for seamless reactivation. By eliminating redundancy and optimizing deployments, it balances cost efficiency and performance, ensuring reliable inference at any scale.
 
 **Consolidated Serving Infrastructure**: maximizes resource utilization with multi-model serving (MMS) and overcommit, reducing compute overhead while ensuring efficient, reliable inference.
 
