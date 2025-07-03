@@ -94,6 +94,9 @@ func TestControlPlaneEvents(t *testing.T) {
 	}
 	now := metav1.Now()
 
+	defaultScalingSpec := mlopsv1alpha1.ScalingSpec{}
+	defaultScalingSpec.Default()
+
 	tests := []test{
 		{
 			name: "with no deleted resources",
@@ -122,7 +125,9 @@ func TestControlPlaneEvents(t *testing.T) {
 						Namespace:  "default",
 						Generation: 1,
 					},
-					Spec: mlopsv1alpha1.ModelSpec{},
+					Spec: mlopsv1alpha1.ModelSpec{
+						ScalingSpec: defaultScalingSpec,
+					},
 				},
 				&mlopsv1alpha1.Model{
 					ObjectMeta: metav1.ObjectMeta{
@@ -132,7 +137,9 @@ func TestControlPlaneEvents(t *testing.T) {
 						DeletionTimestamp: &now,
 						Finalizers:        []string{constants.ModelFinalizerName},
 					},
-					Spec: mlopsv1alpha1.ModelSpec{},
+					Spec: mlopsv1alpha1.ModelSpec{
+						ScalingSpec: defaultScalingSpec,
+					},
 				},
 				&mlopsv1alpha1.Experiment{
 					ObjectMeta: metav1.ObjectMeta{
@@ -158,7 +165,9 @@ func TestControlPlaneEvents(t *testing.T) {
 						Namespace:  "default",
 						Generation: 1,
 					},
-					Spec: mlopsv1alpha1.ServerSpec{},
+					Spec: mlopsv1alpha1.ServerSpec{
+						ScalingSpec: defaultScalingSpec,
+					},
 				},
 			},
 			expected_requests_pipelines: []*scheduler.LoadPipelineRequest{
