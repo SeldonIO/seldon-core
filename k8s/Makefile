@@ -7,6 +7,8 @@ HELM_COMPONENTS_BASE := helm-charts/seldon-core-v2-setup/templates
 HELM_RUNTIME_BASE := helm-charts/seldon-core-v2-runtime/templates
 HELM_SERVERS_BASE := helm-charts/seldon-core-v2-servers/templates
 
+KUSTOMIZE_VERSION ?= v5.2.1
+
 .PHONY: create
 create: create-helm-charts create-yaml
 
@@ -45,7 +47,7 @@ set-chart-version:
 KUSTOMIZE = $(shell pwd)/bin/kustomize
 .PHONY: kustomize
 kustomize: ## Download kustomize locally if necessary.
-	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v5@v5.2.1)
+	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v5@$(KUSTOMIZE_VERSION))
 
 # go-get-tool will 'go get' any package $2 and install it to $1.
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
