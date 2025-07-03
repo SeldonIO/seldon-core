@@ -11,7 +11,6 @@ package v1alpha1
 
 import (
 	"encoding/json"
-	"reflect"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -82,8 +81,7 @@ func TestAsModelDetails(t *testing.T) {
 		modelpb *scheduler.Model
 		error   bool
 	}
-	replicas := int32(4)
-	replicas1 := int32(1)
+
 	secret := "secret"
 	modelType := "sklearn"
 	server := "server"
@@ -118,7 +116,7 @@ func TestAsModelDetails(t *testing.T) {
 					Uri: "gs://test",
 				},
 				DeploymentSpec: &scheduler.DeploymentSpec{
-					Replicas:    0,
+					Replicas:    1,
 					MinReplicas: 0,
 					MaxReplicas: 0,
 				},
@@ -140,7 +138,7 @@ func TestAsModelDetails(t *testing.T) {
 					},
 					Logger:       &LoggingSpec{},
 					Requirements: []string{"a", "b"},
-					ScalingSpec:  ScalingSpec{Replicas: &replicas},
+					ScalingSpec:  ScalingSpec{Replicas: i32(4)},
 					Server:       &server,
 					Explainer: &ExplainerSpec{
 						Type:     "anchor_tabular",
@@ -212,7 +210,7 @@ func TestAsModelDetails(t *testing.T) {
 					},
 					Logger:       &LoggingSpec{},
 					Requirements: []string{"a", "b"},
-					ScalingSpec:  ScalingSpec{Replicas: &replicas},
+					ScalingSpec:  ScalingSpec{Replicas: i32(4)},
 					Server:       &server,
 					Llm: &LlmSpec{
 						ModelRef: &llmModel,
@@ -278,7 +276,8 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					Memory: &m1,
+					Memory:      &m1,
+					ScalingSpec: ScalingSpec{Replicas: i32(1)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -313,7 +312,7 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					ScalingSpec: ScalingSpec{MinReplicas: &replicas},
+					ScalingSpec: ScalingSpec{MinReplicas: i32(4)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -347,7 +346,7 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					ScalingSpec: ScalingSpec{MaxReplicas: &replicas},
+					ScalingSpec: ScalingSpec{Replicas: i32(1), MaxReplicas: i32(4)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -381,7 +380,7 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					ScalingSpec: ScalingSpec{MinReplicas: &replicas, Replicas: &replicas1},
+					ScalingSpec: ScalingSpec{MinReplicas: i32(4), Replicas: i32(1)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -416,7 +415,7 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					ScalingSpec: ScalingSpec{Replicas: &replicas, MaxReplicas: &replicas1},
+					ScalingSpec: ScalingSpec{Replicas: i32(4), MaxReplicas: i32(1)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -463,6 +462,8 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 		expected    *ValidatedScalingSpec
 		wantErr     string
 	}
+
+	g := NewGomegaWithT(t)
 
 	tests := []test{
 		{
@@ -540,13 +541,37 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 			wantErr: "",
 		},
 		{
-			name:        "0 scaling in the model",
+			name:        "unset replica params defaults to 1",
 			replicas:    nil,
 			minReplicas: nil,
 			maxReplicas: nil,
 			expected: &ValidatedScalingSpec{
-				Replicas:    0,
+				Replicas:    1,
 				MinReplicas: 0,
+				MaxReplicas: 0,
+			},
+			wantErr: "",
+		},
+		{
+			name:        "unset replica params defaults to 1",
+			replicas:    nil,
+			minReplicas: i32(1),
+			maxReplicas: nil,
+			expected: &ValidatedScalingSpec{
+				Replicas:    1,
+				MinReplicas: 1,
+				MaxReplicas: 0,
+			},
+			wantErr: "",
+		},
+		{
+			name:        "min replica to 1 and replica to 0 should convert to min replica",
+			replicas:    i32(0),
+			minReplicas: i32(1),
+			maxReplicas: nil,
+			expected: &ValidatedScalingSpec{
+				Replicas:    1,
+				MinReplicas: 1,
 				MaxReplicas: 0,
 			},
 			wantErr: "",
@@ -568,7 +593,7 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 			minReplicas: nil,
 			maxReplicas: i32(2),
 			expected: &ValidatedScalingSpec{
-				Replicas:    0,
+				Replicas:    1,
 				MinReplicas: 0,
 				MaxReplicas: 2,
 			},
@@ -596,9 +621,7 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 				return
 			}
 
-			if reflect.DeepEqual(test.expected, scalingSpec) == false {
-				t.Errorf("GetValidatedScalingSpec() = %v, want %v", scalingSpec, test.expected)
-			}
+			g.Expect(scalingSpec).To(Equal(test.expected))
 		})
 	}
 
