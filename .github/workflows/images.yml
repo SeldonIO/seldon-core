@@ -32,7 +32,7 @@ jobs:
         run: make -C components/tls test
       - name: test-components-kafka
         run: make -C components/kafka test
-  
+
   docker:
     needs: test
     runs-on: ubuntu-latest
@@ -48,7 +48,7 @@ jobs:
           remove-docker-images: 'true'
           overprovision-lvm: 'true'
           swap-size-mb: 1024
-          
+
       - name: Checkout Git Commit
         uses: actions/checkout@v4
 
@@ -69,20 +69,20 @@ jobs:
 
       - name: Push Docker Image for Operator
         working-directory: ./operator
-        run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build docker-push
+        run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build-and-push-prod
 
       - name: Push Docker Image for Seldon Cli
         working-directory: ./operator
-        run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build-cli docker-push-cli
+        run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build-and-push-prod-cli
 
       - name: Push Docker Images for Scheduler
         working-directory: ./scheduler
-        run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build-all docker-push-all
+        run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build-and-push-prod-all
 
       - name: Push Docker Images for Hodometer
         working-directory: ./hodometer
-        run: BUILD_VERSION=${{ steps.docker-tag.outputs.value }} IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make build-hodometer-docker push-hodometer-docker
-    
+        run: BUILD_VERSION=${{ steps.docker-tag.outputs.value }} IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make build-and-push-prod-hodometer-docker
+
       - name: Push Docker Image for k6 Load Testing
         working-directory: ./tests/k6
-        run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build docker-push
+        run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build-and-push-prod

@@ -117,6 +117,14 @@ docker-build: ## Build docker image with the manager.
 docker-build-cli: ## Build docker image with seldon cli.
 	docker build -t ${IMG_CLI} -f Dockerfile.cli ..
 
+.PHONY: docker-build-and-push-prod
+docker-build-and-push-prod: ## Build operator docker image and push, including sbom.
+	docker buildx build --provenance=true -t ${IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile ..
+
+.PHONY: docker-build-and-push-prod-cli
+docker-build-and-push-prod-cli: ## Build seldon cli docker image and push, including sbom.
+	docker buildx build --provenance=true -t ${IMG_CLI} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.cli ..
+
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
 	docker push ${IMG}

@@ -119,6 +119,10 @@ docker-build-scheduler: copy-components
 docker-push-scheduler:
 	docker push ${SCHEDULER_IMG}
 
+.PHONY: docker-build-and-push-prod-scheduler
+docker-build-and-push-prod-scheduler: copy-components
+	docker buildx build --provenance=true -t ${SCHEDULER_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.scheduler ..
+
 .PHONY: copy-components
 copy-components:
 	rm -rf components-TEMP
@@ -132,6 +136,10 @@ docker-build-agent:
 docker-push-agent:
 	docker push ${AGENT_IMG}
 
+.PHONY: docker-build-and-push-prod-agent
+docker-build-and-push-prod-agent:
+	docker buildx build --provenance=true -t ${AGENT_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.agent ..
+
 .PHONY: docker-build-rclone
 docker-build-rclone:
 	docker build -t ${RCLONE_IMG} -f Dockerfile.rclone ..
@@ -139,6 +147,10 @@ docker-build-rclone:
 .PHONY: docker-push-rclone
 docker-push-rclone:
 	docker push ${RCLONE_IMG}
+
+.PHONY: docker-build-and-push-prod-rclone
+docker-build-and-push-prod-rclone:
+	docker buildx build --provenance=true -t ${RCLONE_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.rclone ..
 
 .PHONY: docker-build-modelgateway
 docker-build-modelgateway: copy-components
@@ -148,11 +160,21 @@ docker-build-modelgateway: copy-components
 docker-push-modelgateway:
 	docker push ${MODELGATEWAY_IMG}
 
+.PHONY: docker-build-and-push-prod-modelgateway
+docker-build-and-push-prod-modelgateway: copy-components
+	docker buildx build --provenance=true -t ${MODELGATEWAY_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.modelgateway ..
+
+.PHONY: docker-build-pipelinegateway
 docker-build-pipelinegateway:
 	docker build -t ${PIPELINEGATEWAY_IMG} -f Dockerfile.pipelinegateway ..
 
+.PHONY: docker-push-pipelinegateway
 docker-push-pipelinegateway:
 	docker push ${PIPELINEGATEWAY_IMG}
+
+.PHONY: docker-build-and-push-prod-pipelinegateway
+docker-build-and-push-prod-pipelinegateway:
+	docker buildx build --provenance=true -t ${PIPELINEGATEWAY_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.pipelinegateway ..
 
 .PHONY: docker-build-envoy
 docker-build-envoy:
@@ -162,6 +184,10 @@ docker-build-envoy:
 docker-push-envoy:
 	docker push ${ENVOY_IMG}
 
+.PHONY: docker-build-and-push-prod-envoy
+docker-build-and-push-prod-envoy:
+	docker buildx build --provenance=true -t ${ENVOY_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.envoy ..
+
 .PHONY: docker-build-dataflow
 docker-build-dataflow: data-flow/opentelemetry-javaagent.jar
 	docker build -t ${DATAFLOW_IMG} -f Dockerfile.dataflow ..
@@ -169,6 +195,10 @@ docker-build-dataflow: data-flow/opentelemetry-javaagent.jar
 .PHONY: docker-push-dataflow
 docker-push-dataflow:
 	docker push ${DATAFLOW_IMG}
+
+.PHONY: docker-build-and-push-prod-dataflow
+docker-build-and-push-prod-dataflow: data-flow/opentelemetry-javaagent.jar
+	docker buildx build --provenance=true -t ${DATAFLOW_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.dataflow ..
 
 .PHONY: docker-build-grafana
 docker-build-grafana:
@@ -178,12 +208,18 @@ docker-build-grafana:
 docker-push-grafana:
 	docker push ${GRAFANA_IMG}
 
+.PHONY: docker-build-and-push-prod-grafana
+docker-build-and-push-prod-grafana:
+	docker buildx build --provenance=true -t ${GRAFANA_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.grafana ..
+
 .PHONY: docker-build-all
 docker-build-all: docker-build-dataflow docker-build-agent docker-build-envoy docker-build-rclone docker-build-scheduler docker-build-modelgateway docker-build-pipelinegateway docker-build-grafana
 
 .PHONY: docker-push-all
 docker-push-all: docker-push-agent docker-push-envoy docker-push-rclone docker-push-scheduler docker-push-modelgateway docker-push-pipelinegateway docker-push-dataflow docker-push-grafana
 
+.PHONY: docker-build-and-push-prod-all
+docker-build--and-push-prod-all: docker-build-and-push-prod-dataflow docker-build-and-push-prod-agent docker-build-and-push-prod-envoy docker-build-and-push-prod-rclone docker-build-and-push-prod-scheduler docker-build-and-push-prod-modelgateway docker-build-and-push-prod-pipelinegateway docker-build-and-push-prod-grafana
 
 #####################################
 # Kind
