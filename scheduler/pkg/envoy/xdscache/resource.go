@@ -37,10 +37,9 @@ import (
 	typev3 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
-	"github.com/golang/protobuf/ptypes/duration"
-	wrappers "github.com/golang/protobuf/ptypes/wrappers"
+	duration "google.golang.org/protobuf/types/known/durationpb"
+	wrappers "google.golang.org/protobuf/types/known/wrapperspb"
 	"google.golang.org/protobuf/types/known/anypb"
-	"google.golang.org/protobuf/types/known/durationpb"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -168,7 +167,7 @@ func makeCluster(clusterName string, eps map[string]Endpoint, isGrpc bool, clien
 		}
 		return &cluster.Cluster{
 			Name:                          clusterName,
-			ConnectTimeout:                durationpb.New(5 * time.Second),
+			ConnectTimeout:                duration.New(5 * time.Second),
 			ClusterDiscoveryType:          &cluster.Cluster_Type{Type: cluster.Cluster_STRICT_DNS},
 			LbPolicy:                      cluster.Cluster_LEAST_REQUEST,
 			LoadAssignment:                makeEndpoint(clusterName, eps),
@@ -179,7 +178,7 @@ func makeCluster(clusterName string, eps map[string]Endpoint, isGrpc bool, clien
 	} else {
 		return &cluster.Cluster{
 			Name:                 clusterName,
-			ConnectTimeout:       durationpb.New(5 * time.Second),
+			ConnectTimeout:       duration.New(5 * time.Second),
 			ClusterDiscoveryType: &cluster.Cluster_Type{Type: cluster.Cluster_STRICT_DNS},
 			LbPolicy:             cluster.Cluster_LEAST_REQUEST,
 			LoadAssignment:       makeEndpoint(clusterName, eps),

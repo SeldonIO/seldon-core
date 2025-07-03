@@ -81,7 +81,7 @@ func asKubernetesMetaFromExperiment(meta *experiment.KubernetesMeta) *pb.Kuberne
 func (s *SchedulerServer) sendCurrentExperimentStatuses(stream pb.Scheduler_ExperimentStatusServer) error {
 	experiments, err := s.experimentServer.GetExperiments()
 	if err != nil {
-		return status.Errorf(codes.FailedPrecondition, err.Error())
+		return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 	}
 	for _, exp := range experiments {
 		msg := &pb.ExperimentStatusResponse{

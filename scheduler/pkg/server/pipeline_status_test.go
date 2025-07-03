@@ -163,7 +163,7 @@ func TestPipelineStatusEvents(t *testing.T) {
 					},
 				},
 			},
-			timeout: 1 * time.Millisecond,
+			timeout: 2 * time.Millisecond,
 			err:     true,
 		},
 	}
@@ -185,7 +185,7 @@ func TestPipelineStatusEvents(t *testing.T) {
 			}
 			g.Expect(s.pipelineEventStream.streams[stream]).ToNot(BeNil())
 			hub.PublishPipelineEvent(pipelineEventHandlerName, coordinator.PipelineEventMsg{
-				PipelineName: "foo", PipelineVersion: 1})
+				PipelineName: "foo", PipelineVersion: 1,})
 
 			// to allow events to propagate
 			time.Sleep(500 * time.Millisecond)

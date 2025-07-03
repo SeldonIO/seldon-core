@@ -24,7 +24,7 @@ RELEASE_TYPE ?= pre-release
 .GOLANGCILINT_VERSION := v1.63.4
 .GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint/$(.GOLANGCILINT_VERSION)
 
-${.GOLANGCILINT_PATH}/golangci-lint: 
+${.GOLANGCILINT_PATH}/golangci-lint:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
 			| sh -s -- -b ${.GOLANGCILINT_PATH} ${.GOLANGCILINT_VERSION}
 
@@ -35,7 +35,7 @@ lint: ${.GOLANGCILINT_PATH}/golangci-lint
 	${.GOLANGCILINT_PATH}/golangci-lint run --fix
 
 .PHONY: build-hodometer
-build-hodometer: test-hodometer 
+build-hodometer: test-hodometer
 	$(GO_ENV) \
 				go build -trimpath \
 				-o bin/hodometer \
@@ -74,7 +74,7 @@ clean:
 	rm bin/*
 
 .PHONY: build-hodometer-docker
-build-hodometer-docker: 
+build-hodometer-docker:
 	docker build \
 		--build-arg GIT_COMMIT=$(GIT_COMMIT) \
 		--build-arg GIT_BRANCH=$(GIT_BRANCH) \
