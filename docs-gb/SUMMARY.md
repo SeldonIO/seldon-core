@@ -31,10 +31,30 @@
     * [Graph Deployment Options](deployments/graph-modes.md)
     * [AB Tests and Progerssive Rollouts](deployments/abtests.md)
     * [Troubleshooting Deployments](deployments/troubleshooting.md)
-  * [Servers]
-  * [Routing]
-  * [Wrappers and SDKs]
-  * [Integrations]
+  * Servers
+    * [Custom Inference Servers](servers/custom.md)
+    * [Storage Initializers]
+    * [Inference Optimization](servers/optimization.md)
+    * [XGBoost Server](servers/xgboost.md)
+    * [Triton Inference Server](servers/triton.md)
+    * [SKLearn Server](servers/sklearn.md)
+    * [Tempo Server](servers/tempo.md)
+    * [MLFlow Server](servers/mlflow.md)
+    * [HuggingFace Server](servers/huggingface.md)
+    * [TensorFlow Serving](servers/tensorflow.md)
+  * Routing
+  * Wrappers and SDKs
+  * Integrations
+    * [CI/CD MLOps at Scale](integrations/cicd-mlops.md)
+    * [Payload Logging](integrations/logging.md)
+    * [Distributed Tracing with Jaeger](integrations/distributed-tracing.md)
+    * [Batch Processing](integrations/batch.md)
+    * [Stream Processing with KNative](integrations/knative_eventing.md)
+    * [Metrics with Prometheus](integrations/analytics.md)
+    * [Native Kafka Integration](integrations/kafka.md)
+    * [Model Explanations](integrations/explainers.md)
+    * [Outliner Detection](integrations/outlier_detection.md)
+    * [Drift Detection](integrations/drift_detection.md)
 
 ## Tutorials
  * [Notebooks](install/notebooks.md)
