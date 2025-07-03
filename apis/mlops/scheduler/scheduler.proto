@@ -157,6 +157,7 @@ message ModelStatus {
       ModelTerminated = 5;
       ModelTerminateFailed = 6;
       ScheduleFailed = 7;
+      ModelScaledDown = 8;
   }
   ModelState state = 1;
   string reason = 2;

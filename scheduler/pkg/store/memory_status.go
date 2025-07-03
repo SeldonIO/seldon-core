@@ -88,6 +88,8 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 			modelState = ModelFailed
 			modelReason = stats.lastFailedReason
 			modelTimestamp = stats.lastFailedStateTime
+		} else if modelVersion.GetDeploymentSpec() != nil && stats.replicasAvailable == 0 && modelVersion.GetDeploymentSpec().Replicas == 0 && modelVersion.GetDeploymentSpec().MinReplicas == 0 {
+			modelState = ModelScaledDown
 		} else if (modelVersion.GetDeploymentSpec() != nil && stats.replicasAvailable == modelVersion.GetDeploymentSpec().Replicas) || // equal to desired replicas
 			(modelVersion.GetDeploymentSpec() != nil && stats.replicasAvailable >= modelVersion.GetDeploymentSpec().MinReplicas && modelVersion.GetDeploymentSpec().MinReplicas > 0) || // min replicas is set and available replicas are greater than or equal to min replicas
 			(stats.replicasAvailable > 0 && prevModelVersion != nil && modelVersion != prevModelVersion && prevModelVersion.state.State == ModelAvailable) {

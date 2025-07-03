@@ -1392,6 +1392,24 @@ func TestUpdateModelStatus(t *testing.T) {
 			expectedTimestamp:         d1,
 		},
 		{
+			name:    "Scaled Down",
+			deleted: false,
+			modelVersion: NewModelVersion(
+				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 0}},
+				1,
+				"server",
+				map[int]ReplicaStatus{
+					0: {State: Unloaded, Reason: "", Timestamp: d1},
+				},
+				false,
+				ModelProgressing),
+			prevAvailableModelVersion: nil,
+			expectedState:             ModelScaledDown,
+			expectedAvailableReplicas: 0,
+			expectedReason:            "",
+			expectedTimestamp:         d1,
+		},
+		{
 			name:    "Progressing",
 			deleted: false,
 			modelVersion: NewModelVersion(
