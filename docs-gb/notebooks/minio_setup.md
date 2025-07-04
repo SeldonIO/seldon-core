@@ -2,7 +2,9 @@
 
 ## Helm install minio
 
+
 ```bash
+%%bash
 kubectl create ns minio-system
 helm repo add minio https://helm.min.io/
 helm install minio minio/minio \
@@ -11,13 +13,14 @@ helm install minio minio/minio \
     --namespace minio-system
 ```
 
-```bash
-kubectl rollout status deployment -n minio-system minio
+
+```python
+!kubectl rollout status deployment -n minio-system minio
 ```
 
 ## port-forward Minio to localhost
 
-In a separate terminal:
+in separate terminal:
 
 ```bash
 kubectl port-forward -n minio-system svc/minio 8090:9000
@@ -29,7 +32,9 @@ or follow instructions printed by helm
 
 Install minio using `go get`:
 
+
 ```bash
+%%bash
 GO111MODULE=on go get github.com/minio/mc
 ```
 
@@ -37,6 +42,8 @@ Or follow steps relevant to your platform from official [documentation](https://
 
 ## Configure mc client to talk to your cluster
 
+
 ```bash
+%%bash
 mc config host add minio-seldon http://localhost:8090 minioadmin minioadmin
-``` 
+```

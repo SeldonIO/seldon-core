@@ -31,13 +31,55 @@
     * [Graph Deployment Options](deployments/graph-modes.md)
     * [AB Tests and Progerssive Rollouts](deployments/abtests.md)
     * [Troubleshooting Deployments](deployments/troubleshooting.md)
-  * [Servers]
-  * [Routing]
-  * [Wrappers and SDKs]
-  * [Integrations]
+  * Servers
+    * [Custom Inference Servers](servers/custom.md)
+    * [Storage Initializers]
+    * [Inference Optimization](servers/optimization.md)
+    * [XGBoost Server](servers/xgboost.md)
+    * [Triton Inference Server](servers/triton.md)
+    * [SKLearn Server](servers/sklearn.md)
+    * [Tempo Server](servers/tempo.md)
+    * [MLFlow Server](servers/mlflow.md)
+    * [HuggingFace Server](servers/huggingface.md)
+    * [TensorFlow Serving](servers/tensorflow.md)
+  * Routing
+    * [Ingress with Istio](routing/istio.md)
+    * [Using the Istio Service Mesh](routing/istio.md#using-the-istio-service-mesh)
+    * [Ambassador Ingress](routing/ambassador.md)
+    * [OpenShift](routing/openshift.md)
+    * [Routers Including Multi armed Bandits](routing/routers.md)
+    * [Infrence Graphs](routing/inference-graph.md)
+  * Wrappers and SDKs
+    * Python Language Wrapper
+      * [Install the Seldon Core Python module](wrappers/python/python_module.md)
+      * [Creating your Python inference class](wrappers/python/python_component.md)
+      * [Create imgae S2I](wrappers/python/python_wrapping_s2i.md)
+      * [Create image with Dockerfile](wrappers/python/python_wrapping_docker.md)
+      * [Seldon Python server configuration](wrappers/python/python_server.md)
+      * [Calling the Seldon API with Seldon Python client](wrappers/python/seldon_client.md)
+      * [Python API reference]
+      * [Development Tips](wrappers/python/developer_notes.md)
+    * [Go Language Wrapper]
+    * [Java Language Wrapper](wrappers/java.md)
+    * [Nodejs Language Wrapper](wrappers/nodejs.md)
+    * [C++ Language Wrapper](wrappers/cpp.md)
+    * [R Language Wrapper](wrappers/r.md)
+
+  * Integrations
+    * [CI/CD MLOps at Scale](integrations/cicd-mlops.md)
+    * [Payload Logging](integrations/logging.md)
+    * [Distributed Tracing with Jaeger](integrations/distributed-tracing.md)
+    * [Batch Processing](integrations/batch.md)
+    * [Stream Processing with KNative](integrations/knative_eventing.md)
+    * [Metrics with Prometheus](integrations/analytics.md)
+    * [Native Kafka Integration](integrations/kafka.md)
+    * [Model Explanations](integrations/explainers.md)
+    * [Outliner Detection](integrations/outlier_detection.md)
+    * [Drift Detection](integrations/drift_detection.md)
 
 ## Tutorials
- * [Notebooks](install/notebooks.md)
+ * [Notebooks](notebooks/README.md)
+ 
  
 ## Reference
 
