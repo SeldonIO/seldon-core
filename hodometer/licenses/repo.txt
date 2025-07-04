@@ -8,7 +8,6 @@ alecthomas/kingpin
 alecthomas/units
 antlr4-go/antlr
 armon/go-socks5
-asaskevich/govalidator
 benbjohnson/clock
 beorn7/perks
 blang/semver
@@ -33,6 +32,7 @@ fatih/color
 felixge/httpsnoop
 fsnotify/fsnotify
 fxamacker/cbor
+go-jose/go-jose
 go-kit/log
 go-logfmt/logfmt
 go-logr/logr
@@ -114,6 +114,7 @@ soheilhy/cmux
 spaolacci/murmur3
 spf13/cobra
 spf13/pflag
+spiffe/go-spiffe
 stoewer/go-strcase
 stretchr/objx
 stretchr/testify
@@ -122,6 +123,7 @@ x448/float16
 xhit/go-str2duration
 xiang90/probing
 yuin/goldmark
+zeebo/errs
 https://github.com/golang/go
 go-check/check
 go-inf/inf

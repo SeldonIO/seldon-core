@@ -19,7 +19,6 @@ alecthomas/kingpin
 alecthomas/units
 antlr4-go/antlr
 armon/go-socks5
-asaskevich/govalidator
 aws/aws-sdk-go-v2
 aws/smithy-go
 bahlo/generic-list-go
@@ -222,6 +221,7 @@ soheilhy/cmux
 spaolacci/murmur3
 spf13/cobra
 spf13/pflag
+spiffe/go-spiffe
 stoewer/go-strcase
 stretchr/objx
 stretchr/testify
@@ -251,6 +251,7 @@ xiang90/probing
 xiatechs/jsonata-go
 yuin/goldmark
 yusufpapurcu/wmi
+zeebo/errs
 https://github.com/golang/go
 go-check/check
 go-inf/inf
