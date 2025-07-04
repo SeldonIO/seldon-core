@@ -29,16 +29,14 @@ linters:
   enable:
     # Sorted alphabetically.
     - errcheck
-    - exportloopref
+    - copyloopvar
     - gci
     - goimports # Also includes gofmt style formatting
     - gosimple
     - govet
     - misspell
     - staticcheck
-    - structcheck
     - typecheck
-    - varcheck
 
 linters-settings:
   errcheck:
@@ -51,3 +49,6 @@ linters-settings:
       - prefix(github.com/seldonio/seldon-core/hodometer)
   goconst:
     min-occurrences: 5
+  govet:
+    disable:
+      - printf

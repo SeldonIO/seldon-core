@@ -4,7 +4,7 @@
     name: prometheus
   when: install_prometheus | bool
 
-- name: Create Seldon Core v2 PodMonitors
+- name: Create Seldon Core 2 PodMonitors
   kubernetes.core.k8s:
     state: present
     namespace: "{{ seldon_mesh_namespace }}"

@@ -36,6 +36,15 @@ spec:
         #   "csv=results/base.gz",
         #   "scenarios/infer_constant_rate.js",
         #   ]
+        # # infer_multiple_rates
+        # args: [
+        #   "--no-teardown",
+        #   "--summary-export",
+        #   "results/base.json",
+        #   "--out",
+        #   "csv=results/base.gz",
+        #   "scenarios/infer_multiple_rates.js",
+        #   ]
         # # k8s-test-script
         # args: [
         #   "--summary-export",
@@ -61,8 +70,30 @@ spec:
         #   "scenarios/core2_qa_control_plane_ops.js",
         #   ]
         env:
+        - name: REQUEST_RATE
+          value: "20"
+        # REQUEST_RATES allows you to specify multiple target RPS values, and is
+        # used in the infer_multiple_rates scenario. The duration over which
+        # each rate is maintained is controlled via the value at the same index
+        # in the CONSTANT_RATE_DURATIONS_SECONDS variable. Rather than a sudden
+        # change in RPS, additional stages lasting 1/3rd of the duration over
+        # which the RPS is held constant are automatically introduced, and
+        # perform either a linear ramp-up or ramp-down to the next target RPS.
+        # - name: REQUEST_RATES
+        #   value: "10,70,10,50,20"
+        - name: CONSTANT_RATE_DURATION_SECONDS
+          value: "60"
+        # CONSTANT_RATE_DURATIONS_SECONDS is used in the infer_multiple_rates
+        # scenario. It specifies the duration in seconds for which each target
+        # RPS value is maintained. If the sum of the values here is S, the total
+        # duration of the test will be S + S/3 (with the latter due to the added
+        # ramp-up/ramp-down stages)
+        # - name: CONSTANT_RATE_DURATIONS_SECONDS
+        #   value: "120,120,400,120,400"
         - name: USE_KUBE_CONTROL_PLANE
           value: "true"
+        # - name: SKIP_UNLOAD_MODEL
+        #   value: "true"
         - name: SCHEDULER_ENDPOINT
           value: "${SCHEDULER_ENDPOINT}:9004"
         - name: INFER_HTTP_ITERATIONS
@@ -111,6 +142,14 @@ spec:
         # times more likely than the Create.
         # - name: MODEL_CREATE_UPDATE_DELETE_BIAS
         #   value: "1,3,1"
+        # The following two variables are used to change the model replicas while doing 
+        # data plane tests. The ENABLE_MODEL_REPLICA_CHANGE variable should be set to true
+        # to enable the model replica change. The SLEEP_BETWEEN_REPLICA_CHANGE variable
+        # should be set to the number of seconds to wait between changing the model replicas.
+        # - name: ENABLE_MODEL_REPLICA_CHANGE
+        #   value: "true"
+        # - name: SLEEP_BETWEEN_REPLICA_CHANGE
+        #   value: "10"
         - name: WARMUP
           value: "false"
         - name: GOOGLE_APPLICATION_CREDENTIALS

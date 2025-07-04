@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Seldon Core v2'
+project = 'Seldon Core 2'
 copyright = '2024 Seldon Technologies Ltd.'
 author = "Seldon Technologies Ltd"
 
@@ -66,7 +66,7 @@ exclude_patterns = []
 
 notfound_context = {
     'title': 'Not found',
-    'body': '<h1>Sorry. Seldon Core v2 page was not found!</h1><br><h4>Please use the search bar above to find what you were looking for.</h4>',
+    'body': '<h1>Sorry. Seldon Core 2 page was not found!</h1><br><h4>Please use the search bar above to find what you were looking for.</h4>',
 }
 # -- Options for HTML output -------------------------------------------------
 
@@ -76,13 +76,13 @@ notfound_context = {
 html_theme = 'sphinx_material'
 
 # Set link name generated in the top bar.
-html_title = 'Seldon Core v2'
+html_title = 'Seldon Core 2'
 
 # Material theme options (see theme.conf for more information)
 html_theme_options = {
 
     # Set the name of the project to appear in the navigation.
-    'nav_title': 'Seldon Core v2',
+    'nav_title': 'Seldon Core 2',
 
     # Set you GA account ID to enable tracking
     'google_analytics_account': 'UA-54780881-6',

@@ -42,8 +42,8 @@ func (s *SchedulerClient) LoadPipeline(ctx context.Context, pipeline *v1alpha1.P
 	_, err = grpcClient.LoadPipeline(
 		ctx,
 		&req,
-		grpc_retry.WithMax(SchedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
+		grpc_retry.WithMax(schedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
 	)
 	return s.checkErrorRetryable(pipeline.Kind, pipeline.Name, err), err
 }
@@ -62,8 +62,8 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 	_, err = grpcClient.UnloadPipeline(
 		ctx,
 		&req,
-		grpc_retry.WithMax(SchedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
+		grpc_retry.WithMax(schedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
 	)
 	if err != nil {
 		return err, s.checkErrorRetryable(pipeline.Kind, pipeline.Name, err)
@@ -74,7 +74,7 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 		scheduler.PipelineVersionState_PipelineTerminating.String(),
 		"Pipeline unload requested",
 	)
-	_ = s.updatePipelineStatusImpl(pipeline)
+	_ = s.updatePipelineStatusImpl(ctx, pipeline)
 	return nil, false
 }
 
@@ -85,25 +85,11 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 	stream, err := grpcClient.SubscribePipelineStatus(
 		ctx,
 		&scheduler.PipelineSubscriptionRequest{SubscriberName: "seldon manager"},
-		grpc_retry.WithMax(SchedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(SchedulerConnectBackoffScalar)),
+		grpc_retry.WithMax(schedulerConnectMaxRetries),
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
 	)
 	if err != nil {
 		return err
-	}
-
-	// get pipelines from the scheduler
-	// if there are no pipelines in the scheduler state then we need to create them
-	// this is likely because of the scheduler state got deleted
-	numPipelinesFromScheduler, err := getNumPipelinesFromScheduler(ctx, grpcClient)
-	if err != nil {
-		return err
-	}
-	// if there are no pipelines in the scheduler state then we need to create them if they exist in k8s
-	// also remove finalizers from pipelines that are being deleted
-	if numPipelinesFromScheduler == 0 {
-		handleLoadedPipelines(ctx, namespace, s, grpcClient)
-		handlePendingDeletePipelines(ctx, namespace, s)
 	}
 
 	for {
@@ -139,135 +125,116 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 			"State", pv.GetState().String(),
 		)
 
-		pipeline := &v1alpha1.Pipeline{}
-		err = s.Get(
-			ctx,
-			client.ObjectKey{
-				Name:      event.PipelineName,
-				Namespace: pv.GetPipeline().GetKubernetesMeta().GetNamespace(),
-			},
-			pipeline,
-		)
-		if err != nil {
-			logger.Error(
-				err,
-				"Failed to get pipeline",
-				"name", event.PipelineName,
-				"namespace", pv.GetPipeline().GetKubernetesMeta().GetNamespace(),
-			)
-			continue
-		}
+		if canRemovePipelineFinalizer(pv.State.Status) {
+			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
+				defer cancel()
 
-		if !pipeline.ObjectMeta.DeletionTimestamp.IsZero() {
-			logger.Info(
-				"Pipeline is pending deletion",
-				"pipeline", pipeline.Name,
-				"state", pv.State.Status.String(),
-			)
-			if canRemovePipelineFinalizer(pv.State.Status) {
-				retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-					latestPipeline := &v1alpha1.Pipeline{}
-					err = s.Get(
-						ctx,
-						client.ObjectKey{
-							Name:      event.PipelineName,
-							Namespace: pv.GetPipeline().GetKubernetesMeta().GetNamespace(),
-						},
-						latestPipeline,
+				latestPipeline := &v1alpha1.Pipeline{}
+				err = s.Get(
+					ctxWithTimeout,
+					client.ObjectKey{
+						Name:      event.PipelineName,
+						Namespace: pv.GetPipeline().GetKubernetesMeta().GetNamespace(),
+					},
+					latestPipeline,
+				)
+				if err != nil {
+					return err
+				}
+				if !latestPipeline.ObjectMeta.DeletionTimestamp.IsZero() { // Pipeline is being deleted
+					// remove finalizer now we have completed successfully
+					latestPipeline.ObjectMeta.Finalizers = utils.RemoveStr(
+						latestPipeline.ObjectMeta.Finalizers,
+						constants.PipelineFinalizerName,
 					)
-					if err != nil {
+					if err := s.Update(ctxWithTimeout, latestPipeline); err != nil {
+						logger.Error(err, "Failed to remove finalizer", "pipeline", latestPipeline.GetName())
 						return err
 					}
-					if !latestPipeline.ObjectMeta.DeletionTimestamp.IsZero() { // Pipeline is being deleted
-						// remove finalizer now we have completed successfully
-						latestPipeline.ObjectMeta.Finalizers = utils.RemoveStr(
-							latestPipeline.ObjectMeta.Finalizers,
-							constants.PipelineFinalizerName,
-						)
-						if err := s.Update(ctx, latestPipeline); err != nil {
-							logger.Error(err, "Failed to remove finalizer", "pipeline", latestPipeline.GetName())
-							return err
-						}
-					}
-					return nil
-				})
-				if retryErr != nil {
-					logger.Error(err, "Failed to remove finalizer after retries")
 				}
+				return nil
+			})
+			if retryErr != nil {
+				logger.Error(err, "Failed to remove finalizer after retries")
 			}
 		}
 
 		// Try to update status
-		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-			pipeline := &v1alpha1.Pipeline{}
-			err = s.Get(
-				ctx,
-				client.ObjectKey{
-					Name:      event.PipelineName,
-					Namespace: pv.GetPipeline().GetKubernetesMeta().GetNamespace(),
-				},
-				pipeline,
-			)
-			if err != nil {
-				return err
-			}
+		{
+			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
+				defer cancel()
 
-			if pv.GetPipeline().GetKubernetesMeta().GetGeneration() != pipeline.Generation {
-				logger.Info(
-					"Ignoring event for old generation",
-					"currentGeneration", pipeline.Generation,
-					"eventGeneration", pv.GetPipeline().GetKubernetesMeta().GetGeneration(),
-					"server", event.PipelineName,
+				pipeline := &v1alpha1.Pipeline{}
+				err = s.Get(
+					ctxWithTimeout,
+					client.ObjectKey{
+						Name:      event.PipelineName,
+						Namespace: pv.GetPipeline().GetKubernetesMeta().GetNamespace(),
+					},
+					pipeline,
 				)
-				return nil
-			}
+				if err != nil {
+					return err
+				}
 
-			// Handle status update
-			switch pv.State.Status {
-			case scheduler.PipelineVersionState_PipelineReady:
-				logger.Info(
-					"Setting pipeline to ready",
-					"pipeline", pipeline.Name,
-					"generation", pipeline.Generation,
-				)
-				pipeline.Status.CreateAndSetCondition(
-					v1alpha1.PipelineReady,
-					true,
-					pv.State.Reason,
-					pv.State.Status.String(),
-				)
-			default:
-				logger.Info(
-					"Setting pipeline to not ready",
-					"pipeline", pipeline.Name,
-					"generation", pipeline.Generation,
-				)
-				pipeline.Status.CreateAndSetCondition(
-					v1alpha1.PipelineReady,
-					false,
-					pv.State.Reason,
-					pv.State.Status.String(),
-				)
-			}
-			// Set models ready
-			if pv.State.ModelsReady {
-				pipeline.Status.CreateAndSetCondition(v1alpha1.ModelsReady, true, "Models all available", "")
-			} else {
-				pipeline.Status.CreateAndSetCondition(v1alpha1.ModelsReady, false, "Some models are not available", "")
-			}
+				if pv.GetPipeline().GetKubernetesMeta().GetGeneration() != pipeline.Generation {
+					logger.Info(
+						"Ignoring event for old generation",
+						"currentGeneration", pipeline.Generation,
+						"eventGeneration", pv.GetPipeline().GetKubernetesMeta().GetGeneration(),
+						"server", event.PipelineName,
+					)
+					return nil
+				}
 
-			return s.updatePipelineStatusImpl(pipeline)
-		})
-		if retryErr != nil {
-			logger.Error(retryErr, "Failed to update status", "pipeline", event.PipelineName)
+				// Handle status update
+				switch pv.State.Status {
+				case scheduler.PipelineVersionState_PipelineReady:
+					logger.Info(
+						"Setting pipeline to ready",
+						"pipeline", pipeline.Name,
+						"generation", pipeline.Generation,
+					)
+					pipeline.Status.CreateAndSetCondition(
+						v1alpha1.PipelineReady,
+						true,
+						pv.State.Reason,
+						pv.State.Status.String(),
+					)
+				default:
+					logger.Info(
+						"Setting pipeline to not ready",
+						"pipeline", pipeline.Name,
+						"generation", pipeline.Generation,
+					)
+					pipeline.Status.CreateAndSetCondition(
+						v1alpha1.PipelineReady,
+						false,
+						pv.State.Reason,
+						pv.State.Status.String(),
+					)
+				}
+				// Set models ready
+				if pv.State.ModelsReady {
+					pipeline.Status.CreateAndSetCondition(v1alpha1.ModelsReady, true, "Models all available", "")
+				} else {
+					pipeline.Status.CreateAndSetCondition(v1alpha1.ModelsReady, false, "Some models are not available", "")
+				}
+
+				return s.updatePipelineStatusImpl(ctxWithTimeout, pipeline)
+			})
+			if retryErr != nil {
+				logger.Error(retryErr, "Failed to update status", "pipeline", event.PipelineName)
+			}
 		}
-
 	}
 	return nil
 }
 
-func (s *SchedulerClient) updatePipelineStatusImpl(pipeline *v1alpha1.Pipeline) error {
-	if err := s.Status().Update(context.TODO(), pipeline); err != nil {
+func (s *SchedulerClient) updatePipelineStatusImpl(ctx context.Context, pipeline *v1alpha1.Pipeline) error {
+	if err := s.Status().Update(ctx, pipeline); err != nil {
 		s.recorder.Eventf(pipeline, v1.EventTypeWarning, "UpdateFailed",
 			"Failed to update status for pipeline %q: %v", pipeline.Name, err)
 		return err

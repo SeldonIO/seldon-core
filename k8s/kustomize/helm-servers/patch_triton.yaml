@@ -6,4 +6,9 @@ metadata:
   annotationz: HACK_REMOVE_ME{{ .Values.triton.annotations | toYaml }}
 spec:
   replicas: HACK_REMOVE_ME{{ .Values.triton.replicas }}
+  minReplicas: HACK_REMOVE_ME{{ .Values.triton.minReplicas }}
+  maxReplicas: HACK_REMOVE_ME{{ .Values.triton.maxReplicas }}
   podSpec: HACK_REMOVE_ME{{ toJson .Values.triton.podSpec }}
+  statefulSetPersistentVolumeClaimRetentionPolicy:
+    whenDeleted: HACK_REMOVE_ME{{ .Values.triton.statefulSetPersistentVolumeClaimRetentionPolicy.whenDeleted }}
+    whenScaled: HACK_REMOVE_ME{{ .Values.triton.statefulSetPersistentVolumeClaimRetentionPolicy.whenScaled }}

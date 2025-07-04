@@ -143,7 +143,7 @@ func (r *RCloneClient) listenForConfigUpdates() {
 	logger := r.logger.WithField("func", "listenForConfigUpdates")
 	for config := range r.configChan {
 		logger.Info("Received config update")
-		config := config
+
 		go func() {
 			err := r.loadRcloneConfiguration(&config)
 			if err != nil {

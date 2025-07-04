@@ -10,20 +10,38 @@ the Change License after the Change Date as each is defined in accordance with t
 package agent
 
 import (
+	"context"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	testing_utils "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
+
+type mockScheduler struct{}
+
+var _ scheduler.Scheduler = (*mockScheduler)(nil)
+
+func (s mockScheduler) Schedule(_ string) error {
+	return nil
+}
+
+func (s mockScheduler) ScheduleFailedModels() ([]string, error) {
+	return nil, nil
+}
 
 type mockStore struct {
 	models map[string]*store.ModelSnapshot
@@ -80,7 +98,7 @@ func (m *mockStore) UnloadVersionModels(modelKey string, version uint32) (bool, 
 	panic("implement me")
 }
 
-func (m *mockStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState store.ModelReplicaState, reason string) error {
+func (m *mockStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState store.ModelReplicaState, reason string, runtimeInfo *pbs.ModelRuntimeInfo) error {
 	model := m.models[modelKey]
 	for _, mv := range model.Versions {
 		if mv.GetVersion() == version {
@@ -91,7 +109,7 @@ func (m *mockStore) UpdateModelState(modelKey string, version uint32, serverKey 
 }
 
 func (m *mockStore) AddServerReplica(request *pb.AgentSubscribeRequest) error {
-	panic("implement me")
+	return nil
 }
 
 func (m *mockStore) ServerNotify(request *pbs.ServerNotify) error {
@@ -99,7 +117,7 @@ func (m *mockStore) ServerNotify(request *pbs.ServerNotify) error {
 }
 
 func (m *mockStore) RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) {
-	panic("implement me")
+	return nil, nil
 }
 
 func (m *mockStore) DrainServerReplica(serverName string, replicaIdx int) ([]string, error) {
@@ -776,7 +794,6 @@ func TestModelScalingProtos(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-
 			model, _ := test.store.GetModel(test.triggerModelName)
 			if model != nil { // in the cases where the model is not in the scheduler state yet
 				lastestModel := model.GetLatest()
@@ -872,7 +889,6 @@ func TestModelRelocatedWaiterSmoke(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-
 			waiter := newModelRelocatedWaiter()
 			for _, i := range test.input {
 				waiter.registerServerReplica(i.serverReplica.serverName, i.serverReplica.serverIdx, i.models)
@@ -894,7 +910,6 @@ func TestModelRelocatedWaiterSmoke(t *testing.T) {
 			waiter.signalModel("dummy")
 		})
 	}
-
 }
 
 func TestAutoscalingEnabled(t *testing.T) {
@@ -937,9 +952,127 @@ func TestAutoscalingEnabled(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			enabled := AutoscalingEnabled(test.model)
+			enabled := util.AutoscalingEnabled(test.model.DeploymentSpec.MinReplicas, test.model.DeploymentSpec.MaxReplicas)
 			g.Expect(enabled).To(Equal(test.enabled))
 		})
 	}
+}
 
+func TestSubscribe(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
+	g := NewGomegaWithT(t)
+
+	type ag struct {
+		id      uint32
+		doClose bool
+	}
+	type test struct {
+		name                          string
+		agents                        []ag
+		expectedAgentsCount           int
+		expectedAgentsCountAfterClose int
+	}
+	tests := []test{
+		{
+			name: "simple",
+			agents: []ag{
+				{1, true}, {2, true},
+			},
+			expectedAgentsCount:           2,
+			expectedAgentsCountAfterClose: 0,
+		},
+		{
+			name: "simple - no close",
+			agents: []ag{
+				{1, true}, {2, false},
+			},
+			expectedAgentsCount:           2,
+			expectedAgentsCountAfterClose: 1,
+		},
+		{
+			name: "duplicates",
+			agents: []ag{
+				{1, true}, {1, false},
+			},
+			expectedAgentsCount:           1,
+			expectedAgentsCountAfterClose: 1,
+		},
+		{
+			name: "duplicates with all close",
+			agents: []ag{
+				{1, true}, {1, true}, {1, true},
+			},
+			expectedAgentsCount:           1,
+			expectedAgentsCountAfterClose: 0,
+		},
+	}
+
+	getStream := func(id uint32, context context.Context, port int) *grpc.ClientConn {
+		conn, _ := grpc.NewClient(fmt.Sprintf(":%d", port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+		grpcClient := pb.NewAgentServiceClient(conn)
+		_, _ = grpcClient.Subscribe(
+			context,
+			&pb.AgentSubscribeRequest{
+				ServerName:           "dummy",
+				ReplicaIdx:           id,
+				ReplicaConfig:        &pb.ReplicaConfig{},
+				Shared:               true,
+				AvailableMemoryBytes: 0,
+			},
+		)
+		return conn
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			logger := log.New()
+			eventHub, err := coordinator.NewEventHub(logger)
+			g.Expect(err).To(BeNil())
+			server := NewAgentServer(logger, &mockStore{}, mockScheduler{}, eventHub, false)
+			port, err := testing_utils.GetFreePortForTest()
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = server.startServer(uint(port), false)
+			if err != nil {
+				t.Fatal(err)
+			}
+			time.Sleep(100 * time.Millisecond)
+
+			mu := sync.Mutex{}
+			streams := make([]*grpc.ClientConn, 0)
+			for _, a := range test.agents {
+				go func(id uint32) {
+					conn := getStream(id, context.Background(), port)
+					mu.Lock()
+					streams = append(streams, conn)
+					mu.Unlock()
+				}(a.id)
+			}
+
+			maxCount := 10
+			count := 0
+			for len(server.agents) != test.expectedAgentsCount && count < maxCount {
+				time.Sleep(100 * time.Millisecond)
+				count++
+			}
+			g.Expect(len(server.agents)).To(Equal(test.expectedAgentsCount))
+
+			for idx, s := range streams {
+				go func(idx int, s *grpc.ClientConn) {
+					if test.agents[idx].doClose {
+						s.Close()
+					}
+				}(idx, s)
+			}
+
+			count = 0
+			for len(server.agents) != test.expectedAgentsCountAfterClose && count < maxCount {
+				time.Sleep(100 * time.Millisecond)
+				count++
+			}
+			g.Expect(len(server.agents)).To(Equal(test.expectedAgentsCountAfterClose))
+
+			server.StopAgentStreams()
+		})
+	}
 }

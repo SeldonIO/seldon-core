@@ -27,6 +27,7 @@ message ModelEventMessage {
   Event event = 5;
   string message = 6;
   uint64 availableMemoryBytes = 7;
+  scheduler.ModelRuntimeInfo runtimeInfo = 8;
 }
 
 message ModelEventResponse {

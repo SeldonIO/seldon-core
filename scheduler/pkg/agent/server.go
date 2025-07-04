@@ -39,7 +39,7 @@ const (
 	pendingSyncsQueueSize          int = 1000
 	modelEventHandlerName              = "agent.server.models"
 	modelScalingCoolingDownSeconds     = 60 // this is currently used in scale down events
-	serverDrainingExtraWaitMillis      = 500
+	serverDrainingExtraWaitMillis      = 3000
 )
 
 type modelRelocatedWaiter struct {
@@ -105,13 +105,14 @@ type ServerKey struct {
 type Server struct {
 	mutex sync.RWMutex
 	pb.UnimplementedAgentServiceServer
-	logger                    log.FieldLogger
-	agents                    map[ServerKey]*AgentSubscriber
-	store                     store.ModelStore
-	scheduler                 scheduler.Scheduler
-	certificateStore          *seldontls.CertificateStore
-	waiter                    *modelRelocatedWaiter // waiter for when we want to drain a particular server replica
-	autoscalingServiceEnabled bool
+	logger                  log.FieldLogger
+	agents                  map[ServerKey]*AgentSubscriber
+	store                   store.ModelStore
+	scheduler               scheduler.Scheduler
+	certificateStore        *seldontls.CertificateStore
+	waiter                  *modelRelocatedWaiter // waiter for when we want to drain a particular server replica
+	autoscalingModelEnabled bool
+	agentMutex              sync.Map // to force a serial order per agent (serverName, replicaIdx)
 }
 
 type SchedulerAgent interface {
@@ -129,15 +130,16 @@ func NewAgentServer(
 	store store.ModelStore,
 	scheduler scheduler.Scheduler,
 	hub *coordinator.EventHub,
-	autoscalingServiceEnabled bool,
+	autoscalingModelEnabled bool,
 ) *Server {
 	s := &Server{
-		logger:                    logger.WithField("source", "AgentServer"),
-		agents:                    make(map[ServerKey]*AgentSubscriber),
-		store:                     store,
-		scheduler:                 scheduler,
-		waiter:                    newModelRelocatedWaiter(),
-		autoscalingServiceEnabled: autoscalingServiceEnabled,
+		logger:                  logger.WithField("source", "AgentServer"),
+		agents:                  make(map[ServerKey]*AgentSubscriber),
+		store:                   store,
+		scheduler:               scheduler,
+		waiter:                  newModelRelocatedWaiter(),
+		autoscalingModelEnabled: autoscalingModelEnabled,
+		agentMutex:              sync.Map{},
 	}
 
 	hub.RegisterModelEventHandler(
@@ -165,12 +167,16 @@ func (s *Server) startServer(port uint, secure bool) error {
 	if err != nil {
 		return err
 	}
+
+	kaep := util.GetServerKeepAliveEnforcementPolicy()
+
 	opts := []grpc.ServerOption{}
 	if secure {
 		opts = append(opts, grpc.Creds(s.certificateStore.CreateServerTransportCredentials()))
 	}
 	opts = append(opts, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
 	opts = append(opts, grpc.StatsHandler(otelgrpc.NewServerHandler()))
+	opts = append(opts, grpc.KeepaliveEnforcementPolicy(kaep))
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterAgentServiceServer(grpcServer, s)
 	s.logger.Printf("Agent server running on %d mtls:%v", port, secure)
@@ -259,22 +265,23 @@ func (s *Server) Sync(modelName string) {
 			}
 
 			as.mutex.Lock()
+			model := latestModel.GetModel()
 			err = as.stream.Send(&pb.ModelOperationMessage{
 				Operation:          pb.ModelOperationMessage_LOAD_MODEL,
-				ModelVersion:       &pb.ModelVersion{Model: latestModel.GetModel(), Version: latestModel.GetVersion()},
-				AutoscalingEnabled: AutoscalingEnabled(latestModel.GetModel()) && s.autoscalingServiceEnabled,
+				ModelVersion:       &pb.ModelVersion{Model: model, Version: latestModel.GetVersion()},
+				AutoscalingEnabled: util.AutoscalingEnabled(model.DeploymentSpec.GetMinReplicas(), model.DeploymentSpec.GetMaxReplicas()) && s.autoscalingModelEnabled,
 			})
 			as.mutex.Unlock()
 			if err != nil {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				if errState := s.store.UpdateModelState(
 					latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil,
-					store.LoadRequested, store.LoadFailed, err.Error()); errState != nil {
+					store.LoadRequested, store.LoadFailed, err.Error(), nil); errState != nil {
 					logger.WithError(errState).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				}
 				continue
 			}
-			err = s.store.UpdateModelState(latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil, store.LoadRequested, store.Loading, "")
+			err = s.store.UpdateModelState(latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil, store.LoadRequested, store.Loading, "", nil)
 			if err != nil {
 				logger.WithError(err).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				continue
@@ -301,12 +308,12 @@ func (s *Server) Sync(modelName string) {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				if errState := s.store.UpdateModelState(
 					latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil,
-					store.UnloadRequested, store.UnloadFailed, err.Error()); errState != nil {
+					store.UnloadRequested, store.UnloadFailed, err.Error(), nil); errState != nil {
 					logger.WithError(errState).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				}
 				continue
 			}
-			err = s.store.UpdateModelState(modelVersion.Key(), modelVersion.GetVersion(), modelVersion.Server(), replicaIdx, nil, store.UnloadRequested, store.Unloading, "")
+			err = s.store.UpdateModelState(modelVersion.Key(), modelVersion.GetVersion(), modelVersion.Server(), replicaIdx, nil, store.UnloadRequested, store.Unloading, "", nil)
 			if err != nil {
 				logger.WithError(err).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				continue
@@ -346,7 +353,7 @@ func (s *Server) AgentEvent(ctx context.Context, message *pb.ModelEventMessage) 
 	logger.Infof("Updating state for model %s to %s", message.ModelName, desiredState.String())
 	s.store.LockModel(message.ModelName)
 	defer s.store.UnlockModel(message.ModelName)
-	err := s.store.UpdateModelState(message.ModelName, message.GetModelVersion(), message.ServerName, int(message.ReplicaIdx), &message.AvailableMemoryBytes, expectedState, desiredState, message.GetMessage())
+	err := s.store.UpdateModelState(message.ModelName, message.GetModelVersion(), message.ServerName, int(message.ReplicaIdx), &message.AvailableMemoryBytes, expectedState, desiredState, message.GetMessage(), message.GetRuntimeInfo())
 	if err != nil {
 		logger.WithError(err).Infof("Failed Updating state for model %s", message.ModelName)
 		return nil, status.Error(codes.Internal, err.Error())
@@ -379,12 +386,20 @@ func (s *Server) ModelScalingTrigger(stream pb.AgentService_ModelScalingTriggerS
 
 func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentService_SubscribeServer) error {
 	logger := s.logger.WithField("func", "Subscribe")
+	key := ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx}
+
+	// this is forcing a serial order per agent (serverName, replicaIdx)
+	// in general this will make sure that a given agent disconnects fully before another agent is allowed to connect
+	mu, _ := s.agentMutex.LoadOrStore(key, &sync.Mutex{})
+	mu.(*sync.Mutex).Lock()
+	defer mu.(*sync.Mutex).Unlock()
+
 	logger.Infof("Received subscribe request from %s:%d", request.ServerName, request.ReplicaIdx)
 
 	fin := make(chan bool)
 
 	s.mutex.Lock()
-	s.agents[ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx}] = &AgentSubscriber{
+	s.agents[key] = &AgentSubscriber{
 		finished: fin,
 		stream:   stream,
 	}
@@ -410,7 +425,7 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 		case <-ctx.Done():
 			logger.Infof("Client replica %s:%d has disconnected", request.ServerName, request.ReplicaIdx)
 			s.mutex.Lock()
-			delete(s.agents, ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx})
+			delete(s.agents, key)
 			s.mutex.Unlock()
 			s.removeServerReplicaImpl(request.GetServerName(), int(request.GetReplicaIdx())) // this is non-blocking beyond rescheduling models on removed server
 			return nil
@@ -493,7 +508,6 @@ func (s *Server) drainServerReplicaImpl(serverName string, serverReplicaIdx int)
 }
 
 func (s *Server) applyModelScaling(message *pb.ModelScalingTriggerMessage) error {
-
 	modelName := message.ModelName
 	model, err := s.store.GetModel(modelName)
 	if err != nil {
@@ -571,7 +585,6 @@ func isModelStable(modelVersion *store.ModelVersion) bool {
 }
 
 func calculateDesiredNumReplicas(model *pbs.Model, trigger pb.ModelScalingTriggerMessage_Trigger, numReplicas int) (int, error) {
-
 	if trigger == pb.ModelScalingTriggerMessage_SCALE_UP {
 		if err := checkModelScalingWithinRange(model, numReplicas+1); err != nil {
 			return 0, err
@@ -593,12 +606,12 @@ func calculateDesiredNumReplicas(model *pbs.Model, trigger pb.ModelScalingTrigge
 // which is hidden in this logic unfortunately as we reject the scaling up / down event.
 // a side effect is that we do not go below 1 replica of a model
 func checkModelScalingWithinRange(model *pbs.Model, targetNumReplicas int) error {
-	if !AutoscalingEnabled(model) {
-		return fmt.Errorf("No autoscaling for model %s", model.GetMeta().GetName())
-	}
-
 	minReplicas := model.DeploymentSpec.GetMinReplicas()
 	maxReplicas := model.DeploymentSpec.GetMaxReplicas()
+
+	if !util.AutoscalingEnabled(minReplicas, maxReplicas) {
+		return fmt.Errorf("No autoscaling for model %s", model.GetMeta().GetName())
+	}
 
 	if targetNumReplicas < int(minReplicas) || (targetNumReplicas < 1) {
 		return fmt.Errorf("Violating min replicas %d / %d for model %s", minReplicas, targetNumReplicas, model.GetMeta().GetName())
@@ -609,19 +622,4 @@ func checkModelScalingWithinRange(model *pbs.Model, targetNumReplicas int) error
 	}
 
 	return nil
-}
-
-// if min and max replicas are not set, we do not allow autoscaling
-// we check that they are not set if they are equal to zero as per
-// `GetMinReplicas` and `GetMaxReplicas` definition
-func AutoscalingEnabled(model *pbs.Model) bool {
-	minReplicas := model.DeploymentSpec.GetMinReplicas()
-	maxReplicas := model.DeploymentSpec.GetMaxReplicas()
-
-	if (minReplicas == 0) && (maxReplicas == 0) {
-		// no autoscaling
-		return false
-	} else {
-		return true
-	}
 }

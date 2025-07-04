@@ -154,7 +154,7 @@ func (es *ExperimentStatus) IsConditionReady(t apis.ConditionType) bool {
 func (es *ExperimentStatus) SetCondition(conditionType apis.ConditionType, condition *apis.Condition) {
 	switch {
 	case condition == nil:
-		experimentConditionSet.Manage(es).MarkUnknown(conditionType, "", "")
+		return
 	case condition.Status == v1.ConditionUnknown:
 		experimentConditionSet.Manage(es).MarkUnknown(conditionType, condition.Reason, condition.Message)
 	case condition.Status == v1.ConditionTrue:

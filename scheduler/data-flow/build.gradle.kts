@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("com.github.hierynomus.license-report") version "0.16.1"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    kotlin("jvm") version "1.9.21" // the kotlin version
+    kotlin("jvm") version "2.1.0" // the kotlin version
     id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
     java
     application
@@ -24,18 +24,18 @@ repositories {
 
 dependencies {
     implementation("com.natpryce:konfig:1.6.10.0")
-    implementation("io.klogging:klogging-jvm:0.5.14")
-    implementation("io.klogging:slf4j-klogging:0.5.14")
+    implementation("io.klogging:klogging-jvm:0.11.1")
+    implementation("io.klogging:slf4j-klogging:0.11.1")
 
     // Kafka
-    implementation("org.apache.kafka:kafka-streams:7.6.1-ccs")
-    testImplementation("org.apache.kafka:kafka-streams-test-utils:7.6.1-ccs")
+    implementation("org.apache.kafka:kafka-streams:7.7.0-ccs")
+    testImplementation("org.apache.kafka:kafka-streams-test-utils:7.7.0-ccs")
 
     // gRPC
-    implementation("io.grpc:grpc-kotlin-stub:1.4.1")
-    implementation("io.grpc:grpc-stub:1.65.0")
-    implementation("io.grpc:grpc-protobuf:1.65.0")
-    runtimeOnly("io.grpc:grpc-netty-shaded:1.65.0")
+    implementation("io.grpc:grpc-kotlin-stub:1.4.3")
+    implementation("io.grpc:grpc-stub:1.73.0")
+    implementation("io.grpc:grpc-protobuf:1.73.0")
+    runtimeOnly("io.grpc:grpc-netty-shaded:1.73.0")
     implementation("com.google.protobuf:protobuf-java") {
         version {
             strictly("[4.27.2,)")
@@ -48,11 +48,11 @@ dependencies {
             prefer("4.27.2")
         }
     }
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:2.0.1")
 
     // k8s
-    implementation("io.kubernetes:client-java:21.0.0")
+    implementation("io.kubernetes:client-java:24.0.0")
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.3")

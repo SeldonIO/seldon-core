@@ -9,9 +9,7 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package filters
 
-import (
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
-)
+import "github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 
 type ReplicaFilter interface {
 	Name() string

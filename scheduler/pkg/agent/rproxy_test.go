@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package agent
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
@@ -29,8 +30,8 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	testing_utils2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
@@ -47,6 +48,32 @@ func (mlserver *mockMLServerState) v2Infer(w http.ResponseWriter, req *http.Requ
 		http.NotFound(w, req)
 	}
 	_, _ = w.Write([]byte("Model inference: " + modelName))
+}
+
+func (mlserver *mockMLServerState) v2InferStream(w http.ResponseWriter, req *http.Request) {
+	params := mux.Vars(req)
+	modelName := params["model_name"]
+	if _, ok := mlserver.modelsNotFound[modelName]; ok {
+		http.NotFound(w, req)
+	}
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Content-Type", "text/plain")
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
+		return
+	}
+
+	chunks := []string{"Model ", "inference: ", modelName}
+	for _, chunk := range chunks {
+		newLineChunk := chunk + "\n"
+		_, _ = w.Write([]byte(newLineChunk)) // Write a chunk
+		flusher.Flush()                      // Flush to send immediately
+	}
 }
 
 func (mlserver *mockMLServerState) v2Load(w http.ResponseWriter, req *http.Request) {
@@ -87,6 +114,7 @@ func (mlserver *mockMLServerState) isModelLoaded(modelId string) bool {
 func setupMockMLServer(mockMLServerState *mockMLServerState, serverPort int) *http.Server {
 	rtr := mux.NewRouter()
 	rtr.HandleFunc("/v2/models/{model_name:\\w+}/infer", mockMLServerState.v2Infer).Methods("POST")
+	rtr.HandleFunc("/v2/models/{model_name:\\w+}/infer_stream", mockMLServerState.v2InferStream).Methods("POST")
 	rtr.HandleFunc("/v2/repository/models/{model_name:\\w+}/load", mockMLServerState.v2Load).Methods("POST")
 	rtr.HandleFunc("/v2/repository/models/{model_name:\\w+}/unload", mockMLServerState.v2Unload).Methods("POST")
 	return &http.Server{Addr: ":" + strconv.Itoa(serverPort), Handler: rtr}
@@ -98,9 +126,16 @@ type loadModelSateValue struct {
 	isSoft bool
 }
 
+type inferModelSateValue struct {
+	internalModelName string
+	method            string
+	code              string
+}
+
 type fakeMetricsHandler struct {
-	modelLoadState map[string]loadModelSateValue
-	mu             *sync.Mutex
+	modelLoadState  map[string]loadModelSateValue
+	modelInferState map[string]inferModelSateValue
+	mu              *sync.Mutex
 }
 
 func (f fakeMetricsHandler) AddModelHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc {
@@ -112,6 +147,14 @@ func (f fakeMetricsHandler) HttpCodeToString(code int) string {
 }
 
 func (f fakeMetricsHandler) AddModelInferMetrics(externalModelName string, internalModelName string, method string, elapsedTime float64, code string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	f.modelInferState[externalModelName] = inferModelSateValue{
+		internalModelName: internalModelName,
+		method:            method,
+		code:              code,
+	}
 }
 
 func (f fakeMetricsHandler) AddLoadedModelMetrics(internalModelName string, memory uint64, isLoad, isSoft bool) {
@@ -130,8 +173,9 @@ func (f fakeMetricsHandler) AddServerReplicaMetrics(memory uint64, memoryWithOve
 
 func newFakeMetricsHandler() fakeMetricsHandler {
 	return fakeMetricsHandler{
-		modelLoadState: map[string]loadModelSateValue{},
-		mu:             &sync.Mutex{},
+		modelLoadState:  map[string]loadModelSateValue{},
+		modelInferState: map[string]inferModelSateValue{},
+		mu:              &sync.Mutex{},
 	}
 }
 
@@ -141,7 +185,7 @@ func (f fakeMetricsHandler) UnaryServerInterceptor() func(ctx context.Context, r
 	}
 }
 
-func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string, rpPort, serverPort int) *reverseHTTPProxy {
+func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string, rpPort, serverPort int, metricsHandler metrics.AgentMetricsHandler) *reverseHTTPProxy {
 	v2Client := testing_utils.NewV2RestClientForTest("localhost", serverPort, logger)
 	localCacheManager := setupLocalTestManager(numModels, modelPrefix, v2Client, numModels-2, 1)
 	modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
@@ -153,7 +197,7 @@ func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string
 		"localhost",
 		uint(serverPort),
 		uint(rpPort),
-		fakeMetricsHandler{},
+		metricsHandler,
 		modelScalingStatsCollector,
 	)
 	rp.SetState(localCacheManager)
@@ -166,34 +210,51 @@ func TestReverseProxySmoke(t *testing.T) {
 	logger.SetLevel(log.DebugLevel)
 
 	type test struct {
-		name             string
-		modelToLoad      string
-		modelToRequest   string
-		statusCode       int
-		isLoadedonServer bool
+		name                     string
+		modelToLoad              string
+		modelToRequest           string
+		modelExternalHeader      string
+		expectedModelExternalTag string
+		statusCode               int
+		isLoadedonServer         bool
 	}
 
 	tests := []test{
 		{
-			name:             "model exists",
-			modelToLoad:      "foo",
-			modelToRequest:   "foo",
-			statusCode:       http.StatusOK,
-			isLoadedonServer: true,
+			name:                     "model exists",
+			modelToLoad:              "foo_1",
+			modelToRequest:           "foo_1",
+			modelExternalHeader:      "foo",
+			expectedModelExternalTag: "foo",
+			statusCode:               http.StatusOK,
+			isLoadedonServer:         true,
 		},
 		{
-			name:             "model exists on agent but not loaded on server",
-			modelToLoad:      "foo",
-			modelToRequest:   "foo",
-			statusCode:       http.StatusOK,
-			isLoadedonServer: false,
+			name:                     "model exists, part of experiment",
+			modelToLoad:              "foo_1",
+			modelToRequest:           "foo_1",
+			modelExternalHeader:      "foo-experiment.experiment",
+			expectedModelExternalTag: "foo",
+			statusCode:               http.StatusOK,
+			isLoadedonServer:         true,
 		},
 		{
-			name:             "model does not exists",
-			modelToLoad:      "foo",
-			modelToRequest:   "foo2",
-			statusCode:       http.StatusNotFound,
-			isLoadedonServer: false,
+			name:                     "model exists on agent but not loaded on server",
+			modelToLoad:              "foo_1",
+			modelToRequest:           "foo_1",
+			modelExternalHeader:      "foo",
+			expectedModelExternalTag: "foo",
+			statusCode:               http.StatusOK,
+			isLoadedonServer:         false,
+		},
+		{
+			name:                     "model does not exists",
+			modelToLoad:              "foo_1",
+			modelToRequest:           "foo2_1",
+			modelExternalHeader:      "foo2",
+			expectedModelExternalTag: "foo2",
+			statusCode:               http.StatusNotFound,
+			isLoadedonServer:         false,
 		},
 	}
 
@@ -217,7 +278,8 @@ func TestReverseProxySmoke(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			rpHTTP := setupReverseProxy(logger, 3, test.modelToLoad, rpPort, serverPort)
+			fakeMetricsHandler := newFakeMetricsHandler()
+			rpHTTP := setupReverseProxy(logger, 3, test.modelToLoad, rpPort, serverPort, fakeMetricsHandler)
 			err = rpHTTP.Start()
 			g.Expect(err).To(BeNil())
 			time.Sleep(500 * time.Millisecond)
@@ -232,13 +294,21 @@ func TestReverseProxySmoke(t *testing.T) {
 			}
 
 			// make a dummy predict call with any model name, URL does not matter, only headers
-			inferV2Path := "/v2/models/RANDOM/infer"
-			url := "http://localhost:" + strconv.Itoa(rpPort) + inferV2Path
-			req, err := http.NewRequest(http.MethodPost, url, nil)
-			g.Expect(err).To(BeNil())
-			req.Header.Set("contentType", "application/json")
-			req.Header.Set(resources.SeldonModelHeader, test.modelToRequest)
-			req.Header.Set(resources.SeldonInternalModelHeader, test.modelToRequest)
+			createRequest := func(endpoint string) *http.Request {
+				inferV2Path := "/v2/models/RANDOM/" + endpoint
+				logger.Debug("inferV2Path:", inferV2Path)
+
+				url := "http://localhost:" + strconv.Itoa(rpPort) + inferV2Path
+				req, err := http.NewRequest(http.MethodPost, url, nil)
+				g.Expect(err).To(BeNil())
+				req.Header.Set("contentType", "application/json")
+				req.Header.Set(util.SeldonModelHeader, test.modelExternalHeader)
+				req.Header.Set(util.SeldonInternalModelHeader, test.modelToRequest)
+				return req
+			}
+
+			// infer request
+			req := createRequest("infer")
 			resp, err := http.DefaultClient.Do(req)
 			g.Expect(err).To(BeNil())
 
@@ -250,13 +320,39 @@ func TestReverseProxySmoke(t *testing.T) {
 				g.Expect(strings.Contains(bodyString, test.modelToLoad)).To(BeTrue())
 			}
 
+			// infer_stream request
+			req = createRequest("infer_stream")
+			resp, err = http.DefaultClient.Do(req)
+			g.Expect(err).To(BeNil())
+
+			g.Expect(resp.StatusCode).To(Equal(test.statusCode))
+			if test.statusCode == http.StatusOK {
+				scanner := bufio.NewScanner(resp.Body)
+				messages := make([]string, 0)
+				for scanner.Scan() {
+					messages = append(messages, scanner.Text())
+				}
+
+				g.Expect(scanner.Err()).To(BeNil())
+
+				messages_concat := strings.Join(messages, "")
+				g.Expect(strings.Contains(messages_concat, test.modelToLoad)).To(BeTrue())
+			}
+
 			//  test model scaling stats
 			if test.statusCode == http.StatusOK {
 				g.Expect(rpHTTP.modelScalingStatsCollector.ModelLagStats.Get(test.modelToRequest)).To(Equal(uint32(0)))
 				g.Expect(rpHTTP.modelScalingStatsCollector.ModelLastUsedStats.Get(test.modelToRequest)).Should(BeNumerically("<=", time.Now().Unix())) // only triggered when we get results back
-
 			}
 
+			//  test infer metrics
+			g.Expect(fakeMetricsHandler.modelInferState[test.expectedModelExternalTag].internalModelName).To(Equal(test.modelToRequest))
+			g.Expect(fakeMetricsHandler.modelInferState[test.expectedModelExternalTag].method).To(Equal("rest"))
+			if test.statusCode == http.StatusOK {
+				g.Expect(fakeMetricsHandler.modelInferState[test.expectedModelExternalTag].code).To(Equal("200"))
+			} else {
+				g.Expect(fakeMetricsHandler.modelInferState[test.expectedModelExternalTag].code).To(Equal("404"))
+			}
 			g.Expect(rpHTTP.Ready()).To(BeTrue())
 			_ = rpHTTP.Stop()
 			g.Expect(rpHTTP.Ready()).To(BeFalse())
@@ -273,7 +369,8 @@ func TestReverseEarlyStop(t *testing.T) {
 	logger := log.New()
 	logger.SetLevel(log.DebugLevel)
 
-	rpHTTP := setupReverseProxy(logger, 0, "dummy", 1, 1)
+	fakeMetricsHandler := newFakeMetricsHandler()
+	rpHTTP := setupReverseProxy(logger, 0, "dummy", 1, 1, fakeMetricsHandler)
 	err := rpHTTP.Stop()
 	g.Expect(err).To(BeNil())
 	ready := rpHTTP.Ready()
@@ -416,7 +513,7 @@ func TestLazyLoadRoundTripper(t *testing.T) {
 			httpClient.Transport = &lazyModelLoadTransport{
 				loader, http.DefaultTransport, metricsHandler, modelScalingStatsCollector, log.New()}
 			mockMLServerState.setModelServerUnloaded(dummyModel)
-			req.Header.Set(resources.SeldonInternalModelHeader, dummyModel)
+			req.Header.Set(util.SeldonInternalModelHeader, dummyModel)
 			resp, err := httpClient.Do(req)
 			g.Expect(err).To(BeNil())
 			g.Expect(resp.StatusCode).To(Equal(http.StatusOK))

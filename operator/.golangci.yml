@@ -24,7 +24,7 @@ linters:
   enable:
     # Sorted alphabetically.
     - errcheck
-    - exportloopref
+    - copyloopvar
     - gci
     - goimports # Also includes gofmt style formatting
     - gosimple
@@ -55,3 +55,7 @@ issues:
   #     vendor$, third_party$, testdata$, examples$, Godeps$, builtin$
   exclude-dirs:
     - vendor
+
+  govet:
+    disable:
+      - printf

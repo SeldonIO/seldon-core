@@ -3,7 +3,7 @@
 ## About
 
 The data-flow engine is built on top of [Kafka Streams](https://docs.confluent.io/platform/current/streams/index.html).
-It implements the operations required to propagate information throughout an inference pipeline in Seldon Core v2.
+It implements the operations required to propagate information throughout an inference pipeline in Seldon Core 2.
 These operations include multi-way joins, or fan-ins, and conversion of inference v2 response types to request types.
 
 The core idea of asynchronous data flows is that they offer:

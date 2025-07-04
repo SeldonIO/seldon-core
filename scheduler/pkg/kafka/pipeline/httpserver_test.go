@@ -28,7 +28,6 @@ import (
 
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -174,7 +173,7 @@ func TestHttpServer(t *testing.T) {
 			r := strings.NewReader(test.req)
 			req, err := http.NewRequest(http.MethodPost, url, r)
 			g.Expect(err).To(BeNil())
-			req.Header.Set(resources.SeldonModelHeader, test.header)
+			req.Header.Set(util.SeldonModelHeader, test.header)
 			req.Header.Set("contentType", "application/json")
 			resp, err := http.DefaultClient.Do(req)
 			g.Expect(err).To(BeNil())

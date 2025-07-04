@@ -19,6 +19,9 @@ import (
 )
 
 type Synchroniser interface {
+	// mainly for testing, this api should mean little in production as the synchroniser should be
+	// rely on the other methods to determine if it is ready.
+	IsTriggered() bool
 	IsReady() bool
 	WaitReady()
 	Signals(uint)
@@ -39,21 +42,21 @@ func NewSimpleSynchroniser(timeout time.Duration) *SimpleSynchroniser {
 	}
 	s.isReady.Store(false)
 	s.triggered.Store(false)
+	s.wg.Add(1)
+	time.AfterFunc(s.timeout, s.done)
 	return s
+}
+
+func (s *SimpleSynchroniser) IsTriggered() bool {
+	return s.triggered.Load()
 }
 
 func (s *SimpleSynchroniser) IsReady() bool {
 	return s.isReady.Load()
 }
 
-func (s *SimpleSynchroniser) Signals(numSignals uint) {
-	if !s.IsReady() {
-		swapped := s.triggered.CompareAndSwap(false, true) // make sure we run only once
-		if swapped {
-			s.wg.Add(int(numSignals))
-			time.AfterFunc(s.timeout, s.done)
-		}
-	}
+func (s *SimpleSynchroniser) Signals(_ uint) {
+	s.triggered.Store(true)
 }
 
 func (s *SimpleSynchroniser) WaitReady() {

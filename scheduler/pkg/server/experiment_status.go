@@ -23,6 +23,8 @@ func (s *SchedulerServer) SubscribeExperimentStatus(req *pb.ExperimentSubscripti
 	logger := s.logger.WithField("func", "SubscribeExperimentStatus")
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
+	s.synchroniser.WaitReady()
+
 	err := s.sendCurrentExperimentStatuses(stream)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to send current experiment statuses to %s", req.GetSubscriberName())
@@ -79,7 +81,7 @@ func asKubernetesMetaFromExperiment(meta *experiment.KubernetesMeta) *pb.Kuberne
 func (s *SchedulerServer) sendCurrentExperimentStatuses(stream pb.Scheduler_ExperimentStatusServer) error {
 	experiments, err := s.experimentServer.GetExperiments()
 	if err != nil {
-		return status.Errorf(codes.FailedPrecondition, err.Error())
+		return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 	}
 	for _, exp := range experiments {
 		msg := &pb.ExperimentStatusResponse{

@@ -1,5 +1,8 @@
 import { getConfig } from '../components/settings.js'
-import { doInfer, setupBase, teardownBase, getVersionSuffix } from '../components/utils.js'
+import { doInfer, setupBase, teardownBase, getVersionSuffix, applyModelReplicaChange } from '../components/utils.js'
+import { vu } from 'k6/execution';
+
+var kubeClient = null
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
 export let options = {
@@ -52,6 +55,11 @@ export default function (config) {
         doInfer(modelName, modelNameWithVersion, config, false, idx)
     } else {
         throw new Error('Both REST and GRPC protocols are disabled!')
+    }
+
+    // for simplicity we only change model replicas in the first VU
+    if (vu.idInTest == 1 && config.enableModelReplicaChange) {
+        applyModelReplicaChange(config)
     }
 }
 

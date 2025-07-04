@@ -3,7 +3,7 @@
 
 ## Development Setup
 
-The scheduler and its associated control-plane components in Seldon Core v2 are intended to run both in and out of Kubernetes.
+The scheduler and its associated control-plane components in Seldon Core 2 are intended to run both in and out of Kubernetes.
 While it is possible to run all the individual components locally as plain, OS-level processes (see below), the recommended approach is to use Docker Compose to ensure isolation and reproducibility.
 
 ### Docker Compose
@@ -24,7 +24,7 @@ See the [official documentation](https://docs.docker.com/compose/completion/).
 
 #### Full control plane
 
-There are Makefile targets to start and stop a minimal Seldon Core v2 setup.
+There are Makefile targets to start and stop a minimal Seldon Core 2 setup.
 You need to choose whether to run with MLServer or Triton as the inference server, but otherwise the setups are almost identical.
 
 To get started:

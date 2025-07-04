@@ -1,16 +1,16 @@
 # Usage Metrics
 
-There are various interesting system metrics about how Seldon Core v2 is used.
+There are various interesting system metrics about how Seldon Core 2 is used.
 These metrics can be recorded **anonymously** and sent to Seldon by a lightweight, optional, stand-alone component called Hodometer.
 
-When provided, these metrics will be used to understand the adoption of Seldon Core v2 and how people interact with it.
-For example, knowing how many clusters Seldon Core v2 is running on, if it is used in Kubernetes or for local development, and how many people are benefitting from features like multi-model serving.
+When provided, these metrics will be used to understand the adoption of Seldon Core 2 and how people interact with it.
+For example, knowing how many clusters Seldon Core 2 is running on, if it is used in Kubernetes or for local development, and how many people are benefitting from features like multi-model serving.
 
 ## Architecture
 
 ![Hodometer architecture](./hodometer-architecture.png)
 
-Hodometer is not an integral part of Seldon Core v2, but rather an independent component which connects to the public APIs of the Seldon Core v2 scheduler.
+Hodometer is not an integral part of Seldon Core 2, but rather an independent component which connects to the public APIs of the Seldon Core 2 scheduler.
 If deployed in Kubernetes, it will also try to request some basic information from the Kubernetes API.
 
 Recorded metrics are sent to Seldon and, optionally, to any [additional endpoints](#extra-publish-urls) you define.
@@ -33,7 +33,7 @@ See [below](#list-of-metrics) for an equivalent table of metrics.
 ## Performance
 
 Metrics are collected as periodic snapshots a few times per day.
-They are lightweight to collect, coming mostly from the Seldon Core v2 scheduler, and are heavily aggregated.
+They are lightweight to collect, coming mostly from the Seldon Core 2 scheduler, and are heavily aggregated.
 As such, they should have minimal impact on CPU, memory, and network consumption.
 
 Hodometer does not store anything it records, so does not have any persistent storage.
@@ -47,8 +47,8 @@ Hodometer supports 3 different metrics levels:
 
 | Level | Description |
 | --- | --- |
-| Cluster | Basic information about the Seldon Core v2 installation |
-| Resource | High-level information about which Seldon Core v2 resources are used |
+| Cluster | Basic information about the Seldon Core 2 installation |
+| Resource | High-level information about which Seldon Core 2 resources are used |
 | Feature | More detailed information about how resources are used and whether or not certain feature flags are enabled |
 
 Alternatively, usage metrics can be completely disabled.
@@ -62,8 +62,8 @@ The following environment variables control the behaviour of Hodometer, regardle
 | --- | --- | --- | --- |
 | `METRICS_LEVEL` | string | feature | Level of detail for recorded metrics; one of `feature`, `resource`, or `cluster` |
 | `EXTRA_PUBLISH_URLS` | comma-separated list of URLs | http://my-endpoint-1:8000,http://my-endpoint-2:8000 | Additional endpoints to publish metrics to |
-| `SCHEDULER_HOST` | string | seldon-scheduler | Hostname for Seldon Core v2 scheduler |
-| `SCHEDULER_PORT` | integer | 9004 | Port for Seldon Core v2 scheduler |
+| `SCHEDULER_HOST` | string | seldon-scheduler | Hostname for Seldon Core 2 scheduler |
+| `SCHEDULER_PORT` | integer | 9004 | Port for Seldon Core 2 scheduler |
 | `LOG_LEVEL` | string | info | Level of detail for application logs |
 
 ### Kubernetes
@@ -75,7 +75,7 @@ Hodometer is installed as a separate deployment, by default in the same namespac
 ````{group-tab} Helm
 
 
-If you install Seldon Core v2 by [Helm chart](../getting-started/kubernetes-installation/helm.md), there are values corresponding to the key environment variables discussed [above](#options).
+If you install Seldon Core 2 by [Helm chart](../getting-started/kubernetes-installation/helm.md), there are values corresponding to the key environment variables discussed [above](#options).
 These Helm values and their equivalents are provided below:
 
 | Helm value | Environment variable |
@@ -103,7 +103,7 @@ These can be applied by using the `-f <filename>` switch when running Helm.
 
 ### Docker Compose
 
-The [Compose setup](../getting-started/docker-installation/index.md) provides a pre-configured and opinionated, yet still flexible, approach to using Seldon Core v2.
+The [Compose setup](../getting-started/docker-installation/index.md) provides a pre-configured and opinionated, yet still flexible, approach to using Seldon Core 2.
 
 Hodometer is defined as a service called `hodometer` in the Docker Compose manifest.
 It is automatically enabled when running as per the installation instructions.

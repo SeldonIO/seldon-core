@@ -66,13 +66,15 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  creationTimestamp: null
   name: seldon-v2-manager-role
 rules:
 - apiGroups:
   - ""
   resources:
   - configmaps
+  - secrets
+  - serviceaccounts
+  - services
   verbs:
   - create
   - delete
@@ -89,62 +91,9 @@ rules:
   - create
   - patch
 - apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - serviceaccounts
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - services
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
   - apps
   resources:
   - deployments
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - apps
-  resources:
-  - deployments/status
-  verbs:
-  - get
-- apiGroups:
-  - apps
-  resources:
   - statefulsets
   verbs:
   - create
@@ -157,6 +106,7 @@ rules:
 - apiGroups:
   - apps
   resources:
+  - deployments/status
   - statefulsets/status
   verbs:
   - get
@@ -164,161 +114,11 @@ rules:
   - mlops.seldon.io
   resources:
   - experiments
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - experiments/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - experiments/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
   - models
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - models/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - models/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
   - pipelines
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - pipelines/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - pipelines/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
   - seldonconfigs
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - seldonconfigs/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - seldonconfigs/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
   - seldonruntimes
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - seldonruntimes/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - seldonruntimes/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
   - serverconfigs
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - serverconfigs/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
-  - serverconfigs/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - mlops.seldon.io
-  resources:
   - servers
   verbs:
   - create
@@ -331,12 +131,24 @@ rules:
 - apiGroups:
   - mlops.seldon.io
   resources:
+  - experiments/finalizers
+  - models/finalizers
+  - pipelines/finalizers
+  - seldonconfigs/finalizers
+  - seldonruntimes/finalizers
+  - serverconfigs/finalizers
   - servers/finalizers
   verbs:
   - update
 - apiGroups:
   - mlops.seldon.io
   resources:
+  - experiments/status
+  - models/status
+  - pipelines/status
+  - seldonconfigs/status
+  - seldonruntimes/status
+  - serverconfigs/status
   - servers/status
   verbs:
   - get
@@ -346,17 +158,6 @@ rules:
   - rbac.authorization.k8s.io
   resources:
   - rolebindings
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - rbac.authorization.k8s.io
-  resources:
   - roles
   verbs:
   - create
@@ -370,17 +171,6 @@ rules:
   - v1
   resources:
   - serviceaccounts
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - v1
-  resources:
   - services
   verbs:
   - create
@@ -475,8 +265,10 @@ spec:
       - args:
         - --health-probe-bind-address=:8081
         - --leader-elect
+        - --watch-namespaces=$(WATCH_NAMESPACES)
         - --namespace=$(POD_NAMESPACE)
         - --clusterwide=$(CLUSTERWIDE)
+        - --log-level=$(LOG_LEVEL)
         command:
         - /manager
         env:
@@ -496,6 +288,10 @@ spec:
           value: '/tmp/certs/cpc/ca.crt'
         - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
           value: '/tmp/certs/cps/ca.crt'
+        - name: LOG_LEVEL
+          value: 'info'
+        - name: WATCH_NAMESPACES
+          value: ''
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -552,6 +348,14 @@ spec:
         - --allow-plaintxt=$(ALLOW_PLAINTXT)
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --scheduler-ready-timeout-seconds=$(SCHEDULER_READY_TIMEOUT_SECONDS)
+        - --server-packing-enabled=$(SERVER_PACKING_ENABLED)
+        - --server-packing-percentage=$(SERVER_PACKING_PERCENTAGE)
+        - --envoy-accesslog-path=$(ENVOY_ACCESSLOG_PATH)
+        - --enable-envoy-accesslog=$(ENABLE_ENVOY_ACCESSLOG)
+        - --include-successful-requests-envoy-accesslog=$(INCLUDE_SUCCESSFUL_REQUESTS_ENVOY_ACCESSLOG)
+        - --enable-model-autoscaling=$(ENABLE_MODEL_AUTOSCALING)
+        - --enable-server-autoscaling=$(ENABLE_SERVER_AUTOSCALING)
+        - --log-level=$(LOG_LEVEL)
         command:
         - /bin/scheduler
         env:
@@ -597,6 +401,22 @@ spec:
           value: '/tmp/certs/ddc/ca.crt'
         - name: SCHEDULER_READY_TIMEOUT_SECONDS
           value: '600'
+        - name: SERVER_PACKING_ENABLED
+          value: 'false'
+        - name: SERVER_PACKING_PERCENTAGE
+          value: '0'
+        - name: ENVOY_ACCESSLOG_PATH
+          value: '/tmp/envoy-accesslog.txt'
+        - name: ENABLE_ENVOY_ACCESSLOG
+          value: 'true'
+        - name: INCLUDE_SUCCESSFUL_REQUESTS_ENVOY_ACCESSLOG
+          value: 'false'
+        - name: ENABLE_MODEL_AUTOSCALING
+          value: 'false'
+        - name: ENABLE_SERVER_AUTOSCALING
+          value: 'true'
+        - name: LOG_LEVEL
+          value: 'info'
         - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE
@@ -673,6 +493,7 @@ spec:
         - --envoy-port=80
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --tracing-config-path=/mnt/tracing/tracing.json
+        - --log-level=$(LOG_LEVEL)
         command:
         - /bin/pipelinegateway
         env:
@@ -742,6 +563,8 @@ spec:
           value: '/tmp/certs/cpc/ca.crt'
         - name: CONTROL_PLANE_SERVER_TLS_CA_LOCATION
           value: '/tmp/certs/cps/ca.crt'
+        - name: LOG_LEVEL
+          value: 'info'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
@@ -804,6 +627,7 @@ spec:
         - --envoy-port=80
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --tracing-config-path=/mnt/tracing/tracing.json
+        - --log-level=$(LOG_LEVEL)
         command:
         - /bin/modelgateway
         env:
@@ -867,6 +691,8 @@ spec:
           value: '/tmp/certs/ddc/ca.crt'
         - name: ENVOY_DOWNSTREAM_SERVER_TLS_CA_LOCATION
           value: '/tmp/certs/dds/ca.crt'
+        - name: LOG_LEVEL
+          value: 'info'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
@@ -995,17 +821,26 @@ spec:
               optional: true
         image: 'docker.io/seldonio/seldon-envoy:latest'
         imagePullPolicy: 'IfNotPresent'
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - |
+                echo -ne "POST /healthcheck/fail HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" > /dev/tcp/localhost/9901
+                sleep '30'
         name: envoy
         ports:
         - containerPort: 9000
           name: http
         - containerPort: 9003
-          name: envoy-admin
+          name: envoy-stats
         readinessProbe:
           failureThreshold: 3
           httpGet:
             path: /ready
-            port: envoy-admin
+            port: envoy-stats
           initialDelaySeconds: 10
           periodSeconds: 5
         resources:
@@ -1019,7 +854,7 @@ spec:
         runAsGroup: 1000
         runAsNonRoot: true
         runAsUser: 1000
-      terminationGracePeriodSeconds: 5
+      terminationGracePeriodSeconds: 120
     replicas: 1
   - annotations:
         null
@@ -1067,6 +902,10 @@ spec:
           value: ''
         - name: SELDON_CORES_COUNT
           value: '4'
+        - name: SELDON_LOG_LEVEL_APP
+          value: 'INFO'
+        - name: SELDON_LOG_LEVEL_KAFKA
+          value: 'WARN'
         - name: SELDON_UPSTREAM_HOST
           value: seldon-scheduler
         - name: SELDON_UPSTREAM_PORT
@@ -1142,7 +981,10 @@ metadata:
 spec:
   podSpec:
     containers:
-    - image: 'docker.io/seldonio/seldon-rclone:latest'
+    - env:
+      - name: RCLONE_LOG_LEVEL
+        value: 'INFO'
+      image: 'docker.io/seldonio/seldon-rclone:latest'
       imagePullPolicy: 'IfNotPresent'
       lifecycle:
         preStop:
@@ -1184,8 +1026,6 @@ spec:
         value: '600'
       - name: SELDON_SCALING_STATS_PERIOD_SECONDS
         value: '20'
-      - name: SELDON_OVERCOMMIT_PERCENTAGE
-        value: '10'
       - name: SELDON_MAX_TIME_READY_SUB_SERVICE_AFTER_START_SECONDS
         value: '30'
       - name: SELDON_MAX_ELAPSED_TIME_READY_SUB_SERVICE_BEFORE_START_MINUTES
@@ -1200,6 +1040,10 @@ spec:
         value: '5'
       - name: SELDON_MAX_UNLOAD_RETRY_COUNT
         value: '1'
+      - name: SELDON_UNLOAD_GRACE_PERIOD_SECONDS
+        value: '2'
+      - name: SELDON_OVERCOMMIT_PERCENTAGE
+        value: '10'
       - name: CONTROL_PLANE_SECURITY_PROTOCOL
         value: 'PLAINTEXT'
       - name: CONTROL_PLANE_CLIENT_TLS_SECRET_NAME
@@ -1230,6 +1074,8 @@ spec:
         value: '/tmp/certs/duc/ca.crt'
       - name: MLSERVER_TRACING_SERVER
         value: 'seldon-collector.seldon-mesh:4317'
+      - name: SELDON_LOG_LEVEL
+        value: 'info'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -1315,7 +1161,7 @@ spec:
         value: "false"
       - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH
         value: "1048576000"
-      image: 'docker.io/seldonio/mlserver:1.6.0'
+      image: 'docker.io/seldonio/mlserver:1.7.1'
       imagePullPolicy: 'IfNotPresent'
       lifecycle:
         preStop:
@@ -1396,7 +1242,10 @@ metadata:
 spec:
   podSpec:
     containers:
-    - image: 'docker.io/seldonio/seldon-rclone:latest'
+    - env:
+      - name: RCLONE_LOG_LEVEL
+        value: 'INFO'
+      image: 'docker.io/seldonio/seldon-rclone:latest'
       imagePullPolicy: 'IfNotPresent'
       lifecycle:
         preStop:
@@ -1438,6 +1287,22 @@ spec:
         value: '600'
       - name: SELDON_SCALING_STATS_PERIOD_SECONDS
         value: '20'
+      - name: SELDON_MAX_TIME_READY_SUB_SERVICE_AFTER_START_SECONDS
+        value: '30'
+      - name: SELDON_MAX_ELAPSED_TIME_READY_SUB_SERVICE_BEFORE_START_MINUTES
+        value: '15'
+      - name: SELDON_PERIOD_READY_SUB_SERVICE_SECONDS
+        value: '60'
+      - name: SELDON_MAX_LOAD_ELAPSED_TIME_MINUTES
+        value: '120'
+      - name: SELDON_MAX_UNLOAD_ELAPSED_TIME_MINUTES
+        value: '15'
+      - name: SELDON_MAX_LOAD_RETRY_COUNT
+        value: '5'
+      - name: SELDON_MAX_UNLOAD_RETRY_COUNT
+        value: '1'
+      - name: SELDON_UNLOAD_GRACE_PERIOD_SECONDS
+        value: '2'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: '10'
       - name: CONTROL_PLANE_SECURITY_PROTOCOL
@@ -1468,6 +1333,8 @@ spec:
         value: '/tmp/certs/dus/ca.crt'
       - name: ENVOY_UPSTREAM_CLIENT_TLS_CA_LOCATION
         value: '/tmp/certs/duc/ca.crt'
+      - name: SELDON_LOG_LEVEL
+        value: 'info'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT

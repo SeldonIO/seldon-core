@@ -14,3 +14,22 @@
     chart_ref: "kube-prometheus"
     chart_version: "{{ seldon_monitoring_prometheus_operator_chart_version }}"
     values: "{{ seldon_monitoring_prometheus_operator_values }}"
+
+
+- name: Install Prometheus Adapter
+  kubernetes.core.helm:
+    name: prometheus-adapter
+    release_namespace: "{{ seldon_monitoring_namespace }}"
+    chart_repo_url: "https://prometheus-community.github.io/helm-charts"
+    chart_ref: "prometheus-adapter"
+    chart_version: "{{ seldon_monitoring_prometheus_adapter_chart_version }}"
+    values: "{{ seldon_monitoring_prometheus_adapter_values }}"
+
+- name: Create Seldon HPA ConfigMap
+  kubernetes.core.k8s:
+    state: present
+    namespace: "{{ seldon_monitoring_namespace }}"
+    template: "templates/seldon-prometheus-adapter-configmap.j2"
+
+- name: "Rollout Prometheus Adapter"
+  shell: "kubectl rollout restart deployment prometheus-adapter -n {{ seldon_monitoring_namespace }}"

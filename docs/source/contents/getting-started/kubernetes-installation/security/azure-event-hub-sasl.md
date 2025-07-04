@@ -2,14 +2,14 @@
 
 > New in Seldon Core 2.5.0
 
-Seldon Core v2 can integrate with Azure Event Hub via Kafka protocol.
+Seldon Core 2 can integrate with Azure Event Hub via Kafka protocol.
 
 ```{warning}
 You will need at least `Standard` tier for your Event Hub Namespace as `Basic` tier does not support Kafka protocol.
 ```
 
 ```{warning}
-Seldon Core v2 creates 2 Kafka topics for each pipeline and model plus one global topic for errors.
+Seldon Core 2 creates 2 Kafka topics for each pipeline and model plus one global topic for errors.
 This means that total number of topics will be `2 x (#models + #pipelines) + 1` which will likely exceed the limit of `Standard` tier in Azure Event Hub.
 You can find more information on quotas, like the number of partitions per Event Hub, [here](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-quotas#basic-vs-standard-vs-premium-vs-dedicated-tiers).
 ```
@@ -18,7 +18,7 @@ You can find more information on quotas, like the number of partitions per Event
 
 To start you will need to have an Azure Event Hub Namespace.
 You can create one following Azure quickstart [docs](https://learn.microsoft.com/en-gb/azure/event-hubs/event-hubs-create).
-Note that you do not need to create an Event Hub (topics) as Core v2 will require all the topics it needs automatically.
+Note that you do not need to create an Event Hub (topics) as Core 2 will require all the topics it needs automatically.
 
 ## Create API Keys
 
@@ -39,14 +39,14 @@ Endpoint=sb://<namespace>.servicebus.windows.net/;SharedAccessKeyName=XXXXXX;Sha
 
 ## Create Kubernetes Secret
 
-Seldon Core v2 expects password to be in form of K8s secret
+Seldon Core 2 expects password to be in form of K8s secret
 ```bash
 kubectl create secret generic azure-kafka-secret -n seldon-mesh --from-literal password="Endpoint=sb://<namespace>.servicebus.windows.net/;SharedAccessKeyName=XXXXXX;SharedAccessKey=XXXXXX"
 ```
 
-## Configure Seldon Core v2
+## Configure Seldon Core 2
 
-Configure Seldon Core v2 by setting following Helm values:
+Configure Seldon Core 2 by setting following Helm values:
 
 ```{literalinclude} ../../../../../../k8s/samples/values-azure-event-hub-sasl.yaml.tmpl
 :language: yaml

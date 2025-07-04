@@ -1,0 +1,9 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: join_node
+spec:
+  storageUri: "gs://seldon-models/triton/join_node"
+  requirements:
+  - triton
+  - python

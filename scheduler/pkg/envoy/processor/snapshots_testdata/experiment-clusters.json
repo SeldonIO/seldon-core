@@ -1,0 +1,242 @@
+[
+    {
+        "name": "pipelinegateway_http",
+        "type": "STRICT_DNS",
+        "connectTimeout": "5s",
+        "lbPolicy": "LEAST_REQUEST",
+        "loadAssignment": {
+            "clusterName": "pipelinegateway_http",
+            "endpoints": [
+                {
+                    "lbEndpoints": [
+                        {
+                            "endpoint": {
+                                "address": {
+                                    "socketAddress": {
+                                        "address": "pipeline",
+                                        "portValue": 2
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "dnsLookupFamily": "V4_ONLY"
+    },
+    {
+        "name": "pipelinegateway_grpc",
+        "type": "STRICT_DNS",
+        "connectTimeout": "5s",
+        "lbPolicy": "LEAST_REQUEST",
+        "loadAssignment": {
+            "clusterName": "pipelinegateway_grpc",
+            "endpoints": [
+                {
+                    "lbEndpoints": [
+                        {
+                            "endpoint": {
+                                "address": {
+                                    "socketAddress": {
+                                        "address": "pipeline",
+                                        "portValue": 1
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "typedExtensionProtocolOptions": {
+            "envoy.extensions.upstreams.http.v3.HttpProtocolOptions": {
+                "@type": "type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions",
+                "explicitHttpConfig": {
+                    "http2ProtocolOptions": {}
+                }
+            }
+        },
+        "dnsLookupFamily": "V4_ONLY"
+    },
+    {
+        "name": "mirror_http",
+        "type": "STRICT_DNS",
+        "connectTimeout": "5s",
+        "lbPolicy": "LEAST_REQUEST",
+        "loadAssignment": {
+            "clusterName": "mirror_http",
+            "endpoints": [
+                {
+                    "lbEndpoints": [
+                        {
+                            "endpoint": {
+                                "address": {
+                                    "socketAddress": {
+                                        "address": "0.0.0.0",
+                                        "portValue": 9001
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "dnsLookupFamily": "V4_ONLY"
+    },
+    {
+        "name": "mirror_grpc",
+        "type": "STRICT_DNS",
+        "connectTimeout": "5s",
+        "lbPolicy": "LEAST_REQUEST",
+        "loadAssignment": {
+            "clusterName": "mirror_grpc",
+            "endpoints": [
+                {
+                    "lbEndpoints": [
+                        {
+                            "endpoint": {
+                                "address": {
+                                    "socketAddress": {
+                                        "address": "0.0.0.0",
+                                        "portValue": 9001
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "typedExtensionProtocolOptions": {
+            "envoy.extensions.upstreams.http.v3.HttpProtocolOptions": {
+                "@type": "type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions",
+                "explicitHttpConfig": {
+                    "http2ProtocolOptions": {}
+                }
+            }
+        },
+        "dnsLookupFamily": "V4_ONLY"
+    },
+    {
+        "name": "model2_1_grpc",
+        "type": "STRICT_DNS",
+        "connectTimeout": "5s",
+        "lbPolicy": "LEAST_REQUEST",
+        "loadAssignment": {
+            "clusterName": "model2_1_grpc",
+            "endpoints": [
+                {
+                    "lbEndpoints": [
+                        {
+                            "endpoint": {
+                                "address": {
+                                    "socketAddress": {
+                                        "address": "server.1",
+                                        "portValue": 0
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "typedExtensionProtocolOptions": {
+            "envoy.extensions.upstreams.http.v3.HttpProtocolOptions": {
+                "@type": "type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions",
+                "explicitHttpConfig": {
+                    "http2ProtocolOptions": {}
+                }
+            }
+        },
+        "dnsLookupFamily": "V4_ONLY"
+    },
+    {
+        "name": "model1_1_http",
+        "type": "STRICT_DNS",
+        "connectTimeout": "5s",
+        "lbPolicy": "LEAST_REQUEST",
+        "loadAssignment": {
+            "clusterName": "model1_1_http",
+            "endpoints": [
+                {
+                    "lbEndpoints": [
+                        {
+                            "endpoint": {
+                                "address": {
+                                    "socketAddress": {
+                                        "address": "server.0",
+                                        "portValue": 1234
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "dnsLookupFamily": "V4_ONLY"
+    },
+    {
+        "name": "model1_1_grpc",
+        "type": "STRICT_DNS",
+        "connectTimeout": "5s",
+        "lbPolicy": "LEAST_REQUEST",
+        "loadAssignment": {
+            "clusterName": "model1_1_grpc",
+            "endpoints": [
+                {
+                    "lbEndpoints": [
+                        {
+                            "endpoint": {
+                                "address": {
+                                    "socketAddress": {
+                                        "address": "server.0",
+                                        "portValue": 0
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "typedExtensionProtocolOptions": {
+            "envoy.extensions.upstreams.http.v3.HttpProtocolOptions": {
+                "@type": "type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions",
+                "explicitHttpConfig": {
+                    "http2ProtocolOptions": {}
+                }
+            }
+        },
+        "dnsLookupFamily": "V4_ONLY"
+    },
+    {
+        "name": "model2_1_http",
+        "type": "STRICT_DNS",
+        "connectTimeout": "5s",
+        "lbPolicy": "LEAST_REQUEST",
+        "loadAssignment": {
+            "clusterName": "model2_1_http",
+            "endpoints": [
+                {
+                    "lbEndpoints": [
+                        {
+                            "endpoint": {
+                                "address": {
+                                    "socketAddress": {
+                                        "address": "server.1",
+                                        "portValue": 1234
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "dnsLookupFamily": "V4_ONLY"
+    }
+]

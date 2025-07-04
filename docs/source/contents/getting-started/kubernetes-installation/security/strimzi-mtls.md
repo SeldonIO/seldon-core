@@ -32,7 +32,7 @@ kubectl create -f k8s/samples/strimzi-example-tls-user.yaml -n seldon-mesh
 
 Install seldon with the Strimzi certificate secrets using a custom values file. This sets the secret created by Strimzi for the user created above (`seldon`) and targets the server certificate authority secret from the name of the cluster created on install of the Kafka cluster (`seldon-cluster-ca-cert`).
 
-Configure Seldon Core v2 by setting following Helm values:
+Configure Seldon Core 2 by setting following Helm values:
 
 ```{literalinclude} ../../../../../../k8s/samples/values-strimzi-kafka-mtls.yaml
 :language: yaml

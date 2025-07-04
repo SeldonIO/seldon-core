@@ -119,8 +119,8 @@ func getSeldonMeshService(meta metav1.ObjectMeta, serviceConfig mlopsv1alpha1.Se
 				},
 				{
 					Port:       9003,
-					TargetPort: intstr.FromString("envoy-admin"),
-					Name:       "admin",
+					TargetPort: intstr.FromString("envoy-stats"),
+					Name:       "stats",
 					Protocol:   v1.ProtocolTCP,
 				},
 			},

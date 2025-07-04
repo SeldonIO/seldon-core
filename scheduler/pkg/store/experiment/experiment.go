@@ -9,6 +9,8 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package experiment
 
+import "time"
+
 type ResourceType uint32
 
 const (
@@ -20,6 +22,7 @@ type Experiment struct {
 	Name              string
 	Active            bool
 	Deleted           bool
+	DeletedAt         time.Time
 	Default           *string
 	ResourceType      ResourceType
 	Candidates        []*Candidate

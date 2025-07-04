@@ -14,12 +14,14 @@ package agent
 import (
 	"context"
 	"fmt"
+	"io"
 	"math"
 	"math/rand"
 	"net"
 	"sync"
 	"time"
 
+	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
@@ -31,7 +33,6 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelserver_controlplane/oip"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -169,10 +170,10 @@ func (rp *reverseGRPCProxy) extractModelNamesFromContext(ctx context.Context) (s
 	var internalModelName, externalModelName string
 	var inHeader bool
 	if internalModelName, externalModelName, inHeader = extractModelNamesFromHeaders(ctx); inHeader {
-		rp.logger.Debugf("Extracted model name %s:%s %s:%s", resources.SeldonInternalModelHeader, internalModelName, resources.SeldonModelHeader, externalModelName)
+		rp.logger.Debugf("Extracted model name %s:%s %s:%s", util.SeldonInternalModelHeader, internalModelName, util.SeldonModelHeader, externalModelName)
 		return internalModelName, externalModelName, nil
 	} else {
-		msg := fmt.Sprintf("Failed to extract model name %s:[%s] %s:[%s]", resources.SeldonInternalModelHeader, internalModelName, resources.SeldonModelHeader, externalModelName)
+		msg := fmt.Sprintf("Failed to extract model name %s:[%s] %s:[%s]", util.SeldonInternalModelHeader, internalModelName, util.SeldonModelHeader, externalModelName)
 		rp.logger.Error(msg)
 		return "", "", status.Error(codes.FailedPrecondition, msg)
 	}
@@ -207,6 +208,25 @@ func (rp *reverseGRPCProxy) setTrailer(ctx context.Context, trailer metadata.MD,
 	}
 }
 
+// to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
+func (rp *reverseGRPCProxy) syncScalingMetrics(internalModelName string) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		if err := rp.modelScalingStatsCollector.ScalingMetricsSetup(&wg, internalModelName); err != nil {
+			rp.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+		}
+	}()
+	defer func() {
+		go func() {
+			if err := rp.modelScalingStatsCollector.ScalingMetricsTearDown(&wg, internalModelName); err != nil {
+				rp.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+			}
+		}()
+	}()
+
+}
+
 func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
 	logger := rp.logger.WithField("func", "ModelInfer")
 	internalModelName, externalModelName, err := rp.extractModelNamesFromContext(ctx)
@@ -216,21 +236,8 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	r.ModelName = internalModelName
 	r.ModelVersion = ""
 
-	// to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		if err := rp.modelScalingStatsCollector.ScalingMetricsSetup(&wg, internalModelName); err != nil {
-			logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
-		}
-	}()
-	defer func() {
-		go func() {
-			if err := rp.modelScalingStatsCollector.ScalingMetricsTearDown(&wg, internalModelName); err != nil {
-				logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
-			}
-		}()
-	}()
+	// handle scaling metrics
+	rp.syncScalingMetrics(internalModelName)
 
 	startTime := time.Now()
 	err = rp.ensureLoadModel(r.ModelName)
@@ -259,6 +266,154 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	elapsedTime := time.Since(startTime).Seconds()
 	go rp.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeGrpc, elapsedTime, grpcStatus.Code().String())
 	return resp, err
+}
+
+type InferMessage interface {
+	*v2.ModelInferRequest | *v2.ModelInferResponse
+}
+
+// forwardStream forwards messages from recv to send, modifying them with modify
+// before sending. Two instances of forwardStream are launched, one for each
+// direction of the stream, from client <> reverse proxy and  reverse proxy <> (model) server. If one
+// of the streams stops due to an error, it cancels the context and returns.
+// This will stop the other stream as well. The error is sent to the errChan
+// and it is returned in the ModelStreamInfer. Note that EOF is not considered
+// an error, but it is just a signal that the stream is done. The CloseSend
+// function is called on either error or EOF to properly signal the end of the
+// stream so the resources can be properly released.
+//
+// A goroutine is launched to wait for the termination of the two streams. If
+// no error occurs, the goroutine closes the errChan, releasing the ModelStreamInfer
+// with a nil error. If an error occurs, the goroutine sends the error to the
+// errChan. In ModelStreamInfer, only the first error is waited for and returned.
+// Note that we need to launch a goroutine to wait for the termination of the
+// two streams, because otherwise the ModelStreamInfer function might wait indefinitely
+// (e.g., a forwardStream might be blocked on a recv operation and never call wg.Done()).
+func forwardStream[T InferMessage](
+	ctx context.Context,
+	recv func() (T, error),
+	send func(T) error,
+	modify func(T) T,
+	errChan chan<- error,
+	wg *sync.WaitGroup,
+	cancel context.CancelFunc,
+	closeSend func() error,
+) {
+	defer func() {
+		if err := closeSend(); err != nil {
+			errChan <- fmt.Errorf("failed to close send stream: %v", err)
+			cancel()
+		}
+	}()
+	defer wg.Done()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			msg, err := recv()
+			if err == io.EOF {
+				return
+			}
+			if err != nil {
+				errChan <- fmt.Errorf("stream recv error: %v", err)
+				cancel()
+				return
+			}
+
+			msg = modify(msg)
+			if err := send(msg); err != nil {
+				errChan <- fmt.Errorf("stream send error: %v", err)
+				cancel()
+				return
+			}
+		}
+	}
+}
+
+func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_ModelStreamInferServer) error {
+	ctx := stream.Context()
+	logger := rp.logger.WithField("func", "ModelStreamInfer")
+	internalModelName, externalModelName, err := rp.extractModelNamesFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	// handle scaling metrics
+	rp.syncScalingMetrics(internalModelName)
+
+	startTime := time.Now()
+	// TODO: check the model is still loaded while the stream is going, not just at the start of the stream
+	err = rp.ensureLoadModel(internalModelName)
+	if err != nil {
+		elapsedTime := time.Since(startTime).Seconds()
+		go rp.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeGrpc, elapsedTime, codes.NotFound.String())
+		return status.Error(codes.NotFound, fmt.Sprintf("Model %s not found (err: %s)", internalModelName, err))
+	}
+
+	// Create an outgoing context for the proxy call to service from incoming context
+	outgoingCtx, requestId := rp.createOutgoingCtxWithRequestId(ctx)
+
+	var trailer metadata.MD
+	opts := append(rp.callOptions, grpc.Trailer(&trailer), grpc_retry.Disable())
+	clientStream, err := rp.getV2GRPCClient().ModelStreamInfer(outgoingCtx, opts...)
+	if err != nil {
+		logger.WithError(err).Error("Failed to create stream")
+		return err
+	}
+
+	errChan := make(chan error, 4) // Buffered channel to collect errors
+
+	// Add cancel to context to cancel goroutines when error occurs
+	ctxWithCancel, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	wg := sync.WaitGroup{}
+
+	// Launch goroutines for forwarding
+	wg.Add(2)
+	go forwardStream(
+		ctxWithCancel,
+		stream.Recv,
+		clientStream.Send,
+		func(req *v2.ModelInferRequest) *v2.ModelInferRequest {
+			req.ModelName = internalModelName
+			req.ModelVersion = ""
+			return req
+		},
+		errChan,
+		&wg,
+		cancel,
+		clientStream.CloseSend, // Pass CloseSend function here
+	)
+	go forwardStream(
+		ctxWithCancel,
+		clientStream.Recv,
+		stream.Send,
+		func(resp *v2.ModelInferResponse) *v2.ModelInferResponse { return resp }, // No modification
+		errChan,
+		&wg,
+		cancel,
+		func() error { return nil }, // No need to close stream on receiving
+	)
+
+	go func() {
+		wg.Wait()
+		close(errChan) // Close the error channel after all goroutines are done
+	}()
+
+	rp.setTrailer(ctx, trailer, requestId)
+
+	err = <-errChan // Wait for the first error
+	if err != nil {
+		logger.WithError(err).Error("Error in stream forwarding")
+	}
+
+	grpcStatus, _ := status.FromError(err)
+	elapsedTime := time.Since(startTime).Seconds()
+	go rp.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeGrpc, elapsedTime, grpcStatus.Code().String())
+	return err
 }
 
 func (rp *reverseGRPCProxy) ModelMetadata(ctx context.Context, r *v2.ModelMetadataRequest) (*v2.ModelMetadataResponse, error) {
@@ -354,8 +509,11 @@ func extractHeader(key string, md metadata.MD) string {
 func extractModelNamesFromHeaders(ctx context.Context) (string, string, bool) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if ok {
-		internalModelName := extractHeader(resources.SeldonInternalModelHeader, md)
-		externalModelName := extractHeader(resources.SeldonModelHeader, md)
+		internalModelName := extractHeader(util.SeldonInternalModelHeader, md)
+		externalModelName, _, err := util.GetOrignalModelNameAndVersion(internalModelName)
+		if err != nil {
+			externalModelName = extractHeader(util.SeldonModelHeader, md)
+		}
 		return internalModelName, externalModelName, internalModelName != "" && externalModelName != ""
 	}
 	return "", "", false

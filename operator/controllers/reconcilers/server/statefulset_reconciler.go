@@ -41,6 +41,7 @@ func NewServerStatefulSetReconciler(
 	podSpec *v1.PodSpec,
 	volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim,
 	scaling *mlopsv1alpha1.ScalingSpec,
+	volumeClaimRetentionPolicy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy,
 	serverConfigMeta metav1.ObjectMeta,
 	annotator *patch.Annotator,
 ) *ServerStatefulSetReconciler {
@@ -48,7 +49,7 @@ func NewServerStatefulSetReconciler(
 	annotations := utils.MergeMaps(meta.Annotations, serverConfigMeta.Annotations)
 	return &ServerStatefulSetReconciler{
 		ReconcilerConfig: common,
-		StatefulSet:      toStatefulSet(meta, podSpec, volumeClaimTemplates, scaling, labels, annotations),
+		StatefulSet:      toStatefulSet(meta, podSpec, volumeClaimTemplates, scaling, volumeClaimRetentionPolicy, labels, annotations),
 		Annotator:        annotator,
 	}
 }
@@ -61,6 +62,7 @@ func toStatefulSet(meta metav1.ObjectMeta,
 	podSpec *v1.PodSpec,
 	volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim,
 	scaling *mlopsv1alpha1.ScalingSpec,
+	volumeClaimRetentionPolicy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy,
 	labels map[string]string,
 	annotations map[string]string) *appsv1.StatefulSet {
 	labels[constants.KubernetesNameLabelKey] = constants.ServerLabelValue
@@ -88,7 +90,8 @@ func toStatefulSet(meta metav1.ObjectMeta,
 				},
 				Spec: *podSpec,
 			},
-			PodManagementPolicy: appsv1.ParallelPodManagement,
+			PodManagementPolicy:                  appsv1.ParallelPodManagement,
+			PersistentVolumeClaimRetentionPolicy: volumeClaimRetentionPolicy,
 		},
 	}
 
@@ -203,11 +206,19 @@ func (s *ServerStatefulSetReconciler) Reconcile() error {
 const (
 	StatefulSetReadyReason    = "StatefulSet replicas matches desired replicas"
 	StatefulSetNotReadyReason = "StatefulSet replicas does not match desired replicas"
+	StatefulSetReplicasNil    = "[BUG] StatefulSet replicas is nil"
 )
 
 func (s *ServerStatefulSetReconciler) GetConditions() []*apis.Condition {
-	ready := s.StatefulSet.Status.ReadyReplicas >= s.StatefulSet.Status.Replicas
-	s.Logger.Info("Checking conditions for stateful set", "ready", ready, "replicas", s.StatefulSet.Status.Replicas, "availableReplicas", s.StatefulSet.Status.AvailableReplicas)
+	// Replicas should never be nil as it is set to a default when not given explicitly
+	// Check to defend against programmatic setting to nil (i.e a bug in the code)
+	if s.StatefulSet.Spec.Replicas == nil {
+		s.Logger.Info(StatefulSetReplicasNil)
+		return []*apis.Condition{mlopsv1alpha1.CreateCondition(mlopsv1alpha1.StatefulSetReady, false, StatefulSetReplicasNil)}
+	}
+
+	ready := s.StatefulSet.Status.ReadyReplicas >= *s.StatefulSet.Spec.Replicas
+	s.Logger.Info("Checking conditions for stateful set", "ready", ready, ".spec.replicas", *s.StatefulSet.Spec.Replicas, ".status.replicas", s.StatefulSet.Status.Replicas, "availableReplicas", s.StatefulSet.Status.AvailableReplicas)
 	if ready {
 		return []*apis.Condition{mlopsv1alpha1.CreateCondition(mlopsv1alpha1.StatefulSetReady, ready, StatefulSetReadyReason)}
 	} else {

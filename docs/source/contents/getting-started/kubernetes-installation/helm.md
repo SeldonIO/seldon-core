@@ -15,7 +15,7 @@ following steps.
 
 Note that for Kafka follow the steps discussed [here](../../kubernetes/kafka/index)
 
-## Add Seldon Core v2 Charts
+## Add Seldon Core 2 Charts
 
 ```bash
 helm repo add seldon-charts https://seldonio.github.io/helm-charts
@@ -28,7 +28,7 @@ helm repo update seldon-charts
 helm install seldon-core-v2-crds  seldon-charts/seldon-core-v2-crds
 ```
 
-## Install the Seldon Core V2 Components
+## Install the Seldon Core 2 Components
 
 You can install into any namespace. For illustration we will use `seldon-mesh`. This will install the core manager which will handle the key [resources](../../kubernetes/resources/index.md)  used by Seldon including the SeldonRuntime and Server resources.
 
@@ -48,7 +48,7 @@ helm install seldon-core-v2  seldon-charts/seldon-core-v2-setup --namespace seld
 
 Cluster wide operations will require ClusterRoles to be created so when deploying be aware your user will require the required permissions. With cluster wide operations you can create SeldonRuntimes in any namespace.
 
-## Install the default Seldon Core V2 Runtime
+## Install the default Seldon Core 2 Runtime
 
 ```bash
 helm install seldon-v2-runtime seldon-charts/seldon-core-v2-runtime --namespace seldon-mesh

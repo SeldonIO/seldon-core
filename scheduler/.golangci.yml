@@ -24,7 +24,7 @@ linters:
   enable:
     # Sorted alphabetically.
     - errcheck
-    - exportloopref
+    - copyloopvar
     - gci
     - goimports # Also includes gofmt style formatting
     - gosimple
@@ -47,6 +47,10 @@ linters-settings:
       - prefix(github.com/seldonio/seldon-core/scheduler)
   goconst:
     min-occurrences: 5
+
+  govet:
+    disable:
+      - printf
 
 issues:
   # which dirs to skip: they won't be analyzed;

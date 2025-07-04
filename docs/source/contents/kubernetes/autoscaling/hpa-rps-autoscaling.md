@@ -252,9 +252,9 @@ Please note that you **must** use a `target.type` of `AverageValue`. The value g
 `averageValue` is the threshold RPS per replica, and the new (scaled) number of replicas is computed by HPA according
 to the following formula:
 
-$$\texttt{targetReplicas} = \frac{\texttt{infer\_rps}/\texttt{modelReplicas}}{\texttt{thresholdPerReplicaRPS}}$$
+$$\texttt{targetReplicas} = \frac{\texttt{infer\_rps}}{\texttt{thresholdPerReplicaRPS}}$$
 
-Attempting other target types will not work under the current Seldon Core v2 setup, because they use the number of active Pods associated with the Model CR (i.e. the associated Server pods) in the `targetReplicas` computation. However, this also means that this set of pods becomes "owned" by the Model HPA. Once a pod is owned by a given HPA it is not available for other HPAs to use, so we would no longer be able to scale the Server CRs using HPA.
+Attempting other target types will not work under the current Seldon Core 2 setup, because they use the number of active Pods associated with the Model CR (i.e. the associated Server pods) in the `targetReplicas` computation. However, this also means that this set of pods becomes "owned" by the Model HPA. Once a pod is owned by a given HPA it is not available for other HPAs to use, so we would no longer be able to scale the Server CRs using HPA.
 
 
 **Advanced settings:**

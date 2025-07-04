@@ -2,13 +2,18 @@ CUSTOM_IMAGE_TAG ?= latest
 DOCKERHUB_USERNAME ?= seldonio
 # Image URL to use all building/pushing image targets
 IMG ?= ${DOCKERHUB_USERNAME}/seldonv2-controller:${CUSTOM_IMAGE_TAG}
+IMG_CLI ?= ${DOCKERHUB_USERNAME}/seldon-cli:${CUSTOM_IMAGE_TAG}
 AGENT_IMG ?= ${DOCKERHUB_USERNAME}/seldon-agent:${CUSTOM_IMAGE_TAG}
 RCLONE_IMG ?= ${DOCKERHUB_USERNAME}/seldon-rclone:${CUSTOM_IMAGE_TAG}
-MLSERVER_IMG ?= seldonio/mlserver:1.6.0
+MLSERVER_IMG ?= seldonio/mlserver:1.7.1
 TRITON_IMG ?= nvcr.io/nvidia/tritonserver:23.03-py3
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.22
+ENVTEST_K8S_VERSION = 1.23
+CONTROLLER_GEN_VERSION = v0.18.0
+KUSTOMIZE_VERSION = v5.2.1
+SETUP_ENVTEST_VERSION = release-0.21
 KIND_NAME=seldon
+NAMESPACE ?= seldon-mesh
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -53,6 +58,7 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 	sed -i 's/ClusterRole/Role/' config/rbac/namespace_role.yaml
 	cp config/rbac/role_binding.yaml config/rbac/namespace_role_binding.yaml
 	sed -i 's/ClusterRole/Role/' config/rbac/namespace_role_binding.yaml
+	sed -i 's/-{{[[:space:]]*\.Release\.Namespace[[:space:]]*}}//' config/rbac/namespace_role_binding.yaml
 
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
@@ -66,7 +72,7 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
-.GOLANGCILINT_VERSION := v1.59.1
+.GOLANGCILINT_VERSION := v1.64.8
 .GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint-versions/$(.GOLANGCILINT_VERSION)
 
 ${.GOLANGCILINT_PATH}/golangci-lint:
@@ -88,20 +94,20 @@ test: manifests generate fmt vet envtest ## Run tests.
 
 .PHONY: build
 build: generate fmt vet ## Build manager binary.
-	go build -o bin/manager main.go
+	go build -trimpath -ldflags="-w" -o bin/manager main.go
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./main.go
 
 build-seldon: generate fmt vet
-	go build -o bin/seldon -v ./cmd/seldon
+	go build -trimpath -ldflags="-w" -o bin/seldon -v ./cmd/seldon
 
 build-seldon-arm: generate fmt vet
-	GOOS=darwin GOARCH=arm64 go build -tags dynamic -o bin/seldon -v ./cmd/seldon
+	GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags="-w" -tags dynamic -o bin/seldon -v ./cmd/seldon
 
 build-seldon-docgen:
-	go build -o bin/seldon-gendocs -v ./cmd/seldon/docs
+	go build -trimpath -ldflags="-w" -o bin/seldon-gendocs -v ./cmd/seldon/docs
 
 generate-cli-docs:
 	./bin/seldon-gendocs --out ../docs/source/contents/cli/docs
@@ -110,19 +116,51 @@ generate-cli-docs:
 docker-build: ## Build docker image with the manager.
 	docker build -t ${IMG} -f Dockerfile ..
 
+.PHONY: docker-build-cli
+docker-build-cli: ## Build docker image with seldon cli.
+	docker build -t ${IMG_CLI} -f Dockerfile.cli ..
+
+.PHONY: docker-build-and-push-prod
+docker-build-and-push-prod: ## Build operator docker image and push, including sbom.
+	docker buildx build --provenance=true -t ${IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile ..
+
+.PHONY: docker-build-and-push-prod-cli
+docker-build-and-push-prod-cli: ## Build seldon cli docker image and push, including sbom.
+	docker buildx build --provenance=true -t ${IMG_CLI} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.cli ..
+
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
 	docker push ${IMG}
 
+.PHONY: docker-push-cli
+docker-push-cli: ## Push docker image with seldon cli.
+	docker push ${IMG_CLI}
+
 .PHONY: kind-image-load
-kind-image-load: docker-build
+kind-image-load:
 	kind load -v 3 docker-image ${IMG} --name ${KIND_NAME}
+
+.PHONY: kind-image-load-cli
+kind-image-load-cli:
+	kind load -v 3 docker-image ${IMG_CLI} --name ${KIND_NAME}
+
+.PHONY: kind-image-load-all
+kind-image-load-all: kind-image-load kind-image-load-cli
 
 ##@ Deployment
 
 ifndef ignore-not-found
   ignore-not-found = true
 endif
+
+.PHONY: deploy-seldon-cli
+deploy-seldon-cli:
+	cd config/cli && kustomize edit set image seldon-cli=${IMG_CLI} && kustomize edit set namespace ${NAMESPACE}
+	kustomize build config/cli| kubectl apply -f -
+
+.PHONY: undeploy-seldon-cli
+undeploy-seldon-cli:
+	kustomize build config/cli| kubectl delete -f -
 
 # CRD is current too big for apply due to annotations size limit
 .PHONY: install
@@ -176,17 +214,17 @@ build-push-deploy: build docker-build docker-push deploy-all
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
-	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.9.2)
+	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_GEN_VERSION))
 
 KUSTOMIZE = $(shell pwd)/bin/kustomize
 .PHONY: kustomize
 kustomize: ## Download kustomize locally if necessary.
-	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v4@v4.5.4)
+	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v5@$(KUSTOMIZE_VERSION))
 
 ENVTEST = $(shell pwd)/bin/setup-envtest
 .PHONY: envtest
 envtest: ## Download envtest-setup locally if necessary.
-	$(call go-get-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@v0.0.0-20221206203637-3da2de04734a)
+	$(call go-get-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@$(SETUP_ENVTEST_VERSION))
 
 # go-get-tool will 'go get' any package $2 and install it to $1.
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))

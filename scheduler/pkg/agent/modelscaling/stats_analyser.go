@@ -196,7 +196,7 @@ func (ss *StatsAnalyserService) processImpl(statsWrapper ModelScalingStatsWrappe
 			msg := "Timeout sending trigger scaling event on channel"
 			ss.logger.Error(msg)
 			// invalidate any further events in this round as well.
-			return fmt.Errorf(msg)
+			return fmt.Errorf("processImpl: %v", msg)
 		}
 	}
 	return nil

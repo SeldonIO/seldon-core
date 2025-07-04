@@ -79,6 +79,15 @@ opentelemetry:
   disable: false
   ratio: 1
 
+# logging
+# this is a global setting, in the case individual components logLevel is not set
+# Users should set a value from: 
+# fatal, error, warn, info, debug, trace
+# if used also for .rclone.logLevel, the allowed set reduces to:
+# debug, info, error
+logging:
+  logLevel: info
+
 hodometer:
   image:
     pullPolicy: IfNotPresent
@@ -162,9 +171,11 @@ dataflow:
     runAsUser: 1000
     runAsGroup: 1000
     runAsNonRoot: true
+  logLevelKafka: warn
 
 controller:
   clusterwide: false
+  skipOperatorClusterRoleCreation: false
   image:
     pullPolicy: IfNotPresent
     registry: docker.io
@@ -199,6 +210,12 @@ envoy:
     runAsUser: 1000
     runAsGroup: 1000
     runAsNonRoot: true
+  preStopSleepPeriodSeconds: 30
+  terminationGracePeriodSeconds: 120
+  adminInterfacePort: 9901
+  accesslogPath: /tmp/envoy-accesslog.txt
+  enableAccesslog: true
+  includeSuccessfulRequests: false
 
 scheduler:
   image:
@@ -218,6 +235,12 @@ scheduler:
     runAsGroup: 1000
     runAsNonRoot: true
   schedulerReadyTimeoutSeconds: 600
+  
+autoscaling:
+  autoscalingModelEnabled: false
+  autoscalingServerEnabled: true
+  serverPackingEnabled: false
+  serverPackingPercentage: 0.0
 
 serverConfig:
   terminationGracePeriodSeconds: 120
@@ -237,6 +260,8 @@ serverConfig:
     resources:
       cpu: 50m
       memory: 128Mi
+    # should follow `log-level` from https://rclone.org/docs/
+    logLevel: info
 
   agent:
     image:
@@ -255,6 +280,7 @@ serverConfig:
     maxUnloadElapsedTimeMinutes: "15"
     maxLoadRetryCount: "5"
     maxUnloadRetryCount: "1"
+    unloadGracePeriodSeconds: "2"
     resources:
       cpu: 200m
       memory: 1Gi
@@ -264,7 +290,7 @@ serverConfig:
       pullPolicy: IfNotPresent
       registry: docker.io
       repository: seldonio/mlserver
-      tag: 1.6.0
+      tag: 1.7.1
     serverCapabilities: "mlserver,alibi-detect,alibi-explain,huggingface,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
     modelVolumeStorage: 1Gi
     resources:

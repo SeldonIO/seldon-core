@@ -93,6 +93,13 @@ func TestServersSyncSynchroniser(t *testing.T) {
 			initialSignals: 0,
 			context:        coordinator.SERVER_REPLICA_CONNECTED,
 		},
+		{
+			name:           "long timeout - no signal", // timeout will not be reached
+			timeout:        200 * time.Second,
+			signals:        0,
+			initialSignals: 0,
+			context:        coordinator.SERVER_REPLICA_CONNECTED,
+		},
 	}
 
 	for _, test := range tests {
@@ -140,7 +147,11 @@ func TestServersSyncSynchroniser(t *testing.T) {
 				}
 			}
 
-			g.Expect(s.IsReady()).To(BeFalse())
+			if test.signals+test.initialSignals > 0 {
+				g.Expect(s.IsReady()).To(BeFalseBecause("still need to process events"))
+			} else {
+				g.Expect(s.IsReady()).To(BeTrueBecause("no events to process"))
+			}
 
 			time.Sleep(100 * time.Millisecond)
 

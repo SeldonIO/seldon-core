@@ -39,3 +39,12 @@ spec:
                 name: '{{ .Values.security.controlplane.ssl.client.serverValidationSecret }}' 
                 key: ca.crt
                 optional: true 
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - |
+                  echo -ne "POST /healthcheck/fail HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n" > /dev/tcp/localhost/{{ .Values.envoy.adminInterfacePort }}
+                  sleep '{{ .Values.envoy.preStopSleepPeriodSeconds }}'

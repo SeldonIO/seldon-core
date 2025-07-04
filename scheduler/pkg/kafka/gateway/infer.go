@@ -24,8 +24,9 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	pipeline "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -34,6 +35,8 @@ const (
 	pollTimeoutMillisecs        = 10000
 	DefaultNumWorkers           = 8
 	EnvVarNumWorkers            = "MODELGATEWAY_NUM_WORKERS"
+	DefaultWorkerTimeoutMs      = 2 * 60 * 1000
+	EnvVarWorkerTimeoutMs       = "MODELGATEWAY_WORKER_TIMEOUT_MS"
 	envDefaultReplicationFactor = "KAFKA_DEFAULT_REPLICATION_FACTOR"
 	envDefaultNumPartitions     = "KAFKA_DEFAULT_NUM_PARTITIONS"
 	defaultReplicationFactor    = 1
@@ -105,7 +108,7 @@ func (kc *InferKafkaHandler) setup(consumerConfig kafka.ConfigMap, producerConfi
 	logger := kc.logger.WithField("func", "setup")
 	var err error
 
-	producerConfigWithoutSecrets := config.WithoutSecrets(producerConfig)
+	producerConfigWithoutSecrets := kafka_config.WithoutSecrets(producerConfig)
 	kc.logger.Infof("Creating producer with config %v", producerConfigWithoutSecrets)
 	kc.producer, err = kafka.NewProducer(&producerConfig)
 	if err != nil {
@@ -118,7 +121,7 @@ func (kc *InferKafkaHandler) setup(consumerConfig kafka.ConfigMap, producerConfi
 	// for eg. hash(topic1) -> modelgateway-0
 	// this is done by the caller i.e. ConsumerManager (store.go)
 	consumerConfig["group.id"] = kc.consumerName
-	consumerConfigWithoutSecrets := config.WithoutSecrets(consumerConfig)
+	consumerConfigWithoutSecrets := kafka_config.WithoutSecrets(consumerConfig)
 	kc.logger.Infof("Creating consumer with config %v", consumerConfigWithoutSecrets)
 	kc.consumer, err = kafka.NewConsumer(&consumerConfig)
 	if err != nil {
@@ -254,6 +257,42 @@ func (kc *InferKafkaHandler) createTopics(topicNames []string) error {
 	return nil
 }
 
+func (kc *InferKafkaHandler) deleteTopics(topicNames []string) error {
+	logger := kc.logger.WithField("func", "deleteTopics")
+	if kc.adminClient == nil {
+		logger.Warnf("no kafka admin client, can't delete any of the following topics: %v", topicNames)
+		return nil
+	}
+	t1 := time.Now()
+
+	results, err := kc.adminClient.DeleteTopics(
+		context.Background(),
+		topicNames,
+		kafka.SetAdminOperationTimeout(TopicDeleteTimeout),
+	)
+	if err != nil {
+		return err
+	}
+
+	var failedTopics []string
+	for _, result := range results {
+		if result.Error.Code() != kafka.ErrNoError {
+			failedTopics = append(failedTopics, result.Topic)
+			logger.Errorf("failed to delete topic %s: %s", result.Topic, result.Error.Error())
+		} else {
+			logger.Infof("topic %s deleted", result.Topic)
+		}
+	}
+
+	if len(failedTopics) > 0 {
+		return fmt.Errorf("failed to delete topics: %v", failedTopics)
+	}
+
+	t2 := time.Now()
+	logger.Debugf("kafka topics deleted in %d millis", t2.Sub(t1).Milliseconds())
+	return nil
+}
+
 func (kc *InferKafkaHandler) ensureTopicsExist(topicNames []string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), TopicDescribeTimeout)
 	defer cancel()
@@ -295,9 +334,10 @@ func (kc *InferKafkaHandler) AddModel(modelName string) error {
 	return nil
 }
 
-func (kc *InferKafkaHandler) RemoveModel(modelName string) error {
+func (kc *InferKafkaHandler) RemoveModel(modelName string, cleanTopicsOnDeletion bool) error {
 	kc.mu.Lock()
 	defer kc.mu.Unlock()
+
 	delete(kc.loadedModels, modelName)
 	delete(kc.subscribedTopics, kc.topicNamer.GetModelTopicInputs(modelName))
 	if len(kc.subscribedTopics) > 0 {
@@ -307,6 +347,17 @@ func (kc *InferKafkaHandler) RemoveModel(modelName string) error {
 			return nil
 		}
 	}
+
+	if cleanTopicsOnDeletion {
+		// delete input and output topics from kafka
+		inputTopic := kc.topicNamer.GetModelTopicInputs(modelName)
+		outputTopic := kc.topicNamer.GetModelTopicOutputs(modelName)
+		err := kc.deleteTopics([]string{inputTopic, outputTopic})
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -325,7 +376,7 @@ func (kc *InferKafkaHandler) Serve() {
 	jobChan := make(chan *InferWork, kc.consumerConfig.NumWorkers)
 	// Start workers
 	for i := 0; i < kc.consumerConfig.NumWorkers; i++ {
-		go kc.workers[i].Start(jobChan, cancelChan)
+		go kc.workers[i].Start(jobChan, cancelChan, kc.consumerConfig.WorkerTimeout)
 	}
 
 	for run {

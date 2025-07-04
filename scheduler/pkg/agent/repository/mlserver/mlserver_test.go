@@ -14,6 +14,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -22,29 +23,49 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
-func TestSetExplainer(t *testing.T) {
+func TestSetModelSettings(t *testing.T) {
 	g := NewGomegaWithT(t)
-
 	envoyHost := "0.0.0.0"
 	envoyPort := 9000
+
 	type test struct {
-		name          string
-		data          []byte
-		explainerSpec *scheduler.ExplainerSpec
-		expected      *ModelSettings
+		name      string
+		data      []byte
+		spec      interface{}
+		handler   func(*MLServerRepositoryHandler, string, interface{}, string, int) error
+		assertion func(*GomegaWithT, *ModelSettings)
 	}
 
 	getStrPr := func(str string) *string { return &str }
+
+	// define assertion functions
+	validateExplainer := func(g *GomegaWithT, expected *ModelSettings) func(*GomegaWithT, *ModelSettings) {
+		return func(g *GomegaWithT, settings *ModelSettings) {
+			g.Expect(settings.Parameters.Extra[explainerTypeKey]).To(Equal(expected.Parameters.Extra[explainerTypeKey]))
+			g.Expect(settings.Parameters.Extra[inferUriKey]).To(Equal(expected.Parameters.Extra[inferUriKey]))
+
+		}
+	}
+
+	validateLlm := func(g *GomegaWithT, expected *ModelSettings) func(*GomegaWithT, *ModelSettings) {
+		return func(g *GomegaWithT, settings *ModelSettings) {
+			g.Expect(settings.Parameters.Extra[inferUriKey]).To(Equal(expected.Parameters.Extra[inferUriKey]))
+			g.Expect(settings.Parameters.Extra["prompt_utils"]).To(Equal(expected.Parameters.Extra["prompt_utils"]))
+		}
+	}
+
 	tests := []test{
 		{
-			name: "basic",
-			data: []byte(`{"name": "iris","implementation": "mlserver_sklearn.SKLearnModel",
-"parameters": {"version": "1", "extra":{}}}`),
-			explainerSpec: &scheduler.ExplainerSpec{
+			name: "set explainer - basic",
+			data: []byte(`{"name": "iris","implementation": "mlserver_sklearn.SKLearnModel", "parameters": {"version": "1", "extra":{}}}`),
+			spec: &scheduler.ExplainerSpec{
 				Type:     "anchor_tabular",
 				ModelRef: getStrPr("mymodel"),
 			},
-			expected: &ModelSettings{
+			handler: func(m *MLServerRepositoryHandler, path string, spec interface{}, host string, port int) error {
+				return m.SetExplainer(path, spec.(*scheduler.ExplainerSpec), host, port)
+			},
+			assertion: validateExplainer(g, &ModelSettings{
 				Name:           "iris",
 				Implementation: "mlserver_sklearn.SKLearnModel",
 				Parameters: &ModelParameters{
@@ -54,17 +75,19 @@ func TestSetExplainer(t *testing.T) {
 						inferUriKey:      "http://0.0.0.0:9000/v2/models/mymodel/infer",
 					},
 				},
-			},
+			}),
 		},
 		{
-			name: "explainer parameters",
-			data: []byte(`{"name": "iris","implementation": "mlserver_sklearn.SKLearnModel",
-"parameters": {"version": "1", "extra":{"init_parameters":{"threshold":0.95}}}}`),
-			explainerSpec: &scheduler.ExplainerSpec{
+			name: "set explainer - parameters",
+			data: []byte(`{"name": "iris","implementation": "mlserver_sklearn.SKLearnModel", "parameters": {"version": "1", "extra":{"init_parameters":{"threshold":0.95}}}}`),
+			spec: &scheduler.ExplainerSpec{
 				Type:     "anchor_tabular",
 				ModelRef: getStrPr("mymodel"),
 			},
-			expected: &ModelSettings{
+			handler: func(m *MLServerRepositoryHandler, path string, spec interface{}, host string, port int) error {
+				return m.SetExplainer(path, spec.(*scheduler.ExplainerSpec), host, port)
+			},
+			assertion: validateExplainer(g, &ModelSettings{
 				Name:           "iris",
 				Implementation: "mlserver_sklearn.SKLearnModel",
 				Parameters: &ModelParameters{
@@ -74,7 +97,30 @@ func TestSetExplainer(t *testing.T) {
 						inferUriKey:      "http://0.0.0.0:9000/v2/models/mymodel/infer",
 					},
 				},
+			}),
+		},
+		{
+			name: "chat-completion",
+			data: []byte(`{"name": "chat-completion","implementation": "mlserver_prompt_utils.runtime.PromptRuntime", "parameters": {"version": "1", "extra":{"prompt_utils": {"model_type": "chat.completions"}}}}`),
+			spec: &scheduler.LlmSpec{
+				ModelRef: getStrPr("mymodel"),
 			},
+			handler: func(m *MLServerRepositoryHandler, path string, spec interface{}, host string, port int) error {
+				return m.SetLlm(path, spec.(*scheduler.LlmSpec), host, port)
+			},
+			assertion: validateLlm(g, &ModelSettings{
+				Name:           "chat-completion",
+				Implementation: "mlserver_prompt_utils.runtime.PromptRuntime",
+				Parameters: &ModelParameters{
+					Version: "1",
+					Extra: map[string]interface{}{
+						inferUriKey: "http://0.0.0.0:9000/v2/models/mymodel/infer",
+						"prompt_utils": map[string]interface{}{
+							"model_type": "chat.completions",
+						},
+					},
+				},
+			}),
 		},
 	}
 
@@ -82,17 +128,26 @@ func TestSetExplainer(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			modelRepoPath := t.TempDir()
 			settingsFile := filepath.Join(modelRepoPath, mlserverConfigFilename)
+
+			// write the model settings to a file
 			err := os.WriteFile(settingsFile, test.data, os.ModePerm)
 			g.Expect(err).To(BeNil())
+
 			m := &MLServerRepositoryHandler{}
-			err = m.SetExplainer(modelRepoPath, test.explainerSpec, envoyHost, envoyPort)
+
+			// call the andler
+			err = test.handler(m, modelRepoPath, test.spec, envoyHost, envoyPort)
 			g.Expect(err).To(BeNil())
+
+			// load model settings and perofrm assertion
 			modelSettings, err := m.loadModelSettingsFromFile(settingsFile)
 			g.Expect(err).To(BeNil())
-			g.Expect(modelSettings.Parameters.Extra[explainerTypeKey]).To(Equal(test.expected.Parameters.Extra[explainerTypeKey]))
-			g.Expect(modelSettings.Parameters.Extra[inferUriKey]).To(Equal(test.expected.Parameters.Extra[inferUriKey]))
+
+			test.assertion(g, modelSettings)
+
 		})
 	}
+
 }
 
 func TestLoadFromBytes(t *testing.T) {
@@ -773,6 +828,51 @@ func TestDefaultModelSettings(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			data, _ := json.Marshal(test.modelSettings)
 			g.Expect(data).To(Equal(test.expected))
+		})
+	}
+}
+
+func TestGetModelConfig(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	tests := []struct {
+		name     string
+		expected uint32
+		err      bool
+	}{
+		{
+			name:     "defaults to 1",
+			expected: 1,
+			err:      false,
+		},
+		{
+			name:     "should pick up env var",
+			expected: 10,
+			err:      false,
+		},
+		{
+			name:     "returns 1 on err",
+			expected: 1,
+			err:      true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			logger := log.New()
+			m := NewMLServerRepositoryHandler(logger)
+
+			if test.err {
+				os.Setenv(parallelWorkersEnvVar, "uh-oh")
+			} else if test.expected > 1 {
+				os.Setenv(parallelWorkersEnvVar, strconv.FormatInt(int64(test.expected), 10))
+			}
+
+			runtimeInfo, err := m.GetModelRuntimeInfo("test-model")
+			// mlserver should never return an error
+			g.Expect(err).To(BeNil())
+			mlserverRuntimeInfo := runtimeInfo.ModelRuntimeInfo.(*scheduler.ModelRuntimeInfo_Mlserver)
+			g.Expect(mlserverRuntimeInfo.Mlserver.ParallelWorkers).To(Equal(test.expected))
 		})
 	}
 }

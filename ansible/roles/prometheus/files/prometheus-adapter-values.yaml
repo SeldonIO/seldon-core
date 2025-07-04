@@ -1,0 +1,2 @@
+prometheus:
+  url: http://seldon-monitoring-prometheus

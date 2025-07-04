@@ -8,9 +8,9 @@ ENVOY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-envoy:${CUSTOM_IMAGE_TAG}
 GRAFANA_IMG ?= ${DOCKERHUB_USERNAME}/seldon-grafana:${CUSTOM_IMAGE_TAG}
 PROMETHEUS_IMG ?= prom/prometheus:latest
 HODOMETER_IMG ?= ${DOCKERHUB_USERNAME}/seldon-hodometer:${CUSTOM_IMAGE_TAG}
-KAFKA_IMG ?= docker.io/bitnami/kafka:3.3.1
+KAFKA_IMG ?= docker.io/bitnami/kafka:3.8.1
 ZOOKEEPER_IMG ?= docker.io/bitnami/zookeeper:3.8
-MLSERVER_IMG ?= seldonio/mlserver:1.6.0
+MLSERVER_IMG ?= seldonio/mlserver:1.7.1
 MODELGATEWAY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-modelgateway:${CUSTOM_IMAGE_TAG}
 OTELCOL_IMG ?= otel/opentelemetry-collector-contrib-dev:latest
 JAEGER_IMG ?= jaegertracing/all-in-one:latest
@@ -24,7 +24,7 @@ GID ?= $(shell id -g)
 
 KIND_NAME=seldon
 
-GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
+GO_LDFLAGS := -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 
 #####################################
 # Build
@@ -32,31 +32,31 @@ GO_LDFLAGS := -s -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 
 .PHONY: build-scheduler
 build-scheduler: test-go
-	go build -buildvcs=false -o bin/scheduler ./cmd/scheduler
+	go build -trimpath -ldflags="-w" -buildvcs=false -o bin/scheduler ./cmd/scheduler
 
 .PHONY: build-proxy
 build-proxy: test-go
-	CGO_ENABLED=0 go build -o bin/proxy ./cmd/proxy
+	CGO_ENABLED=0 go build -trimpath -ldflags="-w" -o bin/proxy ./cmd/proxy
 
 .PHONY: build-agent
 build-agent: test-go
-	CGO_ENABLED=0 go build -buildvcs=false -o bin/agent ./cmd/agent
+	CGO_ENABLED=0 go build -trimpath -ldflags="-w" -buildvcs=false -o bin/agent ./cmd/agent
 
 .PHONY: build-modelgateway
 build-modelgateway: test-go
-	go build -o bin/modelgateway -v ./cmd/modelgateway
+	go build -trimpath -ldflags="-w" -o bin/modelgateway -v ./cmd/modelgateway
 
 .PHONY: build-pipelinegateway
 build-pipelinegateway: test-go
-	go build -o bin/pipelinegateway -v ./cmd/pipelinegateway
+	go build -trimpath -ldflags="-w" -o bin/pipelinegateway -v ./cmd/pipelinegateway
 
 .PHONY: build-dataflow-producer
 build-dataflow-producer: test-jvm
-	go build -o data-flow/scripts/bin/producer ./data-flow/scripts/producer.go ./data-flow/scripts/common.go
+	go build -trimpath -ldflags="-w" -o data-flow/scripts/bin/producer ./data-flow/scripts/producer.go ./data-flow/scripts/common.go
 
 .PHONY: build-dataflow-consumer
 build-dataflow-consumer:
-	go build -o data-flow/scripts/bin/consumer ./data-flow/scripts/consumer.go ./data-flow/scripts/common.go
+	go build -trimpath -ldflags="-w" -o data-flow/scripts/bin/consumer ./data-flow/scripts/consumer.go ./data-flow/scripts/common.go
 
 .PHONY: build-dataflow-engine
 build-dataflow-engine:
@@ -71,7 +71,7 @@ build-jvm: build-dataflow-engine
 .PHONY: build
 build: build-go build-jvm
 
-.GOLANGCILINT_VERSION := v1.59.1
+.GOLANGCILINT_VERSION := v1.64.8
 .GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint-versions/$(.GOLANGCILINT_VERSION)
 
 ${.GOLANGCILINT_PATH}/golangci-lint:
@@ -119,6 +119,10 @@ docker-build-scheduler: copy-components
 docker-push-scheduler:
 	docker push ${SCHEDULER_IMG}
 
+.PHONY: docker-build-and-push-prod-scheduler
+docker-build-and-push-prod-scheduler: copy-components
+	docker buildx build --provenance=true -t ${SCHEDULER_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.scheduler ..
+
 .PHONY: copy-components
 copy-components:
 	rm -rf components-TEMP
@@ -132,6 +136,10 @@ docker-build-agent:
 docker-push-agent:
 	docker push ${AGENT_IMG}
 
+.PHONY: docker-build-and-push-prod-agent
+docker-build-and-push-prod-agent:
+	docker buildx build --provenance=true -t ${AGENT_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.agent ..
+
 .PHONY: docker-build-rclone
 docker-build-rclone:
 	docker build -t ${RCLONE_IMG} -f Dockerfile.rclone ..
@@ -139,6 +147,10 @@ docker-build-rclone:
 .PHONY: docker-push-rclone
 docker-push-rclone:
 	docker push ${RCLONE_IMG}
+
+.PHONY: docker-build-and-push-prod-rclone
+docker-build-and-push-prod-rclone:
+	docker buildx build --provenance=true -t ${RCLONE_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.rclone ..
 
 .PHONY: docker-build-modelgateway
 docker-build-modelgateway: copy-components
@@ -148,11 +160,21 @@ docker-build-modelgateway: copy-components
 docker-push-modelgateway:
 	docker push ${MODELGATEWAY_IMG}
 
+.PHONY: docker-build-and-push-prod-modelgateway
+docker-build-and-push-prod-modelgateway: copy-components
+	docker buildx build --provenance=true -t ${MODELGATEWAY_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.modelgateway ..
+
+.PHONY: docker-build-pipelinegateway
 docker-build-pipelinegateway:
 	docker build -t ${PIPELINEGATEWAY_IMG} -f Dockerfile.pipelinegateway ..
 
+.PHONY: docker-push-pipelinegateway
 docker-push-pipelinegateway:
 	docker push ${PIPELINEGATEWAY_IMG}
+
+.PHONY: docker-build-and-push-prod-pipelinegateway
+docker-build-and-push-prod-pipelinegateway:
+	docker buildx build --provenance=true -t ${PIPELINEGATEWAY_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.pipelinegateway ..
 
 .PHONY: docker-build-envoy
 docker-build-envoy:
@@ -162,6 +184,10 @@ docker-build-envoy:
 docker-push-envoy:
 	docker push ${ENVOY_IMG}
 
+.PHONY: docker-build-and-push-prod-envoy
+docker-build-and-push-prod-envoy:
+	docker buildx build --provenance=true -t ${ENVOY_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.envoy ..
+
 .PHONY: docker-build-dataflow
 docker-build-dataflow: data-flow/opentelemetry-javaagent.jar
 	docker build -t ${DATAFLOW_IMG} -f Dockerfile.dataflow ..
@@ -169,6 +195,10 @@ docker-build-dataflow: data-flow/opentelemetry-javaagent.jar
 .PHONY: docker-push-dataflow
 docker-push-dataflow:
 	docker push ${DATAFLOW_IMG}
+
+.PHONY: docker-build-and-push-prod-dataflow
+docker-build-and-push-prod-dataflow: data-flow/opentelemetry-javaagent.jar
+	docker buildx build --provenance=true -t ${DATAFLOW_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.dataflow ..
 
 .PHONY: docker-build-grafana
 docker-build-grafana:
@@ -178,12 +208,18 @@ docker-build-grafana:
 docker-push-grafana:
 	docker push ${GRAFANA_IMG}
 
+.PHONY: docker-build-and-push-prod-grafana
+docker-build-and-push-prod-grafana:
+	docker buildx build --provenance=true -t ${GRAFANA_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.grafana ..
+
 .PHONY: docker-build-all
 docker-build-all: docker-build-dataflow docker-build-agent docker-build-envoy docker-build-rclone docker-build-scheduler docker-build-modelgateway docker-build-pipelinegateway docker-build-grafana
 
 .PHONY: docker-push-all
 docker-push-all: docker-push-agent docker-push-envoy docker-push-rclone docker-push-scheduler docker-push-modelgateway docker-push-pipelinegateway docker-push-dataflow docker-push-grafana
 
+.PHONY: docker-build-and-push-prod-all
+docker-build--and-push-prod-all: docker-build-and-push-prod-dataflow docker-build-and-push-prod-agent docker-build-and-push-prod-envoy docker-build-and-push-prod-rclone docker-build-and-push-prod-scheduler docker-build-and-push-prod-modelgateway docker-build-and-push-prod-pipelinegateway docker-build-and-push-prod-grafana
 
 #####################################
 # Kind

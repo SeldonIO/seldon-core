@@ -23,6 +23,8 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 	logger := s.logger.WithField("func", "SubscribePipelineStatus")
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
+	s.synchroniser.WaitReady()
+
 	err := s.sendCurrentPipelineStatuses(stream, false)
 	if err != nil {
 		return err
@@ -61,7 +63,7 @@ func (s *SchedulerServer) sendCurrentPipelineStatuses(
 ) error {
 	pipelines, err := s.pipelineHandler.GetPipelines()
 	if err != nil {
-		return status.Errorf(codes.FailedPrecondition, err.Error())
+		return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 	}
 	for _, p := range pipelines {
 		resp := createPipelineStatus(p, allVersions)

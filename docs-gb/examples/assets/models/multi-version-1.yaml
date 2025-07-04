@@ -1,0 +1,10 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: math
+spec:
+  storageUri: "gs://seldon-models/scv2/samples/triton_23-03/multi-version"
+  artifactVersion: 1
+  requirements:
+  - triton
+  - python

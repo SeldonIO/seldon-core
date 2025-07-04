@@ -11,6 +11,7 @@ package io.seldon.dataflow
 
 import com.natpryce.konfig.CommandLineOption
 import com.natpryce.konfig.Configuration
+import com.natpryce.konfig.ConfigurationMap
 import com.natpryce.konfig.ConfigurationProperties
 import com.natpryce.konfig.EnvironmentVariables
 import com.natpryce.konfig.Key
@@ -25,6 +26,8 @@ import io.klogging.Level
 import io.klogging.noCoLogger
 import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms
 import io.seldon.dataflow.kafka.security.KafkaSecurityProtocols
+import java.net.InetAddress
+import java.util.UUID
 
 object Cli {
     private const val ENV_VAR_PREFIX = "SELDON_"
@@ -34,6 +37,7 @@ object Cli {
     val logLevelApplication = Key("log.level.app", enumType(*Level.values()))
     val logLevelKafka = Key("log.level.kafka", enumType(*Level.values()))
     val namespace = Key("pod.namespace", stringType)
+    val dataflowReplicaId = Key("dataflow.replica.id", stringType)
 
     // Seldon components
     val upstreamHost = Key("upstream.host", stringType)
@@ -75,6 +79,7 @@ object Cli {
             logLevelApplication,
             logLevelKafka,
             namespace,
+            dataflowReplicaId,
             upstreamHost,
             upstreamPort,
             kafkaBootstrapServers,
@@ -105,10 +110,26 @@ object Cli {
 
     fun configWith(rawArgs: Array<String>): Configuration {
         val fromProperties = ConfigurationProperties.fromResource("local.properties")
+        val fromSystem = getSystemConfig()
         val fromEnv = EnvironmentVariables(prefix = ENV_VAR_PREFIX)
         val fromArgs = parseArguments(rawArgs)
 
-        return fromArgs overriding fromEnv overriding fromProperties
+        return fromArgs overriding fromEnv overriding fromSystem overriding fromProperties
+    }
+
+    private fun getSystemConfig(): Configuration {
+        val dataflowIdPair = this.dataflowReplicaId to getNewDataflowId()
+        return ConfigurationMap(dataflowIdPair)
+    }
+
+    fun getNewDataflowId(assignRandomUuid: Boolean = false): String {
+        if (!assignRandomUuid) {
+            try {
+                return InetAddress.getLocalHost().hostName
+            } catch (_: Exception) {
+            }
+        }
+        return "seldon-dataflow-engine-" + UUID.randomUUID().toString()
     }
 
     private fun parseArguments(rawArgs: Array<String>): Configuration {

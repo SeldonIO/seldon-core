@@ -28,6 +28,7 @@ import (
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 const (
@@ -84,9 +85,13 @@ func (pc *PipelineSchedulerClient) connectToScheduler(host string, plainTxtPort 
 		transCreds = pc.certificateStore.CreateClientTransportCredentials()
 		port = tlsPort
 	}
+
+	kacp := util.GetClientKeepAliveParameters()
+
 	// note: retry is done in the caller
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(transCreds),
+		grpc.WithKeepaliveParams(kacp),
 	}
 	logger.Infof("Connecting to scheduler at %s:%d", host, port)
 	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d", host, port), opts...)
@@ -119,11 +124,7 @@ func (pc *PipelineSchedulerClient) Start(host string, plainTxtPort int, tlsPort 
 		logFailure := func(err error, delay time.Duration) {
 			logger.WithError(err).Errorf("Scheduler not ready")
 		}
-		backOffExp := backoff.NewExponentialBackOff()
-		// Set some reasonable settings for trying to reconnect to scheduler
-		backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
-		backOffExp.MaxInterval = time.Second * 15
-		backOffExp.InitialInterval = time.Second
+		backOffExp := util.GetClientExponentialBackoff()
 		err = backoff.RetryNotify(pc.SubscribePipelineEvents, backOffExp, logFailure)
 		if err != nil {
 			logger.WithError(err).Fatal("Failed to start pipeline gateway client")
@@ -137,7 +138,11 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 	logger := pc.logger.WithField("func", "SubscribePipelineEvents")
 	grpcClient := scheduler.NewSchedulerClient(pc.conn)
 	logger.Info("Subscribing to pipeline status events")
-	stream, errSub := grpcClient.SubscribePipelineStatus(context.Background(), &scheduler.PipelineSubscriptionRequest{SubscriberName: SubscriberName}, grpc_retry.WithMax(100))
+	stream, errSub := grpcClient.SubscribePipelineStatus(
+		context.Background(),
+		&scheduler.PipelineSubscriptionRequest{SubscriberName: SubscriberName},
+		grpc_retry.WithMax(util.MaxGRPCRetriesOnStream),
+	)
 	if errSub != nil {
 		return errSub
 	}

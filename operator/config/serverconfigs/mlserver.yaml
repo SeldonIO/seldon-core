@@ -81,6 +81,8 @@ spec:
         value: "seldon-mesh"
       - name: SELDON_ENVOY_PORT
         value: "80"
+      - name: SELDON_LOG_LEVEL
+        value: "warn"
       - name: POD_NAME
         valueFrom:
           fieldRef:

@@ -22,6 +22,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -32,8 +33,16 @@ import (
 
 const (
 	// these 2 constants in combination with the backoff exponential function will give us a max backoff of 13.5 minutes
-	SchedulerConnectMaxRetries    = 12
-	SchedulerConnectBackoffScalar = 200 * time.Millisecond
+	schedulerConnectMaxRetries    = 100
+	schedulerConnectBackoffScalar = 200 * time.Millisecond
+	// these keep alive settings need to match the scheduler counterpart in scheduler/pkg/util/constants.go
+	clientKeepAliveTime    = 60 * time.Second
+	clientKeepAliveTimeout = 2 * time.Second
+	clientKeepAlivePermit  = false
+	// backoff
+	backoffMaxElapsedTime  = 0 // Never stop due to large time between calls
+	backOffMaxInterval     = time.Second * 15
+	backOffInitialInterval = time.Second
 )
 
 type SchedulerClient struct {
@@ -73,12 +82,17 @@ func getSchedulerHost(namespace string) string {
 // we also add a retry mechanism to reconnect if the connection is lost, this can happen if the scheduler is restarted
 // or if the network connection is lost. We use an exponential backoff to retry the connection.
 // note that when the scheduler is completely dead we will be not be able to reconnect and these go routines will retry forever
+// on reconnect we send the state of the different resources to the scheduler, this is to make sure that the scheduler has the correct state
 // TODO: add a max retry count and report back to the caller.
+// TODO add done for graceful shutdown otherwise these go routines will run forever
+// TODO tidy up ctx from the different handlers, currently they are all context.Background()
 func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientConn) {
+	s.logger.Info("Starting event handling", "namespace", namespace)
+
 	// Subscribe the event streams from scheduler
 	go func() {
 		for {
-			err := retryFn(s.SubscribeModelEvents, conn, namespace, s.logger)
+			err := retryFn(s.SubscribeModelEvents, conn, namespace, s.logger.WithName("SubscribeModelEvents"))
 			if err != nil {
 				s.logger.Error(err, "Subscribe ended for model events", "namespace", namespace)
 			} else {
@@ -88,7 +102,7 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 	}()
 	go func() {
 		for {
-			err := retryFn(s.SubscribeServerEvents, conn, namespace, s.logger)
+			err := retryFn(s.SubscribeServerEvents, conn, namespace, s.logger.WithName("SubscribeServerEvents"))
 			if err != nil {
 				s.logger.Error(err, "Subscribe ended for server events", "namespace", namespace)
 			} else {
@@ -98,7 +112,7 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 	}()
 	go func() {
 		for {
-			err := retryFn(s.SubscribePipelineEvents, conn, namespace, s.logger)
+			err := retryFn(s.SubscribePipelineEvents, conn, namespace, s.logger.WithName("SubscribePipelineEvents"))
 			if err != nil {
 				s.logger.Error(err, "Subscribe ended for pipeline events", "namespace", namespace)
 			} else {
@@ -108,7 +122,7 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 	}()
 	go func() {
 		for {
-			err := retryFn(s.SubscribeExperimentEvents, conn, namespace, s.logger)
+			err := retryFn(s.SubscribeExperimentEvents, conn, namespace, s.logger.WithName("SubscribeExperimentEvents"))
 			if err != nil {
 				s.logger.Error(err, "Subscribe ended for experiment events", "namespace", namespace)
 			} else {
@@ -116,6 +130,49 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 			}
 		}
 	}()
+	go func() {
+		for {
+			err := retryFn(s.SubscribeControlPlaneEvents, conn, namespace, s.logger.WithName("SubscribeControlPlaneEvents"))
+			if err != nil {
+				s.logger.Error(err, "Subscribe ended for control plane events", "namespace", namespace)
+			} else {
+				s.logger.Info("Subscribe ended for control plane events", "namespace", namespace)
+			}
+		}
+	}()
+}
+
+func (s *SchedulerClient) handleStateOnReconnect(context context.Context, grpcClient scheduler.SchedulerClient, namespace string, operation scheduler.ControlPlaneResponse_Event) error {
+	switch operation {
+	case scheduler.ControlPlaneResponse_SEND_SERVERS:
+		// on new reconnects we send a list of servers to the schedule
+		err := s.handleRegisteredServers(context, grpcClient, namespace)
+		if err != nil {
+			s.logger.Error(err, "Failed to send registered server to scheduler")
+		}
+		return err
+	case scheduler.ControlPlaneResponse_SEND_RESOURCES:
+		err := s.handleExperiments(context, grpcClient, namespace)
+		if err != nil {
+			s.logger.Error(err, "Failed to send experiments to scheduler")
+		}
+		if err == nil {
+			err = s.handlePipelines(context, grpcClient, namespace)
+			if err != nil {
+				s.logger.Error(err, "Failed to send pipelines to scheduler")
+			}
+		}
+		if err == nil {
+			err = s.handleModels(context, grpcClient, namespace)
+			if err != nil {
+				s.logger.Error(err, "Failed to send models to scheduler")
+			}
+		}
+		return err
+	default:
+		s.logger.Info("Unknown operation", "operation", operation)
+		return fmt.Errorf("Unknown operation %v", operation)
+	}
 }
 
 func (s *SchedulerClient) RemoveConnection(namespace string) {
@@ -179,6 +236,12 @@ func (s *SchedulerClient) connectToScheduler(host string, namespace string, plai
 			return nil, err
 		}
 	}
+	kacp := keepalive.ClientParameters{
+		Time:                clientKeepAliveTime,
+		Timeout:             clientKeepAliveTimeout,
+		PermitWithoutStream: clientKeepAlivePermit,
+	}
+
 	retryOpts := []grpc_retry.CallOption{
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
 	}
@@ -194,8 +257,9 @@ func (s *SchedulerClient) connectToScheduler(host string, namespace string, plai
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		s.logger.Info("Running scheduler client in plain text mode", "port", port)
 	}
-	opts = append(opts, grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)))
+	// we dont have backoff retry on the grpc streams as we handle this in the event handlers
 	opts = append(opts, grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)))
+	opts = append(opts, grpc.WithKeepaliveParams(kacp))
 	s.logger.Info("Dialing scheduler", "host", host, "port", port)
 	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
@@ -253,11 +317,11 @@ func retryFn(
 	fn func(context context.Context, grpcClient scheduler.SchedulerClient, namespace string) error,
 	conn *grpc.ClientConn, namespace string, logger logr.Logger,
 ) error {
-	logger.Info("RetryFn", "namespace", namespace)
+	logger.Info("Retrying to connect", "namespace", namespace)
 	logFailure := func(err error, delay time.Duration) {
 		logger.Error(err, "Scheduler not ready")
 	}
-	backOffExp := backoff.NewExponentialBackOff()
+	backOffExp := getClientExponentialBackoff()
 	fnWithArgs := func() error {
 		grpcClient := scheduler.NewSchedulerClient(conn)
 		return fn(context.Background(), grpcClient, namespace)
@@ -268,4 +332,12 @@ func retryFn(
 		return err
 	}
 	return nil
+}
+
+func getClientExponentialBackoff() *backoff.ExponentialBackOff {
+	backOffExp := backoff.NewExponentialBackOff()
+	backOffExp.MaxElapsedTime = backoffMaxElapsedTime
+	backOffExp.MaxInterval = backOffMaxInterval
+	backOffExp.InitialInterval = backOffInitialInterval
+	return backOffExp
 }

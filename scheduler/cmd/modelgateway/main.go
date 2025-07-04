@@ -18,7 +18,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/gateway"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 )
@@ -125,7 +126,7 @@ func main() {
 		defer tracer.Stop()
 	}
 
-	kafkaConfigMap, err := config.NewKafkaConfig(kafkaConfigPath)
+	kafkaConfigMap, err := kafka_config.NewKafkaConfig(kafkaConfigPath, logLevel)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
@@ -141,6 +142,7 @@ func main() {
 		InferenceServerConfig: inferServerConfig,
 		TraceProvider:         tracer,
 		NumWorkers:            getEnVar(logger, gateway.EnvVarNumWorkers, gateway.DefaultNumWorkers),
+		WorkerTimeout:         getEnVar(logger, gateway.EnvVarWorkerTimeoutMs, gateway.DefaultWorkerTimeoutMs),
 	}
 	kafkaConsumer, err := gateway.NewConsumerManager(logger, &consumerConfig,
 		getEnVar(logger, gateway.EnvMaxNumConsumers, gateway.DefaultMaxNumConsumers))

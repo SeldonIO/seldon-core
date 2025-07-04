@@ -10,6 +10,8 @@ the Change License after the Change Date as each is defined in accordance with t
 package experiment
 
 import (
+	"time"
+
 	"github.com/dgraph-io/badger/v3"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
@@ -25,19 +27,21 @@ const (
 )
 
 type ExperimentDBManager struct {
-	db     *badger.DB
-	logger logrus.FieldLogger
+	db                 *badger.DB
+	logger             logrus.FieldLogger
+	deletedResourceTTL time.Duration
 }
 
-func newExperimentDbManager(path string, logger logrus.FieldLogger) (*ExperimentDBManager, error) {
+func newExperimentDbManager(path string, logger logrus.FieldLogger, deletedResourceTTL uint) (*ExperimentDBManager, error) {
 	db, err := utils.Open(path, logger, "experimentDb")
 	if err != nil {
 		return nil, err
 	}
 
 	edb := &ExperimentDBManager{
-		db:     db,
-		logger: logger,
+		db:                 db,
+		logger:             logger,
+		deletedResourceTTL: time.Duration(deletedResourceTTL * uint(time.Second)),
 	}
 
 	version, err := edb.getVersion()
@@ -66,10 +70,19 @@ func (edb *ExperimentDBManager) save(experiment *Experiment) error {
 	if err != nil {
 		return err
 	}
-	return edb.db.Update(func(txn *badger.Txn) error {
-		err = txn.Set([]byte(experiment.Name), experimentBytes)
-		return err
-	})
+
+	if !experiment.Deleted {
+		return edb.db.Update(func(txn *badger.Txn) error {
+			err = txn.Set([]byte(experiment.Name), experimentBytes)
+			return err
+		})
+	} else {
+		return edb.db.Update(func(txn *badger.Txn) error {
+			e := badger.NewEntry([]byte(experiment.Name), experimentBytes).WithTTL(edb.deletedResourceTTL)
+			err = txn.SetEntry(e)
+			return err
+		})
+	}
 }
 
 func (edb *ExperimentDBManager) saveVersion() error {
@@ -88,7 +101,8 @@ func (edb *ExperimentDBManager) delete(name string) error {
 }
 
 func (edb *ExperimentDBManager) restore(
-	startExperimentCb func(*Experiment) error, stopExperimentCb func(*Experiment) error) error {
+	startExperimentCb func(*Experiment) error, stopExperimentCb func(*Experiment) error,
+) error {
 	return edb.db.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
 		it := txn.NewIterator(opts)
@@ -108,6 +122,7 @@ func (edb *ExperimentDBManager) restore(
 				}
 				experiment := CreateExperimentFromSnapshot(&snapshot)
 				if experiment.Deleted {
+					experiment.DeletedAt = utils.GetDeletedAt(item, edb.deletedResourceTTL)
 					err = stopExperimentCb(experiment)
 				} else {
 					// otherwise attempt to start the experiment

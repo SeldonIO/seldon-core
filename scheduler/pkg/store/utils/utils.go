@@ -10,12 +10,15 @@ the Change License after the Change Date as each is defined in accordance with t
 package utils
 
 import (
+	"time"
+
 	"github.com/dgraph-io/badger/v3"
 	"github.com/sirupsen/logrus"
 )
 
 const (
-	VersionKey = "__version_key__"
+	VersionKey                                    = "__version_key__"
+	DeletedResourceCleanupFrequency time.Duration = time.Duration(10 * time.Minute)
 )
 
 func Open(path string, logger logrus.FieldLogger, source string) (*badger.DB, error) {
@@ -42,6 +45,14 @@ func SaveVersion(db *badger.DB, version string) error {
 	return db.Update(func(txn *badger.Txn) error {
 		return txn.Set([]byte(VersionKey), []byte(version))
 	})
+}
+
+func GetDeletedAt(item *badger.Item, ttl time.Duration) time.Time {
+	if item.ExpiresAt() == 0 {
+		return time.Time{}
+	} else {
+		return time.Unix(int64(item.ExpiresAt()), 0).Add(-ttl)
+	}
 }
 
 func GetVersion(db *badger.DB, defaultVal string) (string, error) {

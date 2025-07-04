@@ -11,6 +11,7 @@ package agent
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	backoff "github.com/cenkalti/backoff/v4"
@@ -18,6 +19,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 )
@@ -53,9 +55,15 @@ func isReady(service interfaces.DependencyServiceInterface, logger *log.Entry, m
 	return backoff.RetryNotify(readyToError, backoffWithMax, logFailure)
 }
 
-func getModifiedModelVersion(modelId string, version uint32, originalModelVersion *agent.ModelVersion) *agent.ModelVersion {
+func getModifiedModelVersion(modelId string, version uint32, originalModelVersion *agent.ModelVersion, modelRuntimeInfo *scheduler.ModelRuntimeInfo) *agent.ModelVersion {
 	mv := proto.Clone(originalModelVersion)
 	mv.(*agent.ModelVersion).Model.Meta.Name = modelId
+	if modelRuntimeInfo != nil && modelRuntimeInfo.ModelRuntimeInfo != nil {
+		if mv.(*agent.ModelVersion).Model.ModelSpec == nil {
+			mv.(*agent.ModelVersion).Model.ModelSpec = &scheduler.ModelSpec{}
+		}
+		mv.(*agent.ModelVersion).Model.ModelSpec.ModelRuntimeInfo = modelRuntimeInfo
+	}
 	mv.(*agent.ModelVersion).Version = version
 	return mv.(*agent.ModelVersion)
 }
@@ -117,4 +125,16 @@ func (b *backOffWithMaxCount) NextBackOff() time.Duration {
 		b.currentCount++
 		return b.backoffPolicy.NextBackOff()
 	}
+}
+
+func ignoreIfOutOfOrder(key string, timestamp int64, timestamps *sync.Map) bool {
+	tick, ok := timestamps.Load(key)
+	if !ok {
+		timestamps.Store(key, timestamp)
+	} else {
+		if timestamp < tick.(int64) {
+			return true
+		}
+	}
+	return false
 }

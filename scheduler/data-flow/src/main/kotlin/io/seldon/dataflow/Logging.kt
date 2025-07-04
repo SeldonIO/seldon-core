@@ -24,8 +24,10 @@ object Logging {
         kloggingMinLogLevel(appLevel)
         sink(STDOUT_SINK, RENDER_ISO8601, STDOUT)
         logging {
-            fromLoggerBase("io.seldon")
-            toSink(STDOUT_SINK)
+            fromMinLevel(appLevel) {
+                fromLoggerBase("io.seldon")
+                toSink(STDOUT_SINK)
+            }
         }
         logging {
             fromMinLevel(kafkaLevel) {

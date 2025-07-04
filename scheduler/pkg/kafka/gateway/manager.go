@@ -16,7 +16,9 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
+
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -39,11 +41,12 @@ type ConsumerManager struct {
 }
 
 type ManagerConfig struct {
-	SeldonKafkaConfig     *config.KafkaConfig
+	SeldonKafkaConfig     *kafka_config.KafkaConfig
 	Namespace             string
 	InferenceServerConfig *InferenceServerConfig
 	TraceProvider         *seldontracer.TracerProvider
 	NumWorkers            int // infer workers
+	WorkerTimeout         int // timeout for workers in ms
 }
 
 func cloneKafkaConfigMap(m kafka.ConfigMap) kafka.ConfigMap {
@@ -76,14 +79,14 @@ func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error 
 	logger := cm.logger.WithField("func", "createKafkaConfigs")
 	var err error
 
-	producerConfig := config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Producer)
+	producerConfig := kafka_config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Producer)
 	producerConfig["go.delivery.reports"] = true
-	err = config.AddKafkaSSLOptions(producerConfig)
+	err = config_tls.AddKafkaSSLOptions(producerConfig)
 	if err != nil {
 		return err
 	}
 
-	producerConfigMasked := config.WithoutSecrets(producerConfig)
+	producerConfigMasked := kafka_config.WithoutSecrets(producerConfig)
 	producerConfigMaskedJSON, err := json.Marshal(&producerConfigMasked)
 	if err != nil {
 		logger.WithField("config", &producerConfigMasked).Info("Creating producer config for use later")
@@ -91,13 +94,13 @@ func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error 
 		logger.WithField("config", string(producerConfigMaskedJSON)).Info("Creating producer config for use later")
 	}
 
-	consumerConfig := config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Consumer)
-	err = config.AddKafkaSSLOptions(consumerConfig)
+	consumerConfig := kafka_config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Consumer)
+	err = config_tls.AddKafkaSSLOptions(consumerConfig)
 	if err != nil {
 		return err
 	}
 
-	consumerConfigMasked := config.WithoutSecrets(consumerConfig)
+	consumerConfigMasked := kafka_config.WithoutSecrets(consumerConfig)
 	consumerConfigMaskedJson, err := json.Marshal(&consumerConfigMasked)
 	if err != nil {
 		logger.WithField("config", &consumerConfigMasked).Info("Creating consumer config for use later")
@@ -169,7 +172,7 @@ func (cm *ConsumerManager) stopEmptyConsumer(ic *InferKafkaHandler) {
 	}
 }
 
-func (cm *ConsumerManager) RemoveModel(modelName string) error {
+func (cm *ConsumerManager) RemoveModel(modelName string, cleanTopicsOnDeletion bool) error {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	ic, err := cm.getInferKafkaConsumer(modelName, false)
@@ -179,7 +182,7 @@ func (cm *ConsumerManager) RemoveModel(modelName string) error {
 	if ic == nil {
 		return nil
 	}
-	err = ic.RemoveModel(modelName)
+	err = ic.RemoveModel(modelName, cleanTopicsOnDeletion)
 	if err != nil {
 		return err
 	}

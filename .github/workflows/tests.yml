@@ -8,9 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: "1.24"
           cache: false
       - name: test-operator
         run: make -C operator test
@@ -18,3 +18,15 @@ jobs:
         run: make -C scheduler test
       - name: test-hodometer
         run: make -C hodometer test
+      - name: test-components-tls
+        run: make -C components/tls test
+      - name: test-components-kafka
+        run: make -C components/kafka test
+      - name: check CRDs changes
+        run: | 
+          make -C operator generate manifests
+          git diff --exit-code
+      - name: check helm changes
+        run: | 
+          make -C k8s create
+          git diff --exit-code

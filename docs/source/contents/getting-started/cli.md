@@ -1,6 +1,6 @@
 # Seldon CLI
 
-Seldon Core V2 can be managed via a CLI tool.
+Seldon Core 2 can be managed via a CLI tool.
 
 ## Download Linux Binary
 

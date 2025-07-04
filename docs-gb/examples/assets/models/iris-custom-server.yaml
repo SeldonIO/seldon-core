@@ -1,0 +1,7 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: iris
+spec:
+  storageUri: "gs://seldon-models/mlserver/iris"
+  server: mlserver-134

@@ -8,6 +8,8 @@ the Change License after the Change Date as each is defined in accordance with t
 */
 
 // This file includes the ServerBasedSynchroniser struct and its methods.
+// The main logic is to get the controller state of how many servers (x) it has in its etcd storet, and then the scheduler will wait for x agent connections.
+// The synchroniser will also wait for a timeout duration before proceeding if not all servers connect in time.
 // The ServerBasedSynchroniser struct is responsible for synchronising the starting up of the different components of the "scheduler".
 // It ensures that the time between the scheduler starting and the different model servers connecting does not affect the data plane (inferences).
 // In general terms, the synchroniser waits for all servers to connect before proceeding with processing events, especially those that are related to the servers connecting (i.e model scheduling).
@@ -109,8 +111,16 @@ func (s *ServerBasedSynchroniser) Signals(numSignals uint) {
 		if swapped {
 			atomic.AddUint64(&s.maxEvents, uint64(numSignals))
 			s.signalWg.Done()
+			// in the case where we have no servers to connect, we should trigger the doneFn
+			if numSignals == 0 {
+				s.doneFn()
+			}
 		}
 	}
+}
+
+func (s *ServerBasedSynchroniser) IsTriggered() bool {
+	return s.triggered.Load()
 }
 
 func (s *ServerBasedSynchroniser) doneFn() {

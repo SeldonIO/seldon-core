@@ -2,14 +2,14 @@
 
 ## Multi-model Serving
 
-Multi-model serving is an architecture pattern where one ML inference server hosts multiple models at the same time. This means that, within a single instance of the server, you can serve multiple models under different paths. This is a feature provided out of the box by Nvidia Triton and Seldon MLServer, currently the two inference servers that are integrated in Seldon Core v2.
+Multi-model serving is an architecture pattern where one ML inference server hosts multiple models at the same time. This means that, within a single instance of the server, you can serve multiple models under different paths. This is a feature provided out of the box by Nvidia Triton and Seldon MLServer, currently the two inference servers that are integrated in Seldon Core 2.
 
 This deployment pattern allows the system to handle a large number of deployed models letting them share hardware resources allocated to inference servers (e.g GPUs). For example if a single model inference server is deployed on a one GPU node, the underlying loaded models on this inference server instance are able to effectively share this GPU. This is contrast to a single model per server deployment pattern where only one model can use the allocated GPU. 
 
 
 ![Multi-model vs Single-model serving](mms.png)
 
-Multi-model serving is enabled by design in Seldon Core v2. Based on requirements that are specified by the user on a given `Model`, the Scheduler will find an appropriate model inference server instance to load the model onto. 
+Multi-model serving is enabled by design in Seldon Core 2. Based on requirements that are specified by the user on a given `Model`, the Scheduler will find an appropriate model inference server instance to load the model onto. 
 
 In the below example, given that the model is `tensorflow`, the system will deploy the model onto a `triton` server instance (matching with the `Server` labels). Additionally as the model `memory` requirement is `100Ki`, the system will pick the server instance that has enough (memory) capacity to host this model in parallel to other potentially existing models. 
 

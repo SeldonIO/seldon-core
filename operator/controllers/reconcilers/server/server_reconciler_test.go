@@ -72,6 +72,40 @@ func TestServerReconcile(t *testing.T) {
 			expectedSvcNames:        []string{"myserver-0"},
 			expectedStatefulSetName: "myserver",
 		},
+		{
+			name: "Test StatefulSetPersistentVolumeClaimRetentionPolicy",
+			serverConfig: &mlopsv1alpha1.ServerConfig{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      mlserverConfigName,
+					Namespace: constants.SeldonNamespace,
+				},
+				Spec: mlopsv1alpha1.ServerConfigSpec{
+					PodSpec: v1.PodSpec{
+						Containers: []v1.Container{
+							{
+								Name:  "mlserver",
+								Image: "seldonio/mlserver:0.5",
+							},
+						},
+					},
+				},
+			},
+			server: &mlopsv1alpha1.Server{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "myserver",
+					Namespace: constants.SeldonNamespace,
+				},
+				Spec: mlopsv1alpha1.ServerSpec{
+					ServerConfig: mlserverConfigName,
+					StatefulSetPersistentVolumeClaimRetentionPolicy: &appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{
+						WhenDeleted: appsv1.RetainPersistentVolumeClaimRetentionPolicyType,
+						WhenScaled:  appsv1.RetainPersistentVolumeClaimRetentionPolicyType,
+					},
+				},
+			},
+			expectedSvcNames:        []string{"myserver-0"},
+			expectedStatefulSetName: "myserver",
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

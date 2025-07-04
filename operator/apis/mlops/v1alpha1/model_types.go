@@ -44,6 +44,17 @@ type ModelSpec struct {
 	Explainer *ExplainerSpec `json:"explainer,omitempty"`
 	// Parameters to load with model
 	Parameters []ParameterSpec `json:"parameters,omitempty"`
+	// Llm spec
+	Llm *LlmSpec `json:"llm,omitempty"`
+	// Dataflow spec
+	Dataflow *DataflowSpec `json:"dataflow,omitempty"`
+}
+
+func (m *ModelSpec) Validate() error {
+	if m.Explainer != nil && m.Llm != nil {
+		return fmt.Errorf("Can't have both explainer and llm in model spec.")
+	}
+	return nil
 }
 
 type ParameterSpec struct {
@@ -62,6 +73,24 @@ type ExplainerSpec struct {
 	// Reference to Pipeline
 	// +optional
 	PipelineRef *string `json:"pipelineRef,omitempty"`
+}
+
+// Either ModelRef or PipelineRef is required
+type LlmSpec struct {
+	// one of the following need to be set for the llm
+	// Reference to Model
+	// +optional
+	ModelRef *string `json:"modelRef,omitempty"`
+	// Reference to Pipeline
+	// +optional
+	PipelineRef *string `json:"pipelineRef,omitempty"`
+}
+
+type DataflowSpec struct {
+	// Flag to indicate whether the kafka input/output topics
+	// should be cleaned up when the model is deleted
+	// Default false
+	CleanTopicsOnDelete bool `json:"cleanTopicsOnDelete,omitempty"`
 }
 
 type ScalingSpec struct {
@@ -106,9 +135,11 @@ type InferenceArtifactSpec struct {
 // ModelStatus defines the observed state of Model
 type ModelStatus struct {
 	// Total number of replicas targeted by this model
-	Replicas      int32  `json:"replicas,omitempty"`
-	Selector      string `json:"selector"`
-	duckv1.Status `json:",inline"`
+	Replicas int32  `json:"replicas,omitempty"`
+	Selector string `json:"selector,omitempty"`
+	// Number of available replicas
+	AvailableReplicas int32 `json:"availableReplicas,omitempty"`
+	duckv1.Status     `json:",inline"`
 }
 
 //+kubebuilder:object:root=true
@@ -116,7 +147,8 @@ type ModelStatus struct {
 //+kubebuilder:resource:shortName=mlm
 //+kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas,selectorpath=.status.selector
 //+kubebuilder:printcolumn:name="Ready",type=string,JSONPath=`.status.conditions[?(@.type=="ModelReady")].status`,description="Model ready status"
-//+kubebuilder:printcolumn:name="Replicas",type=integer,JSONPath=`.status.replicas`, description="Number of replicas"
+//+kubebuilder:printcolumn:name="Desired Replicas",type=integer,JSONPath=`.spec.replicas`,description="Number of desired replicas"
+//+kubebuilder:printcolumn:name="Available Replicas",type=integer,JSONPath=`.status.availableReplicas`,description="Number of replicas available to receive inference requests"
 //+kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 
 // Model is the Schema for the models API
@@ -143,6 +175,10 @@ func init() {
 
 // Method to convert Model resource to scheduler proto for communication with Scheduler
 func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
+	// guarantees that Explainer and Llm are mutually exclusive
+	if err := m.Spec.Validate(); err != nil {
+		return nil, err
+	}
 	md := &scheduler.Model{
 		Meta: &scheduler.MetaData{
 			Name: m.Name,
@@ -162,12 +198,29 @@ func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
 		},
 	}
 	if m.Spec.Explainer != nil {
-		md.ModelSpec.Explainer = &scheduler.ExplainerSpec{
-			Type:        m.Spec.Explainer.Type,
-			ModelRef:    m.Spec.Explainer.ModelRef,
-			PipelineRef: m.Spec.Explainer.PipelineRef,
+		md.ModelSpec.ModelSpec = &scheduler.ModelSpec_Explainer{
+			Explainer: &scheduler.ExplainerSpec{
+				Type:        m.Spec.Explainer.Type,
+				ModelRef:    m.Spec.Explainer.ModelRef,
+				PipelineRef: m.Spec.Explainer.PipelineRef,
+			},
 		}
 	}
+	if m.Spec.Llm != nil {
+		md.ModelSpec.ModelSpec = &scheduler.ModelSpec_Llm{
+			Llm: &scheduler.LlmSpec{
+				ModelRef:    m.Spec.Llm.ModelRef,
+				PipelineRef: m.Spec.Llm.PipelineRef,
+			},
+		}
+	}
+
+	if m.Spec.Dataflow != nil {
+		md.DataflowSpec = &scheduler.DataflowSpec{
+			CleanTopicsOnDelete: m.Spec.Dataflow.CleanTopicsOnDelete,
+		}
+	}
+
 	if len(m.Spec.Parameters) > 0 {
 		var parameters []*scheduler.ParameterSpec
 		for _, param := range m.Spec.Parameters {
@@ -191,34 +244,13 @@ func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
 		md.ModelSpec.Requirements = append(md.ModelSpec.Requirements, *m.Spec.ModelType)
 	}
 	// Set Replicas
-	if m.Spec.Replicas != nil {
-		md.DeploymentSpec.Replicas = uint32(*m.Spec.Replicas)
-	} else {
-		if m.Spec.MinReplicas != nil {
-			// set replicas to the min replicas if not set
-			md.DeploymentSpec.Replicas = uint32(*m.Spec.MinReplicas)
-		} else {
-			md.DeploymentSpec.Replicas = 1
-		}
+	scalingSpec, err := GetValidatedScalingSpec(m.Spec.Replicas, m.Spec.MinReplicas, m.Spec.MaxReplicas)
+	if err != nil {
+		return nil, err
 	}
-
-	if m.Spec.MinReplicas != nil {
-		md.DeploymentSpec.MinReplicas = uint32(*m.Spec.MinReplicas)
-		if md.DeploymentSpec.Replicas < md.DeploymentSpec.MinReplicas {
-			return nil, fmt.Errorf("Number of replicas %d should be >= min replicas %d", md.DeploymentSpec.Replicas, md.DeploymentSpec.MinReplicas)
-		}
-	} else {
-		md.DeploymentSpec.MinReplicas = 0
-	}
-
-	if m.Spec.MaxReplicas != nil {
-		md.DeploymentSpec.MaxReplicas = uint32(*m.Spec.MaxReplicas)
-		if md.DeploymentSpec.Replicas > md.DeploymentSpec.MaxReplicas {
-			return nil, fmt.Errorf("Number of replicas %d should be <= max replicas %d", md.DeploymentSpec.Replicas, md.DeploymentSpec.MaxReplicas)
-		}
-	} else {
-		md.DeploymentSpec.MaxReplicas = 0
-	}
+	md.DeploymentSpec.Replicas = scalingSpec.Replicas
+	md.DeploymentSpec.MinReplicas = scalingSpec.MinReplicas
+	md.DeploymentSpec.MaxReplicas = scalingSpec.MaxReplicas
 
 	// Set memory bytes
 	if m.Spec.Memory != nil {

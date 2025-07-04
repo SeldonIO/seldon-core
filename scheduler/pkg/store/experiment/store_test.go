@@ -13,6 +13,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/gomega"
@@ -194,7 +195,7 @@ func TestStartExperiment(t *testing.T) {
 			g.Expect(err).To(BeNil())
 			server := NewExperimentServer(logger, eventHub, fakeModelStore{}, fakePipelineStore{})
 			// init db
-			_ = server.InitialiseOrRestoreDB(path)
+			_ = server.InitialiseOrRestoreDB(path, 10)
 			for _, ea := range test.experiments {
 				err := server.StartExperiment(ea.experiment)
 				if ea.fail {
@@ -261,7 +262,7 @@ func TestStopExperiment(t *testing.T) {
 			path := fmt.Sprintf("%s/db", t.TempDir())
 
 			// init db
-			err := test.store.InitialiseOrRestoreDB(path)
+			err := test.store.InitialiseOrRestoreDB(path, 1)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.store.experiments {
 				err := test.store.db.save(p)
@@ -287,6 +288,10 @@ func TestStopExperiment(t *testing.T) {
 				// check db
 				experimentFromDB, _ := test.store.db.get(test.experimentName)
 				g.Expect(experimentFromDB.Deleted).To(BeTrue())
+
+				time.Sleep(1 * time.Second)
+				test.store.cleanupDeletedExperiments()
+				g.Expect(test.store.experiments[test.experimentName]).To(BeNil())
 			}
 		})
 	}
@@ -372,7 +377,8 @@ func TestRestoreExperiments(t *testing.T) {
 							Name: "model2",
 						},
 					},
-					Deleted: false},
+					Deleted: false,
+				},
 			},
 		},
 		{
@@ -394,7 +400,8 @@ func TestRestoreExperiments(t *testing.T) {
 							Name: "model2",
 						},
 					},
-					Deleted: false},
+					Deleted: false,
+				},
 				"b": {Name: "b", Deleted: true},
 			},
 		},
@@ -410,7 +417,7 @@ func TestRestoreExperiments(t *testing.T) {
 				experiments:     make(map[string]*Experiment),
 			}
 			// init db
-			err := store.InitialiseOrRestoreDB(path)
+			err := store.InitialiseOrRestoreDB(path, 10)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.experiments {
 				err := store.db.save(p)
@@ -419,7 +426,7 @@ func TestRestoreExperiments(t *testing.T) {
 			_ = store.db.Stop()
 
 			// restore from db now that we have state on disk
-			_ = store.InitialiseOrRestoreDB(path)
+			_ = store.InitialiseOrRestoreDB(path, 10)
 
 			for _, p := range test.experiments {
 				experimentFromDB, _ := store.db.get(p.Name)
@@ -430,10 +437,13 @@ func TestRestoreExperiments(t *testing.T) {
 				expectedExperiment, ok := test.experiments[p.Name]
 				g.Expect(ok).To(BeTrue())
 				g.Expect(expectedExperiment.Deleted).To(Equal(p.Deleted))
-				g.Expect(cmp.Equal(p, expectedExperiment)).To(BeTrue())
-			}
+				g.Expect(cmp.Equal(p.Name, expectedExperiment.Name)).To(BeTrue())
+				if expectedExperiment.Deleted {
+					g.Expect(expectedExperiment.DeletedAt.Before(time.Now())).To(BeTrue())
+				}
 
-			g.Expect(len(store.experiments)).To(Equal(len(test.experiments)))
+				g.Expect(len(store.experiments)).To(Equal(len(test.experiments)))
+			}
 		})
 	}
 }
@@ -489,7 +499,7 @@ func (f fakeModelStore) UnloadVersionModels(modelKey string, version uint32) (bo
 	panic("implement me")
 }
 
-func (f fakeModelStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState store.ModelReplicaState, reason string) error {
+func (f fakeModelStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState store.ModelReplicaState, reason string, runtimeInfo *scheduler.ModelRuntimeInfo) error {
 	panic("implement me")
 }
 

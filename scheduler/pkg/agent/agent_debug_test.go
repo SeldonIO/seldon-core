@@ -35,7 +35,7 @@ func setupService(numModels int, modelPrefix string, capacity int) *agentDebug {
 }
 
 func TestAgentDebugServiceSmoke(t *testing.T) {
-	//TODO break this down in proper tests
+	// TODO break this down in proper tests
 	g := NewGomegaWithT(t)
 
 	service := setupService(10, "dummy", 10)
@@ -56,8 +56,9 @@ func TestAgentDebugServiceSmoke(t *testing.T) {
 					Name: "dummy_1_1",
 				},
 				ModelSpec: &pbs.ModelSpec{
-					Uri:         "gs://dummy",
-					MemoryBytes: &mem,
+					Uri:              "gs://dummy",
+					MemoryBytes:      &mem,
+					ModelRuntimeInfo: getModelRuntimeInfo(1),
 				},
 			},
 		},
@@ -87,7 +88,7 @@ func TestAgentDebugServiceSmoke(t *testing.T) {
 }
 
 func TestAgentDebugEarlyStop(t *testing.T) {
-	//TODO break this down in proper tests
+	// TODO break this down in proper tests
 	g := NewGomegaWithT(t)
 
 	service := setupService(10, "dummy", 10)

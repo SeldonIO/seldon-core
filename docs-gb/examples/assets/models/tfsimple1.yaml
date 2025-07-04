@@ -1,0 +1,9 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: tfsimple1
+spec:
+  storageUri: "gs://seldon-models/triton/simple"
+  requirements:
+  - tensorflow
+  memory: 100Ki

@@ -70,6 +70,45 @@ func TestModelEquality(t *testing.T) {
 			answer: ModelEquality{Equal: true},
 		},
 		{
+			name: "Equal - model runtime info is ignored",
+			model1: &pb.Model{
+				Meta: &pb.MetaData{
+					Name: "foo",
+				},
+				ModelSpec: &pb.ModelSpec{
+					Uri:              "gs://mymodels/iris",
+					StorageConfig:    &pb.StorageConfig{Config: &pb.StorageConfig_StorageRcloneConfig{StorageRcloneConfig: rcloneConfig1}},
+					Requirements:     []string{"sklearn", "gpu"},
+					MemoryBytes:      &someMemory,
+					Server:           &someServer,
+					ModelRuntimeInfo: &pb.ModelRuntimeInfo{},
+				},
+				DeploymentSpec: &pb.DeploymentSpec{
+					Replicas:    1,
+					MinReplicas: 1,
+					MaxReplicas: 1,
+				},
+			},
+			model2: &pb.Model{
+				Meta: &pb.MetaData{
+					Name: "foo",
+				},
+				ModelSpec: &pb.ModelSpec{
+					Uri:           "gs://mymodels/iris",
+					StorageConfig: &pb.StorageConfig{Config: &pb.StorageConfig_StorageRcloneConfig{StorageRcloneConfig: rcloneConfig1}},
+					Requirements:  []string{"sklearn", "gpu"},
+					MemoryBytes:   &someMemory,
+					Server:        &someServer,
+				},
+				DeploymentSpec: &pb.DeploymentSpec{
+					Replicas:    1,
+					MinReplicas: 1,
+					MaxReplicas: 1,
+				},
+			},
+			answer: ModelEquality{Equal: true},
+		},
+		{
 			name: "DeploymentsDiffer",
 			model1: &pb.Model{
 				Meta: &pb.MetaData{

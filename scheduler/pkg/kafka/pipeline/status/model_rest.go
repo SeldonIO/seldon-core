@@ -19,7 +19,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/resources"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
@@ -37,9 +36,6 @@ func NewModelRestStatusCaller(logger logrus.FieldLogger, envoyHost string, envoy
 		return nil, err
 	}
 	httpClient := util.GetHttpClientFromTLSOptions(tlsOptions)
-	if err != nil {
-		return nil, err
-	}
 	return &ModelRestCaller{
 		envoyHost:  envoyHost,
 		envoyPort:  envoyPort,
@@ -69,7 +65,7 @@ func (mr *ModelRestCaller) CheckModelReady(ctx context.Context, modelName string
 	if err != nil {
 		return false, err
 	}
-	req.Header.Set(resources.SeldonModelHeader, modelName)
+	req.Header.Set(util.SeldonModelHeader, modelName)
 	req.Header.Set(util.RequestIdHeader, requestId)
 	response, err := mr.httpClient.Do(req)
 	if err != nil {

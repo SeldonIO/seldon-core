@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package v1alpha1
 
 import (
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
@@ -37,6 +38,8 @@ type ServerSpec struct {
 	// PodSpec overrides
 	// Slices such as containers would be appended not overridden
 	PodSpec *PodSpec `json:"podSpec,omitempty"`
+	// StatefulSetPersistentVolumeClaimRetentionPolicy policy for stateful set pvc
+	StatefulSetPersistentVolumeClaimRetentionPolicy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy `json:"statefulSetPersistentVolumeClaimRetentionPolicy,omitempty"`
 	// Scaling spec
 	ScalingSpec `json:",inline"`
 	// +Optional
@@ -138,7 +141,7 @@ func (ss *ServerStatus) IsConditionReady(t apis.ConditionType) bool {
 func (ss *ServerStatus) SetCondition(condition *apis.Condition) {
 	switch {
 	case condition == nil:
-		serverConditionSet.Manage(ss).MarkUnknown(condition.Type, "", "")
+		return
 	case condition.Status == v1.ConditionUnknown:
 		serverConditionSet.Manage(ss).MarkUnknown(condition.Type, condition.Reason, condition.Message)
 	case condition.Status == v1.ConditionTrue:

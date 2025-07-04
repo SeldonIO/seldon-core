@@ -30,6 +30,7 @@ spec:
         - --envoy-port=80
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --tracing-config-path=/mnt/tracing/tracing.json
+        - --log-level=$(LOG_LEVEL)
         image: pipelinegateway:latest
         imagePullPolicy: IfNotPresent
         name: pipelinegateway
@@ -42,6 +43,8 @@ spec:
             value: "9004"
           - name: SELDON_SCHEDULER_TLS_PORT
             value: "9044"
+          - name: LOG_LEVEL
+            value: "warn"
           - name: POD_NAMESPACE
             valueFrom:
               fieldRef:

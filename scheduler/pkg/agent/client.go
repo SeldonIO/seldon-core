@@ -13,6 +13,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -26,6 +27,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
@@ -54,6 +56,8 @@ type Client struct {
 	stop                     atomic.Bool
 	modelScalingClientStream agent.AgentService_ModelScalingTriggerClient
 	settings                 *ClientSettings
+	modelTimestamps          sync.Map
+	startTime                time.Time
 	ClientServices
 	SchedulerGrpcClientOptions
 	KubernetesOptions
@@ -92,6 +96,7 @@ type ClientSettings struct {
 	maxUnloadElapsedTime                     time.Duration
 	maxLoadRetryCount                        uint8
 	maxUnloadRetryCount                      uint8
+	unloadGraceTime                          time.Duration
 }
 
 func NewClientSettings(
@@ -107,6 +112,7 @@ func NewClientSettings(
 	maxUnloadElapsedTime time.Duration,
 	maxLoadRetryCount,
 	maxUnloadRetryCount uint8,
+	unloadGraceTime time.Duration,
 ) *ClientSettings {
 	return &ClientSettings{
 		serverName:                               serverName,
@@ -121,6 +127,7 @@ func NewClientSettings(
 		maxUnloadElapsedTime:                     maxUnloadElapsedTime,
 		maxLoadRetryCount:                        maxLoadRetryCount,
 		maxUnloadRetryCount:                      maxUnloadRetryCount,
+		unloadGraceTime:                          unloadGraceTime,
 	}
 }
 
@@ -186,9 +193,11 @@ func NewClient(
 		KubernetesOptions: KubernetesOptions{
 			namespace: namespace,
 		},
-		isDraining: atomic.Bool{},
-		stop:       atomic.Bool{},
-		settings:   settings,
+		isDraining:      atomic.Bool{},
+		stop:            atomic.Bool{},
+		settings:        settings,
+		modelTimestamps: sync.Map{},
+		startTime:       time.Now(),
 	}
 }
 
@@ -228,8 +237,7 @@ func (c *Client) Start() error {
 		logFailure := func(err error, delay time.Duration) {
 			c.logger.WithError(err).Errorf("Scheduler not ready")
 		}
-		backOffExp := backoff.NewExponentialBackOff()
-		backOffExp.MaxElapsedTime = 0 // Never stop due to large time between calls
+		backOffExp := util.GetClientExponentialBackoff()
 		err := backoff.RetryNotify(c.StartService, backOffExp, logFailure)
 		if err != nil {
 			c.logger.WithError(err).Fatal("Failed to start client")
@@ -408,9 +416,12 @@ func (c *Client) getConnection(host string, plainTxtPort int, tlsPort int) (*grp
 
 	logger.Infof("Connecting (non-blocking) to scheduler at %s:%d", host, port)
 
+	kacp := util.GetClientKeepAliveParameters()
+
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(transCreds),
 		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
+		grpc.WithKeepaliveParams(kacp),
 	}
 	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d", host, port), opts...)
 	if err != nil {
@@ -437,7 +448,7 @@ func (c *Client) StartService() error {
 			Shared:               true,
 			AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
 		},
-		grpc_retry.WithMax(1),
+		grpc_retry.WithMax(util.MaxGRPCRetriesOnStream),
 	) // TODO make configurable
 	if err != nil {
 		return err
@@ -471,12 +482,15 @@ func (c *Client) StartService() error {
 
 		c.logger.Infof("Received operation")
 
+		// Get the time since the start of the agent, this is monotonic as time.Now contains a monotonic clock
+		ticksSinceStart := time.Since(c.startTime).Milliseconds()
+
 		switch operation.Operation {
 		case agent.ModelOperationMessage_LOAD_MODEL:
 			c.logger.Infof("calling load model")
 
 			go func() {
-				err := c.LoadModel(operation)
+				err := c.LoadModel(operation, ticksSinceStart)
 				if err != nil {
 					c.logger.WithError(err).Errorf(
 						"Failed to handle load model %s:%d",
@@ -490,7 +504,7 @@ func (c *Client) StartService() error {
 			c.logger.Infof("calling unload model")
 
 			go func() {
-				err := c.UnloadModel(operation)
+				err := c.UnloadModel(operation, ticksSinceStart)
 				if err != nil {
 					c.logger.WithError(err).Errorf(
 						"Failed to handle unload model %s:%d",
@@ -546,7 +560,7 @@ func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte
 
 		}
 
-		config, err := c.secretsHandler.GetSecretConfig(x.StorageSecretName)
+		config, err := c.secretsHandler.GetSecretConfig(x.StorageSecretName, util.K8sTimeoutDefault)
 		if err != nil {
 			return nil, err
 		}
@@ -557,7 +571,7 @@ func (c *Client) getArtifactConfig(request *agent.ModelOperationMessage) ([]byte
 	return nil, nil
 }
 
-func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
+func (c *Client) LoadModel(request *agent.ModelOperationMessage, timestamp int64) error {
 	if request == nil || request.ModelVersion == nil {
 		return fmt.Errorf("empty request received for load model")
 	}
@@ -573,6 +587,13 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	defer c.stateManager.cache.Unlock(modelWithVersion)
 
 	logger.Infof("Load model %s:%d", modelName, modelVersion)
+	// if it is out of order message, ignore it
+	ignore := ignoreIfOutOfOrder(modelWithVersion, timestamp, &c.modelTimestamps)
+	if ignore {
+		logger.Warnf("Ignoring out of order message for model %s:%d", modelName, modelVersion)
+		return nil
+	}
+	defer c.modelTimestamps.Store(modelWithVersion, timestamp)
 
 	// Get Rclone configuration
 	config, err := c.getArtifactConfig(request)
@@ -595,15 +616,23 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	}
 	logger.Infof("Chose path %s for model %s:%d", *chosenVersionPath, modelName, modelVersion)
 
+	modelConfig, err := c.ModelRepository.GetModelRuntimeInfo(modelWithVersion)
+	if err != nil {
+		logger.Errorf("there was a problem getting the config for model: %s", modelName)
+	}
+
 	// TODO: consider whether we need the actual protos being sent to `LoadModelVersion`?
 	modifiedModelVersionRequest := getModifiedModelVersion(
 		modelWithVersion,
 		pinnedModelVersion,
 		request.GetModelVersion(),
+		modelConfig,
 	)
+
 	loaderFn := func() error {
 		return c.stateManager.LoadModelVersion(modifiedModelVersionRequest)
 	}
+
 	if err := backoffWithMaxNumRetry(loaderFn, c.settings.maxLoadRetryCount, c.settings.maxLoadElapsedTime, logger); err != nil {
 		c.sendModelEventError(modelName, modelVersion, agent.ModelEventMessage_LOAD_FAILED, err)
 		c.cleanup(modelWithVersion)
@@ -621,15 +650,21 @@ func (c *Client) LoadModel(request *agent.ModelOperationMessage) error {
 	}
 
 	logger.Infof("Load model %s:%d success", modelName, modelVersion)
-	return c.sendAgentEvent(modelName, modelVersion, agent.ModelEventMessage_LOADED)
+
+	return c.sendAgentEvent(modelName, modelVersion, modelConfig, agent.ModelEventMessage_LOADED)
 }
 
-func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
+func (c *Client) UnloadModel(request *agent.ModelOperationMessage, timestamp int64) error {
 	if request == nil || request.GetModelVersion() == nil {
 		return fmt.Errorf("Empty request received for unload model")
 	}
 
 	logger := c.logger.WithField("func", "UnloadModel")
+
+	// As envoy is eventually consistent, we need to wait for a grace period before unloading the model
+	// to give envoy time to drain the connections and reflect the cluster changes
+	// this should be ~500ms
+	time.Sleep(c.settings.unloadGraceTime)
 
 	modelName := request.GetModelVersion().GetModel().GetMeta().GetName()
 	modelVersion := request.GetModelVersion().GetVersion()
@@ -640,9 +675,17 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	defer c.stateManager.cache.Unlock(modelWithVersion)
 
 	logger.Infof("Unload model %s:%d", modelName, modelVersion)
+	// if it is out of order message, ignore it
+	ignore := ignoreIfOutOfOrder(modelWithVersion, timestamp, &c.modelTimestamps)
+	if ignore {
+		logger.Warnf("Ignoring out of order message for model %s:%d", modelName, modelVersion)
+		return nil
+	}
+	defer c.modelTimestamps.Store(modelWithVersion, timestamp)
 
 	// we do not care about model versions here
-	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, request.GetModelVersion())
+	// model runtime info is retrieved from the existing version, so nil is passed here
+	modifiedModelVersionRequest := getModifiedModelVersion(modelWithVersion, pinnedModelVersion, request.GetModelVersion(), nil)
 
 	unloaderFn := func() error {
 		return c.stateManager.UnloadModelVersion(modifiedModelVersionRequest)
@@ -670,7 +713,7 @@ func (c *Client) UnloadModel(request *agent.ModelOperationMessage) error {
 	}
 
 	logger.Infof("Unload model %s:%d success", modelName, modelVersion)
-	return c.sendAgentEvent(modelName, modelVersion, agent.ModelEventMessage_UNLOADED)
+	return c.sendAgentEvent(modelName, modelVersion, nil, agent.ModelEventMessage_UNLOADED)
 }
 
 func (c *Client) cleanup(modelWithVersion string) {
@@ -710,6 +753,7 @@ func (c *Client) sendModelEventError(
 func (c *Client) sendAgentEvent(
 	modelName string,
 	modelVersion uint32,
+	modelRuntimeInfo *scheduler.ModelRuntimeInfo,
 	event agent.ModelEventMessage_Event,
 ) error {
 	// if the server is draining and the model load has succeeded, we need to "cancel"
@@ -733,6 +777,7 @@ func (c *Client) sendAgentEvent(
 		ModelVersion:         modelVersion,
 		Event:                event,
 		AvailableMemoryBytes: c.stateManager.GetAvailableMemoryBytesWithOverCommit(),
+		RuntimeInfo:          modelRuntimeInfo,
 	})
 	return err
 }

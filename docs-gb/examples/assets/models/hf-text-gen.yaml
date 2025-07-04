@@ -1,0 +1,8 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: text-gen
+spec:
+  storageUri: "gs://seldon-models/mlserver/huggingface/text-generation"
+  requirements:
+  - huggingface

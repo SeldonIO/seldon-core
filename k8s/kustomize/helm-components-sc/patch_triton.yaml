@@ -6,7 +6,10 @@ spec:
   podSpec:
     imagePullSecrets: []
     containers:
-    - image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository }}:{{ .Values.serverConfig.rclone.image.tag }}'
+    - env:
+      - name: RCLONE_LOG_LEVEL
+        value: '{{ hasKey .Values.serverConfig.rclone "logLevel" | ternary .Values.serverConfig.rclone.logLevel .Values.logging.logLevel | upper }}'
+      image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository }}:{{ .Values.serverConfig.rclone.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
       name: rclone
       resources:
@@ -38,6 +41,8 @@ spec:
         value: '{{ .Values.serverConfig.agent.maxLoadRetryCount }}'
       - name: SELDON_MAX_UNLOAD_RETRY_COUNT
         value: '{{ .Values.serverConfig.agent.maxUnloadRetryCount }}'
+      - name: SELDON_UNLOAD_GRACE_PERIOD_SECONDS
+        value: '{{ .Values.serverConfig.agent.unloadGracePeriodSeconds }}'
       - name: SELDON_OVERCOMMIT_PERCENTAGE
         value: '{{ .Values.serverConfig.agent.overcommitPercentage }}'
       - name: CONTROL_PLANE_SECURITY_PROTOCOL
@@ -68,6 +73,8 @@ spec:
         value: '{{ .Values.security.envoy.ssl.upstream.server.caPath }}'
       - name: ENVOY_UPSTREAM_CLIENT_TLS_CA_LOCATION
         value: '{{ .Values.security.envoy.ssl.upstream.server.clientCaPath }}'
+      - name: SELDON_LOG_LEVEL
+        value: '{{ hasKey .Values.serverConfig.agent "logLevel" | ternary .Values.serverConfig.agent.logLevel .Values.logging.logLevel }}'
       image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository }}:{{ .Values.serverConfig.agent.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.agent.image.pullPolicy }}'
       name: agent

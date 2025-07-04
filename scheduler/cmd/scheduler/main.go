@@ -10,7 +10,6 @@ the Change License after the Change Date as each is defined in accordance with t
 package main
 
 import (
-	"context"
 	"flag"
 	"math/rand"
 	"os"
@@ -18,16 +17,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
-	envoyServerControlPlaneV3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
 	log "github.com/sirupsen/logrus"
+
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor"
-	envoyServer "github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/server"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/dataflow"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/cleaner"
@@ -55,14 +52,28 @@ var (
 	tracingConfigPath            string
 	dbPath                       string
 	nodeID                       string
-	allowPlaintxt                bool //scheduler server
-	autoscalingDisabled          bool
+	allowPlaintxt                bool // scheduler server
+	autoscalingModelEnabled      bool
+	autoscalingServerEnabled     bool
 	kafkaConfigPath              string
 	schedulerReadyTimeoutSeconds uint
+	deletedResourceTTLSeconds    uint
+	serverPackingEnabled         bool
+	serverPackingPercentage      float64
+	accessLogPath                string
+	enableAccessLog              bool
+	includeSuccessfulRequests    bool
 )
 
 const (
 	xDSWaitTimeout = time.Duration(10 * time.Second)
+
+	// percentage of time we try to pack server replicas, i.e. number of server replicas is greater than `MaxNumReplicaHostedModels`
+	// this is to be a bit more conservative and not pack all the time as it can lead to
+	// increased latency in the case of MMS
+	// in the future we should have more metrics to decide whether packing can lead
+	// to better performance
+	allowPackingPercentageDefault = 0.25
 )
 
 func init() {
@@ -102,8 +113,9 @@ func init() {
 	// Allow plaintext servers
 	flag.BoolVar(&allowPlaintxt, "allow-plaintxt", true, "Allow plain text scheduler server")
 
-	// Whether to enable autoscaling, default is true
-	flag.BoolVar(&autoscalingDisabled, "disable-autoscaling", false, "Disable autoscaling feature")
+	// Autoscaling
+	flag.BoolVar(&autoscalingModelEnabled, "enable-model-autoscaling", false, "Enable native model autoscaling feature")
+	flag.BoolVar(&autoscalingServerEnabled, "enable-server-autoscaling", true, "Enable native server autoscaling feature")
 
 	// Kafka config path
 	flag.StringVar(
@@ -115,6 +127,18 @@ func init() {
 
 	// Timeout for scheduler to be ready
 	flag.UintVar(&schedulerReadyTimeoutSeconds, "scheduler-ready-timeout-seconds", 300, "Timeout for scheduler to be ready")
+
+	// This TTL is set in badger DB
+	flag.UintVar(&deletedResourceTTLSeconds, "deleted-resource-ttl-seconds", 86400, "TTL for deleted experiments and pipelines (in seconds)")
+
+	// Server packing
+	flag.BoolVar(&serverPackingEnabled, "server-packing-enabled", false, "Enable server packing")
+	flag.Float64Var(&serverPackingPercentage, "server-packing-percentage", allowPackingPercentageDefault, "Percentage of time we try to pack server replicas")
+
+	// Envoy access log config
+	flag.StringVar(&accessLogPath, "envoy-accesslog-path", "/tmp/envoy-accesslog.txt", "Envoy access log path")
+	flag.BoolVar(&enableAccessLog, "enable-envoy-accesslog", true, "Enable Envoy access log")
+	flag.BoolVar(&includeSuccessfulRequests, "include-successful-requests-envoy-accesslog", false, "Include successful requests in Envoy access log")
 }
 
 func getNamespace() string {
@@ -138,9 +162,17 @@ func makeSignalHandler(logger *log.Logger, done chan<- bool) {
 	close(done)
 }
 
+func parseFlags() {
+	flag.Parse()
+	if !serverPackingEnabled {
+		// zero packing percentage == server packing is disabled
+		serverPackingPercentage = 0
+	}
+}
+
 func main() {
 	logger := log.New()
-	flag.Parse()
+	parseFlags()
 	logIntLevel, err := log.ParseLevel(logLevel)
 	if err != nil {
 		logger.WithError(err).Fatalf("Failed to set log level %s", logLevel)
@@ -149,7 +181,9 @@ func main() {
 	logger.SetLevel(logIntLevel)
 
 	logger.Debugf("Scheduler ready timeout is set to %d seconds", schedulerReadyTimeoutSeconds)
-
+	logger.Debugf("Server packing is set to %t", serverPackingEnabled)
+	logger.Debugf("Server packing percentage is set to %f", serverPackingPercentage)
+	logger.Infof("Autoscaling (native) service is set to Model: %t and Server: %t", autoscalingModelEnabled, autoscalingServerEnabled)
 	done := make(chan bool, 1)
 
 	namespace = getNamespace()
@@ -161,9 +195,6 @@ func main() {
 	}
 	defer eventHub.Close()
 	go makeSignalHandler(logger, done)
-
-	// Create a cache
-	xdsCache := cache.NewSnapshotCache(false, cache.IDHash{}, logger)
 
 	tracer, err := tracing.NewTraceProvider("seldon-scheduler", &tracingConfigPath, logger)
 	if err != nil {
@@ -185,14 +216,16 @@ func main() {
 	}
 
 	// Create envoy incremental processor
-	_, err = processor.NewIncrementalProcessor(xdsCache, nodeID, logger, ss, es, ps, eventHub, &pipelineGatewayDetails, cleaner)
+	incrementalProcessor, err := processor.NewIncrementalProcessor(
+		nodeID, logger, ss, es, ps, eventHub, &pipelineGatewayDetails, cleaner, &xdscache.EnvoyConfig{
+			AccessLogPath: accessLogPath, EnableAccessLog: enableAccessLog, IncludeSuccessfulRequests: includeSuccessfulRequests})
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to create incremental processor")
 	}
 
 	// scheduler <-> dataflow grpc
 	dataFlowLoadBalancer := util.NewRingLoadBalancer(1)
-	kafkaConfigMap, err := config.NewKafkaConfig(kafkaConfigPath)
+	kafkaConfigMap, err := kafka_config.NewKafkaConfig(kafkaConfigPath, logLevel)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
@@ -211,11 +244,11 @@ func main() {
 	// Do here after other services created so eventHub events will be handled on pipeline/experiment load
 	// If we start earlier events will be sent but not received by services that start listening "late" to eventHub
 	if dbPath != "" {
-		err := ps.InitialiseOrRestoreDB(dbPath)
+		err := ps.InitialiseOrRestoreDB(dbPath, deletedResourceTTLSeconds)
 		if err != nil {
 			log.WithError(err).Fatalf("Failed to initialise pipeline db at %s", dbPath)
 		}
-		err = es.InitialiseOrRestoreDB(dbPath)
+		err = es.InitialiseOrRestoreDB(dbPath, deletedResourceTTLSeconds)
 		if err != nil {
 			log.WithError(err).Fatalf("Failed to initialise experiment db at %s", dbPath)
 		}
@@ -239,18 +272,23 @@ func main() {
 		ss,
 		scheduler.DefaultSchedulerConfig(ss),
 		sync,
+		eventHub,
 	)
 
 	// scheduler <-> controller grpc
-	s := schedulerServer.NewSchedulerServer(logger, ss, es, ps, sched, eventHub, sync)
+	s := schedulerServer.NewSchedulerServer(
+		logger, ss, es, ps, sched, eventHub, sync,
+		schedulerServer.SchedulerServerConfig{
+			PackThreshold:            serverPackingPercentage, // note that if threshold is 0, packing is disabled
+			AutoScalingServerEnabled: autoscalingServerEnabled,
+		})
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start server gRPC servers")
 	}
 
 	// scheduler <-> agent  grpc
-	logger.Infof("Autoscaling service is set to %t", !autoscalingDisabled)
-	as := agent.NewAgentServer(logger, ss, sched, eventHub, !autoscalingDisabled)
+	as := agent.NewAgentServer(logger, ss, sched, eventHub, autoscalingModelEnabled)
 	err = as.StartGrpcServer(allowPlaintxt, agentPort, agentMtlsPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start agent gRPC server")
@@ -262,11 +300,8 @@ func main() {
 	// extra wait to allow routes state to get created
 	time.Sleep(xDSWaitTimeout)
 
-	// Start envoy xDS server, this is done after the scheduler is ready
-	// so that the xDS server can start sending valid updates to envoy.
-	ctx := context.Background()
-	srv := envoyServerControlPlaneV3.NewServer(ctx, xdsCache, nil)
-	xdsServer := envoyServer.NewXDSServer(srv, logger)
+	// create the processor separately, so it receives all updates
+	xdsServer := processor.NewXDSServer(incrementalProcessor, logger)
 	err = xdsServer.StartXDSServer(envoyPort)
 	if err != nil {
 		log.WithError(err).Fatalf("Failed to start envoy xDS server")
@@ -283,6 +318,7 @@ func main() {
 	s.StopSendServerEvents()
 	s.StopSendExperimentEvents()
 	s.StopSendPipelineEvents()
+	s.StopSendControlPlaneEvents()
 	cs.StopSendPipelineEvents()
 	as.StopAgentStreams()
 

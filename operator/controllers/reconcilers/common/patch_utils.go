@@ -10,9 +10,9 @@ the Change License after the Change Date as each is defined in accordance with t
 package common
 
 import (
+	"dario.cat/mergo"
 	"emperror.dev/errors"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
-	"github.com/imdario/mergo"
 	json "github.com/json-iterator/go"
 	v1 "k8s.io/api/core/v1"
 

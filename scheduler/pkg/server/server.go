@@ -32,22 +32,22 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 const (
-	grpcMaxConcurrentStreams       = 1_000_000
-	pendingEventsQueueSize     int = 1000
-	modelEventHandlerName          = "scheduler.server.models"
-	serverEventHandlerName         = "scheduler.server.servers"
-	experimentEventHandlerName     = "scheduler.server.experiments"
-	pipelineEventHandlerName       = "scheduler.server.pipelines"
-	defaultBatchWait               = 250 * time.Millisecond
-	sendTimeout                    = 30 * time.Second // Timeout for sending events to subscribers via grpc `sendMsg`
+	grpcMaxConcurrentStreams        = 1_000_000
+	pendingEventsQueueSize      int = 1000
+	modelEventHandlerName           = "scheduler.server.models"
+	serverEventHandlerName          = "scheduler.server.servers"
+	serverModelEventHandlerName     = "scheduler.server.servers.models"
+	experimentEventHandlerName      = "scheduler.server.experiments"
+	pipelineEventHandlerName        = "scheduler.server.pipelines"
+	defaultBatchWait                = 250 * time.Millisecond
+	sendTimeout                     = 30 * time.Second // Timeout for sending events to subscribers via grpc `sendMsg`
 )
 
-var (
-	ErrAddServerEmptyServerName = status.Errorf(codes.FailedPrecondition, "Empty server name passed")
-)
+var ErrAddServerEmptyServerName = status.Errorf(codes.FailedPrecondition, "Empty server name passed")
 
 type SchedulerServer struct {
 	pb.UnimplementedSchedulerServer
@@ -60,9 +60,16 @@ type SchedulerServer struct {
 	serverEventStream     ServerEventStream
 	experimentEventStream ExperimentEventStream
 	pipelineEventStream   PipelineEventStream
+	controlPlaneStream    ControlPlaneStream
 	certificateStore      *seldontls.CertificateStore
 	timeout               time.Duration
 	synchroniser          synchroniser.Synchroniser
+	config                SchedulerServerConfig
+}
+
+type SchedulerServerConfig struct {
+	PackThreshold            float64
+	AutoScalingServerEnabled bool
 }
 
 type ModelEventStream struct {
@@ -89,6 +96,11 @@ type PipelineEventStream struct {
 	streams map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription
 }
 
+type ControlPlaneStream struct {
+	mu      sync.Mutex
+	streams map[pb.Scheduler_SubscribeControlPlaneServer]*ControlPlaneSubsription
+}
+
 type ModelSubscription struct {
 	name   string
 	stream pb.Scheduler_SubscribeModelStatusServer
@@ -113,18 +125,28 @@ type PipelineSubscription struct {
 	fin    chan bool
 }
 
+type ControlPlaneSubsription struct {
+	name   string
+	stream pb.Scheduler_SubscribeControlPlaneServer
+	fin    chan bool
+}
+
 func (s *SchedulerServer) startServer(port uint, secure bool) error {
 	logger := s.logger.WithField("func", "startServer")
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return err
 	}
+
+	kaep := util.GetServerKeepAliveEnforcementPolicy()
+
 	opts := []grpc.ServerOption{}
 	if secure {
 		opts = append(opts, grpc.Creds(s.certificateStore.CreateServerTransportCredentials()))
 	}
 	opts = append(opts, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
 	opts = append(opts, grpc.StatsHandler(otelgrpc.NewServerHandler()))
+	opts = append(opts, grpc.KeepaliveEnforcementPolicy(kaep))
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterSchedulerServer(grpcServer, s)
 	s.logger.Printf("Scheduler server running on %d mtls:%v", port, secure)
@@ -147,7 +169,7 @@ func (s *SchedulerServer) StartGrpcServers(allowPlainTxt bool, schedulerPort uin
 		}
 	}
 	if !allowPlainTxt && s.certificateStore == nil {
-		return fmt.Errorf("One of plain txt or mTLS needs to be defined. But have plain text [%v] and no TLS", allowPlainTxt)
+		return fmt.Errorf("one of plain txt or mTLS needs to be defined. But have plain text [%v] and no TLS", allowPlainTxt)
 	}
 	if allowPlainTxt {
 		err := s.startServer(schedulerPort, false)
@@ -176,6 +198,7 @@ func NewSchedulerServer(
 	scheduler scheduler2.Scheduler,
 	eventHub *coordinator.EventHub,
 	synchroniser synchroniser.Synchroniser,
+	config SchedulerServerConfig,
 ) *SchedulerServer {
 	s := &SchedulerServer{
 		logger:           logger.WithField("source", "SchedulerServer"),
@@ -198,8 +221,12 @@ func NewSchedulerServer(
 		experimentEventStream: ExperimentEventStream{
 			streams: make(map[pb.Scheduler_SubscribeExperimentStatusServer]*ExperimentSubscription),
 		},
+		controlPlaneStream: ControlPlaneStream{
+			streams: make(map[pb.Scheduler_SubscribeControlPlaneServer]*ControlPlaneSubsription),
+		},
 		timeout:      sendTimeout,
 		synchroniser: synchroniser,
+		config:       config,
 	}
 
 	eventHub.RegisterModelEventHandler(
@@ -209,10 +236,10 @@ func NewSchedulerServer(
 		s.handleModelEvent,
 	)
 	eventHub.RegisterModelEventHandler(
-		serverEventHandlerName,
+		serverModelEventHandlerName,
 		pendingEventsQueueSize,
 		s.logger,
-		s.handleServerEvent,
+		s.handleModelEventForServerStatus,
 	)
 	eventHub.RegisterExperimentEventHandler(
 		experimentEventHandlerName,
@@ -226,6 +253,12 @@ func NewSchedulerServer(
 		s.logger,
 		s.handlePipelineEvents,
 	)
+	eventHub.RegisterServerEventHandler(
+		serverEventHandlerName,
+		pendingEventsQueueSize,
+		s.logger,
+		s.handleServerEvents,
+	)
 
 	return s
 }
@@ -238,14 +271,14 @@ func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotify
 		logger.Infof("Server notification %s expectedReplicas %d shared %v", server.GetName(), server.GetExpectedReplicas(), server.GetShared())
 		err := s.modelStore.ServerNotify(server)
 		if err != nil {
-			return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+			return nil, status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 		}
 		if server.ExpectedReplicas == 0 {
 			go s.rescheduleModels(server.GetName())
 		}
 		numExpectedReplicas += uint(server.ExpectedReplicas)
 	}
-	if req.IsFirstSync {
+	if req.IsFirstSync && !s.synchroniser.IsReady() {
 		s.synchroniser.Signals(numExpectedReplicas)
 		logger.Infof("Signalling synchroniser with %d expected server agents to connect", numExpectedReplicas)
 	}
@@ -278,12 +311,14 @@ func (s *SchedulerServer) LoadModel(ctx context.Context, req *pb.LoadModelReques
 	logger.Debugf("Load model %+v k8s meta %+v", req.GetModel().GetMeta(), req.GetModel().GetMeta().GetKubernetesMeta())
 	err := s.modelStore.UpdateModel(req)
 	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+		return nil, status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 	}
-	err = s.scheduler.Schedule(req.GetModel().GetMeta().GetName())
-	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-	}
+	go func() {
+		err := s.scheduler.Schedule(req.GetModel().GetMeta().GetName())
+		if err != nil {
+			logger.WithError(err).Warnf("Failed to schedule model %s", req.GetModel().GetMeta().GetName())
+		}
+	}()
 	return &pb.LoadModelResponse{}, nil
 }
 
@@ -292,12 +327,14 @@ func (s *SchedulerServer) UnloadModel(ctx context.Context, req *pb.UnloadModelRe
 	logger.Debugf("Unload model %s", req.GetModel().Name)
 	err := s.modelStore.RemoveModel(req)
 	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+		return nil, status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 	}
-	err = s.scheduler.Schedule(req.GetModel().Name)
-	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
-	}
+	go func() {
+		err := s.scheduler.Schedule(req.GetModel().Name)
+		if err != nil {
+			logger.WithError(err).Warnf("Failed to schedule model %s (for unload)", req.GetModel().GetName())
+		}
+	}()
 	return &pb.UnloadModelResponse{}, nil
 }
 
@@ -335,7 +372,7 @@ func (s *SchedulerServer) modelStatusImpl(model *store.ModelSnapshot, allVersion
 	if !allVersions {
 		latestModel := model.GetLatest()
 		if latestModel == nil {
-			return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("Failed to find model %s", model.Name))
+			return nil, status.Errorf(codes.FailedPrecondition, "Failed to find model %s", model.Name)
 		}
 		modelVersionStatuses = append(modelVersionStatuses, createModelVersionStatus(latestModel))
 	} else {
@@ -362,18 +399,18 @@ func (s *SchedulerServer) ModelStatus(
 		// All models requested
 		models, err := s.modelStore.GetModels()
 		if err != nil {
-			return status.Errorf(codes.FailedPrecondition, err.Error())
+			return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 		}
 
 		for _, m := range models {
 			resp, err := s.modelStatusImpl(m, req.AllVersions)
 			if err != nil {
-				return status.Errorf(codes.FailedPrecondition, err.Error())
+				return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 			}
 
 			err = stream.Send(resp)
 			if err != nil {
-				return status.Errorf(codes.Internal, err.Error())
+				return status.Errorf(codes.Internal, "%s", err.Error())
 			}
 		}
 		return nil
@@ -384,22 +421,22 @@ func (s *SchedulerServer) ModelStatus(
 
 		model, err := s.modelStore.GetModel(req.Model.Name)
 		if err != nil {
-			return status.Errorf(codes.FailedPrecondition, err.Error())
+			return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 		}
 		if model == nil || len(model.Versions) == 0 {
 			return status.Errorf(
 				codes.FailedPrecondition,
-				fmt.Sprintf("Failed to find model %s", req.Model.Name),
+				"Failed to find model %s", req.Model.Name,
 			)
 		}
 
 		resp, err := s.modelStatusImpl(model, req.AllVersions)
 		if err != nil {
-			return status.Errorf(codes.Internal, err.Error())
+			return status.Errorf(codes.Internal, "%s", err.Error())
 		}
 		err = stream.Send(resp)
 		if err != nil {
-			return status.Errorf(codes.Internal, err.Error())
+			return status.Errorf(codes.Internal, "%s", err.Error())
 		}
 		return nil
 	}
@@ -416,14 +453,14 @@ func (s *SchedulerServer) ServerStatus(
 		// All servers requested
 		servers, err := s.modelStore.GetServers(true, true)
 		if err != nil {
-			return status.Errorf(codes.FailedPrecondition, err.Error())
+			return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 		}
 
 		for _, s := range servers {
-			resp := createServerStatusResponse(s)
+			resp := createServerStatusUpdateResponse(s)
 			err := stream.Send(resp)
 			if err != nil {
-				return status.Errorf(codes.Internal, err.Error())
+				return status.Errorf(codes.Internal, "%s", err.Error())
 			}
 		}
 		return nil
@@ -431,21 +468,22 @@ func (s *SchedulerServer) ServerStatus(
 		// Single server requested
 		server, err := s.modelStore.GetServer(req.GetName(), true, true)
 		if err != nil {
-			return status.Errorf(codes.FailedPrecondition, err.Error())
+			return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 		}
-		resp := createServerStatusResponse(server)
+		resp := createServerStatusUpdateResponse(server)
 		err = stream.Send(resp)
 		if err != nil {
-			return status.Errorf(codes.Internal, err.Error())
+			return status.Errorf(codes.Internal, "%s", err.Error())
 		}
 		return nil
 	}
 }
 
-func createServerStatusResponse(s *store.ServerSnapshot) *pb.ServerStatusResponse {
+func createServerStatusUpdateResponse(s *store.ServerSnapshot) *pb.ServerStatusResponse {
 	// note we dont count draining replicas in available replicas
 
 	resp := &pb.ServerStatusResponse{
+		Type:             pb.ServerStatusResponse_StatusUpdate,
 		ServerName:       s.Name,
 		ExpectedReplicas: int32(s.ExpectedReplicas),
 		KubernetesMeta:   s.KubernetesMeta,
@@ -476,10 +514,23 @@ func createServerStatusResponse(s *store.ServerSnapshot) *pb.ServerStatusRespons
 	return resp
 }
 
+func createServerScaleResponse(s *store.ServerSnapshot, expectedReplicas uint32) *pb.ServerStatusResponse {
+	// we dont care about populating the other fields as they should not be used by the controller, reconsider if this changes
+
+	resp := &pb.ServerStatusResponse{
+		Type:             pb.ServerStatusResponse_ScalingRequest,
+		ServerName:       s.Name,
+		ExpectedReplicas: int32(expectedReplicas),
+		KubernetesMeta:   s.KubernetesMeta,
+	}
+
+	return resp
+}
+
 func (s *SchedulerServer) StartExperiment(ctx context.Context, req *pb.StartExperimentRequest) (*pb.StartExperimentResponse, error) {
 	err := s.experimentServer.StartExperiment(experiment.CreateExperimentFromRequest(req.Experiment))
 	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+		return nil, status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 	}
 	return &pb.StartExperimentResponse{}, nil
 }
@@ -487,7 +538,7 @@ func (s *SchedulerServer) StartExperiment(ctx context.Context, req *pb.StartExpe
 func (s *SchedulerServer) StopExperiment(ctx context.Context, req *pb.StopExperimentRequest) (*pb.StopExperimentResponse, error) {
 	err := s.experimentServer.StopExperiment(req.GetName())
 	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+		return nil, status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 	}
 	return &pb.StopExperimentResponse{}, nil
 }
@@ -503,14 +554,14 @@ func (s *SchedulerServer) ExperimentStatus(
 		// All experiments requested
 		experiments, err := s.experimentServer.GetExperiments()
 		if err != nil {
-			return status.Errorf(codes.FailedPrecondition, err.Error())
+			return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 		}
 
 		for _, e := range experiments {
 			resp := createExperimentStatus(e)
 			err = stream.Send(resp)
 			if err != nil {
-				return status.Errorf(codes.Internal, err.Error())
+				return status.Errorf(codes.Internal, "%s", err.Error())
 			}
 		}
 		return nil
@@ -518,13 +569,13 @@ func (s *SchedulerServer) ExperimentStatus(
 		// Single experiment requested
 		exp, err := s.experimentServer.GetExperiment(req.GetName())
 		if err != nil {
-			return status.Errorf(codes.FailedPrecondition, err.Error())
+			return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 		}
 
 		resp := createExperimentStatus(exp)
 		err = stream.Send(resp)
 		if err != nil {
-			return status.Errorf(codes.Internal, err.Error())
+			return status.Errorf(codes.Internal, "%s", err.Error())
 		}
 		return nil
 	}
@@ -550,7 +601,7 @@ func createExperimentStatus(e *experiment.Experiment) *pb.ExperimentStatusRespon
 func (s *SchedulerServer) LoadPipeline(ctx context.Context, req *pb.LoadPipelineRequest) (*pb.LoadPipelineResponse, error) {
 	err := s.pipelineHandler.AddPipeline(req.Pipeline)
 	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+		return nil, status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 	}
 	return &pb.LoadPipelineResponse{}, nil
 }
@@ -558,7 +609,7 @@ func (s *SchedulerServer) LoadPipeline(ctx context.Context, req *pb.LoadPipeline
 func (s *SchedulerServer) UnloadPipeline(ctx context.Context, req *pb.UnloadPipelineRequest) (*pb.UnloadPipelineResponse, error) {
 	err := s.pipelineHandler.RemovePipeline(req.GetName())
 	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+		return nil, status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 	}
 	return &pb.UnloadPipelineResponse{}, nil
 }
@@ -594,12 +645,12 @@ func (s *SchedulerServer) PipelineStatus(
 		// Single pipeline requested
 		p, err := s.pipelineHandler.GetPipeline(req.GetName())
 		if err != nil {
-			return status.Errorf(codes.FailedPrecondition, err.Error())
+			return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 		}
 		resp := createPipelineStatus(p, req.GetAllVersions())
 		err = stream.Send(resp)
 		if err != nil {
-			return status.Errorf(codes.Internal, err.Error())
+			return status.Errorf(codes.Internal, "%s", err.Error())
 		}
 		return nil
 	}

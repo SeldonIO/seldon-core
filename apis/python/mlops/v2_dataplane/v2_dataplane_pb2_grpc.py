@@ -70,6 +70,11 @@ class GRPCInferenceServiceStub(object):
                 request_serializer=mlops_dot_v2__dataplane_dot_v2__dataplane__pb2.ModelInferRequest.SerializeToString,
                 response_deserializer=mlops_dot_v2__dataplane_dot_v2__dataplane__pb2.ModelInferResponse.FromString,
                 _registered_method=True)
+        self.ModelStreamInfer = channel.stream_stream(
+                '/inference.GRPCInferenceService/ModelStreamInfer',
+                request_serializer=mlops_dot_v2__dataplane_dot_v2__dataplane__pb2.ModelInferRequest.SerializeToString,
+                response_deserializer=mlops_dot_v2__dataplane_dot_v2__dataplane__pb2.ModelInferResponse.FromString,
+                _registered_method=True)
         self.RepositoryIndex = channel.unary_unary(
                 '/inference.GRPCInferenceService/RepositoryIndex',
                 request_serializer=mlops_dot_v2__dataplane_dot_v2__dataplane__pb2.RepositoryIndexRequest.SerializeToString,
@@ -140,6 +145,15 @@ class GRPCInferenceServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ModelStreamInfer(self, request_iterator, context):
+        """The ModelStreamInfer API performs bidirectional inference streaming using the
+        specified model. Errors are indicated by the google.rpc.Status returned for
+        the request. The OK code indicates success and other codes indicate failure.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def RepositoryIndex(self, request, context):
         """control plance
         """
@@ -189,6 +203,11 @@ def add_GRPCInferenceServiceServicer_to_server(servicer, server):
             ),
             'ModelInfer': grpc.unary_unary_rpc_method_handler(
                     servicer.ModelInfer,
+                    request_deserializer=mlops_dot_v2__dataplane_dot_v2__dataplane__pb2.ModelInferRequest.FromString,
+                    response_serializer=mlops_dot_v2__dataplane_dot_v2__dataplane__pb2.ModelInferResponse.SerializeToString,
+            ),
+            'ModelStreamInfer': grpc.stream_stream_rpc_method_handler(
+                    servicer.ModelStreamInfer,
                     request_deserializer=mlops_dot_v2__dataplane_dot_v2__dataplane__pb2.ModelInferRequest.FromString,
                     response_serializer=mlops_dot_v2__dataplane_dot_v2__dataplane__pb2.ModelInferResponse.SerializeToString,
             ),
@@ -369,6 +388,33 @@ class GRPCInferenceService(object):
             request,
             target,
             '/inference.GRPCInferenceService/ModelInfer',
+            mlops_dot_v2__dataplane_dot_v2__dataplane__pb2.ModelInferRequest.SerializeToString,
+            mlops_dot_v2__dataplane_dot_v2__dataplane__pb2.ModelInferResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ModelStreamInfer(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_stream(
+            request_iterator,
+            target,
+            '/inference.GRPCInferenceService/ModelStreamInfer',
             mlops_dot_v2__dataplane_dot_v2__dataplane__pb2.ModelInferRequest.SerializeToString,
             mlops_dot_v2__dataplane_dot_v2__dataplane__pb2.ModelInferResponse.FromString,
             options,
