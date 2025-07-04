@@ -219,7 +219,7 @@ docker-build-all: docker-build-dataflow docker-build-agent docker-build-envoy do
 docker-push-all: docker-push-agent docker-push-envoy docker-push-rclone docker-push-scheduler docker-push-modelgateway docker-push-pipelinegateway docker-push-dataflow docker-push-grafana
 
 .PHONY: docker-build-and-push-prod-all
-docker-build--and-push-prod-all: docker-build-and-push-prod-dataflow docker-build-and-push-prod-agent docker-build-and-push-prod-envoy docker-build-and-push-prod-rclone docker-build-and-push-prod-scheduler docker-build-and-push-prod-modelgateway docker-build-and-push-prod-pipelinegateway docker-build-and-push-prod-grafana
+docker-build-and-push-prod-all: docker-build-and-push-prod-dataflow docker-build-and-push-prod-agent docker-build-and-push-prod-envoy docker-build-and-push-prod-rclone docker-build-and-push-prod-scheduler docker-build-and-push-prod-modelgateway docker-build-and-push-prod-pipelinegateway docker-build-and-push-prod-grafana
 
 #####################################
 # Kind
