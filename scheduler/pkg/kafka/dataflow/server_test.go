@@ -458,7 +458,7 @@ func TestPipelineEvents(t *testing.T) {
 				select {
 				case next := <-stream.msgs:
 					psr = next
-				case <-time.After(2*time.Second):
+				case <-time.After(2 * time.Second):
 					t.Fail()
 				}
 

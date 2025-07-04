@@ -24,7 +24,7 @@ linters:
   enable:
     # Sorted alphabetically.
     - errcheck
-    - exportloopref
+    - copyloopvar
     - gci
     - goimports # Also includes gofmt style formatting
     - gosimple
