@@ -50,6 +50,21 @@
     * [Routers Including Multi armed Bandits](routing/routers.md)
     * [Infrence Graphs](routing/inference-graph.md)
   * Wrappers and SDKs
+    * Python Language Wrapper
+      * [Install the Seldon Core Python module](wrappers/python/python_module.md)
+      * [Creating your Python inference class](wrappers/python/python_component.md)
+      * [Create imgae S2I](wrappers/python/python_wrapping_s2i.md)
+      * [Create image with Dockerfile](wrappers/python/python_wrapping_docker.md)
+      * [Seldon Python server configuration](wrappers/python/python_server.md)
+      * [Calling the Seldon API with Seldon Python client](wrappers/python/seldon_client.md)
+      * [Python API reference]
+      * [Development Tips](wrappers/python/developer_notes.md)
+    * [Go Language Wrapper]
+    * [Java Language Wrapper](wrappers/java.md)
+    * [Nodejs Language Wrapper](wrappers/nodejs.md)
+    * [C++ Language Wrapper](wrappers/cpp.md)
+    * [R Language Wrapper](wrappers/r.md)
+
   * Integrations
     * [CI/CD MLOps at Scale](integrations/cicd-mlops.md)
     * [Payload Logging](integrations/logging.md)
