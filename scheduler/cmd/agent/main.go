@@ -33,6 +33,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
 	controlplane_factory "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelserver_controlplane/factory"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/rclone"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/readyservice"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/mlserver"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton"
@@ -122,6 +123,15 @@ func main() {
 	}
 	logger.Infof("Setting log level to %s", cli.LogLevel)
 	logger.SetLevel(logIntLevel)
+
+	// Start the service responding to readiness probes early in the agent lifecycle
+	readinessService := readyservice.NewReadyService(
+		logger, uint(cli.ReadinessServicePort))
+	err = readinessService.Start()
+	if err != nil {
+		logger.WithError(err).Fatal("Failed to start readiness service, agent will never be marked as ready")
+	}
+	defer func() { _ = readinessService.Stop() }()
 
 	// Make required folders
 	//TODO handle via initContainer?
@@ -252,8 +262,8 @@ func main() {
 	defer func() { _ = drainerService.Stop() }()
 
 	// Create Agent
-	client := agent.NewClient(
-		agent.NewClientSettings(
+	agentService := agent.NewAgentServiceManager(
+		agent.NewAgentServiceConfig(
 			cli.ServerName,
 			uint32(cli.ReplicaIdx),
 			cli.SchedulerHost,
@@ -278,11 +288,12 @@ func main() {
 		agentDebugService,
 		modelScalingService,
 		drainerService,
+		readinessService,
 		promMetrics,
 	)
 
 	// Wait for required services to be ready
-	err = client.WaitReadySubServices(true)
+	err = agentService.WaitReadySubServices(true)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to wait for all agent dependent services to be ready")
 		close(done)
@@ -295,15 +306,15 @@ func main() {
 		close(done)
 	}
 
-	// Start client grpc server
+	// Start grpc connection to scheduler and handle incoming events
 	go func() {
-		err = client.Start()
+		err = agentService.StartControlLoop()
 		if err != nil {
-			logger.WithError(err).Error("Failed to initialise client")
+			logger.WithError(err).Error("agent encountered unrecoverable error")
 		}
 		close(done)
 	}()
-	defer func() { client.Stop() }()
+	defer func() { agentService.StopControlLoop() }()
 
 	// Wait for completion
 	<-done

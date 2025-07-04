@@ -24,13 +24,15 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pbad "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent_debug"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 )
 
 const (
 	GRPCDebugServicePort = 7777
 )
 
-type agentDebug struct {
+type AgentDebug struct {
 	pbad.UnimplementedAgentDebugServiceServer
 	logger       log.FieldLogger
 	stateManager *LocalStateManager
@@ -40,75 +42,79 @@ type agentDebug struct {
 	mu           sync.RWMutex
 }
 
-func NewAgentDebug(logger log.FieldLogger, port uint) *agentDebug {
-	return &agentDebug{
+func NewAgentDebug(logger log.FieldLogger, port uint) *AgentDebug {
+	return &AgentDebug{
 		logger: logger.WithField("source", "AgentDebug"),
 		port:   port,
 	}
 }
 
-func (cd *agentDebug) SetState(sm interface{}) {
-	cd.stateManager = sm.(*LocalStateManager)
+func (ad *AgentDebug) SetState(sm interface{}) {
+	ad.stateManager = sm.(*LocalStateManager)
 }
 
-func (cd *agentDebug) Start() error {
-	if cd.stateManager == nil {
+func (ad *AgentDebug) Start() error {
+	if ad.stateManager == nil {
 		return fmt.Errorf("set state before starting the debug service")
 	}
-	l, err := net.Listen("tcp", fmt.Sprintf(":%d", cd.port))
+	l, err := net.Listen("tcp", fmt.Sprintf(":%d", ad.port))
 	if err != nil {
-		cd.logger.Errorf("Unable to start gRPC listening server on port %d", cd.port)
+		ad.logger.Errorf("Unable to start gRPC listening server on port %d", ad.port)
 		return err
 	}
 
 	opts := []grpc.ServerOption{}
 	grpcServer := grpc.NewServer(opts...)
-	pbad.RegisterAgentDebugServiceServer(grpcServer, cd)
+	pbad.RegisterAgentDebugServiceServer(grpcServer, ad)
 
-	cd.logger.Infof("Starting gRPC listening server on port %d", cd.port)
-	cd.grpcServer = grpcServer
+	ad.logger.Infof("Starting gRPC listening server on port %d", ad.port)
+	ad.grpcServer = grpcServer
 	go func() {
-		cd.mu.Lock()
-		cd.serverReady = true
-		cd.mu.Unlock()
-		err := cd.grpcServer.Serve(l)
-		cd.logger.WithError(err).Info("Client debug service stopped")
-		cd.mu.Lock()
-		cd.serverReady = false
-		cd.mu.Unlock()
+		ad.mu.Lock()
+		ad.serverReady = true
+		ad.mu.Unlock()
+		err := ad.grpcServer.Serve(l)
+		ad.logger.WithError(err).Info("Client debug service stopped")
+		ad.mu.Lock()
+		ad.serverReady = false
+		ad.mu.Unlock()
 	}()
 	return nil
 }
 
-func (cd *agentDebug) Stop() error {
-	cd.logger.Info("Start graceful shutdown")
-	cd.mu.Lock()
-	defer cd.mu.Unlock()
-	if cd.grpcServer != nil {
-		cd.grpcServer.GracefulStop()
+func (ad *AgentDebug) Stop() error {
+	ad.logger.Info("Start graceful shutdown")
+	ad.mu.Lock()
+	defer ad.mu.Unlock()
+	if ad.grpcServer != nil {
+		ad.grpcServer.GracefulStop()
 	}
-	cd.serverReady = false
-	cd.logger.Info("Finished graceful shutdown")
+	ad.serverReady = false
+	ad.logger.Info("Finished graceful shutdown")
 	return nil
 }
 
-func (cd *agentDebug) Ready() bool {
-	cd.mu.RLock()
-	defer cd.mu.RUnlock()
-	return cd.serverReady
+func (ad *AgentDebug) Ready() bool {
+	ad.mu.RLock()
+	defer ad.mu.RUnlock()
+	return ad.serverReady
 }
 
-func (rp *agentDebug) Name() string {
+func (ad *AgentDebug) Name() string {
 	return "AgentDebug GRPC service"
 }
 
-func (cd *agentDebug) ReplicaStatus(ctx context.Context, r *pbad.ReplicaStatusRequest) (*pbad.ReplicaStatusResponse, error) {
-	numModels := cd.stateManager.modelVersions.numModels()
+func (ad *AgentDebug) GetType() interfaces.SubServiceType {
+	return interfaces.OptionalService
+}
+
+func (ad *AgentDebug) ReplicaStatus(ctx context.Context, r *pbad.ReplicaStatusRequest) (*pbad.ReplicaStatusResponse, error) {
+	numModels := ad.stateManager.modelVersions.numModels()
 	models := make([]*pbad.ModelReplicaState, numModels)
 	i := 0
 	// TODO: make read loadedModels thread safe
-	for _, name := range cd.stateManager.modelVersions.modelNames() {
-		ts, err := cd.stateManager.cache.Get(name)
+	for _, name := range ad.stateManager.modelVersions.modelNames() {
+		ts, err := ad.stateManager.cache.Get(name)
 		state := pbad.ModelReplicaState_Evicted
 		tspb := timestamppb.New(time.Time{})
 		if err == nil {
@@ -123,6 +129,6 @@ func (cd *agentDebug) ReplicaStatus(ctx context.Context, r *pbad.ReplicaStatusRe
 		i++
 	}
 	return &pbad.ReplicaStatusResponse{
-		AvailableMemoryBytes: uint64(cd.stateManager.GetAvailableMemoryBytes()),
+		AvailableMemoryBytes: ad.stateManager.GetAvailableMemoryBytes(),
 		Models:               models}, nil
 }

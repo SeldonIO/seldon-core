@@ -197,7 +197,13 @@ func (rp *reverseHTTPProxy) Start() error {
 		MaxConnsPerHost:     util.MaxConnsPerHostHTTP,
 		IdleConnTimeout:     util.IdleConnTimeoutSeconds * time.Second,
 	}
-	proxy.Transport = &lazyModelLoadTransport{rp.stateManager.v2Client.LoadModel, t, rp.metrics, rp.modelScalingStatsCollector, rp.logger}
+	proxy.Transport = &lazyModelLoadTransport{
+		rp.stateManager.v2Client.LoadModel,
+		t,
+		rp.metrics,
+		rp.modelScalingStatsCollector,
+		rp.logger,
+	}
 	rp.logger.Infof("Start reverse proxy on port %d for %s", rp.servicePort, backend)
 	var tlsConfig *tls.Config
 	if rp.tlsOptions.TLS {
@@ -263,6 +269,10 @@ func (rp *reverseHTTPProxy) SetState(stateManager interface{}) {
 
 func (rp *reverseHTTPProxy) Name() string {
 	return "Reverse HTTP/REST Proxy"
+}
+
+func (rp *reverseHTTPProxy) GetType() interfaces.SubServiceType {
+	return interfaces.CriticalDataPlaneService
 }
 
 func NewReverseHTTPProxy(

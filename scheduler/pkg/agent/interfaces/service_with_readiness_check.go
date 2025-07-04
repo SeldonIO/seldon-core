@@ -9,11 +9,7 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package interfaces
 
-type DependencyServiceInterface interface {
-	SetState(state any)
-	Start() error
+// the interface for a service that can be checked for readiness
+type ServiceWithReadinessCheck interface {
 	Ready() bool
-	Stop() error
-	Name() string
-	GetType() SubServiceType
 }

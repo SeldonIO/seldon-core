@@ -10,24 +10,37 @@ the Change License after the Change Date as each is defined in accordance with t
 package agent
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
 
-	backoff "github.com/cenkalti/backoff/v4"
+	boff "github.com/cenkalti/backoff/v4"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 )
+
+func logSubserviceNotYetReady(logger *log.Entry, subserviceName string) boff.Notify {
+	return func(err error, delay time.Duration) {
+		logger.WithError(err).Infof("Waiting for %s service to become ready... next check in %s", subserviceName, delay.Round(100*time.Millisecond))
+	}
+}
+
+func newAgentServiceStatusRetryBackoff(ctx context.Context) boff.BackOff {
+	expBackoff := boff.NewExponentialBackOff(boff.WithMaxInterval(config.ServiceReadyRetryMaxInterval))
+	return boff.WithContext(expBackoff, ctx)
+}
 
 func startSubService(
 	service interfaces.DependencyServiceInterface,
 	logger *log.Entry,
-	maxElapsedTimeReadySubServiceBeforeStart time.Duration,
+	ctx context.Context,
 ) error {
 	logger.Infof("Starting and waiting for %s", service.Name())
 	err := service.Start()
@@ -35,24 +48,22 @@ func startSubService(
 		return err
 	}
 
-	return isReady(service, logger, maxElapsedTimeReadySubServiceBeforeStart)
+	return isReady(service, logger, ctx)
 }
 
-func isReady(service interfaces.DependencyServiceInterface, logger *log.Entry, maxElapsedTime time.Duration) error {
-	logFailure := func(err error, delay time.Duration) {
-		logger.WithError(err).Errorf("%s service not ready", service.Name())
-	}
+func isReady(service interfaces.DependencyServiceInterface, logger *log.Entry, ctx context.Context) error {
+	backoffWithContext := newAgentServiceStatusRetryBackoff(ctx)
+
+	logFailure := logSubserviceNotYetReady(logger, service.Name())
 
 	readyToError := func() error {
 		if service.Ready() {
 			return nil
 		} else {
-			return fmt.Errorf("Service %s not ready", service.Name())
+			return fmt.Errorf("service %s not ready", service.Name())
 		}
 	}
-	backoffWithMax := backoff.NewExponentialBackOff()
-	backoffWithMax.MaxElapsedTime = maxElapsedTime
-	return backoff.RetryNotify(readyToError, backoffWithMax, logFailure)
+	return boff.RetryNotify(readyToError, backoffWithContext, logFailure)
 }
 
 func getModifiedModelVersion(modelId string, version uint32, originalModelVersion *agent.ModelVersion, modelRuntimeInfo *scheduler.ModelRuntimeInfo) *agent.ModelVersion {
@@ -72,41 +83,41 @@ func isReadyChecker(
 	isStartup bool,
 	service interfaces.DependencyServiceInterface,
 	logger *log.Entry,
-	logMessage string,
-	maxElapsedTime time.Duration,
-) error {
+	readyNotifications chan<- SubServiceReadinessNotification,
+	ctx context.Context,
+) {
+	var err error
 	if isStartup {
-		if err := startSubService(service, logger, maxElapsedTime); err != nil {
-			logger.WithError(err).Error(logMessage)
-			return err
-		}
+		err = startSubService(service, logger, ctx)
 	} else {
-		if err := isReady(service, logger, maxElapsedTime); err != nil {
-			logger.WithError(err).Error(logMessage + " - after agent start")
-			return err
-		}
+		err = isReady(service, logger, ctx)
 	}
-	return nil
+
+	readyNotifications <- SubServiceReadinessNotification{
+		err:            err,
+		subserviceName: service.Name(),
+		subServiceType: service.GetType(),
+	}
 }
 
 func backoffWithMaxNumRetry(fn func() error, count uint8, maxElapsedTime time.Duration, logger log.FieldLogger) error {
-	backoffWithMax := backoff.NewExponentialBackOff(backoff.WithMaxElapsedTime(maxElapsedTime))
+	backoffWithMax := boff.NewExponentialBackOff(boff.WithMaxElapsedTime(maxElapsedTime))
 	i := 0
 	logFailure := func(err error, delay time.Duration) {
 		logger.WithError(err).Errorf("Retry op #%d", i)
 		i++
 	}
-	return backoff.RetryNotify(fn, newBackOffWithMaxCount(count, backoffWithMax), logFailure)
+	return boff.RetryNotify(fn, newBackOffWithMaxCount(count, backoffWithMax), logFailure)
 }
 
 // backOffWithMaxCount is a backoff policy that retries up to a max count
 type backOffWithMaxCount struct {
-	backoffPolicy backoff.BackOff
+	backoffPolicy boff.BackOff
 	maxCount      uint8
 	currentCount  uint8
 }
 
-func newBackOffWithMaxCount(maxCount uint8, backOffPolicy backoff.BackOff) *backOffWithMaxCount {
+func newBackOffWithMaxCount(maxCount uint8, backOffPolicy boff.BackOff) *backOffWithMaxCount {
 	return &backOffWithMaxCount{
 		maxCount:      maxCount,
 		backoffPolicy: backOffPolicy,
@@ -120,7 +131,7 @@ func (b *backOffWithMaxCount) Reset() {
 
 func (b *backOffWithMaxCount) NextBackOff() time.Duration {
 	if b.currentCount >= b.maxCount-1 {
-		return backoff.Stop
+		return boff.Stop
 	} else {
 		b.currentCount++
 		return b.backoffPolicy.NextBackOff()

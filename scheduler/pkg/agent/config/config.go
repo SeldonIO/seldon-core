@@ -14,6 +14,7 @@ import (
 	"os"
 	"path"
 	"sync"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	log "github.com/sirupsen/logrus"
@@ -25,8 +26,9 @@ import (
 )
 
 const (
-	AgentConfigYamlFilename = "agent.yaml"
-	ConfigMapName           = "seldon-agent"
+	AgentConfigYamlFilename      = "agent.yaml"
+	ConfigMapName                = "seldon-agent"
+	ServiceReadyRetryMaxInterval = 30 * time.Second
 )
 
 type AgentConfiguration struct {
