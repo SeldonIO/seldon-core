@@ -704,7 +704,7 @@
           "datasource": "",
           "editorMode": "code",
           "exemplar": false,
-          "expr": "DCGM_FI_DEV_FB_USED{namespace=~\"^$namespace$\"}",
+          "expr": "DCGM_FI_DEV_FB_USED{namespace=~\"^$exported_namespace$\"}",
           "interval": "",
           "legendFormat": "{{exported_pod}}",
           "range": true,
