@@ -840,7 +840,7 @@ func TestReadinessServiceAgentSync(t *testing.T) {
 	}
 	agentDebug := FakeDependencyService{
 		name:           "agentDebug",
-		subServiceType: (&agentDebug{}).GetType(),
+		subServiceType: (&AgentDebug{}).GetType(),
 	}
 	modelScalingService := modelscaling.NewStatsAnalyserService(
 		[]modelscaling.ModelScalingStatsWrapper{}, logger, 10)
@@ -978,7 +978,7 @@ func TestAgentReadiness(t *testing.T) {
 	agentDebug := FakeDependencyService{
 		name:           "agentDebug",
 		skipErrOnStart: true,
-		subServiceType: (&agentDebug{}).GetType(),
+		subServiceType: (&AgentDebug{}).GetType(),
 	}
 	modelScalingService := FakeDependencyService{
 		name:           "modelScaling",

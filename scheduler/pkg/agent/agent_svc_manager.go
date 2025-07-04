@@ -376,12 +376,6 @@ func (am *AgentServiceManager) WaitReadySubServices(isStartup bool) error {
 		}
 	}
 
-	// wait for subservices from other containers in the pod (rclone, inference server)
-	wg.Add(2)
-	go waitModelRepo()
-	go waitInferenceServer()
-
-	// wait for internal subservices
 	// readinessService not part of the list because it is started outside the AgentServiceManager
 	// and needs to provide responses to readiness checks for the agent itself even if the
 	// AgentServiceManager stops.
@@ -392,7 +386,11 @@ func (am *AgentServiceManager) WaitReadySubServices(isStartup bool) error {
 		am.modelScalingService,
 		am.drainerService,
 	}
-	wg.Add(len(internalSubServices))
+	wg.Add(2)                        // wait for subservices from other containers in the same pod (rclone, inference server)
+	wg.Add(len(internalSubServices)) // wait for internal subservices
+
+	go waitModelRepo()
+	go waitInferenceServer()
 
 	for _, subService := range internalSubServices {
 		go func() {
@@ -419,14 +417,14 @@ func (am *AgentServiceManager) WaitReadySubServices(isStartup bool) error {
 			if am.isCriticalSubserviceFailure(isStartup, notification.subServiceType) {
 				criticalSubservicesNotReady = append(criticalSubservicesNotReady, notification.subserviceName)
 			} else {
-				logger.Warnf("Non-critical subservice no longer ready: %s", notification.subserviceName)
+				logger.Warnf("Non-critical subservice not ready: %s", notification.subserviceName)
 			}
 		}
 	}
 
 	if len(criticalSubservicesNotReady) > 0 {
 		am.criticalSubservicesReady.Store(false)
-		return fmt.Errorf("the following critical subservices are no longer ready: %s", strings.Join(criticalSubservicesNotReady, ", "))
+		return fmt.Errorf("the following critical subservices are not ready: %s", strings.Join(criticalSubservicesNotReady, ", "))
 	} else {
 		if isStartup {
 			logger.Infof("All critical agent subservices ready.")

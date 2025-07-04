@@ -32,7 +32,7 @@ const (
 	GRPCDebugServicePort = 7777
 )
 
-type agentDebug struct {
+type AgentDebug struct {
 	pbad.UnimplementedAgentDebugServiceServer
 	logger       log.FieldLogger
 	stateManager *LocalStateManager
@@ -42,18 +42,18 @@ type agentDebug struct {
 	mu           sync.RWMutex
 }
 
-func NewAgentDebug(logger log.FieldLogger, port uint) *agentDebug {
-	return &agentDebug{
+func NewAgentDebug(logger log.FieldLogger, port uint) *AgentDebug {
+	return &AgentDebug{
 		logger: logger.WithField("source", "AgentDebug"),
 		port:   port,
 	}
 }
 
-func (ad *agentDebug) SetState(sm interface{}) {
+func (ad *AgentDebug) SetState(sm interface{}) {
 	ad.stateManager = sm.(*LocalStateManager)
 }
 
-func (ad *agentDebug) Start() error {
+func (ad *AgentDebug) Start() error {
 	if ad.stateManager == nil {
 		return fmt.Errorf("set state before starting the debug service")
 	}
@@ -82,7 +82,7 @@ func (ad *agentDebug) Start() error {
 	return nil
 }
 
-func (ad *agentDebug) Stop() error {
+func (ad *AgentDebug) Stop() error {
 	ad.logger.Info("Start graceful shutdown")
 	ad.mu.Lock()
 	defer ad.mu.Unlock()
@@ -94,21 +94,21 @@ func (ad *agentDebug) Stop() error {
 	return nil
 }
 
-func (ad *agentDebug) Ready() bool {
+func (ad *AgentDebug) Ready() bool {
 	ad.mu.RLock()
 	defer ad.mu.RUnlock()
 	return ad.serverReady
 }
 
-func (ad *agentDebug) Name() string {
+func (ad *AgentDebug) Name() string {
 	return "AgentDebug GRPC service"
 }
 
-func (cd *agentDebug) GetType() interfaces.SubServiceType {
+func (ad *AgentDebug) GetType() interfaces.SubServiceType {
 	return interfaces.OptionalService
 }
 
-func (ad *agentDebug) ReplicaStatus(ctx context.Context, r *pbad.ReplicaStatusRequest) (*pbad.ReplicaStatusResponse, error) {
+func (ad *AgentDebug) ReplicaStatus(ctx context.Context, r *pbad.ReplicaStatusRequest) (*pbad.ReplicaStatusResponse, error) {
 	numModels := ad.stateManager.modelVersions.numModels()
 	models := make([]*pbad.ModelReplicaState, numModels)
 	i := 0
@@ -129,6 +129,6 @@ func (ad *agentDebug) ReplicaStatus(ctx context.Context, r *pbad.ReplicaStatusRe
 		i++
 	}
 	return &pbad.ReplicaStatusResponse{
-		AvailableMemoryBytes: uint64(ad.stateManager.GetAvailableMemoryBytes()),
+		AvailableMemoryBytes: ad.stateManager.GetAvailableMemoryBytes(),
 		Models:               models}, nil
 }

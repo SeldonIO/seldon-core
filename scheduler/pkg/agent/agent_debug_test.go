@@ -25,7 +25,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
 )
 
-func setupService(numModels int, modelPrefix string, capacity int) *agentDebug {
+func setupService(numModels int, modelPrefix string, capacity int) *AgentDebug {
 	logger := log.New()
 	log.SetLevel(log.DebugLevel)
 	stateManager := setupLocalTestManager(numModels, modelPrefix, nil, capacity, 1)
