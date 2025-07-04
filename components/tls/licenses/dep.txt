@@ -26,7 +26,6 @@ github.com/alecthomas/kingpin/v2
 github.com/alecthomas/units
 github.com/antlr4-go/antlr/v4
 github.com/armon/go-socks5
-github.com/asaskevich/govalidator
 github.com/aws/aws-sdk-go-v2
 github.com/aws/aws-sdk-go-v2/config
 github.com/aws/aws-sdk-go-v2/credentials
@@ -48,7 +47,6 @@ github.com/bufbuild/protocompile
 github.com/buger/goterm
 github.com/buger/jsonparser
 github.com/cenkalti/backoff/v4
-github.com/census-instrumentation/opencensus-proto
 github.com/cespare/xxhash/v2
 github.com/cncf/xds/go
 github.com/compose-spec/compose-go/v2
@@ -81,6 +79,8 @@ github.com/dustin/go-humanize
 github.com/eiannone/keyboard
 github.com/emicklei/go-restful/v3
 github.com/envoyproxy/go-control-plane
+github.com/envoyproxy/go-control-plane/envoy
+github.com/envoyproxy/go-control-plane/ratelimit
 github.com/envoyproxy/protoc-gen-validate
 github.com/evanphx/json-patch
 github.com/evanphx/json-patch/v5
@@ -222,6 +222,7 @@ github.com/soheilhy/cmux
 github.com/spaolacci/murmur3
 github.com/spf13/cobra
 github.com/spf13/pflag
+github.com/spiffe/go-spiffe/v2
 github.com/stoewer/go-strcase
 github.com/stretchr/objx
 github.com/stretchr/testify
@@ -248,6 +249,7 @@ github.com/xiang90/probing
 github.com/xiatechs/jsonata-go
 github.com/yuin/goldmark
 github.com/yusufpapurcu/wmi
+github.com/zeebo/errs
 go.etcd.io/bbolt
 go.etcd.io/etcd/api/v3
 go.etcd.io/etcd/client/pkg/v3
@@ -257,6 +259,7 @@ go.etcd.io/etcd/pkg/v3
 go.etcd.io/etcd/raft/v3
 go.etcd.io/etcd/server/v3
 go.opencensus.io
+go.opentelemetry.io/auto/sdk
 go.opentelemetry.io/contrib/detectors/gcp
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc
 go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace
@@ -278,6 +281,8 @@ go.uber.org/goleak
 go.uber.org/mock
 go.uber.org/multierr
 go.uber.org/zap
+go.yaml.in/yaml/v2
+go.yaml.in/yaml/v3
 golang.org/x/crypto
 golang.org/x/exp
 golang.org/x/mod
@@ -322,6 +327,7 @@ k8s.io/utils
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client
 sigs.k8s.io/controller-runtime
 sigs.k8s.io/json
+sigs.k8s.io/randfill
 sigs.k8s.io/structured-merge-diff/v4
 sigs.k8s.io/yaml
 tags.cncf.io/container-device-interface
