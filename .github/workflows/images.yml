@@ -67,6 +67,10 @@ jobs:
       - name: Echo the tags that will be used to push images
         run: echo "Will push images with tag ${{ steps.docker-tag.outputs.value }}"
 
+      - name: Force docker to use the docker-container driver
+        run: |
+          docker buildx create --name container --driver docker-container --use
+
       - name: Push Docker Image for Operator
         working-directory: ./operator
         run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build-and-push-prod

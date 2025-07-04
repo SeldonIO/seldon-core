@@ -9,7 +9,7 @@ on:
 
 env:
   GITHUB_USER: seldondev
-  KUSTOMIZE_VERSION: 4.5.5
+  KUSTOMIZE_VERSION: 5.2.1
   HELM_VERSION: v3.8.1
 
 jobs:
