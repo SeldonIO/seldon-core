@@ -33,7 +33,6 @@ github.com/antihax/optional
 github.com/antlr4-go/antlr/v4
 github.com/armon/consul-api
 github.com/armon/go-socks5
-github.com/asaskevich/govalidator
 github.com/aws/aws-sdk-go-v2
 github.com/aws/aws-sdk-go-v2/config
 github.com/aws/aws-sdk-go-v2/credentials
@@ -57,6 +56,7 @@ github.com/bufbuild/protocompile
 github.com/buger/goterm
 github.com/buger/jsonparser
 github.com/cenkalti/backoff/v4
+github.com/cenkalti/backoff/v5
 github.com/census-instrumentation/opencensus-proto
 github.com/cespare/xxhash
 github.com/cespare/xxhash/v2
@@ -284,6 +284,7 @@ github.com/spf13/cobra
 github.com/spf13/jwalterweatherman
 github.com/spf13/pflag
 github.com/spf13/viper
+github.com/spiffe/go-spiffe/v2
 github.com/stoewer/go-strcase
 github.com/stretchr/objx
 github.com/stretchr/testify
@@ -313,6 +314,7 @@ github.com/xiatechs/jsonata-go
 github.com/xordataexchange/crypt
 github.com/yuin/goldmark
 github.com/yusufpapurcu/wmi
+github.com/zeebo/errs
 go.etcd.io/bbolt
 go.etcd.io/etcd/api/v3
 go.etcd.io/etcd/client/pkg/v3
@@ -328,6 +330,7 @@ go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc
 go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace
 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
+go.opentelemetry.io/contrib/instrumentation/runtime
 go.opentelemetry.io/otel
 go.opentelemetry.io/otel/exporters/otlp/otlpmetric
 go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc
@@ -335,6 +338,8 @@ go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp
 go.opentelemetry.io/otel/exporters/otlp/otlptrace
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp
+go.opentelemetry.io/otel/exporters/prometheus
+go.opentelemetry.io/otel/exporters/stdout/stdouttrace
 go.opentelemetry.io/otel/metric
 go.opentelemetry.io/otel/sdk
 go.opentelemetry.io/otel/sdk/metric
@@ -346,6 +351,8 @@ go.uber.org/goleak
 go.uber.org/mock
 go.uber.org/multierr
 go.uber.org/zap
+go.yaml.in/yaml/v2
+go.yaml.in/yaml/v3
 golang.org/x/crypto
 golang.org/x/exp
 golang.org/x/lint
@@ -385,7 +392,6 @@ k8s.io/apiserver
 k8s.io/client-go
 k8s.io/code-generator
 k8s.io/component-base
-k8s.io/gengo
 k8s.io/gengo/v2
 k8s.io/klog/v2
 k8s.io/kms
@@ -396,6 +402,7 @@ knative.dev/pkg
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client
 sigs.k8s.io/controller-runtime
 sigs.k8s.io/json
+sigs.k8s.io/randfill
 sigs.k8s.io/structured-merge-diff/v4
 sigs.k8s.io/yaml
 tags.cncf.io/container-device-interface

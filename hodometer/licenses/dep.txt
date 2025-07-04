@@ -13,7 +13,6 @@ github.com/alecthomas/kingpin/v2
 github.com/alecthomas/units
 github.com/antlr4-go/antlr/v4
 github.com/armon/go-socks5
-github.com/asaskevich/govalidator
 github.com/benbjohnson/clock
 github.com/beorn7/perks
 github.com/blang/semver/v4
@@ -32,6 +31,8 @@ github.com/dukex/mixpanel
 github.com/dustin/go-humanize
 github.com/emicklei/go-restful/v3
 github.com/envoyproxy/go-control-plane
+github.com/envoyproxy/go-control-plane/envoy
+github.com/envoyproxy/go-control-plane/ratelimit
 github.com/envoyproxy/protoc-gen-validate
 github.com/evanphx/json-patch
 github.com/evanphx/json-patch/v5
@@ -39,6 +40,7 @@ github.com/fatih/color
 github.com/felixge/httpsnoop
 github.com/fsnotify/fsnotify
 github.com/fxamacker/cbor/v2
+github.com/go-jose/go-jose/v4
 github.com/go-kit/log
 github.com/go-logfmt/logfmt
 github.com/go-logr/logr
@@ -123,6 +125,7 @@ github.com/soheilhy/cmux
 github.com/spaolacci/murmur3
 github.com/spf13/cobra
 github.com/spf13/pflag
+github.com/spiffe/go-spiffe/v2
 github.com/stoewer/go-strcase
 github.com/stretchr/objx
 github.com/stretchr/testify
@@ -131,6 +134,7 @@ github.com/x448/float16
 github.com/xhit/go-str2duration/v2
 github.com/xiang90/probing
 github.com/yuin/goldmark
+github.com/zeebo/errs
 go.etcd.io/bbolt
 go.etcd.io/etcd/api/v3
 go.etcd.io/etcd/client/pkg/v3
@@ -140,6 +144,7 @@ go.etcd.io/etcd/pkg/v3
 go.etcd.io/etcd/raft/v3
 go.etcd.io/etcd/server/v3
 go.opencensus.io
+go.opentelemetry.io/auto/sdk
 go.opentelemetry.io/contrib/detectors/gcp
 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc
 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
@@ -155,6 +160,8 @@ go.uber.org/atomic
 go.uber.org/goleak
 go.uber.org/multierr
 go.uber.org/zap
+go.yaml.in/yaml/v2
+go.yaml.in/yaml/v3
 golang.org/x/crypto
 golang.org/x/exp
 golang.org/x/lint
@@ -201,5 +208,6 @@ k8s.io/utils
 sigs.k8s.io/apiserver-network-proxy/konnectivity-client
 sigs.k8s.io/controller-runtime
 sigs.k8s.io/json
+sigs.k8s.io/randfill
 sigs.k8s.io/structured-merge-diff/v4
 sigs.k8s.io/yaml

@@ -20,7 +20,6 @@ antihax/optional
 antlr4-go/antlr
 armon/consul-api
 armon/go-socks5
-asaskevich/govalidator
 aws/aws-sdk-go-v2
 aws/smithy-go
 bahlo/generic-list-go
@@ -242,6 +241,7 @@ spf13/cobra
 spf13/jwalterweatherman
 spf13/pflag
 spf13/viper
+spiffe/go-spiffe
 stoewer/go-strcase
 stretchr/objx
 stretchr/testify
@@ -270,6 +270,7 @@ xiatechs/jsonata-go
 xordataexchange/crypt
 yuin/goldmark
 yusufpapurcu/wmi
+zeebo/errs
 https://github.com/golang/go
 go-check/check
 go-inf/inf
