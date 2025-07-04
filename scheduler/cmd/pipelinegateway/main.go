@@ -153,10 +153,9 @@ func main() {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
 
-	maxNumTopicsPerConsumer := getEnVar(logger, pipeline.EnvMaxNumTopicPerConsumer, pipeline.DefaultMaxNumTopicsPerConsumer)
 	maxNumConsumers := getEnVar(logger, pipeline.EnvMaxNumConsumers, pipeline.DefaultMaxNumConsumers)
 	km, err := pipeline.NewKafkaManager(
-		logger, namespace, kafkaConfigMap, tracer, maxNumConsumers, maxNumTopicsPerConsumer)
+		logger, namespace, kafkaConfigMap, tracer, maxNumConsumers)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create kafka manager")
 	}
@@ -183,7 +182,7 @@ func main() {
 
 	// Handle pipeline status updates
 	statusManager := status.NewPipelineStatusManager()
-	pipelineSchedulerClient := status.NewPipelineSchedulerClient(logger, statusManager)
+	pipelineSchedulerClient := pipeline.NewPipelineSchedulerClient(logger, statusManager, km)
 	go func() {
 		if err := pipelineSchedulerClient.Start(schedulerHost, schedulerPlaintxtPort, schedulerTlsPort); err != nil {
 			logger.WithError(err).Error("Start client failed")
