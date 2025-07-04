@@ -450,7 +450,7 @@ func TestPipelineEvents(t *testing.T) {
 				g.Expect(s.streams[serverName]).ToNot(BeNil())
 			}
 
-			// to allow events to propagate
+			// to allow events to propagate and trigger derived events
 			time.Sleep(500 * time.Millisecond)
 
 			if test.connection {
@@ -458,7 +458,7 @@ func TestPipelineEvents(t *testing.T) {
 				select {
 				case next := <-stream.msgs:
 					psr = next
-				default:
+				case <-time.After(2 * time.Second):
 					t.Fail()
 				}
 

@@ -63,7 +63,7 @@ func (s *SchedulerServer) sendCurrentPipelineStatuses(
 ) error {
 	pipelines, err := s.pipelineHandler.GetPipelines()
 	if err != nil {
-		return status.Errorf(codes.FailedPrecondition, err.Error())
+		return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 	}
 	for _, p := range pipelines {
 		resp := createPipelineStatus(p, allVersions)

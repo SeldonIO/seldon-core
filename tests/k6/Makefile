@@ -43,6 +43,20 @@ docker-build:
 		-f tests/k6/Dockerfile.k6 .
 	rm ../../k6.tar.gz
 
+docker-build-and-push-prod:
+	tar -czvf ../../k6.tar.gz .
+	cd ../../ && docker buildx build \
+		--provenance=true \
+		--build-arg GIT_COMMIT=${GIT_COMMIT} \
+		--build-arg GIT_BRANCH=${GIT_BRANCH} \
+		--build-arg K6_VERSION=${K6_VERSION} \
+		--build-arg XK6_VERSION=${XK6_VERSION} \
+		-t ${IMG} \
+		--attest type=sbom,generator=docker/scout-sbom-indexer:latest \
+		--push \
+		-f tests/k6/Dockerfile.k6 .
+	rm ../../k6.tar.gz
+
 docker-run:
 	docker run ${IMG}
 

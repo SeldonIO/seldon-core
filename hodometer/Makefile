@@ -21,10 +21,10 @@ RELEASE_TYPE ?= pre-release
 
 ################################################################################
 
-.GOLANGCILINT_VERSION := v1.63.4
+.GOLANGCILINT_VERSION := v1.64.8
 .GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint/$(.GOLANGCILINT_VERSION)
 
-${.GOLANGCILINT_PATH}/golangci-lint: 
+${.GOLANGCILINT_PATH}/golangci-lint:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
 			| sh -s -- -b ${.GOLANGCILINT_PATH} ${.GOLANGCILINT_VERSION}
 
@@ -35,7 +35,7 @@ lint: ${.GOLANGCILINT_PATH}/golangci-lint
 	${.GOLANGCILINT_PATH}/golangci-lint run --fix
 
 .PHONY: build-hodometer
-build-hodometer: test-hodometer 
+build-hodometer: test-hodometer
 	$(GO_ENV) \
 				go build -trimpath \
 				-o bin/hodometer \
@@ -74,7 +74,7 @@ clean:
 	rm bin/*
 
 .PHONY: build-hodometer-docker
-build-hodometer-docker: 
+build-hodometer-docker:
 	docker build \
 		--build-arg GIT_COMMIT=$(GIT_COMMIT) \
 		--build-arg GIT_BRANCH=$(GIT_BRANCH) \
@@ -90,6 +90,19 @@ build-receiver-docker:
 .PHONY: push-hodometer-docker
 push-hodometer-docker:
 	docker push ${HODOMETER_IMG}
+
+.PHONY: build-and-push-prod-hodometer-docker
+build-and-push-prod-hodometer-docker:
+	docker buildx build \
+		--build-arg GIT_COMMIT=$(GIT_COMMIT) \
+		--build-arg GIT_BRANCH=$(GIT_BRANCH) \
+		--build-arg RELEASE_TYPE=$(RELEASE_TYPE) \
+		--build-arg BUILD_VERSION=$(BUILD_VERSION) \
+		--provenance=true \
+		-t ${HODOMETER_IMG} \
+		--attest type=sbom,generator=docker/scout-sbom-indexer:latest \
+		--push \
+		-f Dockerfile.hodometer ..
 
 .PHONY: kind-image-install-hodometer
 kind-image-install-hodometer:

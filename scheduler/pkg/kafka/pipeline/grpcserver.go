@@ -110,7 +110,7 @@ func (g *GatewayGrpcServer) getRequestId(md metadata.MD) string {
 func (g *GatewayGrpcServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("failed to find any metadata - required %s or %s", util.SeldonModelHeader, util.SeldonInternalModelHeader))
+		return nil, status.Errorf(codes.FailedPrecondition, "failed to find any metadata - required %s or %s", util.SeldonModelHeader, util.SeldonInternalModelHeader)
 	}
 	g.logger.Debugf("Seldon model header %v and seldon internal model header %v", md[util.SeldonModelHeader], md[util.SeldonInternalModelHeader])
 	header := extractHeader(util.SeldonInternalModelHeader, md) // Internal model header has precedence
@@ -119,35 +119,35 @@ func (g *GatewayGrpcServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	}
 	resourceName, isModel, err := createResourceNameFromHeader(header)
 	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("failed to find valid header %s, found %s", util.SeldonModelHeader, resourceName))
+		return nil, status.Errorf(codes.FailedPrecondition, "failed to find valid header %s, found %s", util.SeldonModelHeader, resourceName)
 	}
 
 	startTime := time.Now()
 	b, err := proto.Marshal(r)
 	if err != nil {
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+		return nil, status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 	}
 	kafkaRequest, err := g.gateway.Infer(ctx, resourceName, isModel, b, convertGrpcMetadataToKafkaHeaders(md), g.getRequestId(md))
 	elapsedTime := time.Since(startTime).Seconds()
 	if err != nil {
 		go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeGrpc, elapsedTime, codes.FailedPrecondition.String())
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+		return nil, status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 	} else if kafkaRequest.isError {
 		go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeGrpc, elapsedTime, codes.Unknown.String())
-		return nil, status.Errorf(codes.Unknown, string(createResponseErrorPayload(kafkaRequest.errorModel, kafkaRequest.response)))
+		return nil, status.Errorf(codes.Unknown, "%s", string(createResponseErrorPayload(kafkaRequest.errorModel, kafkaRequest.response)))
 	}
 	meta := convertKafkaHeadersToGrpcMetadata(kafkaRequest.headers)
 	meta[util.RequestIdHeader] = []string{kafkaRequest.key}
 	err = grpc.SendHeader(ctx, meta)
 	if err != nil {
 		go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeGrpc, elapsedTime, codes.Internal.String())
-		return nil, status.Errorf(codes.Internal, err.Error())
+		return nil, status.Errorf(codes.Internal, "%s", err.Error())
 	}
 	resProto := &v2.ModelInferResponse{}
 	err = proto.Unmarshal(kafkaRequest.response, resProto)
 	if err != nil {
 		go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeGrpc, elapsedTime, codes.Internal.String())
-		return nil, status.Errorf(codes.FailedPrecondition, err.Error())
+		return nil, status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 	}
 	go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeGrpc, elapsedTime, codes.OK.String())
 
@@ -158,14 +158,14 @@ func (g *GatewayGrpcServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 func (g *GatewayGrpcServer) ModelReady(ctx context.Context, req *v2.ModelReadyRequest) (*v2.ModelReadyResponse, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("failed to find any metadata - required %s or %s", util.SeldonModelHeader, util.SeldonInternalModelHeader))
+		return nil, status.Errorf(codes.FailedPrecondition, "failed to find any metadata - required %s or %s", util.SeldonModelHeader, util.SeldonInternalModelHeader)
 	}
 	ready, err := g.pipelineReadyChecker.CheckPipelineReady(ctx, req.GetName(), g.getRequestId(md))
 	if err != nil {
 		if errors.Is(err, status2.PipelineNotFoundErr) {
 			return nil, status.Errorf(codes.NotFound, "Pipeline not found")
 		} else {
-			return nil, status.Errorf(codes.Internal, err.Error())
+			return nil, status.Errorf(codes.Internal, "%s", err.Error())
 		}
 	}
 	return &v2.ModelReadyResponse{Ready: ready}, nil

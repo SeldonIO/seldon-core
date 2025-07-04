@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM golang:1.23 as builder
+FROM golang:1.24 as builder
 
 WORKDIR /workspace
 COPY . .
@@ -8,7 +8,7 @@ COPY . .
 RUN apt-get install make
 RUN make -C operator  build
 
-FROM registry.access.redhat.com/ubi9/ubi-micro:9.5
+FROM registry.access.redhat.com/ubi9/ubi-micro:9.6
 WORKDIR /
 COPY --from=builder /workspace/operator/bin/manager .
 USER 65532:65532

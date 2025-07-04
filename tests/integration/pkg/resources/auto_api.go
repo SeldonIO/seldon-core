@@ -10,9 +10,10 @@ the Change License after the Change Date as each is defined in accordance with t
 package resources
 
 import (
+	"slices"
 	"context"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 )
 
@@ -30,16 +31,14 @@ func checkSeldonRunningLocally() (bool, error) {
 		return false, err
 	}
 	// get all running containers
-	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{})
+	containers, err := cli.ContainerList(ctx, container.ListOptions{})
 	if err != nil {
 		return false, err
 	}
 	for _, container := range containers {
-		for _, name := range container.Names {
-			if name == "/scv2-scheduler-1" {
+		if slices.Contains(container.Names, "/scv2-scheduler-1") {
 				return true, nil
 			}
-		}
 	}
 	return false, nil
 }
