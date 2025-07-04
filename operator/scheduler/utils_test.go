@@ -776,6 +776,8 @@ func TestHandleRegisteredServers(t *testing.T) {
 		expected  []*scheduler.ServerNotify
 	}
 
+	spec := mlopsv1alpha1.ScalingSpec{}
+	spec.Default()
 	tests := []test{
 		{
 			name: "with 1 server",
@@ -785,6 +787,9 @@ func TestHandleRegisteredServers(t *testing.T) {
 						Name:       "foo",
 						Namespace:  "default",
 						Generation: 1,
+					},
+					Spec: mlopsv1alpha1.ServerSpec{
+						ScalingSpec: spec,
 					},
 				},
 			},
@@ -808,12 +813,18 @@ func TestHandleRegisteredServers(t *testing.T) {
 						Namespace:  "default",
 						Generation: 1,
 					},
+					Spec: mlopsv1alpha1.ServerSpec{
+						ScalingSpec: spec,
+					},
 				},
 				&mlopsv1alpha1.Server{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:       "bar",
 						Namespace:  "default",
 						Generation: 2,
+					},
+					Spec: mlopsv1alpha1.ServerSpec{
+						ScalingSpec: spec,
 					},
 				},
 			},

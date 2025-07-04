@@ -71,6 +71,11 @@ func TestServerNotify(t *testing.T) {
 						Namespace:  "default",
 						Generation: 1,
 					},
+					Spec: v1alpha1.ServerSpec{
+						ScalingSpec: v1alpha1.ScalingSpec{
+							Replicas: getIntPtr(1),
+						},
+					},
 				},
 			},
 			expectedProtos: []*scheduler.ServerNotify{
@@ -125,12 +130,22 @@ func TestServerNotify(t *testing.T) {
 						Namespace:  "default",
 						Generation: 1,
 					},
+					Spec: v1alpha1.ServerSpec{
+						ScalingSpec: v1alpha1.ScalingSpec{
+							Replicas: getIntPtr(1),
+						},
+					},
 				},
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:       "bar",
 						Namespace:  "default",
 						Generation: 2,
+					},
+					Spec: v1alpha1.ServerSpec{
+						ScalingSpec: v1alpha1.ScalingSpec{
+							Replicas: getIntPtr(1),
+						},
 					},
 				},
 			},

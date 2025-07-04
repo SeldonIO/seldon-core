@@ -11,6 +11,7 @@ package v1alpha1
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -81,8 +82,7 @@ func TestAsModelDetails(t *testing.T) {
 		modelpb *scheduler.Model
 		error   bool
 	}
-	replicas := int32(4)
-	replicas1 := int32(1)
+
 	secret := "secret"
 	modelType := "sklearn"
 	server := "server"
@@ -117,7 +117,7 @@ func TestAsModelDetails(t *testing.T) {
 					Uri: "gs://test",
 				},
 				DeploymentSpec: &scheduler.DeploymentSpec{
-					Replicas:    1,
+					Replicas:    0,
 					MinReplicas: 0,
 					MaxReplicas: 0,
 				},
@@ -139,7 +139,7 @@ func TestAsModelDetails(t *testing.T) {
 					},
 					Logger:       &LoggingSpec{},
 					Requirements: []string{"a", "b"},
-					ScalingSpec:  ScalingSpec{Replicas: &replicas},
+					ScalingSpec:  ScalingSpec{Replicas: i32(4)},
 					Server:       &server,
 					Explainer: &ExplainerSpec{
 						Type:     "anchor_tabular",
@@ -211,7 +211,7 @@ func TestAsModelDetails(t *testing.T) {
 					},
 					Logger:       &LoggingSpec{},
 					Requirements: []string{"a", "b"},
-					ScalingSpec:  ScalingSpec{Replicas: &replicas},
+					ScalingSpec:  ScalingSpec{Replicas: i32(4)},
 					Server:       &server,
 					Llm: &LlmSpec{
 						ModelRef: &llmModel,
@@ -277,7 +277,8 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					Memory: &m1,
+					Memory:      &m1,
+					ScalingSpec: ScalingSpec{Replicas: i32(1)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -312,7 +313,7 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					ScalingSpec: ScalingSpec{MinReplicas: &replicas},
+					ScalingSpec: ScalingSpec{MinReplicas: i32(4)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -346,7 +347,7 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					ScalingSpec: ScalingSpec{MaxReplicas: &replicas},
+					ScalingSpec: ScalingSpec{Replicas: i32(1), MaxReplicas: i32(4)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -380,7 +381,7 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					ScalingSpec: ScalingSpec{MinReplicas: &replicas, Replicas: &replicas1},
+					ScalingSpec: ScalingSpec{MinReplicas: i32(4), Replicas: i32(1)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -415,7 +416,7 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					ScalingSpec: ScalingSpec{Replicas: &replicas, MaxReplicas: &replicas1},
+					ScalingSpec: ScalingSpec{Replicas: i32(4), MaxReplicas: i32(1)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -449,6 +450,182 @@ func TestAsModelDetails(t *testing.T) {
 			}
 		})
 	}
+}
+
+func i32(i int32) *int32 { return &i }
+
+func TestGetValidatedScalingSpec(t *testing.T) {
+	type test struct {
+		name        string
+		replicas    *int32
+		minReplicas *int32
+		maxReplicas *int32
+		expected    *ValidatedScalingSpec
+		wantErr     string
+	}
+
+	tests := []test{
+		{
+			name:        "happy path replicas",
+			replicas:    i32(2),
+			minReplicas: i32(1),
+			maxReplicas: i32(3),
+			expected: &ValidatedScalingSpec{
+				Replicas:    2,
+				MinReplicas: 1,
+				MaxReplicas: 3,
+			},
+			wantErr: "",
+		},
+		{
+			name:        "replicas is less than min replicas",
+			replicas:    i32(1),
+			minReplicas: i32(2),
+			maxReplicas: i32(4),
+			expected:    nil,
+			wantErr:     "number of replicas 1 must be >= min replicas  2",
+		},
+		{
+			name:        "replicas is bigger than max replicas",
+			replicas:    i32(5),
+			minReplicas: i32(1),
+			maxReplicas: i32(4),
+			expected:    nil,
+			wantErr:     "number of replicas 5 must be <= max replicas  4",
+		},
+		{
+			name:        "replicas is smaller than min replicas adjusted to min replicas",
+			replicas:    i32(0),
+			minReplicas: i32(1),
+			maxReplicas: i32(4),
+			expected: &ValidatedScalingSpec{
+				Replicas:    1,
+				MinReplicas: 1,
+				MaxReplicas: 4,
+			},
+			wantErr: "",
+		},
+		{
+			name:        "replicas stays at 0 when min replicas and max replicas is 4",
+			replicas:    i32(0),
+			minReplicas: i32(0),
+			maxReplicas: i32(4),
+			expected: &ValidatedScalingSpec{
+				Replicas:    0,
+				MinReplicas: 0,
+				MaxReplicas: 4,
+			},
+			wantErr: "",
+		},
+		{
+			name:        "replicas gets adjusted to min replicas when is less than min replicas",
+			replicas:    i32(0),
+			minReplicas: i32(2),
+			maxReplicas: i32(4),
+			expected: &ValidatedScalingSpec{
+				Replicas:    2,
+				MinReplicas: 2,
+				MaxReplicas: 4,
+			},
+			wantErr: "",
+		},
+		{
+			name:        "no auto scaling enabled",
+			replicas:    i32(2),
+			minReplicas: nil,
+			maxReplicas: nil,
+			expected: &ValidatedScalingSpec{
+				Replicas: 2,
+			},
+			wantErr: "",
+		},
+		{
+			name:        "unset replica params defaults to 1",
+			replicas:    nil,
+			minReplicas: nil,
+			maxReplicas: nil,
+			expected: &ValidatedScalingSpec{
+				Replicas:    1,
+				MinReplicas: 0,
+				MaxReplicas: 0,
+			},
+			wantErr: "",
+		},
+		{
+			name:        "unset replica params defaults to 1",
+			replicas:    nil,
+			minReplicas: i32(1),
+			maxReplicas: nil,
+			expected: &ValidatedScalingSpec{
+				Replicas:    1,
+				MinReplicas: 1,
+				MaxReplicas: 0,
+			},
+			wantErr: "",
+		},
+		{
+			name:        "min replica to 1 and replica to 0 should convert to min replica",
+			replicas:    i32(0),
+			minReplicas: i32(1),
+			maxReplicas: nil,
+			expected: &ValidatedScalingSpec{
+				Replicas:    1,
+				MinReplicas: 1,
+				MaxReplicas: 0,
+			},
+			wantErr: "",
+		},
+		{
+			name:        "min replicas scaling",
+			replicas:    nil,
+			minReplicas: i32(2),
+			maxReplicas: nil,
+			expected: &ValidatedScalingSpec{
+				Replicas:    2,
+				MinReplicas: 2,
+			},
+			wantErr: "",
+		},
+		{
+			name:        "max replicas scaling",
+			replicas:    nil,
+			minReplicas: nil,
+			maxReplicas: i32(2),
+			expected: &ValidatedScalingSpec{
+				Replicas:    1,
+				MinReplicas: 0,
+				MaxReplicas: 2,
+			},
+			wantErr: "",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			scalingSpec, err := GetValidatedScalingSpec(test.replicas, test.minReplicas, test.maxReplicas)
+
+			if test.wantErr != "" {
+				if err == nil {
+					t.Errorf("expected error: %v, got nil", test.wantErr)
+					return
+				}
+				if err.Error() != test.wantErr {
+					t.Errorf("expected error: %q, got: %q", test.wantErr, err.Error())
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+
+			if reflect.DeepEqual(test.expected, scalingSpec) == false {
+				t.Errorf("GetValidatedScalingSpec() = %v, want %v", scalingSpec, test.expected)
+			}
+		})
+	}
+
 }
 
 /* WARNING: Read this first if test below fails (either at compile-time or while running the
