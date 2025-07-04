@@ -2,8 +2,8 @@
 
 ## Seldon Core Setup
 
-* [Install Seldon Core](../notebooks/seldon-core-setup.md)
-* [Install MinIO](../notebooks/minio-setup.md)
+* [Install Seldon Core](seldon-core-setup.md)
+* [Install MinIO](minio_setup.md)
 
 ## Prepackaged Inference Server Examples
 

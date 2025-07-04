@@ -78,7 +78,8 @@
     * [Drift Detection](integrations/drift_detection.md)
 
 ## Tutorials
- * [Notebooks](install/notebooks.md)
+ * [Notebooks](notebooks/README.md)
+ 
  
 ## Reference
 
