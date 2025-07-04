@@ -485,6 +485,9 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 
 		// Handle case where we have no subscribers
 		if len(c.streams) == 0 {
+			if pv.State.Status == pipeline.PipelineTerminated {
+				return
+			}
 			errMsg := "no dataflow engines available to handle pipeline"
 			logger.WithField("pipeline", event.PipelineName).Warn(errMsg)
 
