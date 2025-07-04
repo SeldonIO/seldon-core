@@ -43,6 +43,12 @@
     * [HuggingFace Server](servers/huggingface.md)
     * [TensorFlow Serving](servers/tensorflow.md)
   * Routing
+    * [Ingress with Istio](routing/istio.md)
+    * [Using the Istio Service Mesh](routing/istio.md#using-the-istio-service-mesh)
+    * [Ambassador Ingress](routing/ambassador.md)
+    * [OpenShift](routing/openshift.md)
+    * [Routers Including Multi armed Bandits](routing/routers.md)
+    * [Infrence Graphs](routing/inference-graph.md)
   * Wrappers and SDKs
   * Integrations
     * [CI/CD MLOps at Scale](integrations/cicd-mlops.md)
