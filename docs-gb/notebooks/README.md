@@ -42,7 +42,8 @@
 * [Kafka SpaCy SKlearn NLP](kafka_spacy_sklearn.md)
 * [Kafka KEDA Autoscaling](kafka_keda.md)
 * [CPP Wrapper Simple Single File](cpp_simple.md)
-* [CPP Wrapper Advanced Custom Build System](cpp_advanced.md)
+* [Advanced CPP Buildsystem Override](cpp_advanced.md)
+* [Environment Variables](cpp_advanced.md/#environment-variables)
 
 ## Cloud-Specific Examples
 
