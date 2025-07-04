@@ -71,7 +71,7 @@ build-jvm: build-dataflow-engine
 .PHONY: build
 build: build-go build-jvm
 
-.GOLANGCILINT_VERSION := v1.63.4
+.GOLANGCILINT_VERSION := v1.64.8
 .GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint-versions/$(.GOLANGCILINT_VERSION)
 
 ${.GOLANGCILINT_PATH}/golangci-lint:
