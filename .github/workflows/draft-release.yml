@@ -9,7 +9,7 @@ on:
 
 env:
   GITHUB_USER: seldondev
-  KUSTOMIZE_VERSION: 5.2.1
+  KUSTOMIZE_VERSION_V: 5.2.1
   HELM_VERSION: v3.8.1
 
 jobs:
@@ -81,7 +81,7 @@ jobs:
 
       - name: Setup Kustomize
         run: |
-          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash -s -- ${KUSTOMIZE_VERSION}
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash -s -- ${KUSTOMIZE_VERSION_V}
           sudo mv kustomize /usr/local/bin/
 
       - name: Set versions in helm charts and yaml manifests
