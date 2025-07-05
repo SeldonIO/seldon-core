@@ -20,6 +20,7 @@ import (
 )
 
 const (
+	envServerHost                                      = "SELDON_SERVER_HOST"
 	envServerHttpPort                                  = "SELDON_SERVER_HTTP_PORT"
 	envServerGrpcPort                                  = "SELDON_SERVER_GRPC_PORT"
 	envReverseProxyHttpPort                            = "SELDON_REVERSE_PROXY_HTTP_PORT"
@@ -173,6 +174,7 @@ func updateFlagsFromEnv() {
 	maybeUpdateOverCommitPercentage()
 	maybeUpdateCapabilities()
 	maybeUpdateMemoryRequest()
+	maybeUpdateInferenceHost()
 	maybeUpdateInferenceHttpPort()
 	maybeUpdateInferenceGrpcPort()
 	maybeUpdateReverseProxyHttpPort()
@@ -353,6 +355,20 @@ func maybeUpdateDrainerPort() {
 
 func maybeUpdateReadinessPort() {
 	maybeUpdatePort(flagReadinessServicePort, envReadinessServicePort, &ReadinessServicePort)
+}
+
+func maybeUpdateInferenceHost() {
+	if isFlagPassed("inference-host") {
+		return
+	}
+
+	inferenceHostFromEnv, found := getEnvString(envServerHost)
+	if !found {
+		return
+	}
+
+	log.Infof("Setting inference-host from %s to %s", envServerHost, inferenceHostFromEnv)
+	InferenceHost = inferenceHostFromEnv
 }
 
 func maybeUpdateInferenceHttpPort() {
