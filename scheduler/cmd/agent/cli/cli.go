@@ -109,7 +109,7 @@ const (
 	defaultMaxUnloadElapsedTimeMinute                      = 15
 	defaultMaxLoadRetryCount                               = 5
 	defaultMaxUnloadRetryCount                             = 1
-	defautUnloadGraceSeconds                               = 2
+	defaultUnloadGraceSeconds                              = 2
 )
 
 var (

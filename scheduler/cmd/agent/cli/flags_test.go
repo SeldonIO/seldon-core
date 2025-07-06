@@ -108,7 +108,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 			expectedMaxUnloadElapsedTimeMinute:                      defaultMaxUnloadElapsedTimeMinute,
 			expectedMaxLoadRetryCount:                               defaultMaxLoadRetryCount,
 			expectedMaxUnloadRetryCount:                             defaultMaxUnloadRetryCount,
-			expectedUnloadGraceSeconds:                              defautUnloadGraceSeconds,
+			expectedUnloadGraceSeconds:                              defaultUnloadGraceSeconds,
 		},
 		{
 			name: "good args",
@@ -309,7 +309,7 @@ func TestAgentCliArgsDefault(t *testing.T) {
 			expectedMaxUnloadElapsedTimeMinute:                      defaultMaxUnloadElapsedTimeMinute,
 			expectedMaxLoadRetryCount:                               defaultMaxLoadRetryCount,
 			expectedMaxUnloadRetryCount:                             defaultMaxUnloadRetryCount,
-			expectedUnloadGraceSeconds:                              defautUnloadGraceSeconds,
+			expectedUnloadGraceSeconds:                              defaultUnloadGraceSeconds,
 		},
 	}
 
