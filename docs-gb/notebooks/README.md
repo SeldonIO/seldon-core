@@ -2,8 +2,8 @@
 
 ## Seldon Core Setup
 
-* [Install Seldon Core](../notebooks/seldon-core-setup.md)
-* [Install MinIO](../notebooks/minio-setup.md)
+* [Install Seldon Core](seldon-core-setup.md)
+* [Install MinIO](minio_setup.md)
 
 ## Prepackaged Inference Server Examples
 
@@ -42,7 +42,8 @@
 * [Kafka SpaCy SKlearn NLP](kafka_spacy_sklearn.md)
 * [Kafka KEDA Autoscaling](kafka_keda.md)
 * [CPP Wrapper Simple Single File](cpp_simple.md)
-* [CPP Wrapper Advanced Custom Build System](cpp_advanced.md)
+* [Advanced CPP Buildsystem Override](cpp_advanced.md)
+* [Environment Variables](cpp_advanced.md/#environment-variables)
 
 ## Cloud-Specific Examples
 
