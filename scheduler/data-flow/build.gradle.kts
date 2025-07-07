@@ -52,7 +52,7 @@ dependencies {
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:2.0.1")
 
     // k8s
-    implementation("io.kubernetes:client-java:24.0.0")
+    implementation("io.kubernetes:client-java:24.0.0-legacy")
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.3")
