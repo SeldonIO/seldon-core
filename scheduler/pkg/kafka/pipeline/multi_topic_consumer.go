@@ -11,6 +11,7 @@ package pipeline
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -57,13 +58,17 @@ func NewMultiTopicsKafkaConsumer(
 		requests: cmap.New(),
 		tracer:   tracer,
 	}
-	err := consumer.createConsumer()
+	err := consumer.createConsumer(logger)
 	return consumer, err
 }
 
-func (c *MultiTopicsKafkaConsumer) createConsumer() error {
+func (c *MultiTopicsKafkaConsumer) createConsumer(logger log.FieldLogger) error {
 	consumerConfig := kafka_config.CloneKafkaConfigMap(c.config.Consumer)
 	consumerConfig["group.id"] = c.id
+	consumerConfig["go.events.channel.enable"] = true
+	consumerConfig["go.application.rebalance.enable"] = true // Required for Events()
+	consumerConfig["partition.assignment.strategy"] = "roundrobin"
+
 	err := config_tls.AddKafkaSSLOptions(consumerConfig)
 	if err != nil {
 		return err
@@ -153,13 +158,25 @@ func extractRequestId(partitionAndRequestId string) string {
 func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 	logger := c.logger.WithField("func", "pollAndMatch")
 	for c.isActive.Load() {
-
-		ev := c.consumer.Poll(pollTimeoutMillisecs)
+		ev := <-c.consumer.Events()
+		// ev := c.consumer.Poll(pollTimeoutMillisecs)
 		if ev == nil {
 			continue
 		}
 
 		switch e := ev.(type) {
+		case kafka.AssignedPartitions:
+			logger.Debug("Rebalance: Assigned partitions:", e.Partitions)
+			err := c.consumer.Assign(e.Partitions)
+			if err != nil {
+				fmt.Printf("Assign error: %v\n", err)
+			}
+		case kafka.RevokedPartitions:
+			logger.Debug("Rebalance: Revoked partitions:", e.Partitions)
+			err := c.consumer.Unassign()
+			if err != nil {
+				fmt.Printf("Unassign error: %v\n", err)
+			}
 		case *kafka.Message:
 			logger.
 				WithField("topic", *e.TopicPartition.Topic).
