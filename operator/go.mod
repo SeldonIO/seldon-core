@@ -14,7 +14,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/json-iterator/go v1.1.12
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.36.2
+	github.com/onsi/gomega v1.37.0
 	github.com/seldonio/seldon-core/apis/go/v2 v2.9.1
 	github.com/seldonio/seldon-core/components/kafka/v2 v2.9.1
 	github.com/seldonio/seldon-core/components/tls/v2 v2.9.1
