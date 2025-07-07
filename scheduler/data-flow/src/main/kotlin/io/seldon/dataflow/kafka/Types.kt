@@ -24,7 +24,7 @@ typealias TRecord = ByteArray
 typealias TopicsAndTensors = Pair<Set<TopicName>, Set<TensorName>>
 
 val consumerSerde: Consumed<RequestId, TRecord> = Consumed.with(Serdes.String(), Serdes.ByteArray())
-val producerSerde: Produced<RequestId, TRecord> = Produced.with(Serdes.String(), Serdes.ByteArray())
+val producerSerde: Produced<RequestId, TRecord> = Produced.with(Serdes.String(), Serdes.ByteArray(), SamePartitionForwarder())
 val joinSerde: StreamJoined<RequestId, TRecord, TRecord> =
     StreamJoined.with(Serdes.String(), Serdes.ByteArray(), Serdes.ByteArray())
 

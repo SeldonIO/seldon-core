@@ -13,9 +13,13 @@ import io.klogging.noCoLogger
 import org.apache.kafka.streams.kstream.Branched
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Named
+import org.apache.kafka.streams.processor.StreamPartitioner
 import org.apache.kafka.streams.processor.api.FixedKeyProcessor
 import org.apache.kafka.streams.processor.api.FixedKeyProcessorContext
 import org.apache.kafka.streams.processor.api.FixedKeyRecord
+import org.apache.kafka.streams.processor.api.Processor
+import org.apache.kafka.streams.processor.api.ProcessorContext
+import org.apache.kafka.streams.processor.api.Record
 import org.apache.kafka.streams.state.KeyValueStore
 import java.util.UUID
 
@@ -104,4 +108,46 @@ fun createVisitingCounterBranches(stream: KStream<RequestId, TRecord>): Pair<KSt
     val errorBranch = requireNotNull(branches["$uuid-$VISITING_ERROR_BRANCH"])
     val defaultBranch = requireNotNull(branches["$uuid-$VISITING_DEFAULT_BRANCH"])
     return Pair(defaultBranch, errorBranch)
+}
+
+class TopicProcessor : Processor<RequestId, TRecord, RequestId, TRecord> {
+    private lateinit var context: ProcessorContext<RequestId, TRecord>
+
+    override fun init(context: ProcessorContext<RequestId, TRecord>) {
+        this.context = context
+    }
+
+    override fun process(record: Record<RequestId, TRecord>) {
+        val currentKey = record.key().toString()
+        val partition =
+            context.recordMetadata().orElseThrow {
+                IllegalStateException("Record metadata not available")
+            }.partition()
+
+        val keyHasPartition = currentKey.contains("|") && currentKey.substringBefore("|").toIntOrNull() != null
+
+        val newKey =
+            if (keyHasPartition) {
+                record.key()
+            } else {
+                "$partition|$currentKey"
+            }
+        context.forward(
+            record.withKey(newKey),
+        )
+    }
+
+    override fun close() {}
+}
+
+class SamePartitionForwarder : StreamPartitioner<String, TRecord> {
+    override fun partition(
+        topic: String,
+        key: String,
+        value: TRecord,
+        numPartitions: Int,
+    ): Int {
+        val partitionTag = key.substringBefore("|").toIntOrNull()
+        return partitionTag?.coerceIn(0, numPartitions - 1) ?: 0
+    }
 }

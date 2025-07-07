@@ -252,13 +252,11 @@ func (km *KafkaManager) Infer(
 	defer pipeline.consumer.requests.Remove(compositeKey)
 	request.wg.Add(1)
 
-	outputTopic := km.topicNamer.GetPipelineTopicInputs(resourceName)
-	if isModel {
-		outputTopic = km.topicNamer.GetModelTopicInputs(resourceName)
+	outputTopic := km.topicNamer.GetPipelineTopicOutputs(pipeline.resourceName)
+	if pipeline.isModel {
+		outputTopic = km.topicNamer.GetModelTopicOutputs(pipeline.resourceName)
 	}
-	logger.Debugf("Produce on topic %s with key %s", outputTopic, compositeKey)
-	kafkaHeaders := append(headers, kafka.Header{Key: util.SeldonPipelineHeader, Value: []byte(resourceName)})
-	kafkaHeaders = addRequestIdToKafkaHeadersIfMissing(kafkaHeaders, requestId)
+	logger.Debugf("Output topic for resource %s is %s", resourceName, outputTopic)
 
 	partitions, err := pipeline.consumer.consumer.Assignment()
 	if err != nil {
@@ -267,14 +265,23 @@ func (km *KafkaManager) Infer(
 
 	var partitionsIdx []int32
 	for _, partition := range partitions {
+		logger.Debugf("Partition %d for topic %s", partition.Partition, *partition.Topic)
 		if *partition.Topic == outputTopic {
 			partitionsIdx = append(partitionsIdx, partition.Partition)
 		}
 	}
 
+	inputTopic := km.topicNamer.GetPipelineTopicInputs(resourceName)
+	if isModel {
+		inputTopic = km.topicNamer.GetModelTopicInputs(resourceName)
+	}
+	logger.Debugf("Produce on topic %s with key %s", inputTopic, compositeKey)
+	kafkaHeaders := append(headers, kafka.Header{Key: util.SeldonPipelineHeader, Value: []byte(resourceName)})
+	kafkaHeaders = addRequestIdToKafkaHeadersIfMissing(kafkaHeaders, requestId)
+
 	msg := &kafka.Message{
 		TopicPartition: kafka.TopicPartition{
-			Topic:     &outputTopic,
+			Topic:     &inputTopic,
 			Partition: partitionsIdx[rand.Intn(len(partitionsIdx))],
 		},
 		Key:     []byte(compositeKey),

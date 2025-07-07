@@ -11,6 +11,7 @@ package pipeline
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"sync/atomic"
 
@@ -141,6 +142,14 @@ func (c *MultiTopicsKafkaConsumer) subscribeTopics(cb kafka.RebalanceCb) error {
 	return c.consumer.SubscribeTopics(topics, cb)
 }
 
+func extractRequestId(partitionAndRequestId string) string {
+	parts := strings.SplitN(partitionAndRequestId, "|", 2)
+	if len(parts) < 2 {
+		return partitionAndRequestId
+	}
+	return strings.TrimSpace(parts[1])
+}
+
 func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 	logger := c.logger.WithField("func", "pollAndMatch")
 	for c.isActive.Load() {
@@ -157,7 +166,8 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 				WithField("key", string(e.Key)).
 				Debugf("received message")
 
-			if val, ok := c.requests.Get(string(e.Key)); ok {
+			key := extractRequestId(string(e.Key))
+			if val, ok := c.requests.Get(key); ok {
 				ctx := createBaseContextFromKafkaMsg(e)
 
 				// Add tracing span
@@ -165,21 +175,21 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 				// Use the original request id from kafka headers, as key here is a composite key with the resource name
 				requestId := GetRequestIdFromKafkaHeaders(e.Headers)
 				if requestId == "" {
-					logger.Warnf("Missing request id in Kafka headers for key %s", string(e.Key))
+					logger.Warnf("Missing request id in Kafka headers for key %s", key)
 				}
 				span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
 
 				request := val.(*Request)
 				request.mu.Lock()
 				if request.active {
-					logger.Debugf("Process response for key %s", string(e.Key))
+					logger.Debugf("Process response for key %s", key)
 					request.errorModel, request.isError = extractErrorHeader(e.Headers)
 					request.response = e.Value
 					request.headers = e.Headers
 					request.wg.Done()
 					request.active = false
 				} else {
-					logger.Warnf("Got duplicate request with key %s", string(e.Key))
+					logger.Warnf("Got duplicate request with key %s", key)
 				}
 				request.mu.Unlock()
 				span.End()
