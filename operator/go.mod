@@ -8,7 +8,7 @@ require (
 	dario.cat/mergo v1.0.0
 	emperror.dev/errors v0.8.1
 	github.com/banzaicloud/k8s-objectmatcher v1.8.0
-	github.com/confluentinc/confluent-kafka-go/v2 v2.10.1
+	github.com/confluentinc/confluent-kafka-go/v2 v2.11.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v1.4.3
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
