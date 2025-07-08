@@ -4,9 +4,9 @@ description: Learn how to leverage Core 2's native autoscaling functionality for
 
 # Autoscaling Servers
 
-Core 2 runs with long lived server replicas, each able to host multiple models (through Multi-Model Serving, or MMS). The server replicas can be autoscaled natively by Core 2 in response to dynamic changes in the requested number of model replicas, allowing users to seamlessly optimize the infrastructure cost associated with their deployments. 
+Core 2 runs with long-lived server replicas, each able to host multiple models (through Multi-Model Serving, or MMS). The server replicas can be autoscaled natively by Core 2 in response to dynamic changes in the requested number of model replicas, allowing users to seamlessly optimize the infrastructure cost associated with their deployments. 
 
-This document outlines the autoscaling policies and mechanisms that are available for autoscaling server replicas. These policies are designed to ensure that the server replicas are scaled up or down in response to changes in the number replicas requested for each model. In other words if a given model is scaled up, the system will scale up the server replicas in order to host the new model replicas. Similarly, if a given model is scaled down, the system _may_ scale down the number of replicas of the server hosting the model, depending on other models that are loaded on the same server replica.
+This document outlines the autoscaling policies and mechanisms that are available for autoscaling server replicas. These policies are designed to ensure that the server replicas are scaled up or down in response to changes in the number of replicas requested for each model. In other words if a given model is scaled up, the system will scale up the server replicas in order to host the new model replicas. Similarly, if a given model is scaled down, the system _may_ scale down the number of replicas of the server hosting the model, depending on other models that are loaded on the same server replica.
 
 {% hint style="info" %}
 **Note**: Autoscaling of servers is required in the case of Multi-Model Serving as the models are dynamically loaded and unloaded onto these server replicas. In this case Core 2 would autoscale server replicas according to changes to the model replicas that are required. This is in contrast to single-model autoscaling approach explained [here](hpa-rps-autoscaling.md) where Server and Model replicas are independently scaled using HPA that targets the same metric.
@@ -61,7 +61,7 @@ However in the case of MMS, only reducing the number of server replicas when one
 2. **Lightly Loaded Server Replicas** (Experimental):
 
 {% hint style="warning" %}
-**Warning**: This policy is experimental and is not enabled by default. It can be enabled by setting `autoscaling.serverPackingEnabled` to `true` and `autoscaling.serverPackingPercentage` to a value between 0 and 100. This policy is still under development and might in some cases increase latencies, so it's worth testing ahead of time to observer behavior for a given setup.
+**Warning**: This policy is experimental and is not enabled by default. It can be enabled by setting `autoscaling.serverPackingEnabled` to `true` and `autoscaling.serverPackingPercentage` to a value between 0 and 100. This policy is still under development and might in some cases increase latencies, so it's worth testing ahead of time to observe behavior for a given setup.
 {% endhint %}
 
 Using the above policy which MMS enabled, different model replicas will be hosted on potentially different server replicas and as we scale these models up and down the system can end up in a situation where the models are not consolidated to an optimized number of servers. For illustration, take the case of 3 Models: $$A$$, $$B$$ and $$C$$. We have 1 server $$S$$ with 2 replicas: $$S_1$$ and $$S_2$$ that can host these 3 models. Assuming that initially we have $$A$$ and $$B$$ with 1 replica and $$C$$ with 2 replicas therefore the assignment is:
@@ -81,7 +81,7 @@ There is an argument that this is might not be optimized and in MMS the assignme
 - $$S_1$$: $$A_1$$, $$B_1$$
 - $$S_2$$: removed
 
-As the system evolves this imbalance can get larger and could cause the serving infrastructure to be less optimized. The behavior above is actually not limited to autoscaling, however autoscaling will aggravate the issue causing more imbalance over time. This imbalance can be mitigated by making by the following observation: If the max number of replicas of any given model (assigned to a server from a logical point of view) is less than the number of replicas for this server, then we can pack the models hosted onto a smaller set of replicas. Note in Core 2 a server replica can host only 1 replica of a given model.
+As the system evolves this imbalance can get larger and could cause the serving infrastructure to be less optimized. The behavior above is actually not limited to autoscaling, however autoscaling will aggravate the issue causing more imbalance over time. This imbalance can be mitigated by making the following observation: If the max number of replicas of any given model (assigned to a server from a logical point of view) is less than the number of replicas for this server, then we can pack the models hosted onto a smaller set of replicas. Note in Core 2 a server replica can host only 1 replica of a given model.
 
 In other words, consider the following example - for models $$A$$ and $$B$$ having 2 replicas each and we have 3 server $$S$$ replicas, the following assignment is not potentially optimized:
 
@@ -96,6 +96,6 @@ In this case we could trigger removal of $$S_3$$ for the server which could pack
 - $$S_2$$: $$A_2$$, $$B_2$$
 - $$S_3$$: removed
 
-While this heuristic is going to pack models onto a set of fewer replicas, which allows us to scale models down, there is still the risk that the packing could increase latencies, trigger a later scale up. Core 2 tries to make sure that do not flip-flopping between these states. The user can also reduce the number of packing events by setting `autoscaling.serverPackingPercentage` to a lower value.
+While this heuristic is going to pack models onto a set of fewer replicas, which allows us to scale models down, there is still the risk that the packing could increase latencies, trigger a later scale up. Core 2 ensures consistent behavior without reverting between states. The user can also reduce the number of packing events by setting `autoscaling.serverPackingPercentage` to a lower value.
 
-Currently Core 2 triggers the packing logic only when there is model replica being removed, either from a model scale down or a model being deleted. In the future we might trigger this logic more frequently to ensure that the models are packed onto a fewer set of replicas.
+Currently Core 2 triggers the packing logic only when there is model replica being removed, either from a model scale down or a model being deleted. In the future, the logic might be triggered more frequently to improve model packing onto a smaller set of replicas.
