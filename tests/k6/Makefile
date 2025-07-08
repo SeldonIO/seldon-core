@@ -1,8 +1,8 @@
 CUSTOM_IMAGE_TAG ?= latest
 DOCKERHUB_USERNAME ?= seldonio
 NAMESPACE ?= seldon-mesh
-K6_VERSION ?= 0.51.0
-XK6_VERSION ?= 0.13.4
+K6_VERSION ?= 1.1.0
+XK6_VERSION ?= 1.0.1
 
 IMG ?= ${DOCKERHUB_USERNAME}/seldon-k6:${CUSTOM_IMAGE_TAG}
 GIT_COMMIT := $(shell git rev-parse HEAD)
@@ -116,5 +116,5 @@ create-secret:
 
 xk6-install:
 	# Install xk6
-	go install go.k6.io/xk6/cmd/xk6@latest
+	go install go.k6.io/xk6/cmd/xk6@v${XK6_VERSION}
 	xk6 build v${K6_VERSION} --with github.com/grafana/xk6-kubernetes
