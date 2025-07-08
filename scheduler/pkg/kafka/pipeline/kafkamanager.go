@@ -229,7 +229,7 @@ func (km *KafkaManager) Infer(
 			// may result in unexpected behaviour. This is because due to the load balancing
 			// of the requests, consumers with the same group id may end up consuming from
 			// different topics.
-			logger.Warn("Lazy loading of the models is only suppoerted for a single pipeline gateway instance.")
+			logger.Warning("Lazy loading of the models is only suppoerted for a single pipeline gateway instance.")
 			err := km.StorePipeline(resourceName, true)
 			if err != nil {
 				return nil, fmt.Errorf("failed to store model pipeline %s: %w", resourceName, err)
