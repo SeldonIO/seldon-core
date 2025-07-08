@@ -242,14 +242,16 @@ func (km *KafkaManager) Infer(
 		}
 	}
 
-	// Randomly select a partition to produce the message to
+	// We lock here so we don't reasign the partitions while producing a message.
 	km.mu.RLock()
+	defer km.mu.RUnlock()
+
 	partitions := pipeline.consumer.partitions
-	km.mu.RUnlock()
 	if len(partitions) == 0 {
 		return nil, fmt.Errorf("no partitions assigned for topic %s", resourceName)
 	}
 
+	// Randomly select a partition to produce the message to
 	partition := partitions[rand.Intn(len(partitions))]
 	logger.Debugf("Using partition %d for resource %s", partition, resourceName)
 
