@@ -25,9 +25,9 @@ require (
 	github.com/otiai10/copy v1.14.1
 	github.com/prometheus/client_golang v1.22.0
 	github.com/rs/xid v1.6.0
-	github.com/seldonio/seldon-core/apis/go/v2 v2.9.0
-	github.com/seldonio/seldon-core/components/kafka/v2 v2.9.0
-	github.com/seldonio/seldon-core/components/tls/v2 v2.9.0
+	github.com/seldonio/seldon-core/apis/go/v2 v2.9.1
+	github.com/seldonio/seldon-core/components/kafka/v2 v2.9.1
+	github.com/seldonio/seldon-core/components/tls/v2 v2.9.1
 	github.com/serialx/hashring v0.0.0-20200727003509-22c0c7ab6b1b
 	github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka v1.26.0
 	github.com/sirupsen/logrus v1.9.3
