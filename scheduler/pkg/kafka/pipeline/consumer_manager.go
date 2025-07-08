@@ -75,8 +75,6 @@ func (cm *ConsumerManager) createConsumer(consumerName string, consumers map[str
 }
 
 func (cm *ConsumerManager) getKafkaConsumer(pipelineOrModelName string, isModel bool) (*MultiTopicsKafkaConsumer, error) {
-	// TODO: callers can get the same consumer and can AddTopics that can get this consumer beyond maxNumTopicsPerConsumer
-	// this is fine for now
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 
