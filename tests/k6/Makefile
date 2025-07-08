@@ -37,7 +37,7 @@ docker-build:
 	cd ../../ && docker build \
 		--build-arg GIT_COMMIT=${GIT_COMMIT} \
 		--build-arg GIT_BRANCH=${GIT_BRANCH} \
-		--build-arg K6_VERSION=${K6_VERSION} \
+		--build-arg K6_SEMVER=${K6_VERSION} \
 		--build-arg XK6_VERSION=${XK6_VERSION} \
 		-t ${IMG} \
 		-f tests/k6/Dockerfile.k6 .
@@ -49,7 +49,7 @@ docker-build-and-push-prod:
 		--provenance=true \
 		--build-arg GIT_COMMIT=${GIT_COMMIT} \
 		--build-arg GIT_BRANCH=${GIT_BRANCH} \
-		--build-arg K6_VERSION=${K6_VERSION} \
+		--build-arg K6_SEMVER=${K6_VERSION} \
 		--build-arg XK6_VERSION=${XK6_VERSION} \
 		-t ${IMG} \
 		--attest type=sbom,generator=docker/scout-sbom-indexer:latest \
