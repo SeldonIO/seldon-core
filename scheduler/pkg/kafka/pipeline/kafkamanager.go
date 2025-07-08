@@ -13,6 +13,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"strconv"
 	"sync"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
@@ -241,8 +242,23 @@ func (km *KafkaManager) Infer(
 		}
 	}
 
+	// Randomly select a partition to produce the message to
+	km.mu.RLock()
+	partitions := pipeline.consumer.partitions
+	km.mu.RUnlock()
+	if len(partitions) == 0 {
+		return nil, fmt.Errorf("no partitions assigned for topic %s", resourceName)
+	}
+
+	partition := partitions[rand.Intn(len(partitions))]
+	logger.Debugf("Using partition %d for resource %s", partition, resourceName)
+
 	// Use composite key to differentiate multiple pipelines (i.e. mirror) using the same message
-	compositeKey := getCompositeKey(resourceName, requestId, ".")
+	// Note that we add the partition to the key to ensure that the message will be sent to
+	// a partition for which the consumer is subscribed. For modelgw, it is enought to send the
+	// message to the same partition as the one we read from. For dataflow engine on the other hand,
+	// we need to read the partition from the request id.
+	compositeKey := getCompositeKey(strconv.Itoa(int(partition)), resourceName, requestId, ".")
 	request := &Request{
 		active: true,
 		wg:     new(sync.WaitGroup),
@@ -251,25 +267,6 @@ func (km *KafkaManager) Infer(
 	pipeline.consumer.requests.Set(compositeKey, request)
 	defer pipeline.consumer.requests.Remove(compositeKey)
 	request.wg.Add(1)
-
-	outputTopic := km.topicNamer.GetPipelineTopicOutputs(pipeline.resourceName)
-	if pipeline.isModel {
-		outputTopic = km.topicNamer.GetModelTopicOutputs(pipeline.resourceName)
-	}
-	logger.Debugf("Output topic for resource %s is %s", resourceName, outputTopic)
-
-	partitions, err := pipeline.consumer.consumer.Assignment()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get partitions for topic %s: %w", outputTopic, err)
-	}
-
-	var partitionsIdx []int32
-	for _, partition := range partitions {
-		logger.Debugf("Partition %d for topic %s", partition.Partition, *partition.Topic)
-		if *partition.Topic == outputTopic {
-			partitionsIdx = append(partitionsIdx, partition.Partition)
-		}
-	}
 
 	inputTopic := km.topicNamer.GetPipelineTopicInputs(resourceName)
 	if isModel {
@@ -282,7 +279,7 @@ func (km *KafkaManager) Infer(
 	msg := &kafka.Message{
 		TopicPartition: kafka.TopicPartition{
 			Topic:     &inputTopic,
-			Partition: partitionsIdx[rand.Intn(len(partitionsIdx))],
+			Partition: partition,
 		},
 		Key:     []byte(compositeKey),
 		Value:   data,
@@ -325,13 +322,48 @@ func createResponseErrorPayload(modelName string, response []byte) []byte {
 	return append([]byte(modelName+" : "), response...)
 }
 
+func createRebalanceCb(km *KafkaManager, pipeline *Pipeline) kafka.RebalanceCb {
+	logger := km.logger.WithField("func", "createRebalanceCb")
+	return func(consumer *kafka.Consumer, ev kafka.Event) error {
+		switch e := ev.(type) {
+		case kafka.AssignedPartitions:
+			km.mu.Lock()
+			km.mu.Unlock()
+
+			logger.Debug("Rebalance: Assigned partitions:", e.Partitions)
+			err := consumer.Assign(e.Partitions)
+			if err != nil {
+				pipeline.consumer.partitions = nil
+				return fmt.Errorf("assign error: %w", err)
+			}
+
+			// Update the pipeline consumer partitions
+			pipeline.consumer.partitions = make([]int32, len(e.Partitions))
+			for i, partition := range e.Partitions {
+				pipeline.consumer.partitions[i] = partition.Partition
+			}
+		case kafka.RevokedPartitions:
+			km.mu.Lock()
+			km.mu.Unlock()
+
+			logger.Debug("Rebalance: Revoked partitions:", e.Partitions)
+			err := consumer.Unassign()
+			pipeline.consumer.partitions = nil
+			if err != nil {
+				return fmt.Errorf("unassign error: %w", err)
+			}
+		}
+		return nil
+	}
+}
+
 func (km *KafkaManager) consume(pipeline *Pipeline) error {
 	logger := km.logger.WithField("func", "consume")
 	topicName := km.topicNamer.GetPipelineTopicOutputs(pipeline.resourceName)
 	if pipeline.isModel {
 		topicName = km.topicNamer.GetModelTopicOutputs(pipeline.resourceName)
 	}
-	err := pipeline.consumer.AddTopic(topicName, nil)
+	err := pipeline.consumer.AddTopic(topicName, createRebalanceCb(km, pipeline))
 	pipeline.wg.Done()
 	logger.Infof("Topic %s added in consumer id %s", topicName, pipeline.consumer.id)
 	if err != nil {

@@ -11,7 +11,6 @@ package pipeline
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -31,13 +30,14 @@ import (
 )
 
 type MultiTopicsKafkaConsumer struct {
-	config   *kafka_config.KafkaConfig
-	logger   log.FieldLogger
-	mu       sync.RWMutex
-	topics   map[string]struct{}
-	id       string
-	consumer *kafka.Consumer
-	isActive atomic.Bool
+	config     *kafka_config.KafkaConfig
+	logger     log.FieldLogger
+	mu         sync.RWMutex
+	topics     map[string]struct{}
+	partitions []int32
+	id         string
+	consumer   *kafka.Consumer
+	isActive   atomic.Bool
 	// map of kafka id to request
 	requests cmap.ConcurrentMap
 	tracer   trace.Tracer
@@ -158,25 +158,12 @@ func extractRequestId(partitionAndRequestId string) string {
 func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 	logger := c.logger.WithField("func", "pollAndMatch")
 	for c.isActive.Load() {
-		ev := <-c.consumer.Events()
-		// ev := c.consumer.Poll(pollTimeoutMillisecs)
+		ev := c.consumer.Poll(pollTimeoutMillisecs)
 		if ev == nil {
 			continue
 		}
 
 		switch e := ev.(type) {
-		case kafka.AssignedPartitions:
-			logger.Debug("Rebalance: Assigned partitions:", e.Partitions)
-			err := c.consumer.Assign(e.Partitions)
-			if err != nil {
-				fmt.Printf("Assign error: %v\n", err)
-			}
-		case kafka.RevokedPartitions:
-			logger.Debug("Rebalance: Revoked partitions:", e.Partitions)
-			err := c.consumer.Unassign()
-			if err != nil {
-				fmt.Printf("Unassign error: %v\n", err)
-			}
 		case *kafka.Message:
 			logger.
 				WithField("topic", *e.TopicPartition.Topic).
