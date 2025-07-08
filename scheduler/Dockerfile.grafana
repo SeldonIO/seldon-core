@@ -1,4 +1,4 @@
-FROM grafana/grafana:11.5.2
+FROM grafana/grafana:12.0.2
 
 # Disable Login form or not
 ENV GF_AUTH_DISABLE_LOGIN_FORM "true"
