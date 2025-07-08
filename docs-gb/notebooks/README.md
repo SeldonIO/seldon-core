@@ -86,20 +86,20 @@
 * [Deploy Multiple Seldon Core Operators](multiple_operators.md)
 * [Protocol Examples](protocol_examples.md)
 * [Configurable timeouts](timeouts.md)
-* [Custom Protobuf Data Example](customdata_example.md)
+* [Custom Protobuf Data Example](customdata_example.md) 
 * [Disruption Budgets Example](pdbs_example.md)
 
 ## AB Tests and Progressive Rollouts
 
 * [Istio AB Test](istio_canary.md)
 * [Ambassador AB Test](ambassador_canary.md)
-* [Seldon/Iter8 - Progressive AB Test with Single Seldon Deployment](iter8-single.md)
-* [Seldon/Iter8 - Progressive AB Test with Multiple Seldon Deployments](iter8-separate.md)
+* [Seldon/Iter8 - Progressive AB Test with Single Seldon Deployment](iter8-single.md) 
+* [Seldon/Iter8 - Progressive AB Test with Multiple Seldon Deployments](iter8-separate.md) 
 
 ## Complex Graph Examples
 
 * [Chainer MNIST](chainer_mnist.md)
-* [Custom pre-processors with the Open Inference Protocol](transformers-v2-protocol.md)
+* [Custom pre-processors with the Open Inference Protocol](transformers-v2-protocol.md) 
 * [Graph Examples](graph-examples.md)
 
 ## Ingress
@@ -112,7 +112,7 @@
 
 ## Infrastructure
 
-* [Patch Volumes for Version 1.2.0 Upgrade](patch_1_2.md)
+* [Patch Volumes for Version 1.2.0 Upgrade](patch_1_2.md) 
 
 ## Benchmarking and Load Tests
 
