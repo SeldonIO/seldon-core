@@ -421,10 +421,10 @@ github.com/shirou/gopsutil/v3 v3.23.12 h1:z90NtUkp3bMtmICZKpC4+WaknU1eXtp5vtbQ11
 github.com/shirou/gopsutil/v3 v3.23.12/go.mod h1:1FrWgea594Jp7qmjHUUPlJDTPgcsb9mGnXDxavtikzM=
 github.com/shoenig/go-m1cpu v0.1.6 h1:nxdKQNcEB6vzgA2E2bvzKIYRuNj7XNJ4S/aRSwKzFtM=
 github.com/shoenig/go-m1cpu v0.1.6/go.mod h1:1JJMcUBvfNwpq05QDQVAnx3gUHr9IYF7GNg9SUEw2VQ=
-github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka v1.26.0 h1:pR+87PtSJktfBFiHk6ccLD8VjIvZrB3p+WermP8UBHM=
-github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka v1.26.0/go.mod h1:CRMQFDq3uPBAHP6WJYdc+2hIhGK4bDMDLxhQO7Wjr94=
-github.com/signalfx/splunk-otel-go/instrumentation/internal v1.26.0 h1:Q9SyIupwx+l7LQOmfBaIWPr13IpgT5RInMDp3QKrRYk=
-github.com/signalfx/splunk-otel-go/instrumentation/internal v1.26.0/go.mod h1:MaAByYslkdR7WaLLxiNXZw5L0+JZ6AgBbyEqpsKOGug=
+github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka v1.27.0 h1:gF1SW5YGl7lArferHnKpWIreivw+IUS5FGA3JeZrY6c=
+github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka v1.27.0/go.mod h1:4vSnX1UJKupoZw9T7MrLHrA4rTsWMKzY4Dyi6nn/z1k=
+github.com/signalfx/splunk-otel-go/instrumentation/internal v1.27.0 h1:JKx948Vi54Q0N4qtb7n9xjTBfiJCCIhQ7dGmQtmDOKs=
+github.com/signalfx/splunk-otel-go/instrumentation/internal v1.27.0/go.mod h1:6pmTJ+omhlNsyvQHWd8nwhu3GZDvBy+IU2jTYMMHmFA=
 github.com/sirupsen/logrus v1.4.2/go.mod h1:tLMulIdttU9McNUspp0xgXVQah82FyeX6MwdIuYE2rE=
 github.com/sirupsen/logrus v1.9.3 h1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=
 github.com/sirupsen/logrus v1.9.3/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
