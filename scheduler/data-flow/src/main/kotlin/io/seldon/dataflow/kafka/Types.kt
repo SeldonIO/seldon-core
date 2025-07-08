@@ -13,6 +13,7 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.Produced
 import org.apache.kafka.streams.kstream.StreamJoined
+import org.apache.kafka.streams.processor.StreamPartitioner
 import java.util.Properties
 
 typealias KafkaProperties = Properties
@@ -22,6 +23,18 @@ typealias TensorName = String
 typealias RequestId = String
 typealias TRecord = ByteArray
 typealias TopicsAndTensors = Pair<Set<TopicName>, Set<TensorName>>
+
+class SamePartitionForwarder : StreamPartitioner<String, TRecord> {
+    override fun partition(
+        topic: String,
+        key: String,
+        value: TRecord,
+        numPartitions: Int,
+    ): Int {
+        val partitionTag = key.substringBefore(".").toIntOrNull()
+        return partitionTag?.coerceIn(0, numPartitions - 1) ?: 0
+    }
+}
 
 val consumerSerde: Consumed<RequestId, TRecord> = Consumed.with(Serdes.String(), Serdes.ByteArray())
 val producerSerde: Produced<RequestId, TRecord> = Produced.with(Serdes.String(), Serdes.ByteArray(), SamePartitionForwarder())

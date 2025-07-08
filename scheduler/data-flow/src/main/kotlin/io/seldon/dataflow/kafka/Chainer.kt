@@ -53,9 +53,6 @@ class Chainer(
                 else -> buildPassThroughStream(builder)
             }
 
-        // ensure we will forward the message to the same partition
-        dataStream = dataStream.process<RequestId, TRecord>({ TopicProcessor() })
-
         if (allowCycles) {
             dataStream =
                 dataStream.processValues(
