@@ -1,4 +1,5 @@
-ARG K6_VERSION=1.1.0
+ARG K6_SEMVER=1.1.0
+ARG K6_VERSION=v${K6_SEMVER}
 ARG XK6_VERSION=1.0.1
 
 FROM alpine:3.19.1 AS builder
@@ -12,16 +13,17 @@ RUN apk add --update \
 RUN curl -sSL https://sdk.cloud.google.com | bash
 
 
-FROM grafana/k6:${K6_VERSION}
+FROM grafana/k6:${K6_SEMVER}
 ARG K6_VERSION
 ARG XK6_VERSION
 USER root
 
-RUN apk add --update python3 uuidgen sed go
+RUN apk add --update python3 uuidgen sed go git
 
 COPY --from=builder /root/google-cloud-sdk /root/google-cloud-sdk
 
-ENV PATH $PATH:/root/google-cloud-sdk/bin
+ENV PATH=$PATH:/root/google-cloud-sdk/bin
+ENV K6_VERSION=${K6_VERSION}
 
 RUN mkdir k6
 RUN mkdir /home/apis
@@ -34,7 +36,7 @@ ADD apis /home/apis/
 WORKDIR k6
 
 RUN go install go.k6.io/xk6/cmd/xk6@v${XK6_VERSION}
-RUN ~/go/bin/xk6 build v${K6_VERSION} --with github.com/grafana/xk6-kubernetes
+RUN ~/go/bin/xk6 build --with github.com/grafana/xk6-kubernetes
 
 RUN mkdir results
 
