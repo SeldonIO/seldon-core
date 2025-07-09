@@ -1,30 +1,36 @@
-# Pretrained  GPT2  Model Deployment Example
+# Pretrained GPT2 Model Deployment Example
 
-In this notebook, we will run an example of text generation using GPT2 model exported from HuggingFace and deployed with Seldon's Triton pre-packed server. the example also covers converting the model to ONNX format.
+In this notebook, we will run an example of text generation using a GPT2 model exported from HuggingFace and deployed with Seldon's Triton pre-packed server. The example also covers converting the model to ONNX format.
+
 The implemented example below is of the Greedy approach for the next token prediction.
-more info: https://huggingface.co/transformers/model_doc/gpt2.html?highlight=gpt2
 
-After we have the module deployed to Kubernetes, we will run a simple load test to evaluate the module inference performance.
+More info: [HuggingFace GPT2 Documentation](https://huggingface.co/transformers/model_doc/gpt2.html?highlight=gpt2)
 
+After we have the model deployed to Kubernetes, we will run a simple load test to evaluate the module inference performance.
 
-## Steps:
-- [Download pretrained GPT2 model from hugging face](#Export-HuggingFace-TFGPT2LMHeadModel-pre-trained-model-and-save-it-locally)
-- [Convert the model to ONNX](#Convert-the-TensorFlow-saved-model-to-ONNX)
-- [Store model in Azure Storage Blob](#Copy-your-model-to-Azure-Blob)
-- [Create PersistentVolume and PVC](#Add-Azure-PersistentVolume-and-Claim) mounting Azure Storage Blob
-- [Setup Seldon-Core](#Run-Seldon-in-your-kubernetes-cluster) in your kubernetes cluster
-- [Deploy the ONNX model](#Deploy-your-model-with-Seldon-pre-packaged-Triton-server) with Seldon’s prepackaged Triton server.
-- [Run model inference](#Run-prediction-test:-generate-a-sentence-completion-using-GPT2-model---Greedy-approach), run a greedy alg example (generate sentence completion)
-- [Monitor model with Azure Monitor](#Configure-Model-Monitoring-with-Azure-Monitor)
-- [Run load test using vegeta](#Run-Load-Test-/-Performance-Test-using-vegeta)
-- [Clean-up](#Clean-up)
+---
+
+## Steps
+
+- [Download pretrained GPT2 model from Hugging Face](#export-huggingface-tfgpt2lmheadmodel-pre-trained-model-and-save-it-locally)
+- [Convert the model to ONNX](#convert-the-tensorflow-saved-model-to-onnx)
+- [Store model in Azure Storage Blob](#copy-your-model-to-azure-blob)
+- [Create PersistentVolume and PVC](#add-azure-persistentvolume-and-claim) mounting Azure Storage Blob
+- [Setup Seldon-Core](#run-seldon-in-your-kubernetes-cluster) in your Kubernetes cluster
+- [Deploy the ONNX model](#deploy-your-model-with-seldon-pre-packaged-triton-server) with Seldon's prepackaged Triton server
+- [Run model inference](#run-prediction-test-generate-a-sentence-completion-using-gpt2-model---greedy-approach), run a greedy algorithm example (generate sentence completion)
+- [Monitor model with Azure Monitor](#configure-model-monitoring-with-azure-monitor)
+- [Run load test using vegeta](#run-load-test--performance-test-using-vegeta)
+- [Clean-up](#clean-up)
+
+---
 
 ## Basic requirements
-* Helm v3.0.0+
-* A Kubernetes cluster running v1.13 or above (minkube / docker-for-windows work well if enough RAM)
-* kubectl v1.14+
-* Python 3.6+ 
 
+- Helm v3.0.0+
+- A Kubernetes cluster running v1.13 or above (minikube / docker-for-windows work well if enough RAM)
+- kubectl v1.14+
+- Python 3.6+
 
 ```python
 %%writefile requirements.txt
@@ -35,13 +41,13 @@ tensorflow==2.4.1
 tf2onnx
 ```
 
-
 ```python
 !pip install --trusted-host=pypi.python.org --trusted-host=pypi.org --trusted-host=files.pythonhosted.org -r requirements.txt
 ```
 
-### Export HuggingFace TFGPT2LMHeadModel pre-trained model and save it locally <a id="hf"/>
+---
 
+### Export HuggingFace TFGPT2LMHeadModel pre-trained model and save it locally <a id="hf"/>
 
 ```python
 from transformers import GPT2Tokenizer, TFGPT2LMHeadModel
@@ -53,17 +59,21 @@ model = TFGPT2LMHeadModel.from_pretrained(
 model.save_pretrained("./tfgpt2model", saved_model=True)
 ```
 
-### Convert the TensorFlow saved model to ONNX <a id="onnx"/>
+---
 
+### Convert the TensorFlow saved model to ONNX <a id="onnx"/>
 
 ```python
 !python -m tf2onnx.convert --saved-model ./tfgpt2model/saved_model/1 --opset 13  --output model.onnx
 ```
 
-## Azure Setup
-We have provided [Azure Setup Notebook](https://docs.seldon.io/projects/seldon-core/en/latest/examples/triton_gpt2_example_azure_setup.html) that deploys AKS cluster, Azure storage account and installs Azure Blob CSI driver. If AKS cluster already exists skip to creation of Blob Storage and CSI driver installtion steps. Upon completion of Azure setup following infrastructure will be created:
-![Azure](./azure.jpg)
+---
 
+## Azure Setup
+
+We have provided an [Azure Setup Notebook](https://docs.seldon.io/projects/seldon-core/en/latest/examples/triton_gpt2_example_azure_setup.html) that deploys an AKS cluster, Azure storage account, and installs the Azure Blob CSI driver. If an AKS cluster already exists, skip to creation of Blob Storage and CSI driver installation steps. Upon completion of Azure setup, the following infrastructure will be created:
+
+![Azure](./azure.jpg)
 
 ```python
 resource_group = "seldon"  # feel free to replace or use this default
@@ -73,9 +83,9 @@ storage_account_name = "modeltestsgpt"  # fill in
 storage_container_name = "gpt2onnx"
 ```
 
-### Copy your model to Azure Blob <a id="blob"/>
+---
 
-
+### Copy your model to Azure Blob
 
 ```python
 %%time
@@ -87,51 +97,51 @@ storage_container_name = "gpt2onnx"
                                --destination gpt2/1/model.onnx  
 ```
 
-
 ```python
-#Verify Uploaded file
+# Verify Uploaded file
 !az storage blob list \
     --account-name {storage_account_name}\
     --container-name {storage_container_name} \
     --output table 
-    
 ```
 
-    [33mThis command has been deprecated and will be removed in future release. Use 'az storage fs file list' instead. For more information go to https://github.com/Azure/azure-cli/blob/dev/src/azure-cli/azure/cli/command_modules/storage/docs/ADLS%20Gen2.md[39m
-    [33mThe behavior of this command has been altered by the following extension: storage-preview[0m
-    Name               IsDirectory    Blob Type    Blob Tier    Length     Content Type              Last Modified              Snapshot
-    -----------------  -------------  -----------  -----------  ---------  ------------------------  -------------------------  ----------
-    gpt2/1/model.onnx                 BlockBlob    Hot          652535462  application/octet-stream  2021-05-28T04:37:11+00:00
-    [0m
+> **Note:**
+> This command has been deprecated and will be removed in future release. Use 'az storage fs file list' instead. For more information go to https://github.com/Azure/azure-cli/blob/dev/src/azure-cli/azure/cli/command_modules/storage/docs/ADLS%20Gen2.md
 
-##  Add Azure PersistentVolume and Claim <a id="pv">
-For more details on creating PersistentVolume using CSI driver refer to https://github.com/kubernetes-sigs/blob-csi-driver/blob/master/deploy/example/e2e_usage.md
- - Create secret
- - Create PersistentVolume pointing to secret and Blob Container Name and `mountOptions` specifying user id for non-root containers 
- - Creare PersistentVolumeClaim to bind to volume
+Example output:
 
+```
+Name               IsDirectory    Blob Type    Blob Tier    Length     Content Type              Last Modified              Snapshot
+-----------------  -------------  -----------  -----------  ---------  ------------------------  -------------------------  ----------
+gpt2/1/model.onnx                 BlockBlob    Hot          652535462  application/octet-stream  2021-05-28T04:37:11+00:00
+```
+
+---
+
+## Add Azure PersistentVolume and Claim <a id="pv"/>
+
+For more details on creating PersistentVolume using CSI driver refer to [CSI driver e2e usage](https://github.com/kubernetes-sigs/blob-csi-driver/blob/master/deploy/example/e2e_usage.md)
+
+- Create secret
+- Create PersistentVolume pointing to secret and Blob Container Name and `mountOptions` specifying user id for non-root containers
+- Create PersistentVolumeClaim to bind to volume
 
 ```python
 key = !az storage account keys list --account-name {storage_account_name} -g {resource_group} --query '[0].value' -o tsv
 storage_account_key = key[0]
 ```
 
-
-
-
 ```python
 # Create secret to access storage account
 !kubectl create secret generic azure-blobsecret --from-literal azurestorageaccountname={storage_account_name} --from-literal azurestorageaccountkey="{storage_account_key}" --type=Opaque
 ```
 
-
-```python
-%%writefile azure-blobfuse-pv.yaml
+```yaml
+# azure-blobfuse-pv.yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: pv-gpt2blob
-  
 spec:
   capacity:
     storage: 10Gi
@@ -155,7 +165,6 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: pvc-gpt2blob
- 
 spec:
   accessModes:
     - ReadWriteMany
@@ -164,40 +173,46 @@ spec:
       storage: 10Gi
   volumeName: pv-gpt2blob
   storageClassName: ""
-
 ```
-
 
 ```python
-!kubectl apply -f  azure-blobfuse-pv.yaml
+!kubectl apply -f azure-blobfuse-pv.yaml
 ```
 
-    persistentvolume/pv-gptblob configured
-    persistentvolumeclaim/pvc-gptblob unchanged
+Example output:
 
-
+```
+persistentvolume/pv-gptblob configured
+persistentvolumeclaim/pvc-gptblob unchanged
+```
 
 ```python
 # Verify PVC is bound
 !kubectl get pv,pvc
 ```
 
-    NAME                           CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS   REASON   AGE
-    persistentvolume/pv-gpt2blob   10Gi       RWX            Retain           Bound    default/pvc-gpt2blob                           4h54m
-    
-    NAME                                 STATUS   VOLUME        CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-    persistentvolumeclaim/pvc-gpt2blob   Bound    pv-gpt2blob   10Gi       RWX                           4h54m
+Example output:
 
+```
+NAME                           CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS   REASON   AGE
+persistentvolume/pv-gpt2blob   10Gi       RWX            Retain           Bound    default/pvc-gpt2blob                           4h54m
 
-### Run Seldon in your kubernetes cluster <a id="seldon"/>
+NAME                                 STATUS   VOLUME        CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/pvc-gpt2blob   Bound    pv-gpt2blob   10Gi       RWX                           4h54m
+```
 
-Follow the [Seldon-Core Setup notebook](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html) to Setup a cluster with Istio Ingress and install Seldon Core
+---
+
+### Run Seldon in your Kubernetes cluster <a id="seldon"/>
+
+Follow the [Seldon-Core Setup notebook](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html) to set up a cluster with Istio Ingress and install Seldon Core.
+
+---
 
 ### Deploy your model with Seldon pre-packaged Triton server <a id="sd"/>
 
-
-```python
-%%writefile gpt2-deploy.yaml
+```yaml
+# gpt2-deploy.yaml
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
 metadata:
@@ -237,27 +252,29 @@ spec:
   protocol: kfserving
 ```
 
-    Overwriting gpt2-deploy.yaml
-
-
-
 ```python
 !kubectl apply -f gpt2-deploy.yaml -n default
 ```
 
-    seldondeployment.machinelearning.seldon.io/gpt2 created
+Example output:
 
-
+```
+seldondeployment.machinelearning.seldon.io/gpt2 created
+```
 
 ```python
 !kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=gpt2gpu -o jsonpath='{.items[0].metadata.name}')
 ```
 
-    deployment "gpt2gpu-default-0-gpt2" successfully rolled out
+Example output:
 
+```
+deployment "gpt2gpu-default-0-gpt2" successfully rolled out
+```
+
+---
 
 #### Interact with the model: get model metadata (a "test" request to make sure our model is available and loaded correctly)
-
 
 ```python
 ingress_ip = !(kubectl get svc --namespace istio-system istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
@@ -266,38 +283,19 @@ ingress_ip = ingress_ip[0]
 !curl -v http://{ingress_ip}:80/seldon/default/gpt2gpu/v2/models/gpt2
 ```
 
-    *   Trying 20.75.117.145:80...
-    * TCP_NODELAY set
-    * Connected to 20.75.117.145 (20.75.117.145) port 80 (#0)
-    
-    
-    
-    
-    
-    * Mark bundle as not supporting multiuse
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    * Connection #0 to host 20.75.117.145 left intact
-    {"name":"gpt2","versions":["1"],"platform":"onnxruntime_onnx","inputs":[{"name":"input_ids:0","datatype":"INT32","shape":[-1,-1]},{"name":"attention_mask:0","datatype":"INT32","shape":[-1,-1]}],"outputs":[{"name":"past_key_values","datatype":"FP32","shape":[12,2,-1,12,-1,64]},{"name":"logits","datatype":"FP32","shape":[-1,-1,50257]}]}
+Example output:
 
-### Run prediction test: generate a sentence completion using GPT2 model  - Greedy approach <a id="infer"/>
+```
+{"name":"gpt2","versions":["1"],"platform":"onnxruntime_onnx","inputs":[{"name":"input_ids:0","datatype":"INT32","shape":[-1,-1]},{"name":"attention_mask:0","datatype":"INT32","shape":[-1,-1]}],"outputs":[{"name":"past_key_values","datatype":"FP32","shape":[12,2,-1,12,-1,64]},{"name":"logits","datatype":"FP32","shape":[-1,-1,50257]}]}
+```
 
+---
 
+### Run prediction test: generate a sentence completion using GPT2 model - Greedy approach <a id="infer"/>
 
 ```python
 import http
 import json
-
 import numpy as np
 import requests
 from transformers import GPT2Tokenizer
@@ -342,7 +340,7 @@ while count < max_gen_len:
     logits = np.array(res["outputs"][1]["data"])
     logits = logits.reshape(res["outputs"][1]["shape"])
 
-    # take the best next token probability of the last token of input ( greedy approach)
+    # take the best next token probability of the last token of input (greedy approach)
     next_token = logits.argmax(axis=2)[0]
     next_token_str = tokenizer.decode(
         next_token[-1:], skip_special_tokens=True, clean_up_tokenization_spaces=True
@@ -355,74 +353,94 @@ while count < max_gen_len:
 print(f"Input: {input_text}\nOutput: {gen_sentence}")
 ```
 
-    sending request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
-    Sentence: I love Artificial Intelligence .
-    sending request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
-    Sentence: I love Artificial Intelligence . I
-    sending request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
-    Sentence: I love Artificial Intelligence . I love
-    sending request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
-    Sentence: I love Artificial Intelligence . I love the
-    sending request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
-    Sentence: I love Artificial Intelligence . I love the way
-    sending request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
-    Sentence: I love Artificial Intelligence . I love the way it
-    sending request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
-    Sentence: I love Artificial Intelligence . I love the way it 's
-    sending request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
-    Sentence: I love Artificial Intelligence . I love the way it 's designed
-    Input: I love Artificial Intelligence
-    Output: I love Artificial Intelligence . I love the way it 's designed
+Example output:
 
+```
+sending request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
+Sentence: I love Artificial Intelligence .
+sending request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
+Sentence: I love Artificial Intelligence . I
+sending request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
+Sentence: I love Artificial Intelligence . I love
+sending request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
+Sentence: I love Artificial Intelligence . I love the
+sending request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
+Sentence: I love Artificial Intelligence . I love the way
+sending request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
+Sentence: I love Artificial Intelligence . I love the way it
+sending request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
+Sentence: I love Artificial Intelligence . I love the way it 's
+sending request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
+Sentence: I love Artificial Intelligence . I love the way it 's designed
+Input: I love Artificial Intelligence
+Output: I love Artificial Intelligence . I love the way it 's designed
+```
+
+---
 
 ## Configure Model Monitoring with Azure Monitor <a id="azuremonitor"/> 
-The Azure Monitor Containers Insights provides functionality to allow collecting data from any Prometheus endpoints. It removes the need to install and operate Prometheus server and manage the monitoring data as Azure Monitor provides centralized point for collecting, displaying and alerting on monitoring data. To turn on Azure Monitor Container Insights follow steps described [here](https://docs.microsoft.com/en-us/azure/azure-monitor/containers/container-insights-onboard) and you should that you have an “omsagent” pod running.
 
+The Azure Monitor Containers Insights provides functionality to allow collecting data from any Prometheus endpoints. It removes the need to install and operate Prometheus server and manage the monitoring data as Azure Monitor provides a centralized point for collecting, displaying, and alerting on monitoring data. To turn on Azure Monitor Container Insights, follow steps described [here](https://docs.microsoft.com/en-us/azure/azure-monitor/containers/container-insights-onboard) and you should see that you have an "omsagent" pod running.
 
 ```python
 !kubectl get pods -n kube-system | grep omsagent
 ```
 
-    omsagent-27lk7                                1/1     Running   3          12d
-    omsagent-7q49d                                1/1     Running   3          12d
-    omsagent-9slf6                                1/1     Running   3          12d
-    omsagent-kzbkr                                1/1     Running   3          12d
-    omsagent-q85hk                                1/1     Running   3          12d
-    omsagent-rs-5976fbdc8b-rgxs4                  1/1     Running   0          8d
-    omsagent-tpkq2                                1/1     Running   3          12d
+Example output:
 
+```
+omsagent-27lk7                                1/1     Running   3          12d
+omsagent-7q49d                                1/1     Running   3          12d
+omsagent-9slf6                                1/1     Running   3          12d
+omsagent-kzbkr                                1/1     Running   3          12d
+omsagent-q85hk                                1/1     Running   3          12d
+omsagent-rs-5976fbdc8b-rgxs4                  1/1     Running   0          8d
+omsagent-tpkq2                                1/1     Running   3          12d
+```
+
+---
 
 ### Configure Prometheus Metrics scraping
-Once `omsagent` is running we need to configure it to collect metrics from Prometheus endpoints. Azure Monitor Containers Insights allows configuration to be applied on a cluster or node-wide scope and configure endpoints for monitoring on one of the following ways:
-- Provide an array of URLs 
-- Provide an Array of Kubernetes services
+
+Once `omsagent` is running, we need to configure it to collect metrics from Prometheus endpoints. Azure Monitor Containers Insights allows configuration to be applied on a cluster or node-wide scope and configure endpoints for monitoring in one of the following ways:
+
+- Provide an array of URLs
+- Provide an array of Kubernetes services
 - Enable monitoring of any pods with Prometheus annotations
-For more details on how to configure the scraping endpoints and query collected data refer to [MS Docs on Configure scraping of Prometheus metrics with Container insights](https://docs.microsoft.com/en-us/azure/azure-monitor/containers/container-insights-prometheus-integration)
 
-Our deployed model metrics are availble from couple infrasture layers - [Seldon model orchestrator metrics](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html) and [Nvidia Triton Server Metrics](https://github.com/triton-inference-server/server/blob/main/docs/user_guide/metrics.md). To enable scraping for both endpoints we updated Microsoft provided default  `ConfigMap` that configures `omsagent` [azure-metrics-cm.yaml](./azure-metrics-cm.yaml):
-- **Triton Server:** update  `monitor_kubernetes_pods = true` to enable scrapting for Pods with `prometheus.io` annotations
-    In SeldonDeployment shown above `prometheus.io/path` and `prometheus.io/port` point to default Triton metrics endpoint
-- **Seldon Orchestrator:** add our deployed model seldon service endpoint to list of Kubernetes services to be scraped: 
-  ```yaml
-    kubernetes_services = ["http://gpt2gpu-default.default:8000/prometheus"]
-  ``` 
+For more details on how to configure the scraping endpoints and query collected data, refer to [MS Docs on Configure scraping of Prometheus metrics with Container insights](https://docs.microsoft.com/en-us/azure/azure-monitor/containers/container-insights-prometheus-integration)
 
+Our deployed model metrics are available from a couple of infrastructure layers:
+- [Seldon model orchestrator metrics](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html)
+- [Nvidia Triton Server Metrics](https://github.com/triton-inference-server/server/blob/main/docs/user_guide/metrics.md)
+
+To enable scraping for both endpoints, we updated the Microsoft-provided default `ConfigMap` that configures `omsagent` ([azure-metrics-cm.yaml](./azure-metrics-cm.yaml)):
+
+- **Triton Server:** update `monitor_kubernetes_pods = true` to enable scraping for Pods with `prometheus.io` annotations. In the SeldonDeployment shown above, `prometheus.io/path` and `prometheus.io/port` point to the default Triton metrics endpoint.
+- **Seldon Orchestrator:** add our deployed model Seldon service endpoint to the list of Kubernetes services to be scraped:
+
+```yaml
+kubernetes_services = ["http://gpt2gpu-default.default:8000/prometheus"]
+```
 
 ```python
 !kubectl apply -f azure-metrics-cm.yaml
 ```
 
-## Query and Visualize collected data
-Collected metrics are available in Logs blade of Azure Monitor in a table **InsightsMetrics**, you could see all metrics gathered by running query
+---
 
-```yaml
+## Query and Visualize collected data
+
+Collected metrics are available in the Logs blade of Azure Monitor in a table **InsightsMetrics**. You can see all metrics gathered by running the following query:
+
+```kusto
 InsightsMetrics
 | where Namespace == "prometheus" 
 ```
 
-To get Model Inference Requests per minute from Seldon Metrics run the following query and pin it to Dashboard or add to Azure Monitor Workbook:
+To get Model Inference Requests per minute from Seldon Metrics, run the following query and pin it to Dashboard or add to Azure Monitor Workbook:
 
-```yaml
+```kusto
 InsightsMetrics 
 | where Namespace == "prometheus"
 | where Name == "seldon_api_executor_server_requests_seconds_count"
@@ -434,10 +452,9 @@ InsightsMetrics
 | render areachart 
 ```
 
-
 To get Inference Duration from Triton Metrics:
 
-```yaml
+```kusto
 InsightsMetrics 
 | where Namespace == "prometheus"
 | where Name in ("nv_inference_request_duration_us")
@@ -447,52 +464,57 @@ InsightsMetrics
 | render areachart   
 ```
 
-Here is example dashboard we created using queries above
+Here is an example dashboard we created using queries above:
 
-![dashboard](./azuredashboard.jpg) 
+![dashboard](./azuredashboard.jpg)
 
+---
 
 ### Run Load Test / Performance Test using vegeta <a id="vegeta"/>
 
-#### Install vegeta, for more details take a look in [vegeta](https://github.com/tsenart/vegeta#install) official documentation
+#### Install vegeta
 
+For more details, take a look at the [vegeta official documentation](https://github.com/tsenart/vegeta#install).
 
-```python
+```bash
 !wget https://github.com/tsenart/vegeta/releases/download/v12.8.3/vegeta-12.8.3-linux-arm64.tar.gz
 !tar -zxvf vegeta-12.8.3-linux-arm64.tar.gz
 !chmod +x vegeta
 ```
 
-    --2021-05-28 18:40:27--  https://github.com/tsenart/vegeta/releases/download/v12.8.3/vegeta-12.8.3-linux-arm64.tar.gz
-    Resolving github.com (github.com)... 140.82.114.4
-    Connecting to github.com (github.com)|140.82.114.4|:443... connected.
-    HTTP request sent, awaiting response... 302 Found
-    Location: https://github-releases.githubusercontent.com/12080551/ba68d580-6e90-11ea-8bd2-3f43f5c08b3c?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20210528%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20210528T224014Z&X-Amz-Expires=300&X-Amz-Signature=2efad77c33f1663eea17d366986bfad1cd081128d45012c9b6e6659c4c80eff6&X-Amz-SignedHeaders=host&actor_id=0&key_id=0&repo_id=12080551&response-content-disposition=attachment%3B%20filename%3Dvegeta-12.8.3-linux-arm64.tar.gz&response-content-type=application%2Foctet-stream [following]
-    --2021-05-28 18:40:27--  https://github-releases.githubusercontent.com/12080551/ba68d580-6e90-11ea-8bd2-3f43f5c08b3c?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20210528%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20210528T224014Z&X-Amz-Expires=300&X-Amz-Signature=2efad77c33f1663eea17d366986bfad1cd081128d45012c9b6e6659c4c80eff6&X-Amz-SignedHeaders=host&actor_id=0&key_id=0&repo_id=12080551&response-content-disposition=attachment%3B%20filename%3Dvegeta-12.8.3-linux-arm64.tar.gz&response-content-type=application%2Foctet-stream
-    Resolving github-releases.githubusercontent.com (github-releases.githubusercontent.com)... 185.199.108.154, 185.199.109.154, 185.199.110.154, ...
-    Connecting to github-releases.githubusercontent.com (github-releases.githubusercontent.com)|185.199.108.154|:443... connected.
-    HTTP request sent, awaiting response... 200 OK
-    Length: 3281900 (3.1M) [application/octet-stream]
-    Saving to: ‘vegeta-12.8.3-linux-arm64.tar.gz.2’
-    
-    vegeta-12.8.3-linux 100%[===================>]   3.13M  2.95MB/s    in 1.1s    
-    
-    2021-05-28 18:40:28 (2.95 MB/s) - ‘vegeta-12.8.3-linux-arm64.tar.gz.2’ saved [3281900/3281900]
-    
-    CHANGELOG
-    LICENSE
-    README.md
-    vegeta
+Example output:
 
+```
+--2021-05-28 18:40:27--  https://github.com/tsenart/vegeta/releases/download/v12.8.3/vegeta-12.8.3-linux-arm64.tar.gz
+Resolving github.com (github.com)... 140.82.114.4
+Connecting to github.com (github.com)|140.82.114.4|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://github-releases.githubusercontent.com/12080551/ba68d580-6e90-11ea-8bd2-3f43f5c08b3c?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20210528%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20210528T224014Z&X-Amz-Expires=300&X-Amz-Signature=2efad77c33f1663eea17d366986bfad1cd081128d45012c9b6e6659c4c80eff6&X-Amz-SignedHeaders=host&actor_id=0&key_id=0&repo_id=12080551&response-content-disposition=attachment%3B%20filename%3Dvegeta-12.8.3-linux-arm64.tar.gz&response-content-type=application%2Foctet-stream [following]
+--2021-05-28 18:40:27--  https://github-releases.githubusercontent.com/12080551/ba68d580-6e90-11ea-8bd2-3f43f5c08b3c?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20210528%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20210528T224014Z&X-Amz-Expires=300&X-Amz-Signature=2efad77c33f1663eea17d366986bfad1cd081128d45012c9b6e6659c4c80eff6&X-Amz-SignedHeaders=host&actor_id=0&key_id=0&repo_id=12080551&response-content-disposition=attachment%3B%20filename%3Dvegeta-12.8.3-linux-arm64.tar.gz&response-content-type=application%2Foctet-stream
+Resolving github-releases.githubusercontent.com (github-releases.githubusercontent.com)... 185.199.108.154, 185.199.109.154, 185.199.110.154, ...
+Connecting to github-releases.githubusercontent.com (github-releases.githubusercontent.com)|185.199.108.154|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 3281900 (3.1M) [application/octet-stream]
+Saving to: 'vegeta-12.8.3-linux-arm64.tar.gz.2'
 
-#### Generate vegeta [target file](https://github.com/tsenart/vegeta#-targets) contains "post" cmd with payload in the requiered structure
+vegeta-12.8.3-linux 100%[===================>]   3.13M  2.95MB/s    in 1.1s    
 
+2021-05-28 18:40:28 (2.95 MB/s) - 'vegeta-12.8.3-linux-arm64.tar.gz.2' saved [3281900/3281900]
+
+CHANGELOG
+LICENSE
+README.md
+vegeta
+```
+
+---
+
+#### Generate vegeta [target file](https://github.com/tsenart/vegeta#-targets) containing "post" command with payload in the required structure
 
 ```python
 import base64
 import json
 from subprocess import PIPE, Popen, run
-
 import numpy as np
 from transformers import GPT2Tokenizer, TFGPT2LMHeadModel
 
@@ -533,26 +555,32 @@ with open("vegeta_target.json", mode="w") as file:
     file.write("\n\n")
 ```
 
-    preparing request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
+Example output:
 
+```
+preparing request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
+```
 
-
-```python
+```bash
 !./vegeta attack -targets=vegeta_target.json -rate=1 -duration=60s -format=json | ./vegeta report -type=text
 ```
 
-    Requests      [total, rate, throughput]         60, 1.02, 0.95
-    Duration      [total, attack, wait]             1m3s, 58.994s, 4.445s
-    Latencies     [min, mean, 50, 90, 95, 99, max]  1.45s, 4.003s, 3.983s, 5.249s, 6.329s, 7.876s, 7.97s
-    Bytes In      [total, mean]                     475803960, 7930066.00
-    Bytes Out     [total, mean]                     13140, 219.00
-    Success       [ratio]                           100.00%
-    Status Codes  [code:count]                      200:60  
-    Error Set:
+Example output:
 
+```
+Requests      [total, rate, throughput]         60, 1.02, 0.95
+Duration      [total, attack, wait]             1m3s, 58.994s, 4.445s
+Latencies     [min, mean, 50, 90, 95, 99, max]  1.45s, 4.003s, 3.983s, 5.249s, 6.329s, 7.876s, 7.97s
+Bytes In      [total, mean]                     475803960, 7930066.00
+Bytes Out     [total, mean]                     13140, 219.00
+Success       [ratio]                           100.00%
+Status Codes  [code:count]                      200:60  
+Error Set:
+```
+
+---
 
 ### Clean-up <a id="cleanup"/>
-
 
 ```python
 !kubectl delete -f gpt2-deploy.yaml -n default
