@@ -10,99 +10,104 @@ the Change License after the Change Date as each is defined in accordance with t
 package pipeline
 
 import (
-	"fmt"
 	"sync"
 
-	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel/trace"
 
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 const (
-	EnvMaxNumConsumers             = "PIPELINEGATEWAY_MAX_NUM_CONSUMERS"
-	EnvMaxNumTopicPerConsumer      = "PIPELINEGATEWAY_MAX_NUM_TOPICS_PER_CONSUMER"
-	DefaultMaxNumTopicsPerConsumer = 100
-	DefaultMaxNumConsumers         = 200
-	kafkaConsumerNamePrefix        = "seldon-pipelinegateway"
+	EnvMaxNumConsumers      = "PIPELINEGATEWAY_MAX_NUM_CONSUMERS"
+	DefaultMaxNumConsumers  = 200
+	kafkaConsumerNamePrefix = "seldon-pipelinegateway"
 )
 
 type ConsumerManager struct {
 	logger log.FieldLogger
 	mu     sync.Mutex
 	// all consumers we have
-	consumers               []*MultiTopicsKafkaConsumer
-	consumerConfig          *kafka_config.KafkaConfig
-	maxNumConsumers         int
-	maxNumTopicsPerConsumer int
-	tracer                  trace.Tracer
-	namespace               string
+	pipelinesConsumers map[string]*MultiTopicsKafkaConsumer
+	modelsConsumers    map[string]*MultiTopicsKafkaConsumer
+	consumerConfig     *kafka_config.KafkaConfig
+	maxNumConsumers    int
+	tracer             trace.Tracer
+	namespace          string
 }
 
 func NewConsumerManager(
 	namespace string,
 	logger log.FieldLogger,
 	consumerConfig *kafka_config.KafkaConfig,
-	maxNumTopicsPerConsumer,
 	maxNumConsumers int,
 	tracer trace.Tracer,
 ) *ConsumerManager {
 	logger.
 		WithField("max consumers", maxNumConsumers).
-		WithField("max topics per consumer", maxNumTopicsPerConsumer).
 		Info("creating consumer manager")
 
 	return &ConsumerManager{
-		namespace:               namespace,
-		logger:                  logger.WithField("source", "ConsumerManager"),
-		consumerConfig:          consumerConfig,
-		maxNumTopicsPerConsumer: maxNumTopicsPerConsumer,
-		maxNumConsumers:         maxNumConsumers,
-		tracer:                  tracer,
+		namespace:          namespace,
+		logger:             logger.WithField("source", "ConsumerManager"),
+		pipelinesConsumers: make(map[string]*MultiTopicsKafkaConsumer),
+		modelsConsumers:    make(map[string]*MultiTopicsKafkaConsumer),
+		consumerConfig:     consumerConfig,
+		maxNumConsumers:    maxNumConsumers,
+		tracer:             tracer,
 	}
 }
 
-func (cm *ConsumerManager) createConsumer() error {
-	if len(cm.consumers) == cm.maxNumTopicsPerConsumer {
-		return fmt.Errorf("Max number of consumers reached")
-	}
-
+func (cm *ConsumerManager) createConsumer(consumerName string, consumers map[string]*MultiTopicsKafkaConsumer) (*MultiTopicsKafkaConsumer, error) {
 	c, err := NewMultiTopicsKafkaConsumer(
 		cm.logger,
 		cm.consumerConfig,
-		kafka_config.GetKafkaConsumerName(cm.namespace, cm.consumerConfig.ConsumerGroupIdPrefix, kafkaConsumerNamePrefix, uuid.New().String()),
+		consumerName,
 		cm.tracer,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	cm.consumers = append(cm.consumers, c)
-	return nil
+	consumers[consumerName] = c
+	return c, nil
 }
 
-func (cm *ConsumerManager) getKafkaConsumer() (*MultiTopicsKafkaConsumer, error) {
-	// TODO: callers can get the same consumer and can AddTopics that can get this consumer beyond maxNumTopicsPerConsumer
-	// this is fine for now
+func (cm *ConsumerManager) getKafkaConsumer(pipelineOrModelName string, isModel bool) (*MultiTopicsKafkaConsumer, error) {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 
-	if len(cm.consumers) == 0 {
-		if err := cm.createConsumer(); err != nil {
-			return nil, err
-		}
+	consumerName := util.GetKafkaConsumerName(
+		cm.namespace,
+		cm.consumerConfig.ConsumerGroupIdPrefix,
+		pipelineOrModelName,
+		kafkaConsumerNamePrefix,
+		cm.maxNumConsumers,
+	)
+	consumers := cm.pipelinesConsumers
+	if isModel {
+		consumers = cm.modelsConsumers
 	}
-	c := cm.consumers[len(cm.consumers)-1]
+	if consumer, ok := consumers[consumerName]; ok {
+		return consumer, nil
+	}
+	return cm.createConsumer(consumerName, consumers)
+}
 
-	if c.GetNumTopics() < cm.maxNumTopicsPerConsumer {
-		return c, nil
-	} else {
-		err := cm.createConsumer()
+func getNumModels(consumers map[string]*MultiTopicsKafkaConsumer) int {
+	tot := 0
+	for _, c := range consumers {
+		tot += c.GetNumTopics()
+	}
+	return tot
+}
+
+func stop(consumers map[string]*MultiTopicsKafkaConsumer) {
+	for _, c := range consumers {
+		err := c.Close()
 		if err != nil {
-			return nil, err
-		} else {
-			return cm.consumers[len(cm.consumers)-1], nil
+			log.Warnf("Consumer %s failed to close", c.id)
 		}
 	}
 }
@@ -110,20 +115,12 @@ func (cm *ConsumerManager) getKafkaConsumer() (*MultiTopicsKafkaConsumer, error)
 func (cm *ConsumerManager) GetNumModels() int {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
-	tot := 0
-	for _, c := range cm.consumers {
-		tot += c.GetNumTopics()
-	}
-	return tot
+	return getNumModels(cm.modelsConsumers) + getNumModels(cm.pipelinesConsumers)
 }
 
 func (cm *ConsumerManager) Stop() {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
-	for _, c := range cm.consumers {
-		err := c.Close()
-		if err != nil {
-			cm.logger.Warnf("Consumer %s failed to close", c.id)
-		}
-	}
+	stop(cm.modelsConsumers)
+	stop(cm.pipelinesConsumers)
 }

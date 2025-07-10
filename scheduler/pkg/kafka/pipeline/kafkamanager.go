@@ -12,6 +12,8 @@ package pipeline
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"strconv"
 	"sync"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
@@ -34,6 +36,8 @@ const (
 )
 
 type PipelineInferer interface {
+	StorePipeline(resourceName string, isModel bool) error
+	LoadPipeline(resourceName string, isModel bool) (*Pipeline, error)
 	Infer(
 		ctx context.Context,
 		resourceName string,
@@ -78,8 +82,7 @@ func NewKafkaManager(
 	namespace string,
 	kafkaConfig *kafka_config.KafkaConfig,
 	traceProvider *seldontracer.TracerProvider,
-	maxNumConsumers,
-	maxNumTopicsPerConsumer int,
+	maxNumConsumers int,
 ) (*KafkaManager, error) {
 	topicNamer, err := kafka2.NewTopicNamer(namespace, kafkaConfig.TopicPrefix)
 	if err != nil {
@@ -92,7 +95,7 @@ func NewKafkaManager(
 		logger:          logger.WithField("source", "KafkaManager"),
 		topicNamer:      topicNamer,
 		tracer:          tracer,
-		consumerManager: NewConsumerManager(namespace, logger, kafkaConfig, maxNumTopicsPerConsumer, maxNumConsumers, tracer),
+		consumerManager: NewConsumerManager(namespace, logger, kafkaConfig, maxNumConsumers, tracer),
 		mu:              sync.RWMutex{},
 	}
 
@@ -137,7 +140,7 @@ func (km *KafkaManager) createProducer() error {
 }
 
 func (km *KafkaManager) createPipeline(resource string, isModel bool) (*Pipeline, error) {
-	consumer, err := km.consumerManager.getKafkaConsumer()
+	consumer, err := km.consumerManager.getKafkaConsumer(resource, isModel)
 	if err != nil {
 		return nil, err
 	}
@@ -157,35 +160,50 @@ func getPipelineKey(resourceName string, isModel bool) string {
 	}
 }
 
-func (km *KafkaManager) loadOrStorePipeline(resourceName string, isModel bool) (*Pipeline, error) {
-	logger := km.logger.WithField("func", "loadOrStorePipeline")
+func loadPipeline(resourceName string, isModel bool, pipelines *sync.Map) (*Pipeline, error) {
 	key := getPipelineKey(resourceName, isModel)
-	if val, ok := km.pipelines.Load(key); ok {
-		val.(*Pipeline).wg.Wait()
+	if val, ok := pipelines.Load(key); ok {
 		return val.(*Pipeline), nil
-	} else {
-		pipeline, err := km.createPipeline(resourceName, isModel)
-		if err != nil {
-			return nil, err
-		}
-		pipeline.wg.Add(1) // wait set to allow consumer to say when started
-
-		val, loaded := km.pipelines.LoadOrStore(key, pipeline)
-		if loaded { // we can still have a race condition where multiple "create" are happening, we have to store the first one
-			pipeline = val.(*Pipeline)
-		} else {
-			go func() {
-				err := km.consume(pipeline)
-				if err != nil {
-					km.logger.WithError(err).Errorf("Failed running consumer for resource %s", resourceName)
-				}
-			}()
-		}
-
-		logger.Debugf("Waiting for consumer to be ready for %s", resourceName)
-		pipeline.wg.Wait() // wait (maybe) for consumer start
-		return pipeline, nil
 	}
+	return nil, fmt.Errorf("pipeline for resource %s not found", resourceName)
+}
+
+func (km *KafkaManager) LoadPipeline(resourceName string, isModel bool) (*Pipeline, error) {
+	km.mu.RLock()
+	defer km.mu.RUnlock()
+	return loadPipeline(resourceName, isModel, &km.pipelines)
+}
+
+func (km *KafkaManager) StorePipeline(resourceName string, isModel bool) error {
+	km.mu.Lock()
+	defer km.mu.Unlock()
+
+	_, err := loadPipeline(resourceName, isModel, &km.pipelines)
+	if err == nil {
+		return nil
+	}
+
+	logger := km.logger.WithField("func", "StorePipeline")
+	pipeline, err := km.createPipeline(resourceName, isModel)
+	if err != nil {
+		return err
+	}
+
+	pipeline.wg.Add(1) // wait set to allow consumer to say when started
+
+	key := getPipelineKey(resourceName, isModel)
+	km.pipelines.Store(key, pipeline)
+
+	go func() {
+		err := km.consume(pipeline)
+		if err != nil {
+			km.logger.WithError(err).Errorf("Failed running consumer for resource %s", resourceName)
+		}
+	}()
+
+	logger.Debugf("Waiting for consumer to be ready for %s", resourceName)
+	pipeline.wg.Wait() // wait (maybe) for consumer start
+	return nil
 }
 
 func (km *KafkaManager) Infer(
@@ -197,14 +215,52 @@ func (km *KafkaManager) Infer(
 	requestId string,
 ) (*Request, error) {
 	logger := km.logger.WithField("func", "Infer")
-	km.mu.RLock()
-	pipeline, err := km.loadOrStorePipeline(resourceName, isModel)
+
+	var (
+		pipeline *Pipeline
+		err      error
+	)
+	pipeline, err = km.LoadPipeline(resourceName, isModel)
 	if err != nil {
-		km.mu.RUnlock()
-		return nil, err
+		if isModel {
+			// We only allow lazy loading of model. This path should not be reached
+			// through envoy but only sending requests directly to the pipeline gateway.
+			// Note that due to lazy loading, having multiple replicas of the pipelinegw
+			// may result in unexpected behaviour. This is because due to the load balancing
+			// of the requests, consumers with the same group id may end up consuming from
+			// different topics.
+			logger.Warning("Lazy loading of the models is only suppoerted for a single pipeline gateway instance.")
+			err := km.StorePipeline(resourceName, true)
+			if err != nil {
+				return nil, fmt.Errorf("failed to store model pipeline %s: %w", resourceName, err)
+			}
+
+			// In this case, the existence of the pipeline is guaranteed
+			pipeline, _ = km.LoadPipeline(resourceName, true)
+		} else {
+			return nil, err
+		}
 	}
+
+	// We lock here so we don't reasign the partitions while producing a message.
+	km.mu.RLock()
+	defer km.mu.RUnlock()
+
+	partitions := pipeline.consumer.partitions
+	if len(partitions) == 0 {
+		return nil, fmt.Errorf("no partitions assigned for topic %s", resourceName)
+	}
+
+	// Randomly select a partition to produce the message to
+	partition := partitions[rand.Intn(len(partitions))]
+	logger.Debugf("Using partition %d for resource %s", partition, resourceName)
+
 	// Use composite key to differentiate multiple pipelines (i.e. mirror) using the same message
-	compositeKey := getCompositeKey(resourceName, requestId, ".")
+	// Note that we add the partition to the key to ensure that the message will be sent to
+	// a partition for which the consumer is subscribed. For modelgw, it is enought to send the
+	// message to the same partition as the one we read from. For dataflow engine on the other hand,
+	// we need to read the partition from the request id.
+	compositeKey := getCompositeKey(strconv.Itoa(int(partition)), resourceName, requestId, ".")
 	request := &Request{
 		active: true,
 		wg:     new(sync.WaitGroup),
@@ -214,19 +270,22 @@ func (km *KafkaManager) Infer(
 	defer pipeline.consumer.requests.Remove(compositeKey)
 	request.wg.Add(1)
 
-	outputTopic := km.topicNamer.GetPipelineTopicInputs(resourceName)
+	inputTopic := km.topicNamer.GetPipelineTopicInputs(resourceName)
 	if isModel {
-		outputTopic = km.topicNamer.GetModelTopicInputs(resourceName)
+		inputTopic = km.topicNamer.GetModelTopicInputs(resourceName)
 	}
-	logger.Debugf("Produce on topic %s with key %s", outputTopic, compositeKey)
+	logger.Debugf("Produce on topic %s with key %s", inputTopic, compositeKey)
 	kafkaHeaders := append(headers, kafka.Header{Key: util.SeldonPipelineHeader, Value: []byte(resourceName)})
 	kafkaHeaders = addRequestIdToKafkaHeadersIfMissing(kafkaHeaders, requestId)
 
 	msg := &kafka.Message{
-		TopicPartition: kafka.TopicPartition{Topic: &outputTopic, Partition: kafka.PartitionAny},
-		Key:            []byte(compositeKey),
-		Value:          data,
-		Headers:        kafkaHeaders,
+		TopicPartition: kafka.TopicPartition{
+			Topic:     &inputTopic,
+			Partition: partition,
+		},
+		Key:     []byte(compositeKey),
+		Value:   data,
+		Headers: kafkaHeaders,
 	}
 
 	ctx, span := km.tracer.Start(ctx, "Produce")
@@ -238,7 +297,6 @@ func (km *KafkaManager) Infer(
 	deliveryChan := make(chan kafka.Event)
 	err = km.producer.Produce(msg, deliveryChan)
 	if err != nil {
-		km.mu.RUnlock()
 		span.End()
 		return nil, err
 	}
@@ -247,7 +305,6 @@ func (km *KafkaManager) Infer(
 		logger.Infof("Received delivery event %s", evt.String())
 		span.End()
 	}()
-	km.mu.RUnlock()
 	logger.Debugf("Waiting for response for request id %s for resource %s", requestId, resourceName)
 	request.wg.Wait()
 	logger.Debugf("Got response for request id %s for resource %s", requestId, resourceName)
@@ -267,13 +324,48 @@ func createResponseErrorPayload(modelName string, response []byte) []byte {
 	return append([]byte(modelName+" : "), response...)
 }
 
+func createRebalanceCb(km *KafkaManager, pipeline *Pipeline) kafka.RebalanceCb {
+	logger := km.logger.WithField("func", "createRebalanceCb")
+	return func(consumer *kafka.Consumer, ev kafka.Event) error {
+		switch e := ev.(type) {
+		case kafka.AssignedPartitions:
+			km.mu.Lock()
+			km.mu.Unlock()
+
+			logger.Debug("Rebalance: Assigned partitions:", e.Partitions)
+			err := consumer.Assign(e.Partitions)
+			if err != nil {
+				pipeline.consumer.partitions = nil
+				return fmt.Errorf("assign error: %w", err)
+			}
+
+			// Update the pipeline consumer partitions
+			pipeline.consumer.partitions = make([]int32, len(e.Partitions))
+			for i, partition := range e.Partitions {
+				pipeline.consumer.partitions[i] = partition.Partition
+			}
+		case kafka.RevokedPartitions:
+			km.mu.Lock()
+			km.mu.Unlock()
+
+			logger.Debug("Rebalance: Revoked partitions:", e.Partitions)
+			err := consumer.Unassign()
+			pipeline.consumer.partitions = nil
+			if err != nil {
+				return fmt.Errorf("unassign error: %w", err)
+			}
+		}
+		return nil
+	}
+}
+
 func (km *KafkaManager) consume(pipeline *Pipeline) error {
 	logger := km.logger.WithField("func", "consume")
 	topicName := km.topicNamer.GetPipelineTopicOutputs(pipeline.resourceName)
 	if pipeline.isModel {
 		topicName = km.topicNamer.GetModelTopicOutputs(pipeline.resourceName)
 	}
-	err := pipeline.consumer.AddTopic(topicName, nil)
+	err := pipeline.consumer.AddTopic(topicName, createRebalanceCb(km, pipeline))
 	pipeline.wg.Done()
 	logger.Infof("Topic %s added in consumer id %s", topicName, pipeline.consumer.id)
 	if err != nil {
