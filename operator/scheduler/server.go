@@ -11,6 +11,7 @@ package scheduler
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
@@ -50,7 +51,7 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 		} else {
 			scalingSpec, err = v1alpha1.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to validate scaling spec: %v", err)
 			}
 		}
 
