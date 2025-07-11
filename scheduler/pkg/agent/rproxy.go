@@ -13,6 +13,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net"
@@ -68,6 +69,215 @@ func addRequestIdToResponse(req *http.Request, res *http.Response) {
 	}
 }
 
+func parserOpenAIAPI(body []byte, logger log.FieldLogger) (string, error) {
+	// define final inference request structure
+	inferenceRequest := make(map[string]interface{})
+
+	// unmarshal the body to extract OpenAI API request
+	var jsonBody map[string]interface{}
+	err := json.Unmarshal(body, &jsonBody)
+	if err != nil {
+		logger.WithError(err).Warn("Failed to parse OpenAI API request body")
+		return "", err
+	}
+
+	// extract model name
+	modelName, _ := jsonBody["model"]
+	delete(jsonBody, "model")
+	logger.Debug("OpenAI API request model: ", modelName)
+
+	// parse messages
+	roles := make([]string, 0)
+	contents := make([]string, 0)
+	types := make([]string, 0)
+	toolCalls := make([]string, 0)
+	toolCallIds := make([]string, 0)
+
+	messages := jsonBody["messages"]
+	delete(jsonBody, "messages")
+	for i, message := range messages.([]interface{}) {
+		msgMap, err := message.(map[string]interface{})
+		if !err {
+			logger.Warnf("Failed to parse message %d in OpenAI API request", i)
+			continue
+		}
+
+		// append role
+		role := msgMap["role"].(string)
+		roles = append(roles, role)
+
+		// append content and type
+		content := msgMap["content"]
+		var contentType string
+		var contentMessage string
+
+		switch content.(type) {
+		case string:
+			contentType = "text"
+			contentMessage = content.(string)
+		case []interface{}:
+			contentType = content.(map[string]interface{})["type"].(string)
+			if contentType == "text" {
+				contentMessage = content.(map[string]interface{})[contentType].(string)
+			} else {
+				jsonContentMessage, err := json.Marshal(content.(map[string]interface{})[contentType])
+				if err != nil {
+					logger.WithError(err).Warnf("Failed to marshal content for message %d in OpenAI API request", i)
+					continue
+				}
+				contentMessage = string(jsonContentMessage)
+			}
+		}
+		contents = append(contents, contentMessage)
+		types = append(types, contentType)
+
+		// append tool calls
+		msgToolCalls := msgMap["tools"].(string)
+		toolCalls = append(toolCalls, msgToolCalls)
+
+		// append tool call ids
+		msgToolCallsIds := msgMap["tool_call_ids"].(string)
+		toolCallIds = append(toolCallIds, msgToolCallsIds)
+	}
+
+	inputs := make([]interface{}, 0)
+	if len(roles) == 1 {
+		roleTensor := map[string]interface{}{
+			"name":     "role",
+			"shape":    []int{1},
+			"datatype": "BYTES",
+			"data":     []string{roles[0]},
+		}
+		contentTensor := map[string]interface{}{
+			"name":     "content",
+			"shape":    []int{1},
+			"datatype": "BYTES",
+			"data":     []string{contents[0]},
+		}
+		typeTensor := map[string]interface{}{
+			"name":     "type",
+			"shape":    []int{1},
+			"datatype": "BYTES",
+			"data":     []string{types[0]},
+		}
+		toolCallsTensor := map[string]interface{}{
+			"name":     "tool_calls",
+			"shape":    []int{1},
+			"datatype": "BYTES",
+			"data":     []string{toolCalls[0]},
+		}
+		toolCallIdsTensor := map[string]interface{}{
+			"name":     "tool_call_ids",
+			"shape":    []int{1},
+			"datatype": "BYTES",
+			"data":     []string{toolCallIds[0]},
+		}
+		inputs = append(inputs, roleTensor)
+		inputs = append(inputs, contentTensor)
+		inputs = append(inputs, typeTensor)
+		inputs = append(inputs, toolCallsTensor)
+		inputs = append(inputs, toolCallIdsTensor)
+	} else if len(roles) > 1 {
+		roleTensor := map[string]interface{}{
+			"name":     "role",
+			"shape":    []int{len(roles)},
+			"datatype": "BYTES",
+			"data":     roles,
+		}
+
+		jsonContents := make([]string, len(contents))
+		jsonTypes := make([]string, len(types))
+		jsonToolCalls := make([]string, len(toolCalls))
+		jsonToolCallIds := make([]string, len(toolCallIds))
+
+		for i, _ := range contents {
+			dataContent, err := json.Marshal([]string{contents[i]})
+			if err == nil {
+				jsonContents[i] = string(dataContent)
+			}
+
+			dataType, err := json.Marshal([]string{types[i]})
+			if err == nil {
+				jsonTypes[i] = string(dataType)
+			}
+
+			dataToolCalls, err := json.Marshal([]string{toolCalls[i]})
+			if err == nil {
+				jsonToolCalls[i] = string(dataToolCalls)
+			}
+
+			dataToolCallIds, err := json.Marshal([]string{toolCallIds[i]})
+			if err == nil {
+				jsonToolCallIds[i] = string(dataToolCallIds)
+			}
+		}
+
+		contentTensor := map[string]interface{}{
+			"name":     "content",
+			"shape":    []int{len(contents)},
+			"datatype": "BYTES",
+			"data":     jsonContents,
+		}
+		typeTensor := map[string]interface{}{
+			"name":     "type",
+			"shape":    []int{len(types)},
+			"datatype": "BYTES",
+			"data":     jsonTypes,
+		}
+		toolCallsTensor := map[string]interface{}{
+			"name":     "tool_calls",
+			"shape":    []int{len(toolCalls)},
+			"datatype": "BYTES",
+			"data":     jsonToolCalls,
+		}
+		toolCallIdsTensor := map[string]interface{}{
+			"name":     "tool_call_ids",
+			"shape":    []int{len(toolCallIds)},
+			"datatype": "BYTES",
+			"data":     jsonToolCallIds,
+		}
+
+		inputs = append(inputs, roleTensor)
+		inputs = append(inputs, contentTensor)
+		inputs = append(inputs, typeTensor)
+		inputs = append(inputs, toolCallsTensor)
+		inputs = append(inputs, toolCallIdsTensor)
+	}
+	inferenceRequest["inputs"] = inputs
+
+	// tools
+	tools, ok := jsonBody["tools"]
+	delete(jsonBody, "tools")
+	if ok {
+		data, err := json.Marshal(tools)
+		if err != nil {
+			logger.WithError(err).Warn("Failed to marshal OpenAI API request tools")
+			return "", err
+		}
+		inferenceRequest["tools"] = string(data)
+		delete(jsonBody, "tools")
+	}
+
+	// llm parameters
+	llmParams := make(map[string]interface{})
+	for key, value := range jsonBody {
+		llmParams[key] = value
+	}
+
+	// final OIP infer request
+	data, err := json.Marshal(map[string]interface{}{
+		"inputs": inputs,
+		"parameters": map[string]interface{}{
+			"llm_parameters": llmParams,
+		},
+	})
+	if err != nil {
+		logger.WithError(err).Warn("Failed to marshal OpenAI API request inputs")
+		return "", err
+	}
+	return string(data), nil
+}
+
 // RoundTrip implements http.RoundTripper for the Transport type.
 // It calls its underlying http.RoundTripper to execute the request, and
 // adds retry logic if we get 404
@@ -106,8 +316,18 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 		originalBody, err = io.ReadAll(req.Body)
 	}
 	if err != nil {
-
 		return nil, err
+	}
+
+	openAIHeader := req.Header.Get(util.SeldonOpenAIHeader)
+	if openAIHeader != "" {
+		body, _ := parserOpenAIAPI(originalBody, t.logger)
+		res := &http.Response{
+			StatusCode: http.StatusBadRequest,
+			Header:     make(http.Header),
+			Body:       io.NopCloser(bytes.NewBufferString(body)),
+		}
+		return res, nil
 	}
 
 	// reset main request body
