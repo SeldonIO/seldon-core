@@ -203,24 +203,24 @@ func constructInferenceRequest(messages *Messages, tools string, llmParams map[s
 	}
 }
 
-func ParserOpenAIAPI(body []byte, logger log.FieldLogger) (string, error) {
+func ParserOpenAIAPI(body []byte, logger log.FieldLogger) ([]byte, error) {
 	// unmarshal the body to extract OpenAI API request
 	jsonBody, err := getJsonBody(body)
 	if err != nil {
 		logger.WithError(err).Error("Failed to parse OpenAI API request body")
-		return "", err
+		return nil, err
 	}
 
 	_, _ = getModelName(jsonBody)
 	messages, err := getMessages(jsonBody)
 	if err != nil {
 		logger.WithError(err).Error("Failed to parse messages in OpenAI API request")
-		return "", err
+		return nil, err
 	}
 	tools, err := getTools(jsonBody)
 	if err != nil {
 		logger.WithError(err).Error("Failed to parse tools in OpenAI API request")
-		return "", err
+		return nil, err
 	}
 	llm_parameters := getLLMParameters(jsonBody)
 	inferenceRequest := constructInferenceRequest(messages, tools, llm_parameters)
@@ -228,7 +228,7 @@ func ParserOpenAIAPI(body []byte, logger log.FieldLogger) (string, error) {
 	data, err := json.Marshal(inferenceRequest)
 	if err != nil {
 		logger.WithError(err).Warn("Failed to marshal OpenAI API request inputs")
-		return "", err
+		return nil, err
 	}
-	return string(data), nil
+	return data, nil
 }
