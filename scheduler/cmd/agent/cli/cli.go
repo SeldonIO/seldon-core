@@ -51,6 +51,7 @@ const (
 	envMaxLoadRetryCount                               = "SELDON_MAX_LOAD_RETRY_COUNT"
 	envMaxUnloadRetryCount                             = "SELDON_MAX_UNLOAD_RETRY_COUNT"
 	envUnloadGraceSeconds                              = "SELDON_UNLOAD_GRACE_PERIOD_SECONDS"
+	envConvertFromOpenAIAPI                            = "SELDON_CONVERT_FROM_OPENAI_API"
 
 	flagSchedulerHost                                   = "scheduler-host"
 	flagSchedulerPlaintxtPort                           = "scheduler-port"
@@ -85,6 +86,7 @@ const (
 	flagMaxLoadRetryCount                               = "max-load-retry-count"
 	flagMaxUnloadRetryCount                             = "max-unload-retry-count"
 	flagUnloadGraceSeconds                              = "unload-grace-period-seconds"
+	flagConvertFromOpenAIAPI                            = "convert-from-openai-api"
 )
 
 const (
@@ -156,6 +158,7 @@ var (
 	MaxLoadRetryCount                               int
 	MaxUnloadRetryCount                             int
 	UnloadGraceSeconds                              int
+	ConvertFromOpenAIAPI                            bool
 )
 
 func init() {
@@ -201,6 +204,7 @@ func updateFlagsFromEnv() {
 	maybeMaxLoadRetryCount()
 	maybeMaxUnloadRetryCount()
 	maybeUpdateUnloadGraceSeconds()
+	maybeConvertFromOpenAIAPI()
 }
 
 func maybeUpdateModelInferenceLagThreshold() {
@@ -228,6 +232,29 @@ func maybeUpdateScalingStatsPeriodSeconds() {
 		&ScalingStatsPeriodSeconds,
 		"scaling stats period seconds",
 	)
+}
+
+func maybeUpdateFromBoolEnv(flag string, env string, param *bool, tag string) {
+	if isFlagPassed(flag) {
+		return
+	}
+
+	valueFromEnv, found, parsed := getEnvBool(env)
+	if !found {
+		return
+	}
+	if !parsed {
+		log.Fatalf(
+			"Failed to parse %s for %s",
+			env, tag)
+	}
+	log.Infof(
+		"Setting %s from env %s with value %t",
+		tag,
+		env,
+		valueFromEnv,
+	)
+	*param = valueFromEnv
 }
 
 func maybeUpdateFromIntEnv(flag string, env string, param *int, tag string) {
@@ -456,6 +483,15 @@ func maybeUpdateUnloadGraceSeconds() {
 		envUnloadGraceSeconds,
 		&UnloadGraceSeconds,
 		"unload grace seconds",
+	)
+}
+
+func maybeConvertFromOpenAIAPI() {
+	maybeUpdateFromBoolEnv(
+		flagConvertFromOpenAIAPI,
+		envConvertFromOpenAIAPI,
+		&ConvertFromOpenAIAPI,
+		"convert from OpenAI API",
 	)
 }
 
