@@ -199,6 +199,7 @@ func setupReverseProxy(logger log.FieldLogger, numModels int, modelPrefix string
 		uint(rpPort),
 		metricsHandler,
 		modelScalingStatsCollector,
+		false,
 	)
 	rp.SetState(localCacheManager)
 	return rp
@@ -515,7 +516,8 @@ func TestLazyLoadRoundTripper(t *testing.T) {
 			modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
 				modelscaling.NewModelReplicaLagsKeeper(), modelscaling.NewModelReplicaLastUsedKeeper())
 			httpClient.Transport = &lazyModelLoadTransport{
-				loader, http.DefaultTransport, metricsHandler, modelScalingStatsCollector, log.New()}
+				loader, http.DefaultTransport, metricsHandler, modelScalingStatsCollector, log.New(), false,
+			}
 			mockMLServerState.setModelServerUnloaded(dummyModel)
 			req.Header.Set(util.SeldonInternalModelHeader, dummyModel)
 			resp, err := httpClient.Do(req)

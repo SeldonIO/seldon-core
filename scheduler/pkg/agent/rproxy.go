@@ -46,6 +46,7 @@ type reverseHTTPProxy struct {
 	metrics                    metrics.AgentMetricsHandler
 	tlsOptions                 util.TLSOptions
 	modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector
+	convertFromOpenAIAPI       bool
 }
 
 // in the case the model is not loaded on server (return 404), we attempt to load it and then retry request
@@ -55,6 +56,7 @@ type lazyModelLoadTransport struct {
 	metrics                    metrics.AgentMetricsHandler
 	modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector
 	logger                     log.FieldLogger
+	convertFromOpenAIAPI       bool
 }
 
 func addRequestIdToResponse(req *http.Request, res *http.Response) {
@@ -110,18 +112,19 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 		return nil, err
 	}
 
-	openAIHeader := req.Header.Get(util.SeldonOpenAIHeader)
-	if openAIHeader != "" {
-		body, _ := openai.ParserOpenAIAPI(originalBody, t.logger)
-		res := &http.Response{
-			StatusCode: http.StatusBadRequest,
-			Header:     make(http.Header),
-			Body:       io.NopCloser(bytes.NewBufferString(body)),
+	// convert from OpenAI API format to OIP
+	t.logger.Infof("Convert from OpenAI API format: %t", t.convertFromOpenAIAPI)
+	if t.convertFromOpenAIAPI {
+		t.logger.Infof("Converting OpenAI API request body: %s", string(originalBody))
+		originalBody, err = openai.ParserOpenAIAPI(originalBody, t.logger)
+		if err != nil {
+			t.logger.WithError(err).Warn("Failed to parse OpenAI API request")
+			return nil, err
 		}
-		return res, nil
 	}
 
 	// reset main request body
+	req.ContentLength = int64(len(originalBody))
 	req.Body = io.NopCloser(bytes.NewBuffer(originalBody))
 	res, err := t.RoundTripper.RoundTrip(req)
 	if err != nil {
@@ -214,6 +217,7 @@ func (rp *reverseHTTPProxy) Start() error {
 		rp.metrics,
 		rp.modelScalingStatsCollector,
 		rp.logger,
+		rp.convertFromOpenAIAPI,
 	}
 	rp.logger.Infof("Start reverse proxy on port %d for %s", rp.servicePort, backend)
 	var tlsConfig *tls.Config
@@ -299,6 +303,7 @@ func NewReverseHTTPProxy(
 	servicePort uint,
 	metrics metrics.AgentMetricsHandler,
 	modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector,
+	convertFromOpenAIAPI bool,
 ) *reverseHTTPProxy {
 
 	rp := reverseHTTPProxy{
@@ -308,6 +313,7 @@ func NewReverseHTTPProxy(
 		servicePort:                servicePort,
 		metrics:                    metrics,
 		modelScalingStatsCollector: modelScalingStatsCollector,
+		convertFromOpenAIAPI:       convertFromOpenAIAPI,
 	}
 
 	return &rp
