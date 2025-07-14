@@ -16,6 +16,7 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest, stream pb.Scheduler_SubscribeModelStatusServer) error {
@@ -24,21 +25,31 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 
 	s.synchroniser.WaitReady()
 
-	err := s.sendCurrentModelStatuses(stream)
-	if err != nil {
-		logger.WithError(err).Errorf("Failed to send current model statuses to %s", req.GetSubscriberName())
-		return err
-	}
-
 	fin := make(chan bool)
 
 	s.modelEventStream.mu.Lock()
 	s.modelEventStream.streams[stream] = &ModelSubscription{
-		name:   req.GetSubscriberName(),
-		stream: stream,
-		fin:    fin,
+		name:           req.GetSubscriberName(),
+		stream:         stream,
+		fin:            fin,
+		isModelGateway: req.IsModelGateway,
+	}
+	if req.IsModelGateway {
+		s.loadBalancer.AddServer(req.GetSubscriberName())
 	}
 	s.modelEventStream.mu.Unlock()
+
+	if req.IsModelGateway {
+		// rebalance the streams when a new subscription is added
+		s.rebalance()
+	} else {
+		// update controller with current model statuses
+		err := s.sendCurrentModelStatuses(stream)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to send current model statuses to %s", req.GetSubscriberName())
+			return err
+		}
+	}
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
@@ -51,14 +62,24 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 			logger.Infof("Stream disconnected %s", req.GetSubscriberName())
 			s.modelEventStream.mu.Lock()
 			delete(s.modelEventStream.streams, stream)
+			if req.IsModelGateway {
+				s.loadBalancer.RemoveServer(req.GetSubscriberName())
+			}
 			s.modelEventStream.mu.Unlock()
+
+			// rebalance the streams when a subscription is removed
+			if req.IsModelGateway {
+				s.rebalance()
+			}
 			return nil
 		}
 	}
 }
 
-// TODO as this could be 1000s of models may need to look at ways to optimize?
 func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_SubscribeModelStatusServer) error {
+	s.modelEventStream.mu.Lock()
+	defer s.modelEventStream.mu.Unlock()
+
 	modelNames := s.modelStore.GetAllModels()
 	for _, modelName := range modelNames {
 		model, err := s.modelStore.GetModel(modelName)
@@ -69,13 +90,130 @@ func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_Subscribe
 		if err != nil {
 			return err
 		}
-		// no need to have a lock here as we are in the initial setup
 		_, err = sendWithTimeout(func() error { return stream.Send(ms) }, s.timeout)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func contains(slice []string, val string) bool {
+	for _, item := range slice {
+		if item == val {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *SchedulerServer) GetAllRunningModels() []string {
+	var runningModels []string
+	modelNames := s.modelStore.GetAllModels()
+
+	for _, modelName := range modelNames {
+		model, err := s.modelStore.GetModel(modelName)
+		if err != nil {
+			s.logger.WithError(err).Errorf("Failed to get model %s for running models", modelName)
+			continue
+		}
+		if model.GetLatest() == nil {
+			s.logger.Warnf("Model %s has no versions, skipping running models", modelName)
+			continue
+		}
+		modelState := model.GetLatest().ModelState()
+		if modelState.State == store.ModelAvailable || modelState.State == store.ModelProgressing || modelState.State == store.ModelTerminating {
+			runningModels = append(runningModels, modelName)
+		}
+	}
+	return runningModels
+}
+
+func (s *SchedulerServer) createModelDeletionMessage(model *store.ModelSnapshot, keepTopics bool) (*pb.ModelStatusResponse, error) {
+	ms, err := s.modelStatusImpl(model, false)
+	if err != nil {
+		return nil, err
+	}
+	ms.Versions[0].State.AvailableReplicas = 0
+	ms.KeepTopics = keepTopics
+	return ms, nil
+}
+
+func (s *SchedulerServer) createModelCreationMessage(model *store.ModelSnapshot) (*pb.ModelStatusResponse, error) {
+	ms, err := s.modelStatusImpl(model, false)
+	if err != nil {
+		return nil, err
+	}
+	return ms, nil
+}
+
+func (s *SchedulerServer) rebalance() {
+	s.modelEventStream.mu.Lock()
+	defer s.modelEventStream.mu.Unlock()
+
+	runningModels := s.GetAllRunningModels()
+	for _, modelName := range runningModels {
+
+		model, _ := s.modelStore.GetModel(modelName)
+		consumerBucketId := util.GetKafkaConsumerName(
+			s.consumerGroupConfig.namespace,
+			s.consumerGroupConfig.consumerGroupIdPrefix,
+			modelName,
+			modelGatewayConsumerNamePrefix,
+			s.consumerGroupConfig.maxNumConsumers,
+		)
+
+		s.logger.Debug("Rebalancing model status for model: ", modelName)
+		s.logger.Debug("Consumer bucket ID: ", consumerBucketId)
+
+		servers := s.loadBalancer.GetServersForKey(consumerBucketId)
+		s.logger.Debugf("Servers for model %s: %v", modelName, servers)
+
+		for _, modelSubscription := range s.modelEventStream.streams {
+			if !modelSubscription.isModelGateway {
+				s.logger.Debugf("Skipping non-model gateway stream for %s", modelSubscription.name)
+				continue
+			}
+
+			s.logger.Debug("Processing model subscription for: ", modelSubscription.name)
+			server := modelSubscription.name
+			stream := modelSubscription.stream
+
+			if contains(servers, server) {
+				s.logger.Debug("Server contains model, sending status update for: ", server)
+
+				state := model.GetLatest().ModelState().State
+				var msg *pb.ModelStatusResponse
+				var err error
+
+				if state == store.ModelTerminating {
+					s.logger.Debugf("Model %s is terminating, sending deletion message", modelName)
+					msg, err = s.createModelDeletionMessage(model, false)
+				} else {
+					s.logger.Debugf("Model %s is available or progressing, sending creation message", modelName)
+					msg, err = s.createModelCreationMessage(model)
+				}
+				if err != nil {
+					s.logger.WithError(err).Errorf("Failed to create model status message for %s", modelName)
+					continue
+				}
+				if err := stream.Send(msg); err != nil {
+					s.logger.WithError(err).Errorf("Failed to send create rebalance msg to model %s", modelName)
+				}
+			} else {
+				s.logger.Debugf("Server %s does not contain model %s, sending deletion message", server, modelName)
+				msg, err := s.createModelDeletionMessage(model, true)
+				if err != nil {
+					s.logger.WithError(err).Errorf("Failed to create model deletion message for %s", modelName)
+					continue
+				}
+				s.logger.Debugf("Sending deletion message for model %s to server %s", modelName, server)
+				if err := stream.Send(msg); err != nil {
+					s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to model %s", modelName)
+				}
+			}
+		}
+	}
 }
 
 func (s *SchedulerServer) handleModelEvent(event coordinator.ModelEventMsg) {
@@ -98,7 +236,29 @@ func (s *SchedulerServer) StopSendModelEvents() {
 	}
 }
 
+func (s *SchedulerServer) sendModelStatusEventToStreams(
+	evt coordinator.ModelEventMsg,
+	ms *pb.ModelStatusResponse,
+	streams map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription,
+) {
+	logger := s.logger.WithField("func", "sendModelStatusEventToStreams")
+	for stream, subscription := range streams {
+		hasExpired, err := sendWithTimeout(func() error { return stream.Send(ms) }, s.timeout)
+		if hasExpired {
+			// this should trigger a reconnect from the client
+			close(subscription.fin)
+			delete(s.modelEventStream.streams, stream)
+		}
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to send model status event to %s for %s", subscription.name, evt.String())
+		}
+	}
+}
+
 func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) error {
+	s.modelEventStream.mu.Lock()
+	defer s.modelEventStream.mu.Unlock()
+
 	logger := s.logger.WithField("func", "sendModelStatusEvent")
 	model, err := s.modelStore.GetModel(evt.ModelName)
 	if err != nil {
@@ -110,19 +270,31 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 			logger.WithError(err).Errorf("Failed to create model status for model %s", evt.String())
 			return err
 		}
-		s.modelEventStream.mu.Lock()
-		defer s.modelEventStream.mu.Unlock()
+
+		// find the modelgw servers that should receive this event
+		consumerBucketId := util.GetKafkaConsumerName(
+			s.consumerGroupConfig.namespace,
+			s.consumerGroupConfig.consumerGroupIdPrefix,
+			evt.ModelName,
+			modelGatewayConsumerNamePrefix,
+			s.consumerGroupConfig.maxNumConsumers,
+		)
+		servers := s.loadBalancer.GetServersForKey(consumerBucketId)
+
+		// split streams into model gateway and other streams
+		modelGwStreams := make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription)
+		otherStreams := make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription)
 		for stream, subscription := range s.modelEventStream.streams {
-			hasExpired, err := sendWithTimeout(func() error { return stream.Send(ms) }, s.timeout)
-			if hasExpired {
-				// this should trigger a reconnect from the client
-				close(subscription.fin)
-				delete(s.modelEventStream.streams, stream)
-			}
-			if err != nil {
-				logger.WithError(err).Errorf("Failed to send model status event to %s for %s", subscription.name, evt.String())
+			if !subscription.isModelGateway {
+				otherStreams[stream] = subscription
+			} else if contains(servers, subscription.name) {
+				modelGwStreams[stream] = subscription
 			}
 		}
+
+		// send to model gateway streams
+		s.sendModelStatusEventToStreams(evt, ms, modelGwStreams)
+		s.sendModelStatusEventToStreams(evt, ms, otherStreams)
 	}
 	return nil
 }
