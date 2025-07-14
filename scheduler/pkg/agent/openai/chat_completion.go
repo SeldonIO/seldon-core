@@ -53,6 +53,20 @@ func getMessageField(msgMap map[string]interface{}, field string) (string, error
 	return value.(string), nil
 }
 
+func getToolCalls(msgMap map[string]interface{}) (string, error) {
+	toolCalls, ok := msgMap["tool_calls"].([]interface{})
+	if !ok {
+		return "", nil
+	}
+
+	toolCallsData, err := json.Marshal(toolCalls)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal tool calls: %v", err)
+	}
+
+	return string(toolCallsData), nil
+}
+
 func getContentAndTypeFromMap(msgMap map[string]interface{}) (string, string, error) {
 	contentType, ok := msgMap["type"].(string)
 	if !ok {
@@ -150,10 +164,6 @@ func getMessages(jsonBody map[string]interface{}) (*Messages, error) {
 			return nil, fmt.Errorf("failed to get 'role' field in message %d: %v", i, err)
 		}
 
-		// Optional fields so we ignore errors if they are not present
-		messages.ToolCalls[i], _ = getMessageField(msgMap, "tool_calls")
-		messages.ToolCallId[i], _ = getMessageField(msgMap, "tool_call_id")
-
 		contentMessage, contentType, err := getContentAndType(msgMap)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get content and type in message %d: %v", i, err)
@@ -161,6 +171,10 @@ func getMessages(jsonBody map[string]interface{}) (*Messages, error) {
 
 		messages.Content[i] = contentMessage
 		messages.Type[i] = contentType
+
+		// Optional fields, so we ignore errors
+		messages.ToolCalls[i], _ = getToolCalls(msgMap)
+		messages.ToolCallId[i], _ = getMessageField(msgMap, "tool_call_id")
 	}
 	return messages, nil
 }
@@ -199,16 +213,6 @@ func constructStringTensor(name string, data []string) map[string]interface{} {
 	}
 }
 
-func constructSimpleInferenceRequestInputs(messages *Messages) []interface{} {
-	return []interface{}{
-		constructStringTensor("role", messages.Role),
-		constructStringTensor("content", messages.Content),
-		constructStringTensor("type", messages.Type),
-		// constructStringTensor("tool_calls", messages.ToolCalls),
-		// constructStringTensor("tool_call_id", messages.ToolCallId),
-	}
-}
-
 func buildJSONContent(content []string) []string {
 	jsonContent := make([]string, len(content))
 	for i := range content {
@@ -222,13 +226,27 @@ func buildJSONContent(content []string) []string {
 	return jsonContent
 }
 
+func constructSimpleInferenceRequestInputs(messages *Messages) []interface{} {
+	inferenceRequestInputs := make([]interface{}, 0, 5)
+	inferenceRequestInputs = append(inferenceRequestInputs, constructStringTensor("role", messages.Role))
+	inferenceRequestInputs = append(inferenceRequestInputs, constructStringTensor("content", messages.Content))
+	inferenceRequestInputs = append(inferenceRequestInputs, constructStringTensor("type", messages.Type))
+	if messages.ToolCalls[0] != "" {
+		inferenceRequestInputs = append(inferenceRequestInputs, constructStringTensor("tool_calls", messages.ToolCalls))
+	}
+	if messages.ToolCallId[0] != "" {
+		inferenceRequestInputs = append(inferenceRequestInputs, constructStringTensor("tool_call_id", messages.ToolCallId))
+	}
+	return inferenceRequestInputs
+}
+
 func constructComplexInferenceRequestInputs(messages *Messages) []interface{} {
 	return []interface{}{
 		constructStringTensor("role", messages.Role),
 		constructStringTensor("content", buildJSONContent(messages.Content)),
 		constructStringTensor("type", buildJSONContent(messages.Type)),
-		// constructStringTensor("tool_calls", buildJSONContent(messages.ToolCalls)),
-		// constructStringTensor("tool_call_ids", buildJSONContent(messages.ToolCallId)),
+		constructStringTensor("tool_calls", messages.ToolCalls),
+		constructStringTensor("tool_call_ids", messages.ToolCallId),
 	}
 }
 
