@@ -75,7 +75,7 @@ func addRequestIdToResponse(req *http.Request, res *http.Response) {
 // It calls its underlying http.RoundTripper to execute the request, and
 // adds retry logic if we get 404
 func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	var originalBody []byte
+	var reqOriginalBody []byte
 	var err error
 
 	internalModelName := req.Header.Get(util.SeldonInternalModelHeader)
@@ -106,7 +106,7 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 
 	startTime := time.Now()
 	if req.Body != nil {
-		originalBody, err = io.ReadAll(req.Body)
+		reqOriginalBody, err = io.ReadAll(req.Body)
 	}
 	if err != nil {
 		return nil, err
@@ -115,8 +115,7 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	// convert from OpenAI API format to OIP
 	t.logger.Infof("Convert from OpenAI API format: %t", t.convertFromOpenAIAPI)
 	if t.convertFromOpenAIAPI {
-		t.logger.Infof("Converting OpenAI API request body: %s", string(originalBody))
-		originalBody, err = openai.ParserOpenAIAPI(originalBody, t.logger)
+		reqOriginalBody, err = openai.ParserOpenAIAPIRequest(reqOriginalBody, t.logger)
 		if err != nil {
 			t.logger.WithError(err).Warn("Failed to parse OpenAI API request")
 			return nil, err
@@ -124,8 +123,8 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	}
 
 	// reset main request body
-	req.ContentLength = int64(len(originalBody))
-	req.Body = io.NopCloser(bytes.NewBuffer(originalBody))
+	req.ContentLength = int64(len(reqOriginalBody))
+	req.Body = io.NopCloser(bytes.NewBuffer(reqOriginalBody))
 	res, err := t.RoundTripper.RoundTrip(req)
 	if err != nil {
 		return res, err
@@ -140,9 +139,27 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 		}
 
 		req2 := req.Clone(req.Context())
-
-		req2.Body = io.NopCloser(bytes.NewBuffer(originalBody))
+		req2.Body = io.NopCloser(bytes.NewBuffer(reqOriginalBody))
 		res, err = t.RoundTripper.RoundTrip(req2)
+	}
+
+	if t.convertFromOpenAIAPI {
+		resOriginalBody, err := io.ReadAll(res.Body)
+		if err != nil {
+			t.logger.WithError(err).Warn("Failed to read OpenAI API response body")
+			return nil, err
+		}
+		resBody, err := openai.ParseOpenAIAPIResponse(resOriginalBody, t.logger)
+		if err != nil {
+			t.logger.WithError(err).Warn("Failed to parse OpenAI API response")
+			return nil, err
+		}
+		res = &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       io.NopCloser(bytes.NewBuffer(resBody)),
+			Header:     http.Header{"Content-Type": []string{"application/json"}},
+			Request:    req,
+		}
 	}
 
 	addRequestIdToResponse(req, res)
