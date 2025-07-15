@@ -12,6 +12,8 @@ package server
 import (
 	"context"
 
+	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	v1 "k8s.io/api/core/v1"
 	auth "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -20,9 +22,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"knative.dev/pkg/apis"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
-	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 )
 
 const (

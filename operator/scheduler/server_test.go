@@ -16,13 +16,11 @@ import (
 
 	"github.com/gotidy/ptr"
 	. "github.com/onsi/gomega"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-
 	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func TestServerNotify(t *testing.T) {

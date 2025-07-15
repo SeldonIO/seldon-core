@@ -16,6 +16,10 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
+	testing2 "github.com/seldonio/seldon-core/operator/v2/pkg/utils/testing"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -25,12 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
-
-	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
-	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
-	testing2 "github.com/seldonio/seldon-core/operator/v2/pkg/utils/testing"
 )
 
 // Experiment mock grpc client
@@ -307,20 +306,18 @@ func newMockControllerClient(objs ...client.Object) *schedulerClient {
 	scheme := runtime.NewScheme()
 	_ = mlopsv1alpha1.AddToScheme(scheme)
 	fakeClient := testing2.NewFakeClient(scheme, objs...)
-	schedulerClientMock, ok := NewSchedulerClient(
+	schedulerClientMock := NewSchedulerClient(
 		logger,
 		fakeClient,
 		fakeRecorder,
-<<<<<<< HEAD
 		tls.TLSOptions{},
 	)
-=======
-	).(*schedulerClient)
+
+	s, ok := schedulerClientMock.(*schedulerClient)
 	if !ok {
 		panic("could not assert scheduler client to *schedulerClient")
 	}
-	return schedulerClientMock
->>>>>>> 71a0e5c3c (use interface for scheduler client to enable de-coupling and enable writing of tests. Add tests cases to integration test suite)
+	return s
 }
 
 func TestHandleLoadedExperiments(t *testing.T) {

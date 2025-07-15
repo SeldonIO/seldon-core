@@ -13,9 +13,8 @@ import (
 	"flag"
 	"log"
 
-	"github.com/spf13/cobra/doc"
-
 	"github.com/seldonio/seldon-core/operator/v2/cmd/seldon/cli"
+	"github.com/spf13/cobra/doc"
 )
 
 func main() {

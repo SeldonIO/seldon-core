@@ -14,9 +14,8 @@ import (
 	"emperror.dev/errors"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	json "github.com/json-iterator/go"
-	v1 "k8s.io/api/core/v1"
-
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	v1 "k8s.io/api/core/v1"
 )
 
 func IgnoreVolumeClaimTemplateVolumeModel() patch.CalculateOption {

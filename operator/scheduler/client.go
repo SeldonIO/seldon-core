@@ -19,6 +19,8 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/go-logr/logr"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -27,9 +29,6 @@ import (
 	"google.golang.org/grpc/status"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 )
 
 const (
@@ -74,15 +73,11 @@ type schedulerClient struct {
 	mu             sync.Mutex
 }
 
-//  connect on demand by add getConnection(namespace) which if not existing calls connect to scheduler.
+//	connect on demand by add getConnection(namespace) which if not existing calls connect to scheduler.
+//
 // For this will need to know ports (hardwire for now to 9004 and 9044 - ssl comes fom envvar - so always
 // the same for all schedulers
-
-<<<<<<< HEAD
-func NewSchedulerClient(logger logr.Logger, client client.Client, recorder record.EventRecorder, tlsOptions tls.TLSOptions) *SchedulerClient {
-=======
-func NewSchedulerClient(logger logr.Logger, client client.Client, recorder record.EventRecorder) Client {
->>>>>>> 71a0e5c3c (use interface for scheduler client to enable de-coupling and enable writing of tests. Add tests cases to integration test suite)
+func NewSchedulerClient(logger logr.Logger, client client.Client, recorder record.EventRecorder, tlsOptions tls.TLSOptions) Client {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
