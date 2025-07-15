@@ -144,20 +144,6 @@ func getMessages(jsonBody map[string]interface{}) (*Messages, error) {
 	return messages, nil
 }
 
-func getTools(jsonBody map[string]interface{}) (string, error) {
-	tools, ok := jsonBody["tools"]
-	delete(jsonBody, "tools")
-	if !ok {
-		return "", nil
-	}
-
-	data, err := json.Marshal(tools)
-	if err != nil {
-		return "", err
-	}
-	return string(data), nil
-}
-
 func getLLMParameters(jsonBody map[string]interface{}) map[string]interface{} {
 	llmParameters := make(map[string]interface{})
 	for key, value := range jsonBody {
@@ -177,19 +163,6 @@ func constructStringTensor(name string, data []string) map[string]interface{} {
 		"data":     data,
 	}
 }
-
-// func buildJSONContent(content []string) []string {
-// 	jsonContent := make([]string, len(content))
-// 	for i := range content {
-// 		dataContent, err := json.Marshal([]string{content[i]})
-// 		if err != nil {
-// 			jsonContent[i] = ""
-// 		} else {
-// 			jsonContent[i] = string(dataContent)
-// 		}
-// 	}
-// 	return jsonContent
-// }
 
 func wrapContentInSlice(content []interface{}) []interface{} {
 	wrappedContent := make([]interface{}, len(content))
@@ -322,13 +295,22 @@ func constructInferenceRequestInputs(messages *Messages) ([]interface{}, error) 
 	return inferenceRequestInputs, nil
 }
 
-func constructInferenceRequest(messages *Messages, tools string, llmParams map[string]interface{}) (map[string]interface{}, error) {
+func constructInferenceRequest(messages *Messages, tools []interface{}, llmParams map[string]interface{}) (map[string]interface{}, error) {
 	inferenceRequestInputs, err := constructInferenceRequestInputs(messages)
 	if err != nil {
 		return nil, fmt.Errorf("failed to construct inference request inputs: %v", err)
 	}
 
-	// inferenceRequestInputs = append(inferenceRequestInputs, constructStringTensor("tools", []string{tools}))
+	if tools != nil {
+		strTools, err := marshalListContent(tools)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal tools content: %v", err)
+		}
+		inferenceRequestInputs = append(
+			inferenceRequestInputs,
+			constructStringTensor("tools", strTools),
+		)
+	}
 
 	return map[string]interface{}{
 		"inputs": inferenceRequestInputs,
@@ -355,12 +337,7 @@ func ParserOpenAIAPIRequest(body []byte, logger log.FieldLogger) ([]byte, error)
 		return nil, err
 	}
 
-	tools, err := getTools(jsonBody)
-	if err != nil {
-		logger.WithError(err).Error("Failed to parse tools in OpenAI API request")
-		return nil, err
-	}
-
+	tools, _ := jsonBody["tools"].([]interface{})
 	llm_parameters := getLLMParameters(jsonBody)
 
 	inferenceRequest, err := constructInferenceRequest(messages, tools, llm_parameters)
