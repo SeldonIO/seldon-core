@@ -11,6 +11,7 @@ package agent
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"crypto/tls"
 	"fmt"
@@ -21,6 +22,7 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -69,6 +71,45 @@ func addRequestIdToResponse(req *http.Request, res *http.Response) {
 			res.Header[util.RequestIdHeaderCanonical] = reqRequestIds
 		}
 	}
+}
+
+func trimPathAfterInfer(req *http.Request) error {
+	const marker = "/infer"
+	path := req.URL.Path
+	pos := strings.Index(path, marker)
+	if pos == -1 {
+		return fmt.Errorf("'/infer' not found in path")
+	}
+	req.URL.Path = path[:pos+len(marker)]
+	return nil
+}
+
+func decompressIfNeeded(res *http.Response) error {
+	if res.Header.Get("Content-Encoding") == "gzip" {
+		gr, err := gzip.NewReader(res.Body)
+		if err != nil {
+			return err
+		}
+		res.Body = gr
+	}
+	return nil
+}
+
+func compressIfNeeded(res *http.Response) error {
+	if res.Header.Get("Content-Encoding") == "gzip" {
+		var buf bytes.Buffer
+		gz := gzip.NewWriter(&buf)
+		if _, err := io.Copy(gz, res.Body); err != nil {
+			return err
+		}
+		if err := gz.Close(); err != nil {
+			return err
+		}
+		res.Body = io.NopCloser(&buf)
+		res.Header.Set("Content-Length", strconv.Itoa(buf.Len()))
+		res.Header.Set("Content-Encoding", "gzip")
+	}
+	return nil
 }
 
 // RoundTrip implements http.RoundTripper for the Transport type.
@@ -122,9 +163,18 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 		}
 	}
 
+	t.logger.Infof("URL %s", req.URL.String())
+
 	// reset main request body
 	req.ContentLength = int64(len(reqOriginalBody))
 	req.Body = io.NopCloser(bytes.NewBuffer(reqOriginalBody))
+
+	// update the request URL
+	if err := trimPathAfterInfer(req); err != nil {
+		t.logger.WithError(err).Warnf("Failed to trim path after '/infer' in request URL %s", req.URL.String())
+		return nil, err
+	}
+
 	res, err := t.RoundTripper.RoundTrip(req)
 	if err != nil {
 		return res, err
@@ -144,6 +194,10 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	}
 
 	if t.convertFromOpenAIAPI {
+		if err := decompressIfNeeded(res); err != nil {
+			return res, err
+		}
+
 		resOriginalBody, err := io.ReadAll(res.Body)
 		if err != nil {
 			t.logger.WithError(err).Warn("Failed to read OpenAI API response body")
@@ -154,12 +208,18 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 			t.logger.WithError(err).Warn("Failed to parse OpenAI API response")
 			return nil, err
 		}
-		res = &http.Response{
+		newRes := &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       io.NopCloser(bytes.NewBuffer(resBody)),
 			Header:     http.Header{"Content-Type": []string{"application/json"}},
 			Request:    req,
 		}
+
+		if err := compressIfNeeded(newRes); err != nil {
+			t.logger.WithError(err).Warn("Failed to compress OpenAI API response")
+			return nil, err
+		}
+		res = newRes
 	}
 
 	addRequestIdToResponse(req, res)
