@@ -10,8 +10,9 @@ the Change License after the Change Date as each is defined in accordance with t
 package cli
 
 import (
-	clipkg "github.com/seldonio/seldon-core/operator/v2/pkg/cli"
 	"github.com/spf13/cobra"
+
+	clipkg "github.com/seldonio/seldon-core/operator/v2/pkg/cli"
 )
 
 func createConfigActivate() *cobra.Command {

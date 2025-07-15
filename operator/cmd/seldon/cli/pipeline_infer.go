@@ -12,9 +12,10 @@ package cli
 import (
 	"fmt"
 
-	"github.com/seldonio/seldon-core/operator/v2/pkg/cli"
 	"github.com/spf13/cobra"
 	"k8s.io/utils/env"
+
+	"github.com/seldonio/seldon-core/operator/v2/pkg/cli"
 )
 
 func createPipelineInfer() *cobra.Command {
