@@ -83,8 +83,8 @@ func getContentAndTypeFromMap(msgMap map[string]interface{}) (string, string, er
 
 func getContentAndType(msgMap map[string]interface{}) (interface{}, interface{}, error) {
 	content, ok := msgMap["content"]
-	if !ok {
-		return nil, nil, fmt.Errorf("field 'content' not found in message map")
+	if !ok || content == nil {
+		return "", "text", nil
 	}
 
 	switch c := content.(type) {
@@ -110,7 +110,32 @@ func getContentAndType(msgMap map[string]interface{}) (interface{}, interface{},
 	}
 }
 
-func getMessages(jsonBody map[string]interface{}) (*Messages, error) {
+func getToolCalls(msgMap map[string]interface{}, logger log.FieldLogger) (interface{}, error) {
+	tcRaw := msgMap["tool_calls"]
+	logger.Infof("ToolCalls raw: %v", tcRaw)
+
+	if tcRaw == nil {
+		logger.Info("No tool calls found in message")
+		return nil, nil // No tool calls present
+	}
+
+	logger.Infof("ToolCalls not nil: %v", tcRaw)
+	if tcSlice, ok := tcRaw.([]interface{}); ok {
+		toolCalls := make([]interface{}, len(tcSlice))
+		for j, tc := range tcSlice {
+			data, err := json.Marshal(tc)
+			if err != nil {
+				return nil, fmt.Errorf("failed to marshal tool call %d in message: %v", j, err)
+			}
+			toolCalls[j] = string(data)
+		}
+		return toolCalls, nil
+	}
+
+	return nil, fmt.Errorf("field 'tool_calls' is not a slice")
+}
+
+func getMessages(jsonBody map[string]interface{}, logger log.FieldLogger) (*Messages, error) {
 	messagesList, ok := jsonBody["messages"].([]interface{})
 	if !ok {
 		return nil, fmt.Errorf("`messages` field not found or not an array")
@@ -125,11 +150,14 @@ func getMessages(jsonBody map[string]interface{}) (*Messages, error) {
 			return nil, fmt.Errorf("failed to parse message %d in OpenAI API request", i)
 		}
 
+		// Get role from the message map
 		var err error
 		messages.Role[i], err = getMessageField(msgMap, "role")
 		if err != nil {
 			return nil, fmt.Errorf("failed to get 'role' field in message %d: %v", i, err)
 		}
+
+		// Get content and type from the message map
 		contentMessage, contentType, err := getContentAndType(msgMap)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get content and type in message %d: %v", i, err)
@@ -137,8 +165,14 @@ func getMessages(jsonBody map[string]interface{}) (*Messages, error) {
 		messages.Content[i] = contentMessage
 		messages.Type[i] = contentType
 
-		// Optional fields - not checking for errors
-		messages.ToolCalls[i], _ = getMessageField(msgMap, "tool_calls")
+		// Get tool calls from the message map
+		messages.ToolCalls[i], err = getToolCalls(msgMap, logger)
+		logger.Infof("ToolCalls in message %d: %v", i, messages.ToolCalls[i])
+		if err != nil {
+			return nil, fmt.Errorf("failed to get tool calls in message %d: %v", i, err)
+		}
+
+		// Get tool call ID from the message map
 		messages.ToolCallId[i], _ = getMessageField(msgMap, "tool_call_id")
 	}
 	return messages, nil
@@ -277,7 +311,7 @@ func constructInferenceRequestInputs(messages *Messages) ([]interface{}, error) 
 		inferenceRequestInputs,
 		"tool_calls",
 		messages.ToolCalls,
-		true,
+		false,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add 'tool_calls' field to inference request inputs: %v", err)
@@ -331,7 +365,7 @@ func ParserOpenAIAPIRequest(body []byte, logger log.FieldLogger) ([]byte, error)
 
 	_, _ = getModelName(jsonBody)
 
-	messages, err := getMessages(jsonBody)
+	messages, err := getMessages(jsonBody, logger)
 	if err != nil {
 		logger.WithError(err).Error("Failed to parse messages in OpenAI API request")
 		return nil, err
