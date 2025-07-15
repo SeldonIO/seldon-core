@@ -15,10 +15,6 @@ import (
 	"io"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
-	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
-	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -26,6 +22,12 @@ import (
 	"k8s.io/client-go/util/retry"
 	"knative.dev/pkg/apis"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
+	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 )
 
 // LoadModel loads a model to the scheduler

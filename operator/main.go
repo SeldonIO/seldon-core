@@ -15,9 +15,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
-	mlopscontrollers "github.com/seldonio/seldon-core/operator/v2/controllers/mlops"
-	"github.com/seldonio/seldon-core/operator/v2/scheduler"
 	//+kubebuilder:scaffold:imports
 	zap2 "go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -33,6 +30,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
+
+	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	mlopscontrollers "github.com/seldonio/seldon-core/operator/v2/controllers/mlops"
+	"github.com/seldonio/seldon-core/operator/v2/scheduler"
 )
 
 var (

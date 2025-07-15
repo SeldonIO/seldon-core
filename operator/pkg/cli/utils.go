@@ -17,11 +17,12 @@ import (
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
-	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
-	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
 	"golang.org/x/exp/rand"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
+
+	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
 )
 
 func printPrettyJson(data []byte) {

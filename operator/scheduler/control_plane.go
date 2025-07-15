@@ -15,10 +15,12 @@ import (
 	"time"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 )
 
 func (s *schedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {

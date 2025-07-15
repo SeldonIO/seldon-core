@@ -10,8 +10,9 @@ the Change License after the Change Date as each is defined in accordance with t
 package cli
 
 import (
-	"github.com/seldonio/seldon-core/operator/v2/pkg/cli"
 	"github.com/spf13/cobra"
+
+	"github.com/seldonio/seldon-core/operator/v2/pkg/cli"
 )
 
 func createConfigAdd() *cobra.Command {

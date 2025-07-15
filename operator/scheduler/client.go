@@ -19,9 +19,6 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/go-logr/logr"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
-	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
@@ -29,6 +26,11 @@ import (
 	"google.golang.org/grpc/status"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
+
+	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 )
 
 const (
