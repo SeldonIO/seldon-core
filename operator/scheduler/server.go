@@ -25,7 +25,7 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 )
 
-func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler.SchedulerClient, servers []v1alpha1.Server, isFirstSync bool) error {
+func (s *schedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler.SchedulerClient, servers []v1alpha1.Server, isFirstSync bool) error {
 	logger := s.logger.WithName("NotifyServer")
 	if grpcClient == nil {
 		// we assume that all servers are in the same namespace
@@ -92,7 +92,7 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 }
 
 // note: namespace is not used in this function
-func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
+func (s *schedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeServerEvents")
 
 	stream, err := grpcClient.SubscribeServerStatus(
@@ -167,7 +167,7 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 	return nil
 }
 
-func (s *SchedulerClient) updateServerStatus(ctx context.Context, server *v1alpha1.Server) error {
+func (s *schedulerClient) updateServerStatus(ctx context.Context, server *v1alpha1.Server) error {
 	if err := s.Status().Update(ctx, server); err != nil {
 		s.recorder.Eventf(server, v1.EventTypeWarning, "UpdateFailed",
 			"Failed to update status for Server %q: %v", server.Name, err)
@@ -176,7 +176,7 @@ func (s *SchedulerClient) updateServerStatus(ctx context.Context, server *v1alph
 	return nil
 }
 
-func (s *SchedulerClient) scaleServerReplicas(ctx context.Context, server *v1alpha1.Server, event *scheduler.ServerStatusResponse) error {
+func (s *schedulerClient) scaleServerReplicas(ctx context.Context, server *v1alpha1.Server, event *scheduler.ServerStatusResponse) error {
 	isValidEvent, validatedScalingSpec, err := isValidScalingEvent(server, event)
 	if err != nil {
 		return err
