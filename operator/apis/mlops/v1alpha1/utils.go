@@ -17,6 +17,8 @@ type ValidatedScalingSpec struct {
 	MaxReplicas uint32
 }
 
+// TODO consider putting these rules via CEL into the CR definition for Server, this will allow customers earlier feedback
+//  their CRs are invalid upon trying to apply them, instead of checking controller logs after applying.
 func GetValidatedScalingSpec(replicas *int32, minReplicas *int32, maxReplicas *int32) (*ValidatedScalingSpec, error) {
 	spec, err := validatedScalingSpec(replicas, minReplicas, maxReplicas)
 	if err != nil {
