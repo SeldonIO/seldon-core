@@ -163,8 +163,6 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 		}
 	}
 
-	t.logger.Infof("URL %s", req.URL.String())
-
 	// reset main request body
 	req.ContentLength = int64(len(reqOriginalBody))
 	req.Body = io.NopCloser(bytes.NewBuffer(reqOriginalBody))
