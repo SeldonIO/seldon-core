@@ -14,7 +14,7 @@ import (
 	"emperror.dev/errors"
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	json "github.com/json-iterator/go"
-	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -68,7 +68,7 @@ func deleteVolumeClaimTemplateFields(obj []byte) ([]byte, error) {
 }
 
 // TODO only containers are handled correctly for merging via the name of the container. Need to hande other slices
-func MergePodSpecs(serverConfigPodSpec *v1.PodSpec, override *mlopsv1alpha1.PodSpec) (*v1.PodSpec, error) {
+func MergePodSpecs(serverConfigPodSpec *v1.PodSpec, override *v1alpha1.PodSpec) (*v1.PodSpec, error) {
 	dst := serverConfigPodSpec.DeepCopy()
 	if override != nil {
 		v1PodSpecOverride, err := override.ToV1PodSpec()
