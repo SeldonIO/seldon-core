@@ -161,6 +161,39 @@
     * [RClone Storage Initializer - upgrading your cluster (AWS S3 / MinIO)](notebooks/global-rclone-upgrade.md) 
  
 ## Reference
+ * [Annotation Based Configuration](reference/annotations.md)
+ * [Benchmarking](reference/benchmarking.md)
+ * [General Availability](reference/ga.md)
+ * [Helm Charts](reference/helm_charts.md)
+ * [Images](reference/images.md)
+ * [Logging and Log Level](reference/log_level.md)
+ * [Private Docker Registry](reference/private_registries.md)
+ * [Prediction APIs]
+    * [Open Inference Protocol](reference/v2-protocol.md)
+    * [Scalar Value Types](reference/v2-protocol.md) *
+    * [Microservice API](reference/internal-api.md)
+    * [External API](reference/external-prediction.md)
+    * [Prediction Proto Buffer Spec](reference/prediction.md)
+    * [Prediction Open API Spec] *
+ * [Python API Reference]*
+ * [Release Highlights](reference/release-highlights/)
+    * [Release 1.7.0 Hightlights](reference/release-highlights/release-1.7.0.md)
+    * [Release 1.6.0 Hightlights](reference/release-highlights/release-1.6.0.md)
+    * [Release 1.5.0 Hightlights](reference/release-highlights/release-1.5.0.md)
+    * [Release 1.1.0 Hightlights](reference/release-highlights/release-1.1.0.md)
+    * [Release 1.0.0 Hightlights](reference/release-highlights/release-1.0.0.md)
+    * [Release 0.4.1 Hightlights](reference/release-highlights/release-0.4.1.md)
+    * [Release 0.4.0 Hightlights](reference/release-highlights/release-0.4.0.md)
+    * [Release 0.3.0 Hightlights](reference/release-highlights/release-0.3.0.md)
+    * [Release 0.2.7 Hightlights](reference/release-highlights/release-0.2.7.md)
+    * [Release 0.2.6 Hightlights](reference/release-highlights/release-0.2.6.md)
+    * [Release 0.2.5 Hightlights](reference/release-highlights/release-0.2.5.md)
+    * [Release 0.2.3 Hightlights](reference/release-highlights/release-0.2.3.md)  
+ * [Seldon Deployment CRD]*
+ * [Service Orchestrator](reference/svcorch.md)
+ * [Kubeflow](reference/kubeflow.md)
+ * [Archived Docs](https://docs.seldon.io/projects/seldon-core/en/1.18/nav/archive.html)
+
 
 ## Contributing
  * [Overview](developer/readme.md)
