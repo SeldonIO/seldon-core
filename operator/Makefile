@@ -85,7 +85,7 @@ lint: ${.GOLANGCILINT_PATH}/golangci-lint
 
 .PHONY: test
 test: manifests generate fmt vet envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" POD_NAMESPACE=default go test ./... -coverprofile cover.out
 
 ##@ Build
 

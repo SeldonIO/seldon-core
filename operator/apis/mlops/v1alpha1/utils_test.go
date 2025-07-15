@@ -55,14 +55,14 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 			replicas:    int32Ptr(2),
 			minReplicas: int32Ptr(5),
 			maxReplicas: int32Ptr(10),
-			errMessage:  "number of replicas 2 must be >= min replicas  5",
+			errMessage:  "number of replicas 2 must be >= min replicas 5",
 		},
 		{
 			name:        "error - replicas greater than maxReplicas",
 			replicas:    int32Ptr(15),
 			minReplicas: int32Ptr(2),
 			maxReplicas: int32Ptr(10),
-			errMessage:  "number of replicas 15 must be <= min replicas  10", // Note: This is the actual error message with the bug
+			errMessage:  "number of replicas 15 must be <= max replicas 10",
 		},
 		{
 			name:     "success - zero replicas",
@@ -74,8 +74,9 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 			},
 		},
 		{
-			name:     "success - negative replicas defaults to 1",
-			replicas: int32Ptr(-5),
+			name:       "error - negative replicas defaults to 1",
+			replicas:   int32Ptr(-5),
+			errMessage: "failed scaling spec check: replicas -5 cannot be negative",
 			expectedSpec: &ValidatedScalingSpec{
 				Replicas:    1,
 				MinReplicas: 0,
@@ -94,10 +95,11 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 			},
 		},
 		{
-			name:        "success - negative minReplicas defaults to 0",
+			name:        "error - negative minReplicas defaults to 0",
 			replicas:    int32Ptr(5),
 			minReplicas: int32Ptr(-2),
 			maxReplicas: int32Ptr(10),
+			errMessage:  "failed scaling spec check: min replicas -2 cannot be negative",
 			expectedSpec: &ValidatedScalingSpec{
 				Replicas:    5,
 				MinReplicas: 0,
@@ -105,10 +107,11 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 			},
 		},
 		{
-			name:        "success - zero maxReplicas defaults to 0",
+			name:        "error - zero maxReplicas defaults to 0",
 			replicas:    int32Ptr(5),
 			minReplicas: int32Ptr(2),
 			maxReplicas: int32Ptr(0),
+			errMessage:  "failed scaling spec check: number of replicas 5 must be <= max replicas 0",
 			expectedSpec: &ValidatedScalingSpec{
 				Replicas:    5,
 				MinReplicas: 2,
@@ -116,10 +119,11 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 			},
 		},
 		{
-			name:        "success - negative maxReplicas defaults to 0",
+			name:        "error - negative maxReplicas defaults to 0",
 			replicas:    int32Ptr(5),
 			minReplicas: int32Ptr(2),
 			maxReplicas: int32Ptr(-3),
+			errMessage:  "failed scaling spec check: max replicas -3 cannot be negative",
 			expectedSpec: &ValidatedScalingSpec{
 				Replicas:    5,
 				MinReplicas: 2,
@@ -149,9 +153,13 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 			},
 		},
 		{
-			name:        "error - default replicas with valid minReplicas",
+			name:        "success - replicas with valid minReplicas",
 			minReplicas: int32Ptr(3),
-			errMessage:  "number of replicas 1 must be >= min replicas  3",
+			expectedSpec: &ValidatedScalingSpec{
+				Replicas:    3,
+				MinReplicas: 3,
+				MaxReplicas: 0,
+			},
 		},
 		{
 			name:     "success - only replicas specified",
@@ -161,11 +169,6 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 				MinReplicas: 0,
 				MaxReplicas: 0,
 			},
-		},
-		{
-			name:        "error - only minReplicas specified",
-			minReplicas: int32Ptr(2),
-			errMessage:  "number of replicas 1 must be >= min replicas  2",
 		},
 		{
 			name:        "success - only maxReplicas specified with default replicas",

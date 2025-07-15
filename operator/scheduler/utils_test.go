@@ -299,17 +299,21 @@ func (s *mockSchedulerGrpcClient) SubscribeControlPlane(ctx context.Context, in 
 }
 
 // new mockSchedulerClient (not grpc)
-func newMockControllerClient(objs ...client.Object) *SchedulerClient {
+func newMockControllerClient(objs ...client.Object) *schedulerClient {
 	logger := zap.New()
 	fakeRecorder := record.NewFakeRecorder(3)
 	scheme := runtime.NewScheme()
 	_ = mlopsv1alpha1.AddToScheme(scheme)
 	fakeClient := testing2.NewFakeClient(scheme, objs...)
-	return NewSchedulerClient(
+	schedulerClientMock, ok := NewSchedulerClient(
 		logger,
 		fakeClient,
 		fakeRecorder,
-	)
+	).(*schedulerClient)
+	if !ok {
+		panic("could not assert scheduler client to *schedulerClient")
+	}
+	return schedulerClientMock
 }
 
 func TestHandleLoadedExperiments(t *testing.T) {

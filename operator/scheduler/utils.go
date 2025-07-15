@@ -25,7 +25,7 @@ import (
 
 // TODO: unify these helper functions as they do more or less the same thing
 
-func (s *SchedulerClient) handleLoadedExperiments(
+func (s *schedulerClient) handleLoadedExperiments(
 	ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	experimentList := &v1alpha1.ExperimentList{}
 	// Get all experiments in the namespace
@@ -60,7 +60,7 @@ func (s *SchedulerClient) handleLoadedExperiments(
 	return nil
 }
 
-func (s *SchedulerClient) handlePendingDeleteExperiments(
+func (s *schedulerClient) handlePendingDeleteExperiments(
 	ctx context.Context, namespace string) error {
 	experimentList := &v1alpha1.ExperimentList{}
 	// Get all experiments in the namespace
@@ -98,7 +98,7 @@ func (s *SchedulerClient) handlePendingDeleteExperiments(
 
 // when need to reload the models that are marked in k8s as loaded, this is because there could be a
 // case where the scheduler has load the models state (if the scheduler and the model server restart at the same time)
-func (s *SchedulerClient) handleLoadedModels(
+func (s *schedulerClient) handleLoadedModels(
 	ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	modelList := &v1alpha1.ModelList{}
 	// Get all models in the namespace
@@ -135,7 +135,7 @@ func (s *SchedulerClient) handleLoadedModels(
 	return nil
 }
 
-func (s *SchedulerClient) handleRegisteredServers(
+func (s *schedulerClient) handleRegisteredServers(
 	ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	serverList := &v1alpha1.ServerList{}
 	// Get all servers in the namespace
@@ -157,7 +157,7 @@ func (s *SchedulerClient) handleRegisteredServers(
 	return nil
 }
 
-func (s *SchedulerClient) handlePendingDeleteModels(
+func (s *schedulerClient) handlePendingDeleteModels(
 	ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	modelList := &v1alpha1.ModelList{}
 	// Get all models in the namespace
@@ -210,7 +210,7 @@ func (s *SchedulerClient) handlePendingDeleteModels(
 	return nil
 }
 
-func (s *SchedulerClient) handleLoadedPipelines(
+func (s *schedulerClient) handleLoadedPipelines(
 	ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	pipelineList := &v1alpha1.PipelineList{}
 	// Get all pipelines in the namespace
@@ -245,7 +245,7 @@ func (s *SchedulerClient) handleLoadedPipelines(
 	return nil
 }
 
-func (s *SchedulerClient) handlePendingDeletePipelines(
+func (s *schedulerClient) handlePendingDeletePipelines(
 	ctx context.Context, namespace string) error {
 	pipelineList := &v1alpha1.PipelineList{}
 	// Get all models in the namespace
@@ -329,7 +329,7 @@ func getNumPipelinesFromScheduler(ctx context.Context, grpcClient scheduler.Sche
 	return numPipelinesFromScheduler, nil
 }
 
-func (s *SchedulerClient) handleExperiments(
+func (s *schedulerClient) handleExperiments(
 	ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	// get experiments from the scheduler
 	// if there are no experiments in the scheduler state then we need to create them
@@ -353,7 +353,7 @@ func (s *SchedulerClient) handleExperiments(
 	return nil
 }
 
-func (s *SchedulerClient) handlePipelines(
+func (s *schedulerClient) handlePipelines(
 	ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	// get pipelines from the scheduler
 	// if there are no pipelines in the scheduler state then we need to create them
@@ -377,7 +377,7 @@ func (s *SchedulerClient) handlePipelines(
 	return nil
 }
 
-func (s *SchedulerClient) handleModels(
+func (s *schedulerClient) handleModels(
 	ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 
 	// on new reconnects check if we have models that are stuck in deletion and therefore we need to reconcile their states

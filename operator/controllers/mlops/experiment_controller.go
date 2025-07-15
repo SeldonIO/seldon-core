@@ -32,7 +32,7 @@ import (
 type ExperimentReconciler struct {
 	client.Client
 	Scheme    *runtime.Scheme
-	Scheduler *scheduler.SchedulerClient
+	Scheduler scheduler.Client
 	Recorder  record.EventRecorder
 }
 

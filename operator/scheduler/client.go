@@ -16,9 +16,10 @@ import (
 	"sync"
 	"time"
 
-	backoff "github.com/cenkalti/backoff/v4"
+	"github.com/cenkalti/backoff/v4"
 	"github.com/go-logr/logr"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
@@ -45,7 +46,25 @@ const (
 	backOffInitialInterval = time.Second
 )
 
-type SchedulerClient struct {
+//go:generate go tool mockgen -source=./client.go -destination=./mock/client.go -package=mock scheduler Client
+
+type Client interface {
+	SubscribeControlPlaneEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error
+	StartExperiment(ctx context.Context, experiment *v1alpha1.Experiment, grpcClient scheduler.SchedulerClient) (bool, error)
+	StopExperiment(ctx context.Context, experiment *v1alpha1.Experiment, grpcClient scheduler.SchedulerClient) (bool, error)
+	SubscribeExperimentEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error
+	LoadModel(ctx context.Context, model *v1alpha1.Model, grpcClient scheduler.SchedulerClient) (bool, error)
+	UnloadModel(ctx context.Context, model *v1alpha1.Model, grpcClient scheduler.SchedulerClient) (bool, error)
+	SubscribeModelEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error
+	LoadPipeline(ctx context.Context, pipeline *v1alpha1.Pipeline, grpcClient scheduler.SchedulerClient) (bool, error)
+	UnloadPipeline(ctx context.Context, pipeline *v1alpha1.Pipeline) (error, bool)
+	SubscribePipelineEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error
+	ServerNotify(ctx context.Context, grpcClient scheduler.SchedulerClient, servers []v1alpha1.Server, isFirstSync bool) error
+	SubscribeServerEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error
+	RemoveConnection(namespace string)
+}
+
+type schedulerClient struct {
 	client.Client
 	logger           logr.Logger
 	callOptions      []grpc.CallOption
@@ -59,13 +78,13 @@ type SchedulerClient struct {
 // For this will need to know ports (hardwire for now to 9004 and 9044 - ssl comes fom envvar - so always
 // the same for all schedulers
 
-func NewSchedulerClient(logger logr.Logger, client client.Client, recorder record.EventRecorder) *SchedulerClient {
+func NewSchedulerClient(logger logr.Logger, client client.Client, recorder record.EventRecorder) Client {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
 
-	return &SchedulerClient{
+	return &schedulerClient{
 		Client:         client,
 		logger:         logger.WithName("schedulerClient"),
 		callOptions:    opts,
@@ -86,7 +105,7 @@ func getSchedulerHost(namespace string) string {
 // TODO: add a max retry count and report back to the caller.
 // TODO add done for graceful shutdown otherwise these go routines will run forever
 // TODO tidy up ctx from the different handlers, currently they are all context.Background()
-func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientConn) {
+func (s *schedulerClient) startEventHanders(namespace string, conn *grpc.ClientConn) {
 	s.logger.Info("Starting event handling", "namespace", namespace)
 
 	// Subscribe the event streams from scheduler
@@ -142,7 +161,7 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 	}()
 }
 
-func (s *SchedulerClient) handleStateOnReconnect(context context.Context, grpcClient scheduler.SchedulerClient, namespace string, operation scheduler.ControlPlaneResponse_Event) error {
+func (s *schedulerClient) handleStateOnReconnect(context context.Context, grpcClient scheduler.SchedulerClient, namespace string, operation scheduler.ControlPlaneResponse_Event) error {
 	switch operation {
 	case scheduler.ControlPlaneResponse_SEND_SERVERS:
 		// on new reconnects we send a list of servers to the schedule
@@ -175,7 +194,7 @@ func (s *SchedulerClient) handleStateOnReconnect(context context.Context, grpcCl
 	}
 }
 
-func (s *SchedulerClient) RemoveConnection(namespace string) {
+func (s *schedulerClient) RemoveConnection(namespace string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if conn, ok := s.seldonRuntimes[namespace]; ok {
@@ -188,7 +207,7 @@ func (s *SchedulerClient) RemoveConnection(namespace string) {
 }
 
 // A smoke test allows us to quickly check if we actually have a functional grpc connection to the scheduler
-func (s *SchedulerClient) smokeTestConnection(conn *grpc.ClientConn) error {
+func (s *schedulerClient) smokeTestConnection(conn *grpc.ClientConn) error {
 	grpcClient := scheduler.NewSchedulerClient(conn)
 
 	stream, err := grpcClient.SubscribeModelStatus(context.TODO(), &scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
@@ -202,7 +221,7 @@ func (s *SchedulerClient) smokeTestConnection(conn *grpc.ClientConn) error {
 	return nil
 }
 
-func (s *SchedulerClient) getConnection(namespace string) (*grpc.ClientConn, error) {
+func (s *schedulerClient) getConnection(namespace string) (*grpc.ClientConn, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if conn, ok := s.seldonRuntimes[namespace]; !ok {
@@ -224,7 +243,7 @@ func (s *SchedulerClient) getConnection(namespace string) (*grpc.ClientConn, err
 	}
 }
 
-func (s *SchedulerClient) connectToScheduler(host string, namespace string, plainTxtPort int, tlsPort int) (*grpc.ClientConn, error) {
+func (s *schedulerClient) connectToScheduler(host string, namespace string, plainTxtPort int, tlsPort int) (*grpc.ClientConn, error) {
 	var err error
 	protocol := tls.GetSecurityProtocolFromEnv(tls.EnvSecurityPrefixControlPlane)
 	s.logger.Info("connect to scheduler", "protocol", protocol)
@@ -270,7 +289,7 @@ func (s *SchedulerClient) connectToScheduler(host string, namespace string, plai
 	return conn, nil
 }
 
-func (s *SchedulerClient) checkErrorRetryable(resource string, resourceName string, err error) bool {
+func (s *schedulerClient) checkErrorRetryable(resource string, resourceName string, err error) bool {
 	if err != nil {
 		if st, ok := status.FromError(err); ok {
 			s.logger.Info(

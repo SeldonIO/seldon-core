@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/utils/ptr"
 	"knative.dev/pkg/apis"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -41,7 +42,7 @@ import (
 type ServerReconciler struct {
 	client.Client
 	Scheme    *runtime.Scheme
-	Scheduler *scheduler.SchedulerClient
+	Scheduler scheduler.Client
 	Recorder  record.EventRecorder
 }
 
@@ -77,7 +78,7 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 			// we'll ignore not-found errors, since they can't be fixed by an immediate
 			// requeue (we'll need to wait for a new notification), and we can get them
 			// on deleted requests.
-			logger.Error(err, "server not found, ignoring error", "name", req.Name, "namespace", req.Namespace)
+			logger.Error(err, "Server not found, ignoring error", "name", req.Name, "namespace", req.Namespace)
 			return reconcile.Result{}, nil
 		}
 		logger.Error(err, "unable to fetch Server", "name", req.Name, "namespace", req.Namespace)
@@ -93,11 +94,22 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return reconcile.Result{}, nil
 	}
 
-	err := r.Scheduler.ServerNotify(ctx, nil, []v1alpha1.Server{*server}, false)
+	scalingSpec, err := v1alpha1.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
 	if err != nil {
+		r.updateStatusFromError(ctx, logger, server, err)
+		logger.Error(err, "Scaling spec failed validation", "name", req.Name, "namespace", req.Namespace, "spec", server.Spec)
+		// we return Terminal error here as re-queueing the update will still result in same error. Instead, log as error and wait
+		// for user to correct the scaling spec, which will trigger Reconcile.
+		return reconcile.Result{}, reconcile.TerminalError(err)
+	}
+
+	if err := r.Scheduler.ServerNotify(ctx, nil, []v1alpha1.Server{*server}, false); err != nil {
+		logger.Error(err, "Failed calling ServerNotify", "name", req.Name, "namespace", req.Namespace, "spec", server.Spec)
 		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err
 	}
+
+	server.Spec.Replicas = ptr.To(int32(scalingSpec.Replicas))
 
 	sr, err := serverreconcile.NewServerReconciler(server, common.ReconcilerConfig{
 		Ctx:    ctx,
@@ -105,6 +117,7 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		Client: r.Client,
 	})
 	if err != nil {
+		logger.Error(err, "Failed creating server reconciler", "name", req.Name, "namespace", req.Namespace, "spec", server.Spec)
 		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err
 	}
@@ -112,12 +125,14 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	// Set Controller References
 	err = setControllerReferences(server, common.ToMetaObjects(sr.GetResources()), r.Scheme)
 	if err != nil {
+		logger.Error(err, "Failed setting controller reference", "name", req.Name, "namespace", req.Namespace, "spec", server.Spec)
 		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err
 	}
 
 	err = sr.Reconcile()
 	if err != nil {
+		logger.Error(err, "Failed reconciling", "name", req.Name, "namespace", req.Namespace, "spec", server.Spec)
 		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err
 	}
@@ -129,12 +144,12 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	// Update status fields
 	selector := sr.(common.LabelHandler).GetLabelSelector()
-	replicas := *server.Spec.Replicas
 	server.Status.Selector = selector
-	server.Status.Replicas = replicas
+	server.Status.Replicas = *server.Spec.Replicas
 
 	err = r.updateStatus(server)
 	if err != nil {
+		logger.Error(err, "Failed updating status", "name", req.Name, "namespace", req.Namespace, "spec", server.Spec)
 		return reconcile.Result{}, err
 	}
 
