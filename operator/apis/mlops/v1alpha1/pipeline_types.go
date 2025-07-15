@@ -10,12 +10,11 @@ the Change License after the Change Date as each is defined in accordance with t
 package v1alpha1
 
 import (
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
-
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
 //+kubebuilder:object:root=true

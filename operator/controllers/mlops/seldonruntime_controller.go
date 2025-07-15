@@ -14,6 +14,12 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
+	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
+	seldonreconcile "github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/seldon"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
+	scheduler "github.com/seldonio/seldon-core/operator/v2/scheduler"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	auth "k8s.io/api/rbac/v1"
@@ -29,13 +35,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
-	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
-	seldonreconcile "github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/seldon"
-	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
-	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
-	scheduler "github.com/seldonio/seldon-core/operator/v2/scheduler"
 )
 
 // SeldonRuntimeReconciler reconciles a SeldonRuntime object
