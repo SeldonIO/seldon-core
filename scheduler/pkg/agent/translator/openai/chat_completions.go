@@ -12,9 +12,9 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/translator"
 )
 
-type OpenAIChatCompletionTranslator struct{}
+type OpenAIChatCompletionsTranslator struct{}
 
-func (t *OpenAIChatCompletionTranslator) TranslateToOIP(req *http.Request, logger log.FieldLogger) (*http.Request, error) {
+func (t *OpenAIChatCompletionsTranslator) TranslateToOIP(req *http.Request, logger log.FieldLogger) (*http.Request, error) {
 	// Read the request body
 	body, err := translator.ReadRequestBody(req)
 	if err != nil {
@@ -75,7 +75,7 @@ func (t *OpenAIChatCompletionTranslator) TranslateToOIP(req *http.Request, logge
 	return newReq, nil
 }
 
-func (t *OpenAIChatCompletionTranslator) TranslateFromOIP(res *http.Response, logger log.FieldLogger) (*http.Response, error) {
+func (t *OpenAIChatCompletionsTranslator) TranslateFromOIP(res *http.Response, logger log.FieldLogger) (*http.Response, error) {
 	// Decompress the response if needed - gzip
 	var isGzipped bool
 	var err error
@@ -98,7 +98,7 @@ func (t *OpenAIChatCompletionTranslator) TranslateFromOIP(res *http.Response, lo
 		return nil, err
 	}
 
-	// Pare the response body
+	// Parse the response body
 	logger.Info("Parsing OpenAI API response body", jsonBody)
 	outputs, ok := jsonBody["outputs"].([]interface{})
 	if !ok {

@@ -156,3 +156,13 @@ func Compress(res *http.Response) error {
 	res.Header.Set("Content-Encoding", "gzip")
 	return nil
 }
+
+func GetPathTermination(req *http.Request) (string, error) {
+	const marker = "/infer"
+	path := req.URL.Path
+	pos := strings.Index(path, marker)
+	if pos == -1 {
+		return "", fmt.Errorf("'/infer' not found in path")
+	}
+	return path[pos+len(marker):], nil
+}
