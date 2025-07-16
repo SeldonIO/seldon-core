@@ -21,7 +21,6 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -70,16 +69,6 @@ func addRequestIdToResponse(req *http.Request, res *http.Response) {
 			res.Header[util.RequestIdHeaderCanonical] = reqRequestIds
 		}
 	}
-}
-
-func getPathTermination(req *http.Request) (string, error) {
-	const marker = "/infer"
-	path := req.URL.Path
-	pos := strings.Index(path, marker)
-	if pos == -1 {
-		return "", fmt.Errorf("'/infer' not found in path")
-	}
-	return path[pos+len(marker):], nil
 }
 
 func (t *lazyModelLoadTransport) TranslateToOIP(req *http.Request, termination string, logger log.FieldLogger) (*http.Request, error) {
@@ -132,7 +121,7 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	startTime := time.Now()
 
 	// Translate the request to OIP format if needed
-	termination, err := getPathTermination(req)
+	termination, err := translator.GetPathTermination(req)
 	if err != nil {
 		t.logger.WithError(err).Warn("Failed to get path termination for request")
 		return nil, err
@@ -247,7 +236,7 @@ func (rp *reverseHTTPProxy) Start() error {
 		IdleConnTimeout:     util.IdleConnTimeoutSeconds * time.Second,
 	}
 	apiTranslators := map[string]translator.Translator{
-		"/chat/completions": &openai.OpenAIChatCompletionTranslator{},
+		"/chat/completions": &openai.OpenAIChatCompletionsTranslator{},
 	}
 	proxy.Transport = &lazyModelLoadTransport{
 		rp.stateManager.v2Client.LoadModel,
