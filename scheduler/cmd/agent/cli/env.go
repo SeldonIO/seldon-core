@@ -51,17 +51,3 @@ func getEnvInt(name string) (int, bool, bool) {
 
 	return int(val), true, true
 }
-
-func getEnvBool(name string) (bool, bool, bool) {
-	fromEnv := os.Getenv(name)
-	if fromEnv == "" {
-		return false, false, false
-	}
-
-	val, err := strconv.ParseBool(fromEnv)
-	if err != nil {
-		return false, true, false
-	}
-
-	return val, true, true
-}
