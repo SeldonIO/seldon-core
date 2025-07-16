@@ -165,14 +165,6 @@ func NewMessages(size int) *Messages {
 	}
 }
 
-func getMessageField(msgMap map[string]interface{}, field string) (interface{}, error) {
-	value, ok := msgMap[field]
-	if !ok {
-		return nil, fmt.Errorf("field '%s' not found in message map", field)
-	}
-	return value, nil
-}
-
 func getContentAndTypeFromMap(msgMap map[string]interface{}) (string, string, error) {
 	contentType, ok := msgMap["type"].(string)
 	if !ok {
@@ -201,15 +193,15 @@ func getContentAndTypeFromMap(msgMap map[string]interface{}) (string, string, er
 	return contentMessage, contentType, nil
 }
 
-func getContentAndType(msgMap map[string]interface{}) (interface{}, interface{}, error) {
+func getContentAndType(msgMap map[string]interface{}) ([]string, []string, error) {
 	content, ok := msgMap["content"]
 	if !ok || content == nil {
-		return "", "text", nil
+		return []string{""}, []string{"text"}, nil
 	}
 
 	switch c := content.(type) {
 	case string:
-		return c, "text", nil
+		return []string{c}, []string{"text"}, nil
 	case []interface{}:
 		contentTypeArray := make([]string, len(c))
 		contentMessageArray := make([]string, len(c))
@@ -230,18 +222,15 @@ func getContentAndType(msgMap map[string]interface{}) (interface{}, interface{},
 	}
 }
 
-func getToolCalls(msgMap map[string]interface{}, logger log.FieldLogger) (interface{}, error) {
-	tcRaw := msgMap["tool_calls"]
-	logger.Infof("ToolCalls raw: %v", tcRaw)
-
-	if tcRaw == nil {
-		logger.Info("No tool calls found in message")
-		return nil, nil // No tool calls present
+func getToolCalls(msgMap map[string]interface{}, logger log.FieldLogger) ([]string, error) {
+	tcRaw, ok := msgMap["tool_calls"]
+	if !ok {
+		return nil, nil
 	}
 
-	logger.Infof("ToolCalls not nil: %v", tcRaw)
 	if tcSlice, ok := tcRaw.([]interface{}); ok {
-		toolCalls := make([]interface{}, len(tcSlice))
+		toolCalls := make([]string, len(tcSlice))
+
 		for j, tc := range tcSlice {
 			data, err := json.Marshal(tc)
 			if err != nil {
@@ -272,9 +261,9 @@ func getMessages(jsonBody map[string]interface{}, logger log.FieldLogger) (*Mess
 
 		// Get role from the message map
 		var err error
-		messages.Role[i], err = getMessageField(msgMap, "role")
-		if err != nil {
-			return nil, fmt.Errorf("failed to get 'role' field in message %d: %v", i, err)
+		messages.Role[i], ok = msgMap["role"].(string)
+		if !ok {
+			return nil, fmt.Errorf("field 'role' not found in message %d", i)
 		}
 
 		// Get content and type from the message map
@@ -293,7 +282,7 @@ func getMessages(jsonBody map[string]interface{}, logger log.FieldLogger) (*Mess
 		}
 
 		// Get tool call ID from the message map
-		messages.ToolCallId[i], _ = getMessageField(msgMap, "tool_call_id")
+		messages.ToolCallId[i], _ = msgMap["tool_call_id"]
 	}
 	return messages, nil
 }
@@ -307,18 +296,6 @@ func getLLMParameters(jsonBody map[string]interface{}) map[string]interface{} {
 		llmParameters[key] = value
 	}
 	return llmParameters
-}
-
-func wrapContentInSlice(content []interface{}) []interface{} {
-	wrappedContent := make([]interface{}, len(content))
-	for i, item := range content {
-		if item == nil {
-			wrappedContent[i] = nil
-		} else {
-			wrappedContent[i] = []interface{}{item}
-		}
-	}
-	return wrappedContent
 }
 
 func marshalListContent(content []interface{}) ([]string, error) {
@@ -341,101 +318,72 @@ func marshalListContent(content []interface{}) ([]string, error) {
 	return jsonContent, nil
 }
 
-func unwrapContentFromSlice(content []interface{}) []interface{} {
+func unwrapContentFromSlice(content []interface{}) ([]string, error) {
 	switch c := content[0].(type) {
-	case []interface{}:
-		return c
+	case nil:
+		return []string{}, nil
+	case []string:
+		return c, nil
 	default:
-		return content
+		return marshalListContent(content)
 	}
 }
 
-func prepareField(content []interface{}, wrapContent bool) ([]string, error) {
+func prepareField(content []interface{}) ([]string, error) {
 	if len(content) == 0 {
 		return nil, fmt.Errorf("content is empty")
 	}
-
 	if len(content) == 1 {
-		content = unwrapContentFromSlice(content)
-		if content[0] == nil {
-			return nil, nil
-		}
-		return marshalListContent(content)
-	}
-
-	if wrapContent {
-		content = wrapContentInSlice(content)
+		return unwrapContentFromSlice(content)
 	}
 	return marshalListContent(content)
 }
 
-func addFieldToInferenceRequestInputs(
-	inferenceRequestInputs []interface{},
-	fieldName string,
-	fieldContent []interface{},
-	wrapContent bool,
-) ([]interface{}, error) {
-	strContent, err := prepareField(fieldContent, wrapContent)
+func addFieldToInferenceRequestInputs(inferenceRequestInputs []interface{}, fieldName string, fieldContent []interface{}) ([]interface{}, error) {
+	strContent, err := prepareField(fieldContent)
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare field '%s' content: %v", fieldName, err)
 	}
-
-	if strContent != nil {
+	if len(strContent) > 0 {
 		inferenceRequestInputs = append(
-			inferenceRequestInputs,
-			translator.ConstructStringTensor(fieldName, strContent),
+			inferenceRequestInputs, translator.ConstructStringTensor(fieldName, strContent),
 		)
 	}
 	return inferenceRequestInputs, nil
-
 }
+
 func constructInferenceRequestInputs(messages *Messages) ([]interface{}, error) {
 	var inferenceRequestInputs []interface{}
 	inferenceRequestInputs, err := addFieldToInferenceRequestInputs(
-		inferenceRequestInputs,
-		"role",
-		messages.Role,
-		false,
+		inferenceRequestInputs, "role", messages.Role,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add 'role' field to inference request inputs: %v", err)
 	}
 
 	inferenceRequestInputs, err = addFieldToInferenceRequestInputs(
-		inferenceRequestInputs,
-		"content",
-		messages.Content,
-		true,
+		inferenceRequestInputs, "content", messages.Content,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add 'content' field to inference request inputs: %v", err)
 	}
 
 	inferenceRequestInputs, err = addFieldToInferenceRequestInputs(
-		inferenceRequestInputs,
-		"type",
-		messages.Type,
-		true,
+		inferenceRequestInputs, "type", messages.Type,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add 'type' field to inference request inputs: %v", err)
 	}
 
 	inferenceRequestInputs, err = addFieldToInferenceRequestInputs(
-		inferenceRequestInputs,
-		"tool_calls",
-		messages.ToolCalls,
-		false,
+		inferenceRequestInputs, "tool_calls", messages.ToolCalls,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add 'tool_calls' field to inference request inputs: %v", err)
 	}
 
 	inferenceRequestInputs, err = addFieldToInferenceRequestInputs(
-		inferenceRequestInputs,
-		"tool_call_id",
-		messages.ToolCallId,
-		false,
+		inferenceRequestInputs, "tool_call_id", messages.ToolCallId,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add 'tool_call_id' field to inference request inputs: %v", err)
