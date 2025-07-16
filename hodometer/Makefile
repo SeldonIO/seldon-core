@@ -60,11 +60,11 @@ build: build-hodometer build-receiver
 
 .PHONY: test-hodometer
 test-hodometer:
-	$(GO_ENV) go test $(VERBOSE) -race./cmd/hodometer/... ./pkg/hodometer/...
+	GO111MODULE=on CGO_ENABLED=1 go test $(VERBOSE) ./cmd/hodometer/... ./pkg/hodometer/... -race
 
 .PHONY: test-receiver
 test-receiver:
-	$(GO_ENV) go test $(VERBOSE) -race ./cmd/receiver/... ./pkg/receiver/...
+	GO111MODULE=on CGO_ENABLED=1 go test $(VERBOSE) ./cmd/receiver/... ./pkg/receiver/... -race
 
 .PHONY: test
 test: test-hodometer test-receiver

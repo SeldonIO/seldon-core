@@ -11,6 +11,7 @@ package store
 
 import (
 	"errors"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -1278,23 +1279,31 @@ func TestUpdateModelState(t *testing.T) {
 			}
 
 			var modelEvt *coordinator.ModelEventMsg
+			muModelEvt := &sync.Mutex{}
+
 			eventHub.RegisterModelEventHandler(
 				"handler-model",
 				10,
 				logger,
 				func(event coordinator.ModelEventMsg) {
+					muModelEvt.Lock()
 					modelEvt = &event
+					muModelEvt.Unlock()
 				},
 			)
 
 			var serverEvt *coordinator.ServerEventMsg
+			muServerEvt := &sync.Mutex{}
+
 			eventHub.RegisterServerEventHandler(
 				"handler-server",
 				10,
 				logger,
 				func(event coordinator.ServerEventMsg) {
 					if event.UpdateContext == coordinator.SERVER_SCALE_DOWN {
+						muServerEvt.Lock()
 						serverEvt = &event
+						muServerEvt.Unlock()
 					}
 				},
 			)
@@ -1330,13 +1339,17 @@ func TestUpdateModelState(t *testing.T) {
 			time.Sleep(500 * time.Millisecond)
 
 			if !test.err {
+				muModelEvt.Lock()
 				g.Expect(modelEvt).ToNot(BeNil())
 				g.Expect(modelEvt.ModelVersion).To(Equal(test.version))
+				muModelEvt.Unlock()
 			}
 			if test.name == "DeletedModel" {
+				muServerEvt.Lock()
 				g.Expect(serverEvt).ToNot(BeNil())
 				g.Expect(serverEvt.UpdateContext).To(Equal(coordinator.SERVER_SCALE_DOWN))
 				g.Expect(serverEvt.ServerName).To(Equal(test.serverKey))
+				muServerEvt.Unlock()
 			}
 		})
 	}

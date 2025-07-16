@@ -53,6 +53,7 @@ func (mv *ModelVersionID) String() string {
 type ModelVersion struct {
 	modelDefn *pb.Model
 	version   uint32
+	serverMu  sync.RWMutex
 	server    string
 	replicas  map[int]ReplicaStatus
 	state     ModelStatus
@@ -435,7 +436,15 @@ func (m *ModelVersion) SetDeploymentSpec(spec *pb.DeploymentSpec) {
 	m.modelDefn.DeploymentSpec = spec
 }
 
+func (m *ModelVersion) SetServer(srv string) {
+	m.serverMu.Lock()
+	defer m.serverMu.Unlock()
+	m.server = srv
+}
+
 func (m *ModelVersion) Server() string {
+	m.serverMu.RLock()
+	defer m.serverMu.RUnlock()
 	return m.server
 }
 
@@ -489,7 +498,7 @@ func (m *ModelVersion) GetRequestedServer() *string {
 }
 
 func (m *ModelVersion) HasServer() bool {
-	return m.server != ""
+	return m.Server() != ""
 }
 
 func (m *ModelVersion) Inactive() bool {
@@ -504,7 +513,7 @@ func (m *ModelVersion) Inactive() bool {
 }
 
 func (m *ModelVersion) IsLoadingOrLoaded(server string, replicaIdx int) bool {
-	if server != m.server {
+	if server != m.Server() {
 		return false
 	}
 	m.mu.RLock()
