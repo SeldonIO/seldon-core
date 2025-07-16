@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 
 	log "github.com/sirupsen/logrus"
 
@@ -225,7 +226,7 @@ func getContentAndType(msgMap map[string]interface{}) ([]string, []string, error
 func getToolCalls(msgMap map[string]interface{}, logger log.FieldLogger) ([]string, error) {
 	tcRaw, ok := msgMap["tool_calls"]
 	if !ok {
-		return nil, nil
+		return []string{}, nil
 	}
 
 	if tcSlice, ok := tcRaw.([]interface{}); ok {
@@ -276,7 +277,6 @@ func getMessages(jsonBody map[string]interface{}, logger log.FieldLogger) (*Mess
 
 		// Get tool calls from the message map
 		messages.ToolCalls[i], err = getToolCalls(msgMap, logger)
-		logger.Infof("ToolCalls in message %d: %v", i, messages.ToolCalls[i])
 		if err != nil {
 			return nil, fmt.Errorf("failed to get tool calls in message %d: %v", i, err)
 		}
@@ -302,19 +302,30 @@ func marshalListContent(content []interface{}) ([]string, error) {
 	jsonContent := make([]string, len(content))
 
 	for i, item := range content {
-		switch v := item.(type) {
-		case nil:
+		if item == nil {
 			jsonContent[i] = ""
+			continue
+		}
+
+		// Use reflection to check if it's an empty slice
+		val := reflect.ValueOf(item)
+		if val.Kind() == reflect.Slice && val.Len() == 0 {
+			jsonContent[i] = ""
+			continue
+		}
+
+		switch v := item.(type) {
 		case string:
 			jsonContent[i] = v
 		default:
-			dataContent, err := json.Marshal(item)
+			dataContent, err := json.Marshal(v)
 			if err != nil {
 				return nil, fmt.Errorf("failed to marshal content item: %v", err)
 			}
 			jsonContent[i] = string(dataContent)
 		}
 	}
+
 	return jsonContent, nil
 }
 
