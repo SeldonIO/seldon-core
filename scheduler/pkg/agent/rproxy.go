@@ -11,7 +11,6 @@ package agent
 
 import (
 	"bytes"
-	"compress/gzip"
 	"context"
 	"crypto/tls"
 	"fmt"
@@ -22,7 +21,6 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -31,7 +29,8 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/openai"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/translator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/translator/openai"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -48,7 +47,7 @@ type reverseHTTPProxy struct {
 	metrics                    metrics.AgentMetricsHandler
 	tlsOptions                 util.TLSOptions
 	modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector
-	convertFromOpenAIAPI       bool
+	apiTranslator              translator.Translator
 }
 
 // in the case the model is not loaded on server (return 404), we attempt to load it and then retry request
@@ -58,7 +57,7 @@ type lazyModelLoadTransport struct {
 	metrics                    metrics.AgentMetricsHandler
 	modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector
 	logger                     log.FieldLogger
-	convertFromOpenAIAPI       bool
+	apiTranslator              translator.Translator
 }
 
 func addRequestIdToResponse(req *http.Request, res *http.Response) {
@@ -71,45 +70,6 @@ func addRequestIdToResponse(req *http.Request, res *http.Response) {
 			res.Header[util.RequestIdHeaderCanonical] = reqRequestIds
 		}
 	}
-}
-
-func trimPathAfterInfer(req *http.Request) error {
-	const marker = "/infer"
-	path := req.URL.Path
-	pos := strings.Index(path, marker)
-	if pos == -1 {
-		return fmt.Errorf("'/infer' not found in path")
-	}
-	req.URL.Path = path[:pos+len(marker)]
-	return nil
-}
-
-func decompressIfNeeded(res *http.Response) error {
-	if res.Header.Get("Content-Encoding") == "gzip" {
-		gr, err := gzip.NewReader(res.Body)
-		if err != nil {
-			return err
-		}
-		res.Body = gr
-	}
-	return nil
-}
-
-func compressIfNeeded(res *http.Response) error {
-	if res.Header.Get("Content-Encoding") == "gzip" {
-		var buf bytes.Buffer
-		gz := gzip.NewWriter(&buf)
-		if _, err := io.Copy(gz, res.Body); err != nil {
-			return err
-		}
-		if err := gz.Close(); err != nil {
-			return err
-		}
-		res.Body = io.NopCloser(&buf)
-		res.Header.Set("Content-Length", strconv.Itoa(buf.Len()))
-		res.Header.Set("Content-Encoding", "gzip")
-	}
-	return nil
 }
 
 // RoundTrip implements http.RoundTripper for the Transport type.
@@ -146,6 +106,14 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	}()
 
 	startTime := time.Now()
+
+	// Translate the request to OIP format if needed
+	req, err = t.apiTranslator.TranslateToOIP(req, t.logger)
+	if err != nil {
+		t.logger.WithError(err).Warn("Failed to translate request to OIP format")
+		return nil, err
+	}
+
 	if req.Body != nil {
 		reqOriginalBody, err = io.ReadAll(req.Body)
 	}
@@ -153,26 +121,8 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 		return nil, err
 	}
 
-	// convert from OpenAI API format to OIP
-	t.logger.Infof("Convert from OpenAI API format: %t", t.convertFromOpenAIAPI)
-	if t.convertFromOpenAIAPI {
-		reqOriginalBody, err = openai.ParserOpenAIAPIRequest(reqOriginalBody, t.logger)
-		if err != nil {
-			t.logger.WithError(err).Warn("Failed to parse OpenAI API request")
-			return nil, err
-		}
-	}
-
 	// reset main request body
-	req.ContentLength = int64(len(reqOriginalBody))
 	req.Body = io.NopCloser(bytes.NewBuffer(reqOriginalBody))
-
-	// update the request URL
-	if err := trimPathAfterInfer(req); err != nil {
-		t.logger.WithError(err).Warnf("Failed to trim path after '/infer' in request URL %s", req.URL.String())
-		return nil, err
-	}
-
 	res, err := t.RoundTripper.RoundTrip(req)
 	if err != nil {
 		return res, err
@@ -189,35 +139,16 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 		req2 := req.Clone(req.Context())
 		req2.Body = io.NopCloser(bytes.NewBuffer(reqOriginalBody))
 		res, err = t.RoundTripper.RoundTrip(req2)
-	}
-
-	if t.convertFromOpenAIAPI {
-		if err := decompressIfNeeded(res); err != nil {
+		if err != nil {
 			return res, err
 		}
+	}
 
-		resOriginalBody, err := io.ReadAll(res.Body)
-		if err != nil {
-			t.logger.WithError(err).Warn("Failed to read OpenAI API response body")
-			return nil, err
-		}
-		resBody, err := openai.ParseOpenAIAPIResponse(resOriginalBody, t.logger)
-		if err != nil {
-			t.logger.WithError(err).Warn("Failed to parse OpenAI API response")
-			return nil, err
-		}
-		newRes := &http.Response{
-			StatusCode: http.StatusOK,
-			Body:       io.NopCloser(bytes.NewBuffer(resBody)),
-			Header:     http.Header{"Content-Type": []string{"application/json"}},
-			Request:    req,
-		}
-
-		if err := compressIfNeeded(newRes); err != nil {
-			t.logger.WithError(err).Warn("Failed to compress OpenAI API response")
-			return nil, err
-		}
-		res = newRes
+	// Translate the response from OIP format if needed
+	res, err = t.apiTranslator.TranslateFromOIP(res, t.logger)
+	if err != nil {
+		t.logger.WithError(err).Warn("Failed to translate response from OIP format")
+		return nil, err
 	}
 
 	addRequestIdToResponse(req, res)
@@ -292,7 +223,7 @@ func (rp *reverseHTTPProxy) Start() error {
 		rp.metrics,
 		rp.modelScalingStatsCollector,
 		rp.logger,
-		rp.convertFromOpenAIAPI,
+		rp.apiTranslator,
 	}
 	rp.logger.Infof("Start reverse proxy on port %d for %s", rp.servicePort, backend)
 	var tlsConfig *tls.Config
@@ -380,6 +311,10 @@ func NewReverseHTTPProxy(
 	modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector,
 	convertFromOpenAIAPI bool,
 ) *reverseHTTPProxy {
+	var apiTranslator translator.Translator = &translator.IdentityTranslator{}
+	if convertFromOpenAIAPI {
+		apiTranslator = &openai.OpenAIChatCompletionTranslator{}
+	}
 
 	rp := reverseHTTPProxy{
 		logger:                     logger.WithField("Source", "HTTPProxy"),
@@ -388,7 +323,7 @@ func NewReverseHTTPProxy(
 		servicePort:                servicePort,
 		metrics:                    metrics,
 		modelScalingStatsCollector: modelScalingStatsCollector,
-		convertFromOpenAIAPI:       convertFromOpenAIAPI,
+		apiTranslator:              apiTranslator,
 	}
 
 	return &rp

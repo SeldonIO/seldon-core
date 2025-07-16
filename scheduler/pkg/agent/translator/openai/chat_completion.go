@@ -1,28 +1,148 @@
 package openai
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/translator"
 )
 
-func getJsonBody(body []byte) (map[string]interface{}, error) {
-	var jsonBody map[string]interface{}
-	err := json.Unmarshal(body, &jsonBody)
+type OpenAIChatCompletionTranslator struct{}
+
+func (t *OpenAIChatCompletionTranslator) TranslateToOIP(req *http.Request, logger log.FieldLogger) (*http.Request, error) {
+	// Read the request body
+	body, err := translator.ReadRequestBody(req)
 	if err != nil {
+		logger.WithError(err).Error("Failed to read OpenAI API request body")
 		return nil, err
 	}
-	return jsonBody, nil
+
+	jsonBody, err := translator.GetJsonBody(body)
+	logger.Infof("Parsing OpenAI API request body %v", jsonBody)
+	if err != nil {
+		logger.WithError(err).Error("Failed to parse OpenAI API request body")
+		return nil, err
+	}
+
+	// Read model name. TODO: Check if the model name is in the request path
+	_, _ = translator.GetModelName(jsonBody)
+
+	// Parse messages from the request body
+	messages, err := getMessages(jsonBody, logger)
+	if err != nil {
+		logger.WithError(err).Error("Failed to parse messages in OpenAI API request")
+		return nil, err
+	}
+
+	// Prepare tools and LLM parameters
+	tools, _ := jsonBody["tools"].([]interface{})
+	llm_parameters := getLLMParameters(jsonBody)
+
+	// Construct the OIP formated input request
+	inferenceRequest, err := constructInferenceRequest(messages, tools, llm_parameters)
+	if err != nil {
+		logger.WithError(err).Error("Failed to construct inference request")
+		return nil, err
+	}
+
+	data, err := json.Marshal(inferenceRequest)
+	if err != nil {
+		logger.WithError(err).Error("Failed to marshal OpenAI API request inputs")
+		return nil, err
+	}
+
+	// Create a new request with the translated body
+	newBody := io.NopCloser(bytes.NewBuffer(data))
+	newReq, err := http.NewRequest(req.Method, req.URL.String(), newBody)
+	if err != nil {
+		logger.WithError(err).Error("Failed to create new HTTP request for OpenAI API")
+		return nil, err
+	}
+	newReq.Header = req.Header.Clone()
+
+	// OpenAI API clinet adds `chat/completions` to the path, we need to remove it
+	err = translator.TrimPathAfterInfer(newReq)
+	if err != nil {
+		logger.WithError(err).Error("Failed to trim path after infer in OpenAI API request")
+		return nil, err
+	}
+
+	return newReq, nil
 }
 
-func getModelName(jsonBody map[string]interface{}) (string, error) {
-	modelName, ok := jsonBody["model"].(string)
-	if !ok {
-		return "", nil
+func (t *OpenAIChatCompletionTranslator) TranslateFromOIP(res *http.Response, logger log.FieldLogger) (*http.Response, error) {
+	// Decompress the response if needed - gzip
+	var isGzipped bool
+	var err error
+
+	if isGzipped, err = translator.DecompressIfNeeded(res); err != nil {
+		logger.WithError(err).Error("Failed to decompress OpenAI API response")
+		return nil, err
 	}
-	delete(jsonBody, "model")
-	return modelName, nil
+
+	// Read the response body
+	body, err := translator.ReadResponseBody(res)
+	if err != nil {
+		logger.WithError(err).Error("Failed to read OpenAI API response body")
+		return nil, err
+	}
+
+	jsonBody, err := translator.GetJsonBody(body)
+	if err != nil {
+		logger.WithError(err).Error("Failed to parse OpenAI API response body")
+		return nil, err
+	}
+
+	// Pare the response body
+	logger.Info("Parsing OpenAI API response body", jsonBody)
+	outputs, ok := jsonBody["outputs"].([]interface{})
+	if !ok {
+		logger.Error("`outputs` field not found or not an array in OpenAI API response")
+		return nil, fmt.Errorf("`outputs` field not found or not an array in OpenAI API response")
+	}
+
+	// Extract the output_all tensor form the inference response. This contains the full response
+	// OpenAI API response - only works for OpenAI runtime, since we return the original OpenAI API response
+	tensorName := "output_all"
+	outputAll, err := translator.ExtractTensorByName(outputs, tensorName)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to extract '%s' tensor from OpenAI API response", tensorName)
+		return nil, err
+	}
+
+	data, ok := outputAll["data"].([]interface{})
+	if !ok {
+		logger.Errorf("`data` field not found or not an array of strings in output tensor %s", tensorName)
+		return nil, fmt.Errorf("`data` field not found or not an array of strings in output tensor %s", tensorName)
+	}
+
+	content, ok := data[0].(string)
+	if !ok {
+		logger.Errorf("`data` field in output tensor %s is not a byte array", tensorName)
+		return nil, fmt.Errorf("`data` field in output tensor %s is not a byte array", tensorName)
+	}
+
+	// Create a new response with the translated body
+	newBody := io.NopCloser(bytes.NewBuffer([]byte(content)))
+	newRes := http.Response{
+		StatusCode: res.StatusCode,
+		Header:     res.Header.Clone(),
+		Body:       newBody,
+	}
+
+	// compress the response body if needed
+	if isGzipped {
+		if err := translator.Compress(&newRes); err != nil {
+			logger.WithError(err).Error("Failed to compress OpenAI API response")
+			return nil, err
+		}
+	}
+	return &newRes, nil
 }
 
 type Messages struct {
@@ -189,15 +309,6 @@ func getLLMParameters(jsonBody map[string]interface{}) map[string]interface{} {
 	return llmParameters
 }
 
-func constructStringTensor(name string, data []string) map[string]interface{} {
-	return map[string]interface{}{
-		"name":     name,
-		"shape":    []int{len(data)},
-		"datatype": "BYTES",
-		"data":     data,
-	}
-}
-
 func wrapContentInSlice(content []interface{}) []interface{} {
 	wrappedContent := make([]interface{}, len(content))
 	for i, item := range content {
@@ -270,7 +381,10 @@ func addFieldToInferenceRequestInputs(
 	}
 
 	if strContent != nil {
-		inferenceRequestInputs = append(inferenceRequestInputs, constructStringTensor(fieldName, strContent))
+		inferenceRequestInputs = append(
+			inferenceRequestInputs,
+			translator.ConstructStringTensor(fieldName, strContent),
+		)
 	}
 	return inferenceRequestInputs, nil
 
@@ -342,7 +456,7 @@ func constructInferenceRequest(messages *Messages, tools []interface{}, llmParam
 		}
 		inferenceRequestInputs = append(
 			inferenceRequestInputs,
-			constructStringTensor("tools", strTools),
+			translator.ConstructStringTensor("tools", strTools),
 		)
 	}
 
@@ -352,91 +466,4 @@ func constructInferenceRequest(messages *Messages, tools []interface{}, llmParam
 			"llm_parameters": llmParams,
 		},
 	}, nil
-}
-
-func ParserOpenAIAPIRequest(body []byte, logger log.FieldLogger) ([]byte, error) {
-	jsonBody, err := getJsonBody(body)
-	logger.Infof("Parsing OpenAI API request body %v", jsonBody)
-
-	if err != nil {
-		logger.WithError(err).Error("Failed to parse OpenAI API request body")
-		return nil, err
-	}
-
-	_, _ = getModelName(jsonBody)
-
-	messages, err := getMessages(jsonBody, logger)
-	if err != nil {
-		logger.WithError(err).Error("Failed to parse messages in OpenAI API request")
-		return nil, err
-	}
-
-	tools, _ := jsonBody["tools"].([]interface{})
-	llm_parameters := getLLMParameters(jsonBody)
-
-	inferenceRequest, err := constructInferenceRequest(messages, tools, llm_parameters)
-	if err != nil {
-		logger.WithError(err).Error("Failed to construct inference request")
-		return nil, err
-	}
-
-	data, err := json.Marshal(inferenceRequest)
-	if err != nil {
-		logger.WithError(err).Error("Failed to marshal OpenAI API request inputs")
-		return nil, err
-	}
-	return data, nil
-}
-
-func extractTensorByName(outputs []interface{}, name string) (map[string]interface{}, error) {
-	for i, output := range outputs {
-		outputMap, ok := output.(map[string]interface{})
-		if !ok {
-			return nil, fmt.Errorf("failed to parse output tensor %d", i)
-		}
-
-		if outputMap["name"] == name {
-			return outputMap, nil
-		}
-	}
-	return nil, fmt.Errorf("output tensor with name %s not found", name)
-}
-
-func ParseOpenAIAPIResponse(body []byte, logger log.FieldLogger) ([]byte, error) {
-	jsonBody, err := getJsonBody(body)
-	if err != nil {
-		logger.WithError(err).Error("Failed to parse OpenAI API response body")
-		return nil, err
-	}
-
-	logger.Info("Parsing OpenAI API response body", jsonBody)
-	outputs, ok := jsonBody["outputs"].([]interface{})
-	if !ok {
-		logger.Error("`outputs` field not found or not an array in OpenAI API response")
-		return nil, fmt.Errorf("`outputs` field not found or not an array in OpenAI API response")
-	}
-
-	tensorName := "output_all"
-	outputAll, err := extractTensorByName(outputs, tensorName)
-	if err != nil {
-		logger.WithError(err).Errorf("Failed to extract '%s' tensor from OpenAI API response", tensorName)
-		return nil, err
-	}
-
-	data, ok := outputAll["data"].([]interface{})
-	if !ok {
-		logger.Errorf("`data` field not found or not an array of strings in output tensor %s", tensorName)
-		return nil, fmt.Errorf("`data` field not found or not an array of strings in output tensor %s", tensorName)
-	}
-
-	content, ok := data[0].(string)
-	if !ok {
-		logger.Errorf("`data` field in output tensor %s is not a byte array", tensorName)
-		return nil, fmt.Errorf("`data` field in output tensor %s is not a byte array", tensorName)
-	}
-	return []byte(content), nil
-}
-
-func GetConstantResponse() string {
-	return `{"choices":[{"message":{"role":"assistant","content":"This is a constant response from the OpenAI API parser."},"finish_reason":"stop","index":0}],"created":1700000000,"id":"chatcmpl-1234567890","model":"gpt-3.5-turbo","object":"chat.completion","usage":{"prompt_tokens":10,"completion_tokens":10,"total_tokens":20}}`
 }

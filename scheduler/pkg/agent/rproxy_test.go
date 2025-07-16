@@ -30,6 +30,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/translator"
 	testing_utils2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
@@ -516,7 +517,7 @@ func TestLazyLoadRoundTripper(t *testing.T) {
 			modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
 				modelscaling.NewModelReplicaLagsKeeper(), modelscaling.NewModelReplicaLastUsedKeeper())
 			httpClient.Transport = &lazyModelLoadTransport{
-				loader, http.DefaultTransport, metricsHandler, modelScalingStatsCollector, log.New(), false,
+				loader, http.DefaultTransport, metricsHandler, modelScalingStatsCollector, log.New(), &translator.IdentityTranslator{},
 			}
 			mockMLServerState.setModelServerUnloaded(dummyModel)
 			req.Header.Set(util.SeldonInternalModelHeader, dummyModel)
