@@ -24,7 +24,7 @@ In Seldon we provide two current examples on how to run Iter8 experiments.
 
 The first option is to create an AB Test for the candidate model with an updated Seldon Deployment and run an Iter8 experiment to progressively rollout the candidate based on a set of metrics. The architecture is show below:
 
-![seldonIter8Single](seldon-iter8-single.png)
+![seldonIter8Single](../images/seldon-iter8-single.png)
 
 
 We begin by updating our default model to start an AB test as shown below:
@@ -332,7 +332,7 @@ quickstart-exp   A/B    iris     Completed   15                     ExperimentCo
 
 In the above examples a final stage promotion action is defined for the successful candidate to be updated to the new default Seldon deployment.
 
-As a next step [run the notebook running through this example](../examples/iter8-single.html).
+As a next step [run the notebook running through this example](../notebooks/iter8-single.md).
 
 ## Seldon/Iter8 Experiment over separate Seldon Deployments
 
@@ -340,7 +340,7 @@ We can also run experiments over separate Seldon Deployments. This though would 
 
 The architecture for this type of experiment is shown below:
 
-![seldonIter8Separate](seldon-iter8-separate.png)
+![seldonIter8Separate](../images/seldon-iter8-separate.png)
 
 The difference here is we have two Seldon Deployments. A baseline:
 
@@ -498,4 +498,4 @@ spec:
 
 The progression of the experiment is very similar with in this case the best model be promoted onto of the existing default baseline.
 
-As a next step [run the notebook running through this example](../examples/iter8-separate.html).
+As a next step [run the notebook running through this example](../notebooks/iter8-separate.md).

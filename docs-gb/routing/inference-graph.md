@@ -4,7 +4,7 @@ Seldon Core extends Kubernetes with its own custom resource SeldonDeployment whe
 
 A SeldonDeployment is a JSON or YAML file that allows you to define your graph of component images and the resources each of those images will need to run (using a Kubernetes PodTemplateSpec). The parts of a SeldonDeployment are shown below:
 
-![inference-graph](./inf-graph.png)
+![inference-graph](../images/inf-graph.png)
 
 A minimal example for a single model, this time in YAML, is shown below:
 ```yaml

@@ -21,7 +21,7 @@ Keep reading to learn more!
 
 With `Seldon Core` you can take your model and put it directly into the production using our flexible `Model Servers`.
 
-![](../images/e2e-model-serving.svg)
+![](../docs-gb/images/e2e-model-serving.svg)
 
 Using the so-called `Reusable Model Servers` you can deploy your models into Kubernetes cluster in just a few steps:
 
@@ -48,7 +48,7 @@ Each of these are useful depending on the context and the actual use case.
   Does not require the central repository but requires a build of a new image for every model.
 
 
-![](../images/model-servers.svg)
+![](../docs-gb//images/model-servers.svg)
 
 Read more about our pre-packaged `Model Servers` on their dedicated documentation pages:
 - [MLflow Server](../servers/mlflow.html)
@@ -64,7 +64,7 @@ Language wrappers allows Seldon Core users to build `Reusable` and `Non-Reusable
 As you will see, the whole process is very simple and requires user to only define logic that
 loads models and perform inference prediction as well as the required runtime dependencies.
 
-![](../images/language-wrappers-1.svg)
+![](../docs-gb/images/language-wrappers-1.svg)
 
 
 Model loading and inference logic is defined in `Model.py` file:
@@ -103,7 +103,7 @@ $ curl http://localhost:9000/api/v1.0/predictions \
 }
 ```
 
-![](../images/language-wrappers-2.svg)
+![](../docs-gb/images/language-wrappers-2.svg)
 
 To complete containerisation process you need two more components:
 - `requirements.txt` file that describes your runtime dependencies
@@ -130,7 +130,7 @@ In Seldon Core we use CRDs to define the inference graph through the manifest ya
 The manifest file that you write is very powerful yet simple.
 You can easily define what models do you want in your deployment and how they are connected in the inference graph.
 
-![](../images/seldondeployment-crd.svg)
+![](../docs-gb//images/seldondeployment-crd.svg)
 
 You can think about the CRD as an abstraction around the actual deployment and services that are created in the cluster.
 Once the manifest is applied to the cluster, Seldon Core `Operator` creates all Kubernetes objects required to serve the inference requests.
@@ -149,7 +149,7 @@ It works according to the common Kubernetes operator pattern - in a continues lo
 - `diff` against desired state
 - if necessary `act` to apply desired state
 
-![](../images/operator.svg)
+![](../docs-gb/images/operator.svg)
 
 
 ## Service Orchestrator
@@ -159,7 +159,7 @@ It reads the inference graph structure from the `CRD` and when inference request
 
 It is because of the presence of `Service Orchestrator` that complex graph components like `routers`, `combiners` and output/input `transformers` are available in the `Seldon` world.
 
-![](../images/orchestrator.svg)
+![](../docs-gb/images/orchestrator.svg)
 
 `Service Orchestrator` is also responsible for providing many advance features out of the box:
 - `Jaeger` tracing
@@ -179,7 +179,7 @@ You can easily version your model and describe its expected inputs and outputs.
 These allow you to make connection to the platform you trained your model with (DVC, Pachyderm, ...)
 and know what inputs / outputs you can expect from your inference graph.
 
-![](../images/metadata.svg)
+![](../docs-gb/images/metadata.svg)
 
 Read more about [metadata provenance on its dedicated documentation page](../reference/apis/metadata.html).
 
@@ -189,7 +189,7 @@ Read more about [metadata provenance on its dedicated documentation page](../ref
 Metrics is important aspect of serving ML inference models in production.
 Out of the box Seldon Core deployments expose standard metrics to [Prometheus](https://prometheus.io/) on the `Service Orchestrator`.
 
-![](../images/metrics.png)
+![](../docs-gb/images/metrics.png)
 
 Read more about [metrics on its dedicated documentation page](../analytics/analytics.html).
 
@@ -198,7 +198,7 @@ Read more about [metrics on its dedicated documentation page](../analytics/analy
 
 By default, we support [Jaeger](https://www.jaegertracing.io/) for Distributed Tracing.
 
-![](../images/tracing.svg)
+![](../docs-gb/images/tracing.svg)
 
 Read more about [tracing on its dedicated documentation page](../graph/distributed-tracing.html).
 

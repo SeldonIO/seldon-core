@@ -1,6 +1,6 @@
 # Model and Deployment Metadata
 
-![metadata](./metadata.svg)
+![metadata](../images//metadata.svg)
 
 
 ## Examples
@@ -122,7 +122,7 @@ Model metadata allow you to specify metadata for each of the components (nodes) 
 New orchestrator engine will probe all nodes for their metadata and derive global `inputs` and `outputs` of your graph.
 It will then expose them together with all nodes' metadata at a single endpoint `/api/v1.0/metadata/` of your deployment.
 
-![graph-metadata](./graph-metadata.svg)
+![graph-metadata](../images/graph-metadata.svg)
 
 Example response:
 ```json
