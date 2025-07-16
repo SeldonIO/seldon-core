@@ -237,7 +237,6 @@ func main() {
 		uint(cli.ReverseProxyHttpPort),
 		promMetrics,
 		modelScalingStatsCollector,
-		cli.ConvertFromOpenAIAPI,
 	)
 	defer func() { _ = rpHTTP.Stop() }()
 

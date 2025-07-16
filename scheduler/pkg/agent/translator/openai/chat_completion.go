@@ -282,7 +282,7 @@ func getMessages(jsonBody map[string]interface{}, logger log.FieldLogger) (*Mess
 		}
 
 		// Get tool call ID from the message map
-		messages.ToolCallId[i], _ = msgMap["tool_call_id"]
+		messages.ToolCallId[i] = msgMap["tool_call_id"]
 	}
 	return messages, nil
 }
