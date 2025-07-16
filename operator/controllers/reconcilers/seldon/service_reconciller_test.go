@@ -66,6 +66,145 @@ func TestServiceReconcile(t *testing.T) {
 				mlopsv1alpha1.PipelineGatewayName: "",
 			},
 		},
+		{
+			name: "scheduler disabled",
+			serviceConfig: mlopsv1alpha1.ServiceConfig{
+				GrpcServicePrefix: "",
+			},
+			overrides: map[string]*mlopsv1alpha1.OverrideSpec{
+				mlopsv1alpha1.SchedulerName: {
+					Name:    mlopsv1alpha1.SchedulerName,
+					Disable: true,
+				},
+			},
+			expectedSvcNames: []string{SeldonMeshSVCName, mlopsv1alpha1.PipelineGatewayName},
+			expectedSvcType: map[string]v1.ServiceType{
+				SeldonMeshSVCName:                 v1.ServiceTypeLoadBalancer,
+				mlopsv1alpha1.PipelineGatewayName: "",
+			},
+		},
+		{
+			name: "envoy disabled",
+			serviceConfig: mlopsv1alpha1.ServiceConfig{
+				GrpcServicePrefix: "",
+			},
+			overrides: map[string]*mlopsv1alpha1.OverrideSpec{
+				mlopsv1alpha1.EnvoyName: {
+					Name:    mlopsv1alpha1.EnvoyName,
+					Disable: true,
+				},
+			},
+			expectedSvcNames: []string{mlopsv1alpha1.SchedulerName, mlopsv1alpha1.PipelineGatewayName},
+			expectedSvcType: map[string]v1.ServiceType{
+				SeldonMeshSVCName:                 v1.ServiceTypeLoadBalancer,
+				mlopsv1alpha1.PipelineGatewayName: "",
+			},
+		},
+		{
+			name: "pipeline gateway disabled",
+			serviceConfig: mlopsv1alpha1.ServiceConfig{
+				GrpcServicePrefix: "",
+			},
+			overrides: map[string]*mlopsv1alpha1.OverrideSpec{
+				mlopsv1alpha1.PipelineGatewayName: {
+					Name:    mlopsv1alpha1.PipelineGatewayName,
+					Disable: true,
+				},
+			},
+			expectedSvcNames: []string{SeldonMeshSVCName, mlopsv1alpha1.SchedulerName},
+			expectedSvcType: map[string]v1.ServiceType{
+				SeldonMeshSVCName: v1.ServiceTypeLoadBalancer,
+			},
+		},
+		{
+			name: "all components disabled",
+			serviceConfig: mlopsv1alpha1.ServiceConfig{
+				GrpcServicePrefix: "",
+			},
+			overrides: map[string]*mlopsv1alpha1.OverrideSpec{
+				mlopsv1alpha1.SchedulerName: {
+					Name:    mlopsv1alpha1.SchedulerName,
+					Disable: true,
+				},
+				mlopsv1alpha1.EnvoyName: {
+					Name:    mlopsv1alpha1.EnvoyName,
+					Disable: true,
+				},
+				mlopsv1alpha1.PipelineGatewayName: {
+					Name:    mlopsv1alpha1.PipelineGatewayName,
+					Disable: true,
+				},
+			},
+			expectedSvcNames: []string{}, // No services should be created
+			expectedSvcType:  map[string]v1.ServiceType{},
+		},
+		{
+			name: "mixed disabled and enabled",
+			serviceConfig: mlopsv1alpha1.ServiceConfig{
+				GrpcServicePrefix: "",
+			},
+			overrides: map[string]*mlopsv1alpha1.OverrideSpec{
+				mlopsv1alpha1.SchedulerName: {
+					Name:    mlopsv1alpha1.SchedulerName,
+					Disable: true, // Disabled
+				},
+				mlopsv1alpha1.EnvoyName: {
+					Name:        mlopsv1alpha1.EnvoyName,
+					Disable:     false, // Explicitly enabled
+					ServiceType: v1.ServiceTypeClusterIP,
+				},
+				mlopsv1alpha1.PipelineGatewayName: {
+					Name: mlopsv1alpha1.PipelineGatewayName,
+					// Not disabled, should be created
+				},
+			},
+			expectedSvcNames: []string{SeldonMeshSVCName, mlopsv1alpha1.PipelineGatewayName},
+			expectedSvcType: map[string]v1.ServiceType{
+				SeldonMeshSVCName:                 v1.ServiceTypeClusterIP, // Override applied
+				mlopsv1alpha1.PipelineGatewayName: "",
+			},
+		},
+		{
+			name: "scheduler replicas 0 should not create service",
+			serviceConfig: mlopsv1alpha1.ServiceConfig{
+				GrpcServicePrefix: "",
+			},
+			overrides: map[string]*mlopsv1alpha1.OverrideSpec{
+				mlopsv1alpha1.SchedulerName: {
+					Name:     mlopsv1alpha1.SchedulerName,
+					Replicas: int32Ptr(0), // Scaled to zero
+				},
+			},
+			expectedSvcNames: []string{SeldonMeshSVCName, mlopsv1alpha1.PipelineGatewayName},
+			expectedSvcType: map[string]v1.ServiceType{
+				SeldonMeshSVCName:                 v1.ServiceTypeLoadBalancer,
+				mlopsv1alpha1.PipelineGatewayName: "",
+			},
+		},
+		{
+			name: "mixed replicas 0 and disable true",
+			serviceConfig: mlopsv1alpha1.ServiceConfig{
+				GrpcServicePrefix: "",
+			},
+			overrides: map[string]*mlopsv1alpha1.OverrideSpec{
+				mlopsv1alpha1.SchedulerName: {
+					Name:     mlopsv1alpha1.SchedulerName,
+					Replicas: int32Ptr(0), // Scaled to zero
+				},
+				mlopsv1alpha1.EnvoyName: {
+					Name:    mlopsv1alpha1.EnvoyName,
+					Disable: true, // Explicitly disabled
+				},
+				mlopsv1alpha1.PipelineGatewayName: {
+					Name:     mlopsv1alpha1.PipelineGatewayName,
+					Replicas: int32Ptr(1), // Explicitly enabled with replicas
+				},
+			},
+			expectedSvcNames: []string{mlopsv1alpha1.PipelineGatewayName},
+			expectedSvcType: map[string]v1.ServiceType{
+				mlopsv1alpha1.PipelineGatewayName: "",
+			},
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -97,19 +236,200 @@ func TestServiceReconcile(t *testing.T) {
 			err = sr.Reconcile()
 
 			g.Expect(err).To(BeNil())
+
+			// Check that expected services are created
 			for _, svcName := range test.expectedSvcNames {
 				svc := &v1.Service{}
 				err := client.Get(context.TODO(), types.NamespacedName{
 					Name:      svcName,
 					Namespace: meta.GetNamespace(),
 				}, svc)
-				g.Expect(err).To(BeNil())
+				g.Expect(err).To(BeNil(), "Expected service %s should be created", svcName)
 				if test.expectedSvcType != nil {
 					if svcType, ok := test.expectedSvcType[svcName]; ok {
 						g.Expect(svc.Spec.Type).To(Equal(svcType))
 					}
 				}
 			}
+
+			// Check that disabled services are NOT created
+			allPossibleServices := []string{SeldonMeshSVCName, mlopsv1alpha1.SchedulerName, mlopsv1alpha1.PipelineGatewayName}
+			for _, svcName := range allPossibleServices {
+				found := false
+				for _, expectedSvc := range test.expectedSvcNames {
+					if svcName == expectedSvc {
+						found = true
+						break
+					}
+				}
+				if !found {
+					// This service should NOT exist
+					svc := &v1.Service{}
+					err := client.Get(context.TODO(), types.NamespacedName{
+						Name:      svcName,
+						Namespace: meta.GetNamespace(),
+					}, svc)
+					g.Expect(err).ToNot(BeNil(), "Service %s should NOT be created when disabled", svcName)
+				}
+			}
 		})
 	}
+}
+
+func TestToServicesWithDisableFlag(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	meta := metav1.ObjectMeta{
+		Name:      "test-runtime",
+		Namespace: "test-namespace",
+	}
+
+	serviceConfig := mlopsv1alpha1.ServiceConfig{
+		GrpcServicePrefix: "",
+	}
+
+	type test struct {
+		name               string
+		overrides          map[string]*mlopsv1alpha1.OverrideSpec
+		expectedServices   []string
+		unexpectedServices []string
+	}
+
+	tests := []test{
+		{
+			name:               "no overrides - all services created",
+			overrides:          map[string]*mlopsv1alpha1.OverrideSpec{},
+			expectedServices:   []string{mlopsv1alpha1.SchedulerName, SeldonMeshSVCName, mlopsv1alpha1.PipelineGatewayName},
+			unexpectedServices: []string{},
+		},
+		{
+			name: "scheduler disabled",
+			overrides: map[string]*mlopsv1alpha1.OverrideSpec{
+				mlopsv1alpha1.SchedulerName: {Disable: true},
+			},
+			expectedServices:   []string{SeldonMeshSVCName, mlopsv1alpha1.PipelineGatewayName},
+			unexpectedServices: []string{mlopsv1alpha1.SchedulerName},
+		},
+		{
+			name: "envoy disabled",
+			overrides: map[string]*mlopsv1alpha1.OverrideSpec{
+				mlopsv1alpha1.EnvoyName: {Disable: true},
+			},
+			expectedServices:   []string{mlopsv1alpha1.SchedulerName, mlopsv1alpha1.PipelineGatewayName},
+			unexpectedServices: []string{SeldonMeshSVCName},
+		},
+		{
+			name: "pipeline gateway disabled",
+			overrides: map[string]*mlopsv1alpha1.OverrideSpec{
+				mlopsv1alpha1.PipelineGatewayName: {Disable: true},
+			},
+			expectedServices:   []string{mlopsv1alpha1.SchedulerName, SeldonMeshSVCName},
+			unexpectedServices: []string{mlopsv1alpha1.PipelineGatewayName},
+		},
+		{
+			name: "all components disabled",
+			overrides: map[string]*mlopsv1alpha1.OverrideSpec{
+				mlopsv1alpha1.SchedulerName:       {Disable: true},
+				mlopsv1alpha1.EnvoyName:           {Disable: true},
+				mlopsv1alpha1.PipelineGatewayName: {Disable: true},
+			},
+			expectedServices:   []string{},
+			unexpectedServices: []string{mlopsv1alpha1.SchedulerName, SeldonMeshSVCName, mlopsv1alpha1.PipelineGatewayName},
+		},
+		{
+			name: "scheduler disabled explicitly false should create service",
+			overrides: map[string]*mlopsv1alpha1.OverrideSpec{
+				mlopsv1alpha1.SchedulerName: {Disable: false},
+			},
+			expectedServices:   []string{mlopsv1alpha1.SchedulerName, SeldonMeshSVCName, mlopsv1alpha1.PipelineGatewayName},
+			unexpectedServices: []string{},
+		},
+		{
+			name: "scheduler replicas 0 should not create service",
+			overrides: map[string]*mlopsv1alpha1.OverrideSpec{
+				mlopsv1alpha1.SchedulerName: {Replicas: int32Ptr(0)},
+			},
+			expectedServices:   []string{SeldonMeshSVCName, mlopsv1alpha1.PipelineGatewayName},
+			unexpectedServices: []string{mlopsv1alpha1.SchedulerName},
+		},
+		{
+			name: "envoy replicas 0 should not create service",
+			overrides: map[string]*mlopsv1alpha1.OverrideSpec{
+				mlopsv1alpha1.EnvoyName: {Replicas: int32Ptr(0)},
+			},
+			expectedServices:   []string{mlopsv1alpha1.SchedulerName, mlopsv1alpha1.PipelineGatewayName},
+			unexpectedServices: []string{SeldonMeshSVCName},
+		},
+		{
+			name: "pipeline gateway replicas 0 should not create service",
+			overrides: map[string]*mlopsv1alpha1.OverrideSpec{
+				mlopsv1alpha1.PipelineGatewayName: {Replicas: int32Ptr(0)},
+			},
+			expectedServices:   []string{mlopsv1alpha1.SchedulerName, SeldonMeshSVCName},
+			unexpectedServices: []string{mlopsv1alpha1.PipelineGatewayName},
+		},
+		{
+			name: "mixed disable true and replicas 0",
+			overrides: map[string]*mlopsv1alpha1.OverrideSpec{
+				mlopsv1alpha1.SchedulerName:       {Disable: true},
+				mlopsv1alpha1.EnvoyName:           {Replicas: int32Ptr(0)},
+				mlopsv1alpha1.PipelineGatewayName: {Replicas: int32Ptr(1)},
+			},
+			expectedServices:   []string{mlopsv1alpha1.PipelineGatewayName},
+			unexpectedServices: []string{mlopsv1alpha1.SchedulerName, SeldonMeshSVCName},
+		},
+		{
+			name: "replicas 1 should create service",
+			overrides: map[string]*mlopsv1alpha1.OverrideSpec{
+				mlopsv1alpha1.SchedulerName: {Replicas: int32Ptr(1)},
+			},
+			expectedServices:   []string{mlopsv1alpha1.SchedulerName, SeldonMeshSVCName, mlopsv1alpha1.PipelineGatewayName},
+			unexpectedServices: []string{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			services := toServices(meta, serviceConfig, test.overrides)
+
+			// Check that expected services are present
+			serviceNames := make([]string, len(services))
+			for i, svc := range services {
+				serviceNames[i] = svc.Name
+			}
+
+			for _, expectedSvc := range test.expectedServices {
+				found := false
+				for _, actualSvc := range serviceNames {
+					if expectedSvc == actualSvc {
+						found = true
+						break
+					}
+				}
+				g.Expect(found).To(BeTrue(), "Expected service %s to be created but it was not found", expectedSvc)
+			}
+
+			// Check that unexpected services are NOT present
+			for _, unexpectedSvc := range test.unexpectedServices {
+				found := false
+				for _, actualSvc := range serviceNames {
+					if unexpectedSvc == actualSvc {
+						found = true
+						break
+					}
+				}
+				g.Expect(found).To(BeFalse(), "Service %s should NOT be created when disabled but it was found", unexpectedSvc)
+			}
+
+			// Verify exact count
+			expectedCount := len(test.expectedServices)
+			actualCount := len(services)
+			g.Expect(actualCount).To(Equal(expectedCount), "Expected %d services but got %d", expectedCount, actualCount)
+		})
+	}
+}
+
+// Helper function to create int32 pointer
+func int32Ptr(i int32) *int32 {
+	return &i
 }
