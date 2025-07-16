@@ -76,11 +76,46 @@ func (s *ComponentServiceReconciler) GetResources() []client.Object {
 	return objs
 }
 
+// isComponentEnabled checks if a component should have services created
+// A component is considered disabled if:
+// 1. disable: true is explicitly set, OR
+// 2. replicas: 0 is set (scaled to zero)
+func isComponentEnabled(override *mlopsv1alpha1.OverrideSpec) bool {
+	if override == nil {
+		return true // No override means component is enabled
+	}
+	
+	// Check explicit disable flag
+	if override.Disable {
+		return false
+	}
+	
+	// Check if replicas is set to 0 (scaled to zero)
+	if override.Replicas != nil && *override.Replicas == 0 {
+		return false
+	}
+	
+	return true
+}
+
 func toServices(meta metav1.ObjectMeta, serviceConfig mlopsv1alpha1.ServiceConfig, overrides map[string]*mlopsv1alpha1.OverrideSpec) []*v1.Service {
 	var svcs []*v1.Service
-	svcs = append(svcs, getSchedulerService(meta, serviceConfig, overrides[mlopsv1alpha1.SchedulerName]))
-	svcs = append(svcs, getSeldonMeshService(meta, serviceConfig, overrides[mlopsv1alpha1.EnvoyName]))
-	svcs = append(svcs, getPipelinegatewayService(meta, overrides[mlopsv1alpha1.PipelineGatewayName]))
+
+	// Only create scheduler service if component is enabled
+	if isComponentEnabled(overrides[mlopsv1alpha1.SchedulerName]) {
+		svcs = append(svcs, getSchedulerService(meta, serviceConfig, overrides[mlopsv1alpha1.SchedulerName]))
+	}
+
+	// Only create envoy/mesh service if component is enabled
+	if isComponentEnabled(overrides[mlopsv1alpha1.EnvoyName]) {
+		svcs = append(svcs, getSeldonMeshService(meta, serviceConfig, overrides[mlopsv1alpha1.EnvoyName]))
+	}
+
+	// Only create pipeline gateway service if component is enabled
+	if isComponentEnabled(overrides[mlopsv1alpha1.PipelineGatewayName]) {
+		svcs = append(svcs, getPipelinegatewayService(meta, overrides[mlopsv1alpha1.PipelineGatewayName]))
+	}
+
 	return svcs
 }
 
