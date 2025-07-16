@@ -19,8 +19,6 @@ spec:
         limits:
           memory: '{{ .Values.serverConfig.rclone.resources.memory }}'
     - env:
-      - name: SELDON_CONVERT_FROM_OPENAI_API
-        value: 'true'
       - name: SELDON_SERVER_CAPABILITIES
         value: '{{ .Values.serverConfig.mlserver.serverCapabilities }}'
       - name: SELDON_MODEL_INFERENCE_LAG_THRESHOLD
