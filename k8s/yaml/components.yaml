@@ -1120,8 +1120,6 @@ spec:
       command:
       - /bin/agent
       env:
-      - name: SELDON_CONVERT_FROM_OPENAI_API
-        value: "true"
       - name: SELDON_SERVER_CAPABILITIES
         value: 'mlserver,alibi-detect,alibi-explain,huggingface,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost'
       - name: SELDON_MODEL_INFERENCE_LAG_THRESHOLD
