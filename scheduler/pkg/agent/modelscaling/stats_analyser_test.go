@@ -73,7 +73,10 @@ func TestStatsAnalyserSmoke(t *testing.T) {
 	time.Sleep(time.Millisecond * 100) // for the service to actually start
 
 	g.Expect(err).To(BeNil())
+
+	service.mu.RLock()
 	g.Expect(service.isReady).To(BeTrue())
+	service.mu.RUnlock()
 
 	ch := service.GetEventChannel()
 
@@ -111,7 +114,9 @@ func TestStatsAnalyserSmoke(t *testing.T) {
 
 	time.Sleep(time.Millisecond * 100) // for the service to actually stop
 
+	service.mu.RLock()
 	g.Expect(service.isReady).To(BeFalse())
+	service.mu.RUnlock()
 
 	t.Logf("Done!")
 }
@@ -185,7 +190,9 @@ func TestStatsAnalyserSoak(t *testing.T) {
 	time.Sleep(time.Millisecond * 100) // for the service to actually start
 
 	g.Expect(err).To(BeNil())
+	service.mu.RLock()
 	g.Expect(service.isReady).To(BeTrue())
+	service.mu.RUnlock()
 
 	for j := 0; j < numberModels; j++ {
 		err := service.AddModel(dummyModelPrefix + strconv.Itoa(j))
