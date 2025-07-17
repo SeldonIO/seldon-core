@@ -11,7 +11,13 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.24"
-          cache: false
+          cache: true
+          cache-dependency-path: |
+            hodometer/go.sum
+            operator/go.sum
+            scheduler/go.sum
+            components/kafka/go.sum
+            components/tls/go.sum
       - name: test-operator
         run: make -C operator test
       - name: test-scheduler
