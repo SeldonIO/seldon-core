@@ -40,7 +40,6 @@ func (b *BaseTranslator) TranslateFromOIP(res *http.Response, logger log.FieldLo
 	}
 
 	// Parse the response body
-	logger.Info("Parsing OpenAI API response body", jsonBody)
 	outputs, ok := jsonBody["outputs"].([]interface{})
 	if !ok {
 		logger.Error("`outputs` field not found or not an array in OpenAI API response")

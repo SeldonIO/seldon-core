@@ -98,7 +98,6 @@ func ConvertRequestToJsonBody(req *http.Request, logger log.FieldLogger) (map[st
 	}
 
 	jsonBody, err := GetJsonBody(body)
-	logger.Infof("Parsing OpenAI API request body %v", jsonBody)
 	if err != nil {
 		logger.WithError(err).Error("Failed to parse OpenAI API request body")
 		return nil, err
