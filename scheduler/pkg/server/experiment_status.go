@@ -127,9 +127,7 @@ func (s *SchedulerServer) sendExperimentStatus(event coordinator.ExperimentEvent
 		if hasExpired {
 			// this should trigger a reconnect from the client
 			close(subscription.fin)
-			s.experimentEventStream.mu.Lock()
 			delete(s.experimentEventStream.streams, stream)
-			s.experimentEventStream.mu.Unlock()
 		}
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to send experiment status event to %s for %s", subscription.name, event.String())

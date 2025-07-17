@@ -319,12 +319,14 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 
 			stream := newStubServerStatusServer(10)
 			if test.connection {
+				s.mu.Lock()
 				s.streams[serverName] = &ChainerSubscription{
 					name:   "dummy",
 					stream: stream,
 					fin:    make(chan bool),
 				}
 				g.Expect(s.streams[serverName]).ToNot(BeNil())
+				s.mu.Unlock()
 			}
 
 			// to allow events to propagate
@@ -442,12 +444,14 @@ func TestPipelineEvents(t *testing.T) {
 
 			stream := newStubServerStatusServer(10)
 			if test.connection {
+				s.mu.Lock()
 				s.streams[serverName] = &ChainerSubscription{
 					name:   "dummy",
 					stream: stream,
 					fin:    make(chan bool),
 				}
 				g.Expect(s.streams[serverName]).ToNot(BeNil())
+				s.mu.Unlock()
 			}
 
 			// to allow events to propagate and trigger derived events
@@ -464,7 +468,7 @@ func TestPipelineEvents(t *testing.T) {
 
 				g.Expect(psr).ToNot(BeNil())
 				g.Expect(psr.Pipeline).To(Equal(test.loadReq.Name))
-				g.Expect(psr.Version).To(Equal(uint32(test.loadReq.Version)))
+				g.Expect(psr.Version).To(Equal(test.loadReq.Version))
 				if test.status == pipeline.PipelineCreate {
 					g.Expect(psr.Op).To(Equal(chainer.PipelineUpdateMessage_Create))
 				} else {
@@ -756,8 +760,12 @@ func TestPipelineSubscribe(t *testing.T) {
 				time.Sleep(100 * time.Millisecond)
 				count++
 			}
-			g.Expect(len(s.streams)).To(Equal(test.expectedAgentsCount))
 
+			s.mu.Lock()
+			g.Expect(len(s.streams)).To(Equal(test.expectedAgentsCount))
+			s.mu.Unlock()
+
+			mu.Lock()
 			for idx, s := range streams {
 				go func(idx int, s *grpc.ClientConn) {
 					if test.agents[idx].doClose {
@@ -765,13 +773,23 @@ func TestPipelineSubscribe(t *testing.T) {
 					}
 				}(idx, s)
 			}
+			mu.Unlock()
 
-			count = 0
-			for len(s.streams) != test.expectedAgentsCountAfterClose && count < maxCount {
+			for count < maxCount {
+				s.mu.Lock()
+				if len(s.streams) == test.expectedAgentsCountAfterClose {
+					s.mu.Unlock()
+					break
+				}
+
+				s.mu.Unlock()
 				time.Sleep(100 * time.Millisecond)
 				count++
 			}
+
+			s.mu.Lock()
 			g.Expect(len(s.streams)).To(Equal(test.expectedAgentsCountAfterClose))
+			s.mu.Unlock()
 
 			s.StopSendPipelineEvents()
 		})
