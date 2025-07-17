@@ -373,6 +373,46 @@ func TestRequest(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "streaming",
+			openAIContent: map[string]interface{}{
+				"model": "gpt-4.1",
+				"messages": []map[string]interface{}{
+					{
+						"role":    "user",
+						"content": "Hello!",
+					},
+				},
+				"stream": true,
+			},
+			expectedOipContent: map[string]interface{}{
+				"inputs": []map[string]interface{}{
+					{
+						"name":     "role",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"user"},
+					},
+					{
+						"name":     "content",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"Hello!"},
+					},
+					{
+						"name":     "type",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"text"},
+					},
+				},
+				"parameters": map[string]interface{}{
+					"llm_parameters": map[string]interface{}{
+						"stream": true,
+					},
+				},
+			},
+		},
 	}
 
 	logger := log.New().WithField("Source", "HTTPProxy")
