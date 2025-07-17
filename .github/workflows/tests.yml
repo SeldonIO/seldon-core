@@ -18,6 +18,8 @@ jobs:
             scheduler/go.sum
             components/kafka/go.sum
             components/tls/go.sum
+            apis/go/go.sum
+            tests/integration/go.sum
       - name: test-operator
         run: make -C operator test
       - name: test-scheduler
