@@ -20,7 +20,7 @@ func cleanBody(body string) string {
 	return body
 }
 
-func TestAddModelVersion(t *testing.T) {
+func TestRequest(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
 		name               string
@@ -105,6 +105,208 @@ func TestAddModelVersion(t *testing.T) {
 						"data": []string{
 							"[\"text\"]",
 							"[\"text\"]",
+						},
+					},
+				},
+				"parameters": map[string]interface{}{
+					"llm_parameters": map[string]interface{}{},
+				},
+			},
+		},
+		{
+			name: "tools",
+			openAIContent: map[string]interface{}{
+				"model": "gpt-4.1",
+				"messages": []map[string]interface{}{
+					{
+						"role":    "user",
+						"content": "Hello! What is the weather like in New York?",
+					},
+				},
+				"tools": []map[string]interface{}{
+					{
+						"type":     "function",
+						"function": "foo",
+					},
+					{
+						"type":     "function",
+						"function": "bar",
+					},
+				},
+			},
+			expectedOipContent: map[string]interface{}{
+				"inputs": []map[string]interface{}{
+					{
+						"name":     "role",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"user"},
+					},
+					{
+						"name":     "content",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"Hello! What is the weather like in New York?"},
+					},
+					{
+						"name":     "type",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"text"},
+					},
+					{
+						"name":     "tools",
+						"shape":    []int{2},
+						"datatype": "BYTES",
+						"data": []string{
+							"{\"function\":\"foo\",\"type\":\"function\"}",
+							"{\"function\":\"bar\",\"type\":\"function\"}",
+						},
+					},
+				},
+				"parameters": map[string]interface{}{
+					"llm_parameters": map[string]interface{}{},
+				},
+			},
+		},
+		{
+			name: "tools-calls",
+			openAIContent: map[string]interface{}{
+				"model": "gpt-4.1",
+				"messages": []map[string]interface{}{
+					{
+						"role":    "system",
+						"content": "You are a helpful assistant",
+					},
+					{
+						"role":    "user",
+						"content": "What's the weather like in Paris today?",
+					},
+					{
+						"role": "assistant",
+						"tool_calls": []map[string]interface{}{
+							{
+								"function": "foo_function",
+								"id":       "foo_id",
+								"type":     "function",
+							},
+						},
+					},
+					{
+						"role":         "tool",
+						"tool_call_id": "foo_id",
+						"content":      "foo_content",
+					},
+					{
+						"role":    "user",
+						"content": "What's the weather like in London today?",
+					},
+					{
+						"role": "assistant",
+						"tool_calls": []map[string]interface{}{
+							{
+								"function": "bar_function",
+								"id":       "bar_id",
+								"type":     "function",
+							},
+						},
+					},
+					{
+						"role":         "tool",
+						"tool_call_id": "bar_id",
+						"content":      "bar_content",
+					},
+				},
+				"tools": []map[string]interface{}{
+					{
+						"type":     "function",
+						"function": "foo_function",
+					},
+					{
+						"type":     "function",
+						"function": "bar_function",
+					},
+				},
+			},
+			expectedOipContent: map[string]interface{}{
+				"inputs": []map[string]interface{}{
+					{
+						"name":     "role",
+						"shape":    []int{7},
+						"datatype": "BYTES",
+						"data": []string{
+							"system",
+							"user",
+							"assistant",
+							"tool",
+							"user",
+							"assistant",
+							"tool",
+						},
+					},
+					{
+						"name":     "content",
+						"shape":    []int{7},
+						"datatype": "BYTES",
+						"data": []string{
+							"[\"You are a helpful assistant\"]",
+							"[\"What's the weather like in Paris today?\"]",
+							"[\"\"]",
+							"[\"foo_content\"]",
+							"[\"What's the weather like in London today?\"]",
+							"[\"\"]",
+							"[\"bar_content\"]",
+						},
+					},
+					{
+						"name":     "type",
+						"shape":    []int{7},
+						"datatype": "BYTES",
+						"data": []string{
+							"[\"text\"]",
+							"[\"text\"]",
+							"[\"text\"]",
+							"[\"text\"]",
+							"[\"text\"]",
+							"[\"text\"]",
+							"[\"text\"]",
+						},
+					},
+					{
+						"name":     "tool_calls",
+						"shape":    []int{7},
+						"datatype": "BYTES",
+						"data": []string{
+							"",
+							"",
+							"[\"{\\\"function\\\":\\\"foo_function\\\",\\\"id\\\":\\\"foo_id\\\",\\\"type\\\":\\\"function\\\"}\"]",
+							"",
+							"",
+							"[\"{\\\"function\\\":\\\"bar_function\\\",\\\"id\\\":\\\"bar_id\\\",\\\"type\\\":\\\"function\\\"}\"]",
+							"",
+						},
+					},
+					{
+						"name":     "tool_call_id",
+						"shape":    []int{7},
+						"datatype": "BYTES",
+						"data": []string{
+							"",
+							"",
+							"",
+							"foo_id",
+							"",
+							"",
+							"bar_id",
+						},
+					},
+					{
+						"name":     "tools",
+						"shape":    []int{2},
+						"datatype": "BYTES",
+						"data": []string{
+							"{\"function\":\"foo_function\",\"type\":\"function\"}",
+							"{\"function\":\"bar_function\",\"type\":\"function\"}",
 						},
 					},
 				},
