@@ -236,8 +236,9 @@ func (rp *reverseHTTPProxy) Start() error {
 		IdleConnTimeout:     util.IdleConnTimeoutSeconds * time.Second,
 	}
 	apiTranslators := map[string]translator.Translator{
-		"/chat/completions": &openai.OpenAIChatCompletionsTranslator{},
-		"/embeddings":       &openai.OpenAIEmbeddingsTranslator{},
+		"/chat/completions":   &openai.OpenAIChatCompletionsTranslator{},
+		"/embeddings":         &openai.OpenAIEmbeddingsTranslator{},
+		"/images/generations": &openai.OpenAIImagesGenerationsTranslator{},
 	}
 	proxy.Transport = &lazyModelLoadTransport{
 		rp.stateManager.v2Client.LoadModel,
