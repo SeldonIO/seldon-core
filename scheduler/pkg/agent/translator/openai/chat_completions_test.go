@@ -446,6 +446,198 @@ func TestChatCompletionsRequest(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "parallel-tool-calls",
+			openAIContent: map[string]interface{}{
+				"model": "gpt-4.1",
+				"messages": []map[string]interface{}{
+					{
+						"role":    "user",
+						"content": "Hello! What is the weather like in New York?",
+					},
+				},
+				"tools": []map[string]interface{}{
+					{
+						"type":     "function",
+						"function": "foo",
+					},
+					{
+						"type":     "function",
+						"function": "bar",
+					},
+				},
+				"parallel_tool_calls": true,
+			},
+			expectedOipContent: map[string]interface{}{
+				"inputs": []map[string]interface{}{
+					{
+						"name":     "role",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"user"},
+					},
+					{
+						"name":     "content",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"Hello! What is the weather like in New York?"},
+					},
+					{
+						"name":     "type",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"text"},
+					},
+					{
+						"name":     "tools",
+						"shape":    []int{2},
+						"datatype": "BYTES",
+						"data": []string{
+							"{\"function\":\"foo\",\"type\":\"function\"}",
+							"{\"function\":\"bar\",\"type\":\"function\"}",
+						},
+					},
+					{
+						"name":     "parallel_tool_calls",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"true"},
+					},
+				},
+				"parameters": map[string]interface{}{
+					"llm_parameters": map[string]interface{}{},
+				},
+			},
+		},
+		{
+			name: "tool-choice",
+			openAIContent: map[string]interface{}{
+				"model": "gpt-4.1",
+				"messages": []map[string]interface{}{
+					{
+						"role":    "user",
+						"content": "Hello! What is the weather like in New York?",
+					},
+				},
+				"tools": []map[string]interface{}{
+					{
+						"type":     "function",
+						"function": "foo",
+					},
+					{
+						"type":     "function",
+						"function": "bar",
+					},
+				},
+				"tool_choice": "foo",
+			},
+			expectedOipContent: map[string]interface{}{
+				"inputs": []map[string]interface{}{
+					{
+						"name":     "role",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"user"},
+					},
+					{
+						"name":     "content",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"Hello! What is the weather like in New York?"},
+					},
+					{
+						"name":     "type",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"text"},
+					},
+					{
+						"name":     "tools",
+						"shape":    []int{2},
+						"datatype": "BYTES",
+						"data": []string{
+							"{\"function\":\"foo\",\"type\":\"function\"}",
+							"{\"function\":\"bar\",\"type\":\"function\"}",
+						},
+					},
+					{
+						"name":     "tool_choice",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"foo"},
+					},
+				},
+				"parameters": map[string]interface{}{
+					"llm_parameters": map[string]interface{}{},
+				},
+			},
+		},
+		{
+			name: "tool-choice-complex",
+			openAIContent: map[string]interface{}{
+				"model": "gpt-4.1",
+				"messages": []map[string]interface{}{
+					{
+						"role":    "user",
+						"content": "Hello! What is the weather like in New York?",
+					},
+				},
+				"tools": []map[string]interface{}{
+					{
+						"type":     "function",
+						"function": "foo",
+					},
+					{
+						"type":     "function",
+						"function": "bar",
+					},
+				},
+				"tool_choice": map[string]interface{}{
+					"type":     "function",
+					"function": "dummy_function",
+				},
+			},
+			expectedOipContent: map[string]interface{}{
+				"inputs": []map[string]interface{}{
+					{
+						"name":     "role",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"user"},
+					},
+					{
+						"name":     "content",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"Hello! What is the weather like in New York?"},
+					},
+					{
+						"name":     "type",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"text"},
+					},
+					{
+						"name":     "tools",
+						"shape":    []int{2},
+						"datatype": "BYTES",
+						"data": []string{
+							"{\"function\":\"foo\",\"type\":\"function\"}",
+							"{\"function\":\"bar\",\"type\":\"function\"}",
+						},
+					},
+					{
+						"name":     "tool_choice",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"{\"function\":\"dummy_function\",\"type\":\"function\"}"},
+					},
+				},
+				"parameters": map[string]interface{}{
+					"llm_parameters": map[string]interface{}{},
+				},
+			},
+		},
 	}
 
 	logger := log.New().WithField("Source", "HTTPProxy")
