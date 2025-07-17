@@ -5,8 +5,6 @@ import (
 	"sync/atomic"
 )
 
-// TODO write tests
-
 func NewCountedSyncMap[T any]() *CountedSyncMap[T] {
 	return &CountedSyncMap[T]{
 		m: &sync.Map{},
