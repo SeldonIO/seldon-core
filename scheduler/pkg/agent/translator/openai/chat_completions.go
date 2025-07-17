@@ -33,12 +33,16 @@ func (t *OpenAIChatCompletionsTranslator) TranslateToOIP(req *http.Request, logg
 		return nil, err
 	}
 
-	// Prepare tools and LLM parameters
-	tools, _ := jsonBody["tools"].([]interface{})
+	// Prepare tools
+	tools := getTools(jsonBody, logger)
+	parallelToolCalls := getParallelToolCalls(jsonBody, logger)
+	toolChoice := getToolChoice(jsonBody, logger)
+
+	// Prepare LLM parameters
 	llm_parameters := getLLMParameters(jsonBody)
 
 	// Construct the OIP formated input request
-	inferenceRequest, err := constructChatCompletionInferenceRequest(messages, tools, llm_parameters)
+	inferenceRequest, err := constructChatCompletionInferenceRequest(messages, tools, parallelToolCalls, toolChoice, llm_parameters)
 	if err != nil {
 		logger.WithError(err).Error("Failed to construct inference request")
 		return nil, err
@@ -46,6 +50,27 @@ func (t *OpenAIChatCompletionsTranslator) TranslateToOIP(req *http.Request, logg
 
 	// Construct new request
 	return translator.ConvertInferenceRequestToHttpRequest(inferenceRequest, req, logger)
+}
+
+func getTools(jsonBody map[string]interface{}, logger log.FieldLogger) []interface{} {
+	tools, _ := jsonBody["tools"].([]interface{})
+	return tools
+}
+
+func getParallelToolCalls(jsonBody map[string]interface{}, logger log.FieldLogger) []interface{} {
+	parallelToolCalls, ok := jsonBody["parallel_tool_calls"]
+	if !ok {
+		return []interface{}{}
+	}
+	return []interface{}{parallelToolCalls}
+}
+
+func getToolChoice(jsonBody map[string]interface{}, logger log.FieldLogger) []interface{} {
+	toolChoice, ok := jsonBody["tool_choice"]
+	if !ok {
+		return []interface{}{}
+	}
+	return []interface{}{toolChoice}
 }
 
 type Messages struct {
@@ -192,7 +217,7 @@ func getMessages(jsonBody map[string]interface{}, logger log.FieldLogger) (*Mess
 func getLLMParameters(jsonBody map[string]interface{}) map[string]interface{} {
 	llmParameters := make(map[string]interface{})
 	for key, value := range jsonBody {
-		if key == "model" || key == "messages" || key == "tools" {
+		if key == "model" || key == "messages" || key == "tools" || key == "parallel_tool_calls" || key == "tool_choice" {
 			continue
 		}
 		llmParameters[key] = value
@@ -301,13 +326,13 @@ func constructInferenceRequestInputs(messages *Messages) ([]interface{}, error) 
 	return inferenceRequestInputs, nil
 }
 
-func constructChatCompletionInferenceRequest(messages *Messages, tools []interface{}, llmParams map[string]interface{}) (map[string]interface{}, error) {
+func constructChatCompletionInferenceRequest(messages *Messages, tools []interface{}, parallelToolCalls []interface{}, toolChoice []interface{}, llmParams map[string]interface{}) (map[string]interface{}, error) {
 	inferenceRequestInputs, err := constructInferenceRequestInputs(messages)
 	if err != nil {
 		return nil, fmt.Errorf("failed to construct inference request inputs: %v", err)
 	}
 
-	if tools != nil {
+	if len(tools) > 0 {
 		strTools, err := marshalListContent(tools)
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal tools content: %v", err)
@@ -316,6 +341,30 @@ func constructChatCompletionInferenceRequest(messages *Messages, tools []interfa
 			inferenceRequestInputs,
 			translator.ConstructStringTensor("tools", strTools),
 		)
+
+		// Add parallel_tool_calls if present
+		if len(parallelToolCalls) > 0 {
+			strParallelToolCalls, err := marshalListContent(parallelToolCalls)
+			if err != nil {
+				return nil, fmt.Errorf("failed to marshal parallel tool calls content: %v", err)
+			}
+			inferenceRequestInputs = append(
+				inferenceRequestInputs,
+				translator.ConstructStringTensor("parallel_tool_calls", strParallelToolCalls),
+			)
+		}
+
+		// Add tool_choice if present
+		if len(toolChoice) > 0 {
+			strToolChoice, err := marshalListContent(toolChoice)
+			if err != nil {
+				return nil, fmt.Errorf("failed to marshal tool choice content: %v", err)
+			}
+			inferenceRequestInputs = append(
+				inferenceRequestInputs,
+				translator.ConstructStringTensor("tool_choice", strToolChoice),
+			)
+		}
 	}
 
 	return map[string]interface{}{
