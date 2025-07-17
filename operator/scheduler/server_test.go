@@ -63,6 +63,34 @@ func TestServerNotify(t *testing.T) {
 			},
 		},
 		{
+			name: "good server - min replicas set, replicas not set",
+			servers: []v1alpha1.Server{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: v1alpha1.ServerSpec{
+						ScalingSpec: v1alpha1.ScalingSpec{
+							MinReplicas: getIntPtr(1),
+						},
+					},
+				},
+			},
+			expectedProtos: []*scheduler.ServerNotify{
+				{
+					Name:             "foo",
+					MinReplicas:      1,
+					ExpectedReplicas: 1,
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+			},
+		},
+		{
 			name: "good server - replicas not set",
 			servers: []v1alpha1.Server{
 				{

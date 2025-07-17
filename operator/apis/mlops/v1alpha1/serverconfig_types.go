@@ -75,5 +75,8 @@ func GetServerConfigForServer(serverConfig string, client client.Client) (*Serve
 	}
 	sc := ServerConfig{}
 	err := client.Get(context.TODO(), types.NamespacedName{Name: serverConfig, Namespace: constants.SeldonNamespace}, &sc)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get ServerConfig: %w", err)
+	}
 	return &sc, err
 }

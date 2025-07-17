@@ -36,3 +36,7 @@ licenses: licenses/dep.txt
 		licenses/license_info.csv \
 		../../licenses/additional_license_info.csv
 	concatenate-license -o licenses/license.txt licenses/license_info.csv
+
+.PHONY: go-generate
+go-generate:
+	go generate ./...
