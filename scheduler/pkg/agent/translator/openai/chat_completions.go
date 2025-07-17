@@ -282,7 +282,7 @@ func getMessages(jsonBody map[string]interface{}, logger log.FieldLogger) (*Mess
 		}
 
 		// Get tool call ID from the message map
-		messages.ToolCallId[i] = msgMap["tool_call_id"]
+		messages.ToolCallId[i], _ = msgMap["tool_call_id"].(string)
 	}
 	return messages, nil
 }
@@ -302,12 +302,6 @@ func marshalListContent(content []interface{}) ([]string, error) {
 	jsonContent := make([]string, len(content))
 
 	for i, item := range content {
-		if item == nil {
-			jsonContent[i] = ""
-			continue
-		}
-
-		// Use reflection to check if it's an empty slice
 		val := reflect.ValueOf(item)
 		if val.Kind() == reflect.Slice && val.Len() == 0 {
 			jsonContent[i] = ""
@@ -331,8 +325,11 @@ func marshalListContent(content []interface{}) ([]string, error) {
 
 func unwrapContentFromSlice(content []interface{}) ([]string, error) {
 	switch c := content[0].(type) {
-	case nil:
-		return []string{}, nil
+	case string:
+		if len(c) == 0 {
+			return []string{}, nil
+		}
+		return []string{c}, nil
 	case []string:
 		return c, nil
 	default:
@@ -355,7 +352,7 @@ func addFieldToInferenceRequestInputs(inferenceRequestInputs []interface{}, fiel
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare field '%s' content: %v", fieldName, err)
 	}
-	if len(strContent) > 0 {
+	if len(strContent) > 0 && !translator.IsEmptySlice(strContent) {
 		inferenceRequestInputs = append(
 			inferenceRequestInputs, translator.ConstructStringTensor(fieldName, strContent),
 		)

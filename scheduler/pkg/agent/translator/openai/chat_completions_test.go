@@ -107,18 +107,6 @@ func TestAddModelVersion(t *testing.T) {
 							"[\"text\"]",
 						},
 					},
-					{
-						"name":     "tool_calls",
-						"shape":    []int{2},
-						"datatype": "BYTES",
-						"data":     []string{"", ""},
-					},
-					{
-						"name":     "tool_call_id",
-						"shape":    []int{2},
-						"datatype": "BYTES",
-						"data":     []string{"", ""},
-					},
 				},
 				"parameters": map[string]interface{}{
 					"llm_parameters": map[string]interface{}{},
