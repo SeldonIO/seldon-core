@@ -45,7 +45,7 @@ func (t *OpenAIChatCompletionsTranslator) TranslateToOIP(req *http.Request, logg
 	llm_parameters := getLLMParameters(jsonBody)
 
 	// Construct the OIP formated input request
-	inferenceRequest, err := constructInferenceRequest(messages, tools, llm_parameters)
+	inferenceRequest, err := constructChatCompletionInferenceRequest(messages, tools, llm_parameters)
 	if err != nil {
 		logger.WithError(err).Error("Failed to construct inference request")
 		return nil, err
@@ -399,7 +399,7 @@ func constructInferenceRequestInputs(messages *Messages) ([]interface{}, error) 
 	return inferenceRequestInputs, nil
 }
 
-func constructInferenceRequest(messages *Messages, tools []interface{}, llmParams map[string]interface{}) (map[string]interface{}, error) {
+func constructChatCompletionInferenceRequest(messages *Messages, tools []interface{}, llmParams map[string]interface{}) (map[string]interface{}, error) {
 	inferenceRequestInputs, err := constructInferenceRequestInputs(messages)
 	if err != nil {
 		return nil, fmt.Errorf("failed to construct inference request inputs: %v", err)
