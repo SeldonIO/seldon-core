@@ -110,8 +110,10 @@ func (s *SchedulerServer) handleExperimentEvents(event coordinator.ExperimentEve
 
 func (s *SchedulerServer) sendExperimentStatus(event coordinator.ExperimentEventMsg) {
 	logger := s.logger.WithField("func", "sendExperimentStatus")
+
 	s.experimentEventStream.mu.Lock()
 	defer s.experimentEventStream.mu.Unlock()
+
 	for stream, subscription := range s.experimentEventStream.streams {
 		msg := &pb.ExperimentStatusResponse{
 			ExperimentName:    event.ExperimentName,
@@ -125,7 +127,9 @@ func (s *SchedulerServer) sendExperimentStatus(event coordinator.ExperimentEvent
 		if hasExpired {
 			// this should trigger a reconnect from the client
 			close(subscription.fin)
+			s.experimentEventStream.mu.Lock()
 			delete(s.experimentEventStream.streams, stream)
+			s.experimentEventStream.mu.Unlock()
 		}
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to send experiment status event to %s for %s", subscription.name, event.String())

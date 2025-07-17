@@ -15,11 +15,13 @@ import (
 	"math"
 	"math/rand"
 	"strconv"
+	"sync"
 
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/server/stream/v3"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	"github.com/sirupsen/logrus"
 
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
@@ -48,14 +50,16 @@ type SeldonXDSCache struct {
 	// updates can be sequenced in a way that reduces the susceptibility to "no cluster found"
 	// responses
 	muxCache      *cache.MuxCache
-	snapshotCache cache.SnapshotCache // routes
+	snapshotCache cache.SnapshotCache // Routes
 	cds           *cache.LinearCache  // clusters
 	lds           *cache.LinearCache  // listener
 	sds           *cache.LinearCache  // secrets
 
-	Clusters               map[string]Cluster
-	Pipelines              map[string]PipelineRoute
-	Routes                 map[string]Route
+	// TODO these 3 should be private
+	Clusters               *util.CountedSyncMap[Cluster]
+	Pipelines              *util.CountedSyncMap[PipelineRoute]
+	Routes                 *util.CountedSyncMap[Route]
+	muClustersToAdd        sync.RWMutex
 	clustersToAdd          map[string]struct{}
 	clustersToRemove       map[string]struct{}
 	pipelineGatewayDetails *PipelineGatewayDetails
@@ -80,9 +84,9 @@ type EnvoyConfig struct {
 
 func NewSeldonXDSCache(logger logrus.FieldLogger, pipelineGatewayDetails *PipelineGatewayDetails, config *EnvoyConfig) (*SeldonXDSCache, error) {
 	xdsCache := &SeldonXDSCache{
-		Clusters:               make(map[string]Cluster),
-		Pipelines:              make(map[string]PipelineRoute),
-		Routes:                 make(map[string]Route),
+		Clusters:               util.NewCountedSyncMap[Cluster](),
+		Pipelines:              util.NewCountedSyncMap[PipelineRoute](),
+		Routes:                 util.NewCountedSyncMap[Route](),
 		clustersToAdd:          make(map[string]struct{}),
 		clustersToRemove:       make(map[string]struct{}),
 		pipelineGatewayDetails: pipelineGatewayDetails,
@@ -96,6 +100,10 @@ func NewSeldonXDSCache(logger logrus.FieldLogger, pipelineGatewayDetails *Pipeli
 		return nil, err
 	}
 	return xdsCache, nil
+}
+
+func (xds *SeldonXDSCache) GetRoute(modelName string) (*Route, bool) {
+	return xds.Routes.Load(modelName)
 }
 
 func (xds *SeldonXDSCache) CreateWatch(req *cache.Request, stream stream.StreamState, responseChan chan cache.Response) (cancel func()) {
@@ -318,7 +326,7 @@ func (xds *SeldonXDSCache) UpdateRoutes(nodeId string) error {
 	snapshot, err := cache.NewSnapshot(
 		xds.newSnapshotVersion(), // version
 		map[resource.Type][]types.Resource{
-			resource.RouteType: xds.RouteResources(), // routes
+			resource.RouteType: xds.RouteResources(), // Routes
 		})
 	if err != nil {
 		logger.Errorf("could not create snapshot %+v", snapshot)
@@ -335,6 +343,9 @@ func (xds *SeldonXDSCache) UpdateRoutes(nodeId string) error {
 }
 
 func (xds *SeldonXDSCache) AddClusters() error {
+	xds.muClustersToAdd.Lock()
+	defer xds.muClustersToAdd.Unlock()
+
 	var clientSecret *Secret
 	if xds.tlsActive {
 		if secret, ok := xds.secrets[envoyUpstreamClientCertName]; ok {
@@ -344,7 +355,7 @@ func (xds *SeldonXDSCache) AddClusters() error {
 
 	resources := make(map[string]types.Resource)
 	for clusterName := range xds.clustersToAdd {
-		cluster, ok := xds.Clusters[clusterName]
+		cluster, ok := xds.Clusters.Load(clusterName)
 		if ok {
 			resource := makeCluster(cluster.Name, cluster.Endpoints, cluster.Grpc, clientSecret)
 			resources[cluster.Name] = resource
@@ -370,28 +381,29 @@ func (xds *SeldonXDSCache) RemoveClusters() error {
 
 // updates are batched - always check if the state has changed
 func (xds *SeldonXDSCache) shouldRemoveCluster(name string) bool {
-	cluster, ok := xds.Clusters[name]
+	cluster, ok := xds.Clusters.Load(name)
 	return !ok || len(cluster.Routes) < 1
 }
 
 func (xds *SeldonXDSCache) AddPipelineRoute(routeName string, trafficSplits []PipelineTrafficSplit, mirror *PipelineTrafficSplit) {
 	xds.RemovePipelineRoute(routeName)
-	pipelineRoute, ok := xds.Pipelines[routeName]
+	pipelineRoute, ok := xds.Pipelines.Load(routeName)
 	if !ok {
-		xds.Pipelines[routeName] = PipelineRoute{
+		xds.Pipelines.Store(routeName, PipelineRoute{
 			RouteName: routeName,
 			Mirror:    mirror,
 			Clusters:  trafficSplits,
-		}
-	} else {
-		pipelineRoute.Mirror = mirror
-		pipelineRoute.Clusters = trafficSplits
-		xds.Pipelines[routeName] = pipelineRoute
+		})
+		return
 	}
+
+	pipelineRoute.Mirror = mirror
+	pipelineRoute.Clusters = trafficSplits
+	xds.Pipelines.Store(routeName, *pipelineRoute)
 }
 
 func (xds *SeldonXDSCache) RemovePipelineRoute(pipelineName string) {
-	delete(xds.Pipelines, pipelineName)
+	xds.Pipelines.Delete(pipelineName)
 }
 
 func (xds *SeldonXDSCache) AddRouteClusterTraffic(
@@ -401,9 +413,10 @@ func (xds *SeldonXDSCache) AddRouteClusterTraffic(
 	logPayloads bool,
 	isMirror bool,
 ) {
-	route, ok := xds.Routes[routeName]
+
+	route, ok := xds.Routes.Load(routeName)
 	if !ok {
-		route = Route{
+		route = &Route{
 			RouteName:   routeName,
 			LogPayloads: logPayloads,
 		}
@@ -428,7 +441,7 @@ func (xds *SeldonXDSCache) AddRouteClusterTraffic(
 		route.Clusters = append(route.Clusters, clusterTraffic)
 	}
 
-	xds.Routes[routeName] = route
+	xds.Routes.Store(routeName, *route)
 }
 
 func (xds *SeldonXDSCache) AddClustersForRoute(
@@ -441,9 +454,9 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 
 	routeVersionKey := RouteVersionKey{RouteName: routeName, ModelName: modelName, Version: modelVersion}
 
-	httpCluster, ok := xds.Clusters[httpClusterName]
+	httpCluster, ok := xds.Clusters.Load(httpClusterName)
 	if !ok {
-		httpCluster = Cluster{
+		httpCluster = &Cluster{
 			Name:      httpClusterName,
 			Endpoints: make(map[string]Endpoint),
 			Routes:    make(map[RouteVersionKey]bool),
@@ -451,9 +464,9 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 		}
 	}
 
-	grpcCluster, ok := xds.Clusters[grpcClusterName]
+	grpcCluster, ok := xds.Clusters.Load(grpcClusterName)
 	if !ok {
-		grpcCluster = Cluster{
+		grpcCluster = &Cluster{
 			Name:      grpcClusterName,
 			Endpoints: make(map[string]Endpoint),
 			Routes:    make(map[RouteVersionKey]bool),
@@ -481,32 +494,38 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 		}
 	}
 
-	xds.Clusters[httpClusterName] = httpCluster
+	xds.muClustersToAdd.Lock()
+	defer xds.muClustersToAdd.Unlock()
+
 	httpCluster.Routes[routeVersionKey] = true
+	xds.Clusters.Store(httpClusterName, *httpCluster)
+
 	xds.clustersToAdd[httpClusterName] = struct{}{}
 
-	xds.Clusters[grpcClusterName] = grpcCluster
 	grpcCluster.Routes[routeVersionKey] = true
+	xds.Clusters.Store(grpcClusterName, *grpcCluster)
+
 	xds.clustersToAdd[grpcClusterName] = struct{}{}
 }
 
 func (xds *SeldonXDSCache) RemoveRoute(routeName string) error {
 	logger := xds.logger.WithField("func", "RemoveRoute")
-	logger.Infof("Remove routes for model %s", routeName)
-	route, ok := xds.Routes[routeName]
+	logger.Infof("Remove Routes for model %s", routeName)
+	route, ok := xds.Routes.Load(routeName)
 	if !ok {
 		logger.Warnf("No route found for model %s", routeName)
 		return nil
 	}
-	delete(xds.Routes, routeName)
+	xds.Routes.Delete(routeName)
+
 	for _, cluster := range route.Clusters {
-		err := xds.removeRouteFromCluster(route, cluster)
+		err := xds.removeRouteFromCluster(*route, cluster)
 		if err != nil {
 			return err
 		}
 	}
 	if route.Mirror != nil {
-		err := xds.removeRouteFromCluster(route, *route.Mirror)
+		err := xds.removeRouteFromCluster(*route, *route.Mirror)
 		if err != nil {
 			return err
 		}
@@ -516,13 +535,13 @@ func (xds *SeldonXDSCache) RemoveRoute(routeName string) error {
 
 func (xds *SeldonXDSCache) removeRouteFromCluster(route Route, cluster TrafficSplit) error {
 	removeCluster := func(route Route, clusterName string, split TrafficSplit) error {
-		cluster, ok := xds.Clusters[clusterName]
+		cluster, ok := xds.Clusters.Load(clusterName)
 		if !ok {
 			return fmt.Errorf("can't find cluster for route %s cluster %s route %+v", route.RouteName, clusterName, route)
 		}
 		delete(cluster.Routes, RouteVersionKey{RouteName: route.RouteName, ModelName: split.ModelName, Version: split.ModelVersion})
 		if len(cluster.Routes) == 0 {
-			delete(xds.Clusters, clusterName)
+			xds.Clusters.Delete(clusterName)
 			xds.clustersToRemove[clusterName] = struct{}{}
 		}
 		return nil
