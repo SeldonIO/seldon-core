@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func GetJsonBody(body []byte) (map[string]interface{}, error) {
@@ -86,6 +88,49 @@ func ReadResponseBody(res *http.Response) ([]byte, error) {
 	}
 
 	return body, nil
+}
+
+func ConvertRequestToJsonBody(req *http.Request, logger log.FieldLogger) (map[string]interface{}, error) {
+	body, err := ReadRequestBody(req)
+	if err != nil {
+		logger.WithError(err).Error("Failed to read OpenAI API request body")
+		return nil, err
+	}
+
+	jsonBody, err := GetJsonBody(body)
+	logger.Infof("Parsing OpenAI API request body %v", jsonBody)
+	if err != nil {
+		logger.WithError(err).Error("Failed to parse OpenAI API request body")
+		return nil, err
+	}
+
+	return jsonBody, nil
+}
+
+func ConvertInferenceRequestToHttpRequest(inferenceRequest map[string]interface{}, req *http.Request, logger log.FieldLogger) (*http.Request, error) {
+	data, err := json.Marshal(inferenceRequest)
+	if err != nil {
+		logger.WithError(err).Error("Failed to marshal OpenAI API request inputs")
+		return nil, err
+	}
+
+	// Create a new request with the translated body
+	newBody := io.NopCloser(bytes.NewBuffer(data))
+	newReq, err := http.NewRequest(req.Method, req.URL.String(), newBody)
+	if err != nil {
+		logger.WithError(err).Error("Failed to create new HTTP request for OpenAI API")
+		return nil, err
+	}
+	newReq.Header = req.Header.Clone()
+
+	// OpenAI API clinet adds `chat/completions` to the path, we need to remove it
+	err = TrimPathAfterInfer(newReq)
+	if err != nil {
+		logger.WithError(err).Error("Failed to trim path after infer in OpenAI API request")
+		return nil, err
+	}
+
+	return newReq, nil
 }
 
 func MatchMarker(path string, marker string) (int, error) {

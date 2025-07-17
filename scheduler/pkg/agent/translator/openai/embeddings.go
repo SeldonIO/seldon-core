@@ -1,10 +1,7 @@
 package openai
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
@@ -64,16 +61,10 @@ func constructEmbeddingsInferenceRequest(input []string, llmParams map[string]in
 }
 
 func (t *OpenAIEmbeddingsTranslator) TranslateToOIP(req *http.Request, logger log.FieldLogger) (*http.Request, error) {
-	body, err := translator.ReadRequestBody(req)
+	// Convert OpenAI API request to JSON
+	jsonBody, err := translator.ConvertRequestToJsonBody(req, logger)
 	if err != nil {
-		logger.WithError(err).Error("Failed to read OpenAI request body")
-		return nil, err
-	}
-
-	jsonBody, err := translator.GetJsonBody(body)
-	logger.Info("Parsing OpenAI API request body %v", jsonBody)
-	if err != nil {
-		logger.WithError(err).Error("Failed to parse OpenAI API request body")
+		logger.WithError(err).Error("Failed to convert OpenAI API request to JSON body")
 		return nil, err
 	}
 
@@ -93,27 +84,6 @@ func (t *OpenAIEmbeddingsTranslator) TranslateToOIP(req *http.Request, logger lo
 	// Construct the inference request
 	inferenceRequest := constructEmbeddingsInferenceRequest(input, llmParams)
 
-	// Marshal the inference request to JSON
-	data, err := json.Marshal(inferenceRequest)
-	if err != nil {
-		logger.WithError(err).Error("Failed to marshal OpenAI API request inputs")
-		return nil, err
-	}
-
-	// Create a new request with the translated body
-	newBody := io.NopCloser(bytes.NewBuffer(data))
-	newReq, err := http.NewRequest(req.Method, req.URL.String(), newBody)
-	if err != nil {
-		logger.WithError(err).Error("Failed to create new HTTP request for OpenAI API")
-		return nil, err
-	}
-	newReq.Header = req.Header.Clone()
-
-	// OpenAI API clinet adds `chat/completions` to the path, we need to remove it
-	err = translator.TrimPathAfterInfer(newReq)
-	if err != nil {
-		logger.WithError(err).Error("Failed to trim path after infer in OpenAI API request")
-		return nil, err
-	}
-	return newReq, nil
+	// Construct new request
+	return translator.ConvertInferenceRequestToHttpRequest(inferenceRequest, req, logger)
 }

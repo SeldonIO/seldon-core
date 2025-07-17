@@ -1,10 +1,8 @@
 package openai
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"reflect"
 
@@ -18,17 +16,10 @@ type OpenAIChatCompletionsTranslator struct {
 }
 
 func (t *OpenAIChatCompletionsTranslator) TranslateToOIP(req *http.Request, logger log.FieldLogger) (*http.Request, error) {
-	// Read the request body
-	body, err := translator.ReadRequestBody(req)
+	// Convert OpenAI API request to JSON
+	jsonBody, err := translator.ConvertRequestToJsonBody(req, logger)
 	if err != nil {
-		logger.WithError(err).Error("Failed to read OpenAI API request body")
-		return nil, err
-	}
-
-	jsonBody, err := translator.GetJsonBody(body)
-	logger.Infof("Parsing OpenAI API request body %v", jsonBody)
-	if err != nil {
-		logger.WithError(err).Error("Failed to parse OpenAI API request body")
+		logger.WithError(err).Error("Failed to convert OpenAI API request to JSON body")
 		return nil, err
 	}
 
@@ -53,29 +44,8 @@ func (t *OpenAIChatCompletionsTranslator) TranslateToOIP(req *http.Request, logg
 		return nil, err
 	}
 
-	data, err := json.Marshal(inferenceRequest)
-	if err != nil {
-		logger.WithError(err).Error("Failed to marshal OpenAI API request inputs")
-		return nil, err
-	}
-
-	// Create a new request with the translated body
-	newBody := io.NopCloser(bytes.NewBuffer(data))
-	newReq, err := http.NewRequest(req.Method, req.URL.String(), newBody)
-	if err != nil {
-		logger.WithError(err).Error("Failed to create new HTTP request for OpenAI API")
-		return nil, err
-	}
-	newReq.Header = req.Header.Clone()
-
-	// OpenAI API clinet adds `chat/completions` to the path, we need to remove it
-	err = translator.TrimPathAfterInfer(newReq)
-	if err != nil {
-		logger.WithError(err).Error("Failed to trim path after infer in OpenAI API request")
-		return nil, err
-	}
-
-	return newReq, nil
+	// Construct new request
+	return translator.ConvertInferenceRequestToHttpRequest(inferenceRequest, req, logger)
 }
 
 type Messages struct {
