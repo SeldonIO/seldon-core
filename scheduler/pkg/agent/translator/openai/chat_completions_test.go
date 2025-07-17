@@ -12,14 +12,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func cleanBody(body string) string {
-	// Remove whitespace, tabs, and newlines for comparison
-	body = strings.ReplaceAll(body, "\n", "")
-	body = strings.ReplaceAll(body, "\t", "")
-	body = strings.ReplaceAll(body, " ", "")
-	return body
-}
-
 func TestRequest(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
