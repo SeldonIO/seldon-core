@@ -9,7 +9,9 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package v1alpha1
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type ValidatedScalingSpec struct {
 	Replicas    uint32
@@ -18,8 +20,7 @@ type ValidatedScalingSpec struct {
 }
 
 // TODO consider putting these rules via CEL into the CR definition for Server, this will allow customers earlier feedback
-//
-//	their CRs are invalid upon trying to apply them, instead of checking controller logs after applying.
+// their CRs are invalid upon trying to apply them, instead of checking controller logs after applying.
 func GetValidatedScalingSpec(replicas *int32, minReplicas *int32, maxReplicas *int32) (*ValidatedScalingSpec, error) {
 	spec, err := validatedScalingSpec(replicas, minReplicas, maxReplicas)
 	if err != nil {
