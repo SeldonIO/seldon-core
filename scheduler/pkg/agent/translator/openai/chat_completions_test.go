@@ -12,7 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func TestRequest(t *testing.T) {
+func TestChatCompletionsRequest(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
 		name               string

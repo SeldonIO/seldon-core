@@ -24,8 +24,9 @@ func TestEmbeddingsRequest(t *testing.T) {
 		{
 			name: "default",
 			openAIContent: map[string]interface{}{
-				"model": "text-embedding-ada-002",
-				"input": "This is a test",
+				"model":           "text-embedding-ada-002",
+				"input":           "This is a test",
+				"encoding_format": "float",
 			},
 			expectedOipContent: map[string]interface{}{
 				"inputs": []map[string]interface{}{
@@ -37,7 +38,9 @@ func TestEmbeddingsRequest(t *testing.T) {
 					},
 				},
 				"parameters": map[string]interface{}{
-					"llm_parameters": map[string]interface{}{},
+					"llm_parameters": map[string]interface{}{
+						"encoding_format": "float",
+					},
 				},
 			},
 		},
