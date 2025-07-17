@@ -91,6 +91,10 @@ build-receiver-docker:
 push-hodometer-docker:
 	docker push ${HODOMETER_IMG}
 
+.PHONY: go-generate
+go-generate:
+	go generate ./...
+
 .PHONY: build-and-push-prod-hodometer-docker
 build-and-push-prod-hodometer-docker:
 	docker buildx build \
