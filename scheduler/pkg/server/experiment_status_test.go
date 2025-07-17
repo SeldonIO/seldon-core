@@ -137,12 +137,15 @@ func TestExperimentStatusEvents(t *testing.T) {
 			}
 
 			stream := newStubExperimentStatusServer(1, 5*time.Millisecond)
+			s.experimentEventStream.mu.Lock()
 			s.experimentEventStream.streams[stream] = &ExperimentSubscription{
 				name:   "dummy",
 				stream: stream,
 				fin:    make(chan bool),
 			}
 			g.Expect(s.experimentEventStream.streams[stream]).ToNot(BeNil())
+			s.experimentEventStream.mu.Unlock()
+
 			hub.PublishExperimentEvent(experimentEventHandlerName, coordinator.ExperimentEventMsg{
 				ExperimentName: "foo"})
 

@@ -198,24 +198,28 @@ func TestPipelineStatusEvents(t *testing.T) {
 				s.pipelineEventStream.mu.Lock()
 				g.Expect(s.pipelineEventStream.streams).To(HaveLen(0))
 				s.pipelineEventStream.mu.Unlock()
-			} else {
-
-				var psr *pb.PipelineStatusResponse
-				select {
-				case next := <-stream.msgs:
-					psr = next
-				case <-time.After(2 * time.Second):
-					t.Fail()
-				}
-
-				g.Expect(psr).ToNot(BeNil())
-				g.Expect(psr.Versions).To(HaveLen(1))
-				g.Expect(psr.Versions[0].State.Status).To(Equal(pb.PipelineVersionState_PipelineCreate))
-
-				s.pipelineEventStream.mu.Lock()
-				g.Expect(s.pipelineEventStream.streams).To(HaveLen(1))
-				s.pipelineEventStream.mu.Unlock()
+				return
 			}
+
+			var psr *pb.PipelineStatusResponse
+			select {
+			case next := <-stream.msgs:
+				psr = next
+			case <-time.After(2 * time.Second):
+				t.Fail()
+			}
+
+			g.Expect(psr).ToNot(BeNil())
+			g.Expect(psr.Versions).To(HaveLen(1))
+			g.Expect(psr.Versions[0].State.Status).To(Equal(pb.PipelineVersionState_PipelineCreate))
+
+			s.pipelineEventStream.mu.Lock()
+			g.Expect(s.pipelineEventStream.streams).To(HaveLen(1))
+			s.pipelineEventStream.mu.Unlock()
+
+			s.pipelineEventStream.mu.Lock()
+			g.Expect(s.pipelineEventStream.streams).To(HaveLen(1))
+			s.pipelineEventStream.mu.Unlock()
 		})
 	}
 }

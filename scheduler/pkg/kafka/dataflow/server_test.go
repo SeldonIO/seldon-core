@@ -745,7 +745,14 @@ func TestPipelineSubscribe(t *testing.T) {
 
 			maxCount := 10
 			count := 0
-			for len(s.streams) != test.expectedAgentsCount && count < maxCount {
+			for count < maxCount {
+				s.mu.Lock()
+				if len(s.streams) == test.expectedAgentsCount {
+					s.mu.Unlock()
+					break
+				}
+				s.mu.Unlock()
+
 				time.Sleep(100 * time.Millisecond)
 				count++
 			}
