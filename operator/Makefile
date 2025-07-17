@@ -147,6 +147,10 @@ kind-image-load-cli:
 .PHONY: kind-image-load-all
 kind-image-load-all: kind-image-load kind-image-load-cli
 
+.PHONY: go-generate
+go-generate:
+	go generate ./...
+
 ##@ Deployment
 
 ifndef ignore-not-found

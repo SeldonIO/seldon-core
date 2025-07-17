@@ -38,3 +38,7 @@ jobs:
         run: | 
           make -C k8s create
           git diff --exit-code
+      - name: check go generate
+        run: |
+          make go-generate
+          git diff --exit-code
