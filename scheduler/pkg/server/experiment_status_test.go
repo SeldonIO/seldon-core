@@ -153,7 +153,9 @@ func TestExperimentStatusEvents(t *testing.T) {
 			time.Sleep(500 * time.Millisecond)
 
 			if test.err {
+				s.experimentEventStream.mu.Lock()
 				g.Expect(s.experimentEventStream.streams).To(HaveLen(0))
+				s.experimentEventStream.mu.Unlock()
 			} else {
 
 				var esr *pb.ExperimentStatusResponse

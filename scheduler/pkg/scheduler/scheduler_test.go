@@ -576,7 +576,7 @@ func TestScheduler(t *testing.T) {
 				sort.Ints(test.scheduledReplicas)
 				sort.Ints(mockStore.scheduledReplicas)
 				g.Expect(test.scheduledReplicas).To(Equal(mockStore.scheduledReplicas))
-				g.Expect(serverEvents).To(Equal(int64(test.expectedServerEvents)))
+				g.Expect(atomic.LoadInt64(&serverEvents)).To(Equal(int64(test.expectedServerEvents)))
 			}
 		})
 	}
