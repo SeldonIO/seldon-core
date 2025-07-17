@@ -25,21 +25,35 @@ func getEmbeddingParameters(jsonBody map[string]interface{}) map[string]interfac
 	return llmParameters
 }
 
-func getInput(jsonBody map[string]interface{}) (string, error) {
-	input, ok := jsonBody["input"].(string)
+func getInput(jsonBody map[string]interface{}) ([]string, error) {
+	input, ok := jsonBody["input"]
 	if !ok {
-		return "", fmt.Errorf("OpenAI request body does not contain 'input' field")
+		return nil, fmt.Errorf("OpenAI request body does not contain 'input' field")
 	}
+
 	delete(jsonBody, "input")
-	return input, nil
+	switch v := input.(type) {
+	case string:
+		return []string{v}, nil
+	case []interface{}:
+		strs := make([]string, len(v))
+		for i, item := range v {
+			str, ok := item.(string)
+			if !ok {
+				return nil, fmt.Errorf("OpenAI request body 'input' field contains non-string item: %v", item)
+			}
+			strs[i] = str
+		}
+		return strs, nil
+	default:
+		return nil, fmt.Errorf("OpenAI request body 'input' field is not a string or an array of strings: %v", input)
+	}
 }
 
-func constructEmbeddingsInferenceRequest(input string, llmParams map[string]interface{}) map[string]interface{} {
+func constructEmbeddingsInferenceRequest(input []string, llmParams map[string]interface{}) map[string]interface{} {
 	return map[string]interface{}{
 		"inputs": []map[string]interface{}{
-			map[string]interface{}{
-				"input": translator.ConstructStringTensor("input", []string{input}),
-			},
+			translator.ConstructStringTensor("input", input),
 		},
 		"parameters": map[string]interface{}{
 			"llm_parameters": llmParams,
