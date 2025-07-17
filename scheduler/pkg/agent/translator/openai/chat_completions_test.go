@@ -316,6 +316,63 @@ func TestRequest(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "image-input",
+			openAIContent: map[string]interface{}{
+				"model": "gpt-4.1",
+				"messages": []map[string]interface{}{
+					{
+						"role": "user",
+						"content": []map[string]interface{}{
+							{
+								"type": "text",
+								"text": "What is in this image?",
+							},
+							{
+								"type": "image_url",
+								"image_url": map[string]interface{}{
+									"url": "dummy_image_url",
+								},
+							},
+						},
+					},
+				},
+				"max_tokens": 300,
+			},
+			expectedOipContent: map[string]interface{}{
+				"inputs": []map[string]interface{}{
+					{
+						"name":     "role",
+						"shape":    []int{1},
+						"datatype": "BYTES",
+						"data":     []string{"user"},
+					},
+					{
+						"name":     "content",
+						"shape":    []int{2},
+						"datatype": "BYTES",
+						"data": []string{
+							"What is in this image?",
+							"{\"url\":\"dummy_image_url\"}",
+						},
+					},
+					{
+						"name":     "type",
+						"shape":    []int{2},
+						"datatype": "BYTES",
+						"data": []string{
+							"text",
+							"image_url",
+						},
+					},
+				},
+				"parameters": map[string]interface{}{
+					"llm_parameters": map[string]interface{}{
+						"max_tokens": 300,
+					},
+				},
+			},
+		},
 	}
 
 	logger := log.New().WithField("Source", "HTTPProxy")
