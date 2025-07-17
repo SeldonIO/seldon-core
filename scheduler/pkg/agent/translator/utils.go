@@ -166,3 +166,12 @@ func GetPathTermination(req *http.Request) (string, error) {
 	}
 	return path[pos+len(marker):], nil
 }
+
+func IsEmptySlice(slice []string) bool {
+	for _, item := range slice {
+		if item != "" {
+			return false
+		}
+	}
+	return true
+}
