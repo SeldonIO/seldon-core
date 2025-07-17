@@ -237,6 +237,7 @@ func (rp *reverseHTTPProxy) Start() error {
 	}
 	apiTranslators := map[string]translator.Translator{
 		"/chat/completions": &openai.OpenAIChatCompletionsTranslator{},
+		"/embeddings":       &openai.OpenAIEmbeddingsTranslator{},
 	}
 	proxy.Transport = &lazyModelLoadTransport{
 		rp.stateManager.v2Client.LoadModel,
