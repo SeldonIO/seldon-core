@@ -88,15 +88,33 @@ func ReadResponseBody(res *http.Response) ([]byte, error) {
 	return body, nil
 }
 
-func TrimPathAfterInfer(req *http.Request) error {
-	const marker = "/infer"
-	path := req.URL.Path
-	pos := strings.Index(path, marker)
-	if pos == -1 {
-		return fmt.Errorf("'/infer' not found in path")
+func MatchMarker(path string, marker string) (int, error) {
+	if path == "" || marker == "" {
+		return -1, fmt.Errorf("path or marker cannot be empty")
 	}
-	req.URL.Path = path[:pos+len(marker)]
-	return nil
+	pos := strings.Index(path, marker)
+	return pos, nil
+}
+
+func TrimPathAfterInfer(req *http.Request) error {
+	posInfer, err := MatchMarker(req.URL.Path, "/infer/")
+	if err != nil {
+		return fmt.Errorf("error matching '/infer' in path: %w", err)
+	}
+	if posInfer != -1 {
+		req.URL.Path = req.URL.Path[:posInfer+len("/infer")]
+		return nil
+	}
+
+	posInferStream, err := MatchMarker(req.URL.Path, "/infer_stream/")
+	if err != nil {
+		return fmt.Errorf("error matching '/infer_stream' in path: %w", err)
+	}
+	if posInferStream != -1 {
+		req.URL.Path = req.URL.Path[:posInferStream+len("/infer_stream")]
+		return nil
+	}
+	return fmt.Errorf("neither '/infer' nor '/infer_stream' found in path")
 }
 
 func DecompressIfNeeded(res *http.Response) (bool, error) {

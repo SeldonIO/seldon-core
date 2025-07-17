@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/translator"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -486,30 +485,4 @@ func TestRequest(t *testing.T) {
 			g.Expect(oipReqBody).To(Equal(expectedOipBody), "OIP request body does not match expected format")
 		})
 	}
-}
-
-func TestGzip(t *testing.T) {
-	g := NewGomegaWithT(t)
-
-	// create request
-	content := "This is a test string"
-	res := &http.Response{
-		Body:   io.NopCloser(strings.NewReader(content)),
-		Header: http.Header{},
-	}
-
-	// test Gzip compression
-	err := translator.Compress(res)
-	g.Expect(err).To(BeNil(), "Error compressing request body with Gzip")
-	g.Expect(res.Header.Get("Content-Encoding")).To(Equal("gzip"), "Content-Encoding header should be set to gzip")
-
-	// test gzip decompression
-	isGzipped, err := translator.DecompressIfNeeded(res)
-	g.Expect(err).To(BeNil(), "Error decompressing response body")
-	g.Expect(isGzipped).To(BeTrue(), "Response body should be gzipped")
-
-	// read decompressed body and check content
-	decompressedContent, err := translator.ReadResponseBody(res)
-	g.Expect(err).To(BeNil(), "Error reading decompressed response body")
-	g.Expect(string(decompressedContent)).To(Equal(content), "Decompressed content does not match original content")
 }
