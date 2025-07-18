@@ -241,6 +241,18 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 						modelStatus.GetState().String(),
 						modelStatus.GetReason(),
 					)
+				case scheduler.ModelStatus_ModelScaledDown:
+					logger.Info(
+						"Setting model to not ready",
+						"name", event.ModelName,
+						"state", modelStatus.GetState().String(),
+					)
+					latestModel.Status.CreateAndSetCondition(
+						v1alpha1.ModelReady,
+						false,
+						modelStatus.GetState().String(),
+						modelStatus.GetReason(),
+					)
 				default:
 					logger.Info(
 						"Setting model to not ready",
