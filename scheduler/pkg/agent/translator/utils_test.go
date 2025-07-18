@@ -7,9 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
-
 	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
 )
 
 func TestTrimPathAfterInfer(t *testing.T) {
