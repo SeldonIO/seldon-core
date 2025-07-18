@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -48,8 +49,8 @@ import (
 type mockAgentV2Server struct {
 	models []string
 	pb.UnimplementedAgentServiceServer
-	loadedEvents       int
-	loadFailedEvents   int
+	loadedEvents       atomic.Int64
+	loadFailedEvents   atomic.Int64
 	unloadedEvents     int
 	unloadFailedEvents int
 	otherEvents        int
@@ -145,21 +146,21 @@ func dialerv2(mockAgentV2Server *mockAgentV2Server) func(context.Context, string
 }
 
 func (m *mockAgentV2Server) loaded() int {
-	return m.loadedEvents
+	return int(m.loadedEvents.Load())
 }
 
 func (m *mockAgentV2Server) loadFailed() int {
-	return m.loadFailedEvents
+	return int(m.loadFailedEvents.Load())
 }
 
 func (m *mockAgentV2Server) AgentEvent(ctx context.Context, message *pb.ModelEventMessage) (*pb.ModelEventResponse, error) {
 	switch message.Event {
 	case pb.ModelEventMessage_LOADED:
-		m.loadedEvents++
+		m.loadedEvents.Add(1)
 	case pb.ModelEventMessage_UNLOADED:
 		m.unloadedEvents++
 	case pb.ModelEventMessage_LOAD_FAILED:
-		m.loadFailedEvents++
+		m.loadFailedEvents.Add(1)
 	case pb.ModelEventMessage_UNLOAD_FAILED:
 		m.unloadFailedEvents++
 	default:
@@ -420,8 +421,8 @@ func TestLoadModel(t *testing.T) {
 
 			if test.success {
 				g.Expect(err).To(BeNil())
-				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
-				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
+				g.Expect(mockAgentV2Server.loaded()).To(Equal(1))
+				g.Expect(mockAgentV2Server.loadFailed()).To(Equal(0))
 				g.Expect(len(mockAgentV2Server.events)).To(Equal(1))
 				g.Expect(mockAgentV2Server.events[0].RuntimeInfo).ToNot(BeNil())
 				g.Expect(mockAgentV2Server.events[0].RuntimeInfo.GetMlserver().ParallelWorkers).To(Equal(uint32(1)))
@@ -446,8 +447,8 @@ func TestLoadModel(t *testing.T) {
 				}
 			} else {
 				g.Expect(err).ToNot(BeNil())
-				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(0))
-				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(1))
+				g.Expect(mockAgentV2Server.loaded()).To(Equal(0))
+				g.Expect(mockAgentV2Server.loadFailed()).To(Equal(1))
 				g.Expect(asm.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 				g.Expect(modelRepository.modelRemovals).To(Equal(1))
 			}
@@ -577,13 +578,13 @@ parameters:
 			err := asm.LoadModel(test.op, 1)
 			if test.success {
 				g.Expect(err).To(BeNil())
-				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
-				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
+				g.Expect(mockAgentV2Server.loaded()).To(Equal(1))
+				g.Expect(mockAgentV2Server.loadFailed()).To(Equal(0))
 				g.Expect(asm.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 				g.Expect(modelRepository.modelRemovals).To(Equal(0))
 			} else {
 				g.Expect(err).ToNot(BeNil())
-				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(0))
+				g.Expect(mockAgentV2Server.loaded()).To(Equal(0))
 				g.Expect(modelRepository.modelRemovals).To(Equal(1))
 			}
 			asm.StopControlLoop()
@@ -720,9 +721,9 @@ func TestUnloadModel(t *testing.T) {
 			err = asm.UnloadModel(test.unloadOp, 2)
 			if test.success {
 				g.Expect(err).To(BeNil())
-				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
+				g.Expect(mockAgentV2Server.loaded()).To(Equal(1))
 				g.Expect(mockAgentV2Server.unloadedEvents).To(Equal(1))
-				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
+				g.Expect(mockAgentV2Server.loadFailed()).To(Equal(0))
 				g.Expect(mockAgentV2Server.unloadFailedEvents).To(Equal(0))
 				g.Expect(asm.stateManager.GetAvailableMemoryBytes()).To(Equal(test.expectedAvailableMemory))
 				// check model scaling stats removed
@@ -733,9 +734,9 @@ func TestUnloadModel(t *testing.T) {
 				g.Expect(err).ToNot(BeNil())
 			} else {
 				g.Expect(err).ToNot(BeNil())
-				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
+				g.Expect(mockAgentV2Server.loaded()).To(Equal(1))
 				g.Expect(mockAgentV2Server.unloadedEvents).To(Equal(0))
-				g.Expect(mockAgentV2Server.loadFailedEvents).To(Equal(0))
+				g.Expect(mockAgentV2Server.loadFailed()).To(Equal(0))
 				g.Expect(mockAgentV2Server.unloadFailedEvents).To(Equal(1))
 			}
 			asm.StopControlLoop()
@@ -1306,10 +1307,10 @@ func TestUnloadModelOutOfOrder(t *testing.T) {
 			err = asm.UnloadModel(test.unloadOp, test.unloadTicks)
 			g.Expect(err).To(BeNil())
 			if test.success {
-				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
+				g.Expect(mockAgentV2Server.loaded()).To(Equal(1))
 				g.Expect(mockAgentV2Server.unloadedEvents).To(Equal(1))
 			} else {
-				g.Expect(mockAgentV2Server.loadedEvents).To(Equal(1))
+				g.Expect(mockAgentV2Server.loaded()).To(Equal(1))
 				g.Expect(mockAgentV2Server.unloadedEvents).To(Equal(0))
 			}
 			asm.StopControlLoop()

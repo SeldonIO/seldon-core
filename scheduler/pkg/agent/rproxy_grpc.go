@@ -368,6 +368,8 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 		return err
 	}
 
+	rp.setTrailer(ctx, trailer, requestId)
+
 	errChan := make(chan error, 4) // Buffered channel to collect errors
 
 	// Add cancel to context to cancel goroutines when error occurs
@@ -407,8 +409,6 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 		wg.Wait()
 		close(errChan) // Close the error channel after all goroutines are done
 	}()
-
-	rp.setTrailer(ctx, trailer, requestId)
 
 	err = <-errChan // Wait for the first error
 	if err != nil {

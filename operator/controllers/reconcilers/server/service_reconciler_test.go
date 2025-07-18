@@ -31,6 +31,8 @@ import (
 )
 
 func TestToServices(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -65,6 +67,8 @@ func TestToServices(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			svcs := toServices(test.meta, test.replicas)
 			g.Expect(len(svcs)).To(Equal(test.numExpectedSvcs))
 			for idx, svc := range svcs {
@@ -79,6 +83,8 @@ func TestToServices(t *testing.T) {
 }
 
 func TestServiceReconcile(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 	logger := logrtest.New(t)
 	type test struct {
@@ -144,6 +150,8 @@ func TestServiceReconcile(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			var client client2.Client
 			scheme := runtime.NewScheme()
 			err := appsv1.AddToScheme(scheme)

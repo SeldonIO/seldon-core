@@ -34,6 +34,8 @@ import (
 *
  */
 func TestServerStatusPrintColumns(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -66,6 +68,8 @@ func TestServerStatusPrintColumns(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			jsonBytes, err := json.Marshal(test.server)
 			g.Expect(err).To(BeNil())
 			for _, key := range test.expectedJsonSerializationKeys {
@@ -76,6 +80,8 @@ func TestServerStatusPrintColumns(t *testing.T) {
 }
 
 func TestServerStatusSetCondition(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		condition *apis.Condition
 	}
@@ -121,6 +127,8 @@ func TestServerStatusSetCondition(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			ss := &ServerStatus{}
 			ss.SetCondition(tt.args.condition)
 			if tt.want == nil {

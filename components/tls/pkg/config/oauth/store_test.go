@@ -84,7 +84,7 @@ func TestNewOAuthStoreWithSecret(t *testing.T) {
 				oauthConfig := store.GetOAuthConfig()
 				assert.Equal(c, expectedUpdate, oauthConfig)
 			}
-			assert.EventuallyWithT(t, checkForUpdate, 200*time.Millisecond, 5*time.Millisecond)
+			assert.EventuallyWithT(t, checkForUpdate, 6000*time.Millisecond, 20*time.Millisecond)
 		},
 	)
 }

@@ -1051,12 +1051,23 @@ func TestSubscribe(t *testing.T) {
 
 			maxCount := 10
 			count := 0
-			for len(server.agents) != test.expectedAgentsCount && count < maxCount {
+
+			for count < maxCount {
+				server.mutex.RLock()
+				if len(server.agents) == test.expectedAgentsCount {
+					server.mutex.RUnlock()
+					break
+				}
+				server.mutex.RUnlock()
 				time.Sleep(100 * time.Millisecond)
 				count++
 			}
-			g.Expect(len(server.agents)).To(Equal(test.expectedAgentsCount))
 
+			server.mutex.RLock()
+			g.Expect(len(server.agents)).To(Equal(test.expectedAgentsCount))
+			server.mutex.RUnlock()
+
+			mu.Lock()
 			for idx, s := range streams {
 				go func(idx int, s *grpc.ClientConn) {
 					if test.agents[idx].doClose {
@@ -1064,13 +1075,24 @@ func TestSubscribe(t *testing.T) {
 					}
 				}(idx, s)
 			}
+			mu.Unlock()
 
 			count = 0
-			for len(server.agents) != test.expectedAgentsCountAfterClose && count < maxCount {
+
+			for count < maxCount {
+				server.mutex.RLock()
+				if len(server.agents) == test.expectedAgentsCountAfterClose {
+					server.mutex.RUnlock()
+					break
+				}
+				server.mutex.RUnlock()
 				time.Sleep(100 * time.Millisecond)
 				count++
 			}
+
+			server.mutex.RLock()
 			g.Expect(len(server.agents)).To(Equal(test.expectedAgentsCountAfterClose))
+			server.mutex.RUnlock()
 
 			server.StopAgentStreams()
 		})

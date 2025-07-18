@@ -24,6 +24,8 @@ import (
 )
 
 func TestSubscribeExperimentsEvents(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -309,7 +311,9 @@ func TestSubscribeExperimentsEvents(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			// note that responses_experiments is nill -> scheduler state is not existing
+			t.Parallel()
+
+			// note that responses_experiments is nil -> scheduler state is not existing
 			var grpcClient mockSchedulerGrpcClient
 			if !test.noSchedulerState {
 				grpcClient = mockSchedulerGrpcClient{

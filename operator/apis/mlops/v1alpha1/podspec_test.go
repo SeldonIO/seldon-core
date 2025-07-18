@@ -18,6 +18,8 @@ import (
 )
 
 func TestToV1PodSped(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -52,6 +54,8 @@ func TestToV1PodSped(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			podNew, err := test.mlopsPodSpec.ToV1PodSpec()
 			g.Expect(err).To(BeNil())
 			g.Expect(equality.Semantic.DeepEqual(podNew, test.podSpec)).To(BeTrue())

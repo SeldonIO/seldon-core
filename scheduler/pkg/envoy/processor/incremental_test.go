@@ -300,8 +300,8 @@ func TestUpdateEnvoyForModelVersion(t *testing.T) {
 				inc.updateEnvoyForModelVersion(mv.GetMeta().GetName(), mv, test.server, test.traffic, false)
 			}
 
-			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.expectedRoutes))
-			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.expectedClusters))
+			g.Expect(inc.xdsCache.Routes.Length()).To(Equal(test.expectedRoutes))
+			g.Expect(inc.xdsCache.Clusters.Length()).To(Equal(test.expectedClusters))
 		})
 	}
 }
@@ -355,13 +355,21 @@ func TestRollingUpdate(t *testing.T) {
 			for _, op := range test.ops {
 				op(inc, g)
 			}
-			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.numExpectedClusters))
-			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.numExpectedRoutes))
+			g.Expect(inc.xdsCache.Clusters.Length()).To(Equal(test.numExpectedClusters))
+			g.Expect(inc.xdsCache.Routes.Length()).To(Equal(test.numExpectedRoutes))
 			for modelName, trafficSplits := range test.numTrafficSplits {
-				g.Expect(len(inc.xdsCache.Routes[modelName].Clusters)).To(Equal(trafficSplits))
+				g.Expect(len(mustFindVal(inc.xdsCache.Routes, modelName).Clusters)).To(Equal(trafficSplits))
 			}
 		})
 	}
+}
+
+func mustFindVal[T any](c *util.CountedSyncMap[T], key string) T {
+	val, ok := c.Load(key)
+	if !ok {
+		panic("failed to find key")
+	}
+	return *val
 }
 
 func TestDraining(t *testing.T) {
@@ -425,10 +433,10 @@ func TestDraining(t *testing.T) {
 			for _, op := range test.ops {
 				op(inc, g)
 			}
-			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.numExpectedClusters))
-			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.numExpectedRoutes))
+			g.Expect(inc.xdsCache.Clusters.Length()).To(Equal(test.numExpectedClusters))
+			g.Expect(inc.xdsCache.Routes.Length()).To(Equal(test.numExpectedRoutes))
 			for modelName, trafficSplits := range test.numTrafficSplits {
-				g.Expect(len(inc.xdsCache.Routes[modelName].Clusters)).To(Equal(trafficSplits))
+				g.Expect(len(mustFindVal(inc.xdsCache.Routes, modelName).Clusters)).To(Equal(trafficSplits))
 			}
 			for modelName, modelState := range test.expectedModelState {
 				model, err := inc.modelStore.GetModel(modelName)
@@ -838,9 +846,9 @@ func TestEnvoySettings(t *testing.T) {
 			err = inc.updateEnvoy()
 			g.Expect(err).To(BeNil())
 
-			g.Expect(len(inc.xdsCache.Clusters)).To(Equal(test.numExpectedClusters))
-			g.Expect(len(inc.xdsCache.Routes)).To(Equal(test.numExpectedRoutes))
-			g.Expect(len(inc.xdsCache.Pipelines)).To(Equal(test.numExpectedPipelines))
+			g.Expect(inc.xdsCache.Clusters.Length()).To(Equal(test.numExpectedClusters))
+			g.Expect(inc.xdsCache.Routes.Length()).To(Equal(test.numExpectedRoutes))
+			g.Expect(inc.xdsCache.Pipelines.Length()).To(Equal(test.numExpectedPipelines))
 
 			exp, err := inc.experimentServer.GetExperiment("exp")
 			if test.experimentExists {
@@ -853,13 +861,15 @@ func TestEnvoySettings(t *testing.T) {
 				g.Expect(exp).To(BeNil())
 			}
 			for modelName, version := range test.expectedVersionsInRoutes {
-				for _, route := range inc.xdsCache.Routes {
+
+				inc.xdsCache.Routes.Range(func(_ string, route xdscache.Route) bool {
 					for _, cluster := range route.Clusters {
 						if cluster.ModelName == modelName {
 							g.Expect(cluster.ModelVersion).To(Equal(version))
 						}
 					}
-				}
+					return true
+				})
 			}
 
 			// Check snapshots

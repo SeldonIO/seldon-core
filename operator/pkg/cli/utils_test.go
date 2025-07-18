@@ -20,6 +20,8 @@ import (
 )
 
 func TestGetConsumerConfig(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -102,6 +104,8 @@ func TestGetConsumerConfig(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			var configFilePath string
 			if test.kafkaConfig != "" {
 				configFilePath = fmt.Sprintf("%s/kafka.json", t.TempDir())

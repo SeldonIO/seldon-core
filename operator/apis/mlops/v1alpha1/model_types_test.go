@@ -25,6 +25,8 @@ import (
 )
 
 func TestModelSpec_Validate(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 	tests := []struct {
 		name    string
@@ -61,19 +63,25 @@ func TestModelSpec_Validate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		err := tt.spec.Validate()
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-		if tt.wantErr {
-			g.Expect(err).ToNot(BeNil())
-			g.Expect(err.Error()).To(ContainSubstring("Can't have both explainer and llm in model spec."))
-		} else {
-			g.Expect(err).To(BeNil())
-		}
+			err := tt.spec.Validate()
+
+			if tt.wantErr {
+				g.Expect(err).ToNot(BeNil())
+				g.Expect(err.Error()).To(ContainSubstring("Can't have both explainer and llm in model spec."))
+			} else {
+				g.Expect(err).To(BeNil())
+			}
+		})
 	}
 
 }
 
 func TestAsModelDetails(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 	type test struct {
 		name    string
@@ -440,6 +448,8 @@ func TestAsModelDetails(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			md, err := test.model.AsSchedulerModel()
 			if !test.error {
 				g.Expect(err).To(BeNil())
@@ -465,6 +475,8 @@ func TestAsModelDetails(t *testing.T) {
 *
  */
 func TestModelStatusPrintColumns(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -514,6 +526,8 @@ func TestModelStatusPrintColumns(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			if test.model.Status.Conditions != nil {
 				searchMap := make(map[string]v1.ConditionStatus)
 				for _, cond := range test.model.Status.Conditions {

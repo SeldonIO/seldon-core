@@ -154,7 +154,9 @@ func TestModelsStatusEvents(t *testing.T) {
 			time.Sleep(500 * time.Millisecond)
 
 			if test.err {
+				s.modelEventStream.mu.Lock()
 				g.Expect(s.modelEventStream.streams).To(HaveLen(0))
+				s.modelEventStream.mu.Unlock()
 			} else {
 
 				var msr *pb.ModelStatusResponse
@@ -389,18 +391,22 @@ func TestModelEventsForServerStatus(t *testing.T) {
 			}
 
 			stream := newStubServerStatusServer(1, 5*time.Millisecond)
+			s.serverEventStream.mu.Lock()
 			s.serverEventStream.streams[stream] = &ServerSubscription{
 				name:   "dummy",
 				stream: stream,
 				fin:    make(chan bool),
 			}
 			g.Expect(s.serverEventStream.streams[stream]).ToNot(BeNil())
+			s.serverEventStream.mu.Unlock()
 
 			// to allow events to propagate
 			time.Sleep(500 * time.Millisecond)
 
 			if test.err {
+				s.serverEventStream.mu.Lock()
 				g.Expect(s.serverEventStream.streams).To(HaveLen(0))
+				s.serverEventStream.mu.Unlock()
 			} else {
 				var ssr *pb.ServerStatusResponse
 				select {
@@ -541,11 +547,14 @@ func TestServerScaleUpEvents(t *testing.T) {
 			time.Sleep(1 * time.Second)
 
 			stream := newStubServerStatusServer(1, 5*time.Millisecond)
+
+			s.serverEventStream.mu.Lock()
 			s.serverEventStream.streams[stream] = &ServerSubscription{
 				name:   "dummy",
 				stream: stream,
 				fin:    make(chan bool),
 			}
+			s.serverEventStream.mu.Unlock()
 
 			g.Expect(s.serverEventStream.streams[stream]).ToNot(BeNil())
 

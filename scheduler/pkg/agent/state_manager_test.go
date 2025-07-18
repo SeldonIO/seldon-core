@@ -464,7 +464,9 @@ func TestConcurrentLoad(t *testing.T) {
 						time.Sleep(10 * time.Millisecond)
 						err = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion), getModelRuntimeInfo(1))
 					}
+					manager.mu.RLock()
 					g.Expect(manager.availableMainMemoryBytes).Should(BeNumerically(">=", 0))
+					manager.mu.RUnlock()
 					wg.Done()
 				}
 
@@ -491,7 +493,9 @@ func TestConcurrentLoad(t *testing.T) {
 					if err != nil {
 						t.Logf("Error %s", err)
 					}
+					manager.mu.RLock()
 					g.Expect(manager.availableMainMemoryBytes).Should(BeNumerically(">=", 0))
+					manager.mu.RUnlock()
 					wg.Done()
 				}
 
@@ -554,7 +558,9 @@ func TestConcurrentLoadWithVersions(t *testing.T) {
 					time.Sleep(10 * time.Millisecond)
 					err = manager.loadModelFn(getDummyModelDetails(modelName, memBytes, modelVersion), getModelRuntimeInfo(1))
 				}
+				manager.mu.RLock()
 				g.Expect(manager.availableMainMemoryBytes).Should(BeNumerically(">=", 0))
+				manager.mu.RUnlock()
 				wg.Done()
 			}
 			for i := 0; i < test.numModels; i++ {
@@ -1091,7 +1097,9 @@ func TestModelMetricsStats(t *testing.T) {
 				time.Sleep(10 * time.Millisecond)
 				model := getVersionedModelId(dummyModelPrefix, i, 1)
 				// model under test real load
-				g.Expect(manager.metrics.(fakeMetricsHandler).modelLoadState[model]).To(Equal(
+
+				manager.metrics.(*fakeMetricsHandler).mu.Lock()
+				g.Expect(manager.metrics.(*fakeMetricsHandler).modelLoadState[model]).To(Equal(
 					loadModelSateValue{
 						memory: memBytes,
 						isLoad: true,
@@ -1101,7 +1109,7 @@ func TestModelMetricsStats(t *testing.T) {
 				if i >= test.capacity {
 					// first model evicted
 					evictedModel := getVersionedModelId(dummyModelPrefix, (i+1)%test.numModels, 1)
-					g.Expect(manager.metrics.(fakeMetricsHandler).modelLoadState[evictedModel]).To(Equal(
+					g.Expect(manager.metrics.(*fakeMetricsHandler).modelLoadState[evictedModel]).To(Equal(
 						loadModelSateValue{
 							memory: memBytes,
 							isLoad: false,
@@ -1109,6 +1117,7 @@ func TestModelMetricsStats(t *testing.T) {
 						},
 					))
 				}
+				manager.metrics.(*fakeMetricsHandler).mu.Unlock()
 			}
 
 			t.Log("ensure load test")
@@ -1120,7 +1129,8 @@ func TestModelMetricsStats(t *testing.T) {
 				if test.capacity < test.numModels {
 					// next model evicted
 					evictedModel := getVersionedModelId(dummyModelPrefix, (i+1)%test.numModels, 1)
-					g.Expect(manager.metrics.(fakeMetricsHandler).modelLoadState[evictedModel]).To(Equal(
+					manager.metrics.(*fakeMetricsHandler).mu.Lock()
+					g.Expect(manager.metrics.(*fakeMetricsHandler).modelLoadState[evictedModel]).To(Equal(
 						loadModelSateValue{
 							memory: memBytes,
 							isLoad: false,
@@ -1130,24 +1140,28 @@ func TestModelMetricsStats(t *testing.T) {
 
 					// model under test reloaded
 					model := getVersionedModelId(dummyModelPrefix, i, 1)
-					g.Expect(manager.metrics.(fakeMetricsHandler).modelLoadState[model]).To(Equal(
+					g.Expect(manager.metrics.(*fakeMetricsHandler).modelLoadState[model]).To(Equal(
 						loadModelSateValue{
 							memory: memBytes,
 							isLoad: true,
 							isSoft: true,
 						},
 					))
+					manager.metrics.(*fakeMetricsHandler).mu.Unlock()
+
 				} else {
 
 					// no change from setup step
 					model := getVersionedModelId(dummyModelPrefix, 1, 1)
-					g.Expect(manager.metrics.(fakeMetricsHandler).modelLoadState[model]).To(Equal(
+					manager.metrics.(*fakeMetricsHandler).mu.Lock()
+					g.Expect(manager.metrics.(*fakeMetricsHandler).modelLoadState[model]).To(Equal(
 						loadModelSateValue{
 							memory: memBytes,
 							isLoad: true,
 							isSoft: false,
 						},
 					))
+					manager.metrics.(*fakeMetricsHandler).mu.Unlock()
 				}
 			}
 
@@ -1160,30 +1174,36 @@ func TestModelMetricsStats(t *testing.T) {
 				model := getVersionedModelId(dummyModelPrefix, i, 1)
 				if test.capacity < test.numModels {
 					if i == 0 {
-						g.Expect(manager.metrics.(fakeMetricsHandler).modelLoadState[model]).To(Equal(
+						manager.metrics.(*fakeMetricsHandler).mu.Lock()
+						g.Expect(manager.metrics.(*fakeMetricsHandler).modelLoadState[model]).To(Equal(
 							loadModelSateValue{
 								memory: 0,
 								isLoad: false,
 								isSoft: false,
 							},
 						))
+						manager.metrics.(*fakeMetricsHandler).mu.Unlock()
 					} else {
-						g.Expect(manager.metrics.(fakeMetricsHandler).modelLoadState[model]).To(Equal(
+						manager.metrics.(*fakeMetricsHandler).mu.Lock()
+						g.Expect(manager.metrics.(*fakeMetricsHandler).modelLoadState[model]).To(Equal(
 							loadModelSateValue{
 								memory: memBytes,
 								isLoad: false,
 								isSoft: false,
 							},
 						))
+						manager.metrics.(*fakeMetricsHandler).mu.Unlock()
 					}
 				} else {
-					g.Expect(manager.metrics.(fakeMetricsHandler).modelLoadState[model]).To(Equal(
+					manager.metrics.(*fakeMetricsHandler).mu.Lock()
+					g.Expect(manager.metrics.(*fakeMetricsHandler).modelLoadState[model]).To(Equal(
 						loadModelSateValue{
 							memory: memBytes,
 							isLoad: false,
 							isSoft: false,
 						},
 					))
+					manager.metrics.(*fakeMetricsHandler).mu.Unlock()
 				}
 			}
 		})

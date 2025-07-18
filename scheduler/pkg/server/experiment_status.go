@@ -110,8 +110,10 @@ func (s *SchedulerServer) handleExperimentEvents(event coordinator.ExperimentEve
 
 func (s *SchedulerServer) sendExperimentStatus(event coordinator.ExperimentEventMsg) {
 	logger := s.logger.WithField("func", "sendExperimentStatus")
+
 	s.experimentEventStream.mu.Lock()
 	defer s.experimentEventStream.mu.Unlock()
+
 	for stream, subscription := range s.experimentEventStream.streams {
 		msg := &pb.ExperimentStatusResponse{
 			ExperimentName:    event.ExperimentName,
