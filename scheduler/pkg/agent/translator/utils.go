@@ -265,6 +265,10 @@ func CheckModelsMatch(jsonBody map[string]interface{}, path string, logger log.F
 		return err
 	}
 
+	if strings.Contains(pathModelName, "_") {
+		pathModelName = strings.Split(pathModelName, "_")[0]
+	}
+
 	if modelName != pathModelName {
 		return fmt.Errorf("model %s not loaded at endpoint %s", modelName, path)
 	}
