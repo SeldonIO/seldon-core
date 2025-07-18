@@ -22,6 +22,8 @@ import (
 )
 
 func TestAsPipelineDetails(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 	type test struct {
 		name     string
@@ -104,6 +106,8 @@ func TestAsPipelineDetails(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			proto := test.pipeline.AsSchedulerPipeline()
 			g.Expect(proto).To(Equal(test.proto))
 		})
@@ -124,6 +128,7 @@ func TestAsPipelineDetails(t *testing.T) {
 *
  */
 func TestPipelineStatusPrintColumns(t *testing.T) {
+	t.Parallel()
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -163,6 +168,8 @@ func TestPipelineStatusPrintColumns(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			if test.pipeline.Status.Conditions != nil {
 				searchMap := make(map[string]v1.ConditionStatus)
 				for _, cond := range test.pipeline.Status.Conditions {

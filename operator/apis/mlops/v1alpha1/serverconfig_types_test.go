@@ -23,6 +23,8 @@ import (
 )
 
 func TestGetServerConfigForServer(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -140,6 +142,8 @@ func TestGetServerConfigForServer(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			scheme := runtime.NewScheme()
 			err := AddToScheme(scheme)
 			g.Expect(err).To(BeNil())

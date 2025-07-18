@@ -371,7 +371,6 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 }
 
 func TestPipelineEvents(t *testing.T) {
-	g := NewGomegaWithT(t)
 
 	type test struct {
 		name       string
@@ -433,13 +432,12 @@ func TestPipelineEvents(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			g := NewGomegaWithT(t)
+
 			serverName := "dummy"
 			s, _ := createTestScheduler(t, serverName)
 
 			err := s.pipelineHandler.AddPipeline(test.loadReq) // version 1
-			g.Expect(err).To(BeNil())
-
-			err = s.pipelineHandler.SetPipelineState(test.loadReq.Name, test.loadReq.Version, test.loadReq.Uid, test.status, "", sourceChainerServer)
 			g.Expect(err).To(BeNil())
 
 			stream := newStubServerStatusServer(10)
@@ -454,8 +452,11 @@ func TestPipelineEvents(t *testing.T) {
 				s.mu.Unlock()
 			}
 
+			err = s.pipelineHandler.SetPipelineState(test.loadReq.Name, test.loadReq.Version, test.loadReq.Uid, test.status, "", sourceChainerServer)
+			g.Expect(err).To(BeNil())
+
 			// to allow events to propagate and trigger derived events
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(3000 * time.Millisecond)
 
 			if test.connection {
 				var psr *chainer.PipelineUpdateMessage
