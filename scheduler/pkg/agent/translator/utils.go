@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"path"
 	"strconv"
 	"strings"
 
@@ -25,7 +27,7 @@ func GetJsonBody(body []byte) (map[string]interface{}, error) {
 func GetModelName(jsonBody map[string]interface{}) (string, error) {
 	modelName, ok := jsonBody["model"].(string)
 	if !ok {
-		return "", nil
+		return "", errors.New("model name not found in request body")
 	}
 	delete(jsonBody, "model")
 	return modelName, nil
@@ -236,4 +238,35 @@ func IsEmptySlice(slice []string) bool {
 		}
 	}
 	return true
+}
+
+func ExtractModelNameFromPath(p string) (string, error) {
+	// Normalize the path to remove any trailing slashes
+	p = path.Clean(p)
+
+	parts := strings.Split(p, "/")
+	for i := 0; i < len(parts)-2; i++ {
+		if parts[i] == "v2" && parts[i+1] == "models" {
+			return parts[i+2], nil
+		}
+	}
+
+	return "", errors.New("model name not found in path")
+}
+
+func CheckModelsMatch(jsonBody map[string]interface{}, path string, logger log.FieldLogger) error {
+	modelName, err := GetModelName(jsonBody)
+	if err != nil {
+		return err
+	}
+
+	pathModelName, err := ExtractModelNameFromPath(path)
+	if err != nil {
+		return err
+	}
+
+	if modelName != pathModelName {
+		return fmt.Errorf("model %s not loaded at endpoint %s", modelName, path)
+	}
+	return nil
 }

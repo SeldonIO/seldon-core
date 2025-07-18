@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	log "github.com/sirupsen/logrus"
+
 	. "github.com/onsi/gomega"
 )
 
@@ -241,6 +243,96 @@ func TestExtractTensorByName(t *testing.T) {
 			} else {
 				g.Expect(err).To(BeNil(), "expected no error but got one")
 				g.Expect(result).To(Equal(test.expected), "Extracted tensor does not match expected result")
+			}
+		})
+	}
+}
+
+func TestExtractModelNameFromPath(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	tests := []struct {
+		name      string
+		path      string
+		expectErr bool
+		expected  string
+	}{
+		{
+			name:      "Valid model path",
+			path:      "/v2/models/my-model/infer",
+			expectErr: false,
+			expected:  "my-model",
+		},
+		{
+			name:      "Invalid model path",
+			path:      "/v2/some-other-path/infer",
+			expectErr: true,
+			expected:  "",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			modelName, err := ExtractModelNameFromPath(test.path)
+			if test.expectErr {
+				g.Expect(err).NotTo(BeNil(), "expected an error but got none")
+				g.Expect(modelName).To(Equal(test.expected), "expected model name to be empty")
+			} else {
+				g.Expect(err).To(BeNil(), "expected no error but got one")
+				g.Expect(modelName).To(Equal(test.expected), "expected model name to match")
+			}
+		})
+	}
+}
+
+func TestCheckModelsMatch(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	tests := []struct {
+		name      string
+		jsonBody  map[string]interface{}
+		path      string
+		expectErr bool
+	}{
+		{
+			name: "Matching model names",
+			jsonBody: map[string]interface{}{
+				"model": "my-model",
+			},
+			path:      "/v2/models/my-model/infer",
+			expectErr: false,
+		},
+		{
+			name: "Non-matching model names",
+			jsonBody: map[string]interface{}{
+				"model": "my-model",
+			},
+			path:      "/v2/models/another-model/infer",
+			expectErr: true,
+		},
+		{
+			name:      "Missing model name in JSON body",
+			jsonBody:  map[string]interface{}{},
+			path:      "/v2/models/my-model/infer",
+			expectErr: true,
+		},
+		{
+			name: "Invalid path format",
+			jsonBody: map[string]interface{}{
+				"model": "my-model",
+			},
+			path:      "/v2/some-other-path/infer",
+			expectErr: true,
+		},
+	}
+
+	logger := log.New().WithField("test", "CheckModelsMatch")
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := CheckModelsMatch(test.jsonBody, test.path, logger)
+			if test.expectErr {
+				g.Expect(err).NotTo(BeNil(), "expected an error but got none")
+			} else {
+				g.Expect(err).To(BeNil(), "expected no error but got one")
 			}
 		})
 	}
