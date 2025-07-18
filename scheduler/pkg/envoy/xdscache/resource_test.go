@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
