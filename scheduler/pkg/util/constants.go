@@ -23,7 +23,6 @@ const (
 	ExternalHeaderPrefix       = "x-"
 	SeldonModelHeaderSuffix    = "model"
 	SeldonPipelineHeaderSuffix = "pipeline"
-	SeldonOpenAIHeader         = "seldon-openai-header"
 )
 
 // REST
