@@ -58,6 +58,14 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 			wantErr:     "number of replicas 0 cannot be less than minimum replica 1",
 		},
 		{
+			name:        "error - min replica is bigger than max replicas",
+			replicas:    ptr.Int32(6),
+			minReplicas: ptr.Int32(6),
+			maxReplicas: ptr.Int32(4),
+			expected:    nil,
+			wantErr:     "min number of replicas 6 must be <= max number of replicas 4",
+		},
+		{
 			name:        "success - replicas stays at 0 when min replicas and max replicas is 4",
 			replicas:    ptr.Int32(0),
 			minReplicas: ptr.Int32(0),
@@ -65,6 +73,18 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 			expected: &ValidatedScalingSpec{
 				Replicas:    0,
 				MinReplicas: 0,
+				MaxReplicas: 4,
+			},
+			wantErr: "",
+		},
+		{
+			name:        "success - all replica params are the same",
+			replicas:    ptr.Int32(4),
+			minReplicas: ptr.Int32(4),
+			maxReplicas: ptr.Int32(4),
+			expected: &ValidatedScalingSpec{
+				Replicas:    4,
+				MinReplicas: 4,
 				MaxReplicas: 4,
 			},
 			wantErr: "",

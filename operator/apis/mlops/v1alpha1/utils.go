@@ -58,6 +58,9 @@ func GetValidatedScalingSpec(replicas *int32, minReplicas *int32, maxReplicas *i
 
 	if maxReplicas != nil && *maxReplicas > 0 {
 		validatedSpec.MaxReplicas = uint32(*maxReplicas)
+		if validatedSpec.MinReplicas > validatedSpec.MaxReplicas {
+			return nil, fmt.Errorf("min number of replicas %d must be <= max number of replicas %d", validatedSpec.MinReplicas, validatedSpec.MaxReplicas)
+		}
 		if validatedSpec.Replicas > validatedSpec.MaxReplicas {
 			return nil, fmt.Errorf("number of replicas %d must be <= max replicas %d", validatedSpec.Replicas, validatedSpec.MaxReplicas)
 		}
