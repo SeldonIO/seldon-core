@@ -47,7 +47,7 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/sync v0.15.0 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
-	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20250717101424-e08f24a1e29f // indirect
+	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20250626154428-7fd020cb5fc3 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.2.0 // indirect
 )
