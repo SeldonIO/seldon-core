@@ -26,8 +26,6 @@ import (
 )
 
 func TestSendWithTimeout(t *testing.T) {
-	t.Parallel()
-
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -69,8 +67,6 @@ func TestSendWithTimeout(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
-
 			hasExpired, err := execWithTimeout(context.Background(), func(_ context.Context) error {
 				return fn(test.err)
 			}, test.sleepTime)
@@ -85,8 +81,6 @@ func TestSendWithTimeout(t *testing.T) {
 }
 
 func TestControlPlaneEvents(t *testing.T) {
-	t.Parallel()
-
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -232,8 +226,6 @@ func TestControlPlaneEvents(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
-
 			grpcClient := mockSchedulerGrpcClient{}
 
 			controller := newMockControllerClient(test.existing_resources...)
