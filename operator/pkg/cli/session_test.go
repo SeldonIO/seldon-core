@@ -18,8 +18,6 @@ import (
 )
 
 func TestSaveLoadSessionKey(t *testing.T) {
-	t.Parallel()
-
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -56,7 +54,6 @@ func TestSaveLoadSessionKey(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
 
 			saved, err := saveStickySessionKeyHttp(test.headers)
 			g.Expect(err).To(BeNil())
