@@ -68,8 +68,12 @@ func (t *OpenAIEmbeddingsTranslator) TranslateToOIP(req *http.Request, logger lo
 		return nil, err
 	}
 
-	// Read model name. TODO: Check if the model name is in the request path
-	_, _ = translator.GetModelName(jsonBody)
+	// Check if model name matches the one in the request path
+	err = translator.CheckModelsMatch(jsonBody, req.URL.Path, logger)
+	if err != nil {
+		logger.WithError(err).Error("Model name mismatch in OpenAI API request")
+		return nil, err
+	}
 
 	// Read the input field to be embedded
 	input, err := getInput(jsonBody)
