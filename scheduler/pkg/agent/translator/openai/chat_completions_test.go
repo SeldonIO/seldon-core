@@ -654,7 +654,7 @@ func TestChatCompletionsRequest(t *testing.T) {
 				URL: &url.URL{
 					Scheme: "http",
 					Host:   "localhost:9000",
-					Path:   "/v2/models/chatgpt/infer/chat/completions",
+					Path:   "/v2/models/gpt-4.1_1/infer/chat/completions",
 				},
 			}
 			oipReq, err := openAITranslator.TranslateToOIP(&openAIReq, logger)
