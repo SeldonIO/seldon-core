@@ -793,7 +793,7 @@ func TestHandleRegisteredServers(t *testing.T) {
 				{
 					Name:             "foo",
 					ExpectedReplicas: 1,
-					MinReplicas:      1,
+					MinReplicas:      0,
 					MaxReplicas:      math.MaxUint32,
 					KubernetesMeta: &scheduler.KubernetesMeta{
 						Namespace:  "default",
@@ -824,7 +824,7 @@ func TestHandleRegisteredServers(t *testing.T) {
 				{
 					Name:             "bar",
 					ExpectedReplicas: 1,
-					MinReplicas:      1,
+					MinReplicas:      0,
 					MaxReplicas:      math.MaxUint32,
 					KubernetesMeta: &scheduler.KubernetesMeta{
 						Namespace:  "default",
@@ -834,7 +834,7 @@ func TestHandleRegisteredServers(t *testing.T) {
 				{
 					Name:             "foo",
 					ExpectedReplicas: 1,
-					MinReplicas:      1,
+					MinReplicas:      0,
 					MaxReplicas:      math.MaxUint32,
 					KubernetesMeta: &scheduler.KubernetesMeta{
 						Namespace:  "default",
