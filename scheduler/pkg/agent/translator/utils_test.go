@@ -302,17 +302,25 @@ func TestCheckModelsMatch(t *testing.T) {
 			expectErr: false,
 		},
 		{
+			name: "Matching model names with underscore",
+			jsonBody: map[string]interface{}{
+				"model": "my-model",
+			},
+			path:      "/v2/models/my-model_1/infer",
+			expectErr: false,
+		},
+		{
 			name: "Non-matching model names",
 			jsonBody: map[string]interface{}{
 				"model": "my-model",
 			},
-			path:      "/v2/models/another-model/infer",
+			path:      "/v2/models/another-model_1/infer",
 			expectErr: true,
 		},
 		{
 			name:      "Missing model name in JSON body",
 			jsonBody:  map[string]interface{}{},
-			path:      "/v2/models/my-model/infer",
+			path:      "/v2/models/my-model_1/infer",
 			expectErr: true,
 		},
 		{
