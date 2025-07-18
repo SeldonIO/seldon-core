@@ -60,7 +60,7 @@ func TestEmbeddingsRequest(t *testing.T) {
 				URL: &url.URL{
 					Scheme: "http",
 					Host:   "localhost:9000",
-					Path:   "/v2/models/chatgpt/infer/embeddings",
+					Path:   "/v2/models/text-embedding-ada-002_1/infer/embeddings",
 				},
 			}
 			oipReq, err := openAITranslator.TranslateToOIP(&openAIReq, logger)

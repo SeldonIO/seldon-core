@@ -62,7 +62,7 @@ func TestImagesGenerationRequest(t *testing.T) {
 				URL: &url.URL{
 					Scheme: "http",
 					Host:   "localhost:9000",
-					Path:   "/v2/models/chatgpt/infer/images/generations",
+					Path:   "/v2/models/gpt-image-1_1/infer/images/generations",
 				},
 			}
 			oipReq, err := openAITranslator.TranslateToOIP(&openAIReq, logger)
