@@ -668,6 +668,8 @@ knative.dev/pkg v0.0.0-20250128013458-efddeac3ec35 h1:FEk78RvL8yTuu/RczMXIo/ahhP
 knative.dev/pkg v0.0.0-20250128013458-efddeac3ec35/go.mod h1:8hCNDHVxfWH0OBbPGvupXOqxMJPOqVrxC1Ar+/Gd28o=
 sigs.k8s.io/controller-runtime v0.21.0 h1:CYfjpEuicjUecRk+KAeyYh+ouUBn4llGyDYytIGcJS8=
 sigs.k8s.io/controller-runtime v0.21.0/go.mod h1:OSg14+F65eWqIu4DceX7k/+QRAbTTvxeQSNSOQpukWM=
+sigs.k8s.io/controller-runtime v0.21.1-0.20250626154428-7fd020cb5fc3 h1:dWbxR/a8H932PNaivyJ/uSXIgjT5NdtDCrGJroRkrIc=
+sigs.k8s.io/controller-runtime v0.21.1-0.20250626154428-7fd020cb5fc3/go.mod h1:OSg14+F65eWqIu4DceX7k/+QRAbTTvxeQSNSOQpukWM=
 sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20250626154428-7fd020cb5fc3 h1:CPPRG6M4YrrYmvtJ1CTJtXvj21SYwpU3NMMX1JCEATg=
 sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20250626154428-7fd020cb5fc3/go.mod h1:zxemiV1fQ3IJnXX0VeOb6qbHp2Wtv3s1w+gftNeHWTg=
 sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 h1:gBQPwqORJ8d8/YNZWEjoZs7npUVDpVXUUOFfW6CgAqE=
