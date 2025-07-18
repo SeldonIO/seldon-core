@@ -106,7 +106,11 @@ func TestWatchFile(t *testing.T) {
 			configHandler, err := NewAgentConfigHandler(tdir, "", logger, nil)
 			defer func() { _ = configHandler.Close() }()
 			g.Expect(err).To(BeNil())
+
+			configHandler.mu.RLock()
 			g.Expect(configHandler.config).To(Equal(test.contents1))
+			configHandler.mu.RUnlock()
+
 			b, err = json.Marshal(test.contents2)
 			g.Expect(err).To(BeNil())
 			err = os.WriteFile(configFile, b, 0644)
