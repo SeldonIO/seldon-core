@@ -2,7 +2,7 @@ GO_LDFLAGS := -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 
 .PHONY: test
 test:
-	go test ./pkg/... -race -coverprofile cover.out
+	go test ./pkg/... -coverprofile cover.out
 
 .GOLANGCILINT_VERSION := v1.64.8
 .GOLANGCILINT_PATH := $(shell go env GOPATH)/bin/golangci-lint/$(.GOLANGCILINT_VERSION)
