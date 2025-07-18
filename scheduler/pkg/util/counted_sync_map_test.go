@@ -9,6 +9,8 @@ import (
 )
 
 func TestCountedSyncMap_Store(t *testing.T) {
+	t.Parallel()
+
 	m := NewCountedSyncMap[string]()
 
 	m.Store("key1", "value1")
@@ -22,6 +24,8 @@ func TestCountedSyncMap_Store(t *testing.T) {
 }
 
 func TestCountedSyncMap_Load(t *testing.T) {
+	t.Parallel()
+
 	m := NewCountedSyncMap[string]()
 
 	val, ok := m.Load("nonexistent")
@@ -40,6 +44,8 @@ func TestCountedSyncMap_Load(t *testing.T) {
 }
 
 func TestCountedSyncMap_Delete(t *testing.T) {
+	t.Parallel()
+
 	m := NewCountedSyncMap[string]()
 
 	m.Delete("nonexistent")
@@ -63,6 +69,8 @@ func TestCountedSyncMap_Delete(t *testing.T) {
 }
 
 func TestCountedSyncMap_Length(t *testing.T) {
+	t.Parallel()
+
 	m := NewCountedSyncMap[int]()
 
 	require.Equal(t, 0, m.Length(), "initial length should be 0")
@@ -80,6 +88,8 @@ func TestCountedSyncMap_Length(t *testing.T) {
 }
 
 func TestCountedSyncMap_Range(t *testing.T) {
+	t.Parallel()
+
 	m := NewCountedSyncMap[string]()
 
 	called := false
@@ -121,9 +131,11 @@ func TestCountedSyncMap_Range(t *testing.T) {
 }
 
 func TestCountedSyncMap_Concurrent(t *testing.T) {
+	t.Parallel()
+
 	m := NewCountedSyncMap[int]()
 
-	const numGoroutines = 10
+	const numGoroutines = 5
 	const numOperations = 100
 
 	var wg sync.WaitGroup

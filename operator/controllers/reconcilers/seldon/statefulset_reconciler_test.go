@@ -33,6 +33,8 @@ import (
 )
 
 func TestStatefulSetReconcile(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -112,6 +114,8 @@ func TestStatefulSetReconcile(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			logger := logrtest.New(t)
 			var client client2.Client
 			scheme := runtime.NewScheme()
