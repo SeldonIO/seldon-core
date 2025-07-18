@@ -23,8 +23,12 @@ func (t *OpenAIChatCompletionsTranslator) TranslateToOIP(req *http.Request, logg
 		return nil, err
 	}
 
-	// Read model name. TODO: Check if the model name is in the request path
-	_, _ = translator.GetModelName(jsonBody)
+	// Check if model name matches the one in the request path
+	err = translator.CheckModelsMatch(jsonBody, req.URL.Path, logger)
+	if err != nil {
+		logger.WithError(err).Error("Model name mismatch in OpenAI API request")
+		return nil, err
+	}
 
 	// Parse messages from the request body
 	messages, err := getMessages(jsonBody, logger)
