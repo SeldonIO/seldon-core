@@ -9,7 +9,10 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package v1alpha1
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
 
 type ValidatedScalingSpec struct {
 	Replicas    uint32
@@ -22,6 +25,8 @@ func GetValidatedScalingSpec(replicas *int32, minReplicas *int32, maxReplicas *i
 
 	if replicas == nil && minReplicas == nil && maxReplicas == nil {
 		validatedSpec.Replicas = 1
+		validatedSpec.MinReplicas = 1
+		validatedSpec.MaxReplicas = math.MaxUint32
 		return &validatedSpec, nil
 	}
 
@@ -33,6 +38,10 @@ func GetValidatedScalingSpec(replicas *int32, minReplicas *int32, maxReplicas *i
 		validatedSpec.Replicas = uint32(*replicas)
 	} else {
 		if minReplicas != nil && *minReplicas > 0 {
+
+			if replicas != nil && *replicas < *minReplicas {
+				return nil, fmt.Errorf("number of replicas %d cannot be less than minimum replica %d", *replicas, *minReplicas)
+			}
 			// set replicas to the min replicas when replicas is not set explicitly
 			validatedSpec.Replicas = uint32(*minReplicas)
 		}
@@ -41,19 +50,19 @@ func GetValidatedScalingSpec(replicas *int32, minReplicas *int32, maxReplicas *i
 	if minReplicas != nil && *minReplicas > 0 {
 		validatedSpec.MinReplicas = uint32(*minReplicas)
 		if validatedSpec.Replicas < validatedSpec.MinReplicas {
-			return nil, fmt.Errorf("number of replicas %d must be >= min replicas  %d", validatedSpec.Replicas, validatedSpec.MinReplicas)
+			return nil, fmt.Errorf("number of replicas %d must be >= min replicas %d", validatedSpec.Replicas, validatedSpec.MinReplicas)
 		}
 	} else {
-		validatedSpec.MinReplicas = 0
+		validatedSpec.MinReplicas = validatedSpec.Replicas
 	}
 
 	if maxReplicas != nil && *maxReplicas > 0 {
 		validatedSpec.MaxReplicas = uint32(*maxReplicas)
 		if validatedSpec.Replicas > validatedSpec.MaxReplicas {
-			return nil, fmt.Errorf("number of replicas %d must be <= max replicas  %d", validatedSpec.Replicas, validatedSpec.MaxReplicas)
+			return nil, fmt.Errorf("number of replicas %d must be <= max replicas %d", validatedSpec.Replicas, validatedSpec.MaxReplicas)
 		}
 	} else {
-		validatedSpec.MaxReplicas = 0
+		validatedSpec.MaxReplicas = math.MaxUint32
 	}
 
 	return &validatedSpec, nil

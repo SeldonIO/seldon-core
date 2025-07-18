@@ -11,8 +11,10 @@ package scheduler
 
 import (
 	"context"
+	"math"
 	"testing"
 
+	"github.com/gotidy/ptr"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -22,8 +24,6 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 )
-
-var getIntPtr = func(val int32) *int32 { return &val }
 
 func TestServerNotify(t *testing.T) {
 	g := NewGomegaWithT(t)
@@ -46,7 +46,7 @@ func TestServerNotify(t *testing.T) {
 					},
 					Spec: v1alpha1.ServerSpec{
 						ScalingSpec: v1alpha1.ScalingSpec{
-							Replicas: getIntPtr(2),
+							Replicas: ptr.Int32(2),
 						},
 					},
 				},
@@ -55,6 +55,8 @@ func TestServerNotify(t *testing.T) {
 				{
 					Name:             "foo",
 					ExpectedReplicas: 2,
+					MinReplicas:      2,
+					MaxReplicas:      math.MaxUint32,
 					KubernetesMeta: &scheduler.KubernetesMeta{
 						Namespace:  "default",
 						Generation: 1,
@@ -77,6 +79,8 @@ func TestServerNotify(t *testing.T) {
 				{
 					Name:             "foo",
 					ExpectedReplicas: 1,
+					MinReplicas:      1,
+					MaxReplicas:      math.MaxUint32,
 					KubernetesMeta: &scheduler.KubernetesMeta{
 						Namespace:  "default",
 						Generation: 1,
@@ -96,7 +100,7 @@ func TestServerNotify(t *testing.T) {
 					},
 					Spec: v1alpha1.ServerSpec{
 						ScalingSpec: v1alpha1.ScalingSpec{
-							Replicas: getIntPtr(2),
+							Replicas: ptr.Int32(2),
 						},
 					},
 				},
@@ -138,6 +142,8 @@ func TestServerNotify(t *testing.T) {
 				{
 					Name:             "foo",
 					ExpectedReplicas: 1,
+					MinReplicas:      1,
+					MaxReplicas:      math.MaxUint32,
 					KubernetesMeta: &scheduler.KubernetesMeta{
 						Namespace:  "default",
 						Generation: 1,
@@ -146,6 +152,8 @@ func TestServerNotify(t *testing.T) {
 				{
 					Name:             "bar",
 					ExpectedReplicas: 1,
+					MinReplicas:      1,
+					MaxReplicas:      math.MaxUint32,
 					KubernetesMeta: &scheduler.KubernetesMeta{
 						Namespace:  "default",
 						Generation: 2,
@@ -195,9 +203,9 @@ func TestSubscribeServerEvents(t *testing.T) {
 				},
 				Spec: v1alpha1.ServerSpec{
 					ScalingSpec: v1alpha1.ScalingSpec{
-						Replicas:    getIntPtr(1),
-						MinReplicas: getIntPtr(1),
-						MaxReplicas: getIntPtr(5),
+						Replicas:    ptr.Int32(1),
+						MinReplicas: ptr.Int32(1),
+						MaxReplicas: ptr.Int32(5),
 					},
 				},
 			},
@@ -228,9 +236,9 @@ func TestSubscribeServerEvents(t *testing.T) {
 				},
 				Spec: v1alpha1.ServerSpec{
 					ScalingSpec: v1alpha1.ScalingSpec{
-						Replicas:    getIntPtr(1),
-						MinReplicas: getIntPtr(1),
-						MaxReplicas: getIntPtr(5),
+						Replicas:    ptr.Int32(1),
+						MinReplicas: ptr.Int32(1),
+						MaxReplicas: ptr.Int32(5),
 					},
 				},
 			},
@@ -261,9 +269,9 @@ func TestSubscribeServerEvents(t *testing.T) {
 				},
 				Spec: v1alpha1.ServerSpec{
 					ScalingSpec: v1alpha1.ScalingSpec{
-						Replicas:    getIntPtr(1),
-						MinReplicas: getIntPtr(1),
-						MaxReplicas: getIntPtr(5),
+						Replicas:    ptr.Int32(1),
+						MinReplicas: ptr.Int32(1),
+						MaxReplicas: ptr.Int32(5),
 					},
 				},
 			},
@@ -301,8 +309,8 @@ func TestSubscribeServerEvents(t *testing.T) {
 						ReplicaIdx: 0,
 					},
 				},
-				AvailableReplicas:      3,
-				ExpectedReplicas:       6,
+				AvailableReplicas:      1,
+				ExpectedReplicas:       0,
 				NumLoadedModelReplicas: 0,
 				KubernetesMeta: &scheduler.KubernetesMeta{
 					Namespace:  "seldon",
