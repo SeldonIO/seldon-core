@@ -11,6 +11,7 @@ require (
 	github.com/confluentinc/confluent-kafka-go/v2 v2.10.1
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v1.4.3
+	github.com/gotidy/ptr v1.4.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/json-iterator/go v1.1.12
 	github.com/onsi/ginkgo v1.16.5

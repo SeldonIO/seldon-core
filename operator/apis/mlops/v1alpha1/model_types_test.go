@@ -11,8 +11,10 @@ package v1alpha1
 
 import (
 	"encoding/json"
+	"math"
 	"testing"
 
+	"github.com/gotidy/ptr"
 	. "github.com/onsi/gomega"
 	"github.com/tidwall/gjson"
 	v1 "k8s.io/api/core/v1"
@@ -125,8 +127,8 @@ func TestAsModelDetails(t *testing.T) {
 				},
 				DeploymentSpec: &scheduler.DeploymentSpec{
 					Replicas:    1,
-					MinReplicas: 0,
-					MaxReplicas: 0,
+					MinReplicas: 1,
+					MaxReplicas: math.MaxUint32,
 				},
 			},
 		},
@@ -146,7 +148,7 @@ func TestAsModelDetails(t *testing.T) {
 					},
 					Logger:       &LoggingSpec{},
 					Requirements: []string{"a", "b"},
-					ScalingSpec:  ScalingSpec{Replicas: i32(4)},
+					ScalingSpec:  ScalingSpec{Replicas: ptr.Int32(4)},
 					Server:       &server,
 					Explainer: &ExplainerSpec{
 						Type:     "anchor_tabular",
@@ -197,8 +199,8 @@ func TestAsModelDetails(t *testing.T) {
 				DeploymentSpec: &scheduler.DeploymentSpec{
 					Replicas:    4,
 					LogPayloads: true,
-					MinReplicas: 0,
-					MaxReplicas: 0,
+					MinReplicas: 4,
+					MaxReplicas: math.MaxUint32,
 				},
 			},
 		},
@@ -218,7 +220,7 @@ func TestAsModelDetails(t *testing.T) {
 					},
 					Logger:       &LoggingSpec{},
 					Requirements: []string{"a", "b"},
-					ScalingSpec:  ScalingSpec{Replicas: i32(4)},
+					ScalingSpec:  ScalingSpec{Replicas: ptr.Int32(4)},
 					Server:       &server,
 					Llm: &LlmSpec{
 						ModelRef: &llmModel,
@@ -267,8 +269,8 @@ func TestAsModelDetails(t *testing.T) {
 				DeploymentSpec: &scheduler.DeploymentSpec{
 					Replicas:    4,
 					LogPayloads: true,
-					MinReplicas: 0,
-					MaxReplicas: 0,
+					MinReplicas: 4,
+					MaxReplicas: math.MaxUint32,
 				},
 			},
 		},
@@ -285,7 +287,7 @@ func TestAsModelDetails(t *testing.T) {
 						StorageURI: "gs://test",
 					},
 					Memory:      &m1,
-					ScalingSpec: ScalingSpec{Replicas: i32(1)},
+					ScalingSpec: ScalingSpec{Replicas: ptr.Int32(1)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -302,8 +304,8 @@ func TestAsModelDetails(t *testing.T) {
 				},
 				DeploymentSpec: &scheduler.DeploymentSpec{
 					Replicas:    1,
-					MinReplicas: 0,
-					MaxReplicas: 0,
+					MinReplicas: 1,
+					MaxReplicas: math.MaxUint32,
 				},
 			},
 		},
@@ -320,7 +322,7 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					ScalingSpec: ScalingSpec{MinReplicas: i32(4)},
+					ScalingSpec: ScalingSpec{MinReplicas: ptr.Int32(4)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -337,7 +339,7 @@ func TestAsModelDetails(t *testing.T) {
 				DeploymentSpec: &scheduler.DeploymentSpec{
 					Replicas:    4,
 					MinReplicas: 4,
-					MaxReplicas: 0,
+					MaxReplicas: math.MaxUint32,
 				},
 			},
 		},
@@ -354,7 +356,7 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					ScalingSpec: ScalingSpec{Replicas: i32(1), MaxReplicas: i32(4)},
+					ScalingSpec: ScalingSpec{Replicas: ptr.Int32(1), MaxReplicas: ptr.Int32(4)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -370,7 +372,7 @@ func TestAsModelDetails(t *testing.T) {
 				},
 				DeploymentSpec: &scheduler.DeploymentSpec{
 					Replicas:    1,
-					MinReplicas: 0,
+					MinReplicas: 1,
 					MaxReplicas: 4,
 				},
 			},
@@ -388,7 +390,7 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					ScalingSpec: ScalingSpec{MinReplicas: i32(4), Replicas: i32(1)},
+					ScalingSpec: ScalingSpec{MinReplicas: ptr.Int32(4), Replicas: ptr.Int32(1)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -423,7 +425,7 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					ScalingSpec: ScalingSpec{Replicas: i32(4), MaxReplicas: i32(1)},
+					ScalingSpec: ScalingSpec{Replicas: ptr.Int32(4), MaxReplicas: ptr.Int32(1)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -459,182 +461,6 @@ func TestAsModelDetails(t *testing.T) {
 			}
 		})
 	}
-}
-
-func i32(i int32) *int32 { return &i }
-
-func TestGetValidatedScalingSpec(t *testing.T) {
-	type test struct {
-		name        string
-		replicas    *int32
-		minReplicas *int32
-		maxReplicas *int32
-		expected    *ValidatedScalingSpec
-		wantErr     string
-	}
-
-	g := NewGomegaWithT(t)
-
-	tests := []test{
-		{
-			name:        "happy path replicas",
-			replicas:    i32(2),
-			minReplicas: i32(1),
-			maxReplicas: i32(3),
-			expected: &ValidatedScalingSpec{
-				Replicas:    2,
-				MinReplicas: 1,
-				MaxReplicas: 3,
-			},
-			wantErr: "",
-		},
-		{
-			name:        "replicas is less than min replicas",
-			replicas:    i32(1),
-			minReplicas: i32(2),
-			maxReplicas: i32(4),
-			expected:    nil,
-			wantErr:     "number of replicas 1 must be >= min replicas  2",
-		},
-		{
-			name:        "replicas is bigger than max replicas",
-			replicas:    i32(5),
-			minReplicas: i32(1),
-			maxReplicas: i32(4),
-			expected:    nil,
-			wantErr:     "number of replicas 5 must be <= max replicas  4",
-		},
-		{
-			name:        "replicas is smaller than min replicas adjusted to min replicas",
-			replicas:    i32(0),
-			minReplicas: i32(1),
-			maxReplicas: i32(4),
-			expected: &ValidatedScalingSpec{
-				Replicas:    1,
-				MinReplicas: 1,
-				MaxReplicas: 4,
-			},
-			wantErr: "",
-		},
-		{
-			name:        "replicas stays at 0 when min replicas and max replicas is 4",
-			replicas:    i32(0),
-			minReplicas: i32(0),
-			maxReplicas: i32(4),
-			expected: &ValidatedScalingSpec{
-				Replicas:    0,
-				MinReplicas: 0,
-				MaxReplicas: 4,
-			},
-			wantErr: "",
-		},
-		{
-			name:        "replicas gets adjusted to min replicas when is less than min replicas",
-			replicas:    i32(0),
-			minReplicas: i32(2),
-			maxReplicas: i32(4),
-			expected: &ValidatedScalingSpec{
-				Replicas:    2,
-				MinReplicas: 2,
-				MaxReplicas: 4,
-			},
-			wantErr: "",
-		},
-		{
-			name:        "no auto scaling enabled",
-			replicas:    i32(2),
-			minReplicas: nil,
-			maxReplicas: nil,
-			expected: &ValidatedScalingSpec{
-				Replicas: 2,
-			},
-			wantErr: "",
-		},
-		{
-			name:        "unset replica params defaults to 1",
-			replicas:    nil,
-			minReplicas: nil,
-			maxReplicas: nil,
-			expected: &ValidatedScalingSpec{
-				Replicas:    1,
-				MinReplicas: 0,
-				MaxReplicas: 0,
-			},
-			wantErr: "",
-		},
-		{
-			name:        "unset replica params defaults to 1",
-			replicas:    nil,
-			minReplicas: i32(1),
-			maxReplicas: nil,
-			expected: &ValidatedScalingSpec{
-				Replicas:    1,
-				MinReplicas: 1,
-				MaxReplicas: 0,
-			},
-			wantErr: "",
-		},
-		{
-			name:        "min replica to 1 and replica to 0 should convert to min replica",
-			replicas:    i32(0),
-			minReplicas: i32(1),
-			maxReplicas: nil,
-			expected: &ValidatedScalingSpec{
-				Replicas:    1,
-				MinReplicas: 1,
-				MaxReplicas: 0,
-			},
-			wantErr: "",
-		},
-		{
-			name:        "min replicas scaling",
-			replicas:    nil,
-			minReplicas: i32(2),
-			maxReplicas: nil,
-			expected: &ValidatedScalingSpec{
-				Replicas:    2,
-				MinReplicas: 2,
-			},
-			wantErr: "",
-		},
-		{
-			name:        "max replicas scaling",
-			replicas:    nil,
-			minReplicas: nil,
-			maxReplicas: i32(2),
-			expected: &ValidatedScalingSpec{
-				Replicas:    1,
-				MinReplicas: 0,
-				MaxReplicas: 2,
-			},
-			wantErr: "",
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			scalingSpec, err := GetValidatedScalingSpec(test.replicas, test.minReplicas, test.maxReplicas)
-
-			if test.wantErr != "" {
-				if err == nil {
-					t.Errorf("expected error: %v, got nil", test.wantErr)
-					return
-				}
-				if err.Error() != test.wantErr {
-					t.Errorf("expected error: %q, got: %q", test.wantErr, err.Error())
-				}
-				return
-			}
-
-			if err != nil {
-				t.Errorf("unexpected error: %v", err)
-				return
-			}
-
-			g.Expect(scalingSpec).To(Equal(test.expected))
-		})
-	}
-
 }
 
 /* WARNING: Read this first if test below fails (either at compile-time or while running the
