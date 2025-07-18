@@ -127,7 +127,7 @@ func TestAsModelDetails(t *testing.T) {
 				},
 				DeploymentSpec: &scheduler.DeploymentSpec{
 					Replicas:    1,
-					MinReplicas: 1,
+					MinReplicas: 0,
 					MaxReplicas: math.MaxUint32,
 				},
 			},
@@ -199,7 +199,7 @@ func TestAsModelDetails(t *testing.T) {
 				DeploymentSpec: &scheduler.DeploymentSpec{
 					Replicas:    4,
 					LogPayloads: true,
-					MinReplicas: 4,
+					MinReplicas: 0,
 					MaxReplicas: math.MaxUint32,
 				},
 			},
@@ -269,7 +269,7 @@ func TestAsModelDetails(t *testing.T) {
 				DeploymentSpec: &scheduler.DeploymentSpec{
 					Replicas:    4,
 					LogPayloads: true,
-					MinReplicas: 4,
+					MinReplicas: 0,
 					MaxReplicas: math.MaxUint32,
 				},
 			},
@@ -304,7 +304,7 @@ func TestAsModelDetails(t *testing.T) {
 				},
 				DeploymentSpec: &scheduler.DeploymentSpec{
 					Replicas:    1,
-					MinReplicas: 1,
+					MinReplicas: 0,
 					MaxReplicas: math.MaxUint32,
 				},
 			},
@@ -372,7 +372,7 @@ func TestAsModelDetails(t *testing.T) {
 				},
 				DeploymentSpec: &scheduler.DeploymentSpec{
 					Replicas:    1,
-					MinReplicas: 1,
+					MinReplicas: 0,
 					MaxReplicas: 4,
 				},
 			},

@@ -57,7 +57,7 @@ func TestServerNotify(t *testing.T) {
 				{
 					Name:             "foo",
 					ExpectedReplicas: 2,
-					MinReplicas:      2,
+					MinReplicas:      0,
 					MaxReplicas:      math.MaxUint32,
 					KubernetesMeta: &scheduler.KubernetesMeta{
 						Namespace:  "default",
@@ -81,7 +81,7 @@ func TestServerNotify(t *testing.T) {
 				{
 					Name:             "foo",
 					ExpectedReplicas: 1,
-					MinReplicas:      1,
+					MinReplicas:      0,
 					MaxReplicas:      math.MaxUint32,
 					KubernetesMeta: &scheduler.KubernetesMeta{
 						Namespace:  "default",
@@ -144,7 +144,7 @@ func TestServerNotify(t *testing.T) {
 				{
 					Name:             "foo",
 					ExpectedReplicas: 1,
-					MinReplicas:      1,
+					MinReplicas:      0,
 					MaxReplicas:      math.MaxUint32,
 					KubernetesMeta: &scheduler.KubernetesMeta{
 						Namespace:  "default",
@@ -154,7 +154,7 @@ func TestServerNotify(t *testing.T) {
 				{
 					Name:             "bar",
 					ExpectedReplicas: 1,
-					MinReplicas:      1,
+					MinReplicas:      0,
 					MaxReplicas:      math.MaxUint32,
 					KubernetesMeta: &scheduler.KubernetesMeta{
 						Namespace:  "default",
@@ -306,6 +306,13 @@ func TestSubscribeServerEvents(t *testing.T) {
 					Namespace:  "seldon",
 					Generation: 1,
 				},
+				Spec: v1alpha1.ServerSpec{
+					ScalingSpec: v1alpha1.ScalingSpec{
+						Replicas:    ptr.Int32(1),
+						MinReplicas: ptr.Int32(0),
+						MaxReplicas: ptr.Int32(0),
+					},
+				},
 			},
 			response: &scheduler.ServerStatusResponse{
 				Type:       scheduler.ServerStatusResponse_ScalingRequest,
@@ -315,8 +322,8 @@ func TestSubscribeServerEvents(t *testing.T) {
 						ReplicaIdx: 0,
 					},
 				},
-				AvailableReplicas:      1,
-				ExpectedReplicas:       0,
+				AvailableReplicas:      3,
+				ExpectedReplicas:       6,
 				NumLoadedModelReplicas: 0,
 				KubernetesMeta: &scheduler.KubernetesMeta{
 					Namespace:  "seldon",
@@ -332,6 +339,13 @@ func TestSubscribeServerEvents(t *testing.T) {
 					Name:       "foo",
 					Namespace:  "default",
 					Generation: 1,
+				},
+				Spec: v1alpha1.ServerSpec{
+					ScalingSpec: v1alpha1.ScalingSpec{
+						Replicas:    ptr.Int32(1),
+						MinReplicas: ptr.Int32(0),
+						MaxReplicas: ptr.Int32(0),
+					},
 				},
 			},
 			response: &scheduler.ServerStatusResponse{
