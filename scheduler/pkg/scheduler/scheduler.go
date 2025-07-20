@@ -187,12 +187,12 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) (*coordinator.Serve
 	filteredServers = s.filterServers(latestModel, servers)
 	if len(filteredServers) == 0 {
 		totalServers := len(servers)
-		modelName := latestModel.GetMeta().GetName()
+		latestModelName := latestModel.GetMeta().GetName()
 		
 		msg := fmt.Sprintf("Failed to schedule model '%s' as no matching servers are available (checked %d servers)", 
-			modelName, totalServers)
+			latestModelName, totalServers)
 		
-		logger.WithField("total_servers_checked", totalServers).
+		logger.WithField("servers_checked", totalServers).
 			WithField("model_requirements", getModelRequirementsStr(latestModel)).
 			Info(msg)
 			
@@ -227,7 +227,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) (*coordinator.Serve
 				latestModel.GetMeta().GetName(), desiredReplicas, minReplicas)
 			logger.WithField("desired_replicas", desiredReplicas).
 				WithField("min_replicas", minReplicas).
-				WithField("available_servers", len(filteredServers)).
+				WithField("servers_checked", len(filteredServers)).
 				Warn(msg)
 		}
 	}
@@ -401,8 +401,8 @@ func (s *SimpleScheduler) filterServers(model *store.ModelVersion, servers []*st
 
 	// Store rejection reasons for verbose error reporting
 	if len(filteredServers) == 0 && len(rejectionReasons) > 0 {
-		logger.WithField("rejection_details", rejectionReasons).Info("All servers rejected for model scheduling")
-		// Store rejection reasons in model metadata for CLI access
+		logger.WithField("rejection_details", strings.Join(rejectionReasons, "; ")).Info("All servers rejected for model scheduling")
+		// Store rejection reasons for detailed logging
 		s.storeRejectionReasons(model, rejectionReasons)
 	}
 
@@ -446,19 +446,17 @@ func (s *SimpleScheduler) filterReplicas(model *store.ModelVersion, server *stor
 
 	// Log detailed replica rejection information when no replicas are available
 	if len(candidateServer.ChosenReplicas) == 0 && len(rejectedReplicas) > 0 {
-		logger.WithField("replica_rejections", rejectedReplicas).
-			WithField("total_replicas_checked", len(server.Replicas)).
+		logger.WithField("replica_rejections", strings.Join(rejectedReplicas, "; ")).
+			WithField("replicas_checked", len(server.Replicas)).
 			Info("No suitable replicas found on server for model")
 	}
 
 	return &candidateServer
 }
 
-// storeRejectionReasons stores detailed rejection reasons in the model's metadata
-// for later access by CLI tools and debugging
+// storeRejectionReasons logs detailed rejection reasons for debugging purposes
 func (s *SimpleScheduler) storeRejectionReasons(model *store.ModelVersion, reasons []string) {
-	// For now, we'll log the detailed reasons at Info level so they appear in logs
-	// This could be enhanced to store in model metadata when that capability is available
+	// Log the detailed reasons at Info level so they appear in logs for debugging
 	reasonStr := strings.Join(reasons, "; ")
 	s.logger.WithField("model", model.GetMeta().GetName()).
 		WithField("detailed_reasons", reasonStr).
