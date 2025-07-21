@@ -286,7 +286,7 @@ func main() {
 	)
 
 	// scheduler <-> controller grpc
-	modelGwLoadBalancer := util.NewRingLoadBalancer(4)
+	modelGwLoadBalancer := util.NewRingLoadBalancer(numPartitions)
 	s := schedulerServer.NewSchedulerServer(
 		logger, ss, es, ps, sched, eventHub, sync,
 		schedulerServer.SchedulerServerConfig{
