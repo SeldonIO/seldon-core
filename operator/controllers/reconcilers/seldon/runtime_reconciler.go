@@ -75,6 +75,29 @@ func ValidateDataflowScaleSpec(
 	return nil
 }
 
+func ValidatePipelineGatewaySpec(
+	component *mlopsv1alpha1.ComponentDefn,
+	runtime *mlopsv1alpha1.SeldonRuntime,
+	commonConfig common.ReconcilerConfig,
+	namespace *string,
+) error {
+	numPartitions, err := ParseInt32(runtime.Spec.Config.KafkaConfig.Topics["numPartitions"].StrVal)
+	if err != nil {
+		return fmt.Errorf("failed to parse numPartitions from KafkaConfig: %w", err)
+	}
+
+	if component.Replicas != nil && *component.Replicas > numPartitions {
+		component.Replicas = &numPartitions
+		commonConfig.Recorder.Eventf(
+			runtime,
+			v1.EventTypeWarning,
+			"PipelineGwReplicasAdjusted",
+			fmt.Sprintf("Pipeline gateway replicas adjusted to %d based on KafkaConfig", numPartitions),
+		)
+	}
+	return nil
+}
+
 func ValidateComponent(
 	component *mlopsv1alpha1.ComponentDefn,
 	runtime *mlopsv1alpha1.SeldonRuntime,
@@ -83,6 +106,14 @@ func ValidateComponent(
 ) error {
 	if component.Name == mlopsv1alpha1.DataflowEngineName {
 		return ValidateDataflowScaleSpec(
+			component,
+			runtime,
+			commonConfig,
+			namespace,
+		)
+	}
+	if component.Name == mlopsv1alpha1.PipelineGatewayName {
+		return ValidatePipelineGatewaySpec(
 			component,
 			runtime,
 			commonConfig,
