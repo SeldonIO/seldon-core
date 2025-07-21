@@ -11,7 +11,6 @@ package pipeline
 
 import (
 	"context"
-	"strings"
 	"sync"
 	"sync/atomic"
 
@@ -146,14 +145,6 @@ func (c *MultiTopicsKafkaConsumer) subscribeTopics(cb kafka.RebalanceCb) error {
 	return c.consumer.SubscribeTopics(topics, cb)
 }
 
-func extractRequestId(partitionAndRequestId string) string {
-	parts := strings.SplitN(partitionAndRequestId, ".", 2)
-	if len(parts) < 2 {
-		return partitionAndRequestId
-	}
-	return strings.TrimSpace(parts[1])
-}
-
 func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 	logger := c.logger.WithField("func", "pollAndMatch")
 	for c.isActive.Load() {
@@ -169,7 +160,7 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 				WithField("key", string(e.Key)).
 				Debugf("received message")
 
-			key := extractRequestId(string(e.Key))
+			key := string(e.Key)
 			if val, ok := c.requests.Get(key); ok {
 				ctx := createBaseContextFromKafkaMsg(e)
 

@@ -280,9 +280,9 @@ func (km *KafkaManager) Infer(
 		logger.Infof("Received delivery event %s", evt.String())
 		span.End()
 	}()
-	logger.Debugf("Waiting for response for request id %s for resource %s", requestId, resourceName)
+	logger.Debugf("Waiting for response for request id %s for resource %s on parititon %d", requestId, resourceName, partition)
 	request.wg.Wait()
-	logger.Debugf("Got response for request id %s for resource %s", requestId, resourceName)
+	logger.Debugf("Got response for request id %s for resource %s on parition %d", requestId, resourceName, partition)
 	return request, nil
 }
 
