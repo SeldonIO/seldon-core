@@ -12,6 +12,7 @@ package scheduler
 import (
 	"context"
 	"fmt"
+	"math"
 	"testing"
 	"time"
 
@@ -184,7 +185,9 @@ func TestControlPlaneEvents(t *testing.T) {
 						},
 						ModelSpec: &scheduler.ModelSpec{},
 						DeploymentSpec: &scheduler.DeploymentSpec{
-							Replicas: 1,
+							Replicas:    1,
+							MinReplicas: 0,
+							MaxReplicas: math.MaxUint32,
 						},
 					},
 				},
@@ -219,6 +222,8 @@ func TestControlPlaneEvents(t *testing.T) {
 						Generation: 1,
 					},
 					ExpectedReplicas: 1,
+					MinReplicas:      0,
+					MaxReplicas:      math.MaxUint32,
 				},
 			},
 		},
