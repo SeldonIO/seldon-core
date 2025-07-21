@@ -32,6 +32,10 @@ type SeldonRuntimeReconciler struct {
 }
 
 func ParseInt32(s string) (int32, error) {
+	if s == "" {
+		return 1, nil
+	}
+
 	i64, err := strconv.ParseInt(s, 10, 32)
 	return int32(i64), err
 }
