@@ -25,6 +25,7 @@ type KafkaConfig struct {
 	Consumer              kafka.ConfigMap `json:"consumer,omitempty"`
 	Producer              kafka.ConfigMap `json:"producer,omitempty"`
 	Streams               kafka.ConfigMap `json:"streams,omitempty"`
+	Topics                kafka.ConfigMap `json:"topics,omitempty"`
 	TopicPrefix           string          `json:"topicPrefix,omitempty"`
 	ConsumerGroupIdPrefix string          `json:"consumerGroupIdPrefix,omitempty"`
 }
@@ -123,6 +124,10 @@ func NewKafkaConfig(path string, logLevel string) (*KafkaConfig, error) {
 		return nil, err
 	}
 	kc.Streams, err = convertConfigMap(kc.Streams)
+	if err != nil {
+		return nil, err
+	}
+	kc.Topics, err = convertConfigMap(kc.Topics)
 	if err != nil {
 		return nil, err
 	}

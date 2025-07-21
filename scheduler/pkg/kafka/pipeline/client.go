@@ -7,7 +7,7 @@ Use of this software is governed by
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package status
+package pipeline
 
 import (
 	"context"
@@ -27,6 +27,7 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -39,12 +40,13 @@ type PipelineSchedulerClient struct {
 	logger                logrus.FieldLogger
 	conn                  *grpc.ClientConn
 	callOptions           []grpc.CallOption
-	pipelineStatusUpdater PipelineStatusUpdater
+	pipelineStatusUpdater status.PipelineStatusUpdater
+	pipelineInferer       PipelineInferer
 	certificateStore      *seldontls.CertificateStore
 	stop                  atomic.Bool
 }
 
-func NewPipelineSchedulerClient(logger logrus.FieldLogger, pipelineStatusUpdater PipelineStatusUpdater) *PipelineSchedulerClient {
+func NewPipelineSchedulerClient(logger logrus.FieldLogger, pipelineStatusUpdater status.PipelineStatusUpdater, pipelineInferer PipelineInferer) *PipelineSchedulerClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
@@ -54,6 +56,7 @@ func NewPipelineSchedulerClient(logger logrus.FieldLogger, pipelineStatusUpdater
 		logger:                logger.WithField("source", "PipelineSchedulerClient"),
 		callOptions:           opts,
 		pipelineStatusUpdater: pipelineStatusUpdater,
+		pipelineInferer:       pipelineInferer,
 	}
 }
 
@@ -169,8 +172,14 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 		}
 
 		logger.Debugf("Processing pipeline %s version %d with state %s", pv.Name, pv.Version, pv.State.Status.String())
-
 		pc.pipelineStatusUpdater.Update(pv)
+
+		_, err = pc.pipelineInferer.LoadOrStorePipeline(pv.Name, false)
+		logger.Debugf("Stored pipeline %s", pv.Name)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to store pipeline %s", pv.Name)
+			continue
+		}
 	}
 	logger.Infof("Closing connection to scheduler")
 	defer func() {

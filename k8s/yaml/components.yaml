@@ -964,6 +964,9 @@ spec:
         linger.ms: '0'
         message.max.bytes: '1000000000'
       topicPrefix: 'seldon'
+      topics:
+        numPartitions: '1'
+        replicationFactor: '1'
     serviceConfig:
       grpcServicePrefix: ''
       serviceType: 'LoadBalancer'
