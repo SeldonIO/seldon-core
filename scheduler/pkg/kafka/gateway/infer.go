@@ -43,8 +43,6 @@ const (
 	envDefaultNumPartitions     = "KAFKA_DEFAULT_NUM_PARTITIONS"
 	defaultReplicationFactor    = 1
 	defaultNumPartitions        = 1
-	replicationFactorKey        = "replicationFactor"
-	numPartitionsKey            = "numPartitions"
 )
 
 type InferKafkaHandler struct {
