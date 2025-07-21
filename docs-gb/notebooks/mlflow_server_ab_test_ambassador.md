@@ -97,7 +97,7 @@ On each run, `mlflow` will set up the Conda environment defined by the `conda.ya
 
 Each of these commands will create a new run which can be visualised through the MLFlow dashboard as per the screenshot below.
 
-![mlflow-dashboard](images/mlflow-dashboard.png)
+![mlflow-dashboard](../images/mlflow-dashboard.png)
 
 
 Each of these models can actually be found on the `mlruns` folder:
@@ -338,7 +338,7 @@ data.apply(_test_row, axis=1)
 
 You should now be able to see Seldon's pre-built Grafana dashboard.
 
-![grafana-mlflow](images/grafana-mlflow.jpg)
+![grafana-mlflow](../images/grafana-mlflow.jpg)
 
 In bottom of the dashboard you can see the following charts: 
 

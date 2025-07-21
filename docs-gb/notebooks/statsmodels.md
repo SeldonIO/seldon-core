@@ -243,7 +243,7 @@ Once the model is deployed, you can now monitor various metrics, the 2 main ones
 
 The model deployed on Seldon can be monitored using build in metrics dashboard on Grafana. Here is the link to deploy metrics dashboard: https://docs.seldon.io/projects/seldon-core/en/v1.1.0/analytics/analytics.html.  <br>                                                                                                                                                                                                            
 The screenshot of a sample dashboard is given below: <br>
-![dashboard_image1](dashboard_image.png)
+![dashboard_image1](../images/dashboard_image.png)
 
 
 <b>Summary</b>

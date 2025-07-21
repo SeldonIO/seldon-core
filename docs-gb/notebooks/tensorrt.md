@@ -930,7 +930,7 @@ print("Truth",y,"predicted",predicted)
 
 
     
-![png](triton_tensorrt_files/triton_tensorrt_11_1.png)
+![png](../images/triton_tensorrt_11_1.png)
     
 
 

@@ -2,7 +2,7 @@
 
 This notebook illustrates how you can serve [OpenVINO](https://software.intel.com/en-us/openvino-toolkit) optimized models for Imagenet with Seldon Core.
 
-![car](car.png)
+![car](../images/car.png)
 
    
 To run all of the notebook successfully you will need to start it with

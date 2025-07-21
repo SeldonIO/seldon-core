@@ -17,7 +17,7 @@
 We will use the Sagemaker example notebook [Iris Training and Prediction with Sagemaker Scikit-learn](https://github.com/aws/amazon-sagemaker-examples/blob/master/sagemaker-python-sdk/scikit_learn_iris/scikit_learn_estimator_example_with_batch_transform.ipynb)
 
   1. Run this notebook inside Sagemaker but change the training step to include an ```output_path``` parameter with value an S3 bucket you have created. For example ```output_path="s3://<my-bucket>/<my-path>``` as shown below:
-     * <img src="sagemaker-scikit-iris-train.png"/>
+     * <img src="../images/sagemaker-scikit-iris-train.png"/>
   1. Once trained you should find the model saved to the location you specified. You will need to use this S3 location later when deploying locally.
 
 ## Create Sagemaker SKLearn Image
