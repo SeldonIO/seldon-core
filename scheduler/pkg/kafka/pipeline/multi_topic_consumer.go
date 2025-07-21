@@ -29,13 +29,14 @@ import (
 )
 
 type MultiTopicsKafkaConsumer struct {
-	config   *kafka_config.KafkaConfig
-	logger   log.FieldLogger
-	mu       sync.RWMutex
-	topics   map[string]struct{}
-	id       string
-	consumer *kafka.Consumer
-	isActive atomic.Bool
+	config     *kafka_config.KafkaConfig
+	logger     log.FieldLogger
+	mu         sync.RWMutex
+	topics     map[string]struct{}
+	partitions []int32
+	id         string
+	consumer   *kafka.Consumer
+	isActive   atomic.Bool
 	// map of kafka id to request
 	requests cmap.ConcurrentMap
 	tracer   trace.Tracer
@@ -56,13 +57,16 @@ func NewMultiTopicsKafkaConsumer(
 		requests: cmap.New(),
 		tracer:   tracer,
 	}
-	err := consumer.createConsumer()
+	err := consumer.createConsumer(logger)
 	return consumer, err
 }
 
-func (c *MultiTopicsKafkaConsumer) createConsumer() error {
+func (c *MultiTopicsKafkaConsumer) createConsumer(logger log.FieldLogger) error {
 	consumerConfig := kafka_config.CloneKafkaConfigMap(c.config.Consumer)
 	consumerConfig["group.id"] = c.id
+	consumerConfig["go.application.rebalance.enable"] = true
+	consumerConfig["partition.assignment.strategy"] = "roundrobin"
+
 	err := config_tls.AddKafkaSSLOptions(consumerConfig)
 	if err != nil {
 		return err
@@ -144,7 +148,6 @@ func (c *MultiTopicsKafkaConsumer) subscribeTopics(cb kafka.RebalanceCb) error {
 func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 	logger := c.logger.WithField("func", "pollAndMatch")
 	for c.isActive.Load() {
-
 		ev := c.consumer.Poll(pollTimeoutMillisecs)
 		if ev == nil {
 			continue
@@ -157,7 +160,8 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 				WithField("key", string(e.Key)).
 				Debugf("received message")
 
-			if val, ok := c.requests.Get(string(e.Key)); ok {
+			key := string(e.Key)
+			if val, ok := c.requests.Get(key); ok {
 				ctx := createBaseContextFromKafkaMsg(e)
 
 				// Add tracing span
@@ -165,21 +169,21 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 				// Use the original request id from kafka headers, as key here is a composite key with the resource name
 				requestId := GetRequestIdFromKafkaHeaders(e.Headers)
 				if requestId == "" {
-					logger.Warnf("Missing request id in Kafka headers for key %s", string(e.Key))
+					logger.Warnf("Missing request id in Kafka headers for key %s", key)
 				}
 				span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
 
 				request := val.(*Request)
 				request.mu.Lock()
 				if request.active {
-					logger.Debugf("Process response for key %s", string(e.Key))
+					logger.Debugf("Process response for key %s", key)
 					request.errorModel, request.isError = extractErrorHeader(e.Headers)
 					request.response = e.Value
 					request.headers = e.Headers
 					request.wg.Done()
 					request.active = false
 				} else {
-					logger.Warnf("Got duplicate request with key %s", string(e.Key))
+					logger.Warnf("Got duplicate request with key %s", key)
 				}
 				request.mu.Unlock()
 				span.End()

@@ -48,6 +48,10 @@ func (f *fakePipelineInferer) Infer(ctx context.Context, resourceName string, is
 	}
 }
 
+func (f *fakePipelineInferer) LoadOrStorePipeline(resourceName string, isModel bool) (*Pipeline, error) {
+	return nil, nil
+}
+
 func waitForServer(port int) {
 	backoff := 50 * time.Millisecond
 

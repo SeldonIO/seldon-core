@@ -249,10 +249,10 @@ func (iw *InferWorker) produce(
 			logger.Debugf("Adding kafka header for topic %s %s:%s", topic, h.Key, string(h.Value))
 		}
 	}
-	logger.Infof("Produce response to topic %s", topic)
+	logger.Debugf("Produce response to topic %s on partition %d", topic, job.msg.TopicPartition.Partition)
 
 	msg := &kafka.Message{
-		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
+		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: job.msg.TopicPartition.Partition},
 		Key:            job.msg.Key,
 		Value:          b,
 		Headers:        kafkaHeaders,

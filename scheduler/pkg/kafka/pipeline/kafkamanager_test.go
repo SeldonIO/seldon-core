@@ -54,7 +54,7 @@ func TestGetPipelineKey(t *testing.T) {
 	}
 }
 
-func TestLoadOrStorePipeline(t *testing.T) {
+func TestStoreAndLoadPipeline(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -97,12 +97,12 @@ func TestLoadOrStorePipeline(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			km, err := NewKafkaManager(logrus.New(), "default", &kafka_config.KafkaConfig{}, tracer, 10, 10)
+			km, err := NewKafkaManager(logrus.New(), "default", &kafka_config.KafkaConfig{}, tracer, 10)
 			g.Expect(err).To(BeNil())
 			if test.pipeline != nil {
 				km.pipelines.Store(getPipelineKey(test.resourceName, test.isModel), test.pipeline)
 			}
-			pipeline, err := km.loadOrStorePipeline(test.resourceName, test.isModel)
+			pipeline, err := km.LoadOrStorePipeline(test.resourceName, test.isModel)
 			g.Expect(err).To(BeNil())
 			g.Expect(pipeline).ToNot(BeNil())
 			count := 0
