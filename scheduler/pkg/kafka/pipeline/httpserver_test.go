@@ -48,11 +48,7 @@ func (f *fakePipelineInferer) Infer(ctx context.Context, resourceName string, is
 	}
 }
 
-func (f *fakePipelineInferer) StorePipeline(resourceName string, isModel bool) error {
-	return nil
-}
-
-func (f *fakePipelineInferer) LoadPipeline(resourceName string, isModel bool) (*Pipeline, error) {
+func (f *fakePipelineInferer) LoadOrStorePipeline(resourceName string, isModel bool) (*Pipeline, error) {
 	return nil, nil
 }
 

@@ -102,9 +102,7 @@ func TestStoreAndLoadPipeline(t *testing.T) {
 			if test.pipeline != nil {
 				km.pipelines.Store(getPipelineKey(test.resourceName, test.isModel), test.pipeline)
 			}
-			err = km.StorePipeline(test.resourceName, test.isModel)
-			g.Expect(err).To(BeNil())
-			pipeline, err := km.LoadPipeline(test.resourceName, test.isModel)
+			pipeline, err := km.LoadOrStorePipeline(test.resourceName, test.isModel)
 			g.Expect(err).To(BeNil())
 			g.Expect(pipeline).ToNot(BeNil())
 			count := 0

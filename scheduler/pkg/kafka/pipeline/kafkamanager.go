@@ -36,8 +36,7 @@ const (
 )
 
 type PipelineInferer interface {
-	StorePipeline(resourceName string, isModel bool) error
-	LoadPipeline(resourceName string, isModel bool) (*Pipeline, error)
+	LoadOrStorePipeline(resourceName string, isModel bool) (*Pipeline, error)
 	Infer(
 		ctx context.Context,
 		resourceName string,
@@ -160,38 +159,35 @@ func getPipelineKey(resourceName string, isModel bool) string {
 	}
 }
 
-func loadPipeline(resourceName string, isModel bool, pipelines *sync.Map) (*Pipeline, error) {
+func (km *KafkaManager) LoadOrStorePipeline(resourceName string, isModel bool) (*Pipeline, error) {
+	logger := km.logger.WithField("func", "loadOrStorePipeline")
 	key := getPipelineKey(resourceName, isModel)
-	if val, ok := pipelines.Load(key); ok {
+
+	// try to load the pipeline from the map
+	km.mu.RLock()
+	if val, ok := km.pipelines.Load(key); ok {
+		km.mu.RUnlock()
+		val.(*Pipeline).wg.Wait()
 		return val.(*Pipeline), nil
 	}
-	return nil, fmt.Errorf("pipeline for resource %s not found", resourceName)
-}
+	km.mu.RUnlock()
 
-func (km *KafkaManager) LoadPipeline(resourceName string, isModel bool) (*Pipeline, error) {
-	km.mu.RLock()
-	defer km.mu.RUnlock()
-	return loadPipeline(resourceName, isModel, &km.pipelines)
-}
-
-func (km *KafkaManager) StorePipeline(resourceName string, isModel bool) error {
+	// acquire write lock to potentially create and store
 	km.mu.Lock()
 	defer km.mu.Unlock()
 
-	_, err := loadPipeline(resourceName, isModel, &km.pipelines)
-	if err == nil {
-		return nil
+	// check again in case another goroutine stored it
+	if val, ok := km.pipelines.Load(key); ok {
+		val.(*Pipeline).wg.Wait()
+		return val.(*Pipeline), nil
 	}
 
-	logger := km.logger.WithField("func", "StorePipeline")
+	// create new pipeline
 	pipeline, err := km.createPipeline(resourceName, isModel)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
 	pipeline.wg.Add(1) // wait set to allow consumer to say when started
-
-	key := getPipelineKey(resourceName, isModel)
 	km.pipelines.Store(key, pipeline)
 
 	go func() {
@@ -203,7 +199,7 @@ func (km *KafkaManager) StorePipeline(resourceName string, isModel bool) error {
 
 	logger.Debugf("Waiting for consumer to be ready for %s", resourceName)
 	pipeline.wg.Wait() // wait (maybe) for consumer start
-	return nil
+	return pipeline, nil
 }
 
 func (km *KafkaManager) Infer(
@@ -216,30 +212,9 @@ func (km *KafkaManager) Infer(
 ) (*Request, error) {
 	logger := km.logger.WithField("func", "Infer")
 
-	var (
-		pipeline *Pipeline
-		err      error
-	)
-	pipeline, err = km.LoadPipeline(resourceName, isModel)
+	pipeline, err := km.LoadOrStorePipeline(resourceName, isModel)
 	if err != nil {
-		if isModel {
-			// We only allow lazy loading of model. This path should not be reached
-			// through envoy but only sending requests directly to the pipeline gateway.
-			// Note that due to lazy loading, having multiple replicas of the pipelinegw
-			// may result in unexpected behaviour. This is because due to the load balancing
-			// of the requests, consumers with the same group id may end up consuming from
-			// different topics.
-			logger.Warning("Lazy loading of the models is only suppoerted for a single pipeline gateway instance.")
-			err := km.StorePipeline(resourceName, true)
-			if err != nil {
-				return nil, fmt.Errorf("failed to store model pipeline %s: %w", resourceName, err)
-			}
-
-			// In this case, the existence of the pipeline is guaranteed
-			pipeline, _ = km.LoadPipeline(resourceName, true)
-		} else {
-			return nil, err
-		}
+		return nil, err
 	}
 
 	// We lock here so we don't reasign the partitions while producing a message.

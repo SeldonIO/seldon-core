@@ -65,8 +65,7 @@ func NewMultiTopicsKafkaConsumer(
 func (c *MultiTopicsKafkaConsumer) createConsumer(logger log.FieldLogger) error {
 	consumerConfig := kafka_config.CloneKafkaConfigMap(c.config.Consumer)
 	consumerConfig["group.id"] = c.id
-	consumerConfig["go.events.channel.enable"] = true
-	consumerConfig["go.application.rebalance.enable"] = true // Required for Events()
+	consumerConfig["go.application.rebalance.enable"] = true
 	consumerConfig["partition.assignment.strategy"] = "roundrobin"
 
 	err := config_tls.AddKafkaSSLOptions(consumerConfig)
@@ -148,7 +147,7 @@ func (c *MultiTopicsKafkaConsumer) subscribeTopics(cb kafka.RebalanceCb) error {
 }
 
 func extractRequestId(partitionAndRequestId string) string {
-	parts := strings.SplitN(partitionAndRequestId, "|", 2)
+	parts := strings.SplitN(partitionAndRequestId, ".", 2)
 	if len(parts) < 2 {
 		return partitionAndRequestId
 	}
