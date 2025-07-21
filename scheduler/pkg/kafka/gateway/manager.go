@@ -38,6 +38,7 @@ type ConsumerManager struct {
 	maxNumConsumers   int
 	consumerConfigMap kafka.ConfigMap
 	producerConfigMap kafka.ConfigMap
+	topicsConfigMap   kafka.ConfigMap
 }
 
 type ManagerConfig struct {
@@ -108,8 +109,17 @@ func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error 
 		logger.WithField("config", string(consumerConfigMaskedJson)).Info("Creating consumer config for use later")
 	}
 
+	topicsConfig := kafka_config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Topics)
+	topicsConfigJSON, err := json.Marshal(&topicsConfig)
+	if err != nil {
+		logger.WithField("config", &topicsConfig).Info("Creating topics config for use later")
+	} else {
+		logger.WithField("config", string(topicsConfigJSON)).Info("Creating topics config for use later")
+	}
+
 	cm.consumerConfigMap = consumerConfig
 	cm.producerConfigMap = producerConfig
+	cm.topicsConfigMap = topicsConfig
 	return nil
 }
 
@@ -134,6 +144,7 @@ func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) 
 			cm.managerConfig,
 			cloneKafkaConfigMap(cm.consumerConfigMap),
 			cloneKafkaConfigMap(cm.producerConfigMap),
+			cloneKafkaConfigMap(cm.topicsConfigMap),
 			consumerBucketId)
 		if err != nil {
 			return nil, err

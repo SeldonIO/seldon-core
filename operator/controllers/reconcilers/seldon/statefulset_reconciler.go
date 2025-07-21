@@ -44,11 +44,11 @@ func NewComponentStatefulSetReconciler(
 	name string,
 	common common.ReconcilerConfig,
 	meta metav1.ObjectMeta,
+	replicas int32,
 	podSpec *v1.PodSpec,
 	volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim,
 	componentLabels map[string]string,
 	componentAnnotations map[string]string,
-	override *mlopsv1alpha1.OverrideSpec,
 	seldonConfigMeta metav1.ObjectMeta,
 	annotator *patch.Annotator,
 ) (*ComponentStatefulSetReconciler, error) {
@@ -56,7 +56,7 @@ func NewComponentStatefulSetReconciler(
 	labels = utils.MergeMaps(componentLabels, labels)
 	annotations := utils.MergeMaps(meta.Annotations, seldonConfigMeta.Annotations)
 	annotations = utils.MergeMaps(componentAnnotations, annotations)
-	statefulSet, err := toStatefulSet(name, meta, podSpec, volumeClaimTemplates, override, labels, annotations)
+	statefulSet, err := toStatefulSet(name, meta, replicas, podSpec, volumeClaimTemplates, labels, annotations)
 	if err != nil {
 		return nil, err
 	}
@@ -75,26 +75,12 @@ func (s *ComponentStatefulSetReconciler) GetResources() []client.Object {
 func toStatefulSet(
 	name string,
 	meta metav1.ObjectMeta,
+	replicas int32,
 	podSpec *v1.PodSpec,
 	volumeClaimTemplates []mlopsv1alpha1.PersistentVolumeClaim,
-	override *mlopsv1alpha1.OverrideSpec,
 	labels map[string]string,
 	annotations map[string]string,
 ) (*appsv1.StatefulSet, error) {
-	var replicas int32
-	if override != nil && override.Replicas != nil {
-		replicas = *override.Replicas
-	} else {
-		replicas = 1
-	}
-	// Merge specs
-	if override != nil && override.PodSpec != nil {
-		var err error
-		podSpec, err = common.MergePodSpecs(podSpec, override.PodSpec)
-		if err != nil {
-			return nil, err
-		}
-	}
 	metaLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: name}, labels)
 	templateLabels := utils.MergeMaps(map[string]string{constants.KubernetesNameLabelKey: name}, labels)
 	ss := &appsv1.StatefulSet{

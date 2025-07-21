@@ -59,6 +59,7 @@ type KafkaConfig struct {
 	Consumer              map[string]intstr.IntOrString `json:"consumer,omitempty"`
 	Producer              map[string]intstr.IntOrString `json:"producer,omitempty"`
 	Streams               map[string]intstr.IntOrString `json:"streams,omitempty"`
+	Topics                map[string]intstr.IntOrString `json:"topics,omitempty"`
 	TopicPrefix           string                        `json:"topicPrefix,omitempty"`
 }
 
@@ -161,6 +162,14 @@ func (k *KafkaConfig) addDefaults(defaults KafkaConfig) {
 	}
 	if k.Streams == nil && defaults.Streams != nil {
 		k.Streams = make(map[string]intstr.IntOrString)
+	}
+	if k.Topics == nil && defaults.Topics != nil {
+		k.Topics = make(map[string]intstr.IntOrString)
+		for key, val := range defaults.Topics {
+			if _, ok := k.Topics[key]; !ok {
+				k.Topics[key] = val
+			}
+		}
 	}
 	for key, val := range defaults.Streams {
 		if _, ok := k.Streams[key]; !ok {

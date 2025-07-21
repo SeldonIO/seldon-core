@@ -156,7 +156,7 @@ func TestRuntimeReconcile(t *testing.T) {
 				client = testing2.NewFakeClient(scheme)
 			}
 			g.Expect(err).To(BeNil())
-			sr, err := NewSeldonRuntimeReconciler(test.runtime, common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client})
+			sr, err := NewSeldonRuntimeReconciler(test.runtime, common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client}, constants.SeldonNamespace)
 			g.Expect(err).To(BeNil())
 			err = sr.Reconcile()
 			if test.error {
