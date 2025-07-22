@@ -445,8 +445,6 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        - name: USE_DEPLOYMENTS_FOR_SERVERS
-          value: "false"
         image: '{{ .Values.controller.image.registry }}/{{ .Values.controller.image.repository
           }}:{{ .Values.controller.image.tag }}'
         imagePullPolicy: '{{ .Values.controller.image.pullPolicy }}'
@@ -1315,8 +1313,6 @@ spec:
           resourceFieldRef:
             containerName: mlserver
             resource: requests.memory
-      - name: SELDON_USE_DEPLOYMENTS_FOR_SERVERS
-        value: "false"
       image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository
         }}:{{ .Values.serverConfig.agent.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.agent.image.pullPolicy }}'
@@ -1600,8 +1596,6 @@ spec:
           resourceFieldRef:
             containerName: triton
             resource: requests.memory
-      - name: SELDON_USE_DEPLOYMENTS_FOR_SERVERS
-        value: "false"
       image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository
         }}:{{ .Values.serverConfig.agent.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.agent.image.pullPolicy }}'
