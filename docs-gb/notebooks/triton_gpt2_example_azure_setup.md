@@ -58,7 +58,7 @@ az group create -l $region -n $resource_group
 
 ---
 
-## Create AKS Cluster and NodePools <a id="aks"/>
+## Create AKS Cluster and NodePools
 Below, we create the AKS cluster with default 1 system node (to save time, in production use more nodes as per best practices) in the resource group we created earlier. This step can take 5 or more minutes.
 
 ```bash
@@ -200,7 +200,7 @@ az storage container create \
 
 ---
 
-# Install Kubernetes Blob CSI Driver <a id="csidriver"/>
+# Install Kubernetes Blob CSI Driver
 [Azure Blob Storage CSI driver for Kubernetes](https://github.com/kubernetes-sigs/blob-csi-driver) allows Kubernetes to access Azure Storage. We will deploy it using Helm3 package manager as described in the docs https://github.com/kubernetes-sigs/blob-csi-driver/tree/master/charts
 
 ```bash
@@ -215,7 +215,7 @@ kubectl -n kube-system get pods -l "app.kubernetes.io/instance=blob-csi-driver"
 
 ---
 
-## Create Persistent Volume for Azure Blob <a id="pv"/>
+## Create Persistent Volume for Azure Blob
 For more details on creating `PersistentVolume` using CSI driver refer to https://github.com/kubernetes-sigs/blob-csi-driver/blob/master/deploy/example/e2e_usage.md
 
 ```bash
