@@ -9,7 +9,9 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package v1alpha1
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type ValidatedScalingSpec struct {
 	Replicas    uint32
@@ -17,36 +19,57 @@ type ValidatedScalingSpec struct {
 	MaxReplicas uint32
 }
 
+// TODO consider putting these rules via CEL into the CR definition for Server, this will allow customers earlier feedback
+// their CRs are invalid upon trying to apply them, instead of checking controller logs after applying.
 func GetValidatedScalingSpec(replicas *int32, minReplicas *int32, maxReplicas *int32) (*ValidatedScalingSpec, error) {
+	spec, err := validatedScalingSpec(replicas, minReplicas, maxReplicas)
+	if err != nil {
+		return nil, fmt.Errorf("failed scaling spec check: %s", err)
+	}
+	return spec, nil
+}
+
+func validatedScalingSpec(replicas *int32, minReplicas *int32, maxReplicas *int32) (*ValidatedScalingSpec, error) {
 	var validatedSpec ValidatedScalingSpec
 
-	if replicas != nil && *replicas > 0 {
-		validatedSpec.Replicas = uint32(*replicas)
-	} else {
-		if minReplicas != nil && *minReplicas > 0 {
-			// set replicas to the min replicas when replicas is not set explicitly
-			validatedSpec.Replicas = uint32(*minReplicas)
-		} else {
-			validatedSpec.Replicas = 1
+	if replicas != nil {
+		if *replicas < 0 {
+			return nil, fmt.Errorf("replicas %d cannot be negative", *replicas)
 		}
+		validatedSpec.Replicas = uint32(*replicas)
+	} else if minReplicas != nil {
+		validatedSpec.Replicas = uint32(*minReplicas)
+	} else {
+		// default to 1 if replicas and minimum not set
+		validatedSpec.Replicas = 1
 	}
 
-	if minReplicas != nil && *minReplicas > 0 {
+	if minReplicas != nil {
+		if *minReplicas < 0 {
+			return nil, fmt.Errorf("min replicas %d cannot be negative", *minReplicas)
+		}
 		validatedSpec.MinReplicas = uint32(*minReplicas)
 		if validatedSpec.Replicas < validatedSpec.MinReplicas {
-			return nil, fmt.Errorf("number of replicas %d must be >= min replicas  %d", validatedSpec.Replicas, validatedSpec.MinReplicas)
+			return nil, fmt.Errorf("number of replicas %d must be >= min replicas %d",
+				validatedSpec.Replicas, validatedSpec.MinReplicas)
 		}
-	} else {
-		validatedSpec.MinReplicas = 0
 	}
 
-	if maxReplicas != nil && *maxReplicas > 0 {
+	if maxReplicas != nil {
+		if *maxReplicas < 0 {
+			return nil, fmt.Errorf("max replicas %d cannot be negative", *maxReplicas)
+		}
 		validatedSpec.MaxReplicas = uint32(*maxReplicas)
 		if validatedSpec.Replicas > validatedSpec.MaxReplicas {
-			return nil, fmt.Errorf("number of replicas %d must be <= min replicas  %d", validatedSpec.Replicas, validatedSpec.MaxReplicas)
+			return nil, fmt.Errorf("number of replicas %d must be <= max replicas %d",
+				validatedSpec.Replicas,
+				validatedSpec.MaxReplicas)
 		}
-	} else {
-		validatedSpec.MaxReplicas = 0
+	}
+
+	if minReplicas != nil && maxReplicas != nil && *minReplicas > *maxReplicas {
+		return nil, fmt.Errorf("min replicas %d cannot be greater than max replicas %d",
+			*minReplicas, *maxReplicas)
 	}
 
 	return &validatedSpec, nil
