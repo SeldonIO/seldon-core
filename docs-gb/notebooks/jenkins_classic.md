@@ -456,7 +456,7 @@ curl \
 
 In order to add a pipeline to Jenkins, you just have to go to the "Manage Jenkins" configuration dashboard, and click on "New Item" to create a new pipeline.
 
-![New Item](./images/new-item.png)
+![New Item](../images/new-item.png)
 
 
 In the first menu, we'll add a name.
@@ -478,7 +478,7 @@ Firstly, we will change the following:
             * For this you need to make sure that the current selected option is "Username and Password".
             * There you have to enter your Docker username, and for password it's advised to use a Docker API Key.
 
-![Pipeline Config](./images/pipeline-config.png)
+![Pipeline Config](../images/pipeline-config.png)
 
 Lastly, we will need to point to the right `Jenkinsfile`.
 Note that since we are working with a monorepository, where multiple model implementations are tracked, we will need to point our pipeline to the `./models/news_classifier` folder.
@@ -489,14 +489,14 @@ If we were working with a single model implementation repository, we would only 
 * Point to the right `Jenkinsfile` under "Script Path". In this case, `models/news_classifier/Jenkinsfile`.
 * If needed, add credentials that will allow to access private repos.
 
-![SCM Config](./images/scm-config.png)
+![SCM Config](../images/scm-config.png)
 
 ### Running pipeline
 
 In order to trigger a new build, we can do it manually by clicking on "Build with Parameters" and then on "Build" or we can just push a new change to our GitHub repo.
 This will take us to a view where we can see some details about each of the stages of the latest builds. 
 
-![Pipeline Stages](./images/pipeline-stages.png)
+![Pipeline Stages](../images/pipeline-stages.png)
 
 ## Installing Jenkins on your K8s cluster
 
@@ -534,7 +534,7 @@ If you wish to set up automated pipeline triggers, you will have to install the 
 
 Additionally, you will need to configure your Git's `name` and `email` as part of Jenkins settings.
 
-![Git user config](./images/git-user.png)
+![Git user config](../images/git-user.png)
 
 #### Make sure plugins are updated
 

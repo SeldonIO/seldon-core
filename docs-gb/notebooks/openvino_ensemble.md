@@ -4,7 +4,7 @@ This notebook illustrates how you can serve ensemble of models using [OpenVINO p
 The demo includes optimized ResNet50 and DenseNet169 models by OpenVINO model optimizer. 
 They have [reduced precision](https://www.edge-ai-vision.com/2019/02/introducing-int8-quantization-for-fast-cpu-inference-using-openvino/) of graph operations from FP32 to INT8. It significantly improves the execution peformance with minimal impact on the accuracy. The gain is particularly visible with the latest Casade Lake CPU with [VNNI](https://www.intel.com/content/www/us/en/developer/articles/guide/deep-learning-with-avx512-and-dl-boost.html#inpage-nav-1) extension.
 
-![pipeline](../images/pipeline1.png)
+![pipeline](pipeline1.png)
 
 ## Setup Seldon Core
 

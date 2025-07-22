@@ -1,7 +1,7 @@
 # Model Explainers
 
-![cat](cat.png)
-![explanation](cat_explanation.png)
+![cat](../images/cat.png)
+![explanation](../images/cat_explanation.png)
 
 Seldon provides model explanations using its [Alibi](https://github.com/SeldonIO/alibi) library.
 

@@ -1,5 +1,5 @@
 # Example Seldon Core Deployments using Helm
-<img src="images/deploy-graph.png" alt="predictor with canary" title="ml graph"/>
+<img src="../images/deploy-graph.png" alt="predictor with canary" title="ml graph"/>
 
 ## Setup Seldon Core
 

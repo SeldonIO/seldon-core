@@ -186,7 +186,7 @@ df["removed"].value_counts().plot.bar()
 
 
     
-![png](../images/sklearn_spacy_text_classifier_example_5_1.png)
+![png](../images/sklearn_spacy_text_classifier_example_7_1.png)
     
 
 

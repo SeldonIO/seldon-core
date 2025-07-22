@@ -171,7 +171,7 @@ kubectl get nodes -o json | jq '.items[].spec.taints'
 
 ---
 
-# Create Storage Account for training data <a id="storageaccount"/>
+# Create Storage Account for training data
 In this section of the notebook, we'll create an Azure blob storage that we'll use throughout the tutorial. This object store will be used to store input images and save checkpoints. Use `az cli` to create the account.
 
 ```bash

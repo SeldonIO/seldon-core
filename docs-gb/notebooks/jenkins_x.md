@@ -16,7 +16,7 @@ By the end of this tutorial, you will be able to:
 
 In this project, we will be building an MLOps workflow to deploy your production machine learning models by buiding a re-usable pre-packaged model server through CI, and then deploying individual models using CD.
 
-![](images/jenkins-x-full-diagram.jpg)
+![](../images/jenkins-x-full-diagram.jpg)
 
 ## Requirements
 
