@@ -53,7 +53,7 @@ const (
 	envMaxLoadRetryCount                               = "SELDON_MAX_LOAD_RETRY_COUNT"
 	envMaxUnloadRetryCount                             = "SELDON_MAX_UNLOAD_RETRY_COUNT"
 	envUnloadGraceSeconds                              = "SELDON_UNLOAD_GRACE_PERIOD_SECONDS"
-	envUseServerWithDeployment                         = "SELDON_USE_SERVER_WITH_DEPLOYMENT"
+	envuseDeploymentsForServers                        = "SELDON_USE_DEPLOYMENTS_FOR_SERVERS"
 
 	flagSchedulerHost                                   = "scheduler-host"
 	flagSchedulerPlaintxtPort                           = "scheduler-port"
@@ -113,7 +113,7 @@ const (
 	defaultMaxLoadRetryCount                               = 5
 	defaultMaxUnloadRetryCount                             = 1
 	defautUnloadGraceSeconds                               = 2
-	defaultUseServerWithDeployment                         = false
+	defaultuseDeploymentsForServers                        = false
 )
 
 var (
@@ -161,7 +161,7 @@ var (
 	MaxLoadRetryCount                               int
 	MaxUnloadRetryCount                             int
 	UnloadGraceSeconds                              int
-	UseServerWithDeployment                         bool
+	useDeploymentsForServers                        bool
 )
 
 func init() {
@@ -188,7 +188,7 @@ func updateFlagsFromEnv() {
 	maybeUpdateSchedulerPort()
 	maybeUpdateSchedulerTlsPort()
 	maybeUpdateMetricsPort()
-	maybeUpdateUseServerWithDeployment()
+	maybeUpdateuseDeploymentsForServers()
 	maybeUpdateServerNameAndIndex()
 	maybeUpdateReplicaConfig()
 	maybeUpdateLogLevel()
@@ -490,11 +490,11 @@ func maybeUpdateUnloadGraceSeconds() {
 	)
 }
 
-func maybeUpdateUseServerWithDeployment() {
+func maybeUpdateuseDeploymentsForServers() {
 	maybeUpdateFromBoolEnv(
 		flagUseDeploymentsForServers,
-		envUseServerWithDeployment,
-		&UseServerWithDeployment,
+		envuseDeploymentsForServers,
+		&useDeploymentsForServers,
 		"use server with deployment instead of statefulset",
 	)
 }
@@ -523,7 +523,7 @@ func maybeUpdateServerNameAndIndex() {
 		return
 	}
 
-	if UseServerWithDeployment {
+	if useDeploymentsForServers {
 		log.Infof("Using server with deployment")
 		setServerNameAndIdxFromDeploymentPodName()
 	} else {
@@ -667,7 +667,7 @@ func setDeploymentPodInferenceSvcName() {
 }
 
 func setInferenceSvcName() {
-	if UseServerWithDeployment {
+	if useDeploymentsForServers {
 		setDeploymentPodInferenceSvcName()
 	} else {
 		setStatefulSetPodInferenceSvcName()

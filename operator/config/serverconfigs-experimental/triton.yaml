@@ -93,7 +93,7 @@ spec:
           resourceFieldRef:
             containerName: triton
             resource: requests.memory
-      - name: SELDON_USE_SERVER_WITH_DEPLOYMENT
+      - name: SELDON_USE_DEPLOYMENTS_FOR_SERVERS
         value: "true"
       ports:
       - containerPort: 9501

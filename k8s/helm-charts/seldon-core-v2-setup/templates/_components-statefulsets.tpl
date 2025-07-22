@@ -413,7 +413,7 @@ spec:
         - --namespace=$(POD_NAMESPACE)
         - --clusterwide=$(CLUSTERWIDE)
         - --log-level=$(LOG_LEVEL)
-        - --use-server-with-deployment=$(USE_SERVER_WITH_DEPLOYMENT)
+        - --use-deployments-for-servers=$(USE_DEPLOYMENTS_FOR_SERVERS)
         command:
         - /manager
         env:
@@ -445,7 +445,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        - name: USE_SERVER_WITH_DEPLOYMENT
+        - name: USE_DEPLOYMENTS_FOR_SERVERS
           value: "false"
         image: '{{ .Values.controller.image.registry }}/{{ .Values.controller.image.repository
           }}:{{ .Values.controller.image.tag }}'
@@ -1315,7 +1315,7 @@ spec:
           resourceFieldRef:
             containerName: mlserver
             resource: requests.memory
-      - name: SELDON_USE_SERVER_WITH_DEPLOYMENT
+      - name: SELDON_USE_DEPLOYMENTS_FOR_SERVERS
         value: "false"
       image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository
         }}:{{ .Values.serverConfig.agent.image.tag }}'
@@ -1600,7 +1600,7 @@ spec:
           resourceFieldRef:
             containerName: triton
             resource: requests.memory
-      - name: SELDON_USE_SERVER_WITH_DEPLOYMENT
+      - name: SELDON_USE_DEPLOYMENTS_FOR_SERVERS
         value: "false"
       image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository
         }}:{{ .Values.serverConfig.agent.image.tag }}'
