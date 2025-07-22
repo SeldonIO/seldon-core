@@ -159,7 +159,7 @@ print("prediction:", class_names[arr.argmax()])
 
 
     
-![png](triton_examples_files/triton_examples_11_1.png)
+![png](../images/triton_examples_11_1.png)
     
 
 
@@ -255,12 +255,14 @@ print("prediction:", class_names[arr.argmax()])
 
       % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                      Dload  Upload   Total   Spent    Left  Speed
-      0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 63913  100   344  100 63569  20081  3623k --:--:-- --:--:-- --:--:-- 3651k
+    
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100 63913  100   344  100 63569  20081  3623k --:--:-- --:--:-- --:--:-- 3651k
 
 
 
     
-![png](triton_examples_files/triton_examples_17_1.png)
+![png](../images/triton_examples_17_1.png)
     
 
 
@@ -389,12 +391,15 @@ print("prediction:", class_names[arr.argmax()])
 
       % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                      Dload  Upload   Total   Spent    Left  Speed
-      0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 63672  100   309  100 63363   2175   435k --:--:-- --:--:-- --:--:--  435k100 63672  100   309  100 63363   2174   435k --:--:-- --:--:-- --:--:--  432k
+    
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100 63672  100   309  100 63363   2175   435k --:--:-- --:--:-- --:--:--  435k
+100 63672  100   309  100 63363   2174   435k --:--:-- --:--:-- --:--:--  432k
 
 
 
     
-![png](triton_examples_files/triton_examples_24_1.png)
+![png](../images/triton_examples_24_1.png)
     
 
 
@@ -492,7 +497,7 @@ print("prediction:", class_names[arr.argmax()])
 
 
     
-![png](triton_examples_files/triton_examples_30_1.png)
+![png](../images/triton_examples_30_1.png)
     
 
 
