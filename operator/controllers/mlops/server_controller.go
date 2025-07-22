@@ -43,7 +43,7 @@ type ServerReconciler struct {
 	Scheme                  *runtime.Scheme
 	Scheduler               *scheduler.SchedulerClient
 	Recorder                record.EventRecorder
-	UseServerWithDeployment bool
+	useDeploymentsForServers bool
 }
 
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=servers,verbs=get;list;watch;create;update;patch;delete
@@ -103,7 +103,7 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	var sr common.Reconciler
-	if r.UseServerWithDeployment {
+	if r.useDeploymentsForServers {
 		sr, err = serverreconcile.NewServerReconcilerWithDeployment(server, common.ReconcilerConfig{
 			Ctx:    ctx,
 			Logger: logger,

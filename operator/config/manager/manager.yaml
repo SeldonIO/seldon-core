@@ -28,7 +28,7 @@ spec:
         - --namespace=$(POD_NAMESPACE)
         - --clusterwide=$(CLUSTERWIDE)
         - --log-level=$(LOG_LEVEL)
-        - --use-server-with-deployment=$(USE_SERVER_WITH_DEPLOYMENT)
+        - --use-deployments-for-servers=$(USE_SERVER_WITH_DEPLOYMENT)
         image: controller:latest
         imagePullPolicy: IfNotPresent
         name: manager
