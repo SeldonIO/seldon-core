@@ -764,6 +764,18 @@ spec:
           value: 'info'
         - name: MODELGATEWAY_MAX_NUM_CONSUMERS
           value: '100'
+        - name: SCHEMA_REGISTRY_URL
+          value: ''
+        - name: SCHEMA_REGISTRY_USERNAME
+          value: ''
+        - name: SCHEMA_REGISTRY_PASSWORD
+          value: ''
+        - name: SCHEMA_REGISTRY_TOKEN
+          value: ''
+        - name: SCHEMA_REGISTRY_TARGET_SR
+          value: ''
+        - name: SCHEMA_REGISTRY_IDENTITY_POOL_ID
+          value: ''
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
@@ -996,6 +1008,8 @@ spec:
           value: ''
         - name: SELDON_KAFKA_SASL_PASSWORD_PATH
           value: 'password'
+        - name: SELDON_KAFKA_SCHEMA_REGISTRY_URL
+          value: ''
         - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
           value: ''
         - name: SELDON_CORES_COUNT

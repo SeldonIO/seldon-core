@@ -13,6 +13,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde/protobuf"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/inference_schema"
+	"google.golang.org/protobuf/proto"
 	"math/rand"
 	"strconv"
 	"sync"
@@ -57,14 +61,15 @@ type PipelineInferer interface {
 }
 
 type KafkaManager struct {
-	kafkaConfig     *kafka_config.KafkaConfig
-	producer        *kafka.Producer
-	pipelines       sync.Map
-	logger          logrus.FieldLogger
-	mu              sync.RWMutex
-	topicNamer      *kafka2.TopicNamer
-	tracer          trace.Tracer
-	consumerManager *ConsumerManager
+	kafkaConfig          *kafka_config.KafkaConfig
+	producer             *kafka.Producer
+	pipelines            sync.Map
+	logger               logrus.FieldLogger
+	mu                   sync.RWMutex
+	topicNamer           *kafka2.TopicNamer
+	tracer               trace.Tracer
+	consumerManager      *ConsumerManager
+	schemaRegistryClient schemaregistry.Client
 }
 
 type Pipeline struct {
@@ -91,6 +96,7 @@ func NewKafkaManager(
 	kafkaConfig *kafka_config.KafkaConfig,
 	traceProvider *seldontracer.TracerProvider,
 	maxNumConsumers int,
+	schemaRegistryClient schemaregistry.Client,
 ) (*KafkaManager, error) {
 	topicNamer, err := kafka2.NewTopicNamer(namespace, kafkaConfig.TopicPrefix)
 	if err != nil {
@@ -99,12 +105,13 @@ func NewKafkaManager(
 
 	tracer := traceProvider.GetTraceProvider().Tracer("KafkaManager")
 	km := &KafkaManager{
-		kafkaConfig:     kafkaConfig,
-		logger:          logger.WithField("source", "KafkaManager"),
-		topicNamer:      topicNamer,
-		tracer:          tracer,
-		consumerManager: NewConsumerManager(namespace, logger, kafkaConfig, maxNumConsumers, tracer),
-		mu:              sync.RWMutex{},
+		kafkaConfig:          kafkaConfig,
+		logger:               logger.WithField("source", "KafkaManager"),
+		topicNamer:           topicNamer,
+		tracer:               tracer,
+		consumerManager:      NewConsumerManager(namespace, logger, kafkaConfig, maxNumConsumers, tracer, schemaRegistryClient),
+		mu:                   sync.RWMutex{},
+		schemaRegistryClient: schemaRegistryClient,
 	}
 
 	err = km.createProducer()
@@ -389,6 +396,41 @@ func (km *KafkaManager) infer(
 	logger.Debugf("Produce on topic %s with key %s", inputTopic, compositeKey)
 	kafkaHeaders := append(headers, kafka.Header{Key: util.SeldonPipelineHeader, Value: []byte(resourceName)})
 	kafkaHeaders = addRequestIdToKafkaHeadersIfMissing(kafkaHeaders, requestId)
+
+	if km.schemaRegistryClient != nil {
+		logger.Debugf("first 10 bytes before serialisation")
+		for _, b := range data[:10] {
+			logger.Debugf("%02x", b)
+		}
+
+		schemaConfig := protobuf.NewSerializerConfig()
+		schemaConfig.NormalizeSchemas = true
+
+		ser, err := protobuf.NewSerializer(km.schemaRegistryClient, 3, schemaConfig)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to obtain a serialiser")
+		}
+
+		v2Request := &inference_schema.ModelInferRequest{}
+		err = proto.Unmarshal(data, v2Request)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal v2 request: %v", err)
+		}
+
+		b, err := ser.Serialize(inputTopic, v2Request)
+		if err != nil {
+			return nil, fmt.Errorf("failed to serialize v2 request: %v", err)
+		}
+
+		logger.Infof("sucesssfully serialised data with schema on topic %s", inputTopic)
+
+		logger.Debugf("first 10 bytes after serialisation")
+		for _, b := range data[:10] {
+			logger.Debugf("%02x", b)
+		}
+
+		data = b
+	}
 
 	msg := &kafka.Message{
 		TopicPartition: kafka.TopicPartition{

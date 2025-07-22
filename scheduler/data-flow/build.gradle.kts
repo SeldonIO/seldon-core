@@ -31,6 +31,8 @@ dependencies {
     // Kafka
     implementation("org.apache.kafka:kafka-streams:8.0.0-ccs")
     testImplementation("org.apache.kafka:kafka-streams-test-utils:8.0.0-ccs")
+    // https://mvnrepository.com/artifact/io.confluent/kafka-streams-protobuf-serde
+    implementation("io.confluent:kafka-streams-protobuf-serde:8.0.0")
 
     // gRPC
     implementation("io.grpc:grpc-kotlin-stub:1.4.3")

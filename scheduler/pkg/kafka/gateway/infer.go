@@ -169,7 +169,7 @@ func (kc *InferKafkaHandler) setup(consumerConfig kafka.ConfigMap, producerConfi
 	}
 
 	for i := 0; i < kc.consumerConfig.NumWorkers; i++ {
-		worker, err := NewInferWorker(kc, kc.logger, kc.consumerConfig.TraceProvider, kc.topicNamer)
+		worker, err := NewInferWorker(kc, kc.logger, kc.consumerConfig.TraceProvider, kc.topicNamer, kc.schemaRegistryClient)
 		if err != nil {
 			return err
 		}
@@ -393,13 +393,13 @@ func (kc *InferKafkaHandler) AddModel(modelName string) error {
 		return err
 	}
 
-	if err := kc.createInputTopicSchema(inputTopic); err != nil {
-		kc.logger.WithError(err).Errorf("failed to create input topic schema for model %s", modelName)
-	}
-
-	if err := kc.createOutputTopicSchema(outputTopic); err != nil {
-		kc.logger.WithError(err).Errorf("failed to create input topic schema for model %s", modelName)
-	}
+	//if err := kc.createInputTopicSchema(inputTopic); err != nil {
+	//	kc.logger.WithError(err).Errorf("failed to create input topic schema for model %s", modelName)
+	//}
+	//
+	//if err := kc.createOutputTopicSchema(outputTopic); err != nil {
+	//	kc.logger.WithError(err).Errorf("failed to create input topic schema for model %s", modelName)
+	//}
 
 	kc.subscribedTopics[inputTopic] = true
 	err := kc.subscribeTopics()
@@ -501,6 +501,38 @@ func (kc *InferKafkaHandler) Serve() {
 				if !kc.Exists(modelName) {
 					logger.Infof("Failed to find model %s in loaded models", modelName)
 					continue
+				}
+
+				if kc.schemaRegistryClient != nil {
+					//srLogger := logger.WithField("source", "schema registry")
+					//
+					//ser, err := protobuf.NewDeserializer(kc.schemaRegistryClient, serde.ValueSerde, protobuf.NewDeserializerConfig())
+					//if err != nil {
+					//	srLogger.WithError(err).Errorf("Failed to obtain a serialiser")
+					//}
+					//
+					//err = ser.ProtoRegistry.RegisterMessage((&inference_schema.ModelInferRequest{}).ProtoReflect().Type())
+					//if err != nil {
+					//	srLogger.WithError(err).Errorf("Failed to register inference schema")
+					//}
+					//
+					//str := &inference_schema.ModelInferRequest{}
+					//
+					//err = ser.DeserializeInto(*e.TopicPartition.Topic, e.Value, str)
+					//if err != nil {
+					//	srLogger.WithError(err).Errorf("Failed to deserialize inference schema")
+					//}
+					//
+					//value, err := proto.Marshal(str)
+					//if err != nil {
+					//	srLogger.WithError(err).Errorf("Failed to marshal inference schema")
+					//}
+					//e.Value = value
+
+					logger.Infof("got rid of the schema message")
+
+					e.Value = e.Value[6:]
+
 				}
 
 				// Add tracing span

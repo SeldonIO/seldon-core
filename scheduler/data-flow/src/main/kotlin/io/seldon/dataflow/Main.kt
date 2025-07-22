@@ -18,6 +18,8 @@ import io.seldon.dataflow.health.ServiceHealthCheck
 import io.seldon.dataflow.kafka.KafkaDomainParams
 import io.seldon.dataflow.kafka.KafkaSecurityParams
 import io.seldon.dataflow.kafka.KafkaStreamsParams
+import io.seldon.dataflow.kafka.SchemaRegistryConfig
+import io.seldon.dataflow.kafka.SerdeFactory
 import io.seldon.dataflow.kafka.TopicWaitRetryParams
 import io.seldon.dataflow.kafka.getKafkaAdminProperties
 import io.seldon.dataflow.kafka.getKafkaProperties
@@ -63,18 +65,21 @@ object Main {
                         username = config[Cli.saslUsername],
                         passwordField = config[Cli.saslPasswordPath],
                     )
+
                 KafkaSaslMechanisms.SCRAM_SHA_256 ->
                     SaslConfig.Password.Scram256(
                         secretName = config[Cli.saslSecret],
                         username = config[Cli.saslUsername],
                         passwordField = config[Cli.saslPasswordPath],
                     )
+
                 KafkaSaslMechanisms.SCRAM_SHA_512 ->
                     SaslConfig.Password.Scram512(
                         secretName = config[Cli.saslSecret],
                         username = config[Cli.saslUsername],
                         passwordField = config[Cli.saslPasswordPath],
                     )
+
                 KafkaSaslMechanisms.OAUTH_BEARER ->
                     SaslConfig.Oauth(
                         secretName = config[Cli.saslSecret],
@@ -110,6 +115,21 @@ object Main {
                 describeRetryDelayMillis = config[Cli.topicDescribeRetryDelayMillis],
             )
         val subscriberId = config[Cli.dataflowReplicaId]
+        val schemaRegistryConfig =
+            SchemaRegistryConfig(
+                enabled = true,
+                url = config[Cli.schemaRegistryURL],
+                recordNameStrategy = "io.confluent.kafka.serializers.subject.RecordNameStrategy",
+            )
+
+        logger.info { "Initialised $schemaRegistryConfig" }
+
+        val useSchema = schemaRegistryConfig.url != ""
+
+        logger.info {
+            "schema registry config is set to $useSchema"
+        }
+        val kafkaStreamsSerdes = SerdeFactory.KafkaStreamsSerdes(useSchema)
 
         val subscriber =
             PipelineSubscriber(
@@ -125,6 +145,7 @@ object Main {
                 config[Cli.kafkaConsumerGroupIdPrefix],
                 config[Cli.namespace],
                 config[Cli.pipelineCtlopsThreads],
+                kafkaStreamsSerdes,
             )
 
         // Set up health server

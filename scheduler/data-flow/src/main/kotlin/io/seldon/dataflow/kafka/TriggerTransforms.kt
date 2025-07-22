@@ -23,6 +23,7 @@ fun addTriggerTopology(
     joinType: ChainerOuterClass.PipelineStepUpdate.PipelineJoinType,
     lastStream: KStream<RequestId, TRecord>,
     pending: KStream<RequestId, TRecord>? = null,
+    kafkaStreamsSerdes: SerdeFactory.KafkaStreamsSerdes,
 ): KStream<RequestId, TRecord> {
     if (inputTopics.isEmpty()) {
         when (pending) {
@@ -35,7 +36,7 @@ fun addTriggerTopology(
                         JoinWindows.ofTimeDifferenceWithNoGrace(
                             Duration.ofMillis(kafkaDomainParams.joinWindowMillis),
                         ),
-                        joinSerde,
+                        kafkaStreamsSerdes.joinSerde,
                     )
         }
     }
@@ -43,7 +44,7 @@ fun addTriggerTopology(
     val topic = inputTopics.first()
     val nextStream =
         builder // TODO possible bug - not all streams will be v2 requests? Maybe v2 responses?
-            .stream(topic.topicName, consumerSerde)
+            .stream(topic.topicName, kafkaStreamsSerdes.consumerSerde)
             .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Response()
             .convertToRequest(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), emptyList())
@@ -64,7 +65,7 @@ fun addTriggerTopology(
                         // Also see https://confluentcommunity.slack.com/archives/C6UJNMY67/p1649520904545229?thread_ts=1649324912.542999&cid=C6UJNMY67
                         // Issue created at https://issues.apache.org/jira/browse/KAFKA-13813
                         JoinWindows.of(Duration.ofMillis(1)),
-                        joinSerde,
+                        kafkaStreamsSerdes.joinSerde,
                     ) ?: nextStream
 
             return addTriggerTopology(
@@ -75,6 +76,7 @@ fun addTriggerTopology(
                 joinType,
                 lastStream,
                 nextPending,
+                kafkaStreamsSerdes,
             )
         }
 
@@ -88,7 +90,7 @@ fun addTriggerTopology(
                         JoinWindows.ofTimeDifferenceWithNoGrace(
                             Duration.ofMillis(kafkaDomainParams.joinWindowMillis),
                         ),
-                        joinSerde,
+                        kafkaStreamsSerdes.joinSerde,
                     ) ?: nextStream
 
             return addTriggerTopology(
@@ -99,6 +101,7 @@ fun addTriggerTopology(
                 joinType,
                 lastStream,
                 nextPending,
+                kafkaStreamsSerdes,
             )
         }
 
@@ -111,7 +114,7 @@ fun addTriggerTopology(
                         JoinWindows.ofTimeDifferenceWithNoGrace(
                             Duration.ofMillis(kafkaDomainParams.joinWindowMillis),
                         ),
-                        joinSerde,
+                        kafkaStreamsSerdes.joinSerde,
                     ) ?: nextStream
 
             return addTriggerTopology(
@@ -122,6 +125,7 @@ fun addTriggerTopology(
                 joinType,
                 lastStream,
                 nextPending,
+                kafkaStreamsSerdes,
             )
         }
     }

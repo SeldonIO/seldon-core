@@ -13,6 +13,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde/protobuf"
 	"io"
 	"math"
 	"net"
@@ -36,6 +39,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/inference_schema"
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
@@ -45,13 +49,14 @@ import (
 )
 
 type InferWorker struct {
-	logger      log.FieldLogger
-	grpcClient  v2.GRPCInferenceServiceClient
-	httpClient  *http.Client
-	consumer    *InferKafkaHandler
-	tracer      trace.Tracer
-	callOptions []grpc.CallOption
-	topicNamer  *kafka2.TopicNamer
+	logger               log.FieldLogger
+	grpcClient           v2.GRPCInferenceServiceClient
+	httpClient           *http.Client
+	consumer             *InferKafkaHandler
+	tracer               trace.Tracer
+	callOptions          []grpc.CallOption
+	topicNamer           *kafka2.TopicNamer
+	schemaRegistryClient schemaregistry.Client
 }
 
 type InferWork struct {
@@ -69,18 +74,20 @@ func NewInferWorker(
 	logger log.FieldLogger,
 	traceProvider *seldontracer.TracerProvider,
 	topicNamer *kafka2.TopicNamer,
+	schemaRegistryClient schemaregistry.Client,
 ) (*InferWorker, error) {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
 	iw := &InferWorker{
-		logger:      logger.WithField("source", "KafkaInferWorker"),
-		httpClient:  util.GetHttpClientFromTLSOptions(consumer.tlsClientOptions),
-		consumer:    consumer,
-		tracer:      traceProvider.GetTraceProvider().Tracer("Worker"),
-		callOptions: opts,
-		topicNamer:  topicNamer,
+		logger:               logger.WithField("source", "KafkaInferWorker"),
+		httpClient:           util.GetHttpClientFromTLSOptions(consumer.tlsClientOptions),
+		consumer:             consumer,
+		tracer:               traceProvider.GetTraceProvider().Tracer("Worker"),
+		callOptions:          opts,
+		topicNamer:           topicNamer,
+		schemaRegistryClient: schemaRegistryClient,
 	}
 	// Create gRPC clients
 	grpcClient, err := iw.getGrpcClient(
@@ -252,6 +259,29 @@ func (iw *InferWorker) produce(
 	}
 	logger.Debugf("Produce response to topic %s on partition %d", topic, job.msg.TopicPartition.Partition)
 
+	logger.Infof("the payload to write to the topic %s is %s", topic, b)
+
+	if iw.schemaRegistryClient != nil && !errorTopic {
+		srLogger := logger.WithField("source", "schema registry")
+		v2Res := &inference_schema.ModelInferResponse{}
+		err := proto.Unmarshal(b, v2Res)
+		if err != nil {
+			srLogger.WithError(err).Errorf("Failed to unmarshal response to dataplane model")
+		}
+
+		schemaConfig := protobuf.NewSerializerConfig()
+		schemaConfig.NormalizeSchemas = true
+
+		ser, err := protobuf.NewSerializer(iw.schemaRegistryClient, serde.ValueSerde, schemaConfig)
+		if err != nil {
+			srLogger.WithError(err).Errorf("Failed to obtain a serialiser")
+		}
+		b, err = ser.Serialize(topic, v2Res)
+		if err != nil {
+			srLogger.WithError(err).Errorf("Failed to serialise response to dataplane model")
+		}
+	}
+
 	msg := &kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: job.msg.TopicPartition.Partition},
 		Key:            job.msg.Key,
@@ -300,6 +330,12 @@ func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeCon
 	logger.Debugf("REST request to %s for %s", restUrl.String(), job.modelName)
 
 	data := job.msg.Value
+	logger.Infof("before schema checkkkk")
+	if iw.schemaRegistryClient != nil {
+		logger.Infof("the first 5 bytes of the request contain: %s", job.msg.Value[:5])
+		data = job.msg.Value[:]
+	}
+
 	if maybeConvert {
 		data = maybeChainRest(job.msg.Value)
 	}

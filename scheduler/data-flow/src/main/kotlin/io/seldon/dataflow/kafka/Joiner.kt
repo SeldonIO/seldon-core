@@ -38,6 +38,7 @@ class Joiner(
     internal val inputTriggerTopics: Set<TopicForPipeline>,
     internal val triggerJoinType: PipelineJoinType,
     internal val triggerTensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
+    internal val kafkaStreamsSerdes: SerdeFactory.KafkaStreamsSerdes,
 ) : PipelineStep {
     init {
         var dataStream = buildTopology(builder, inputTopics)
@@ -50,6 +51,7 @@ class Joiner(
                 triggerJoinType,
                 dataStream,
                 null,
+                kafkaStreamsSerdes,
             )
                 .headerAdjust(pipelineName, pipelineVersion)
 
@@ -62,10 +64,10 @@ class Joiner(
                     )
 
             val (defaultBranch, errorBranch) = createVisitingCounterBranches(dataStream)
-            defaultBranch.to(outputTopic.topicName, producerSerde)
-            errorBranch.to(pipelineErrorTopic, producerSerde)
+            defaultBranch.to(outputTopic.topicName, kafkaStreamsSerdes.producerSerde)
+            errorBranch.to(pipelineErrorTopic, kafkaStreamsSerdes.producerSerde)
         } else {
-            dataStream.to(outputTopic.topicName, producerSerde)
+            dataStream.to(outputTopic.topicName, kafkaStreamsSerdes.producerSerde)
         }
     }
 
@@ -113,7 +115,7 @@ class Joiner(
                             // Also see https://confluentcommunity.slack.com/archives/C6UJNMY67/p1649520904545229?thread_ts=1649324912.542999&cid=C6UJNMY67
                             // Issue created at https://issues.apache.org/jira/browse/KAFKA-13813
                             JoinWindows.of(Duration.ofMillis(1)),
-                            joinSerde,
+                            kafkaStreamsSerdes.joinSerde,
                         ) ?: nextStream
 
                 return buildTopology(builder, inputTopics.minus(topic), nextPending)
@@ -129,7 +131,7 @@ class Joiner(
                             JoinWindows.ofTimeDifferenceWithNoGrace(
                                 Duration.ofMillis(kafkaDomainParams.joinWindowMillis),
                             ),
-                            joinSerde,
+                            kafkaStreamsSerdes.joinSerde,
                         ) ?: nextStream
 
                 return buildTopology(builder, inputTopics.minus(topic), nextPending)
@@ -144,7 +146,7 @@ class Joiner(
                             JoinWindows.ofTimeDifferenceWithNoGrace(
                                 Duration.ofMillis(kafkaDomainParams.joinWindowMillis),
                             ),
-                            joinSerde,
+                            kafkaStreamsSerdes.joinSerde,
                         ) ?: nextStream
 
                 return buildTopology(builder, inputTopics.minus(topic), nextPending)
@@ -157,7 +159,7 @@ class Joiner(
         builder: StreamsBuilder,
     ): KStream<RequestId, TRecord> {
         return builder
-            .stream(topic.topicName, consumerSerde)
+            .stream(topic.topicName, kafkaStreamsSerdes.consumerSerde)
             .filterForPipeline(topic.pipelineName)
     }
 
@@ -166,7 +168,7 @@ class Joiner(
         builder: StreamsBuilder,
     ): KStream<RequestId, TRecord> {
         return builder
-            .stream(topic.topicName, consumerSerde)
+            .stream(topic.topicName, kafkaStreamsSerdes.consumerSerde)
             .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Request()
             .convertToResponse(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
@@ -180,7 +182,7 @@ class Joiner(
         builder: StreamsBuilder,
     ): KStream<RequestId, TRecord> {
         return builder
-            .stream(topic.topicName, consumerSerde)
+            .stream(topic.topicName, kafkaStreamsSerdes.consumerSerde)
             .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Response()
             .filterResponses(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
@@ -194,7 +196,7 @@ class Joiner(
         builder: StreamsBuilder,
     ): KStream<RequestId, TRecord> {
         return builder
-            .stream(topic.topicName, consumerSerde)
+            .stream(topic.topicName, kafkaStreamsSerdes.consumerSerde)
             .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Response()
             .convertToRequest(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)
@@ -208,7 +210,7 @@ class Joiner(
         builder: StreamsBuilder,
     ): KStream<RequestId, TRecord> {
         return builder
-            .stream(topic.topicName, consumerSerde)
+            .stream(topic.topicName, kafkaStreamsSerdes.consumerSerde)
             .filterForPipeline(topic.pipelineName)
             .unmarshallInferenceV2Request()
             .filterRequests(topic.pipelineName, topic.topicName, tensorsByTopic?.get(topic), tensorRenaming)

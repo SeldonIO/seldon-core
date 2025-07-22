@@ -78,6 +78,9 @@ object Cli {
     val saslPasswordPath = Key("kafka.sasl.password.path", stringType)
     val saslMechanism = Key("kafka.sasl.mechanism", enumType(KafkaSaslMechanisms.byName))
 
+    // Schema Registry
+    val schemaRegistryURL = Key("kafka.schema.registry.url", stringType)
+
     fun args(): List<Key<Any>> {
         return listOf(
             logLevelApplication,
@@ -111,6 +114,7 @@ object Cli {
             saslSecret,
             saslPasswordPath,
             saslMechanism,
+            schemaRegistryURL,
         )
     }
 
