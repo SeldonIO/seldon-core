@@ -1,4 +1,4 @@
-{{- if .Values.useServerWithDeployment }}
+{{- if .Values.useDeploymentsForServers }}
 {{ include "servers.deployments" .  }}
 {{- else }}
 {{ include "servers.statefulsets" .  }}

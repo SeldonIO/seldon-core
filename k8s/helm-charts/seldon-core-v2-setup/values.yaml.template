@@ -1,4 +1,4 @@
-useServerWithDeployment: false
+useDeploymentsForServers: false
 
 # Security settings
 security:

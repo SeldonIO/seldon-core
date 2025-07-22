@@ -439,12 +439,14 @@ spec:
             .Values.logging.logLevel }}'
         - name: WATCH_NAMESPACES
           value: '{{ join "," .Values.controller.watchNamespaces }}'
-        - name: USE_SERVER_WITH_DEPLOYMENT
-          value: '{{ .Values.useServerWithDeployment }}'
+        - name: USE_DEPLOYMENTS_FOR_SERVERS
+          value: '{{ .Values.useDeploymentsForServers }}'
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: USE_SERVER_WITH_DEPLOYMENT
+          value: "false"
         image: '{{ .Values.controller.image.registry }}/{{ .Values.controller.image.repository
           }}:{{ .Values.controller.image.tag }}'
         imagePullPolicy: '{{ .Values.controller.image.pullPolicy }}'
@@ -1268,8 +1270,8 @@ spec:
       - name: SELDON_LOG_LEVEL
         value: '{{ hasKey .Values.serverConfig.agent "logLevel" | ternary .Values.serverConfig.agent.logLevel
           .Values.logging.logLevel }}'
-      - name: SELDON_USE_SERVER_WITH_DEPLOYMENT
-        value: '{{ .Values.useServerWithDeployment }}'
+      - name: SELDON_USE_DEPLOYMENTS_FOR_SERVERS
+        value: '{{ .Values.useDeploymentsForServers }}'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -1313,6 +1315,8 @@ spec:
           resourceFieldRef:
             containerName: mlserver
             resource: requests.memory
+      - name: SELDON_USE_SERVER_WITH_DEPLOYMENT
+        value: "false"
       image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository
         }}:{{ .Values.serverConfig.agent.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.agent.image.pullPolicy }}'
@@ -1557,8 +1561,8 @@ spec:
       - name: SELDON_LOG_LEVEL
         value: '{{ hasKey .Values.serverConfig.agent "logLevel" | ternary .Values.serverConfig.agent.logLevel
           .Values.logging.logLevel }}'
-      - name: SELDON_USE_SERVER_WITH_DEPLOYMENT
-        value: '{{ .Values.useServerWithDeployment }}'
+      - name: SELDON_USE_DEPLOYMENTS_FOR_SERVERS
+        value: '{{ .Values.useDeploymentsForServers }}'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
       - name: SELDON_SERVER_GRPC_PORT
@@ -1596,6 +1600,8 @@ spec:
           resourceFieldRef:
             containerName: triton
             resource: requests.memory
+      - name: SELDON_USE_SERVER_WITH_DEPLOYMENT
+        value: "false"
       image: '{{ .Values.serverConfig.agent.image.registry }}/{{ .Values.serverConfig.agent.image.repository
         }}:{{ .Values.serverConfig.agent.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.agent.image.pullPolicy }}'

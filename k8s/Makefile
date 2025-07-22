@@ -46,7 +46,7 @@ merge-configs:
 	sed -i '1s;^;{{- define "setup.statefulsets" }}\n;' ${HELM_COMPONENTS_BASE}/_components-statefulsets.tpl && echo '{{- end }}' >> ${HELM_COMPONENTS_BASE}/_components-statefulsets.tpl
 	sed -i '1s;^;{{- define "setup.deployments" }}\n;' ${HELM_COMPONENTS_BASE}/_components-deployments.tpl && echo '{{- end }}' >> ${HELM_COMPONENTS_BASE}/_components-deployments.tpl
 	@{ \
-	echo '{{- if .Values.useServerWithDeployment }}'; \
+	echo '{{- if .Values.useDeploymentsForServers }}'; \
 	echo '{{ include "setup.deployments" .  }}'; \
 	echo '{{- else }}'; \
 	echo '{{ include "setup.statefulsets" .  }}'; \
@@ -55,7 +55,7 @@ merge-configs:
 	sed -i '1s;^;{{- define "servers.statefulsets" }}\n;' ${HELM_SERVERS_BASE}/_servers-statefulsets.tpl && echo '{{- end }}' >> ${HELM_SERVERS_BASE}/_servers-statefulsets.tpl
 	sed -i '1s;^;{{- define "servers.deployments" }}\n;' ${HELM_SERVERS_BASE}/_servers-deployments.tpl && echo '{{- end }}' >> ${HELM_SERVERS_BASE}/_servers-deployments.tpl
 	@{ \
-	echo '{{- if .Values.useServerWithDeployment }}'; \
+	echo '{{- if .Values.useDeploymentsForServers }}'; \
 	echo '{{ include "servers.deployments" .  }}'; \
 	echo '{{- else }}'; \
 	echo '{{ include "servers.statefulsets" .  }}'; \

@@ -1,4 +1,4 @@
-useServerWithDeployment: false
+useDeploymentsForServers: false
 
 mlserver:
   replicas: 1

@@ -293,12 +293,14 @@ spec:
           value: 'info'
         - name: WATCH_NAMESPACES
           value: ''
-        - name: USE_SERVER_WITH_DEPLOYMENT
+        - name: USE_DEPLOYMENTS_FOR_SERVERS
           value: 'false'
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: USE_SERVER_WITH_DEPLOYMENT
+          value: "false"
         image: 'docker.io/seldonio/seldonv2-controller:latest'
         imagePullPolicy: 'IfNotPresent'
         livenessProbe:
@@ -1088,7 +1090,7 @@ spec:
         value: 'seldon-collector.seldon-mesh:4317'
       - name: SELDON_LOG_LEVEL
         value: 'info'
-      - name: SELDON_USE_SERVER_WITH_DEPLOYMENT
+      - name: SELDON_USE_DEPLOYMENTS_FOR_SERVERS
         value: 'false'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
@@ -1133,6 +1135,8 @@ spec:
           resourceFieldRef:
             containerName: mlserver
             resource: requests.memory
+      - name: SELDON_USE_SERVER_WITH_DEPLOYMENT
+        value: "false"
       image: 'docker.io/seldonio/seldon-agent:latest'
       imagePullPolicy: 'IfNotPresent'
       lifecycle:
@@ -1365,7 +1369,7 @@ spec:
         value: '/tmp/certs/duc/ca.crt'
       - name: SELDON_LOG_LEVEL
         value: 'info'
-      - name: SELDON_USE_SERVER_WITH_DEPLOYMENT
+      - name: SELDON_USE_DEPLOYMENTS_FOR_SERVERS
         value: 'false'
       - name: SELDON_SERVER_HTTP_PORT
         value: "9000"
@@ -1404,6 +1408,8 @@ spec:
           resourceFieldRef:
             containerName: triton
             resource: requests.memory
+      - name: SELDON_USE_SERVER_WITH_DEPLOYMENT
+        value: "false"
       image: 'docker.io/seldonio/seldon-agent:latest'
       imagePullPolicy: 'IfNotPresent'
       lifecycle:
