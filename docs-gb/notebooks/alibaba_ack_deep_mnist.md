@@ -228,7 +228,7 @@ print("Expected label: ", np.sum(range(0, 10) * y), ". One hot encoding: ", y)
 
 
     
-![png](alibaba_cloud_ack_deep_mnist_files/alibaba_cloud_ack_deep_mnist_16_0.png)
+![png](../images/alibaba_cloud_ack_deep_mnist_16_0.png)
     
 
 
@@ -436,7 +436,7 @@ print("Expected label: ", np.sum(range(0, 10) * y), ". One hot encoding: ", y)
 
 
     
-![png](alibaba_cloud_ack_deep_mnist_files/alibaba_cloud_ack_deep_mnist_40_0.png)
+![png](../images/alibaba_cloud_ack_deep_mnist_40_0.png)
     
 
 

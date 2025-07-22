@@ -195,7 +195,7 @@ print("Expected label: ", np.sum(range(0, 10) * y), ". One hot encoding: ", y)
 
 
     
-![png](azure_aks_deep_mnist_files/azure_aks_deep_mnist_11_0.png)
+![png](../images/azure_aks_deep_mnist_11_0.png)
     
 
 
@@ -520,7 +520,7 @@ print("Expected label: ", np.sum(range(0, 10) * y), ". One hot encoding: ", y)
 
 
     
-![png](azure_aks_deep_mnist_files/azure_aks_deep_mnist_42_0.png)
+![png](../images/azure_aks_deep_mnist_42_0.png)
     
 
 
