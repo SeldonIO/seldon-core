@@ -163,7 +163,7 @@ func main() {
 		Scheme:                   mgr.GetScheme(),
 		Scheduler:                schedulerClient,
 		Recorder:                 mgr.GetEventRecorderFor("server-controller"),
-		useDeploymentsForServers: useDeploymentsForServers,
+		UseDeploymentsForServers: useDeploymentsForServers,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Server")
 		os.Exit(1)
