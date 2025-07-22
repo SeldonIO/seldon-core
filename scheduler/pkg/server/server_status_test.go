@@ -11,7 +11,7 @@ package server
 
 import (
 	"context"
-	"sort"
+	"fmt"
 	"testing"
 	"time"
 
@@ -869,71 +869,86 @@ func TestModelGwRebalance(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name    string
-		loadReq *pb.LoadModelRequest
+		name     string
+		models   []*pb.LoadModelRequest
+		replicas int // number of modelgw instances
 	}
 
 	tests := []test{
 		{
-			name: "rebalance model",
-			loadReq: &pb.LoadModelRequest{
-				Model: &pb.Model{
-					Meta: &pb.MetaData{Name: "foo"},
+			name: "rebalance multiple models across N replicas",
+			models: []*pb.LoadModelRequest{
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "foo"},
+					},
+				},
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "bar"},
+					},
+				},
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "baz"},
+					},
 				},
 			},
+			replicas: 4, // test with 4 modelgw replicas
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			// create a test scheduler - note it uses a load balancer with 1 partition
 			s, _ := createTestScheduler()
 
-			// create first modelgw stream
-			firstStream, firstSubscription := createStream("dummy", true)
-			s.modelEventStream.streams[firstStream] = firstSubscription
-			g.Expect(s.modelEventStream.streams[firstStream]).ToNot(BeNil())
+			var streams []*stubModelStatusServer
+			for i := 0; i < test.replicas; i++ {
+				name := fmt.Sprintf("dummy%d", i)
+				stream, subscription := createStream(name, true)
+				s.modelEventStream.streams[stream] = subscription
+				s.loadBalancer.AddServer(subscription.name)
+				streams = append(streams, stream)
+				g.Expect(s.modelEventStream.streams[stream]).ToNot(BeNil())
+			}
 
-			// create second modelgw stream
-			secondStream, secondSubscription := createStream("dummy2", true)
-			s.modelEventStream.streams[secondStream] = secondSubscription
-			g.Expect(s.modelEventStream.streams[secondStream]).ToNot(BeNil())
+			// Load all models into the store and mark them as available
+			for _, req := range test.models {
+				err := s.modelStore.UpdateModel(req)
+				g.Expect(err).To(BeNil())
 
-			// add stream to the load balancer
-			s.loadBalancer.AddServer(firstSubscription.name)
-			s.loadBalancer.AddServer(secondSubscription.name)
+				modelName := req.Model.Meta.Name
+				model, _ := s.modelStore.GetModel(modelName)
+				model.GetLatest().SetModelState(store.ModelStatus{
+					State:             store.ModelAvailable,
+					AvailableReplicas: 1,
+				})
+			}
 
-			// add a model to the store
-			err := s.modelStore.UpdateModel(test.loadReq)
-			g.Expect(err).To(BeNil())
-
-			// set the model to available
-			modelName := test.loadReq.Model.Meta.Name
-			model, _ := s.modelStore.GetModel(modelName)
-			model.GetLatest().SetModelState(store.ModelStatus{
-				State:             store.ModelAvailable,
-				AvailableReplicas: 1,
-			})
-
-			// trigger rebalance
 			s.rebalance()
 
-			// read message from all streams
-			messages := make([]int, 0, 2)
-			for _, stream := range []*stubModelStatusServer{firstStream, secondStream} {
-				select {
-				case next := <-stream.msgs:
-					messages = append(messages, int(next.Versions[0].State.AvailableReplicas))
-				default:
-					t.Fail()
+			modelAssignments := make(map[string]int)
+			for _, stream := range streams {
+			NextStream:
+				for {
+					select {
+					case msg := <-stream.msgs:
+						name := msg.ModelName
+						count := int(msg.Versions[0].State.AvailableReplicas)
+						modelAssignments[name] += count
+					default:
+						break NextStream
+					}
 				}
 			}
 
-			// sort messages to compare to {0, 1}
-			sort.Ints(messages)
-			g.Expect(messages).To(HaveLen(2))
-			g.Expect(messages[0]).To(Equal(0))
-			g.Expect(messages[1]).To(Equal(1))
+			// Expect each model to have exactly 1 replica assigned
+			g.Expect(modelAssignments).To(HaveLen(len(test.models)))
+			for _, req := range test.models {
+				modelName := req.Model.Meta.Name
+				g.Expect(modelAssignments[modelName]).To(Equal(1),
+					fmt.Sprintf("model %q should have exactly 1 replica assigned", modelName))
+			}
 		})
 	}
 }
