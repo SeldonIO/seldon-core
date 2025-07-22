@@ -74,7 +74,7 @@ storage_account_name = "modeltestsgpt"  # fill in
 storage_container_name = "gpt2onnx"
 ```
 
-### Copy your model to Azure Blob <a id="blob"/>
+### Copy your model to Azure Blob
 
 ```bash
 # Copy model file
@@ -99,7 +99,7 @@ Name               IsDirectory    Blob Type    Blob Tier    Length     Content T
 gpt2/1/model.onnx                 BlockBlob    Hot          652535462  application/octet-stream  2021-05-28T04:37:11+00:00
 ```
 
-## Add Azure PersistentVolume and Claim <a id="pv"/>
+## Add Azure PersistentVolume and Claim
 
 For more details on creating a PersistentVolume using the CSI driver, refer to the [official documentation](https://github.com/kubernetes-sigs/blob-csi-driver/blob/master/deploy/example/e2e_usage.md).
 - Create secret
@@ -172,11 +172,11 @@ NAME                                 STATUS   VOLUME        CAPACITY   ACCESS MO
 persistentvolumeclaim/pvc-gpt2blob   Bound    pv-gpt2blob   10Gi       RWX                           4h54m
 ```
 
-### Run Seldon in your kubernetes cluster <a id="seldon"/>
+### Run Seldon in your kubernetes cluster
 
 Follow the [Seldon-Core Setup notebook](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html) to set up a cluster with Istio Ingress and install Seldon Core.
 
-### Deploy your model with Seldon pre-packaged Triton server <a id="sd"/>
+### Deploy your model with Seldon pre-packaged Triton server
 
 Create a file named `gpt2-deploy.yaml`:
 ```yaml
@@ -238,7 +238,7 @@ curl -v http://${ingress_ip}:80/seldon/default/gpt2gpu/v2/models/gpt2
 {"name":"gpt2","versions":["1"],"platform":"onnxruntime_onnx","inputs":[{"name":"input_ids:0","datatype":"INT32","shape":[-1,-1]},{"name":"attention_mask:0","datatype":"INT32","shape":[-1,-1]}],"outputs":[{"name":"past_key_values","datatype":"FP32","shape":[12,2,-1,12,-1,64]},{"name":"logits","datatype":"FP32","shape":[-1,-1,50257]}]}
 ```
 
-### Run prediction test: generate a sentence completion using GPT2 model  - Greedy approach <a id="infer"/>
+### Run prediction test: generate a sentence completion using GPT2 model  - Greedy approach
 
 ```python
 import http
@@ -373,7 +373,7 @@ Here is an example dashboard created using the queries above:
 ![dashboard](../images/azuredashboard.jpg) 
 
 
-### Run Load Test / Performance Test using vegeta <a id="vegeta"/>
+### Run Load Test / Performance Test using vegeta
 
 #### Install vegeta
 For more details, see the [official vegeta documentation](https://github.com/tsenart/vegeta#install).
