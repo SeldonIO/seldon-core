@@ -345,7 +345,7 @@ func (kc *InferKafkaHandler) AddModel(modelName string) error {
 	return nil
 }
 
-func (kc *InferKafkaHandler) RemoveModel(modelName string, cleanTopicsOnDeletion bool) error {
+func (kc *InferKafkaHandler) RemoveModel(modelName string, cleanTopicsOnDeletion bool, keepTopics bool) error {
 	kc.mu.Lock()
 	defer kc.mu.Unlock()
 
@@ -359,7 +359,7 @@ func (kc *InferKafkaHandler) RemoveModel(modelName string, cleanTopicsOnDeletion
 		}
 	}
 
-	if cleanTopicsOnDeletion {
+	if !keepTopics && cleanTopicsOnDeletion {
 		// delete input and output topics from kafka
 		inputTopic := kc.topicNamer.GetModelTopicInputs(modelName)
 		outputTopic := kc.topicNamer.GetModelTopicOutputs(modelName)

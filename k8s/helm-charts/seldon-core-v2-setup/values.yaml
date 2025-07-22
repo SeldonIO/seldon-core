@@ -132,6 +132,7 @@ modelgateway:
     repository: seldonio/seldon-modelgateway
     tag: latest
   workers: 8
+  maxNumConsumers: 100
   resources:
     cpu: 100m
     memory: 1G

@@ -125,6 +125,10 @@ spec:
           value: "100"
         - name: LOG_LEVEL
           value: "warn"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -256,6 +260,8 @@ spec:
           value: "true"
         - name: LOG_LEVEL
           value: "warn"
+        - name: MODELGATEWAY_MAX_NUM_CONSUMERS
+          value: "100"
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:

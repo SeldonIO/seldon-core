@@ -417,6 +417,8 @@ spec:
           value: 'true'
         - name: LOG_LEVEL
           value: 'info'
+        - name: MODELGATEWAY_MAX_NUM_CONSUMERS
+          value: '100'
         - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE
@@ -693,12 +695,16 @@ spec:
           value: '/tmp/certs/dds/ca.crt'
         - name: LOG_LEVEL
           value: 'info'
+        - name: MODELGATEWAY_MAX_NUM_CONSUMERS
+          value: '100'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
           value: "9044"
-        - name: MODELGATEWAY_MAX_NUM_CONSUMERS
-          value: "100"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:

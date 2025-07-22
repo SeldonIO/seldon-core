@@ -31,9 +31,9 @@ type SeldonRuntimeReconciler struct {
 	configMapReconciler  common.Reconciler
 }
 
-func ParseInt32(s string) (int32, error) {
+func ParseInt32(s string, defaultVal int32) (int32, error) {
 	if s == "" {
-		return 1, nil
+		return defaultVal, nil
 	}
 
 	i64, err := strconv.ParseInt(s, 10, 32)
@@ -47,7 +47,7 @@ func ValidateDataflowScaleSpec(
 	namespace *string,
 ) error {
 	ctx, clt, recorder := commonConfig.Ctx, commonConfig.Client, commonConfig.Recorder
-	numPartitions, err := ParseInt32(runtime.Spec.Config.KafkaConfig.Topics["numPartitions"].StrVal)
+	numPartitions, err := ParseInt32(runtime.Spec.Config.KafkaConfig.Topics["numPartitions"].StrVal, 1)
 	if err != nil {
 		return fmt.Errorf("failed to parse numPartitions from KafkaConfig: %w", err)
 	}
@@ -79,13 +79,50 @@ func ValidateDataflowScaleSpec(
 	return nil
 }
 
+func ValidateModelGatewaySpec(
+	component *mlopsv1alpha1.ComponentDefn,
+	runtime *mlopsv1alpha1.SeldonRuntime,
+	commonConfig common.ReconcilerConfig,
+	namespace *string,
+) error {
+	numPartitions, err := ParseInt32(runtime.Spec.Config.KafkaConfig.Topics["numPartitions"].StrVal, 1)
+	if err != nil {
+		return fmt.Errorf("failed to parse numPartitions from KafkaConfig: %w", err)
+	}
+
+	var maxNumWorkers int32 = 100
+	if component.PodSpec != nil && len(component.PodSpec.Containers) > 0 {
+		for _, env := range component.PodSpec.Containers[0].Env {
+			if env.Name == "MODELGATEWAY_MAX_NUM_CONSUMERS" {
+				maxNumWorkers, err = ParseInt32(env.Value, 100)
+				if err != nil {
+					return fmt.Errorf("failed to parse MODELGATEWAY_MAX_NUM_CONSUMERS: %w", err)
+				}
+				break
+			}
+		}
+	}
+
+	maxReplicas := numPartitions * maxNumWorkers
+	if component.Replicas != nil && *component.Replicas > maxReplicas {
+		component.Replicas = &maxReplicas
+		commonConfig.Recorder.Eventf(
+			runtime,
+			v1.EventTypeWarning,
+			"ModelGatewayReplicasAdjusted",
+			fmt.Sprintf("Model gateway replicas adjusted to %d based on KafkaConfig and maxNumWorkers", maxReplicas),
+		)
+	}
+	return nil
+}
+
 func ValidatePipelineGatewaySpec(
 	component *mlopsv1alpha1.ComponentDefn,
 	runtime *mlopsv1alpha1.SeldonRuntime,
 	commonConfig common.ReconcilerConfig,
 	namespace *string,
 ) error {
-	numPartitions, err := ParseInt32(runtime.Spec.Config.KafkaConfig.Topics["numPartitions"].StrVal)
+	numPartitions, err := ParseInt32(runtime.Spec.Config.KafkaConfig.Topics["numPartitions"].StrVal, 1)
 	if err != nil {
 		return fmt.Errorf("failed to parse numPartitions from KafkaConfig: %w", err)
 	}
@@ -118,6 +155,14 @@ func ValidateComponent(
 	}
 	if component.Name == mlopsv1alpha1.PipelineGatewayName {
 		return ValidatePipelineGatewaySpec(
+			component,
+			runtime,
+			commonConfig,
+			namespace,
+		)
+	}
+	if component.Name == mlopsv1alpha1.ModelGatewayName {
+		return ValidateModelGatewaySpec(
 			component,
 			runtime,
 			commonConfig,

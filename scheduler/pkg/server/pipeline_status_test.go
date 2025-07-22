@@ -163,7 +163,7 @@ func TestPipelineStatusEvents(t *testing.T) {
 					},
 				},
 			},
-			timeout: 2 * time.Millisecond,
+			timeout: 1 * time.Millisecond,
 			err:     true,
 		},
 	}
