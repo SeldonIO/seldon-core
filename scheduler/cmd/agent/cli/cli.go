@@ -88,7 +88,7 @@ const (
 	flagMaxLoadRetryCount                               = "max-load-retry-count"
 	flagMaxUnloadRetryCount                             = "max-unload-retry-count"
 	flagUnloadGraceSeconds                              = "unload-grace-period-seconds"
-	flagUseServerWithDeployment                         = "use-server-with-deployment"
+	flagUseDeploymentsForServers                        = "use-deployments-for-servers"
 )
 
 const (
@@ -492,7 +492,7 @@ func maybeUpdateUnloadGraceSeconds() {
 
 func maybeUpdateUseServerWithDeployment() {
 	maybeUpdateFromBoolEnv(
-		flagUseServerWithDeployment,
+		flagUseDeploymentsForServers,
 		envUseServerWithDeployment,
 		&UseServerWithDeployment,
 		"use server with deployment instead of statefulset",
