@@ -266,7 +266,7 @@ get_graph("tmp.json")
 
 
     
-![svg](tfserving-mnist_files/tfserving-mnist_20_0.svg)
+![svg](../images/tfserving-mnist_20_0.svg)
     
 
 
@@ -391,7 +391,7 @@ rest_request_ambassador(
 
 
     
-![png](tfserving-mnist_files/tfserving-mnist_23_0.png)
+![png](../images/tfserving-mnist_23_0.png)
     
 
 

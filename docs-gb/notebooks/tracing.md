@@ -166,7 +166,7 @@ kubectl port-forward $(kubectl get pods -l app.kubernetes.io/name=simplest -n se
 
 Check the Jaeger UI. You should be able to find traces like below:
 
-![rest](jaeger-ui-rest-example.png)
+![rest](../images/jaeger-ui-rest-example.png)
 
 
 ```python
@@ -204,7 +204,7 @@ Check the Jaeger UI. You should be able to find traces like below:
 Check the Jaeger UI. You should be able to find traces like below:
 
 
-![grpc](jaeger-ui-grpc-example.png)
+![grpc](../images/jaeger-ui-grpc-example.png)
 
 
 ```python

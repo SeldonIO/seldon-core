@@ -814,7 +814,7 @@ spec:
 
 Looking at the metrics dashboard for Seldon you should see throughput we are getting. For a single replica on GKE with n1-standard-4 nodes we can see roughly 150 requests per second being processed.
 
-![rest](tensorflow-rest-kafka.png)
+![rest](../images/tensorflow-rest-kafka.png)
 
 
 ```python
@@ -1411,7 +1411,7 @@ spec:
 
 Looking at the metrics dashboard for Seldon you should see throughput we are getting. For a single replica on GKE with n1-standard-4 nodes we can see around 220 requests per second being processed.
 
-![grpc](tensorflow-grpc-kafka.png)
+![grpc](../images/tensorflow-grpc-kafka.png)
 
 
 ```python

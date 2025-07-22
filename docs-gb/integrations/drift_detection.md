@@ -7,4 +7,4 @@ Machine learning models do not extrapolate well outside of the training data dis
 
 The general framework shown in this example is to use the Seldon Core payload logger to pass requests to components that process them asynchronously. The results can be passed onwards to alterting systems.
 
-![Example architecture](analytics.png)
+![Example architecture](../images/analytics.png)

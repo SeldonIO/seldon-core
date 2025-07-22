@@ -80,11 +80,11 @@ spec:
 
 ## REST Example
 
-![jaeger-ui-rest](./jaeger-ui-rest-example.png)
+![jaeger-ui-rest](../images/jaeger-ui-rest-example.png)
 
 ## gRPC Example
 
-![jaeger-ui-rest](./jaeger-ui-grpc-example.png)
+![jaeger-ui-rest](../images/jaeger-ui-grpc-example.png)
 
 
 ## Worked Example

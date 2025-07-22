@@ -228,7 +228,7 @@ print("Expected label: ", np.sum(range(0, 10) * y), ". One hot encoding: ", y)
 
 
     
-![png](alibaba_cloud_ack_deep_mnist_files/alibaba_cloud_ack_deep_mnist_16_0.png)
+![png](../images/alibaba_cloud_ack_deep_mnist_16_0.png)
     
 
 
@@ -289,7 +289,7 @@ We need to first create a cluster in Alibaba Cloud - you should follow the follo
 
 You should follow up the instructions but the finished cluster should look as follows:
 
-![k8s-dashboard-2](images/k8s-dashboard-2.jpg)
+![k8s-dashboard-2](../images/k8s-dashboard-2.jpg)
 
 ### 4.2 Copy the kubectl configuration to access the cluster
 
@@ -319,7 +319,7 @@ Use the setup notebook to [Setup Cluster](https://docs.seldon.io/projects/seldon
 ### 4.5 Push docker image
 We'll now make sure the image is accessible within the Kubernetes cluster by pushing it to the repo that we created in step 4.3. This should look as follows in your dashboard:
 
-![k8s-dashboard-1](images/k8s-dashboard-1.jpg)
+![k8s-dashboard-1](../images/k8s-dashboard-1.jpg)
 
 #### To push the image we first tag it
 
@@ -436,7 +436,7 @@ print("Expected label: ", np.sum(range(0, 10) * y), ". One hot encoding: ", y)
 
 
     
-![png](alibaba_cloud_ack_deep_mnist_files/alibaba_cloud_ack_deep_mnist_40_0.png)
+![png](../images/alibaba_cloud_ack_deep_mnist_40_0.png)
     
 
 
@@ -581,4 +581,4 @@ For this we can access the URL with the command below, it will request an admin 
 
 The metrics include requests per second, as well as latency. You are able to add your own custom metrics, and try out other more complex deployments by following furher guides at https://docs.seldon.io/projects/seldon-core/en/latest/examples/notebooks.html
 
-![graf](images/graf.jpg)
+![graf](../images/graf.jpg)

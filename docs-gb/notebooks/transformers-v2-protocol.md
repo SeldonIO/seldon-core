@@ -9,7 +9,7 @@ This tokeniser will then be part of an inference graph, so that its output gets 
 
 > **NOTE**: The tokeniser logic and the Triton artifacts are taken from the [GPT-2 Model example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/triton_gpt2_example.html). To learn more about these, feel free to check that tutorial.
 
-![Inference graph with tokeniser and GPT-2 model](./images/gpt2-graph.svg)
+![Inference graph with tokeniser and GPT-2 model](../images/gpt2-graph.svg)
 
 ## Creating a Tokeniser
 

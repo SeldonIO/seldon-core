@@ -771,7 +771,7 @@ plt.show();
 
 
     
-![png](cifar10-od_files/cifar10-od_34_0.png)
+![png](../images/cifar10-od_34_0.png)
     
 
 
@@ -780,7 +780,7 @@ plt.show();
 
 
     
-![png](cifar10-od_files/cifar10-od_34_2.png)
+![png](../images/cifar10-od_34_2.png)
     
 
 

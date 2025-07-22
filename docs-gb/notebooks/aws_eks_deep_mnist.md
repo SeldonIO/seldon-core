@@ -161,7 +161,7 @@ print("Expected label: ", np.sum(range(0, 10) * y), ". One hot encoding: ", y)
 
 
     
-![png](aws_eks_deep_mnist_files/aws_eks_deep_mnist_11_0.png)
+![png](../images/aws_eks_deep_mnist_11_0.png)
     
 
 
@@ -629,7 +629,7 @@ print("Expected label: ", np.sum(range(0, 10) * y), ". One hot encoding: ", y)
 
 
     
-![png](aws_eks_deep_mnist_files/aws_eks_deep_mnist_48_0.png)
+![png](../images/aws_eks_deep_mnist_48_0.png)
     
 
 

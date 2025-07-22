@@ -5,7 +5,7 @@ Dependencies:
 * Seldon core installed as per the docs with [Istio Ingress](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html#install-seldon-core-with-helm)
 * Kubeflow Pipelines installed (installation instructions in this notebook)
 
-![kubeflow-pipeline](assets/kubeflow-pipeline.jpg)
+![kubeflow-pipeline](../images/kubeflow-pipeline.jpg)
 
 ### Kubeflow Pipelines Setup
 
@@ -271,7 +271,7 @@ And we can open it locally in our browser via [http://localhost:8000](http://loc
 
 Now we can follow the standard steps to create and deploy the kubeflow pipline
 
-![seldon-kubeflow-batch](assets/seldon-kubeflow-batch.gif)
+![seldon-kubeflow-batch](../images/seldon-kubeflow-batch.gif)
 
 
 ```python

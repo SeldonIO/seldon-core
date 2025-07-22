@@ -1,5 +1,5 @@
 # Cifar10 Outlier Detection
-![demo](./demo.png)
+![demo](../images/demo.png)
 
 In this example we will deploy an image classification model along with an outlier detector trained on the same dataset. For in depth details on creating an outlier detection model for your own dataset see the [alibi-detect project](https://github.com/SeldonIO/alibi-detect) and associated [documentation](https://docs.seldon.io/projects/alibi-detect/en/latest/). You can find details for this [CIFAR10 example in their documentation](https://docs.seldon.io/projects/alibi-detect/en/latest/examples/od_vae_cifar10.html) as well.
 
