@@ -571,6 +571,8 @@ spec:
         - name: LOG_LEVEL
           value: '{{ hasKey .Values.scheduler "logLevel" | ternary .Values.scheduler.logLevel
             .Values.logging.logLevel }}'
+        - name: MODELGATEWAY_MAX_NUM_CONSUMERS
+          value: '{{ .Values.modelgateway.maxNumConsumers }}'
         - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE
@@ -858,12 +860,16 @@ spec:
         - name: LOG_LEVEL
           value: '{{ hasKey .Values.modelgateway "logLevel" | ternary .Values.modelgateway.logLevel
             .Values.logging.logLevel }}'
+        - name: MODELGATEWAY_MAX_NUM_CONSUMERS
+          value: '{{ .Values.modelgateway.maxNumConsumers }}'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
           value: "9044"
-        - name: MODELGATEWAY_MAX_NUM_CONSUMERS
-          value: "100"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
@@ -1140,6 +1146,9 @@ spec:
         linger.ms: '{{ .Values.kafka.producer.lingerMs }}'
         message.max.bytes: '{{ int .Values.kafka.producer.messageMaxBytes }}'
       topicPrefix: '{{ .Values.kafka.topicPrefix }}'
+      topics:
+        numPartitions: '{{ .Values.kafka.topics.numPartitions }}'
+        replicationFactor: '{{ .Values.kafka.topics.replicationFactor }}'
     serviceConfig:
       grpcServicePrefix: '{{ .Values.services.serviceGRPCPrefix }}'
       serviceType: '{{ .Values.services.defaultServiceType }}'
