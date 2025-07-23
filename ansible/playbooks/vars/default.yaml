@@ -40,5 +40,8 @@ seldon_monitoring_grafana_web_ui_port: 3000
 strimzi_kafka_operator_namespace: "{{ seldon_mesh_namespace }}"
 seldon_kafka_namespace: "{{ seldon_mesh_namespace }}"
 
+# Schema Registry Configuration
+schema_registry_namespace: confluent
+schema_registry_host_name: seldon-schema-registry.local
 # Helm install
 helm_force_install: false
