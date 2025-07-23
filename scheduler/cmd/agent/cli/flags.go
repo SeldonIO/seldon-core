@@ -59,7 +59,7 @@ func makeArgs() {
 	flag.IntVar(&MaxLoadRetryCount, flagMaxLoadRetryCount, defaultMaxLoadRetryCount, "Number of retries for loading a model onto a server")
 	flag.IntVar(&MaxUnloadRetryCount, flagMaxUnloadRetryCount, defaultMaxUnloadRetryCount, "Number of retries for unloading a model onto a server")
 	flag.IntVar(&UnloadGraceSeconds, flagUnloadGraceSeconds, defautUnloadGraceSeconds, "Grace period in seconds before unloading a model")
-	flag.BoolVar(&useDeploymentsForServers, flagUseDeploymentsForServers, defaultuseDeploymentsForServers, "Use server with deployment instead of statefulset.")
+	flag.BoolVar(&useDeploymentsForServers, flagUseDeploymentsForServers, defaultUseDeploymentsForServers, "Use server with deployment instead of statefulset.")
 }
 
 func parseFlags() {

@@ -113,7 +113,7 @@ const (
 	defaultMaxLoadRetryCount                               = 5
 	defaultMaxUnloadRetryCount                             = 1
 	defautUnloadGraceSeconds                               = 2
-	defaultuseDeploymentsForServers                        = false
+	defaultUseDeploymentsForServers                        = false
 )
 
 var (
