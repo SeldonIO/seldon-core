@@ -1,0 +1,9 @@
+kafka:
+  enabled: false
+
+externalKafka:
+  brokers: "PLAINTEXT://seldon-kafka-bootstrap.seldon-mesh.svc.cluster.local:9092"
+  listener:
+    protocol: "PLAINTEXT"
+ingress:
+  hostname: "{{schema_registry_host_name}}"
