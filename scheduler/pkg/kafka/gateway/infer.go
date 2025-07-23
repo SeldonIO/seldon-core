@@ -153,7 +153,7 @@ func (kc *InferKafkaHandler) setup(consumerConfig kafka.ConfigMap, producerConfi
 	}
 
 	for i := 0; i < kc.consumerConfig.NumWorkers; i++ {
-		worker, err := NewInferWorker(kc, kc.logger, kc.consumerConfig.TraceProvider, kc.topicNamer)
+		worker, err := NewInferWorker(kc, kc.logger, kc.consumerConfig.TraceProvider, kc.topicNamer, kc.schemaRegistryClient)
 		if err != nil {
 			return err
 		}
@@ -373,13 +373,13 @@ func (kc *InferKafkaHandler) AddModel(modelName string) error {
 		return err
 	}
 
-	if err := kc.createInputTopicSchema(inputTopic); err != nil {
-		kc.logger.WithError(err).Errorf("failed to create input topic schema for model %s", modelName)
-	}
-
-	if err := kc.createOutputTopicSchema(outputTopic); err != nil {
-		kc.logger.WithError(err).Errorf("failed to create input topic schema for model %s", modelName)
-	}
+	//if err := kc.createInputTopicSchema(inputTopic); err != nil {
+	//	kc.logger.WithError(err).Errorf("failed to create input topic schema for model %s", modelName)
+	//}
+	//
+	//if err := kc.createOutputTopicSchema(outputTopic); err != nil {
+	//	kc.logger.WithError(err).Errorf("failed to create input topic schema for model %s", modelName)
+	//}
 
 	kc.subscribedTopics[inputTopic] = true
 	err := kc.subscribeTopics()
