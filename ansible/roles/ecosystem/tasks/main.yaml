@@ -18,3 +18,6 @@
 
 - name: Install and configure OpenTelemetry Operator
   import_tasks: opentelemetry.yaml
+
+- name: Install Schema registry
+  import_tasks: schema-registry.yaml

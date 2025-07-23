@@ -9,6 +9,7 @@ install_kafka: true
 install_certmanager: true
 install_jaeger: true
 install_opentelemetry: true
+install_schema_registry: false
 
 # Configuration on/off flags
 configure_prometheus: "{{ install_prometheus }}"
