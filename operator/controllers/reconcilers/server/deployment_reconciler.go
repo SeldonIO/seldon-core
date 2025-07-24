@@ -180,14 +180,14 @@ func (s *ServerDeploymentReconciler) GetConditions() []*apis.Condition {
 	// Check to defend against programmatic setting to nil (i.e a bug in the code)
 	if s.Deployment.Spec.Replicas == nil {
 		s.Logger.Info(DeploymentReplicasNil)
-		return []*apis.Condition{mlopsv1alpha1.CreateCondition(mlopsv1alpha1.DeploymentReady, false, DeploymentReplicasNil)}
+		return []*apis.Condition{mlopsv1alpha1.CreateCondition(mlopsv1alpha1.StatefulSetorDeploymentReady, false, DeploymentReplicasNil)}
 	}
 
 	ready := s.Deployment.Status.ReadyReplicas >= *s.Deployment.Spec.Replicas
 	s.Logger.Info("Checking conditions for deployment", "ready", ready, ".spec.replicas", *s.Deployment.Spec.Replicas, ".status.replicas", s.Deployment.Status.Replicas, "availableReplicas", s.Deployment.Status.AvailableReplicas)
 	if ready {
-		return []*apis.Condition{mlopsv1alpha1.CreateCondition(mlopsv1alpha1.DeploymentReady, ready, DeploymentReadyReason)}
+		return []*apis.Condition{mlopsv1alpha1.CreateCondition(mlopsv1alpha1.StatefulSetorDeploymentReady, ready, DeploymentReadyReason)}
 	} else {
-		return []*apis.Condition{mlopsv1alpha1.CreateCondition(mlopsv1alpha1.DeploymentReady, ready, DeploymentNotReadyReason)}
+		return []*apis.Condition{mlopsv1alpha1.CreateCondition(mlopsv1alpha1.StatefulSetorDeploymentReady, ready, DeploymentNotReadyReason)}
 	}
 }

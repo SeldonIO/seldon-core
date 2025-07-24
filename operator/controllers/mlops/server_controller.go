@@ -160,7 +160,11 @@ func serverReady(status mlopsv1alpha1.ServerStatus) bool {
 }
 
 func (r *ServerReconciler) updateStatusFromError(ctx context.Context, logger logr.Logger, server *mlopsv1alpha1.Server, err error) {
-	server.Status.CreateAndSetCondition(mlopsv1alpha1.DeploymentReady, false, err.Error())
+	if r.UseDeploymentsForServers {
+		server.Status.CreateAndSetCondition(mlopsv1alpha1.StatefulSetorDeploymentReady, false, err.Error())
+	} else {
+		server.Status.CreateAndSetCondition(mlopsv1alpha1.StatefulSetorDeploymentReady, false, err.Error())
+	}
 	if errSet := r.Status().Update(ctx, server); errSet != nil {
 		logger.Error(errSet, "Failed to set status for server on error", "server", server.Name, "error", err.Error())
 	}
@@ -227,10 +231,17 @@ func (r *ServerReconciler) mapServerFromServerConfig(_ context.Context, obj clie
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *ServerReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
+	builder := ctrl.NewControllerManagedBy(mgr).
 		For(&mlopsv1alpha1.Server{}).
-		Owns(&appsv1.Deployment{}).
-		Owns(&v1.Service{}).
+		Owns(&v1.Service{})
+
+	if r.UseDeploymentsForServers {
+		builder = builder.Owns(&appsv1.Deployment{})
+	} else {
+		builder = builder.Owns(&appsv1.StatefulSet{})
+	}
+
+	return builder.
 		Watches(
 			&mlopsv1alpha1.ServerConfig{},
 			handler.EnqueueRequestsFromMapFunc(r.mapServerFromServerConfig),

@@ -114,16 +114,11 @@ func (s *ServerSpec) Default() {
 }
 
 const (
-	DeploymentReady apis.ConditionType = "DeploymentReady"
-)
-
-const (
-	StatefulSetReady apis.ConditionType = "StatefulSetReady"
+	StatefulSetorDeploymentReady apis.ConditionType = "StatefulSetOrDeploymentReady"
 )
 
 var serverConditionSet = apis.NewLivingConditionSet(
-	StatefulSetReady,
-	DeploymentReady,
+	StatefulSetorDeploymentReady,
 )
 
 var _ apis.ConditionsAccessor = (*ServerStatus)(nil)
