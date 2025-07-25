@@ -36,6 +36,10 @@ model.mlops.seldon.io/iris created
  model.mlops.seldon.io/iris condition met
  ```  
 ## Deploy a pipeline for the Iris Model
+{% hint style="info" %}
+**Note**: The pipeline name must not be reused as the name of any individual step within the pipeline. This results in a Kubernetes validation error:
+`pipeline iris must not have a step name with the same name as pipeline name`
+{% endhint %}
 
 1. Apply the following configuration to deploy the Iris model in the namespace `seldon-mesh`:
 
@@ -98,6 +102,7 @@ The output is similar to:
   Ensure that:
   * The Host header matches the expected virtual host configured in your service mesh.
   * The Seldon-Model header specifies the correct pipeline name.
+  * To route inference requests to a pipeline endpoint, include the `.pipeline` suffix in the model name within the request header. This distinguishes the pipeline from a model that shares the same base name.
 
 ```bash
 curl -k http://<INGRESS_IP>:80/v2/models/irispipeline/infer \
