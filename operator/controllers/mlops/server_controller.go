@@ -40,9 +40,10 @@ import (
 // ServerReconciler reconciles a Server object
 type ServerReconciler struct {
 	client.Client
-	Scheme    *runtime.Scheme
-	Scheduler *scheduler.SchedulerClient
-	Recorder  record.EventRecorder
+	Scheme                   *runtime.Scheme
+	Scheduler                *scheduler.SchedulerClient
+	Recorder                 record.EventRecorder
+	UseDeploymentsForServers bool
 }
 
 //+kubebuilder:rbac:groups=mlops.seldon.io,resources=servers,verbs=get;list;watch;create;update;patch;delete
@@ -54,6 +55,8 @@ type ServerReconciler struct {
 // +kubebuilder:rbac:groups=v1,resources=services/status,verbs=get
 // +kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=statefulsets/status,verbs=get
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -99,11 +102,20 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return reconcile.Result{}, err
 	}
 
-	sr, err := serverreconcile.NewServerReconciler(server, common.ReconcilerConfig{
-		Ctx:    ctx,
-		Logger: logger,
-		Client: r.Client,
-	})
+	var sr common.Reconciler
+	if r.UseDeploymentsForServers {
+		sr, err = serverreconcile.NewServerReconcilerWithDeployment(server, common.ReconcilerConfig{
+			Ctx:    ctx,
+			Logger: logger,
+			Client: r.Client,
+		})
+	} else {
+		sr, err = serverreconcile.NewServerReconciler(server, common.ReconcilerConfig{
+			Ctx:    ctx,
+			Logger: logger,
+			Client: r.Client,
+		})
+	}
 	if err != nil {
 		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err
@@ -148,7 +160,7 @@ func serverReady(status mlopsv1alpha1.ServerStatus) bool {
 }
 
 func (r *ServerReconciler) updateStatusFromError(ctx context.Context, logger logr.Logger, server *mlopsv1alpha1.Server, err error) {
-	server.Status.CreateAndSetCondition(mlopsv1alpha1.StatefulSetReady, false, err.Error())
+	server.Status.CreateAndSetCondition(mlopsv1alpha1.StatefulSetorDeploymentReady, false, err.Error())
 	if errSet := r.Status().Update(ctx, server); errSet != nil {
 		logger.Error(errSet, "Failed to set status for server on error", "server", server.Name, "error", err.Error())
 	}
@@ -215,10 +227,17 @@ func (r *ServerReconciler) mapServerFromServerConfig(_ context.Context, obj clie
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *ServerReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
+	builder := ctrl.NewControllerManagedBy(mgr).
 		For(&mlopsv1alpha1.Server{}).
-		Owns(&appsv1.StatefulSet{}).
-		Owns(&v1.Service{}).
+		Owns(&v1.Service{})
+
+	if r.UseDeploymentsForServers {
+		builder = builder.Owns(&appsv1.Deployment{})
+	} else {
+		builder = builder.Owns(&appsv1.StatefulSet{})
+	}
+
+	return builder.
 		Watches(
 			&mlopsv1alpha1.ServerConfig{},
 			handler.EnqueueRequestsFromMapFunc(r.mapServerFromServerConfig),

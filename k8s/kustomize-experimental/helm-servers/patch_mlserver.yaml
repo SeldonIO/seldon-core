@@ -1,0 +1,11 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  name: mlserver
+  labelz: HACK_REMOVE_ME{{ .Values.mlserver.labels | toYaml }}
+  annotationz: HACK_REMOVE_ME{{ .Values.mlserver.annotations | toYaml }}
+spec:
+  replicas: HACK_REMOVE_ME{{ .Values.mlserver.replicas }}
+  minReplicas: HACK_REMOVE_ME{{ .Values.mlserver.minReplicas }}
+  maxReplicas: HACK_REMOVE_ME{{ .Values.mlserver.maxReplicas }}
+  podSpec: HACK_REMOVE_ME{{ toJson .Values.mlserver.podSpec }}

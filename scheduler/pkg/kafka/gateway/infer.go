@@ -12,6 +12,7 @@ package gateway
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -66,6 +67,20 @@ type InferKafkaHandler struct {
 	producerActive    atomic.Bool
 }
 
+func GetIntConfigMapValue(configMap kafka.ConfigMap, key string, defaultValue int) (int, error) {
+	configMapValue, ok := configMap[key]
+	if !ok {
+		return defaultValue, nil
+	}
+
+	value, err := strconv.Atoi(configMapValue.(string))
+	if err != nil {
+		return 0, err
+	}
+
+	return value, nil
+}
+
 func NewInferKafkaHandler(
 	logger log.FieldLogger,
 	consumerConfig *ManagerConfig,
@@ -78,7 +93,7 @@ func NewInferKafkaHandler(
 	if err != nil {
 		return nil, err
 	}
-	replicationFactor, err := util.GetIntConfigMapValue(topicsConfigMap, replicationFactorKey, defaultReplicationFactor)
+	replicationFactor, err := GetIntConfigMapValue(topicsConfigMap, replicationFactorKey, defaultReplicationFactor)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +101,7 @@ func NewInferKafkaHandler(
 	if err != nil {
 		return nil, err
 	}
-	numPartitions, err := util.GetIntConfigMapValue(topicsConfigMap, numPartitionsKey, defaultNumPartitions)
+	numPartitions, err := GetIntConfigMapValue(topicsConfigMap, numPartitionsKey, defaultNumPartitions)
 	if err != nil {
 		return nil, err
 	}

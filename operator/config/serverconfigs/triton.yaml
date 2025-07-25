@@ -92,6 +92,8 @@ spec:
           resourceFieldRef:
             containerName: triton
             resource: requests.memory
+      - name: SELDON_USE_DEPLOYMENTS_FOR_SERVERS
+        value: "false"
       ports:
       - containerPort: 9501
         name: grpc

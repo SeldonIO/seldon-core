@@ -1,0 +1,33 @@
+{{- define "servers.deployments" }}
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  annotations:
+    {{ .Values.mlserver.annotations | toYaml }}
+  labels:
+    {{ .Values.mlserver.labels | toYaml }}
+  name: mlserver
+  namespace: '{{ .Release.Namespace }}'
+spec:
+  maxReplicas: {{ .Values.mlserver.maxReplicas }}
+  minReplicas: {{ .Values.mlserver.minReplicas }}
+  podSpec: {{ toJson .Values.mlserver.podSpec }}
+  replicas: {{ .Values.mlserver.replicas }}
+  serverConfig: mlserver
+---
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  annotations:
+    {{ .Values.triton.annotations | toYaml }}
+  labels:
+    {{ .Values.triton.labels | toYaml }}
+  name: triton
+  namespace: '{{ .Release.Namespace }}'
+spec:
+  maxReplicas: {{ .Values.triton.maxReplicas }}
+  minReplicas: {{ .Values.triton.minReplicas }}
+  podSpec: {{ toJson .Values.triton.podSpec }}
+  replicas: {{ .Values.triton.replicas }}
+  serverConfig: triton
+{{- end }}

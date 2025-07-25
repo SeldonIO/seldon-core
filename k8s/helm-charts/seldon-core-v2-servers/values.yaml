@@ -1,3 +1,5 @@
+useDeploymentsForServers: false
+
 mlserver:
   replicas: 1
   minReplicas: 1

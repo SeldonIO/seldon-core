@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package cli
 
 import (
+	"hash/fnv"
 	"math/rand"
 	"os"
 	"strconv"
@@ -27,6 +28,7 @@ const (
 	envDebugGrpcPort                                   = "SELDON_DEBUG_GRPC_PORT"
 	envMetricsPort                                     = "SELDON_METRICS_PORT"
 	envPodName                                         = "POD_NAME"
+	envPodIP                                           = "POD_IP"
 	envSchedulerHost                                   = "SELDON_SCHEDULER_HOST"
 	envSchedulerPort                                   = "SELDON_SCHEDULER_PORT"
 	envSchedulerTlsPort                                = "SELDON_SCHEDULER_TLS_PORT"
@@ -51,6 +53,7 @@ const (
 	envMaxLoadRetryCount                               = "SELDON_MAX_LOAD_RETRY_COUNT"
 	envMaxUnloadRetryCount                             = "SELDON_MAX_UNLOAD_RETRY_COUNT"
 	envUnloadGraceSeconds                              = "SELDON_UNLOAD_GRACE_PERIOD_SECONDS"
+	envuseDeploymentsForServers                        = "SELDON_USE_DEPLOYMENTS_FOR_SERVERS"
 
 	flagSchedulerHost                                   = "scheduler-host"
 	flagSchedulerPlaintxtPort                           = "scheduler-port"
@@ -85,6 +88,7 @@ const (
 	flagMaxLoadRetryCount                               = "max-load-retry-count"
 	flagMaxUnloadRetryCount                             = "max-unload-retry-count"
 	flagUnloadGraceSeconds                              = "unload-grace-period-seconds"
+	flagUseDeploymentsForServers                        = "use-deployments-for-servers"
 )
 
 const (
@@ -109,6 +113,7 @@ const (
 	defaultMaxLoadRetryCount                               = 5
 	defaultMaxUnloadRetryCount                             = 1
 	defautUnloadGraceSeconds                               = 2
+	defaultUseDeploymentsForServers                        = false
 )
 
 var (
@@ -156,6 +161,7 @@ var (
 	MaxLoadRetryCount                               int
 	MaxUnloadRetryCount                             int
 	UnloadGraceSeconds                              int
+	useDeploymentsForServers                        bool
 )
 
 func init() {
@@ -182,6 +188,7 @@ func updateFlagsFromEnv() {
 	maybeUpdateSchedulerPort()
 	maybeUpdateSchedulerTlsPort()
 	maybeUpdateMetricsPort()
+	maybeUpdateuseDeploymentsForServers()
 	maybeUpdateServerNameAndIndex()
 	maybeUpdateReplicaConfig()
 	maybeUpdateLogLevel()
@@ -201,6 +208,7 @@ func updateFlagsFromEnv() {
 	maybeMaxLoadRetryCount()
 	maybeMaxUnloadRetryCount()
 	maybeUpdateUnloadGraceSeconds()
+
 }
 
 func maybeUpdateModelInferenceLagThreshold() {
@@ -228,6 +236,29 @@ func maybeUpdateScalingStatsPeriodSeconds() {
 		&ScalingStatsPeriodSeconds,
 		"scaling stats period seconds",
 	)
+}
+
+func maybeUpdateFromBoolEnv(flag string, env string, param *bool, tag string) {
+	if isFlagPassed(flag) {
+		return
+	}
+
+	valueFromEnv, found, parsed := getEnvBool(env)
+	if !found {
+		return
+	}
+	if !parsed {
+		log.Fatalf(
+			"Failed to parse %s for %s",
+			env, tag)
+	}
+	log.Infof(
+		"Setting %s from env %s with value %t",
+		tag,
+		env,
+		valueFromEnv,
+	)
+	*param = valueFromEnv
 }
 
 func maybeUpdateFromIntEnv(flag string, env string, param *int, tag string) {
@@ -459,6 +490,15 @@ func maybeUpdateUnloadGraceSeconds() {
 	)
 }
 
+func maybeUpdateuseDeploymentsForServers() {
+	maybeUpdateFromBoolEnv(
+		flagUseDeploymentsForServers,
+		envuseDeploymentsForServers,
+		&useDeploymentsForServers,
+		"use server with deployment instead of statefulset",
+	)
+}
+
 func maybeUpdateSchedulerHost() {
 	if isFlagPassed(flagSchedulerHost) {
 		return
@@ -483,10 +523,16 @@ func maybeUpdateServerNameAndIndex() {
 		return
 	}
 
-	setServerNameAndIdxFromPodName()
+	if useDeploymentsForServers {
+		log.Infof("Using server with deployment")
+		setServerNameAndIdxFromDeploymentPodName()
+	} else {
+		log.Infof("Using server with statefulset")
+		setServerNameAndIdxFromStatefulSetPodName()
+	}
 }
 
-func setServerNameAndIdxFromPodName() {
+func setServerNameAndIdxFromStatefulSetPodName() {
 	log.Infof("Trying to set server name and replica index from pod name")
 
 	podName := os.Getenv(envPodName)
@@ -514,6 +560,35 @@ func setServerNameAndIdxFromPodName() {
 					ReplicaIdx,
 				)
 			}
+		}
+	}
+}
+
+func stringToUint(s string) uint {
+	h := fnv.New32a()
+	h.Write([]byte(s))
+	return uint(h.Sum32())
+}
+
+func setServerNameAndIdxFromDeploymentPodName() {
+	log.Infof("Trying to set server name and replica index from pod name")
+	podName := os.Getenv(envPodName)
+
+	if podName != "" {
+		// pod name is in the format deploymentName-replicaSetHash-randomTermination
+		tokens := strings.Split(podName, "-")
+		if len(tokens) < 3 {
+			log.Infof("Can't decypher pod name to find server name and index. %s", podName)
+		} else {
+			ReplicaIdx = stringToUint(strings.Join(tokens[len(tokens)-2:], "-"))
+			ServerName = strings.Join(tokens[:len(tokens)-2], "-")
+			log.Infof(
+				"Got server name and index from %s with value %s. Server name:%s Replica Idx:%d",
+				envPodName,
+				podName,
+				ServerName,
+				ReplicaIdx,
+			)
 		}
 	}
 }
@@ -573,12 +648,29 @@ func updateNamespace() {
 	}
 }
 
-func setInferenceSvcName() {
+func setStatefulSetPodInferenceSvcName() {
 	podName := os.Getenv(envPodName)
 	if podName != "" {
 		InferenceSvcName = podName
 	} else {
 		InferenceSvcName = agentHost
+	}
+}
+
+func setDeploymentPodInferenceSvcName() {
+	podIp := os.Getenv(envPodIP)
+	if podIp != "" {
+		InferenceSvcName = podIp
+	} else {
+		InferenceSvcName = agentHost
+	}
+}
+
+func setInferenceSvcName() {
+	if useDeploymentsForServers {
+		setDeploymentPodInferenceSvcName()
+	} else {
+		setStatefulSetPodInferenceSvcName()
 	}
 	log.Infof("Setting inference svc name to %s", InferenceSvcName)
 }

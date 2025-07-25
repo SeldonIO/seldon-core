@@ -214,14 +214,14 @@ func (s *ServerStatefulSetReconciler) GetConditions() []*apis.Condition {
 	// Check to defend against programmatic setting to nil (i.e a bug in the code)
 	if s.StatefulSet.Spec.Replicas == nil {
 		s.Logger.Info(StatefulSetReplicasNil)
-		return []*apis.Condition{mlopsv1alpha1.CreateCondition(mlopsv1alpha1.StatefulSetReady, false, StatefulSetReplicasNil)}
+		return []*apis.Condition{mlopsv1alpha1.CreateCondition(mlopsv1alpha1.StatefulSetorDeploymentReady, false, StatefulSetReplicasNil)}
 	}
 
 	ready := s.StatefulSet.Status.ReadyReplicas >= *s.StatefulSet.Spec.Replicas
 	s.Logger.Info("Checking conditions for stateful set", "ready", ready, ".spec.replicas", *s.StatefulSet.Spec.Replicas, ".status.replicas", s.StatefulSet.Status.Replicas, "availableReplicas", s.StatefulSet.Status.AvailableReplicas)
 	if ready {
-		return []*apis.Condition{mlopsv1alpha1.CreateCondition(mlopsv1alpha1.StatefulSetReady, ready, StatefulSetReadyReason)}
+		return []*apis.Condition{mlopsv1alpha1.CreateCondition(mlopsv1alpha1.StatefulSetorDeploymentReady, ready, StatefulSetReadyReason)}
 	} else {
-		return []*apis.Condition{mlopsv1alpha1.CreateCondition(mlopsv1alpha1.StatefulSetReady, ready, StatefulSetNotReadyReason)}
+		return []*apis.Condition{mlopsv1alpha1.CreateCondition(mlopsv1alpha1.StatefulSetorDeploymentReady, ready, StatefulSetNotReadyReason)}
 	}
 }

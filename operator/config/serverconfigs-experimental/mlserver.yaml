@@ -1,4 +1,3 @@
----
 apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig
 metadata:
@@ -71,8 +70,6 @@ spec:
         value: "9006"
       - name: SELDON_DRAINER_PORT
         value: "9007"
-      - name: SELDON_READINESS_PORT
-        value: "9008"
       - name: AGENT_TLS_SECRET_NAME
         value: ""
       - name: AGENT_TLS_FOLDER_PATH
@@ -85,6 +82,10 @@ spec:
         value: "80"
       - name: SELDON_LOG_LEVEL
         value: "warn"
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
       - name: POD_NAME
         valueFrom:
           fieldRef:
@@ -99,7 +100,7 @@ spec:
             containerName: mlserver
             resource: requests.memory
       - name: SELDON_USE_DEPLOYMENTS_FOR_SERVERS
-        value: "false"
+        value: "true"
       ports:
       - containerPort: 9501
         name: grpc
@@ -110,25 +111,11 @@ spec:
       - containerPort: 9006
         name: metrics
         protocol: TCP
-      - containerPort: 9008
-        name: readiness-port
       lifecycle:
         preStop:
           httpGet:
             port: 9007
             path: terminate
-      readinessProbe:
-        httpGet:
-          path: /ready
-          port: 9008
-        failureThreshold: 1
-        periodSeconds: 5
-      startupProbe:
-        httpGet:
-          path: /ready
-          port: 9008
-        failureThreshold: 60
-        periodSeconds: 15
       resources:
         requests:
           cpu: "500m"
@@ -212,10 +199,5 @@ spec:
       secret:
         secretName: seldon-downstream-server
         optional: true
-  volumeClaimTemplates:
-  - name: mlserver-models
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 1Gi
+    - name: mlserver-models
+      emptyDir: {}
