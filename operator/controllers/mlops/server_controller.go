@@ -160,11 +160,7 @@ func serverReady(status mlopsv1alpha1.ServerStatus) bool {
 }
 
 func (r *ServerReconciler) updateStatusFromError(ctx context.Context, logger logr.Logger, server *mlopsv1alpha1.Server, err error) {
-	if r.UseDeploymentsForServers {
-		server.Status.CreateAndSetCondition(mlopsv1alpha1.StatefulSetorDeploymentReady, false, err.Error())
-	} else {
-		server.Status.CreateAndSetCondition(mlopsv1alpha1.StatefulSetorDeploymentReady, false, err.Error())
-	}
+	server.Status.CreateAndSetCondition(mlopsv1alpha1.StatefulSetorDeploymentReady, false, err.Error())
 	if errSet := r.Status().Update(ctx, server); errSet != nil {
 		logger.Error(errSet, "Failed to set status for server on error", "server", server.Name, "error", err.Error())
 	}
