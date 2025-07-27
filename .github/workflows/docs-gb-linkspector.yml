@@ -1,0 +1,62 @@
+name: Link Checker for docs-gb
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'docs-gb/**'
+  pull_request:
+    branches: [ main, master, v2, ]
+    paths:
+      - 'docs-gb/**'
+  schedule:
+    # Run weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+
+jobs:
+  link-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install LinkSpector
+      run: npm install -g linkspector
+      
+    - name: Check links in docs-gb folder
+      run: |
+        find docs-gb -name "*.md" -type f > markdown_files.txt
+        
+        while IFS= read -r file; do
+          echo "Checking links in: $file"
+          linkspector "$file" --format json --output "link-check-$(basename "$file" .md).json" || true
+        done < markdown_files.txt
+        
+    - name: Upload link check results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: link-check-results
+        path: link-check-*.json
+        retention-days: 7
+        
+    - name: Check for broken links
+      run: |
+        for file in link-check-*.json; do
+          if [ -f "$file" ]; then
+            if jq -e '.broken_links | length > 0' "$file" > /dev/null 2>&1; then
+              echo "❌ Broken links found in $file:"
+              jq -r '.broken_links[] | "  - \(.url) (Status: \(.status_code))"' "$file"
+              exit 1
+            else
+              echo "✅ No broken links found in $file"
+            fi
+          fi
+        done 
