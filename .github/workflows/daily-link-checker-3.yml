@@ -3,6 +3,10 @@ name: Check all Markdown links daily
 on:
   schedule:
     - cron: "0 23 * * *"
+  pull_request:
+    branches:
+      - master, v2
+  workflow_dispatch:
 
 permissions:
   contents: read
