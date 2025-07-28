@@ -13,10 +13,16 @@ type OpenAIEmbeddingsTranslator struct {
 	translator.BaseTranslator
 }
 
+const (
+	inputKey = "input"
+)
+
 func getEmbeddingParameters(jsonBody map[string]interface{}) map[string]interface{} {
 	llmParameters := make(map[string]interface{})
+	skipKeys := []string{modelKey, inputKey}
+
 	for key, value := range jsonBody {
-		if key == "model" || key == "input" {
+		if translator.Contains(skipKeys, key) {
 			continue
 		}
 		llmParameters[key] = value
@@ -25,12 +31,12 @@ func getEmbeddingParameters(jsonBody map[string]interface{}) map[string]interfac
 }
 
 func getInput(jsonBody map[string]interface{}) ([]string, error) {
-	input, ok := jsonBody["input"]
+	input, ok := jsonBody[inputKey]
 	if !ok {
-		return nil, fmt.Errorf("OpenAI request body does not contain 'input' field")
+		return nil, fmt.Errorf("OpenAI request body does not contain '%s' field", inputKey)
 	}
 
-	delete(jsonBody, "input")
+	delete(jsonBody, inputKey)
 	switch v := input.(type) {
 	case string:
 		return []string{v}, nil
@@ -39,23 +45,23 @@ func getInput(jsonBody map[string]interface{}) ([]string, error) {
 		for i, item := range v {
 			str, ok := item.(string)
 			if !ok {
-				return nil, fmt.Errorf("OpenAI request body 'input' field contains non-string item: %v", item)
+				return nil, fmt.Errorf("OpenAI request body '%s' field contains non-string item: %v", inputKey, item)
 			}
 			strs[i] = str
 		}
 		return strs, nil
 	default:
-		return nil, fmt.Errorf("OpenAI request body 'input' field is not a string or an array of strings: %v", input)
+		return nil, fmt.Errorf("OpenAI request body '%s' field is not a string or an array of strings: %v", inputKey, input)
 	}
 }
 
 func constructEmbeddingsInferenceRequest(input []string, llmParams map[string]interface{}) map[string]interface{} {
 	return map[string]interface{}{
-		"inputs": []map[string]interface{}{
-			translator.ConstructStringTensor("input", input),
+		inputsKey: []map[string]interface{}{
+			translator.ConstructStringTensor(inputKey, input),
 		},
-		"parameters": map[string]interface{}{
-			"llm_parameters": llmParams,
+		parametersKey: map[string]interface{}{
+			llmParametersKey: llmParams,
 		},
 	}
 }

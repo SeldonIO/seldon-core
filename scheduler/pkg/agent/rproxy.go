@@ -35,6 +35,12 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
+const (
+	chatCompletionsPath   = "/chat/completions"
+	embeddingsPath        = "/embeddings"
+	imagesGenerationsPath = "/images/generations"
+)
+
 type reverseHTTPProxy struct {
 	stateManager               *LocalStateManager
 	logger                     log.FieldLogger
@@ -236,9 +242,9 @@ func (rp *reverseHTTPProxy) Start() error {
 		IdleConnTimeout:     util.IdleConnTimeoutSeconds * time.Second,
 	}
 	apiTranslators := map[string]translator.Translator{
-		"/chat/completions":   &openai.OpenAIChatCompletionsTranslator{},
-		"/embeddings":         &openai.OpenAIEmbeddingsTranslator{},
-		"/images/generations": &openai.OpenAIImagesGenerationsTranslator{},
+		chatCompletionsPath:   &openai.OpenAIChatCompletionsTranslator{},
+		embeddingsPath:        &openai.OpenAIEmbeddingsTranslator{},
+		imagesGenerationsPath: &openai.OpenAIImagesGenerationsTranslator{},
 	}
 	proxy.Transport = &lazyModelLoadTransport{
 		rp.stateManager.v2Client.LoadModel,

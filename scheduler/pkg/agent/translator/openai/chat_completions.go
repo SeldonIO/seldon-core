@@ -15,6 +15,22 @@ type OpenAIChatCompletionsTranslator struct {
 	translator.BaseTranslator
 }
 
+const (
+	modelKey             = "model"
+	messagesKey          = "messages"
+	roleKey              = "role"
+	contentKey           = "content"
+	typeKey              = "type"
+	toolsKey             = "tools"
+	parallelToolCallsKey = "parallel_tool_calls"
+	toolChoiceKey        = "tool_choice"
+	toolCallsKey         = "tool_calls"
+	toolCallIdKey        = "tool_call_id"
+	inputsKey            = "inputs"
+	parametersKey        = "parameters"
+	llmParametersKey     = "llm_parameters"
+)
+
 func (t *OpenAIChatCompletionsTranslator) TranslateToOIP(req *http.Request, logger log.FieldLogger) (*http.Request, error) {
 	// Convert OpenAI API request to JSON
 	jsonBody, err := translator.ConvertRequestToJsonBody(req, logger)
@@ -57,12 +73,12 @@ func (t *OpenAIChatCompletionsTranslator) TranslateToOIP(req *http.Request, logg
 }
 
 func getTools(jsonBody map[string]interface{}, logger log.FieldLogger) []interface{} {
-	tools, _ := jsonBody["tools"].([]interface{})
+	tools, _ := jsonBody[toolsKey].([]interface{})
 	return tools
 }
 
 func getParallelToolCalls(jsonBody map[string]interface{}, logger log.FieldLogger) []interface{} {
-	parallelToolCalls, ok := jsonBody["parallel_tool_calls"]
+	parallelToolCalls, ok := jsonBody[parallelToolCallsKey]
 	if !ok {
 		return []interface{}{}
 	}
@@ -70,7 +86,7 @@ func getParallelToolCalls(jsonBody map[string]interface{}, logger log.FieldLogge
 }
 
 func getToolChoice(jsonBody map[string]interface{}, logger log.FieldLogger) []interface{} {
-	toolChoice, ok := jsonBody["tool_choice"]
+	toolChoice, ok := jsonBody[toolChoiceKey]
 	if !ok {
 		return []interface{}{}
 	}
@@ -98,9 +114,9 @@ func NewMessages(size int) *Messages {
 }
 
 func getContentAndTypeFromMap(msgMap map[string]interface{}) (string, string, error) {
-	contentType, ok := msgMap["type"].(string)
+	contentType, ok := msgMap[typeKey].(string)
 	if !ok {
-		return "", "", fmt.Errorf("field 'type' not found or not a string in message map")
+		return "", "", fmt.Errorf("field '%s' not found or not a string in message map", typeKey)
 	}
 
 	rawContentMessage, ok := msgMap[contentType]
@@ -126,7 +142,7 @@ func getContentAndTypeFromMap(msgMap map[string]interface{}) (string, string, er
 }
 
 func getContentAndType(msgMap map[string]interface{}) ([]string, []string, error) {
-	content, ok := msgMap["content"]
+	content, ok := msgMap[contentKey]
 	if !ok || content == nil {
 		return []string{""}, []string{"text"}, nil
 	}
@@ -155,7 +171,7 @@ func getContentAndType(msgMap map[string]interface{}) ([]string, []string, error
 }
 
 func getToolCalls(msgMap map[string]interface{}, logger log.FieldLogger) ([]string, error) {
-	tcRaw, ok := msgMap["tool_calls"]
+	tcRaw, ok := msgMap[toolCallsKey]
 	if !ok {
 		return []string{}, nil
 	}
@@ -173,16 +189,16 @@ func getToolCalls(msgMap map[string]interface{}, logger log.FieldLogger) ([]stri
 		return toolCalls, nil
 	}
 
-	return nil, fmt.Errorf("field 'tool_calls' is not a slice")
+	return nil, fmt.Errorf("field '%s' is not a slice", toolCallsKey)
 }
 
 func getMessages(jsonBody map[string]interface{}, logger log.FieldLogger) (*Messages, error) {
-	messagesList, ok := jsonBody["messages"].([]interface{})
+	messagesList, ok := jsonBody[messagesKey].([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("`messages` field not found or not an array")
+		return nil, fmt.Errorf("`%s` field not found or not an array", messagesKey)
 	}
 
-	delete(jsonBody, "messages")
+	delete(jsonBody, messagesKey)
 	messages := NewMessages(len(messagesList))
 
 	for i, message := range messagesList {
@@ -193,9 +209,9 @@ func getMessages(jsonBody map[string]interface{}, logger log.FieldLogger) (*Mess
 
 		// Get role from the message map
 		var err error
-		messages.Role[i], ok = msgMap["role"].(string)
+		messages.Role[i], ok = msgMap[roleKey].(string)
 		if !ok {
-			return nil, fmt.Errorf("field 'role' not found in message %d", i)
+			return nil, fmt.Errorf("field '%s' not found in message %d", roleKey, i)
 		}
 
 		// Get content and type from the message map
@@ -213,15 +229,18 @@ func getMessages(jsonBody map[string]interface{}, logger log.FieldLogger) (*Mess
 		}
 
 		// Get tool call ID from the message map
-		messages.ToolCallId[i], _ = msgMap["tool_call_id"].(string)
+		messages.ToolCallId[i], _ = msgMap[toolCallIdKey].(string)
 	}
 	return messages, nil
 }
 
 func getLLMParameters(jsonBody map[string]interface{}) map[string]interface{} {
 	llmParameters := make(map[string]interface{})
+	skipKeys := []string{
+		modelKey, messagesKey, toolsKey, parallelToolCallsKey, toolChoiceKey,
+	}
 	for key, value := range jsonBody {
-		if key == "model" || key == "messages" || key == "tools" || key == "parallel_tool_calls" || key == "tool_choice" {
+		if translator.Contains(skipKeys, key) {
 			continue
 		}
 		llmParameters[key] = value
@@ -294,38 +313,38 @@ func addFieldToInferenceRequestInputs(inferenceRequestInputs []interface{}, fiel
 func constructInferenceRequestInputs(messages *Messages) ([]interface{}, error) {
 	var inferenceRequestInputs []interface{}
 	inferenceRequestInputs, err := addFieldToInferenceRequestInputs(
-		inferenceRequestInputs, "role", messages.Role,
+		inferenceRequestInputs, roleKey, messages.Role,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to add 'role' field to inference request inputs: %v", err)
+		return nil, fmt.Errorf("failed to add '%s' field to inference request inputs: %v", roleKey, err)
 	}
 
 	inferenceRequestInputs, err = addFieldToInferenceRequestInputs(
-		inferenceRequestInputs, "content", messages.Content,
+		inferenceRequestInputs, contentKey, messages.Content,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to add 'content' field to inference request inputs: %v", err)
+		return nil, fmt.Errorf("failed to add '%s' field to inference request inputs: %v", contentKey, err)
 	}
 
 	inferenceRequestInputs, err = addFieldToInferenceRequestInputs(
-		inferenceRequestInputs, "type", messages.Type,
+		inferenceRequestInputs, typeKey, messages.Type,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to add 'type' field to inference request inputs: %v", err)
+		return nil, fmt.Errorf("failed to add '%s' field to inference request inputs: %v", typeKey, err)
 	}
 
 	inferenceRequestInputs, err = addFieldToInferenceRequestInputs(
-		inferenceRequestInputs, "tool_calls", messages.ToolCalls,
+		inferenceRequestInputs, toolCallsKey, messages.ToolCalls,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to add 'tool_calls' field to inference request inputs: %v", err)
+		return nil, fmt.Errorf("failed to add '%s' field to inference request inputs: %v", toolCallsKey, err)
 	}
 
 	inferenceRequestInputs, err = addFieldToInferenceRequestInputs(
-		inferenceRequestInputs, "tool_call_id", messages.ToolCallId,
+		inferenceRequestInputs, toolCallIdKey, messages.ToolCallId,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to add 'tool_call_id' field to inference request inputs: %v", err)
+		return nil, fmt.Errorf("failed to add '%s' field to inference request inputs: %v", toolCallIdKey, err)
 	}
 	return inferenceRequestInputs, nil
 }
@@ -339,22 +358,22 @@ func constructChatCompletionInferenceRequest(messages *Messages, tools []interfa
 	if len(tools) > 0 {
 		strTools, err := marshalListContent(tools)
 		if err != nil {
-			return nil, fmt.Errorf("failed to marshal tools content: %v", err)
+			return nil, fmt.Errorf("failed to marshal %s content: %v", toolsKey, err)
 		}
 		inferenceRequestInputs = append(
 			inferenceRequestInputs,
-			translator.ConstructStringTensor("tools", strTools),
+			translator.ConstructStringTensor(toolsKey, strTools),
 		)
 
 		// Add parallel_tool_calls if present
 		if len(parallelToolCalls) > 0 {
 			strParallelToolCalls, err := marshalListContent(parallelToolCalls)
 			if err != nil {
-				return nil, fmt.Errorf("failed to marshal parallel tool calls content: %v", err)
+				return nil, fmt.Errorf("failed to marshal %s content: %v", parallelToolCallsKey, err)
 			}
 			inferenceRequestInputs = append(
 				inferenceRequestInputs,
-				translator.ConstructStringTensor("parallel_tool_calls", strParallelToolCalls),
+				translator.ConstructStringTensor(parallelToolCallsKey, strParallelToolCalls),
 			)
 		}
 
@@ -362,19 +381,19 @@ func constructChatCompletionInferenceRequest(messages *Messages, tools []interfa
 		if len(toolChoice) > 0 {
 			strToolChoice, err := marshalListContent(toolChoice)
 			if err != nil {
-				return nil, fmt.Errorf("failed to marshal tool choice content: %v", err)
+				return nil, fmt.Errorf("failed to marshal %s content: %v", toolChoiceKey, err)
 			}
 			inferenceRequestInputs = append(
 				inferenceRequestInputs,
-				translator.ConstructStringTensor("tool_choice", strToolChoice),
+				translator.ConstructStringTensor(toolChoiceKey, strToolChoice),
 			)
 		}
 	}
 
 	return map[string]interface{}{
-		"inputs": inferenceRequestInputs,
-		"parameters": map[string]interface{}{
-			"llm_parameters": llmParams,
+		inputsKey: inferenceRequestInputs,
+		parametersKey: map[string]interface{}{
+			llmParametersKey: llmParams,
 		},
 	}, nil
 }
