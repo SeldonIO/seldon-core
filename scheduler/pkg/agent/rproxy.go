@@ -29,8 +29,16 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/translator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/translator/openai"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
+)
+
+const (
+	chatCompletionsPath   = "/chat/completions"
+	embeddingsPath        = "/embeddings"
+	imagesGenerationsPath = "/images/generations"
 )
 
 type reverseHTTPProxy struct {
@@ -54,6 +62,7 @@ type lazyModelLoadTransport struct {
 	metrics                    metrics.AgentMetricsHandler
 	modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector
 	logger                     log.FieldLogger
+	apiTranslators             map[string]translator.Translator
 }
 
 func addRequestIdToResponse(req *http.Request, res *http.Response) {
@@ -68,11 +77,25 @@ func addRequestIdToResponse(req *http.Request, res *http.Response) {
 	}
 }
 
+func (t *lazyModelLoadTransport) TranslateToOIP(req *http.Request, termination string, logger log.FieldLogger) (*http.Request, error) {
+	if translator, ok := t.apiTranslators[termination]; ok {
+		return translator.TranslateToOIP(req, logger)
+	}
+	return req, nil
+}
+
+func (t *lazyModelLoadTransport) TranslateFromOIP(res *http.Response, termination string, logger log.FieldLogger) (*http.Response, error) {
+	if translator, ok := t.apiTranslators[termination]; ok {
+		return translator.TranslateFromOIP(res, logger)
+	}
+	return res, nil
+}
+
 // RoundTrip implements http.RoundTripper for the Transport type.
 // It calls its underlying http.RoundTripper to execute the request, and
 // adds retry logic if we get 404
 func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	var originalBody []byte
+	var reqOriginalBody []byte
 	var err error
 
 	internalModelName := req.Header.Get(util.SeldonInternalModelHeader)
@@ -102,16 +125,28 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	}()
 
 	startTime := time.Now()
+
+	// Translate the request to OIP format if needed
+	termination, err := translator.GetPathTermination(req)
+	if err != nil {
+		t.logger.WithError(err).Warn("Failed to get path termination for request")
+		return nil, err
+	}
+	req, err = t.TranslateToOIP(req, termination, t.logger)
+	if err != nil {
+		t.logger.WithError(err).Warn("Failed to translate request to OIP format")
+		return nil, err
+	}
+
 	if req.Body != nil {
-		originalBody, err = io.ReadAll(req.Body)
+		reqOriginalBody, err = io.ReadAll(req.Body)
 	}
 	if err != nil {
-
 		return nil, err
 	}
 
 	// reset main request body
-	req.Body = io.NopCloser(bytes.NewBuffer(originalBody))
+	req.Body = io.NopCloser(bytes.NewBuffer(reqOriginalBody))
 	res, err := t.RoundTripper.RoundTrip(req)
 	if err != nil {
 		return res, err
@@ -126,9 +161,18 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 		}
 
 		req2 := req.Clone(req.Context())
-
-		req2.Body = io.NopCloser(bytes.NewBuffer(originalBody))
+		req2.Body = io.NopCloser(bytes.NewBuffer(reqOriginalBody))
 		res, err = t.RoundTripper.RoundTrip(req2)
+		if err != nil {
+			return res, err
+		}
+	}
+
+	// Translate the response from OIP format if needed
+	res, err = t.TranslateFromOIP(res, termination, t.logger)
+	if err != nil {
+		t.logger.WithError(err).Warn("Failed to translate response from OIP format")
+		return nil, err
 	}
 
 	addRequestIdToResponse(req, res)
@@ -197,12 +241,18 @@ func (rp *reverseHTTPProxy) Start() error {
 		MaxConnsPerHost:     util.MaxConnsPerHostHTTP,
 		IdleConnTimeout:     util.IdleConnTimeoutSeconds * time.Second,
 	}
+	apiTranslators := map[string]translator.Translator{
+		chatCompletionsPath:   &openai.OpenAIChatCompletionsTranslator{},
+		embeddingsPath:        &openai.OpenAIEmbeddingsTranslator{},
+		imagesGenerationsPath: &openai.OpenAIImagesGenerationsTranslator{},
+	}
 	proxy.Transport = &lazyModelLoadTransport{
 		rp.stateManager.v2Client.LoadModel,
 		t,
 		rp.metrics,
 		rp.modelScalingStatsCollector,
 		rp.logger,
+		apiTranslators,
 	}
 	rp.logger.Infof("Start reverse proxy on port %d for %s", rp.servicePort, backend)
 	var tlsConfig *tls.Config
@@ -283,7 +333,6 @@ func NewReverseHTTPProxy(
 	metrics metrics.AgentMetricsHandler,
 	modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector,
 ) *reverseHTTPProxy {
-
 	rp := reverseHTTPProxy{
 		logger:                     logger.WithField("Source", "HTTPProxy"),
 		backendHTTPServerHost:      backendHTTPServerHost,
