@@ -76,3 +76,8 @@ type PipelineEventMsg struct {
 func (p PipelineEventMsg) String() string {
 	return fmt.Sprintf("%s:%d (%s)", p.PipelineName, p.PipelineVersion, p.UID)
 }
+
+type PipelineStreamsEventMsg struct {
+	PipelineEventMsg
+	StreamNames []string
+}

@@ -27,10 +27,10 @@ import (
 )
 
 const (
-	pendingSyncsQueueSize      int = 1000
-	modelEventHandlerName          = "incremental.processor.models"
-	experimentEventHandlerName     = "incremental.processor.experiments"
-	pipelineEventHandlerName       = "incremental.processor.pipelines"
+	pendingSyncsQueueSize           int = 1000
+	modelEventHandlerName               = "incremental.processor.models"
+	experimentEventHandlerName          = "incremental.processor.experiments"
+	pipelineStreamsEventHandlerName     = "incremental.processor.pipelinestreams"
 )
 
 type IncrementalProcessor struct {
@@ -96,11 +96,11 @@ func NewIncrementalProcessor(
 		ip.logger,
 		ip.handleExperimentEvents,
 	)
-	hub.RegisterPipelineEventHandler(
-		pipelineEventHandlerName,
+	hub.RegisterPipelineStreamsEventHandler(
+		pipelineStreamsEventHandlerName,
 		pendingSyncsQueueSize,
 		ip.logger,
-		ip.handlePipelinesEvents,
+		ip.handlePipelineStreamsEvents,
 	)
 
 	err = ip.updateEnvoy()
@@ -110,8 +110,8 @@ func NewIncrementalProcessor(
 	return ip, nil
 }
 
-func (p *IncrementalProcessor) handlePipelinesEvents(event coordinator.PipelineEventMsg) {
-	logger := p.logger.WithField("func", "handlePipelineEvents")
+func (p *IncrementalProcessor) handlePipelineStreamsEvents(event coordinator.PipelineStreamsEventMsg) {
+	logger := p.logger.WithField("func", "handlePipelineStreamsEvents")
 	logger.Debugf("Received event %s", event.String())
 
 	// Ignore pipeline events due to model status change to stop pointless processing

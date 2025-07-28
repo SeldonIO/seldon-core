@@ -822,11 +822,11 @@ func TestEnvoySettings(t *testing.T) {
 				inc.logger,
 				inc.handleExperimentEvents,
 			)
-			eventHub.RegisterPipelineEventHandler(
-				pipelineEventHandlerName,
+			eventHub.RegisterPipelineStreamsEventHandler(
+				pipelineStreamsEventHandlerName,
 				pendingSyncsQueueSize,
 				inc.logger,
-				inc.handlePipelinesEvents,
+				inc.handlePipelineStreamsEvents,
 			)
 
 			for _, op := range test.ops {

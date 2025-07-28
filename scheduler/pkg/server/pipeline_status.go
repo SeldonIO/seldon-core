@@ -19,6 +19,10 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
+const (
+	addPipelineStreamEventSource = "pipeline.store.addpipelinestream"
+)
+
 func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRequest, stream pb.Scheduler_SubscribePipelineStatusServer) error {
 	logger := s.logger.WithField("func", "SubscribePipelineStatus")
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
@@ -114,6 +118,12 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 			logger.WithError(err).Errorf("Failed to send pipeline status event to %s for %s", subscription.name, event.String())
 		}
 	}
+
+	eventMsg := coordinator.PipelineStreamsEventMsg{
+		PipelineEventMsg: event,
+		StreamNames:      []string{},
+	}
+	s.eventHub.PublishPipelineStreamsEvent(addPipelineStreamEventSource, eventMsg)
 }
 
 func (s *SchedulerServer) StopSendPipelineEvents() {

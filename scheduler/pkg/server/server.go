@@ -72,6 +72,7 @@ type SchedulerServer struct {
 	config                SchedulerServerConfig
 	loadBalancer          *util.RingLoadBalancer
 	consumerGroupConfig   *ConsumerGroupConfig
+	eventHub              *coordinator.EventHub
 }
 
 type SchedulerServerConfig struct {
@@ -288,6 +289,7 @@ func NewSchedulerServer(
 		config:              config,
 		loadBalancer:        loadBalancer,
 		consumerGroupConfig: consumerGroupConfig,
+		eventHub:            eventHub,
 	}
 
 	eventHub.RegisterModelEventHandler(

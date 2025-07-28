@@ -25,7 +25,7 @@ func TestNewEventHub(t *testing.T) {
 	tests := []test{
 		{
 			name:           "Should register four topics",
-			expectedTopics: []string{topicModelEvents, topicServerEvents, topicExperimentEvents, topicPipelineEvents},
+			expectedTopics: []string{topicModelEvents, topicServerEvents, topicExperimentEvents, topicPipelineEvents, topicPipelineStreamsEvents},
 		},
 	}
 
