@@ -11,6 +11,7 @@ package scheduler
 
 import (
 	"errors"
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -185,8 +186,16 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) (*coordinator.Serve
 	// Filter and sort servers
 	filteredServers = s.filterServers(latestModel, servers)
 	if len(filteredServers) == 0 {
-		msg := "Failed to schedule model as no matching servers are available"
-		logger.Debug(msg)
+		totalServers := len(servers)
+		latestModelName := latestModel.GetMeta().GetName()
+		
+		msg := fmt.Sprintf("Failed to schedule model '%s' as no matching servers are available (checked %d servers)", 
+			latestModelName, totalServers)
+		
+		logger.WithField("servers_checked", totalServers).
+			WithField("model_requirements", getModelRequirementsStr(latestModel)).
+			Info(msg)
+			
 		s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas())
 		return nil, errors.New(msg)
 	}
@@ -214,8 +223,12 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) (*coordinator.Serve
 	if !ok && minReplicas > 0 {
 		okWithMinReplicas = s.findAndUpdateToServers(filteredServers, latestModel, desiredReplicas, int(minReplicas))
 		if okWithMinReplicas {
-			msg := "Failed to schedule model as no matching server had enough suitable replicas, managed to schedule with min replicas"
-			logger.Warn(msg)
+			msg := fmt.Sprintf("Failed to schedule model '%s' with desired replicas (%d), managed to schedule with min replicas (%d)", 
+				latestModel.GetMeta().GetName(), desiredReplicas, minReplicas)
+			logger.WithField("desired_replicas", desiredReplicas).
+				WithField("min_replicas", minReplicas).
+				WithField("servers_checked", len(filteredServers)).
+				Warn(msg)
 		}
 	}
 
@@ -223,8 +236,13 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) (*coordinator.Serve
 	if !ok {
 		serverEvent = s.serverScaleUp(latestModel)
 		if !okWithMinReplicas {
-			msg := "Failed to schedule model as no matching server had enough suitable replicas"
-			logger.Debug(msg)
+			msg := fmt.Sprintf("Failed to schedule model '%s' as no matching server had enough suitable replicas (desired: %d, min: %d, servers checked: %d)", 
+				latestModel.GetMeta().GetName(), desiredReplicas, minReplicas, len(filteredServers))
+			logger.WithField("desired_replicas", desiredReplicas).
+				WithField("min_replicas", minReplicas).
+				WithField("servers_checked", len(filteredServers)).
+				WithField("model_requirements", getModelRequirementsStr(latestModel)).
+				Info(msg)
 			// we do not want to reset the server if it has live replicas or loading replicas
 			// in the case of loading replicas, we need to make sure that we can unload them later.
 			// for example in the case that a model is just marked as loading on a particular server replica
@@ -355,14 +373,19 @@ func (s *SimpleScheduler) filterServers(model *store.ModelVersion, servers []*st
 	logger.WithField("num_servers", len(servers)).Debug("Filtering servers for model")
 
 	var filteredServers []*store.ServerSnapshot
+	var rejectionReasons []string
+	
 	for _, server := range servers {
 		ok := true
 		for _, serverFilter := range s.serverFilters {
 			if !serverFilter.Filter(model, server) {
+				reason := serverFilter.Description(model, server)
+				rejectionReasons = append(rejectionReasons, fmt.Sprintf("Server '%s' rejected by %s: %s", server.Name, serverFilter.Name(), reason))
+				
 				logger.
 					WithField("filter", serverFilter.Name()).
 					WithField("server", server.Name).
-					WithField("reason", serverFilter.Description(model, server)).
+					WithField("reason", reason).
 					Debug("Rejecting server for model")
 
 				ok = false
@@ -376,6 +399,13 @@ func (s *SimpleScheduler) filterServers(model *store.ModelVersion, servers []*st
 		}
 	}
 
+	// Store rejection reasons for verbose error reporting
+	if len(filteredServers) == 0 && len(rejectionReasons) > 0 {
+		logger.WithField("rejection_details", strings.Join(rejectionReasons, "; ")).Info("All servers rejected for model scheduling")
+		// Store rejection reasons for detailed logging
+		s.storeRejectionReasons(model, rejectionReasons)
+	}
+
 	return filteredServers
 }
 
@@ -387,14 +417,20 @@ func (s *SimpleScheduler) filterReplicas(model *store.ModelVersion, server *stor
 	logger.Debug("Filtering server replicas for model")
 
 	candidateServer := sorters.CandidateServer{Model: model, Server: server}
+	var rejectedReplicas []string
+	
 	for _, replica := range server.Replicas {
 		ok := true
 		for _, replicaFilter := range s.replicaFilters {
 			if !replicaFilter.Filter(model, replica) {
+				reason := replicaFilter.Description(model, replica)
+				rejectedReplicas = append(rejectedReplicas, 
+					fmt.Sprintf("Replica %d rejected by %s: %s", replica.GetReplicaIdx(), replicaFilter.Name(), reason))
+				
 				logger.
 					WithField("filter", replicaFilter.Name()).
 					WithField("replica", replica.GetReplicaIdx()).
-					WithField("reason", replicaFilter.Description(model, replica)).
+					WithField("reason", reason).
 					Debug("Rejecting server replica for model")
 
 				ok = false
@@ -408,5 +444,59 @@ func (s *SimpleScheduler) filterReplicas(model *store.ModelVersion, server *stor
 		}
 	}
 
+	// Log detailed replica rejection information when no replicas are available
+	if len(candidateServer.ChosenReplicas) == 0 && len(rejectedReplicas) > 0 {
+		logger.WithField("replica_rejections", strings.Join(rejectedReplicas, "; ")).
+			WithField("replicas_checked", len(server.Replicas)).
+			Info("No suitable replicas found on server for model")
+	}
+
 	return &candidateServer
+}
+
+// storeRejectionReasons logs detailed rejection reasons for debugging purposes
+func (s *SimpleScheduler) storeRejectionReasons(model *store.ModelVersion, reasons []string) {
+	// Log the detailed reasons at Info level so they appear in logs for debugging
+	reasonStr := strings.Join(reasons, "; ")
+	s.logger.WithField("model", model.GetMeta().GetName()).
+		WithField("detailed_reasons", reasonStr).
+		Info("Model scheduling failed - detailed reasons available")
+}
+
+// getModelRequirementsStr returns a human-readable string of model requirements for debugging
+func getModelRequirementsStr(model *store.ModelVersion) string {
+	deploymentSpec := model.GetDeploymentSpec()
+	modelSpec := model.GetModel().GetModelSpec()
+	requirements := []string{}
+	
+	// Add replica requirements
+	if deploymentSpec.GetReplicas() > 0 {
+		requirements = append(requirements, fmt.Sprintf("replicas=%d", deploymentSpec.GetReplicas()))
+	}
+	
+	if deploymentSpec.GetMinReplicas() > 0 {
+		requirements = append(requirements, fmt.Sprintf("min_replicas=%d", deploymentSpec.GetMinReplicas()))
+	}
+	
+	// Add memory requirements if available
+	if modelSpec.GetMemoryBytes() > 0 {
+		memoryMB := modelSpec.GetMemoryBytes() / (1024 * 1024)
+		requirements = append(requirements, fmt.Sprintf("memory=%dMB", memoryMB))
+	}
+	
+	// Add server requirements if specified
+	if modelSpec.GetServer() != "" {
+		requirements = append(requirements, fmt.Sprintf("server=%s", modelSpec.GetServer()))
+	}
+	
+	// Add capability requirements if specified
+	if len(modelSpec.GetRequirements()) > 0 {
+		requirements = append(requirements, fmt.Sprintf("capabilities=%v", modelSpec.GetRequirements()))
+	}
+	
+	if len(requirements) == 0 {
+		return "none specified"
+	}
+	
+	return strings.Join(requirements, ", ")
 }
