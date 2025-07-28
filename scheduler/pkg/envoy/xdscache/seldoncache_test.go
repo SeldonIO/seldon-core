@@ -449,7 +449,7 @@ func TestAccessLogSettings(t *testing.T) {
 		cache, err := NewSeldonXDSCache(logger, &PipelineGatewayDetails{}, test.EnvoyConfig)
 		g.Expect(err).To(BeNil())
 		if test.EnvoyConfig != nil {
-			for _, res := range cache.lds.GetResources() {
+			for _, res := range cache.Lds.GetResources() {
 				// check access log settings
 				for _, c := range res.(*listener.Listener).FilterChains {
 					for _, filterpb := range c.Filters {

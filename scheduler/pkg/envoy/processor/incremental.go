@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -110,6 +111,67 @@ func NewIncrementalProcessor(
 	return ip, nil
 }
 
+func getClusterNamesForPipeline(pipelineName string) (string, string) {
+	httpClusterName := fmt.Sprintf("%s.%s", pipelineName, xdscache.PipelineGatewayHttpClusterName)
+	grpcClusterName := fmt.Sprintf("%s.%s", pipelineName, xdscache.PipelineGatewayGrpcClusterName)
+	return httpClusterName, grpcClusterName
+}
+
+func (p *IncrementalProcessor) addPipelineCluster(pipelineName string) error {
+	xds := p.xdsCache
+
+	var clientSecret *xdscache.Secret
+	if xds.TlsActive {
+		if secret, ok := xds.Secrets[xdscache.EnvoyUpstreamClientCertName]; ok {
+			clientSecret = &secret
+		}
+	}
+
+	host := xds.PipelineGatewayDetails.Host
+	httpPort := xds.PipelineGatewayDetails.HttpPort
+	grpcPort := xds.PipelineGatewayDetails.GrpcPort
+
+	httpClusterName := xdscache.PipelineGatewayHttpClusterName
+	grpcClusterName := xdscache.PipelineGatewayGrpcClusterName
+	// httpClusterName, grpcClusterName := getClusterNamesForPipeline(pipelineName)
+
+	resources := make(map[string]types.Resource)
+
+	// add http cluster
+	pipelineGatewayHttpEndpointName := fmt.Sprintf("%s:%d", host, httpPort)
+	pipelineGatewayHttpCluster := xdscache.MakeCluster(
+		httpClusterName,
+		map[string]xdscache.Endpoint{
+			pipelineGatewayHttpEndpointName: {
+				UpstreamHost: host,
+				UpstreamPort: uint32(httpPort),
+			},
+		},
+		false,
+		clientSecret,
+	)
+	resources[pipelineGatewayHttpCluster.Name] = pipelineGatewayHttpCluster
+
+	// add grpc cluster
+	pipelineGatewayGrpcEndpointName := fmt.Sprintf("%s:%d", host, grpcPort)
+	pipelineGatewayGrpcCluster := xdscache.MakeCluster(
+		grpcClusterName,
+		map[string]xdscache.Endpoint{
+			pipelineGatewayGrpcEndpointName: {
+				UpstreamHost: host,
+				UpstreamPort: uint32(grpcPort),
+			},
+		},
+		true,
+		clientSecret,
+	)
+	resources[pipelineGatewayGrpcCluster.Name] = pipelineGatewayGrpcCluster
+
+	logger := p.logger.WithField("func", "addPipelineCluster")
+	logger.Debugf("Adding pipeline cluster %s with http %s and grpc %s", pipelineName, httpClusterName, grpcClusterName)
+	return xds.Cds.UpdateResources(resources, nil)
+}
+
 func (p *IncrementalProcessor) handlePipelineStreamsEvents(event coordinator.PipelineStreamsEventMsg) {
 	logger := p.logger.WithField("func", "handlePipelineStreamsEvents")
 	logger.Debugf("Received event %s", event.String())
@@ -117,6 +179,12 @@ func (p *IncrementalProcessor) handlePipelineStreamsEvents(event coordinator.Pip
 	// Ignore pipeline events due to model status change to stop pointless processing
 	// If models are ready or not has no bearing on whether we need to update pipeline
 	if !event.ModelStatusChange {
+		err := p.addPipelineCluster(event.PipelineName)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to add pipeline cluster")
+			return
+		}
+
 		go func() {
 			err := p.addPipeline(event.PipelineName)
 			if err != nil {

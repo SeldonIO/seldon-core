@@ -148,7 +148,7 @@ func makeHTTPListener(listenerName, address string,
 	}
 }
 
-func makeCluster(clusterName string, eps map[string]Endpoint, isGrpc bool, clientSecret *Secret) *cluster.Cluster {
+func MakeCluster(clusterName string, eps map[string]Endpoint, isGrpc bool, clientSecret *Secret) *cluster.Cluster {
 	if isGrpc {
 		// Need to ensure http 2 is used
 		// https://github.com/envoyproxy/go-control-plane/blob/d1a10d9a9366e8ab48f3f76b44a35930bac46fec/envoy/extensions/upstreams/http/v3/http_protocol_options.pb.go#L165-L166
