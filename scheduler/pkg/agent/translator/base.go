@@ -16,6 +16,12 @@ type Translator interface {
 
 type BaseTranslator struct{}
 
+const (
+	dataKey      = "data"
+	outputsKey   = "outputs"
+	outputAllKey = "output_all"
+)
+
 func (b *BaseTranslator) TranslateFromOIP(res *http.Response, logger log.FieldLogger) (*http.Response, error) {
 	// Decompress the response if needed - gzip
 	var isGzipped bool
@@ -40,31 +46,30 @@ func (b *BaseTranslator) TranslateFromOIP(res *http.Response, logger log.FieldLo
 	}
 
 	// Parse the response body
-	outputs, ok := jsonBody["outputs"].([]interface{})
+	outputs, ok := jsonBody[outputsKey].([]interface{})
 	if !ok {
-		logger.Error("`outputs` field not found or not an array in OpenAI API response")
-		return nil, fmt.Errorf("`outputs` field not found or not an array in OpenAI API response")
+		logger.Errorf("`%s` field not found or not an array in OpenAI API response", outputsKey)
+		return nil, fmt.Errorf("`%s` field not found or not an array in OpenAI API response", outputsKey)
 	}
 
 	// Extract the output_all tensor form the inference response. This contains the full response
 	// OpenAI API response - only works for OpenAI runtime, since we return the original OpenAI API response
-	tensorName := "output_all"
-	outputAll, err := ExtractTensorByName(outputs, tensorName)
+	outputAll, err := ExtractTensorByName(outputs, outputAllKey)
 	if err != nil {
-		logger.WithError(err).Errorf("Failed to extract '%s' tensor from OpenAI API response", tensorName)
+		logger.WithError(err).Errorf("Failed to extract '%s' tensor from OpenAI API response", outputAllKey)
 		return nil, err
 	}
 
-	data, ok := outputAll["data"].([]interface{})
+	data, ok := outputAll[dataKey].([]interface{})
 	if !ok {
-		logger.Errorf("`data` field not found or not an array of strings in output tensor %s", tensorName)
-		return nil, fmt.Errorf("`data` field not found or not an array of strings in output tensor %s", tensorName)
+		logger.Errorf("`%s` field not found or not an array of strings in output tensor %s", dataKey, outputAllKey)
+		return nil, fmt.Errorf("`%s` field not found or not an array of strings in output tensor %s", dataKey, outputAllKey)
 	}
 
 	content, ok := data[0].(string)
 	if !ok {
-		logger.Errorf("`data` field in output tensor %s is not a byte array", tensorName)
-		return nil, fmt.Errorf("`data` field in output tensor %s is not a byte array", tensorName)
+		logger.Errorf("`%s` field in output tensor %s is not a byte array", dataKey, outputAllKey)
+		return nil, fmt.Errorf("`%s` field in output tensor %s is not a byte array", dataKey, outputAllKey)
 	}
 
 	// Create a new response with the translated body
