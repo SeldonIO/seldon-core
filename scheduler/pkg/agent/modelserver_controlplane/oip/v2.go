@@ -51,6 +51,7 @@ func CreateV2GrpcConnection(v2Config V2Config) (*grpc.ClientConn, error) {
 	}
 
 	opts := []grpc.DialOption{
+		grpc.WithKeepaliveParams(util.GetClientKeepAliveParameters()),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(v2Config.GRPCMaxMsgSizeBytes), grpc.MaxCallSendMsgSize(v2Config.GRPCMaxMsgSizeBytes)),
 		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
