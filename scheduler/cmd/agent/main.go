@@ -11,6 +11,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io/fs"
 	"net/http"
 	"os"
@@ -102,14 +103,16 @@ func runningInsideK8s() bool {
 	return cli.Namespace != ""
 }
 
-func makeTermSignalHandler(logger *log.Logger, done chan<- bool) {
+func termSignalHandler(logger *log.Logger, errChan <-chan error) {
 	exit := make(chan os.Signal, 1)
 	signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
 
-	<-exit
-
-	logger.Info("shutting down due to SIGTERM or SIGINT")
-	close(done)
+	select {
+	case err := <-errChan:
+		logger.WithError(err).Error("Shutting down due error")
+	case <-exit:
+		logger.Info("Shutting down due to SIGTERM or SIGINT")
+	}
 }
 
 func main() {
@@ -142,10 +145,6 @@ func main() {
 			Fatalf("Failed to create required folders %s and %s", modelRepositoryDir, rcloneRepositoryDir)
 	}
 	log.Infof("Model repository dir %s, Rclone repository dir %s ", modelRepositoryDir, rcloneRepositoryDir)
-
-	done := make(chan bool, 1)
-
-	go makeTermSignalHandler(logger, done)
 
 	var clientset kubernetes.Interface
 	if runningInsideK8s() {
@@ -197,6 +196,8 @@ func main() {
 		logger.WithError(err).Fatal("Can't create model server control plane client")
 	}
 
+	errChan := make(chan error, 10)
+
 	promMetrics, err := metrics.NewPrometheusModelMetrics(cli.ServerName, cli.ReplicaIdx, logger)
 	if err != nil {
 		logger.WithError(err).Fatal("Can't create prometheus metrics")
@@ -207,7 +208,7 @@ func main() {
 			return
 		}
 		logger.WithError(err).Fatal("Can't start metrics server")
-		close(done)
+		errChan <- err
 	}()
 	defer func() { _ = promMetrics.Stop() }()
 
@@ -295,15 +296,15 @@ func main() {
 	// Wait for required services to be ready
 	err = agentService.WaitReadySubServices(true)
 	if err != nil {
-		logger.WithError(err).Fatal("Failed to wait for all agent dependent services to be ready")
-		close(done)
+		logger.WithError(err).Error("Failed to wait for all agent dependent services to be ready")
+		errChan <- fmt.Errorf("failed to waiting for sub-services to be ready: %w", err)
 	}
 
 	// Now we are ready start config listener
 	err = rcloneClient.StartConfigListener()
 	if err != nil {
-		logger.WithError(err).Fatal("Failed to initialise rclone config listener")
-		close(done)
+		logger.WithError(err).Error("Failed to initialise rclone config listener")
+		errChan <- fmt.Errorf("failed to initialise rclone config listener: %w", err)
 	}
 
 	// Start grpc connection to scheduler and handle incoming events
@@ -312,11 +313,10 @@ func main() {
 		if err != nil {
 			logger.WithError(err).Error("agent encountered unrecoverable error")
 		}
-		close(done)
+		errChan <- fmt.Errorf("failure from agent control loop: %w", err)
 	}()
 	defer func() { agentService.StopControlLoop() }()
 
-	// Wait for completion
-	<-done
+	termSignalHandler(logger, errChan)
 	logger.Warning("Agent shutting down")
 }
