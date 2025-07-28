@@ -11,11 +11,9 @@ package drainservice
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 	"sync"
-	"time"
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -26,8 +24,6 @@ import (
 
 const (
 	terminateEndpoint = "/terminate"
-	eventWindowMs     = 100
-	eventsTarget      = 3 // e.g. the number of containers in a pod
 )
 
 type DrainerService struct {
@@ -37,9 +33,9 @@ type DrainerService struct {
 	serverReady bool
 	// mutex to guard changes to `serverReady`
 	muServerReady sync.RWMutex
-	triggered     bool
 	// mutex to guard changes to `triggered`
 	muTriggered sync.Mutex
+	triggered   bool
 	// wait group to block consumers of the DrainerService until a call to /terminate has occurred.
 	// this is effectively triggering downstream logic in agent
 	triggeredWg *sync.WaitGroup
@@ -47,9 +43,6 @@ type DrainerService struct {
 	// this is effectively including agent and scheduler related logic.
 	// at this state we should be confident that this server replica (agent) can go down gracefully.
 	drainingFinishedWg *sync.WaitGroup
-	// we want to make sure that we get 3 terminate requests in a short period ot time otherwise we assume
-	// it is not a pod terminate
-	events uint32
 }
 
 func NewDrainerService(logger log.FieldLogger, port uint) *DrainerService {
@@ -64,7 +57,6 @@ func NewDrainerService(logger log.FieldLogger, port uint) *DrainerService {
 		triggered:          false,
 		drainingFinishedWg: &schedulerWg,
 		triggeredWg:        &triggeredWg,
-		events:             0,
 	}
 }
 
@@ -130,12 +122,12 @@ func (drainer *DrainerService) SetSchedulerDone() {
 	drainer.drainingFinishedWg.Done()
 }
 
-func (drainer *DrainerService) handleTerminate(w http.ResponseWriter, _ *http.Request) {
+func (drainer *DrainerService) handleTerminate(_ http.ResponseWriter, _ *http.Request) {
 	// this is the crux of this service:
 	// once someone (e.g. kubelet) calls `\terminate` we trigger downstream logic to drain this particular agent/server
 	// the drain logic is defined in pkg/agent/server.go `drainServerReplicaImpl`
 	// the flow is:
-	// 0. wait for at least 3 events to arrive in a short-period of time (to signal pod restart)
+	// 0. wait for /terminate HTTP request to signal pod deletion via k8s preStop hook
 	// 1. call \terminate (this is atomic)
 	// 2. agent (drainOnRequest) is unblocked
 	// 3. agent sends an AgentDrain grpc message to scheduler and waits for a reply
@@ -145,19 +137,12 @@ func (drainer *DrainerService) handleTerminate(w http.ResponseWriter, _ *http.Re
 	// 7. \terminate returns
 
 	drainer.muTriggered.Lock()
-	drainer.events++
-	drainer.muTriggered.Unlock()
-	time.Sleep(eventWindowMs * time.Millisecond)
-	drainer.muTriggered.Lock()
-	if drainer.events >= eventsTarget {
-		if !drainer.triggered {
-			drainer.triggered = true
-			drainer.triggeredWg.Done()
-		}
+	defer drainer.muTriggered.Unlock()
+
+	if !drainer.triggered {
+		drainer.triggered = true
+		drainer.triggeredWg.Done()
 		drainer.drainingFinishedWg.Wait()
-	} else {
-		drainer.events = 0
+		drainer.logger.Infof("Drainer service completed handing %s endpoint", terminateEndpoint)
 	}
-	fmt.Fprintf(w, "ok\n")
-	drainer.muTriggered.Unlock()
 }
