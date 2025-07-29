@@ -735,6 +735,10 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
