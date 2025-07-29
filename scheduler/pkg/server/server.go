@@ -129,9 +129,11 @@ type ExperimentSubscription struct {
 }
 
 type PipelineSubscription struct {
-	name   string
-	stream pb.Scheduler_SubscribePipelineStatusServer
-	fin    chan bool
+	name              string
+	ip                string
+	isPipelineGateway bool // Indicates if this subscription is for the pipeline gateway
+	stream            pb.Scheduler_SubscribePipelineStatusServer
+	fin               chan bool
 }
 
 type ControlPlaneSubsription struct {

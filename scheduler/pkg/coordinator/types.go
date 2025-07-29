@@ -80,4 +80,5 @@ func (p PipelineEventMsg) String() string {
 type PipelineStreamsEventMsg struct {
 	PipelineEventMsg
 	StreamNames []string
+	StreamIps   []string
 }

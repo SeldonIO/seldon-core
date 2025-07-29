@@ -38,9 +38,11 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 
 	s.pipelineEventStream.mu.Lock()
 	s.pipelineEventStream.streams[stream] = &PipelineSubscription{
-		name:   req.GetSubscriberName(),
-		stream: stream,
-		fin:    fin,
+		name:              req.GetSubscriberName(),
+		ip:                req.GetSubscriberIp(),
+		isPipelineGateway: req.GetIsPipelineGateway(),
+		stream:            stream,
+		fin:               fin,
 	}
 	s.pipelineEventStream.mu.Unlock()
 
@@ -121,9 +123,32 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 
 	eventMsg := coordinator.PipelineStreamsEventMsg{
 		PipelineEventMsg: event,
-		StreamNames:      []string{},
+		StreamNames:      s.getStreamNames(),
+		StreamIps:        s.getStreamIps(),
 	}
 	s.eventHub.PublishPipelineStreamsEvent(addPipelineStreamEventSource, eventMsg)
+}
+
+func (s *SchedulerServer) getStreamNames() []string {
+	streamNames := make([]string, 0, len(s.pipelineEventStream.streams))
+	for _, subscription := range s.pipelineEventStream.streams {
+		if !subscription.isPipelineGateway {
+			continue
+		}
+		streamNames = append(streamNames, subscription.name)
+	}
+	return streamNames
+}
+
+func (s *SchedulerServer) getStreamIps() []string {
+	streamIps := make([]string, 0, len(s.pipelineEventStream.streams))
+	for _, subscription := range s.pipelineEventStream.streams {
+		if !subscription.isPipelineGateway {
+			continue
+		}
+		streamIps = append(streamIps, subscription.ip)
+	}
+	return streamIps
 }
 
 func (s *SchedulerServer) StopSendPipelineEvents() {

@@ -33,6 +33,10 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
+const (
+	SubscriberName = "seldon-pipelinegateway"
+)
+
 type PipelineSchedulerClient struct {
 	logger                logrus.FieldLogger
 	conn                  *grpc.ClientConn
@@ -134,27 +138,40 @@ func (pc *PipelineSchedulerClient) Start(host string, plainTxtPort int, tlsPort 
 	}
 }
 
-func getSubscriberName() (string, error) {
+func getSubscriberName() string {
 	podName := os.Getenv("POD_NAME")
 	if podName == "" {
-		return "", fmt.Errorf("POD_NAME environment variable is not set")
+		return SubscriberName
 	}
-	return podName, nil
+	return podName
+}
+
+func getSubsriberIp() (string, error) {
+	podIp := os.Getenv("POD_IP")
+	if podIp == "" {
+		return "", fmt.Errorf("POD_IP environment variable is not set")
+	}
+	return podIp, nil
 }
 
 func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 	logger := pc.logger.WithField("func", "SubscribePipelineEvents")
 	grpcClient := scheduler.NewSchedulerClient(pc.conn)
 
-	subscriberName, err := getSubscriberName()
+	subscriberName := getSubscriberName()
+	subscriberIp, err := getSubsriberIp()
 	if err != nil {
 		return err
 	}
 
-	logger.Infof("Subscriber %s subscribing to pipeline status events", subscriberName)
+	logger.Infof("Subscriber (%s, %s) subscribing to pipeline status events", subscriberName, subscriberIp)
 	stream, errSub := grpcClient.SubscribePipelineStatus(
 		context.Background(),
-		&scheduler.PipelineSubscriptionRequest{SubscriberName: subscriberName},
+		&scheduler.PipelineSubscriptionRequest{
+			SubscriberName:    subscriberName,
+			SubscriberIp:      subscriberIp,
+			IsPipelineGateway: true,
+		},
 		grpc_retry.WithMax(util.MaxGRPCRetriesOnStream),
 	)
 	if errSub != nil {

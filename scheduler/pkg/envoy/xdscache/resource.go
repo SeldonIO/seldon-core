@@ -573,9 +573,11 @@ func createWeightedPipelineClusterAction(clusterTraffics []PipelineTrafficSplit,
 	var mirrors []*route.RouteAction_RequestMirrorPolicy
 	var totWeight uint32
 	for _, clusterTraffic := range clusterTraffics {
-		clusterName := PipelineGatewayHttpClusterName
+		clusterName := fmt.Sprintf("%s.%s", clusterTraffic.PipelineName, util.SeldonPipelineHeaderSuffix)
 		if isGrpc {
-			clusterName = PipelineGatewayGrpcClusterName
+			clusterName = fmt.Sprintf("%s.grpc", clusterName)
+		} else {
+			clusterName = fmt.Sprintf("%s.http", clusterName)
 		}
 		totWeight = totWeight + clusterTraffic.TrafficWeight
 		splits = append(splits,
@@ -670,7 +672,7 @@ func makePipelineStickySessionEnvoyRoute(routeName string, envoyRoute *route.Rou
 			Route: &route.RouteAction{
 				Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
 				ClusterSpecifier: &route.RouteAction_Cluster{
-					Cluster: PipelineGatewayGrpcClusterName,
+					Cluster: fmt.Sprintf("%s.grpc", routeName),
 				},
 			},
 		}
@@ -679,7 +681,7 @@ func makePipelineStickySessionEnvoyRoute(routeName string, envoyRoute *route.Rou
 			Route: &route.RouteAction{
 				Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
 				ClusterSpecifier: &route.RouteAction_Cluster{
-					Cluster: PipelineGatewayHttpClusterName,
+					Cluster: fmt.Sprintf("%s.http", routeName),
 				},
 			},
 		}
