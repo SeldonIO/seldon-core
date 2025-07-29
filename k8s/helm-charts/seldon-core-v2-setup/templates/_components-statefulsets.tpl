@@ -731,6 +731,10 @@ spec:
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
           value: "9044"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:

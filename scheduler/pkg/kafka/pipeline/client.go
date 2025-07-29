@@ -13,6 +13,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"os"
 	"sync/atomic"
 	"time"
 
@@ -30,10 +31,6 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
-)
-
-const (
-	SubscriberName = "seldon-pipelinegateway"
 )
 
 type PipelineSchedulerClient struct {
@@ -137,18 +134,33 @@ func (pc *PipelineSchedulerClient) Start(host string, plainTxtPort int, tlsPort 
 	}
 }
 
+func getSubscriberName() (string, error) {
+	podName := os.Getenv("POD_NAME")
+	if podName == "" {
+		return "", fmt.Errorf("POD_NAME environment variable is not set")
+	}
+	return podName, nil
+}
+
 func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 	logger := pc.logger.WithField("func", "SubscribePipelineEvents")
 	grpcClient := scheduler.NewSchedulerClient(pc.conn)
-	logger.Info("Subscribing to pipeline status events")
+
+	subscriberName, err := getSubscriberName()
+	if err != nil {
+		return err
+	}
+
+	logger.Infof("Subscriber %s subscribing to pipeline status events", subscriberName)
 	stream, errSub := grpcClient.SubscribePipelineStatus(
 		context.Background(),
-		&scheduler.PipelineSubscriptionRequest{SubscriberName: SubscriberName},
+		&scheduler.PipelineSubscriptionRequest{SubscriberName: subscriberName},
 		grpc_retry.WithMax(util.MaxGRPCRetriesOnStream),
 	)
 	if errSub != nil {
 		return errSub
 	}
+
 	for {
 		if pc.stop.Load() {
 			logger.Info("Stopping")
