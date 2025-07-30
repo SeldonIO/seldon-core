@@ -21,9 +21,9 @@ import (
 )
 
 const (
-	EnvMaxNumConsumers      = "PIPELINEGATEWAY_MAX_NUM_CONSUMERS"
-	DefaultMaxNumConsumers  = 200
-	kafkaConsumerNamePrefix = "seldon-pipelinegateway"
+	EnvMaxNumConsumers                = "PIPELINEGATEWAY_MAX_NUM_CONSUMERS"
+	DefaultMaxNumConsumers            = 200
+	pipelineGatewayConsumerNamePrefix = "seldon-pipelinegateway"
 )
 
 type ConsumerManager struct {
@@ -82,7 +82,7 @@ func (cm *ConsumerManager) getKafkaConsumer(pipelineOrModelName string, isModel 
 		cm.namespace,
 		cm.consumerConfig.ConsumerGroupIdPrefix,
 		pipelineOrModelName,
-		kafkaConsumerNamePrefix,
+		pipelineGatewayConsumerNamePrefix,
 		cm.maxNumConsumers,
 	)
 	consumers := cm.pipelinesConsumers

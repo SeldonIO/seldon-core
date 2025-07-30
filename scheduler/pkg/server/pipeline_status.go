@@ -19,6 +19,7 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 const (
@@ -30,11 +31,6 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
 
 	s.synchroniser.WaitReady()
-
-	err := s.sendCurrentPipelineStatuses(stream, false)
-	if err != nil {
-		return err
-	}
 
 	fin := make(chan bool)
 
@@ -111,8 +107,8 @@ func (s *SchedulerServer) sendCurrentPipelineStatuses(
 func (s *SchedulerServer) GetAllRunningPipelines() []string {
 	pipelineEventMessages := s.pipelineHandler.GetAllRunningPipelineVersions()
 	runningPipelines := make([]string, 0, len(pipelineEventMessages))
-	for i, pipelineEventMessage := range pipelineEventMessages {
-		runningPipelines[i] = pipelineEventMessage.PipelineName
+	for _, pipelineEventMessage := range pipelineEventMessages {
+		runningPipelines = append(runningPipelines, pipelineEventMessage.PipelineName)
 	}
 	return runningPipelines
 }
@@ -137,10 +133,17 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 	runningPipelines := s.GetAllRunningPipelines()
 	for _, pipelineName := range runningPipelines {
 		pip, _ := s.pipelineHandler.GetPipeline(pipelineName)
-		s.logger.Debug("Rebalancing pipeline: %s", pipelineName)
+		consumerBucketId := util.GetKafkaConsumerName(
+			s.consumerGroupConfig.namespace,
+			s.consumerGroupConfig.consumerGroupIdPrefix,
+			pipelineName,
+			pipelineGatewayConsumerNamePrefix,
+			s.consumerGroupConfig.maxNumConsumers,
+		)
 
-		servers := s.pipelineGWLoadBalancer.GetServersForKey(pipelineName)
+		servers := s.pipelineGWLoadBalancer.GetServersForKey(consumerBucketId)
 		s.logger.Debugf("Servers for pipeline %s: %v", pipelineName, servers)
+		s.logger.Debug("Consumer bucket ID: ", consumerBucketId)
 
 		for _, pipelineSubscription := range s.pipelineEventStream.streams {
 			if !pipelineSubscription.isPipelineGateway {
@@ -200,12 +203,14 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 	if event.ExperimentUpdate {
 		return
 	}
+
 	pv, err := s.pipelineHandler.GetPipelineVersion(event.PipelineName, event.PipelineVersion, event.UID)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to get pipeline from event %s", event.String())
 		return
 	}
 	logger.Debugf("Handling pipeline event for %s with state %v", event.String(), pv.State.Status)
+
 	var pipelineVersions []*pb.PipelineWithState
 	pipelineWithState := pipeline.CreatePipelineWithState(pv)
 	pipelineVersions = append(pipelineVersions, pipelineWithState)
@@ -213,8 +218,44 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 		PipelineName: pv.Name,
 		Versions:     pipelineVersions,
 	}
+
 	s.pipelineEventStream.mu.Lock()
 	defer s.pipelineEventStream.mu.Unlock()
+
+	// find pipelinegw servers that should receive this event
+	servers := s.pipelineGWLoadBalancer.GetServersForKey(event.PipelineName)
+
+	// split the streams into pipeline gateways and non-gateways
+	pipelineGwStreams := make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription)
+	otherStreams := make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription)
+
+	for stream, subscription := range s.pipelineEventStream.streams {
+		if !subscription.isPipelineGateway {
+			otherStreams[stream] = subscription
+		} else if contains(servers, subscription.name) {
+			pipelineGwStreams[stream] = subscription
+		}
+	}
+
+	// send to pipeline gateway streams and other streams
+	s.sendPipelineEventsToStreams(event, status, pipelineGwStreams)
+	s.sendPipelineEventsToStreams(event, status, otherStreams)
+
+	eventMsg := coordinator.PipelineStreamsEventMsg{
+		PipelineEventMsg: event,
+		StreamNames:      s.getStreamNames(),
+		StreamIps:        s.getStreamIps(),
+	}
+	s.eventHub.PublishPipelineStreamsEvent(addPipelineStreamEventSource, eventMsg)
+}
+
+func (s *SchedulerServer) sendPipelineEventsToStreams(
+	event coordinator.PipelineEventMsg,
+	status *pb.PipelineStatusResponse,
+	streams map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription,
+) {
+
+	logger := s.logger.WithField("func", "sendPipelineEventsToStreams")
 	for stream, subscription := range s.pipelineEventStream.streams {
 		hasExpired, err := sendWithTimeout(func() error { return stream.Send(status) }, s.timeout)
 		if hasExpired {
@@ -226,13 +267,6 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 			logger.WithError(err).Errorf("Failed to send pipeline status event to %s for %s", subscription.name, event.String())
 		}
 	}
-
-	eventMsg := coordinator.PipelineStreamsEventMsg{
-		PipelineEventMsg: event,
-		StreamNames:      s.getStreamNames(),
-		StreamIps:        s.getStreamIps(),
-	}
-	s.eventHub.PublishPipelineStreamsEvent(addPipelineStreamEventSource, eventMsg)
 }
 
 func (s *SchedulerServer) getStreamNames() []string {

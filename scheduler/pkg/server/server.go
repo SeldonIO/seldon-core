@@ -38,18 +38,19 @@ import (
 )
 
 const (
-	grpcMaxConcurrentStreams           = 1_000_000
-	pendingEventsQueueSize         int = 1000
-	modelEventHandlerName              = "scheduler.server.models"
-	serverEventHandlerName             = "scheduler.server.servers"
-	serverModelEventHandlerName        = "scheduler.server.servers.models"
-	experimentEventHandlerName         = "scheduler.server.experiments"
-	pipelineEventHandlerName           = "scheduler.server.pipelines"
-	defaultBatchWait                   = 250 * time.Millisecond
-	sendTimeout                        = 30 * time.Second // Timeout for sending events to subscribers via grpc `sendMsg`
-	modelGatewayConsumerNamePrefix     = "seldon-modelgateway"
-	EnvMaxNumConsumers                 = "MODELGATEWAY_MAX_NUM_CONSUMERS"
-	DefaultMaxNumConsumers             = 100
+	grpcMaxConcurrentStreams              = 1_000_000
+	pendingEventsQueueSize            int = 1000
+	modelEventHandlerName                 = "scheduler.server.models"
+	serverEventHandlerName                = "scheduler.server.servers"
+	serverModelEventHandlerName           = "scheduler.server.servers.models"
+	experimentEventHandlerName            = "scheduler.server.experiments"
+	pipelineEventHandlerName              = "scheduler.server.pipelines"
+	defaultBatchWait                      = 250 * time.Millisecond
+	sendTimeout                           = 30 * time.Second // Timeout for sending events to subscribers via grpc `sendMsg`
+	modelGatewayConsumerNamePrefix        = "seldon-modelgateway"
+	pipelineGatewayConsumerNamePrefix     = "seldon-pipelinegateway"
+	EnvMaxNumConsumers                    = "MODELGATEWAY_MAX_NUM_CONSUMERS"
+	DefaultMaxNumConsumers                = 100
 )
 
 var ErrAddServerEmptyServerName = status.Errorf(codes.FailedPrecondition, "Empty server name passed")
