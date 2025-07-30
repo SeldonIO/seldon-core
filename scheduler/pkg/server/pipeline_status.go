@@ -10,6 +10,8 @@ the Change License after the Change Date as each is defined in accordance with t
 package server
 
 import (
+	"fmt"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -44,7 +46,22 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 		stream:            stream,
 		fin:               fin,
 	}
+	if req.IsPipelineGateway {
+		s.pipelineGWLoadBalancer.AddServer(req.GetSubscriberName())
+	}
 	s.pipelineEventStream.mu.Unlock()
+
+	if req.IsPipelineGateway {
+		// rebalance the streams when a new subscriber is added
+		s.pipelineGwRebalance()
+	} else {
+		// update controller with current model statuses
+		err := s.sendCurrentPipelineStatuses(stream, false)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to send current pipeline statuses to %s", req.GetSubscriberName())
+			return err
+		}
+	}
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
@@ -57,7 +74,15 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 			logger.Infof("Stream disconnected %s", req.GetSubscriberName())
 			s.pipelineEventStream.mu.Lock()
 			delete(s.pipelineEventStream.streams, stream)
+			if req.IsPipelineGateway {
+				s.pipelineGWLoadBalancer.RemoveServer(req.GetSubscriberName())
+			}
 			s.pipelineEventStream.mu.Unlock()
+
+			// rebalance the streams when a subscriber is removed
+			if req.IsPipelineGateway {
+				s.pipelineGwRebalance()
+			}
 			return nil
 		}
 	}
@@ -81,6 +106,87 @@ func (s *SchedulerServer) sendCurrentPipelineStatuses(
 		}
 	}
 	return nil
+}
+
+func (s *SchedulerServer) GetAllRunningPipelines() []string {
+	pipelineEventMessages := s.pipelineHandler.GetAllRunningPipelineVersions()
+	runningPipelines := make([]string, 0, len(pipelineEventMessages))
+	for i, pipelineEventMessage := range pipelineEventMessages {
+		runningPipelines[i] = pipelineEventMessage.PipelineName
+	}
+	return runningPipelines
+}
+
+func (s *SchedulerServer) createPipelineDeletionMessage(pip *pipeline.Pipeline, keepTopics bool) (*pb.PipelineStatusResponse, error) {
+	return nil, fmt.Errorf("Pipeline deletion message not implemented")
+}
+
+func (s *SchedulerServer) createPipelineCreationMessage(pip *pipeline.Pipeline) (*pb.PipelineStatusResponse, error) {
+	pipelineVersion := pip.GetLatestPipelineVersion()
+	pipelineWithState := pipeline.CreatePipelineWithState(pipelineVersion)
+	return &pb.PipelineStatusResponse{
+		PipelineName: pip.Name,
+		Versions:     []*pb.PipelineWithState{pipelineWithState},
+	}, nil
+}
+
+func (s *SchedulerServer) pipelineGwRebalance() {
+	s.pipelineEventStream.mu.Lock()
+	defer s.pipelineEventStream.mu.Unlock()
+
+	runningPipelines := s.GetAllRunningPipelines()
+	for _, pipelineName := range runningPipelines {
+		pip, _ := s.pipelineHandler.GetPipeline(pipelineName)
+		s.logger.Debug("Rebalancing pipeline: %s", pipelineName)
+
+		servers := s.pipelineGWLoadBalancer.GetServersForKey(pipelineName)
+		s.logger.Debugf("Servers for pipeline %s: %v", pipelineName, servers)
+
+		for _, pipelineSubscription := range s.pipelineEventStream.streams {
+			if !pipelineSubscription.isPipelineGateway {
+				s.logger.Debugf("Skipping non-pipeline gateway stream for %s", pipelineSubscription.name)
+				continue
+			}
+
+			s.logger.Debug("Processing pipeline subscription for ", pipelineSubscription.name)
+			server := pipelineSubscription.name
+			stream := pipelineSubscription.stream
+
+			if contains(servers, server) {
+				s.logger.Debug("Server contains model, sending status update for ", server)
+
+				state := pip.GetLatestPipelineVersion().State.Status
+				var msg *pb.PipelineStatusResponse
+				var err error
+
+				if state == pipeline.PipelineTerminating {
+					s.logger.Debugf("Pipeline %s is terminating, sending deletion message", pipelineName)
+					msg, err = s.createPipelineDeletionMessage(pip, false)
+				} else {
+					s.logger.Debugf("Pipeline %s is available or progressing, sending creation message", pipelineName)
+					msg, err = s.createPipelineCreationMessage(pip)
+				}
+				if err != nil {
+					s.logger.WithError(err).Errorf("Failed to create pipelines status message for %s", &pipelineName)
+					continue
+				}
+				if err := stream.Send(msg); err != nil {
+					s.logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", &pipelineName)
+				}
+			} else {
+				s.logger.Debugf("Server %s does not contain pipeline %s, sending deletion message", server, &pipelineName)
+				msg, err := s.createPipelineDeletionMessage(pip, true)
+				if err != nil {
+					s.logger.WithError(err).Errorf("Failed to create pipeline deletion message for %s", &pipelineName)
+					continue
+				}
+				s.logger.Debugf("Sending deletion message for pipeline %s to server %s", &pipelineName, server)
+				if err := stream.Send(msg); err != nil {
+					s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", &pipelineName)
+				}
+			}
+		}
+	}
 }
 
 func (s *SchedulerServer) handlePipelineEvents(event coordinator.PipelineEventMsg) {

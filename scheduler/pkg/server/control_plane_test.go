@@ -131,7 +131,10 @@ func TestSubscribeControlPlane(t *testing.T) {
 
 		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10 * time.Millisecond))
 		modelGwLoadBalancer := util.NewRingLoadBalancer(1)
-		s := NewSchedulerServer(logger, nil, nil, nil, nil, eventHub, sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer)
+		pipelineGwLoadBalancer := util.NewRingLoadBalancer(1)
+		s := NewSchedulerServer(
+			logger, nil, nil, nil, nil, eventHub, sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer, pipelineGwLoadBalancer,
+		)
 		sync.Signals(1)
 
 		return s

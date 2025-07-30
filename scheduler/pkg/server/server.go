@@ -56,23 +56,24 @@ var ErrAddServerEmptyServerName = status.Errorf(codes.FailedPrecondition, "Empty
 
 type SchedulerServer struct {
 	pb.UnimplementedSchedulerServer
-	logger                log.FieldLogger
-	modelStore            store.ModelStore
-	experimentServer      experiment.ExperimentServer
-	pipelineHandler       pipeline.PipelineHandler
-	scheduler             scheduler2.Scheduler
-	modelEventStream      ModelEventStream
-	serverEventStream     ServerEventStream
-	experimentEventStream ExperimentEventStream
-	pipelineEventStream   PipelineEventStream
-	controlPlaneStream    ControlPlaneStream
-	certificateStore      *seldontls.CertificateStore
-	timeout               time.Duration
-	synchroniser          synchroniser.Synchroniser
-	config                SchedulerServerConfig
-	loadBalancer          *util.RingLoadBalancer
-	consumerGroupConfig   *ConsumerGroupConfig
-	eventHub              *coordinator.EventHub
+	logger                 log.FieldLogger
+	modelStore             store.ModelStore
+	experimentServer       experiment.ExperimentServer
+	pipelineHandler        pipeline.PipelineHandler
+	scheduler              scheduler2.Scheduler
+	modelEventStream       ModelEventStream
+	serverEventStream      ServerEventStream
+	experimentEventStream  ExperimentEventStream
+	pipelineEventStream    PipelineEventStream
+	controlPlaneStream     ControlPlaneStream
+	certificateStore       *seldontls.CertificateStore
+	timeout                time.Duration
+	synchroniser           synchroniser.Synchroniser
+	config                 SchedulerServerConfig
+	modelGwLoadBalancer    *util.RingLoadBalancer
+	pipelineGWLoadBalancer *util.RingLoadBalancer
+	consumerGroupConfig    *ConsumerGroupConfig
+	eventHub               *coordinator.EventHub
 }
 
 type SchedulerServerConfig struct {
@@ -249,7 +250,8 @@ func NewSchedulerServer(
 	config SchedulerServerConfig,
 	namespace string,
 	consumerGroupIdPrefix string,
-	loadBalancer *util.RingLoadBalancer,
+	modelGwLoadBalancer *util.RingLoadBalancer,
+	pipelineGWLoadBalancer *util.RingLoadBalancer,
 ) *SchedulerServer {
 	loggerWithField := logger.WithField("source", "SchedulerServer")
 	maxNumConsumers := getEnVar(loggerWithField, EnvMaxNumConsumers, DefaultMaxNumConsumers)
@@ -286,12 +288,13 @@ func NewSchedulerServer(
 		controlPlaneStream: ControlPlaneStream{
 			streams: make(map[pb.Scheduler_SubscribeControlPlaneServer]*ControlPlaneSubsription),
 		},
-		timeout:             sendTimeout,
-		synchroniser:        synchroniser,
-		config:              config,
-		loadBalancer:        loadBalancer,
-		consumerGroupConfig: consumerGroupConfig,
-		eventHub:            eventHub,
+		timeout:                sendTimeout,
+		synchroniser:           synchroniser,
+		config:                 config,
+		modelGwLoadBalancer:    modelGwLoadBalancer,
+		pipelineGWLoadBalancer: pipelineGWLoadBalancer,
+		consumerGroupConfig:    consumerGroupConfig,
+		eventHub:               eventHub,
 	}
 
 	eventHub.RegisterModelEventHandler(
