@@ -174,6 +174,14 @@ func makeCluster(clusterName string, eps map[string]Endpoint, isGrpc bool, clien
 			DnsLookupFamily:               cluster.Cluster_V4_ONLY,
 			TypedExtensionProtocolOptions: map[string]*anypb.Any{"envoy.extensions.upstreams.http.v3.HttpProtocolOptions": hpoMarshalled},
 			TransportSocket:               createUpstreamTransportSocket(clientSecret),
+			DnsRefreshRate:                duration.New(2 * time.Second),
+			CircuitBreakers: &cluster.CircuitBreakers{
+				Thresholds: []*cluster.CircuitBreakers_Thresholds{
+					{
+						MaxRetries: &wrappers.UInt32Value{Value: 5},
+					},
+				},
+			},
 		}
 	} else {
 		return &cluster.Cluster{
@@ -184,6 +192,14 @@ func makeCluster(clusterName string, eps map[string]Endpoint, isGrpc bool, clien
 			LoadAssignment:       makeEndpoint(clusterName, eps),
 			DnsLookupFamily:      cluster.Cluster_V4_ONLY,
 			TransportSocket:      createUpstreamTransportSocket(clientSecret),
+			DnsRefreshRate:       duration.New(2 * time.Second),
+			CircuitBreakers: &cluster.CircuitBreakers{
+				Thresholds: []*cluster.CircuitBreakers_Thresholds{
+					{
+						MaxRetries: &wrappers.UInt32Value{Value: 5},
+					},
+				},
+			},
 		}
 	}
 }
@@ -381,6 +397,7 @@ func createWeightedModelClusterAction(clusterTraffics []TrafficSplit, mirrorTraf
 	if mirrorTraffic != nil {
 		mirrors = createMirrorRouteAction(mirrorTraffic.TrafficWeight, isGrpc)
 	}
+
 	action := &route.Route_Route{
 		Route: &route.RouteAction{
 			Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
@@ -390,6 +407,18 @@ func createWeightedModelClusterAction(clusterTraffics []TrafficSplit, mirrorTraf
 				},
 			},
 			RequestMirrorPolicies: mirrors,
+			RetryPolicy: &route.RetryPolicy{
+				RetryOn:    "5xx,connect-failure",
+				NumRetries: &wrappers.UInt32Value{Value: 5},
+				RetryBackOff: &route.RetryPolicy_RetryBackOff{
+					BaseInterval: &duration.Duration{
+						Nanos: int32(time.Millisecond * 500),
+					},
+					MaxInterval: &duration.Duration{
+						Seconds: 5,
+					},
+				},
+			},
 		},
 	}
 	return action

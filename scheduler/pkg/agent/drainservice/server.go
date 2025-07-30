@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -141,8 +142,9 @@ func (drainer *DrainerService) handleTerminate(_ http.ResponseWriter, _ *http.Re
 
 	if !drainer.triggered {
 		drainer.triggered = true
+		now := time.Now()
 		drainer.triggeredWg.Done()
 		drainer.drainingFinishedWg.Wait()
-		drainer.logger.Infof("Drainer service completed handing %s endpoint", terminateEndpoint)
+		drainer.logger.Infof("Drainer service completed handling %s endpoint, took %s", terminateEndpoint, time.Since(now))
 	}
 }
