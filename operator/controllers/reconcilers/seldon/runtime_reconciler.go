@@ -40,11 +40,12 @@ func ParseInt32(s string, defaultVal int32) (int32, error) {
 	return int32(i64), err
 }
 
-func ValidateDataflowScaleSpec(
+func ValidateScaleSpecPipelines(
 	component *mlopsv1alpha1.ComponentDefn,
 	runtime *mlopsv1alpha1.SeldonRuntime,
 	commonConfig common.ReconcilerConfig,
 	namespace *string,
+	reason string,
 ) error {
 	ctx, clt, recorder := commonConfig.Ctx, commonConfig.Client, commonConfig.Recorder
 	numPartitions, err := ParseInt32(runtime.Spec.Config.KafkaConfig.Topics["numPartitions"].StrVal, 1)
@@ -72,11 +73,26 @@ func ValidateDataflowScaleSpec(
 		recorder.Eventf(
 			runtime,
 			v1.EventTypeWarning,
-			"DataflowEngineReplicasAdjusted",
-			fmt.Sprintf("Dataflow engine replicas adjusted to %d based on KafkaConfig and Pipeline count", maxReplicas),
+			reason,
+			fmt.Sprintf("%s replicas adjusted to %d based on KafkaConfig and Pipeline count", component.Name, maxReplicas),
 		)
 	}
 	return nil
+}
+
+func ValidateDataflowScaleSpec(
+	component *mlopsv1alpha1.ComponentDefn,
+	runtime *mlopsv1alpha1.SeldonRuntime,
+	commonConfig common.ReconcilerConfig,
+	namespace *string,
+) error {
+	return ValidateScaleSpecPipelines(
+		component,
+		runtime,
+		commonConfig,
+		namespace,
+		"DataflowEngineReplicasAdjusted",
+	)
 }
 
 func ValidateModelGatewaySpec(
@@ -122,21 +138,13 @@ func ValidatePipelineGatewaySpec(
 	commonConfig common.ReconcilerConfig,
 	namespace *string,
 ) error {
-	numPartitions, err := ParseInt32(runtime.Spec.Config.KafkaConfig.Topics["numPartitions"].StrVal, 1)
-	if err != nil {
-		return fmt.Errorf("failed to parse numPartitions from KafkaConfig: %w", err)
-	}
-
-	if component.Replicas != nil && *component.Replicas > numPartitions {
-		component.Replicas = &numPartitions
-		commonConfig.Recorder.Eventf(
-			runtime,
-			v1.EventTypeWarning,
-			"PipelineGwReplicasAdjusted",
-			fmt.Sprintf("Pipeline gateway replicas adjusted to %d based on KafkaConfig", numPartitions),
-		)
-	}
-	return nil
+	return ValidateScaleSpecPipelines(
+		component,
+		runtime,
+		commonConfig,
+		namespace,
+		"PipelineGatewayReplicasAdjusted",
+	)
 }
 
 func ValidateComponent(
