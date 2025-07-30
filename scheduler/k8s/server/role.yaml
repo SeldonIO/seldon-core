@@ -18,5 +18,6 @@ rules:
   - secrets
   verbs:
   - get
-
-                      
+- apiGroups: [""]
+  resources: ["endpoints"]
+  verbs: ["get", "list", "watch"]

@@ -20,10 +20,8 @@ import (
 	"syscall"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-	"k8s.io/client-go/kubernetes"
-
 	agent2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/cmd/agent/cli"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
@@ -103,13 +101,13 @@ func runningInsideK8s() bool {
 	return cli.Namespace != ""
 }
 
-func termSignalHandler(logger *log.Logger, errChan <-chan error) {
+func termSignalErrHandler(logger *log.Logger, errChan <-chan error) {
 	exit := make(chan os.Signal, 1)
 	signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
 
 	select {
 	case err := <-errChan:
-		logger.WithError(err).Error("Shutting down due error")
+		logger.WithError(err).Error("Shutting down due to error")
 	case <-exit:
 		logger.Info("Shutting down due to SIGTERM or SIGINT")
 	}
@@ -146,12 +144,13 @@ func main() {
 	}
 	log.Infof("Model repository dir %s, Rclone repository dir %s ", modelRepositoryDir, rcloneRepositoryDir)
 
-	var clientset kubernetes.Interface
+	var clientset k8s.ExtendedClient
 	if runningInsideK8s() {
-		clientset, err = k8s.CreateClientset()
-		if err != nil { //TODO change to Error from Fatal?
+		k8sClient, err := k8s.CreateClientset()
+		if err != nil {
 			logger.WithError(err).Fatal("Failed to create kubernetes clientset")
 		}
+		clientset = k8s.NewExtendedClient(cli.Namespace, k8sClient)
 	}
 
 	tracer, err := tracing.NewTraceProvider("seldon-agent", &cli.TracingConfigPath, logger)
@@ -207,8 +206,7 @@ func main() {
 		if errors.Is(err, http.ErrServerClosed) {
 			return
 		}
-		logger.WithError(err).Fatal("Can't start metrics server")
-		errChan <- err
+		errChan <- fmt.Errorf("prometheus metrics server failed: %w", err)
 	}()
 	defer func() { _ = promMetrics.Stop() }()
 
@@ -278,6 +276,7 @@ func main() {
 			uint8(cli.MaxLoadRetryCount),
 			uint8(cli.MaxUnloadRetryCount),
 			time.Duration(cli.UnloadGraceSeconds)*time.Second,
+			runningInsideK8s(),
 		),
 		logger,
 		modelRepository,
@@ -291,32 +290,29 @@ func main() {
 		drainerService,
 		readinessService,
 		promMetrics,
+		clientset,
 	)
 
 	// Wait for required services to be ready
 	err = agentService.WaitReadySubServices(true)
 	if err != nil {
-		logger.WithError(err).Error("Failed to wait for all agent dependent services to be ready")
-		errChan <- fmt.Errorf("failed to waiting for sub-services to be ready: %w", err)
+		errChan <- fmt.Errorf("failed to waiting for agent dependent sub-services to be ready: %w", err)
 	}
 
 	// Now we are ready start config listener
 	err = rcloneClient.StartConfigListener()
 	if err != nil {
-		logger.WithError(err).Error("Failed to initialise rclone config listener")
 		errChan <- fmt.Errorf("failed to initialise rclone config listener: %w", err)
 	}
 
 	// Start grpc connection to scheduler and handle incoming events
 	go func() {
-		err = agentService.StartControlLoop()
-		if err != nil {
-			logger.WithError(err).Error("agent encountered unrecoverable error")
+		if err := agentService.StartControlLoop(); err != nil {
+			errChan <- fmt.Errorf("failure from agent control loop: %w", err)
 		}
-		errChan <- fmt.Errorf("failure from agent control loop: %w", err)
 	}()
 	defer func() { agentService.StopControlLoop() }()
 
-	termSignalHandler(logger, errChan)
+	termSignalErrHandler(logger, errChan)
 	logger.Warning("Agent shutting down")
 }

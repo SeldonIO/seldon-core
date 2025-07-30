@@ -65,6 +65,7 @@ type AgentServiceManager struct {
 	agentConfig              *AgentServiceConfig
 	modelTimestamps          sync.Map
 	startTime                time.Time
+	runningInK8s             bool
 	StorageManager
 	SchedulerGrpcClientOptions
 	KubernetesOptions
@@ -83,6 +84,7 @@ type SchedulerGrpcClientOptions struct {
 
 type KubernetesOptions struct {
 	secretsHandler *k8s.SecretHandler
+	extendedClient k8s.ExtendedClient
 	namespace      string
 }
 
@@ -104,6 +106,7 @@ type AgentServiceConfig struct {
 	maxLoadRetryCount                        uint8
 	maxUnloadRetryCount                      uint8
 	unloadGraceTime                          time.Duration
+	runningInK8s                             bool
 }
 
 func NewAgentServiceConfig(
@@ -120,6 +123,7 @@ func NewAgentServiceConfig(
 	maxLoadRetryCount,
 	maxUnloadRetryCount uint8,
 	unloadGraceTime time.Duration,
+	runningInK8s bool,
 ) *AgentServiceConfig {
 	return &AgentServiceConfig{
 		serverName:                               serverName,
@@ -135,6 +139,7 @@ func NewAgentServiceConfig(
 		maxLoadRetryCount:                        maxLoadRetryCount,
 		maxUnloadRetryCount:                      maxUnloadRetryCount,
 		unloadGraceTime:                          unloadGraceTime,
+		runningInK8s:                             runningInK8s,
 	}
 }
 
@@ -161,6 +166,7 @@ func NewAgentServiceManager(
 	drainerService interfaces.DependencyServiceInterface,
 	readinessService interfaces.DependencyServiceInterface,
 	metrics metrics.AgentMetricsHandler,
+	k8sClient k8s.ExtendedClient,
 ) *AgentServiceManager {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
@@ -199,7 +205,8 @@ func NewAgentServiceManager(
 			certificateStore:      nil, // Needed to stop 1.48.0 lint failing
 		},
 		KubernetesOptions: KubernetesOptions{
-			namespace: namespace,
+			namespace:      namespace,
+			extendedClient: k8sClient,
 		},
 		isDraining:               atomic.Bool{},
 		criticalSubservicesReady: atomic.Bool{},
@@ -266,7 +273,7 @@ func (am *AgentServiceManager) StartControlLoop() error {
 		backOffExp := util.GetClientExponentialBackoff()
 		err := boff.RetryNotify(am.HandleSchedulerSubscription, backOffExp, logFailure)
 		if err != nil {
-			am.logger.WithError(err).Fatal("Failed to connect to the scheduler")
+			am.logger.WithError(err).Error("Failed to connect to the scheduler")
 			return err
 		}
 		logger.Info("Scheduler subscription ended")
@@ -513,6 +520,8 @@ func (am *AgentServiceManager) HandleSchedulerSubscription() error {
 	logger := am.logger.WithField("func", "HandleSchedulerSubscription")
 	logger.Info("Call subscribe to scheduler")
 
+	defer am.isStartup.Store(true)
+
 	grpcClient := agent_pb.NewAgentServiceClient(am.schedulerConn)
 
 	// Connect to the scheduler for server-side streaming
@@ -531,6 +540,10 @@ func (am *AgentServiceManager) HandleSchedulerSubscription() error {
 	if err != nil {
 		return err
 	}
+	defer func() {
+		_ = stream.CloseSend()
+	}()
+
 	logger.Info("Subscribed to scheduler")
 
 	// start model scaling events consumer
@@ -548,6 +561,16 @@ func (am *AgentServiceManager) HandleSchedulerSubscription() error {
 	// This connection may break and will be retried, but we define the agent as "started"
 	// once we are able to successfully connect once.
 	am.isStartup.Store(false)
+
+	if am.agentConfig.runningInK8s {
+		logger.Info("Checking pod has IP published in endpoints")
+		err := am.extendedClient.HasPublishedIP(context.TODO(), fmt.Sprintf("%s-%d", am.agentConfig.serverName, am.agentConfig.replicaIdx))
+		if err != nil {
+			return fmt.Errorf("failed waiting to check if pod's IP is published to endpoints: %v", err)
+		}
+		logger.Debug("Pod has IP published in endpoints")
+	}
+
 	// Start the main control loop for the agent<-scheduler stream
 	for {
 		if am.stop.Load() {
@@ -596,10 +619,6 @@ func (am *AgentServiceManager) HandleSchedulerSubscription() error {
 			}()
 		}
 	}
-
-	defer func() {
-		_ = stream.CloseSend()
-	}()
 
 	logger.Info("Exiting")
 	return nil
