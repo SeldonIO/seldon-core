@@ -349,8 +349,8 @@ Below are some of the core components together with link to the logs that provid
 ### Reference
 
 * [Annotation-based Configuration ](../docs-gb/reference/annotations.md)
-* [Benchmarking ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/benchmarking.html)
-* [General Availability ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/ga.html)
+* [Benchmarking ](../docs-gb/reference/benchmarking.md)
+* [General Availability ](../docs-gb/reference/ga.md)
 * [Helm Charts ](../docs-gb/reference/helm_charts.md)
 * [Images ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/images.html)
 * [Logging & Log Level ](../docs-gb/reference/log_level.md)
@@ -358,7 +358,7 @@ Below are some of the core components together with link to the logs that provid
 * [Prediction APIs ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/index.html)
 * [Python API reference ](https://docs.seldon.io/projects/seldon-core/en/latest/python/api/modules.html)
 * [Release Highlights ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/release-highlights.html)
-* [Seldon Deployment CRD ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/seldon-deployment.html)
+* [Seldon Deployment CRD ](../docs-gb/reference/)(https://docs.seldon.io/projects/seldon-core/en/latest/reference/seldon-deployment.html)
 * [Service Orchestrator ](../docs-gb/reference/svcorch.md)
 * [Kubeflow ](../docs-gb/reference/kubeflow.md)
 
