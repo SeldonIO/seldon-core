@@ -22,7 +22,7 @@ At present, we support the following protocols:
 These protocols are supported by some of our pre-packaged servers out of the
 box.
 You can check their
-[documentation](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html)
+[documentation](../servers/overview.md)
 for more details.
 
 Additionally, you can see basic examples for all options in the [protocol

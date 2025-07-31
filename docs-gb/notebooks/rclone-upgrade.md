@@ -8,7 +8,7 @@ As it is explained in the [SC 1.8 upgrading notes](https://docs.seldon.io/projec
 In this tutorial we will show how to upgrade your configuration to new Storage Initializer with focus on getting the new format of a required secret right.
 
 Read more:
-- [Prepackaged Model Servers documentation page](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html)
+- [Prepackaged Model Servers documentation page](../servers/overview.md)
 - [SC 1.8 upgrading notes](https://docs.seldon.io/projects/seldon-core/en/latest/reference/upgrading.html#upgrading-to-1-8)
 - [Example upgrade path to use rclone-based storage initializer globally](https://docs.seldon.io/projects/seldon-core/en/latest/examples/global-rclone-upgrade.html)
 
@@ -115,7 +115,7 @@ curl -s -X POST -H 'Content-Type: application/json' \
 
 ## Preparing rclone-compatible secret
 
-The [rclone](https://rclone.org/)-based storage initializer expects one to define a new secret. General documentation credentials hadling can be found [here](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html#handling-credentials) with constantly updated examples of tested configurations.
+The [rclone](https://rclone.org/)-based storage initializer expects one to define a new secret. General documentation credentials hadling can be found [here](../servers/overview.md#handling-credentials) with constantly updated examples of tested configurations.
 
 If we do not have yet an example for Cloud Storage solution that you are using, please, consult the relevant page on [RClone documentation](https://rclone.org/#providers).
 

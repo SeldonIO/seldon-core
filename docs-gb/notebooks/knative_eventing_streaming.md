@@ -13,7 +13,7 @@ You will require the following in order to go ahead:
 
 ## Deploy your Seldon Model
 
-We will first deploy our model using Seldon Core. In this case we'll use one of the [pre-packaged model servers](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html).
+We will first deploy our model using Seldon Core. In this case we'll use one of the [pre-packaged model servers](../servers/overview.md).
 
 We first createa  configuration file:
 

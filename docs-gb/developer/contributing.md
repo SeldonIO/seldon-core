@@ -171,5 +171,4 @@ These spin up an actual Kubernetes cluster using
 `SeldonDeployment` and resources.
 
 You can learn more about how to run them and how to add new test cases on
-[their dedicated
-documentation](https://docs.seldon.io/projects/seldon-core/en/latest/developer/e2e.html).
+[their dedicated documentation](e2e.md)

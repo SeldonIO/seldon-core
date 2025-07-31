@@ -42,7 +42,7 @@ What this command does is basically the following:
 * Find the quickstart named "mlops-quickstart"
 * Build the project with name "mlops-deployment"
 
-You now have a repo where you'll be able to leverage [Seldon's pre-packaged model servers](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html).
+You now have a repo where you'll be able to leverage [Seldon's pre-packaged model servers](../servers/overview.md).
 
 Let's have a look at what was created:
 
@@ -77,7 +77,7 @@ We will need the following dependencies in order to run the Python code:
 ```
 
     ## You need the right versions for your model server:
-    ## Model servers: https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html
+    ## [Model servers]: https://docs.seldon.ai/seldon-core-1/en/latest/servers/overview
     
     ## For SKLearn you need a pickle and the following:
     scikit-learn==0.20.3 # See https://docs.seldon.io/projects/seldon-core/en/latest/servers/sklearn.html
