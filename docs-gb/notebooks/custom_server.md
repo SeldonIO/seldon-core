@@ -17,7 +17,7 @@ The Seldon model server is in defined in `lightgbmserver` folder.
 
 ## Setup Seldon Core
 
-Use the setup notebook to [Setup Cluster](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html) to setup Seldon Core with an ingress - either Ambassador or Istio.
+Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md) to setup Seldon Core with an ingress - either Ambassador or Istio.
 
 Then port-forward to that ingress on localhost:8003 in a separate terminal either with:
 

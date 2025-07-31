@@ -141,7 +141,7 @@ We will be using the model we updated to our google bucket (gs://seldon-models/m
 
 ### Setup Seldon Core
 
-Use the setup notebook to [Setup Cluster](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Setup-Cluster) with [Ambassador Ingress](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Ambassador) and [Install Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Install-Seldon-Core). Instructions [also online](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html).
+Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setup-cluster) with [Ambassador Ingress](../notebooks/seldon-core-setup.md#ambassador) and [Install Seldon Core](../notebooks/seldon-core-setup.md#Install-Seldon-Core). Instructions [also online](../notebooks/seldon-core-setup.md).
 
 
 ```python
@@ -346,4 +346,4 @@ In bottom of the dashboard you can see the following charts:
 - On the center: the reward, where you can see how model `a` outperforms model `b` by a large margin.
 - On the right, the latency for each one of them.
 
-You are able to add your own custom metrics, and try out other more complex deployments by following further guides at https://docs.seldon.io/projects/seldon-core/en/latest/examples/mlflow_server_ab_test_ambassador.html
+You are able to add your own custom metrics, and try out other more complex deployments by following [these guides](../notebooks/README.md)

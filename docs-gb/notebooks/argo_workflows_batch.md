@@ -11,12 +11,12 @@ Dependencies:
 ### Setup
 
 #### Install Seldon Core
-Use the notebook to [set-up Seldon Core with Ambassador or Istio Ingress](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html).
+Use the notebook to [set-up Seldon Core with Ambassador or Istio Ingress](../notebooks/seldon-core-setup.md).
 
 Note: If running with KIND you need to make sure do follow [these steps](https://github.com/argoproj/argo-workflows/issues/2376#issuecomment-595593237) as workaround to the `/.../docker.sock` known issue.
 
 #### Set up Minio in your cluster
-Use the notebook to [set-up Minio in your cluster](https://docs.seldon.io/projects/seldon-core/en/latest/examples/minio_setup.html).
+Use the notebook to [set-up Minio in your cluster](../notebooks/minio_setup.md).
 
 #### Create rclone configuration
 In this example, our workflow stages responsible for pulling / pushing data to in-cluster MinIO S3 storage will use `rclone` CLI.

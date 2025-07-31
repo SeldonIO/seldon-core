@@ -10,7 +10,7 @@ In this tutorial we aim to provide an intuition of the steps you will have to ca
 Read more:
 - [Prepackaged Model Servers documentation page](../servers/overview.md)
 - [SC 1.8 upgrading notes](https://docs.seldon.io/projects/seldon-core/en/latest/reference/upgrading.html#upgrading-to-1-8)
-- [Testing new storage initializer without global update](https://docs.seldon.io/projects/seldon-core/en/latest/examples/rclone-upgrade.html)
+- [Testing new storage initializer without global update](../notebooks/rclone-upgrade.md)
 
 ## Prerequisites
 
@@ -30,7 +30,7 @@ Read more:
  
 ## Setup Seldon Core
 
-Use the setup notebook to [Setup Cluster](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Setup-Cluster) with [Ambassador Ingress](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Ambassador) and [Install Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Install-Seldon-Core). 
+Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setup-cluster) with [Ambassador Ingress](../notebooks/seldon-core-setup.md#ambassador) and [Install Seldon Core](../notebooks/seldon-core-setup.md#Install-Seldon-Core). 
 
 Set starting storage initializer to be kfserving one
 
@@ -48,7 +48,7 @@ helm upgrade seldon-core seldon-core-operator \
 
 ## Setup MinIO
 
-Use the provided [notebook](https://docs.seldon.io/projects/seldon-core/en/latest/examples/minio_setup.html) to install Minio in your cluster and configure `mc` CLI tool. 
+Use the provided [notebook](../notebooks/minio_setup.md) to install Minio in your cluster and configure `mc` CLI tool. 
 
 ## Copy iris model into local MinIO
 

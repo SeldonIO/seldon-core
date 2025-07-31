@@ -27,7 +27,7 @@ Make sure you install the following dependencies, as they are critical for this 
 - Python 3.6+
 - Python DEV requirements (we'll install them below)
 
-You can follow this [notebook](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Setup-Cluster) to setup your cluster.
+You can follow this [notebook](../notebooks/seldon-core-setup.md#setup-cluster) to setup your cluster.
 
 Let's get started! 🚀🔥
 

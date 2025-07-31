@@ -63,7 +63,7 @@ model.save_pretrained("./tfgpt2model", saved_model=True)
 
 ### Copy your model to a local MinIo
 #### Setup MinIo
-Use the provided [notebook](https://docs.seldon.io/projects/seldon-core/en/latest/examples/minio_setup.html) to install MinIo in your cluster and configure `mc` CLI tool. Instructions also [online](https://docs.min.io/docs/minio-client-quickstart-guide.html).
+Use the provided [notebook](../notebooks/minio_setup.md) to install MinIo in your cluster and configure `mc` CLI tool. Instructions also [online](https://docs.min.io/docs/minio-client-quickstart-guide.html).
 
 -- Note: You can use your prefer remote storage server (google/ AWS etc.)
 
@@ -80,7 +80,7 @@ Use the provided [notebook](https://docs.seldon.io/projects/seldon-core/en/lates
 
 ### Run Seldon in your kubernetes cluster
 
-Follow the [Seldon-Core Setup notebook](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html) to Setup a cluster with Ambassador Ingress or Istio and install Seldon Core
+Follow the [Seldon-Core Setup notebook](../notebooks/seldon-core-setup.md) to Setup a cluster with Ambassador Ingress or Istio and install Seldon Core
 
 ### Deploy your model with Seldon pre-packaged Triton server
 

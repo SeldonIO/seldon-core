@@ -11,7 +11,7 @@
  
 ## Setup Seldon Core
 
-Use the setup notebook to [Setup Cluster](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html) to setup Seldon Core with an ingress.
+Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md) to setup Seldon Core with an ingress.
 
 
 ```python

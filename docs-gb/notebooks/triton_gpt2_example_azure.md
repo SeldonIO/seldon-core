@@ -62,7 +62,7 @@ python -m tf2onnx.convert --saved-model ./tfgpt2model/saved_model/1 --opset 13  
 
 ## Azure Setup
 
-We have provided an [Azure Setup Notebook](https://docs.seldon.io/projects/seldon-core/en/latest/examples/triton_gpt2_example_azure_setup.html) that deploys an AKS cluster, an Azure storage account, and installs the Azure Blob CSI driver. If an AKS cluster already exists, skip to the creation of Blob Storage and CSI driver installation steps.
+We have provided an [Azure Setup Notebook](../notebooks/triton_gpt2_example_azure_setup.md) that deploys an AKS cluster, an Azure storage account, and installs the Azure Blob CSI driver. If an AKS cluster already exists, skip to the creation of Blob Storage and CSI driver installation steps.
 
 Upon completion of the Azure setup, the following infrastructure will be created:
 ![Azure](../images/azure.jpg)
@@ -174,7 +174,7 @@ persistentvolumeclaim/pvc-gpt2blob   Bound    pv-gpt2blob   10Gi       RWX      
 
 ### Run Seldon in your kubernetes cluster
 
-Follow the [Seldon-Core Setup notebook](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html) to set up a cluster with Istio Ingress and install Seldon Core.
+Follow the [Seldon-Core Setup notebook](../notebooks/seldon-core-setup.md) to set up a cluster with Istio Ingress and install Seldon Core.
 
 ### Deploy your model with Seldon pre-packaged Triton server
 
