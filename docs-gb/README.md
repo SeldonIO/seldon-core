@@ -104,7 +104,7 @@ This can be accessed through the endpoint `http://<ingress_url>/seldon/<namespac
 
 ![](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/rest-openapi.jpg)
 
-Or alternatively you can send requests programmatically using our [Seldon Python Client](https://docs.seldon.io/projects/seldon-core/en/latest/python/seldon_client.html) or another Linux CLI:
+Or alternatively you can send requests programmatically using our [Seldon Python Client](../docs-gb/wrappers/python/seldon_client.md) or another Linux CLI:
 
 ```console
 $ curl -X POST http://<ingress>/seldon/seldon/iris-model/api/v1.0/predictions \
@@ -185,7 +185,7 @@ This can be accessed through the endpoint `http://<ingress_url>/seldon/<namespac
 
 ![](https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/rest-openapi.jpg)
 
-Or alternatively you can send requests programmatically using our [Seldon Python Client](https://docs.seldon.io/projects/seldon-core/en/latest/python/seldon_client.html) or another Linux CLI:
+Or alternatively you can send requests programmatically using our [Seldon Python Client](../docs-gb/wrappers/python/seldon_client.md) or another Linux CLI:
 
 ```console
 $ curl -X POST http://<ingress>/seldon/model-namespace/iris-model/api/v1.0/predictions \
@@ -287,7 +287,7 @@ Below are some of the core components together with link to the logs that provid
 * [Quickstart Guide ](README.md#getting-started)
 * [Overview of Components ](overview.md)
 * [Install Seldon Core on Kubernetes ](../install/installation.md)
-* [Join the Community ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/community.html)
+* [Join the Community ](../docs-gb/developer/community.md)
 
 ### Seldon Core Deep Dive
 
@@ -315,15 +315,15 @@ Below are some of the core components together with link to the logs that provid
 
 ### Language Wrappers (Incubating)
 
-* [Java Language Wrapper [Incubating] ](https://docs.seldon.io/projects/seldon-core/en/latest/java/README.html)
-* [R Language Wrapper [ALPHA] ](https://docs.seldon.io/projects/seldon-core/en/latest/R/README.html)
-* [NodeJS Language Wrapper [ALPHA] ](https://docs.seldon.io/projects/seldon-core/en/latest/nodejs/README.html)
+* [Java Language Wrapper [Incubating] ](../docs-gb/wrappers/java.md)
+* [R Language Wrapper [ALPHA] ](../docs-gb/wrappers/r.md)
+* [NodeJS Language Wrapper [ALPHA] ](../docs-gb/wrappers/nodejs.md)
 * [Go Language Wrapper [ALPHA] ](https://docs.seldon.io/projects/seldon-core/en/latest/go/go_wrapper_link.html)
 
 ### Ingress
 
-* [Ambassador Ingress ](https://docs.seldon.io/projects/seldon-core/en/latest/ingress/ambassador.html)
-* [Istio Ingress ](https://docs.seldon.io/projects/seldon-core/en/latest/ingress/istio.html)
+* [Ambassador Ingress ](../docs-gb/routing/ambassador.md)
+* [Istio Ingress ](../docs-gb/routing/istio.md)
 
 ### Production
 
@@ -349,8 +349,8 @@ Below are some of the core components together with link to the logs that provid
 ### Reference
 
 * [Annotation-based Configuration ](../docs-gb/reference/annotations.md)
-* [Benchmarking ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/benchmarking.html)
-* [General Availability ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/ga.html)
+* [Benchmarking ](../docs-gb/reference/benchmarking.md)
+* [General Availability ](../docs-gb/reference/ga.md)
 * [Helm Charts ](../docs-gb/reference/helm_charts.md)
 * [Images ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/images.html)
 * [Logging & Log Level ](../docs-gb/reference/log_level.md)
@@ -358,17 +358,17 @@ Below are some of the core components together with link to the logs that provid
 * [Prediction APIs ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/index.html)
 * [Python API reference ](https://docs.seldon.io/projects/seldon-core/en/latest/python/api/modules.html)
 * [Release Highlights ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/release-highlights.html)
-* [Seldon Deployment CRD ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/seldon-deployment.html)
+* [Seldon Deployment CRD ](../docs-gb/reference/)(https://docs.seldon.io/projects/seldon-core/en/latest/reference/seldon-deployment.html)
 * [Service Orchestrator ](../docs-gb/reference/svcorch.md)
 * [Kubeflow ](../docs-gb/reference/kubeflow.md)
 
 ### Developer
 
-* [Overview ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/readme.html)
-* [Contributing to Seldon Core ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/contributing.html)
+* [Overview ](../docs-gb/developer/readme.md)
+* [Contributing to Seldon Core ](../docs-gb/developer/contributing.md)
 * [End to End Tests ](../docs-gb/developer/e2e.md)
-* [Roadmap ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/roadmap.html)
-* [Build using private repo ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/build-using-private-repo.html)
+* [Roadmap ](../docs-gb/developer/roadmap.md)
+* [Build using private repo ](../docs-gb/developer/buid-using-private-repo.md)
 
 ## About the name "Seldon Core"
 
