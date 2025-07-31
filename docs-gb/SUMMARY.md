@@ -20,7 +20,7 @@
     * [Helm Configurations](install/advanced-helm-chart-configuration.md)
     * [Usage Reporting](install/usage-reporting.md)
     * [Change Log](https://github.com/SeldonIO/seldon-core/tree/master/CHANGELOG.md)
-    * [Upgrading](upgrading.md)
+    * [Upgrading](../docs-gb/upgrading.md)
   * Deployments
     * [Deployment Techniques](deployments/deploying.md)
     * [Supported API Protocols](deployments/protocols.md)
@@ -34,6 +34,7 @@
   * Servers
     * [Custom Inference Servers](servers/custom.md)
     * [Storage Initializers]
+    * [Prepackaged Model Servers](servers/overview.md)
     * [Inference Optimization](servers/optimization.md)
     * [XGBoost Server](servers/xgboost.md)
     * [Triton Inference Server](servers/triton.md)

@@ -225,7 +225,7 @@ You will need tensorflow installed to run these steps.
 
 ## Setup Seldon Core
 
-Instructions [also online](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html).
+Instructions [also online](../notebooks/seldon-core-setup.md).
 
 ### Run MNIST Inference Graph
 

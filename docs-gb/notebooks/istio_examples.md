@@ -6,7 +6,7 @@ Prequisites
 
 ## Setup Cluster and Ingress
 
-Use the setup notebook to [Setup Cluster](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Setup-Cluster) with [Istio Ingress](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Istio). Instructions [also online](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html).
+Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setup-cluster) with [Istio Ingress](../notebooks/seldon-core-setup.md#Istio). Instructions [also online](../notebooks/seldon-core-setup.md).
 
 
 ```python
@@ -93,7 +93,7 @@ def writetemplate(line, cell):
 
 ## Start Seldon Core
 
-Use the setup notebook to [Install Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Install-Seldon-Core) with Istio Ingress. Instructions [also online](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html).
+Use the setup notebook to [Install Seldon Core](../notebooks/seldon-core-setup.md#Install-Seldon-Core) with Istio Ingress. Instructions [also online](../notebooks/seldon-core-setup.md).
 
 ## Serve Single Model
 

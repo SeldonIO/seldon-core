@@ -32,7 +32,7 @@ For Alibi explainers that need to be trained you should
 
  1. Use python 3.7 as the Seldon Alibi Explain Server also runs in python 3.7.10 when it loads your explainer.
  1. Follow the [Alibi docs](https://docs.seldon.io/projects/alibi/en/latest/index.html) for your particular desired explainer. The Seldon Wrapper presently supports: Anchors (Tabular, Text and Image), KernelShap and Integrated Gradients.
- 1. Save your explainer using [explainer.save](https://docs.seldon.io/projects/alibi/en/latest/overview/saving.html) method and store in the object store or PVC in your cluster. We support various cloud storage solutions through our [init container](../servers/overview.html).
+ 1. Save your explainer using [explainer.save](https://docs.seldon.io/projects/alibi/en/latest/overview/saving.html) method and store in the object store or PVC in your cluster. We support various cloud storage solutions through our [init container](../servers/overview.md).
 
 The runtime environment in our [Alibi Explain Server](https://github.com/SeldonIO/seldon-core/tree/master/components/alibi-explain-server) is locked using [Poetry](https://python-poetry.org/). See our e2e example [here](../examples/iris_explainer_poetry.html) on how to use that definition to train your explainers.
 

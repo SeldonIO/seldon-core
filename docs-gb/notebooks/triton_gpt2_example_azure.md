@@ -62,7 +62,7 @@ python -m tf2onnx.convert --saved-model ./tfgpt2model/saved_model/1 --opset 13  
 
 ## Azure Setup
 
-We have provided an [Azure Setup Notebook](https://docs.seldon.io/projects/seldon-core/en/latest/examples/triton_gpt2_example_azure_setup.html) that deploys an AKS cluster, an Azure storage account, and installs the Azure Blob CSI driver. If an AKS cluster already exists, skip to the creation of Blob Storage and CSI driver installation steps.
+We have provided an [Azure Setup Notebook](../notebooks/triton_gpt2_example_azure_setup.md) that deploys an AKS cluster, an Azure storage account, and installs the Azure Blob CSI driver. If an AKS cluster already exists, skip to the creation of Blob Storage and CSI driver installation steps.
 
 Upon completion of the Azure setup, the following infrastructure will be created:
 ![Azure](../images/azure.jpg)
@@ -174,7 +174,7 @@ persistentvolumeclaim/pvc-gpt2blob   Bound    pv-gpt2blob   10Gi       RWX      
 
 ### Run Seldon in your kubernetes cluster
 
-Follow the [Seldon-Core Setup notebook](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html) to set up a cluster with Istio Ingress and install Seldon Core.
+Follow the [Seldon-Core Setup notebook](../notebooks/seldon-core-setup.md) to set up a cluster with Istio Ingress and install Seldon Core.
 
 ### Deploy your model with Seldon pre-packaged Triton server
 
@@ -333,7 +333,7 @@ kubectl get pods -n kube-system | grep omsagent
 
 For more details on how to configure the scraping endpoints and query collected data refer to [MS Docs on Configure scraping of Prometheus metrics with Container insights](https://docs.microsoft.com/en-us/azure/azure-monitor/containers/container-insights-prometheus-integration).
 
-Our deployed model metrics are available from the [Seldon model orchestrator](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html) and [Nvidia Triton Server](https://github.com/triton-inference-server/server/blob/main/docs/user_guide/metrics.md). To enable scraping for both endpoints, update the `ConfigMap` that configures `omsagent` ([azure-metrics-cm.yaml](./azure-metrics-cm.yaml)).
+Our deployed model metrics are available from the [Seldon model orchestrator](../integrations/analytics.md) and [Nvidia Triton Server](https://github.com/triton-inference-server/server/blob/main/docs/user_guide/metrics.md). To enable scraping for both endpoints, update the `ConfigMap` that configures `omsagent` ([azure-metrics-cm.yaml](./azure-metrics-cm.yaml)).
 
 ```bash
 kubectl apply -f azure-metrics-cm.yaml

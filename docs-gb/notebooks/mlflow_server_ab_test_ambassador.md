@@ -19,7 +19,7 @@ It will follow closely our talk at the [Spark + AI Summit 2019 on Seldon and MLf
 
 ## Dependencies
 
-For this example to work you must be running Seldon 0.3.2 or above - you can follow our [getting started guide for this](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html).
+For this example to work you must be running Seldon 0.3.2 or above - you can follow our [getting started guide for this](../install/installation.md).
 
 In regards to other dependencies, make sure you have installed:
 
@@ -141,7 +141,7 @@ We will be using the model we updated to our google bucket (gs://seldon-models/m
 
 ### Setup Seldon Core
 
-Use the setup notebook to [Setup Cluster](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Setup-Cluster) with [Ambassador Ingress](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Ambassador) and [Install Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Install-Seldon-Core). Instructions [also online](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html).
+Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setup-cluster) with [Ambassador Ingress](../notebooks/seldon-core-setup.md#ambassador) and [Install Seldon Core](../notebooks/seldon-core-setup.md#Install-Seldon-Core). Instructions [also online](../notebooks/seldon-core-setup.md).
 
 
 ```python
@@ -270,7 +270,7 @@ We should now see the "a-" model and the "b-" models.
 
 This section is optional, but by following the instructions you will be able to visualise the performance of both models as per the chart below.
 
-In order for this example to work you need to install and run the [Grafana Analytics package for Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html#helm-analytics-chart).
+In order for this example to work you need to install and run the [Grafana Analytics package for Seldon Core](https://docs.seldon.ai/seldon-core-1/configuration/integrations/analytics#helm-analytics-chart).
 
 For this we can access the URL with the command below, it will request an admin and password which by default are set to the following:
 * Username: admin
@@ -346,4 +346,4 @@ In bottom of the dashboard you can see the following charts:
 - On the center: the reward, where you can see how model `a` outperforms model `b` by a large margin.
 - On the right, the latency for each one of them.
 
-You are able to add your own custom metrics, and try out other more complex deployments by following further guides at https://docs.seldon.io/projects/seldon-core/en/latest/examples/mlflow_server_ab_test_ambassador.html
+You are able to add your own custom metrics, and try out other more complex deployments by following [these guides](../notebooks/README.md)

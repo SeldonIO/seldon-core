@@ -11,7 +11,7 @@ In your commands:
 * kubectl
 
 In cluster:
-* [Install Seldon](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html)
+* [Install Seldon](../install/installation.md)
 * Install Kafka as per the instructions below
 
 

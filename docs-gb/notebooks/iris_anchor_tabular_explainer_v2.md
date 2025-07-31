@@ -8,7 +8,7 @@ MLServer is a Python server for your machine learning models through a REST and 
 
  This should install the required package dependencies, if not please also install:
  
-- install and configure `mc`, follow the relevant section in this [link](https://docs.seldon.io/projects/seldon-core/en/latest/examples/minio_setup.html)
+- install and configure `mc`, follow the relevant section in this [link](../notebooks/minio_setup.md)
 
 - run this jupyter notebook in conda environment
 ```bash
@@ -29,7 +29,7 @@ $ jupyter notebook
 
 ## Setup Seldon Core
 
-Follow the instructions to [Setup Cluster](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Setup-Cluster) with [Ambassador Ingress](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Ambassador) and [Install Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Install-Seldon-Core).
+Follow the instructions to [Setup Cluster](../notebooks/seldon-core-setup.md#setup-cluster) with [Ambassador Ingress](../notebooks/seldon-core-setup.md#ambassador) and [Install Seldon Core](../notebooks/seldon-core-setup.md#Install-Seldon-Core).
 
  Then port-forward to that ingress on localhost:8003 in a separate terminal either with:
 
@@ -38,8 +38,8 @@ Follow the instructions to [Setup Cluster](https://docs.seldon.io/projects/seldo
 
 ### Setup MinIO
 
-Use the provided [notebook](https://docs.seldon.io/projects/seldon-core/en/latest/examples/minio_setup.html) to install Minio in your cluster and configure `mc` CLI tool. 
-Instructions [also online](https://docs.seldon.io/projects/seldon-core/en/latest/examples/minio_setup.html).
+Use the provided [notebook](../notebooks/minio_setup.md) to install Minio in your cluster and configure `mc` CLI tool. 
+Instructions [also online](../notebooks/minio_setup.md).
 
 ## Train `iris` model using `sklearn`
 

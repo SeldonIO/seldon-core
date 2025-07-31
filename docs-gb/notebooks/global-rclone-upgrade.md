@@ -3,14 +3,14 @@
 In this documentation page we provide an example upgrade path from kfserving-based to rclone-based storage initializer. This is required due to the fact that secret format expected by these two storage initializers is different. 
 
 Storage initializers are used by Seldon's pre-packaged model servers to download models binaries. 
-As it is explained in the [SC 1.8 upgrading notes](https://docs.seldon.io/projects/seldon-core/en/latest/reference/upgrading.html#upgrading-to-1-8) the [seldonio/rclone-storage-initializer](https://github.com/SeldonIO/seldon-core/tree/master/components/rclone-storage-initializer) became default storage initializer in v1.8.0.
+As it is explained in the [SC 1.8 upgrading notes](../upgrading.md#upgrading-to-1-8) the [seldonio/rclone-storage-initializer](https://github.com/SeldonIO/seldon-core/tree/master/components/rclone-storage-initializer) became default storage initializer in v1.8.0.
 
 In this tutorial we aim to provide an intuition of the steps you will have to carry to migrate to the new rclone-based Storage Initializer with the context that every cluster configuration will be different, so you should be able to see this as something you can build from.
 
 Read more:
-- [Prepackaged Model Servers documentation page](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html)
-- [SC 1.8 upgrading notes](https://docs.seldon.io/projects/seldon-core/en/latest/reference/upgrading.html#upgrading-to-1-8)
-- [Testing new storage initializer without global update](https://docs.seldon.io/projects/seldon-core/en/latest/examples/rclone-upgrade.html)
+- [Prepackaged Model Servers documentation page](../servers/overview.md)
+- [SC 1.8 upgrading notes](../upgrading.md#upgrading-to-1-8)
+- [Testing new storage initializer without global update](../notebooks/rclone-upgrade.md)
 
 ## Prerequisites
 
@@ -30,7 +30,7 @@ Read more:
  
 ## Setup Seldon Core
 
-Use the setup notebook to [Setup Cluster](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Setup-Cluster) with [Ambassador Ingress](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Ambassador) and [Install Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Install-Seldon-Core). 
+Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setup-cluster) with [Ambassador Ingress](../notebooks/seldon-core-setup.md#ambassador) and [Install Seldon Core](../notebooks/seldon-core-setup.md#Install-Seldon-Core). 
 
 Set starting storage initializer to be kfserving one
 
@@ -48,7 +48,7 @@ helm upgrade seldon-core seldon-core-operator \
 
 ## Setup MinIO
 
-Use the provided [notebook](https://docs.seldon.io/projects/seldon-core/en/latest/examples/minio_setup.html) to install Minio in your cluster and configure `mc` CLI tool. 
+Use the provided [notebook](../notebooks/minio_setup.md) to install Minio in your cluster and configure `mc` CLI tool. 
 
 ## Copy iris model into local MinIO
 
@@ -188,7 +188,7 @@ curl -s -X POST -H 'Content-Type: application/json' \
 
 ## Preparing rclone-compatible secret
 
-The [rclone](https://rclone.org/)-based storage initializer expects one to define a new secret. General documentation credentials hadling can be found [here](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html#handling-credentials) with constantly updated examples of tested configurations.
+The [rclone](https://rclone.org/)-based storage initializer expects one to define a new secret. General documentation credentials hadling can be found [here](../servers/overview.md#handling-credentials) with constantly updated examples of tested configurations.
 
 If we do not have yet an example for Cloud Storage solution that you are using, please, consult the relevant page on [RClone documentation](https://rclone.org/#providers).
 

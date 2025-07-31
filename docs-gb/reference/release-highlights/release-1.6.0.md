@@ -56,7 +56,7 @@ spec:
         value: 'true'
 ```
 
-You can find a full end to end example of the multi-armed bandits [implementation here](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/routers.html).
+You can find a full end to end example of the multi-armed bandits [implementation here](https://docs.seldon.ai/seldon-core-1/configuration/routing/routers).
 
 ## Added Github Actions for CI
 

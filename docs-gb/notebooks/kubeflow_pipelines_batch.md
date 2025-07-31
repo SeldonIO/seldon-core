@@ -2,7 +2,7 @@
 In this notebook we will dive into how you can run batch processing with Kubeflow Pipelines and Seldon Core.
 
 Dependencies:
-* Seldon core installed as per the docs with [Istio Ingress](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html#install-seldon-core-with-helm)
+* Seldon core installed as per the docs with [Istio Ingress](../install/installation.md#install-seldon-core-with-helm)
 * Kubeflow Pipelines installed (installation instructions in this notebook)
 
 ![kubeflow-pipeline](../images/kubeflow-pipeline.jpg)

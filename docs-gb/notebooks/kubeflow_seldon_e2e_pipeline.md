@@ -20,7 +20,7 @@ This tutorial will break down in the following sections:
 
 Make sure you have the following components set-up and running in your Kubernetes cluster:
 
-* [Seldon Core installed](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html#install-seldon-core-with-helm) with an [ingress (Ambassador / Istio) set up](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html#ingress-support)
+* [Seldon Core installed](../install/installation.md#install-seldon-core-with-helm) with an [ingress (Ambassador / Istio) set up](../install/installation.md)
 * Kubeflow Pipelines [version 1.0.0 Standalone](https://www.kubeflow.org/docs/pipelines/installation/standalone-deployment/#deploying-kubeflow-pipelines) set up
 
 Let's get started! 🚀🔥 We will be building the end-to-end pipeline below:

@@ -102,8 +102,8 @@ Create two topics with 2 partitions each. This will allow scaling up to 2 replic
 
 ## Install Seldon
 
-  * [Install Seldon](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html)
-  * [Follow our docs to intstall the Grafana analytics](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html).
+  * [Install Seldon](../install/installation.md)
+  * [Follow our docs to intstall the Grafana analytics](https://docs.seldon.ai/seldon-core-1/configuration/integrations/analytics).
 
 ## Download Test Request Data
 We have two example datasets containing 50,000 requests in tensorflow serving format for CIFAR10. One in JSON format and one as length encoded proto buffers.

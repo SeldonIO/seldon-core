@@ -9,11 +9,11 @@ In this example we will deploy a simple model containerised with Seldon Core and
 You will require the following in order to go ahead:
 * Istio 1.42+ Installed ([Documentation Instructions](https://istio.io/latest/docs/setup/install/))
 * KNative Eventing 0.13 installed ([Documentation Instructions](https://knative.dev/docs/admin/install/))
-* Seldon Core v1.1+ installed with Istio Ingress Enabled ([Documentation Instructions](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html#ingress-support))
+* Seldon Core v1.1+ installed with Istio Ingress Enabled ([Documentation Instructions](/install/installation.md))
 
 ## Deploy your Seldon Model
 
-We will first deploy our model using Seldon Core. In this case we'll use one of the [pre-packaged model servers](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html).
+We will first deploy our model using Seldon Core. In this case we'll use one of the [pre-packaged model servers](../servers/overview.md).
 
 We first createa  configuration file:
 

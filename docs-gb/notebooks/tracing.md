@@ -6,7 +6,7 @@
 
 ## Setup Seldon Core
 
-Install Seldon Core as described in [docs](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html)
+Install Seldon Core as described in [docs](../install/installation.md)
 
 Then port-forward to that ingress on localhost:8003 in a separate terminal either with:
 

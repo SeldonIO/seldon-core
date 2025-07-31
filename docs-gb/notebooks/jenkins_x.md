@@ -23,7 +23,7 @@ In this project, we will be building an MLOps workflow to deploy your production
 * A Kubernetes cluster running v1.13+ (this was run using GKE)
 * The [jx CLI](https://github.com/jenkins-x/jx/) version 2.0.916
 * Jenkins-X installed in your cluster (you can set it up with the [jx boot tutorial](https://jenkins-x.io/docs/getting-started/setup/boot/))
-* Seldon Core [v0.5.0 installed](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html) in your cluster
+* Seldon Core [v0.5.0 installed](../install/installation.md) in your cluster
 
 Once you set everything up, we'll be ready to kick off 🚀
 
@@ -42,7 +42,7 @@ What this command does is basically the following:
 * Find the quickstart named "mlops-quickstart"
 * Build the project with name "mlops-deployment"
 
-You now have a repo where you'll be able to leverage [Seldon's pre-packaged model servers](https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html).
+You now have a repo where you'll be able to leverage [Seldon's pre-packaged model servers](../servers/overview.md).
 
 Let's have a look at what was created:
 
@@ -77,10 +77,10 @@ We will need the following dependencies in order to run the Python code:
 ```
 
     ## You need the right versions for your model server:
-    ## Model servers: https://docs.seldon.io/projects/seldon-core/en/latest/servers/overview.html
+    ## [Model servers]: https://docs.seldon.ai/seldon-core-1/en/latest/servers/overview
     
     ## For SKLearn you need a pickle and the following:
-    scikit-learn==0.20.3 # See https://docs.seldon.io/projects/seldon-core/en/latest/servers/sklearn.html
+    scikit-learn==0.20.3 # See https://docs.seldon.ai/seldon-core-1/en/latest/servers/sklearn
     joblib==0.13.2
     
     ## For XGBoost you need v 0.82 and an xgboost export (not a pickle)

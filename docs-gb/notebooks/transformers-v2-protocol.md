@@ -5,9 +5,9 @@ For example, extra information may need to be fetched (e.g. from a feature store
 
 In this tutorial, we will focus on this latter scenario.
 In particular, we will explore how to deploy a _tokeniser_ pre-transformer that converts our natural language text to tokens. 
-This tokeniser will then be part of an inference graph, so that its output gets routed to a [GPT-2 model deployed using Triton](https://docs.seldon.io/projects/seldon-core/en/latest/examples/triton_gpt2_example.html).
+This tokeniser will then be part of an inference graph, so that its output gets routed to a [GPT-2 model deployed using Triton](../notebooks/triton_gpt2_example.md).
 
-> **NOTE**: The tokeniser logic and the Triton artifacts are taken from the [GPT-2 Model example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/triton_gpt2_example.html). To learn more about these, feel free to check that tutorial.
+> **NOTE**: The tokeniser logic and the Triton artifacts are taken from the [GPT-2 Model example](../notebooks/triton_gpt2_example.md). To learn more about these, feel free to check that tutorial.
 
 ![Inference graph with tokeniser and GPT-2 model](../images/gpt2-graph.svg)
 
@@ -19,7 +19,7 @@ MLServer is a production-grade inference server, whose main goal is to ease up t
 As well as an inference server, MLServer also exposes a *framework* which can be leveraged to easily **write your custom inference runtimes**.
 These custom runtimes can be used to write any custom logic, including (you guessed it!) our tokeniser pre-processor.
 Therefore, we will start by extending the base `mlserver.MLModel` class, adding our custom logic.
-Note that this logic is taken (almost) verbatim from the [GPT-2 Model example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/triton_gpt2_example.html).
+Note that this logic is taken (almost) verbatim from the [GPT-2 Model example](../notebooks/triton_gpt2_example.md).
 
 
 ```python
@@ -159,9 +159,9 @@ Now that we have our custom tokeniser built and ready, we are able to deploy it 
 This can be achieved through a `SeldonDeployment` manifest which **links both models**.
 That is, our tokeniser, plus the actual GPT-2 model.
 
-As outlined above, this manifest will re-use the image and resources built in the [GPT-2 Model example](https://docs.seldon.io/projects/seldon-core/en/latest/examples/triton_gpt2_example.html), which is accessible from GCS.
+As outlined above, this manifest will re-use the image and resources built in the [GPT-2 Model example](../notebooks/triton_gpt2_example.md), which is accessible from GCS.
 
-> **NOTE:** This manifest expects that the `gpt2-tokeniser:0.1.0` image built in the previous section **is accessible** from within the cluster where Seldon Core has been installed. If you are [using kind](https://docs.seldon.io/projects/seldon-core/en/latest/install/kind.html), you should be able to load the image into your local cluster with the following command:
+> **NOTE:** This manifest expects that the `gpt2-tokeniser:0.1.0` image built in the previous section **is accessible** from within the cluster where Seldon Core has been installed. If you are [using kind](../install/kind.md), you should be able to load the image into your local cluster with the following command:
 ```bash
 kind load docker-image gpt2-tokeniser:0.1.0
 ```
