@@ -1,0 +1,35 @@
+name: Check all Markdown links daily
+
+on:
+  schedule:
+    - cron: "0 23 * * *"
+  pull_request:
+    branches:
+      - master, v2
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  markdown-link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Run Linkspector
+        uses: umbrelladocs/action-linkspector@v1
+        with:
+          workdir: docs-gb
+          reporter: github-pr-review
+          fail_level: any
+          fconfig_file: .linkspector.yml
+
+      - name: Create issue
+        if: ${{ failure() }}
+        uses: JasonEtco/create-an-issue@e27dddc79c92bc6e4562f268fffa5ed752639abd
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          filename: .github/ISSUE_TEMPLATE/broken_link_report.md
