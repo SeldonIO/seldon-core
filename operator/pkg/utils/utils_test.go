@@ -16,6 +16,8 @@ import (
 )
 
 func TestMergeMaps(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -48,6 +50,8 @@ func TestMergeMaps(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			m3 := MergeMaps(test.m1, test.m2)
 			for k, v := range test.expected {
 				g.Expect(m3[k]).To(Equal(v))
@@ -57,6 +61,8 @@ func TestMergeMaps(t *testing.T) {
 }
 
 func TestHasMappings(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -95,6 +101,8 @@ func TestHasMappings(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			g.Expect(HasMappings(test.m1, test.m2)).To(Equal(test.expected))
 		})
 	}

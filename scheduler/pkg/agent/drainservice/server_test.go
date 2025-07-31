@@ -48,7 +48,7 @@ func TestDrainerServiceSmoke(t *testing.T) {
 	for i := 0; i < numCalls; i++ {
 		go func() {
 			// only one of these http call will trigger the start of the draining process
-			_, err = http.Get("http://localhost:" + strconv.Itoa(serverPort) + terminateEndpoint)
+			_, err := http.Get("http://localhost:" + strconv.Itoa(serverPort) + terminateEndpoint)
 			if err == nil {
 				wg.Done()
 			}

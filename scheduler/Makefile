@@ -93,7 +93,7 @@ lint: lint-go lint-jvm
 
 .PHONY: test-go
 test-go:
-	go test ./pkg/... -coverprofile cover.out
+	go test ./pkg/... -race -coverprofile cover.out
 
 .PHONY: test-jvm
 test-jvm:

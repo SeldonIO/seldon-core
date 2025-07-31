@@ -138,15 +138,15 @@ type fakeMetricsHandler struct {
 	mu              *sync.Mutex
 }
 
-func (f fakeMetricsHandler) AddModelHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc {
+func (f *fakeMetricsHandler) AddModelHistogramMetricsHandler(baseHandler http.HandlerFunc) http.HandlerFunc {
 	return baseHandler
 }
 
-func (f fakeMetricsHandler) HttpCodeToString(code int) string {
+func (f *fakeMetricsHandler) HttpCodeToString(code int) string {
 	return fmt.Sprintf("%d", code)
 }
 
-func (f fakeMetricsHandler) AddModelInferMetrics(externalModelName string, internalModelName string, method string, elapsedTime float64, code string) {
+func (f *fakeMetricsHandler) AddModelInferMetrics(externalModelName string, internalModelName string, method string, elapsedTime float64, code string) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
@@ -157,7 +157,7 @@ func (f fakeMetricsHandler) AddModelInferMetrics(externalModelName string, inter
 	}
 }
 
-func (f fakeMetricsHandler) AddLoadedModelMetrics(internalModelName string, memory uint64, isLoad, isSoft bool) {
+func (f *fakeMetricsHandler) AddLoadedModelMetrics(internalModelName string, memory uint64, isLoad, isSoft bool) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
@@ -171,15 +171,15 @@ func (f fakeMetricsHandler) AddLoadedModelMetrics(internalModelName string, memo
 func (f fakeMetricsHandler) AddServerReplicaMetrics(memory uint64, memoryWithOvercommit float32) {
 }
 
-func newFakeMetricsHandler() fakeMetricsHandler {
-	return fakeMetricsHandler{
+func newFakeMetricsHandler() *fakeMetricsHandler {
+	return &fakeMetricsHandler{
 		modelLoadState:  map[string]loadModelSateValue{},
 		modelInferState: map[string]inferModelSateValue{},
 		mu:              &sync.Mutex{},
 	}
 }
 
-func (f fakeMetricsHandler) UnaryServerInterceptor() func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+func (f *fakeMetricsHandler) UnaryServerInterceptor() func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		return handler(ctx, req)
 	}
@@ -346,6 +346,8 @@ func TestReverseProxySmoke(t *testing.T) {
 			}
 
 			//  test infer metrics
+
+			fakeMetricsHandler.mu.Lock()
 			g.Expect(fakeMetricsHandler.modelInferState[test.expectedModelExternalTag].internalModelName).To(Equal(test.modelToRequest))
 			g.Expect(fakeMetricsHandler.modelInferState[test.expectedModelExternalTag].method).To(Equal("rest"))
 			if test.statusCode == http.StatusOK {
@@ -353,6 +355,8 @@ func TestReverseProxySmoke(t *testing.T) {
 			} else {
 				g.Expect(fakeMetricsHandler.modelInferState[test.expectedModelExternalTag].code).To(Equal("404"))
 			}
+			fakeMetricsHandler.mu.Unlock()
+
 			g.Expect(rpHTTP.Ready()).To(BeTrue())
 			_ = rpHTTP.Stop()
 			g.Expect(rpHTTP.Ready()).To(BeFalse())

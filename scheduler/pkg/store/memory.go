@@ -402,7 +402,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 	if replicaStateUpdated || modelVersion.state.State == ScheduleFailed || model.IsDeleted() || modelVersion.state.State == ModelProgressing ||
 		(modelVersion.state.State == ModelAvailable && len(modelVersion.GetAssignment()) < modelVersion.DesiredReplicas()) {
 		logger.Debugf("Updating model status for model %s server %s", modelKey, serverKey)
-		modelVersion.server = serverKey
+		modelVersion.SetServer(serverKey)
 		m.updateModelStatus(true, model.IsDeleted(), modelVersion, model.GetLastAvailableModelVersion())
 
 		return &coordinator.ModelEventMsg{
@@ -666,7 +666,7 @@ func (m *MemoryStore) addServerReplicaImpl(request *agent.AgentSubscribeRequest)
 	for _, modelVersionReq := range request.LoadedModels {
 		model, modelVersion := m.addModelVersionIfNotExists(modelVersionReq)
 		modelVersion.replicas[int(request.ReplicaIdx)] = ReplicaStatus{State: Loaded}
-		modelVersion.server = request.ServerName
+		modelVersion.SetServer(request.ServerName)
 		m.updateModelStatus(true, false, modelVersion, model.GetLastAvailableModelVersion())
 		evts = append(evts, coordinator.ModelEventMsg{
 			ModelName:    modelVersion.GetMeta().GetName(),

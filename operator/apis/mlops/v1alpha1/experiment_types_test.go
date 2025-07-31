@@ -23,6 +23,8 @@ import (
 )
 
 func TestAsSchedulerExperimentRequest(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 	type test struct {
 		name       string
@@ -137,6 +139,8 @@ func TestAsSchedulerExperimentRequest(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			proto := test.experiment.AsSchedulerExperimentRequest()
 			g.Expect(proto).To(Equal(test.proto))
 		})
@@ -157,6 +161,8 @@ func TestAsSchedulerExperimentRequest(t *testing.T) {
 *
  */
 func TestExperimentStatusPrintColumns(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -198,6 +204,8 @@ func TestExperimentStatusPrintColumns(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			if test.experiment.Status.Conditions != nil {
 				searchMap := make(map[string]v1.ConditionStatus)
 				for _, cond := range test.experiment.Status.Conditions {
@@ -213,6 +221,8 @@ func TestExperimentStatusPrintColumns(t *testing.T) {
 }
 
 func TestExperimentStatusSetCondition(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		conditionType apis.ConditionType
 		condition     *apis.Condition
@@ -263,6 +273,8 @@ func TestExperimentStatusSetCondition(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			es := &ExperimentStatus{}
 			es.SetCondition(tt.args.conditionType, tt.args.condition)
 			if tt.want == nil {

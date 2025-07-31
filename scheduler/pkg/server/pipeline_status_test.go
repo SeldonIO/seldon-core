@@ -178,12 +178,15 @@ func TestPipelineStatusEvents(t *testing.T) {
 			}
 
 			stream := newStubPipelineStatusServer(1, 5*time.Millisecond)
+			s.pipelineEventStream.mu.Lock()
 			s.pipelineEventStream.streams[stream] = &PipelineSubscription{
 				name:   "dummy",
 				stream: stream,
 				fin:    make(chan bool),
 			}
 			g.Expect(s.pipelineEventStream.streams[stream]).ToNot(BeNil())
+			s.pipelineEventStream.mu.Unlock()
+
 			hub.PublishPipelineEvent(pipelineEventHandlerName, coordinator.PipelineEventMsg{
 				PipelineName: "foo", PipelineVersion: 1})
 
@@ -191,22 +194,27 @@ func TestPipelineStatusEvents(t *testing.T) {
 			time.Sleep(500 * time.Millisecond)
 
 			if test.err {
+				s.pipelineEventStream.mu.Lock()
 				g.Expect(s.pipelineEventStream.streams).To(HaveLen(0))
-			} else {
-
-				var psr *pb.PipelineStatusResponse
-				select {
-				case next := <-stream.msgs:
-					psr = next
-				default:
-					t.Fail()
-				}
-
-				g.Expect(psr).ToNot(BeNil())
-				g.Expect(psr.Versions).To(HaveLen(1))
-				g.Expect(psr.Versions[0].State.Status).To(Equal(pb.PipelineVersionState_PipelineCreate))
-				g.Expect(s.pipelineEventStream.streams).To(HaveLen(1))
+				s.pipelineEventStream.mu.Unlock()
+				return
 			}
+
+			var psr *pb.PipelineStatusResponse
+			select {
+			case next := <-stream.msgs:
+				psr = next
+			default:
+				t.Fail()
+			}
+
+			g.Expect(psr).ToNot(BeNil())
+			g.Expect(psr.Versions).To(HaveLen(1))
+			g.Expect(psr.Versions[0].State.Status).To(Equal(pb.PipelineVersionState_PipelineCreate))
+
+			s.pipelineEventStream.mu.Lock()
+			g.Expect(s.pipelineEventStream.streams).To(HaveLen(1))
+			s.pipelineEventStream.mu.Unlock()
 		})
 	}
 }

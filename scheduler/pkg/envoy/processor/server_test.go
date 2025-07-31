@@ -96,7 +96,16 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 			}
 		}()
 
-		g.Eventually(inc.xdsCache.Clusters).WithPolling(100 * time.Millisecond).WithTimeout(5 * time.Second).Should(HaveKey(MatchRegexp(`^model_1`)))
+		g.Eventually(func() bool {
+			for _, key := range []string{"model_1_grpc", "model_1_http"} {
+				_, ok := inc.xdsCache.Clusters.Load(key)
+				if ok {
+					return true
+				}
+			}
+			return false
+		}).WithPolling(100 * time.Millisecond).WithTimeout(5 * time.Second).Should(BeTrue())
+
 		result := fetch(c, g, firstFetch)
 
 		// version 1 exists
@@ -118,7 +127,16 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 			}
 		}()
 
-		g.Eventually(inc.xdsCache.Clusters).WithPolling(100 * time.Millisecond).WithTimeout(5 * time.Second).Should(HaveKey(MatchRegexp(`^model_2`)))
+		g.Eventually(func() bool {
+			for _, key := range []string{"model_2_grpc", "model_2_http"} {
+				_, ok := inc.xdsCache.Clusters.Load(key)
+				if ok {
+					return true
+				}
+			}
+			return false
+		}).WithPolling(100 * time.Millisecond).WithTimeout(5 * time.Second).Should(BeTrue())
+
 		result := fetch(c, g, secondFetch)
 
 		// version 2 exists

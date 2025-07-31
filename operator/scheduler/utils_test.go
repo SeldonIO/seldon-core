@@ -313,6 +313,8 @@ func newMockControllerClient(objs ...client.Object) *SchedulerClient {
 }
 
 func TestHandleLoadedExperiments(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -366,6 +368,8 @@ func TestHandleLoadedExperiments(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			grpcClient := mockSchedulerGrpcClient{}
 			client := newMockControllerClient(test.resources...)
 			err := client.handleLoadedExperiments(context.Background(), &grpcClient, "")
@@ -384,6 +388,8 @@ func TestHandleLoadedExperiments(t *testing.T) {
 }
 
 func TestHandleLoadedModels(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -437,6 +443,8 @@ func TestHandleLoadedModels(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			grpcClient := mockSchedulerGrpcClient{}
 			client := newMockControllerClient(test.resources...)
 			err := client.handleLoadedModels(context.Background(), &grpcClient, "")
@@ -455,6 +463,8 @@ func TestHandleLoadedModels(t *testing.T) {
 }
 
 func TestHandleLoadedPipelines(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -508,6 +518,8 @@ func TestHandleLoadedPipelines(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			grpcClient := mockSchedulerGrpcClient{}
 			client := newMockControllerClient(test.resources...)
 			err := client.handleLoadedPipelines(context.Background(), &grpcClient, "")
@@ -526,6 +538,8 @@ func TestHandleLoadedPipelines(t *testing.T) {
 }
 
 func TestHandleDeletedExperiments(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -579,6 +593,8 @@ func TestHandleDeletedExperiments(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			s := newMockControllerClient(test.resources...)
 			err := s.handlePendingDeleteExperiments(context.Background(), "")
 			g.Expect(err).To(BeNil())
@@ -605,6 +621,8 @@ func TestHandleDeletedExperiments(t *testing.T) {
 }
 
 func TestHandleDeletedPipelines(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -658,6 +676,8 @@ func TestHandleDeletedPipelines(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			s := newMockControllerClient(test.resources...)
 			err := s.handlePendingDeletePipelines(context.Background(), "")
 			g.Expect(err).To(BeNil())
@@ -684,6 +704,8 @@ func TestHandleDeletedPipelines(t *testing.T) {
 }
 
 func TestHandleDeletedModels(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -737,6 +759,8 @@ func TestHandleDeletedModels(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			grpcClient := mockSchedulerGrpcClient{
 				errors: map[string]error{
 					"UnloadModel": status.Error(codes.FailedPrecondition, "no models"),
@@ -768,6 +792,8 @@ func TestHandleDeletedModels(t *testing.T) {
 }
 
 func TestHandleRegisteredServers(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -844,6 +870,8 @@ func TestHandleRegisteredServers(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			grpcClient := mockSchedulerGrpcClient{}
 			client := newMockControllerClient(test.resources...)
 			err := client.handleRegisteredServers(context.Background(), &grpcClient, "")
@@ -854,6 +882,8 @@ func TestHandleRegisteredServers(t *testing.T) {
 }
 
 func TestGetNumExperiments(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -881,6 +911,8 @@ func TestGetNumExperiments(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			client := mockSchedulerGrpcClient{responses_experiments: test.results}
 			num, err := getNumExperimentsFromScheduler(context.Background(), &client)
 
@@ -891,6 +923,8 @@ func TestGetNumExperiments(t *testing.T) {
 }
 
 func TestGetNumPipelines(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -918,6 +952,8 @@ func TestGetNumPipelines(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			client := mockSchedulerGrpcClient{responses_pipelines: test.results}
 			num, err := getNumPipelinesFromScheduler(context.Background(), &client)
 

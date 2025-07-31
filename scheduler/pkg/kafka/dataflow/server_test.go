@@ -319,12 +319,14 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 
 			stream := newStubServerStatusServer(10)
 			if test.connection {
+				s.mu.Lock()
 				s.streams[serverName] = &ChainerSubscription{
 					name:   "dummy",
 					stream: stream,
 					fin:    make(chan bool),
 				}
 				g.Expect(s.streams[serverName]).ToNot(BeNil())
+				s.mu.Unlock()
 			}
 
 			// to allow events to propagate
@@ -369,7 +371,6 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 }
 
 func TestPipelineEvents(t *testing.T) {
-	g := NewGomegaWithT(t)
 
 	type test struct {
 		name       string
@@ -431,27 +432,31 @@ func TestPipelineEvents(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			g := NewGomegaWithT(t)
+
 			serverName := "dummy"
 			s, _ := createTestScheduler(t, serverName)
 
 			err := s.pipelineHandler.AddPipeline(test.loadReq) // version 1
 			g.Expect(err).To(BeNil())
 
-			err = s.pipelineHandler.SetPipelineState(test.loadReq.Name, test.loadReq.Version, test.loadReq.Uid, test.status, "", sourceChainerServer)
-			g.Expect(err).To(BeNil())
-
 			stream := newStubServerStatusServer(10)
 			if test.connection {
+				s.mu.Lock()
 				s.streams[serverName] = &ChainerSubscription{
 					name:   "dummy",
 					stream: stream,
 					fin:    make(chan bool),
 				}
 				g.Expect(s.streams[serverName]).ToNot(BeNil())
+				s.mu.Unlock()
 			}
 
+			err = s.pipelineHandler.SetPipelineState(test.loadReq.Name, test.loadReq.Version, test.loadReq.Uid, test.status, "", sourceChainerServer)
+			g.Expect(err).To(BeNil())
+
 			// to allow events to propagate and trigger derived events
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(3000 * time.Millisecond)
 
 			if test.connection {
 				var psr *chainer.PipelineUpdateMessage
@@ -464,7 +469,7 @@ func TestPipelineEvents(t *testing.T) {
 
 				g.Expect(psr).ToNot(BeNil())
 				g.Expect(psr.Pipeline).To(Equal(test.loadReq.Name))
-				g.Expect(psr.Version).To(Equal(uint32(test.loadReq.Version)))
+				g.Expect(psr.Version).To(Equal(test.loadReq.Version))
 				if test.status == pipeline.PipelineCreate {
 					g.Expect(psr.Op).To(Equal(chainer.PipelineUpdateMessage_Create))
 				} else {
@@ -745,12 +750,23 @@ func TestPipelineSubscribe(t *testing.T) {
 
 			maxCount := 10
 			count := 0
-			for len(s.streams) != test.expectedAgentsCount && count < maxCount {
+			for count < maxCount {
+				s.mu.Lock()
+				if len(s.streams) == test.expectedAgentsCount {
+					s.mu.Unlock()
+					break
+				}
+				s.mu.Unlock()
+
 				time.Sleep(100 * time.Millisecond)
 				count++
 			}
-			g.Expect(len(s.streams)).To(Equal(test.expectedAgentsCount))
 
+			s.mu.Lock()
+			g.Expect(len(s.streams)).To(Equal(test.expectedAgentsCount))
+			s.mu.Unlock()
+
+			mu.Lock()
 			for idx, s := range streams {
 				go func(idx int, s *grpc.ClientConn) {
 					if test.agents[idx].doClose {
@@ -758,13 +774,23 @@ func TestPipelineSubscribe(t *testing.T) {
 					}
 				}(idx, s)
 			}
+			mu.Unlock()
 
-			count = 0
-			for len(s.streams) != test.expectedAgentsCountAfterClose && count < maxCount {
+			for count < maxCount {
+				s.mu.Lock()
+				if len(s.streams) == test.expectedAgentsCountAfterClose {
+					s.mu.Unlock()
+					break
+				}
+
+				s.mu.Unlock()
 				time.Sleep(100 * time.Millisecond)
 				count++
 			}
+
+			s.mu.Lock()
 			g.Expect(len(s.streams)).To(Equal(test.expectedAgentsCountAfterClose))
+			s.mu.Unlock()
 
 			s.StopSendPipelineEvents()
 		})

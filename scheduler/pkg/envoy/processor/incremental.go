@@ -597,7 +597,7 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 
 func (p *IncrementalProcessor) callVersionCleanupIfNeeded(modelName string) {
 	logger := p.logger.WithField("func", "callVersionCleanupIfNeeded")
-	if routes, ok := p.xdsCache.Routes[modelName]; ok {
+	if routes, ok := p.xdsCache.GetRoute(modelName); ok {
 		logger.Debugf("routes for model %s %v", modelName, routes)
 		if p.versionCleaner != nil {
 			logger.Debugf("Calling cleanup for model %s", modelName)

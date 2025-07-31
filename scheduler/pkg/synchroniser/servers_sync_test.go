@@ -169,11 +169,14 @@ func TestServersSyncSynchroniser(t *testing.T) {
 			waitReadyWg.Wait()
 			g.Expect(s.IsReady()).To(BeTrue())
 
+			s.connectedServersMu.Lock()
 			if test.isTimeout || test.isDuplicateEvent || test.context != coordinator.SERVER_REPLICA_CONNECTED {
 				g.Expect(len(s.connectedServers)).Should(BeNumerically("<", test.signals+test.initialSignals))
 			} else {
 				g.Expect(len(s.connectedServers)).To(Equal(int(test.signals + test.initialSignals)))
 			}
+			s.connectedServersMu.Unlock()
+
 			// make sure we are graceful after this point
 
 			s.Signals(10)

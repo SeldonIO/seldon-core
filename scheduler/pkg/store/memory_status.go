@@ -118,7 +118,7 @@ func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string
 	}
 	// make sure we reset server but only if there are no available replicas
 	if reset {
-		modelVersion.server = ""
+		modelVersion.SetServer("")
 	}
 
 	m.eventHub.PublishModelEvent(

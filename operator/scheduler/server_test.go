@@ -26,6 +26,8 @@ import (
 var getIntPtr = func(val int32) *int32 { return &val }
 
 func TestServerNotify(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -157,6 +159,8 @@ func TestServerNotify(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			grpcClient := mockSchedulerGrpcClient{
 				requests_servers: []*scheduler.ServerNotify{},
 			}
@@ -175,6 +179,8 @@ func TestServerNotify(t *testing.T) {
 }
 
 func TestSubscribeServerEvents(t *testing.T) {
+	t.Parallel()
+
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -363,6 +369,8 @@ func TestSubscribeServerEvents(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			grpcClient := mockSchedulerGrpcClient{
 				responses_subscribe_servers: []*scheduler.ServerStatusResponse{test.response},
 			}
