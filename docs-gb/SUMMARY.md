@@ -34,6 +34,7 @@
   * Servers
     * [Custom Inference Servers](servers/custom.md)
     * [Storage Initializers]
+    * [Prepackaged Model Servers](servers/overview.md)
     * [Inference Optimization](servers/optimization.md)
     * [XGBoost Server](servers/xgboost.md)
     * [Triton Inference Server](servers/triton.md)

@@ -304,10 +304,10 @@ Below are some of the core components together with link to the logs that provid
 
 ### Pre-Packaged Inference Servers
 
-* [MLflow Server ](https://docs.seldon.io/projects/seldon-core/en/latest/servers/mlflow.html)
-* [SKLearn server ](https://docs.seldon.io/projects/seldon-core/en/latest/servers/sklearn.html)
-* [Tensorflow Serving ](https://docs.seldon.io/projects/seldon-core/en/latest/servers/tensorflow.html)
-* [XGBoost server ](https://docs.seldon.io/projects/seldon-core/en/latest/servers/xgboost.html)
+* [MLflow Server ](../docs-gb/servers/mlflow.md)
+* [SKLearn server ](../docs-gb/servers/sklearn.md)
+* [Tensorflow Serving ](../docs-gb/servers/tensorflow.md)
+* [XGBoost server ](../docs-gb/servers/xgboost.md)
 
 ### Language Wrappers (Production)
 
@@ -334,7 +334,7 @@ Below are some of the core components together with link to the logs that provid
 * [Distributed Tracing with Jaeger ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/distributed-tracing.html)
 * [Replica Scaling ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/scaling.html)
 * [Budgeting Disruptions](https://docs.seldon.io/projects/seldon-core/en/latest/graph/disruption-budgets.html)
-* [Custom Inference Servers](https://docs.seldon.io/projects/seldon-core/en/latest/servers/custom.html)
+* [Custom Inference Servers](../docs-gb/servers/custom.md)
 
 ### Advanced Inference
 

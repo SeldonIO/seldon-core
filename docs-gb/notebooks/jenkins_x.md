@@ -80,7 +80,7 @@ We will need the following dependencies in order to run the Python code:
     ## [Model servers]: https://docs.seldon.ai/seldon-core-1/en/latest/servers/overview
     
     ## For SKLearn you need a pickle and the following:
-    scikit-learn==0.20.3 # See https://docs.seldon.io/projects/seldon-core/en/latest/servers/sklearn.html
+    scikit-learn==0.20.3 # See https://docs.seldon.ai/seldon-core-1/en/latest/servers/sklearn
     joblib==0.13.2
     
     ## For XGBoost you need v 0.82 and an xgboost export (not a pickle)
