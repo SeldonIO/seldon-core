@@ -271,7 +271,7 @@ func (am *AgentServiceManager) StartControlLoop() error {
 			am.logger.WithError(err).Errorf("Scheduler not ready")
 		}
 		backOffExp := util.GetClientExponentialBackoff()
-		err := boff.RetryNotify(am.HandleSchedulerSubscription, backOffExp, logFailure)
+		err := boff.RetryNotify(am.handleSchedulerSubscription, backOffExp, logFailure)
 		if err != nil {
 			am.logger.WithError(err).Error("Failed to connect to the scheduler")
 			return err
@@ -516,8 +516,8 @@ func (am *AgentServiceManager) getConnection(host string, plainTxtPort int, tlsP
 	return conn, nil
 }
 
-func (am *AgentServiceManager) HandleSchedulerSubscription() error {
-	logger := am.logger.WithField("func", "HandleSchedulerSubscription")
+func (am *AgentServiceManager) handleSchedulerSubscription() error {
+	logger := am.logger.WithField("func", "handleSchedulerSubscription")
 	logger.Info("Call subscribe to scheduler")
 
 	defer am.isStartup.Store(true)
@@ -563,12 +563,19 @@ func (am *AgentServiceManager) HandleSchedulerSubscription() error {
 	am.isStartup.Store(false)
 
 	if am.agentConfig.runningInK8s {
+		// We need to make sure we only inform the scheduler we have loaded models once we are ready
+		// i.e. readiness probe has passed and the pod's IP has been published to /endpoints. Otherwise,
+		// inference reqs may result in 503 as envoy will serve reqs to the previous pod's IP.
+		// In the case of not ready, caller will backoff retry indefinitely.
 		logger.Info("Checking pod has IP published in endpoints")
-		err := am.extendedClient.HasPublishedIP(context.TODO(), fmt.Sprintf("%s-%d", am.agentConfig.serverName, am.agentConfig.replicaIdx))
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		defer cancel()
+		// will block on k8s watch until IP assigned
+		err := am.extendedClient.HasPublishedIP(ctx, fmt.Sprintf("%s-%d", am.agentConfig.serverName, am.agentConfig.replicaIdx))
 		if err != nil {
 			return fmt.Errorf("failed waiting to check if pod's IP is published to endpoints: %v", err)
 		}
-		logger.Debug("Pod has IP published in endpoints")
+		logger.Debug("Found IP in endpoints")
 	}
 
 	// Start the main control loop for the agent<-scheduler stream

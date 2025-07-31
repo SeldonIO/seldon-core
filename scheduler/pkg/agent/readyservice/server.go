@@ -11,9 +11,6 @@ package readyservice
 
 import (
 	"context"
-	"sync/atomic"
-
-	// "fmt"
 	"net/http"
 	"strconv"
 	"sync"
@@ -38,18 +35,13 @@ type ReadyService struct {
 	muServerReady   sync.RWMutex
 	muTarget        sync.RWMutex
 	readinessTarget interfaces.ServiceWithReadinessCheck
-	// k8sReadinessCheckPassed is true when k8s has called the readiness probe and returned a 200. This will trigger
-	// k8s to publish the pod's IP in /endpoints and make it discoverable via DNS. This is critical otherwise envoy
-	// will not know where to send the inference requests.
-	k8sReadinessCheckPassed atomic.Bool
 }
 
 func NewReadyService(logger log.FieldLogger, port uint) *ReadyService {
 	return &ReadyService{
-		port:                    port,
-		logger:                  logger.WithField("source", "ReadinessService"),
-		serverReady:             false,
-		k8sReadinessCheckPassed: atomic.Bool{},
+		port:        port,
+		logger:      logger.WithField("source", "ReadinessService"),
+		serverReady: false,
 	}
 }
 
@@ -121,10 +113,6 @@ func (ready *ReadyService) GetHTTPHandler() *http.Handler {
 	return nil
 }
 
-func (ready *ReadyService) PassedK8sReadinessCheck() bool {
-	return ready.k8sReadinessCheckPassed.Load()
-}
-
 func (ready *ReadyService) handleReadinessCheck(w http.ResponseWriter, _ *http.Request) {
 	ready.muTarget.RLock()
 	defer ready.muTarget.RUnlock()
@@ -132,7 +120,6 @@ func (ready *ReadyService) handleReadinessCheck(w http.ResponseWriter, _ *http.R
 	am := ready.readinessTarget
 
 	if am == nil {
-		ready.k8sReadinessCheckPassed.Store(false)
 		ready.logger.Warn("Agent readiness HTTP handler failed, target not set")
 		http.Error(w, "No service monitored for readiness by this endpoint", http.StatusNotFound)
 		return
@@ -140,8 +127,6 @@ func (ready *ReadyService) handleReadinessCheck(w http.ResponseWriter, _ *http.R
 
 	// Check if the agent and its sub-services are ready
 	if am.Ready() {
-		ready.logger.Info("Agent readiness check succeeded")
-		ready.k8sReadinessCheckPassed.Store(true)
 		w.WriteHeader(http.StatusOK)
 		_, err := w.Write([]byte("The agent and its dependent sub-services are ready"))
 		if err != nil {
@@ -150,7 +135,6 @@ func (ready *ReadyService) handleReadinessCheck(w http.ResponseWriter, _ *http.R
 		return
 	}
 
-	ready.k8sReadinessCheckPassed.Store(false)
-	ready.logger.Warn("Agent readiness HTTP handler failed")
+	ready.logger.Warn("Agent readiness failed, agent service manager is not ready")
 	http.Error(w, "The agent is not ready", http.StatusServiceUnavailable)
 }
