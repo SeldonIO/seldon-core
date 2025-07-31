@@ -5,12 +5,12 @@
 * [Quick Start Guide](README.md)
 * [License](LICENSE.md)
 * Installation
-    * [Install in Kubernetes](install/installation.md)
-    * [Install Locally](install/kind.md)
-    * [Install on Google Cloud](install/gcp.md)
-    * [Install on Azure](install/azure.md)
-    * [Install on AWS](install/aws.md)
-* [Community](developer/community.md)
+    * [Install in Kubernetes](../docs-gb/install/installation.md)
+    * [Install Locally](../docs-gb/install/kind.md)
+    * [Install on Google Cloud](../docs-gb/install/gcp.md)
+    * [Install on Azure](../docs-gb/install/azure.md)
+    * [Install on AWS](../docs-gb/install/aws.md)
+* [Community](../docs-gb/developer/community.md)
 
 ## Concepts
 * [Overview of Components](overview.md)

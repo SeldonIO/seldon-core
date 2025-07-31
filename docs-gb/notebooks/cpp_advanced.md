@@ -4,7 +4,7 @@ In this example we will show how we can wrap a complex CPP project by extending 
 
 If you are looking for a basic implementation of the C++ wrapper, you can get started with the ["Single file C++ Example"](../notebooks/cpp_simple.md).
 
-You can read about how to configure your environment in the [CPP Wrapper documentation page](https://docs.seldon.io/projects/seldon-core/en/latest/cpp/README.html).
+You can read about how to configure your environment in the [CPP Wrapper documentation page](../wrappers/cpp.md).
 
 ## Naming Conventions
 

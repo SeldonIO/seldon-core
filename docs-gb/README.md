@@ -345,8 +345,6 @@ Below are some of the core components together with link to the logs that provid
 ### Examples
 
 * [Notebooks ](../docs-gb/notebooks/README.md)
-* [Articles/Blogs ](https://docs.seldon.io/projects/seldon-core/en/latest/tutorials/blogs.html)
-* [Videos ](https://docs.seldon.io/projects/seldon-core/en/latest/tutorials/videos.html)
 
 ### Reference
 
