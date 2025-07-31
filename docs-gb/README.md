@@ -33,7 +33,7 @@ With over 2M installs, Seldon Core is used across organisations to manage large 
  * Out of the box endpoints which can be tested through [Swagger UI](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/openapi.html?highlight=swagger), [Seldon Python Client or Curl / GRPCurl](../docs-gb/wrappers/python/python_module.md#seldon-core-python-package).
  * Cloud agnostic and tested on [AWS EKS, Azure AKS, Google GKE, Alicloud, Digital Ocean and Openshift](../docs-gb/notebooks/README.md#cloud-specific-examples).
  * Powerful and rich inference graphs made out of [predictors, transformers, routers, combiners, and more](https://docs.seldon.io/projects/seldon-core/en/1.18/examples/graph-metadata.html).
- * Metadata provenance to ensure each model can be traced back to its respective [training system, data and metrics](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/metadata.html).
+ * Metadata provenance to ensure each model can be traced back to its respective [training system, data and metrics](../docs-gb/deployments/metadata.md)
  * Advanced and customisable metrics with integration [to Prometheus and Grafana](../docs-gb/integrations/analytics.md).
  * Full auditability through model input-output request [logging integration with Elasticsearch](../docs-gb/reference/log_level.md).
  * Microservice distributed tracing through [integration to Jaeger](../docs-gb/integrations/distributed-tracing.md) for insights on latency across microservice hops.
@@ -269,7 +269,7 @@ Below are some of the core components together with link to the logs that provid
         </a>
     </td>
     <td width="50%">
-        <a href="https://docs.seldon.io/projects/seldon-core/en/latest/graph/distributed-tracing.html">
+        <a href="https://docs.seldon.ai/seldon-core-1/configuration/integrations/distributed-tracing">
             <br>
             <b>Distributed tracing for performance monitoring</b>
             <br>
@@ -294,7 +294,7 @@ Below are some of the core components together with link to the logs that provid
 * [Detailed Installation Parameters ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/helm.html)
 * [Pre-packaged Inference Servers ](../docs-gb/servers/overview.md)
 * [Language Wrappers for Custom Models ](https://docs.seldon.io/projects/seldon-core/en/1.18/wrappers/language_wrappers.html)
-* [Create your Inference Graph ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/inference-graph.html)
+* [Create your Inference Graph ](../docs-gb/routing/inference-graph.md)
 * [Deploy your Model  ](../docs-gb/deployments/deploying.md)
 * [Testing your Model Endpoints  ](../docs-gb/deployments/serving.md)
 * [Troubleshooting guide ](../docs-gb/deployments/troubleshooting.md)
@@ -327,13 +327,13 @@ Below are some of the core components together with link to the logs that provid
 
 ### Production
 
-* [Supported API Protocols ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/protocols.html)
+* [Supported API Protocols ](../docs-gb/deployments/protocols.md)
 * [CI/CD MLOps at Scale ](../docs-gb/integrations/cicd-mlops.md)
 * [Metrics with Prometheus ](../docs-gb/integrations/analytics.md)
 * [Payload Logging with ELK ](../docs-gb/integrations/logging.md)
-* [Distributed Tracing with Jaeger ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/distributed-tracing.html)
-* [Replica Scaling ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/scaling.html)
-* [Budgeting Disruptions](https://docs.seldon.io/projects/seldon-core/en/latest/graph/disruption-budgets.html)
+* [Distributed Tracing with Jaeger ](../docs-gb/integrations/distributed-tracing.md)
+* [Replica Scaling ](../docs-gb/deployments/scaling.md)
+* [Budgeting Disruptions](../docs-gb/deployments/disruption-budgets.md)
 * [Custom Inference Servers](../docs-gb/servers/custom.md)
 
 ### Advanced Inference
@@ -348,18 +348,18 @@ Below are some of the core components together with link to the logs that provid
 
 ### Reference
 
-* [Annotation-based Configuration ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/annotations.html)
+* [Annotation-based Configuration ](../docs-gb/reference/annotations.md)
 * [Benchmarking ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/benchmarking.html)
 * [General Availability ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/ga.html)
-* [Helm Charts ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/helm_charts.html)
+* [Helm Charts ](../docs-gb/reference/helm_charts.md)
 * [Images ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/images.html)
 * [Logging & Log Level ](../docs-gb/reference/log_level.md)
-* [Private Docker Registry ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/private_registries.html)
+* [Private Docker Registry ](../docs-gb/reference/private_registries.md)
 * [Prediction APIs ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/index.html)
 * [Python API reference ](https://docs.seldon.io/projects/seldon-core/en/latest/python/api/modules.html)
 * [Release Highlights ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/release-highlights.html)
 * [Seldon Deployment CRD ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/seldon-deployment.html)
-* [Service Orchestrator ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/svcorch.html)
+* [Service Orchestrator ](../docs-gb/reference/svcorch.md)
 * [Kubeflow ](../docs-gb/reference/kubeflow.md)
 
 ### Developer
