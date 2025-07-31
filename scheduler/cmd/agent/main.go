@@ -20,8 +20,9 @@ import (
 	"syscall"
 	"time"
 
-	agent2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	log "github.com/sirupsen/logrus"
+
+	agent2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/cmd/agent/cli"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
@@ -150,7 +151,7 @@ func main() {
 		if err != nil {
 			logger.WithError(err).Fatal("Failed to create kubernetes clientset")
 		}
-		clientset = k8s.NewExtendedClient(cli.Namespace, k8sClient)
+		clientset = k8s.NewExtendedClient(cli.Namespace, k8sClient, logger)
 	}
 
 	tracer, err := tracing.NewTraceProvider("seldon-agent", &cli.TracingConfigPath, logger)

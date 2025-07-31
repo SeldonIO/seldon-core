@@ -11,6 +11,7 @@ package agent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -22,6 +23,7 @@ import (
 	"github.com/jarcoal/httpmock"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials/insecure"
@@ -38,6 +40,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/k8s"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/k8s/mocks"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelserver_controlplane/oip"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/readyservice"
@@ -230,11 +233,24 @@ func TestAgentServiceManagerCreate(t *testing.T) {
 			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
 			readyServicePort, _ := testing_utils2.GetFreePortForTest()
 			readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
+
+			ctrl := gomock.NewController(t)
+			k8sExtendedClient := mocks.NewMockExtendedClient(ctrl)
+			k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), "mlserver-1").Return(nil)
+
 			asm := NewAgentServiceManager(
-				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
+				NewAgentServiceConfig("mlserver",
+					1,
+					"scheduler",
+					9002,
+					9055, 1*time.Minute,
+					1*time.Minute,
+					1*time.Minute,
+					1*time.Minute,
+					1*time.Minute, 1, 1, 1, true),
 				logger, modelRepository, v2Client,
 				test.replicaConfig, "default",
-				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler())
+				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler(), k8sExtendedClient)
 			mockAgentV2Server := &mockAgentV2Server{models: test.models}
 			conn, err := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
@@ -253,6 +269,102 @@ func TestAgentServiceManagerCreate(t *testing.T) {
 			}
 			asm.StopControlLoop()
 			httpmock.DeactivateAndReset()
+		})
+	}
+}
+
+func TestHandleSchedulerSubscription(t *testing.T) {
+	t.Parallel()
+
+	logger := log.New()
+	log.SetLevel(log.DebugLevel)
+	g := NewWithT(t)
+
+	type test struct {
+		name          string
+		expectErr     string
+		mockK8sClient func(c *mocks.MockExtendedClient)
+	}
+	tests := []test{
+		{
+			name: "success - has IP",
+			mockK8sClient: func(c *mocks.MockExtendedClient) {
+				c.EXPECT().HasPublishedIP(gomock.Any(), "mlserver-1").Return(nil)
+			},
+		},
+		{
+			name: "failure - IP not yet published to endpoints",
+			mockK8sClient: func(c *mocks.MockExtendedClient) {
+				c.EXPECT().HasPublishedIP(gomock.Any(), "mlserver-1").Return(errors.New("ip not found"))
+			},
+			expectErr: "failed waiting to check if pod's IP is published to endpoints: ip not found",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			v2Client := createTestV2Client(addVerionToModels([]string{"model"}, 0), 200)
+			httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
+			modelRepository := &FakeModelRepository{err: nil}
+			rpHTTP := FakeDependencyService{err: nil}
+			rpGRPC := FakeDependencyService{err: nil}
+			agentDebug := FakeDependencyService{err: nil}
+			modelScalingService := modelscaling.NewStatsAnalyserService(
+				[]modelscaling.ModelScalingStatsWrapper{}, logger, 10)
+			drainerServicePort, _ := testing_utils2.GetFreePortForTest()
+			drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
+			readyServicePort, _ := testing_utils2.GetFreePortForTest()
+			readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
+
+			ctrl := gomock.NewController(t)
+			k8sExtendedClient := mocks.NewMockExtendedClient(ctrl)
+			test.mockK8sClient(k8sExtendedClient)
+
+			asm := NewAgentServiceManager(
+				NewAgentServiceConfig("mlserver",
+					1,
+					"scheduler",
+					9002,
+					9055, 1*time.Minute,
+					1*time.Minute,
+					1*time.Minute,
+					1*time.Minute,
+					1*time.Minute, 1, 1, 1, true),
+				logger, modelRepository, v2Client,
+				&pb.ReplicaConfig{}, "default",
+				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler(), k8sExtendedClient)
+
+			mockAgentV2Server := &mockAgentV2Server{models: []string{"model"}}
+			conn, err := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()),
+				grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
+			g.Expect(err).To(BeNil())
+			asm.schedulerConn = conn
+
+			defer func() {
+				asm.StopControlLoop()
+				httpmock.DeactivateAndReset()
+			}()
+
+			errChan := make(chan error)
+			go func() {
+				err = asm.handleSchedulerSubscription()
+				errChan <- err
+			}()
+
+			if test.expectErr != "" {
+				err := <-errChan
+				g.Expect(err).ToNot(BeNil())
+				g.Expect(err.Error()).To(Equal(test.expectErr))
+				return
+			}
+
+			select {
+			case <-time.After(100 * time.Millisecond):
+			case err := <-errChan:
+				g.Expect(err).To(BeNil())
+			}
 		})
 	}
 }
@@ -364,6 +476,10 @@ func TestLoadModel(t *testing.T) {
 			t.Logf("Test #%d", tidx)
 
 			// Set up dependencies
+			ctrl := gomock.NewController(t)
+			k8sExtendedClient := mocks.NewMockExtendedClient(ctrl)
+			k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), gomock.Any()).Return(nil)
+
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			modelRepository := &FakeModelRepository{err: test.modelRepoErr}
@@ -396,9 +512,16 @@ func TestLoadModel(t *testing.T) {
 			readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
 
 			asm := NewAgentServiceManager(
-				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
+				NewAgentServiceConfig("mlserver", 1, "scheduler",
+					9002,
+					9055,
+					1*time.Minute,
+					1*time.Minute,
+					1*time.Minute,
+					1*time.Minute,
+					1*time.Minute, 1, 1, 1, true),
 				logger, modelRepository, v2Client, test.replicaConfig, "default",
-				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler())
+				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler(), k8sExtendedClient)
 
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
@@ -539,6 +662,11 @@ parameters:
 	for tidx, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			t.Logf("Test #%d", tidx)
+
+			ctrl := gomock.NewController(t)
+			k8sExtendedClient := mocks.NewMockExtendedClient(ctrl)
+			k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), gomock.Any()).Return(nil)
+
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			modelRepository := &FakeModelRepository{}
@@ -552,11 +680,11 @@ parameters:
 			readyServicePort, _ := testing_utils2.GetFreePortForTest()
 			readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
 			asm := NewAgentServiceManager(
-				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
+				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1, true),
 				logger, modelRepository,
 				v2Client, test.replicaConfig, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService,
-				newFakeMetricsHandler())
+				newFakeMetricsHandler(), k8sExtendedClient)
 			switch x := test.op.GetModelVersion().GetModel().GetModelSpec().StorageConfig.Config.(type) {
 			case *pbs.StorageConfig_StorageSecretName:
 				secret := &v1.Secret{ObjectMeta: metav1.ObjectMeta{Name: x.StorageSecretName, Namespace: asm.namespace}, StringData: map[string]string{"mys3": test.secretData}}
@@ -675,6 +803,11 @@ func TestUnloadModel(t *testing.T) {
 	for tidx, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			t.Logf("Test #%d", tidx)
+
+			ctrl := gomock.NewController(t)
+			k8sExtendedClient := mocks.NewMockExtendedClient(ctrl)
+			k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), gomock.Any()).Return(nil)
+
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			modelRepository := &FakeModelRepository{}
@@ -702,9 +835,18 @@ func TestUnloadModel(t *testing.T) {
 			readyServicePort, _ := testing_utils2.GetFreePortForTest()
 			readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
 			asm := NewAgentServiceManager(
-				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
+				NewAgentServiceConfig("mlserver",
+					1,
+					"scheduler",
+					9002,
+					9055,
+					1*time.Minute,
+					1*time.Minute,
+					1*time.Minute,
+					1*time.Minute,
+					1*time.Minute, 1, 1, 1, true),
 				logger, modelRepository, v2Client, test.replicaConfig, "default",
-				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler())
+				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler(), k8sExtendedClient)
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())
@@ -750,6 +892,9 @@ func TestAgentServiceManagerClose(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	g := NewWithT(t)
 
+	ctrl := gomock.NewController(t)
+	k8sExtendedClient := mocks.NewMockExtendedClient(ctrl)
+
 	v2Client := createTestV2Client(nil, 200)
 	httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 	defer httpmock.DeactivateAndReset()
@@ -764,10 +909,19 @@ func TestAgentServiceManagerClose(t *testing.T) {
 	readyServicePort, _ := testing_utils2.GetFreePortForTest()
 	readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
 	asm := NewAgentServiceManager(
-		NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
+		NewAgentServiceConfig("mlserver",
+			1,
+			"scheduler",
+			9002,
+			9055,
+			1*time.Minute,
+			1*time.Minute,
+			1*time.Minute,
+			1*time.Minute,
+			1*time.Minute, 1, 1, 1, true),
 		logger, modelRepository, v2Client,
 		&pb.ReplicaConfig{MemoryBytes: 1000}, "default",
-		rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler())
+		rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler(), k8sExtendedClient)
 	mockAgentV2Server := &mockAgentV2Server{}
 	conn, err := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
@@ -797,6 +951,10 @@ func TestReadinessServiceAgentSync(t *testing.T) {
 	serviceStatusCheckEvery := 10 * time.Second
 	maxTimeBeforeStart := 2 * time.Second
 	maxTimeAfterStart := 500 * time.Millisecond
+
+	ctrl := gomock.NewController(t)
+	k8sExtendedClient := mocks.NewMockExtendedClient(ctrl)
+	k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), gomock.Any()).Return(nil)
 
 	readyServicePort, _ := testing_utils2.GetFreePortForTest()
 	readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
@@ -848,12 +1006,12 @@ func TestReadinessServiceAgentSync(t *testing.T) {
 	drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
 
 	asm := NewAgentServiceManager(
-		NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, serviceStatusCheckEvery, maxTimeBeforeStart, maxTimeAfterStart, 1*time.Minute, 1*time.Minute, 1, 1, 1),
+		NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, serviceStatusCheckEvery, maxTimeBeforeStart, maxTimeAfterStart, 1*time.Minute, 1*time.Minute, 1, 1, 1, true),
 		logger, modelRepository,
 		v2Client,
 		&pb.ReplicaConfig{MemoryBytes: 1000}, "default",
 		rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService,
-		newFakeMetricsHandler())
+		newFakeMetricsHandler(), k8sExtendedClient)
 	mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 	conn, cerr := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 	g.Expect(cerr).To(BeNil())
@@ -1000,6 +1158,9 @@ func TestAgentReadiness(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
+
+			ctrl := gomock.NewController(t)
+			k8sExtendedClient := mocks.NewMockExtendedClient(ctrl)
 			var maybeCriticalServiceError, maybeOptionalServiceError, maybeAuxServiceError error
 			hasErrors := false
 			if test.withErrorSvcCritical {
@@ -1025,12 +1186,21 @@ func TestAgentReadiness(t *testing.T) {
 			agentDebug.err = maybeOptionalServiceError
 
 			asm := NewAgentServiceManager(
-				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, serviceStatusCheckEvery, maxTimeBeforeStart, maxTimeAfterStart, 1*time.Minute, 1*time.Minute, 1, 1, 1),
+				NewAgentServiceConfig("mlserver",
+					1,
+					"scheduler",
+					9002,
+					9055,
+					serviceStatusCheckEvery,
+					maxTimeBeforeStart,
+					maxTimeAfterStart,
+					1*time.Minute,
+					1*time.Minute, 1, 1, 1, true),
 				logger, modelRepository,
 				v2Client,
 				&pb.ReplicaConfig{MemoryBytes: 1000}, "default",
 				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService,
-				newFakeMetricsHandler())
+				newFakeMetricsHandler(), k8sExtendedClient)
 
 			start := time.Now()
 			err := asm.WaitReadySubServices(test.isFirstStart)
@@ -1109,6 +1279,10 @@ func TestAgentStopOnSubServicesFailure(t *testing.T) {
 	maxTimeAfterStart := 1 * time.Millisecond
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			k8sExtendedClient := mocks.NewMockExtendedClient(ctrl)
+			k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), gomock.Any()).Return(nil)
+
 			mockMLServer := &testing_utils.MockGRPCMLServer{}
 			backEndGRPCPort, err := testing_utils2.GetFreePortForTest()
 			if err != nil {
@@ -1141,10 +1315,19 @@ func TestAgentStopOnSubServicesFailure(t *testing.T) {
 			readyServicePort, _ := testing_utils2.GetFreePortForTest()
 			readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
 			asm := NewAgentServiceManager(
-				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, period, maxTimeBeforeStart, maxTimeAfterStart, 1*time.Minute, 1*time.Minute, 1, 1, 1),
+				NewAgentServiceConfig("mlserver",
+					1,
+					"scheduler",
+					9002,
+					9055,
+					period,
+					maxTimeBeforeStart,
+					maxTimeAfterStart,
+					1*time.Minute,
+					1*time.Minute, 1, 1, 1, true),
 				logger, modelRepository, v2Client,
 				&pb.ReplicaConfig{MemoryBytes: 1000}, "default",
-				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler())
+				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler(), k8sExtendedClient)
 			mockAgentV2Server := &mockAgentV2Server{}
 			conn, err := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
@@ -1261,6 +1444,11 @@ func TestUnloadModelOutOfOrder(t *testing.T) {
 	for tidx, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			t.Logf("Test #%d", tidx)
+
+			ctrl := gomock.NewController(t)
+			k8sExtendedClient := mocks.NewMockExtendedClient(ctrl)
+			k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), gomock.Any()).Return(nil)
+
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), 200)
 			httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
 			modelRepository := &FakeModelRepository{}
@@ -1288,9 +1476,18 @@ func TestUnloadModelOutOfOrder(t *testing.T) {
 			readyServicePort, _ := testing_utils2.GetFreePortForTest()
 			readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
 			asm := NewAgentServiceManager(
-				NewAgentServiceConfig("mlserver", 1, "scheduler", 9002, 9055, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1*time.Minute, 1, 1, 1),
+				NewAgentServiceConfig("mlserver",
+					1,
+					"scheduler",
+					9002,
+					9055,
+					1*time.Minute,
+					1*time.Minute,
+					1*time.Minute,
+					1*time.Minute,
+					1*time.Minute, 1, 1, 1, true),
 				logger, modelRepository, v2Client, &pb.ReplicaConfig{MemoryBytes: 1000}, "default",
-				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler())
+				rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler(), k8sExtendedClient)
 			mockAgentV2Server := &mockAgentV2Server{models: []string{}}
 			conn, cerr := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
 			g.Expect(cerr).To(BeNil())

@@ -414,9 +414,6 @@ func createWeightedModelClusterAction(clusterTraffics []TrafficSplit, mirrorTraf
 					BaseInterval: &duration.Duration{
 						Nanos: int32(time.Millisecond * 500),
 					},
-					MaxInterval: &duration.Duration{
-						Seconds: 5,
-					},
 				},
 			},
 		},
