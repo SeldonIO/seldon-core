@@ -284,8 +284,8 @@ Below are some of the core components together with link to the logs that provid
 
 ### Getting Started
 
-* [Quickstart Guide ](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/github-readme.html)
-* [Overview of Components ](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/overview.html)
+* [Quickstart Guide ](README.md#getting-started)
+* [Overview of Components ](overview.md)
 * [Install Seldon Core on Kubernetes ](../install/installation.md)
 * [Join the Community ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/community.html)
 
@@ -295,10 +295,10 @@ Below are some of the core components together with link to the logs that provid
 * [Pre-packaged Inference Servers ](../docs-gb/servers/overview.md)
 * [Language Wrappers for Custom Models ](https://docs.seldon.io/projects/seldon-core/en/latest/wrappers/language_wrappers.html)
 * [Create your Inference Graph ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/inference-graph.html)
-* [Deploy your Model  ](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/deploying.html)
+* [Deploy your Model  ](../docs-gb/deployments/deploying.md)
 * [Testing your Model Endpoints  ](../docs-gb/deployments/serving.md)
-* [Troubleshooting guide ](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/troubleshooting.html)
-* [Usage reporting ](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/usage-reporting.html)
+* [Troubleshooting guide ](../docs-gb/deployments/troubleshooting.md)
+* [Usage reporting ](../docs-gb/install/usage-reporting.md)
 * [Upgrading ](../docs-gb/upgrading.md)
 * [Changelog ](https://github.com/SeldonIO/seldon-core/blob/master/CHANGELOG.md)
 
