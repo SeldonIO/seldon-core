@@ -23,7 +23,7 @@ In this project, we will be building an MLOps workflow to deploy your production
 * A Kubernetes cluster running v1.13+ (this was run using GKE)
 * The [jx CLI](https://github.com/jenkins-x/jx/) version 2.0.916
 * Jenkins-X installed in your cluster (you can set it up with the [jx boot tutorial](https://jenkins-x.io/docs/getting-started/setup/boot/))
-* Seldon Core [v0.5.0 installed](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html) in your cluster
+* Seldon Core [v0.5.0 installed](../install/installation.md) in your cluster
 
 Once you set everything up, we'll be ready to kick off 🚀
 

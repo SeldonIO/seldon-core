@@ -286,7 +286,7 @@ Below are some of the core components together with link to the logs that provid
 
 * [Quickstart Guide ](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/github-readme.html)
 * [Overview of Components ](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/overview.html)
-* [Install Seldon Core on Kubernetes ](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html)
+* [Install Seldon Core on Kubernetes ](../install/installation.md)
 * [Join the Community ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/community.html)
 
 ### Seldon Core Deep Dive

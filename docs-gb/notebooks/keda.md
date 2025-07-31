@@ -8,7 +8,7 @@ In this example we will scale the seldon deployment with Prometheus metrics as a
 
 ## Install Seldon Core
 
-Install Seldon Core as described in [docs](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html)
+Install Seldon Core as described in [docs](../install/installation.md)
 
 Make sure add `--set keda.enabled=true`
 

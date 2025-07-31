@@ -10,7 +10,7 @@
     * [Install on Google Cloud](../docs-gb/install/gcp.md)
     * [Install on Azure](../docs-gb/install/azure.md)
     * [Install on AWS](../docs-gb/install/aws.md)
-* [Community](developer/community.md)
+* [Community](../docs-gb/developer/community.md)
 
 ## Concepts
 * [Overview of Components](overview.md)
@@ -20,7 +20,7 @@
     * [Helm Configurations](install/advanced-helm-chart-configuration.md)
     * [Usage Reporting](install/usage-reporting.md)
     * [Change Log](https://github.com/SeldonIO/seldon-core/tree/master/CHANGELOG.md)
-    * [Upgrading](upgrading.md)
+    * [Upgrading](../docs-gb/upgrading.md)
   * Deployments
     * [Deployment Techniques](deployments/deploying.md)
     * [Supported API Protocols](deployments/protocols.md)

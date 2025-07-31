@@ -8,7 +8,7 @@ Prequisites:
 
   * [Knative eventing installed](https://knative.dev/docs/install/)
     * Ensure the istio-ingressgateway is exposed as a loadbalancer (no auth in this demo)
-  * [Seldon Core installed](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html) 
+  * [Seldon Core installed](../install/installation.md) 
     * Ensure you install for istio, e.g. for the helm chart `--set istio.enabled=true`
     
     Tested on GKE and Kind with Knative 0.18 and Istio 1.7.3

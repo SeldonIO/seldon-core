@@ -19,7 +19,7 @@ It will follow closely our talk at the [Spark + AI Summit 2019 on Seldon and MLf
 
 ## Dependencies
 
-For this example to work you must be running Seldon 0.3.2 or above - you can follow our [getting started guide for this](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/install.html).
+For this example to work you must be running Seldon 0.3.2 or above - you can follow our [getting started guide for this](../install/installation.md).
 
 In regards to other dependencies, make sure you have installed:
 
