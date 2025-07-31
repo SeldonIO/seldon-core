@@ -148,7 +148,7 @@ func makeHTTPListener(listenerName, address string,
 	}
 }
 
-func MakeCluster(clusterName string, eps map[string]Endpoint, isGrpc bool, clientSecret *Secret) *cluster.Cluster {
+func makeCluster(clusterName string, eps map[string]Endpoint, isGrpc bool, clientSecret *Secret) *cluster.Cluster {
 	if isGrpc {
 		// Need to ensure http 2 is used
 		// https://github.com/envoyproxy/go-control-plane/blob/d1a10d9a9366e8ab48f3f76b44a35930bac46fec/envoy/extensions/upstreams/http/v3/http_protocol_options.pb.go#L165-L166
@@ -403,6 +403,20 @@ var (
 	}
 )
 
+func getClusterNameFromRoute(routeName string, isGrpc bool) string {
+	if isGrpc {
+		return fmt.Sprintf("%s.grpc", routeName)
+	}
+	return fmt.Sprintf("%s.http", routeName)
+}
+
+func getClusterName(clusterPrefix string, isGrpc bool) string {
+	if isGrpc {
+		return fmt.Sprintf("%s.%s.grpc", clusterPrefix, util.SeldonPipelineHeaderSuffix)
+	}
+	return fmt.Sprintf("%s.%s.http", clusterPrefix, util.SeldonPipelineHeaderSuffix)
+}
+
 func getRouteName(routeName string, isPipeline bool, isGrpc bool, isMirror bool) string {
 	pipelineSuffix := ""
 	if isPipeline {
@@ -573,12 +587,7 @@ func createWeightedPipelineClusterAction(clusterTraffics []PipelineTrafficSplit,
 	var mirrors []*route.RouteAction_RequestMirrorPolicy
 	var totWeight uint32
 	for _, clusterTraffic := range clusterTraffics {
-		clusterName := fmt.Sprintf("%s.%s", clusterTraffic.PipelineName, util.SeldonPipelineHeaderSuffix)
-		if isGrpc {
-			clusterName = fmt.Sprintf("%s.grpc", clusterName)
-		} else {
-			clusterName = fmt.Sprintf("%s.http", clusterName)
-		}
+		clusterName := getClusterName(clusterTraffic.PipelineName, isGrpc)
 		totWeight = totWeight + clusterTraffic.TrafficWeight
 		splits = append(splits,
 			&route.WeightedCluster_ClusterWeight{
@@ -667,24 +676,13 @@ func makePipelineStickySessionEnvoyRoute(routeName string, envoyRoute *route.Rou
 			},
 		},
 	}
-	if isGrpc {
-		envoyRoute.Action = &route.Route_Route{
-			Route: &route.RouteAction{
-				Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
-				ClusterSpecifier: &route.RouteAction_Cluster{
-					Cluster: fmt.Sprintf("%s.grpc", routeName),
-				},
+	envoyRoute.Action = &route.Route_Route{
+		Route: &route.RouteAction{
+			Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
+			ClusterSpecifier: &route.RouteAction_Cluster{
+				Cluster: getClusterNameFromRoute(routeName, isGrpc),
 			},
-		}
-	} else {
-		envoyRoute.Action = &route.Route_Route{
-			Route: &route.RouteAction{
-				Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
-				ClusterSpecifier: &route.RouteAction_Cluster{
-					Cluster: fmt.Sprintf("%s.http", routeName),
-				},
-			},
-		}
+		},
 	}
 }
 

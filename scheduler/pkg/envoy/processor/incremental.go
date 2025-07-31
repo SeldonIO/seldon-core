@@ -15,8 +15,6 @@ import (
 	"sync"
 	"time"
 
-	clusterv3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
-	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -112,68 +110,6 @@ func NewIncrementalProcessor(
 	return ip, nil
 }
 
-func makeEndpoints(streamNames []string, streamIps []string, port uint32, logger *logrus.Entry) map[string]xdscache.Endpoint {
-	endpoints := make(map[string]xdscache.Endpoint, len(streamNames))
-	for i, stream := range streamNames {
-		logger.Debugf("Adding endpoint for stream %s with ip: %s and port: %d", stream, streamIps[i], port)
-		endpoints[stream] = xdscache.Endpoint{
-			UpstreamHost: streamIps[i],
-			UpstreamPort: port,
-		}
-	}
-	return endpoints
-}
-
-func makeHttpCluster(event *coordinator.PipelineStreamsEventMsg, xds *xdscache.SeldonXDSCache, clientSecret *xdscache.Secret, logger *logrus.Entry) *clusterv3.Cluster {
-	httpPort := uint32(xds.PipelineGatewayDetails.HttpPort)
-	httpClusterName := fmt.Sprintf("%s.%s.http", event.PipelineName, util.SeldonPipelineHeaderSuffix)
-	return xdscache.MakeCluster(
-		httpClusterName,
-		makeEndpoints(event.StreamNames, event.StreamIps, httpPort, logger),
-		false,
-		clientSecret,
-	)
-}
-
-func makeGrpcCluster(event *coordinator.PipelineStreamsEventMsg, xds *xdscache.SeldonXDSCache, clientSecret *xdscache.Secret, logger *logrus.Entry) *clusterv3.Cluster {
-	grpcPort := uint32(xds.PipelineGatewayDetails.GrpcPort)
-	grpcClusterName := fmt.Sprintf("%s.%s.grpc", event.PipelineName, util.SeldonPipelineHeaderSuffix)
-	return xdscache.MakeCluster(
-		grpcClusterName,
-		makeEndpoints(event.StreamNames, event.StreamIps, grpcPort, logger),
-		true,
-		clientSecret,
-	)
-}
-
-func (p *IncrementalProcessor) addPipelineCluster(event *coordinator.PipelineStreamsEventMsg) error {
-	xds := p.xdsCache
-	logger := p.logger.WithField("func", "addPipelineCluster")
-
-	var clientSecret *xdscache.Secret
-	if xds.TlsActive {
-		if secret, ok := xds.Secrets[xdscache.EnvoyUpstreamClientCertName]; ok {
-			clientSecret = &secret
-		}
-	}
-
-	resources := make(map[string]types.Resource)
-
-	// add http cluster
-	pipelineGatewayHttpCluster := makeHttpCluster(event, xds, clientSecret, logger)
-	resources[pipelineGatewayHttpCluster.Name] = pipelineGatewayHttpCluster
-
-	// add grpc cluster
-	pipelineGatewayGrpcCluster := makeGrpcCluster(event, xds, clientSecret, logger)
-	resources[pipelineGatewayGrpcCluster.Name] = pipelineGatewayGrpcCluster
-
-	logger.Debugf(
-		"Adding pipeline %s with http cluster: %s and grpc cluster: %s",
-		event.PipelineName, pipelineGatewayHttpCluster.Name, pipelineGatewayGrpcCluster.Name,
-	)
-	return xds.Cds.UpdateResources(resources, nil)
-}
-
 func (p *IncrementalProcessor) handlePipelineStreamsEvents(event coordinator.PipelineStreamsEventMsg) {
 	logger := p.logger.WithField("func", "handlePipelineStreamsEvents")
 	logger.Debugf("Received event %s", event.String())
@@ -181,13 +117,8 @@ func (p *IncrementalProcessor) handlePipelineStreamsEvents(event coordinator.Pip
 	// Ignore pipeline events due to model status change to stop pointless processing
 	// If models are ready or not has no bearing on whether we need to update pipeline
 	if !event.ModelStatusChange {
-		err := p.addPipelineCluster(&event)
-		if err != nil {
-			logger.WithError(err).Errorf("Failed to add pipeline cluster")
-			return
-		}
-
 		go func() {
+			p.xdsCache.AddPipelineClusters(&event, logger)
 			err := p.addPipeline(event.PipelineName)
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to add pipeline %s", event.PipelineName)
@@ -489,19 +420,23 @@ func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 	logger := p.logger.WithField("func", "addPipeline")
 	p.mu.Lock()
 	defer p.mu.Unlock()
+
 	pip, err := p.pipelineHandler.GetPipeline(pipelineName)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to get pipeline %s", pipelineName)
 		return err
 	}
+
 	logger.Debugf("Handling pipeline %s deleted %v", pip.Name, pip.Deleted)
 	if pip.Deleted {
 		return p.removePipeline(pip)
 	}
+
 	routeName := getPipelineRouteName(pip.Name)
 	p.xdsCache.RemovePipelineRoute(routeName)
 	exp := p.experimentServer.GetExperimentForBaselinePipeline(pip.Name)
 	logger.Debugf("getting experiment for baseline %s returned %v", pip.Name, exp)
+
 	// This experiment must have a default for this pipeline
 	if exp != nil {
 		if exp.Default == nil {
