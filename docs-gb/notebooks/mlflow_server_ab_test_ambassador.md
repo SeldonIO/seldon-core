@@ -270,7 +270,7 @@ We should now see the "a-" model and the "b-" models.
 
 This section is optional, but by following the instructions you will be able to visualise the performance of both models as per the chart below.
 
-In order for this example to work you need to install and run the [Grafana Analytics package for Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html#helm-analytics-chart).
+In order for this example to work you need to install and run the [Grafana Analytics package for Seldon Core](https://docs.seldon.ai/seldon-core-1/configuration/integrations/analytics#helm-analytics-chart).
 
 For this we can access the URL with the command below, it will request an admin and password which by default are set to the following:
 * Username: admin

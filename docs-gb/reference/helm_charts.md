@@ -26,7 +26,7 @@ A set of charts to provide example templates for creating particular inference g
    seldon-od-model <../charts/seldon-od-model>
    seldon-od-transformer <../charts/seldon-od-transformer>
 
-[A notebook with examples of using the above charts](https://docs.seldon.io/projects/seldon-core/en/latest/examples/helm_examples.html) is provided.
+[A notebook with examples of using the above charts](../notebooks/helm_examples.md) is provided.
 
 ## Misc
 

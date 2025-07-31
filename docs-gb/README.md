@@ -220,7 +220,7 @@ Below are some of the core components together with link to the logs that provid
 <table>
   <tr valign="top">
     <td width="50%" >
-        <a href="https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html">
+        <a href="https://docs.seldon.ai/seldon-core-1/configuration/integrations/analytics">
             <br>
             <b>Standard and custom metrics with prometheus</b>
             <br>
@@ -229,7 +229,7 @@ Below are some of the core components together with link to the logs that provid
         </a>
     </td>
     <td width="50%">
-        <a href="https://docs.seldon.io/projects/seldon-core/en/latest/analytics/logging.html">
+        <a href="https://docs.seldon.ai/seldon-core-1/configuration/integrations/logging">
             <br>
             <b>Full audit trails with ELK request logging</b>
             <br>
@@ -240,7 +240,7 @@ Below are some of the core components together with link to the logs that provid
   </tr>
   <tr valign="top">
     <td width="50%">
-        <a href="https://docs.seldon.io/projects/seldon-core/en/latest/analytics/explainers.html">
+        <a href="https://docs.seldon.ai/seldon-core-1/configuration/integrations/explainers">
             <br>
             <b>Explainers for Machine Learning Interpretability</b>
             <br>
@@ -249,7 +249,7 @@ Below are some of the core components together with link to the logs that provid
         </a>
     </td>
     <td width="50%">
-        <a href="https://docs.seldon.io/projects/seldon-core/en/latest/analytics/outlier_detection.html">
+        <a href="https://docs.seldon.ai/seldon-core-1/configuration/integrations/outlier_detection">
             <br>
             <b>Outlier and Adversarial Detectors for Monitoring</b>
             <br>
@@ -260,7 +260,7 @@ Below are some of the core components together with link to the logs that provid
   </tr>
   <tr valign="top">
     <td width="50%">
-        <a href="https://docs.seldon.io/projects/seldon-core/en/latest/analytics/cicd-mlops.html">
+        <a href="https://docs.seldon.ai/seldon-core-1/configuration/integrations/cicd-mlops">
             <br>
             <b>CI/CD for MLOps at Massive Scale</b>
             <br>
@@ -328,9 +328,9 @@ Below are some of the core components together with link to the logs that provid
 ### Production
 
 * [Supported API Protocols ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/protocols.html)
-* [CI/CD MLOps at Scale ](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/cicd-mlops.html)
-* [Metrics with Prometheus ](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html)
-* [Payload Logging with ELK ](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/logging.html)
+* [CI/CD MLOps at Scale ](../docs-gb/integrations/cicd-mlops.md)
+* [Metrics with Prometheus ](../docs-gb/integrations/analytics.md)
+* [Payload Logging with ELK ](../docs-gb/integrations/logging.md)
 * [Distributed Tracing with Jaeger ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/distributed-tracing.html)
 * [Replica Scaling ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/scaling.html)
 * [Budgeting Disruptions](https://docs.seldon.io/projects/seldon-core/en/latest/graph/disruption-budgets.html)
@@ -338,13 +338,13 @@ Below are some of the core components together with link to the logs that provid
 
 ### Advanced Inference
 
-* [Model Explanations ](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/explainers.html)
-* [Outlier Detection ](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/outlier_detection.html)
-* [Routers (incl. Multi Armed Bandits)  ](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/routers.html)
+* [Model Explanations ](../docs-gb/integrations/explainers.md)
+* [Outlier Detection ](../docs-gb/integrations/outlier_detection.md)
+* [Routers (incl. Multi Armed Bandits)  ](../docs-gb/routing/routers.md)
 
 ### Examples
 
-* [Notebooks ](https://docs.seldon.io/projects/seldon-core/en/latest/examples/notebooks.html)
+* [Notebooks ](../docs-gb/notebooks/README.md)
 * [Articles/Blogs ](https://docs.seldon.io/projects/seldon-core/en/latest/tutorials/blogs.html)
 * [Videos ](https://docs.seldon.io/projects/seldon-core/en/latest/tutorials/videos.html)
 
@@ -355,14 +355,14 @@ Below are some of the core components together with link to the logs that provid
 * [General Availability ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/ga.html)
 * [Helm Charts ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/helm_charts.html)
 * [Images ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/images.html)
-* [Logging & Log Level ](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/log_level.html)
+* [Logging & Log Level ](../docs-gb/reference/log_level.md)
 * [Private Docker Registry ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/private_registries.html)
 * [Prediction APIs ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/index.html)
 * [Python API reference ](https://docs.seldon.io/projects/seldon-core/en/latest/python/api/modules.html)
 * [Release Highlights ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/release-highlights.html)
 * [Seldon Deployment CRD ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/seldon-deployment.html)
 * [Service Orchestrator ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/svcorch.html)
-* [Kubeflow ](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/kubeflow.html)
+* [Kubeflow ](../docs-gb/reference/kubeflow.md)
 
 ### Developer
 

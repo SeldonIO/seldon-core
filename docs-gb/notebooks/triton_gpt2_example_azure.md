@@ -333,7 +333,7 @@ kubectl get pods -n kube-system | grep omsagent
 
 For more details on how to configure the scraping endpoints and query collected data refer to [MS Docs on Configure scraping of Prometheus metrics with Container insights](https://docs.microsoft.com/en-us/azure/azure-monitor/containers/container-insights-prometheus-integration).
 
-Our deployed model metrics are available from the [Seldon model orchestrator](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html) and [Nvidia Triton Server](https://github.com/triton-inference-server/server/blob/main/docs/user_guide/metrics.md). To enable scraping for both endpoints, update the `ConfigMap` that configures `omsagent` ([azure-metrics-cm.yaml](./azure-metrics-cm.yaml)).
+Our deployed model metrics are available from the [Seldon model orchestrator](../integrations/analytics.md) and [Nvidia Triton Server](https://github.com/triton-inference-server/server/blob/main/docs/user_guide/metrics.md). To enable scraping for both endpoints, update the `ConfigMap` that configures `omsagent` ([azure-metrics-cm.yaml](./azure-metrics-cm.yaml)).
 
 ```bash
 kubectl apply -f azure-metrics-cm.yaml
