@@ -296,11 +296,11 @@ Below are some of the core components together with link to the logs that provid
 * [Language Wrappers for Custom Models ](https://docs.seldon.io/projects/seldon-core/en/latest/wrappers/language_wrappers.html)
 * [Create your Inference Graph ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/inference-graph.html)
 * [Deploy your Model  ](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/deploying.html)
-* [Testing your Model Endpoints  ](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/serving.html)
+* [Testing your Model Endpoints  ](../docs-gb/deployments/serving.md)
 * [Troubleshooting guide ](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/troubleshooting.html)
 * [Usage reporting ](https://docs.seldon.io/projects/seldon-core/en/latest/workflow/usage-reporting.html)
-* [Upgrading ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/upgrading.html)
-* [Changelog ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/changelog.html)
+* [Upgrading ](../docs-gb/upgrading.md)
+* [Changelog ](https://github.com/SeldonIO/seldon-core/blob/master/CHANGELOG.md)
 
 ### Pre-Packaged Inference Servers
 
@@ -366,7 +366,7 @@ Below are some of the core components together with link to the logs that provid
 
 * [Overview ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/readme.html)
 * [Contributing to Seldon Core ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/contributing.html)
-* [End to End Tests ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/e2e.html)
+* [End to End Tests ](../docs-gb/developer/e2e.md)
 * [Roadmap ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/roadmap.html)
 * [Build using private repo ](https://docs.seldon.io/projects/seldon-core/en/latest/developer/build-using-private-repo.html)
 

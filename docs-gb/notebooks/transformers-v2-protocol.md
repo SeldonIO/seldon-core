@@ -161,7 +161,7 @@ That is, our tokeniser, plus the actual GPT-2 model.
 
 As outlined above, this manifest will re-use the image and resources built in the [GPT-2 Model example](../notebooks/triton_gpt2_example.md), which is accessible from GCS.
 
-> **NOTE:** This manifest expects that the `gpt2-tokeniser:0.1.0` image built in the previous section **is accessible** from within the cluster where Seldon Core has been installed. If you are [using kind](https://docs.seldon.io/projects/seldon-core/en/latest/install/kind.html), you should be able to load the image into your local cluster with the following command:
+> **NOTE:** This manifest expects that the `gpt2-tokeniser:0.1.0` image built in the previous section **is accessible** from within the cluster where Seldon Core has been installed. If you are [using kind](../install/kind.md), you should be able to load the image into your local cluster with the following command:
 ```bash
 kind load docker-image gpt2-tokeniser:0.1.0
 ```

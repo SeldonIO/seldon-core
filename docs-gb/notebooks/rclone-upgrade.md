@@ -3,13 +3,13 @@
 In this documentation page we provide an example upgrade path from kfserving-based to rclone-based storage initializer. This is required due to the fact that secret format expected by these two storage initializers is different. 
 
 Storage initializers are used by Seldon's pre-packaged model servers to download models binaries. 
-As it is explained in the [SC 1.8 upgrading notes](https://docs.seldon.io/projects/seldon-core/en/latest/reference/upgrading.html#upgrading-to-1-8) the [seldonio/rclone-storage-initializer](https://github.com/SeldonIO/seldon-core/tree/master/components/rclone-storage-initializer) became default storage initializer in v1.8.0.
+As it is explained in the [SC 1.8 upgrading notes](../upgrading.md#upgrading-to-1-8) the [seldonio/rclone-storage-initializer](https://github.com/SeldonIO/seldon-core/tree/master/components/rclone-storage-initializer) became default storage initializer in v1.8.0.
 
 In this tutorial we will show how to upgrade your configuration to new Storage Initializer with focus on getting the new format of a required secret right.
 
 Read more:
 - [Prepackaged Model Servers documentation page](../servers/overview.md)
-- [SC 1.8 upgrading notes](https://docs.seldon.io/projects/seldon-core/en/latest/reference/upgrading.html#upgrading-to-1-8)
+- [SC 1.8 upgrading notes](../upgrading.md#upgrading-to-1-8)
 - [Example upgrade path to use rclone-based storage initializer globally](../notebooks/global-rclone-upgrade.md)
 
 ## Prerequisites
