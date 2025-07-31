@@ -25,6 +25,7 @@ export function inferHttp(endpoint, modelName, payload, viaEnvoy, pipelineSuffix
     };
     //console.log("URL:",url,"Payload:",payloadStr,"Params:",JSON.stringify(params))
     const response = http.post(url, payloadStr, params);
+    //console.log("URL:",url,"Status:",response.status, "Payloads:",JSON.stringify(response.error), response.body)
     check(response, {'model http prediction success': (r) => r.status === 200});
 }
 
