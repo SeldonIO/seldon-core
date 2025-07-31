@@ -29,7 +29,7 @@ Seldon handles scaling to thousands of production machine learning models and pr
 
 With over 2M installs, Seldon Core is used across organisations to manage large scale deployment of machine learning models, and key benefits include:
 
- * Easy way to containerise ML models using our [pre-packaged inference servers](../docs-gb/servers/overview.md), [custom servers](../docs-gb/servers/custom.md), or [language wrappers](https://docs.seldon.io/projects/seldon-core/en/latest/wrappers/language_wrappers.html).
+ * Easy way to containerise ML models using our [pre-packaged inference servers](../docs-gb/servers/overview.md), [custom servers](../docs-gb/servers/custom.md), or [language wrappers](https://docs.seldon.io/projects/seldon-core/en/1.18/wrappers/language_wrappers.html).
  * Out of the box endpoints which can be tested through [Swagger UI](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/openapi.html?highlight=swagger), [Seldon Python Client or Curl / GRPCurl](../docs-gb/wrappers/python/python_module.md#seldon-core-python-package).
  * Cloud agnostic and tested on [AWS EKS, Azure AKS, Google GKE, Alicloud, Digital Ocean and Openshift](../docs-gb/notebooks/README.md#cloud-specific-examples).
  * Powerful and rich inference graphs made out of [predictors, transformers, routers, combiners, and more](https://docs.seldon.io/projects/seldon-core/en/1.18/examples/graph-metadata.html).
@@ -147,7 +147,7 @@ class Model:
         return output
 ```
 
-We can now containerize our class file using the [Seldon Core s2i utils](https://docs.seldon.io/projects/seldon-core/en/latest/wrappers/s2i.html) to produce the `sklearn_iris` image:
+We can now containerize our class file using the [Seldon Core s2i utils](https://docs.seldon.io/projects/seldon-core/en/1.18/wrappers/s2i.html) to produce the `sklearn_iris` image:
 
 ```console
 s2i build . seldonio/seldon-core-s2i-python3:0.18 sklearn_iris:0.1
@@ -293,7 +293,7 @@ Below are some of the core components together with link to the logs that provid
 
 * [Detailed Installation Parameters ](https://docs.seldon.io/projects/seldon-core/en/latest/reference/helm.html)
 * [Pre-packaged Inference Servers ](../docs-gb/servers/overview.md)
-* [Language Wrappers for Custom Models ](https://docs.seldon.io/projects/seldon-core/en/latest/wrappers/language_wrappers.html)
+* [Language Wrappers for Custom Models ](https://docs.seldon.io/projects/seldon-core/en/1.18/wrappers/language_wrappers.html)
 * [Create your Inference Graph ](https://docs.seldon.io/projects/seldon-core/en/latest/graph/inference-graph.html)
 * [Deploy your Model  ](../docs-gb/deployments/deploying.md)
 * [Testing your Model Endpoints  ](../docs-gb/deployments/serving.md)
