@@ -10,7 +10,7 @@
     * [Install on Google Cloud](../docs-gb/install/gcp.md)
     * [Install on Azure](../docs-gb/install/azure.md)
     * [Install on AWS](../docs-gb/install/aws.md)
-* [Community](../docs-gb/developer/community.md)
+* [Community](developer/community.md)
 
 ## Concepts
 * [Overview of Components](overview.md)
