@@ -67,14 +67,6 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - endpoints
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
   - events
   verbs:
   - create
@@ -99,6 +91,13 @@ rules:
   - statefulsets/status
   verbs:
   - get
+- apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - list
+  - watch
 - apiGroups:
   - mlops.seldon.io
   resources:
@@ -216,14 +215,6 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - endpoints
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
   - events
   verbs:
   - create
@@ -248,6 +239,13 @@ rules:
   - statefulsets/status
   verbs:
   - get
+- apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - list
+  - watch
 - apiGroups:
   - mlops.seldon.io
   resources:

@@ -571,7 +571,7 @@ func (am *AgentServiceManager) handleSchedulerSubscription() error {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		defer cancel()
 		// will block on k8s watch until IP assigned
-		err := am.extendedClient.HasPublishedIP(ctx, fmt.Sprintf("%s-%d", am.agentConfig.serverName, am.agentConfig.replicaIdx))
+		err := am.extendedClient.HasPublishedIP(ctx, fmt.Sprintf("%s-%d", am.agentConfig.serverName, am.agentConfig.replicaIdx), "")
 		if err != nil {
 			return fmt.Errorf("failed waiting to check if pod's IP is published to endpoints: %v", err)
 		}
