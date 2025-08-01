@@ -10,8 +10,6 @@ the Change License after the Change Date as each is defined in accordance with t
 package server
 
 import (
-	"fmt"
-
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -35,6 +33,7 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 	fin := make(chan bool)
 
 	s.pipelineEventStream.mu.Lock()
+	s.pipelineEventStream.namesToIps[req.GetSubscriberName()] = req.GetSubscriberIp()
 	s.pipelineEventStream.streams[stream] = &PipelineSubscription{
 		name:              req.GetSubscriberName(),
 		ip:                req.GetSubscriberIp(),
@@ -114,7 +113,10 @@ func (s *SchedulerServer) GetAllRunningPipelines() []string {
 }
 
 func (s *SchedulerServer) createPipelineDeletionMessage(pip *pipeline.Pipeline, keepTopics bool) (*pb.PipelineStatusResponse, error) {
-	return nil, fmt.Errorf("Pipeline deletion message not implemented")
+	return &pb.PipelineStatusResponse{
+		PipelineName: pip.Name,
+		Versions:     nil,
+	}, nil
 }
 
 func (s *SchedulerServer) createPipelineCreationMessage(pip *pipeline.Pipeline) (*pb.PipelineStatusResponse, error) {
@@ -145,6 +147,13 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 		s.logger.Debugf("Servers for pipeline %s: %v", pipelineName, servers)
 		s.logger.Debug("Consumer bucket ID: ", consumerBucketId)
 
+		// need to update envoy clusters
+		s.sendPipelineStreamsEventMsg(
+			coordinator.PipelineEventMsg{PipelineName: pipelineName},
+			servers,
+		)
+
+		// send messages to each pipeline gateway stream
 		for _, pipelineSubscription := range s.pipelineEventStream.streams {
 			if !pipelineSubscription.isPipelineGateway {
 				s.logger.Debugf("Skipping non-pipeline gateway stream for %s", pipelineSubscription.name)
@@ -222,8 +231,8 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 	s.pipelineEventStream.mu.Lock()
 	defer s.pipelineEventStream.mu.Unlock()
 
-	// find pipelinegw servers that should receive this event
-	servers := s.pipelineGWLoadBalancer.GetServersForKey(event.PipelineName)
+	// find pipelinegw serverNames that should receive this event
+	serverNames := s.pipelineGWLoadBalancer.GetServersForKey(event.PipelineName)
 
 	// split the streams into pipeline gateways and non-gateways
 	pipelineGwStreams := make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription)
@@ -232,7 +241,7 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 	for stream, subscription := range s.pipelineEventStream.streams {
 		if !subscription.isPipelineGateway {
 			otherStreams[stream] = subscription
-		} else if contains(servers, subscription.name) {
+		} else if contains(serverNames, subscription.name) {
 			pipelineGwStreams[stream] = subscription
 		}
 	}
@@ -241,10 +250,25 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 	s.sendPipelineEventsToStreams(event, status, pipelineGwStreams)
 	s.sendPipelineEventsToStreams(event, status, otherStreams)
 
+	// publish event for envoy
+	s.sendPipelineStreamsEventMsg(event, serverNames)
+}
+
+func (s *SchedulerServer) sendPipelineStreamsEventMsg(event coordinator.PipelineEventMsg, streamNames []string) {
+	streamIps := make([]string, 0, len(streamNames))
+	for _, streamName := range streamNames {
+		ip, exists := s.pipelineEventStream.namesToIps[streamName]
+		if !exists {
+			s.logger.Errorf("No IP found for stream name %s", streamName)
+			return
+		}
+		streamIps = append(streamIps, ip)
+	}
+
 	eventMsg := coordinator.PipelineStreamsEventMsg{
 		PipelineEventMsg: event,
-		StreamNames:      s.getStreamNames(),
-		StreamIps:        s.getStreamIps(),
+		StreamNames:      streamNames,
+		StreamIps:        streamIps,
 	}
 	s.eventHub.PublishPipelineStreamsEvent(addPipelineStreamEventSource, eventMsg)
 }
@@ -267,28 +291,6 @@ func (s *SchedulerServer) sendPipelineEventsToStreams(
 			logger.WithError(err).Errorf("Failed to send pipeline status event to %s for %s", subscription.name, event.String())
 		}
 	}
-}
-
-func (s *SchedulerServer) getStreamNames() []string {
-	streamNames := make([]string, 0, len(s.pipelineEventStream.streams))
-	for _, subscription := range s.pipelineEventStream.streams {
-		if !subscription.isPipelineGateway {
-			continue
-		}
-		streamNames = append(streamNames, subscription.name)
-	}
-	return streamNames
-}
-
-func (s *SchedulerServer) getStreamIps() []string {
-	streamIps := make([]string, 0, len(s.pipelineEventStream.streams))
-	for _, subscription := range s.pipelineEventStream.streams {
-		if !subscription.isPipelineGateway {
-			continue
-		}
-		streamIps = append(streamIps, subscription.ip)
-	}
-	return streamIps
 }
 
 func (s *SchedulerServer) StopSendPipelineEvents() {

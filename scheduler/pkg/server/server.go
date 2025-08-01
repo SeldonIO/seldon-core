@@ -102,8 +102,9 @@ type ExperimentEventStream struct {
 }
 
 type PipelineEventStream struct {
-	mu      sync.Mutex
-	streams map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription
+	mu         sync.Mutex
+	streams    map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription
+	namesToIps map[string]string // Maps pipeline names to their IPs
 }
 
 type ControlPlaneStream struct {
@@ -281,7 +282,8 @@ func NewSchedulerServer(
 			pendingEvents: map[string]struct{}{},
 		},
 		pipelineEventStream: PipelineEventStream{
-			streams: make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription),
+			streams:    make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription),
+			namesToIps: make(map[string]string),
 		},
 		experimentEventStream: ExperimentEventStream{
 			streams: make(map[pb.Scheduler_SubscribeExperimentStatusServer]*ExperimentSubscription),
