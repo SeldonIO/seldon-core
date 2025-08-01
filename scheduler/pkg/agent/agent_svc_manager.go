@@ -65,7 +65,6 @@ type AgentServiceManager struct {
 	agentConfig              *AgentServiceConfig
 	modelTimestamps          sync.Map
 	startTime                time.Time
-	runningInK8s             bool
 	StorageManager
 	SchedulerGrpcClientOptions
 	KubernetesOptions
