@@ -31,7 +31,7 @@ type ExtendedClient interface {
 	// id (corresponding to object with metadata.labels.kubernetes.io/service-name == name).
 	// If no IP is assigned, it is blocking on a watch channel, waiting for an IP to be assigned. A nil error indicates
 	// the named resource has an IP.
-	HasPublishedIP(ctx context.Context, name, fieldSelector string) error
+	HasPublishedIP(ctx context.Context, name, optionalFieldSelector string) error
 }
 
 const defaultLabelSelector = "kubernetes.io/service-name"
