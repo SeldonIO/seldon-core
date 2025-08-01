@@ -11,7 +11,6 @@ package readyservice
 
 import (
 	"context"
-	// "fmt"
 	"net/http"
 	"strconv"
 	"sync"
@@ -117,21 +116,25 @@ func (ready *ReadyService) GetHTTPHandler() *http.Handler {
 func (ready *ReadyService) handleReadinessCheck(w http.ResponseWriter, _ *http.Request) {
 	ready.muTarget.RLock()
 	defer ready.muTarget.RUnlock()
+
 	am := ready.readinessTarget
+
 	if am == nil {
+		ready.logger.Warn("Agent readiness HTTP handler failed, target not set")
 		http.Error(w, "No service monitored for readiness by this endpoint", http.StatusNotFound)
 		return
-	} else {
-		// Check if the agent and its sub-services are ready
-		if am.Ready() {
-			w.WriteHeader(http.StatusOK)
-			_, err := w.Write([]byte("The agent and its dependent sub-services are ready"))
-			if err != nil {
-				ready.logger.WithError(err).Error("Failed to write response for readiness check")
-			}
-		} else {
-			http.Error(w, "The agent is not ready", http.StatusServiceUnavailable)
+	}
+
+	// Check if the agent and its sub-services are ready
+	if am.Ready() {
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte("The agent and its dependent sub-services are ready"))
+		if err != nil {
+			ready.logger.WithError(err).Error("Failed to write response for readiness check")
 		}
 		return
 	}
+
+	ready.logger.Warn("Agent readiness failed, agent service manager is not ready")
+	http.Error(w, "The agent is not ready", http.StatusServiceUnavailable)
 }
