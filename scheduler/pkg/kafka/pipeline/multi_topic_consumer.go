@@ -103,7 +103,7 @@ func (c *MultiTopicsKafkaConsumer) AddTopic(topic string, cb kafka.RebalanceCb) 
 	return c.subscribeTopics(cb)
 }
 
-func (c *MultiTopicsKafkaConsumer) RemoveTopic(topic string) error {
+func (c *MultiTopicsKafkaConsumer) RemoveTopic(topic string, cb kafka.RebalanceCb) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -117,7 +117,7 @@ func (c *MultiTopicsKafkaConsumer) RemoveTopic(topic string) error {
 	} else {
 		// TODO: we want to make sure that this does not affect the already existing subscription
 		// specifically after we mark a given consumer to be ready initially (with a cb)
-		return c.subscribeTopics(nil)
+		return c.subscribeTopics(cb)
 	}
 }
 

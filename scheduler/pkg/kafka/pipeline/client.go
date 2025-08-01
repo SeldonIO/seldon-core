@@ -188,26 +188,37 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 			logger.WithError(err).Error("event recv failed")
 			break
 		}
+
 		// The expected contract is just the latest version will be sent to us
-		if len(event.Versions) != 1 {
-			logger.Info("Expected a single model version", "numVersions", len(event.Versions), "name", event.GetPipelineName())
+		if len(event.Versions) > 1 {
+			logger.Info("Expected at most a single model version", "numVersions", len(event.Versions), "name", event.GetPipelineName())
 			continue
 		}
 
-		pv, err := pipeline.CreatePipelineVersionWithStateFromProto(event.Versions[0])
-		if err != nil {
-			logger.Warningf("Failed to create pipeline state for pipeline %s with %s", event.PipelineName, protojson.Format(event))
-			continue
-		}
+		if len(event.Versions) == 1 {
+			pv, err := pipeline.CreatePipelineVersionWithStateFromProto(event.Versions[0])
+			if err != nil {
+				logger.Warningf("Failed to create pipeline state for pipeline %s with %s", event.PipelineName, protojson.Format(event))
+				continue
+			}
 
-		logger.Debugf("Processing pipeline %s version %d with state %s", pv.Name, pv.Version, pv.State.Status.String())
-		pc.pipelineStatusUpdater.Update(pv)
+			logger.Debugf("Processing pipeline %s version %d with state %s", pv.Name, pv.Version, pv.State.Status.String())
+			pc.pipelineStatusUpdater.Update(pv)
 
-		_, err = pc.pipelineInferer.LoadOrStorePipeline(pv.Name, false)
-		logger.Debugf("Stored pipeline %s", pv.Name)
-		if err != nil {
-			logger.WithError(err).Errorf("Failed to store pipeline %s", pv.Name)
-			continue
+			_, err = pc.pipelineInferer.LoadOrStorePipeline(pv.Name, false)
+			logger.Debugf("Stored pipeline %s", pv.Name)
+			if err != nil {
+				logger.WithError(err).Errorf("Failed to store pipeline %s", pv.Name)
+				continue
+			}
+		} else {
+			logger.Debugf("Received event with no versions for pipeline %s", event.PipelineName)
+			err := pc.pipelineInferer.DeletePipeline(event.PipelineName, false)
+			if err != nil {
+				logger.WithError(err).Errorf("Failed to delete pipeline %s", event.PipelineName)
+			} else {
+				logger.Debugf("Deleted pipeline %s", event.PipelineName)
+			}
 		}
 	}
 	logger.Infof("Closing connection to scheduler")

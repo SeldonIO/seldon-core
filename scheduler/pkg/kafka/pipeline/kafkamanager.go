@@ -37,6 +37,7 @@ const (
 
 type PipelineInferer interface {
 	LoadOrStorePipeline(resourceName string, isModel bool) (*Pipeline, error)
+	DeletePipeline(resourceName string, isModel bool) error
 	Infer(
 		ctx context.Context,
 		resourceName string,
@@ -157,6 +158,32 @@ func getPipelineKey(resourceName string, isModel bool) string {
 	} else {
 		return fmt.Sprintf("%s.pipeline", resourceName)
 	}
+}
+
+func (km *KafkaManager) DeletePipeline(resourceName string, isModel bool) error {
+	logger := km.logger.WithField("func", "DeletePipeline")
+	key := getPipelineKey(resourceName, isModel)
+
+	km.mu.Lock()
+	defer km.mu.Unlock()
+
+	if val, ok := km.pipelines.Load(key); ok {
+		pipeline := val.(*Pipeline)
+		err := pipeline.consumer.RemoveTopic(
+			km.topicNamer.GetPipelineTopicOutputs(resourceName),
+			createRebalanceCb(km, pipeline),
+		)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to remove topic for resource %s", resourceName)
+			return err
+		}
+
+		km.pipelines.Delete(key)
+		logger.Infof("Deleted pipeline %s", resourceName)
+	} else {
+		logger.Warnf("No pipeline found for resource %s", resourceName)
+	}
+	return nil
 }
 
 func (km *KafkaManager) LoadOrStorePipeline(resourceName string, isModel bool) (*Pipeline, error) {
