@@ -164,9 +164,12 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 		return err
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	logger.Infof("Subscriber (%s, %s) subscribing to pipeline status events", subscriberName, subscriberIp)
 	stream, errSub := grpcClient.SubscribePipelineStatus(
-		context.Background(),
+		ctx,
 		&scheduler.PipelineSubscriptionRequest{
 			SubscriberName:    subscriberName,
 			SubscriberIp:      subscriberIp,
@@ -216,8 +219,6 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 			err := pc.pipelineInferer.DeletePipeline(event.PipelineName, false)
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to delete pipeline %s", event.PipelineName)
-			} else {
-				logger.Debugf("Deleted pipeline %s", event.PipelineName)
 			}
 		}
 	}

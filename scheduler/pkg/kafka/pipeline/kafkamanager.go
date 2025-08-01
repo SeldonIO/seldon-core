@@ -171,7 +171,7 @@ func (km *KafkaManager) DeletePipeline(resourceName string, isModel bool) error 
 		pipeline := val.(*Pipeline)
 		err := pipeline.consumer.RemoveTopic(
 			km.topicNamer.GetPipelineTopicOutputs(resourceName),
-			createRebalanceCb(km, pipeline),
+			createRebalanceCb(km, pipeline.consumer),
 		)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to remove topic for resource %s", resourceName)
@@ -326,7 +326,7 @@ func createResponseErrorPayload(modelName string, response []byte) []byte {
 	return append([]byte(modelName+" : "), response...)
 }
 
-func createRebalanceCb(km *KafkaManager, pipeline *Pipeline) kafka.RebalanceCb {
+func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) kafka.RebalanceCb {
 	logger := km.logger.WithField("func", "createRebalanceCb")
 	return func(consumer *kafka.Consumer, ev kafka.Event) error {
 		switch e := ev.(type) {
@@ -337,14 +337,14 @@ func createRebalanceCb(km *KafkaManager, pipeline *Pipeline) kafka.RebalanceCb {
 			logger.Debug("Rebalance: Assigned partitions:", e.Partitions)
 			err := consumer.Assign(e.Partitions)
 			if err != nil {
-				pipeline.consumer.partitions = nil
+				mtConsumer.partitions = nil
 				return fmt.Errorf("assign error: %w", err)
 			}
 
 			// Update the pipeline consumer partitions
-			pipeline.consumer.partitions = make([]int32, len(e.Partitions))
+			mtConsumer.partitions = make([]int32, len(e.Partitions))
 			for i, partition := range e.Partitions {
-				pipeline.consumer.partitions[i] = partition.Partition
+				mtConsumer.partitions[i] = partition.Partition
 			}
 		case kafka.RevokedPartitions:
 			km.mu.Lock()
@@ -352,7 +352,7 @@ func createRebalanceCb(km *KafkaManager, pipeline *Pipeline) kafka.RebalanceCb {
 
 			logger.Debug("Rebalance: Revoked partitions:", e.Partitions)
 			err := consumer.Unassign()
-			pipeline.consumer.partitions = nil
+			mtConsumer.partitions = nil
 			if err != nil {
 				return fmt.Errorf("unassign error: %w", err)
 			}
@@ -367,7 +367,7 @@ func (km *KafkaManager) consume(pipeline *Pipeline) error {
 	if pipeline.isModel {
 		topicName = km.topicNamer.GetModelTopicOutputs(pipeline.resourceName)
 	}
-	err := pipeline.consumer.AddTopic(topicName, createRebalanceCb(km, pipeline))
+	err := pipeline.consumer.AddTopic(topicName, createRebalanceCb(km, pipeline.consumer))
 	pipeline.wg.Done()
 	logger.Infof("Topic %s added in consumer id %s", topicName, pipeline.consumer.id)
 	if err != nil {

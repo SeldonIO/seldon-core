@@ -115,7 +115,7 @@ func (s *SchedulerServer) GetAllRunningPipelines() []string {
 func (s *SchedulerServer) createPipelineDeletionMessage(pip *pipeline.Pipeline, keepTopics bool) (*pb.PipelineStatusResponse, error) {
 	return &pb.PipelineStatusResponse{
 		PipelineName: pip.Name,
-		Versions:     nil,
+		Versions:     []*pb.PipelineWithState{},
 	}, nil
 }
 
@@ -133,16 +133,11 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 	defer s.pipelineEventStream.mu.Unlock()
 
 	runningPipelines := s.GetAllRunningPipelines()
+	s.logger.Debugf("Rebalancing pipeline gateways for running pipelines: %v", runningPipelines)
+
 	for _, pipelineName := range runningPipelines {
 		pip, _ := s.pipelineHandler.GetPipeline(pipelineName)
-		consumerBucketId := util.GetKafkaConsumerName(
-			s.consumerGroupConfig.namespace,
-			s.consumerGroupConfig.consumerGroupIdPrefix,
-			pipelineName,
-			pipelineGatewayConsumerNamePrefix,
-			s.consumerGroupConfig.maxNumConsumers,
-		)
-
+		consumerBucketId := s.getConsumerBucketId(pipelineName)
 		servers := s.pipelineGWLoadBalancer.GetServersForKey(consumerBucketId)
 		s.logger.Debugf("Servers for pipeline %s: %v", pipelineName, servers)
 		s.logger.Debug("Consumer bucket ID: ", consumerBucketId)
@@ -232,7 +227,8 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 	defer s.pipelineEventStream.mu.Unlock()
 
 	// find pipelinegw serverNames that should receive this event
-	serverNames := s.pipelineGWLoadBalancer.GetServersForKey(event.PipelineName)
+	consumerBucketId := s.getConsumerBucketId(event.PipelineName)
+	serverNames := s.pipelineGWLoadBalancer.GetServersForKey(consumerBucketId)
 
 	// split the streams into pipeline gateways and non-gateways
 	pipelineGwStreams := make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription)
@@ -299,4 +295,14 @@ func (s *SchedulerServer) StopSendPipelineEvents() {
 	for _, subscription := range s.pipelineEventStream.streams {
 		close(subscription.fin)
 	}
+}
+
+func (s *SchedulerServer) getConsumerBucketId(pipelineName string) string {
+	return util.GetKafkaConsumerName(
+		s.consumerGroupConfig.namespace,
+		s.consumerGroupConfig.consumerGroupIdPrefix,
+		pipelineName,
+		pipelineGatewayConsumerNamePrefix,
+		s.consumerGroupConfig.maxNumConsumers,
+	)
 }
