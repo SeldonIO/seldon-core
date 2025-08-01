@@ -236,7 +236,7 @@ func TestAgentServiceManagerCreate(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 			k8sExtendedClient := mocks.NewMockExtendedClient(ctrl)
-			k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), "mlserver-1").Return(nil)
+			k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), "mlserver-1", "").Return(nil)
 
 			asm := NewAgentServiceManager(
 				NewAgentServiceConfig("mlserver",
@@ -289,13 +289,13 @@ func TestHandleSchedulerSubscription(t *testing.T) {
 		{
 			name: "success - has IP",
 			mockK8sClient: func(c *mocks.MockExtendedClient) {
-				c.EXPECT().HasPublishedIP(gomock.Any(), "mlserver-1").Return(nil)
+				c.EXPECT().HasPublishedIP(gomock.Any(), "mlserver-1", "").Return(nil)
 			},
 		},
 		{
 			name: "failure - IP not yet published to endpoints",
 			mockK8sClient: func(c *mocks.MockExtendedClient) {
-				c.EXPECT().HasPublishedIP(gomock.Any(), "mlserver-1").Return(errors.New("ip not found"))
+				c.EXPECT().HasPublishedIP(gomock.Any(), "mlserver-1", "").Return(errors.New("ip not found"))
 			},
 			expectErr: "failed waiting to check if pod's IP is published to endpoints: ip not found",
 		},
@@ -478,7 +478,7 @@ func TestLoadModel(t *testing.T) {
 			// Set up dependencies
 			ctrl := gomock.NewController(t)
 			k8sExtendedClient := mocks.NewMockExtendedClient(ctrl)
-			k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), gomock.Any()).Return(nil)
+			k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), gomock.Any(), "").Return(nil)
 
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
@@ -665,7 +665,7 @@ parameters:
 
 			ctrl := gomock.NewController(t)
 			k8sExtendedClient := mocks.NewMockExtendedClient(ctrl)
-			k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), gomock.Any()).Return(nil)
+			k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), gomock.Any(), "").Return(nil)
 
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
@@ -806,7 +806,7 @@ func TestUnloadModel(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 			k8sExtendedClient := mocks.NewMockExtendedClient(ctrl)
-			k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), gomock.Any()).Return(nil)
+			k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), gomock.Any(), "").Return(nil)
 
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), test.v2Status)
 			httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
@@ -954,7 +954,7 @@ func TestReadinessServiceAgentSync(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	k8sExtendedClient := mocks.NewMockExtendedClient(ctrl)
-	k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), gomock.Any()).Return(nil)
+	k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), gomock.Any(), "").Return(nil)
 
 	readyServicePort, _ := testing_utils2.GetFreePortForTest()
 	readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
@@ -1281,7 +1281,7 @@ func TestAgentStopOnSubServicesFailure(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			k8sExtendedClient := mocks.NewMockExtendedClient(ctrl)
-			k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), gomock.Any()).Return(nil)
+			k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), gomock.Any(), "").Return(nil)
 
 			mockMLServer := &testing_utils.MockGRPCMLServer{}
 			backEndGRPCPort, err := testing_utils2.GetFreePortForTest()
@@ -1447,7 +1447,7 @@ func TestUnloadModelOutOfOrder(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 			k8sExtendedClient := mocks.NewMockExtendedClient(ctrl)
-			k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), gomock.Any()).Return(nil)
+			k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), gomock.Any(), "").Return(nil)
 
 			v2Client := createTestV2Client(addVerionToModels(test.models, 0), 200)
 			httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
