@@ -5,7 +5,8 @@ on:
     - cron: "0 23 * * *"
   pull_request:
     branches:
-      - master, v2
+      - master
+      - v2
   workflow_dispatch:
 
 permissions:
@@ -13,20 +14,25 @@ permissions:
   issues: write
 
 jobs:
-  markdown-link-check:
+  check-docs-gb:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        folder:
+          - docs-gb
+          - v2/docs-gb
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
 
-      - name: Run Linkspector
+      - name: Run Linkspector on ${{ matrix.folder }}
         uses: umbrelladocs/action-linkspector@v1
         with:
-          workdir: docs-gb
+          workdir: ${{ matrix.folder }}
           reporter: github-pr-review
           fail_level: any
-          fconfig_file: .linkspector.yml
+          config_file: .linkspector.yml
 
-      - name: Create issue
+      - name: Create issue if ${{ matrix.folder }} fails
         if: ${{ failure() }}
         uses: JasonEtco/create-an-issue@e27dddc79c92bc6e4562f268fffa5ed752639abd
         env:
