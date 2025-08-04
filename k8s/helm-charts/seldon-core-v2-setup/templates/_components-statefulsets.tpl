@@ -573,6 +573,8 @@ spec:
             .Values.logging.logLevel }}'
         - name: MODELGATEWAY_MAX_NUM_CONSUMERS
           value: '{{ .Values.modelgateway.maxNumConsumers }}'
+        - name: PIPELINEGATEWAY_MAX_NUM_CONSUMERS
+          value: '{{ .Values.pipelinegateway.maxNumConsumers }}'
         - name: ALLOW_PLAINTXT
           value: "true"
         - name: POD_NAMESPACE
@@ -727,6 +729,8 @@ spec:
         - name: LOG_LEVEL
           value: '{{ hasKey .Values.pipelinegateway "logLevel" | ternary .Values.pipelinegateway.logLevel
             .Values.logging.logLevel }}'
+        - name: PIPELINEGATEWAY_MAX_NUM_CONSUMERS
+          value: '{{ .Values.pipelinegateway.maxNumConsumers }}'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
