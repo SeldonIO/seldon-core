@@ -331,9 +331,6 @@ func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) k
 	return func(consumer *kafka.Consumer, ev kafka.Event) error {
 		switch e := ev.(type) {
 		case kafka.AssignedPartitions:
-			km.mu.Lock()
-			defer km.mu.Unlock()
-
 			logger.Debug("Rebalance: Assigned partitions:", e.Partitions)
 			err := consumer.Assign(e.Partitions)
 			if err != nil {
@@ -349,9 +346,6 @@ func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) k
 			}
 
 		case kafka.RevokedPartitions:
-			km.mu.Lock()
-			defer km.mu.Unlock()
-
 			logger.Debug("Rebalance: Revoked partitions:", e.Partitions)
 			err := consumer.Unassign()
 			if err != nil {
