@@ -277,7 +277,7 @@ func (s *SchedulerServer) sendPipelineEventsToStreams(
 ) {
 
 	logger := s.logger.WithField("func", "sendPipelineEventsToStreams")
-	for stream, subscription := range s.pipelineEventStream.streams {
+	for stream, subscription := range streams {
 		hasExpired, err := sendWithTimeout(func() error { return stream.Send(status) }, s.timeout)
 		if hasExpired {
 			// this should trigger a reconnect from the client
