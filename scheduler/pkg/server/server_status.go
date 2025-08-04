@@ -159,7 +159,7 @@ func (s *SchedulerServer) modelGwRebalance() {
 			s.consumerGroupConfig.consumerGroupIdPrefix,
 			modelName,
 			modelGatewayConsumerNamePrefix,
-			s.consumerGroupConfig.maxNumConsumers,
+			s.consumerGroupConfig.modelGatewayMaxNumConsumers,
 		)
 		s.logger.Debug("Rebalancing model %s with consumber bucket id %s", modelName, consumerBucketId)
 
@@ -274,7 +274,7 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 			s.consumerGroupConfig.consumerGroupIdPrefix,
 			evt.ModelName,
 			modelGatewayConsumerNamePrefix,
-			s.consumerGroupConfig.maxNumConsumers,
+			s.consumerGroupConfig.modelGatewayMaxNumConsumers,
 		)
 		servers := s.modelGwLoadBalancer.GetServersForKey(consumerBucketId)
 

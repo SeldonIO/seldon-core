@@ -22,7 +22,7 @@ import (
 
 const (
 	EnvMaxNumConsumers                = "PIPELINEGATEWAY_MAX_NUM_CONSUMERS"
-	DefaultMaxNumConsumers            = 200
+	DefaultMaxNumConsumers            = 100
 	pipelineGatewayConsumerNamePrefix = "seldon-pipelinegateway"
 )
 
@@ -86,6 +86,7 @@ func (cm *ConsumerManager) getKafkaConsumer(pipelineOrModelName string, isModel 
 		cm.maxNumConsumers,
 	)
 	consumers := cm.pipelinesConsumers
+	cm.logger.Debugf("Getting consumer for %s with name %s", pipelineOrModelName, consumerName)
 	if isModel {
 		consumers = cm.modelsConsumers
 	}

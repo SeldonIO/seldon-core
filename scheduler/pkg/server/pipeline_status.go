@@ -69,6 +69,7 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 			logger.Infof("Stream disconnected %s", req.GetSubscriberName())
 			s.pipelineEventStream.mu.Lock()
 			delete(s.pipelineEventStream.streams, stream)
+			delete(s.pipelineEventStream.namesToIps, req.GetSubscriberName())
 			if req.IsPipelineGateway {
 				s.pipelineGWLoadBalancer.RemoveServer(req.GetSubscriberName())
 			}
@@ -303,6 +304,6 @@ func (s *SchedulerServer) getConsumerBucketId(pipelineName string) string {
 		s.consumerGroupConfig.consumerGroupIdPrefix,
 		pipelineName,
 		pipelineGatewayConsumerNamePrefix,
-		s.consumerGroupConfig.maxNumConsumers,
+		s.consumerGroupConfig.pipelineGatewayMaxNumConsumers,
 	)
 }

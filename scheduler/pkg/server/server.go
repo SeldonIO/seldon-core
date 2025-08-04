@@ -49,7 +49,8 @@ const (
 	sendTimeout                           = 30 * time.Second // Timeout for sending events to subscribers via grpc `sendMsg`
 	modelGatewayConsumerNamePrefix        = "seldon-modelgateway"
 	pipelineGatewayConsumerNamePrefix     = "seldon-pipelinegateway"
-	EnvMaxNumConsumers                    = "MODELGATEWAY_MAX_NUM_CONSUMERS"
+	EnvModelGatewayMaxNumConsumers        = "MODELGATEWAY_MAX_NUM_CONSUMERS"
+	EnvPipelineGatewayMaxNumConsumers     = "PIPELINEGATEWAY_MAX_NUM_CONSUMERS"
 	DefaultMaxNumConsumers                = 100
 )
 
@@ -146,25 +147,27 @@ type ControlPlaneSubsription struct {
 }
 
 type ConsumerGroupConfig struct {
-	namespace             string
-	consumerGroupIdPrefix string
-	maxNumConsumers       int
+	namespace                      string
+	consumerGroupIdPrefix          string
+	modelGatewayMaxNumConsumers    int
+	pipelineGatewayMaxNumConsumers int
 }
 
-func NewConsumerGroupConfig(namespace, consumerGroupIdPrefix string, maxNumConsumers int) *ConsumerGroupConfig {
+func NewConsumerGroupConfig(namespace, consumerGroupIdPrefix string, modelGatewayMaxNumConsumers int, pipelineGatewayMaxNumConsumers int) *ConsumerGroupConfig {
 	if namespace == "" {
 		namespace = "default"
 	}
-	if consumerGroupIdPrefix == "" {
-		consumerGroupIdPrefix = modelGatewayConsumerNamePrefix
+	if modelGatewayMaxNumConsumers <= 0 {
+		modelGatewayMaxNumConsumers = DefaultMaxNumConsumers
 	}
-	if maxNumConsumers <= 0 {
-		maxNumConsumers = DefaultMaxNumConsumers
+	if pipelineGatewayMaxNumConsumers <= 0 {
+		pipelineGatewayMaxNumConsumers = DefaultMaxNumConsumers
 	}
 	return &ConsumerGroupConfig{
-		namespace:             namespace,
-		consumerGroupIdPrefix: consumerGroupIdPrefix,
-		maxNumConsumers:       maxNumConsumers,
+		namespace:                      namespace,
+		consumerGroupIdPrefix:          consumerGroupIdPrefix,
+		modelGatewayMaxNumConsumers:    modelGatewayMaxNumConsumers,
+		pipelineGatewayMaxNumConsumers: pipelineGatewayMaxNumConsumers,
 	}
 }
 
@@ -256,14 +259,13 @@ func NewSchedulerServer(
 	pipelineGWLoadBalancer *util.RingLoadBalancer,
 ) *SchedulerServer {
 	loggerWithField := logger.WithField("source", "SchedulerServer")
-	maxNumConsumers := getEnVar(loggerWithField, EnvMaxNumConsumers, DefaultMaxNumConsumers)
-	if maxNumConsumers <= 0 {
-		maxNumConsumers = DefaultMaxNumConsumers
-	}
+	modelGatewayMaxNumConsumers := getEnVar(loggerWithField, EnvModelGatewayMaxNumConsumers, DefaultMaxNumConsumers)
+	pipelineGatewayMaxNumConsumers := getEnVar(loggerWithField, EnvPipelineGatewayMaxNumConsumers, DefaultMaxNumConsumers)
 	consumerGroupConfig := NewConsumerGroupConfig(
 		namespace,
 		consumerGroupIdPrefix,
-		maxNumConsumers,
+		modelGatewayMaxNumConsumers,
+		pipelineGatewayMaxNumConsumers,
 	)
 
 	s := &SchedulerServer{
