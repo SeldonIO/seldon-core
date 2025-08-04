@@ -332,30 +332,33 @@ func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) k
 		switch e := ev.(type) {
 		case kafka.AssignedPartitions:
 			km.mu.Lock()
-			km.mu.Unlock()
+			defer km.mu.Unlock()
 
 			logger.Debug("Rebalance: Assigned partitions:", e.Partitions)
 			err := consumer.Assign(e.Partitions)
 			if err != nil {
-				mtConsumer.partitions = nil
+				// Don't modify mtConsumer.partitions on assign failure
+				// as the consumer state hasn't changed
 				return fmt.Errorf("assign error: %w", err)
 			}
 
-			// Update the pipeline consumer partitions
+			// Only update partitions after successful assignment
 			mtConsumer.partitions = make([]int32, len(e.Partitions))
 			for i, partition := range e.Partitions {
 				mtConsumer.partitions[i] = partition.Partition
 			}
+
 		case kafka.RevokedPartitions:
 			km.mu.Lock()
-			km.mu.Unlock()
+			defer km.mu.Unlock()
 
 			logger.Debug("Rebalance: Revoked partitions:", e.Partitions)
 			err := consumer.Unassign()
-			mtConsumer.partitions = nil
 			if err != nil {
 				return fmt.Errorf("unassign error: %w", err)
 			}
+			// Only clear partitions after successful unassign
+			mtConsumer.partitions = nil
 		}
 		return nil
 	}
