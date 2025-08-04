@@ -6,7 +6,7 @@ toolchain go1.24.4
 
 require (
 	github.com/docker/docker v28.3.1+incompatible
-	github.com/onsi/gomega v1.36.2
+	github.com/onsi/gomega v1.38.0
 	github.com/seldonio/seldon-core/operator/v2 v2.9.1
 	k8s.io/api v0.33.2
 	k8s.io/apimachinery v0.33.2
