@@ -31,16 +31,17 @@ import (
 type MultiTopicsKafkaConsumer struct {
 	config     *kafka_config.KafkaConfig
 	logger     log.FieldLogger
-	mu         sync.RWMutex
 	topics     map[string]struct{}
 	partitions []int32
 	id         string
 	consumer   *kafka.Consumer
 	isActive   atomic.Bool
 	// map of kafka id to request
-	requests cmap.ConcurrentMap
-	tracer   trace.Tracer
-	wg       sync.WaitGroup
+	requests    cmap.ConcurrentMap
+	tracer      trace.Tracer
+	topicMu     sync.Mutex
+	rebalanceMu sync.RWMutex
+	wg          sync.WaitGroup
 }
 
 func NewMultiTopicsKafkaConsumer(
@@ -52,7 +53,6 @@ func NewMultiTopicsKafkaConsumer(
 	consumer := &MultiTopicsKafkaConsumer{
 		logger:   logger.WithField("source", "MultiTopicsKafkaConsumer"),
 		config:   consumerConfig,
-		mu:       sync.RWMutex{},
 		topics:   make(map[string]struct{}),
 		id:       id,
 		requests: cmap.New(),
@@ -95,8 +95,8 @@ func (c *MultiTopicsKafkaConsumer) createConsumer(logger log.FieldLogger) error 
 }
 
 func (c *MultiTopicsKafkaConsumer) AddTopic(topic string, cb kafka.RebalanceCb) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.topicMu.Lock()
+	defer c.topicMu.Unlock()
 
 	if _, ok := c.topics[topic]; ok {
 		return nil
@@ -107,8 +107,8 @@ func (c *MultiTopicsKafkaConsumer) AddTopic(topic string, cb kafka.RebalanceCb) 
 }
 
 func (c *MultiTopicsKafkaConsumer) RemoveTopic(topic string, cb kafka.RebalanceCb) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.topicMu.Lock()
+	defer c.topicMu.Unlock()
 
 	if _, ok := c.topics[topic]; !ok {
 		return nil
@@ -122,12 +122,6 @@ func (c *MultiTopicsKafkaConsumer) RemoveTopic(topic string, cb kafka.RebalanceC
 		// specifically after we mark a given consumer to be ready initially (with a cb)
 		return c.subscribeTopics(cb)
 	}
-}
-
-func (c *MultiTopicsKafkaConsumer) GetNumTopics() int {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	return len(c.topics)
 }
 
 func (c *MultiTopicsKafkaConsumer) Close() error {

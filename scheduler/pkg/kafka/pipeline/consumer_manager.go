@@ -96,14 +96,6 @@ func (cm *ConsumerManager) getKafkaConsumer(pipelineOrModelName string, isModel 
 	return cm.createConsumer(consumerName, consumers)
 }
 
-func getNumModels(consumers map[string]*MultiTopicsKafkaConsumer) int {
-	tot := 0
-	for _, c := range consumers {
-		tot += c.GetNumTopics()
-	}
-	return tot
-}
-
 func stop(consumers map[string]*MultiTopicsKafkaConsumer) {
 	for _, c := range consumers {
 		err := c.Close()
@@ -111,12 +103,6 @@ func stop(consumers map[string]*MultiTopicsKafkaConsumer) {
 			log.Warnf("Consumer %s failed to close", c.id)
 		}
 	}
-}
-
-func (cm *ConsumerManager) GetNumModels() int {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-	return getNumModels(cm.modelsConsumers) + getNumModels(cm.pipelinesConsumers)
 }
 
 func (cm *ConsumerManager) Stop() {

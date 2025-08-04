@@ -245,8 +245,8 @@ func (km *KafkaManager) Infer(
 	}
 
 	// We lock here so we don't reasign the partitions while producing a message.
-	km.mu.RLock()
-	defer km.mu.RUnlock()
+	pipeline.consumer.rebalanceMu.RLock()
+	defer pipeline.consumer.rebalanceMu.RUnlock()
 
 	partitions := pipeline.consumer.partitions
 	if len(partitions) == 0 {
@@ -329,6 +329,9 @@ func createResponseErrorPayload(modelName string, response []byte) []byte {
 func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) kafka.RebalanceCb {
 	logger := km.logger.WithField("func", "createRebalanceCb")
 	return func(consumer *kafka.Consumer, ev kafka.Event) error {
+		mtConsumer.rebalanceMu.Lock()
+		defer mtConsumer.rebalanceMu.Unlock()
+
 		switch e := ev.(type) {
 		case kafka.AssignedPartitions:
 			logger.Debug("Rebalance: Assigned partitions:", e.Partitions)
