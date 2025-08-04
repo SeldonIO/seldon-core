@@ -40,6 +40,7 @@ type MultiTopicsKafkaConsumer struct {
 	// map of kafka id to request
 	requests cmap.ConcurrentMap
 	tracer   trace.Tracer
+	wg       sync.WaitGroup
 }
 
 func NewMultiTopicsKafkaConsumer(
@@ -83,9 +84,11 @@ func (c *MultiTopicsKafkaConsumer) createConsumer(logger log.FieldLogger) error 
 	c.consumer = consumer
 	c.isActive.Store(true)
 
+	c.wg.Add(1)
 	go func() {
+		defer c.wg.Done()
 		err := c.pollAndMatch()
-		c.logger.WithError(err).Infof("Consumer %s failed and is ending", c.id)
+		c.logger.WithError(err).Infof("Consumer %s is ending", c.id)
 	}()
 
 	return nil
@@ -129,7 +132,16 @@ func (c *MultiTopicsKafkaConsumer) GetNumTopics() int {
 
 func (c *MultiTopicsKafkaConsumer) Close() error {
 	if c.isActive.Load() {
+		// Stop the consumer from polling
 		c.isActive.Store(false)
+		c.wg.Wait()
+
+		// Explicitly release partitions
+		err := c.consumer.Unassign()
+		if err != nil {
+			c.logger.Errorf("Error unassigning partitions: %v", err)
+		}
+
 		return c.consumer.Close()
 	}
 	return nil
@@ -149,6 +161,13 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 	logger := c.logger.WithField("func", "pollAndMatch")
 	for c.isActive.Load() {
 		ev := c.consumer.Poll(pollTimeoutMillisecs)
+
+		// Closing the consumer cleanly. First stop polling and then close the connection.
+		if !c.isActive.Load() {
+			logger.Info("Consumer is not active, stopping poll")
+			return nil
+		}
+
 		if ev == nil {
 			continue
 		}
