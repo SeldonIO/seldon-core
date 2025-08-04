@@ -161,7 +161,7 @@ func (s *SchedulerServer) modelGwRebalance() {
 			modelGatewayConsumerNamePrefix,
 			s.consumerGroupConfig.modelGatewayMaxNumConsumers,
 		)
-		s.logger.Debug("Rebalancing model %s with consumber bucket id %s", modelName, consumerBucketId)
+		s.logger.Debugf("Rebalancing model %s with consumber bucket id %s", modelName, consumerBucketId)
 
 		servers := s.modelGwLoadBalancer.GetServersForKey(consumerBucketId)
 		s.logger.Debugf("Servers for model %s: %v", modelName, servers)
