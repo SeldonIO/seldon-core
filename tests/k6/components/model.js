@@ -403,6 +403,80 @@ export function generateModel(modelType, modelName, uriOffset, replicas, isProxy
     }
 }
 
+
+export function generateMultiModelPipelineYaml(numberOfModels, modelType, modelName, uriOffset, replicas, isProxy = false, memoryBytes = null, inferBatchSize = 1) {
+    if (numberOfModels < 1) {
+        throw new Error(`Invalid config: numberOfModels must be at least 1`)
+    }
+
+    const data = models[modelType]
+    const modelTemplate = data.modelTemplate
+    var uri = modelTemplate.uriTemplate
+    if (modelTemplate.maxUriSuffix > 0) {
+        uri = uri + (uriOffset % modelTemplate.maxUriSuffix).toString()
+    }
+
+    const getModelName = function (name, index) {
+        return name + "-" + index
+    }
+
+    const pipelineCR = {
+        "apiVersion": "mlops.seldon.io/v1alpha1",
+        "kind": "Pipeline",
+        "metadata": {
+            "name": generatePipelineName(modelName),
+            "namespace": getConfig().namespace
+        },
+        "spec": {
+            "steps" : [],
+            "output" : {
+                "steps": [getModelName(modelName, 1)]
+            }
+        }
+    }
+
+    let modelCRYaml = [];
+    let previousModelId = ''
+
+    for (let i = 1; i <= numberOfModels; i++) {
+        const modelID = getModelName(modelName, i)
+
+        let modelCR = {
+            "apiVersion": "mlops.seldon.io/v1alpha1",
+            "kind": "Model",
+            "metadata": {
+                "name": modelID,
+                "namespace": getConfig().namespace
+            },
+            "spec": {
+                "storageUri": uri,
+                "requirements": modelTemplate.requirements,
+                "memory": (memoryBytes == null) ? modelTemplate.memoryBytes : memoryBytes,
+                "replicas": replicas
+            }
+        }
+
+        modelCRYaml.push(modelCR)
+
+        if (i === 1) {
+            pipelineCR.spec.steps.push({"name": modelID})
+        } else {
+            pipelineCR.spec.steps.push({"name": modelID, "inputs": [previousModelId]})
+        }
+
+        previousModelId = modelID
+    }
+
+    const pipelineCRYaml = yamlDump(pipelineCR)
+    const inference = getModelInferencePayload(modelType, inferBatchSize)
+    return {
+        "modelCRYaml": modelCRYaml,
+        "pipelineCRYaml": pipelineCRYaml,
+        "pipelineName" : pipelineCR.metadata.name,
+        "inference": JSON.parse(JSON.stringify(inference))
+    }
+}
+
 export function generatePipelineName(modelName) {
     return modelName + "-pipeline"
 }

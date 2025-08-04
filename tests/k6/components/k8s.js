@@ -148,9 +148,11 @@ export function getModelReadyCondition(modelCR) {
     return getObjectCondition(modelCR, "ModelReady", "message")
 }
 
-export function loadModel(modelName, data, awaitReady=true) {
+export function loadModel(modelName, data, awaitReady=true, throwError=false) {
     try {
+        console.log("Loading model " + modelName)
         kubeclient.apply(data)
+        console.log("Loaded model " + modelName)
         let created = kubeclient.get(seldonObjectType.MODEL.description, modelName, seldon_target_ns)
         if ('uid' in created.metadata) {
             if (awaitReady) {
@@ -158,7 +160,10 @@ export function loadModel(modelName, data, awaitReady=true) {
             }
         }
         return seldonOpExecStatus.OK
-    } catch (_) {
+    } catch (error) {
+        if (throwError) {
+            throw error
+        }
         // continue on error. the apply may be concurrent with a delete and fail
         return seldonOpExecStatus.CONCURRENT_OP_FAIL
     }
@@ -249,8 +254,9 @@ export function getPipelineReadyCondition(pipelineCR) {
     return getObjectCondition(pipelineCR, "PipelineReady", "reason")
 }
 
-export function loadPipeline(pipelineName, data, awaitReady=true) {
+export function loadPipeline(pipelineName, data, awaitReady=true, throwError=false) {
     try {
+        console.log("Creating pipeline " + data)
         kubeclient.apply(data)
         let created = kubeclient.get(seldonObjectType.PIPELINE.description, pipelineName, seldon_target_ns)
         if ('uid' in created.metadata) {
@@ -259,7 +265,10 @@ export function loadPipeline(pipelineName, data, awaitReady=true) {
             }
         }
         return seldonOpExecStatus.OK
-    } catch (_) {
+    } catch (error) {
+        if (throwError) {
+            throw error
+        }
         // continue on error. the apply may be concurrent with a delete and fail
         return seldonOpExecStatus.CONCURRENT_OP_FAIL
     }
