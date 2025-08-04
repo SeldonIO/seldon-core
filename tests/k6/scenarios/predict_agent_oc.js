@@ -32,4 +32,4 @@ export default function (config) {
 
 export function teardown(config) {
     teardownBase(config)
-  }
+}
