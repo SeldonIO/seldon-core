@@ -317,7 +317,7 @@
                             "weightedClusters": {
                                 "clusters": [
                                     {
-                                        "name": "pipelinegateway_http",
+                                        "name": "pipe.pipeline.http",
                                         "weight": 100,
                                         "requestHeadersToAdd": [
                                             {
@@ -362,7 +362,7 @@
                             "weightedClusters": {
                                 "clusters": [
                                     {
-                                        "name": "pipelinegateway_grpc",
+                                        "name": "pipe.pipeline.grpc",
                                         "weight": 100,
                                         "requestHeadersToAdd": [
                                             {
