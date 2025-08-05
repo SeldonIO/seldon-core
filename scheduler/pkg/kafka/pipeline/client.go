@@ -208,7 +208,7 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 			logger.Debugf("Processing pipeline %s version %d with state %s", pv.Name, pv.Version, pv.State.Status.String())
 			pc.pipelineStatusUpdater.Update(pv)
 
-			_, err = pc.pipelineInferer.LoadOrStorePipeline(pv.Name, false)
+			_, err = pc.pipelineInferer.LoadOrStorePipeline(pv.Name, false, false)
 			logger.Debugf("Stored pipeline %s", pv.Name)
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to store pipeline %s", pv.Name)

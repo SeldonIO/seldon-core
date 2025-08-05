@@ -283,6 +283,7 @@ func (s *SchedulerServer) sendPipelineEventsToStreams(
 			// this should trigger a reconnect from the client
 			close(subscription.fin)
 			delete(s.pipelineEventStream.streams, stream)
+			delete(s.pipelineEventStream.namesToIps, subscription.name)
 		}
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to send pipeline status event to %s for %s", subscription.name, event.String())

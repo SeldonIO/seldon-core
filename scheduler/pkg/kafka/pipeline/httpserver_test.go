@@ -52,7 +52,7 @@ func (f *fakePipelineInferer) DeletePipeline(resourceName string, isModel bool) 
 	return nil
 }
 
-func (f *fakePipelineInferer) LoadOrStorePipeline(resourceName string, isModel bool) (*Pipeline, error) {
+func (f *fakePipelineInferer) LoadOrStorePipeline(resourceName string, isModel bool, loadOnly bool) (*Pipeline, error) {
 	return nil, nil
 }
 

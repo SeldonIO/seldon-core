@@ -12,10 +12,8 @@ package xdscache
 import "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 const (
-	PipelineGatewayHttpClusterName = "pipelinegateway_http"
-	PipelineGatewayGrpcClusterName = "pipelinegateway_grpc"
-	MirrorHttpClusterName          = "mirror_http"
-	MirrorGrpcClusterName          = "mirror_grpc"
+	MirrorHttpClusterName = "mirror_http"
+	MirrorGrpcClusterName = "mirror_grpc"
 )
 
 type Listener struct {
