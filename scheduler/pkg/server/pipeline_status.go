@@ -175,22 +175,22 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 					msg, err = s.createPipelineCreationMessage(pip)
 				}
 				if err != nil {
-					s.logger.WithError(err).Errorf("Failed to create pipelines status message for %s", &pipelineName)
+					s.logger.WithError(err).Errorf("Failed to create pipelines status message for %s", pipelineName)
 					continue
 				}
 				if err := stream.Send(msg); err != nil {
-					s.logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", &pipelineName)
+					s.logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pipelineName)
 				}
 			} else {
-				s.logger.Debugf("Server %s does not contain pipeline %s, sending deletion message", server, &pipelineName)
+				s.logger.Debugf("Server %s does not contain pipeline %s, sending deletion message", server, pipelineName)
 				msg, err := s.createPipelineDeletionMessage(pip, true)
 				if err != nil {
-					s.logger.WithError(err).Errorf("Failed to create pipeline deletion message for %s", &pipelineName)
+					s.logger.WithError(err).Errorf("Failed to create pipeline deletion message for %s", pipelineName)
 					continue
 				}
-				s.logger.Debugf("Sending deletion message for pipeline %s to server %s", &pipelineName, server)
+				s.logger.Debugf("Sending deletion message for pipeline %s to server %s", pipelineName, server)
 				if err := stream.Send(msg); err != nil {
-					s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", &pipelineName)
+					s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pipelineName)
 				}
 			}
 		}
