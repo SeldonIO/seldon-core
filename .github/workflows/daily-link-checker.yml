@@ -5,7 +5,8 @@ on:
     - cron: "0 23 * * *"
   pull_request:
     branches:
-      - master, v2
+      - master
+      - v2
   workflow_dispatch:
 
 permissions:
@@ -16,7 +17,7 @@ jobs:
   markdown-link-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
 
       - name: Run Linkspector
         uses: umbrelladocs/action-linkspector@v1
@@ -24,7 +25,7 @@ jobs:
           workdir: docs-gb
           reporter: github-pr-review
           fail_level: any
-          fconfig_file: .linkspector.yml
+          config_file: .linkspector.yml
 
       - name: Create issue
         if: ${{ failure() }}
