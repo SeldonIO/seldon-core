@@ -13,8 +13,8 @@ import io.klogging.noCoLogger
 import io.seldon.dataflow.kafka.KafkaDomainParams
 import io.seldon.dataflow.kafka.KafkaSecurityParams
 import io.seldon.dataflow.kafka.KafkaStreamsParams
-import io.seldon.dataflow.kafka.ProtobufSerdeFactory
 import io.seldon.dataflow.kafka.SchemaRegistryConfig
+import io.seldon.dataflow.kafka.SerdeFactory
 import io.seldon.dataflow.kafka.TopicWaitRetryParams
 import io.seldon.dataflow.kafka.getKafkaAdminProperties
 import io.seldon.dataflow.kafka.getKafkaProperties
@@ -122,7 +122,7 @@ object Main {
         logger.info {
             "schema registry config is set to $useSchema"
         }
-        val kafkaStreamsSerdes = ProtobufSerdeFactory.KafkaStreamsSerdes(useSchema)
+        val kafkaStreamsSerdes = SerdeFactory.KafkaStreamsSerdes(useSchema)
 
         val subscriber =
             PipelineSubscriber(

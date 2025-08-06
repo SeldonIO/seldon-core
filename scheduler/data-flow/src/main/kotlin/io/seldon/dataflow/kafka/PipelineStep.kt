@@ -44,7 +44,7 @@ fun stepFor(
     joinWindowMillis: Long,
     batchProperties: Batch,
     kafkaDomainParams: KafkaDomainParams,
-    kafkaStreamsSerdes: ProtobufSerdeFactory.KafkaStreamsSerdes,
+    kafkaStreamsSerdes: SerdeFactory.KafkaStreamsSerdes,
 ): PipelineStep? {
     val triggerTopicsToTensors = parseTriggers(triggerSources)
     val effectiveKafkaDomainParams =
