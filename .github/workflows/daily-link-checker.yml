@@ -21,6 +21,6 @@ jobs:
         uses: umbrelladocs/action-linkspector@v1
         with:
           workdir: docs-gb
-          reporter: github-pr-review
+          reporter: console
           fail_level: any
           config_file: .linkspector.yml
