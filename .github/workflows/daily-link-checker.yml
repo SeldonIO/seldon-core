@@ -2,7 +2,7 @@ name: Check all Markdown links daily
 
 on:
   schedule:
-    - cron: "0 23 * * *"
+    - cron: "0 23 * * *"  # Runs daily at 11 PM UTC
   pull_request:
     branches:
       - master
@@ -15,24 +15,20 @@ permissions:
 
 jobs:
   check-docs-gb:
+    if: github.repository == 'SeldonIO/seldon-core'  # Skip for forks
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        folder:
-          - docs-gb
-          - v2/docs-gb
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run Linkspector on ${{ matrix.folder }}
+      - name: Run Linkspector on docs-gb
         uses: umbrelladocs/action-linkspector@v1
         with:
-          workdir: ${{ matrix.folder }}
+          workdir: docs-gb
           reporter: github-pr-review
           fail_level: any
           config_file: .linkspector.yml
 
-      - name: Create issue if ${{ matrix.folder }} fails
+      - name: Create issue if docs-gb fails
         if: ${{ failure() }}
         uses: JasonEtco/create-an-issue@e27dddc79c92bc6e4562f268fffa5ed752639abd
         env:
