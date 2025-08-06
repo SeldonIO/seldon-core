@@ -842,7 +842,7 @@ func TestModelGwRebalanceMessage(t *testing.T) {
 			modelName := test.loadReq.Model.Meta.Name
 			model, _ := s.modelStore.GetModel(modelName)
 			model.GetLatest().SetModelState(store.ModelStatus{
-				State:             store.ModelAvailable,
+				State:             test.modelState,
 				AvailableReplicas: test.availableReplicas,
 			})
 
