@@ -1,4 +1,4 @@
-name: Check Markdown Links in docs-gb
+name: Check Markdown Links in docs-gb 
 
 on:
   pull_request:
