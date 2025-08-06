@@ -80,7 +80,6 @@ func toServices(meta metav1.ObjectMeta, serviceConfig mlopsv1alpha1.ServiceConfi
 	var svcs []*v1.Service
 	svcs = append(svcs, getSchedulerService(meta, serviceConfig, overrides[mlopsv1alpha1.SchedulerName]))
 	svcs = append(svcs, getSeldonMeshService(meta, serviceConfig, overrides[mlopsv1alpha1.EnvoyName]))
-	svcs = append(svcs, getPipelinegatewayService(meta, overrides[mlopsv1alpha1.PipelineGatewayName]))
 	return svcs
 }
 
@@ -121,39 +120,6 @@ func getSeldonMeshService(meta metav1.ObjectMeta, serviceConfig mlopsv1alpha1.Se
 					Port:       9003,
 					TargetPort: intstr.FromString("envoy-stats"),
 					Name:       "stats",
-					Protocol:   v1.ProtocolTCP,
-				},
-			},
-		},
-	}
-	return svc
-}
-
-func getPipelinegatewayService(meta metav1.ObjectMeta, overrides *mlopsv1alpha1.OverrideSpec) *v1.Service {
-	svc := &v1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      mlopsv1alpha1.PipelineGatewayName,
-			Namespace: meta.GetNamespace(),
-			Labels: map[string]string{
-				constants.KubernetesNameLabelKey: mlopsv1alpha1.PipelineGatewayName,
-			},
-		},
-		Spec: v1.ServiceSpec{
-			ClusterIP: v1.ClusterIPNone,
-			Selector: map[string]string{
-				constants.KubernetesNameLabelKey: mlopsv1alpha1.PipelineGatewayName,
-			},
-			Ports: []v1.ServicePort{
-				{
-					Port:       9010,
-					TargetPort: intstr.FromString("http"),
-					Name:       "http",
-					Protocol:   v1.ProtocolTCP,
-				},
-				{
-					Port:       9011,
-					TargetPort: intstr.FromString("grpc"),
-					Name:       "gprc",
 					Protocol:   v1.ProtocolTCP,
 				},
 			},

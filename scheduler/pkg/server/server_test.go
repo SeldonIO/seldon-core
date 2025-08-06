@@ -69,9 +69,10 @@ func TestLoadModel(t *testing.T) {
 			eventHub,
 		)
 		modelGwLoadBalancer := util.NewRingLoadBalancer(1)
+		pipelineGwLoadBalancer := util.NewRingLoadBalancer(1)
 		s := NewSchedulerServer(
 			logger, schedulerStore, experimentServer, pipelineServer,
-			scheduler, eventHub, sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer)
+			scheduler, eventHub, sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer, pipelineGwLoadBalancer)
 		sync.Signals(1)
 		mockAgent := &mockAgentHandler{}
 
@@ -374,9 +375,10 @@ func TestUnloadModel(t *testing.T) {
 			eventHub,
 		)
 		modelGwLoadBalancer := util.NewRingLoadBalancer(1)
+		pipelineGwLoadBalancer := util.NewRingLoadBalancer(1)
 		s := NewSchedulerServer(
 			logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub,
-			sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer)
+			sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer, pipelineGwLoadBalancer)
 		sync.Signals(1)
 		return s, mockAgent, eventHub
 	}
@@ -712,9 +714,10 @@ func TestServerNotify(t *testing.T) {
 			eventHub,
 		)
 		modelGwLoadBalancer := util.NewRingLoadBalancer(1)
+		pipelineGwLoadBalancer := util.NewRingLoadBalancer(1)
 		s := NewSchedulerServer(
 			logger, schedulerStore, nil, nil, scheduler, eventHub,
-			sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer)
+			sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer, pipelineGwLoadBalancer)
 		return s, sync
 	}
 

@@ -83,7 +83,7 @@ func TestRuntimeReconcile(t *testing.T) {
 					SeldonConfig: configName,
 				},
 			},
-			expectedSvcNames:        []string{SeldonMeshSVCName, mlopsv1alpha1.SchedulerName, mlopsv1alpha1.PipelineGatewayName},
+			expectedSvcNames:        []string{SeldonMeshSVCName, mlopsv1alpha1.SchedulerName},
 			expectedStatefulSetName: mlopsv1alpha1.SchedulerName,
 		},
 		{
@@ -133,7 +133,7 @@ func TestRuntimeReconcile(t *testing.T) {
 					SeldonConfig: configName,
 				},
 			},
-			expectedSvcNames:    []string{SeldonMeshSVCName, mlopsv1alpha1.SchedulerName, mlopsv1alpha1.PipelineGatewayName},
+			expectedSvcNames:    []string{SeldonMeshSVCName, mlopsv1alpha1.SchedulerName},
 			expectedDeployments: []string{mlopsv1alpha1.PipelineGatewayName, mlopsv1alpha1.ModelGatewayName},
 		},
 	}

@@ -753,10 +753,11 @@ func createTestSchedulerImpl(config SchedulerServerConfig) (*SchedulerServer, *c
 	)
 
 	modelGwLoadBalancer := util.NewRingLoadBalancer(1)
+	pipelineGwLoadBalancer := util.NewRingLoadBalancer(1)
 	s := NewSchedulerServer(
 		logger, schedulerStore, experimentServer, pipelineServer, scheduler,
 		eventHub, synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), config,
-		"", "", modelGwLoadBalancer,
+		"", "", modelGwLoadBalancer, pipelineGwLoadBalancer,
 	)
 
 	return s, eventHub
@@ -831,7 +832,7 @@ func TestModelGwRebalanceMessage(t *testing.T) {
 			g.Expect(s.modelEventStream.streams[stream]).ToNot(BeNil())
 
 			// add stream to the load balancer
-			s.loadBalancer.AddServer(subscription.name)
+			s.modelGwLoadBalancer.AddServer(subscription.name)
 
 			// add a model to the store
 			err := s.modelStore.UpdateModel(test.loadReq)
@@ -841,12 +842,12 @@ func TestModelGwRebalanceMessage(t *testing.T) {
 			modelName := test.loadReq.Model.Meta.Name
 			model, _ := s.modelStore.GetModel(modelName)
 			model.GetLatest().SetModelState(store.ModelStatus{
-				State:             store.ModelAvailable,
+				State:             test.modelState,
 				AvailableReplicas: test.availableReplicas,
 			})
 
 			// trigger rebalance
-			s.rebalance()
+			s.modelGwRebalance()
 
 			var msr *pb.ModelStatusResponse
 			select {
@@ -907,7 +908,7 @@ func TestModelGwRebalance(t *testing.T) {
 				name := fmt.Sprintf("dummy%d", i)
 				stream, subscription := createStream(name, true)
 				s.modelEventStream.streams[stream] = subscription
-				s.loadBalancer.AddServer(subscription.name)
+				s.modelGwLoadBalancer.AddServer(subscription.name)
 				streams = append(streams, stream)
 				g.Expect(s.modelEventStream.streams[stream]).ToNot(BeNil())
 			}
@@ -925,7 +926,7 @@ func TestModelGwRebalance(t *testing.T) {
 				})
 			}
 
-			s.rebalance()
+			s.modelGwRebalance()
 
 			modelAssignments := make(map[string]int)
 			for _, stream := range streams {
@@ -993,8 +994,8 @@ func TestSendModelStatusEvent(t *testing.T) {
 			g.Expect(s.modelEventStream.streams[secondMgwStream]).ToNot(BeNil())
 
 			// add modelgw streams to the load balancer
-			s.loadBalancer.AddServer(firstMgwSubscription.name)
-			s.loadBalancer.AddServer(secondMgwSubscription.name)
+			s.modelGwLoadBalancer.AddServer(firstMgwSubscription.name)
+			s.modelGwLoadBalancer.AddServer(secondMgwSubscription.name)
 
 			// add a model to the store
 			err := s.modelStore.UpdateModel(test.loadReq)

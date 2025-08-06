@@ -13,6 +13,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"os"
 	"sync/atomic"
 	"time"
 
@@ -137,18 +138,49 @@ func (pc *PipelineSchedulerClient) Start(host string, plainTxtPort int, tlsPort 
 	}
 }
 
+func getSubscriberName() string {
+	podName := os.Getenv("POD_NAME")
+	if podName == "" {
+		return SubscriberName
+	}
+	return podName
+}
+
+func getSubsriberIp() (string, error) {
+	podIp := os.Getenv("POD_IP")
+	if podIp == "" {
+		return "", fmt.Errorf("POD_IP environment variable is not set")
+	}
+	return podIp, nil
+}
+
 func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 	logger := pc.logger.WithField("func", "SubscribePipelineEvents")
 	grpcClient := scheduler.NewSchedulerClient(pc.conn)
-	logger.Info("Subscribing to pipeline status events")
+
+	subscriberName := getSubscriberName()
+	subscriberIp, err := getSubsriberIp()
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	logger.Infof("Subscriber (%s, %s) subscribing to pipeline status events", subscriberName, subscriberIp)
 	stream, errSub := grpcClient.SubscribePipelineStatus(
-		context.Background(),
-		&scheduler.PipelineSubscriptionRequest{SubscriberName: SubscriberName},
+		ctx,
+		&scheduler.PipelineSubscriptionRequest{
+			SubscriberName:    subscriberName,
+			SubscriberIp:      subscriberIp,
+			IsPipelineGateway: true,
+		},
 		grpc_retry.WithMax(util.MaxGRPCRetriesOnStream),
 	)
 	if errSub != nil {
 		return errSub
 	}
+
 	for {
 		if pc.stop.Load() {
 			logger.Info("Stopping")
@@ -159,26 +191,35 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 			logger.WithError(err).Error("event recv failed")
 			break
 		}
+
 		// The expected contract is just the latest version will be sent to us
-		if len(event.Versions) != 1 {
-			logger.Info("Expected a single model version", "numVersions", len(event.Versions), "name", event.GetPipelineName())
+		if len(event.Versions) > 1 {
+			logger.Info("Expected at most a single model version", "numVersions", len(event.Versions), "name", event.GetPipelineName())
 			continue
 		}
 
-		pv, err := pipeline.CreatePipelineVersionWithStateFromProto(event.Versions[0])
-		if err != nil {
-			logger.Warningf("Failed to create pipeline state for pipeline %s with %s", event.PipelineName, protojson.Format(event))
-			continue
-		}
+		if len(event.Versions) == 1 {
+			pv, err := pipeline.CreatePipelineVersionWithStateFromProto(event.Versions[0])
+			if err != nil {
+				logger.Warningf("Failed to create pipeline state for pipeline %s with %s", event.PipelineName, protojson.Format(event))
+				continue
+			}
 
-		logger.Debugf("Processing pipeline %s version %d with state %s", pv.Name, pv.Version, pv.State.Status.String())
-		pc.pipelineStatusUpdater.Update(pv)
+			logger.Debugf("Processing pipeline %s version %d with state %s", pv.Name, pv.Version, pv.State.Status.String())
+			pc.pipelineStatusUpdater.Update(pv)
 
-		_, err = pc.pipelineInferer.LoadOrStorePipeline(pv.Name, false)
-		logger.Debugf("Stored pipeline %s", pv.Name)
-		if err != nil {
-			logger.WithError(err).Errorf("Failed to store pipeline %s", pv.Name)
-			continue
+			_, err = pc.pipelineInferer.LoadOrStorePipeline(pv.Name, false, false)
+			logger.Debugf("Stored pipeline %s", pv.Name)
+			if err != nil {
+				logger.WithError(err).Errorf("Failed to store pipeline %s", pv.Name)
+				continue
+			}
+		} else {
+			logger.Debugf("Received event with no versions for pipeline %s", event.PipelineName)
+			err := pc.pipelineInferer.DeletePipeline(event.PipelineName, false)
+			if err != nil {
+				logger.WithError(err).Errorf("Failed to delete pipeline %s", event.PipelineName)
+			}
 		}
 	}
 	logger.Infof("Closing connection to scheduler")

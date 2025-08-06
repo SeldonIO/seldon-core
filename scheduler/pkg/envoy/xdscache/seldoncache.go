@@ -24,6 +24,7 @@ import (
 
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
@@ -249,33 +250,7 @@ func (xds *SeldonXDSCache) addPermanentListeners() error {
 }
 
 func (xds *SeldonXDSCache) addPermanentClusters() error {
-	var clientSecret *Secret
-	if xds.tlsActive {
-		if secret, ok := xds.secrets[envoyUpstreamClientCertName]; ok {
-			clientSecret = &secret
-		}
-	}
-
 	resources := make(map[string]types.Resource)
-
-	// Add pipeline gateway clusters
-	pipelineGatewayHttpEndpointName := fmt.Sprintf("%s:%d", xds.pipelineGatewayDetails.Host, xds.pipelineGatewayDetails.HttpPort)
-	pipelineGatewayHttpCluster := makeCluster(PipelineGatewayHttpClusterName, map[string]Endpoint{
-		pipelineGatewayHttpEndpointName: {
-			UpstreamHost: xds.pipelineGatewayDetails.Host,
-			UpstreamPort: uint32(xds.pipelineGatewayDetails.HttpPort),
-		},
-	}, false, clientSecret)
-	resources[pipelineGatewayHttpCluster.Name] = pipelineGatewayHttpCluster
-
-	pipelineGatewayGrpcEndpointName := fmt.Sprintf("%s:%d", xds.pipelineGatewayDetails.Host, xds.pipelineGatewayDetails.GrpcPort)
-	pipelineGatewayGrpcCluster := makeCluster(PipelineGatewayGrpcClusterName, map[string]Endpoint{
-		pipelineGatewayGrpcEndpointName: {
-			UpstreamHost: xds.pipelineGatewayDetails.Host,
-			UpstreamPort: uint32(xds.pipelineGatewayDetails.GrpcPort),
-		},
-	}, true, clientSecret)
-	resources[pipelineGatewayGrpcCluster.Name] = pipelineGatewayGrpcCluster
 
 	// Add Mirror clusters
 	mirrorHttpEndpointName := fmt.Sprintf("%s:%d", mirrorListenerAddress, mirrorListenerPort)
@@ -372,6 +347,27 @@ func (xds *SeldonXDSCache) RemoveClusters() error {
 func (xds *SeldonXDSCache) shouldRemoveCluster(name string) bool {
 	cluster, ok := xds.Clusters[name]
 	return !ok || len(cluster.Routes) < 1
+}
+
+func (xds *SeldonXDSCache) AddPipelineClusters(event *coordinator.PipelineStreamsEventMsg, logger *logrus.Entry) {
+	// add http cluster
+	xds.CreateClusterForStreams(
+		event.PipelineName,
+		event.StreamNames,
+		event.StreamIps,
+		uint32(xds.pipelineGatewayDetails.HttpPort),
+		false,
+		logger,
+	)
+	// add grpc cluster
+	xds.CreateClusterForStreams(
+		event.PipelineName,
+		event.StreamNames,
+		event.StreamIps,
+		uint32(xds.pipelineGatewayDetails.GrpcPort),
+		true,
+		logger,
+	)
 }
 
 func (xds *SeldonXDSCache) AddPipelineRoute(routeName string, trafficSplits []PipelineTrafficSplit, mirror *PipelineTrafficSplit) {
@@ -537,4 +533,32 @@ func (xds *SeldonXDSCache) removeRouteFromCluster(route Route, cluster TrafficSp
 		return err
 	}
 	return nil
+}
+
+func (xds *SeldonXDSCache) createEndpointsForStreams(streamNames []string, streamIps []string, port uint32, logger *logrus.Entry) map[string]Endpoint {
+	endpoints := make(map[string]Endpoint, len(streamNames))
+	for i, stream := range streamNames {
+		logger.Debugf("Adding endpoint for stream %s with ip: %s and port: %d", stream, streamIps[i], port)
+		endpoints[stream] = Endpoint{
+			UpstreamHost: streamIps[i],
+			UpstreamPort: port,
+		}
+	}
+	return endpoints
+}
+
+func (xds *SeldonXDSCache) CreateClusterForStreams(clusterPrefix string, streamNames []string, streamIps []string, port uint32, isGrpc bool, logger *logrus.Entry) *Cluster {
+	clusterName := getPipelineClusterName(clusterPrefix, isGrpc)
+	logger.Debugf("Creating cluster %s for streams: %v with ips: %v and port: %d", clusterName, streamNames, streamIps, port)
+
+	cluster := Cluster{
+		Name:      clusterName,
+		Endpoints: xds.createEndpointsForStreams(streamNames, streamIps, port, logger),
+		Routes:    make(map[RouteVersionKey]bool),
+		Grpc:      isGrpc,
+	}
+
+	xds.Clusters[clusterName] = cluster
+	xds.clustersToAdd[clusterName] = struct{}{}
+	return &cluster
 }

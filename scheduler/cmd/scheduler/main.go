@@ -287,6 +287,7 @@ func main() {
 
 	// scheduler <-> controller grpc
 	modelGwLoadBalancer := util.NewRingLoadBalancer(numPartitions)
+	pipelineGWLoadBalancer := util.NewRingLoadBalancer(numPartitions)
 	s := schedulerServer.NewSchedulerServer(
 		logger, ss, es, ps, sched, eventHub, sync,
 		schedulerServer.SchedulerServerConfig{
@@ -296,6 +297,7 @@ func main() {
 		namespace,
 		kafkaConfigMap.ConsumerGroupIdPrefix,
 		modelGwLoadBalancer,
+		pipelineGWLoadBalancer,
 	)
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {

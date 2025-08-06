@@ -36,7 +36,8 @@ const (
 )
 
 type PipelineInferer interface {
-	LoadOrStorePipeline(resourceName string, isModel bool) (*Pipeline, error)
+	LoadOrStorePipeline(resourceName string, isModel bool, loadOnly bool) (*Pipeline, error)
+	DeletePipeline(resourceName string, isModel bool) error
 	Infer(
 		ctx context.Context,
 		resourceName string,
@@ -70,6 +71,7 @@ type Request struct {
 	active     bool
 	wg         *sync.WaitGroup
 	key        string
+	partition  int32
 	response   []byte
 	headers    []kafka.Header
 	isError    bool
@@ -159,7 +161,43 @@ func getPipelineKey(resourceName string, isModel bool) string {
 	}
 }
 
-func (km *KafkaManager) LoadOrStorePipeline(resourceName string, isModel bool) (*Pipeline, error) {
+func (km *KafkaManager) DeletePipeline(resourceName string, isModel bool) error {
+	logger := km.logger.WithField("func", "DeletePipeline")
+	key := getPipelineKey(resourceName, isModel)
+
+	km.mu.Lock()
+	defer km.mu.Unlock()
+
+	if val, ok := km.pipelines.Load(key); ok {
+		pipeline := val.(*Pipeline)
+		err := pipeline.consumer.RemoveTopic(
+			km.topicNamer.GetPipelineTopicOutputs(resourceName),
+			createRebalanceCb(km, pipeline.consumer),
+		)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to remove topic for resource %s", resourceName)
+			return err
+		}
+
+		// If the consumer has no topics left, we can remove it from the map
+		// to avoid reusing a closed consumer.
+		if len(pipeline.consumer.topics) == 0 {
+			if pipeline.isModel {
+				delete(km.consumerManager.modelsConsumers, pipeline.consumer.id)
+			} else {
+				delete(km.consumerManager.pipelinesConsumers, pipeline.consumer.id)
+			}
+		}
+
+		km.pipelines.Delete(key)
+		logger.Infof("Deleted pipeline %s", resourceName)
+	} else {
+		logger.Warnf("No pipeline found for resource %s", resourceName)
+	}
+	return nil
+}
+
+func (km *KafkaManager) LoadOrStorePipeline(resourceName string, isModel bool, loadOnly bool) (*Pipeline, error) {
 	logger := km.logger.WithField("func", "loadOrStorePipeline")
 	key := getPipelineKey(resourceName, isModel)
 
@@ -171,6 +209,12 @@ func (km *KafkaManager) LoadOrStorePipeline(resourceName string, isModel bool) (
 		return val.(*Pipeline), nil
 	}
 	km.mu.RUnlock()
+
+	// don't create a new pipeline if loadOnly is true. In case of invalid envoy
+	// routes, we don't want to create a new pipeline on the wrong replica.
+	if !isModel && loadOnly {
+		return nil, fmt.Errorf("pipeline %s not found", resourceName)
+	}
 
 	// acquire write lock to potentially create and store
 	km.mu.Lock()
@@ -212,17 +256,16 @@ func (km *KafkaManager) Infer(
 ) (*Request, error) {
 	logger := km.logger.WithField("func", "Infer")
 
-	pipeline, err := km.LoadOrStorePipeline(resourceName, isModel)
+	pipeline, err := km.LoadOrStorePipeline(resourceName, isModel, true)
 	if err != nil {
 		return nil, err
 	}
 
-	// We lock here so we don't reasign the partitions while producing a message.
-	km.mu.RLock()
-	defer km.mu.RUnlock()
-
+	// We lock here since the partition assignment can change in rebalance
+	pipeline.consumer.rebalanceMu.RLock()
 	partitions := pipeline.consumer.partitions
 	if len(partitions) == 0 {
+		pipeline.consumer.rebalanceMu.RUnlock()
 		return nil, fmt.Errorf("no partitions assigned for topic %s", resourceName)
 	}
 
@@ -237,13 +280,20 @@ func (km *KafkaManager) Infer(
 	// we need to read the partition from the request id.
 	compositeKey := getCompositeKey(strconv.Itoa(int(partition)), resourceName, requestId, ".")
 	request := &Request{
-		active: true,
-		wg:     new(sync.WaitGroup),
-		key:    compositeKey,
+		active:    true,
+		wg:        new(sync.WaitGroup),
+		key:       compositeKey,
+		partition: partition,
 	}
 	pipeline.consumer.requests.Set(compositeKey, request)
 	defer pipeline.consumer.requests.Remove(compositeKey)
 	request.wg.Add(1)
+
+	// We release the lock here in case a rebalance happens while we are producing the message.
+	// The rebalance callback function will invalidate the request if the partition is revoked.
+	// Note that we cannot hold the lock until the end of the function because the poll function
+	// may call the rebalance callback which holds the same lock and this would lead to a deadlock.
+	pipeline.consumer.rebalanceMu.RUnlock()
 
 	inputTopic := km.topicNamer.GetPipelineTopicInputs(resourceName)
 	if isModel {
@@ -299,36 +349,65 @@ func createResponseErrorPayload(modelName string, response []byte) []byte {
 	return append([]byte(modelName+" : "), response...)
 }
 
-func createRebalanceCb(km *KafkaManager, pipeline *Pipeline) kafka.RebalanceCb {
+func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) kafka.RebalanceCb {
 	logger := km.logger.WithField("func", "createRebalanceCb")
 	return func(consumer *kafka.Consumer, ev kafka.Event) error {
+		mtConsumer.rebalanceMu.Lock()
+		defer mtConsumer.rebalanceMu.Unlock()
+
 		switch e := ev.(type) {
 		case kafka.AssignedPartitions:
-			km.mu.Lock()
-			km.mu.Unlock()
-
 			logger.Debug("Rebalance: Assigned partitions:", e.Partitions)
 			err := consumer.Assign(e.Partitions)
 			if err != nil {
-				pipeline.consumer.partitions = nil
+				// Don't modify mtConsumer.partitions on assign failure
+				// as the consumer state hasn't changed
 				return fmt.Errorf("assign error: %w", err)
 			}
 
-			// Update the pipeline consumer partitions
-			pipeline.consumer.partitions = make([]int32, len(e.Partitions))
+			// Only update partitions after successful assignment
+			mtConsumer.partitions = make([]int32, len(e.Partitions))
 			for i, partition := range e.Partitions {
-				pipeline.consumer.partitions[i] = partition.Partition
+				mtConsumer.partitions[i] = partition.Partition
 			}
-		case kafka.RevokedPartitions:
-			km.mu.Lock()
-			km.mu.Unlock()
 
+		case kafka.RevokedPartitions:
 			logger.Debug("Rebalance: Revoked partitions:", e.Partitions)
 			err := consumer.Unassign()
-			pipeline.consumer.partitions = nil
 			if err != nil {
 				return fmt.Errorf("unassign error: %w", err)
 			}
+
+			revokedPartitionSet := make(map[int32]bool)
+			for _, partition := range e.Partitions {
+				revokedPartitionSet[partition.Partition] = true
+			}
+
+			// We have to cancel all requests for revoked partitions. Due to repartitioning,
+			// our consumer may now consume from a different partition and thus the infer
+			// method will block waiting for a response that will never come.
+			canceledRequests := [](*Request){}
+			for _, request := range mtConsumer.requests.Items() {
+				req := request.(*Request)
+				req.mu.Lock()
+				if revokedPartitionSet[req.partition] {
+					logger.Debugf("Revoking request %s for partition %d", req.key, req.partition)
+					canceledRequests = append(canceledRequests, req)
+					req.response = []byte("Request revoked due to partition reassignment")
+					req.isError = true
+					req.wg.Done()
+					req.active = false
+				}
+				req.mu.Unlock()
+			}
+
+			// Remove canceled requests from the map
+			for _, req := range canceledRequests {
+				mtConsumer.requests.Remove(req.key)
+			}
+
+			// Only clear partitions after successful unassign
+			mtConsumer.partitions = nil
 		}
 		return nil
 	}
@@ -340,7 +419,7 @@ func (km *KafkaManager) consume(pipeline *Pipeline) error {
 	if pipeline.isModel {
 		topicName = km.topicNamer.GetModelTopicOutputs(pipeline.resourceName)
 	}
-	err := pipeline.consumer.AddTopic(topicName, createRebalanceCb(km, pipeline))
+	err := pipeline.consumer.AddTopic(topicName, createRebalanceCb(km, pipeline.consumer))
 	pipeline.wg.Done()
 	logger.Infof("Topic %s added in consumer id %s", topicName, pipeline.consumer.id)
 	if err != nil {

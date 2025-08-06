@@ -27,10 +27,10 @@ import (
 )
 
 const (
-	pendingSyncsQueueSize      int = 1000
-	modelEventHandlerName          = "incremental.processor.models"
-	experimentEventHandlerName     = "incremental.processor.experiments"
-	pipelineEventHandlerName       = "incremental.processor.pipelines"
+	pendingSyncsQueueSize           int = 1000
+	modelEventHandlerName               = "incremental.processor.models"
+	experimentEventHandlerName          = "incremental.processor.experiments"
+	pipelineStreamsEventHandlerName     = "incremental.processor.pipelinestreams"
 )
 
 type IncrementalProcessor struct {
@@ -96,11 +96,11 @@ func NewIncrementalProcessor(
 		ip.logger,
 		ip.handleExperimentEvents,
 	)
-	hub.RegisterPipelineEventHandler(
-		pipelineEventHandlerName,
+	hub.RegisterPipelineStreamsEventHandler(
+		pipelineStreamsEventHandlerName,
 		pendingSyncsQueueSize,
 		ip.logger,
-		ip.handlePipelinesEvents,
+		ip.handlePipelineStreamsEvents,
 	)
 
 	err = ip.updateEnvoy()
@@ -110,14 +110,15 @@ func NewIncrementalProcessor(
 	return ip, nil
 }
 
-func (p *IncrementalProcessor) handlePipelinesEvents(event coordinator.PipelineEventMsg) {
-	logger := p.logger.WithField("func", "handlePipelineEvents")
+func (p *IncrementalProcessor) handlePipelineStreamsEvents(event coordinator.PipelineStreamsEventMsg) {
+	logger := p.logger.WithField("func", "handlePipelineStreamsEvents")
 	logger.Debugf("Received event %s", event.String())
 
 	// Ignore pipeline events due to model status change to stop pointless processing
 	// If models are ready or not has no bearing on whether we need to update pipeline
 	if !event.ModelStatusChange {
 		go func() {
+			p.xdsCache.AddPipelineClusters(&event, logger)
 			err := p.addPipeline(event.PipelineName)
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to add pipeline %s", event.PipelineName)
@@ -419,19 +420,23 @@ func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 	logger := p.logger.WithField("func", "addPipeline")
 	p.mu.Lock()
 	defer p.mu.Unlock()
+
 	pip, err := p.pipelineHandler.GetPipeline(pipelineName)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to get pipeline %s", pipelineName)
 		return err
 	}
+
 	logger.Debugf("Handling pipeline %s deleted %v", pip.Name, pip.Deleted)
 	if pip.Deleted {
 		return p.removePipeline(pip)
 	}
+
 	routeName := getPipelineRouteName(pip.Name)
 	p.xdsCache.RemovePipelineRoute(routeName)
 	exp := p.experimentServer.GetExperimentForBaselinePipeline(pip.Name)
 	logger.Debugf("getting experiment for baseline %s returned %v", pip.Name, exp)
+
 	// This experiment must have a default for this pipeline
 	if exp != nil {
 		if exp.Default == nil {
@@ -455,7 +460,7 @@ func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 
 		p.xdsCache.AddPipelineRoute(routeName, trafficSplits, mirrorSplit)
 	} else {
-		logger.Infof("Adding normal pipeline route %s", routeName)
+		logger.Infof("Adding normal pipeline route %s", pip.Name)
 		p.xdsCache.AddPipelineRoute(routeName, []xdscache.PipelineTrafficSplit{{PipelineName: pip.Name, TrafficWeight: 100}}, nil)
 	}
 
@@ -463,7 +468,7 @@ func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 }
 
 func (p *IncrementalProcessor) removePipeline(pip *pipeline.Pipeline) error {
-	p.xdsCache.RemovePipelineRoute(getPipelineRouteName(pip.Name))
+	p.xdsCache.RemovePipelineRoute(pip.Name)
 	return p.updateEnvoy()
 }
 

@@ -775,7 +775,7 @@ func TestEnvoySettings(t *testing.T) {
 				createTestModel("model3", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
 				createTestPipeline("pipe", []string{"model1", "model2", "model3"}, 1),
 			},
-			numExpectedClusters:  6,
+			numExpectedClusters:  8,
 			numExpectedRoutes:    3,
 			numExpectedPipelines: 1,
 			snapshotFilename:     "pipeline",
@@ -790,7 +790,7 @@ func TestEnvoySettings(t *testing.T) {
 				createTestPipeline("pipe", []string{"model1", "model2", "model3"}, 1),
 				removeTestModel("model2", 1, "server", 1),
 			},
-			numExpectedClusters:  4,
+			numExpectedClusters:  6,
 			numExpectedRoutes:    2, // model2 should be removed from the routes
 			numExpectedPipelines: 1, // route to pipeline is till there
 			snapshotFilename:     "removed-model",
@@ -822,11 +822,11 @@ func TestEnvoySettings(t *testing.T) {
 				inc.logger,
 				inc.handleExperimentEvents,
 			)
-			eventHub.RegisterPipelineEventHandler(
-				pipelineEventHandlerName,
+			eventHub.RegisterPipelineStreamsEventHandler(
+				pipelineStreamsEventHandlerName,
 				pendingSyncsQueueSize,
 				inc.logger,
-				inc.handlePipelinesEvents,
+				inc.handlePipelineStreamsEvents,
 			)
 
 			for _, op := range test.ops {
@@ -1168,8 +1168,22 @@ func createTestPipeline(pipelineName string, modelNames []string, version uint32
 			Steps:   steps,
 			Uid:     "uid",
 		}
+
 		err := inc.pipelineHandler.AddPipeline(pipe)
 		g.Expect(err).To(BeNil())
+
+		event := coordinator.PipelineStreamsEventMsg{
+			PipelineEventMsg: coordinator.PipelineEventMsg{
+				PipelineName:    pipelineName,
+				PipelineVersion: version,
+			},
+			StreamNames: []string{"dummy-stream"},
+			StreamIps:   []string{"dummy-ip"},
+		}
+		inc.xdsCache.AddPipelineClusters(&event, inc.logger.WithField("source", "IncrementalProcessor"))
+		err = inc.addPipeline(pipelineName)
+		g.Expect(err).To(BeNil())
+
 		err = inc.pipelineHandler.SetPipelineState(pipelineName, version, "uid", pipeline.PipelineReady, "", "")
 		g.Expect(err).To(BeNil())
 	}
