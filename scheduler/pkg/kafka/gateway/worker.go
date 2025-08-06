@@ -41,7 +41,6 @@ import (
 
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 	pipeline "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
@@ -262,7 +261,7 @@ func (iw *InferWorker) produce(
 
 	if iw.schemaRegistryClient != nil {
 		srLogger := logger.WithField("source", "schema registry")
-		v2Res := &v2_dataplane.ModelInferResponse{}
+		v2Res := &v2.ModelInferResponse{}
 		err := proto.Unmarshal(b, v2Res)
 		if err != nil {
 			srLogger.WithError(err).Errorf("Failed to unmarshal response to dataplane model")
