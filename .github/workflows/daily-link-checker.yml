@@ -15,18 +15,17 @@ permissions:
 
 jobs:
   check-docs-gb:
-    if: github.repository == 'SeldonIO/seldon-core'  # Skip for forks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@master
 
-      - name: Run Linkspector on docs-gb
+      - name: Run Linkspector 
         uses: umbrelladocs/action-linkspector@v1
         with:
           workdir: docs-gb
-          reporter: local
+          reporter: github-pr-review
           fail_level: any
-          config_file: .linkspector.yml
+          fconfig_file: .linkspector.yml
 
       - name: Create issue if docs-gb fails
         if: ${{ failure() }}
