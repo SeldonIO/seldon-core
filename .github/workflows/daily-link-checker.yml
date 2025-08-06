@@ -1,8 +1,6 @@
-name: Check all Markdown links daily
+name: Check Markdown links in docs-gb
 
 on:
-  schedule:
-    - cron: "0 23 * * *"  # Runs daily at 11 PM UTC
   pull_request:
     branches:
       - master
@@ -11,12 +9,11 @@ on:
 
 permissions:
   contents: read
-  issues: write
 
 jobs:
-  check-docs-gb:
-    if: github.repository == 'SeldonIO/seldon-core'  # Skip for forks
+  markdown-link-check:
     runs-on: ubuntu-latest
+    if: github.repository == 'SeldonIO/seldon-core'
     steps:
       - uses: actions/checkout@v4
 
@@ -24,14 +21,6 @@ jobs:
         uses: umbrelladocs/action-linkspector@v1
         with:
           workdir: docs-gb
-          reporter: cli
+          reporter: github-pr-review
           fail_level: any
           config_file: .linkspector.yml
-
-      - name: Create issue if docs-gb fails
-        if: ${{ failure() }}
-        uses: JasonEtco/create-an-issue@e27dddc79c92bc6e4562f268fffa5ed752639abd
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          filename: .github/ISSUE_TEMPLATE/broken_link_report.md
