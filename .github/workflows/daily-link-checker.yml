@@ -1,43 +1,26 @@
-name: Check Markdown Links in docs-gb
+name: Check Markdown links in docs-gb
 
 on:
   pull_request:
     branches:
       - master
       - v2
-    paths:
-      - 'docs-gb/**'
-  schedule:
-    - cron: '0 23 * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
-  issues: write
-  pull-requests: write
 
 jobs:
-  check-docs-gb:
-    if: github.repository == 'SeldonIO/seldon-core'
+  markdown-link-check:
     runs-on: ubuntu-latest
-
+    if: github.repository == 'SeldonIO/seldon-core'
     steps:
-      - uses: actions/checkout@v4  
+      - uses: actions/checkout@v4
 
       - name: Run Linkspector on docs-gb
         uses: umbrelladocs/action-linkspector@v1
         with:
           workdir: docs-gb
-          reporter: github-check  
+          reporter: github-pr-review
           fail_level: any
-          config_file: .linkspector.yml
-          show_stats: true
-          reviewdog_flags: "-tee"
-
-      - name: Create Issue on Link Check Failure
-        if: failure()
-        uses: JasonEtco/create-an-issue@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          filename: .github/ISSUE_TEMPLATE/broken_link_report.md
+          fconfig_file: .linkspector.yml
