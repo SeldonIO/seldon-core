@@ -35,6 +35,7 @@ class Chainer(
     internal val inputTriggerTopics: Set<TopicForPipeline>,
     internal val triggerJoinType: ChainerOuterClass.PipelineStepUpdate.PipelineJoinType,
     internal val triggerTensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
+    private val kafkaStreamsSerdes: ProtobufSerdeFactory.KafkaStreamsSerdes,
 ) : PipelineStep {
     init {
         builder.apply {
@@ -61,14 +62,14 @@ class Chainer(
                 )
 
             if (inputTopic.topicName == pipelineErrorTopic) {
-                dataStream.to(outputTopic.topicName, producerSerde)
+                dataStream.to(outputTopic.topicName, kafkaStreamsSerdes.producerSerde)
             } else {
                 val (defaultBranch, errorBranch) = createVisitingCounterBranches(dataStream)
-                defaultBranch.to(outputTopic.topicName, producerSerde)
-                errorBranch.to(pipelineErrorTopic, producerSerde)
+                defaultBranch.to(outputTopic.topicName, kafkaStreamsSerdes.producerSerde)
+                errorBranch.to(pipelineErrorTopic, kafkaStreamsSerdes.producerSerde)
             }
         } else {
-            dataStream.to(outputTopic.topicName, producerSerde)
+            dataStream.to(outputTopic.topicName, kafkaStreamsSerdes.producerSerde)
         }
 
         // TODO - when does K-Streams send an ack?  On consuming or only once a new value has been produced?
@@ -78,7 +79,7 @@ class Chainer(
     private fun buildPassThroughStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
         val s1 =
             builder
-                .stream(inputTopic.topicName, consumerSerde)
+                .stream(inputTopic.topicName, kafkaStreamsSerdes.consumerSerde)
                 .filterForPipeline(inputTopic.pipelineName)
         return addTriggerTopology(
             kafkaDomainParams,
@@ -88,6 +89,7 @@ class Chainer(
             triggerJoinType,
             s1,
             null,
+            kafkaStreamsSerdes,
         )
             .headerRemover()
             .headerSetter(pipelineName, pipelineVersion)
@@ -96,7 +98,7 @@ class Chainer(
     private fun buildInputOutputStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
         val s1 =
             builder
-                .stream(inputTopic.topicName, consumerSerde)
+                .stream(inputTopic.topicName, kafkaStreamsSerdes.consumerSerde)
                 .filterForPipeline(inputTopic.pipelineName)
                 .unmarshallInferenceV2Request()
                 .convertToResponse(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
@@ -111,6 +113,7 @@ class Chainer(
             triggerJoinType,
             s1,
             null,
+            kafkaStreamsSerdes,
         )
             .headerRemover()
             .headerSetter(pipelineName, pipelineVersion)
@@ -119,7 +122,7 @@ class Chainer(
     private fun buildOutputOutputStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
         val s1 =
             builder
-                .stream(inputTopic.topicName, consumerSerde)
+                .stream(inputTopic.topicName, kafkaStreamsSerdes.consumerSerde)
                 .filterForPipeline(inputTopic.pipelineName)
                 .unmarshallInferenceV2Response()
                 .filterResponses(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
@@ -134,6 +137,7 @@ class Chainer(
             triggerJoinType,
             s1,
             null,
+            kafkaStreamsSerdes,
         )
             .headerRemover()
             .headerSetter(pipelineName, pipelineVersion)
@@ -142,7 +146,7 @@ class Chainer(
     private fun buildOutputInputStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
         val s1 =
             builder
-                .stream(inputTopic.topicName, consumerSerde)
+                .stream(inputTopic.topicName, kafkaStreamsSerdes.consumerSerde)
                 .filterForPipeline(inputTopic.pipelineName)
                 .unmarshallInferenceV2Response()
                 .convertToRequest(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
@@ -158,6 +162,7 @@ class Chainer(
             triggerJoinType,
             s1,
             null,
+            kafkaStreamsSerdes,
         )
             .headerRemover()
             .headerSetter(pipelineName, pipelineVersion)
@@ -166,7 +171,7 @@ class Chainer(
     private fun buildInputInputStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
         val s1 =
             builder
-                .stream(inputTopic.topicName, consumerSerde)
+                .stream(inputTopic.topicName, kafkaStreamsSerdes.consumerSerde)
                 .filterForPipeline(inputTopic.pipelineName)
                 .unmarshallInferenceV2Request()
                 .filterRequests(inputTopic.pipelineName, inputTopic.topicName, tensors, tensorRenaming)
@@ -182,6 +187,7 @@ class Chainer(
             triggerJoinType,
             s1,
             null,
+            kafkaStreamsSerdes,
         )
             .headerRemover()
             .headerSetter(pipelineName, pipelineVersion)
