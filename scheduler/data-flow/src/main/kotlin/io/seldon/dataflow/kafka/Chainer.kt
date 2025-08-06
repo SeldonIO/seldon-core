@@ -35,7 +35,7 @@ class Chainer(
     internal val inputTriggerTopics: Set<TopicForPipeline>,
     internal val triggerJoinType: ChainerOuterClass.PipelineStepUpdate.PipelineJoinType,
     internal val triggerTensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
-    private val kafkaStreamsSerdes: ProtobufSerdeFactory.KafkaStreamsSerdes,
+    private val kafkaStreamsSerdes: SerdeFactory.KafkaStreamsSerdes,
 ) : PipelineStep {
     init {
         builder.apply {

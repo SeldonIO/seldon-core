@@ -22,7 +22,7 @@ import io.seldon.dataflow.kafka.Pipeline
 import io.seldon.dataflow.kafka.PipelineId
 import io.seldon.dataflow.kafka.PipelineMetadata
 import io.seldon.dataflow.kafka.PipelineStatus
-import io.seldon.dataflow.kafka.ProtobufSerdeFactory
+import io.seldon.dataflow.kafka.SerdeFactory
 import io.seldon.dataflow.kafka.TopicWaitRetryParams
 import io.seldon.mlops.chainer.ChainerGrpcKt
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate
@@ -54,7 +54,7 @@ class PipelineSubscriber(
     grpcServiceConfig: Map<String, Any>,
     private val kafkaConsumerGroupIdPrefix: String,
     private val namespace: String,
-    private val kafkaStreamsSerdes: ProtobufSerdeFactory.KafkaStreamsSerdes,
+    private val kafkaStreamsSerdes: SerdeFactory.KafkaStreamsSerdes,
 ) {
     private val kafkaAdmin = KafkaAdmin(kafkaAdminProperties, kafkaStreamsParams, topicWaitRetryParams)
     private val channel =

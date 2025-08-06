@@ -23,7 +23,7 @@ fun addTriggerTopology(
     joinType: ChainerOuterClass.PipelineStepUpdate.PipelineJoinType,
     lastStream: KStream<RequestId, TRecord>,
     pending: KStream<RequestId, TRecord>? = null,
-    kafkaStreamsSerdes: ProtobufSerdeFactory.KafkaStreamsSerdes,
+    kafkaStreamsSerdes: SerdeFactory.KafkaStreamsSerdes,
 ): KStream<RequestId, TRecord> {
     if (inputTopics.isEmpty()) {
         when (pending) {
