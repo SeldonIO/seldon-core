@@ -24,7 +24,7 @@ jobs:
         uses: umbrelladocs/action-linkspector@v1
         with:
           workdir: docs-gb
-          reporter: cli
+          reporter: local
           fail_level: any
           config_file: .linkspector.yml
 
