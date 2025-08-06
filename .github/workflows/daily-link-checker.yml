@@ -1,8 +1,8 @@
-name: Check all Markdown links daily
+name: Check all Markdown links in docs-gb folders
 
 on:
   schedule:
-    - cron: "0 23 * * *"  # Runs daily at 11 PM UTC
+    - cron: "0 23 * * *"
   pull_request:
     branches:
       - master
@@ -14,22 +14,45 @@ permissions:
   issues: write
 
 jobs:
-  markdown-link-check:
+  check-docs-gb:
+    if: github.repository == 'SeldonIO/seldon-core'
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@master
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      - name: Run Linkspector 
-        uses: umbrelladocs/action-linkspector@v1
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          workdir: docs-gb
-          reporter: github-pr-review
-          fail_level: any
-          fconfig_file: .linkspector.yml
+          node-version: 20
 
-      - name: Create issue if docs-gb fails
-        if: ${{ failure() }}
-        uses: JasonEtco/create-an-issue@e27dddc79c92bc6e4562f268fffa5ed752639abd
+      - name: Install Linkspector
+        run: npm install -g @umbrella-docs/linkspector
+
+      - name: Run Linkspector on docs-gb
+        run: |
+          echo "::group::docs-gb"
+          linkspector --workdir docs-gb --config-file .linkspector.yml || echo "::error::Broken links found in docs-gb"
+          echo "::endgroup::"
+
+      - name: Run Linkspector on v2/docs-gb
+        run: |
+          if [ -d "v2/docs-gb" ]; then
+            echo "::group::v2/docs-gb"
+            linkspector --workdir v2/docs-gb --config-file .linkspector.yml || echo "::error::Broken links found in v2/docs-gb"
+            echo "::endgroup::"
+          else
+            echo "No v2/docs-gb folder found. Skipping."
+          fi
+
+      - name: Fail if any broken links found
+        if: failure()
+        run: exit 1
+
+      - name: Create issue if broken links are found
+        if: failure()
+        uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
