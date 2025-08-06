@@ -316,7 +316,9 @@ func TestPipelineGwRebalanceMessage(t *testing.T) {
 
 			// add a pipeline to the store
 			err := s.pipelineHandler.AddPipeline(test.loadReq)
-			s.pipelineHandler.SetPipelineState(
+			g.Expect(err).To(BeNil())
+
+			err = s.pipelineHandler.SetPipelineState(
 				test.loadReq.Name,
 				test.loadReq.Version,
 				test.loadReq.Uid,
