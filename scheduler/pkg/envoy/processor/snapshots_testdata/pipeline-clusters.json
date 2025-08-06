@@ -238,5 +238,65 @@
             }
         },
         "dnsLookupFamily": "V4_ONLY"
+    },
+    {
+        "name": "pipe_pipeline_http",
+        "type": "STRICT_DNS",
+        "connectTimeout": "5s",
+        "lbPolicy": "LEAST_REQUEST",
+        "loadAssignment": {
+            "clusterName": "pipe_pipeline_http",
+            "endpoints": [
+                {
+                    "lbEndpoints": [
+                        {
+                            "endpoint": {
+                                "address": {
+                                    "socketAddress": {
+                                        "address": "dummy-ip",
+                                        "portValue": 2
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "dnsLookupFamily": "V4_ONLY"
+    },
+    {
+        "name": "pipe_pipeline_grpc",
+        "type": "STRICT_DNS",
+        "connectTimeout": "5s",
+        "lbPolicy": "LEAST_REQUEST",
+        "loadAssignment": {
+            "clusterName": "pipe_pipeline_grpc",
+            "endpoints": [
+                {
+                    "lbEndpoints": [
+                        {
+                            "endpoint": {
+                                "address": {
+                                    "socketAddress": {
+                                        "address": "dummy-ip",
+                                        "portValue": 1
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "typedExtensionProtocolOptions": {
+            "envoy.extensions.upstreams.http.v3.HttpProtocolOptions": {
+                "@type": "type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions",
+                "explicitHttpConfig": {
+                    "http2ProtocolOptions": {}
+                }
+            }
+        },
+        "dnsLookupFamily": "V4_ONLY"
     }
 ]

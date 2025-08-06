@@ -780,21 +780,21 @@ func TestEnvoySettings(t *testing.T) {
 			numExpectedPipelines: 1,
 			snapshotFilename:     "pipeline",
 		},
-		// {
-		// 	name: "pipeline with removed model",
-		// 	ops: []func(inc *IncrementalProcessor, g *WithT){
-		// 		createTestServer("server", 2),
-		// 		createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
-		// 		createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-		// 		createTestModel("model3", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
-		// 		createTestPipeline("pipe", []string{"model1", "model2", "model3"}, 1),
-		// 		removeTestModel("model2", 1, "server", 1),
-		// 	},
-		// 	numExpectedClusters:  4,
-		// 	numExpectedRoutes:    2, // model2 should be removed from the routes
-		// 	numExpectedPipelines: 1, // route to pipeline is till there
-		// 	snapshotFilename:     "removed-model",
-		// },
+		{
+			name: "pipeline with removed model",
+			ops: []func(inc *IncrementalProcessor, g *WithT){
+				createTestServer("server", 2),
+				createTestModel("model1", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model2", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestModel("model3", "server", 1, []int{1}, 1, []store.ModelReplicaState{store.Available}),
+				createTestPipeline("pipe", []string{"model1", "model2", "model3"}, 1),
+				removeTestModel("model2", 1, "server", 1),
+			},
+			numExpectedClusters:  6,
+			numExpectedRoutes:    2, // model2 should be removed from the routes
+			numExpectedPipelines: 1, // route to pipeline is till there
+			snapshotFilename:     "removed-model",
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -894,36 +894,36 @@ func TestEnvoySettings(t *testing.T) {
 				g.Expect(resultingRoutes).Should(ConsistOf(snapshotRoutes))
 				count++
 			}
-			// g.Expect(len(resultingRoutes)).To(Equal(count))
+			g.Expect(len(resultingRoutes)).To(Equal(count))
 
-			// clusterFilename := test.snapshotFilename + "-clusters.json"
-			// if generateSnapshots {
-			// 	createSnapshot(g, inc.xdsCache.ClusterResources(), clusterFilename)
-			// }
+			clusterFilename := test.snapshotFilename + "-clusters.json"
+			if generateSnapshots {
+				createSnapshot(g, inc.xdsCache.ClusterResources(), clusterFilename)
+			}
 
-			// resultingClusters := getResultingClusters(inc.xdsCache.ClusterResources())
+			resultingClusters := getResultingClusters(inc.xdsCache.ClusterResources())
 
-			// data, err = os.ReadFile(snapshots_directory_name + "/" + clusterFilename)
-			// g.Expect(err).To(BeNil())
+			data, err = os.ReadFile(snapshots_directory_name + "/" + clusterFilename)
+			g.Expect(err).To(BeNil())
 
-			// err = json.Unmarshal(data, &rawMessages)
-			// g.Expect(err).To(BeNil())
+			err = json.Unmarshal(data, &rawMessages)
+			g.Expect(err).To(BeNil())
 
-			// count = 0
-			// for _, rawMessage := range rawMessages {
-			// 	snapshotCluster := &clusterv3.Cluster{}
-			// 	err := protojson.Unmarshal(rawMessage, snapshotCluster)
-			// 	g.Expect(err).To(BeNil())
+			count = 0
+			for _, rawMessage := range rawMessages {
+				snapshotCluster := &clusterv3.Cluster{}
+				err := protojson.Unmarshal(rawMessage, snapshotCluster)
+				g.Expect(err).To(BeNil())
 
-			// 	resultingCluster := resultingClusters[snapshotCluster.Name]
-			// 	g.Expect(resultingCluster).To(Not(BeNil()))
-			// 	snapshotEndpoints := getEndpoints(snapshotCluster.LoadAssignment)
-			// 	resultingEndpoints := getEndpoints(resultingCluster.LoadAssignment)
-			// 	g.Expect(len(resultingEndpoints)).Should(Equal(len(snapshotEndpoints)))
-			// 	g.Expect(resultingEndpoints).Should(ConsistOf(snapshotEndpoints))
-			// 	count++
-			// }
-			// g.Expect(len(resultingClusters)).To(Equal(count))
+				resultingCluster := resultingClusters[snapshotCluster.Name]
+				g.Expect(resultingCluster).To(Not(BeNil()))
+				snapshotEndpoints := getEndpoints(snapshotCluster.LoadAssignment)
+				resultingEndpoints := getEndpoints(resultingCluster.LoadAssignment)
+				g.Expect(len(resultingEndpoints)).Should(Equal(len(snapshotEndpoints)))
+				g.Expect(resultingEndpoints).Should(ConsistOf(snapshotEndpoints))
+				count++
+			}
+			g.Expect(len(resultingClusters)).To(Equal(count))
 		})
 	}
 }
@@ -1170,6 +1170,8 @@ func createTestPipeline(pipelineName string, modelNames []string, version uint32
 		}
 
 		err := inc.pipelineHandler.AddPipeline(pipe)
+		g.Expect(err).To(BeNil())
+
 		event := coordinator.PipelineStreamsEventMsg{
 			PipelineEventMsg: coordinator.PipelineEventMsg{
 				PipelineName:    pipelineName,
@@ -1179,9 +1181,9 @@ func createTestPipeline(pipelineName string, modelNames []string, version uint32
 			StreamIps:   []string{"dummy-ip"},
 		}
 		inc.xdsCache.AddPipelineClusters(&event, inc.logger.WithField("source", "IncrementalProcessor"))
-		inc.addPipeline(pipelineName)
-
+		err = inc.addPipeline(pipelineName)
 		g.Expect(err).To(BeNil())
+
 		err = inc.pipelineHandler.SetPipelineState(pipelineName, version, "uid", pipeline.PipelineReady, "", "")
 		g.Expect(err).To(BeNil())
 	}

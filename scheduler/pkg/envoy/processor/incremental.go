@@ -460,7 +460,7 @@ func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 
 		p.xdsCache.AddPipelineRoute(routeName, trafficSplits, mirrorSplit)
 	} else {
-		logger.Infof("Adding normal pipeline route %s", routeName)
+		logger.Infof("Adding normal pipeline route %s", pip.Name)
 		p.xdsCache.AddPipelineRoute(routeName, []xdscache.PipelineTrafficSplit{{PipelineName: pip.Name, TrafficWeight: 100}}, nil)
 	}
 
@@ -468,7 +468,7 @@ func (p *IncrementalProcessor) addPipeline(pipelineName string) error {
 }
 
 func (p *IncrementalProcessor) removePipeline(pip *pipeline.Pipeline) error {
-	p.xdsCache.RemovePipelineRoute(getPipelineRouteName(pip.Name))
+	p.xdsCache.RemovePipelineRoute(pip.Name)
 	return p.updateEnvoy()
 }
 

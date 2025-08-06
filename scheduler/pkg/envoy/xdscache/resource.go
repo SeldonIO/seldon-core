@@ -403,25 +403,14 @@ var (
 	}
 )
 
-func getClusterNameFromRoute(routeName string, isGrpc bool) string {
+func getPipelineClusterName(clusterPrefix string, isGrpc bool) string {
 	if isGrpc {
-		return fmt.Sprintf("%s.grpc", routeName)
+		return fmt.Sprintf("%s_%s_grpc", clusterPrefix, util.SeldonPipelineHeaderSuffix)
 	}
-	return fmt.Sprintf("%s.http", routeName)
+	return fmt.Sprintf("%s_%s_http", clusterPrefix, util.SeldonPipelineHeaderSuffix)
 }
 
-func getClusterName(clusterPrefix string, isGrpc bool) string {
-	if isGrpc {
-		return fmt.Sprintf("%s.%s.grpc", clusterPrefix, util.SeldonPipelineHeaderSuffix)
-	}
-	return fmt.Sprintf("%s.%s.http", clusterPrefix, util.SeldonPipelineHeaderSuffix)
-}
-
-func getRouteName(routeName string, isPipeline bool, isGrpc bool, isMirror bool) string {
-	pipelineSuffix := ""
-	if isPipeline {
-		pipelineSuffix = "_pipeline"
-	}
+func getRouteName(routeName string, isGrpc bool, isMirror bool) string {
 	mirrorSuffix := ""
 	if isMirror {
 		mirrorSuffix = "_mirror"
@@ -430,7 +419,7 @@ func getRouteName(routeName string, isPipeline bool, isGrpc bool, isMirror bool)
 	if isGrpc {
 		httpSuffix = "_grpc"
 	}
-	return fmt.Sprintf("%s%s%s%s", routeName, pipelineSuffix, httpSuffix, mirrorSuffix)
+	return fmt.Sprintf("%s%s%s", routeName, httpSuffix, mirrorSuffix)
 }
 
 func makeModelStickySessionEnvoyRoute(routeName string, envoyRoute *route.Route, logPayloads bool, clusterTraffic *TrafficSplit, isGrpc bool) {
@@ -513,7 +502,7 @@ func makeModelStickySessionEnvoyRoute(routeName string, envoyRoute *route.Route,
 }
 
 func makeModelEnvoyRoute(r *Route, envoyRoute *route.Route, isGrpc, isMirror bool) {
-	envoyRoute.Name = getRouteName(r.RouteName, false, isGrpc, isMirror)
+	envoyRoute.Name = getRouteName(r.RouteName, isGrpc, isMirror)
 	if isGrpc {
 		envoyRoute.Match.PathSpecifier = modelRouteMatchPathGrpc
 	} else {
@@ -548,7 +537,7 @@ func makeModelEnvoyRoute(r *Route, envoyRoute *route.Route, isGrpc, isMirror boo
 }
 
 func makePipelineEnvoyRoute(r *PipelineRoute, envoyRoute *route.Route, isGrpc, isMirror bool) {
-	envoyRoute.Name = getRouteName(r.RouteName, true, isGrpc, isMirror)
+	envoyRoute.Name = getRouteName(r.RouteName, isGrpc, isMirror)
 	envoyRoute.Match.PathSpecifier = pipelineRoutePathHttp
 	if isGrpc {
 		envoyRoute.Match.PathSpecifier = pipelineRoutePathGrpc
@@ -587,7 +576,7 @@ func createWeightedPipelineClusterAction(clusterTraffics []PipelineTrafficSplit,
 	var mirrors []*route.RouteAction_RequestMirrorPolicy
 	var totWeight uint32
 	for _, clusterTraffic := range clusterTraffics {
-		clusterName := getClusterName(clusterTraffic.PipelineName, isGrpc)
+		clusterName := getPipelineClusterName(clusterTraffic.PipelineName, isGrpc)
 		totWeight = totWeight + clusterTraffic.TrafficWeight
 		splits = append(splits,
 			&route.WeightedCluster_ClusterWeight{
@@ -680,7 +669,7 @@ func makePipelineStickySessionEnvoyRoute(routeName string, envoyRoute *route.Rou
 		Route: &route.RouteAction{
 			Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
 			ClusterSpecifier: &route.RouteAction_Cluster{
-				Cluster: getClusterNameFromRoute(routeName, isGrpc),
+				Cluster: getPipelineClusterName(routeName, isGrpc),
 			},
 		},
 	}

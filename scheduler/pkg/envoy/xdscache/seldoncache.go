@@ -548,7 +548,7 @@ func (xds *SeldonXDSCache) createEndpointsForStreams(streamNames []string, strea
 }
 
 func (xds *SeldonXDSCache) CreateClusterForStreams(clusterPrefix string, streamNames []string, streamIps []string, port uint32, isGrpc bool, logger *logrus.Entry) *Cluster {
-	clusterName := getClusterName(clusterPrefix, isGrpc)
+	clusterName := getPipelineClusterName(clusterPrefix, isGrpc)
 	logger.Debugf("Creating cluster %s for streams: %v with ips: %v and port: %d", clusterName, streamNames, streamIps, port)
 
 	cluster := Cluster{
