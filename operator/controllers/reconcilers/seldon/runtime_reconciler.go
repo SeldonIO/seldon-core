@@ -23,6 +23,15 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 )
 
+const (
+	DEFAULT_NUM_PARTITIONS                    = 1
+	DEFAULT_MODELGATEWAY_MAX_NUM_CONSUMERS    = 100
+	DEFAULT_PIPELINEGATEWAY_MAX_NUM_CONSUMERS = 100
+
+	MODELGATEWAY_MAX_NUM_CONSUMERS    = "MODELGATEWAY_MAX_NUM_CONSUMERS"
+	PIPELINEGATEWAY_MAX_NUM_CONSUMERS = "PIPELINEGATEWAY_MAX_NUM_CONSUMERS"
+)
+
 type SeldonRuntimeReconciler struct {
 	common.ReconcilerConfig
 	componentReconcilers []common.Reconciler
@@ -40,44 +49,108 @@ func ParseInt32(s string, defaultVal int32) (int32, error) {
 	return int32(i64), err
 }
 
-func ValidateScaleSpecPipelines(
+func getEnvVarValue(podSpec *v1.PodSpec, name string, defaultValue string) string {
+	if podSpec != nil && len(podSpec.Containers) > 0 {
+		for _, env := range podSpec.Containers[0].Env {
+			if env.Name == name {
+				return env.Value
+			}
+		}
+	}
+
+	return defaultValue
+}
+
+func min(a, b int32) int32 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func replicaCalc(resourceCount, maxConsumers, partitions int32) int32 {
+	if resourceCount == 0 {
+		return 1
+	}
+	return partitions * min(resourceCount, maxConsumers)
+}
+
+func validateScaleSpec(
 	component *mlopsv1alpha1.ComponentDefn,
 	runtime *mlopsv1alpha1.SeldonRuntime,
 	commonConfig common.ReconcilerConfig,
 	namespace *string,
-	reason string,
+	envVar string,
+	defaultMaxConsumers int32,
+	eventReason string,
+	resourceListObj client.ObjectList,
+	countResources func(client.ObjectList) int,
 ) error {
 	ctx, clt, recorder := commonConfig.Ctx, commonConfig.Client, commonConfig.Recorder
-	numPartitions, err := ParseInt32(runtime.Spec.Config.KafkaConfig.Topics["numPartitions"].StrVal, 1)
+
+	numPartitions, err := ParseInt32(
+		runtime.Spec.Config.KafkaConfig.Topics["numPartitions"].StrVal,
+		DEFAULT_NUM_PARTITIONS,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to parse numPartitions from KafkaConfig: %w", err)
 	}
 
-	var pipelineCount int32 = 0
+	var resourceCount int32 = 0
 	if namespace != nil {
-		// Get the number of Pipeline resources in the namespace
-		var pipelineList mlopsv1alpha1.PipelineList
-		if err := clt.List(ctx, &pipelineList, client.InNamespace(*namespace)); err != nil {
-			return fmt.Errorf("failed to list Pipeline resources in namespace %s: %w", *namespace, err)
+		if err := clt.List(ctx, resourceListObj, client.InNamespace(*namespace)); err != nil {
+			return fmt.Errorf("failed to list resources in namespace %s: %w", *namespace, err)
 		}
-		pipelineCount = int32(len(pipelineList.Items))
+		resourceCount = int32(countResources(resourceListObj))
 	}
 
-	maxReplicas := numPartitions
-	if pipelineCount != 0 {
-		maxReplicas = numPartitions * pipelineCount
+	var maxConsumers int32 = defaultMaxConsumers
+	if envVar != "" {
+		envValue := getEnvVarValue(component.PodSpec, envVar, "")
+		maxConsumers, err = ParseInt32(envValue, defaultMaxConsumers)
+		if err != nil {
+			return fmt.Errorf("failed to parse %s: %w", envVar, err)
+		}
+		if maxConsumers == 0 {
+			return fmt.Errorf("invalid %s value: %s", envVar, envValue)
+		}
 	}
 
+	maxReplicas := replicaCalc(resourceCount, maxConsumers, numPartitions)
 	if component.Replicas != nil && *component.Replicas > maxReplicas {
 		component.Replicas = &maxReplicas
 		recorder.Eventf(
 			runtime,
 			v1.EventTypeWarning,
-			reason,
-			fmt.Sprintf("%s replicas adjusted to %d based on KafkaConfig and Pipeline count", component.Name, maxReplicas),
+			eventReason,
+			fmt.Sprintf("%s replicas adjusted to %d based on KafkaConfig and resource count", component.Name, maxReplicas),
 		)
 	}
+
 	return nil
+}
+
+func ValidateScaleSpecPipelines(
+	component *mlopsv1alpha1.ComponentDefn,
+	runtime *mlopsv1alpha1.SeldonRuntime,
+	commonConfig common.ReconcilerConfig,
+	namespace *string,
+	envVar string,
+	reason string,
+) error {
+	return validateScaleSpec(
+		component,
+		runtime,
+		commonConfig,
+		namespace,
+		envVar,
+		DEFAULT_PIPELINEGATEWAY_MAX_NUM_CONSUMERS,
+		reason,
+		&mlopsv1alpha1.PipelineList{},
+		func(obj client.ObjectList) int {
+			return len(obj.(*mlopsv1alpha1.PipelineList).Items)
+		},
+	)
 }
 
 func ValidateDataflowScaleSpec(
@@ -91,45 +164,9 @@ func ValidateDataflowScaleSpec(
 		runtime,
 		commonConfig,
 		namespace,
+		"", // No env var
 		"DataflowEngineReplicasAdjusted",
 	)
-}
-
-func ValidateModelGatewaySpec(
-	component *mlopsv1alpha1.ComponentDefn,
-	runtime *mlopsv1alpha1.SeldonRuntime,
-	commonConfig common.ReconcilerConfig,
-	namespace *string,
-) error {
-	numPartitions, err := ParseInt32(runtime.Spec.Config.KafkaConfig.Topics["numPartitions"].StrVal, 1)
-	if err != nil {
-		return fmt.Errorf("failed to parse numPartitions from KafkaConfig: %w", err)
-	}
-
-	var maxNumWorkers int32 = 100
-	if component.PodSpec != nil && len(component.PodSpec.Containers) > 0 {
-		for _, env := range component.PodSpec.Containers[0].Env {
-			if env.Name == "MODELGATEWAY_MAX_NUM_CONSUMERS" {
-				maxNumWorkers, err = ParseInt32(env.Value, 100)
-				if err != nil {
-					return fmt.Errorf("failed to parse MODELGATEWAY_MAX_NUM_CONSUMERS: %w", err)
-				}
-				break
-			}
-		}
-	}
-
-	maxReplicas := numPartitions * maxNumWorkers
-	if component.Replicas != nil && *component.Replicas > maxReplicas {
-		component.Replicas = &maxReplicas
-		commonConfig.Recorder.Eventf(
-			runtime,
-			v1.EventTypeWarning,
-			"ModelGatewayReplicasAdjusted",
-			fmt.Sprintf("Model gateway replicas adjusted to %d based on KafkaConfig and maxNumWorkers", maxReplicas),
-		)
-	}
-	return nil
 }
 
 func ValidatePipelineGatewaySpec(
@@ -143,7 +180,29 @@ func ValidatePipelineGatewaySpec(
 		runtime,
 		commonConfig,
 		namespace,
+		PIPELINEGATEWAY_MAX_NUM_CONSUMERS,
 		"PipelineGatewayReplicasAdjusted",
+	)
+}
+
+func ValidateModelGatewaySpec(
+	component *mlopsv1alpha1.ComponentDefn,
+	runtime *mlopsv1alpha1.SeldonRuntime,
+	commonConfig common.ReconcilerConfig,
+	namespace *string,
+) error {
+	return validateScaleSpec(
+		component,
+		runtime,
+		commonConfig,
+		namespace,
+		MODELGATEWAY_MAX_NUM_CONSUMERS,
+		DEFAULT_MODELGATEWAY_MAX_NUM_CONSUMERS,
+		"ModelGatewayReplicasAdjusted",
+		&mlopsv1alpha1.ModelList{},
+		func(obj client.ObjectList) int {
+			return len(obj.(*mlopsv1alpha1.ModelList).Items)
+		},
 	)
 }
 
