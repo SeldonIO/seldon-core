@@ -1,57 +1,43 @@
-name: Check all Markdown links in docs-gb folders
+name: Check Markdown Links in docs-gb
 
 on:
-  schedule:
-    - cron: "0 23 * * *"
   pull_request:
     branches:
       - master
       - v2
+    paths:
+      - 'docs-gb/**'
+  schedule:
+    - cron: '0 23 * * *'  # Daily at 11 PM UTC
   workflow_dispatch:
 
 permissions:
   contents: read
   issues: write
+  pull-requests: write  # Required for review comments
 
 jobs:
-  check-docs-gb:
-    if: github.repository == 'SeldonIO/seldon-core'
+  check-links:
+    if: github.repository == 'SeldonIO/seldon-core'  # Skip forks
+    name: Check Links in docs-gb/
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install Linkspector
-        run: npm install -g @umbrella-docs/linkspector
+        uses: actions/checkout@v4  
 
       - name: Run Linkspector on docs-gb
-        run: |
-          echo "::group::docs-gb"
-          linkspector --workdir docs-gb --config-file .linkspector.yml || echo "::error::Broken links found in docs-gb"
-          echo "::endgroup::"
+        uses: umbrelladocs/action-linkspector@v1
+        with:
+          workdir: docs-gb
+          reporter: github-check  # clearly lists errors on GitHub checks tab
+          fail_level: any
+          config_file: .linkspector.yml
+          show_stats: true
+          reviewdog_flags: -tee
 
-      - name: Run Linkspector on v2/docs-gb
-        run: |
-          if [ -d "v2/docs-gb" ]; then
-            echo "::group::v2/docs-gb"
-            linkspector --workdir v2/docs-gb --config-file .linkspector.yml || echo "::error::Broken links found in v2/docs-gb"
-            echo "::endgroup::"
-          else
-            echo "No v2/docs-gb folder found. Skipping."
-          fi
-
-      - name: Fail if any broken links found
-        if: failure()
-        run: exit 1
-
-      - name: Create issue if broken links are found
-        if: failure()
+      - name: Create Issue on Link Check Failure
+        if: ${{ failure() }}
         uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
