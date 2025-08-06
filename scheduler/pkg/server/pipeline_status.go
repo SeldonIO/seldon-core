@@ -138,7 +138,7 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 
 	for _, pipelineName := range runningPipelines {
 		pip, _ := s.pipelineHandler.GetPipeline(pipelineName)
-		consumerBucketId := s.getConsumerBucketId(pipelineName)
+		consumerBucketId := s.getPipelineGatewayBucketId(pipelineName)
 		servers := s.pipelineGWLoadBalancer.GetServersForKey(consumerBucketId)
 		s.logger.Debugf("Servers for pipeline %s: %v", pipelineName, servers)
 		s.logger.Debug("Consumer bucket ID: ", consumerBucketId)
@@ -228,7 +228,7 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 	defer s.pipelineEventStream.mu.Unlock()
 
 	// find pipelinegw serverNames that should receive this event
-	consumerBucketId := s.getConsumerBucketId(event.PipelineName)
+	consumerBucketId := s.getPipelineGatewayBucketId(event.PipelineName)
 	serverNames := s.pipelineGWLoadBalancer.GetServersForKey(consumerBucketId)
 
 	// split the streams into pipeline gateways and non-gateways
@@ -299,7 +299,7 @@ func (s *SchedulerServer) StopSendPipelineEvents() {
 	}
 }
 
-func (s *SchedulerServer) getConsumerBucketId(pipelineName string) string {
+func (s *SchedulerServer) getPipelineGatewayBucketId(pipelineName string) string {
 	return util.GetKafkaConsumerName(
 		s.consumerGroupConfig.namespace,
 		s.consumerGroupConfig.consumerGroupIdPrefix,

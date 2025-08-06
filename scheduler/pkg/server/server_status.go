@@ -154,13 +154,7 @@ func (s *SchedulerServer) modelGwRebalance() {
 	runningModels := s.GetAllRunningModels()
 	for _, modelName := range runningModels {
 		model, _ := s.modelStore.GetModel(modelName)
-		consumerBucketId := util.GetKafkaConsumerName(
-			s.consumerGroupConfig.namespace,
-			s.consumerGroupConfig.consumerGroupIdPrefix,
-			modelName,
-			modelGatewayConsumerNamePrefix,
-			s.consumerGroupConfig.modelGatewayMaxNumConsumers,
-		)
+		consumerBucketId := s.getModelGatewayBucketId(modelName)
 		s.logger.Debugf("Rebalancing model %s with consumber bucket id %s", modelName, consumerBucketId)
 
 		servers := s.modelGwLoadBalancer.GetServersForKey(consumerBucketId)
@@ -269,13 +263,7 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 		}
 
 		// find the modelgw servers that should receive this event
-		consumerBucketId := util.GetKafkaConsumerName(
-			s.consumerGroupConfig.namespace,
-			s.consumerGroupConfig.consumerGroupIdPrefix,
-			evt.ModelName,
-			modelGatewayConsumerNamePrefix,
-			s.consumerGroupConfig.modelGatewayMaxNumConsumers,
-		)
+		consumerBucketId := s.getModelGatewayBucketId(evt.ModelName)
 		servers := s.modelGwLoadBalancer.GetServersForKey(consumerBucketId)
 
 		// split streams into model gateway and other streams
@@ -467,4 +455,14 @@ func (s *SchedulerServer) sendCurrentServerStatuses(stream pb.Scheduler_ServerSt
 
 	}
 	return nil
+}
+
+func (s *SchedulerServer) getModelGatewayBucketId(modelName string) string {
+	return util.GetKafkaConsumerName(
+		s.consumerGroupConfig.namespace,
+		s.consumerGroupConfig.consumerGroupIdPrefix,
+		modelName,
+		modelGatewayConsumerNamePrefix,
+		s.consumerGroupConfig.modelGatewayMaxNumConsumers,
+	)
 }
