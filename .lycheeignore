@@ -22,3 +22,18 @@
 ^https://docs.github.com/
 _template
 ^[#._]
+
+# --- Ignore all local files and internal doc links ---
+file://
+*.rst
+*.ipynb
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.gif
+*.yaml
+*.yml
+*.txt
+*.pdf
+*.csv
