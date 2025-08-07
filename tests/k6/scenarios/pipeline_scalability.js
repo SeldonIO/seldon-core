@@ -1,11 +1,10 @@
 import * as k8s from '../components/k8s.js';
-import { dump as yamlDump } from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.mjs";
 import * as scheduler from '../components/scheduler.js'
 
 import { getConfig } from '../components/settings.js'
 import {connectControlPlaneOps,
 } from '../components/utils.js'
-import {generateMultiModelPipelineYaml} from '../components/model.js';
+import {generateMultiModelPipelineYaml, getModelInferencePayload} from '../components/model.js';
 import {inferHttp} from "../components/v2.js";
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
@@ -18,12 +17,10 @@ export let options = {
         'data_sent{scenario:default}': [],
     },
     setupTimeout: '6000s',
-    duration: '30m',
+    //duration: '5s',
     teardownTimeout: '6000s',
+    iterations: 200000,
 }
-
-let pipelineName;
-let inferData;
 
 export function setup() {
     k8s.init()
@@ -31,35 +28,44 @@ export function setup() {
 
     const ctl = connectControlPlaneOps(config)
 
-    const pipeline = generateMultiModelPipelineYaml(5, config.modelType, config.modelName, 1, 1)
-    pipelineName = pipeline.pipelineName;
-    inferData = pipeline.inference.inference;
+    const modelParams = [
+        {
+            name: 'response_length',
+            value: '50',
+        }
+    ]
+
+    const pipeline = generateMultiModelPipelineYaml(5, "echo", "echo", modelParams, config.modelName, 1, 1)
+
 
     // pipeline.modelCRYaml.forEach(model => {
-    //     console.log(yamlDump(model));
+    //     ctl.unloadModelFn(model.metadata.name, true)
     //     ctl.loadModelFn(model.metadata.name, yamlDump(model), true, true)
     // })
-
-    ctl.loadPipelineFn(pipeline.pipelineName, pipeline.pipelineCRYaml, true, true)
+    //
+    // ctl.unloadPipelineFn(pipeline.pipelineName, true)
+    //ctl.loadPipelineFn(pipeline.pipelineName, pipeline.pipelineCRYaml, true, true)
+    config.pipelineName = pipeline.pipelineName
     return config
 }
 
 export default function (config) {
-    const httpEndpoint = config.inferHttpEndpoint
-    inferHttp(httpEndpoint, pipelineName, inferData, false, 'pipeline')
+    const inferPayload = getModelInferencePayload("echo", 1)
+    inferHttp(config.inferHttpEndpoint, "echo", inferPayload.http, true, 'pipeline', config.debug)
 }
 
 export function teardown(config) {
-    let modelNames = k8s.getExistingModelNames(config.modelName)
-    for (var modelName in modelNames) {
-        k8s.unloadModel(modelName, false)
-    }
-
-
-    let pipelineNames = k8s.getExistingPipelineNames(pipelineName)
-    for (var pipelineName in pipelineNames) {
-        k8s.unloadModel(pipelineName, false)
-    }
+    const ctl = connectControlPlaneOps(config)
+    //
+    // let modelNames = k8s.getExistingModelNames(config.modelName)
+    // modelNames.forEach(modelName => {
+    //    ctl.unloadModelFn(modelName, false)
+    // })
+    //
+    // let pipelineNames = k8s.getExistingPipelineNames(pipelineName)
+    // pipelineNames.forEach(pipelineName => {
+    //     ctl.unloadPipelineFn(pipelineName, false)
+    // })
 
     scheduler.disconnectScheduler()
 }

@@ -6,7 +6,7 @@ import { generatePipelineName } from '../components/model.js';
 const v2Client = new grpc.Client();
 v2Client.load(['../../../apis/mlops/v2_dataplane/'], 'v2_dataplane.proto');
 
-export function inferHttp(endpoint, modelName, payload, viaEnvoy, pipelineSuffix) {
+export function inferHttp(endpoint, modelName, payload, viaEnvoy, pipelineSuffix, debug = false) {
     const url = endpoint + "/v2/models/"+modelName+"/infer"
     const payloadStr = JSON.stringify(payload);
     var metadata = {
@@ -23,9 +23,17 @@ export function inferHttp(endpoint, modelName, payload, viaEnvoy, pipelineSuffix
     const params = {
         headers:  metadata
     };
-    //console.log("URL:",url,"Payload:",payloadStr,"Params:",JSON.stringify(params))
+
+    if (debug) {
+        console.log("URL:",url,"Payload:",payloadStr,"Params:",JSON.stringify(params))
+    }
+
     const response = http.post(url, payloadStr, params);
-    //console.log("URL:",url,"Status:",response.status, "Payloads:",JSON.stringify(response.error), response.body)
+
+    if (debug && (response.status !== 200) ) {
+        console.error("URL:",url, "Status:",response.status, "Payloads:",JSON.stringify(response.error), response.body)
+    }
+
     check(response, {'model http prediction success': (r) => r.status === 200});
 }
 
@@ -92,7 +100,7 @@ export function generateDataFlowName(modelName, suffix) {
     if (suffix=="") {
         return modelName
     } else {
-        if (suffix=="pipeline") {
+        if (suffix == "pipeline") {
             // we add -pipeline to the model name in the case of constructing a pipeline
             return generatePipelineName(modelName)+"."+suffix
         } else {

@@ -184,6 +184,13 @@ function modelEndIdx() {
     return 0
 }
 
+function debug() {
+    if (__ENV.K6_DEBUG) {
+        return (__ENV.K6_DEBUG === "true")
+    }
+    return false
+}
+
 function isLoadPipeline() {
     if (__ENV.DATAFLOW_TAG) {
         return !(__ENV.DATAFLOW_TAG === "")
@@ -364,6 +371,7 @@ function sleepBetweenModelReplicaChange() {
 
 export function getConfig() {
     return {
+        "debug": debug(),
         "useKubeControlPlane": useKubeControlPlane(),
         "schedulerEndpoint": schedulerEndpoint(),
         "inferHttpEndpoint": inferHttpEndpoint(),
