@@ -150,9 +150,7 @@ export function getModelReadyCondition(modelCR) {
 
 export function loadModel(modelName, data, awaitReady=true, throwError=false) {
     try {
-        console.log("Loading model " + modelName)
         kubeclient.apply(data)
-        console.log("Loaded model " + modelName)
         let created = kubeclient.get(seldonObjectType.MODEL.description, modelName, seldon_target_ns)
         if ('uid' in created.metadata) {
             if (awaitReady) {
@@ -187,7 +185,7 @@ export function awaitStatus(modelName, status) {
     }
 }
 
-export function unloadModel(modelName, awaitReady=true) {
+export function unloadModel(modelName, awaitReady=true, throwError=false) {
     if(seldonObjExists(seldonObjectType.MODEL, modelName, seldon_target_ns)) {
         try {
             kubeclient.delete(seldonObjectType.MODEL.description, modelName, seldon_target_ns)
@@ -203,7 +201,10 @@ export function unloadModel(modelName, awaitReady=true) {
                 }
             }
             return seldonOpExecStatus.OK
-        } catch(_) {
+        } catch(error) {
+            if (throwError) {
+                throw error
+            }
             // catch case where model was deleted concurrently by another VU
         }
     }
@@ -292,7 +293,7 @@ export function awaitPipelineStatus(pipelineName, status) {
     }
 }
 
-export function unloadPipeline(pipelineName, awaitReady = true) {
+export function unloadPipeline(pipelineName, awaitReady = true, throwError=false) {
     if(seldonObjExists(seldonObjectType.PIPELINE, pipelineName, seldon_target_ns)) {
         try {
             kubeclient.delete(seldonObjectType.PIPELINE.description, pipelineName, seldon_target_ns)
@@ -308,7 +309,10 @@ export function unloadPipeline(pipelineName, awaitReady = true) {
                 }
             }
             return seldonOpExecStatus.OK
-        } catch(_) {
+        } catch(error) {
+            if (throwError) {
+                throw error
+            }
             // catch case where model was deleted concurrently by another VU
         }
     }

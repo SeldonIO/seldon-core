@@ -351,6 +351,7 @@ func createResponseErrorPayload(modelName string, response []byte) []byte {
 
 func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) kafka.RebalanceCb {
 	logger := km.logger.WithField("func", "createRebalanceCb")
+
 	return func(consumer *kafka.Consumer, ev kafka.Event) error {
 		mtConsumer.rebalanceMu.Lock()
 		defer mtConsumer.rebalanceMu.Unlock()
