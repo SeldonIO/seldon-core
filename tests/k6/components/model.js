@@ -11,6 +11,7 @@ const onnx_gpt2 = "onnx_gpt2"
 const mlflow_wine = "mlflow_wine" // mlserver
 const add10 = "add10" // https://github.com/SeldonIO/triton-python-examples/tree/master/add10
 const sentiment = "sentiment" // mlserver
+const echo = "echo"
 
 const models = {
     mlflow_wine: {
@@ -91,6 +92,14 @@ const models = {
             "maxUriSuffix": 0,
             "requirements": ["onnx"],
             "memoryBytes": 20000,
+        },
+    },
+    echo: {
+        "modelTemplate": {
+            "uriTemplate": "gs://seldon-models/integration-tests/models/mlserver/echo",
+            "maxUriSuffix": 0,
+            "memoryBytes": 20000,
+            "requirements": ["mlserver"]
         },
     },
 }
@@ -208,6 +217,14 @@ export function getModelInferencePayload(modelName, inferBatchSize) {
         return {
             "http": { "inputs": v2Fields, "parameters": { "content_type": "pd" } },
             "grpc": { "inputs": v2FieldsGrpc, "parameters": { "content_type": { "string_param": "pd" } } }
+        }
+    } else if (modelName == echo) {
+        const shape = [1]
+        const data = new Array(1).fill("hello")
+        const datatype = "BYTES"
+        return {
+            "http": { "inputs": [{ "name": "predict", "data": data, "datatype": datatype, "shape": shape }] },
+            "grpc": { "inputs": [{ "name": "predict", "contents": { "int_contents": data }, "datatype": datatype, "shape": shape }] }
         }
     }
 }
@@ -404,7 +421,7 @@ export function generateModel(modelType, modelName, uriOffset, replicas, isProxy
 }
 
 
-export function generateMultiModelPipelineYaml(numberOfModels, modelType, modelName, uriOffset, replicas, isProxy = false, memoryBytes = null, inferBatchSize = 1) {
+export function generateMultiModelPipelineYaml(numberOfModels, modelType, modelName, modelParams, uriOffset, replicas, isProxy = false, memoryBytes = null, inferBatchSize = 1) {
     if (numberOfModels < 1) {
         throw new Error(`Invalid config: numberOfModels must be at least 1`)
     }
@@ -430,7 +447,7 @@ export function generateMultiModelPipelineYaml(numberOfModels, modelType, modelN
         "spec": {
             "steps" : [],
             "output" : {
-                "steps": [getModelName(modelName, 1)]
+                "steps": [getModelName(modelName, numberOfModels)]
             }
         }
     }
@@ -452,7 +469,8 @@ export function generateMultiModelPipelineYaml(numberOfModels, modelType, modelN
                 "storageUri": uri,
                 "requirements": modelTemplate.requirements,
                 "memory": (memoryBytes == null) ? modelTemplate.memoryBytes : memoryBytes,
-                "replicas": replicas
+                "replicas": replicas,
+                "parameters": (modelParams != null) ? modelParams : []
             }
         }
 

@@ -301,6 +301,7 @@ func createResponseErrorPayload(modelName string, response []byte) []byte {
 
 func createRebalanceCb(km *KafkaManager, pipeline *Pipeline) kafka.RebalanceCb {
 	logger := km.logger.WithField("func", "createRebalanceCb")
+
 	return func(consumer *kafka.Consumer, ev kafka.Event) error {
 		switch e := ev.(type) {
 		case kafka.AssignedPartitions:
