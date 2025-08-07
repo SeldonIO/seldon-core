@@ -92,6 +92,13 @@ rules:
   verbs:
   - get
 - apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - list
+  - watch
+- apiGroups:
   - mlops.seldon.io
   resources:
   - experiments
@@ -232,6 +239,13 @@ rules:
   - statefulsets/status
   verbs:
   - get
+- apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - list
+  - watch
 - apiGroups:
   - mlops.seldon.io
   resources:
