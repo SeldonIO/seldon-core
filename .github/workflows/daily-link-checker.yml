@@ -1,26 +1,20 @@
-name: Check Markdown links in docs-gb
+name: Nightly Link Checker
 
 on:
+  schedule:
+    - cron: '0 0 * * *'  # every day at midnight UTC
+  workflow_dispatch:
   pull_request:
     branches:
       - master
       - v2
-  workflow_dispatch:
-
-permissions:
-  contents: read
 
 jobs:
-  markdown-link-check:
+  lychee-check:
     runs-on: ubuntu-latest
-    if: github.repository == 'SeldonIO/seldon-core'
     steps:
       - uses: actions/checkout@v4
-
-      - name: Run Linkspector on docs-gb
-        uses: umbrelladocs/action-linkspector@v1
+      - name: Run Lychee link checker on docs-gb
+        uses: lycheeverse/lychee-action@v1.10.0
         with:
-          workdir: docs-gb
-          reporter: console
-          fail_level: any
-          config_file: .linkspector.yml
+          args: --verbose --no-progress docs-gb/**/*.md
