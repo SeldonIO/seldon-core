@@ -19,10 +19,4 @@ jobs:
         uses: lycheeverse/lychee-action@v1.10.0
         with:
           args: --verbose --no-progress docs-gb/**/*.md --output lychee/out.md
-      - name: Create issue on broken links
-        if: failure()
-        uses: peter-evans/create-issue-from-file@v4
-        with:
-          title: 'Broken links detected in docs-gb'
-          content-filepath: lychee/out.md
-          labels: 'bug, automated issue, link check'
+     
