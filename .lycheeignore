@@ -23,17 +23,17 @@
 _template
 ^[#._]
 
-# --- Ignore all local files and internal doc links ---
-file://
-*.rst
-*.ipynb
-*.png
-*.jpg
-*.jpeg
-*.svg
-*.gif
-*.yaml
-*.yml
-*.txt
-*.pdf
-*.csv
+# Ignore all local files by extension (use regex)
+\.rst$
+\.ipynb$
+\.png$
+\.jpg$
+\.jpeg$
+\.svg$
+\.gif$
+\.yaml$
+\.yml$
+\.txt$
+\.pdf$
+\.csv$
+^file://
