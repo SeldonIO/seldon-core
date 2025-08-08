@@ -670,3 +670,166 @@ func TestChatCompletionsRequest(t *testing.T) {
 		})
 	}
 }
+
+func TestChatCompletionsResponse(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name                   string
+		oipResponse            map[string]interface{}
+		expectedOpenAIResponse map[string]interface{}
+	}
+
+	tests := []test{
+		{
+			name: "api-response",
+			oipResponse: map[string]interface{}{
+				"id":         "aa65a0ac-6aea-4284-9e55-7c74e299390e",
+				"model_name": "openai-chat-completions",
+				"outputs": []map[string]interface{}{
+					{
+						"name":     "role",
+						"datatype": "BYTES",
+						"shape":    []int{1, 1},
+						"data":     []string{"assistant"},
+						"parameters": map[string]interface{}{
+							"content_type": "str",
+						},
+					},
+					{
+						"name":     "content",
+						"datatype": "BYTES",
+						"shape":    []int{1, 1},
+						"data":     []string{"Hello! How can I assist you today?"},
+						"parameters": map[string]interface{}{
+							"content_type": "str",
+						},
+					},
+					{
+						"name":     "type",
+						"datatype": "BYTES",
+						"shape":    []int{1, 1},
+						"data":     []string{"text"},
+						"parameters": map[string]interface{}{
+							"content_type": "str",
+						},
+					},
+					{
+						"name":     "output_all",
+						"datatype": "BYTES",
+						"shape":    []int{1, 1},
+						"data": []string{
+							"{\n" +
+								"  \"id\": \"chatcmpl-AYD7ygNL8rqda0t5mG691k1aXpGLC\",\n" +
+								"  \"choices\": [\n" +
+								"    {\n" +
+								"      \"finish_reason\": \"stop\",\n" +
+								"      \"index\": 0,\n" +
+								"      \"logprobs\": null,\n" +
+								"      \"message\": {\n" +
+								"        \"content\": \"Hello! How can I assist you today?\",\n" +
+								"        \"refusal\": null,\n" +
+								"        \"role\": \"assistant\"\n" +
+								"      }\n" +
+								"    }\n" +
+								"  ],\n" +
+								"  \"created\": 1732716978,\n" +
+								"  \"model\": \"gpt-3.5-turbo-0125\",\n" +
+								"  \"object\": \"chat.completion\",\n" +
+								"  \"system_fingerprint\": null,\n" +
+								"  \"usage\": {\n" +
+								"    \"completion_tokens\": 9,\n" +
+								"    \"prompt_tokens\": 21,\n" +
+								"    \"total_tokens\": 30,\n" +
+								"    \"completion_tokens_details\": {\n" +
+								"      \"reasoning_tokens\": 0,\n" +
+								"      \"audio_tokens\": 0,\n" +
+								"      \"accepted_prediction_tokens\": 0,\n" +
+								"      \"rejected_prediction_tokens\": 0\n" +
+								"    },\n" +
+								"    \"prompt_tokens_details\": {\n" +
+								"      \"cached_tokens\": 0,\n" +
+								"      \"audio_tokens\": 0\n" +
+								"    }\n" +
+								"  }\n" +
+								"}",
+						},
+						"parameters": map[string]interface{}{
+							"content_type": "str",
+						},
+					},
+				},
+				"parameters": map[string]interface{}{},
+			},
+			expectedOpenAIResponse: map[string]interface{}{
+				"id":      "chatcmpl-AYD7ygNL8rqda0t5mG691k1aXpGLC",
+				"model":   "gpt-3.5-turbo-0125",
+				"created": 1732716978,
+				"object":  "chat.completion",
+				"choices": []map[string]interface{}{
+					{
+						"index": 0,
+						"message": map[string]interface{}{
+							"content": "Hello! How can I assist you today?",
+							"role":    "assistant",
+							"refusal": nil,
+						},
+						"finish_reason": "stop",
+						"logprobs":      nil,
+					},
+				},
+				"system_fingerprint": nil,
+				"usage": map[string]interface{}{
+					"prompt_tokens":     21,
+					"completion_tokens": 9,
+					"total_tokens":      30,
+					"prompt_tokens_details": map[string]interface{}{
+						"cached_tokens": 0,
+						"audio_tokens":  0,
+					},
+					"completion_tokens_details": map[string]interface{}{
+						"reasoning_tokens":           0,
+						"audio_tokens":               0,
+						"accepted_prediction_tokens": 0,
+						"rejected_prediction_tokens": 0,
+					},
+				},
+			},
+		},
+	}
+
+	logger := log.New().WithField("Source", "HTTPProxy")
+	openAITranslator := &OpenAIChatCompletionsTranslator{}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			oipResponseBody, err := json.Marshal(test.oipResponse)
+			g.Expect(err).To(BeNil(), "Error marshalling OIP response content")
+
+			oipResp := &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(strings.NewReader(string(oipResponseBody))),
+				Header:     http.Header{"Content-Type": []string{"application/json"}},
+			}
+
+			openAIResp, err := openAITranslator.TranslateFromOIP(oipResp, logger)
+			g.Expect(err).To(BeNil(), "Error translating OIP response to OpenAI format")
+
+			openAIRespBody, err := io.ReadAll(openAIResp.Body)
+			g.Expect(err).To(BeNil(), "Error reading OpenAI response body")
+
+			// unmarsal and marshal to ensure formatting is correct
+			var openAIRespContent map[string]interface{}
+			err = json.Unmarshal(openAIRespBody, &openAIRespContent)
+			g.Expect(err).To(BeNil(), "Error unmarshalling OpenAI response content")
+
+			openAIRespMarshal, err := json.Marshal(openAIRespContent)
+			g.Expect(err).To(BeNil(), "Error marshalling OpenAI response content")
+
+			// marshal expected response for comparison including null values
+			expectedOpenAIResponseMarshal, err := json.Marshal(test.expectedOpenAIResponse)
+			g.Expect(err).To(BeNil(), "Error marshalling expected OpenAI response content")
+			g.Expect(openAIRespMarshal).To(Equal(expectedOpenAIResponseMarshal), "OpenAI response body does not match expected format")
+		})
+	}
+
+}
