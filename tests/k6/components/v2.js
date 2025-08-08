@@ -24,10 +24,6 @@ export function inferHttp(endpoint, modelName, payload, viaEnvoy, pipelineSuffix
         headers:  metadata
     };
 
-    if (debug) {
-        console.log("URL:",url,"Payload:",payloadStr,"Params:",JSON.stringify(params))
-    }
-
     const response = http.post(url, payloadStr, params);
 
     if (debug && (response.status !== 200) ) {

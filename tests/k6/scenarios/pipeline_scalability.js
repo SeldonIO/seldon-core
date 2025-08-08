@@ -1,3 +1,4 @@
+import { dump as yamlDump } from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.mjs";
 import * as k8s from '../components/k8s.js';
 import * as scheduler from '../components/scheduler.js'
 
@@ -19,7 +20,7 @@ export let options = {
     setupTimeout: '6000s',
     //duration: '5s',
     teardownTimeout: '6000s',
-    iterations: 200000,
+    iterations: 10000,
 }
 
 export function setup() {
@@ -31,27 +32,44 @@ export function setup() {
     const modelParams = [
         {
             name: 'response_length',
-            value: '50',
+            value: (10).toString(),
         }
     ]
 
-    const pipeline = generateMultiModelPipelineYaml(5, "echo", "echo", modelParams, config.modelName, 1, 1)
+    const pipeline1 = generateMultiModelPipelineYaml(5, "echo", "echo1", modelParams, config.modelName, 1, 1)
 
 
-    // pipeline.modelCRYaml.forEach(model => {
-    //     ctl.unloadModelFn(model.metadata.name, true)
-    //     ctl.loadModelFn(model.metadata.name, yamlDump(model), true, true)
-    // })
-    //
-    // ctl.unloadPipelineFn(pipeline.pipelineName, true)
-    //ctl.loadPipelineFn(pipeline.pipelineName, pipeline.pipelineCRYaml, true, true)
-    config.pipelineName = pipeline.pipelineName
+    pipeline1.modelCRYaml.forEach(model => {
+        ctl.unloadModelFn(model.metadata.name, true)
+        ctl.loadModelFn(model.metadata.name, yamlDump(model), true, true)
+    })
+
+    ctl.unloadPipelineFn(pipeline1.pipelineName, true)
+    ctl.loadPipelineFn(pipeline1.pipelineName, pipeline1.pipelineCRYaml, true, true)
+
+    const pipeline2 = generateMultiModelPipelineYaml(5, "echo", "echo2", modelParams, config.modelName, 1, 1)
+
+
+    pipeline2.modelCRYaml.forEach(model => {
+        ctl.unloadModelFn(model.metadata.name, true)
+        ctl.loadModelFn(model.metadata.name, yamlDump(model), true, true)
+    })
+
+    ctl.unloadPipelineFn(pipeline2.pipelineName, true)
+    ctl.loadPipelineFn(pipeline2.pipelineName, pipeline2.pipelineCRYaml, true, true)
+
     return config
 }
 
 export default function (config) {
-    const inferPayload = getModelInferencePayload("echo", 1)
-    inferHttp(config.inferHttpEndpoint, "echo", inferPayload.http, true, 'pipeline', config.debug)
+    if (Math.random() > 0.5) {
+        const inferPayload1 = getModelInferencePayload("echo", 1)
+        inferHttp(config.inferHttpEndpoint, "echo1", inferPayload1.http, true, 'pipeline', config.debug)
+        return
+    }
+
+    const inferPayload2 = getModelInferencePayload("echo", 1)
+    inferHttp(config.inferHttpEndpoint, "echo2", inferPayload2.http, true, 'pipeline', config.debug)
 }
 
 export function teardown(config) {
