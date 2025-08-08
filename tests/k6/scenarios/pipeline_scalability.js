@@ -27,6 +27,10 @@ export function setup() {
     k8s.init()
     var config = getConfig()
 
+    if (config.skipSetup) {
+        return
+    }
+
     const ctl = connectControlPlaneOps(config)
 
     const modelParams = [
