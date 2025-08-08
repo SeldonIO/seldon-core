@@ -47,6 +47,13 @@ function modelType() {
     return ["iris"]
 }
 
+function skipSetup() {
+    if (__ENV.SKIP_SETUP) {
+        return true
+    }
+    return false
+}
+
 function loadModel() {
     if (__ENV.SKIP_LOAD_MODEL) {
         return false
@@ -371,6 +378,7 @@ function sleepBetweenModelReplicaChange() {
 
 export function getConfig() {
     return {
+        "skipSetup" : skipSetup(),
         "debug": debug(),
         "useKubeControlPlane": useKubeControlPlane(),
         "schedulerEndpoint": schedulerEndpoint(),
