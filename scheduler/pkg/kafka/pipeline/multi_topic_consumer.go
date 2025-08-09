@@ -11,6 +11,7 @@ package pipeline
 
 import (
 	"context"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
 	"sync"
 	"sync/atomic"
 
@@ -42,6 +43,7 @@ type MultiTopicsKafkaConsumer struct {
 	topicMu     sync.Mutex
 	rebalanceMu sync.RWMutex
 	wg          sync.WaitGroup
+	schemaRegistryClient schemaregistry.Client
 }
 
 func NewMultiTopicsKafkaConsumer(
@@ -49,6 +51,7 @@ func NewMultiTopicsKafkaConsumer(
 	consumerConfig *kafka_config.KafkaConfig,
 	id string,
 	tracer trace.Tracer,
+	schemaRegistryClient schemaregistry.Client,
 ) (*MultiTopicsKafkaConsumer, error) {
 	consumer := &MultiTopicsKafkaConsumer{
 		logger:   logger.WithField("source", "MultiTopicsKafkaConsumer"),
@@ -57,6 +60,7 @@ func NewMultiTopicsKafkaConsumer(
 		id:       id,
 		requests: cmap.New(),
 		tracer:   tracer,
+		schemaRegistryClient: schemaRegistryClient,
 	}
 	err := consumer.createConsumer(logger)
 	return consumer, err
@@ -184,8 +188,14 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 				if requestId == "" {
 					logger.Warnf("Missing request id in Kafka headers for key %s", key)
 				}
-				span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
 
+				// deserialising logic
+
+				if c.schemaRegistryClient != nil {
+					// temporary deserialisation
+					e.Value = e.Value[5:]
+				}
+				span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
 				request := val.(*Request)
 				request.mu.Lock()
 				if request.active {

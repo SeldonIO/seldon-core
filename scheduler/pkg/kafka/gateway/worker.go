@@ -259,7 +259,7 @@ func (iw *InferWorker) produce(
 
 	logger.Infof("the payload to write to the topic %s is %s", topic, b)
 
-	if iw.schemaRegistryClient != nil {
+	if iw.schemaRegistryClient != nil && !errorTopic {
 		srLogger := logger.WithField("source", "schema registry")
 		v2Res := &v2.ModelInferResponse{}
 		err := proto.Unmarshal(b, v2Res)
@@ -325,6 +325,12 @@ func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeCon
 	logger.Debugf("REST request to %s for %s", restUrl.String(), job.modelName)
 
 	data := job.msg.Value
+	logger.Infof("before schema checkkkk")
+	if iw.schemaRegistryClient != nil {
+		logger.Infof("the first 5 bytes of the request contain: %s", job.msg.Value[:5])
+		data = job.msg.Value[:]
+	}
+
 	if maybeConvert {
 		data = maybeChainRest(job.msg.Value)
 	}
