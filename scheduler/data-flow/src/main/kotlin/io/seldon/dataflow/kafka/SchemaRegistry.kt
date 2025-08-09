@@ -34,7 +34,7 @@ class SerdeFactory {
         fun createValueSerde(useSchemaRegistry: Boolean): Serde<ByteArray> {
             return when (useSchemaRegistry) {
                 true -> {
-                    println("Using schema registry")
+                    logger.info("Using schema registry")
                     createWireFormatByteArraySerde()
                 }
 
@@ -59,21 +59,19 @@ class SerdeFactory {
                 configs,
             )
 
-        private val logger = Logger(PipelineSubscriber::class)
-
-//        private fun createSchemaRegistrySerde(
-//            config: SchemaRegistryConfig,
-//        ): Serde<ByteArray> {
-//            val serde = KafkaProtobufSerde<ByteArray>()
-//            val props = mapOf(
-//                "schema.registry.url" to config.url,
-//                "value.subject.name.strategy" to config.recordNameStrategy,
-//                "auto.register.schemas" to config.autoRegisterSchemas.toString(),
-//                "use.latest.version" to "true"
-//            )
-//            serde.configure(props, false) // false = value serde
-//            return serde.toString().toByteArray()
+//        val deserializer = KafkaProtobufDeserializer<DynamicMessage>(schemaClient)
+//
+//        init {
+//            val props =
+//                mapOf(
+//                    "schema.registry.url" to schemaRegistryUrl,
+//                    "specific.protobuf.reader" to false,
+//                    // Use DynamicMessage instead of specific classes
+//                )
+//            deserializer.configure(props, false)
 //        }
+
+        private val logger = Logger(PipelineSubscriber::class)
 
         // For consuming messages with Schema Registry wire format but without schema validation
         private fun createWireFormatByteArraySerde(): Serde<ByteArray> {
@@ -95,6 +93,7 @@ class SerdeFactory {
             topic: String?,
             data: ByteArray?,
         ): ByteArray? {
+            logger.info("the topic to deserialize is $topic")
             return data?.let { removeSchemaRegistryWireFormat(it) }
         }
 
@@ -102,19 +101,28 @@ class SerdeFactory {
             // Schema Registry wire format:
             // [magic_byte(1)] + [schema_id(4)] + [actual_protobuf_data...]
 
+            logger.info("Removing schema registry")
             if (data.size < 5) {
+                logger.info("No schema id in message")
                 // Not enough bytes for wire format, return as-is
                 return data
             }
 
             // Check if first byte is the magic byte (0x0)
             if (data[0] != 0.toByte()) {
+                logger.info("did not find magic byte, returning normal data")
                 // Not schema registry format, return as-is
                 return data
             }
 
+            logger.info("First 10 bytes before remove: ${data.take(10).joinToString(" ") { "%02x".format(it) }}")
+
             // Skip the first 5 bytes (magic byte + 4-byte schema ID)
-            return data.copyOfRange(5, data.size)
+            val dataAfter = data.copyOfRange(7, data.size)
+
+            logger.info("First 10 bytes after remove: ${dataAfter.take(10).joinToString(" ") { "%02x".format(it) }}")
+            logger.info("Returned data without schema id")
+            return dataAfter
         }
     }
 
@@ -123,11 +131,13 @@ class SerdeFactory {
             topic: String?,
             data: ByteArray?,
         ): ByteArray? {
+            logger.info("the topic to serialise data is $topic")
             return data?.let { payload ->
                 val schemaId = getSchemaId()
                 if (schemaId != null) {
                     addSchemaRegistryWireFormat(payload, schemaId)
                 } else {
+                    logger.info("Schema with id $schemaId not found")
                     // No schema ID available, return original payload without wire format
                     payload
                 }
@@ -138,6 +148,9 @@ class SerdeFactory {
             data: ByteArray,
             schemaId: Int,
         ): ByteArray {
+            logger.info("Adding schema registry with id $schemaId")
+
+            logger.info("First 10 bytes before adding schema: ${data.take(10).joinToString(" ") { "%02x".format(it) }}")
             val result = ByteArray(5 + data.size)
             result[0] = 0 // Magic byte
 
@@ -150,6 +163,11 @@ class SerdeFactory {
             // Copy the actual protobuf data
             data.copyInto(result, 5)
 
+            logger.info(
+                "First 10 bytes after adding schema: ${
+                    result.take(10).joinToString(" ") { "%02x".format(it) }
+                }",
+            )
             return result
         }
 
