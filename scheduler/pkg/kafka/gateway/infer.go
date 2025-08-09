@@ -483,6 +483,26 @@ func (kc *InferKafkaHandler) Serve() {
 					continue
 				}
 
+				if kc.schemaRegistryClient != nil {
+					//srLogger := logger.WithField("source", "schema registry")
+					//
+					//ser, err := protobuf.NewDeserializer(kc.schemaRegistryClient, serde.ValueSerde, protobuf.NewDeserializerConfig())
+					//if err != nil {
+					//	srLogger.WithError(err).Errorf("Failed to obtain a serialiser")
+					//}
+					//
+					//value, err := ser.Deserialize(*e.TopicPartition.Topic, e.Value)
+					//
+					//if err != nil {
+					//	fmt.Printf("Failed to deserialize payload: %s\n", err)
+					//}
+
+					logger.Infof("got rid of the schema message")
+
+					e.Value = e.Value[5:]
+
+				}
+
 				// Add tracing span
 				ctx := context.Background()
 				carrierIn := splunkkafka.NewMessageCarrier(e)
