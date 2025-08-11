@@ -2,7 +2,7 @@ import grpc from 'k6/net/grpc';
 import {check} from 'k6';
 
 const schedulerClient = new grpc.Client();
-schedulerClient.load(['../../../apis/'], 'mlops/proxy/proxy.proto');
+schedulerClient.load([import.meta.resolve('../../../apis/')], 'mlops/proxy/proxy.proto');
 
 export function connectScheduler(serverUrl) {
     schedulerClient.connect(serverUrl, {

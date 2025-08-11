@@ -1,12 +1,12 @@
 import { dump as yamlDump } from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.mjs";
-import * as k8s from '../components/k8s.js';
-import * as scheduler from '../components/scheduler.js'
+import * as k8s from '../../../components/k8s.js';
+import * as scheduler from '../../../components/scheduler.js'
 
-import { getConfig } from '../components/settings.js'
+import { getConfig } from '../../../components/settings.js'
 import {connectControlPlaneOps,
-} from '../components/utils.js'
-import {generateMultiModelPipelineYaml, getModelInferencePayload} from '../components/model.js';
-import {inferHttp} from "../components/v2.js";
+} from '../../../components/utils.js'
+import {generateMultiModelPipelineYaml, getModelInferencePayload} from '../../../components/model.js';
+import {inferHttp} from "../../../components/v2.js";
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
 export let options = {
