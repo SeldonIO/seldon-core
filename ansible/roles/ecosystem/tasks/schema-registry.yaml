@@ -1,0 +1,5 @@
+---
+- name: "Install Schema Registry"
+  include_role:
+    name: schema-registry
+  when: install_schema_registry | bool
