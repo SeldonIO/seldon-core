@@ -38,40 +38,44 @@ import (
 )
 
 const (
-	grpcMaxConcurrentStreams           = 1_000_000
-	pendingEventsQueueSize         int = 1000
-	modelEventHandlerName              = "scheduler.server.models"
-	serverEventHandlerName             = "scheduler.server.servers"
-	serverModelEventHandlerName        = "scheduler.server.servers.models"
-	experimentEventHandlerName         = "scheduler.server.experiments"
-	pipelineEventHandlerName           = "scheduler.server.pipelines"
-	defaultBatchWait                   = 250 * time.Millisecond
-	sendTimeout                        = 30 * time.Second // Timeout for sending events to subscribers via grpc `sendMsg`
-	modelGatewayConsumerNamePrefix     = "seldon-modelgateway"
-	EnvMaxNumConsumers                 = "MODELGATEWAY_MAX_NUM_CONSUMERS"
-	DefaultMaxNumConsumers             = 100
+	grpcMaxConcurrentStreams              = 1_000_000
+	pendingEventsQueueSize            int = 1000
+	modelEventHandlerName                 = "scheduler.server.models"
+	serverEventHandlerName                = "scheduler.server.servers"
+	serverModelEventHandlerName           = "scheduler.server.servers.models"
+	experimentEventHandlerName            = "scheduler.server.experiments"
+	pipelineEventHandlerName              = "scheduler.server.pipelines"
+	defaultBatchWait                      = 250 * time.Millisecond
+	sendTimeout                           = 30 * time.Second // Timeout for sending events to subscribers via grpc `sendMsg`
+	modelGatewayConsumerNamePrefix        = "seldon-modelgateway"
+	pipelineGatewayConsumerNamePrefix     = "seldon-pipelinegateway"
+	EnvModelGatewayMaxNumConsumers        = "MODELGATEWAY_MAX_NUM_CONSUMERS"
+	EnvPipelineGatewayMaxNumConsumers     = "PIPELINEGATEWAY_MAX_NUM_CONSUMERS"
+	DefaultMaxNumConsumers                = 100
 )
 
 var ErrAddServerEmptyServerName = status.Errorf(codes.FailedPrecondition, "Empty server name passed")
 
 type SchedulerServer struct {
 	pb.UnimplementedSchedulerServer
-	logger                log.FieldLogger
-	modelStore            store.ModelStore
-	experimentServer      experiment.ExperimentServer
-	pipelineHandler       pipeline.PipelineHandler
-	scheduler             scheduler2.Scheduler
-	modelEventStream      ModelEventStream
-	serverEventStream     ServerEventStream
-	experimentEventStream ExperimentEventStream
-	pipelineEventStream   PipelineEventStream
-	controlPlaneStream    ControlPlaneStream
-	certificateStore      *seldontls.CertificateStore
-	timeout               time.Duration
-	synchroniser          synchroniser.Synchroniser
-	config                SchedulerServerConfig
-	loadBalancer          *util.RingLoadBalancer
-	consumerGroupConfig   *ConsumerGroupConfig
+	logger                 log.FieldLogger
+	modelStore             store.ModelStore
+	experimentServer       experiment.ExperimentServer
+	pipelineHandler        pipeline.PipelineHandler
+	scheduler              scheduler2.Scheduler
+	modelEventStream       ModelEventStream
+	serverEventStream      ServerEventStream
+	experimentEventStream  ExperimentEventStream
+	pipelineEventStream    PipelineEventStream
+	controlPlaneStream     ControlPlaneStream
+	certificateStore       *seldontls.CertificateStore
+	timeout                time.Duration
+	synchroniser           synchroniser.Synchroniser
+	config                 SchedulerServerConfig
+	modelGwLoadBalancer    *util.RingLoadBalancer
+	pipelineGWLoadBalancer *util.RingLoadBalancer
+	consumerGroupConfig    *ConsumerGroupConfig
+	eventHub               *coordinator.EventHub
 }
 
 type SchedulerServerConfig struct {
@@ -99,8 +103,9 @@ type ExperimentEventStream struct {
 }
 
 type PipelineEventStream struct {
-	mu      sync.Mutex
-	streams map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription
+	mu         sync.Mutex
+	streams    map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription
+	namesToIps map[string]string // Maps pipeline names to their IPs
 }
 
 type ControlPlaneStream struct {
@@ -128,9 +133,11 @@ type ExperimentSubscription struct {
 }
 
 type PipelineSubscription struct {
-	name   string
-	stream pb.Scheduler_SubscribePipelineStatusServer
-	fin    chan bool
+	name              string
+	ip                string
+	isPipelineGateway bool // Indicates if this subscription is for the pipeline gateway
+	stream            pb.Scheduler_SubscribePipelineStatusServer
+	fin               chan bool
 }
 
 type ControlPlaneSubsription struct {
@@ -140,25 +147,27 @@ type ControlPlaneSubsription struct {
 }
 
 type ConsumerGroupConfig struct {
-	namespace             string
-	consumerGroupIdPrefix string
-	maxNumConsumers       int
+	namespace                      string
+	consumerGroupIdPrefix          string
+	modelGatewayMaxNumConsumers    int
+	pipelineGatewayMaxNumConsumers int
 }
 
-func NewConsumerGroupConfig(namespace, consumerGroupIdPrefix string, maxNumConsumers int) *ConsumerGroupConfig {
+func NewConsumerGroupConfig(namespace, consumerGroupIdPrefix string, modelGatewayMaxNumConsumers int, pipelineGatewayMaxNumConsumers int) *ConsumerGroupConfig {
 	if namespace == "" {
 		namespace = "default"
 	}
-	if consumerGroupIdPrefix == "" {
-		consumerGroupIdPrefix = modelGatewayConsumerNamePrefix
+	if modelGatewayMaxNumConsumers <= 0 {
+		modelGatewayMaxNumConsumers = DefaultMaxNumConsumers
 	}
-	if maxNumConsumers <= 0 {
-		maxNumConsumers = DefaultMaxNumConsumers
+	if pipelineGatewayMaxNumConsumers <= 0 {
+		pipelineGatewayMaxNumConsumers = DefaultMaxNumConsumers
 	}
 	return &ConsumerGroupConfig{
-		namespace:             namespace,
-		consumerGroupIdPrefix: consumerGroupIdPrefix,
-		maxNumConsumers:       maxNumConsumers,
+		namespace:                      namespace,
+		consumerGroupIdPrefix:          consumerGroupIdPrefix,
+		modelGatewayMaxNumConsumers:    modelGatewayMaxNumConsumers,
+		pipelineGatewayMaxNumConsumers: pipelineGatewayMaxNumConsumers,
 	}
 }
 
@@ -246,17 +255,17 @@ func NewSchedulerServer(
 	config SchedulerServerConfig,
 	namespace string,
 	consumerGroupIdPrefix string,
-	loadBalancer *util.RingLoadBalancer,
+	modelGwLoadBalancer *util.RingLoadBalancer,
+	pipelineGWLoadBalancer *util.RingLoadBalancer,
 ) *SchedulerServer {
 	loggerWithField := logger.WithField("source", "SchedulerServer")
-	maxNumConsumers := getEnVar(loggerWithField, EnvMaxNumConsumers, DefaultMaxNumConsumers)
-	if maxNumConsumers <= 0 {
-		maxNumConsumers = DefaultMaxNumConsumers
-	}
+	modelGatewayMaxNumConsumers := getEnVar(loggerWithField, EnvModelGatewayMaxNumConsumers, DefaultMaxNumConsumers)
+	pipelineGatewayMaxNumConsumers := getEnVar(loggerWithField, EnvPipelineGatewayMaxNumConsumers, DefaultMaxNumConsumers)
 	consumerGroupConfig := NewConsumerGroupConfig(
 		namespace,
 		consumerGroupIdPrefix,
-		maxNumConsumers,
+		modelGatewayMaxNumConsumers,
+		pipelineGatewayMaxNumConsumers,
 	)
 
 	s := &SchedulerServer{
@@ -275,7 +284,8 @@ func NewSchedulerServer(
 			pendingEvents: map[string]struct{}{},
 		},
 		pipelineEventStream: PipelineEventStream{
-			streams: make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription),
+			streams:    make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription),
+			namesToIps: make(map[string]string),
 		},
 		experimentEventStream: ExperimentEventStream{
 			streams: make(map[pb.Scheduler_SubscribeExperimentStatusServer]*ExperimentSubscription),
@@ -283,11 +293,13 @@ func NewSchedulerServer(
 		controlPlaneStream: ControlPlaneStream{
 			streams: make(map[pb.Scheduler_SubscribeControlPlaneServer]*ControlPlaneSubsription),
 		},
-		timeout:             sendTimeout,
-		synchroniser:        synchroniser,
-		config:              config,
-		loadBalancer:        loadBalancer,
-		consumerGroupConfig: consumerGroupConfig,
+		timeout:                sendTimeout,
+		synchroniser:           synchroniser,
+		config:                 config,
+		modelGwLoadBalancer:    modelGwLoadBalancer,
+		pipelineGWLoadBalancer: pipelineGWLoadBalancer,
+		consumerGroupConfig:    consumerGroupConfig,
+		eventHub:               eventHub,
 	}
 
 	eventHub.RegisterModelEventHandler(

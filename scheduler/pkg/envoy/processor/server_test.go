@@ -34,7 +34,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
-var permanentClusterNames = []string{"pipelinegateway_http", "pipelinegateway_grpc", "mirror_http", "mirror_grpc"}
+var permanentClusterNames = []string{"mirror_http", "mirror_grpc"}
 
 func TestFetch(t *testing.T) {
 	g := NewGomegaWithT(t)

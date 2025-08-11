@@ -19,10 +19,11 @@ import (
 )
 
 const (
-	topicModelEvents      = "model.event"
-	topicServerEvents     = "server.event"
-	topicExperimentEvents = "experiment.event"
-	topicPipelineEvents   = "pipeline.event"
+	topicModelEvents           = "model.event"
+	topicServerEvents          = "server.event"
+	topicExperimentEvents      = "experiment.event"
+	topicPipelineEvents        = "pipeline.event"
+	topicPipelineStreamsEvents = "pipelinestreams.event"
 )
 
 type SequenceGenerator struct {
@@ -37,14 +38,15 @@ func (g *SequenceGenerator) Generate() string {
 var _ busV3.IDGenerator = (*SequenceGenerator)(nil)
 
 type EventHub struct {
-	bus                            *busV3.Bus
-	logger                         log.FieldLogger
-	modelEventHandlerChannels      []chan ModelEventMsg
-	serverEventHandlerChannels     []chan ServerEventMsg
-	experimentEventHandlerChannels []chan ExperimentEventMsg
-	pipelineEventHandlerChannels   []chan PipelineEventMsg
-	lock                           sync.RWMutex
-	closed                         bool
+	bus                                 *busV3.Bus
+	logger                              log.FieldLogger
+	modelEventHandlerChannels           []chan ModelEventMsg
+	serverEventHandlerChannels          []chan ServerEventMsg
+	experimentEventHandlerChannels      []chan ExperimentEventMsg
+	pipelineEventHandlerChannels        []chan PipelineEventMsg
+	pipelineStreamsEventHandlerChannels []chan PipelineStreamsEventMsg
+	lock                                sync.RWMutex
+	closed                              bool
 }
 
 // NewEventHub creates a new EventHub with topics pre-registered.
@@ -61,7 +63,7 @@ func NewEventHub(l log.FieldLogger) (*EventHub, error) {
 		bus:    bus,
 	}
 
-	hub.bus.RegisterTopics(topicModelEvents, topicServerEvents, topicExperimentEvents, topicPipelineEvents)
+	hub.bus.RegisterTopics(topicModelEvents, topicServerEvents, topicExperimentEvents, topicPipelineEvents, topicPipelineStreamsEvents)
 
 	return &hub, nil
 }

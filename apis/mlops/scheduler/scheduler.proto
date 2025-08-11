@@ -401,6 +401,8 @@ message PipelineStatusRequest {
 
 message PipelineSubscriptionRequest {
   string subscriberName = 1; //Name of the subscription caller
+  string subscriberIp = 2; // IP of the subscription caller
+  bool isPipelineGateway = 3; // If true, the subscription is for a pipeline gateway
 }
 
 message PipelineStatusResponse {

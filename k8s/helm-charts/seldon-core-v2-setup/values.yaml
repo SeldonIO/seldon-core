@@ -150,6 +150,7 @@ pipelinegateway:
     registry: docker.io
     repository: seldonio/seldon-pipelinegateway
     tag: latest
+  maxNumConsumers: 100
   resources:
     cpu: 100m
     memory: 1G

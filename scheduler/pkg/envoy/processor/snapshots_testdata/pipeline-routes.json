@@ -297,7 +297,7 @@
                         }
                     },
                     {
-                        "name": "pipe.pipeline_pipeline_http",
+                        "name": "pipe.pipeline_http",
                         "match": {
                             "prefix": "/v2",
                             "headers": [
@@ -317,7 +317,7 @@
                             "weightedClusters": {
                                 "clusters": [
                                     {
-                                        "name": "pipelinegateway_http",
+                                        "name": "pipe_pipeline_http",
                                         "weight": 100,
                                         "requestHeadersToAdd": [
                                             {
@@ -342,7 +342,7 @@
                         }
                     },
                     {
-                        "name": "pipe.pipeline_pipeline_grpc",
+                        "name": "pipe.pipeline_grpc",
                         "match": {
                             "prefix": "/inference.GRPCInferenceService",
                             "headers": [
@@ -362,7 +362,7 @@
                             "weightedClusters": {
                                 "clusters": [
                                     {
-                                        "name": "pipelinegateway_grpc",
+                                        "name": "pipe_pipeline_grpc",
                                         "weight": 100,
                                         "requestHeadersToAdd": [
                                             {

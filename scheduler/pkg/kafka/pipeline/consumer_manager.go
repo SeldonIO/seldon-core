@@ -21,9 +21,9 @@ import (
 )
 
 const (
-	EnvMaxNumConsumers      = "PIPELINEGATEWAY_MAX_NUM_CONSUMERS"
-	DefaultMaxNumConsumers  = 200
-	kafkaConsumerNamePrefix = "seldon-pipelinegateway"
+	EnvMaxNumConsumers                = "PIPELINEGATEWAY_MAX_NUM_CONSUMERS"
+	DefaultMaxNumConsumers            = 100
+	pipelineGatewayConsumerNamePrefix = "seldon-pipelinegateway"
 )
 
 type ConsumerManager struct {
@@ -82,10 +82,11 @@ func (cm *ConsumerManager) getKafkaConsumer(pipelineOrModelName string, isModel 
 		cm.namespace,
 		cm.consumerConfig.ConsumerGroupIdPrefix,
 		pipelineOrModelName,
-		kafkaConsumerNamePrefix,
+		pipelineGatewayConsumerNamePrefix,
 		cm.maxNumConsumers,
 	)
 	consumers := cm.pipelinesConsumers
+	cm.logger.Debugf("Getting consumer for %s with name %s", pipelineOrModelName, consumerName)
 	if isModel {
 		consumers = cm.modelsConsumers
 	}
@@ -95,14 +96,6 @@ func (cm *ConsumerManager) getKafkaConsumer(pipelineOrModelName string, isModel 
 	return cm.createConsumer(consumerName, consumers)
 }
 
-func getNumModels(consumers map[string]*MultiTopicsKafkaConsumer) int {
-	tot := 0
-	for _, c := range consumers {
-		tot += c.GetNumTopics()
-	}
-	return tot
-}
-
 func stop(consumers map[string]*MultiTopicsKafkaConsumer) {
 	for _, c := range consumers {
 		err := c.Close()
@@ -110,12 +103,6 @@ func stop(consumers map[string]*MultiTopicsKafkaConsumer) {
 			log.Warnf("Consumer %s failed to close", c.id)
 		}
 	}
-}
-
-func (cm *ConsumerManager) GetNumModels() int {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-	return getNumModels(cm.modelsConsumers) + getNumModels(cm.pipelinesConsumers)
 }
 
 func (cm *ConsumerManager) Stop() {

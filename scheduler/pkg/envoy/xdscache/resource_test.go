@@ -221,40 +221,40 @@ func TestGetRouteName(t *testing.T) {
 		},
 		{
 			name:       "http pipeline",
-			routeName:  "foo",
+			routeName:  "foo.pipeline",
 			isPipeline: true,
 			isGrpc:     false,
 			isMirror:   false,
-			expected:   "foo_pipeline_http",
+			expected:   "foo.pipeline_http",
 		},
 		{
 			name:       "grpc pipeline",
-			routeName:  "foo",
+			routeName:  "foo.pipeline",
 			isPipeline: true,
 			isGrpc:     true,
 			isMirror:   false,
-			expected:   "foo_pipeline_grpc",
+			expected:   "foo.pipeline_grpc",
 		},
 		{
 			name:       "http pipeline mirror",
-			routeName:  "foo",
+			routeName:  "foo.pipeline",
 			isPipeline: true,
 			isGrpc:     false,
 			isMirror:   true,
-			expected:   "foo_pipeline_http_mirror",
+			expected:   "foo.pipeline_http_mirror",
 		},
 		{
 			name:       "grpc pipeline mirror",
-			routeName:  "foo",
+			routeName:  "foo.pipeline",
 			isPipeline: true,
 			isGrpc:     true,
 			isMirror:   true,
-			expected:   "foo_pipeline_grpc_mirror",
+			expected:   "foo.pipeline_grpc_mirror",
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			routeName := getRouteName(test.routeName, test.isPipeline, test.isGrpc, test.isMirror)
+			routeName := getRouteName(test.routeName, test.isGrpc, test.isMirror)
 			g.Expect(routeName).To(Equal(test.expected))
 		})
 	}

@@ -48,7 +48,7 @@ func TestServiceReconcile(t *testing.T) {
 				GrpcServicePrefix: "",
 			},
 			overrides:        map[string]*mlopsv1alpha1.OverrideSpec{},
-			expectedSvcNames: []string{SeldonMeshSVCName, mlopsv1alpha1.SchedulerName, mlopsv1alpha1.PipelineGatewayName},
+			expectedSvcNames: []string{SeldonMeshSVCName, mlopsv1alpha1.SchedulerName},
 			expectedSvcType: map[string]v1.ServiceType{
 				SeldonMeshSVCName:                 v1.ServiceTypeLoadBalancer,
 				mlopsv1alpha1.PipelineGatewayName: "",
@@ -60,7 +60,7 @@ func TestServiceReconcile(t *testing.T) {
 				GrpcServicePrefix: "grpc-",
 			},
 			overrides:        map[string]*mlopsv1alpha1.OverrideSpec{},
-			expectedSvcNames: []string{SeldonMeshSVCName, mlopsv1alpha1.SchedulerName, mlopsv1alpha1.PipelineGatewayName},
+			expectedSvcNames: []string{SeldonMeshSVCName, mlopsv1alpha1.SchedulerName},
 			expectedSvcType: map[string]v1.ServiceType{
 				SeldonMeshSVCName:                 v1.ServiceTypeLoadBalancer,
 				mlopsv1alpha1.PipelineGatewayName: "",
