@@ -23,7 +23,6 @@ ansible-playbook playbooks/seldon-all.yaml -e @<path-to-custom-images-config.yam
 By creating multiple such config files under a separate directory, you can easily switch between
 sets of dev configurations when deploying.
 
-
 ## Minimal dev image config
 
 Say you want to use all the default images from the normal helm install, with the exception of
@@ -45,12 +44,14 @@ custom_image_config:
       tag: "pipeline-test"
 
 ```
+
 When passing the configuration file to the `seldon-all.yaml` or the `setup-seldon.yaml` ansible
 playbooks:
 
 * Two new docker images are built:
- - `seldondev/dataflow:pipeline-test`
- - `seldondev/pipelinegateway:pipeline-test`
+
+- `seldondev/dataflow:pipeline-test`
+- `seldondev/pipelinegateway:pipeline-test`
 
 * Those images get copied into the kind install
 * The installed helm-charts end up pointing to those kind-local docker images
@@ -58,17 +59,17 @@ playbooks:
   worktree)
 
 The configurable components (which you can specify in the `components` list) are:
-    - scheduler
-    - modelgateway
-    - pipelinegateway
-    - dataflow
-    - controller
-    - hodometer
-    - envoy
-    - agent
-    - rclone
-    - grafana
-    - mlserver
+- scheduler
+- modelgateway
+- pipelinegateway
+- dataflow
+- controller
+- hodometer
+- envoy
+- agent
+- rclone
+- grafana
+- mlserver
 
 It's highly recommended you configure a custom `dockerhub_user` as above. If you don't, the
 default will be `seldonio`, and depending on what tag you configure you might end up shadowing one
@@ -150,7 +151,6 @@ Please note we're no longer setting `dev_img_set` for the second element of the
 `custom_image_config` list, which indicates we're not going to build those images locally but
 try to fetch them from dockerhub.
 
-
 ## Using non-dev images from private registries
 
 If you would like to fetch some of the components from private registries:
@@ -173,7 +173,7 @@ custom_image_config:
       - mlserver
     repository_img_prefix: ""
     image:
-      registry: [...pkg.dev/dev-seldon-registry/mlserver]
+      registry: [ ...pkg.dev/dev-seldon-registry/mlserver ]
       tag: 1.4.0.rc9
 
 custom_image_pull_secrets:
@@ -215,7 +215,6 @@ its key in JSON format. Authenticate the docker CLI with this key, i.e:
 then configure the dockerconfigjson property in `custom_image_pull_secrets` with the resulting
 docker config.json (the default path is the one set above, `~/.docker/config.json`)
 
-
 ## Configuring secrets to be installed into kind
 
 Sometimes, you might want your kind install to contain secrets. It's possible to automatically
@@ -225,13 +224,13 @@ create those secrets via ansible by defining them in the `custom_secrets` top-le
 # ... other component configs
 
 custom_secrets:
-    - name: my-secret
-      template: "~/local/path/to/my-secret.yaml.j2"
-      namespaces:
-        - "seldon-mesh"
-        - "default"
-    - name: top-secret
-      template: "~/local/path/to/top-secret.yaml.j2"
+  - name: my-secret
+    template: "~/local/path/to/my-secret.yaml.j2"
+    namespaces:
+      - "seldon-mesh"
+      - "default"
+  - name: top-secret
+    template: "~/local/path/to/top-secret.yaml.j2"
 ```
 
 The template is a normal k8s secret yaml (as you would write to create a secret via kubectl)
@@ -301,13 +300,13 @@ You can now load a model into kind with `storageUri` pointing to `/mnt/local-mod
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Model
 metadata:
-    name: iris
-    namespace: seldon-mesh
+  name: iris
+  namespace: seldon-mesh
 spec:
-    storageUri: "/mnt/local-models/iris"
-    requirements:
+  storageUri: "/mnt/local-models/iris"
+  requirements:
     - sklearn
-    memory: 100Ki
+  memory: 100Ki
 ```
 
 ## Complex component configurations
@@ -364,7 +363,7 @@ custom_components_values:
       sasl:
         mechanism: OAUTHBEARER
         client:
-            secret: kafka-oauth
+          secret: kafka-oauth
       ssl:
         client:
           secret:
@@ -399,21 +398,21 @@ confluent-cloud broker, set up consumer/producer properties as well as broker op
 config references a k8s secret name, so wer're also creating that secret in kind from a local
 template file.
 
-
 ## Detailed description of available options and defaults
 
 ### Override any of the seldon ansible playbook variables
 
 Example:
+
 ```yaml
 install_kafka: false
 configure_kafka: false
 ```
 
-
 ### seldon_dev
 
 The `seldon_dev` dictionary holds dev options relating to
+
 - image building & deployment into a kind k8s custer
 - saving the current customisation as a helm values file for reuse outside ansible
 
@@ -448,6 +447,7 @@ The following keys may be configured:
                                         Path & filename for saving helm value overrides
 
 Example:
+
 ```yaml
 seldon_dev:
   dockerhub_user: seldondev
@@ -465,10 +465,11 @@ or referring to local dev sources.
 Any components not specified will be deployed with their default setup.
 
 This is a list, where each item is a dictionary with the following keys:
+
 - dev_img_set : [optional, default: false]
-                Whether the components listed in `components` are to be considered local dev
-                images that should be built & deployed (when true) or pre-built images to be
-                fetched externally (when false)
+  Whether the components listed in `components` are to be considered local dev
+  images that should be built & deployed (when true) or pre-built images to be
+  fetched externally (when false)
 
                 If `seldon_dev.build_skip_existing_images` is true, `dev_img_set is true` and
                 an image with the given tag is not present amongst the local docker images for
@@ -479,27 +480,28 @@ This is a list, where each item is a dictionary with the following keys:
                 rebuilt even if local docker images with the same tag already exist.
 
 - components: [required, default: []]
-            List of components with a common image customisation. Possible list items are:
-            - hodometer
-            - modelgateway
-            - pipelinegateway
-            - dataflow
-            - controller
-            - envoy
-            - scheduler
-            - mlserver
-            - triton (supported with `dev_img_set: false` only)
-            - rclone
-            - agent
+  List of components with a common image customisation. Possible list items are:
+  - hodometer
+  - modelgateway
+  - pipelinegateway
+  - dataflow
+  - controller
+  - envoy
+  - scheduler
+  - mlserver
+  - triton (supported with `dev_img_set: false` only)
+  - rclone
+  - agent
 
 - image: [optional] the keys to overwrite in the existing "image" helm-chart values for each
-        component in the `components` list
+  component in the `components` list
 
 - repository_img_prefix: [optional, default: `seldon_dev.dockerhub_user`]
-                        The repository prefix that should be applied to the docker image
-                        name. Typically the dockerhub user.
+  The repository prefix that should be applied to the docker image
+  name. Typically the dockerhub user.
 
 Example:
+
 ```yaml
 custom_image_config:
 
@@ -508,8 +510,8 @@ custom_image_config:
       - dataflow
     image:
       tag: "dev.seldon.df-test"   # when dev_img_set is true, an image with this tag is built
-                                  # locally as `[seldon_dev.dockerhub_user]/[component-name]:
-                                  # dev.seldon.df-test` for each of the listed components
+        # locally as `[seldon_dev.dockerhub_user]/[component-name]:
+      # dev.seldon.df-test` for each of the listed components
 
   - dev_img_set: true
     components:
@@ -519,25 +521,25 @@ custom_image_config:
       - controller
     image:
       tag: "dev.seldon.core-test" # different set of components can be built locally with
-                                  # a different tag
+      # a different tag
   - components:
       - hodometer
       - envoy
     repository_img_prefix: "seldonio"  # use upstream images for those components, namely
-                                       # seldonio/[component-name]:latest
+    # seldonio/[component-name]:latest
   - components:
       - agent
     image:
       tag: "2.7.0"
     repository_img_prefix: "seldonio"  # use upstream image for this component, with custom tag
-                                       # seldonio/[component-name]:2.7.0
+    # seldonio/[component-name]:2.7.0
   - components:
       - mlserver
     repository_img_prefix: ""
     image:
       registry: private-registry/mlserver  # image from private-registry. also configure
-                                           # `custom_image_pull_secrets` to ensure that k8s has
-                                           # access to the right secret for pulling this image
+        # `custom_image_pull_secrets` to ensure that k8s has
+      # access to the right secret for pulling this image
       tag: 1.4.0.rc9
 ```
 
@@ -555,6 +557,7 @@ with OAUTH authentication. Typically this will also require setting a secret con
 authentication details (see `custom_secrets` below):
 
 Example:
+
 ```yaml
  custom_components_values:
    kafka:
@@ -572,14 +575,13 @@ Example:
        sasl:
          mechanism: OAUTHBEARER
          client:
-             secret: kafka-oauth
+           secret: kafka-oauth
        ssl:
          client:
            secret:
            brokerValidationSecret:
            endpointIdentificationAlgorithm: https
 ```
-
 
 ### custom_runtime_values
 
@@ -590,9 +592,11 @@ configuration options
 The example below sets a preloaded secret to be added to the `seldon-agent` ConfigMap, so
 that all the inference servers managed by the runtime have access to a GCS bucket.
 Typically this will also require setting a secret containing service account details (see
-`custom_secrets` below; also refer to the [documentation](https://docs.seldon.io/projects/seldon-core/en/v2/contents/kubernetes/storage-secrets/index.html#preloaded-secrets]):
+`custom_secrets` below; also refer to
+the [documentation](https://docs.seldon.io/projects/seldon-core/en/v2/contents/kubernetes/storage-secrets/index.html#preloaded-secrets]):
 
 Example:
+
 ```yaml
 custom_runtime_values:
   config:
@@ -601,7 +605,6 @@ custom_runtime_values:
         configSecrets:
           - gcs-buckets
 ```
-
 
 ### custom_servers_values
 
@@ -612,6 +615,7 @@ configuration options
 The example below sets the initial number of mlserver and triton inference server replicas:
 
 Example:
+
 ```yaml
 custom_servers_values:
   mlserver:
@@ -619,7 +623,6 @@ custom_servers_values:
   triton:
     replicas: 0
 ```
-
 
 ### custom_image_repository
 
@@ -630,21 +633,21 @@ Set the core component to registry name mapping here; The defaults are the ones 
 for reference.
 
 Example:
+
 ```yaml
 
- custom_image_repository:
-   hodometer: "seldon-hodometer"
-   modelgateway: "seldon-modelgateway"
-   pipelinegateway: "seldon-pipelinegateway"
-   dataflow: "seldon-dataflow-engine"
-   controller: "seldonv2-controller"
-   envoy: "seldon-envoy"
-   scheduler: "seldon-scheduler"
-   rclone: "seldon-rclone"
-   agent: "seldon-agent"
-   mlserver: "mlserver"
+custom_image_repository:
+  hodometer: "seldon-hodometer"
+  modelgateway: "seldon-modelgateway"
+  pipelinegateway: "seldon-pipelinegateway"
+  dataflow: "seldon-dataflow-engine"
+  controller: "seldonv2-controller"
+  envoy: "seldon-envoy"
+  scheduler: "seldon-scheduler"
+  rclone: "seldon-rclone"
+  agent: "seldon-agent"
+  mlserver: "mlserver"
 ```
-
 
 ### custom_image_pull_secrets
 
@@ -659,6 +662,7 @@ its key in JSON format. Authenticate the docker CLI with this key, i.e:
 then configure the `dockerconfigjson` property with the resulting docker config.json
 
 Example:
+
 ```yaml
 custom_image_pull_secrets:
   name: private-registry
@@ -673,22 +677,23 @@ of the deployment.
 Each element of the list is a dictionary containing the following items:
 
 - name: [mandatory]
-        the name of the secret
+  the name of the secret
 - template: [mandatory]
-            path to a file containing the secret template (yaml, no need to specify name
-            and namespace)
+  path to a file containing the secret template (yaml, no need to specify name
+  and namespace)
 - namespaces: [optional, default:[{{ seldon_mesh_namespace }}]]
-                list of namespaces to which this secret should be added to
+  list of namespaces to which this secret should be added to
 
 An example below assuming you want to use the same secret name as one defined somewhere
 in the custom_components_values variable :
 
 Example:
+
 ```yaml
 custom_secrets:
   - name: "{{ custom_components_values.security.kafka.sasl.client.secret }}"
     template: "[path-to-secrets-template.yaml]"
     namespaces:
-        - "my-namespace-1"
-        - "my-namespace-2"
+      - "my-namespace-1"
+      - "my-namespace-2"
 ```
