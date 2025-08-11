@@ -796,6 +796,57 @@ func TestChatCompletionsResponse(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "local-response",
+			oipResponse: map[string]interface{}{
+				"id":         "aa65a0ac-6aea-4284-9e55-7c74e299390e",
+				"model_name": "local-chat-completions",
+				"outputs": []map[string]interface{}{
+					{
+						"name":     "role",
+						"datatype": "BYTES",
+						"shape":    []int{1, 1},
+						"data":     []string{"assistant"},
+						"parameters": map[string]interface{}{
+							"content_type": "str",
+						},
+					},
+					{
+						"name":     "content",
+						"datatype": "BYTES",
+						"shape":    []int{1, 1},
+						"data":     []string{"Hello! How can I assist you today?"},
+						"parameters": map[string]interface{}{
+							"content_type": "str",
+						},
+					},
+					{
+						"name":     "type",
+						"datatype": "BYTES",
+						"shape":    []int{1, 1},
+						"data":     []string{"text"},
+						"parameters": map[string]interface{}{
+							"content_type": "str",
+						},
+					},
+				},
+			},
+			expectedOpenAIResponse: map[string]interface{}{
+				"id":      "aa65a0ac-6aea-4284-9e55-7c74e299390e",
+				"model":   "local-chat-completions",
+				"created": 0, // Local responses do not have a created
+				"object":  "chat.completion",
+				"choices": []map[string]interface{}{
+					{
+						"index": 0,
+						"message": map[string]interface{}{
+							"content": "Hello! How can I assist you today?",
+							"role":    "assistant",
+						},
+					},
+				},
+			},
+		},
 	}
 
 	logger := log.New().WithField("Source", "HTTPProxy")
