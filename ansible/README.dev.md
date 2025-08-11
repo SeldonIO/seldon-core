@@ -241,8 +241,8 @@ apiVersion: v1
 kind: Secret
 type: Opaque
 stringData:
-  method: OIDC
-  client_id: a-secret-client-id
+  method: "OIDC"
+  client_id: "a-secret-client-id"
 ```
 
 ## Mounting local (host) path into the rclone container of a Server pod
@@ -510,7 +510,7 @@ custom_image_config:
       - dataflow
     image:
       tag: "dev.seldon.df-test"   # when dev_img_set is true, an image with this tag is built
-        # locally as `[seldon_dev.dockerhub_user]/[component-name]:
+      # locally as `[seldon_dev.dockerhub_user]/[component-name]:
       # dev.seldon.df-test` for each of the listed components
 
   - dev_img_set: true
@@ -538,7 +538,7 @@ custom_image_config:
     repository_img_prefix: ""
     image:
       registry: private-registry/mlserver  # image from private-registry. also configure
-        # `custom_image_pull_secrets` to ensure that k8s has
+      # `custom_image_pull_secrets` to ensure that k8s has
       # access to the right secret for pulling this image
       tag: 1.4.0.rc9
 ```
