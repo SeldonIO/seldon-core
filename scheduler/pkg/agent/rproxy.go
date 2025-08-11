@@ -213,12 +213,17 @@ func (rp *reverseHTTPProxy) Start() error {
 		Addr:      ":" + strconv.Itoa(int(rp.servicePort)),
 		Handler:   rp.addHandlers(proxy),
 		TLSConfig: tlsConfig,
+		BaseContext: func(net.Listener) context.Context {
+			// BaseContext is called once the server has spun up and is accepting connections
+			rp.mu.Lock()
+			rp.serverReady = true
+			rp.mu.Unlock()
+			return context.Background()
+		},
 	}
+
 	// TODO: check for errors? we rely for now on Ready
 	go func() {
-		rp.mu.Lock()
-		rp.serverReady = true
-		rp.mu.Unlock()
 		if rp.tlsOptions.TLS {
 			err := rp.server.ListenAndServeTLS("", "")
 			rp.logger.WithError(err).Info("HTTPS/REST reverse proxy debug service stopped")
@@ -230,6 +235,7 @@ func (rp *reverseHTTPProxy) Start() error {
 		rp.serverReady = false
 		rp.mu.Unlock()
 	}()
+
 	return nil
 }
 
