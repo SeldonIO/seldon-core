@@ -519,8 +519,6 @@ func (am *AgentServiceManager) handleSchedulerSubscription() error {
 	logger := am.logger.WithField("func", "handleSchedulerSubscription")
 	logger.Info("Call subscribe to scheduler")
 
-	defer am.isStartup.Store(true)
-
 	grpcClient := agent_pb.NewAgentServiceClient(am.schedulerConn)
 
 	// Connect to the scheduler for server-side streaming
