@@ -118,36 +118,6 @@ func constructEmbeddingsInferenceRequest(input []string, llmParams map[string]in
 	}
 }
 
-func extractEmbeddingVectorsFromResponse(outputs []interface{}) ([][]float64, error) {
-	// Extract the embedding tensor from the inference response
-	tensor, err := translator.ExtractTensorByName(outputs, embeddingKey)
-	if err != nil {
-		return nil, err
-	}
-
-	data, ok := tensor[translator.DataKey].([]interface{})
-	if !ok {
-		return nil, fmt.Errorf("`%s` field not found or not an array in output tensor %s", translator.DataKey, embeddingKey)
-	}
-
-	shape, ok := tensor[translator.ShapeKey].([]int)
-	if !ok && len(shape) != 2 {
-		return nil, fmt.Errorf("`%s` field not found or not a 2D array in output tensor %s", translator.ShapeKey, embeddingKey)
-	}
-
-	rows, cols := shape[0], shape[1]
-	vectors := make([][]float64, len(data))
-
-	for i := 0; i < rows; i++ {
-		floatVector := make([]float64, cols)
-		for j := 0; j < cols; j++ {
-			floatVector[j] = data[i*cols+j].(float64)
-		}
-		vectors[i] = floatVector
-	}
-	return vectors, nil
-}
-
 func parseOutputEmbeddings(outputs []interface{}, modelName string) (string, error) {
 	tensor, err := translator.ExtractTensorByName(outputs, embeddingKey)
 	if err != nil {
