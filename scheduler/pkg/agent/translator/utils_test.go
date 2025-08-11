@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	log "github.com/sirupsen/logrus"
 )
 
 func TestTrimPathAfterInfer(t *testing.T) {
@@ -332,10 +331,9 @@ func TestCheckModelsMatch(t *testing.T) {
 		},
 	}
 
-	logger := log.New().WithField("test", "CheckModelsMatch")
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := CheckModelsMatch(test.jsonBody, test.path, logger)
+			err := CheckModelsMatch(test.jsonBody, test.path)
 			if test.expectErr {
 				g.Expect(err).NotTo(BeNil(), "expected an error but got none")
 			} else {

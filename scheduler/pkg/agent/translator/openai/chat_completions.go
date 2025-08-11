@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"reflect"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/translator"
 )
 
@@ -31,32 +29,29 @@ const (
 	llmParametersKey     = "llm_parameters"
 )
 
-func (t *OpenAIChatCompletionsTranslator) TranslateToOIP(req *http.Request, logger log.FieldLogger) (*http.Request, error) {
+func (t *OpenAIChatCompletionsTranslator) TranslateToOIP(req *http.Request) (*http.Request, error) {
 	// Convert OpenAI API request to JSON
-	jsonBody, err := translator.ConvertRequestToJsonBody(req, logger)
+	jsonBody, err := translator.ConvertRequestToJsonBody(req)
 	if err != nil {
-		logger.WithError(err).Error("Failed to convert OpenAI API request to JSON body")
 		return nil, err
 	}
 
 	// Check if model name matches the one in the request path
-	err = translator.CheckModelsMatch(jsonBody, req.URL.Path, logger)
+	err = translator.CheckModelsMatch(jsonBody, req.URL.Path)
 	if err != nil {
-		logger.WithError(err).Error("Model name mismatch in OpenAI API request")
 		return nil, err
 	}
 
 	// Parse messages from the request body
-	messages, err := getMessages(jsonBody, logger)
+	messages, err := getMessages(jsonBody)
 	if err != nil {
-		logger.WithError(err).Error("Failed to parse messages in OpenAI API request")
 		return nil, err
 	}
 
 	// Prepare tools
-	tools := getTools(jsonBody, logger)
-	parallelToolCalls := getParallelToolCalls(jsonBody, logger)
-	toolChoice := getToolChoice(jsonBody, logger)
+	tools := getTools(jsonBody)
+	parallelToolCalls := getParallelToolCalls(jsonBody)
+	toolChoice := getToolChoice(jsonBody)
 
 	// Prepare LLM parameters
 	llm_parameters := getLLMParameters(jsonBody)
@@ -64,20 +59,52 @@ func (t *OpenAIChatCompletionsTranslator) TranslateToOIP(req *http.Request, logg
 	// Construct the OIP formated input request
 	inferenceRequest, err := constructChatCompletionInferenceRequest(messages, tools, parallelToolCalls, toolChoice, llm_parameters)
 	if err != nil {
-		logger.WithError(err).Error("Failed to construct inference request")
 		return nil, err
 	}
 
 	// Construct new request
-	return translator.ConvertInferenceRequestToHttpRequest(inferenceRequest, req, logger)
+	return translator.ConvertInferenceRequestToHttpRequest(inferenceRequest, req)
 }
 
-func getTools(jsonBody map[string]interface{}, logger log.FieldLogger) []interface{} {
+func (t *OpenAIChatCompletionsTranslator) TranslateFromOIP(res *http.Response) (*http.Response, error) {
+	httpRespones, err := t.BaseTranslator.TranslateFromOIP(res)
+	if err == nil {
+		return httpRespones, nil
+	}
+
+	jsonBody, isGzipped, err := translator.DecompressIfNeededAndConvertToJSON(res)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decompress and parse the response: %w", err)
+	}
+
+	outputs, ok := jsonBody[translator.OutputsKey].([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("`%s` field not found or not an array in the response", translator.OutputsKey)
+	}
+
+	id, ok := jsonBody["id"].(string)
+	if !ok {
+		return nil, fmt.Errorf("`id` field not found or not a string in the response")
+	}
+
+	modelName, ok := jsonBody["model_name"].(string)
+	if !ok {
+		return nil, fmt.Errorf("`model_name` field not found or not a string in the response")
+	}
+
+	content, err := parseOuputChatCompletion(outputs, id, modelName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse chat completion response: %w", err)
+	}
+	return translator.CreateResponseFromContent(content, res.StatusCode, res.Header, isGzipped)
+}
+
+func getTools(jsonBody map[string]interface{}) []interface{} {
 	tools, _ := jsonBody[toolsKey].([]interface{})
 	return tools
 }
 
-func getParallelToolCalls(jsonBody map[string]interface{}, logger log.FieldLogger) []interface{} {
+func getParallelToolCalls(jsonBody map[string]interface{}) []interface{} {
 	parallelToolCalls, ok := jsonBody[parallelToolCallsKey]
 	if !ok {
 		return []interface{}{}
@@ -85,12 +112,48 @@ func getParallelToolCalls(jsonBody map[string]interface{}, logger log.FieldLogge
 	return []interface{}{parallelToolCalls}
 }
 
-func getToolChoice(jsonBody map[string]interface{}, logger log.FieldLogger) []interface{} {
+func getToolChoice(jsonBody map[string]interface{}) []interface{} {
 	toolChoice, ok := jsonBody[toolChoiceKey]
 	if !ok {
 		return []interface{}{}
 	}
 	return []interface{}{toolChoice}
+}
+
+func parseOuputChatCompletion(outputs []interface{}, id string, modelName string) (string, error) {
+	role, err := translator.ExtractTensorContentFromResponse(outputs, roleKey)
+	if err != nil {
+		return "", err
+	}
+
+	content, err := translator.ExtractTensorContentFromResponse(outputs, contentKey)
+	if err != nil {
+		return "", err
+	}
+
+	// construct the OpenAI API response
+	response := map[string]interface{}{
+		"id":      id,
+		"model":   modelName,
+		"created": 0,
+		"object":  "chat.completion",
+		"choices": []map[string]interface{}{
+			{
+				"index": 0,
+				"message": map[string]interface{}{
+					"content": content,
+					"role":    role,
+				},
+			},
+		},
+	}
+
+	// convert the response to JSON
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal OpenAI API response: %w", err)
+	}
+	return string(jsonResponse), nil
 }
 
 type Messages struct {
@@ -170,7 +233,7 @@ func getContentAndType(msgMap map[string]interface{}) ([]string, []string, error
 	}
 }
 
-func getToolCalls(msgMap map[string]interface{}, logger log.FieldLogger) ([]string, error) {
+func getToolCalls(msgMap map[string]interface{}) ([]string, error) {
 	tcRaw, ok := msgMap[toolCallsKey]
 	if !ok {
 		return []string{}, nil
@@ -192,7 +255,7 @@ func getToolCalls(msgMap map[string]interface{}, logger log.FieldLogger) ([]stri
 	return nil, fmt.Errorf("field '%s' is not a slice", toolCallsKey)
 }
 
-func getMessages(jsonBody map[string]interface{}, logger log.FieldLogger) (*Messages, error) {
+func getMessages(jsonBody map[string]interface{}) (*Messages, error) {
 	messagesList, ok := jsonBody[messagesKey].([]interface{})
 	if !ok {
 		return nil, fmt.Errorf("`%s` field not found or not an array", messagesKey)
@@ -223,7 +286,7 @@ func getMessages(jsonBody map[string]interface{}, logger log.FieldLogger) (*Mess
 		messages.Type[i] = contentType
 
 		// Get tool calls from the message map
-		messages.ToolCalls[i], err = getToolCalls(msgMap, logger)
+		messages.ToolCalls[i], err = getToolCalls(msgMap)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get tool calls in message %d: %v", i, err)
 		}
