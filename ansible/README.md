@@ -124,21 +124,22 @@ ansible-playbook playbooks/setup-ecosystem.yaml -e full_install=no -e install_ka
 
 will only install Kafka when setting up the ecosystem.
 
-|                         | type   | default                       | comment                                                        |
-|-------------------------|--------|-------------------------------|----------------------------------------------------------------|
-| seldon_mesh_namespace   | string | seldon-mesh                   | namespace to install Seldon Core 2                             |
-| seldon_kafka_namespace  | string | seldon-mesh                   | namespace to install Kafka Cluster for Seldon Core 2           |
-| full_install            | bool   | yes                           | enables full ecosystem installation                            |
-| install_kafka           | bool   | `{{ full_install }}`          | installs Strimzi Kafka Operator                                |
-| install_prometheus      | bool   | `{{ full_install }}`          | installs Prometheus Operator                                   |
-| install_grafana         | bool   | `{{ full_install }}`          | installs Grafana Operator                                      |
-| install_certmanager     | bool   | `{{ full_install }}`          | installs Cert Manager                                          |
-| install_jaeger          | bool   | `{{ full_install }}`          | installs Jaeger                                                |
-| install_opentelemetry   | bool   | `{{ full_install }}`          | installs OpenTelemetry                                         |
-| configure_kafka         | bool   | `{{ install_kafka }}`         | configures Kafka Cluster for Seldon Core 2                     |
-| configure_prometheus    | bool   | `{{ install_prometheus }}`    | configure Prometheus using Seldon Core 2 specific resources    |
-| configure_jaeger        | bool   | `{{ install_jaeger }}`        | configure Jaeger using Seldon Core 2 specific resources        |
-| configure_opentelemetry | bool   | `{{ install_opentelemetry }}` | configure OpenTelemetry using Seldon Core 2 specific resources |
+|                         | type   | default                         | comment                                                        |
+|-------------------------|--------|---------------------------------|----------------------------------------------------------------|
+| seldon_mesh_namespace   | string | seldon-mesh                     | namespace to install Seldon Core 2                             |
+| seldon_kafka_namespace  | string | seldon-mesh                     | namespace to install Kafka Cluster for Seldon Core 2           |
+| full_install            | bool   | yes                             | enables full ecosystem installation                            |
+| install_kafka           | bool   | `{{ full_install }}`            | installs Strimzi Kafka Operator                                |
+| install_prometheus      | bool   | `{{ full_install }}`            | installs Prometheus Operator                                   |
+| install_grafana         | bool   | `{{ full_install }}`            | installs Grafana Operator                                      |
+| install_certmanager     | bool   | `{{ full_install }}`            | installs Cert Manager                                          |
+| install_jaeger          | bool   | `{{ full_install }}`            | installs Jaeger                                                |
+| install_opentelemetry   | bool   | `{{ full_install }}`            | installs OpenTelemetry                                         |
+| configure_kafka         | bool   | `{{ install_kafka }}`           | configures Kafka Cluster for Seldon Core 2                     |
+| configure_prometheus    | bool   | `{{ install_prometheus }}`      | configure Prometheus using Seldon Core 2 specific resources    |
+| configure_jaeger        | bool   | `{{ install_jaeger }}`          | configure Jaeger using Seldon Core 2 specific resources        |
+| configure_opentelemetry | bool   | `{{ install_opentelemetry }}`   | configure OpenTelemetry using Seldon Core 2 specific resources |
+| install_schema_registry | bool   | `{{ install_schema_registry }}` | installs Schema Registry                                       |
 
 ### Seldon Core 2 configuration options
 
