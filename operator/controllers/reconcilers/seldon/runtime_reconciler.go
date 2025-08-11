@@ -80,7 +80,7 @@ func validateScaleSpec(
 	runtime *mlopsv1alpha1.SeldonRuntime,
 	commonConfig common.ReconcilerConfig,
 	namespace *string,
-	envVar string,
+	maxConsumersEnvName string,
 	defaultMaxConsumers int32,
 	eventReason string,
 	resourceListObj client.ObjectList,
@@ -105,14 +105,14 @@ func validateScaleSpec(
 	}
 
 	var maxConsumers int32 = defaultMaxConsumers
-	if envVar != "" {
-		envValue := getEnvVarValue(component.PodSpec, envVar, "")
-		maxConsumers, err = ParseInt32(envValue, defaultMaxConsumers)
+	if maxConsumersEnvName != "" {
+		maxConsumersEnv := getEnvVarValue(component.PodSpec, maxConsumersEnvName, "")
+		maxConsumers, err = ParseInt32(maxConsumersEnv, defaultMaxConsumers)
 		if err != nil {
-			return fmt.Errorf("failed to parse %s: %w", envVar, err)
+			return fmt.Errorf("failed to parse %s: %w", maxConsumersEnvName, err)
 		}
 		if maxConsumers == 0 {
-			return fmt.Errorf("invalid %s value: %s", envVar, envValue)
+			return fmt.Errorf("invalid %s value: %s", maxConsumersEnvName, maxConsumersEnv)
 		}
 	}
 
@@ -123,7 +123,10 @@ func validateScaleSpec(
 			runtime,
 			v1.EventTypeWarning,
 			eventReason,
-			fmt.Sprintf("%s replicas adjusted to %d based on KafkaConfig and resource count", component.Name, maxReplicas),
+			fmt.Sprintf(
+				"%s requested replicas exceeded maximum of %d based on KafkaConfig and resource count, adjusted to %d",
+				component.Name, maxReplicas, maxReplicas,
+			),
 		)
 	}
 
