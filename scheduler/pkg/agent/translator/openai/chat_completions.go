@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/translator"
 )
@@ -66,6 +67,11 @@ func (t *OpenAIChatCompletionsTranslator) TranslateToOIP(req *http.Request) (*ht
 	return translator.ConvertInferenceRequestToHttpRequest(inferenceRequest, req)
 }
 
+func isServerSentEventStream(resp *http.Response) bool {
+	contentType := resp.Header.Get("Content-Type")
+	return strings.HasPrefix(contentType, "text/event-stream")
+}
+
 func (t *OpenAIChatCompletionsTranslator) TranslateFromOIP(res *http.Response) (*http.Response, error) {
 	httpRespones, err := t.BaseTranslator.TranslateFromOIP(res)
 	if err == nil {
@@ -92,11 +98,14 @@ func (t *OpenAIChatCompletionsTranslator) TranslateFromOIP(res *http.Response) (
 		return nil, fmt.Errorf("`model_name` field not found or not a string in the response")
 	}
 
-	content, err := parseOuputChatCompletion(outputs, id, modelName)
+	content, err := parseOuputChatCompletion(outputs, id, modelName, isServerSentEventStream(res))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
-	return translator.CreateResponseFromContent(content, res.StatusCode, res.Header, isGzipped)
+
+	return translator.CreateResponseFromContent(
+		content, res.StatusCode, res.Header, isGzipped,
+	)
 }
 
 func getTools(jsonBody map[string]interface{}) []interface{} {
@@ -120,7 +129,7 @@ func getToolChoice(jsonBody map[string]interface{}) []interface{} {
 	return []interface{}{toolChoice}
 }
 
-func parseOuputChatCompletion(outputs []interface{}, id string, modelName string) (string, error) {
+func parseOuputChatCompletion(outputs []interface{}, id string, modelName string, isStream bool) (string, error) {
 	role, err := translator.ExtractTensorContentFromResponse(outputs, roleKey)
 	if err != nil {
 		return "", err
@@ -132,20 +141,39 @@ func parseOuputChatCompletion(outputs []interface{}, id string, modelName string
 	}
 
 	// construct the OpenAI API response
-	response := map[string]interface{}{
-		"id":      id,
-		"model":   modelName,
-		"created": 0,
-		"object":  "chat.completion",
-		"choices": []map[string]interface{}{
-			{
-				"index": 0,
-				"message": map[string]interface{}{
-					"content": content,
-					"role":    role,
+	var response map[string]interface{}
+	if isStream {
+		response = map[string]interface{}{
+			"id":      id,
+			"model":   modelName,
+			"created": 0,
+			"object":  "chat.completion.chunk",
+			"choices": []map[string]interface{}{
+				{
+					"index": 0,
+					"delta": map[string]interface{}{
+						"role":    role,
+						"content": content,
+					},
 				},
 			},
-		},
+		}
+	} else {
+		response = map[string]interface{}{
+			"id":      id,
+			"model":   modelName,
+			"created": 0,
+			"object":  "chat.completion",
+			"choices": []map[string]interface{}{
+				{
+					"index": 0,
+					"message": map[string]interface{}{
+						"content": content,
+						"role":    role,
+					},
+				},
+			},
+		}
 	}
 
 	// convert the response to JSON
