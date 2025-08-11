@@ -94,7 +94,7 @@ func (t *OpenAIChatCompletionsTranslator) TranslateFromOIP(res *http.Response) (
 
 	content, err := parseOuputChatCompletion(outputs, id, modelName)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse chat completion response: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 	return translator.CreateResponseFromContent(content, res.StatusCode, res.Header, isGzipped)
 }
