@@ -62,9 +62,9 @@ func (t *OpenAIEmbeddingsTranslator) TranslateFromOIP(res *http.Response) (*http
 		return nil, fmt.Errorf("`%s` field not found or not an array in the response", translator.OutputsKey)
 	}
 
-	content, err := parseOutputEmbeddings(outputs, jsonBody["id"].(string), jsonBody["model"].(string))
+	content, err := parseOutputEmbeddings(outputs, jsonBody["model"].(string))
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse chat completion response: %w", err)
+		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 	return translator.CreateResponseFromContent(content, res.StatusCode, res.Header, isGzipped)
 }
@@ -130,44 +130,58 @@ func extractEmbeddingVectorsFromResponse(outputs []interface{}) ([][]float64, er
 		return nil, fmt.Errorf("`%s` field not found or not an array in output tensor %s", translator.DataKey, embeddingKey)
 	}
 
-	vectors := make([][]float64, len(data))
-	for i, item := range data {
-		vector, ok := item.([]interface{})
-		if !ok {
-			return nil, fmt.Errorf("item %d in `%s` field of output tensor %s is not an array", i, translator.DataKey, embeddingKey)
-		}
+	shape, ok := tensor[translator.ShapeKey].([]int)
+	if !ok && len(shape) != 2 {
+		return nil, fmt.Errorf("`%s` field not found or not a 2D array in output tensor %s", translator.ShapeKey, embeddingKey)
+	}
 
-		floatVector := make([]float64, len(vector))
-		for j, value := range vector {
-			floatValue, ok := value.(float64)
-			if !ok {
-				return nil, fmt.Errorf("item %d in `%s` field of output tensor %s is not a float64", j, translator.DataKey, embeddingKey)
-			}
-			floatVector[j] = floatValue
+	rows, cols := shape[0], shape[1]
+	vectors := make([][]float64, len(data))
+
+	for i := 0; i < rows; i++ {
+		floatVector := make([]float64, cols)
+		for j := 0; j < cols; j++ {
+			floatVector[j] = data[i*cols+j].(float64)
 		}
 		vectors[i] = floatVector
 	}
 	return vectors, nil
 }
 
-func parseOutputEmbeddings(outputs []interface{}, id string, modelName string) (string, error) {
-	embeddings, err := extractEmbeddingVectorsFromResponse(outputs)
+func parseOutputEmbeddings(outputs []interface{}, modelName string) (string, error) {
+	tensor, err := translator.ExtractTensorByName(outputs, embeddingKey)
 	if err != nil {
 		return "", err
 	}
 
-	data := make([]map[string]interface{}, 0, len(outputs))
-	for i, embedding := range embeddings {
-		data = append(data, map[string]interface{}{
+	data, ok := tensor[translator.DataKey].([]interface{})
+	if !ok {
+		return "", fmt.Errorf("`%s` field not found or not an array in output tensor %s", translator.DataKey, embeddingKey)
+	}
+
+	shape, ok := tensor[translator.ShapeKey].([]interface{})
+	if !ok || len(shape) != 2 {
+		return "", fmt.Errorf("`%s` field not found or not a 2D array in output tensor %s", translator.ShapeKey, embeddingKey)
+	}
+
+	rows, cols := int(shape[0].(float64)), int(shape[1].(float64))
+	openAIData := make([]map[string]interface{}, 0, len(outputs))
+
+	for i := 0; i < rows; i++ {
+		floatVector := make([]float64, cols)
+		for j := 0; j < cols; j++ {
+			floatVector[j] = data[i*cols+j].(float64)
+		}
+		openAIData = append(openAIData, map[string]interface{}{
 			"object":    "embedding",
-			"embedding": embedding,
+			"embedding": floatVector,
 			"index":     i,
 		})
 	}
 
 	response := map[string]interface{}{
 		"object": "list",
-		"data":   data,
+		"data":   openAIData,
 		"model":  modelName,
 	}
 
