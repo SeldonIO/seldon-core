@@ -16,6 +16,7 @@ type BaseTranslator struct{}
 
 const (
 	DataKey      = "data"
+	ShapeKey     = "shape"
 	OutputsKey   = "outputs"
 	OutputAllKey = "output_all"
 )
