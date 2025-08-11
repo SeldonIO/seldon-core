@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/translator"
 )
 
@@ -50,25 +48,22 @@ func constructImagesGenerationsRequest(prompt []string, llmParams map[string]int
 	}
 }
 
-func (t *OpenAIImagesGenerationsTranslator) TranslateToOIP(req *http.Request, logger log.FieldLogger) (*http.Request, error) {
+func (t *OpenAIImagesGenerationsTranslator) TranslateToOIP(req *http.Request) (*http.Request, error) {
 	// Convert OpenAI API request to JSON
-	jsonBody, err := translator.ConvertRequestToJsonBody(req, logger)
+	jsonBody, err := translator.ConvertRequestToJsonBody(req)
 	if err != nil {
-		logger.WithError(err).Error("Failed to convert OpenAI API request to JSON body")
 		return nil, err
 	}
 
 	// Check if model name matches the one in the request path
-	err = translator.CheckModelsMatch(jsonBody, req.URL.Path, logger)
+	err = translator.CheckModelsMatch(jsonBody, req.URL.Path)
 	if err != nil {
-		logger.WithError(err).Error("Model name mismatch in OpenAI API request")
 		return nil, err
 	}
 
 	// Read the prompt field to be used for image generation
 	prompt, err := getPrompt(jsonBody)
 	if err != nil {
-		logger.WithError(err).Error("Failed to get input field from OpenAI request body")
 		return nil, err
 	}
 
@@ -79,5 +74,5 @@ func (t *OpenAIImagesGenerationsTranslator) TranslateToOIP(req *http.Request, lo
 	inferenceRequest := constructImagesGenerationsRequest(prompt, llmParams)
 
 	// Construct new request
-	return translator.ConvertInferenceRequestToHttpRequest(inferenceRequest, req, logger)
+	return translator.ConvertInferenceRequestToHttpRequest(inferenceRequest, req)
 }

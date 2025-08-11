@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	log "github.com/sirupsen/logrus"
 )
 
 func TestEmbeddingsRequest(t *testing.T) {
@@ -46,9 +45,7 @@ func TestEmbeddingsRequest(t *testing.T) {
 		},
 	}
 
-	logger := log.New().WithField("Source", "HTTPProxy")
 	openAITranslator := &OpenAIEmbeddingsTranslator{}
-
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			openAIReqBody, err := json.Marshal(test.openAIContent)
@@ -63,7 +60,7 @@ func TestEmbeddingsRequest(t *testing.T) {
 					Path:   "/v2/models/text-embedding-ada-002_1/infer/embeddings",
 				},
 			}
-			oipReq, err := openAITranslator.TranslateToOIP(&openAIReq, logger)
+			oipReq, err := openAITranslator.TranslateToOIP(&openAIReq)
 			g.Expect(err).To(BeNil(), "Error translating OpenAI request to OIP format")
 
 			oipReqBody, err := io.ReadAll(oipReq.Body)

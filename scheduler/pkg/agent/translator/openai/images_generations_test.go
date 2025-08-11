@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	log "github.com/sirupsen/logrus"
 )
 
 func TestImagesGenerationRequest(t *testing.T) {
@@ -48,7 +47,6 @@ func TestImagesGenerationRequest(t *testing.T) {
 		},
 	}
 
-	logger := log.New().WithField("Source", "HTTPProxy")
 	openAITranslator := &OpenAIImagesGenerationsTranslator{}
 
 	for _, test := range tests {
@@ -65,7 +63,7 @@ func TestImagesGenerationRequest(t *testing.T) {
 					Path:   "/v2/models/gpt-image-1_1/infer/images/generations",
 				},
 			}
-			oipReq, err := openAITranslator.TranslateToOIP(&openAIReq, logger)
+			oipReq, err := openAITranslator.TranslateToOIP(&openAIReq)
 			g.Expect(err).To(BeNil(), "Error translating OpenAI request to OIP format")
 
 			oipReqBody, err := io.ReadAll(oipReq.Body)

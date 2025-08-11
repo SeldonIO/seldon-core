@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	log "github.com/sirupsen/logrus"
 )
 
 func TestChatCompletionsRequest(t *testing.T) {
@@ -640,7 +639,6 @@ func TestChatCompletionsRequest(t *testing.T) {
 		},
 	}
 
-	logger := log.New().WithField("Source", "HTTPProxy")
 	openAITranslator := &OpenAIChatCompletionsTranslator{}
 
 	for _, test := range tests {
@@ -657,7 +655,7 @@ func TestChatCompletionsRequest(t *testing.T) {
 					Path:   "/v2/models/gpt-4.1_1/infer/chat/completions",
 				},
 			}
-			oipReq, err := openAITranslator.TranslateToOIP(&openAIReq, logger)
+			oipReq, err := openAITranslator.TranslateToOIP(&openAIReq)
 			g.Expect(err).To(BeNil(), "Error translating OpenAI request to OIP format")
 
 			oipReqBody, err := io.ReadAll(oipReq.Body)
@@ -849,7 +847,6 @@ func TestChatCompletionsResponse(t *testing.T) {
 		},
 	}
 
-	logger := log.New().WithField("Source", "HTTPProxy")
 	openAITranslator := &OpenAIChatCompletionsTranslator{}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -862,7 +859,7 @@ func TestChatCompletionsResponse(t *testing.T) {
 				Header:     http.Header{"Content-Type": []string{"application/json"}},
 			}
 
-			openAIResp, err := openAITranslator.TranslateFromOIP(oipResp, logger)
+			openAIResp, err := openAITranslator.TranslateFromOIP(oipResp)
 			g.Expect(err).To(BeNil(), "Error translating OIP response to OpenAI format")
 
 			openAIRespBody, err := io.ReadAll(openAIResp.Body)
