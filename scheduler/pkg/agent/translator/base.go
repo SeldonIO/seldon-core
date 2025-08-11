@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"knative.dev/pkg/webhook/json"
@@ -119,14 +118,11 @@ func parseOuputChatCompletion(outputs []interface{}, id string, modelName string
 		return "", err
 	}
 
-	// get current timestamp
-	timestamp := time.Now().Format(time.RFC3339)
-
 	// construct the OpenAI API response
 	response := map[string]interface{}{
 		"id":      id,
 		"model":   modelName,
-		"created": timestamp,
+		"created": 0,
 		"object":  "chat.completion",
 		"choices": []map[string]interface{}{
 			{
