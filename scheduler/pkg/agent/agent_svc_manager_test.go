@@ -273,6 +273,68 @@ func TestAgentServiceManagerCreate(t *testing.T) {
 	}
 }
 
+func TestNotInStartUpPhaseIfSchedulerConnLost(t *testing.T) {
+	logger := log.New()
+	log.SetLevel(log.DebugLevel)
+	g := NewWithT(t)
+
+	v2Client := createTestV2Client(addVerionToModels([]string{"model"}, 0), 200)
+	httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
+	modelRepository := &FakeModelRepository{err: nil}
+	rpHTTP := FakeDependencyService{err: nil}
+	rpGRPC := FakeDependencyService{err: nil}
+	agentDebug := FakeDependencyService{err: nil}
+	modelScalingService := modelscaling.NewStatsAnalyserService(
+		[]modelscaling.ModelScalingStatsWrapper{}, logger, 10)
+	drainerServicePort, _ := testing_utils2.GetFreePortForTest()
+	drainerService := drainservice.NewDrainerService(logger, uint(drainerServicePort))
+	readyServicePort, _ := testing_utils2.GetFreePortForTest()
+	readinessService := readyservice.NewReadyService(logger, uint(readyServicePort))
+
+	ctrl := gomock.NewController(t)
+	k8sExtendedClient := mocks.NewMockExtendedClient(ctrl)
+	k8sExtendedClient.EXPECT().HasPublishedIP(gomock.Any(), "mlserver-1", "").Return(nil)
+
+	asm := NewAgentServiceManager(
+		NewAgentServiceConfig("mlserver",
+			1,
+			"scheduler",
+			9002,
+			9055, 1*time.Minute,
+			1*time.Minute,
+			1*time.Minute,
+			1*time.Minute,
+			1*time.Minute, 1, 1, 1, true),
+		logger, modelRepository, v2Client,
+		&pb.ReplicaConfig{}, "default",
+		rpHTTP, rpGRPC, agentDebug, modelScalingService, drainerService, readinessService, newFakeMetricsHandler(), k8sExtendedClient)
+
+	mockAgentV2Server := &mockAgentV2Server{models: []string{"model"}}
+	conn, err := grpc.NewClient("passthrough://", grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithContextDialer(dialerv2(mockAgentV2Server)))
+	g.Expect(err).To(BeNil())
+	asm.schedulerConn = conn
+
+	defer func() {
+		asm.StopControlLoop()
+		httpmock.DeactivateAndReset()
+	}()
+
+	go func() {
+		time.Sleep(time.Millisecond * 100)
+		// will cause handleSchedulerSubscription below to exit
+		conn.Close()
+	}()
+
+	g.Expect(asm.isStartup.Load()).To(BeTrue())
+	err = asm.handleSchedulerSubscription()
+	g.Expect(err).To(BeNil())
+
+	// losing scheduler conn should not cause agent to fail readiness check as it can still serve incoming reqs for
+	// models which are already loaded, it just can't load/unload any models at current time.
+	g.Expect(asm.isStartup.Load()).To(BeFalse())
+}
+
 func TestHandleSchedulerSubscription(t *testing.T) {
 	t.Parallel()
 
