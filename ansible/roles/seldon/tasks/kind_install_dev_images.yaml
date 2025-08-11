@@ -10,7 +10,7 @@
       - docker-image
       - "{{ _docker_user }}/{{ _image_repo }}:{{ _image_tag }}"
       - --name
-      - seldon
+      - {{ kind_cluster_name }}
     chdir: "{{ seldon_images[item.1].src }}"
   vars:
     _docker_user: "{{ item.0.repository_img_prefix | split('/') | first }}"

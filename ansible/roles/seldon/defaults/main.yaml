@@ -1,3 +1,5 @@
+kind_cluster_name: "seldon"
+
 repo_root_dir: "{{ inventory_dir }}/.."
 seldon_crds_namespace: "default"
 seldon_mesh_namespace: "seldon-mesh"
