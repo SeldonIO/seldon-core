@@ -61,13 +61,6 @@ func getEnvVarValue(podSpec *v1.PodSpec, name string, defaultValue string) strin
 	return defaultValue
 }
 
-func min(a, b int32) int32 {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 func replicaCalc(resourceCount, maxConsumers, partitions int32) int32 {
 	if resourceCount == 0 {
 		return 1

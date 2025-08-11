@@ -34,13 +34,6 @@ func NewRingLoadBalancer(numPartitions int) *RingLoadBalancer {
 	}
 }
 
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 func (lb *RingLoadBalancer) AddServer(serverName string) {
 	lb.ring = lb.ring.AddNode(serverName)
 	lb.nodes[serverName] = true
