@@ -199,7 +199,7 @@ func TestPipelineStatusEvents(t *testing.T) {
 				select {
 				case next := <-stream.msgs:
 					psr = next
-				default:
+				case <-time.After(2 * time.Second):
 					t.Fail()
 				}
 
@@ -336,7 +336,7 @@ func TestPipelineGwRebalanceMessage(t *testing.T) {
 			select {
 			case next := <-stream.msgs:
 				msr = next
-			default:
+			case <-time.After(2 * time.Second):
 				t.Fail()
 			}
 
@@ -448,7 +448,7 @@ func TestPipelineGwRebalance(t *testing.T) {
 					select {
 					case msg := <-stream.msgs:
 						log.Infof("Drained message from stream %d: %v", i, msg)
-					default:
+					case <-time.After(100 * time.Millisecond):
 						break drainLoop
 					}
 				}
@@ -469,7 +469,7 @@ func TestPipelineGwRebalance(t *testing.T) {
 					case msg := <-stream.msgs:
 						name := msg.PipelineName
 						pipelineAssignments[name] += len(msg.Versions)
-					default:
+					case <-time.After(100 * time.Millisecond):
 						break collectLoop
 					}
 				}
