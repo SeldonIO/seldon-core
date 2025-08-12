@@ -1,7 +1,7 @@
 apiVersion: "clickhouse.altinity.com/v1"
 kind: "ClickHouseInstallation"
 metadata:
-  name: cluster01
+  name: cluster
 spec:
   templates:
     podTemplates:
@@ -17,7 +17,7 @@ spec:
         - 0.0.0.0/0
         default/password: ""
     clusters:
-      - name: cluster01
+      - name: clickhousecluster
         layout:
           shardsCount: 1
           replicasCount: 1
