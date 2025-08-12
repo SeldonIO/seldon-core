@@ -482,12 +482,14 @@ func (kc *InferKafkaHandler) Serve() {
 				ctx := context.Background()
 				carrierIn := splunkkafka.NewMessageCarrier(e)
 				ctx = otel.GetTextMapPropagator().Extract(ctx, carrierIn)
+
 				_, span := kc.tracer.Start(ctx, "Consume")
 				requestId := pipeline.GetRequestIdFromKafkaHeaders(e.Headers)
 				if requestId == "" {
 					logger.Warnf("Missing request id in Kafka headers for key %s", string(e.Key))
 				}
 				span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
+
 				headers := collectHeaders(e.Headers)
 				logger.Debugf("Headers received from kafka for model %s %v", modelName, e.Headers)
 

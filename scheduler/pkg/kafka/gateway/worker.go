@@ -398,7 +398,7 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 	var span trace.Span
 	// TODO this is messy, need to find way of setting within trace interceptor
 	if requestId := pipeline.GetRequestIdFromKafkaHeaders(job.msg.Headers); requestId != "" {
-		ctx, span = iw.tracer.Start(ctx, "grpcRequest.ModelInfer")
+		_, span = iw.tracer.Start(context.TODO(), "grpcRequest.ModelInfer")
 		span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
 	}
 
