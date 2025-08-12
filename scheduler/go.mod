@@ -14,13 +14,12 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/go-playground/validator/v10 v10.27.0
 	github.com/google/go-cmp v0.7.0
-	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/jarcoal/httpmock v1.4.0
 	github.com/mitchellh/copystructure v1.2.0
 	github.com/mustafaturan/bus/v3 v3.0.3
-	github.com/onsi/gomega v1.36.2
+	github.com/onsi/gomega v1.38.0
 	github.com/orcaman/concurrent-map v1.0.0
 	github.com/otiai10/copy v1.14.1
 	github.com/prometheus/client_golang v1.22.0
@@ -81,6 +80,7 @@ require (
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/flatbuffers v25.2.10+incompatible // indirect
 	github.com/google/gnostic-models v0.7.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
