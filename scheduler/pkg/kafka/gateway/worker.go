@@ -385,6 +385,7 @@ func addMetadataToOutgoingContext(ctx context.Context, job *InferWork, logger lo
 func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.ModelInferRequest) error {
 	logger := iw.logger.WithField("func", "grpcRequest")
 	logger.Debugf("gRPC request for %s", job.modelName)
+
 	//Update req with correct modelName
 	req.ModelName = job.modelName
 	req.ModelVersion = fmt.Sprintf("%d", util.GetPinnedModelVersion())
@@ -395,17 +396,7 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 	opts := append(iw.callOptions, grpc.Header(&header))
 	opts = append(opts, grpc.Trailer(&trailer))
 
-	var span trace.Span
-	// TODO this is messy, need to find way of setting within trace interceptor
-	if requestId := pipeline.GetRequestIdFromKafkaHeaders(job.msg.Headers); requestId != "" {
-		_, span = iw.tracer.Start(context.TODO(), "grpcRequest.ModelInfer")
-		span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
-	}
-
 	resp, err := iw.grpcClient.ModelInfer(ctx, req, opts...)
-	if span != nil {
-		span.End()
-	}
 
 	if err != nil {
 		logger.WithError(err).Warnf("Failed infer request")
