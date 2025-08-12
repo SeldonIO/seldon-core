@@ -58,7 +58,7 @@ export function setup() {
 
 export default function (config) {
     const inferPayload1 = getModelInferencePayload(modelType, 1)
-    inferHttp(config.inferHttpEndpoint, modelName, inferPayload1.http, true, 'pipeline', config.debug)
+    inferHttp(config.inferHttpEndpoint, modelName, inferPayload1.http, true, 'pipeline', config.debug, config.requestID)
 }
 
 export function teardown(config) {

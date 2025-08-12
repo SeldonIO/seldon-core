@@ -235,6 +235,13 @@ function experimentNamePrefix() {
     return "experiment"
 }
 
+function requestID() {
+    if (__ENV.REQUEST_ID) {
+        return __ENV.REQUEST_ID
+    }
+    return null
+}
+
 function inferType() {
     if (__ENV.INFER_TYPE) {
         return __ENV.INFER_TYPE
@@ -378,6 +385,7 @@ function sleepBetweenModelReplicaChange() {
 
 export function getConfig() {
     return {
+        "requestID" : requestID(),
         "skipSetup" : skipSetup(),
         "debug": debug(),
         "useKubeControlPlane": useKubeControlPlane(),
