@@ -18,3 +18,6 @@
 
 - name: Install and configure OpenTelemetry Operator
   import_tasks: opentelemetry.yaml
+
+- name: Install and configure Clickhouse Operator
+  import_tasks: clickhouse.yaml
