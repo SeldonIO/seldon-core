@@ -397,7 +397,7 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 
 	if requestId := pipeline.GetRequestIdFromKafkaHeaders(job.msg.Headers); requestId != "" {
 		var span trace.Span
-		ctx, span = iw.tracer.Start(ctx, "grpc.ModelInfer")
+		ctx, span = iw.tracer.Start(ctx, "grpcRequest.ModelInfer")
 		span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
 	}
 
