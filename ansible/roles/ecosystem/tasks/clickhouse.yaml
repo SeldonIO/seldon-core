@@ -1,0 +1,3 @@
+- include_role:
+    name: clickhouse
+  when: install_clickhouse | bool

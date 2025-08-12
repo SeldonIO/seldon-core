@@ -1,0 +1,15 @@
+---
+- name: Install Clickhouse Operator
+  kubernetes.core.helm:
+    name: clickhouse
+    namespace: "{{ clickhouse_namespace }}"
+    chart_ref: "altinity-clickhouse-operator"
+    chart_version: "{{ clickhouse_chart_version }}"
+    chart_repo_url: "https://docs.altinity.com/clickhouse-operator"
+    wait: true
+
+- name: Create cluster CRD definition
+  kubernetes.core.k8s:
+    state: present
+    namespace: "{{ clickhouse_namespace }}"
+    template: "templates/cluster-definition.j2"

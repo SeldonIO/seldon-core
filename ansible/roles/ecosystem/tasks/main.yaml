@@ -21,3 +21,6 @@
 
 - name: Install Schema registry
   import_tasks: schema-registry.yaml
+
+- name: Install and configure Clickhouse Operator
+  import_tasks: clickhouse.yaml
