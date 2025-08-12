@@ -235,9 +235,9 @@ function experimentNamePrefix() {
     return "experiment"
 }
 
-function requestID() {
-    if (__ENV.REQUEST_ID) {
-        return __ENV.REQUEST_ID
+function requestIDPrefix() {
+    if (__ENV.REQUEST_ID_PREFIX) {
+        return __ENV.REQUEST_ID_PREFIX
     }
     return null
 }
@@ -385,7 +385,7 @@ function sleepBetweenModelReplicaChange() {
 
 export function getConfig() {
     return {
-        "requestID" : requestID(),
+        "requestIDPrefix" : requestIDPrefix(),
         "skipSetup" : skipSetup(),
         "debug": debug(),
         "useKubeControlPlane": useKubeControlPlane(),
