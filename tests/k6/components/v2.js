@@ -6,7 +6,7 @@ import { generatePipelineName } from '../components/model.js';
 const v2Client = new grpc.Client();
 v2Client.load([import.meta.resolve('../../../apis/mlops/v2_dataplane/')], 'v2_dataplane.proto');
 
-export function inferHttp(endpoint, modelName, payload, viaEnvoy, pipelineSuffix, debug = false, requestID = null) {
+export function inferHttp(endpoint, modelName, payload, viaEnvoy, pipelineSuffix, debug = false, requestIDPrefix = null) {
     const url = endpoint + "/v2/models/"+modelName+"/infer"
     const payloadStr = JSON.stringify(payload);
     var metadata = {
@@ -18,8 +18,8 @@ export function inferHttp(endpoint, modelName, payload, viaEnvoy, pipelineSuffix
         'Accept-Encoding': 'entity',
     };
 
-    if (requestID !== null) {
-        metadata['x-request-id'] = requestID;
+    if (requestIDPrefix !== null) {
+        metadata['x-request-id'] = requestIDPrefix + "_" + generateRandomString(15);
     }
 
     if (viaEnvoy != true) {
@@ -36,6 +36,15 @@ export function inferHttp(endpoint, modelName, payload, viaEnvoy, pipelineSuffix
     }
 
     check(response, {'model http prediction success': (r) => r.status === 200});
+}
+
+function generateRandomString(length = 10) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
 }
 
 export function inferHttpLoop(endpoint, modelName, payload, iterations, viaEnvoy = true, pipelineSuffix = "") {
