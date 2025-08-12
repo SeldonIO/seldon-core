@@ -20,12 +20,12 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
-	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
-
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
+	log "github.com/sirupsen/logrus"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 const (
@@ -109,7 +109,14 @@ func (g *GatewayHttpServer) createListener() net.Listener {
 
 func (g *GatewayHttpServer) setupRoutes() {
 	g.router.Use(mux.CORSMethodMiddleware(g.router))
-	g.router.Use(otelmux.Middleware("pipelinegateway"))
+	g.router.Use(otelmux.Middleware("pipelinegateway", otelmux.WithMetricAttributesFn(func(r *http.Request) []attribute.KeyValue {
+		if id := r.Header.Get(util.RequestIdHeader); id != "" {
+			return []attribute.KeyValue{
+				attribute.String(util.RequestIdHeader, id),
+			}
+		}
+		return nil
+	})))
 	g.router.NewRoute().Path(
 		v2ModelPathPrefix + "{" + ResourceNameVariable + "}/infer").HandlerFunc(g.inferModel)
 	g.router.NewRoute().Path(
