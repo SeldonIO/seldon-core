@@ -395,13 +395,18 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 	opts := append(iw.callOptions, grpc.Header(&header))
 	opts = append(opts, grpc.Trailer(&trailer))
 
+	var span trace.Span
+	// TODO this is messy, need to find way of setting within trace interceptor
 	if requestId := pipeline.GetRequestIdFromKafkaHeaders(job.msg.Headers); requestId != "" {
-		var span trace.Span
 		ctx, span = iw.tracer.Start(ctx, "grpcRequest.ModelInfer")
 		span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
 	}
 
 	resp, err := iw.grpcClient.ModelInfer(ctx, req, opts...)
+	if span != nil {
+		span.End()
+	}
+
 	if err != nil {
 		logger.WithError(err).Warnf("Failed infer request")
 		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), []byte(err.Error()), true, nil)
