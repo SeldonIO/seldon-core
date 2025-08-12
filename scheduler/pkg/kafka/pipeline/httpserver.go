@@ -109,6 +109,7 @@ func (g *GatewayHttpServer) createListener() net.Listener {
 
 func (g *GatewayHttpServer) setupRoutes() {
 	g.router.Use(mux.CORSMethodMiddleware(g.router))
+	// TODO we seem to always enforce tracing middleware even if tracing is not enabled via configmap?? needless latency
 	g.router.Use(otelmux.Middleware("pipelinegateway", otelmux.WithMetricAttributesFn(func(r *http.Request) []attribute.KeyValue {
 		if id := r.Header.Get(util.RequestIdHeader); id != "" {
 			return []attribute.KeyValue{
