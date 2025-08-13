@@ -165,8 +165,7 @@ build-go: \
 		./mlops/scheduler/storage.proto \
 		./mlops/chainer/chainer.proto \
 		./mlops/v2_dataplane/v2_dataplane.proto \
-		./mlops/v2_dataplane/schema_registry/infer_request.proto \
-		./mlops/v2_dataplane/schema_registry/infer_response.proto
+		./mlops/v2_dataplane/schema_registry/inference_schema.proto
 
 
 .PHONY: clean-go
@@ -273,7 +272,7 @@ build-kotlin: \
 		--plugin=protoc-gen-grpckt=$(CMD_PROTOC_GEN_KOTLIN_GRPC) \
 		--kotlin_out=./kotlin \
 		--grpckt_out=./kotlin \
-		infer_request.proto infer_response.proto
+		inference_schema.proto
 
 ################################################################################
 
