@@ -13,10 +13,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
-	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde"
-	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde/protobuf"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
-	"google.golang.org/protobuf/proto"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/inference_schema"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/schema"
 	"math/rand"
 	"strconv"
 	"sync"
@@ -267,30 +265,35 @@ func (km *KafkaManager) Infer(
 			logger.Debugf("%02x", b)
 		}
 
-		ser, err := protobuf.NewSerializer(km.schemaRegistryClient, serde.ValueSerde, protobuf.NewSerializerConfig())
+		data, err = schema.SerialisePayload(km.schemaRegistryClient, schema.InferenceSchemaSubject, data, &inference_schema.ModelInferRequest{})
 		if err != nil {
-			logger.WithError(err).Errorf("Failed to obtain a serialiser")
+			return nil, fmt.Errorf("failed to serialised payload with schema id: %v", err)
 		}
 
-		v2Request := &v2_dataplane.ModelInferRequest{}
-		err = proto.Unmarshal(data, v2Request)
-		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal v2 request: %v", err)
-		}
-
-		b, err := ser.Serialize(inputTopic, v2Request)
-		if err != nil {
-			logger.WithError(err).Errorf("Failed to serialise response to dataplane model")
-		}
+		//ser, err := protobuf.NewSerializer(km.schemaRegistryClient, 3, protobuf.NewSerializerConfig())
+		//if err != nil {
+		//	logger.WithError(err).Errorf("Failed to obtain a serialiser")
+		//}
+		//
+		//v2Request := &inference_schema.ModelInferRequest{}
+		//err = proto.Unmarshal(data, v2Request)
+		//if err != nil {
+		//	return nil, fmt.Errorf("failed to unmarshal v2 request: %v", err)
+		//}
+		//
+		//v2Request.ProtoReflect().Descriptor()
+		//
+		//_, b, err := ser.SerializeWithHeaders("infer_request", v2Request)
+		//if err != nil {
+		//	logger.WithError(err).Errorf("Failed to serialise response to dataplane model")
+		//}
 
 		logger.Infof("sucesssfully serialised data with schema on topic %s", inputTopic)
 
 		logger.Debugf("first 10 bytes after serialisation")
-		for _, b := range b[:10] {
+		for _, b := range data[:10] {
 			logger.Debugf("%02x", b)
 		}
-
-		data = b
 	}
 
 	msg := &kafka.Message{
