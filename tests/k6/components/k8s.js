@@ -1,3 +1,4 @@
+import { dump as yamlDump } from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.mjs";
 import { Kubernetes } from "k6/x/kubernetes";
 import { getConfig } from '../components/settings.js'
 import {
@@ -251,6 +252,11 @@ export function pipelineConditionMet(pipelineName, targetCondition) {
     return getObjectCondition(pipelineObj, targetCondition, "status").met
 }
 
+export function seldonRuntimeConditionMet(targetCondition) {
+    let seldonRuntimeObj = kubeclient.get("seldonruntime.mlops.seldon.io", getConfig().seldonRuntimeName, seldon_target_ns)
+    return getObjectCondition(seldonRuntimeObj, targetCondition, "status").met
+}
+
 export function getPipelineReadyCondition(pipelineCR) {
     return getObjectCondition(pipelineCR, "PipelineReady", "reason")
 }
@@ -291,6 +297,29 @@ export function awaitPipelineStatus(pipelineName, status) {
         // in case getPipelineStatus throws an exception
         return seldonOpExecStatus.CONCURRENT_OP_FAIL
     }
+}
+
+export function awaitSeldonRuntime(retries = 0, throwError = false) {
+    try {
+        for (const condition of ['DataflowEngineReady', 'EnvoyReady', 'HodometerReady', 'ModelGatewayReady', 'PipelineGatewayReady','SchedulerReady']) {
+            if (!seldonRuntimeConditionMet(condition)) {
+                sleep(1)
+                retries++
+                if(retries > MAX_RETRIES) {
+                    console.log(`Giving up on waiting for SeldonRuntime ${condition} to reach status True, after ${MAX_RETRIES}`)
+                    return seldonOpExecStatus.FAIL
+                }
+                return awaitSeldonRuntime(retries)
+            }
+        }
+    } catch(error) {
+        if (throwError) {
+            throw error
+        }
+        return seldonOpExecStatus.FAIL
+    }
+
+    return seldonOpExecStatus.OK
 }
 
 export function unloadPipeline(pipelineName, awaitReady = true, throwError=false) {
@@ -346,5 +375,72 @@ export function unloadExperiment(experimentName, awaitReady=true) {
         if (awaitReady && schedulerClient != null) {
             awaitExperimentStop(experimentName)
         }
+    }
+}
+
+/************
+ *
+ * SeldonRuntime
+ *
+ *****/
+
+
+export function generateSeldonRuntime(modelGwReplicas, pipelineGwReplicas, dataFlowEngineReplicas) {
+    let runtime = kubeclient.get("seldonruntime.mlops.seldon.io", getConfig().seldonRuntimeName, seldon_target_ns)
+
+    const updatedReplicas = {
+        spec : {
+            seldonConfig: "default",
+            overrides : [
+                {
+                    name: "hodometer",
+                    replicas: 1,
+                },
+                {
+                    name: "seldon-scheduler",
+                    replicas: 1,
+                    serviceType: "LoadBalancer"
+                },
+                {
+                    name: "seldon-envoy",
+                    replicas: 1,
+                    serviceType: "LoadBalancer"
+                },
+                {
+                    name: "seldon-dataflow-engine",
+                    replicas: dataFlowEngineReplicas,
+                },
+                {
+                    name: "seldon-modelgateway",
+                    replicas: modelGwReplicas,
+                },
+                {
+                    name: "seldon-pipelinegateway",
+                    replicas: pipelineGwReplicas,
+                }
+            ]
+        }
+    }
+
+    const seldonRuntimeSpec = { ...runtime, ...updatedReplicas };
+
+    return {
+        "object" : seldonRuntimeSpec,
+        "yaml" : yamlDump(seldonRuntimeSpec)
+    }
+}
+
+export function loadSeldonRuntime(data, awaitReady=true, throwError=false) {
+    try {
+        kubeclient.update(data)
+        if (awaitReady) {
+            return awaitSeldonRuntime(0, true)
+        }
+        return seldonOpExecStatus.OK
+    } catch (error) {
+        if (throwError) {
+            throw error
+        }
+        return seldonOpExecStatus.FAIL
     }
 }
