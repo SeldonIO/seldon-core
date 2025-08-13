@@ -58,6 +58,7 @@ type InferWork struct {
 	modelName string
 	headers   map[string]string
 	msg       *kafka.Message
+	span      trace.Span
 }
 
 type V2Error struct {
@@ -166,6 +167,10 @@ func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct
 			return
 
 		case job := <-jobChan:
+			if job.span != nil {
+				// records how long we had to wait for a worker to pick up the job
+				job.span.End()
+			}
 			ctx := createBaseContextFromKafkaMsg(job.msg)
 			err := iw.processRequest(ctx, job, time.Duration(inferTimeout)*time.Millisecond)
 			if err != nil {
