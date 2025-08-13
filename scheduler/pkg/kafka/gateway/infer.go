@@ -493,10 +493,14 @@ func (kc *InferKafkaHandler) Serve() {
 				headers := collectHeaders(e.Headers)
 				logger.Debugf("Headers received from kafka for model %s %v", modelName, e.Headers)
 
+				_, spanJob := kc.tracer.Start(ctx, "WaitForWorker")
+				spanJob.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
+
 				job := InferWork{
 					modelName: modelName,
 					msg:       e,
 					headers:   headers,
+					span:      spanJob,
 				}
 				// enqueue a job
 				jobChan <- &job
