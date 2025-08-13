@@ -67,8 +67,11 @@ export function inferGrpc(modelName, payload, viaEnvoy, pipelineSuffix) {
     };
     payload.model_name = modelName
     const response = v2Client.invoke('inference.GRPCInferenceService/ModelInfer', payload, params);
-    //console.log(response.status, JSON.stringify(response.error),  JSON.stringify(response.message))
     check(response, {'model grpc prediction success': (r) => r && r.status === grpc.StatusOK})
+
+    if (response.status !== grpc.StatusOK) {
+        console.log(response.error)
+    }
 }
 
 export function inferGrpcLoop(endpoint, modelName, payload, iterations, viaEnvoy = true, pipelineSuffix = "") {
