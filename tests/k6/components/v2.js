@@ -6,6 +6,7 @@ import { generatePipelineName } from '../components/model.js';
 const v2Client = new grpc.Client();
 v2Client.load([import.meta.resolve('../../../apis/mlops/v2_dataplane/')], 'v2_dataplane.proto');
 
+
 export function inferHttp(endpoint, modelName, payload, viaEnvoy, pipelineSuffix, debug = false, requestIDPrefix = null) {
     const url = endpoint + "/v2/models/"+modelName+"/infer"
     const payloadStr = JSON.stringify(payload);

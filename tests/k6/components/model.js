@@ -220,11 +220,11 @@ export function getModelInferencePayload(modelType, inferBatchSize) {
         }
     } else if (modelType == echo) {
         const shape = [1]
-        const data = new Array(1).fill("hello")
+        const data = new Int32Array(new Array(1).fill("hello"))
         const datatype = "BYTES"
         return {
             "http": { "inputs": [{ "name": "predict", "data": data, "datatype": datatype, "shape": shape }] },
-            "grpc": { "inputs": [{ "name": "predict", "contents": { "int_contents": data }, "datatype": datatype, "shape": shape }] }
+            "grpc": { "inputs": [{ "name": "input_1", "contents": { "fp32_contents": data }, "datatype": datatype, "shape": shape }] }
         }
     }
 }
