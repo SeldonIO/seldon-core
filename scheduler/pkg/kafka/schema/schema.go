@@ -10,9 +10,15 @@ the Change License after the Change Date as each is defined in accordance with t
 package schema
 
 import (
-	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
-	log "github.com/sirupsen/logrus"
+	"bytes"
+	"fmt"
 	"os"
+
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde"
+	log "github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 const (
@@ -22,6 +28,12 @@ const (
 	EnvToken          = "SCHEMA_REGISTRY_TOKEN"
 	EnvTargetSr       = "SCHEMA_REGISTRY_TARGET_SR"
 	EnvIdentityPoolID = "SCHEMA_REGISTRY_IDENTITY_POOL_ID"
+)
+
+type Subject string
+
+const (
+	InferenceSchemaSubject Subject = "inference_schema-value"
 )
 
 func NewSchemaRegistryClient(log *log.Logger) schemaregistry.Client {
@@ -61,6 +73,76 @@ func NewSchemaRegistryClient(log *log.Logger) schemaregistry.Client {
 
 	logger.Info("schema registry client created")
 	return srClient
+}
+
+func SerialisePayload(schemaClient schemaregistry.Client, topic Subject, payload []byte, msg interface{}) ([]byte, error) {
+	schemaMetadata, err := schemaClient.GetLatestSchemaMetadata(string(topic))
+	if err != nil {
+		return nil, err
+	}
+
+	var protoMsg proto.Message
+	switch t := msg.(type) {
+	case proto.Message:
+		protoMsg = t
+	default:
+		return nil, fmt.Errorf("serialization target must be a protobuf struct. Got '%v'", t)
+	}
+
+	messageIndexes := toMessageIndexArray(protoMsg.ProtoReflect().Descriptor())
+
+	schemaID := serde.SchemaID{
+		SchemaType:     "PROTOBUF",
+		ID:             schemaMetadata.ID,
+		MessageIndexes: messageIndexes,
+	}
+
+	IDBytes, err := schemaID.IDToBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	var buf bytes.Buffer
+
+	_, err = buf.Write(IDBytes)
+	if err != nil {
+		return nil, err
+	}
+	_, err = buf.Write(payload)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func toMessageIndexArray(descriptor protoreflect.Descriptor) []int {
+	if descriptor.Index() == 0 {
+		switch descriptor.Parent().(type) {
+		case protoreflect.FileDescriptor:
+			// This is an optimization for the first message in the schema
+			return []int{0}
+		}
+	}
+	return toMessageIndexes(descriptor, 0)
+}
+
+// Adapted from ideasculptor, see https://github.com/riferrei/srclient/issues/17
+func toMessageIndexes(descriptor protoreflect.Descriptor, count int) []int {
+	index := descriptor.Index()
+	switch v := descriptor.Parent().(type) {
+	case protoreflect.FileDescriptor:
+		// parent is FileDescriptor, we reached the top of the stack, so we are
+		// done. Allocate an array large enough to hold count+1 entries and
+		// populate first value with index
+		msgIndexes := make([]int, count+1)
+		msgIndexes[0] = index
+		return msgIndexes[0:1]
+	default:
+		// parent is another MessageDescriptor.  We were nested so get that
+		// descriptor's indexes and append the index of this one
+		msgIndexes := toMessageIndexes(v, count+1)
+		return append(msgIndexes, index)
+	}
 }
 
 func GetModelInferenceRequestSchema() schemaregistry.SchemaInfo {
