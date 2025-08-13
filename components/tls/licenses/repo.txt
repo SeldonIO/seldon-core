@@ -1,5 +1,4 @@
 seldonio/seldon-core
-None
 AdaLogics/go-fuzz-headers
 AlecAivazis/survey
 Azure/azure-sdk-for-go
@@ -222,3 +221,4 @@ go-check/check
 go-inf/inf
 natefinch/lumberjack
 go-yaml/yaml
+None
