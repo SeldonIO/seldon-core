@@ -8,7 +8,6 @@ import {
     connectControlPlaneOps, doInfer, getVersionSuffix,
 } from '../../../components/utils.js'
 import {generateMultiModelPipelineYaml, getModelInferencePayload} from '../../../components/model.js';
-import {connectV2Grpc, inferGrpc, inferHttp} from "../../../components/v2.js";
 import {generateSeldonRuntime} from "../../../components/k8s.js";
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
@@ -27,7 +26,7 @@ export let options = {
 }
 
 const modelType = 'echo'
-const modelName = 'tests-pipeline-1-node-echo';
+const modelName = 'tests-pipeline-1-node-echo-1';
 
 export function setup() {
     k8s.init()
@@ -71,8 +70,8 @@ export function setup() {
 }
 
 export default function (config) {
-    const modelNameWithVersion = getVersionSuffix(true)
-    doInfer(modelName, modelNameWithVersion, config, false, 0)
+    const modelNameWithVersion = "_2"
+    doInfer(modelName, modelName + modelNameWithVersion, config, false, 0)
 }
 
 export function teardown(config) {
