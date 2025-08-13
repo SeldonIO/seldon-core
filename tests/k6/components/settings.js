@@ -235,6 +235,13 @@ function experimentNamePrefix() {
     return "experiment"
 }
 
+function seldonRuntimeName() {
+    if (__ENV.SELDON_RUNTIME_NAME) {
+        return __ENV.SELDON_RUNTIME_NAME
+    }
+    return "seldon"
+}
+
 function requestIDPrefix() {
     if (__ENV.REQUEST_ID_PREFIX) {
         return __ENV.REQUEST_ID_PREFIX
@@ -385,6 +392,7 @@ function sleepBetweenModelReplicaChange() {
 
 export function getConfig() {
     return {
+        "seldonRuntimeName": seldonRuntimeName(),
         "requestIDPrefix" : requestIDPrefix(),
         "skipSetup" : skipSetup(),
         "debug": debug(),

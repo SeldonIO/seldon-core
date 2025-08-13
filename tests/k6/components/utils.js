@@ -123,6 +123,7 @@ export function connectControlPlaneOps(config) {
     ctl.unloadPipelineFn = k8s.unloadPipeline
     ctl.loadExperimentFn = k8s.loadExperiment
     ctl.unloadExperimentFn = k8s.unloadExperiment
+    ctl.loadSeldonRuntimeFn = k8s.loadSeldonRuntime
   } else {
     ctl.loadModelFn = loadModel
     ctl.unloadModelFn = unloadModel
