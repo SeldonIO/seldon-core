@@ -47,6 +47,7 @@ export function setup() {
 
     const modelServerReplicas = 5
 
+    // TODO fix... controller resets to 1.. probably due to the way e update the server... just create a new one instead?
     const server = generateServer("mlserver", "mlserver", modelServerReplicas, 1, modelServerReplicas)
 
     let updated = ctl.loadServerFn(server.object, true, true)
