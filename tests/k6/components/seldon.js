@@ -1,7 +1,9 @@
 export const seldonObjectType = {
   MODEL: Symbol("Model.mlops.seldon.io"),
   PIPELINE: Symbol("Pipeline.mlops.seldon.io"),
-  EXPERIMENT: Symbol("Experiment.mlops.seldon.io")
+  EXPERIMENT: Symbol("Experiment.mlops.seldon.io"),
+  SERVER: Symbol("Server.mlops.seldon.io"),
+  SELDONRUNTIME: Symbol("Seldonruntime.mlops.seldon.io")
 };
 
 export const seldonOpType = {

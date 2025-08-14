@@ -10,6 +10,7 @@ import { sleep } from 'k6';
 
 const seldon_target_ns = getConfig().namespace;
 export const MAX_RETRIES = 10;
+export const MAX_RETRIES_SERVER = 20;
 var kubeclient = null;
 var schedulerClient = null;
 
@@ -252,6 +253,11 @@ export function pipelineConditionMet(pipelineName, targetCondition) {
     return getObjectCondition(pipelineObj, targetCondition, "status").met
 }
 
+export function serverConditionMet(serverName, targetCondition) {
+    let serverObj = kubeclient.get(seldonObjectType.SERVER.description, serverName, seldon_target_ns)
+    return getObjectCondition(serverObj, targetCondition, "status").met
+}
+
 export function seldonRuntimeConditionMet(targetCondition) {
     let seldonRuntimeObj = kubeclient.get("seldonruntime.mlops.seldon.io", getConfig().seldonRuntimeName, seldon_target_ns)
     return getObjectCondition(seldonRuntimeObj, targetCondition, "status").met
@@ -295,6 +301,27 @@ export function awaitPipelineStatus(pipelineName, status) {
         return seldonOpExecStatus.OK
     } catch(_) {
         // in case getPipelineStatus throws an exception
+        return seldonOpExecStatus.CONCURRENT_OP_FAIL
+    }
+}
+
+export function awaitServerStatus(serverName, status, throwError=false) {
+    let retries = 0
+    try {
+        while (!serverConditionMet(serverName, status)) {
+            console.log("waiting for server status", serverName, status)
+            sleep(1)
+            retries++
+            if(retries > MAX_RETRIES_SERVER) {
+                console.log(`Giving up on waiting for server ${serverName} to reach status ${status}, after ${MAX_RETRIES}`)
+                return seldonOpExecStatus.FAIL
+            }
+        }
+        return seldonOpExecStatus.OK
+    } catch(error) {
+        if (throwError) {
+            throw error
+        }
         return seldonOpExecStatus.CONCURRENT_OP_FAIL
     }
 }
@@ -386,7 +413,7 @@ export function unloadExperiment(experimentName, awaitReady=true) {
 
 
 export function generateSeldonRuntime(modelGwReplicas, pipelineGwReplicas, dataFlowEngineReplicas) {
-    let runtime = kubeclient.get("seldonruntime.mlops.seldon.io", getConfig().seldonRuntimeName, seldon_target_ns)
+    let runtime = kubeclient.get(seldonObjectType.SELDONRUNTIME, getConfig().seldonRuntimeName, seldon_target_ns)
 
     const updatedReplicas = {
         spec : {
@@ -435,6 +462,56 @@ export function loadSeldonRuntime(data, awaitReady=true, throwError=false) {
         kubeclient.update(data)
         if (awaitReady) {
             return awaitSeldonRuntime(0, true)
+        }
+        return seldonOpExecStatus.OK
+    } catch (error) {
+        if (throwError) {
+            throw error
+        }
+        return seldonOpExecStatus.FAIL
+    }
+}
+
+/************
+ *
+ * Server
+ *
+ *****/
+
+
+export function generateServer(serverName, serverConfig, replicas, minReplicas, maxReplicas) {
+    let server = kubeclient.get(seldonObjectType.SERVER, serverName, seldon_target_ns)
+
+    const updatedReplicasSpec = {
+        spec : {
+            minReplicas: minReplicas,
+            maxReplicas: maxReplicas,
+            replicas: replicas,
+            serverConfig : serverConfig,
+            statefulSetPersistentVolumeClaimRetentionPolicy : {
+                whenDeleted: "Retain",
+                whenScaled : "Retain",
+            }
+        }
+    }
+
+    // TODO is this the best way??
+
+    const serverSpec = { ...server, ...updatedReplicasSpec };
+
+    return {
+        "object" : serverSpec,
+        "yaml" : yamlDump(serverSpec)
+    }
+}
+
+
+export function loadServer(data, awaitReady=true, throwError=false) {
+    try {
+        kubeclient.update(data)
+        sleep(1)
+        if (awaitReady) {
+            return awaitServerStatus(data.metadata.name, "Ready")
         }
         return seldonOpExecStatus.OK
     } catch (error) {
