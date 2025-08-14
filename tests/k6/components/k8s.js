@@ -10,7 +10,7 @@ import { sleep } from 'k6';
 
 const seldon_target_ns = getConfig().namespace;
 export const MAX_RETRIES = 10;
-export const MAX_RETRIES_SERVER = 20;
+export const MAX_RETRIES_SERVER = 40;
 var kubeclient = null;
 var schedulerClient = null;
 
