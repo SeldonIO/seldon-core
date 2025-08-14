@@ -17,7 +17,7 @@ syntax = "proto3";
 package seldon.mlops.inference.schema;
 
 option go_package = "github.com/seldonio/seldon-core/apis/go/v2/mlops/inference_schema";
-option java_package = "io.seldon.mlops.inference.schema";
+option java_package = "io.seldon.mlops.schema";
 
 message ModelInferRequest
 {
