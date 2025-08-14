@@ -11,7 +11,9 @@ package io.seldon.dataflow.kafka
 
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient
+import io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer
 import io.seldon.dataflow.PipelineSubscriber
+import io.seldon.mlops.schema.InferenceSchema
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.kstream.Consumed
@@ -71,6 +73,21 @@ class SerdeFactory {
 //            deserializer.configure(props, false)
 //        }
 
+        val requestSerializer = KafkaProtobufSerializer<InferenceSchema.ModelInferRequest>()
+        val responseSerialiser = KafkaProtobufSerializer<InferenceSchema.ModelInferResponse>()
+
+        init {
+            val props =
+                mapOf(
+                    "schema.registry.url" to schemaRegistryUrl,
+                    "auto.register.schemas" to false,
+                    "use.latest.version" to true,
+                )
+
+            requestSerializer.configure(props, false)
+            responseSerialiser.configure(props, false)
+        }
+
         private val logger = Logger(PipelineSubscriber::class)
 
         // For consuming messages with Schema Registry wire format but without schema validation
@@ -94,10 +111,13 @@ class SerdeFactory {
             data: ByteArray?,
         ): ByteArray? {
             logger.info("the topic to deserialize is $topic")
-            return data?.let { removeSchemaRegistryWireFormat(it) }
+            return data?.let { removeSchemaRegistryWireFormat(topic, it) }
         }
 
-        private fun removeSchemaRegistryWireFormat(data: ByteArray): ByteArray {
+        private fun removeSchemaRegistryWireFormat(
+            topic: String?,
+            data: ByteArray,
+        ): ByteArray {
             // Schema Registry wire format:
             // [magic_byte(1)] + [schema_id(4)] + [actual_protobuf_data...]
 
@@ -117,8 +137,16 @@ class SerdeFactory {
 
             logger.info("First 10 bytes before remove: ${data.take(10).joinToString(" ") { "%02x".format(it) }}")
 
-            // Skip the first 5 bytes (magic byte + 4-byte schema ID)
-            val dataAfter = data.copyOfRange(7, data.size)
+//            var dataAfter: ByteArray = byteArrayOf()
+//
+//            if (topic?.contains("input") ?: return data) {
+//                dataAfter = deserializer.deserialize("inference_schema", data).toByteArray()
+//            } else if (topic?.contains("output") ?: return data) {
+//                dataAfter = deserializer.deserialize("inference_schema", data).toByteArray()
+//            }
+
+            // Skip the first 6 bytes (magic byte + 4-byte schema ID)
+            val dataAfter = data.copyOfRange(6, data.size)
 
             logger.info("First 10 bytes after remove: ${dataAfter.take(10).joinToString(" ") { "%02x".format(it) }}")
             logger.info("Returned data without schema id")
@@ -131,17 +159,29 @@ class SerdeFactory {
             topic: String?,
             data: ByteArray?,
         ): ByteArray? {
-            logger.info("the topic to serialise data is $topic")
-            return data?.let { payload ->
-                val schemaId = getSchemaId()
-                if (schemaId != null) {
-                    addSchemaRegistryWireFormat(payload, schemaId)
-                } else {
-                    logger.info("Schema with id $schemaId not found")
-                    // No schema ID available, return original payload without wire format
-                    payload
-                }
+            if (data == null) return null
+
+            return try {
+                // Parse raw protobuf to your message type
+                val message = InferenceSchema.ModelInferRequest.parseFrom(data)
+
+                // Serialize with Schema Registry wire format
+                requestSerializer.serialize("inference_request", message)
+            } catch (e: Exception) {
+                logger.warn("Failed to serialize with Schema Registry, using raw data", e)
+                data // Fallback to raw data
             }
+//            logger.info("the topic to serialise data is $topic")
+//            return data?.let { payload ->
+//                val schemaId = getSchemaId()
+//                if (schemaId != null) {
+//                    addSchemaRegistryWireFormat(payload, schemaId)
+//                } else {
+//                    logger.info("Schema with id $schemaId not found")
+//                    // No schema ID available, return original payload without wire format
+//                    payload
+//                }
+//            }
         }
 
         private fun addSchemaRegistryWireFormat(
@@ -181,52 +221,6 @@ class SerdeFactory {
             }
         }
     }
-
-    // Wire format deserializer (strips Schema Registry header then deserializes protobuf)
-//    class SchemaRegistryWireFormatDeserializer<T : Message>(
-//        private val protoClass: Class<T>
-//    ) : org.apache.kafka.common.serialization.Deserializer<T> {
-//
-//        companion object {
-//            private const val WIRE_FORMAT_HEADER_SIZE = 5 // magic byte + 4 bytes schema ID
-//        }
-//
-//        override fun deserialize(topic: String?, data: ByteArray?): T? {
-//            if (data == null) return null
-//
-//            // Strip the Schema Registry wire format header (magic byte + schema ID)
-//            val protobufData = if (data.size > WIRE_FORMAT_HEADER_SIZE) {
-//                data.copyOfRange(WIRE_FORMAT_HEADER_SIZE, data.size)
-//            } else {
-//                throw RuntimeException("Invalid Schema Registry wire format: data too short")
-//            }
-//
-//            return parseProtobufMessage(protobufData)
-//        }
-//
-//        private fun parseProtobufMessage(data: ByteArray): T? {
-//            return try {
-//                // For Kotlin generated protobuf classes, parseFrom is in the companion object
-//                val companionClass = Class.forName("${protoClass.name}\$Companion")
-//                val companionField = protoClass.getDeclaredField("Companion")
-//                val companion = companionField.get(null)
-//
-//                val parseMethod = companionClass.getMethod("parseFrom", ByteArray::class.java)
-//                parseMethod.invoke(companion, data) as T
-//            } catch (e: Exception) {
-//                // Fallback to Java-style if Kotlin companion object approach fails
-//                try {
-//                    val parseMethod = protoClass.getMethod("parseFrom", ByteArray::class.java)
-//                    parseMethod.invoke(null, data) as T
-//                } catch (fallbackException: Exception) {
-//                    throw RuntimeException(
-//                        "Failed to deserialize protobuf message. Tried both Kotlin and Java approaches.",
-//                        e
-//                    )
-//                }
-//            }
-//        }
-//    }
 
     // Generic factory for any protobuf class
     class KafkaSerdesFactory(private val useSchemaRegistry: Boolean) {
