@@ -125,6 +125,7 @@ func (iw *InferWorker) getGrpcClient(host string, port int) (v2.GRPCInferenceSer
 	}
 
 	opts := []grpc.DialOption{
+		grpc.WithKeepaliveParams(util.GetClientKeepAliveParameters()),
 		grpc.WithTransportCredentials(creds),
 		grpc.WithDefaultCallOptions(
 			grpc.MaxCallRecvMsgSize(util.GRPCMaxMsgSizeBytes),
