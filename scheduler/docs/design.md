@@ -60,14 +60,15 @@ A model state can be in a set of states.
 
 ```golang
 const (
-	ModelStateUnknown ModelState = iota
-	ModelProgressing
-	ModelAvailable
-	ModelFailed
-	ModelTerminating
-	ModelTerminated
-	ModelTerminateFailed
-	ScheduleFailed
+    ModelStateUnknown ModelState = iota
+    ModelProgressing
+    ModelAvailable
+    ModelFailed
+    ModelTerminating
+    ModelTerminated
+    ModelTerminateFailed
+    ScheduleFailed
+    ModelScaledDown
 )
 ```
 
@@ -121,3 +122,58 @@ When it syncs
 ### Scheduler-Envoy
  1. Envoy syncs and updates mapping for any models it sees that have state `Loaded` to be `Available` and removes any whose state is not `Loaded`
  1. Envoy sets all model replicas marked as `UnloadEnvoyRequested` to `UnloadRequested`, which would trigger Agent-server model replica unload
+
+
+Below a diagram of the interaction of creating a new Model
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Operator
+    participant Scheduler
+    participant ModelStore
+    participant EventBus
+    participant AgentClient as Agent Client
+    participant AgentServer
+    participant k8sAPI
+    participant MLServer
+    participant IncrementalProcessor
+    participant Envoy
+    
+    User->>Operator: Loads a new model First Time
+    Operator->>Scheduler: Request model load
+    Scheduler->>ModelStore: Create a new Model in store
+    ModelStore->>Scheduler: get all servers
+    Note right of Scheduler: filter servers
+    Note right of Scheduler: sort servers
+    Scheduler->>ModelStore: Update loaded Models (find and update to servers)
+    loop update loaded models per server and replicas
+    Note right of ModelStore: iterate through every assigned replica and set load requested
+    Note right of ModelStore: unload other models in other replicas that weren't requested
+      ModelStore->>ModelStore: update model status to Progressing
+      ModelStore->>EventBus: modelUpdateEventSource
+      EventBus-->>Scheduler: Handle Model events
+      Scheduler->>Operator: Send Status Event
+      Operator->>Operator: Update Model status to Progressing
+    end
+    EventBus->>AgentClient: model update event
+    loop through each model replica with Load Requested in Agent Client
+      AgentClient->>AgentServer: GRPC load request
+      AgentClient->>ModelStore: Update Replica state for model to Load Requested
+      ModelStore-->>EventBus: Model Update Event
+    end
+    
+    AgentServer->>k8sAPI: Get rclone config
+    AgentServer->>AgentServer: copy model artifact into pvc
+    AgentServer->>MLServer: Load model
+    
+    AgentServer->>AgentClient: New Agent event Model Loaded
+    AgentClient->>ModelStore: update model status to Loaded
+    ModelStore-->>EventBus: new Model Update Event Available
+    
+    EventBus-->>Scheduler: Handle Model events
+    EventBus-->>IncrementalProcessor: new Model Event with status Available
+    IncrementalProcessor->>Envoy: Add a new route for Model
+    Scheduler->>Operator: Send Status Event
+    Operator->>Operator: Update Model status to Available
+```
