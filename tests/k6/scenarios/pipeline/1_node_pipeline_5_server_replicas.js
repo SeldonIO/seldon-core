@@ -7,7 +7,7 @@ import {connectControlPlaneOps,
 } from '../../components/utils.js'
 import {generateMultiModelPipelineYaml, getModelInferencePayload} from '../../components/model.js';
 import {inferHttp} from "../../components/v2.js";
-import {generateServer} from "../../components/k8s.js";
+import {generateSeldonRuntime, generateServer} from "../../components/k8s.js";
 import {seldonOpExecStatus} from "../../components/seldon.js";
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
@@ -37,6 +37,16 @@ export function setup() {
     if (config.skipSetup) {
         return config
     }
+
+    const replicaModelGw = 1;
+    const replicaDataFlowEngine = 1;
+    const replicaPipeLineGw = 1;
+
+
+    const seldonRuneTime = generateSeldonRuntime(replicaModelGw,replicaPipeLineGw,replicaDataFlowEngine)
+
+    ctl.loadSeldonRuntimeFn(seldonRuneTime.object, true, true)
+
 
     const modelParams = [
         {
