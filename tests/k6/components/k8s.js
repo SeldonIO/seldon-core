@@ -508,7 +508,8 @@ export function generateServer(serverName, serverConfig, replicas, minReplicas, 
 
 export function loadServer(data, awaitReady=true, throwError=false) {
     try {
-        kubeclient.update(data)
+        let res =  kubeclient.update(data)
+        console.log(res)
         sleep(1)
         if (awaitReady) {
             return awaitServerStatus(data.metadata.name, "Ready")
