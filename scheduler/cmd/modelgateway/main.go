@@ -198,7 +198,7 @@ func main() {
 	}()
 
 	// Wait for completion
-	waitForTermSignalOrErr(logger, errChan)
+	waitForErrOrKillSignal(logger, errChan)
 
 	logger.Info("Graceful shutdown triggered")
 }
@@ -232,7 +232,7 @@ func initHealthProbeServer(logger *log.Logger, schedulerClient *gateway.KafkaSch
 	return healthServer
 }
 
-func waitForTermSignalOrErr(logger *log.Logger, errChan <-chan error) {
+func waitForErrOrKillSignal(logger *log.Logger, errChan <-chan error) {
 	exit := make(chan os.Signal, 1)
 	signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
 
@@ -242,4 +242,5 @@ func waitForTermSignalOrErr(logger *log.Logger, errChan <-chan error) {
 	case <-exit:
 		logger.Info("Shutting down due to SIGTERM or SIGINT")
 	}
+
 }
