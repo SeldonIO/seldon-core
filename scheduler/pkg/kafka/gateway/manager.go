@@ -229,11 +229,23 @@ func (cm *ConsumerManager) Stop() {
 	cm.logger.Infof("Stopping")
 	// stop all consumers
 	cm.logger.Infof("Number of consumers to stop %d", len(cm.consumers))
-	for icKey, ic := range cm.consumers {
-		cm.logger.Info("Stopping consumer")
-		delete(cm.consumers, icKey)
-		// we block until the consumers have completed their shutdown sequence with kafka and communicated their
-		// latest offsets
-		ic.Stop(true)
+
+	wg := &sync.WaitGroup{}
+	wg.Add(len(cm.consumers))
+	// consumers can take a while to shut down, we shut them down concurrently to mitigate risk of exceeded the k8s
+	// terminate graceful shutdown period (terminationGracePeriodSeconds)
+	for bucketID, ic := range cm.consumers {
+		go func() {
+			defer wg.Done()
+			cm.logger.WithField("bucket_id", bucketID).Info("Stopping consumer")
+			delete(cm.consumers, bucketID)
+			// we block until the consumers have completed their shutdown sequence with kafka and communicated their
+			// latest offsets
+			ic.Stop(true)
+		}()
 	}
+
+	cm.logger.Infof("Waiting for all consumers to stop")
+	wg.Wait()
+	cm.logger.Infof("All consumers stopped")
 }
