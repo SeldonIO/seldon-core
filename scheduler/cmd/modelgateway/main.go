@@ -78,14 +78,17 @@ func updateNamespace() {
 	}
 }
 
-func makeSignalHandler(logger *log.Logger, done chan<- bool) {
+func waitForErrOrKillSignal(logger *log.Logger, errChan <-chan error) {
 	exit := make(chan os.Signal, 1)
 	signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
 
-	<-exit
+	select {
+	case err := <-errChan:
+		logger.WithError(err).Error("Shutting down due to error")
+	case <-exit:
+		logger.Info("Shutting down due to SIGTERM or SIGINT")
+	}
 
-	logger.Info("shutting down due to SIGTERM or SIGINT")
-	close(done)
 }
 
 func getEnVar(logger *log.Logger, key string, defaultValue int) int {
@@ -115,9 +118,7 @@ func main() {
 
 	updateNamespace()
 
-	done := make(chan bool, 1)
-
-	go makeSignalHandler(logger, done)
+	errChan := make(chan error, 1)
 
 	tracer, err := tracing.NewTraceProvider("seldon-modelgateway", &tracingConfigPath, logger)
 	if err != nil {
@@ -160,14 +161,9 @@ func main() {
 
 	go func() {
 		err := kafkaSchedulerClient.Start()
-		if err != nil {
-			logger.WithError(err).Error("Start client failed")
-		}
-		logger.Infof("Scheduler client ended - closing done")
-		close(done)
+		logger.Infof("Scheduler client ended")
+		errChan <- err
 	}()
 
-	// Wait for completion
-	<-done
-
+	waitForErrOrKillSignal(logger, errChan)
 }
