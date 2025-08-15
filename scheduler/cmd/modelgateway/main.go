@@ -111,6 +111,8 @@ func main() {
 	logger := log.New()
 	flag.Parse()
 
+	defer logger.Infof("Graceful shutdown complete")
+
 	logIntLevel, err := log.ParseLevel(logLevel)
 	if err != nil {
 		logger.WithError(err).Fatalf("Failed to set log level %s", logLevel)

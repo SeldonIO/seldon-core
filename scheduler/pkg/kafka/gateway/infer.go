@@ -453,6 +453,8 @@ func (kc *InferKafkaHandler) Serve() {
 				continue
 			}
 
+			kc.consumer.IsClosed()
+
 			switch e := ev.(type) {
 			case *kafka.Message:
 
