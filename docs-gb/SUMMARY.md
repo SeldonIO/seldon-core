@@ -176,7 +176,17 @@
     * [External API](reference/external-prediction.md)
     * [Prediction Proto Buffer Spec](reference/prediction.md)
     * [Prediction Open API Spec](reference/api_index.md)
-      * [external](reference/seldon_core_external_via_ambassador.md)
+      * [API](api/README.md)
+  * ```yaml
+    type: builtin:openapi
+    props:
+      models: true
+    dependencies:
+      spec:
+        ref:
+          kind: openapi
+          spec: engine.oas3.json
+    ```
       * [internal](reference/seldon%20_core_internal_microservice_api.md)
     
  * [Python API Reference]*
