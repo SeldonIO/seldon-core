@@ -170,24 +170,25 @@
  * [Logging and Log Level](reference/log_level.md)
  * [Private Docker Registry](reference/private_registries.md)
  * [Prediction APIs]
-    * [Open Inference Protocol](reference/v2-protocol.md)
-    * [Scalar Value Types](reference/v2-protocol.md) 
-    * [Microservice API](reference/internal-api.md)
-    * [External API](reference/external-prediction.md)
-    * [Prediction Proto Buffer Spec](reference/prediction.md)
-    * [Prediction Open API Spec](reference/api_index.md)
-      * [Seldon Core External via Ambassador](reference/seldon_core_external_via_ambassador.md)
-       * ```yaml
-        type: builtin:openapi
-        props:
-          models: true
-        dependencies:
-          spec:
-            ref:
-              kind: openapi
-              spec: engine
-      * [internal](reference/seldon%20_core_internal_microservice_api.md)
-    
+  * [Open Inference Protocol](reference/v2-protocol.md)
+  * [Scalar Value Types](reference/v2-protocol.md) 
+  * [Microservice API](reference/internal-api.md)
+  * [External API](reference/external-prediction.md)
+  * [Prediction Proto Buffer Spec](reference/prediction.md)
+  * [Prediction Open API Spec](reference/api_index.md)
+    * [Seldon Core External via Ambassador](reference/seldon_core_external_via_ambassador.md)
+    * ```yaml
+      type: builtin:openapi
+      props:
+        models: true
+      dependencies:
+        spec:
+          ref:
+            kind: openapi
+            spec: https://github.com/SeldonIO/seldon-core/tree/master/openapi/engine.oas3.json
+      ```
+    * [Internal](reference/seldon_core_internal_microservice_api.md)
+
  * [Python API Reference]*
  * [Release Highlights](reference/release-highlights/)
     * [Release 1.7.0 Hightlights](reference/release-highlights/release-1.7.0.md)
