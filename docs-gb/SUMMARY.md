@@ -171,11 +171,12 @@
  * [Private Docker Registry](reference/private_registries.md)
  * [Prediction APIs]
     * [Open Inference Protocol](reference/v2-protocol.md)
-    * [Scalar Value Types](reference/v2-protocol.md) *
+    * [Scalar Value Types](reference/v2-protocol.md) 
     * [Microservice API](reference/internal-api.md)
     * [External API](reference/external-prediction.md)
     * [Prediction Proto Buffer Spec](reference/prediction.md)
-    * [Prediction Open API Spec] *
+    * [Prediction Open API Spec](reference/api_index.md)
+    
  * [Python API Reference]*
  * [Release Highlights](reference/release-highlights/)
     * [Release 1.7.0 Hightlights](reference/release-highlights/release-1.7.0.md)
