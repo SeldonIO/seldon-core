@@ -176,6 +176,8 @@
     * [External API](reference/external-prediction.md)
     * [Prediction Proto Buffer Spec](reference/prediction.md)
     * [Prediction Open API Spec](reference/api_index.md)
+      * [external](reference/seldon_core_external_via_ambassador.md)
+      * [internal](reference/seldon%20_core_internal_microservice_api.md)
     
  * [Python API Reference]*
  * [Release Highlights](reference/release-highlights/)
