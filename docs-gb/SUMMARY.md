@@ -185,7 +185,7 @@
         spec:
           ref:
             kind: openapi
-            spec: https://github.com/SeldonIO/seldon-core/tree/master/openapi/engine.oas3.json
+            spec: .gitbook/assets/engine.json
       ```
     * [Internal](reference/seldon_core_internal_microservice_api.md)
 
