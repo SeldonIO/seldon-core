@@ -1,4 +1,4 @@
-name: Nightly Link Checker
+name: GB Docs Link Checker
 
 on:
   schedule:
@@ -11,6 +11,7 @@ on:
 
 jobs:
   lychee-check:
+    if: github.repository == 'SeldonIO/seldon-core'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
