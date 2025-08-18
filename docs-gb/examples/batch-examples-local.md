@@ -197,7 +197,7 @@ seldon model infer iris '{"inputs": [{"name": "predict", "shape": [1, 4], "datat
 
 ```
 
-The preidiction request body needs to be an [Open Inference Protocol](../user-guide/inference/v2/)\
+The preidiction request body needs to be an [Open Inference Protocol](../user-guide/v2/)\
 compatible payload and also match the expected inputs for the model you've deployed. In this case,\
 the iris model expects data of shape `[1, 4]` and of type `FP32`.
 

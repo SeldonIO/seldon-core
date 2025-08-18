@@ -44,19 +44,19 @@
 * [Inference](user-guide/inference/README.md)
   * [Inference Server](inference.md)
   * [Run Inference](examples/inference.md)
-  * [Open Inference Protocol](user-guide/inference/v2/README.md)
-    * [REST](user-guide/inference/v2/rest/README.md)
-      * ```yaml
-        type: builtin:openapi
-        props:
-          models: true
-        dependencies:
-          spec:
-            ref:
-              kind: openapi
-              spec: open-inference-protocol-v2
-        ```
   * [Batch](examples/batch-examples-k8s.md)
+* [Open Inference Protocol](user-guide/v2/README.md)
+  * [REST](user-guide/v2/rest/README.md)
+    * ```yaml
+      type: builtin:openapi
+      props:
+        models: true
+      dependencies:
+        spec:
+          ref:
+            kind: openapi
+            spec: open-inference-protocol-v2
+      ```
 * [Pipelines](pipelines.md)
 * [Autoscaling](scaling/README.md)
   * [Seldon Core Autoscaling](scaling/core-autoscaling.md)
@@ -129,7 +129,7 @@
     * [Chainer](apis/internal/chainer.md)
     * [Agent](apis/internal/agent.md)
   * [Inference](apis/inference/README.md)
-    * [Open Inference Protocol](user-guide/inference/v2/README.md)
+    * [Open Inference Protocol](user-guide/v2/README.md)
   * [Scheduler](apis/scheduler.md)
   * [Seldon CLI](getting-started/cli.md)
     * [CLI](resources/apis/cli/cli.md)

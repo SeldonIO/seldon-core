@@ -10,6 +10,6 @@ Learn about the API specification implemented in all Seldon inference servers. T
 
 Seldon inference servers must respect the following API specification.
 
-* [Seldon, KServe, NVIDIA V2 Inference API Spec](../../user-guide/inference/v2/)
+* [Seldon, KServe, NVIDIA V2 Inference API Spec](../../user-guide/v2/)
 
 In future, Seldon may provide extensions for use with Pipelines, Experiments and Explainers.
