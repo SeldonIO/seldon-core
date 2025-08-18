@@ -1,5 +1,4 @@
 seldonio/seldon-core
-None
 AdaLogics/go-fuzz-headers
 AlecAivazis/survey
 Azure/azure-sdk-for-go
