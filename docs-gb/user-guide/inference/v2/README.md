@@ -1,40 +1,40 @@
 # Open Inference Protocol
 
-This page describes a predict/inference API independent of any
-specific ML/DL framework and model server. These APIs are
-able to support both easy-to-use and high-performance use cases.
-By implementing this protocol both
-inference clients and servers will increase their utility and
-portability by being able to operate seamlessly on platforms that have
-standardized around this API. This protocol is endorsed by NVIDIA
-Triton Inference Server, TensorFlow Serving, and ONNX Runtime
+This page describes a predict/inference API independent of any\
+specific ML/DL framework and model server. These APIs are\
+able to support both easy-to-use and high-performance use cases.\
+By implementing this protocol both\
+inference clients and servers will increase their utility and\
+portability by being able to operate seamlessly on platforms that have\
+standardized around this API. This protocol is endorsed by NVIDIA\
+Triton Inference Server, TensorFlow Serving, and ONNX Runtime\
 Server. It is sometimes referred to by its old name "V2 Inference Protocol".
 
-For an inference server to be compliant with this protocol the server
-must implement all APIs described below, except where an optional
-feature is explicitly noted. A compliant inference server may choose
+For an inference server to be compliant with this protocol the server\
+must implement all APIs described below, except where an optional\
+feature is explicitly noted. A compliant inference server may choose\
 to implement either or both of the HTTP/REST API and the GRPC API.
 
-The protocol supports an extension mechanism as a required part of the
-API, but this document does not propose any specific extensions. Any
+The protocol supports an extension mechanism as a required part of the\
+API, but this document does not propose any specific extensions. Any\
 specific extensions will be proposed separately.
 
 ## HTTP/REST
 
-A compliant server must implement the health, metadata, and inference
+A compliant server must implement the health, metadata, and inference\
 APIs described in this section.
 
-The HTTP/REST API uses JSON because it is widely supported and
-language independent. In all JSON schemas shown in this document
-$number, $string, $boolean, $object and $array refer to the
+The HTTP/REST API uses JSON because it is widely supported and\
+language independent. In all JSON schemas shown in this document\
+$number, $string, $boolean, $object and $array refer to the\
 fundamental JSON types. #optional indicates an optional JSON field.
 
 All strings in all contexts are case-sensitive.
 
-For Seldon a server must recognize the following URLs. The
-versions portion of the URL is shown as optional to allow
-implementations that don’t support versioning or for cases when the
-user does not want to specify a specific model version (in which case
+For Seldon a server must recognize the following URLs. The\
+versions portion of the URL is shown as optional to allow\
+implementations that don’t support versioning or for cases when the\
+user does not want to specify a specific model version (in which case\
 the server will choose a version based on its own policies).
 
 **Health:**
@@ -65,46 +65,43 @@ POST v2/models/${MODEL_NAME}[/versions/${MODEL_VERSION}]/infer
 
 ### Health
 
-A health request is made with an HTTP GET to a health endpoint. The
-HTTP response status code indicates a boolean result for the health
-request. A 200 status code indicates true and a 4xx status code
-indicates false. The HTTP response body should be empty. There are
+A health request is made with an HTTP GET to a health endpoint. The\
+HTTP response status code indicates a boolean result for the health\
+request. A 200 status code indicates true and a 4xx status code\
+indicates false. The HTTP response body should be empty. There are\
 three health APIs.
 
 #### Server Live
 
-The “server live” API indicates if the inference server is able to
-receive and respond to metadata and inference requests. The “server
-live” API can be used directly to implement the Kubernetes
+The “server live” API indicates if the inference server is able to\
+receive and respond to metadata and inference requests. The “server\
+live” API can be used directly to implement the Kubernetes\
 livenessProbe.
 
 #### Server Ready
 
-The “server ready” health API indicates if all the models are ready
-for inferencing. The “server ready” health API can be used directly to
+The “server ready” health API indicates if all the models are ready\
+for inferencing. The “server ready” health API can be used directly to\
 implement the Kubernetes readinessProbe.
 
 #### Model Ready
 
-The “model ready” health API indicates if a specific model is ready
-for inferencing. The model name and (optionally) version must be
-available in the URL. If a version is not provided the server may
+The “model ready” health API indicates if a specific model is ready\
+for inferencing. The model name and (optionally) version must be\
+available in the URL. If a version is not provided the server may\
 choose a version based on its own policies.
 
 ### Server Metadata
 
-The server metadata endpoint provides information about the server. A
-server metadata request is made with an HTTP GET to a server metadata
-endpoint. In the corresponding response the HTTP body contains the
-[Server Metadata Response JSON Object](#server-metadata-response-json-object)
-or the
-[Server Metadata Response JSON Error Object](#server-metadata-response-json-error-object).
+The server metadata endpoint provides information about the server. A\
+server metadata request is made with an HTTP GET to a server metadata\
+endpoint. In the corresponding response the HTTP body contains the[Server Metadata Response JSON Object](./#server-metadata-response-json-object)\
+or the[Server Metadata Response JSON Error Object](./#server-metadata-response-json-error-object).
 
 #### Server Metadata Response JSON Object
 
-A successful server metadata request is indicated by a 200 HTTP status
-code. The server metadata response object, identified as
-*$metadata_server_response*, is returned in the HTTP body.
+A successful server metadata request is indicated by a 200 HTTP status\
+code. The server metadata response object, identified a&#x73;_$metadata\_server\_response_, is returned in the HTTP body.
 
 ```md
 $metadata_server_response =
@@ -117,15 +114,14 @@ $metadata_server_response =
 
 * “name” : A descriptive name for the server.
 * "version" : The server version.
-* “extensions” : The extensions supported by the server. Currently no
-  standard extensions are defined. Individual inference servers may
+* “extensions” : The extensions supported by the server. Currently no\
+  standard extensions are defined. Individual inference servers may\
   define and document their own extensions.
 
 #### Server Metadata Response JSON Error Object
 
-A failed server metadata request must be indicated by an HTTP error
-status (typically 400). The HTTP body must contain the
-*$metadata_server_error_response* object.
+A failed server metadata request must be indicated by an HTTP error\
+status (typically 400). The HTTP body must contain th&#x65;_$metadata\_server\_error\_response_ object.
 
 ```md
 $metadata_server_error_response =
@@ -138,21 +134,18 @@ $metadata_server_error_response =
 
 ### Model Metadata
 
-The per-model metadata endpoint provides information about a model. A
-model metadata request is made with an HTTP GET to a model metadata
-endpoint. In the corresponding response the HTTP body contains the
-[Model Metadata Response JSON Object](#model-metadata-response-json-object)
-or the
-[Model Metadata Response JSON Error Object](#model-metadata-response-json-error-object).
-The model name and (optionally) version must be available in the
-URL. If a version is not provided the server may choose a version
+The per-model metadata endpoint provides information about a model. A\
+model metadata request is made with an HTTP GET to a model metadata\
+endpoint. In the corresponding response the HTTP body contains the[Model Metadata Response JSON Object](./#model-metadata-response-json-object)\
+or the[Model Metadata Response JSON Error Object](./#model-metadata-response-json-error-object).\
+The model name and (optionally) version must be available in the\
+URL. If a version is not provided the server may choose a version\
 based on its own policies or return an error.
 
 #### Model Metadata Response JSON Object
 
-A successful model metadata request is indicated by a 200 HTTP status
-code. The metadata response object, identified as
-*$metadata_model_response*, is returned in the HTTP body for every
+A successful model metadata request is indicated by a 200 HTTP status\
+code. The metadata response object, identified a&#x73;_$metadata\_model\_response_, is returned in the HTTP body for every\
 successful model metadata request.
 
 ```md
@@ -167,17 +160,15 @@ $metadata_model_response =
 ```
 
 * “name” : The name of the model.
-* "versions" : The model versions that may be explicitly requested via
-  the appropriate endpoint. Optional for servers that don’t support
-  versions. Optional for models that don’t allow a version to be
+* "versions" : The model versions that may be explicitly requested via\
+  the appropriate endpoint. Optional for servers that don’t support\
+  versions. Optional for models that don’t allow a version to be\
   explicitly requested.
-* “platform” : The framework/backend for the model. See
-  [Platforms](#platforms).
+* “platform” : The framework/backend for the model. See[Platforms](./#platforms).
 * “inputs” : The inputs required by the model.
 * “outputs” : The outputs produced by the model.
 
-Each model input and output tensors’ metadata is described with a
-*$metadata_tensor object*.
+Each model input and output tensors’ metadata is described with &#x61;_$metadata\_tensor object_.
 
 ```md
 $metadata_tensor =
@@ -189,16 +180,14 @@ $metadata_tensor =
 ```
 
 * “name” : The name of the tensor.
-* "datatype" : The data-type of the tensor elements as defined in
-  [Tensor Data Types](#tensor-data-types).
-* "shape" : The shape of the tensor. Variable-size dimensions are
+* "datatype" : The data-type of the tensor elements as defined in[Tensor Data Types](./#tensor-data-types).
+* "shape" : The shape of the tensor. Variable-size dimensions are\
   specified as -1.
 
 #### Model Metadata Response JSON Error Object
 
-A failed model metadata request must be indicated by an HTTP error
-status (typically 400). The HTTP body must contain the
-*$metadata_model_error_response* object.
+A failed model metadata request must be indicated by an HTTP error\
+status (typically 400). The HTTP body must contain th&#x65;_$metadata\_model\_error\_response_ object.
 
 ```md
 $metadata_model_error_response =
@@ -211,21 +200,17 @@ $metadata_model_error_response =
 
 ### Inference
 
-An inference request is made with an HTTP POST to an inference
-endpoint. In the request the HTTP body contains the
-[Inference Request JSON Object](#inference-request-json-object). In
-the corresponding response the HTTP body contains the
-[Inference Response JSON Object](#inference-response-json-object) or
-[Inference Response JSON Error Object](#inference-response-json-error-object). See
-[Inference Request Examples](#inference-request-examples) for some
+An inference request is made with an HTTP POST to an inference\
+endpoint. In the request the HTTP body contains the[Inference Request JSON Object](./#inference-request-json-object). In\
+the corresponding response the HTTP body contains the[Inference Response JSON Object](./#inference-response-json-object) or[Inference Response JSON Error Object](./#inference-response-json-error-object). See[Inference Request Examples](./#inference-request-examples) for some\
 example HTTP/REST requests and responses.
 
 #### Inference Request JSON Object
 
-The inference request object, identified as `$inference_request`, is
-required in the HTTP body of the POST request. The model name and
-(optionally) version must be available in the URL. If a version is not
-provided the server may choose a version based on its own policies or
+The inference request object, identified as `$inference_request`, is\
+required in the HTTP body of the POST request. The model name and\
+(optionally) version must be available in the URL. If a version is not\
+provided the server may choose a version based on its own policies or\
 return an error.
 
 ```md
@@ -238,23 +223,21 @@ $inference_request =
 }
 ```
 
-* `id` : An identifier for this request. Optional, but if specified
+* `id` : An identifier for this request. Optional, but if specified\
   this identifier must be returned in the response.
-* `parameters` : An object containing zero or more parameters for this
-  inference request expressed as key/value pairs. See
-  [Parameters](#parameters) for more information.
-* `inputs` : The input tensors. Each input is described using the
-  `$request_input` schema defined in [Request Input](#request-input).
-* `outputs` : The output tensors requested for this inference. Each
-  requested output is described using the `$request_output` schema
-  defined in [Request Output](#request-output). Optional, if not
-  specified all outputs produced by the model will be returned using
+* `parameters` : An object containing zero or more parameters for this\
+  inference request expressed as key/value pairs. See[Parameters](./#parameters) for more information.
+* `inputs` : The input tensors. Each input is described using the`$request_input` schema defined in [Request Input](./#request-input).
+* `outputs` : The output tensors requested for this inference. Each\
+  requested output is described using the `$request_output` schema\
+  defined in [Request Output](./#request-output). Optional, if not\
+  specified all outputs produced by the model will be returned using\
   default `$request_output` settings.
 
-##### Request Input
+**Request Input**
 
-The `$request_input` JSON describes an input to the model. If the
-input is batched, the shape and data must represent the full shape and
+The `$request_input` JSON describes an input to the model. If the\
+input is batched, the shape and data must represent the full shape and\
 contents of the entire batch.
 
 ```md
@@ -269,19 +252,19 @@ $request_input =
 ```
 
 * `"name"`: The name of the input tensor.
-* `"shape"`: The shape of the input tensor. Each dimension must be an
+* `"shape"`: The shape of the input tensor. Each dimension must be an\
   integer representable as an unsigned 64-bit integer value.
-* `"datatype"`: The data-type of the input tensor elements as defined
-  in [Tensor Data Types](#tensor-data-types).
-* `"parameters"`: An object containing zero or more parameters for this
-  input expressed as key/value pairs. See [Parameters](#parameters)
+* `"datatype"`: The data-type of the input tensor elements as defined\
+  in [Tensor Data Types](./#tensor-data-types).
+* `"parameters"`: An object containing zero or more parameters for this\
+  input expressed as key/value pairs. See [Parameters](./#parameters)\
   for more information.
-* `“data”`: The contents of the tensor. See [Tensor Data](#tensor-data)
+* `“data”`: The contents of the tensor. See [Tensor Data](./#tensor-data)\
   for more information.
 
-##### Request Output
+**Request Output**
 
-The `$request_output` JSON is used to request which output tensors
+The `$request_output` JSON is used to request which output tensors\
 should be returned from the model.
 
 ```md
@@ -293,15 +276,14 @@ $request_output =
 ```
 
 * `"name"`: The name of the output tensor.
-* `"parameters"`: An object containing zero or more parameters for this
-  output expressed as key/value pairs. See [Parameters](#parameters)
+* `"parameters"`: An object containing zero or more parameters for this\
+  output expressed as key/value pairs. See [Parameters](./#parameters)\
   for more information.
 
 #### Inference Response JSON Object
 
-A successful inference request is indicated by a 200 HTTP status
-code. The inference response object, identified as
-*$inference_response*, is returned in the HTTP body.
+A successful inference request is indicated by a 200 HTTP status\
+code. The inference response object, identified a&#x73;_$inference\_response_, is returned in the HTTP body.
 
 ```md
 $inference_response =
@@ -315,21 +297,19 @@ $inference_response =
 ```
 
 * `"model_name"`: The name of the model used for inference.
-* `"model_version"`: The specific model version used for
-  inference. Inference servers that do not implement versioning should
+* `"model_version"`: The specific model version used for\
+  inference. Inference servers that do not implement versioning should\
   not provide this field in the response.
 * `"id"`: The "id" identifier given in the request, if any.
-* `"parameters"`: An object containing zero or more parameters for this
-  response expressed as key/value pairs. See [Parameters](#parameters)
+* `"parameters"`: An object containing zero or more parameters for this\
+  response expressed as key/value pairs. See [Parameters](./#parameters)\
   for more information.
-* `"outputs"`: The output tensors. Each output is described using the
-  `$response_output` schema defined in
-  [Response Output](#response-output).
+* `"outputs"`: The output tensors. Each output is described using the`$response_output` schema defined in[Response Output](./#response-output).
 
-##### Response Output
+**Response Output**
 
-The `$response_output` JSON describes an output from the model. If the
-output is batched, the shape and data represents the full shape of the
+The `$response_output` JSON describes an output from the model. If the\
+output is batched, the shape and data represents the full shape of the\
 entire batch.
 
 ```md
@@ -344,21 +324,20 @@ $response_output =
 ```
 
 * `"name"`: The name of the output tensor.
-* `"shape"`: The shape of the output tensor. Each dimension must be an
+* `"shape"`: The shape of the output tensor. Each dimension must be an\
   integer representable as an unsigned 64-bit integer value.
-* `"datatype"`: The data-type of the output tensor elements as defined
-  in [Tensor Data Types](#tensor-data-types).
-* `"parameters"`: An object containing zero or more parameters for this
-  input expressed as key/value pairs. See [Parameters](#parameters)
+* `"datatype"`: The data-type of the output tensor elements as defined\
+  in [Tensor Data Types](./#tensor-data-types).
+* `"parameters"`: An object containing zero or more parameters for this\
+  input expressed as key/value pairs. See [Parameters](./#parameters)\
   for more information.
-* `“data”`: The contents of the tensor. See [Tensor Data](#tensor-data)
+* `“data”`: The contents of the tensor. See [Tensor Data](./#tensor-data)\
   for more information.
 
 #### Inference Response JSON Error Object
 
-A failed inference request must be indicated by an HTTP error status
-(typically 400). The HTTP body must contain the
-`$inference_error_response` object.
+A failed inference request must be indicated by an HTTP error status\
+(typically 400). The HTTP body must contain the`$inference_error_response` object.
 
 ```md
 $inference_error_response =
@@ -371,8 +350,8 @@ $inference_error_response =
 
 #### Inference Request Examples
 
-The following example shows an inference request to a model with two
-inputs and one output. The HTTP Content-Length header gives the size
+The following example shows an inference request to a model with two\
+inputs and one output. The HTTP Content-Length header gives the size\
 of the JSON object.
 
 ```md
@@ -404,8 +383,8 @@ Content-Length: <xx>
 }
 ```
 
-For the above request the inference server must return the “output0”
-output tensor. Assuming the model returns a [ 3, 2 ] tensor of data
+For the above request the inference server must return the “output0”\
+output tensor. Assuming the model returns a \[ 3, 2 ] tensor of data\
 type FP32 the following response would be returned.
 
 ```md
@@ -427,9 +406,8 @@ Content-Length: <yy>
 
 ### Parameters
 
-The `$parameters` JSON describes zero or more `“name”`/`”value”` pairs,
-where the `“name”` is the name of the parameter and the `“value”` is a
-`$string`, `$number`, or `$boolean`.
+The `$parameters` JSON describes zero or more `“name”`/`”value”` pairs,\
+where the `“name”` is the name of the parameter and the `“value”` is a`$string`, `$number`, or `$boolean`.
 
 ```md
 $parameters =
@@ -440,53 +418,56 @@ $parameters =
 $parameter = $string : $string | $number | $boolean
 ```
 
-Currently no parameters are defined. As required a future proposal may
-define one or more standard parameters to allow portable functionality
-across different inference servers. A server can implement
+Currently no parameters are defined. As required a future proposal may\
+define one or more standard parameters to allow portable functionality\
+across different inference servers. A server can implement\
 server-specific parameters to provide non-standard capabilities.
 
 ### Tensor Data
 
-Tensor data must be presented in row-major order of the tensor
-elements. Element values must be given in "linear" order without any
-stride or padding between elements. Tensor elements may be presented
-in their nature multi-dimensional representation, or as a flattened
+Tensor data must be presented in row-major order of the tensor\
+elements. Element values must be given in "linear" order without any\
+stride or padding between elements. Tensor elements may be presented\
+in their nature multi-dimensional representation, or as a flattened\
 one-dimensional representation.
 
-Tensor data given explicitly is provided in a JSON array. Each element
-of the array may be an integer, floating-point number, string or
-boolean value. The server can decide to coerce each element to the
-required type or return an error if an unexpected value is
-received. Note that fp16 is problematic to communicate explicitly
-since there is not a standard fp16 representation across backends nor
-typically the programmatic support to create the fp16 representation
+Tensor data given explicitly is provided in a JSON array. Each element\
+of the array may be an integer, floating-point number, string or\
+boolean value. The server can decide to coerce each element to the\
+required type or return an error if an unexpected value is\
+received. Note that fp16 is problematic to communicate explicitly\
+since there is not a standard fp16 representation across backends nor\
+typically the programmatic support to create the fp16 representation\
 for a JSON number.
 
 For example, the 2-dimensional matrix:
+
 ```md
 [ 1 2
   4 5 ]
 ```
 
 Can be represented in its natural format as:
+
 ```md
 "data" : [ [ 1, 2 ], [ 4, 5 ] ]
 ```
 
 Or in a flattened one-dimensional representation:
+
 ```md
 "data" : [ 1, 2, 4, 5 ]
 ```
 
 ## GRPC
 
-The GRPC API closely follows the concepts defined in the
-[HTTP/REST](#httprest) API. A compliant server must implement the
+The GRPC API closely follows the concepts defined in the[HTTP/REST](./#httprest) API. A compliant server must implement the\
 health, metadata, and inference APIs described in this section.
 
 All strings in all contexts are case-sensitive.
 
 The GRPC definition of the service is:
+
 ```md
 //
 // Inference Server GRPC endpoints.
@@ -515,16 +496,17 @@ service GRPCInferenceService
 
 ### Health
 
-A health request is made using the ServerLive, ServerReady, or
-ModelReady endpoint. For each of these endpoints errors are indicated
-by the google.rpc.Status returned for the request. The OK code
+A health request is made using the ServerLive, ServerReady, or\
+ModelReady endpoint. For each of these endpoints errors are indicated\
+by the google.rpc.Status returned for the request. The OK code\
 indicates success and other codes indicate failure.
 
 #### Server Live
 
-The ServerLive API indicates if the inference server is able to
-receive and respond to metadata and inference requests. The request
+The ServerLive API indicates if the inference server is able to\
+receive and respond to metadata and inference requests. The request\
 and response messages for ServerLive are:
+
 ```md
 message ServerLiveRequest {}
 
@@ -537,8 +519,9 @@ message ServerLiveResponse
 
 #### Server Ready
 
-The ServerReady API indicates if the server is ready for
+The ServerReady API indicates if the server is ready for\
 inferencing. The request and response messages for ServerReady are:
+
 ```md
 message ServerReadyRequest {}
 
@@ -551,8 +534,9 @@ message ServerReadyResponse
 
 #### Model Ready
 
-The ModelReady API indicates if a specific model is ready for
+The ModelReady API indicates if a specific model is ready for\
 inferencing. The request and response messages for ModelReady are:
+
 ```md
 message ModelReadyRequest
 {
@@ -573,10 +557,11 @@ message ModelReadyResponse
 
 ### Server Metadata
 
-The ServerMetadata API provides information about the server. Errors
-are indicated by the google.rpc.Status returned for the request. The
-OK code indicates success and other codes indicate failure. The
+The ServerMetadata API provides information about the server. Errors\
+are indicated by the google.rpc.Status returned for the request. The\
+OK code indicates success and other codes indicate failure. The\
 request and response messages for ServerMetadata are:
+
 ```md
 message ServerMetadataRequest {}
 
@@ -595,9 +580,9 @@ message ServerMetadataResponse
 
 ### Model Metadata
 
-The per-model metadata API provides information about a model. Errors
-are indicated by the google.rpc.Status returned for the request. The
-OK code indicates success and other codes indicate failure. The
+The per-model metadata API provides information about a model. Errors\
+are indicated by the google.rpc.Status returned for the request. The\
+OK code indicates success and other codes indicate failure. The\
 request and response messages for ModelMetadata are:
 
 ```md
@@ -646,10 +631,11 @@ message ModelMetadataResponse
 
 ### Inference
 
-The ModelInfer API performs inference using the specified
-model. Errors are indicated by the google.rpc.Status returned for the
-request. The OK code indicates success and other codes indicate
+The ModelInfer API performs inference using the specified\
+model. Errors are indicated by the google.rpc.Status returned for the\
+request. The OK code indicates success and other codes indicate\
 failure. The request and response messages for ModelInfer are:
+
 ```md
 message ModelInferRequest
 {
@@ -780,14 +766,14 @@ message ModelInferResponse
 
 ### Parameters
 
-The Parameters message describes a `“name”`/`”value”` pair, where the
-`“name”` is the name of the parameter and the `“value”` is a boolean,
+The Parameters message describes a `“name”`/`”value”` pair, where the`“name”` is the name of the parameter and the `“value”` is a boolean,\
 integer, or string corresponding to the parameter.
 
-Currently no parameters are defined. As required a future proposal may
-define one or more standard parameters to allow portable functionality
-across different inference servers. A server can implement
+Currently no parameters are defined. As required a future proposal may\
+define one or more standard parameters to allow portable functionality\
+across different inference servers. A server can implement\
 server-specific parameters to provide non-standard capabilities.
+
 ```md
 //
 // An inference parameter value.
@@ -812,20 +798,19 @@ message InferParameter
 
 ### Tensor Data
 
-In all representations tensor data must be flattened to a
-one-dimensional, row-major order of the tensor elements. Element
-values must be given in "linear" order without any stride or padding
+In all representations tensor data must be flattened to a\
+one-dimensional, row-major order of the tensor elements. Element\
+values must be given in "linear" order without any stride or padding\
 between elements.
 
-Using a "raw" representation of tensors with
-`ModelInferRequest::raw_input_contents` and
-`ModelInferResponse::raw_output_contents` will typically allow higher
-performance due to the way protobuf allocation and reuse interacts
+Using a "raw" representation of tensors with`ModelInferRequest::raw_input_contents` and`ModelInferResponse::raw_output_contents` will typically allow higher\
+performance due to the way protobuf allocation and reuse interacts\
 with GRPC. For example, see [issue here](https://github.com/grpc/grpc/issues/23231).
 
-An alternative to the `"raw"` representation is to use
-InferTensorContents to represent the tensor data in a format that
+An alternative to the `"raw"` representation is to use\
+InferTensorContents to represent the tensor data in a format that\
 matches the tensor's data type.
+
 ```md
 //
 // The data contained in a tensor represented by the repeated type
@@ -880,13 +865,11 @@ message InferTensorContents
 
 ## Platforms
 
-A platform is a string indicating a DL/ML framework or
-backend. Platform is returned as part of the response to a
-[Model Metadata](#model-metadata) request but is information only. The
-proposed inference APIs are generic relative to the DL/ML framework
-used by a model and so a client does not need to know the platform of
-a given model to use the API. Platform names use the format
-`“<project>_<format>”`. The following platform names are allowed:
+A platform is a string indicating a DL/ML framework or\
+backend. Platform is returned as part of the response to a[Model Metadata](./#model-metadata) request but is information only. The\
+proposed inference APIs are generic relative to the DL/ML framework\
+used by a model and so a client does not need to know the platform of\
+a given model to use the API. Platform names use the format`“<project>_<format>”`. The following platform names are allowed:
 
 * `tensorrt_plan`: A TensorRT model encoded as a serialized engine or `“plan”`.
 * `tensorflow_graphdef`: A TensorFlow model encoded as a GraphDef.
@@ -898,26 +881,24 @@ a given model to use the API. Platform names use the format
 
 ## Tensor Data Types
 
-Tensor data types are shown in the following table along with the size
+Tensor data types are shown in the following table along with the size\
 of each type, in bytes.
 
-
-| Data Type | Size (bytes) |
-| --------- | ------------ |
-| BOOL      | 1            |
-| UINT8     | 1            |
-| UINT16    | 2            |
-| UINT32    | 4            |
-| UINT64    | 8            |
-| INT8      | 1            |
-| INT16     | 2            |
-| INT32     | 4            |
-| INT64     | 8            |
-| FP16      | 2            |
-| FP32      | 4            |
-| FP64      | 8            |
+| Data Type | Size (bytes)                  |
+| --------- | ----------------------------- |
+| BOOL      | 1                             |
+| UINT8     | 1                             |
+| UINT16    | 2                             |
+| UINT32    | 4                             |
+| UINT64    | 8                             |
+| INT8      | 1                             |
+| INT16     | 2                             |
+| INT32     | 4                             |
+| INT64     | 8                             |
+| FP16      | 2                             |
+| FP32      | 4                             |
+| FP64      | 8                             |
 | BYTES     | Variable (max 2<sup>32</sup>) |
-
 
 ## References
 

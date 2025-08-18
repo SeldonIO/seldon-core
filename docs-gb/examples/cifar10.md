@@ -1,6 +1,3 @@
----
----
-
 # Production image classifier with drift and outlier monitoring
 
 Run these examples from the `samples/examples/image_classifier` folder.
@@ -11,9 +8,9 @@ Run these examples from the `samples/examples/image_classifier` folder.
 
 We show an image classifier (CIFAR10) with associated outlier and drift detectors using a Pipeline.
 
-* The model is a tensorflow [CIFAR10](https://www.cs.toronto.edu/\~kriz/cifar.html) image classfier
-* The outlier detector is created from the [CIFAR10 VAE Outlier example](https://docs.seldon.io/projects/alibi-detect/en/stable/examples/od\_vae\_cifar10.html).
-* The drift detector is created from the [CIFAR10 KS Drift example](https://docs.seldon.io/projects/alibi-detect/en/stable/examples/cd\_ks\_cifar10.html)
+* The model is a tensorflow [CIFAR10](https://www.cs.toronto.edu/~kriz/cifar.html) image classfier
+* The outlier detector is created from the [CIFAR10 VAE Outlier example](https://docs.seldon.io/projects/alibi-detect/en/stable/examples/od_vae_cifar10.html).
+* The drift detector is created from the [CIFAR10 KS Drift example](https://docs.seldon.io/projects/alibi-detect/en/stable/examples/cd_ks_cifar10.html)
 
 ### Model Training (optional for notebook)
 
@@ -220,8 +217,6 @@ seldon model status cifar10-drift -w ModelAvailable | jq .
 {% endtab %}
 {% endtabs %}
 
-
-
 ```bash
 cat ../../pipelines/cifar10.yaml
 ```
@@ -247,7 +242,6 @@ spec:
 
 {% tabs %}
 {% tab title="kubectl" %}
-
 ```bash
 kubectl apply -f ../../pipelines/cifar10.yaml  -n ${NAMESPACE}
 ```
@@ -316,71 +310,49 @@ seldon pipeline status cifar10-production -w PipelineReady | jq -M .
 {% endtab %}
 {% endtabs %}
 
-
 ```python
 infer("cifar10-production.pipeline",20, "normal")
 ```
 
-
-![png](../images/infer_14_0.png)
-
+![png](<../images/infer_14_0 (1).png>)
 
 ![png](../images/infer_14_1.png)
 
-
 ![png](../images/infer_14_2.png)
-
 
 ![png](../images/infer_14_3.png)
 
-
 ![png](../images/infer_14_4.png)
-
 
 ![png](../images/infer_14_5.png)
 
-
 ![png](../images/infer_14_6.png)
-
 
 ![png](../images/infer_14_7.png)
 
-
 ![png](../images/infer_14_8.png)
-
 
 ![png](../images/infer_14_9.png)
 
-
 ![png](../images/infer_14_10.png)
-
 
 ![png](../images/infer_14_11.png)
 
-
 ![png](../images/infer_14_12.png)
-
 
 ![png](../images/infer_14_13.png)
 
-
 ![png](../images/infer_14_14.png)
-
 
 ![png](../images/infer_14_15.png)
 
-
 ![png](../images/infer_14_16.png)
-
 
 ![png](../images/infer_14_17.png)
 
-
 ![png](../images/infer_14_18.png)
 
-
 ![png](../images/infer_14_19.png)
-
 
 ```
 <Response [200]>
@@ -403,62 +375,43 @@ infer("cifar10-production.pipeline",20, "drift")
 
 ![png](../images/infer_16_0.png)
 
-
 ![png](../images/infer_16_1.png)
-
 
 ![png](../images/infer_16_2.png)
 
-
 ![png](../images/infer_16_3.png)
-
 
 ![png](../images/infer_16_4.png)
 
-
 ![png](../images/infer_16_5.png)
-
 
 ![png](../images/infer_16_6.png)
 
-
 ![png](../images/infer_16_7.png)
-
 
 ![png](../images/infer_16_8.png)
 
-
 ![png](../images/infer_16_9.png)
 
-
 ![png](../images/infer_16_10.png)
-
 
 ![png](../images/infer_16_11.png)
 
 ![png](../images/infer_16_12.png)
 
-
 ![png](../images/infer_16_13.png)
-
 
 ![png](../images/infer_16_14.png)
 
-
 ![png](../images/infer_16_15.png)
-
 
 ![png](../images/infer_16_16.png)
 
-
 ![png](../images/infer_16_17.png)
-
 
 ![png](../images/infer_16_18.png)
 
-
 ![png](../images/infer_16_19.png)
-
 
 ```
 <Response [200]>
@@ -481,7 +434,6 @@ infer("cifar10-production.pipeline",1, "outlier")
 
 ![png](../images/infer_18_0.png)
 
-
 ```
 <Response [200]>
 {'model_name': '', 'outputs': [{'data': [6.3606867e-06, 0.0006106364, 0.0054279356, 0.6536454, 1.4738829e-05, 2.6104701e-06, 0.3397848, 1.3538776e-05, 0.0004458526, 4.807229e-05], 'name': 'fc10', 'shape': [1, 10], 'datatype': 'FP32'}, {'data': [1], 'name': 'is_outlier', 'shape': [1, 1], 'datatype': 'INT64', 'parameters': {'content_type': 'np'}}]}
@@ -493,7 +445,6 @@ infer("cifar10-production.pipeline",1, "ok")
 ```
 
 ![png](../images/infer_19_0.png)
-
 
 ```
 <Response [200]>
@@ -512,7 +463,6 @@ seldon.default.model.cifar10.outputs	cifeiq8fh5ss738i5bqg	{"modelName":"cifar10_
 
 ```
 
-
 {% tabs %}
 {% tab title="kubectl" %}
 ```bash
@@ -521,11 +471,9 @@ kubectl delete -f ../../models/cifar10.yaml -n ${NAMESPACE}
 kubectl delete -f ../../models/cifar10-outlier-detect.yaml -n ${NAMESPACE}
 kubectl delete -f ../../models/cifar10-drift-detect.yaml -n ${NAMESPACE}
 ```
-
 {% endtab %}
 
 {% tab title="seldon-cli" %}
-
 ```bash
 seldon pipeline unload cifar10-production
 ```

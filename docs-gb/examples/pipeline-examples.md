@@ -1,22 +1,19 @@
----
----
+# Pipeline examples
 
-# Seldon V2 Pipeline Examples
-
-This notebook illustrates a series of Pipelines showing of different ways of combining flows of
+This notebook illustrates a series of Pipelines showing of different ways of combining flows of\
 data and conditional logic. We assume you have Seldon Core 2 running locally.
 
 ### Models Used
 
-* `gs://seldon-models/triton/simple` an example Triton tensorflow model that takes 2 inputs INPUT0
-and INPUT1 and adds them to produce OUTPUT0 and also subtracts INPUT1 from INPUT0 to produce OUTPUT1.
-See [here](https://github.com/triton-inference-server/server/tree/main/docs/examples/model_repository/simple)
-for the original source code and license.
+* `gs://seldon-models/triton/simple` an example Triton tensorflow model that takes 2 inputs INPUT0\
+  and INPUT1 and adds them to produce OUTPUT0 and also subtracts INPUT1 from INPUT0 to produce OUTPUT1.\
+  See [here](https://github.com/triton-inference-server/server/tree/main/docs/examples/model_repository/simple)\
+  for the original source code and license.
 * Other models can be found at https://github.com/SeldonIO/triton-python-examples
 
 ### Model Chaining
 
-Chain the output of one model into the next. Also shows chaning the tensor names via `tensorMap` to
+Chain the output of one model into the next. Also shows chaning the tensor names via `tensorMap` to\
 conform to the expected input tensor names of the second model.
 
 ```bash
@@ -69,8 +66,8 @@ seldon model status tfsimple2 -w ModelAvailable | jq -M .
 
 ```
 
-The pipeline below chains the output of `tfsimple1` into `tfsimple2`. As these models have compatible
-shape and data type this can be done. However, the output tensor names from `tfsimple1` need to be
+The pipeline below chains the output of `tfsimple1` into `tfsimple2`. As these models have compatible\
+shape and data type this can be done. However, the output tensor names from `tfsimple1` need to be\
 renamed to match the input tensor names for `tfsimple2`. We do this with the `tensorMap` feature.
 
 The output of the Pipeline is the output from `tfsimple2`.
@@ -1108,6 +1105,7 @@ seldon model unload mul10
 ```
 
 ### Pipeline Input Tensors
+
 Access to indivudal tensors in pipeline inputs
 
 ```bash

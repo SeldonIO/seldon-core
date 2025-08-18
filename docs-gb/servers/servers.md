@@ -1,11 +1,14 @@
 ---
-description: Learn how to configure and manage inference servers in Seldon Core 2, including MLServer and Triton server farms, model scheduling, and capability management.
+description: >-
+  Learn how to configure and manage inference servers in Seldon Core 2,
+  including MLServer and Triton server farms, model scheduling, and capability
+  management.
 ---
 
 # Servers
 
-By default Seldon installs two server farms using MLServer and Triton with 1 replica each. Models
-are scheduled onto servers based on the server's resources and whether the capabilities of the server
+By default Seldon installs two server farms using MLServer and Triton with 1 replica each. Models\
+are scheduled onto servers based on the server's resources and whether the capabilities of the server\
 matches the requirements specified in the Model request. For example:
 
 ```yaml
@@ -24,18 +27,21 @@ This model specifies the requirement `sklearn`
 
 There is a default capabilities for each server as follows:
 
-* MLServer
-  ```yaml
-  - name: SELDON_SERVER_CAPABILITIES
-    value: "mlserver,alibi-detect,alibi-explain,huggingface,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
-  ```
-* Triton
-  ```yaml
-  - name: SELDON_SERVER_CAPABILITIES
-    value: "triton,dali,fil,onnx,openvino,python,pytorch,tensorflow,tensorrt"
-  ```
+*   MLServer
+
+    ```yaml
+    - name: SELDON_SERVER_CAPABILITIES
+      value: "mlserver,alibi-detect,alibi-explain,huggingface,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
+    ```
+*   Triton
+
+    ```yaml
+    - name: SELDON_SERVER_CAPABILITIES
+      value: "triton,dali,fil,onnx,openvino,python,pytorch,tensorflow,tensorrt"
+    ```
 
 ## Custom Capabilities
+
 Servers can be defined with a `capabilities` field to indicate custom configurations (e.g. Python dependencies). For instance:
 
 ```yaml
@@ -80,11 +86,13 @@ spec:
   extraCapabilities:
   - extra
 ```
-This server, `mlserver-extra`, inherits a default set of capabilities via `serverConfig: mlserver`.
-These defaults are discussed above.
+
+This server, `mlserver-extra`, inherits a default set of capabilities via `serverConfig: mlserver`.\
+These defaults are discussed above.\
 The `extraCapabilities` are appended to these to create a single list of capabilities for this server.
 
 Models can then specify requirements to select a server that satisfies those requirements as follows.
+
 ```yaml
 apiVersion: mlops.seldon.io/v1alpha1
 kind: Model
@@ -98,9 +106,8 @@ spec:
 
 The `capabilities` field takes precedence over the `extraCapabilities` field.
 
-For some examples see [here](examples/custom-servers.md).
-
+For some examples see [here](../examples/custom-servers.md).
 
 ## Autoscaling of Servers
 
-Within docker we don't support this but for Kubernetes see [here](kubernetes/autoscaling/README.md)
+Within docker we don't support this but for Kubernetes see [here](../kubernetes/autoscaling/)

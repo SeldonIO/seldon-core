@@ -1,60 +1,62 @@
 # Table of contents
 
 ## About
+
 * [Production-ready ML Serving Framework](README.md)
 * [Seldon Core Features](core-features.md)
 * [Concepts](concepts/README.md)
 * [Architecture](architecture/README.md)
 
 ## Installation
+
 * [Installation Overview](installation/README.md)
 * [Learning Environment](installation/learning-environment/README.md)
   * [Self-hosted Kafka](installation/learning-environment/self-hosted-kafka.md)
 * [Production Environment](installation/production-environment/README.md)
   * [Kafka Integration](installation/production-environment/kafka/README.md)
-  * [Managed Kafka](installation/production-environment/kafka/managed-kafka.md) 
+  * [Managed Kafka](installation/production-environment/kafka/managed-kafka.md)
   * [Ingress Controller](installation/production-environment/ingress-controller/istio.md)
 * [Test the Installation](installation/test-installation.md)
-    
-* Advanced Configurations
+* [Advanced Configurations](installation/advanced-configurations/README.md)
   * [Helm Configuration](installation/helm/README.md)
   * [Server Config](kubernetes/resources/serverconfig.md)
   * [Server Runtime](kubernetes/resources/seldonruntime.md)
   * [Seldon Config](kubernetes/resources/seldonconfig.md)
   * [Pipeline Config](kubernetes/resources/pipeline.md)
   * [Managing Kafka Topics](managing-kafka-topics.md)
-* [Upgrading](upgrading.md) 
+* [Upgrading](upgrading.md)
 
 ## User Guide
+
 * [Quickstart](getting-started/quickstart/quickstart.md)
-<!-- * Getting Started -->
-<!-- * Deploy Model (OIP+MLServer Link) -->
-<!-- * Inference Server -->
-<!-- * Run Inference -->
-* [Kubernetes Resources](kubernetes/resources/README.md) 
+* [Kubernetes Resources](kubernetes/resources/README.md)
 * [Servers](servers/servers.md)
-    * [Resource allocation](servers/resource-allocation.md)
-      * [Example: Serving models on dedicated GPU nodes](servers/example-serving-models-on-dedicated-gpu-nodes.md)
+  * [Resource allocation](servers/resource-allocation.md)
+    * [Example: Serving models on dedicated GPU nodes](servers/example-serving-models-on-dedicated-gpu-nodes.md)
 * [Models](models/README.md)
-    <!--  
-    * CRD
-    * Registration
-    * Versioning
-    * LLM
-    * Parameterized Models
-    * Links to Secret Management -->
-    * [Multi-Model Serving](models/mms.md)
-    * [Inference Artifacts](models/inference-artifacts.md)
-    * [Scheduling](models/scheduling.md)
-    * [rClone](models/rclone.md)
-    * [Parameterized Models](models/parameterized-models/README.md)
-    * [Pandas Query](models/parameterized-models/pandasquery.md) 
-    * [Storage Secrets](kubernetes/storage-secrets.md)
-* Inference
-    * [Inference Server](inference.md)
-    * [Run Inference](examples/inference.md)
-    * [OIP](apis/inference/v2.md)
-    * [Batch](examples/batch-examples-k8s.md) and (examples/batch-examples-local.md)
+  * [Multi-Model Serving](models/mms.md)
+  * [Inference Artifacts](models/inference-artifacts.md)
+  * [Scheduling](models/scheduling.md)
+  * [rClone](models/rclone.md)
+  * [Parameterized Models](models/parameterized-models/README.md)
+  * [Pandas Query](models/parameterized-models/pandasquery.md)
+  * [Storage Secrets](kubernetes/storage-secrets.md)
+* [Inference](user-guide/inference/README.md)
+  * [Inference Server](inference.md)
+  * [Run Inference](examples/inference.md)
+  * [Open Inference Protocol](user-guide/inference/v2/README.md)
+    * [REST](user-guide/inference/v2/rest/README.md)
+      * ```yaml
+        type: builtin:openapi
+        props:
+          models: true
+        dependencies:
+          spec:
+            ref:
+              kind: openapi
+              spec: open-inference-protocol-v2
+        ```
+  * [Batch](examples/batch-examples-k8s.md)
 * [Pipelines](pipelines.md)
 * [Autoscaling](scaling/README.md)
   * [Seldon Core Autoscaling](scaling/core-autoscaling.md)
@@ -65,47 +67,27 @@
     * [Model Autoscaling with HPA](scaling/model-hpa-autoscaling.md)
     * [Model and Server Autoscaling with HPA](scaling/single-model-serving-hpa.md)
   * [Scaling Seldon Services](scaling/scaling-core-services.md)
-
-  <!--
-  * Multi-Component Serving and Overcommit -->
-* Data Science Monitoring
-    * [Dataflow with Kafka](architecture/dataflow.md)
-    <!-- * Request & Response Logging  -->
-    * [Model Performance Metrics](performance-tests.md)
-    * [Drift Detection](drift.md)
-    * [Outlier Detection](outlier.md)
-    * [Explainability](explainers.md)
-* [Operational Monitoring](operational-monitoring/README.md) 
-    * [Operational Metrics](operational-monitoring/operational.md)
-    * [Observability](operational-monitoring/observability.md)
-    * [Usage Metrics](operational-monitoring/usage.md)
-    * [Local Metrics](operational-monitoring/local-metrics-test.md)
-    * [Tracing](kubernetes/tracing.md)
-    <!-- * Kubernetes Metrics -->
-    
+* [Data Science Monitoring](user-guide/data-science-monitoring/README.md)
+  * [Dataflow with Kafka](architecture/dataflow.md)
+  * [Model Performance Metrics](performance-tests.md)
+  * [Drift Detection](drift.md)
+  * [Outlier Detection](outlier.md)
+  * [Explainability](explainers.md)
+* [Operational Monitoring](operational-monitoring/README.md)
+  * [Operational Metrics](operational-monitoring/operational.md)
+  * [Observability](operational-monitoring/observability.md)
+  * [Usage Metrics](operational-monitoring/usage.md)
+  * [Local Metrics](operational-monitoring/local-metrics-test.md)
+  * [Tracing](kubernetes/tracing.md)
 * [Performance Tuning](performance-tuning/readme.md)
-    * [Models](performance-tuning/models/README.md)
-        * [Load Testing](performance-tuning/models/load-testing.md)
-        * [Inference](performance-tuning/models/inference.md)
-        * [Infrastructure Setup](performance-tuning/models/infrastructure-setup.md)
-    * [Pipelines](performance-tuning/pipelines/README.md)
-        * [Testing Pipelines](performance-tuning/pipelines/testing-pipelines.md)
-        * [Core 2 Configuration](performance-tuning/pipelines/core-2-configuration.md)
-
-<!--    
-* Rollouts & Experiments
-    * Rollout Strategies
-        * Progressive Rollouts
-        * Rollbacks -->
+  * [Models](performance-tuning/models/README.md)
+    * [Load Testing](performance-tuning/models/load-testing.md)
+    * [Inference](performance-tuning/models/inference.md)
+    * [Infrastructure Setup](performance-tuning/models/infrastructure-setup.md)
+  * [Pipelines](performance-tuning/pipelines/README.md)
+    * [Testing Pipelines](performance-tuning/pipelines/testing-pipelines.md)
+    * [Core 2 Configuration](performance-tuning/pipelines/core-2-configuration.md)
 * [Experiments](kubernetes/resources/experiment.md)
-<!--
-      * A/B Testing
-      * Traffic Splitting
-      * Canary
-      * Shadow 
-    * CI/CD
-      * Link to Component Versioning 
--->
 * [Examples](examples/README.md)
   * [Local examples](examples/local-examples.md)
   * [Kubernetes examples](examples/k8s-examples.md)
@@ -129,78 +111,60 @@
   * [Production image classifier with drift and outlier monitoring](examples/cifar10.md)
   * [Production income classifier with drift, outlier and explanations](examples/income.md)
   * [Conditional pipeline with pandas query model](examples/pandasquery.md)
-  * [Kubernetes Server with PVC](examples/k8s-pvc.md)  
-
+  * [Kubernetes Server with PVC](examples/k8s-pvc.md)
 
 ## Integrations
-  * [Service Meshes](kubernetes/service-meshes/README.md)
-    * [Ambassador](kubernetes/service-meshes/ambassador.md)
-    * [Istio](kubernetes/service-meshes/istio.md)
-    * [Traefik](kubernetes/service-meshes/traefik.md)
-    * [Secure Model Endpoints](models/securing-endpoints.md)
-<!--   
-  * Audit Trails
-  * Alerts
-  * Data Management
-  * Modules 
-  -->
+
+* [Service Meshes](kubernetes/service-meshes/README.md)
+  * [Ambassador](kubernetes/service-meshes/ambassador.md)
+  * [Istio](kubernetes/service-meshes/istio.md)
+  * [Traefik](kubernetes/service-meshes/traefik.md)
+  * [Secure Model Endpoints](models/securing-endpoints.md)
+
 ## Resources
-<!--
-* Troubleshooting
-* Tutorials -->
+
 * [Security](getting-started/kubernetes-installation/security/README.md)
-<!--
-  * Authentication
-  * Authorization
-  * Secrets Management 
-  -->
 * [APIs](apis/README.md)
   * [Internal](apis/internal/README.md)
     * [Chainer](apis/internal/chainer.md)
     * [Agent](apis/internal/agent.md)
   * [Inference](apis/inference/README.md)
-    * [Open Inference Protocol](apis/inference/v2.md)
+    * [Open Inference Protocol](user-guide/inference/v2/README.md)
   * [Scheduler](apis/scheduler.md)
   * [Seldon CLI](getting-started/cli.md)
-    * [CLI](cli/README.md)
+    * [CLI](resources/apis/cli/cli.md)
     * [Seldon](cli/seldon.md)
-      * [Config](cli/seldon\_config.md)
-      * [Config Activate](cli/seldon\_config\_activate.md)
-      * [Config Deactivate](cli/seldon\_config\_deactivate.md)
-      * [Config Add](cli/seldon\_config\_add.md)
-      * [Config List](cli/seldon\_config\_list.md)
-      * [Config Remove](cli/seldon\_config\_remove.md)
-    * [Experiment](cli/seldon\_experiment.md)
-      * [Experiment Start](cli/seldon\_experiment\_start.md)
-      * [Experiment Status](cli/seldon\_experiment\_status.md)
-      * [Experiment List](cli/seldon\_experiment\_list.md)
-      * [Experiment Stop](cli/seldon\_experiment\_stop.md)
-    * [Model](cli/seldon\_model.md)
-      * [Model Status](cli/seldon\_model\_status.md)
-      * [Model Load](cli/seldon\_model\_load.md)
-      * [Model List](cli/seldon\_model\_list.md)
-      * [Model Infer](cli/seldon\_model\_infer.md)
-      * [Model Metadata](cli/seldon\_model\_metadata.md)
-      * [Model Unload](cli/seldon\_model\_unload.md)
-    * [Pipeline](cli/seldon\_pipeline.md)
-      * [Pipeline Load](cli/seldon\_pipeline\_load.md)
-      * [Pipeline Status](cli/seldon\_pipeline\_status.md)
-      * [Pipeline List](cli/seldon\_pipeline\_list.md)
-      * [Pipeline Inspect](cli/seldon\_pipeline\_inspect.md)
-      * [Pipeline Infer](cli/seldon\_pipeline\_infer.md)
-      * [Pipeline Unload](cli/seldon\_pipeline\_unload.md)
-    * [Server](cli/seldon\_server.md)
-      * [Server List](cli/seldon\_server\_list.md)
-      * [Server Status](cli/seldon\_server\_status.md)
-<!--    
-* Reference
-    * Glossary -->
+      * [Config](cli/seldon_config.md)
+      * [Config Activate](cli/seldon_config_activate.md)
+      * [Config Deactivate](cli/seldon_config_deactivate.md)
+      * [Config Add](cli/seldon_config_add.md)
+      * [Config List](cli/seldon_config_list.md)
+      * [Config Remove](cli/seldon_config_remove.md)
+    * [Experiment](cli/seldon_experiment.md)
+      * [Experiment Start](cli/seldon_experiment_start.md)
+      * [Experiment Status](cli/seldon_experiment_status.md)
+      * [Experiment List](cli/seldon_experiment_list.md)
+      * [Experiment Stop](cli/seldon_experiment_stop.md)
+    * [Model](cli/seldon_model.md)
+      * [Model Status](cli/seldon_model_status.md)
+      * [Model Load](cli/seldon_model_load.md)
+      * [Model List](cli/seldon_model_list.md)
+      * [Model Infer](cli/seldon_model_infer.md)
+      * [Model Metadata](cli/seldon_model_metadata.md)
+      * [Model Unload](cli/seldon_model_unload.md)
+    * [Pipeline](cli/seldon_pipeline.md)
+      * [Pipeline Load](cli/seldon_pipeline_load.md)
+      * [Pipeline Status](cli/seldon_pipeline_status.md)
+      * [Pipeline List](cli/seldon_pipeline_list.md)
+      * [Pipeline Inspect](cli/seldon_pipeline_inspect.md)
+      * [Pipeline Infer](cli/seldon_pipeline_infer.md)
+      * [Pipeline Unload](cli/seldon_pipeline_unload.md)
+    * [Server](cli/seldon_server.md)
+      * [Server List](cli/seldon_server_list.md)
+      * [Server Status](cli/seldon_server_status.md)
 * [Seldon Docs Home](https://docs.seldon.ai/home)
-* [FAQs](faqs.md)         
+* [FAQs](faqs.md)
 * [Development](development/README.md)
   * [License](development/licenses.md)
   * [Release](development/release.md)
 * [Release Notes](https://github.com/SeldonIO/seldon-core/releases/tag/v2.9.0)
-
-
-

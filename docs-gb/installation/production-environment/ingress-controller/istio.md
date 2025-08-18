@@ -1,21 +1,25 @@
 ---
-description: Learn how to configure Istio as an ingress controller for Seldon Core, including traffic management and security policies.
+description: >-
+  Learn how to configure Istio as an ingress controller for Seldon Core,
+  including traffic management and security policies.
 ---
 
-An ingress controller functions as a reverse proxy and load balancer, implementing a Kubernetes Ingress. It adds an abstraction layer for traffic routing by receiving traffic from outside the Kubernetes platform and load balancing it to Pods running within the Kubernetes cluster. 
+# Ingress Controller
+
+An ingress controller functions as a reverse proxy and load balancer, implementing a Kubernetes Ingress. It adds an abstraction layer for traffic routing by receiving traffic from outside the Kubernetes platform and load balancing it to Pods running within the Kubernetes cluster.
 
 Seldon Core 2 works seamlessly with any service mesh or ingress controller, offering flexibility in your deployment setup. This guide provides detailed instructions for installing and configuring Istio with Seldon Core 2.
 
-# Istio
+## Istio
 
 Istio implements the Kubernetes ingress resource to expose a service and make it accessible from outside the cluster. You can install Istio in either a self-hosted Kubernetes cluster or a managed Kubernetes service provided by a cloud provider that is running the Seldon Core 2.
 
-## Prerequisites
+### Prerequisites
 
-* Install[ Seldon Core 2](/docs-gb/installation/production-environment/README.md).
+* Install[ Seldon Core 2](../).
 * Ensure that you install a version of Istio that is compatible with your Kubernetes cluster version. For detailed information on supported versions, refer to the [Istio Compatibility Matrix](https://istio.io/latest/docs/releases/supported-releases/#support-status-of-istio-releases).
 
-## Installing Istio ingress controller
+### Installing Istio ingress controller
 
 Installing Istio ingress controller in a Kubernetes cluster running Seldon Core 2 involves these tasks:
 
@@ -23,38 +27,37 @@ Installing Istio ingress controller in a Kubernetes cluster running Seldon Core 
 2. [Install Istio Ingress Gateway](istio.md#install-istio-ingress-gateway)
 3. [Expose Seldon mesh service](istio.md#expose-seldon-mesh-service)
 
-### Install Istio
+#### Install Istio
 
-1.  Add the Istio Helm charts repository and update it:
+1.  Add the Istio Helm charts repository and update it:
 
     ```
     helm repo add istio https://istio-release.storage.googleapis.com/charts
     helm repo update
     ```
-2.  Create the `istio-system` namespace where Istio components are installed:
+2.  Create the `istio-system` namespace where Istio components are installed:
 
     ```
     kubectl create namespace istio-system
     ```
-3.  Install the base component:
+3.  Install the base component:
 
     ```
     helm install istio-base istio/base -n istio-system
     ```
-4. Install Istiod, the Istio control plane:
+4.  Install Istiod, the Istio control plane:
 
     ```
     helm install istiod istio/istiod -n istio-system --wait
-    ```    
+    ```
 
-### Install Istio Ingress Gateway
+#### Install Istio Ingress Gateway
 
-1. Install Istio Ingress Gateway:
+1.  Install Istio Ingress Gateway:
 
     ```
     helm install istio-ingressgateway istio/gateway -n istio-system
     ```
-
 2.  Verify that Istio Ingress Gateway is installed:
 
     ```
@@ -62,12 +65,12 @@ Installing Istio ingress controller in a Kubernetes cluster running Seldon Core 
     ```
 
     This should return details of the Istio Ingress Gateway, including the external IP address.
-
-3. Verify that all Istio Pods are running:
+3.  Verify that all Istio Pods are running:
 
     ```
     kubectl get pods -n istio-system
     ```
+
     The output is similar to:
 
     ```
@@ -79,16 +82,16 @@ Installing Istio ingress controller in a Kubernetes cluster running Seldon Core 
 
     ```
     ISTIO_INGRESS=$(kubectl get svc seldon-mesh -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-    
+
     echo "Seldon Core 2: http://$ISTIO_INGRESS"
 
     ```
 
     {% hint style="info" %}
-    Make a note of the IP address that is displayed in the output. This is the IP address that you require to [test the installation](/docs-gb/installation/test-installation.md).
+    Make a note of the IP address that is displayed in the output. This is the IP address that you require to [test the installation](../../test-installation.md).
     {% endhint %}
 
-### Expose Seldon mesh service
+#### Expose Seldon mesh service
 
 It is important to expose `seldon-service` service to enable communication between deployed machine learning models and external clients or services. The Seldon Core 2 inference API is exposed through the `seldon-mesh` service in the `seldon-mesh` namespace. If you install Core 2 in multiple namespaces, you need to expose the `seldon-mesh` service in each of namespace.
 
@@ -108,7 +111,6 @@ It is important to expose `seldon-service` service to enable communication betwe
     triton-0                 ClusterIP      None             <none>          9000/TCP,9500/TCP,9005/TCP 
     ```
 2.  Create a YAML file to create a VirtualService named `iris-route` in the namespace `seldon-mesh`. For example, create the `seldon-mesh-vs.yaml` file. Use your preferred text editor to create and save the file with the following content:
-
 
     ```yaml
     apiVersion: networking.istio.io/v1alpha3
@@ -130,7 +132,6 @@ It is important to expose `seldon-service` service to enable communication betwe
             - destination:
                 host: seldon-mesh.seldon-mesh.svc.cluster.local
     ```
-
 3.  Create a virtual service to expose the `seldon-mesh` service.
 
     ```
@@ -143,11 +144,11 @@ It is important to expose `seldon-service` service to enable communication betwe
     virtualservice.networking.istio.io/iris-route created
     ```
 
+#### Next Steps
 
-### Next Steps
-[Verify the installation](/docs-gb/installation/test-installation.md)
+[Verify the installation](../../test-installation.md)
 
-#### Additional Resources
+**Additional Resources**
 
 * [Istio Documentation](https://istio.io/latest/docs/tasks/traffic-management/ingress/secure-ingress/)
 * [GKE Ingress Guide](https://cloud.google.com/kubernetes-engine/docs/concepts/ingress)

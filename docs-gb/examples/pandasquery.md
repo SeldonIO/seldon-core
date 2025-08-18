@@ -1,9 +1,6 @@
----
----
+# Conditional pipeline with pandas query model
 
-# Conditional Pipeline with Pandas Query Model
-
-The model is defined as an MLServer custom runtime and allows the user to pass in a custom
+The model is defined as an MLServer custom runtime and allows the user to pass in a custom\
 pandas query as a parameter defined at model creation to be used to filter the data passed to the model.
 
 ```python
@@ -110,7 +107,6 @@ spec:
 
 ```
 
-
 {% tabs %}
 {% tab title="kubectl" %}
 ```bash
@@ -144,8 +140,6 @@ seldon model load -f ../../models/mul10.yaml
 ```
 {% endtab %}
 {% endtabs %}
-
-
 
 {% tabs %}
 {% tab title="kubectl" %}
@@ -181,7 +175,6 @@ seldon model status mul10 -w ModelAvailable
 ```
 {% endtab %}
 {% endtabs %}
-
 
 ```bash
 cat ../../pipelines/choice.yaml
@@ -219,6 +212,7 @@ spec:
 ```bash
 kubectl apply -f pipelines/choice.yaml
 ```
+
 ```
 pipeline.mlops.seldon.io/choice created
 ```
@@ -236,6 +230,7 @@ pipeline.mlops.seldon.io/choice condition met
 ```bash
 seldon pipeline load -f ../../pipelines/choice.yaml
 ```
+
 ```bash
 seldon pipeline status choice -w PipelineReady | jq -M .
 ```
@@ -298,8 +293,6 @@ seldon pipeline status choice -w PipelineReady | jq -M .
 {% endtab %}
 {% endtabs %}
 
-
-
 ```bash
 seldon pipeline infer choice --inference-mode grpc \
  '{"model_name":"choice","inputs":[{"name":"choice","contents":{"int_contents":[1]},"datatype":"INT32","shape":[1]},{"name":"INPUT","contents":{"fp32_contents":[5,6,7,8]},"datatype":"FP32","shape":[4]}]}' | jq -M .
@@ -356,7 +349,6 @@ seldon pipeline infer choice --inference-mode grpc \
 
 ```
 
-
 {% tabs %}
 {% tab title="kubectl" %}
 ```bash
@@ -378,5 +370,3 @@ seldon pipeline unload choice
 ```
 {% endtab %}
 {% endtabs %}
-
-

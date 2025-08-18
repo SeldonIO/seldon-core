@@ -1,16 +1,18 @@
 ---
-description: Learn how to implement request-per-second (RPS) based autoscaling in Seldon Core 2 using Kubernetes HPA and Prometheus metrics.
+description: >-
+  Learn how to implement request-per-second (RPS) based autoscaling in Seldon
+  Core 2 using Kubernetes HPA and Prometheus metrics.
 ---
 
 # Exposing Metrics for HPA
 
-Given Seldon Core 2 is predominantly for serving ML in Kubernetes, it is possible to leverage `HorizontalPodAutoscaler` or [HPA](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) to define scaling logic automatically scale up and down Kubernetes resources. This requires exposing metrics such that they can be used by HPA. In this tutorial, we will explain how to expose a metric (requests per second) using Prometheus and [Prometheus Adapter](https://github.com/kubernetes-sigs/prometheus-adapter), such that it can be used to autoscale Models or Servers using HPA. 
+Given Seldon Core 2 is predominantly for serving ML in Kubernetes, it is possible to leverage `HorizontalPodAutoscaler` or [HPA](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) to define scaling logic automatically scale up and down Kubernetes resources. This requires exposing metrics such that they can be used by HPA. In this tutorial, we will explain how to expose a metric (requests per second) using Prometheus and [Prometheus Adapter](https://github.com/kubernetes-sigs/prometheus-adapter), such that it can be used to autoscale Models or Servers using HPA.
 
-The following workflow will require: 
+The following workflow will require:
 
 * Having a Seldon Core 2 install that publishes metrics to prometheus (default). In the following, we will assume that prometheus is already installed and configured in the `seldon-monitoring` namespace.
 * Installing and configuring [Prometheus Adapter](https://github.com/kubernetes-sigs/prometheus-adapter), which allows prometheus queries on relevant metrics to be published as k8s custom metrics
-* Configuring HPA manifests to scale Models 
+* Configuring HPA manifests to scale Models
 
 {% hint style="warning" %}
 Each Kubernetes cluster supports only one active custom metrics provider. If your cluster already uses a custom metrics provider different from `prometheus-adapter`, it will need to be removed before being able to scale Core 2 models and servers via HPA. The Kubernetes community is actively exploring solutions for allowing multiple custom metrics providers to coexist.
@@ -47,7 +49,7 @@ Change the `name` if you've chosen a different value for the `prometheus-adapter
 {% endhint %}
 
 {% code title="prometheus-adapter.config.yaml" lineNumbers="true" %}
-````yaml
+```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -74,7 +76,7 @@ data:
             <<.Series>>{<<.LabelMatchers>>}[2m]
           )
         )
-````
+```
 {% endcode %}
 
 In this example, a single rule is defined to fetch the `seldon_model_infer_total` metric from Prometheus, compute its per second change rate based on data within a 2 minute sliding window, and expose this to Kubernetes as the `infer_rps` metric, with aggregations available at model, server, inference server pod and namespace level.
@@ -105,52 +107,58 @@ A list of all the Prometheus metrics exposed by Seldon Core 2 in relation to Mod
 
 The rule definition can be broken down in four parts:
 
-### Discovery 
+### Discovery
 
 **Discovery** (the `seriesQuery` and `seriesFilters` keys) controls what Prometheus metrics are considered for exposure via the k8s custom metrics API.
 
-  As an alternative to the example above, all the Seldon Prometheus metrics of the form `seldon_model.*_total` could be considered, followed by excluding metrics pre-aggregated across all models (`.*_aggregate_.*`) as well as the cummulative infer time per model (`.*_seconds_total`):
+As an alternative to the example above, all the Seldon Prometheus metrics of the form `seldon_model.*_total` could be considered, followed by excluding metrics pre-aggregated across all models (`.*_aggregate_.*`) as well as the cummulative infer time per model (`.*_seconds_total`):
 
-    ```yaml
-    "seriesQuery": |
-            {__name__=~"^seldon_model.*_total",namespace!=""}
-        "seriesFilters":
-            - "isNot": "^seldon_.*_seconds_total"
-            - "isNot": "^seldon_.*_aggregate_.*"
-    ...
-    ```
+````
+```yaml
+"seriesQuery": |
+        {__name__=~"^seldon_model.*_total",namespace!=""}
+    "seriesFilters":
+        - "isNot": "^seldon_.*_seconds_total"
+        - "isNot": "^seldon_.*_aggregate_.*"
+...
+```
+````
 
-  For RPS, we are only interested in the model inference count (`seldon_model_infer_total`)
+For RPS, we are only interested in the model inference count (`seldon_model_infer_total`)
 
 ### **Association**
+
 **Association** (the `resources` key) controls the Kubernetes resources that a particular metric can be attached to or aggregated over.
 
-  The resources key defines an association between certain labels from the Prometheus metric and k8s resources. For example, on line 17, `"model": {group: "mlops.seldon.io", resource: "model"}` lets `prometheus-adapter` know that, for the selected Prometheus metrics, the value of the "model" label represents the name of a k8s `model.mlops.seldon.io` CR.
+The resources key defines an association between certain labels from the Prometheus metric and k8s resources. For example, on line 17, `"model": {group: "mlops.seldon.io", resource: "model"}` lets `prometheus-adapter` know that, for the selected Prometheus metrics, the value of the "model" label represents the name of a k8s `model.mlops.seldon.io` CR.
 
-  One k8s custom metric is generated for each k8s resource associated with a prometheus metric. In this way, it becomes possible to request the k8s custom metric values for `models.mlops.seldon.io/iris` or for `servers.mlops.seldon.io/mlserver`.
+One k8s custom metric is generated for each k8s resource associated with a prometheus metric. In this way, it becomes possible to request the k8s custom metric values for `models.mlops.seldon.io/iris` or for `servers.mlops.seldon.io/mlserver`.
 
-  The labels that *do not* refer to a `namespace` resource generate "namespaced" custom metrics (the label values refer to resources which are part of a namespace) -- this distinction becomes important when needing to fetch the metrics via kubectl, and in understanding how certain Prometheus query template placeholders are replaced.
+The labels that _do not_ refer to a `namespace` resource generate "namespaced" custom metrics (the label values refer to resources which are part of a namespace) -- this distinction becomes important when needing to fetch the metrics via kubectl, and in understanding how certain Prometheus query template placeholders are replaced.
 
-### **Naming** 
+### **Naming**
 
 **Naming** (the `name` key) configures the naming of the k8s custom metric.
 
-  In the example ConfigMap, this is configured to take the Prometheus metric named `seldon_model_infer_total` and expose custom metric endpoints named `infer_rps`, which when called return the result of a query over the Prometheus metric. Instead of a literal match, one could also use regex group capture expressions, which can then be referenced in the custom metric name:
+In the example ConfigMap, this is configured to take the Prometheus metric named `seldon_model_infer_total` and expose custom metric endpoints named `infer_rps`, which when called return the result of a query over the Prometheus metric. Instead of a literal match, one could also use regex group capture expressions, which can then be referenced in the custom metric name:
 
-  ```yaml
-  "name":
-    "matches": "^seldon_model_(.*)_total"
-    "as": "${1}_rps"
-  ```
+```yaml
+"name":
+  "matches": "^seldon_model_(.*)_total"
+  "as": "${1}_rps"
+```
 
 ### **Querying**
+
 **Querying** (the `metricsQuery` key) defines how a request for a specific k8s custom metric gets converted into a Prometheus query.
 
-  The query can make use of the following placeholders:
+The query can make use of the following placeholders:
 
-    - .Series is replaced by the discovered prometheus metric name (e.g. `seldon_model_infer_total`)
-    - .LabelMatchers, when requesting a namespaced metric for resource `X` with name `x` in namespace `n`, is replaced by `X=~"x",namespace="n"`. For example, `model=~"iris0", namespace="seldon-mesh"`. When requesting the namespace resource itself, only the `namespace="n"` is kept.
-    - .GroupBy is replaced by the resource type of the requested metric (e.g. `model`, `server`, `pod` or `namespace`).
+```
+- .Series is replaced by the discovered prometheus metric name (e.g. `seldon_model_infer_total`)
+- .LabelMatchers, when requesting a namespaced metric for resource `X` with name `x` in namespace `n`, is replaced by `X=~"x",namespace="n"`. For example, `model=~"iris0", namespace="seldon-mesh"`. When requesting the namespace resource itself, only the `namespace="n"` is kept.
+- .GroupBy is replaced by the resource type of the requested metric (e.g. `model`, `server`, `pod` or `namespace`).
+```
 
 For a complete reference for how `prometheus-adapter` can be configured via the `ConfigMap`, please consult the docs [here](https://github.com/kubernetes-sigs/prometheus-adapter/blob/master/docs/config.md).
 
@@ -185,25 +193,22 @@ kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/[NAMESPACE]/[A
 
 For example:
 
-* Fetching model RPS metric for a specific `(namespace, model)` pair `(seldon-mesh, irisa0)`:
+*   Fetching model RPS metric for a specific `(namespace, model)` pair `(seldon-mesh, irisa0)`:
 
     ```sh
     kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/seldon-mesh/models.mlops.seldon.io/irisa0/infer_rps
     ```
-
-* Fetching model RPS metric aggregated at the `(namespace, server)` level `(seldon-mesh, mlserver)`:
+*   Fetching model RPS metric aggregated at the `(namespace, server)` level `(seldon-mesh, mlserver)`:
 
     ```sh
     kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/seldon-mesh/servers.mlops.seldon.io/mlserver/infer_rps
     ```
-
-* Fetching model RPS metric aggregated at the `(namespace, pod)` level `(seldon-mesh, mlserver-0)`:
+*   Fetching model RPS metric aggregated at the `(namespace, pod)` level `(seldon-mesh, mlserver-0)`:
 
     ```sh
     kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/seldon-mesh/pods/mlserver-0/infer_rps
     ```
-
-* Fetching the same metric aggregated at `namespace` level `(seldon-mesh)`:
+*   Fetching the same metric aggregated at `namespace` level `(seldon-mesh)`:
 
     ```sh
     kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/*/metrics/infer_rps

@@ -1,16 +1,13 @@
----
----
+# Huggingface speech to sentiment with explanations pipeline
 
-# Huggingface speech to sentiment pipeline
-
-In this example we create a Pipeline to chain two huggingface models to allow speech to
+In this example we create a Pipeline to chain two huggingface models to allow speech to\
 sentiment functionalityand add an explainer to understand the result.
 
 This example also illustrates how explainers can target pipelines to allow complex explanations flows.
 
 ![architecture](../images/speech-to-sentiment.jpg)
 
-This example requires **ffmpeg** package to be installed locally. run `make install-requirements`
+This example requires **ffmpeg** package to be installed locally. run `make install-requirements`\
 for the Python dependencies.
 
 ```python
@@ -24,7 +21,7 @@ import os
 import time
 ```
 
-Create a method to load speech from recorder; transform into mp3 and send at base64 data. On
+Create a method to load speech from recorder; transform into mp3 and send at base64 data. On\
 return of the result extract and show the text and sentiment.
 
 ```python
@@ -84,7 +81,6 @@ spec:
 
 {% tabs %}
 {% tab title="kubectl" %}
-
 ```bash
 kubectl apply -f ../../models/hf-whisper.yaml -n ${NAMESPACE}
 kubectl apply -f ../../models/hf-sentiment.yaml -n ${NAMESPACE}
@@ -104,11 +100,9 @@ kubectl wait --for condition=ready --timeout=300s model sentiment -n ${NAMESPACE
 model.mlops.seldon.io/whisper condition met
 model.mlops.seldon.io/sentiment condition met
 ```
-
 {% endtab %}
 
 {% tab title="seldon-cli" %}
-
 ```bash
 seldon model load -f ../../models/hf-whisper.yaml
 seldon model load -f ../../models/hf-sentiment.yaml
@@ -137,8 +131,8 @@ seldon model status sentiment -w ModelAvailable | jq -M .
 
 To allow Alibi-Explain to more easily explain the sentiment we will need:
 
- * input and output transfrorms that take the Dict values input and output by the Huggingface sentiment model and turn them into values that Alibi-Explain can easily understand with the core values we want to explain and the outputs from the sentiment model.
- * A separate Pipeline to allow us to join the sentiment model with the output transform
+* input and output transfrorms that take the Dict values input and output by the Huggingface sentiment model and turn them into values that Alibi-Explain can easily understand with the core values we want to explain and the outputs from the sentiment model.
+* A separate Pipeline to allow us to join the sentiment model with the output transform
 
 These transform models are MLServer custom runtimes as shown below:
 
@@ -286,7 +280,6 @@ kubectl wait --for condition=ready --timeout=300s model sentiment-output-transfo
 model.mlops.seldon.io/sentiment-input-transform condition met
 model.mlops.seldon.io/sentiment-output-transform condition met
 ```
-
 {% endtab %}
 
 {% tab title="seldon-cli" %}
@@ -294,22 +287,24 @@ model.mlops.seldon.io/sentiment-output-transform condition met
 seldon model load -f ../../models/hf-sentiment-input-transform.yaml
 seldon model load -f ../../models/hf-sentiment-output-transform.yaml
 ```
+
 ```json
 {}
 {}
 
 ```
+
 ```bash
 seldon model status sentiment-input-transform -w ModelAvailable | jq -M .
 seldon model status sentiment-output-transform -w ModelAvailable | jq -M .
 ```
+
 ```json
 {}
 {}
 ```
 {% endtab %}
 {% endtabs %}
-
 
 ```bash
 cat ../../pipelines/sentiment-explain.yaml
@@ -333,7 +328,6 @@ spec:
     - sentiment-output-transform
 
 ```
-
 
 {% tabs %}
 {% tab title="kubectl" %}
@@ -408,8 +402,6 @@ seldon pipeline status sentiment-explain -w PipelineReady | jq -M .
 {% endtab %}
 {% endtabs %}
 
-
-
 ```bash
 cat ../../models/hf-sentiment-explainer.yaml
 ```
@@ -466,7 +458,6 @@ Error: Model wait status timeout
 {% endtab %}
 {% endtabs %}
 
-
 ### Speech to Sentiment Pipeline with Explanation
 
 We can now create the final pipeline that will take speech and generate sentiment alongwith an explanation of why that sentiment was predicted.
@@ -501,7 +492,6 @@ spec:
 
 ```
 
-
 {% tabs %}
 {% tab title="kubectl" %}
 ```bash
@@ -519,7 +509,6 @@ kubectl wait --for condition=ready --timeout=300s model speech-to-sentiment -n $
 ```
 model.mlops.seldon.io/speech-to-sentiment condition met
 ```
-
 {% endtab %}
 
 {% tab title="seldon-cli" %}
@@ -589,8 +578,6 @@ seldon pipeline status speech-to-sentiment -w PipelineReady | jq -M .
 {% endtab %}
 {% endtabs %}
 
-
-
 ### Test
 
 ```python
@@ -643,10 +630,8 @@ Explanation anchors: ['great']
 
 ### Cleanup
 
-
 {% tabs %}
 {% tab title="kubectl" %}
-
 ```bash
 kubectl delete -f ../../pipelines/speech-to-sentiment.yaml -n ${NAMESPACE}
 kubectl delete -f ../../pipelines/sentiment-explain.yaml -n ${NAMESPACE}
@@ -658,7 +643,6 @@ kubectl delete -f ../../models/hf-sentiment-output-transform.yaml -n ${NAMESPACE
 {% endtab %}
 
 {% tab title="seldon-cli" %}
-
 ```bash
 seldon pipeline unload speech-to-sentiment
 seldon pipeline unload sentiment-explain
@@ -673,4 +657,3 @@ seldon model unload sentiment-input-transform
 ```
 {% endtab %}
 {% endtabs %}
-

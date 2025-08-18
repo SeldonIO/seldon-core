@@ -1,10 +1,12 @@
 ---
-description: Learn how to use PandasQuery for data transformation in Seldon Core, including query configuration and parameter handling.
+description: >-
+  Learn how to use PandasQuery for data transformation in Seldon Core, including
+  query configuration and parameter handling.
 ---
 
-# Pandas Query Model
+# Pandas Query
 
-This model allows a [Pandas](https://pandas.pydata.org/)  query to be run in the input to select rows. An example is shown below:
+This model allows a [Pandas](https://pandas.pydata.org/) query to be run in the input to select rows. An example is shown below:
 
 ```yaml
 # samples/models/choice1.yaml
@@ -24,10 +26,9 @@ spec:
 
 This invocation check filters for tensor A having value 1.
 
-* The model also returns a tensor called `status` which indicates the operation run and whether it
-was a success. If no rows satisfy the query then just a `status` tensor output will be returned.
+* The model also returns a tensor called `status` which indicates the operation run and whether it\
+  was a success. If no rows satisfy the query then just a `status` tensor output will be returned.
 * Further details on Pandas query can be found [here](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.query.html)
-
 
 This model can be useful for conditional Pipelines. For example, you could have two invocations of this model:
 
@@ -94,7 +95,7 @@ spec:
     stepsJoin: any
 ```
 
-Here the mul10 model will be called if the choice-is-one model succeeds and the add10 model will
+Here the mul10 model will be called if the choice-is-one model succeeds and the add10 model will\
 be called if the choice-is-two model succeeds.
 
 The full notebook can be found [here](../examples/pandasquery.md)

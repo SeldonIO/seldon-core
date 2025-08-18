@@ -1,16 +1,13 @@
----
----
-
-# Seldon V2 Pipeline to Pipeline Examples
+# Pipeline to pipeline examples
 
 This notebook illustrates a series of Pipelines that are joined together.
 
 ### Models Used
 
-* `gs://seldon-models/triton/simple` an example Triton tensorflow model that takes 2
- inputs INPUT0 and INPUT1 and adds them to produce OUTPUT0 and also subtracts `INPUT1`
- from `INPUT0` to produce OUTPUT1. See [here](https://github.com/triton-inference-server/server/tree/main/docs/examples/model_repository/simple)
- for the original source code and license.
+* `gs://seldon-models/triton/simple` an example Triton tensorflow model that takes 2\
+  inputs INPUT0 and INPUT1 and adds them to produce OUTPUT0 and also subtracts `INPUT1`\
+  from `INPUT0` to produce OUTPUT1. See [here](https://github.com/triton-inference-server/server/tree/main/docs/examples/model_repository/simple)\
+  for the original source code and license.
 * Other models can be found at https://github.com/SeldonIO/triton-python-examples
 
 ### Pipeline pulling from one other Pipeline

@@ -1,7 +1,4 @@
----
----
-
-# Seldon V2 Non Kubernetes Local Examples
+# Local examples
 
 ### SKLearn Model
 
@@ -27,11 +24,11 @@ spec:
 Load the model
 
 {% tabs %}
-
 {% tab title="kubectl" %}
 ```bash
 kubectl apply -f ./models/sklearn-iris-gs.yaml -n ${NAMESPACE}
 ```
+
 ```
 model.mlops.seldon.io/iris created
 ```
@@ -41,22 +38,21 @@ model.mlops.seldon.io/iris created
 ```bash
 seldon model load -f ./models/sklearn-iris-gs.yaml
 ```
+
 ```json
 {}
 ```
 {% endtab %}
-
 {% endtabs %}
-
 
 Wait for the model to be ready
 
 {% tabs %}
-
 {% tab title="kubectl" %}
 ```bash
 kubectl wait --for condition=ready --timeout=300s model iris -n ${NAMESPACE}
 ```
+
 ```
 model.mlops.seldon.io/iris condition met
 ```
@@ -66,23 +62,23 @@ model.mlops.seldon.io/iris condition met
 ```bash
 seldon model status iris -w ModelAvailable | jq -M .
 ```
+
 ```json
 {}
 ```
 {% endtab %}
-
 {% endtabs %}
 
 Do a REST inference call
 
 {% tabs %}
-
 {% tab title="curl" %}
 ```bash
 curl --location 'http://${SELDON_INFER_HOST}/v2/models/iris/infer' \
 	--header 'Content-Type: application/json'  \
     --data '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
+
 ```json
 {
 	"model_name": "iris_1",
@@ -114,6 +110,7 @@ curl --location 'http://${SELDON_INFER_HOST}/v2/models/iris/infer' \
 seldon model infer iris \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
+
 ```json
 {
 	"model_name": "iris_1",
@@ -139,9 +136,7 @@ seldon model infer iris \
 }
 ```
 {% endtab %}
-
 {% endtabs %}
-
 
 Do a **gRPC** inference call
 
@@ -181,11 +176,11 @@ seldon model infer iris --inference-mode grpc \
 Unload the model
 
 {% tabs %}
-
 {% tab title="kubectl" %}
 ```bash
 kubectl delete -f ./models/sklearn-iris-gs.yaml -n ${NAMESPACE}
 ```
+
 ```
 model.mlops.seldon.io "iris" deleted
 ```
@@ -196,9 +191,7 @@ model.mlops.seldon.io "iris" deleted
 seldon model unload iris
 ```
 {% endtab %}
-
 {% endtabs %}
-
 
 ### Tensorflow Model
 
@@ -224,11 +217,11 @@ spec:
 Load the model.
 
 {% tabs %}
-
 {% tab title="kubectl" %}
 ```bash
 kubectl apply -f ./models/tfsimple1.yaml -n ${NAMESPACE}
 ```
+
 ```
 model.mlops.seldon.io/tfsimple1 created
 ```
@@ -238,22 +231,21 @@ model.mlops.seldon.io/tfsimple1 created
 ```bash
 seldon model load -f ./models/tfsimple1.yaml
 ```
+
 ```json
 {}
 ```
 {% endtab %}
-
 {% endtabs %}
-
 
 Wait for the model to be ready.
 
 {% tabs %}
-
 {% tab title="kubectl" %}
 ```bash
 kubectl wait --for condition=ready --timeout=300s model tfsimple1 -n ${NAMESPACE}
 ```
+
 ```bash
 model.mlops.seldon.io/tfsimple1 condition met
 ```
@@ -263,20 +255,17 @@ model.mlops.seldon.io/tfsimple1 condition met
 ```bash
 seldon model status tfsimple1 -w ModelAvailable | jq -M .
 ```
+
 ```json
 {}
 ```
 {% endtab %}
-
 {% endtabs %}
 
 Get model metadata
 
-
 {% tabs %}
-
 {% tab title="curl" %}
-
 ```bash
 curl --location 'http://${SELDON_INFER_HOST}/v2/models/tfsimple1'
 ```
@@ -381,16 +370,11 @@ seldon model metadata tfsimple1
 
 ```
 {% endtab %}
-
 {% endtabs %}
-
 
 Do a REST inference call.
 
-
-
 {% tabs %}
-
 {% tab title="curl" %}
 ```bash
 curl --location 'http://${SELDON_INFER_HOST}/v2/models/tfsimple1/infer' \
@@ -462,7 +446,6 @@ curl --location 'http://${SELDON_INFER_HOST}/v2/models/tfsimple1/infer' \
 {% endtab %}
 
 {% tab title="seldon-cli" %}
-
 ```bash
 seldon model infer tfsimple1 \
     '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
@@ -530,10 +513,7 @@ seldon model infer tfsimple1 \
 
 ```
 {% endtab %}
-
 {% endtabs %}
-
-
 
 Do a gRPC inference call
 
@@ -610,13 +590,12 @@ seldon model infer tfsimple1 --inference-mode grpc \
 
 Unload the model
 
-
 {% tabs %}
-
 {% tab title="kubectl" %}
 ```bash
 kubectl delete -f ./models/tfsimple1.yaml -n ${NAMESPACE}
 ```
+
 ```
 model.mlops.seldon.io "tfsimple1" deleted
 ```
@@ -627,10 +606,7 @@ model.mlops.seldon.io "tfsimple1" deleted
 seldon model unload tfsimple1
 ```
 {% endtab %}
-
 {% endtabs %}
-
-
 
 ### Experiment
 
@@ -670,7 +646,6 @@ spec:
 
 Load both models.
 
-
 {% tabs %}
 {% tab title="kubectl" %}
 ```bash
@@ -689,6 +664,7 @@ model.mlops.seldon.io/sklearn2 created
 seldon model load -f ./models/sklearn1.yaml
 seldon model load -f ./models/sklearn2.yaml
 ```
+
 ```json
 {}
 {}
@@ -696,10 +672,7 @@ seldon model load -f ./models/sklearn2.yaml
 {% endtab %}
 {% endtabs %}
 
-
-
 Wait for both models to be ready.
-
 
 {% tabs %}
 {% tab title="kubectl" %}
@@ -797,9 +770,6 @@ seldon model status iris2 | jq -M .
 ```
 {% endtab %}
 {% endtabs %}
-
-
-
 
 Create an experiment that modifies the iris model to add a second model splitting traffic 50/50 between the two.
 
@@ -903,7 +873,7 @@ seldon model infer iris \
 
 ```
 
-Use sticky session key passed by last infer request to ensure same route is taken each time.
+Use sticky session key passed by last infer request to ensure same route is taken each time.\
 We will test REST and gRPC.
 
 {% tabs %}
@@ -922,7 +892,6 @@ seldon model infer iris -s -i 50 \
 ```
 {% endtab %}
 {% endtabs %}
-
 
 ```
 Success: map[:iris_1::50]
@@ -966,7 +935,6 @@ seldon model infer iris -i 100 \
 {% endtab %}
 {% endtabs %}
 
-
 ```
 Success: map[:iris_1::100]
 
@@ -974,10 +942,7 @@ Success: map[:iris_1::100]
 
 Unload both models.
 
-
-
 {% tabs %}
-
 {% tab title="kubectl" %}
 ```bash
 kubectl delete -f ./models/sklearn1.yaml -n ${NAMESPACE}
@@ -991,6 +956,4 @@ seldon model unload iris
 seldon model unload iris2
 ```
 {% endtab %}
-
 {% endtabs %}
-

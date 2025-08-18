@@ -1,11 +1,12 @@
 ---
-description: Learn how to implement drift detection in Seldon Core 2 using Alibi-Detect integration for model monitoring and batch processing.
+description: >-
+  Learn how to implement drift detection in Seldon Core 2 using Alibi-Detect
+  integration for model monitoring and batch processing.
 ---
 
 # Drift Detection
 
-Drift detection models are treated as any other Model. You can run any saved
-[Alibi-Detect](https://github.com/SeldonIO/alibi-detect) drift detection model by
+Drift detection models are treated as any other Model. You can run any saved[Alibi-Detect](https://github.com/SeldonIO/alibi-detect) drift detection model by\
 adding the requirement `alibi-detect`.
 
 An example drift detection model from the CIFAR10 image classification example is shown below:
@@ -23,8 +24,8 @@ spec:
     - alibi-detect
 ```
 
-Usually you would run these models in an asynchronous part of a Pipeline, i.e. they are not
-connected to the output of the Pipeline which defines the synchronous path. For example, the
+Usually you would run these models in an asynchronous part of a Pipeline, i.e. they are not\
+connected to the output of the Pipeline which defines the synchronous path. For example, the\
 CIFAR-10 image detection example uses a pipeline as shown below:
 
 ```yaml
@@ -46,7 +47,7 @@ spec:
     - cifar10-outlier.outputs.is_outlier
 ```
 
-Note how the `cifar10-drift` model is not part of the path to the outputs. Drift alerts can be
+Note how the `cifar10-drift` model is not part of the path to the outputs. Drift alerts can be\
 read from the Kafka topic of the model.
 
 ## Examples

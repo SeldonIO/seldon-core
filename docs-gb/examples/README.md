@@ -1,9 +1,8 @@
-# Workflow, Examples and Tutorials
+# Examples
 
 ## Workflows
 
-Seldon inference is built from atomic Model components. Models as [shown here](../models/inference-artifacts.md)
-cover a wide range of artifacts including:
+Seldon inference is built from atomic Model components. Models as [shown here](../models/inference-artifacts.md) cover a wide range of artifacts including:
 
 * Core machine learning models, e.g. a PyTorch model.
 * Feature transformations that might be built with custom python code.
@@ -15,14 +14,12 @@ cover a wide range of artifacts including:
 A typical workflow for a production machine learning setup might be as follows:
 
 1. You create a Tensorflow model for your core application use case and test this model in isolation to validate.
-2. You create SKLearn feature transformation component before your model to convert the input into the correct
-form for your model. You also create Drift and Outlier detectors using Seldon's open source Alibi-detect library
-and test these in isolation.
+2. You create SKLearn feature transformation component before your model to convert the input into the correct form for your model. You also create Drift and Outlier detectors using Seldon's open source Alibi-detect library and test these in isolation.
 3. You join these components together into a Pipeline for the final production setup.
 
 These steps are shown in the diagram below:
 
-![Workflow](../images/workflow.png)
+![Workflow](<../images/workflow (2).png>)
 
 ## Examples & Tutorials
 
@@ -58,7 +55,6 @@ This section will provide some examples to allow operations with Seldon to be te
 * [Local experiments](local-experiments.md)
 * [Experiment version examples](experiment-versions.md)
 
-
 ## Making Inference Requests
 
 * [Inference examples](inference.md)
@@ -69,7 +65,7 @@ This section will provide some examples to allow operations with Seldon to be te
 ## Misc
 
 * [Checking Pipeline readiness](pipeline-ready-and-metadata.md)
-* [Local Overcommit](local-overcommit-examples)
+* [Local Overcommit](local-overcommit-examples/)
 
 ## Further Kubernetes Examples
 

@@ -1,12 +1,12 @@
 # Models
 
-Models provide the atomic building blocks of Seldon. They represents machine learning models,
-drift detectors, outlier detectors, explainers, feature transformations, and more complex routing
+Models provide the atomic building blocks of Seldon. They represents machine learning models,\
+drift detectors, outlier detectors, explainers, feature transformations, and more complex routing\
 models such as multi-armed bandits.
 
-* Seldon can handle a wide range of [inference artifacts](./inference-artifacts.md)
-* Artifacts can be stored on any of the 40 or more cloud storage technologies as well as from
-local (mounted) folder as discussed [here](./rclone.md).
+* Seldon can handle a wide range of [inference artifacts](inference-artifacts.md)
+* Artifacts can be stored on any of the 40 or more cloud storage technologies as well as from\
+  local (mounted) folder as discussed [here](rclone.md).
 
 ## Kubernetes Example
 
@@ -28,10 +28,9 @@ spec:
 Its Kubernetes `spec` has two core requirements
 
 * A `storageUri` specifying the location of the artifact. This can be any rclone URI specification.
-* A `requirements` list which provides tags that need to be matched by the Server that can run
-this artifact type. By default when you install Seldon we provide a set of Servers that cover a
-range of artifact types.
-
+* A `requirements` list which provides tags that need to be matched by the Server that can run\
+  this artifact type. By default when you install Seldon we provide a set of Servers that cover a\
+  range of artifact types.
 
 ## GRPC Example
 
@@ -53,25 +52,25 @@ The proto buffer definitions for the scheduler are outlined [here](../apis/sched
 
 ## Multi-model Serving with Overcommit
 
-Multi-model serving is an architecture pattern where one ML inference server hosts multiple models
-at the same time. It is a feature provided out of the box by Nvidia Triton and Seldon MLServer.
-Multi-model serving reduces infrastructure hardware requirements (e.g. expensive GPUs) which enables
+Multi-model serving is an architecture pattern where one ML inference server hosts multiple models\
+at the same time. It is a feature provided out of the box by Nvidia Triton and Seldon MLServer.\
+Multi-model serving reduces infrastructure hardware requirements (e.g. expensive GPUs) which enables\
 the deployment of a large number of models while making it efficient to operate the system at scale.
 
-Seldon Core 2 leverages multi-model serving by design and it is the default option for deploying
-models. The system will find an appropriate server to load the model onto based on requirements that
+Seldon Core 2 leverages multi-model serving by design and it is the default option for deploying\
+models. The system will find an appropriate server to load the model onto based on requirements that\
 the user defines in the `Model` deployment definition.
 
-Moreover, in many cases demand patterns allow for further Overcommit of resources. Seldon Core 2
-is able to register more models than what can be served by the provisioned (memory) infrastructure
-and will swap models dynamically according to least used without adding significant latency overheads
+Moreover, in many cases demand patterns allow for further Overcommit of resources. Seldon Core 2\
+is able to register more models than what can be served by the provisioned (memory) infrastructure\
+and will swap models dynamically according to least used without adding significant latency overheads\
 to inference workload.
 
 See [Multi-model serving](mms.md) for more information.
 
 ## Autoscaling of Models
 
-See [here](../kubernetes/autoscaling.md) for discussion of autoscaling of models.
+See [here](broken-reference) for discussion of autoscaling of models.
 
 ## Scheduling of Models onto Servers
 

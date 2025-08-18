@@ -1,14 +1,16 @@
 ---
-description: Learn how to test and validate metrics collection in Seldon Core locally, including Prometheus setup and Grafana dashboards.
+description: >-
+  Learn how to test and validate metrics collection in Seldon Core locally,
+  including Prometheus setup and Grafana dashboards.
 ---
 
-# Local Metrics Testing
+# Local Metrics
 
 Run these examples from the `samples` folder at the root of the repo.
 
 This notebook tests the exposed Prometheus metrics of model and pipeline servers.
 
-Requires: `prometheus_client` and `requests` libraries.
+Requires: `prometheus_client` and `requests` libraries.\
 See docs for full set of metrics available.
 
 ```python

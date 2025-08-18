@@ -1,11 +1,12 @@
 ---
-description: Learn how to implement outlier detection in Seldon Core using Alibi-Detect integration for model monitoring and anomaly detection.
+description: >-
+  Learn how to implement outlier detection in Seldon Core using Alibi-Detect
+  integration for model monitoring and anomaly detection.
 ---
 
 # Outlier Detection
 
-Outlier detection models are treated as any other Model. You can run any saved
-[Alibi-Detect](https://github.com/SeldonIO/alibi-detect) outlier detection model
+Outlier detection models are treated as any other Model. You can run any saved[Alibi-Detect](https://github.com/SeldonIO/alibi-detect) outlier detection model\
 by adding the requirement `alibi-detect`.
 
 An example outlier detection model from the CIFAR10 image classification example is shown below:
