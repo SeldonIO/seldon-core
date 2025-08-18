@@ -1,4 +1,4 @@
-# Seldon deployment of Alibi Outlier detector
+# Outlier Detection with Combiner
 
 The objective of this tutorial is to build a "loan approval" classifier equipped with the outlier detector from the [alibi-detect](https://github.com/SeldonIO/alibi-detect) package.
 
@@ -13,29 +13,29 @@ In this tutorial we will follow these steps:
 3. Containerize and deploy your models
 4. Test your new Seldon deployment
 
----
+***
 
 ## Before you start
 
 Make sure you install the following dependencies, as they are critical for this example to work:
 
-- Helm v3.0.0+
-- A Kubernetes cluster running v1.13 or above (minikube / docker-for-windows work well if enough RAM)
-- kubectl v1.14+
-- ksonnet v0.13.1+
-- kfctl 0.5.1 - Please use this exact version as there are major changes every few months
-- Python 3.6+
-- Python DEV requirements (we'll install them below)
+* Helm v3.0.0+
+* A Kubernetes cluster running v1.13 or above (minikube / docker-for-windows work well if enough RAM)
+* kubectl v1.14+
+* ksonnet v0.13.1+
+* kfctl 0.5.1 - Please use this exact version as there are major changes every few months
+* Python 3.6+
+* Python DEV requirements (we'll install them below)
 
-You can follow this [notebook](../notebooks/seldon-core-setup.md#setup-cluster) to setup your cluster.
+You can follow this [notebook](seldon-core-setup.md#setup-cluster) to setup your cluster.
 
 Let's get started! 🚀🔥
 
----
+***
 
 ## Install Python dependencies
 
-In the [requirements-dev](https://github.com/SeldonIO/seldon-core/blob/master/examples/outliers/alibi-detect-combiner/requirements-dev.txt) file you will find a set of Python dependencies required to run this notebook.
+In the [requirements-dev](../../examples/outliers/alibi-detect-combiner/requirements-dev.txt) file you will find a set of Python dependencies required to run this notebook.
 
 ```bash
 cat requirements-dev.txt
@@ -58,11 +58,11 @@ Install them with:
 pip install -r requirements-dev.txt
 ```
 
----
+***
 
 ## Train and test loanclassifier
 
-We start with training the loanclassifier model by using a prepared Python script [train_classifier](https://github.com/SeldonIO/seldon-core/blob/master/examples/outliers/alibi-detect-combiner/train_classifier.py):
+We start with training the loanclassifier model by using a prepared Python script [train\_classifier](../../examples/outliers/alibi-detect-combiner/train_classifier.py):
 
 ```python
 # train_classifier.py
@@ -117,7 +117,7 @@ xai.metrics_plot(y_test, pred)
 ```
 
 | Metric      | Value    |
-|-------------|----------|
+| ----------- | -------- |
 | precision   | 0.704545 |
 | recall      | 0.658497 |
 | specificity | 0.913289 |
@@ -125,11 +125,11 @@ xai.metrics_plot(y_test, pred)
 | auc         | 0.785893 |
 | f1          | 0.680743 |
 
----
+***
 
 ## Train and test outliers detector
 
-We will now train the outliers detector using another prepared script [train_detector](https://github.com/SeldonIO/seldon-core/blob/master/examples/outliers/alibi-detect-combiner/train_detector.py):
+We will now train the outliers detector using another prepared script [train\_detector](../../examples/outliers/alibi-detect-combiner/train_detector.py):
 
 ```python
 # train_detector.py
@@ -183,13 +183,13 @@ print("F1 score: {}".format(f1))
 cm = confusion_matrix(y_outlier, y_pred)
 ```
 
----
+***
 
 ## Containerize your models
 
 Before you can deploy classifier `Model` and outliers `Detector` as part of Seldon's graph you have to containerize them.
 
-We will use s2i to do so with help of the provided [Makefile](https://github.com/SeldonIO/seldon-core/blob/master/examples/outliers/alibi-detect-combiner/Makefile):
+We will use s2i to do so with help of the provided [Makefile](../../examples/outliers/alibi-detect-combiner/Makefile/):
 
 ```makefile
 .ONESHELL:
@@ -216,14 +216,13 @@ or if using Minikube:
 eval $(minikube docker-env) && make
 ```
 
----
+***
 
 ## Deploy your models separately
 
 Now, you can include your newly built containers as part of a Seldon deployment.
 
-First, we will create two separate deployments: `loanclassifier` and `outliersdetector`.
-Each of them will have their own separate endpoint and can be queried independently depending on your needs.
+First, we will create two separate deployments: `loanclassifier` and `outliersdetector`. Each of them will have their own separate endpoint and can be queried independently depending on your needs.
 
 ### Deploy separate loanclassifier
 
@@ -309,7 +308,7 @@ kubectl apply -f pipeline/outliersdetector.yaml
 kubectl get pods
 ```
 
----
+***
 
 ## Test deployed components
 
@@ -337,12 +336,11 @@ prediction = sc.predict(data=to_explain)
 get_data_from_proto(prediction.response)
 ```
 
----
+***
 
 ## Deploy loanclassifier and outliersdetector with combiner
 
-Another possibility is to use a slightly more complicated graph with a `combiner` that will
-gather outputs from `loanclassifier` and `outliersdetector`.
+Another possibility is to use a slightly more complicated graph with a `combiner` that will gather outputs from `loanclassifier` and `outliersdetector`.
 
 Please note that `loanclassifier` and `outliersdetector` are part of the `loanclassifier-combined` graph and this deployment is independent from the previous two.
 

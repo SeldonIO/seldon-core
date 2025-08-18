@@ -2,12 +2,12 @@
 
 Seldon provides several prepacked servers you can use to deploy trained models:
 
-- [SKLearn Server](./sklearn.html)
-- [XGBoost Server](./xgboost.html)
-- [Tensorflow Serving](./tensorflow.html)
-- [MLflow Server](./mlflow.html)
-- [Custom Servers](./custom.html)
-- [Alibi Explainers](../analytics/explainers.html)
+* [SKLearn Server](sklearn.html)
+* [XGBoost Server](xgboost.html)
+* [Tensorflow Serving](tensorflow.html)
+* [MLflow Server](mlflow.html)
+* [Custom Servers](custom.html)
+* [Alibi Explainers](../analytics/explainers.html)
 
 For these servers you only need the location of the saved model in a local filestore, Google bucket, S3 bucket, azure or minio. An example manifest with an sklearn server is shown below:
 
@@ -26,26 +26,20 @@ spec:
         modelUri: gs://seldon-models/v1.19.0-dev/sklearn/iris
 ```
 
-By default only public models published to Google Cloud Storage will be accessible.
-See below notes on how to configure credentials for AWS S3, Minio and other storage solutions.
-
+By default only public models published to Google Cloud Storage will be accessible. See below notes on how to configure credentials for AWS S3, Minio and other storage solutions.
 
 ## Init Containers
 
-Seldon Core uses [Init Containers](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/) to download model binaries for the prepackaged model servers. We use [rclone](https://rclone.org/)-based [storage initailizer](https://github.com/SeldonIO/seldon-core/tree/master/components/rclone-storage-initializer
-) for our `Init Containers` by defining
+Seldon Core uses [Init Containers](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/) to download model binaries for the prepackaged model servers. We use [rclone](https://rclone.org/)-based [storage initailizer](https://github.com/SeldonIO/seldon-core/tree/master/components/rclone-storage-initializer) for our `Init Containers` by defining
 
 ```yaml
 storageInitializer:
   image: seldonio/rclone-storage-initializer:1.19.0-dev
 ```
-in our default [helm values](../charts/seldon-core-operator.html#values).
-See the [Dockerfile](https://github.com/SeldonIO/seldon-core/blob/master/components/rclone-storage-initializer/Dockerfile
-) for a detailed reference.
-You can overwrite this value to specify another default `initContainer`. See details on requirements bellow
 
-Secrets are injected into the init containers as environmental variables from kubernetes `secrets`.
-The default secret name can be defined by setting following [helm value](../charts/seldon-core-operator.html#values)
+in our default [helm values](../charts/seldon-core-operator.html#values). See the [Dockerfile](../../components/rclone-storage-initializer/Dockerfile/) for a detailed reference. You can overwrite this value to specify another default `initContainer`. See details on requirements bellow
+
+Secrets are injected into the init containers as environmental variables from kubernetes `secrets`. The default secret name can be defined by setting following [helm value](../charts/seldon-core-operator.html#values)
 
 ```yaml
 predictiveUnit:
@@ -108,12 +102,13 @@ spec:
 ```
 
 Key observations:
-- Our prepackaged model will expect model binaries to be saved into `/mnt/models` path
-- Default `initContainers` name is constructed from `{predictiveUnitName}-model-initializer`
-- The `entrypoint` of the `container` must take two arguments:
-  - First representing the models URI
-  - Second the desired path where binary should be downloaded to
-- If user would to provide their own `initContainer` which name matches the above pattern it would be used as provided
+
+* Our prepackaged model will expect model binaries to be saved into `/mnt/models` path
+* Default `initContainers` name is constructed from `{predictiveUnitName}-model-initializer`
+* The `entrypoint` of the `container` must take two arguments:
+  * First representing the models URI
+  * Second the desired path where binary should be downloaded to
+* If user would to provide their own `initContainer` which name matches the above pattern it would be used as provided
 
 This is equivalent to the following `sklearn-iris` Seldon Deployment. As we can see using prepackaged model servers allow one to avoid defining boilerplate and make definition much cleaner:
 
@@ -133,6 +128,7 @@ spec:
       storageInitializerImage: seldonio/rclone-storage-initializer:1.19.0-dev  # Specify custom image here
       envSecretRefName: seldon-init-container-secret                          # Specify custom secret here
 ```
+
 Note that image and secret used by Storage Initializer can be customised per-deployment.
 
 See our [example](../examples/custom_init_container.html) that explains in details how init containers are used and how to write a custom one using [rclone](https://rclone.org/) for cloud storage operations as an example.
@@ -167,24 +163,23 @@ The image name and other details will be added when this is deployed automatical
 
 Next steps:
 
-- [Worked notebook](../examples/server_examples.html)
-- [SKLearn Server](./sklearn.html)
-- [XGBoost Server](./xgboost.html)
-- [Tensorflow Serving](./tensorflow.html)
-- [MLflow Server](./mlflow.html)
-- [SKLearn Server with MinIO](../examples/minio-sklearn.html)
+* [Worked notebook](../examples/server_examples.html)
+* [SKLearn Server](sklearn.html)
+* [XGBoost Server](xgboost.html)
+* [Tensorflow Serving](tensorflow.html)
+* [MLflow Server](mlflow.html)
+* [SKLearn Server with MinIO](../examples/minio-sklearn.html)
 
-You can also build and add your own [custom inference servers](./custom.md),
-which can then be used in a similar way as the prepackaged ones.
+You can also build and add your own [custom inference servers](custom.md), which can then be used in a similar way as the prepackaged ones.
 
 If your use case does not fit for a reusable standard server then you can create your own component using our wrappers.
-
 
 ## Handling Credentials
 
 ### General notes
 
 Rclone remotes can be configured using the environmental variables:
+
 ```
 RCLONE_CONFIG_<remote name>_<config variable>: <config value>
 ```
@@ -192,22 +187,22 @@ RCLONE_CONFIG_<remote name>_<config variable>: <config value>
 Note: multiple remotes can be configured simultaneously.
 
 Once the remote is configured the modelUri that is compatible with `rclone` takes form
+
 ```
 modelUri: <remote>:<bucket name>
 ```
+
 for example `modelUri: s3:sklearn/iris`.
 
 Note: Rclone will remove the leading slashes for buckets so this is equivalent to `s3://sklearn/iris`.
 
 Below you will find a few example configurations. For other cloud solutions, please, consult great [documentation](https://rclone.org/) of the rclone project.
 
-
 ### Example for public GCS configuration
 
 Note: this is configured by default in the `seldonio/rclone-storage-initializer` image.
 
 Reference: [rclone documentation](https://rclone.org/googlecloudstorage/).
-
 
 ```yaml
 apiVersion: v1
@@ -237,7 +232,6 @@ spec:
       modelUri: gs:seldon-models/sklearn/iris
       envSecretRefName: seldon-rclone-secret
 ```
-
 
 ### Example minio configuration
 
@@ -276,7 +270,6 @@ stringData:
   RCLONE_CONFIG_S3_SECRET_ACCESS_KEY: "<your AWS_SECRET_ACCESS_KEY here>"
 ```
 
-
 ### Example AWS S3 with IAM roles configuration
 
 Reference: [rclone documentation](https://rclone.org/s3/#amazon-s3)
@@ -295,20 +288,20 @@ stringData:
   RCLONE_CONFIG_S3_ENV_AUTH: "true"
 ```
 
-
 ### Example for GCP/GKE
 
 Reference: [rclone documentation](https://rclone.org/googlecloudstorage/)
 
-For GCP/GKE, you will need create a service-account key and have it as local `json` file.
-First make sure that you have `[SA-NAME]@[PROJECT-ID].iam.gserviceaccount.com` service account created in the gcloud console that have sufficient permissions to access the bucket with your models (i.e. `Storage Object Admin`).
+For GCP/GKE, you will need create a service-account key and have it as local `json` file. First make sure that you have `[SA-NAME]@[PROJECT-ID].iam.gserviceaccount.com` service account created in the gcloud console that have sufficient permissions to access the bucket with your models (i.e. `Storage Object Admin`).
 
 Now, generate `keys` locally using the `gcloud` tool
+
 ```bash
 gcloud iam service-accounts keys create gcloud-application-credentials.json --iam-account [SA-NAME]@[PROJECT-ID].iam.gserviceaccount.com
 ```
 
 Now using the content of locally saved `gcloud-application-credentials.json` file create a secret
+
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -321,8 +314,7 @@ stringData:
   RCLONE_CONFIG_GCS_SERVICE_ACCOUNT_CREDENTIALS: '{"type":"service_account", ... <rest of gcloud-application-credentials.json>}'
 ```
 
-Note: remote name is `gcs` here so urls would take form similar to `gcs:<your bucket>`.
-Tip: using `cat gcloud-application-credentials.json | jq -c .` can help to easily collapse credentials.json into one line.
+Note: remote name is `gcs` here so urls would take form similar to `gcs:<your bucket>`. Tip: using `cat gcloud-application-credentials.json | jq -c .` can help to easily collapse credentials.json into one line.
 
 ### Example Azure Blob with Account Key
 
@@ -340,6 +332,7 @@ stringData:
   RCLONE_CONFIG_AZUREBLOB_ENV_AUTH: "false"
   RCLONE_CONFIG_AZUREBLOB_KEY: ""
 ```
+
 Note: remote name is `azureblob` here so urls would take form similar to `azureblob:<container>/path/to/dir`.
 
 ### Directly from PVC

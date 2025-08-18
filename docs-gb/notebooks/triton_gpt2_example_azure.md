@@ -1,4 +1,4 @@
-# Pre-trained GPT-2 Model Deployment with Triton on Azure
+# Triton GPT2 Example Azure
 
 In this notebook, we will run an example of text generation using a GPT-2 model exported from HuggingFace and deployed with Seldon's Triton pre-packed server. The example also covers converting the model to ONNX format. The implemented example below uses a Greedy approach for next token prediction.
 
@@ -8,27 +8,27 @@ After we have the module deployed to Kubernetes, we will run a simple load test 
 
 ## Steps
 
-- [Download pre-trained GPT-2 model from HuggingFace](#Export-HuggingFace-TFGPT2LMHeadModel-pre-trained-model-and-save-it-locally)
-- [Convert the model to ONNX](#Convert-the-TensorFlow-saved-model-to-ONNX)
-- [Store model in Azure Storage Blob](#Copy-your-model-to-Azure-Blob)
-- [Create PersistentVolume and PVC](#Add-Azure-PersistentVolume-and-Claim) mounting Azure Storage Blob
-- [Setup Seldon-Core](#Run-Seldon-in-your-kubernetes-cluster) in your Kubernetes cluster
-- [Deploy the ONNX model](#Deploy-your-model-with-Seldon-pre-packaged-Triton-server) with Seldon’s pre-packaged Triton server
-- [Run model inference](#Run-prediction-test:-generate-a-sentence-completion-using-GPT2-model---Greedy-approach) (greedy algorithm example)
-- [Monitor model with Azure Monitor](#Configure-Model-Monitoring-with-Azure-Monitor)
-- [Run load test using Vegeta](#Run-Load-Test-/-Performance-Test-using-vegeta)
-- [Clean-up](#Clean-up)
+* [Download pre-trained GPT-2 model from HuggingFace](triton_gpt2_example_azure.md#Export-HuggingFace-TFGPT2LMHeadModel-pre-trained-model-and-save-it-locally)
+* [Convert the model to ONNX](triton_gpt2_example_azure.md#Convert-the-TensorFlow-saved-model-to-ONNX)
+* [Store model in Azure Storage Blob](triton_gpt2_example_azure.md#Copy-your-model-to-Azure-Blob)
+* [Create PersistentVolume and PVC](triton_gpt2_example_azure.md#Add-Azure-PersistentVolume-and-Claim) mounting Azure Storage Blob
+* [Setup Seldon-Core](triton_gpt2_example_azure.md#Run-Seldon-in-your-kubernetes-cluster) in your Kubernetes cluster
+* [Deploy the ONNX model](triton_gpt2_example_azure.md#Deploy-your-model-with-Seldon-pre-packaged-Triton-server) with Seldon’s pre-packaged Triton server
+* [Run model inference](triton_gpt2_example_azure.md#Run-prediction-test:-generate-a-sentence-completion-using-GPT2-model---Greedy-approach) (greedy algorithm example)
+* [Monitor model with Azure Monitor](triton_gpt2_example_azure.md#Configure-Model-Monitoring-with-Azure-Monitor)
+* [Run load test using Vegeta](triton_gpt2_example_azure.md#Run-Load-Test-/-Performance-Test-using-vegeta)
+* [Clean-up](triton_gpt2_example_azure.md#Clean-up)
 
 ## Basic Requirements
 
-- Helm v3.0.0+
-- A Kubernetes cluster running v1.13 or above
-- kubectl v1.14+
-- Python 3.6+
+* Helm v3.0.0+
+* A Kubernetes cluster running v1.13 or above
+* kubectl v1.14+
+* Python 3.6+
 
 First, create a `requirements.txt` file:
 
-```text
+```
 transformers==4.5.1
 torch==1.8.1
 tokenizers<0.11,>=0.10.1
@@ -42,30 +42,17 @@ Now, install the dependencies:
 pip install --trusted-host=pypi.python.org --trusted-host=pypi.org --trusted-host=files.pythonhosted.org -r requirements.txt
 ```
 
-### Export HuggingFace TFGPT2LMHeadModel pre-trained model and save it locally <a id="hf"/>
+### Export HuggingFace TFGPT2LMHeadModel pre-trained model and save it locally <a href="#hf" id="hf"></a>
 
-```python
-from transformers import GPT2Tokenizer, TFGPT2LMHeadModel
+from transformers import GPT2Tokenizer, TFGPT2LMHeadModeltokenizer = GPT2Tokenizer.from\_pretrained("gpt2")model = TFGPT2LMHeadModel.from\_pretrained(    "gpt2", from\_pt=True, pad\_token\_id=tokenizer.eos\_token\_id)model.save\_pretrained("./tfgpt2model", saved\_model=True)
 
-tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-model = TFGPT2LMHeadModel.from_pretrained(
-    "gpt2", from_pt=True, pad_token_id=tokenizer.eos_token_id
-)
-model.save_pretrained("./tfgpt2model", saved_model=True)
-```
+### Convert the TensorFlow saved model to ONNX <a href="#onnx" id="onnx"></a>
 
-### Convert the TensorFlow saved model to ONNX <a id="onnx"/>
+python -m tf2onnx.convert --saved-model ./tfgpt2model/saved\_model/1 --opset 13  --output model.onnxAzure Setup
 
-```bash
-python -m tf2onnx.convert --saved-model ./tfgpt2model/saved_model/1 --opset 13  --output model.onnx
-```
+We have provided an [Azure Setup Notebook](triton_gpt2_example_azure_setup.md) that deploys an AKS cluster, an Azure storage account, and installs the Azure Blob CSI driver. If an AKS cluster already exists, skip to the creation of Blob Storage and CSI driver installation steps.
 
-## Azure Setup
-
-We have provided an [Azure Setup Notebook](../notebooks/triton_gpt2_example_azure_setup.md) that deploys an AKS cluster, an Azure storage account, and installs the Azure Blob CSI driver. If an AKS cluster already exists, skip to the creation of Blob Storage and CSI driver installation steps.
-
-Upon completion of the Azure setup, the following infrastructure will be created:
-![Azure](../images/azure.jpg)
+Upon completion of the Azure setup, the following infrastructure will be created: ![Azure](../images/azure.jpg)
 
 ```python
 resource_group = "seldon"  # feel free to replace or use this default
@@ -93,7 +80,7 @@ az storage blob list \
     --output table
 ```
 
-```text
+```
 Name               IsDirectory    Blob Type    Blob Tier    Length     Content Type              Last Modified              Snapshot
 -----------------  -------------  -----------  -----------  ---------  ------------------------  -------------------------  ----------
 gpt2/1/model.onnx                 BlockBlob    Hot          652535462  application/octet-stream  2021-05-28T04:37:11+00:00
@@ -102,9 +89,10 @@ gpt2/1/model.onnx                 BlockBlob    Hot          652535462  applicati
 ## Add Azure PersistentVolume and Claim
 
 For more details on creating a PersistentVolume using the CSI driver, refer to the [official documentation](https://github.com/kubernetes-sigs/blob-csi-driver/blob/master/deploy/example/e2e_usage.md).
-- Create secret
-- Create a PersistentVolume pointing to the secret and Blob Container Name
-- Create a PersistentVolumeClaim to bind to the volume
+
+* Create secret
+* Create a PersistentVolume pointing to the secret and Blob Container Name
+* Create a PersistentVolumeClaim to bind to the volume
 
 ```python
 key = !az storage account keys list --account-name {storage_account_name} -g {resource_group} --query '[0].value' -o tsv
@@ -117,6 +105,7 @@ kubectl create secret generic azure-blobsecret --from-literal azurestorageaccoun
 ```
 
 Create a file named `azure-blobfuse-pv.yaml`:
+
 ```yaml
 apiVersion: v1
 kind: PersistentVolume
@@ -164,7 +153,7 @@ kubectl apply -f  azure-blobfuse-pv.yaml
 kubectl get pv,pvc
 ```
 
-```text
+```
 NAME                           CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS   REASON   AGE
 persistentvolume/pv-gpt2blob   10Gi       RWX            Retain           Bound    default/pvc-gpt2blob                           4h54m
 
@@ -174,11 +163,12 @@ persistentvolumeclaim/pvc-gpt2blob   Bound    pv-gpt2blob   10Gi       RWX      
 
 ### Run Seldon in your kubernetes cluster
 
-Follow the [Seldon-Core Setup notebook](../notebooks/seldon-core-setup.md) to set up a cluster with Istio Ingress and install Seldon Core.
+Follow the [Seldon-Core Setup notebook](seldon-core-setup.md) to set up a cluster with Istio Ingress and install Seldon Core.
 
 ### Deploy your model with Seldon pre-packaged Triton server
 
 Create a file named `gpt2-deploy.yaml`:
+
 ```yaml
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
@@ -238,7 +228,7 @@ curl -v http://${ingress_ip}:80/seldon/default/gpt2gpu/v2/models/gpt2
 {"name":"gpt2","versions":["1"],"platform":"onnxruntime_onnx","inputs":[{"name":"input_ids:0","datatype":"INT32","shape":[-1,-1]},{"name":"attention_mask:0","datatype":"INT32","shape":[-1,-1]}],"outputs":[{"name":"past_key_values","datatype":"FP32","shape":[12,2,-1,12,-1,64]},{"name":"logits","datatype":"FP32","shape":[-1,-1,50257]}]}
 ```
 
-### Run prediction test: generate a sentence completion using GPT2 model  - Greedy approach
+### Run prediction test: generate a sentence completion using GPT2 model - Greedy approach
 
 ```python
 import http
@@ -300,7 +290,7 @@ while count < max_gen_len:
 print(f"Input: {input_text}\nOutput: {gen_sentence}")
 ```
 
-```text
+```
 sending request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
 Sentence: I love Artificial Intelligence .
 sending request to http://20.75.117.145/seldon/default/gpt2gpu/v2/models/gpt2/infer
@@ -321,7 +311,7 @@ Input: I love Artificial Intelligence
 Output: I love Artificial Intelligence . I love the way it 's designed
 ```
 
-## Configure Model Monitoring with Azure Monitor <a id="azuremonitor"/>
+## Configure Model Monitoring with Azure Monitor <a href="#azuremonitor" id="azuremonitor"></a>
 
 The Azure Monitor Containers Insights provides functionality to allow collecting data from any Prometheus endpoints. To turn on Azure Monitor Container Insights, follow the steps described [here](https://docs.microsoft.com/en-us/azure/azure-monitor/containers/container-insights-onboard).
 
@@ -333,13 +323,14 @@ kubectl get pods -n kube-system | grep omsagent
 
 For more details on how to configure the scraping endpoints and query collected data refer to [MS Docs on Configure scraping of Prometheus metrics with Container insights](https://docs.microsoft.com/en-us/azure/azure-monitor/containers/container-insights-prometheus-integration).
 
-Our deployed model metrics are available from the [Seldon model orchestrator](../integrations/analytics.md) and [Nvidia Triton Server](https://github.com/triton-inference-server/server/blob/main/docs/user_guide/metrics.md). To enable scraping for both endpoints, update the `ConfigMap` that configures `omsagent` ([azure-metrics-cm.yaml](./azure-metrics-cm.yaml)).
+Our deployed model metrics are available from the [Seldon model orchestrator](../integrations/analytics.md) and [Nvidia Triton Server](https://github.com/triton-inference-server/server/blob/main/docs/user_guide/metrics.md). To enable scraping for both endpoints, update the `ConfigMap` that configures `omsagent` ([azure-metrics-cm.yaml](azure-metrics-cm.yaml)).
 
 ```bash
 kubectl apply -f azure-metrics-cm.yaml
 ```
 
 ### Query and Visualize collected data
+
 Collected metrics are available in the Logs blade of Azure Monitor in a table **InsightsMetrics**.
 
 To get Model Inference Requests per minute from Seldon Metrics, run the following KQL query:
@@ -370,12 +361,12 @@ InsightsMetrics
 
 Here is an example dashboard created using the queries above:
 
-![dashboard](../images/azuredashboard.jpg) 
-
+![dashboard](../images/azuredashboard.jpg)
 
 ### Run Load Test / Performance Test using vegeta
 
 #### Install vegeta
+
 For more details, see the [official vegeta documentation](https://github.com/tsenart/vegeta#install).
 
 ```bash
@@ -434,7 +425,7 @@ with open("vegeta_target.json", mode="w") as file:
 ./vegeta attack -targets=vegeta_target.json -rate=1 -duration=60s -format=json | ./vegeta report -type=text
 ```
 
-```text
+```
 Requests      [total, rate, throughput]         60, 1.02, 0.95
 Duration      [total, attack, wait]             1m3s, 58.994s, 4.445s
 Latencies     [min, mean, 50, 90, 95, 99, max]  1.45s, 4.003s, 3.983s, 5.249s, 6.329s, 7.876s, 7.97s
@@ -445,8 +436,6 @@ Status Codes  [code:count]                      200:60
 Error Set:
 ```
 
-### Clean-up <a id="cleanup"/>
+### Clean-up <a href="#cleanup" id="cleanup"></a>
 
-```bash
 kubectl delete -f gpt2-deploy.yaml -n default
-```

@@ -173,8 +173,20 @@
 * [Logging and Log Level](reference/log_level.md)
 * [Private Docker Registry](reference/private_registries.md)
 * [Prediction APIs](reference/prediction-apis/README.md)
-  * [Open Inference Protocol](reference/v2-protocol.md)
-  * [Scalar Value Types](reference/v2-protocol.md)
+  * [Open Inference Protocol](reference/prediction-apis/v2-protocol/README.md)
+    * [REST](reference/prediction-apis/v2-protocol/rest/README.md)
+      * ```yaml
+        type: builtin:openapi
+        props:
+          models: true
+        dependencies:
+          spec:
+            ref:
+              kind: openapi
+              spec: open-inference-protocol-v2
+        ```
+    * [gRPC](reference/prediction-apis/v2-protocol/grpc.md)
+  * [Scalar Value Types](reference/prediction-apis/v2-protocol/grpc.md#scalar-value-types)
   * [Microservice API](reference/internal-api.md)
   * [External API](reference/external-prediction.md)
   * [Prediction Proto Buffer Spec](reference/prediction.md)

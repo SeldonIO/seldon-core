@@ -1,32 +1,22 @@
-#                  Deploying  Time-Series Models on Seldon  
+# Statsmodels Holt-Winter's time-series model
 
-The following notebook are steps to deploy your first time-series model on Seldon. The first step is to install statsmodels on our local system, along with s2i. s2i will be used to convert the source code to a docker image and stasmodels is a python library to build statistical models.  
+The following notebook are steps to deploy your first time-series model on Seldon. The first step is to install statsmodels on our local system, along with s2i. s2i will be used to convert the source code to a docker image and stasmodels is a python library to build statistical models.
 
 Dependencies:
 
-1. Seldon-core (https://docs.seldon.io/projects/seldon-core/en/v1.1.0/workflow/install.html) 
-
+1. Seldon-core (https://docs.seldon.io/projects/seldon-core/en/v1.1.0/workflow/install.html)
 2. s2i - Source to Image
+3. statsmodels (https://www.statsmodels.org/stable/index.html)
 
-3. statsmodels (https://www.statsmodels.org/stable/index.html) 
+Assuming you have installed statsmodels and s2i, the next step is to create a joblib file of your time-series model. The sample code is given below . Here we have considered a Holt- Winter's seasonal model and the shampoo sales dataset as a basic example.
 
-
-
-Assuming you have installed statsmodels and s2i,  the next step is to create a joblib file of your time-series model. The sample code is given below . Here  we have considered a Holt- Winter's  seasonal model and the shampoo sales dataset as a basic example.  
- 
- 
-The univariate dataset : https://raw.githubusercontent.com/jbrownlee/Datasets/master/shampoo.csv 
-
+The univariate dataset : https://raw.githubusercontent.com/jbrownlee/Datasets/master/shampoo.csv
 
 ```python
 !pip install statsmodels
 ```
 
-<b>Code snippet to create a joblib file :</b>
-
-
-
-
+Code snippet to create a joblib file :
 
 ```python
 import joblib
@@ -58,8 +48,7 @@ model = ExponentialSmoothing(
 joblib.dump(model, "model.sav")
 ```
 
-<b>The Next  step is to write the code in a format defined by s2i as given below : </b>
-
+The Next step is to write the code in a format defined by s2i as given below :
 
 ```python
 %%writefile holt_winter.py
@@ -96,38 +85,39 @@ class holt_winter(object):
         return self.model.forecast(X)
 ```
 
-After saving the code, we now  create an environment_rest file and add  the following lines:                                                   
+After saving the code, we now create an environment\_rest file and add the following lines:
 
-MODEL_NAME=holt_winter <br>
-API_TYPE=REST <br>
-SERVICE_TYPE=MODEL<br>
-PERSISTENCE =0<br>
-
-
-MODEL_NAME: <br>
-The name of the class containing the model. Also the name of the python file which will be imported. <br>
-
-API_TYPE:<br>
-API type to create. Can be REST or GRPC<br>
-
-SERVICE_TYPE:<br>
-The service type being created. Available options are:<br>
-1. MODEL<br>
-2. ROUTER<br>
-3. TRANSFORMER<br>
-4. COMBINER<br>
-5. OUTLIER_DETECTOR<br>
+MODEL\_NAME=holt\_winter\
+API\_TYPE=REST\
+SERVICE\_TYPE=MODEL\
+PERSISTENCE =0\
 
 
-
-PERSISTENCE:<br>
-Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved periodically to redis and loaded from redis (if exists) or created fresh if not. <br>
-
+MODEL\_NAME:\
+The name of the class containing the model. Also the name of the python file which will be imported.\
 
 
+API\_TYPE:\
+API type to create. Can be REST or GRPC\
 
 
+SERVICE\_TYPE:\
+The service type being created. Available options are:\
 
+
+1. MODEL\
+
+2. ROUTER\
+
+3. TRANSFORMER\
+
+4. COMBINER\
+
+5. OUTLIER\_DETECTOR\
+
+
+PERSISTENCE:\
+Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved periodically to redis and loaded from redis (if exists) or created fresh if not.\
 
 
 ```python
@@ -138,7 +128,6 @@ pandas
 numpy
 
 ```
-
 
 ```python
 %%writefile environment_rest
@@ -152,13 +141,11 @@ PERSISTENCE =0
 
 Now we build the image using the s2i command, replace "seldonio/statsmodel-holts:0.1" with the image name of your choice :
 
-
 ```python
 !s2i build -E environment_rest . seldonio/seldon-core-s2i-python37-ubi8:1.7.0-dev seldonio/statsmodel-holts:0.1
 ```
 
 Running the docker image created:
-
 
 ```python
 !docker run --name "holt_predictor" -d --rm -p 5000:5000 seldonio/statsmodel-holts:0.1
@@ -166,20 +153,17 @@ Running the docker image created:
 
 The code is now running at the local host at port 5000. It can be tested by sending a curl command, here we are sending a request to the model to predict the sales for the next 3 weeks.
 
-
 ```python
 !curl  -s http://localhost:5000/predict -H "Content-Type: application/json" -d '{"data":{"ndarray":3}}'
 ```
 
-The next step is to push the code into the docker registry, you are free to use the docker hub or the private registry in your cluster.  
-
+The next step is to push the code into the docker registry, you are free to use the docker hub or the private registry in your cluster.
 
 ```python
 !docker push seldonio/statsmodel-holts:0.1
 ```
 
 The final step is to deploy the configuration file on your cluster as shown below.
-
 
 ```python
 %%writefile model.yaml
@@ -207,46 +191,39 @@ spec:
     replicas: 1
 ```
 
-
 ```python
 !kubectl apply -f model.yaml
 ```
 
 Your model will now be deployed as a service, create a route in order for external traffic to access it . A sample curl request (with a dummy I.P, replace it with the route created by you) for the model is :
 
-
 ```python
 !curl -s -d '{"data": {"ndarray":2}}'    -X POST http://160.11.22.334:4556/seldon/testseldon/holt-predictor/api/v1.0/predictions    -H "Content-Type: application/json"
 ```
 
-In the above command, we send a request to get a prediction of  the sales of the  shampoo for the next 2 days. testseldon is the namespace, you can replace it with the namespace created by you where the model is deployed .
+In the above command, we send a request to get a prediction of the sales of the shampoo for the next 2 days. testseldon is the namespace, you can replace it with the namespace created by you where the model is deployed .
 
+The response we get is :
 
-The response we get is : 
-
-{"data":{"names":[],"ndarray":[487.86681173,415.82743026 ]},"meta":{}}
-
+{"data":{"names":\[],"ndarray":\[487.86681173,415.82743026 ]},"meta":{\}}
 
 The data returned is an n-dimensional array with 2 values which is the predicted values by the model, in this case the sales of the shampoo.
 
-<span style="color: red;">Note: it is suggested that you try the model on your local system before deploying it on the cluster</span>.
+Note: it is suggested that you try the model on your local system before deploying it on the cluster.
 
-<b>Model Monitoring</b>
+Model Monitoring
 
 Once the model is deployed, you can now monitor various metrics, the 2 main ones being:
 
-1. Requests per second <br>
+1. Requests per second\
+
 2. Latency in serving the request
 
+The model deployed on Seldon can be monitored using build in metrics dashboard on Grafana. Here is the link to deploy metrics dashboard: https://docs.seldon.io/projects/seldon-core/en/v1.1.0/analytics/analytics.html.\
+\
+The screenshot of a sample dashboard is given below:\
+![dashboard\_image1](../images/dashboard_image.png)
 
-
-
-The model deployed on Seldon can be monitored using build in metrics dashboard on Grafana. Here is the link to deploy metrics dashboard: https://docs.seldon.io/projects/seldon-core/en/v1.1.0/analytics/analytics.html.  <br>                                                                                                                                                                                                            
-The screenshot of a sample dashboard is given below: <br>
-![dashboard_image1](../images/dashboard_image.png)
-
-
-<b>Summary</b>
+Summary
 
 This documentation covers deploying time series model on Seldon, this model could be inferenced for forecasting values from a given data set. This is very useful for customers who want to deploy time series alogithm for forecasting models.
-
