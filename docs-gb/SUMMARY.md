@@ -172,7 +172,7 @@
 * [Images](reference/images.md)
 * [Logging and Log Level](reference/log_level.md)
 * [Private Docker Registry](reference/private_registries.md)
-* [\[Prediction APIs\]](reference/prediction-apis/README.md)
+* [Prediction APIs](reference/prediction-apis/README.md)
   * [Open Inference Protocol](reference/v2-protocol.md)
   * [Scalar Value Types](reference/v2-protocol.md)
   * [Microservice API](reference/internal-api.md)
