@@ -13,8 +13,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde/protobuf"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/inference_schema"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/schema"
+	"google.golang.org/protobuf/proto"
 	"math/rand"
 	"strconv"
 	"sync"
@@ -315,28 +316,24 @@ func (km *KafkaManager) Infer(
 			logger.Debugf("%02x", b)
 		}
 
-		data, err = schema.SerialisePayload(km.schemaRegistryClient, schema.InferenceSchemaSubject, data, &inference_schema.ModelInferRequest{})
+		schemaConfig := protobuf.NewSerializerConfig()
+		schemaConfig.NormalizeSchemas = true
+
+		ser, err := protobuf.NewSerializer(km.schemaRegistryClient, 3, schemaConfig)
 		if err != nil {
-			return nil, fmt.Errorf("failed to serialised payload with schema id: %v", err)
+			logger.WithError(err).Errorf("Failed to obtain a serialiser")
 		}
 
-		//ser, err := protobuf.NewSerializer(km.schemaRegistryClient, 3, protobuf.NewSerializerConfig())
-		//if err != nil {
-		//	logger.WithError(err).Errorf("Failed to obtain a serialiser")
-		//}
-		//
-		//v2Request := &inference_schema.ModelInferRequest{}
-		//err = proto.Unmarshal(data, v2Request)
-		//if err != nil {
-		//	return nil, fmt.Errorf("failed to unmarshal v2 request: %v", err)
-		//}
-		//
-		//v2Request.ProtoReflect().Descriptor()
-		//
-		//_, b, err := ser.SerializeWithHeaders("infer_request", v2Request)
-		//if err != nil {
-		//	logger.WithError(err).Errorf("Failed to serialise response to dataplane model")
-		//}
+		v2Request := &inference_schema.ModelInferRequest{}
+		err = proto.Unmarshal(data, v2Request)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal v2 request: %v", err)
+		}
+
+		b, err := ser.Serialize(inputTopic, v2Request)
+		if err != nil {
+			return nil, fmt.Errorf("failed to serialize v2 request: %v", err)
+		}
 
 		logger.Infof("sucesssfully serialised data with schema on topic %s", inputTopic)
 
@@ -344,6 +341,8 @@ func (km *KafkaManager) Infer(
 		for _, b := range data[:10] {
 			logger.Debugf("%02x", b)
 		}
+
+		data = b
 	}
 
 	msg := &kafka.Message{

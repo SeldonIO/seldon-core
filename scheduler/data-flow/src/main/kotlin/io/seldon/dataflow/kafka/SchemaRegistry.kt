@@ -9,11 +9,13 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow.kafka
 
+import com.google.protobuf.Message
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer
 import io.seldon.dataflow.PipelineSubscriber
-import io.seldon.mlops.schema.InferenceSchema
+import io.seldon.mlops.inference_schema.InferRequest.ModelInferRequest
+import io.seldon.mlops.inference_schema.InferResponse.ModelInferResponse
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.kstream.Consumed
@@ -73,14 +75,14 @@ class SerdeFactory {
 //            deserializer.configure(props, false)
 //        }
 
-        val requestSerializer = KafkaProtobufSerializer<InferenceSchema.ModelInferRequest>()
-        val responseSerialiser = KafkaProtobufSerializer<InferenceSchema.ModelInferResponse>()
+        val requestSerializer = KafkaProtobufSerializer<ModelInferRequest>()
+        val responseSerialiser = KafkaProtobufSerializer<ModelInferResponse>()
 
         init {
             val props =
                 mapOf(
                     "schema.registry.url" to schemaRegistryUrl,
-                    "auto.register.schemas" to false,
+                    "auto.register.schemas" to true,
                     "use.latest.version" to true,
                 )
 
@@ -162,62 +164,34 @@ class SerdeFactory {
             if (data == null) return null
 
             return try {
-                // Parse raw protobuf to your message type
-                val message = InferenceSchema.ModelInferRequest.parseFrom(data)
+                var message: Message
 
-                // Serialize with Schema Registry wire format
-                requestSerializer.serialize("inference_request", message)
+                if (topic?.contains("input") ?: return data) {
+                    // Parse raw protobuf to your message type
+                    message = ModelInferRequest.parseFrom(data)
+                    val serialised = requestSerializer.serialize(topic, message)
+                    logger.info(
+                        "First 10 bytes after serialised of data for topic $topic: ${
+                            serialised.take(10).joinToString(" ") { "%02x".format(it) }
+                        }",
+                    )
+                    serialised
+                } else if (topic?.contains("output") ?: return data) {
+                    message = ModelInferResponse.parseFrom(data)
+
+                    val serialised = responseSerialiser.serialize(topic, message)
+                    logger.info(
+                        "First 10 bytes after serialised of data for topic $topic: ${
+                            serialised.take(10).joinToString(" ") { "%02x".format(it) }
+                        }",
+                    )
+                    serialised
+                } else {
+                    data
+                }
             } catch (e: Exception) {
                 logger.warn("Failed to serialize with Schema Registry, using raw data", e)
                 data // Fallback to raw data
-            }
-//            logger.info("the topic to serialise data is $topic")
-//            return data?.let { payload ->
-//                val schemaId = getSchemaId()
-//                if (schemaId != null) {
-//                    addSchemaRegistryWireFormat(payload, schemaId)
-//                } else {
-//                    logger.info("Schema with id $schemaId not found")
-//                    // No schema ID available, return original payload without wire format
-//                    payload
-//                }
-//            }
-        }
-
-        private fun addSchemaRegistryWireFormat(
-            data: ByteArray,
-            schemaId: Int,
-        ): ByteArray {
-            logger.info("Adding schema registry with id $schemaId")
-
-            logger.info("First 10 bytes before adding schema: ${data.take(10).joinToString(" ") { "%02x".format(it) }}")
-            val result = ByteArray(5 + data.size)
-            result[0] = 0 // Magic byte
-
-            // Write schema ID as 4 bytes (big-endian)
-            result[1] = (schemaId shr 24).toByte()
-            result[2] = (schemaId shr 16).toByte()
-            result[3] = (schemaId shr 8).toByte()
-            result[4] = schemaId.toByte()
-
-            // Copy the actual protobuf data
-            data.copyInto(result, 5)
-
-            logger.info(
-                "First 10 bytes after adding schema: ${
-                    result.take(10).joinToString(" ") { "%02x".format(it) }
-                }",
-            )
-            return result
-        }
-
-        private fun getSchemaId(subject: String = "infer_response"): Int? {
-            return try {
-                val metadata = schemaClient.getLatestSchemaMetadata(subject)
-                metadata.id
-            } catch (e: Exception) {
-                logger.warn("Could not get schema metadata for subject $subject", e)
-                null // Return null to indicate failure
             }
         }
     }

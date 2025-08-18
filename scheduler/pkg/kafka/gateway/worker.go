@@ -14,8 +14,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/inference_schema"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/schema"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde/protobuf"
 	"io"
 	"math"
 	"net"
@@ -39,6 +39,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/inference_schema"
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
@@ -260,28 +261,24 @@ func (iw *InferWorker) produce(
 	logger.Infof("the payload to write to the topic %s is %s", topic, b)
 
 	if iw.schemaRegistryClient != nil && !errorTopic {
-		//srLogger := logger.WithField("source", "schema registry")
-		//v2Res := &v2.ModelInferResponse{}
-		//err := proto.Unmarshal(b, v2Res)
-		//if err != nil {
-		//	srLogger.WithError(err).Errorf("Failed to unmarshal response to dataplane model")
-		//}
-		//
-		//ser, err := protobuf.NewSerializer(iw.schemaRegistryClient, serde.ValueSerde, protobuf.NewSerializerConfig())
-		//if err != nil {
-		//	srLogger.WithError(err).Errorf("Failed to obtain a serialiser")
-		//}
-		//b, err = ser.Serialize(topic, v2Res)
-		//if err != nil {
-		//	srLogger.WithError(err).Errorf("Failed to serialise response to dataplane model")
-		//}
-
-		data, err := schema.SerialisePayload(iw.schemaRegistryClient, schema.InferenceSchemaSubject, b, &inference_schema.ModelInferResponse{})
+		srLogger := logger.WithField("source", "schema registry")
+		v2Res := &inference_schema.ModelInferResponse{}
+		err := proto.Unmarshal(b, v2Res)
 		if err != nil {
-			return fmt.Errorf("failed to serialised payload with schema id: %v", err)
+			srLogger.WithError(err).Errorf("Failed to unmarshal response to dataplane model")
 		}
 
-		b = data
+		schemaConfig := protobuf.NewSerializerConfig()
+		schemaConfig.NormalizeSchemas = true
+
+		ser, err := protobuf.NewSerializer(iw.schemaRegistryClient, serde.ValueSerde, schemaConfig)
+		if err != nil {
+			srLogger.WithError(err).Errorf("Failed to obtain a serialiser")
+		}
+		b, err = ser.Serialize(topic, v2Res)
+		if err != nil {
+			srLogger.WithError(err).Errorf("Failed to serialise response to dataplane model")
+		}
 	}
 
 	msg := &kafka.Message{
