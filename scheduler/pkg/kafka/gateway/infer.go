@@ -504,35 +504,11 @@ func (kc *InferKafkaHandler) Serve() {
 				}
 
 				if kc.schemaRegistryClient != nil {
-					//srLogger := logger.WithField("source", "schema registry")
-					//
-					//ser, err := protobuf.NewDeserializer(kc.schemaRegistryClient, serde.ValueSerde, protobuf.NewDeserializerConfig())
-					//if err != nil {
-					//	srLogger.WithError(err).Errorf("Failed to obtain a serialiser")
-					//}
-					//
-					//err = ser.ProtoRegistry.RegisterMessage((&inference_schema.ModelInferRequest{}).ProtoReflect().Type())
-					//if err != nil {
-					//	srLogger.WithError(err).Errorf("Failed to register inference schema")
-					//}
-					//
-					//str := &inference_schema.ModelInferRequest{}
-					//
-					//err = ser.DeserializeInto(*e.TopicPartition.Topic, e.Value, str)
-					//if err != nil {
-					//	srLogger.WithError(err).Errorf("Failed to deserialize inference schema")
-					//}
-					//
-					//value, err := proto.Marshal(str)
-					//if err != nil {
-					//	srLogger.WithError(err).Errorf("Failed to marshal inference schema")
-					//}
-					//e.Value = value
-
-					logger.Infof("got rid of the schema message")
-
-					e.Value = e.Value[6:]
-
+					// If it's Schema Registry format (magic byte 0x0)
+					if e.Value[0] == 0x0 {
+						// Skip magic byte (1) + schema ID (4) + message index (0) = 6 bytes
+						e.Value = e.Value[6:]
+					}
 				}
 
 				// Add tracing span

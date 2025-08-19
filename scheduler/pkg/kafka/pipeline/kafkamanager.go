@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde"
 	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde/protobuf"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/inference_schema"
 	"google.golang.org/protobuf/proto"
@@ -406,7 +407,7 @@ func (km *KafkaManager) infer(
 		schemaConfig := protobuf.NewSerializerConfig()
 		schemaConfig.NormalizeSchemas = true
 
-		ser, err := protobuf.NewSerializer(km.schemaRegistryClient, 3, schemaConfig)
+		ser, err := protobuf.NewSerializer(km.schemaRegistryClient, serde.ValueSerde, schemaConfig)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to obtain a serialiser")
 		}
@@ -427,6 +428,10 @@ func (km *KafkaManager) infer(
 		logger.Debugf("first 10 bytes after serialisation")
 		for _, b := range data[:10] {
 			logger.Debugf("%02x", b)
+		}
+
+		if err != nil {
+
 		}
 
 		data = b
