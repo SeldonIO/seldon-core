@@ -98,7 +98,7 @@ func TestStoreAndLoadPipeline(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			km, err := NewKafkaManager(logrus.New(), "default", &kafka_config.KafkaConfig{}, tracer, 10)
+			km, err := NewKafkaManager(logrus.New(), "default", &kafka_config.KafkaConfig{}, tracer, 10, nil)
 			g.Expect(err).To(BeNil())
 			if test.pipeline != nil {
 				km.pipelines.Store(getPipelineKey(test.resourceName, test.isModel), test.pipeline)
