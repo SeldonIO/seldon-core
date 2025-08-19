@@ -422,7 +422,7 @@ export function generateModel(modelType, modelName, uriOffset, replicas, isProxy
 }
 
 
-export function generateMultiModelPipelineYaml(numberOfModels, modelType, modelName, modelParams, uriOffset, replicas, isProxy = false, memoryBytes = null, inferBatchSize = 1) {
+export function generateMultiModelPipelineYaml(numberOfModels, modelType, pipelineName, modelName, modelParams, uriOffset, replicas, deployToServer, isProxy = false, memoryBytes = null, inferBatchSize = 1) {
     if (numberOfModels < 1) {
         throw new Error(`Invalid config: numberOfModels must be at least 1`)
     }
@@ -442,7 +442,7 @@ export function generateMultiModelPipelineYaml(numberOfModels, modelType, modelN
         "apiVersion": "mlops.seldon.io/v1alpha1",
         "kind": "Pipeline",
         "metadata": {
-            "name": generatePipelineName(modelName),
+            "name": pipelineName,
             "namespace": getConfig().namespace
         },
         "spec": {
@@ -471,7 +471,8 @@ export function generateMultiModelPipelineYaml(numberOfModels, modelType, modelN
                 "requirements": modelTemplate.requirements,
                 "memory": (memoryBytes == null) ? modelTemplate.memoryBytes : memoryBytes,
                 "replicas": replicas,
-                "parameters": (modelParams != null) ? modelParams : []
+                "parameters": (modelParams != null) ? modelParams : [],
+                "server" : deployToServer,
             }
         }
 

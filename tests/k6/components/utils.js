@@ -33,7 +33,7 @@ export function setupBase(config) {
                 var defs = getSeldonObjDef(config, model, seldonObjectType.MODEL)
 
                 ctl.loadModelFn(modelName, defs.model.modelDefn, true)
-                if (config.isLoadPipeline) {
+                if (config.viaPipeline) {
                     let waitForReady = config.enableStateCheck
                     ctl.loadPipelineFn(generatePipelineName(modelName), defs.model.pipelineDefn, waitForReady)  // we use pipeline name as model name + "-pipeline"
                 }
@@ -41,7 +41,7 @@ export function setupBase(config) {
         }
 
         // note: this doesnt work in case of kafka
-        if (!config.isLoadPipeline) {
+        if (!config.viaPipeline) {
             for (let j = 0; j < config.maxNumModels.length; j++) {
                 const n = config.maxNumModels[j] - 1
                 if (n >= 0) {
@@ -73,7 +73,7 @@ export function setupBase(config) {
                     const model = generateModel(config.modelType[j], modelNameWithVersion, 1, 1, config.isSchedulerProxy, config.modelMemoryBytes[j])
 
                     inferHttpLoop(
-                        config.inferHttpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, model.inference.http, 1, config.isEnvoy, config.dataflowTag)
+                        config.inferHttpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, model.inference.http, 1, config.isEnvoy, config.viaPipeline)
                 }
             }
         }
@@ -90,7 +90,7 @@ export function teardownBase(config ) {
             for (let i = 0; i < config.maxNumModels[j]; i++) {
                 const modelName = config.modelNamePrefix[j] + i.toString()
                 // if we have added a pipeline, unloaded it
-                if (config.isLoadPipeline) {
+                if (config.viaPipeline) {
                     ctl.unloadPipelineFn(generatePipelineName(modelName))
                 }
 
@@ -125,6 +125,7 @@ export function connectControlPlaneOps(config) {
     ctl.unloadExperimentFn = k8s.unloadExperiment
     ctl.loadSeldonRuntimeFn = k8s.loadSeldonRuntime
     ctl.loadServerFn = k8s.loadServer
+    ctl.unloadServerFn = k8s.unloadServer
   } else {
     ctl.loadModelFn = loadModel
     ctl.unloadModelFn = unloadModel
@@ -210,10 +211,10 @@ export function doInfer(modelName, modelNameWithVersion, config, isHttp, idx) {
     if (config.infer) {
         if (isHttp) {
             inferHttpLoop(
-                httpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, model.inference.http, config.inferHttpIterations, config.isEnvoy, config.dataflowTag)
+                httpEndpoint, config.isEnvoy?modelName:modelNameWithVersion, model.inference.http, config.inferHttpIterations, config.isEnvoy, config.viaPipeline)
         } else {
             inferGrpcLoop(
-                grpcEndpoint, config.isEnvoy?modelName:modelNameWithVersion, model.inference.grpc, config.inferGrpcIterations, config.isEnvoy, config.dataflowTag)
+                grpcEndpoint, config.isEnvoy?modelName:modelNameWithVersion, model.inference.grpc, config.inferGrpcIterations, config.isEnvoy, config.viaPipeline)
         }
     }
 }

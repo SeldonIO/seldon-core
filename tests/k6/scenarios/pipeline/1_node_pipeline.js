@@ -25,6 +25,7 @@ export let options = {
 
 const modelType = 'echo'
 const modelName = 'tests-pipeline-1-node-echo';
+const pipelineName = 'tests-pipeline-1-node-echo-pipeline';
 
 export function setup() {
     k8s.init()
@@ -43,7 +44,7 @@ export function setup() {
         }
     ]
 
-    const pipeline = generateMultiModelPipelineYaml(1, modelType, modelName, modelParams, config.modelName, 1, 1)
+    const pipeline = generateMultiModelPipelineYaml(1, modelType, pipelineName, modelName, modelParams, config.modelName, 1, 1)
 
 
     pipeline.modelCRYaml.forEach(model => {
@@ -58,7 +59,7 @@ export function setup() {
 
 export default function (config) {
     const inferPayload1 = getModelInferencePayload(modelType, 1)
-    inferHttp(config.inferHttpEndpoint, modelName, inferPayload1.http, true, 'pipeline', config.debug, config.requestIDPrefix)
+    inferHttp(config.inferHttpEndpoint, modelName, inferPayload1.http, true, true, config.debug, config.requestIDPrefix)
 }
 
 export function teardown(config) {

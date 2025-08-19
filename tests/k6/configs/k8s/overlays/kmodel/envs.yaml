@@ -14,5 +14,5 @@ spec:
           value: "${PIPELINE_ENDPOINT}:9011"
         - name: INFER_HTTP_ENDPOINT
           value: "http://${PIPELINE_ENDPOINT}:9010"
-        - name: DATAFLOW_TAG
-          value: "model"
+        - name: VIA_PIPELINE
+          value: "false"
