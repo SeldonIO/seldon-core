@@ -75,17 +75,17 @@ spec:
           - name: MODELGATEWAY_MAX_NUM_CONSUMERS
             value: '{{ .Values.modelgateway.maxNumConsumers }}'
           - name: SCHEMA_REGISTRY_URL
-            value: '{{ .Values.security.schemaRegistry.client.URL}}'
+            value: '{{ .Values.security.schemaRegistry.client.URL }}'
           - name: SCHEMA_REGISTRY_USERNAME
-            value: '{{ .Values.security.schemaRegistry.client.username}}'
+            value: '{{ .Values.security.schemaRegistry.client.username }}'
           - name: SCHEMA_REGISTRY_PASSWORD
-            value: '{{ .Values.security.schemaRegistry.client.password}}'
+            value: '{{ .Values.security.schemaRegistry.client.password }}'
           - name: SCHEMA_REGISTRY_TOKEN
-            value: '{{ .Values.security.schemaRegistry.client.token}}'
+            value: '{{ .Values.security.schemaRegistry.client.token }}'
           - name: SCHEMA_REGISTRY_TARGET_SR
-            value: '{{ .Values.security.schemaRegistry.client.targetSR}}'
+            value: '{{ .Values.security.schemaRegistry.client.targetSR }}'
           - name: SCHEMA_REGISTRY_IDENTITY_POOL_ID
-            value: '{{ .Values.security.schemaRegistry.client.identityPoolID}}'
+            value: '{{ .Values.security.schemaRegistry.client.identityPoolID }}'
         resources:
           requests:
             cpu: '{{ .Values.modelgateway.resources.cpu }}'

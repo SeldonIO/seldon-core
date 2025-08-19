@@ -36,14 +36,14 @@ security:
         caPath: /tmp/certs/kafka/client/ca.crt
         brokerCaPath: /tmp/certs/kafka/broker/ca.crt
         endpointIdentificationAlgorithm:
-    schemaRegistry:
-      client:
-        URL:
-        username:
-        password:
-        token:
-        targetSR:
-        identityPoolID:
+  schemaRegistry:
+    client:
+      URL:
+      username:
+      password:
+      token:
+      targetSR:
+      identityPoolID:
   envoy:
     protocol: PLAINTEXT
     ssl:

@@ -714,6 +714,18 @@ spec:
           value: '{{ .Values.security.kafka.ssl.client.brokerValidationSecret }}'
         - name: KAFKA_BROKER_TLS_CA_LOCATION
           value: '{{ .Values.security.kafka.ssl.client.brokerCaPath }}'
+        - name: SCHEMA_REGISTRY_URL
+          value: '{{ .Values.security.schemaRegistry.client.URL }}'
+        - name: SCHEMA_REGISTRY_USERNAME
+          value: '{{ .Values.security.schemaRegistry.client.username }}'
+        - name: SCHEMA_REGISTRY_PASSWORD
+          value: '{{ .Values.security.schemaRegistry.client.password }}'
+        - name: SCHEMA_REGISTRY_TOKEN
+          value: '{{ .Values.security.schemaRegistry.client.token }}'
+        - name: SCHEMA_REGISTRY_TARGET_SR
+          value: '{{ .Values.security.schemaRegistry.client.targetSR }}'
+        - name: SCHEMA_REGISTRY_IDENTITY_POOL_ID
+          value: '{{ .Values.security.schemaRegistry.client.identityPoolID }}'
         - name: ENVOY_SECURITY_PROTOCOL
           value: '{{ .Values.security.envoy.protocol }}'
         - name: ENVOY_UPSTREAM_SERVER_TLS_SECRET_NAME
@@ -932,6 +944,18 @@ spec:
             .Values.logging.logLevel }}'
         - name: MODELGATEWAY_MAX_NUM_CONSUMERS
           value: '{{ .Values.modelgateway.maxNumConsumers }}'
+        - name: SCHEMA_REGISTRY_URL
+          value: '{{ .Values.security.schemaRegistry.client.URL }}'
+        - name: SCHEMA_REGISTRY_USERNAME
+          value: '{{ .Values.security.schemaRegistry.client.username }}'
+        - name: SCHEMA_REGISTRY_PASSWORD
+          value: '{{ .Values.security.schemaRegistry.client.password }}'
+        - name: SCHEMA_REGISTRY_TOKEN
+          value: '{{ .Values.security.schemaRegistry.client.token }}'
+        - name: SCHEMA_REGISTRY_TARGET_SR
+          value: '{{ .Values.security.schemaRegistry.client.targetSR }}'
+        - name: SCHEMA_REGISTRY_IDENTITY_POOL_ID
+          value: '{{ .Values.security.schemaRegistry.client.identityPoolID }}'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
@@ -1169,6 +1193,8 @@ spec:
           value: '{{ .Values.security.kafka.sasl.client.secret }}'
         - name: SELDON_KAFKA_SASL_PASSWORD_PATH
           value: '{{ .Values.security.kafka.sasl.client.passwordPath }}'
+        - name: SELDON_KAFKA_SCHEMA_REGISTRY_URL
+          value: '{{ .Values.security.schemaRegistry.client.URL }}'
         - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
           value: '{{ .Values.security.kafka.ssl.client.endpointIdentificationAlgorithm
             }}'
