@@ -14,13 +14,13 @@ import (
 	"strconv"
 
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
-	v1 "k8s.io/api/core/v1"
-	"knative.dev/pkg/apis"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
+	v1 "k8s.io/api/core/v1"
+	"knative.dev/pkg/apis"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 const (
@@ -97,7 +97,7 @@ func validateScaleSpec(
 		resourceCount = int32(countResources(resourceListObj))
 	}
 
-	var maxConsumers int32 = defaultMaxConsumers
+	maxConsumers := defaultMaxConsumers
 	if maxConsumersEnvName != "" {
 		maxConsumersEnv := getEnvVarValue(component.PodSpec, maxConsumersEnvName, "")
 		maxConsumers, err = ParseInt32(maxConsumersEnv, defaultMaxConsumers)
@@ -111,15 +111,20 @@ func validateScaleSpec(
 
 	maxReplicas := replicaCalc(resourceCount, maxConsumers, numPartitions)
 	if component.Replicas != nil && *component.Replicas > maxReplicas {
+		msg := fmt.Sprintf(
+			"%s requested replicas exceeded maximum of %d based on KafkaConfig and resource count, adjusted to %d",
+			component.Name, maxReplicas, maxReplicas,
+		)
+
+		logger := log.FromContext(ctx).WithName("validateScaleSpec")
+		logger.Info(msg)
+
 		component.Replicas = &maxReplicas
 		recorder.Eventf(
 			runtime,
 			v1.EventTypeWarning,
 			eventReason,
-			fmt.Sprintf(
-				"%s requested replicas exceeded maximum of %d based on KafkaConfig and resource count, adjusted to %d",
-				component.Name, maxReplicas, maxReplicas,
-			),
+			msg,
 		)
 	}
 
@@ -328,6 +333,7 @@ func NewSeldonRuntimeReconciler(
 			commonConfig.Logger.Info("Disabling component", "name", c.Name)
 		}
 	}
+
 	// Set last applied annotation for update
 	for _, cr := range componentReconcilers {
 		for _, res := range cr.GetResources() {

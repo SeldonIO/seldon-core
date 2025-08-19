@@ -30,8 +30,8 @@ export default function (config) {
     }
 
     if (config.infer) {
-        inferHttpLoop(httpEndpoint, modelName, model.inference.http, config.inferHttpIterations, config.isEnvoy, "pipeline")
-        inferGrpcLoop(grpcEndpoint, modelName, model.inference.grpc, config.inferGrpcIterations, config.isEnvoy, "pipeline")
+        inferHttpLoop(httpEndpoint, modelName, model.inference.http, config.inferHttpIterations, config.isEnvoy, true)
+        inferGrpcLoop(grpcEndpoint, modelName, model.inference.grpc, config.inferGrpcIterations, config.isEnvoy, true)
     }
 
     if (config.unloadModel) {

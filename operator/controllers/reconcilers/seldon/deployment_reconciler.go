@@ -151,14 +151,14 @@ func (s *ComponentDeploymentReconciler) Reconcile() error {
 	op, err := s.getReconcileOperation()
 	switch op {
 	case constants.ReconcileCreateNeeded:
-		logger.V(1).Info("Deployment Create", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
+		logger.Info("Deployment Create", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
 		err = s.Client.Create(s.Ctx, s.Deployment)
 		if err != nil {
 			logger.Error(err, "Failed to create Deployment", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
 			return err
 		}
 	case constants.ReconcileUpdateNeeded:
-		logger.V(1).Info("Deployment Update", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
+		logger.Info("Deployment Update", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
 		err = s.Client.Update(s.Ctx, s.Deployment)
 		if err != nil {
 			logger.Error(err, "Failed to update statefuleset", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
@@ -166,8 +166,9 @@ func (s *ComponentDeploymentReconciler) Reconcile() error {
 		}
 	case constants.ReconcileNoChange:
 		err = nil
-		logger.V(1).Info("Deployment No Change", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
+		logger.Info("Deployment No Change", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
 	case constants.ReconcileUnknown:
+		logger.Info("Unknown reconcile", "Name", s.Deployment.GetName())
 		if err != nil {
 			logger.Error(err, "Failed to get reconcile operation for Deployment", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
 			return err

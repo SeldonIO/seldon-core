@@ -47,6 +47,13 @@ function modelType() {
     return ["iris"]
 }
 
+function skipTeardown() {
+    if (__ENV.SKIP_TEARDOWN) {
+        return true
+    }
+    return false
+}
+
 function skipSetup() {
     if (__ENV.SKIP_SETUP) {
         return true
@@ -198,18 +205,8 @@ function debug() {
     return false
 }
 
-function isLoadPipeline() {
-    if (__ENV.DATAFLOW_TAG) {
-        return !(__ENV.DATAFLOW_TAG === "")
-    }
-    return false
-}
-
-function dataflowTag() {
-    if (__ENV.DATAFLOW_TAG) {
-        return __ENV.DATAFLOW_TAG
-    }
-    return ""  // empty means that we should not go via kafka
+function viaPipeline() {
+    return (__ENV.VIA_PIPELINE === "true")
 }
 
 function modelNamePrefix() {
@@ -395,6 +392,7 @@ export function getConfig() {
         "seldonRuntimeName": seldonRuntimeName(),
         "requestIDPrefix" : requestIDPrefix(),
         "skipSetup" : skipSetup(),
+        "skipTearDown" : skipTeardown(),
         "debug": debug(),
         "useKubeControlPlane": useKubeControlPlane(),
         "schedulerEndpoint": schedulerEndpoint(),
@@ -411,8 +409,7 @@ export function getConfig() {
         "isEnvoy": isEnvoy(),
         "modelMemoryBytes": modelMemoryBytes(),
         "inferBatchSize": inferBatchSize(),
-        "isLoadPipeline": isLoadPipeline(),
-        "dataflowTag": dataflowTag(),
+        "viaPipeline": viaPipeline(),
         "modelNamePrefix": modelNamePrefix(),
         "experimentNamePrefix": experimentNamePrefix(),
         "loadExperiment" : loadExperiment(),

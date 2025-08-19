@@ -10,7 +10,6 @@ import { sleep } from 'k6';
 
 const seldon_target_ns = getConfig().namespace;
 export const MAX_RETRIES = 10;
-export const MAX_RETRIES_SERVER = 40;
 var kubeclient = null;
 var schedulerClient = null;
 
@@ -269,7 +268,6 @@ export function getPipelineReadyCondition(pipelineCR) {
 
 export function loadPipeline(pipelineName, data, awaitReady=true, throwError=false) {
     try {
-        console.log("Creating pipeline " + data)
         kubeclient.apply(data)
         let created = kubeclient.get(seldonObjectType.PIPELINE.description, pipelineName, seldon_target_ns)
         if ('uid' in created.metadata) {
@@ -305,15 +303,19 @@ export function awaitPipelineStatus(pipelineName, status) {
     }
 }
 
-export function awaitServerStatus(serverName, status, throwError=false) {
+export function awaitServerStatus(serverName, status, throwError=false, maxRetries = 10) {
     let retries = 0
     try {
         while (!serverConditionMet(serverName, status)) {
             console.log("waiting for server status", serverName, status)
             sleep(1)
             retries++
-            if(retries > MAX_RETRIES_SERVER) {
-                console.log(`Giving up on waiting for server ${serverName} to reach status ${status}, after ${MAX_RETRIES}`)
+            if(retries > maxRetries) {
+                const msg = `Giving up on waiting for server ${serverName} to reach status ${status}, after ${maxRetries}`
+                if (throwError) {
+                    throw msg
+                }
+                console.log(msg)
                 return seldonOpExecStatus.FAIL
             }
         }
@@ -413,7 +415,7 @@ export function unloadExperiment(experimentName, awaitReady=true) {
 
 
 export function generateSeldonRuntime(modelGwReplicas, pipelineGwReplicas, dataFlowEngineReplicas) {
-    let runtime = kubeclient.get(seldonObjectType.SELDONRUNTIME, getConfig().seldonRuntimeName, seldon_target_ns)
+    let runtime = kubeclient.get("seldonruntime.mlops.seldon.io", getConfig().seldonRuntimeName, seldon_target_ns)
 
     const updatedReplicas = {
         spec : {
@@ -461,7 +463,7 @@ export function loadSeldonRuntime(data, awaitReady=true, throwError=false) {
     try {
         kubeclient.update(data)
         if (awaitReady) {
-            return awaitSeldonRuntime(0, true)
+            return awaitSeldonRuntime(10, true)
         }
         return seldonOpExecStatus.OK
     } catch (error) {
@@ -480,39 +482,37 @@ export function loadSeldonRuntime(data, awaitReady=true, throwError=false) {
 
 
 export function generateServer(serverName, serverConfig, replicas, minReplicas, maxReplicas) {
-    let server = kubeclient.get(seldonObjectType.SERVER, serverName, seldon_target_ns)
-
-    const updatedReplicasSpec = {
-        spec : {
-            minReplicas: minReplicas,
+    const serverResource = {
+        apiVersion: "mlops.seldon.io/v1alpha1",
+        kind: "Server",
+        metadata: {
+            name: serverName,
+            namespace: seldon_target_ns,
+        },
+        spec: {
             maxReplicas: maxReplicas,
+            minReplicas: minReplicas,
             replicas: replicas,
-            serverConfig : serverConfig,
-            statefulSetPersistentVolumeClaimRetentionPolicy : {
+            serverConfig: serverConfig,
+            statefulSetPersistentVolumeClaimRetentionPolicy: {
                 whenDeleted: "Retain",
-                whenScaled : "Retain",
+                whenScaled: "Retain"
             }
         }
-    }
-
-    // TODO is this the best way??
-
-    const serverSpec = { ...server, ...updatedReplicasSpec };
+    };
 
     return {
-        "object" : serverSpec,
-        "yaml" : yamlDump(serverSpec)
+        "object" : serverResource,
+        "yaml" : yamlDump(serverResource)
     }
 }
 
 
-export function loadServer(data, awaitReady=true, throwError=false) {
+export function loadServer(data, serverName, awaitReady=true, throwError=false, maxRetires = 10) {
     try {
-        let res =  kubeclient.update(data)
-        console.log(res)
-        sleep(1)
+        kubeclient.apply(data)
         if (awaitReady) {
-            return awaitServerStatus(data.metadata.name, "Ready")
+            return awaitServerStatus(serverName, "Ready", throwError, maxRetires)
         }
         return seldonOpExecStatus.OK
     } catch (error) {
@@ -520,5 +520,34 @@ export function loadServer(data, awaitReady=true, throwError=false) {
             throw error
         }
         return seldonOpExecStatus.FAIL
+    }
+}
+
+export function unloadServer(serverName, awaitReady=true, throwError=false) {
+    if(seldonObjExists(seldonObjectType.SERVER, serverName, seldon_target_ns)) {
+        try {
+            kubeclient.delete(seldonObjectType.SERVER.description, serverName, seldon_target_ns)
+            if (awaitReady) {
+                let retries = 0
+                while (seldonObjExists(seldonObjectType.SERVER, serverName, seldon_target_ns)) {
+                    sleep(1)
+                    retries++
+                    if(retries > MAX_RETRIES) {
+                        const msg = `Failed to unload server ${serverName} after ${MAX_RETRIES}, giving up`
+                        if (throwError) {
+                            throw msg
+                        }
+                        console.log(msg)
+                        return seldonOpExecStatus.FAIL
+                    }
+                }
+            }
+            return seldonOpExecStatus.OK
+        } catch(error) {
+            if (throwError) {
+                throw error
+            }
+            // catch case where model was deleted concurrently by another VU
+        }
     }
 }
