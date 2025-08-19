@@ -193,7 +193,7 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 
 				if c.schemaRegistryClient != nil {
 					// temporary deserialisation
-					e.Value = e.Value[5:]
+					e.Value = e.Value[6:]
 				}
 				span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
 				request := val.(*Request)

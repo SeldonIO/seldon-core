@@ -506,15 +506,27 @@ func (kc *InferKafkaHandler) Serve() {
 					//	srLogger.WithError(err).Errorf("Failed to obtain a serialiser")
 					//}
 					//
-					//value, err := ser.Deserialize(*e.TopicPartition.Topic, e.Value)
-					//
+					//err = ser.ProtoRegistry.RegisterMessage((&inference_schema.ModelInferRequest{}).ProtoReflect().Type())
 					//if err != nil {
-					//	fmt.Printf("Failed to deserialize payload: %s\n", err)
+					//	srLogger.WithError(err).Errorf("Failed to register inference schema")
 					//}
+					//
+					//str := &inference_schema.ModelInferRequest{}
+					//
+					//err = ser.DeserializeInto(*e.TopicPartition.Topic, e.Value, str)
+					//if err != nil {
+					//	srLogger.WithError(err).Errorf("Failed to deserialize inference schema")
+					//}
+					//
+					//value, err := proto.Marshal(str)
+					//if err != nil {
+					//	srLogger.WithError(err).Errorf("Failed to marshal inference schema")
+					//}
+					//e.Value = value
 
 					logger.Infof("got rid of the schema message")
 
-					e.Value = e.Value[5:]
+					e.Value = e.Value[6:]
 
 				}
 

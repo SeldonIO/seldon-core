@@ -26,6 +26,8 @@ build: build-go build-kotlin build-v2-python update-copyright
 # https://github.com/protocolbuffers/protobuf/releases
 PROTOC_VERSION ?= 27.2
 
+PROTOC_VERSION_SCHEMA_REGISTRY ?= 25.0
+
 # https://pkg.go.dev/google.golang.org/protobuf/cmd/protoc-gen-go
 PROTOC_GEN_GO_VERSION ?= 1.34.2
 
@@ -90,6 +92,9 @@ $(TOOLS_DIR)/%/:
 CMD_PROTOC          ?= $(TOOLS_DIR)/bin/protoc-$(PROTOC_VERSION)
 PROTOC_DOWNLOAD_URL ?= $(PROTOBUF_RELEASE_URL)/download/v$(PROTOC_VERSION)/protoc-$(PROTOC_VERSION)-linux-$(ARCH).zip
 
+CMD_PROTOC_SCHEMA          ?= $(TOOLS_DIR)/bin/protoc-$(PROTOC_VERSION_SCHEMA_REGISTRY)
+PROTOC_DOWNLOAD_URL_SCHEMA ?= $(PROTOBUF_RELEASE_URL)/download/v$(PROTOC_VERSION_SCHEMA_REGISTRY)/protoc-$(PROTOC_VERSION_SCHEMA_REGISTRY)-linux-$(ARCH).zip
+
 # Download protoc
 $(TOOLS_DIR)/bin/protoc-$(PROTOC_VERSION): \
 	| $(TOOLS_DIR)/.check_$(CMD_WGET) \
@@ -99,6 +104,16 @@ $(TOOLS_DIR)/bin/protoc-$(PROTOC_VERSION): \
 	@$(CMD_UNZIP) -o protoc-$(PROTOC_VERSION)-linux-$(ARCH).zip -d $(TOOLS_DIR)
 	@mv $(TOOLS_DIR)/bin/protoc $(TOOLS_DIR)/bin/protoc-$(PROTOC_VERSION)
 	@rm protoc-$(PROTOC_VERSION)-linux-$(ARCH).zip
+
+# Download protoc for schema registry compatibility
+$(TOOLS_DIR)/bin/protoc-$(PROTOC_VERSION_SCHEMA_REGISTRY): \
+	| $(TOOLS_DIR)/.check_$(CMD_WGET) \
+		$(TOOLS_DIR)/.check_$(CMD_UNZIP)
+#
+	@$(CMD_WGET) -q $(PROTOC_DOWNLOAD_URL_SCHEMA) -O protoc-$(PROTOC_VERSION_SCHEMA_REGISTRY)-linux-$(ARCH).zip
+	@$(CMD_UNZIP) -o protoc-$(PROTOC_VERSION_SCHEMA_REGISTRY)-linux-$(ARCH).zip -d $(TOOLS_DIR)
+	@mv $(TOOLS_DIR)/bin/protoc $(TOOLS_DIR)/bin/protoc-$(PROTOC_VERSION_SCHEMA_REGISTRY)
+	@rm protoc-$(PROTOC_VERSION_SCHEMA_REGISTRY)-linux-$(ARCH).zip
 
 
 ################################################################################
@@ -247,7 +262,7 @@ build-kotlin: \
 		$(TOOLS_DIR)/.check_$(CMD_PROTOC_GEN_KOTLIN_GRPC)
 #
 	@echo "[INFO] Generating Java/Kotlin code from protobuf files..."
-	@cd $(BASE_DIR)/mlops/chainer && $(CMD_PROTOC) \
+	@cd $(BASE_DIR)/mlops/chainer && $(CMD_PROTOC_SCHEMA) \
 		--proto_path=. \
 		--plugin=protoc-gen-grpc-java=$(CMD_PROTOC_GEN_JAVA_GRPC) \
 		--java_out=./kotlin \
@@ -256,7 +271,7 @@ build-kotlin: \
 		--kotlin_out=./kotlin \
 		--grpckt_out=./kotlin \
 		chainer.proto
-	@cd $(BASE_DIR)/mlops/v2_dataplane && $(CMD_PROTOC) \
+	@cd $(BASE_DIR)/mlops/v2_dataplane && $(CMD_PROTOC_SCHEMA) \
 		--proto_path=. \
 		--plugin=protoc-gen-grpc-java=$(CMD_PROTOC_GEN_JAVA_GRPC) \
 		--java_out=./kotlin \
@@ -265,7 +280,7 @@ build-kotlin: \
 		--kotlin_out=./kotlin \
 		--grpckt_out=./kotlin \
 		v2_dataplane.proto
-	@cd $(BASE_DIR)/mlops/v2_dataplane/schema_registry && $(CMD_PROTOC) \
+	@cd $(BASE_DIR)/mlops/v2_dataplane/schema_registry && $(CMD_PROTOC_SCHEMA) \
 		--proto_path=. \
 		--plugin=protoc-gen-grpc-java=$(CMD_PROTOC_GEN_JAVA_GRPC) \
 		--java_out=./kotlin \
