@@ -90,12 +90,12 @@ func TestGzip(t *testing.T) {
 	g.Expect(res.Header.Get("Content-Encoding")).To(Equal("gzip"), "Content-Encoding header should be set to gzip")
 
 	// test gzip decompression
-	isGzipped, err := DecompressIfNeeded(res)
+	newRes, isGzipped, err := DecompressIfNeeded(res)
 	g.Expect(err).To(BeNil(), "Error decompressing response body")
 	g.Expect(isGzipped).To(BeTrue(), "Response body should be gzipped")
 
 	// read decompressed body and check content
-	decompressedContent, err := ReadResponseBody(res)
+	decompressedContent, err := ReadResponseBody(newRes)
 	g.Expect(err).To(BeNil(), "Error reading decompressed response body")
 	g.Expect(string(decompressedContent)).To(Equal(content), "Decompressed content does not match original content")
 }

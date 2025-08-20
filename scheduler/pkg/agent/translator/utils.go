@@ -157,23 +157,27 @@ func TrimPathAfterInfer(req *http.Request) error {
 	return fmt.Errorf("neither '/infer' nor '/infer_stream' found in path")
 }
 
-func DecompressIfNeeded(res *http.Response) (bool, error) {
+func DecompressIfNeeded(res *http.Response) (*http.Response, bool, error) {
 	if res.Header.Get("Content-Encoding") == "gzip" {
 		gr, err := gzip.NewReader(res.Body)
 		if err != nil {
-			return false, err
+			return res, false, err
 		}
 
-		res.Body = &gzipReadCloser{
-			gzipReader:   gr,
-			originalBody: res.Body,
+		newRes := http.Response{
+			StatusCode: res.StatusCode,
+			Header:     res.Header.Clone(),
+			Body: &gzipReadCloser{
+				gzipReader:   gr,
+				originalBody: res.Body,
+			},
 		}
 
-		res.Header.Del("Content-Length")
-		res.Header.Del("Content-Encoding")
-		return true, nil
+		newRes.Header.Del("Content-Length")
+		newRes.Header.Del("Content-Encoding")
+		return &newRes, true, nil
 	}
-	return false, nil
+	return res, false, nil
 }
 
 type gzipReadCloser struct {
