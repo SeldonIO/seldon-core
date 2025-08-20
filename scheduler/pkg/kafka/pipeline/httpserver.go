@@ -182,7 +182,6 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, reso
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
-			w.WriteHeader(http.StatusOK)
 			go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeRest, elapsedTime, metrics.HttpCodeToString(http.StatusOK))
 		}
 	}

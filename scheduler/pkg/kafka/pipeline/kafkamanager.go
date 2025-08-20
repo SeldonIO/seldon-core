@@ -279,7 +279,9 @@ func (km *KafkaManager) Infer(
 			return nil, fmt.Errorf("timed out waiting for partitions to be assigned to consumer for pipeline %s", resourceName)
 		}
 
-		logger.WithField("resource_name", resourceName).Info("Received signal, partition ready")
+		partitions = pipeline.consumer.partitions
+		logger.WithFields(logrus.Fields{"resource_name": resourceName, "partitions": len(partitions)}).
+			Info("Received signal, partition ready")
 	}
 
 	// Randomly select a partition to produce the message to
@@ -340,7 +342,7 @@ func (km *KafkaManager) Infer(
 	}
 	go func() {
 		evt := <-deliveryChan
-		logger.Infof("Received delivery event %s", evt.String())
+		logger.Debugf("Received delivery event %s", evt.String())
 		span.End()
 	}()
 	logger.Debugf("Waiting for response for request id %s for resource %s on parititon %d", requestId, resourceName, partition)
