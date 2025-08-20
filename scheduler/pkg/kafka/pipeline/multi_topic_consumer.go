@@ -37,12 +37,11 @@ type MultiTopicsKafkaConsumer struct {
 	consumer   *kafka.Consumer
 	isActive   atomic.Bool
 	// map of kafka id to request
-	requests    cmap.ConcurrentMap
-	tracer      trace.Tracer
-	topicMu     sync.Mutex
-	rebalanceMu sync.RWMutex
-	wg          sync.WaitGroup
-
+	requests        cmap.ConcurrentMap
+	tracer          trace.Tracer
+	topicMu         sync.Mutex
+	rebalanceMu     sync.RWMutex
+	wg              sync.WaitGroup
 	partitionsReady *Broadcaster
 }
 

@@ -1,40 +1,41 @@
+/*
+Copyright (c) 2024 Seldon Technologies Ltd.
+
+Use of this software is governed by
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
+*/
+
 package pipeline
 
 import "sync"
 
 type Broadcaster struct {
-	mu        sync.RWMutex
-	listeners []chan struct{}
+	mu    sync.Mutex
+	ready chan struct{}
 }
 
 func NewBroadcaster() *Broadcaster {
-	return &Broadcaster{
-		listeners: make([]chan struct{}, 0),
-	}
+	return &Broadcaster{}
 }
 
 func (b *Broadcaster) Subscribe() <-chan struct{} {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
-	ch := make(chan struct{})
-	b.listeners = append(b.listeners, ch)
-	return ch
-}
-
-func (b *Broadcaster) HasListeners() bool {
-	b.mu.RLock()
-	defer b.mu.RUnlock()
-
-	return len(b.listeners) > 0
+	if b.ready == nil {
+		b.ready = make(chan struct{})
+	}
+	return b.ready
 }
 
 func (b *Broadcaster) Broadcast() {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
-	for _, ch := range b.listeners {
-		close(ch)
+	if b.ready != nil {
+		close(b.ready)
+		b.ready = nil
 	}
-	b.listeners = b.listeners[:0]
 }

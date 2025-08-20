@@ -271,7 +271,8 @@ func (km *KafkaManager) Infer(
 		// we must unlock to allow the rebalance callback to notify us when partitions are available
 		pipeline.consumer.rebalanceMu.RUnlock()
 
-		logger.WithField("resource_name", resourceName).Info("Waiting for partition to be available")
+		logger := logger.WithField("resource_name", resourceName)
+		logger.Info("Waiting for partition to be available")
 		select {
 		case <-listener:
 			pipeline.consumer.rebalanceMu.RLock()
@@ -280,16 +281,15 @@ func (km *KafkaManager) Infer(
 		}
 
 		partitions = pipeline.consumer.partitions
-		// there is a small chance no partitions are available, as there's a small time window between
+		// there is a small chance no partitions are available, as there's a tiny time window between
 		// where we receive the signal partitions are available and when we acquire the read lock, that partitions are
-		// revoked, so we check for this.
+		// revoked, so we check for this. Envoy will handle exponential backoff retry.
 		if len(partitions) == 0 {
 			pipeline.consumer.rebalanceMu.RUnlock()
 			return nil, fmt.Errorf("no partitions available for consumer for pipeline %s", resourceName)
 		}
 
-		logger.WithFields(logrus.Fields{"resource_name": resourceName, "partitions": len(partitions)}).
-			Info("Received signal - partition(s) ready")
+		logger.WithField("partitions", len(partitions)).Info("Received signal - partition(s) ready")
 	}
 
 	// Randomly select a partition to produce the message to
@@ -394,9 +394,9 @@ func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) k
 				mtConsumer.partitions[i] = partition.Partition
 			}
 
-			if len(e.Partitions) > 0 && mtConsumer.partitionsReady.HasListeners() {
+			if len(e.Partitions) > 0 {
 				// signal to unblock waiting goroutines to proceed sending inference reqs
-				logger.Info("Broadcasting to waiting goroutines - partition(s) are ready")
+				logger.Info("Broadcasting to any waiting goroutines - partition(s) are ready")
 				mtConsumer.partitionsReady.Broadcast()
 			}
 
