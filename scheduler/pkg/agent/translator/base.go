@@ -23,15 +23,16 @@ const (
 
 func DecompressIfNeededAndConvertToJSON(res *http.Response) (map[string]interface{}, bool, error) {
 	// Decompress the response if needed - gzip
-	var isGzipped bool
 	var err error
+	var isGzipped bool
+	var newRes *http.Response
 
-	if isGzipped, err = DecompressIfNeeded(res); err != nil {
+	if newRes, isGzipped, err = DecompressIfNeeded(res); err != nil {
 		return nil, isGzipped, err
 	}
 
 	// Read the response body
-	body, err := ReadResponseBody(res)
+	body, err := ReadResponseBody(newRes)
 	if err != nil {
 		return nil, isGzipped, err
 	}
@@ -47,11 +48,17 @@ func DecompressIfNeededAndConvertToJSON(res *http.Response) (map[string]interfac
 func CreateResponseFromContent(content string, statusCode int, headers http.Header, isGzipped bool) (*http.Response, error) {
 	// Create a new response with the translated body
 	newBody := io.NopCloser(bytes.NewBuffer([]byte(content)))
+	if headers == nil {
+		headers = http.Header{}
+	}
 	newRes := http.Response{
 		StatusCode: statusCode,
 		Header:     headers.Clone(),
 		Body:       newBody,
 	}
+
+	// set content length
+	newRes.Header.Set("Content-Length", fmt.Sprintf("%d", len(content)))
 
 	// compress the response body if needed
 	if isGzipped {
