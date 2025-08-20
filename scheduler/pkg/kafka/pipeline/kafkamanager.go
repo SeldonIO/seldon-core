@@ -268,6 +268,7 @@ func (km *KafkaManager) Infer(
 	partitions := pipeline.consumer.partitions
 	if len(partitions) == 0 {
 		listener := pipeline.consumer.partitionsReady.Subscribe()
+		// we must unlock to allow the rebalance callback to notify us when partitions are available
 		pipeline.consumer.rebalanceMu.RUnlock()
 
 		logger.WithField("resource_name", resourceName).Info("Waiting for partition to be available")
