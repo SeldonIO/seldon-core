@@ -22,6 +22,7 @@
 ^https://docs.github.com/
 _template
 ^https://127\.0\.0\.1(:\d+)?/
+^http://
 ^[#._]
 
 # Ignore all local files by extension (use regex)
