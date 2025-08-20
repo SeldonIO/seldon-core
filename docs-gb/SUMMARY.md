@@ -213,7 +213,6 @@
               kind: openapi
               spec: wrapper
         ```
-* [\[Python API Reference\]\*](reference/python-api-reference.md)
 * [Release Highlights](reference/release-highlights/README.md)
   * [Release 1.7.0 Hightlights](reference/release-highlights/release-1.7.0.md)
   * [Release 1.6.0 Hightlights](reference/release-highlights/release-1.6.0.md)
@@ -238,4 +237,4 @@
 * [Seldon Core Licensing](developer/contributing.md)
 * [End to End Tests](developer/e2e.md)
 * [Roadmap](developer/roadmap.md)
-* [Build using Private repo](developer/buid-using-private-repo.md)
+* [Build using Private Repo](developer/buid-using-private-repo.md)
