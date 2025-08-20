@@ -490,7 +490,6 @@ func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) k
 
 		case kafka.RevokedPartitions:
 			logger.Info("Rebalance: Revoked partitions:", e.Partitions)
-
 			_, err := consumer.Commit()
 			if err != nil {
 				// some msgs might get replayed, but should not prevent us revoking the partitions
