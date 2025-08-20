@@ -42,6 +42,8 @@ type MultiTopicsKafkaConsumer struct {
 	topicMu     sync.Mutex
 	rebalanceMu sync.RWMutex
 	wg          sync.WaitGroup
+
+	partitionsReady *Broadcaster
 }
 
 func NewMultiTopicsKafkaConsumer(
@@ -51,12 +53,13 @@ func NewMultiTopicsKafkaConsumer(
 	tracer trace.Tracer,
 ) (*MultiTopicsKafkaConsumer, error) {
 	consumer := &MultiTopicsKafkaConsumer{
-		logger:   logger.WithField("source", "MultiTopicsKafkaConsumer"),
-		config:   consumerConfig,
-		topics:   make(map[string]struct{}),
-		id:       id,
-		requests: cmap.New(),
-		tracer:   tracer,
+		logger:          logger.WithField("source", "MultiTopicsKafkaConsumer"),
+		config:          consumerConfig,
+		topics:          make(map[string]struct{}),
+		id:              id,
+		requests:        cmap.New(),
+		tracer:          tracer,
+		partitionsReady: NewBroadcaster(),
 	}
 	err := consumer.createConsumer(logger)
 	return consumer, err
