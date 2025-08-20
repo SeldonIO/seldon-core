@@ -386,7 +386,7 @@ func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) k
 
 			if len(e.Partitions) > 0 && mtConsumer.partitionsReady.HasListeners() {
 				// signal to unblock waiting goroutines to proceed sending inference reqs
-				logger.Info("Broadcasting to waiting goroutines - partiions are ready")
+				logger.Info("Broadcasting to waiting goroutines - partitions are ready")
 				mtConsumer.partitionsReady.Broadcast()
 				logger.Info("Broadcast complete")
 			}

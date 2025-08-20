@@ -31,7 +31,7 @@ func (b *Broadcaster) HasListeners() bool {
 
 func (b *Broadcaster) Broadcast() {
 	b.mu.Lock()
-	defer b.mu.Lock()
+	defer b.mu.Unlock()
 
 	for _, ch := range b.listeners {
 		close(ch)
