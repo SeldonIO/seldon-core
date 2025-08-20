@@ -53,6 +53,9 @@ const (
 	DefaultRouteConfigurationName = "listener_0"
 	MirrorRouteConfigurationName  = "listener_1"
 	TLSRouteConfigurationName     = "listener_tls"
+
+	circuitBreakerMaxRetry  = 5
+	pipelineMaxBackoffRetry = 5
 )
 
 var (
@@ -174,6 +177,7 @@ func makeCluster(clusterName string, eps map[string]Endpoint, isGrpc bool, clien
 			DnsLookupFamily:               cluster.Cluster_V4_ONLY,
 			TypedExtensionProtocolOptions: map[string]*anypb.Any{"envoy.extensions.upstreams.http.v3.HttpProtocolOptions": hpoMarshalled},
 			TransportSocket:               createUpstreamTransportSocket(clientSecret),
+			CircuitBreakers:               getCircuitBreaker(),
 		}
 	} else {
 		return &cluster.Cluster{
@@ -184,7 +188,18 @@ func makeCluster(clusterName string, eps map[string]Endpoint, isGrpc bool, clien
 			LoadAssignment:       makeEndpoint(clusterName, eps),
 			DnsLookupFamily:      cluster.Cluster_V4_ONLY,
 			TransportSocket:      createUpstreamTransportSocket(clientSecret),
+			CircuitBreakers:      getCircuitBreaker(),
 		}
+	}
+}
+
+func getCircuitBreaker() *cluster.CircuitBreakers {
+	return &cluster.CircuitBreakers{
+		Thresholds: []*cluster.CircuitBreakers_Thresholds{
+			{
+				MaxRetries: &wrappers.UInt32Value{Value: circuitBreakerMaxRetry},
+			},
+		},
 	}
 }
 
@@ -615,9 +630,22 @@ func createWeightedPipelineClusterAction(clusterTraffics []PipelineTrafficSplit,
 				},
 			},
 			RequestMirrorPolicies: mirrors,
+			RetryPolicy:           getPipelineRetryPolicy(),
 		},
 	}
 	return action
+}
+
+func getPipelineRetryPolicy() *route.RetryPolicy {
+	return &route.RetryPolicy{
+		RetryOn:    "5xx,connect-failure",
+		NumRetries: &wrappers.UInt32Value{Value: pipelineMaxBackoffRetry},
+		RetryBackOff: &route.RetryPolicy_RetryBackOff{
+			BaseInterval: &duration.Duration{
+				Nanos: int32(time.Millisecond * 500),
+			},
+		},
+	}
 }
 
 func makePipelineStickySessionEnvoyRoute(routeName string, envoyRoute *route.Route, clusterTraffic *PipelineTrafficSplit, isGrpc bool) {
@@ -671,6 +699,7 @@ func makePipelineStickySessionEnvoyRoute(routeName string, envoyRoute *route.Rou
 			ClusterSpecifier: &route.RouteAction_Cluster{
 				Cluster: getPipelineClusterName(routeName, isGrpc),
 			},
+			RetryPolicy: getPipelineRetryPolicy(),
 		},
 	}
 }
