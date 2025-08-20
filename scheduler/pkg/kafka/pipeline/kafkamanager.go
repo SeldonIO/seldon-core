@@ -34,7 +34,7 @@ import (
 
 const (
 	pollTimeoutMillisecs     = 10000
-	timeoutWaitForPartitions = time.Second * 5
+	timeoutWaitForPartitions = time.Second * 10
 )
 
 type PipelineInferer interface {
@@ -386,8 +386,9 @@ func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) k
 
 			if len(e.Partitions) > 0 && mtConsumer.partitionsReady.HasListeners() {
 				// signal to unblock waiting goroutines to proceed sending inference reqs
-				logger.Infof("Broadcasting to waiting goroutines - partiions are ready")
+				logger.Info("Broadcasting to waiting goroutines - partiions are ready")
 				mtConsumer.partitionsReady.Broadcast()
+				logger.Info("Broadcast complete")
 			}
 
 		case kafka.RevokedPartitions:

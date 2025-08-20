@@ -126,7 +126,7 @@ func (g *GatewayHttpServer) getRequestId(req *http.Request) string {
 	if len(requestIds) > 0 {
 		requestId = requestIds[0]
 	} else {
-		g.logger.Warning("Failed to find request ID - will generate one")
+		g.logger.Debug("Failed to find request ID - will generate one")
 		requestId = util.CreateRequestId()
 	}
 	return requestId

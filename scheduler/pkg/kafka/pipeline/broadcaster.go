@@ -8,7 +8,9 @@ type Broadcaster struct {
 }
 
 func NewBroadcaster() *Broadcaster {
-	return &Broadcaster{}
+	return &Broadcaster{
+		listeners: make([]chan struct{}, 0),
+	}
 }
 
 func (b *Broadcaster) Subscribe() <-chan struct{} {
