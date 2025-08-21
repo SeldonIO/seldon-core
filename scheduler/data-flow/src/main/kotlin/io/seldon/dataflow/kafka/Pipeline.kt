@@ -149,7 +149,7 @@ class Pipeline(
             kafkaDomainParams: KafkaDomainParams,
             kafkaConsumerGroupIdPrefix: String,
             namespace: String,
-            kafkaStreamsSerdes: SerdeFactory.KafkaStreamsSerdes,
+            kafkaStreamsSerdes: KafkaStreamsSerdes,
         ): Pair<Pipeline?, PipelineStatus.Error?> {
             val (topology, numSteps) = buildTopology(metadata, steps, kafkaDomainParams, kafkaStreamsSerdes)
             val pipelineProperties = localiseKafkaProperties(kafkaProperties, metadata, numSteps, kafkaConsumerGroupIdPrefix, namespace)
@@ -189,7 +189,7 @@ class Pipeline(
             metadata: PipelineMetadata,
             steps: List<PipelineStepUpdate>,
             kafkaDomainParams: KafkaDomainParams,
-            kafkaStreamsSerdes: SerdeFactory.KafkaStreamsSerdes,
+            kafkaStreamsSerdes: KafkaStreamsSerdes,
         ): Pair<Topology, Int> {
             // Sort the steps by the sink to ensure the same
             // order when building the topology amongst multiple

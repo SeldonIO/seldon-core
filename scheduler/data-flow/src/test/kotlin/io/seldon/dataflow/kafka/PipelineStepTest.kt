@@ -73,7 +73,7 @@ internal class PipelineStepTest {
                 .setPipelineName(DEFAULT_PIPELINE_NAME).build()
         private val defaultSink = TopicForPipeline(topicName = "seldon.namespace.sinkModel.inputs", pipelineName = DEFAULT_PIPELINE_NAME)
         private val kafkaDomainParams = KafkaDomainParams(useCleanState = true, joinWindowMillis = 1_000L)
-        private val kafkaStreamsSerdes = SerdeFactory.KafkaStreamsSerdes(false)
+        private val kafkaStreamsSerdes = KafkaStreamsSerdes(SchemaRegistryConfig(useSchemaRegistry = false))
 
         @JvmStatic
         fun stepFor(): Stream<Arguments> =

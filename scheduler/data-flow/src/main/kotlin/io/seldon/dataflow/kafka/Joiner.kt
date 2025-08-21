@@ -38,7 +38,7 @@ class Joiner(
     internal val inputTriggerTopics: Set<TopicForPipeline>,
     internal val triggerJoinType: PipelineJoinType,
     internal val triggerTensorsByTopic: Map<TopicForPipeline, Set<TensorName>>?,
-    internal val kafkaStreamsSerdes: SerdeFactory.KafkaStreamsSerdes,
+    internal val kafkaStreamsSerdes: KafkaStreamsSerdes,
 ) : PipelineStep {
     init {
         var dataStream = buildTopology(builder, inputTopics)
