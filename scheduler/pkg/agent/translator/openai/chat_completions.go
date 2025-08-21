@@ -1,12 +1,17 @@
 package openai
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"reflect"
+	"strings"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/translator"
+	"github.com/sirupsen/logrus"
 )
 
 type OpenAIChatCompletionsTranslator struct {
@@ -72,14 +77,17 @@ func (t *OpenAIChatCompletionsTranslator) TranslateFromOIP(res *http.Response) (
 		return httpRespones, nil
 	}
 
+	if translator.IsServerSentEvent(res) {
+		return t.translateStreamFromOIP(res)
+	}
+
+	return t.translateFromOIP(res)
+}
+
+func (t *OpenAIChatCompletionsTranslator) translateFromOIP(res *http.Response) (*http.Response, error) {
 	jsonBody, isGzipped, err := translator.DecompressIfNeededAndConvertToJSON(res)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decompress and parse the response: %w", err)
-	}
-
-	outputs, ok := jsonBody[translator.OutputsKey].([]interface{})
-	if !ok {
-		return nil, fmt.Errorf("`%s` field not found or not an array in the response", translator.OutputsKey)
 	}
 
 	id, ok := jsonBody["id"].(string)
@@ -92,6 +100,11 @@ func (t *OpenAIChatCompletionsTranslator) TranslateFromOIP(res *http.Response) (
 		return nil, fmt.Errorf("`model_name` field not found or not a string in the response")
 	}
 
+	outputs, ok := jsonBody[translator.OutputsKey].([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("`%s` field not found or not an array in the response", translator.OutputsKey)
+	}
+
 	content, err := parseOuputChatCompletion(outputs, id, modelName, translator.IsServerSentEvent(res))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse response: %w", err)
@@ -100,6 +113,101 @@ func (t *OpenAIChatCompletionsTranslator) TranslateFromOIP(res *http.Response) (
 	return translator.CreateResponseFromContent(
 		content, res.StatusCode, res.Header, isGzipped,
 	)
+}
+
+func (t *OpenAIChatCompletionsTranslator) translateStreamFromOIP(res *http.Response) (*http.Response, error) {
+	logger := logrus.New()
+	pr, pw := io.Pipe()
+
+	// Start background goroutine to copy/transform as data arrives
+	go func() {
+		defer res.Body.Close()
+
+		// read first line which faild to parse
+		firstLine := res.Header.Get("First-Line")
+		res.Header.Del("First-Line")
+
+		translated, err := translateLocalLine(firstLine)
+		if err != nil {
+			pw.CloseWithError(err)
+			return
+		}
+
+		// Write the first line to the pipe
+		if _, err := pw.Write([]byte(translated)); err != nil {
+			pw.CloseWithError(err)
+			return
+		}
+
+		// declare the scanner and override the default split function
+		scanner := bufio.NewScanner(res.Body)
+		scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+			if i := bytes.Index(data, []byte(translator.SSESuffix)); i >= 0 {
+				return i + 2, data[:i], nil
+			}
+			if atEOF && len(data) > 0 {
+				return len(data), data, nil
+			}
+			return 0, nil, nil
+		})
+
+		for scanner.Scan() {
+			line := scanner.Text()
+			logger.Infof("Processing SSE line: %s", line)
+
+			translated, err := translateLocalLine(line)
+			if err != nil {
+				pw.CloseWithError(err)
+				return
+			}
+
+			if _, err := pw.Write([]byte(translated)); err != nil {
+				return
+			}
+		}
+		if err := scanner.Err(); err != nil {
+			pw.CloseWithError(err)
+		}
+		pw.Close()
+	}()
+
+	// Return single streaming response
+	return &http.Response{
+		StatusCode: res.StatusCode,
+		Header:     res.Header.Clone(),
+		Body:       pr,
+	}, nil
+}
+
+func translateLocalLine(line string) (string, error) {
+	line = strings.TrimPrefix(line, translator.SSEPrefix)
+	jsonLine, err := translator.GetJsonBody([]byte(line))
+	if err != nil {
+		return "", fmt.Errorf("failed to parse SSE line: %w", err)
+	}
+
+	id, ok := jsonLine["id"].(string)
+	if !ok {
+		return "", fmt.Errorf("`id` field not found or not a string in the response")
+	}
+
+	modelName, ok := jsonLine["model_name"].(string)
+	if !ok {
+		return "", fmt.Errorf("`model_name` field not found or not a string in the response")
+	}
+
+	outputs, ok := jsonLine[translator.OutputsKey].([]interface{})
+	if !ok {
+		return "", fmt.Errorf("`%s` field not found or not an array in the response", translator.OutputsKey)
+	}
+
+	content, err := parseOuputChatCompletion(outputs, id, modelName, true)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse response: %w", err)
+	}
+
+	return fmt.Sprintf("%s%s%s", translator.SSEPrefix, string(content), translator.SSESuffix), nil
+
 }
 
 func getTools(jsonBody map[string]interface{}) []interface{} {

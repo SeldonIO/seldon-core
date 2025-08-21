@@ -136,41 +136,56 @@ func translateFromOIP(res *http.Response) (*http.Response, error) {
 func translateStreamFromOIP(res *http.Response) (*http.Response, error) {
 	pr, pw := io.Pipe()
 
+	// override the default split function
+	scanner := bufio.NewScanner(res.Body)
+	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		if i := bytes.Index(data, []byte(SSESuffix)); i >= 0 {
+			return i + 2, data[:i], nil
+		}
+		if atEOF && len(data) > 0 {
+			return len(data), data, nil
+		}
+		return 0, nil, nil
+	})
+
+	_ = scanner.Scan()
+	line := scanner.Text()
+
+	// Transform the first line to check if we have output_all key
+	trsanslated, err := translateLine(line)
+	if err != nil {
+		res.Header.Set("First-Line", line)
+		return nil, fmt.Errorf("failed to translate first line: %w", err)
+	}
+
 	// Start background goroutine to copy/transform as data arrives
 	go func() {
 		defer res.Body.Close()
 
-		// declare the scanner and override the default split function
-		scanner := bufio.NewScanner(res.Body)
-		scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-			if i := bytes.Index(data, []byte(SSESuffix)); i >= 0 {
-				return i + 2, data[:i], nil
-			}
-			if atEOF && len(data) > 0 {
-				return len(data), data, nil
-			}
-			return 0, nil, nil
-		})
+		// Write the first line to the pipe
+		if _, err := pw.Write([]byte(trsanslated)); err != nil {
+			pw.CloseWithError(err)
+			return
+		}
 
+		// Process the rest of the lines
 		for scanner.Scan() {
 			line := scanner.Text()
+			translated, err := translateLine(line)
+			if err != nil {
+				pw.CloseWithError(err)
+				return
+			}
 
-			if strings.HasPrefix(line, "data:") {
-				// Transform each SSE event if needed
-				translated, err := translateLine(line)
-				if err != nil {
-					pw.CloseWithError(err)
-					return
-				}
-
-				if _, err := pw.Write([]byte(translated)); err != nil {
-					return
-				}
+			if _, err := pw.Write([]byte(translated)); err != nil {
+				return
 			}
 		}
+
 		if err := scanner.Err(); err != nil {
 			pw.CloseWithError(err)
 		}
+
 		pw.Close()
 	}()
 
@@ -196,7 +211,7 @@ func translateLine(line string) (string, error) {
 
 	content, err := parseOutputAll(outputs)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse output_all field: %w", err)
+		return "", fmt.Errorf("failed to parse %s field: %w", OutputAllKey, err)
 	}
 
 	// unmarshal and then marshal again to ensure proper formatting
