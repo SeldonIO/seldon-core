@@ -267,14 +267,14 @@ func (km *KafkaManager) Infer(
 	pipeline.consumer.rebalanceMu.RLock()
 	partitions := pipeline.consumer.partitions
 	if len(partitions) == 0 {
-		listener := pipeline.consumer.partitionsReady.Subscribe()
+		ready := pipeline.consumer.partitionsReady.Subscribe()
 		// we must unlock to allow the rebalance callback to notify us when partitions are available
 		pipeline.consumer.rebalanceMu.RUnlock()
 
 		logger := logger.WithField("resource_name", resourceName)
-		logger.Info("Waiting for partition to be available")
+		logger.WithField("timeout", timeoutWaitForPartitions).Warn("Waiting for partition to be available")
 		select {
-		case <-listener:
+		case <-ready:
 			pipeline.consumer.rebalanceMu.RLock()
 		case <-time.After(timeoutWaitForPartitions):
 			return nil, fmt.Errorf("timed out waiting for partitions to be assigned to consumer for pipeline %s", resourceName)

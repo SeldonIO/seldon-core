@@ -54,6 +54,7 @@ const (
 	MirrorRouteConfigurationName  = "listener_1"
 	TLSRouteConfigurationName     = "listener_tls"
 
+	// circuitBreakerMaxRetry max parallel retries
 	circuitBreakerMaxRetry  = 5
 	pipelineMaxBackoffRetry = 5
 )
