@@ -22,6 +22,20 @@ func GetJsonBody(body []byte) (map[string]interface{}, error) {
 	return jsonBody, nil
 }
 
+func GetJsonBodyStream(body []byte) (map[string]interface{}, error) {
+	idx := bytes.Index(body, []byte(SSESuffix))
+	if idx == -1 {
+		return nil, fmt.Errorf("no SSE event found")
+	}
+	ev := body[:idx]
+
+	if !bytes.HasPrefix(ev, []byte(SSEPrefix)) {
+		return nil, fmt.Errorf("invalid SSE event: missing 'data: ' prefix")
+	}
+	ev = ev[len(SSEPrefix):]
+	return GetJsonBody(ev)
+}
+
 func GetModelName(jsonBody map[string]interface{}) (string, error) {
 	modelName, ok := jsonBody["model"].(string)
 	if !ok {
@@ -79,6 +93,7 @@ func ReadResponseBody(res *http.Response) ([]byte, error) {
 
 	body, err := io.ReadAll(res.Body)
 	res.Body.Close()
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
@@ -220,13 +235,16 @@ func Compress(res *http.Response) error {
 }
 
 func GetPathTermination(req *http.Request) (string, error) {
-	const marker = "/infer"
+	markers := []string{"/infer_stream", "/infer"}
 	path := req.URL.Path
-	pos := strings.Index(path, marker)
-	if pos == -1 {
-		return "", fmt.Errorf("'/infer' not found in path")
+
+	for _, marker := range markers {
+		if pos := strings.Index(path, marker); pos != -1 {
+			return path[pos+len(marker):], nil
+		}
 	}
-	return path[pos+len(marker):], nil
+
+	return "", fmt.Errorf("no valid marker found in path")
 }
 
 func IsEmptySlice(slice []string) bool {
@@ -280,4 +298,13 @@ func Contains(slice []string, item string) bool {
 		}
 	}
 	return false
+}
+
+func IsServerSentEvent(resp *http.Response) bool {
+	return IsServerSentEventHeader(&resp.Header)
+}
+
+func IsServerSentEventHeader(header *http.Header) bool {
+	contentType := header.Get("Content-Type")
+	return strings.HasPrefix(contentType, "text/event-stream")
 }

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
-	"strings"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/translator"
 )
@@ -67,11 +66,6 @@ func (t *OpenAIChatCompletionsTranslator) TranslateToOIP(req *http.Request) (*ht
 	return translator.ConvertInferenceRequestToHttpRequest(inferenceRequest, req)
 }
 
-func isServerSentEventStream(resp *http.Response) bool {
-	contentType := resp.Header.Get("Content-Type")
-	return strings.HasPrefix(contentType, "text/event-stream")
-}
-
 func (t *OpenAIChatCompletionsTranslator) TranslateFromOIP(res *http.Response) (*http.Response, error) {
 	httpRespones, err := t.BaseTranslator.TranslateFromOIP(res)
 	if err == nil {
@@ -98,7 +92,7 @@ func (t *OpenAIChatCompletionsTranslator) TranslateFromOIP(res *http.Response) (
 		return nil, fmt.Errorf("`model_name` field not found or not a string in the response")
 	}
 
-	content, err := parseOuputChatCompletion(outputs, id, modelName, isServerSentEventStream(res))
+	content, err := parseOuputChatCompletion(outputs, id, modelName, translator.IsServerSentEvent(res))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
