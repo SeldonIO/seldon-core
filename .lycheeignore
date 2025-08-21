@@ -1,14 +1,3 @@
-^getting-started/
-^production-environment/
-^product-tour/
-^demos/
-^architecture/
-^operations/
-^upgrading/
-^README.md
-^multi-tentant-environment.md
-^openshift-environment.md
-^help-and-support/
 ^https?://localhost
 ^https://mvnrepository.com
 ^https://platform.openai.com/docs
