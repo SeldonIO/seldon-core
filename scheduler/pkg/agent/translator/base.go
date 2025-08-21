@@ -1,10 +1,13 @@
 package translator
 
 import (
+	"bufio"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 type Translator interface {
@@ -19,6 +22,8 @@ const (
 	ShapeKey     = "shape"
 	OutputsKey   = "outputs"
 	OutputAllKey = "output_all"
+	SSEPrefix    = "data: "
+	SSESuffix    = "\n\n"
 )
 
 func DecompressIfNeededAndConvertToJSON(res *http.Response) (map[string]interface{}, bool, error) {
@@ -45,28 +50,31 @@ func DecompressIfNeededAndConvertToJSON(res *http.Response) (map[string]interfac
 	return jsonBody, isGzipped, nil
 }
 
-func CreateResponseFromContent(content string, statusCode int, headers http.Header, isGzipped bool) (*http.Response, error) {
-	// Create a new response with the translated body
-	newBody := io.NopCloser(bytes.NewBuffer([]byte(content)))
-	if headers == nil {
-		headers = http.Header{}
-	}
-	newRes := http.Response{
-		StatusCode: statusCode,
-		Header:     headers.Clone(),
-		Body:       newBody,
+func CreateResponseFromContent(content string, statusCode int, header http.Header, isGzipped bool) (*http.Response, error) {
+	if header == nil {
+		header = http.Header{}
 	}
 
-	// set content length
-	newRes.Header.Set("Content-Length", fmt.Sprintf("%d", len(content)))
+	newBody := io.NopCloser(bytes.NewBufferString(content))
+	header.Set("Content-Length", fmt.Sprintf("%d", len(content)))
 
-	// compress the response body if needed
 	if isGzipped {
+		newRes := http.Response{
+			StatusCode: statusCode,
+			Header:     header.Clone(),
+			Body:       newBody,
+		}
 		if err := Compress(&newRes); err != nil {
 			return nil, err
 		}
+		return &newRes, nil
 	}
-	return &newRes, nil
+
+	return &http.Response{
+		StatusCode: statusCode,
+		Header:     header.Clone(),
+		Body:       newBody,
+	}, nil
 }
 
 func ExtractTensorContentFromResponse(outputs []interface{}, tensorName string) (string, error) {
@@ -99,6 +107,14 @@ func parseOutputAll(outputs []interface{}) (string, error) {
 }
 
 func (b *BaseTranslator) TranslateFromOIP(res *http.Response) (*http.Response, error) {
+	if IsServerSentEvent(res) {
+		return translateStreamFromOIP(res)
+	}
+
+	return translateFromOIP(res)
+}
+
+func translateFromOIP(res *http.Response) (*http.Response, error) {
 	jsonBody, isGzipped, err := DecompressIfNeededAndConvertToJSON(res)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decompress and parse the response: %w", err)
@@ -115,4 +131,86 @@ func (b *BaseTranslator) TranslateFromOIP(res *http.Response) (*http.Response, e
 	}
 
 	return CreateResponseFromContent(content, res.StatusCode, res.Header, isGzipped)
+}
+
+func translateStreamFromOIP(res *http.Response) (*http.Response, error) {
+	pr, pw := io.Pipe()
+
+	// Start background goroutine to copy/transform as data arrives
+	go func() {
+		defer res.Body.Close()
+
+		// declare the scanner and override the default split function
+		scanner := bufio.NewScanner(res.Body)
+		scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+			if i := bytes.Index(data, []byte(SSESuffix)); i >= 0 {
+				return i + 2, data[:i], nil
+			}
+			if atEOF && len(data) > 0 {
+				return len(data), data, nil
+			}
+			return 0, nil, nil
+		})
+
+		for scanner.Scan() {
+			line := scanner.Text()
+
+			if strings.HasPrefix(line, "data:") {
+				// Transform each SSE event if needed
+				translated, err := translateLine(line)
+				if err != nil {
+					pw.CloseWithError(err)
+					return
+				}
+
+				if _, err := pw.Write([]byte(translated)); err != nil {
+					return
+				}
+			}
+		}
+		if err := scanner.Err(); err != nil {
+			pw.CloseWithError(err)
+		}
+		pw.Close()
+	}()
+
+	// Return single streaming response
+	return &http.Response{
+		StatusCode: res.StatusCode,
+		Header:     res.Header.Clone(),
+		Body:       pr,
+	}, nil
+}
+
+func translateLine(line string) (string, error) {
+	line = strings.TrimPrefix(line, SSEPrefix)
+	jsonLine, err := GetJsonBody([]byte(line))
+	if err != nil {
+		return "", fmt.Errorf("failed to parse SSE line: %w", err)
+	}
+
+	outputs, ok := jsonLine[OutputsKey].([]interface{})
+	if !ok {
+		return "", fmt.Errorf("`%s` field not found or not an array in the response", OutputsKey)
+	}
+
+	content, err := parseOutputAll(outputs)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse output_all field: %w", err)
+	}
+
+	// unmarshal and then marshal again to ensure proper formatting
+	mapContent := map[string]interface{}{}
+	err = json.Unmarshal([]byte(content), &mapContent)
+	if err != nil {
+		return "", fmt.Errorf("failed to unmarshal content: %w", err)
+	}
+
+	contentBytes, err := json.Marshal(mapContent)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal content: %w", err)
+	}
+
+	// Reconstruct the line with the original SSE format
+	return fmt.Sprintf("%s%s%s", SSEPrefix, string(contentBytes), SSESuffix), nil
 }
