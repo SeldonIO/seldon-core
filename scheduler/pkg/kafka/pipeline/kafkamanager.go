@@ -11,6 +11,7 @@ package pipeline
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -77,6 +78,7 @@ type Request struct {
 	response   []byte
 	headers    []kafka.Header
 	isError    bool
+	err        error
 	errorModel string
 }
 
@@ -256,6 +258,36 @@ func (km *KafkaManager) Infer(
 	headers []kafka.Header,
 	requestId string,
 ) (*Request, error) {
+	reQueueCount := 0
+	for {
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+			resp, err := km.infer(ctx, resourceName, isModel, data, headers, requestId)
+			if err != nil {
+				if err == "requeue" {
+					if reQueueCount == 10 {
+						return nil, fmt.Errorf("requeued max amount of times: %d", reQueueCount)
+					}
+					reQueueCount++
+					continue
+				}
+				return nil, err
+			}
+			return resp, nil
+		}
+	}
+}
+
+func (km *KafkaManager) infer(
+	ctx context.Context,
+	resourceName string,
+	isModel bool,
+	data []byte,
+	headers []kafka.Header,
+	requestId string,
+) (*Request, error) {
 	logger := km.logger.WithField("func", "Infer")
 
 	pipeline, err := km.LoadOrStorePipeline(resourceName, isModel, true)
@@ -424,6 +456,7 @@ func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) k
 					canceledRequests = append(canceledRequests, req)
 					req.response = []byte("Request revoked due to partition reassignment")
 					req.isError = true
+					req.err = errPartitionRevoked
 					req.wg.Done()
 					req.active = false
 				}
@@ -441,6 +474,8 @@ func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) k
 		return nil
 	}
 }
+
+var errPartitionRevoked = errors.New("partition revoked")
 
 func (km *KafkaManager) consume(pipeline *Pipeline) error {
 	logger := km.logger.WithField("func", "consume")
