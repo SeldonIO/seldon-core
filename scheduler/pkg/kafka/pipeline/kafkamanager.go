@@ -34,8 +34,9 @@ import (
 )
 
 const (
-	pollTimeoutMillisecs     = 10000
-	timeoutWaitForPartitions = time.Second * 10
+	pollTimeoutMillisecs           = 10000
+	timeoutWaitForPartitions       = 10 * time.Second
+	maxRequeueAfterPartitionRevoke = 2
 )
 
 type PipelineInferer interface {
@@ -70,16 +71,14 @@ type Pipeline struct {
 }
 
 type Request struct {
-	mu         sync.Mutex
-	active     bool
-	wg         *sync.WaitGroup
-	key        string
-	partition  int32
-	response   []byte
-	headers    []kafka.Header
-	isError    bool
-	err        error
-	errorModel string
+	mu        sync.Mutex
+	active    bool
+	wg        *sync.WaitGroup
+	key       string
+	partition int32
+	response  []byte
+	headers   []kafka.Header
+	err       error
 }
 
 func NewKafkaManager(
@@ -265,17 +264,20 @@ func (km *KafkaManager) Infer(
 			return nil, ctx.Err()
 		default:
 			resp, err := km.infer(ctx, resourceName, isModel, data, headers, requestId)
-			if err != nil {
-				if err == "requeue" {
-					if reQueueCount == 10 {
-						return nil, fmt.Errorf("requeued max amount of times: %d", reQueueCount)
-					}
-					reQueueCount++
-					continue
-				}
-				return nil, err
+			if err == nil {
+				return resp, nil
 			}
-			return resp, nil
+
+			if errors.Is(err, errPartitionRevoked) {
+				if reQueueCount == maxRequeueAfterPartitionRevoke {
+					return nil, fmt.Errorf("requeued max amount of times <%d> : %w", reQueueCount, err)
+				}
+				reQueueCount++
+				km.logger.WithFields(logrus.Fields{"req_id": requestId, "requeue_count": reQueueCount}).
+					Warn("Retrying failed inflight req due to partition revoking")
+				continue
+			}
+			return nil, fmt.Errorf("failed sending inference: %w", err)
 		}
 	}
 }
@@ -330,7 +332,7 @@ func (km *KafkaManager) infer(
 
 	// Use composite key to differentiate multiple pipelines (i.e. mirror) using the same message
 	// Note that we add the partition to the key to ensure that the message will be sent to
-	// a partition for which the consumer is subscribed. For modelgw, it is enought to send the
+	// a partition for which the consumer is subscribed. For modelgw, it is enough to send the
 	// message to the same partition as the one we read from. For dataflow engine on the other hand,
 	// we need to read the partition from the request id.
 	compositeKey := getCompositeKey(strconv.Itoa(int(partition)), resourceName, requestId, ".")
@@ -378,7 +380,7 @@ func (km *KafkaManager) infer(
 	err = km.producer.Produce(msg, deliveryChan)
 	if err != nil {
 		span.End()
-		return nil, err
+		return nil, fmt.Errorf("failed to send kafka message: %w", err)
 	}
 	go func() {
 		evt := <-deliveryChan
@@ -388,7 +390,7 @@ func (km *KafkaManager) infer(
 	logger.Debugf("Waiting for response for request id %s for resource %s on parititon %d", requestId, resourceName, partition)
 	request.wg.Wait()
 	logger.Debugf("Got response for request id %s for resource %s on parition %d", requestId, resourceName, partition)
-	return request, nil
+	return request, request.err
 }
 
 func extractErrorHeader(headers []kafka.Header) (string, bool) {
@@ -400,8 +402,8 @@ func extractErrorHeader(headers []kafka.Header) (string, bool) {
 	return "", false
 }
 
-func createResponseErrorPayload(modelName string, response []byte) []byte {
-	return append([]byte(modelName+" : "), response...)
+func createResponseErrorPayload(err error, response []byte) []byte {
+	return append([]byte(err.Error()+" : "), response...)
 }
 
 func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) kafka.RebalanceCb {
@@ -447,25 +449,18 @@ func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) k
 			// We have to cancel all requests for revoked partitions. Due to repartitioning,
 			// our consumer may now consume from a different partition and thus the infer
 			// method will block waiting for a response that will never come.
-			canceledRequests := [](*Request){}
 			for _, request := range mtConsumer.requests.Items() {
 				req := request.(*Request)
 				req.mu.Lock()
 				if revokedPartitionSet[req.partition] {
-					logger.Debugf("Revoking request %s for partition %d", req.key, req.partition)
-					canceledRequests = append(canceledRequests, req)
+					logger.Warnf("Revoking request %s for partition %d", req.key, req.partition)
 					req.response = []byte("Request revoked due to partition reassignment")
-					req.isError = true
 					req.err = errPartitionRevoked
 					req.wg.Done()
 					req.active = false
+					mtConsumer.requests.Remove(req.key)
 				}
 				req.mu.Unlock()
-			}
-
-			// Remove canceled requests from the map
-			for _, req := range canceledRequests {
-				mtConsumer.requests.Remove(req.key)
 			}
 
 			// Only clear partitions after successful unassign

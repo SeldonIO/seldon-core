@@ -163,27 +163,28 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, reso
 	}
 
 	w.Header().Set(util.RequestIdHeader, kafkaRequest.key)
-	if kafkaRequest.isError {
+	if kafkaRequest.err != nil {
 		logger.Error(string(kafkaRequest.response))
 		w.WriteHeader(http.StatusBadRequest)
-		_, err = w.Write(createResponseErrorPayload(kafkaRequest.errorModel, kafkaRequest.response))
+		_, err = w.Write(createResponseErrorPayload(kafkaRequest.err, kafkaRequest.response))
 		if err != nil {
 			logger.WithError(err).Error("Failed to write error payload")
 		}
+		return
+	}
+
+	resJson, err := ConvertV2ResponseBytesToJson(kafkaRequest.response)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to convert v2 response to json for resource %s", resourceName)
+		go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeRest, elapsedTime, metrics.HttpCodeToString(http.StatusInternalServerError))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	_, err = w.Write(resJson)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 	} else {
-		resJson, err := ConvertV2ResponseBytesToJson(kafkaRequest.response)
-		if err != nil {
-			logger.WithError(err).Errorf("Failed to convert v2 response to json for resource %s", resourceName)
-			go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeRest, elapsedTime, metrics.HttpCodeToString(http.StatusInternalServerError))
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		_, err = w.Write(resJson)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-		} else {
-			go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeRest, elapsedTime, metrics.HttpCodeToString(http.StatusOK))
-		}
+		go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeRest, elapsedTime, metrics.HttpCodeToString(http.StatusOK))
 	}
 }
 
