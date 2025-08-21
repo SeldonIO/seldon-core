@@ -13,6 +13,8 @@ import io.klogging.noCoLogger
 import io.seldon.dataflow.kafka.KafkaDomainParams
 import io.seldon.dataflow.kafka.KafkaSecurityParams
 import io.seldon.dataflow.kafka.KafkaStreamsParams
+import io.seldon.dataflow.kafka.KafkaStreamsSerdes
+import io.seldon.dataflow.kafka.SchemaRegistryConfig
 import io.seldon.dataflow.kafka.TopicWaitRetryParams
 import io.seldon.dataflow.kafka.getKafkaAdminProperties
 import io.seldon.dataflow.kafka.getKafkaProperties
@@ -56,18 +58,21 @@ object Main {
                         username = config[Cli.saslUsername],
                         passwordField = config[Cli.saslPasswordPath],
                     )
+
                 KafkaSaslMechanisms.SCRAM_SHA_256 ->
                     SaslConfig.Password.Scram256(
                         secretName = config[Cli.saslSecret],
                         username = config[Cli.saslUsername],
                         passwordField = config[Cli.saslPasswordPath],
                     )
+
                 KafkaSaslMechanisms.SCRAM_SHA_512 ->
                     SaslConfig.Password.Scram512(
                         secretName = config[Cli.saslSecret],
                         username = config[Cli.saslUsername],
                         passwordField = config[Cli.saslPasswordPath],
                     )
+
                 KafkaSaslMechanisms.OAUTH_BEARER ->
                     SaslConfig.Oauth(
                         secretName = config[Cli.saslSecret],
@@ -103,6 +108,12 @@ object Main {
                 describeRetryDelayMillis = config[Cli.topicDescribeRetryDelayMillis],
             )
         val subscriberId = config[Cli.dataflowReplicaId]
+        val schemaRegistryConfig =
+            SchemaRegistryConfig(
+                url = config[Cli.schemaRegistryURL],
+            )
+
+        val kafkaStreamsSerdes = KafkaStreamsSerdes(schemaRegistryConfig)
 
         val subscriber =
             PipelineSubscriber(
@@ -117,6 +128,7 @@ object Main {
                 GrpcServiceConfigProvider.config,
                 config[Cli.kafkaConsumerGroupIdPrefix],
                 config[Cli.namespace],
+                kafkaStreamsSerdes,
             )
 
         addShutdownHandler(subscriber)

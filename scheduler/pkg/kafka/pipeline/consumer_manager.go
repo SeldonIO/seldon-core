@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package pipeline
 
 import (
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
@@ -30,12 +31,13 @@ type ConsumerManager struct {
 	logger log.FieldLogger
 	mu     sync.Mutex
 	// all consumers we have
-	pipelinesConsumers map[string]*MultiTopicsKafkaConsumer
-	modelsConsumers    map[string]*MultiTopicsKafkaConsumer
-	consumerConfig     *kafka_config.KafkaConfig
-	maxNumConsumers    int
-	tracer             trace.Tracer
-	namespace          string
+	pipelinesConsumers   map[string]*MultiTopicsKafkaConsumer
+	modelsConsumers      map[string]*MultiTopicsKafkaConsumer
+	consumerConfig       *kafka_config.KafkaConfig
+	maxNumConsumers      int
+	tracer               trace.Tracer
+	namespace            string
+	schemaRegistryClient schemaregistry.Client
 }
 
 func NewConsumerManager(
@@ -44,19 +46,21 @@ func NewConsumerManager(
 	consumerConfig *kafka_config.KafkaConfig,
 	maxNumConsumers int,
 	tracer trace.Tracer,
+	schemaRegistryClient schemaregistry.Client,
 ) *ConsumerManager {
 	logger.
 		WithField("max consumers", maxNumConsumers).
 		Info("creating consumer manager")
 
 	return &ConsumerManager{
-		namespace:          namespace,
-		logger:             logger.WithField("source", "ConsumerManager"),
-		pipelinesConsumers: make(map[string]*MultiTopicsKafkaConsumer),
-		modelsConsumers:    make(map[string]*MultiTopicsKafkaConsumer),
-		consumerConfig:     consumerConfig,
-		maxNumConsumers:    maxNumConsumers,
-		tracer:             tracer,
+		namespace:            namespace,
+		logger:               logger.WithField("source", "ConsumerManager"),
+		pipelinesConsumers:   make(map[string]*MultiTopicsKafkaConsumer),
+		modelsConsumers:      make(map[string]*MultiTopicsKafkaConsumer),
+		consumerConfig:       consumerConfig,
+		maxNumConsumers:      maxNumConsumers,
+		tracer:               tracer,
+		schemaRegistryClient: schemaRegistryClient,
 	}
 }
 
@@ -66,6 +70,7 @@ func (cm *ConsumerManager) createConsumer(consumerName string, consumers map[str
 		cm.consumerConfig,
 		consumerName,
 		cm.tracer,
+		cm.schemaRegistryClient,
 	)
 	if err != nil {
 		return nil, err

@@ -19,6 +19,7 @@ import (
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
 
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -39,6 +40,7 @@ type ConsumerManager struct {
 	consumerConfigMap kafka.ConfigMap
 	producerConfigMap kafka.ConfigMap
 	topicsConfigMap   kafka.ConfigMap
+	schemaRegistryClient schemaregistry.Client
 }
 
 type ManagerConfig struct {
@@ -62,12 +64,14 @@ func NewConsumerManager(
 	logger log.FieldLogger,
 	managerConfig *ManagerConfig,
 	maxNumConsumers int,
+	schemaRegistryClient schemaregistry.Client,
 ) (*ConsumerManager, error) {
 	cm := &ConsumerManager{
-		logger:          logger.WithField("source", "ConsumerManager"),
-		managerConfig:   managerConfig,
-		consumers:       make(map[string]*InferKafkaHandler),
-		maxNumConsumers: maxNumConsumers,
+		logger:               logger.WithField("source", "ConsumerManager"),
+		managerConfig:        managerConfig,
+		consumers:            make(map[string]*InferKafkaHandler),
+		maxNumConsumers:      maxNumConsumers,
+		schemaRegistryClient: schemaRegistryClient,
 	}
 	err := cm.createKafkaConfigs(managerConfig)
 	if err != nil {
@@ -145,7 +149,7 @@ func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) 
 			cloneKafkaConfigMap(cm.consumerConfigMap),
 			cloneKafkaConfigMap(cm.producerConfigMap),
 			cloneKafkaConfigMap(cm.topicsConfigMap),
-			consumerBucketId)
+			consumerBucketId, cm.schemaRegistryClient)
 		if err != nil {
 			return nil, err
 		}

@@ -18,6 +18,7 @@ import io.seldon.dataflow.kafka.KafkaAdminProperties
 import io.seldon.dataflow.kafka.KafkaDomainParams
 import io.seldon.dataflow.kafka.KafkaProperties
 import io.seldon.dataflow.kafka.KafkaStreamsParams
+import io.seldon.dataflow.kafka.KafkaStreamsSerdes
 import io.seldon.dataflow.kafka.Pipeline
 import io.seldon.dataflow.kafka.PipelineId
 import io.seldon.dataflow.kafka.PipelineMetadata
@@ -53,6 +54,7 @@ class PipelineSubscriber(
     grpcServiceConfig: Map<String, Any>,
     private val kafkaConsumerGroupIdPrefix: String,
     private val namespace: String,
+    private val kafkaStreamsSerdes: KafkaStreamsSerdes,
 ) {
     private val kafkaAdmin = KafkaAdmin(kafkaAdminProperties, kafkaStreamsParams, topicWaitRetryParams)
     private val channel =
@@ -116,6 +118,7 @@ class PipelineSubscriber(
                             kafkaConsumerGroupIdPrefix,
                             namespace,
                         )
+
                     PipelineOperation.Delete -> handleDelete(metadata, update.updatesList, update.timestamp)
                     else -> logger.warn("unrecognised pipeline operation (${update.op})")
                 }
@@ -223,6 +226,7 @@ class PipelineSubscriber(
                 kafkaDomainParams,
                 kafkaConsumerGroupIdPrefix,
                 namespace,
+                kafkaStreamsSerdes,
             )
         if (err != null) {
             err.log(logger, Level.ERROR)

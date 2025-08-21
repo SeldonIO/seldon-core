@@ -24,6 +24,7 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/schema"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
@@ -153,9 +154,14 @@ func main() {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
 
+	schemaRegistryClient := schema.NewSchemaRegistryClient(logger)
+	if schemaRegistryClient != nil {
+		logger.Warn("Schema registry client was set")
+	}
+
 	maxNumConsumers := getEnVar(logger, pipeline.EnvMaxNumConsumers, pipeline.DefaultMaxNumConsumers)
 	km, err := pipeline.NewKafkaManager(
-		logger, namespace, kafkaConfigMap, tracer, maxNumConsumers)
+		logger, namespace, kafkaConfigMap, tracer, maxNumConsumers, schemaRegistryClient)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create kafka manager")
 	}

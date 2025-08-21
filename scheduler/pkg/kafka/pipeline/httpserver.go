@@ -171,6 +171,11 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, reso
 			logger.WithError(err).Error("Failed to write error payload")
 		}
 	} else {
+
+		logger.Debugf("first 10 bytes before deserialisation for client")
+		for _, b := range kafkaRequest.response[:10] {
+			logger.Debugf("%02x", b)
+		}
 		resJson, err := ConvertV2ResponseBytesToJson(kafkaRequest.response)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to convert v2 response to json for resource %s", resourceName)

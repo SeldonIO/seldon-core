@@ -21,6 +21,7 @@ import (
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/gateway"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/schema"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 )
 
@@ -131,6 +132,11 @@ func main() {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
 
+	schemaRegistryClient := schema.NewSchemaRegistryClient(logger)
+	if schemaRegistryClient != nil {
+		logger.Warn("Schema registry client was set")
+	}
+
 	inferServerConfig := &gateway.InferenceServerConfig{
 		Host:     envoyHost,
 		HttpPort: envoyPort,
@@ -145,7 +151,7 @@ func main() {
 		WorkerTimeout:         getEnVar(logger, gateway.EnvVarWorkerTimeoutMs, gateway.DefaultWorkerTimeoutMs),
 	}
 	kafkaConsumer, err := gateway.NewConsumerManager(logger, &consumerConfig,
-		getEnVar(logger, gateway.EnvMaxNumConsumers, gateway.DefaultMaxNumConsumers))
+		getEnVar(logger, gateway.EnvMaxNumConsumers, gateway.DefaultMaxNumConsumers), schemaRegistryClient)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create consumer manager")
 	}

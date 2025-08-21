@@ -28,8 +28,10 @@ dependencies {
     implementation("io.klogging:slf4j-klogging:0.11.1")
 
     // Kafka
-    implementation("org.apache.kafka:kafka-streams:7.7.0-ccs")
-    testImplementation("org.apache.kafka:kafka-streams-test-utils:7.7.0-ccs")
+    implementation("org.apache.kafka:kafka-streams:7.9.0-ccs")
+    testImplementation("org.apache.kafka:kafka-streams-test-utils:7.9.0-ccs")
+    // https://mvnrepository.com/artifact/io.confluent/kafka-streams-protobuf-serde
+    implementation("io.confluent:kafka-streams-protobuf-serde:7.9.0")
 
     // gRPC
     implementation("io.grpc:grpc-kotlin-stub:1.4.3")
@@ -38,14 +40,14 @@ dependencies {
     runtimeOnly("io.grpc:grpc-netty-shaded:1.73.0")
     implementation("com.google.protobuf:protobuf-java") {
         version {
-            strictly("[4.27.2,)")
-            prefer("4.27.2")
+            strictly("[3.25.5,)")
+            prefer("3.25.5")
         }
     }
     implementation("com.google.protobuf:protobuf-kotlin") {
         version {
-            strictly("[4.27.2,)")
-            prefer("4.27.2")
+            strictly("[3.25.5,)")
+            prefer("3.25.5")
         }
     }
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
