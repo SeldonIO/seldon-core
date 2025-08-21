@@ -2,7 +2,6 @@ package openai
 
 import (
 	"bufio"
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/translator"
-	"github.com/sirupsen/logrus"
 )
 
 type OpenAIChatCompletionsTranslator struct {
@@ -116,60 +114,23 @@ func (t *OpenAIChatCompletionsTranslator) translateFromOIP(res *http.Response) (
 }
 
 func (t *OpenAIChatCompletionsTranslator) translateStreamFromOIP(res *http.Response) (*http.Response, error) {
-	logger := logrus.New()
 	pr, pw := io.Pipe()
 
-	// Start background goroutine to copy/transform as data arrives
-	go func() {
-		defer res.Body.Close()
+	// declare the scanner and override the default split function
+	scanner := bufio.NewScanner(res.Body)
+	scanner.Split(translator.SplitSSE)
 
-		// read first line which faild to parse
-		firstLine := res.Header.Get("First-Line")
-		res.Header.Del("First-Line")
+	// read first line which faild to parse
+	firstLine := res.Header.Get(translator.FirstLineKey)
+	res.Header.Del(translator.FirstLineKey)
 
-		translated, err := translateLocalLine(firstLine)
-		if err != nil {
-			pw.CloseWithError(err)
-			return
-		}
+	translated, err := translateLocalLine(firstLine)
+	if err != nil {
+		pw.CloseWithError(err)
+		return nil, fmt.Errorf("failed to translate first line: %w", err)
+	}
 
-		// Write the first line to the pipe
-		if _, err := pw.Write([]byte(translated)); err != nil {
-			pw.CloseWithError(err)
-			return
-		}
-
-		// declare the scanner and override the default split function
-		scanner := bufio.NewScanner(res.Body)
-		scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-			if i := bytes.Index(data, []byte(translator.SSESuffix)); i >= 0 {
-				return i + 2, data[:i], nil
-			}
-			if atEOF && len(data) > 0 {
-				return len(data), data, nil
-			}
-			return 0, nil, nil
-		})
-
-		for scanner.Scan() {
-			line := scanner.Text()
-			logger.Infof("Processing SSE line: %s", line)
-
-			translated, err := translateLocalLine(line)
-			if err != nil {
-				pw.CloseWithError(err)
-				return
-			}
-
-			if _, err := pw.Write([]byte(translated)); err != nil {
-				return
-			}
-		}
-		if err := scanner.Err(); err != nil {
-			pw.CloseWithError(err)
-		}
-		pw.Close()
-	}()
+	go translator.ScanAndWriteSSE(res, &translated, scanner, pw, translateLocalLine)
 
 	// Return single streaming response
 	return &http.Response{

@@ -1,6 +1,7 @@
 package translator
 
 import (
+	"bufio"
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
@@ -307,4 +308,44 @@ func IsServerSentEvent(resp *http.Response) bool {
 func IsServerSentEventHeader(header *http.Header) bool {
 	contentType := header.Get("Content-Type")
 	return strings.HasPrefix(contentType, "text/event-stream")
+}
+
+func SplitSSE(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	if i := bytes.Index(data, []byte(SSESuffix)); i >= 0 {
+		return i + 2, data[:i], nil
+	}
+	if atEOF && len(data) > 0 {
+		return len(data), data, nil
+	}
+	return 0, nil, nil
+}
+
+func ScanAndWriteSSE(res *http.Response, firstTranslatedLine *string, scanner *bufio.Scanner, pw *io.PipeWriter, translateLineFunc func(string) (string, error)) {
+	defer res.Body.Close()
+
+	// Write the first line to the pipe
+	if _, err := pw.Write([]byte(*firstTranslatedLine)); err != nil {
+		pw.CloseWithError(err)
+		return
+	}
+
+	// Process the rest of the lines
+	for scanner.Scan() {
+		line := scanner.Text()
+		translated, err := translateLineFunc(line)
+		if err != nil {
+			pw.CloseWithError(err)
+			return
+		}
+
+		if _, err := pw.Write([]byte(translated)); err != nil {
+			return
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		pw.CloseWithError(err)
+	}
+
+	pw.Close()
 }

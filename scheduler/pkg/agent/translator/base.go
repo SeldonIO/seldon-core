@@ -24,6 +24,7 @@ const (
 	OutputAllKey = "output_all"
 	SSEPrefix    = "data: "
 	SSESuffix    = "\n\n"
+	FirstLineKey = "First-Line"
 )
 
 func DecompressIfNeededAndConvertToJSON(res *http.Response) (map[string]interface{}, bool, error) {
@@ -138,56 +139,20 @@ func translateStreamFromOIP(res *http.Response) (*http.Response, error) {
 
 	// override the default split function
 	scanner := bufio.NewScanner(res.Body)
-	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-		if i := bytes.Index(data, []byte(SSESuffix)); i >= 0 {
-			return i + 2, data[:i], nil
-		}
-		if atEOF && len(data) > 0 {
-			return len(data), data, nil
-		}
-		return 0, nil, nil
-	})
+	scanner.Split(SplitSSE)
 
 	_ = scanner.Scan()
 	line := scanner.Text()
 
 	// Transform the first line to check if we have output_all key
-	trsanslated, err := translateLine(line)
+	translated, err := translateLine(line)
 	if err != nil {
-		res.Header.Set("First-Line", line)
+		res.Header.Set(FirstLineKey, line)
 		return nil, fmt.Errorf("failed to translate first line: %w", err)
 	}
 
 	// Start background goroutine to copy/transform as data arrives
-	go func() {
-		defer res.Body.Close()
-
-		// Write the first line to the pipe
-		if _, err := pw.Write([]byte(trsanslated)); err != nil {
-			pw.CloseWithError(err)
-			return
-		}
-
-		// Process the rest of the lines
-		for scanner.Scan() {
-			line := scanner.Text()
-			translated, err := translateLine(line)
-			if err != nil {
-				pw.CloseWithError(err)
-				return
-			}
-
-			if _, err := pw.Write([]byte(translated)); err != nil {
-				return
-			}
-		}
-
-		if err := scanner.Err(); err != nil {
-			pw.CloseWithError(err)
-		}
-
-		pw.Close()
-	}()
+	go ScanAndWriteSSE(res, &translated, scanner, pw, translateLine)
 
 	// Return single streaming response
 	return &http.Response{
