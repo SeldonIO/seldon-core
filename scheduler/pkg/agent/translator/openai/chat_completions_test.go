@@ -55,6 +55,7 @@ func TestChatCompletionsRequest(t *testing.T) {
 				},
 				"parameters": map[string]interface{}{
 					"llm_parameters": map[string]interface{}{},
+					"kwargs":         map[string]interface{}{},
 				},
 			},
 		},
@@ -102,6 +103,7 @@ func TestChatCompletionsRequest(t *testing.T) {
 				},
 				"parameters": map[string]interface{}{
 					"llm_parameters": map[string]interface{}{},
+					"kwargs":         map[string]interface{}{},
 				},
 			},
 		},
@@ -158,6 +160,7 @@ func TestChatCompletionsRequest(t *testing.T) {
 				},
 				"parameters": map[string]interface{}{
 					"llm_parameters": map[string]interface{}{},
+					"kwargs":         map[string]interface{}{},
 				},
 			},
 		},
@@ -304,6 +307,7 @@ func TestChatCompletionsRequest(t *testing.T) {
 				},
 				"parameters": map[string]interface{}{
 					"llm_parameters": map[string]interface{}{},
+					"kwargs":         map[string]interface{}{},
 				},
 			},
 		},
@@ -361,6 +365,9 @@ func TestChatCompletionsRequest(t *testing.T) {
 					"llm_parameters": map[string]interface{}{
 						"max_tokens": 300,
 					},
+					"kwargs": map[string]interface{}{
+						"max_tokens": 300,
+					},
 				},
 			},
 		},
@@ -399,6 +406,9 @@ func TestChatCompletionsRequest(t *testing.T) {
 				},
 				"parameters": map[string]interface{}{
 					"llm_parameters": map[string]interface{}{
+						"stream": true,
+					},
+					"kwargs": map[string]interface{}{
 						"stream": true,
 					},
 				},
@@ -440,6 +450,10 @@ func TestChatCompletionsRequest(t *testing.T) {
 				},
 				"parameters": map[string]interface{}{
 					"llm_parameters": map[string]interface{}{
+						"logprobs":     true,
+						"top_logprobs": 2,
+					},
+					"kwargs": map[string]interface{}{
 						"logprobs":     true,
 						"top_logprobs": 2,
 					},
@@ -506,6 +520,7 @@ func TestChatCompletionsRequest(t *testing.T) {
 				},
 				"parameters": map[string]interface{}{
 					"llm_parameters": map[string]interface{}{},
+					"kwargs":         map[string]interface{}{},
 				},
 			},
 		},
@@ -569,6 +584,7 @@ func TestChatCompletionsRequest(t *testing.T) {
 				},
 				"parameters": map[string]interface{}{
 					"llm_parameters": map[string]interface{}{},
+					"kwargs":         map[string]interface{}{},
 				},
 			},
 		},
@@ -635,6 +651,7 @@ func TestChatCompletionsRequest(t *testing.T) {
 				},
 				"parameters": map[string]interface{}{
 					"llm_parameters": map[string]interface{}{},
+					"kwargs":         map[string]interface{}{},
 				},
 			},
 		},
