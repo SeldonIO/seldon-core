@@ -126,7 +126,7 @@ func (g *GatewayHttpServer) getRequestId(req *http.Request) string {
 	if len(requestIds) > 0 {
 		requestId = requestIds[0]
 	} else {
-		g.logger.Warning("Failed to find request ID - will generate one")
+		g.logger.Debug("Failed to find request ID - will generate one")
 		requestId = util.CreateRequestId()
 	}
 	return requestId
@@ -182,7 +182,6 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, reso
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
-			w.WriteHeader(http.StatusOK)
 			go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeRest, elapsedTime, metrics.HttpCodeToString(http.StatusOK))
 		}
 	}

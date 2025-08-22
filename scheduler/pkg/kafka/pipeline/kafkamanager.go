@@ -15,6 +15,7 @@ import (
 	"math/rand"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka"
@@ -32,7 +33,8 @@ import (
 )
 
 const (
-	pollTimeoutMillisecs = 10000
+	pollTimeoutMillisecs     = 10000
+	timeoutWaitForPartitions = time.Second * 10
 )
 
 type PipelineInferer interface {
@@ -265,8 +267,29 @@ func (km *KafkaManager) Infer(
 	pipeline.consumer.rebalanceMu.RLock()
 	partitions := pipeline.consumer.partitions
 	if len(partitions) == 0 {
+		ready := pipeline.consumer.partitionsReady.Subscribe()
+		// we must unlock to allow the rebalance callback to notify us when partitions are available
 		pipeline.consumer.rebalanceMu.RUnlock()
-		return nil, fmt.Errorf("no partitions assigned for topic %s", resourceName)
+
+		logger := logger.WithField("resource_name", resourceName)
+		logger.WithField("timeout", timeoutWaitForPartitions).Warn("Waiting for partition to be available")
+		select {
+		case <-ready:
+			pipeline.consumer.rebalanceMu.RLock()
+		case <-time.After(timeoutWaitForPartitions):
+			return nil, fmt.Errorf("timed out waiting for partitions to be assigned to consumer for pipeline %s", resourceName)
+		}
+
+		partitions = pipeline.consumer.partitions
+		// there is a small chance no partitions are available, as there's a tiny time window between
+		// where we receive the signal partitions are available and when we acquire the read lock, that partitions are
+		// revoked, so we check for this. Envoy will handle exponential backoff retry.
+		if len(partitions) == 0 {
+			pipeline.consumer.rebalanceMu.RUnlock()
+			return nil, fmt.Errorf("no partitions available for consumer for pipeline %s", resourceName)
+		}
+
+		logger.WithField("partitions", len(partitions)).Info("Received signal - partition(s) ready")
 	}
 
 	// Randomly select a partition to produce the message to
@@ -327,7 +350,7 @@ func (km *KafkaManager) Infer(
 	}
 	go func() {
 		evt := <-deliveryChan
-		logger.Infof("Received delivery event %s", evt.String())
+		logger.Debugf("Received delivery event %s", evt.String())
 		span.End()
 	}()
 	logger.Debugf("Waiting for response for request id %s for resource %s on parititon %d", requestId, resourceName, partition)
@@ -357,7 +380,7 @@ func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) k
 
 		switch e := ev.(type) {
 		case kafka.AssignedPartitions:
-			logger.Debug("Rebalance: Assigned partitions:", e.Partitions)
+			logger.Info("Rebalance: Assigned partitions:", e.Partitions)
 			err := consumer.Assign(e.Partitions)
 			if err != nil {
 				// Don't modify mtConsumer.partitions on assign failure
@@ -371,8 +394,14 @@ func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) k
 				mtConsumer.partitions[i] = partition.Partition
 			}
 
+			if len(e.Partitions) > 0 {
+				// signal to unblock waiting goroutines to proceed sending inference reqs
+				logger.Info("Broadcasting to any waiting goroutines - partition(s) are ready")
+				mtConsumer.partitionsReady.Broadcast()
+			}
+
 		case kafka.RevokedPartitions:
-			logger.Debug("Rebalance: Revoked partitions:", e.Partitions)
+			logger.Info("Rebalance: Revoked partitions:", e.Partitions)
 			err := consumer.Unassign()
 			if err != nil {
 				return fmt.Errorf("unassign error: %w", err)
