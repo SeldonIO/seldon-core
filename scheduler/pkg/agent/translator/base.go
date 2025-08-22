@@ -47,7 +47,6 @@ func DecompressIfNeededAndConvertToJSON(res *http.Response) (map[string]interfac
 	if err != nil {
 		return nil, isGzipped, err
 	}
-
 	return jsonBody, isGzipped, nil
 }
 

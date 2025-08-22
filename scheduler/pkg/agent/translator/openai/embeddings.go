@@ -62,10 +62,16 @@ func (t *OpenAIEmbeddingsTranslator) TranslateFromOIP(res *http.Response) (*http
 		return nil, fmt.Errorf("`%s` field not found or not an array in the response", translator.OutputsKey)
 	}
 
-	content, err := parseOutputEmbeddings(outputs, jsonBody["model"].(string))
+	modelName, ok := jsonBody[modelNameKey].(string)
+	if !ok {
+		return nil, fmt.Errorf("`%s` field not found or not a string in the response", modelNameKey)
+	}
+
+	content, err := parseOutputEmbeddings(outputs, modelName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
+
 	return translator.CreateResponseFromContent(content, res.StatusCode, res.Header, isGzipped)
 }
 

@@ -89,7 +89,7 @@ func ReadRequestBody(req *http.Request) ([]byte, error) {
 
 func ReadResponseBody(res *http.Response) ([]byte, error) {
 	if res.Body == nil {
-		return nil, fmt.Errorf("response body is empty")
+		return nil, fmt.Errorf("response body is nil")
 	}
 
 	body, err := io.ReadAll(res.Body)
@@ -99,11 +99,7 @@ func ReadResponseBody(res *http.Response) ([]byte, error) {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	if len(body) == 0 {
-		return nil, fmt.Errorf("response body is empty")
-	}
-
-	res.Body = io.NopCloser(bytes.NewBuffer(body)) // Reset the body for further reads
+	res.Body = io.NopCloser(bytes.NewReader(body))
 	return body, nil
 }
 
@@ -128,7 +124,7 @@ func ConvertInferenceRequestToHttpRequest(inferenceRequest map[string]interface{
 	}
 
 	// Create a new request with the translated body
-	newBody := io.NopCloser(bytes.NewBuffer(data))
+	newBody := io.NopCloser(bytes.NewReader(data))
 	newReq, err := http.NewRequest(req.Method, req.URL.String(), newBody)
 	if err != nil {
 		return nil, err
@@ -175,7 +171,16 @@ func TrimPathAfterInfer(req *http.Request) error {
 
 func DecompressIfNeeded(res *http.Response) (*http.Response, bool, error) {
 	if res.Header.Get("Content-Encoding") == "gzip" {
-		gr, err := gzip.NewReader(res.Body)
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			return nil, false, fmt.Errorf("failed to read gzipped response body: %w", err)
+		}
+
+		// reset the body to the original state
+		res.Body.Close()
+		res.Body = io.NopCloser(bytes.NewReader(body))
+
+		gr, err := gzip.NewReader(io.NopCloser(bytes.NewReader(body)))
 		if err != nil {
 			return res, false, err
 		}
@@ -183,10 +188,7 @@ func DecompressIfNeeded(res *http.Response) (*http.Response, bool, error) {
 		newRes := http.Response{
 			StatusCode: res.StatusCode,
 			Header:     res.Header.Clone(),
-			Body: &gzipReadCloser{
-				gzipReader:   gr,
-				originalBody: res.Body,
-			},
+			Body:       gr,
 		}
 
 		newRes.Header.Del("Content-Length")
@@ -194,24 +196,6 @@ func DecompressIfNeeded(res *http.Response) (*http.Response, bool, error) {
 		return &newRes, true, nil
 	}
 	return res, false, nil
-}
-
-type gzipReadCloser struct {
-	gzipReader   *gzip.Reader
-	originalBody io.ReadCloser
-}
-
-func (grc *gzipReadCloser) Read(p []byte) (int, error) {
-	return grc.gzipReader.Read(p)
-}
-
-func (grc *gzipReadCloser) Close() error {
-	gzipErr := grc.gzipReader.Close()
-	bodyErr := grc.originalBody.Close()
-	if gzipErr != nil {
-		return gzipErr
-	}
-	return bodyErr
 }
 
 func Compress(res *http.Response) error {
