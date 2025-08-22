@@ -84,9 +84,7 @@ func ExtractTensorContentFromResponse(outputs []interface{}, tensorName string) 
 	if err != nil {
 		return "", err
 	}
-
 	return extractContentFromTensor(tensor, DataKey)
-
 }
 
 func extractContentFromTensor(tensor map[string]interface{}, key string) (string, error) {
@@ -136,7 +134,7 @@ func translateFromOIP(res *http.Response) (*http.Response, error) {
 func translateStreamFromOIP(res *http.Response) (*http.Response, error) {
 	pr, pw := io.Pipe()
 
-	// override the default split function
+	// Override the default split function
 	scanner := bufio.NewScanner(res.Body)
 	scanner.Split(SplitSSE)
 
@@ -178,7 +176,7 @@ func translateLine(line string) (string, error) {
 		return "", fmt.Errorf("failed to parse %s field: %w", OutputAllKey, err)
 	}
 
-	// unmarshal and then marshal again to ensure proper formatting
+	// Unmarshal and then marshal again to ensure proper formatting
 	mapContent := map[string]interface{}{}
 	err = json.Unmarshal([]byte(content), &mapContent)
 	if err != nil {

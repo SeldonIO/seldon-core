@@ -118,11 +118,11 @@ func (t *OpenAIChatCompletionsTranslator) translateFromOIP(res *http.Response) (
 func (t *OpenAIChatCompletionsTranslator) translateStreamFromOIP(res *http.Response) (*http.Response, error) {
 	pr, pw := io.Pipe()
 
-	// declare the scanner and override the default split function
+	// Declare the scanner and override the default split function
 	scanner := bufio.NewScanner(res.Body)
 	scanner.Split(translator.SplitSSE)
 
-	// read first line which faild to parse
+	// Read first line which faild to parse
 	firstLine := res.Header.Get(translator.FirstLineKey)
 	res.Header.Del(translator.FirstLineKey)
 
