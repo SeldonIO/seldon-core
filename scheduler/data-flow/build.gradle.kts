@@ -67,7 +67,7 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.3")
     testImplementation("io.strikt:strikt-core:0.34.1")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("org.assertj:assertj-core:3.25.1")
 }
 
 sourceSets {
