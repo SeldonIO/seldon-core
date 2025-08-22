@@ -98,7 +98,7 @@ Monitoring the model deployments in Seldon Core 2 involves:
 
     kubectl apply -f ${CUSTOM_RBAC}/cr.yaml
     ```
-4.  Configure metrics collection by createing the following `PodMonitor` resources.
+4.  Configure metrics collection by creating the following `PodMonitor` resources.
     ```bash
     PODMONITOR_RESOURCE_LOCATION=https://raw.githubusercontent.com/SeldonIO/seldon-core/v2.8.2/prometheus/monitors
 
