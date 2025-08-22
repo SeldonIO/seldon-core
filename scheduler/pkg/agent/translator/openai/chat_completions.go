@@ -30,6 +30,8 @@ const (
 	inputsKey            = "inputs"
 	parametersKey        = "parameters"
 	llmParametersKey     = "llm_parameters"
+	modelNameKey         = "model_name"
+	idKey                = "id"
 )
 
 func (t *OpenAIChatCompletionsTranslator) TranslateToOIP(req *http.Request) (*http.Request, error) {
@@ -88,14 +90,14 @@ func (t *OpenAIChatCompletionsTranslator) translateFromOIP(res *http.Response) (
 		return nil, fmt.Errorf("failed to decompress and parse the response: %w", err)
 	}
 
-	id, ok := jsonBody["id"].(string)
+	id, ok := jsonBody[idKey].(string)
 	if !ok {
-		return nil, fmt.Errorf("`id` field not found or not a string in the response")
+		return nil, fmt.Errorf("`%s` field not found or not a string in the response", idKey)
 	}
 
-	modelName, ok := jsonBody["model_name"].(string)
+	modelName, ok := jsonBody[modelNameKey].(string)
 	if !ok {
-		return nil, fmt.Errorf("`model_name` field not found or not a string in the response")
+		return nil, fmt.Errorf("`%s` field not found or not a string in the response", modelNameKey)
 	}
 
 	outputs, ok := jsonBody[translator.OutputsKey].([]interface{})
