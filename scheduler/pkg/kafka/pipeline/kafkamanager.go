@@ -36,7 +36,11 @@ import (
 const (
 	pollTimeoutMillisecs           = 10000
 	timeoutWaitForPartitions       = 10 * time.Second
-	maxRequeueAfterPartitionRevoke = 2
+	maxRequeueAfterPartitionRevoke = 1
+)
+
+var (
+	errPartitionRevoked = errors.New("partition(s) revoked")
 )
 
 type PipelineInferer interface {
@@ -269,11 +273,12 @@ func (km *KafkaManager) Infer(
 			}
 
 			if errors.Is(err, errPartitionRevoked) {
+				// TODO write some docs
 				if reQueueCount == maxRequeueAfterPartitionRevoke {
 					return nil, fmt.Errorf("requeued max amount of times <%d> : %w", reQueueCount, err)
 				}
 				reQueueCount++
-				km.logger.WithFields(logrus.Fields{"req_id": requestId, "requeue_count": reQueueCount}).
+				km.logger.WithFields(logrus.Fields{"req_id": requestId, "requeue_attempt": reQueueCount}).
 					Warn("Retrying failed inflight req due to partition revoking")
 				continue
 			}
@@ -415,6 +420,7 @@ func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) k
 		switch e := ev.(type) {
 		case kafka.AssignedPartitions:
 			logger.Info("Rebalance: Assigned partitions:", e.Partitions)
+
 			err := consumer.Assign(e.Partitions)
 			if err != nil {
 				// Don't modify mtConsumer.partitions on assign failure
@@ -436,8 +442,13 @@ func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) k
 
 		case kafka.RevokedPartitions:
 			logger.Info("Rebalance: Revoked partitions:", e.Partitions)
-			err := consumer.Unassign()
+
+			_, err := consumer.Commit()
 			if err != nil {
+				logger.WithError(err).Error("Revoked partitions: failed to commit offset")
+			}
+
+			if err := consumer.Unassign(); err != nil {
 				return fmt.Errorf("unassign error: %w", err)
 			}
 
@@ -456,8 +467,8 @@ func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) k
 					logger.Warnf("Revoking request %s for partition %d", req.key, req.partition)
 					req.response = []byte("Request revoked due to partition reassignment")
 					req.err = errPartitionRevoked
-					req.wg.Done()
 					req.active = false
+					req.wg.Done()
 					mtConsumer.requests.Remove(req.key)
 				}
 				req.mu.Unlock()
@@ -469,8 +480,6 @@ func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) k
 		return nil
 	}
 }
-
-var errPartitionRevoked = errors.New("partition revoked")
 
 func (km *KafkaManager) consume(pipeline *Pipeline) error {
 	logger := km.logger.WithField("func", "consume")

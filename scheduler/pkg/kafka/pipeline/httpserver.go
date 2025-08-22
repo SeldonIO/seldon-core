@@ -156,13 +156,13 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, reso
 		return
 	}
 
+	w.Header().Set(util.RequestIdHeader, kafkaRequest.key)
 	for k, vals := range convertKafkaHeadersToHttpHeaders(kafkaRequest.headers) {
 		for _, val := range vals {
 			w.Header().Add(k, val)
 		}
 	}
 
-	w.Header().Set(util.RequestIdHeader, kafkaRequest.key)
 	if kafkaRequest.err != nil {
 		logger.Error(string(kafkaRequest.response))
 		w.WriteHeader(http.StatusBadRequest)
