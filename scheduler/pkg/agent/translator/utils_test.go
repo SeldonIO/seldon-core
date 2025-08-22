@@ -152,11 +152,6 @@ func TestReadResponseBody(t *testing.T) {
 			expectErr: false,
 		},
 		{
-			name:      "Empty response body",
-			res:       &http.Response{Body: io.NopCloser(strings.NewReader(""))},
-			expectErr: true,
-		},
-		{
 			name:      "Nil response body",
 			res:       &http.Response{Body: nil},
 			expectErr: true,

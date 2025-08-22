@@ -1,6 +1,7 @@
 package openai
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -973,11 +974,11 @@ func TestChatCompletionStreamResponse(t *testing.T) {
 			expectedOpenAIResponse: map[string]interface{}{
 				"id":      "chatcmpl-AYD7ygNL8rqda0t5mG691k1aXpGLC",
 				"model":   "gpt-3.5-turbo-0125",
-				"created": 1732716978,
+				"created": float64(1732716978), // JSON unmarshaling converts numbers to float64
 				"object":  "chat.completion.chunk",
-				"choices": []map[string]interface{}{
-					{
-						"index": 0,
+				"choices": []interface{}{
+					map[string]interface{}{
+						"index": float64(0),
 						"delta": map[string]interface{}{
 							"role":    "assistant",
 							"content": "Hello!",
@@ -988,18 +989,18 @@ func TestChatCompletionStreamResponse(t *testing.T) {
 				},
 				"system_fingerprint": nil,
 				"usage": map[string]interface{}{
-					"prompt_tokens":     21,
-					"completion_tokens": 9,
-					"total_tokens":      30,
+					"prompt_tokens":     float64(21),
+					"completion_tokens": float64(9),
+					"total_tokens":      float64(30),
 					"prompt_tokens_details": map[string]interface{}{
-						"cached_tokens": 0,
-						"audio_tokens":  0,
+						"cached_tokens": float64(0),
+						"audio_tokens":  float64(0),
 					},
 					"completion_tokens_details": map[string]interface{}{
-						"reasoning_tokens":           0,
-						"audio_tokens":               0,
-						"accepted_prediction_tokens": 0,
-						"rejected_prediction_tokens": 0,
+						"reasoning_tokens":           float64(0),
+						"audio_tokens":               float64(0),
+						"accepted_prediction_tokens": float64(0),
+						"rejected_prediction_tokens": float64(0),
 					},
 				},
 			},
@@ -1042,11 +1043,11 @@ func TestChatCompletionStreamResponse(t *testing.T) {
 			expectedOpenAIResponse: map[string]interface{}{
 				"id":      "aa65a0ac-6aea-4284-9e55-7c74e299390e",
 				"model":   "local-chat-completions",
-				"created": 0, // Local responses do not have a created
+				"created": float64(0), // Local responses do not have a created timestamp
 				"object":  "chat.completion.chunk",
-				"choices": []map[string]interface{}{
-					{
-						"index": 0,
+				"choices": []interface{}{
+					map[string]interface{}{
+						"index": float64(0),
 						"delta": map[string]interface{}{
 							"role":    "assistant",
 							"content": "Hello!",
@@ -1063,9 +1064,16 @@ func TestChatCompletionStreamResponse(t *testing.T) {
 			oipResponseBody, err := json.Marshal(test.oipResponse)
 			g.Expect(err).To(BeNil(), "Error marshalling OIP response content")
 
+			// Proper SSE format: "data: " prefix, JSON payload, double newline
+			sseBody := "data: " + string(oipResponseBody) + "\n\n"
+
+			// Alternative formats you might need to test:
+			// For multiple chunks: sseBody += "data: " + string(anotherChunk) + "\n\n"
+			// For ending the stream: sseBody += "data: [DONE]\n\n"
+
 			oipResp := &http.Response{
 				StatusCode: http.StatusOK,
-				Body:       io.NopCloser(strings.NewReader(string(oipResponseBody))),
+				Body:       io.NopCloser(strings.NewReader(sseBody)),
 				Header:     http.Header{"Content-Type": []string{"text/event-stream"}},
 			}
 
@@ -1075,19 +1083,16 @@ func TestChatCompletionStreamResponse(t *testing.T) {
 			openAIRespBody, err := io.ReadAll(openAIResp.Body)
 			g.Expect(err).To(BeNil(), "Error reading OpenAI response body")
 
-			// unmarsal and marshal to ensure formatting is correct
+			// remove prefix and suffix to get the JSON payload
+			openAIRespBody = bytes.TrimPrefix(openAIRespBody, []byte("data: "))
+			openAIRespBody = bytes.TrimSuffix(openAIRespBody, []byte("\n\n"))
+
 			var openAIRespContent map[string]interface{}
-			err = json.Unmarshal(openAIRespBody, &openAIRespContent)
-			g.Expect(err).To(BeNil(), "Error unmarshalling OpenAI response content")
+			err = json.Unmarshal([]byte(openAIRespBody), &openAIRespContent)
+			g.Expect(err).To(BeNil(), "Error unmarshalling OpenAI SSE response content")
 
-			openAIRespMarshal, err := json.Marshal(openAIRespContent)
-			g.Expect(err).To(BeNil(), "Error marshalling OpenAI response content")
-
-			// marshal expected response for comparison including null values
-			expectedOpenAIResponseMarshal, err := json.Marshal(test.expectedOpenAIResponse)
-			g.Expect(err).To(BeNil(), "Error marshalling expected OpenAI response content")
-			g.Expect(openAIRespMarshal).To(Equal(expectedOpenAIResponseMarshal), "OpenAI response body does not match expected format")
+			// Compare the actual response with expected
+			g.Expect(openAIRespContent).To(Equal(test.expectedOpenAIResponse), "OpenAI response content does not match expected format")
 		})
 	}
-
 }

@@ -145,7 +145,7 @@ func TestEmbeddingRespose(t *testing.T) {
 		{
 			name: "local response - single",
 			oipResponse: map[string]interface{}{
-				"model": "text-embedding-ada-002",
+				"model_name": "text-embedding-ada-002",
 				"outputs": []map[string]interface{}{
 					{
 						"name":     "embedding",
@@ -173,7 +173,7 @@ func TestEmbeddingRespose(t *testing.T) {
 		{
 			name: "local response - multiple",
 			oipResponse: map[string]interface{}{
-				"model": "text-embedding-ada-002",
+				"model_name": "text-embedding-ada-002",
 				"outputs": []map[string]interface{}{
 					{
 						"name":     "embedding",
