@@ -40,6 +40,9 @@ func TestEmbeddingsRequest(t *testing.T) {
 					"llm_parameters": map[string]interface{}{
 						"encoding_format": "float",
 					},
+					"embedding_parameters": map[string]interface{}{
+						"encoding_format": "float",
+					},
 				},
 			},
 		},

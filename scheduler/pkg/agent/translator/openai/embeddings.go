@@ -13,8 +13,9 @@ type OpenAIEmbeddingsTranslator struct {
 }
 
 const (
-	inputKey     = "input"
-	embeddingKey = "embedding"
+	inputKey               = "input"
+	embeddingKey           = "embedding"
+	embeddingParametersKey = "embedding_parameters"
 )
 
 func (t *OpenAIEmbeddingsTranslator) TranslateToOIP(req *http.Request) (*http.Request, error) {
@@ -118,8 +119,15 @@ func constructEmbeddingsInferenceRequest(input []string, llmParams map[string]in
 		inputsKey: []map[string]interface{}{
 			translator.ConstructStringTensor(inputKey, input),
 		},
+		// There is an inconsistency in the naming of the parameters field
+		// across the runtimes. The API runtime uses `llm_parameters` for all
+		// model types (not just LLMs), while local embedding runtime uses
+		// `embedding_parameters` for embedding models.
+		//
+		// To handle both cases, we set both fields to the same value.
 		parametersKey: map[string]interface{}{
-			llmParametersKey: llmParams,
+			llmParametersKey:       llmParams,
+			embeddingParametersKey: llmParams,
 		},
 	}
 }
