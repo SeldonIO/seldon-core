@@ -10,10 +10,8 @@ the Change License after the Change Date as each is defined in accordance with t
 package io.seldon.dataflow.kafka
 
 import com.google.protobuf.Message
-import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient
-import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient
+import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer
-import io.klogging.logger
 import io.seldon.mlops.inference_schema.InferRequest.ModelInferRequest
 import io.seldon.mlops.inference_schema.InferResponse.ModelInferResponse
 import org.apache.kafka.common.serialization.Serde
@@ -25,19 +23,29 @@ import io.klogging.noCoLogger as Logger
 
 // Configuration class to hold schema registry settings
 data class SchemaRegistryConfig(
-    val url: String = "http://localhost:8081",
+    val url: String = "",
     private val _useSchemaRegistry: Boolean? = null,
-    val basicAuthCredentialsSource: String = "",
     val basicAuthUserInfo: String = "",
+    val bearerAuthToken: String = "",
+    val identityPoolID: String = "",
     val autoRegisterSchemas: Boolean = true,
     val useLatestVersion: Boolean = true,
     val cacheSize: Int = 100,
 ) {
     val useSchemaRegistry: Boolean
         get() = _useSchemaRegistry ?: url.isNotBlank()
+
+    val basicAuthCredentialsSource: String
+        get() =
+            if (basicAuthUserInfo.isEmpty()) {
+                "URL"
+            } else {
+                "USER_INFO"
+            }
+
     fun validate() {
         require(cacheSize > 0) { "Cache size must be positive" }
-        if (basicAuthCredentialsSource.isNotBlank()) {
+        if (basicAuthCredentialsSource.equals("USER_INFO")) {
             require(basicAuthUserInfo.isNotBlank()) { "Basic auth user info required when credentials source is set" }
         }
         if (useSchemaRegistry) {
@@ -45,18 +53,15 @@ data class SchemaRegistryConfig(
         }
     }
 
-    fun toClientProperties(): Map<String, Any> {
-        return mapOf(
-            "basic.auth.credentials.source" to basicAuthCredentialsSource,
-            "basic.auth.user.info" to basicAuthUserInfo,
-        ).filterValues { it.toString().isNotBlank() }
-    }
-
     fun toSerializerProperties(): Map<String, Any> {
         return mapOf(
-            "schema.registry.url" to url,
-            "auto.register.schemas" to autoRegisterSchemas,
-            "use.latest.version" to useLatestVersion,
+            AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG to url,
+            AbstractKafkaSchemaSerDeConfig.AUTO_REGISTER_SCHEMAS to autoRegisterSchemas,
+            AbstractKafkaSchemaSerDeConfig.USE_LATEST_VERSION to useLatestVersion,
+            AbstractKafkaSchemaSerDeConfig.NORMALIZE_SCHEMAS to true,
+            AbstractKafkaSchemaSerDeConfig.USER_INFO_CONFIG to basicAuthUserInfo,
+            AbstractKafkaSchemaSerDeConfig.BEARER_AUTH_TOKEN_CONFIG to bearerAuthToken,
+            AbstractKafkaSchemaSerDeConfig.BEARER_AUTH_IDENTITY_POOL_ID to identityPoolID,
         )
     }
 }
@@ -69,19 +74,6 @@ class SchemaRegistrySerializerFactory(private val config: SchemaRegistryConfig) 
         config.validate()
         if (config.useSchemaRegistry) {
             logger.info("Initializing Schema Registry serializers with URL: ${config.url}")
-        }
-    }
-
-    private val schemaClient: SchemaRegistryClient by lazy {
-        try {
-            CachedSchemaRegistryClient(
-                config.url,
-                config.cacheSize,
-                config.toClientProperties(),
-            )
-        } catch (e: Exception) {
-            logger.error("Failed to create schema registry client", e)
-            throw IllegalStateException("Could not initialize schema registry client", e)
         }
     }
 
@@ -122,10 +114,10 @@ class ProtobufWireFormatDeserializer : org.apache.kafka.common.serialization.Des
         topic: String?,
         data: ByteArray,
     ): ByteArray {
-        // Schema Registry wire format: [magic_byte(1)] + [schema_id(4)] + [actual_protobuf_data...]
-        logger.debug("Removing schema registry wire format")
+        // Schema Registry wire format: [magic_byte(1)] + [schema_id(5)] + [proto message index(6)] + [actual_protobuf_data...]
+        logger.debug("Removing schema registry wire format from a message in $topic")
 
-        if (data.size < 5) {
+        if (data.size < 6) {
             logger.debug("No schema id in message")
             return data
         }
@@ -138,8 +130,8 @@ class ProtobufWireFormatDeserializer : org.apache.kafka.common.serialization.Des
 
         logger.debug("First 10 bytes before remove: ${data.take(10).joinToString(" ") { "%02x".format(it) }}")
 
-        // Skip the first 5 bytes (magic byte + 4-byte schema ID)
-        val dataAfter = data.copyOfRange(5, data.size)
+        // Skip the first 6 bytes (magic byte + schema ID + proto msg index)
+        val dataAfter = data.copyOfRange(6, data.size)
 
         logger.debug("First 10 bytes after remove: ${dataAfter.take(10).joinToString(" ") { "%02x".format(it) }}")
         logger.debug("Returned data without schema id")
@@ -253,33 +245,4 @@ class KafkaStreamsSerdes(config: SchemaRegistryConfig) {
     val consumerSerde: Consumed<String, TRecord> = serdesFactory.createConsumerSerde()
     val producerSerde: Produced<String, TRecord> = serdesFactory.createProducerSerde()
     val joinSerde: StreamJoined<String, TRecord, TRecord> = serdesFactory.createJoinSerde()
-}
-
-// Configuration loading with proper validation and defaults
-object ConfigLoader {
-    private val logger = Logger(ConfigLoader::class)
-
-    fun loadSchemaRegistryConfig(): SchemaRegistryConfig {
-        return try {
-            val config =
-                SchemaRegistryConfig(
-                    url =
-                        System.getenv("SCHEMA_REGISTRY_URL")
-                            ?: "http://schema-registry.confluent.svc.cluster.local:8081",
-                    useSchemaRegistry = System.getenv("USE_SCHEMA_REGISTRY")?.toBoolean() ?: false,
-                    basicAuthCredentialsSource = System.getenv("SCHEMA_REGISTRY_AUTH_SOURCE") ?: "",
-                    basicAuthUserInfo = System.getenv("SCHEMA_REGISTRY_AUTH_USER_INFO") ?: "",
-                    autoRegisterSchemas = System.getenv("SCHEMA_REGISTRY_AUTO_REGISTER")?.toBoolean() ?: true,
-                    useLatestVersion = System.getenv("SCHEMA_REGISTRY_USE_LATEST")?.toBoolean() ?: true,
-                    cacheSize = System.getenv("SCHEMA_REGISTRY_CACHE_SIZE")?.toIntOrNull() ?: 100,
-                )
-
-            config.validate()
-            logger.info("Loaded schema registry config: useSchemaRegistry=${config.useSchemaRegistry}, url=${config.url}")
-            config
-        } catch (e: Exception) {
-            logger.error("Failed to load schema registry configuration", e)
-            throw IllegalStateException("Invalid schema registry configuration", e)
-        }
-    }
 }
