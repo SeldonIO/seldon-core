@@ -12,7 +12,7 @@ package pipeline
 import "sync"
 
 type Broadcaster struct {
-	mu    sync.Mutex
+	mu    sync.RWMutex
 	ready chan struct{}
 }
 
@@ -21,12 +21,20 @@ func NewBroadcaster() *Broadcaster {
 }
 
 func (b *Broadcaster) Subscribe() <-chan struct{} {
+	b.mu.RLock()
+	if b.ready != nil {
+		defer b.mu.RUnlock()
+		return b.ready
+	}
+	b.mu.RUnlock()
+
 	b.mu.Lock()
 	defer b.mu.Unlock()
-
-	if b.ready == nil {
-		b.ready = make(chan struct{})
+	// we must check again if ready has been set as multiple goroutines could have been waiting to acquire lock
+	if b.ready != nil {
+		return b.ready
 	}
+	b.ready = make(chan struct{})
 	return b.ready
 }
 
