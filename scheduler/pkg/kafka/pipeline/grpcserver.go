@@ -127,15 +127,19 @@ func (g *GatewayGrpcServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	if err != nil {
 		return nil, status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 	}
+
 	kafkaRequest, err := g.gateway.Infer(ctx, resourceName, isModel, b, convertGrpcMetadataToKafkaHeaders(md), g.getRequestId(md))
 	elapsedTime := time.Since(startTime).Seconds()
 	if err != nil {
 		go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeGrpc, elapsedTime, codes.FailedPrecondition.String())
 		return nil, status.Errorf(codes.FailedPrecondition, "%s", err.Error())
-	} else if kafkaRequest.isError {
-		go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeGrpc, elapsedTime, codes.Unknown.String())
-		return nil, status.Errorf(codes.Unknown, "%s", string(createResponseErrorPayload(kafkaRequest.errorModel, kafkaRequest.response)))
 	}
+
+	if kafkaRequest.err != nil {
+		go g.metrics.AddPipelineInferMetrics(resourceName, metrics.MethodTypeGrpc, elapsedTime, codes.Unknown.String())
+		return nil, status.Errorf(codes.Unknown, "%s", string(createResponseErrorPayload(kafkaRequest.err, kafkaRequest.response)))
+	}
+
 	meta := convertKafkaHeadersToGrpcMetadata(kafkaRequest.headers)
 	meta[util.RequestIdHeader] = []string{kafkaRequest.key}
 	err = grpc.SendHeader(ctx, meta)

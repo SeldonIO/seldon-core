@@ -11,6 +11,7 @@ package pipeline
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"sync/atomic"
 
@@ -192,7 +193,9 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 				request.mu.Lock()
 				if request.active {
 					logger.Debugf("Process response for key %s", key)
-					request.errorModel, request.isError = extractErrorHeader(e.Headers)
+					if errMsg, ok := extractErrorHeader(e.Headers); ok {
+						request.err = fmt.Errorf("%s", errMsg)
+					}
 					request.response = e.Value
 					request.headers = e.Headers
 					request.wg.Done()
