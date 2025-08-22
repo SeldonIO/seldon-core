@@ -164,7 +164,7 @@ func (g *GatewayHttpServer) infer(w http.ResponseWriter, req *http.Request, reso
 	}
 
 	if kafkaRequest.err != nil {
-		logger.Error(string(kafkaRequest.response))
+		logger.WithField("resp_body", kafkaRequest.response).Error("Got upstream error after publishing req")
 		w.WriteHeader(http.StatusBadRequest)
 		_, err = w.Write(createResponseErrorPayload(kafkaRequest.err, kafkaRequest.response))
 		if err != nil {

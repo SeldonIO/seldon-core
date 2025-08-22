@@ -269,19 +269,21 @@ func (km *KafkaManager) Infer(
 		default:
 			resp, err := km.infer(ctx, resourceName, isModel, data, headers, requestId)
 			if err == nil {
+				if errors.Is(resp.err, errPartitionRevoked) {
+					// partition has been revoked, so we can not consume the response for the req, we attempt to
+					// re-publish, once a partition is available. If none available we return error 500, envoy will
+					// handle backoff retrying the request.
+					if reQueueCount == maxRequeueAfterPartitionRevoke {
+						return nil, fmt.Errorf("requeued max amount of times <%d> : %w", reQueueCount, err)
+					}
+					reQueueCount++
+					km.logger.WithFields(logrus.Fields{"req_id": requestId, "requeue_attempt": reQueueCount}).
+						Warn("Retrying failed in-flight req due to partition revoking")
+					continue
+				}
 				return resp, nil
 			}
 
-			if errors.Is(err, errPartitionRevoked) {
-				// TODO write some docs
-				if reQueueCount == maxRequeueAfterPartitionRevoke {
-					return nil, fmt.Errorf("requeued max amount of times <%d> : %w", reQueueCount, err)
-				}
-				reQueueCount++
-				km.logger.WithFields(logrus.Fields{"req_id": requestId, "requeue_attempt": reQueueCount}).
-					Warn("Retrying failed inflight req due to partition revoking")
-				continue
-			}
 			return nil, fmt.Errorf("failed sending inference: %w", err)
 		}
 	}
@@ -395,7 +397,7 @@ func (km *KafkaManager) infer(
 	logger.Debugf("Waiting for response for request id %s for resource %s on parititon %d", requestId, resourceName, partition)
 	request.wg.Wait()
 	logger.Debugf("Got response for request id %s for resource %s on parition %d", requestId, resourceName, partition)
-	return request, request.err
+	return request, nil
 }
 
 func extractErrorHeader(headers []kafka.Header) (string, bool) {
@@ -425,6 +427,9 @@ func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) k
 			if err != nil {
 				// Don't modify mtConsumer.partitions on assign failure
 				// as the consumer state hasn't changed
+				//
+				// kafka does not appear to log any errors from our callback so up to us
+				logger.WithError(err).Error("Assigned partitions: assign error")
 				return fmt.Errorf("assign error: %w", err)
 			}
 
@@ -445,10 +450,13 @@ func createRebalanceCb(km *KafkaManager, mtConsumer *MultiTopicsKafkaConsumer) k
 
 			_, err := consumer.Commit()
 			if err != nil {
+				// some msgs might get replayed, but should not prevent us revoking the partitions
 				logger.WithError(err).Error("Revoked partitions: failed to commit offset")
 			}
 
 			if err := consumer.Unassign(); err != nil {
+				// kafka does not appear to log any errors from our callback so up to us
+				logger.WithError(err).Error("Revoked partitions: unassign error")
 				return fmt.Errorf("unassign error: %w", err)
 			}
 
