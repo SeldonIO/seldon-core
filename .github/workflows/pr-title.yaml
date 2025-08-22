@@ -18,12 +18,9 @@ jobs:
     steps:
       - name: Check PR title matches Conventional Commit format
         run: |
-          PR_TITLE="${{ github.event.pull_request.title }}"
           PATTERN="^(build|ci|docs|feat|fix|refactor|revert|test)\([^)]+\): .+$"
           
-          echo "Validating PR title: '$PR_TITLE'"
-          
-          if [[ $PR_TITLE =~ $PATTERN ]]; then
+          if [[ ${{ github.event.pull_request.title }} =~ $PATTERN ]]; then
             echo "✅ PR title is valid!"
           else
             echo "❌ PR title does not match required format!"
@@ -35,7 +32,5 @@ jobs:
             echo "  feat(auth): add login functionality"
             echo "  fix(api): resolve timeout issue"
             echo "  docs(readme): update installation guide"
-            echo ""
-            echo "Your title: '$PR_TITLE'"
             exit 1
           fi
