@@ -17,10 +17,12 @@ jobs:
       pull-requests: read
     steps:
       - name: Check PR title matches Conventional Commit format
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           PATTERN="^(build|ci|docs|feat|fix|refactor|revert|test)\([^)]+\): .+$"
           
-          if [[ ${{ github.event.pull_request.title }} =~ $PATTERN ]]; then
+          if [[ $PR_TITLE =~ $PATTERN ]]; then
             echo "✅ PR title is valid!"
           else
             echo "❌ PR title does not match required format!"
