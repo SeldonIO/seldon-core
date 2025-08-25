@@ -51,31 +51,32 @@ static_resources:
           address: 0.0.0.0
           port_value: 9003
       filter_chains:
-        - name: envoy.http_connection_manager
-          typed_config:
-            "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
-            stat_prefix: util_endpoint_http
-            http_filters:
-            - name: envoy.filters.http.health_check
-              typed_config:
-                "@type": type.googleapis.com/envoy.extensions.filters.http.health_check.v3.HealthCheck
-                pass_through_mode: false
-                headers:
-                  - exact_match: /ready
-                    name: :path
-            - name: envoy.filters.http.router
-              typed_config:
-                "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
-            route_config:
-              name: local_admin_interface_route
-              virtual_hosts:
-              - name: admin_interface
-                domains: ["*"]
-                routes:
-                - match:
-                    prefix: /stats
-                  route:
-                    cluster: admin_interface_cluster
+        - filters:
+          - name: envoy.http_connection_manager
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+              stat_prefix: util_endpoint_http
+              http_filters:
+              - name: envoy.filters.http.health_check
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.health_check.v3.HealthCheck
+                  pass_through_mode: false
+                  headers:
+                    - exact_match: /ready
+                      name: :path
+              - name: envoy.filters.http.router
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+              route_config:
+                name: local_admin_interface_route
+                virtual_hosts:
+                - name: admin_interface
+                  domains: ["*"]
+                  routes:
+                  - match:
+                      prefix: /stats
+                    route:
+                      cluster: admin_interface_cluster
 dynamic_resources:
   ads_config:
     api_type: DELTA_GRPC
