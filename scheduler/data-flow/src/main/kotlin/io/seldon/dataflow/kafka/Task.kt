@@ -116,6 +116,7 @@ class CreationTask(
 }
 
 class DeletionTask(
+    private val pipeline: Pipeline,
     private val pipelineSubscriber: PipelineSubscriber,
     private val metadata: PipelineMetadata,
     private val steps: List<PipelineStepUpdate>,
@@ -131,13 +132,14 @@ class DeletionTask(
             metadata.version,
             metadata.id,
         )
-        pipelineSubscriber.pipelines
-            .remove(metadata.id)
-            ?.also { pipeline ->
-                runBlocking {
-                    pipeline.stop()
-                }
-            }
+
+        // close the task queue
+        pipeline.stopProcessing()
+
+        // stop kafka stream
+        runBlocking {
+            pipeline.stop()
+        }
 
         var pipelineError: PipelineStatus? = null
         val errTopics = kafkaAdmin.deleteTopics(steps)

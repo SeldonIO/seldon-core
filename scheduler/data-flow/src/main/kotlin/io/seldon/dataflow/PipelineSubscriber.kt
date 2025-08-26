@@ -186,6 +186,8 @@ class PipelineSubscriber(
             return
         }
 
+        // Create the new pipeline and start processing messages from
+        // the task queue
         pipelines[metadata.id] =
             Pipeline(
                 metadata,
@@ -195,7 +197,10 @@ class PipelineSubscriber(
             ).also {
                 it.startProcessing(scope)
             }
-        pipelines[metadata.id]?.queue?.send(
+
+        // Send creation task to the task queue
+        val pipeline = pipelines[metadata.id]!!
+        pipeline.queue.send(
             CreationTask(
                 this,
                 metadata,
@@ -218,17 +223,28 @@ class PipelineSubscriber(
         timestamp: Long,
     ) {
         val pipeline = pipelines[metadata.id]
-        pipeline?.queue?.send(
-            DeletionTask(
-                this,
-                metadata,
-                steps,
-                kafkaAdmin,
-                timestamp,
-                name,
-                logger,
-            ),
-        )
+        if (pipeline != null) {
+            // Remove pipeline from the subscriber so that future
+            // creations of the pipeline will create a new entry in
+            // the pipelines hashmap. This allows us to cleanly close
+            // the task queue after deletion.
+            pipelines.remove(metadata.id)
+
+            // Send the deletion task. Note that we send a reference
+            // to the pipeline to cleanly close the task queue
+            pipeline.queue.send(
+                DeletionTask(
+                    pipeline,
+                    this,
+                    metadata,
+                    steps,
+                    kafkaAdmin,
+                    timestamp,
+                    name,
+                    logger,
+                ),
+            )
+        }
     }
 
     fun cancelPipelines(reason: String) {

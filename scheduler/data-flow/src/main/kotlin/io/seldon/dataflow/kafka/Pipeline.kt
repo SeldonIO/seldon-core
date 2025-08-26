@@ -57,6 +57,10 @@ class Pipeline(
     private val latch = CountDownLatch(1)
     val queue = Channel<Task>(Channel.UNLIMITED)
 
+    companion object {
+        const val STATE_DIR_CONFIG = "state.dir"
+    }
+
     // Never update status properties in-place, because we need it to have atomic
     // properties. Instead, just assign new values to it.
     @Volatile
@@ -170,11 +174,14 @@ class Pipeline(
         namespace: String,
     ): PipelineStatus.Error? {
         val (topology, numSteps) = buildTopology(metadata, steps, kafkaDomainParams)
-        val pipelineProperties = localiseKafkaProperties(kafkaProperties, metadata, numSteps, kafkaConsumerGroupIdPrefix, namespace)
-        var streamsApp: KafkaStreams?
+        this.topology = topology
+
         var pipelineError: PipelineStatus.Error?
+        val pipelineProperties = localiseKafkaProperties(kafkaProperties, metadata, numSteps, kafkaConsumerGroupIdPrefix, namespace)
+        pipelineProperties[Pipeline.STATE_DIR_CONFIG] = "/tmp/kafka-streams/${metadata.id}"
+
         try {
-            streamsApp = KafkaStreams(topology, pipelineProperties)
+            streams = KafkaStreams(this.topology, pipelineProperties)
         } catch (e: Exception) {
             pipelineError =
                 PipelineStatus.Error(null)
@@ -187,7 +194,7 @@ class Pipeline(
             pipelineProperties[KAFKA_UNCAUGHT_EXCEPTION_HANDLER_CLASS_CONFIG] as? Class<StreamsUncaughtExceptionHandler>?
         uncaughtExceptionHandlerClass?.let {
             logger.debug("Setting custom Kafka streams uncaught exception handler")
-            streamsApp.setUncaughtExceptionHandler(it.getDeclaredConstructor().newInstance())
+            streams.setUncaughtExceptionHandler(it.getDeclaredConstructor().newInstance())
         }
         logger.info(
             "Create pipeline stream for name:{pipelineName} id:{pipelineId} " +
@@ -200,9 +207,6 @@ class Pipeline(
         logger.info(
             "AllowCycles: ${metadata.allowCycles}; maxStepRevisits: ${metadata.maxStepRevisits}",
         )
-
-        this.topology = topology
-        this.streams = streamsApp
         return null
     }
 
