@@ -303,7 +303,7 @@ func main() {
 	// Now we are ready start config listener
 	err = rcloneClient.StartConfigListener()
 	if err != nil {
-		errChan <- fmt.Errorf("failed to initialise rclone config listener: %w", err)
+		logger.WithError(err).Fatal("Failed to initialise rclone config listener")
 	}
 
 	// Start grpc connection to scheduler and handle incoming events
