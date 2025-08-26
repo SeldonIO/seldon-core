@@ -18,6 +18,7 @@ import (
 	"strconv"
 	"syscall"
 
+	readiness2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/readiness"
 	log "github.com/sirupsen/logrus"
 
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
@@ -191,12 +192,17 @@ func main() {
 		close(done)
 	}()
 
+	readiness := readiness2.NewReadiness()
+	readiness.AddService(readiness2.NewService("grpc", func() error {
+		
+	}))
+
 	restModelChecker, err := status.NewModelRestStatusCaller(logger, envoyHost, envoyPort)
 	if err != nil {
 		logger.WithError(err).Fatalf("Failed to create REST modelchecker")
 	}
 	pipelineReadyChecker := status.NewSimpleReadyChecker(statusManager, restModelChecker)
-	httpServer := pipeline.NewGatewayHttpServer(httpPort, logger, km, promMetrics, &tlsOptions, pipelineReadyChecker)
+	httpServer := pipeline.NewGatewayHttpServer(httpPort, logger, km, promMetrics, &tlsOptions, pipelineReadyChecker, readiness)
 	go func() {
 		if err := httpServer.Start(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
