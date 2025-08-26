@@ -297,7 +297,7 @@ func main() {
 	// Wait for required services to be ready
 	err = agentService.WaitReadySubServices(true)
 	if err != nil {
-		errChan <- fmt.Errorf("failed to waiting for agent dependent sub-services to be ready: %w", err)
+		logger.WithError(err).Fatal("Failed to waiting for agent dependent sub-services to be ready")
 	}
 
 	// Now we are ready start config listener
