@@ -57,6 +57,7 @@ const (
 	// circuitBreakerMaxRetry max parallel retries
 	circuitBreakerMaxRetry  = 5
 	pipelineMaxBackoffRetry = 5
+	dnsRefreshRate          = 2 * time.Second
 )
 
 var (
@@ -179,6 +180,7 @@ func makeCluster(clusterName string, eps map[string]Endpoint, isGrpc bool, clien
 			TypedExtensionProtocolOptions: map[string]*anypb.Any{"envoy.extensions.upstreams.http.v3.HttpProtocolOptions": hpoMarshalled},
 			TransportSocket:               createUpstreamTransportSocket(clientSecret),
 			CircuitBreakers:               getCircuitBreaker(),
+			DnsRefreshRate:                duration.New(dnsRefreshRate),
 		}
 	} else {
 		return &cluster.Cluster{
@@ -189,6 +191,7 @@ func makeCluster(clusterName string, eps map[string]Endpoint, isGrpc bool, clien
 			LoadAssignment:       makeEndpoint(clusterName, eps),
 			DnsLookupFamily:      cluster.Cluster_V4_ONLY,
 			TransportSocket:      createUpstreamTransportSocket(clientSecret),
+			DnsRefreshRate:       duration.New(dnsRefreshRate),
 			CircuitBreakers:      getCircuitBreaker(),
 		}
 	}
@@ -397,6 +400,7 @@ func createWeightedModelClusterAction(clusterTraffics []TrafficSplit, mirrorTraf
 	if mirrorTraffic != nil {
 		mirrors = createMirrorRouteAction(mirrorTraffic.TrafficWeight, isGrpc)
 	}
+
 	action := &route.Route_Route{
 		Route: &route.RouteAction{
 			Timeout: &duration.Duration{Seconds: DefaultRouteTimeoutSecs},
@@ -406,6 +410,15 @@ func createWeightedModelClusterAction(clusterTraffics []TrafficSplit, mirrorTraf
 				},
 			},
 			RequestMirrorPolicies: mirrors,
+			RetryPolicy: &route.RetryPolicy{
+				RetryOn:    "5xx,connect-failure",
+				NumRetries: &wrappers.UInt32Value{Value: 5},
+				RetryBackOff: &route.RetryPolicy_RetryBackOff{
+					BaseInterval: &duration.Duration{
+						Nanos: int32(time.Millisecond * 500),
+					},
+				},
+			},
 		},
 	}
 	return action

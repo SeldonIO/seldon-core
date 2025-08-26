@@ -11,7 +11,6 @@ package drainservice
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 	"sync"
@@ -26,7 +25,7 @@ import (
 
 const (
 	terminateEndpoint = "/terminate"
-	eventWindowMs     = 100
+	eventWindow       = 200 * time.Millisecond
 	eventsTarget      = 3 // e.g. the number of containers in a pod
 )
 
@@ -37,9 +36,9 @@ type DrainerService struct {
 	serverReady bool
 	// mutex to guard changes to `serverReady`
 	muServerReady sync.RWMutex
-	triggered     bool
 	// mutex to guard changes to `triggered`
 	muTriggered sync.Mutex
+	triggered   bool
 	// wait group to block consumers of the DrainerService until a call to /terminate has occurred.
 	// this is effectively triggering downstream logic in agent
 	triggeredWg *sync.WaitGroup
@@ -64,7 +63,6 @@ func NewDrainerService(logger log.FieldLogger, port uint) *DrainerService {
 		triggered:          false,
 		drainingFinishedWg: &schedulerWg,
 		triggeredWg:        &triggeredWg,
-		events:             0,
 	}
 }
 
@@ -130,7 +128,7 @@ func (drainer *DrainerService) SetSchedulerDone() {
 	drainer.drainingFinishedWg.Done()
 }
 
-func (drainer *DrainerService) handleTerminate(w http.ResponseWriter, _ *http.Request) {
+func (drainer *DrainerService) handleTerminate(_ http.ResponseWriter, req *http.Request) {
 	// this is the crux of this service:
 	// once someone (e.g. kubelet) calls `\terminate` we trigger downstream logic to drain this particular agent/server
 	// the drain logic is defined in pkg/agent/server.go `drainServerReplicaImpl`
@@ -147,17 +145,28 @@ func (drainer *DrainerService) handleTerminate(w http.ResponseWriter, _ *http.Re
 	drainer.muTriggered.Lock()
 	drainer.events++
 	drainer.muTriggered.Unlock()
-	time.Sleep(eventWindowMs * time.Millisecond)
+
+	select {
+	case <-req.Context().Done():
+		return
+	case <-time.After(eventWindow):
+	}
+
 	drainer.muTriggered.Lock()
+	defer drainer.muTriggered.Unlock()
+
 	if drainer.events >= eventsTarget {
+		var now time.Time
 		if !drainer.triggered {
 			drainer.triggered = true
+			now = time.Now()
 			drainer.triggeredWg.Done()
 		}
 		drainer.drainingFinishedWg.Wait()
-	} else {
-		drainer.events = 0
+		if !now.IsZero() {
+			drainer.logger.Infof("Drainer service drained agent and completed in %s", time.Since(now))
+		}
+		return
 	}
-	fmt.Fprintf(w, "ok\n")
-	drainer.muTriggered.Unlock()
+	drainer.events = 0
 }
