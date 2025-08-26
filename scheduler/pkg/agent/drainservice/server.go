@@ -25,6 +25,8 @@ import (
 
 const (
 	terminateEndpoint = "/terminate"
+	eventWindow       = 200 * time.Millisecond
+	eventsTarget      = 3 // e.g. the number of containers in a pod
 )
 
 type DrainerService struct {
@@ -44,6 +46,9 @@ type DrainerService struct {
 	// this is effectively including agent and scheduler related logic.
 	// at this state we should be confident that this server replica (agent) can go down gracefully.
 	drainingFinishedWg *sync.WaitGroup
+	// we want to make sure that we get 3 terminate requests in a short period ot time otherwise we assume
+	// it is not a pod terminate
+	events uint32
 }
 
 func NewDrainerService(logger log.FieldLogger, port uint) *DrainerService {
@@ -123,12 +128,12 @@ func (drainer *DrainerService) SetSchedulerDone() {
 	drainer.drainingFinishedWg.Done()
 }
 
-func (drainer *DrainerService) handleTerminate(_ http.ResponseWriter, _ *http.Request) {
+func (drainer *DrainerService) handleTerminate(_ http.ResponseWriter, req *http.Request) {
 	// this is the crux of this service:
 	// once someone (e.g. kubelet) calls `\terminate` we trigger downstream logic to drain this particular agent/server
 	// the drain logic is defined in pkg/agent/server.go `drainServerReplicaImpl`
 	// the flow is:
-	// 0. wait for /terminate HTTP request to signal pod deletion via k8s preStop hook
+	// 0. wait for at least 3 events to arrive in a short-period of time (to signal pod restart)
 	// 1. call \terminate (this is atomic)
 	// 2. agent (drainOnRequest) is unblocked
 	// 3. agent sends an AgentDrain grpc message to scheduler and waits for a reply
@@ -138,13 +143,30 @@ func (drainer *DrainerService) handleTerminate(_ http.ResponseWriter, _ *http.Re
 	// 7. \terminate returns
 
 	drainer.muTriggered.Lock()
+	drainer.events++
+	drainer.muTriggered.Unlock()
+
+	select {
+	case <-req.Context().Done():
+		return
+	case <-time.After(eventWindow):
+	}
+
+	drainer.muTriggered.Lock()
 	defer drainer.muTriggered.Unlock()
 
-	if !drainer.triggered {
-		drainer.triggered = true
-		now := time.Now()
-		drainer.triggeredWg.Done()
+	if drainer.events >= eventsTarget {
+		var now time.Time
+		if !drainer.triggered {
+			drainer.triggered = true
+			now = time.Now()
+			drainer.triggeredWg.Done()
+		}
 		drainer.drainingFinishedWg.Wait()
-		drainer.logger.Infof("Drainer service completed handling %s endpoint, took %s", terminateEndpoint, time.Since(now))
+		if !now.IsZero() {
+			drainer.logger.Infof("Drainer service drained agent and completed in %s", time.Since(now))
+		}
+		return
 	}
+	drainer.events = 0
 }
