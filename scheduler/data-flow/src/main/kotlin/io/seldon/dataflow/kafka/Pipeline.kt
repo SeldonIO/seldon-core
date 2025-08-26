@@ -14,6 +14,10 @@ import io.seldon.dataflow.hashutils.HashUtils
 import io.seldon.dataflow.withException
 import io.seldon.dataflow.withMessage
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExecutorCoroutineDispatcher
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.KafkaStreams.State
@@ -42,17 +46,35 @@ data class PipelineMetadata(
 
 class Pipeline(
     private val metadata: PipelineMetadata,
-    private val topology: Topology,
-    private val streams: KafkaStreams,
     private val kafkaDomainParams: KafkaDomainParams,
+    private val dispatcher: ExecutorCoroutineDispatcher,
     val size: Int,
 ) : StateListener {
+    private lateinit var topology: Topology
+    private lateinit var streams: KafkaStreams
+
+    private val logger = noCoLogger(Pipeline::class)
     private val latch = CountDownLatch(1)
+    val queue = Channel<Task>(Channel.UNLIMITED)
 
     // Never update status properties in-place, because we need it to have atomic
     // properties. Instead, just assign new values to it.
     @Volatile
     var status: PipelineStatus = PipelineStatus.StreamStopped(null)
+
+    fun startProcessing(scope: CoroutineScope) {
+        scope.launch {
+            for (task in queue) {
+                launch(dispatcher) {
+                    task.run()
+                }
+            }
+        }
+    }
+
+    fun stopProcessing() {
+        queue.close()
+    }
 
     fun start(): PipelineStatus {
         if (kafkaDomainParams.useCleanState) {
@@ -139,125 +161,124 @@ class Pipeline(
         //       from RUNNING to REBALANCING or from RUNNING to an Error state)
     }
 
-    companion object {
-        private val logger = noCoLogger(Pipeline::class)
+    fun forSteps(
+        metadata: PipelineMetadata,
+        steps: List<PipelineStepUpdate>,
+        kafkaProperties: KafkaProperties,
+        kafkaDomainParams: KafkaDomainParams,
+        kafkaConsumerGroupIdPrefix: String,
+        namespace: String,
+    ): PipelineStatus.Error? {
+        val (topology, numSteps) = buildTopology(metadata, steps, kafkaDomainParams)
+        val pipelineProperties = localiseKafkaProperties(kafkaProperties, metadata, numSteps, kafkaConsumerGroupIdPrefix, namespace)
+        var streamsApp: KafkaStreams?
+        var pipelineError: PipelineStatus.Error?
+        try {
+            streamsApp = KafkaStreams(topology, pipelineProperties)
+        } catch (e: Exception) {
+            pipelineError =
+                PipelineStatus.Error(null)
+                    .withException(e)
+                    .withMessage("failed to initialize kafka streams for pipeline")
+            return pipelineError
+        }
 
-        fun forSteps(
-            metadata: PipelineMetadata,
-            steps: List<PipelineStepUpdate>,
-            kafkaProperties: KafkaProperties,
-            kafkaDomainParams: KafkaDomainParams,
-            kafkaConsumerGroupIdPrefix: String,
-            namespace: String,
-        ): Pair<Pipeline?, PipelineStatus.Error?> {
-            val (topology, numSteps) = buildTopology(metadata, steps, kafkaDomainParams)
-            val pipelineProperties = localiseKafkaProperties(kafkaProperties, metadata, numSteps, kafkaConsumerGroupIdPrefix, namespace)
-            var streamsApp: KafkaStreams?
-            var pipelineError: PipelineStatus.Error?
-            try {
-                streamsApp = KafkaStreams(topology, pipelineProperties)
-            } catch (e: Exception) {
-                pipelineError =
-                    PipelineStatus.Error(null)
-                        .withException(e)
-                        .withMessage("failed to initialize kafka streams for pipeline")
-                return null to pipelineError
-            }
+        val uncaughtExceptionHandlerClass =
+            pipelineProperties[KAFKA_UNCAUGHT_EXCEPTION_HANDLER_CLASS_CONFIG] as? Class<StreamsUncaughtExceptionHandler>?
+        uncaughtExceptionHandlerClass?.let {
+            logger.debug("Setting custom Kafka streams uncaught exception handler")
+            streamsApp.setUncaughtExceptionHandler(it.getDeclaredConstructor().newInstance())
+        }
+        logger.info(
+            "Create pipeline stream for name:{pipelineName} id:{pipelineId} " +
+                "version:{pipelineVersion} stream with kstream app id:{kstreamAppId}",
+            metadata.name,
+            metadata.id,
+            metadata.version,
+            pipelineProperties[StreamsConfig.APPLICATION_ID_CONFIG],
+        )
+        logger.info(
+            "AllowCycles: ${metadata.allowCycles}; maxStepRevisits: ${metadata.maxStepRevisits}",
+        )
 
-            val uncaughtExceptionHandlerClass =
-                pipelineProperties[KAFKA_UNCAUGHT_EXCEPTION_HANDLER_CLASS_CONFIG] as? Class<StreamsUncaughtExceptionHandler>?
-            uncaughtExceptionHandlerClass?.let {
-                logger.debug("Setting custom Kafka streams uncaught exception handler")
-                streamsApp.setUncaughtExceptionHandler(it.getDeclaredConstructor().newInstance())
-            }
-            logger.info(
-                "Create pipeline stream for name:{pipelineName} id:{pipelineId} " +
-                    "version:{pipelineVersion} stream with kstream app id:{kstreamAppId}",
-                metadata.name,
-                metadata.id,
-                metadata.version,
-                pipelineProperties[StreamsConfig.APPLICATION_ID_CONFIG],
+        this.topology = topology
+        this.streams = streamsApp
+        return null
+    }
+
+    private fun buildTopology(
+        metadata: PipelineMetadata,
+        steps: List<PipelineStepUpdate>,
+        kafkaDomainParams: KafkaDomainParams,
+    ): Pair<Topology, Int> {
+        // Sort the steps by the sink to ensure the same
+        // order when building the topology amongst multiple
+        // replicas. The scheduler doesn't send the same message
+        // because the steps are created from iterating over a map
+        val sortedSteps = steps.sortedBy { it.sink.topicName }
+        val builder = StreamsBuilder()
+
+        if (metadata.allowCycles) {
+            builder.addStateStore(
+                Stores.keyValueStoreBuilder(
+                    Stores.inMemoryKeyValueStore(VISITING_COUNTER_STORE),
+                    Serdes.String(),
+                    Serdes.Integer(),
+                ),
             )
-            logger.info(
-                "AllowCycles: ${metadata.allowCycles}; maxStepRevisits: ${metadata.maxStepRevisits}",
+        }
+
+        val topologySteps =
+            sortedSteps
+                .mapNotNull {
+                    stepFor(
+                        builder,
+                        metadata.name,
+                        metadata.version.toString(),
+                        metadata.pipelineOutputTopic,
+                        metadata.pipelineErrorTopic,
+                        metadata.allowCycles,
+                        metadata.maxStepRevisits,
+                        it.sourcesList,
+                        it.triggersList,
+                        it.tensorMapList,
+                        it.sink,
+                        it.inputJoinTy,
+                        it.triggersJoinTy,
+                        it.joinWindowMs.toLong(),
+                        it.batch,
+                        kafkaDomainParams,
+                    )
+                }
+        val topology = builder.build()
+        return topology to topologySteps.size
+    }
+
+    private fun localiseKafkaProperties(
+        kafkaProperties: KafkaProperties,
+        metadata: PipelineMetadata,
+        numSteps: Int,
+        kafkaConsumerGroupIdPrefix: String,
+        namespace: String,
+    ): KafkaProperties {
+        return kafkaProperties
+            .withAppId(
+                namespace,
+                kafkaConsumerGroupIdPrefix,
+                HashUtils.hashIfLong(metadata.id),
             )
-            return Pipeline(metadata, topology, streamsApp, kafkaDomainParams, numSteps) to null
-        }
+            .withStreamThreads(
+                getNumThreadsFor(numSteps),
+            )
+            .withErrorHandlers(
+                StreamErrorHandling.StreamsDeserializationErrorHandler(),
+                StreamErrorHandling.StreamsCustomUncaughtExceptionHandler(),
+                StreamErrorHandling.StreamsRecordProducerErrorHandler(),
+            )
+    }
 
-        private fun buildTopology(
-            metadata: PipelineMetadata,
-            steps: List<PipelineStepUpdate>,
-            kafkaDomainParams: KafkaDomainParams,
-        ): Pair<Topology, Int> {
-            // Sort the steps by the sink to ensure the same
-            // order when building the topology amongst multiple
-            // replicas. The scheduler doesn't send the same message
-            // because the steps are created from iterating over a map
-            val sortedSteps = steps.sortedBy { it.sink.topicName }
-            val builder = StreamsBuilder()
-
-            if (metadata.allowCycles) {
-                builder.addStateStore(
-                    Stores.keyValueStoreBuilder(
-                        Stores.inMemoryKeyValueStore(VISITING_COUNTER_STORE),
-                        Serdes.String(),
-                        Serdes.Integer(),
-                    ),
-                )
-            }
-
-            val topologySteps =
-                sortedSteps
-                    .mapNotNull {
-                        stepFor(
-                            builder,
-                            metadata.name,
-                            metadata.version.toString(),
-                            metadata.pipelineOutputTopic,
-                            metadata.pipelineErrorTopic,
-                            metadata.allowCycles,
-                            metadata.maxStepRevisits,
-                            it.sourcesList,
-                            it.triggersList,
-                            it.tensorMapList,
-                            it.sink,
-                            it.inputJoinTy,
-                            it.triggersJoinTy,
-                            it.joinWindowMs.toLong(),
-                            it.batch,
-                            kafkaDomainParams,
-                        )
-                    }
-            val topology = builder.build()
-            return topology to topologySteps.size
-        }
-
-        private fun localiseKafkaProperties(
-            kafkaProperties: KafkaProperties,
-            metadata: PipelineMetadata,
-            numSteps: Int,
-            kafkaConsumerGroupIdPrefix: String,
-            namespace: String,
-        ): KafkaProperties {
-            return kafkaProperties
-                .withAppId(
-                    namespace,
-                    kafkaConsumerGroupIdPrefix,
-                    HashUtils.hashIfLong(metadata.id),
-                )
-                .withStreamThreads(
-                    getNumThreadsFor(numSteps),
-                )
-                .withErrorHandlers(
-                    StreamErrorHandling.StreamsDeserializationErrorHandler(),
-                    StreamErrorHandling.StreamsCustomUncaughtExceptionHandler(),
-                    StreamErrorHandling.StreamsRecordProducerErrorHandler(),
-                )
-        }
-
-        private fun getNumThreadsFor(numSteps: Int): Int {
-            val scale = floor(log2(numSteps.toFloat()))
-            return max(1, scale.toInt())
-        }
+    private fun getNumThreadsFor(numSteps: Int): Int {
+        val scale = floor(log2(numSteps.toFloat()))
+        return max(1, scale.toInt())
     }
 }
