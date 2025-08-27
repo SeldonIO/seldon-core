@@ -133,9 +133,6 @@ class DeletionTask(
             metadata.id,
         )
 
-        // close the task queue
-        pipeline.stopProcessing()
-
         // stop kafka stream
         runBlocking {
             pipeline.stop()

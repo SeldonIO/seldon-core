@@ -170,17 +170,16 @@ class PipelineSubscriber(
         //
         // WARNING: at the moment handleCreate is called sequentially on each update in
         // Flow<PipelineUpdateMessage> from subscribePipelines(). This allows us to sidestep issues
-        // related to race conditions on `pipelines.containsKey(...)` below. If we ever move to
+        // related to race conditions on `pipelines[metadata.id] below. If we ever move to
         // concurrent creation of pipelines, this needs to be revisited.
-        if (pipelines.containsKey(metadata.id)) {
-            val previous = pipelines[metadata.id]!!
+        pipelines[metadata.id]?.let { previous ->
             previous.queue.send(
                 UpdateTask(
-                    this,
-                    metadata,
-                    timestamp,
-                    name,
-                    logger,
+                    pipelineSubscriber = this,
+                    metadata = metadata,
+                    timestamp = timestamp,
+                    name = name,
+                    logger = logger,
                 ),
             )
             return
@@ -188,33 +187,30 @@ class PipelineSubscriber(
 
         // Create the new pipeline and start processing messages from
         // the task queue
-        pipelines[metadata.id] =
-            Pipeline(
-                metadata,
-                kafkaDomainParams,
-                dispatcher,
-                steps.size,
-            ).also {
-                it.startProcessing(scope)
-            }
-
-        // Send creation task to the task queue
-        val pipeline = pipelines[metadata.id]!!
-        pipeline.queue.send(
-            CreationTask(
-                this,
-                metadata,
-                steps,
-                kafkaAdmin,
-                kafkaProperties,
-                kafkaDomainParams,
-                kafkaConsumerGroupIdPrefix,
-                namespace,
-                timestamp,
-                name,
-                logger,
-            ),
-        )
+        Pipeline(
+            metadata,
+            kafkaDomainParams,
+            dispatcher,
+            steps.size,
+        ).apply {
+            startProcessing(scope)
+            pipelines[metadata.id] = this
+            queue.send(
+                CreationTask(
+                    pipelineSubscriber = this@PipelineSubscriber,
+                    metadata = metadata,
+                    steps = steps,
+                    kafkaAdmin = kafkaAdmin,
+                    kafkaProperties = kafkaProperties,
+                    kafkaDomainParams = kafkaDomainParams,
+                    kafkaConsumerGroupIdPrefix = kafkaConsumerGroupIdPrefix,
+                    namespace = namespace,
+                    timestamp = timestamp,
+                    name = name,
+                    logger = logger,
+                ),
+            )
+        }
     }
 
     private suspend fun handleDelete(
@@ -222,28 +218,23 @@ class PipelineSubscriber(
         steps: List<PipelineStepUpdate>,
         timestamp: Long,
     ) {
-        val pipeline = pipelines[metadata.id]
-        if (pipeline != null) {
-            // Remove pipeline from the subscriber so that future
-            // creations of the pipeline will create a new entry in
-            // the pipelines hashmap. This allows us to cleanly close
-            // the task queue after deletion.
-            pipelines.remove(metadata.id)
-
-            // Send the deletion task. Note that we send a reference
-            // to the pipeline to cleanly close the task queue
+        pipelines.remove(metadata.id)?.let { pipeline ->
+            // Send deletion task (pipeline is passed so the kafka stream app
+            // can be cleanly stopped)
             pipeline.queue.send(
                 DeletionTask(
-                    pipeline,
-                    this,
-                    metadata,
-                    steps,
-                    kafkaAdmin,
-                    timestamp,
-                    name,
-                    logger,
+                    pipeline = pipeline,
+                    pipelineSubscriber = this,
+                    metadata = metadata,
+                    steps = steps,
+                    kafkaAdmin = kafkaAdmin,
+                    timestamp = timestamp,
+                    name = name,
+                    logger = logger,
                 ),
             )
+            // Close the task queue
+            pipeline.stopProcessing()
         }
     }
 
