@@ -31,7 +31,6 @@ import io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -75,7 +74,7 @@ class PipelineSubscriber(
     val client = ChainerGrpcKt.ChainerCoroutineStub(channel)
     val pipelines = ConcurrentHashMap<PipelineId, Pipeline>()
     val dispatcher = Executors.newFixedThreadPool(20).asCoroutineDispatcher()
-    val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
     suspend fun subscribe() {
         while (true) {
