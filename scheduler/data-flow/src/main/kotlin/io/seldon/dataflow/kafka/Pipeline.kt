@@ -221,16 +221,7 @@ class Pipeline(
         // order when building the topology amongst multiple
         // replicas. The scheduler doesn't send the same message
         // because the steps are created from iterating over a map
-        val sortedSteps =
-            steps.sortedWith(
-                compareBy(
-                    {
-                        it.sourcesList.sortedBy { source -> source.topicName }
-                            .joinToString(separator = ",") { source -> source.topicName }
-                    },
-                    { it.sink.topicName },
-                ),
-            )
+        val sortedSteps = steps.sortedBy { it.sink.topicName }
         val builder = StreamsBuilder()
 
         if (metadata.allowCycles) {
