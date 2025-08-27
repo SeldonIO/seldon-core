@@ -58,6 +58,7 @@ class PipelineSubscriber(
     grpcServiceConfig: Map<String, Any>,
     private val kafkaConsumerGroupIdPrefix: String,
     private val namespace: String,
+    nThreads: Int,
 ) {
     private val kafkaAdmin = KafkaAdmin(kafkaAdminProperties, kafkaStreamsParams, topicWaitRetryParams)
     private val channel =
@@ -73,7 +74,7 @@ class PipelineSubscriber(
 
     val client = ChainerGrpcKt.ChainerCoroutineStub(channel)
     val pipelines = ConcurrentHashMap<PipelineId, Pipeline>()
-    val dispatcher = Executors.newFixedThreadPool(20).asCoroutineDispatcher()
+    val dispatcher = Executors.newFixedThreadPool(nThreads).asCoroutineDispatcher()
     val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
     suspend fun subscribe() {

@@ -38,6 +38,7 @@ object Cli {
     val logLevelKafka = Key("log.level.kafka", enumType(*Level.values()))
     val namespace = Key("pod.namespace", stringType)
     val dataflowReplicaId = Key("dataflow.replica.id", stringType)
+    val dispatcherNThreads = Key("dispatcher.n.threads", intType)
 
     // Seldon components
     val upstreamHost = Key("upstream.host", stringType)
@@ -80,6 +81,7 @@ object Cli {
             logLevelKafka,
             namespace,
             dataflowReplicaId,
+            dispatcherNThreads,
             upstreamHost,
             upstreamPort,
             kafkaBootstrapServers,
