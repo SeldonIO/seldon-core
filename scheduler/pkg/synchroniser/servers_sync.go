@@ -17,7 +17,7 @@ the Change License after the Change Date as each is defined in accordance with t
 // The main trick is that the "controller" will send a number of expected servers to connect based on its etcd state, then the synchroniser will wait for all servers to connect before proceeding.
 // The synchroniser will also wait for a timeout to be reached before proceeding if not all servers connect in time.
 // the synchroniser subsribes to the server event handler and listens for SERVER_REPLICA_CONNECTED events, which are triggered when agents connect to the scheduler.
-// The struct implements the Synchroniser interface, which includes the IsReady, WaitReady, and Signals methods.
+// The struct implements the Synchroniser interface, which includes the CheckReadiness, WaitReady, and Signals methods.
 // The struct also includes the handleServerEvents and doneFn methods.
 
 // The ServerBasedSynchroniser struct is defined as follows:

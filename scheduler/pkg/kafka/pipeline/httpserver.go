@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/readiness"
+	healthprobe "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 
@@ -44,7 +44,7 @@ type GatewayHttpServer struct {
 	metrics              metrics.PipelineMetricsHandler
 	tlsOptions           *util.TLSOptions
 	pipelineReadyChecker status.PipelineReadyChecker
-	readiness            readiness.Manager
+	health               healthprobe.Manager
 }
 
 type TLSDetails struct {
@@ -57,7 +57,7 @@ func NewGatewayHttpServer(port int, logger log.FieldLogger,
 	gateway PipelineInferer,
 	metrics metrics.PipelineMetricsHandler,
 	tlsOptions *util.TLSOptions,
-	pipelineReadyChecker status.PipelineReadyChecker, readinessManager readiness.Manager) *GatewayHttpServer {
+	pipelineReadyChecker status.PipelineReadyChecker, health healthprobe.Manager) *GatewayHttpServer {
 	return &GatewayHttpServer{
 		port:                 port,
 		router:               mux.NewRouter(),
@@ -66,7 +66,7 @@ func NewGatewayHttpServer(port int, logger log.FieldLogger,
 		metrics:              metrics,
 		tlsOptions:           tlsOptions,
 		pipelineReadyChecker: pipelineReadyChecker,
-		readiness:            readinessManager,
+		health:               health,
 	}
 }
 
@@ -120,7 +120,13 @@ func (g *GatewayHttpServer) setupRoutes() {
 		v2ModelPathPrefix + "{" + ResourceNameVariable + "}/ready").HandlerFunc(g.pipelineReadyFromModelPath)
 	g.router.NewRoute().Path(
 		v2PipelinePathPrefix + "{" + ResourceNameVariable + "}/ready").HandlerFunc(g.pipelineReadyFromPipelinePath)
-	g.router.NewRoute().Path("/ready").HandlerFunc(g.ready)
+	g.setupHealthRoutes()
+}
+
+func (g *GatewayHttpServer) setupHealthRoutes() {
+	g.router.NewRoute().Path("/ready").HandlerFunc(g.healthCheck(g.health.CheckReadiness))
+	g.router.NewRoute().Path("/live").HandlerFunc(g.healthCheck(g.health.CheckLiveness))
+	g.router.NewRoute().Path("/startup").HandlerFunc(g.healthCheck(g.health.CheckStartup))
 }
 
 // Get or create a request ID
@@ -245,14 +251,15 @@ func (g *GatewayHttpServer) pipelineReady(w http.ResponseWriter, req *http.Reque
 	}
 }
 
-func (g *GatewayHttpServer) ready(w http.ResponseWriter, _ *http.Request) {
-	if err := g.readiness.IsReady(); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		g.logger.WithError(err).Error("Failed readiness check")
-		return
+func (g *GatewayHttpServer) healthCheck(fn func() error) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		if err := fn(); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			g.logger.WithError(err).WithField("req", req).Error("Failed health probe")
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 	}
-	w.WriteHeader(http.StatusOK)
 }
 
 func (g *GatewayHttpServer) pipelineReadyFromPipelinePath(w http.ResponseWriter, req *http.Request) {

@@ -764,6 +764,12 @@ spec:
         image: '{{ .Values.pipelinegateway.image.registry }}/{{ .Values.pipelinegateway.image.repository
           }}:{{ .Values.pipelinegateway.image.tag }}'
         imagePullPolicy: '{{ .Values.pipelinegateway.image.pullPolicy }}'
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /live
+            port: http
+          periodSeconds: 5
         name: pipelinegateway
         ports:
         - containerPort: 9010
@@ -775,12 +781,25 @@ spec:
         - containerPort: 9006
           name: metrics
           protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ready
+            port: http
+          periodSeconds: 5
         resources:
           limits:
             memory: '{{ .Values.pipelinegateway.resources.memory }}'
           requests:
             cpu: '{{ .Values.pipelinegateway.resources.cpu }}'
             memory: '{{ .Values.pipelinegateway.resources.memory }}'
+        startupProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /startup
+            port: http
+          initialDelaySeconds: 3
+          periodSeconds: 5
         volumeMounts:
         - mountPath: /mnt/kafka
           name: kafka-config-volume

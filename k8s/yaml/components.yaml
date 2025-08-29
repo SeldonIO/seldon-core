@@ -599,6 +599,12 @@ spec:
               fieldPath: metadata.namespace
         image: 'docker.io/seldonio/seldon-pipelinegateway:latest'
         imagePullPolicy: 'IfNotPresent'
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /live
+            port: http
+          periodSeconds: 5
         name: pipelinegateway
         ports:
         - containerPort: 9010
@@ -610,12 +616,25 @@ spec:
         - containerPort: 9006
           name: metrics
           protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ready
+            port: http
+          periodSeconds: 5
         resources:
           limits:
             memory: '1G'
           requests:
             cpu: '100m'
             memory: '1G'
+        startupProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /startup
+            port: http
+          initialDelaySeconds: 3
+          periodSeconds: 5
         volumeMounts:
         - mountPath: /mnt/kafka
           name: kafka-config-volume

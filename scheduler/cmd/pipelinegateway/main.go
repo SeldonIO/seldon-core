@@ -10,18 +10,23 @@ the Change License after the Change Date as each is defined in accordance with t
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
 
-	readiness2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/readiness"
-	log "github.com/sirupsen/logrus"
-
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+	health "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
+	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/backoff"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
@@ -183,40 +188,43 @@ func main() {
 
 	// Handle pipeline status updates
 	statusManager := status.NewPipelineStatusManager()
-	pipelineSchedulerClient := pipeline.NewPipelineSchedulerClient(logger, statusManager, km)
+	schedulerClient := pipeline.NewPipelineSchedulerClient(logger, statusManager, km)
 	go func() {
-		if err := pipelineSchedulerClient.Start(schedulerHost, schedulerPlaintxtPort, schedulerTlsPort); err != nil {
+		if err := schedulerClient.Start(schedulerHost, schedulerPlaintxtPort, schedulerTlsPort); err != nil {
 			logger.WithError(err).Error("Start client failed")
 		}
 		logger.Info("Scheduler client ended - closing done")
 		close(done)
 	}()
 
-	readiness := readiness2.NewReadiness()
-	readiness.AddService(readiness2.NewService("grpc", func() error {
-		
-	}))
+	// TODO set manifests for liveness, startup
+	// TODO tidy tests
+	healthManager, err := initHealthProbe(schedulerClient)
+	if err != nil {
+		logger.WithError(err).Fatal("Failed to create health probe")
+	}
 
 	restModelChecker, err := status.NewModelRestStatusCaller(logger, envoyHost, envoyPort)
 	if err != nil {
 		logger.WithError(err).Fatalf("Failed to create REST modelchecker")
 	}
 	pipelineReadyChecker := status.NewSimpleReadyChecker(statusManager, restModelChecker)
-	httpServer := pipeline.NewGatewayHttpServer(httpPort, logger, km, promMetrics, &tlsOptions, pipelineReadyChecker, readiness)
-	go func() {
-		if err := httpServer.Start(); err != nil {
-			if !errors.Is(err, http.ErrServerClosed) {
-				logger.WithError(err).Error("Failed to start http server")
-				close(done)
-			}
-		}
-	}()
 
 	grpcServer := pipeline.NewGatewayGrpcServer(grpcPort, logger, km, promMetrics, &tlsOptions, pipelineReadyChecker)
 	go func() {
 		if err := grpcServer.Start(); err != nil {
 			logger.WithError(err).Error("Failed to start grpc server")
 			close(done)
+		}
+	}()
+
+	httpServer := pipeline.NewGatewayHttpServer(httpPort, logger, km, promMetrics, &tlsOptions, pipelineReadyChecker, healthManager)
+	go func() {
+		if err := httpServer.Start(); err != nil {
+			if !errors.Is(err, http.ErrServerClosed) {
+				logger.WithError(err).Error("Failed to start http server")
+				close(done)
+			}
 		}
 	}()
 
@@ -228,5 +236,33 @@ func main() {
 	}
 	logger.Infof("Shutting down scheduler client")
 	grpcServer.Stop()
-	pipelineSchedulerClient.Stop()
+	schedulerClient.Stop()
+}
+
+func initHealthProbe(schedulerClient *pipeline.PipelineSchedulerClient) (health.Manager, error) {
+	manager := health.NewManager()
+	manager.RegisterSvc("pipeline_scheduler", func() error {
+		if !schedulerClient.IsConnected() {
+			return fmt.Errorf("not connected to scheduler")
+		}
+		return nil
+	}, health.ProbeStartUp)
+
+	conn, err := grpc.NewClient(fmt.Sprintf(":%d", grpcPort),
+		grpc.WithConnectParams(grpc.ConnectParams{
+			Backoff: backoff.DefaultConfig,
+		}),
+		grpc.WithKeepaliveParams(util.GetClientKeepAliveParameters()),
+		grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, fmt.Errorf("error creating gRPC connection: %v", err)
+	}
+	gRPCClient := v2_dataplane.NewGRPCInferenceServiceClient(conn)
+
+	manager.RegisterSvc("grpc_gateway", func() error {
+		_, err := gRPCClient.ServerReady(context.Background(), &v2_dataplane.ServerReadyRequest{})
+		return err
+	}, health.ProbeReadiness, health.ProbeLiveness)
+
+	return manager, nil
 }

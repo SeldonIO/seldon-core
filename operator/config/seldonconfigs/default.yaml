@@ -212,6 +212,25 @@ spec:
           requests:
             cpu: 100m
             memory: 1G
+        startupProbe:
+          httpGet:
+            path: /startup
+            port: http
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          periodSeconds: 5
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /live
+            port: http
+          periodSeconds: 5
+          failureThreshold: 3
         volumeMounts:
         - mountPath: /mnt/kafka
           name: kafka-config-volume
