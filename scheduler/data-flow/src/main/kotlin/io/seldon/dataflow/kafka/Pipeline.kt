@@ -27,6 +27,7 @@ import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
 import org.apache.kafka.streams.state.Stores
+import java.util.UUID
 import java.util.concurrent.CountDownLatch
 import kotlin.math.floor
 import kotlin.math.log2
@@ -53,7 +54,7 @@ class Pipeline(
     private lateinit var topology: Topology
     private lateinit var streams: KafkaStreams
 
-    private val logger = noCoLogger(Pipeline::class)
+    val logger = noCoLogger(Pipeline::class)
     private val latch = CountDownLatch(1)
 
     // Use `Channel.CONFLATED` so that only the most recent task is kept.
@@ -184,7 +185,7 @@ class Pipeline(
 
         var pipelineError: PipelineStatus.Error?
         val pipelineProperties = localiseKafkaProperties(kafkaProperties, metadata, numSteps, kafkaConsumerGroupIdPrefix, namespace)
-        pipelineProperties[Pipeline.STATE_DIR_CONFIG] = "/tmp/kafka-streams/${metadata.id}"
+        pipelineProperties[Pipeline.STATE_DIR_CONFIG] = "/tmp/kafka-streams/${metadata.id}-${UUID.randomUUID()}"
 
         try {
             streams = KafkaStreams(this.topology, pipelineProperties)

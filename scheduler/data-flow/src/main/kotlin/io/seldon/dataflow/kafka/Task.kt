@@ -213,3 +213,33 @@ class UpdateTask(
         previous.stop()
     }
 }
+
+class StopTask(
+    private val pipelineSubscriber: PipelineSubscriber,
+    private val metadata: PipelineMetadata,
+    private val logger: Klogger,
+) : Task() {
+    override suspend fun run() {
+        val previous = pipelineSubscriber.pipelines[metadata.id]!!
+
+        // pipeline exists but in failed/stopped state; cleanup state and re-create
+        logger.info(
+            "Recreating non-active pipeline {pipelineName} version: {pipelineVersion}, id: {pipelineId}",
+            metadata.name,
+            metadata.version,
+            metadata.id,
+        )
+        logger.debug(
+            "Previous state for non-active pipeline {pipelineName} version: {pipelineVersion}, id: {pipelineId}: {pipelineStatus}",
+            metadata.name,
+            metadata.version,
+            metadata.id,
+            previous.status.getDescription(),
+        )
+        // Calling stop() here may be superfluous (depending on the state in which the pipeline is in),
+        // but we want to ensure that we clean up the KafkaStreams state of the pipeline because
+        // otherwise we have issues in re-starting it.
+        // Calling stop() on an already stopped pipeline is safe.
+        previous.stop()
+    }
+}

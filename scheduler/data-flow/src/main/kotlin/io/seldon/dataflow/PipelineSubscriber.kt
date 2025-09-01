@@ -22,6 +22,7 @@ import io.seldon.dataflow.kafka.KafkaStreamsParams
 import io.seldon.dataflow.kafka.Pipeline
 import io.seldon.dataflow.kafka.PipelineId
 import io.seldon.dataflow.kafka.PipelineMetadata
+import io.seldon.dataflow.kafka.StopTask
 import io.seldon.dataflow.kafka.TopicWaitRetryParams
 import io.seldon.dataflow.kafka.UpdateTask
 import io.seldon.mlops.chainer.ChainerGrpcKt
@@ -172,45 +173,60 @@ class PipelineSubscriber(
         // Flow<PipelineUpdateMessage> from subscribePipelines(). This allows us to sidestep issues
         // related to race conditions on `pipelines[metadata.id] below. If we ever move to
         // concurrent creation of pipelines, this needs to be revisited.
-        pipelines[metadata.id]?.let { previous ->
-            previous.queue.send(
-                UpdateTask(
-                    pipelineSubscriber = this,
-                    metadata = metadata,
-                    timestamp = timestamp,
-                    name = name,
-                    logger = logger,
-                ),
-            )
-            return
+        var pipeline: Pipeline? = null
+        if (pipelines.containsKey(metadata.id)) {
+            val previous = pipelines[metadata.id]!!
+            if (previous.status.isActive()) {
+                previous.queue.send(
+                    UpdateTask(
+                        pipelineSubscriber = this,
+                        metadata = metadata,
+                        timestamp = timestamp,
+                        name = name,
+                        logger = logger,
+                    ),
+                )
+                return
+            } else {
+                pipeline = previous
+                previous.queue.send(
+                    StopTask(
+                        pipelineSubscriber = this,
+                        metadata = metadata,
+                        logger = logger,
+                    ),
+                )
+            }
         }
 
-        // Create the new pipeline and start processing messages from
-        // the task queue
-        Pipeline(
-            metadata,
-            kafkaDomainParams,
-            dispatcher,
-            steps.size,
-        ).apply {
-            startProcessing(scope)
-            pipelines[metadata.id] = this
-            queue.send(
-                CreationTask(
-                    pipelineSubscriber = this@PipelineSubscriber,
-                    metadata = metadata,
-                    steps = steps,
-                    kafkaAdmin = kafkaAdmin,
-                    kafkaProperties = kafkaProperties,
-                    kafkaDomainParams = kafkaDomainParams,
-                    kafkaConsumerGroupIdPrefix = kafkaConsumerGroupIdPrefix,
-                    namespace = namespace,
-                    timestamp = timestamp,
-                    name = name,
-                    logger = logger,
-                ),
-            )
+        if (pipeline == null) {
+            // Create the new pipeline and start processing messages from the task queue
+            pipeline =
+                Pipeline(
+                    metadata,
+                    kafkaDomainParams,
+                    dispatcher,
+                    steps.size,
+                )
         }
+
+        pipeline.startProcessing(scope)
+        pipelines[metadata.id] = pipeline
+        pipeline.queue.send(
+            CreationTask(
+                pipelineSubscriber = this,
+                metadata = metadata,
+                steps = steps,
+                kafkaAdmin = kafkaAdmin,
+                kafkaProperties = kafkaProperties,
+                kafkaDomainParams = kafkaDomainParams,
+                kafkaConsumerGroupIdPrefix = kafkaConsumerGroupIdPrefix,
+                namespace = namespace,
+                timestamp = timestamp,
+                name = name,
+                logger = logger,
+            ),
+        )
     }
 
     private suspend fun handleDelete(
