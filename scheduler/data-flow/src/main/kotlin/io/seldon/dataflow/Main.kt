@@ -118,6 +118,8 @@ object Main {
         val schemaRegistryConfig =
             SchemaRegistryConfig(
                 url = config[Cli.schemaRegistryURL],
+                username = config[Cli.schemaRegistryUsername],
+                password = config[Cli.schemaRegistryPassword],
             )
 
         val kafkaStreamsSerdes = KafkaStreamsSerdes(schemaRegistryConfig)

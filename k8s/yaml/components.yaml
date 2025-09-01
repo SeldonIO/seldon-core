@@ -555,6 +555,12 @@ spec:
           value: ''
         - name: KAFKA_BROKER_TLS_CA_LOCATION
           value: '/tmp/certs/kafka/broker/ca.crt'
+        - name: SCHEMA_REGISTRY_URL
+          value: ''
+        - name: SCHEMA_REGISTRY_USERNAME
+          value: ''
+        - name: SCHEMA_REGISTRY_PASSWORD
+          value: ''
         - name: ENVOY_SECURITY_PROTOCOL
           value: 'PLAINTEXT'
         - name: ENVOY_UPSTREAM_SERVER_TLS_SECRET_NAME
@@ -769,12 +775,6 @@ spec:
         - name: SCHEMA_REGISTRY_USERNAME
           value: ''
         - name: SCHEMA_REGISTRY_PASSWORD
-          value: ''
-        - name: SCHEMA_REGISTRY_TOKEN
-          value: ''
-        - name: SCHEMA_REGISTRY_TARGET_SR
-          value: ''
-        - name: SCHEMA_REGISTRY_IDENTITY_POOL_ID
           value: ''
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
@@ -1013,12 +1013,6 @@ spec:
         - name: SELDON_KAFKA_SCHEMA_REGISTRY_USERNAME
           value: ''
         - name: SELDON_KAFKA_SCHEMA_REGISTRY_PASSWORD
-          value: ''
-        - name: SELDON_KAFKA_SCHEMA_REGISTRY_TOKEN
-          value: ''
-        - name: SELDON_KAFKA_SCHEMA_REGISTRY_TARGET_SR
-          value: ''
-        - name: SELDON_KAFKA_SCHEMA_REGISTRY_IDENTITY_POOL_ID
           value: ''
         - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
           value: ''

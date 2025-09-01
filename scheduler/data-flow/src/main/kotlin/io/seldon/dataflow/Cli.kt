@@ -80,6 +80,8 @@ object Cli {
 
     // Schema Registry
     val schemaRegistryURL = Key("kafka.schema.registry.url", stringType)
+    val schemaRegistryUsername = Key("kafka.schema.registry.username", stringType)
+    val schemaRegistryPassword = Key("kafka.schema.registry.password", stringType)
 
     fun args(): List<Key<Any>> {
         return listOf(

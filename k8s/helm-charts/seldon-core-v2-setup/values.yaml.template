@@ -41,9 +41,6 @@ security:
       URL:
       username:
       password:
-      token:
-      targetSR:
-      identityPoolID:
   envoy:
     protocol: PLAINTEXT
     ssl:

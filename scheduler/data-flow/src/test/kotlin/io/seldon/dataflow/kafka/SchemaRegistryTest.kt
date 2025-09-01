@@ -21,21 +21,11 @@ class SchemaRegistryTest {
         fun `validate passes with valid config`() {
             val config =
                 SchemaRegistryConfig(
-                    url = "http://localhost:8081",
-                    basicAuthUserInfo = "",
-                    cacheSize = 100,
+                    url = "mock://",
                 )
 
             // Should not throw
             config.validate()
-        }
-
-        @Test
-        fun `validate fails with negative cache size`() {
-            val config = SchemaRegistryConfig(cacheSize = -1)
-
-            val exception = assertThrows<IllegalArgumentException> { config.validate() }
-            expectThat(exception.message).isNotNull().contains("Cache size must be positive")
         }
 
         @Test
@@ -52,7 +42,7 @@ class SchemaRegistryTest {
 
         @Test
         fun `useSchemaRegistry auto-detects from non-blank url`() {
-            val config = SchemaRegistryConfig(url = "http://localhost:8081")
+            val config = SchemaRegistryConfig(url = "mock://")
 
             expectThat(config.useSchemaRegistry).isTrue()
         }
@@ -68,7 +58,7 @@ class SchemaRegistryTest {
         fun `useSchemaRegistry respects explicit false even with url`() {
             val config =
                 SchemaRegistryConfig(
-                    url = "http://localhost:8081",
+                    url = "mock://",
                     _useSchemaRegistry = false,
                 )
 
@@ -79,21 +69,22 @@ class SchemaRegistryTest {
         fun `toSerializerProperties contains all required properties`() {
             val config =
                 SchemaRegistryConfig(
-                    url = "http://localhost:8081",
+                    url = "mock://",
                     autoRegisterSchemas = true,
                     useLatestVersion = false,
                 )
 
             val properties = config.toSerializerProperties()
 
-            expectThat(properties).hasSize(7)
-            expectThat(properties[AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG]).isEqualTo("http://localhost:8081")
+            expectThat(properties).hasSize(8)
+            expectThat(properties[AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG]).isEqualTo("mock://")
             expectThat(properties[AbstractKafkaSchemaSerDeConfig.AUTO_REGISTER_SCHEMAS]).isEqualTo(true)
             expectThat(properties[AbstractKafkaSchemaSerDeConfig.USE_LATEST_VERSION]).isEqualTo(false)
             expectThat(properties[AbstractKafkaSchemaSerDeConfig.NORMALIZE_SCHEMAS]).isEqualTo(true)
             expectThat(properties[AbstractKafkaSchemaSerDeConfig.USER_INFO_CONFIG]).isEqualTo("")
             expectThat(properties[AbstractKafkaSchemaSerDeConfig.BEARER_AUTH_TOKEN_CONFIG]).isEqualTo("")
             expectThat(properties[AbstractKafkaSchemaSerDeConfig.BEARER_AUTH_IDENTITY_POOL_ID]).isEqualTo("")
+            expectThat(properties[AbstractKafkaSchemaSerDeConfig.BASIC_AUTH_CREDENTIALS_SOURCE]).isEqualTo("USER_INFO")
         }
     }
 
@@ -156,24 +147,15 @@ class SchemaRegistryTest {
     inner class SchemaRegistrySerializerFactoryTest {
         @Test
         fun `constructor validates config`() {
-            val validConfig = SchemaRegistryConfig(url = "http://localhost:8081")
+            val validConfig = SchemaRegistryConfig(url = "mock://")
 
             // Should not throw
             SchemaRegistrySerializerFactory(validConfig)
         }
 
         @Test
-        fun `constructor throws when config invalid`() {
-            val invalidConfig = SchemaRegistryConfig(cacheSize = -1)
-
-            assertThrows<IllegalArgumentException> {
-                SchemaRegistrySerializerFactory(invalidConfig)
-            }
-        }
-
-        @Test
         fun `responseSerializer lazy initialization works`() {
-            val config = SchemaRegistryConfig(url = "http://localhost:8081")
+            val config = SchemaRegistryConfig(url = "mock://")
             val factory = SchemaRegistrySerializerFactory(config)
 
             expectThat(factory.responseSerializer)

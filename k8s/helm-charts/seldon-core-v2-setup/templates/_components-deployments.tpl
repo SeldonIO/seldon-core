@@ -720,12 +720,6 @@ spec:
           value: '{{ .Values.security.schemaRegistry.client.username }}'
         - name: SCHEMA_REGISTRY_PASSWORD
           value: '{{ .Values.security.schemaRegistry.client.password }}'
-        - name: SCHEMA_REGISTRY_TOKEN
-          value: '{{ .Values.security.schemaRegistry.client.token }}'
-        - name: SCHEMA_REGISTRY_TARGET_SR
-          value: '{{ .Values.security.schemaRegistry.client.targetSR }}'
-        - name: SCHEMA_REGISTRY_IDENTITY_POOL_ID
-          value: '{{ .Values.security.schemaRegistry.client.identityPoolID }}'
         - name: ENVOY_SECURITY_PROTOCOL
           value: '{{ .Values.security.envoy.protocol }}'
         - name: ENVOY_UPSTREAM_SERVER_TLS_SECRET_NAME
@@ -950,12 +944,6 @@ spec:
           value: '{{ .Values.security.schemaRegistry.client.username }}'
         - name: SCHEMA_REGISTRY_PASSWORD
           value: '{{ .Values.security.schemaRegistry.client.password }}'
-        - name: SCHEMA_REGISTRY_TOKEN
-          value: '{{ .Values.security.schemaRegistry.client.token }}'
-        - name: SCHEMA_REGISTRY_TARGET_SR
-          value: '{{ .Values.security.schemaRegistry.client.targetSR }}'
-        - name: SCHEMA_REGISTRY_IDENTITY_POOL_ID
-          value: '{{ .Values.security.schemaRegistry.client.identityPoolID }}'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
@@ -1199,12 +1187,6 @@ spec:
           value: '{{ .Values.security.schemaRegistry.client.username }}'
         - name: SELDON_KAFKA_SCHEMA_REGISTRY_PASSWORD
           value: '{{ .Values.security.schemaRegistry.client.password }}'
-        - name: SELDON_KAFKA_SCHEMA_REGISTRY_TOKEN
-          value: '{{ .Values.security.schemaRegistry.client.token }}'
-        - name: SELDON_KAFKA_SCHEMA_REGISTRY_TARGET_SR
-          value: '{{ .Values.security.schemaRegistry.client.targetSR }}'
-        - name: SELDON_KAFKA_SCHEMA_REGISTRY_IDENTITY_POOL_ID
-          value: '{{ .Values.security.schemaRegistry.client.identityPoolID }}'
         - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
           value: '{{ .Values.security.kafka.ssl.client.endpointIdentificationAlgorithm
             }}'

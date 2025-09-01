@@ -25,29 +25,23 @@ import io.klogging.noCoLogger as Logger
 data class SchemaRegistryConfig(
     val url: String = "",
     private val _useSchemaRegistry: Boolean? = null,
-    val basicAuthUserInfo: String = "",
-    val bearerAuthToken: String = "",
-    val identityPoolID: String = "",
+    val username: String = "",
+    val password: String = "",
     val autoRegisterSchemas: Boolean = true,
     val useLatestVersion: Boolean = true,
-    val cacheSize: Int = 100,
 ) {
     val useSchemaRegistry: Boolean
         get() = _useSchemaRegistry ?: url.isNotBlank()
 
-    val basicAuthCredentialsSource: String
+    val userInfoConfig: String
         get() =
-            if (basicAuthUserInfo.isEmpty()) {
-                "URL"
+            if (username.isNotBlank() || password.isNotBlank()) {
+                "$username:$password"
             } else {
-                "USER_INFO"
+                ""
             }
 
     fun validate() {
-        require(cacheSize > 0) { "Cache size must be positive" }
-        if (basicAuthCredentialsSource.equals("USER_INFO")) {
-            require(basicAuthUserInfo.isNotBlank()) { "Basic auth user info required when credentials source is set" }
-        }
         if (useSchemaRegistry) {
             require(url.isNotBlank()) { "Schema registry URL is required when useSchemaRegistry is true" }
         }
@@ -59,9 +53,9 @@ data class SchemaRegistryConfig(
             AbstractKafkaSchemaSerDeConfig.AUTO_REGISTER_SCHEMAS to autoRegisterSchemas,
             AbstractKafkaSchemaSerDeConfig.USE_LATEST_VERSION to useLatestVersion,
             AbstractKafkaSchemaSerDeConfig.NORMALIZE_SCHEMAS to true,
-            AbstractKafkaSchemaSerDeConfig.USER_INFO_CONFIG to basicAuthUserInfo,
-            AbstractKafkaSchemaSerDeConfig.BEARER_AUTH_TOKEN_CONFIG to bearerAuthToken,
-            AbstractKafkaSchemaSerDeConfig.BEARER_AUTH_IDENTITY_POOL_ID to identityPoolID,
+            AbstractKafkaSchemaSerDeConfig.USER_INFO_CONFIG to userInfoConfig,
+            AbstractKafkaSchemaSerDeConfig.BEARER_AUTH_TOKEN_CONFIG to password,
+            AbstractKafkaSchemaSerDeConfig.BASIC_AUTH_CREDENTIALS_SOURCE to "USER_INFO",
         )
     }
 }
@@ -89,6 +83,15 @@ class SchemaRegistrySerializerFactory(private val config: SchemaRegistryConfig) 
         return try {
             val serializer = KafkaProtobufSerializer<T>()
             serializer.configure(config.toSerializerProperties(), false)
+
+            logger.info("with user info properties ${config.toSerializerProperties()[AbstractKafkaSchemaSerDeConfig.USER_INFO_CONFIG]}")
+            try {
+                serializer.schemaRegistryClient.allSubjects
+            } catch (e: Exception) {
+                logger.info("failed to ping schema registry client")
+                throw IllegalStateException("could not ping schema registry client", e)
+            }
+
             logger.info("Successfully configured protobuf serializer")
             serializer
         } catch (e: Exception) {
