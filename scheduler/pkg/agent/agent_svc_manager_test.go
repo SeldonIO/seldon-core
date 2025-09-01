@@ -366,7 +366,6 @@ func TestHandleSchedulerSubscription(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
 
 			v2Client := createTestV2Client(addVerionToModels([]string{"model"}, 0), 200)
 			httpmock.ActivateNonDefault(v2Client.(*testing_utils.V2RestClientForTest).HttpClient)
