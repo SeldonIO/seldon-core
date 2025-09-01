@@ -20,10 +20,10 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	healthprobe "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 
+	healthprobe "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"

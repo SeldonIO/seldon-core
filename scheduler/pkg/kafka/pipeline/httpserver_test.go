@@ -24,13 +24,13 @@ import (
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe/mocks"
 	"github.com/sirupsen/logrus"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/proto"
 
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe/mocks"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
