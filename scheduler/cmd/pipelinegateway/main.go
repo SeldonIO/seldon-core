@@ -264,7 +264,7 @@ func initHealthProbe(schedulerClient *pipeline.PipelineSchedulerClient) (health.
 			return fmt.Errorf("gRPC server check failed calling ServerReady: %w", err)
 		}
 		return nil
-	}, health.ProbeReadiness, health.ProbeLiveness)
+	}, health.ProbeReadiness, health.ProbeStartUp, health.ProbeLiveness)
 
 	return manager, nil
 }
