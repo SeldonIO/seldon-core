@@ -13,6 +13,7 @@ const (
 	ProbeLiveness
 )
 
+//go:generate go tool mockgen -source=health.go -destination=./mocks/mock_health.go -package=mocks Manager
 type Manager interface {
 	AddCheck(cb ProbeCallback, probes ...ProbeType)
 	CheckReadiness() error

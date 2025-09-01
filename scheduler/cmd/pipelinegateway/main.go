@@ -197,8 +197,6 @@ func main() {
 		close(done)
 	}()
 
-	// TODO set manifests for liveness, startup
-	// TODO tidy tests
 	healthManager, err := initHealthProbe(schedulerClient)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create health probe")
@@ -206,7 +204,7 @@ func main() {
 
 	restModelChecker, err := status.NewModelRestStatusCaller(logger, envoyHost, envoyPort)
 	if err != nil {
-		logger.WithError(err).Fatalf("Failed to create REST modelchecker")
+		logger.WithError(err).Fatal("Failed to create REST modelchecker")
 	}
 	pipelineReadyChecker := status.NewSimpleReadyChecker(statusManager, restModelChecker)
 
@@ -262,7 +260,10 @@ func initHealthProbe(schedulerClient *pipeline.PipelineSchedulerClient) (health.
 
 	manager.AddCheck(func() error {
 		_, err := gRPCClient.ServerReady(context.Background(), &v2_dataplane.ServerReadyRequest{})
-		return err
+		if err != nil {
+			return fmt.Errorf("gRPC server check failed calling ServerReady: %w", err)
+		}
+		return nil
 	}, health.ProbeReadiness, health.ProbeLiveness)
 
 	return manager, nil

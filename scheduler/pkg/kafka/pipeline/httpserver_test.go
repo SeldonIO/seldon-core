@@ -24,7 +24,9 @@ import (
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe/mocks"
 	"github.com/sirupsen/logrus"
+	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/proto"
 
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
@@ -78,14 +80,16 @@ func TestHttpServer(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name       string
-		path       string
-		header     string
-		req        string
-		res        *v2.ModelInferResponse
-		errRes     []byte
-		errorModel error
-		statusCode int
+		name               string
+		path               string
+		header             string
+		req                string
+		res                *v2.ModelInferResponse
+		errRes             []byte
+		errorModel         error
+		statusCode         int
+		setupHealthChecker func(c *mocks.MockManager)
+		doNotCheckReqID    bool
 	}
 	tests := []test{
 		{
@@ -141,6 +145,60 @@ func TestHttpServer(t *testing.T) {
 			req:        ``,
 			statusCode: http.StatusBadRequest,
 		},
+		{
+			name:       "liveness probe successful",
+			path:       "/live",
+			statusCode: http.StatusOK,
+			setupHealthChecker: func(c *mocks.MockManager) {
+				c.EXPECT().CheckLiveness().Return(nil)
+			},
+			doNotCheckReqID: true,
+		},
+		{
+			name:       "liveness probe failed",
+			path:       "/live",
+			statusCode: http.StatusInternalServerError,
+			setupHealthChecker: func(c *mocks.MockManager) {
+				c.EXPECT().CheckLiveness().Return(errors.New("some issue"))
+			},
+			doNotCheckReqID: true,
+		},
+		{
+			name:       "readiness probe successful",
+			path:       "/ready",
+			statusCode: http.StatusOK,
+			setupHealthChecker: func(c *mocks.MockManager) {
+				c.EXPECT().CheckReadiness().Return(nil)
+			},
+			doNotCheckReqID: true,
+		},
+		{
+			name:       "readiness probe failed",
+			path:       "/ready",
+			statusCode: http.StatusInternalServerError,
+			setupHealthChecker: func(c *mocks.MockManager) {
+				c.EXPECT().CheckReadiness().Return(errors.New("some issue"))
+			},
+			doNotCheckReqID: true,
+		},
+		{
+			name:       "startup probe successful",
+			path:       "/startup",
+			statusCode: http.StatusOK,
+			setupHealthChecker: func(c *mocks.MockManager) {
+				c.EXPECT().CheckStartup().Return(nil)
+			},
+			doNotCheckReqID: true,
+		},
+		{
+			name:       "startup probe failed",
+			path:       "/startup",
+			statusCode: http.StatusInternalServerError,
+			setupHealthChecker: func(c *mocks.MockManager) {
+				c.EXPECT().CheckStartup().Return(errors.New("some issue"))
+			},
+			doNotCheckReqID: true,
+		},
 	}
 
 	testRequestId := "test-id"
@@ -151,14 +209,27 @@ func TestHttpServer(t *testing.T) {
 		data: []byte("result"),
 		key:  testRequestId,
 	}
-	httpServer := NewGatewayHttpServer(port, logrus.New(), mockInferer, fakePipelineMetricsHandler{}, &util.TLSOptions{}, nil)
-	go func() {
-		err := httpServer.Start()
-		g.Expect(err).To(Equal(http.ErrServerClosed))
-	}()
-	waitForServer(port)
+
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockHealthCheck := mocks.NewMockManager(ctrl)
+
+			if test.setupHealthChecker != nil {
+				test.setupHealthChecker(mockHealthCheck)
+			}
+
+			httpServer := NewGatewayHttpServer(port, logrus.New(), mockInferer, fakePipelineMetricsHandler{}, &util.TLSOptions{}, nil, mockHealthCheck)
+			go func() {
+				err := httpServer.Start()
+				g.Expect(err).To(Equal(http.ErrServerClosed))
+			}()
+			waitForServer(port)
+			defer func() {
+				err = httpServer.Stop()
+				g.Expect(err).To(BeNil())
+			}()
+
 			var b []byte
 			if test.errRes != nil {
 				b = test.errRes
@@ -185,7 +256,9 @@ func TestHttpServer(t *testing.T) {
 			g.Expect(resp.StatusCode).To(Equal(test.statusCode))
 			if resp.StatusCode == http.StatusOK {
 				g.Expect(resp.Header.Get(util.RequestIdHeader)).ToNot(BeNil())
-				g.Expect(resp.Header.Get(util.RequestIdHeader)).To(Equal(testRequestId))
+				if !test.doNotCheckReqID {
+					g.Expect(resp.Header.Get(util.RequestIdHeader)).To(Equal(testRequestId))
+				}
 			}
 			if test.res != nil {
 				bResp, err := io.ReadAll(resp.Body)
@@ -201,6 +274,4 @@ func TestHttpServer(t *testing.T) {
 			defer resp.Body.Close()
 		})
 	}
-	err = httpServer.Stop()
-	g.Expect(err).To(BeNil())
 }
