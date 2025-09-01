@@ -49,6 +49,16 @@ spec:
           value: '{{ .Values.security.kafka.sasl.client.passwordPath }}'
         - name: SELDON_KAFKA_SCHEMA_REGISTRY_URL
           value: '{{ .Values.security.schemaRegistry.client.URL }}'
+        - name: SELDON_KAFKA_SCHEMA_REGISTRY_USERNAME
+          value: '{{ .Values.security.schemaRegistry.client.username }}'
+        - name: SELDON_KAFKA_SCHEMA_REGISTRY_PASSWORD
+          value: '{{ .Values.security.schemaRegistry.client.password }}'
+        - name: SELDON_KAFKA_SCHEMA_REGISTRY_TOKEN
+          value: '{{ .Values.security.schemaRegistry.client.token }}'
+        - name: SELDON_KAFKA_SCHEMA_REGISTRY_TARGET_SR
+          value: '{{ .Values.security.schemaRegistry.client.targetSR }}'
+        - name: SELDON_KAFKA_SCHEMA_REGISTRY_IDENTITY_POOL_ID
+          value: '{{ .Values.security.schemaRegistry.client.identityPoolID }}'
         - name: SELDON_KAFKA_TLS_BROKER_SECRET
           value: '{{ .Values.security.kafka.ssl.client.brokerValidationSecret }}'
         - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM

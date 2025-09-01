@@ -1010,6 +1010,16 @@ spec:
           value: 'password'
         - name: SELDON_KAFKA_SCHEMA_REGISTRY_URL
           value: ''
+        - name: SELDON_KAFKA_SCHEMA_REGISTRY_USERNAME
+          value: ''
+        - name: SELDON_KAFKA_SCHEMA_REGISTRY_PASSWORD
+          value: ''
+        - name: SELDON_KAFKA_SCHEMA_REGISTRY_TOKEN
+          value: ''
+        - name: SELDON_KAFKA_SCHEMA_REGISTRY_TARGET_SR
+          value: ''
+        - name: SELDON_KAFKA_SCHEMA_REGISTRY_IDENTITY_POOL_ID
+          value: ''
         - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
           value: ''
         - name: SELDON_CORES_COUNT
