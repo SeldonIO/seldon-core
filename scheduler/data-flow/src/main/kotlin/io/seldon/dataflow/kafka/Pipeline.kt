@@ -55,7 +55,11 @@ class Pipeline(
 
     private val logger = noCoLogger(Pipeline::class)
     private val latch = CountDownLatch(1)
-    val queue = Channel<Task>(Channel.UNLIMITED)
+
+    // Use `Channel.CONFLATED` so that only the most recent task is kept.
+    // This prevents executing redundant intermediate tasks (e.g., load/unload),
+    // since only the latest task determines the final pipeline state.
+    val queue = Channel<Task>(Channel.CONFLATED)
 
     companion object {
         const val STATE_DIR_CONFIG = "state.dir"
