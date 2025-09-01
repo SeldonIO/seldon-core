@@ -577,7 +577,7 @@ func (xds *SeldonXDSCache) CreateClusterForStreams(clusterPrefix string, streamN
 		Grpc:      isGrpc,
 	}
 
-	xds.Clusters[clusterName] = cluster
+	xds.Clusters.Store(clusterName, cluster)
 	xds.clustersToAdd[clusterName] = struct{}{}
 	return &cluster
 }
