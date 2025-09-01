@@ -32,6 +32,7 @@ type manager struct {
 	svcs map[ProbeType][]ProbeCallback
 }
 
+
 func NewManager() Manager {
 	return &manager{
 		svcs: make(map[ProbeType][]ProbeCallback, 0),

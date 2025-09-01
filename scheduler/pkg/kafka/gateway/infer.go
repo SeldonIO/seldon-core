@@ -127,6 +127,7 @@ func NewInferKafkaHandler(
 		numPartitions:     numPartitions,
 		tlsClientOptions:  tlsClientOptions,
 	}
+
 	return ic, ic.setup(consumerConfigMap, producerConfigMap)
 }
 

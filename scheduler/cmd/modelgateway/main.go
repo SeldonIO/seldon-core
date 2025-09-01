@@ -10,12 +10,16 @@ the Change License after the Change Date as each is defined in accordance with t
 package main
 
 import (
+	"context"
+	"errors"
 	"flag"
+	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
 
+	health_probe "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
 	log "github.com/sirupsen/logrus"
 
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
@@ -31,22 +35,25 @@ const (
 	flagEnvoyHost                = "envoy-host"
 	flagEnvoyPort                = "envoy-port"
 	flagLogLevel                 = "log-level"
+	flagHealthPort               = "health-probe-port"
 	defaultSchedulerPlaintxtPort = 9004
 	defaultSchedulerTLSPort      = 9044
 	defaultEnvoyPort             = 9000
+	defaultHealthProbePort       = 8000
 	kubernetesNamespacePath      = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 )
 
 var (
-	schedulerHost         string
-	schedulerPlaintxtPort int
-	schedulerTlsPort      int
-	envoyHost             string
-	envoyPort             int
-	kafkaConfigPath       string
-	namespace             string
-	logLevel              string
-	tracingConfigPath     string
+	schedulerHost          string
+	schedulerPlaintxtPort  int
+	schedulerTlsPort       int
+	envoyHost              string
+	envoyPort              int
+	kafkaConfigPath        string
+	namespace              string
+	logLevel               string
+	tracingConfigPath      string
+	healthProbeServicePort int
 )
 
 func init() {
@@ -65,6 +72,7 @@ func init() {
 	)
 	flag.StringVar(&logLevel, flagLogLevel, "debug", "Log level - examples: debug, info, error")
 	flag.StringVar(&tracingConfigPath, "tracing-config-path", "", "Tracing config path")
+	flag.IntVar(&healthProbeServicePort, flagHealthPort, defaultHealthProbePort, "K8s health probe port")
 }
 
 func updateNamespace() {
@@ -76,16 +84,6 @@ func updateNamespace() {
 		log.Infof("Setting namespace from k8s file to %s", ns)
 		namespace = ns
 	}
-}
-
-func makeSignalHandler(logger *log.Logger, done chan<- bool) {
-	exit := make(chan os.Signal, 1)
-	signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
-
-	<-exit
-
-	logger.Info("shutting down due to SIGTERM or SIGINT")
-	close(done)
 }
 
 func getEnVar(logger *log.Logger, key string, defaultValue int) int {
@@ -115,9 +113,7 @@ func main() {
 
 	updateNamespace()
 
-	done := make(chan bool, 1)
-
-	go makeSignalHandler(logger, done)
+	errChan := make(chan error, 5)
 
 	tracer, err := tracing.NewTraceProvider("seldon-modelgateway", &tracingConfigPath, logger)
 	if err != nil {
@@ -154,7 +150,7 @@ func main() {
 	kafkaSchedulerClient := gateway.NewKafkaSchedulerClient(logger, kafkaConsumer)
 	err = kafkaSchedulerClient.ConnectToScheduler(schedulerHost, schedulerPlaintxtPort, schedulerTlsPort)
 	if err != nil {
-		logger.WithError(err).Fatalf("Failed to connect to scheduler")
+		logger.WithError(err).Fatal("Failed to connect to scheduler")
 	}
 	defer kafkaSchedulerClient.Stop()
 
@@ -164,10 +160,53 @@ func main() {
 			logger.WithError(err).Error("Start client failed")
 		}
 		logger.Infof("Scheduler client ended - closing done")
-		close(done)
+		errChan <- err
 	}()
 
-	// Wait for completion
-	<-done
+	healthServer := initHealthProbeServer(logger, kafkaSchedulerClient, errChan)
+	defer healthServer.Shutdown(context.Background())
 
+	// Wait for completion
+	waitForTermSignalOrErr(logger, errChan)
+}
+
+func initHealthProbeServer(logger *log.Logger, schedulerClient *gateway.KafkaSchedulerClient, errChan chan<- error) *health_probe.HTTPServer {
+	healthManager := health_probe.NewManager()
+	healthManager.AddCheck(func() error {
+		if !schedulerClient.IsConnected() {
+			return errors.New("not connected to scheduler")
+		}
+		return nil
+	}, health_probe.ProbeStartUp)
+	healthManager.AddCheck(func() error {
+		// we don't perform any business logic checks here, if we can respond with a HTTP 200 it means
+		// we still have available sockets to serve reqs.
+		return nil
+	}, health_probe.ProbeLiveness, health_probe.ProbeReadiness)
+
+	healthServer := health_probe.NewHTTPServer(healthProbeServicePort, healthManager, logger)
+	go func() {
+		healthServer.ConfigureReadiness("/ready")
+		healthServer.ConfigureLiveness("/live")
+		healthServer.ConfigureLiveness("/startup")
+		err := healthServer.Start()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			logger.WithError(err).Error("HTP health server failed")
+		}
+		errChan <- err
+	}()
+
+	return healthServer, nil
+}
+
+func waitForTermSignalOrErr(logger *log.Logger, errChan <-chan error) {
+	exit := make(chan os.Signal, 1)
+	signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
+
+	select {
+	case err := <-errChan:
+		logger.WithError(err).Error("Shutting down due to error")
+	case <-exit:
+		logger.Info("Shutting down due to SIGTERM or SIGINT")
+	}
 }
