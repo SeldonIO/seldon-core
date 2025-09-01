@@ -39,12 +39,13 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.37.0
 	go.opentelemetry.io/otel/sdk v1.37.0
 	go.opentelemetry.io/otel/trace v1.37.0
+	go.uber.org/mock v0.4.0
 	google.golang.org/grpc v1.73.0
 	google.golang.org/protobuf v1.36.6
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.33.2
-	k8s.io/apimachinery v0.33.2
-	k8s.io/client-go v0.33.2
+	k8s.io/api v0.34.0
+	k8s.io/apimachinery v0.34.0
+	k8s.io/client-go v0.34.0
 	knative.dev/pkg v0.0.0-20250702180455-68cdb02d48c8
 	sigs.k8s.io/controller-runtime v0.21.0
 )
@@ -64,7 +65,7 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v1.2.1 // indirect
 	github.com/evanphx/json-patch/v5 v5.9.11 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/fxamacker/cbor/v2 v2.8.0 // indirect
+	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.9 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -90,7 +91,7 @@ require (
 	github.com/mailru/easyjson v0.9.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/otiai10/mint v1.6.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -106,7 +107,6 @@ require (
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/otel/metric v1.37.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.7.0 // indirect
-	go.uber.org/mock v0.4.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.39.0 // indirect
@@ -128,12 +128,12 @@ require (
 	istio.io/pkg v0.0.0-20250424180003-5bd6dc4b200f // indirect
 	k8s.io/apiextensions-apiserver v0.33.2 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20250701173324-9bd5c66d9911 // indirect
+	k8s.io/kube-openapi v0.0.0-20250710124328-f3f2b991d03b // indirect
 	k8s.io/utils v0.0.0-20250604170112-4c0f3b243397 // indirect
 	sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.7.0 // indirect
-	sigs.k8s.io/yaml v1.5.0 // indirect
+	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
+	sigs.k8s.io/yaml v1.6.0 // indirect
 )
 
 tool go.uber.org/mock/mockgen
