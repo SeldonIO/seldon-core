@@ -27,4 +27,3 @@ _template
 \.txt$
 \.pdf$
 \.csv$
-^file://
