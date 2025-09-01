@@ -255,7 +255,7 @@ func (g *GatewayHttpServer) healthCheck(fn func() error) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		if err := fn(); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			g.logger.WithError(err).WithField("req", req).Error("Failed health probe")
+			g.logger.WithError(err).WithField("uri", req.RequestURI).Warn("Failed health probe")
 			return
 		}
 		w.WriteHeader(http.StatusOK)

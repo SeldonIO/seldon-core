@@ -7,312 +7,276 @@ import (
 	g "github.com/onsi/gomega"
 )
 
-func TestProbeTypeValid(t *testing.T) {
-	g.RegisterTestingT(t)
+func TestProbeType_Valid(t *testing.T) {
+	gomega := g.NewWithT(t)
 
-	t.Run("should return true for valid probe types", func(t *testing.T) {
-		g.Expect(ProbeStartUp.Valid()).To(g.BeTrue())
-		g.Expect(ProbeReadiness.Valid()).To(g.BeTrue())
-		g.Expect(ProbeLiveness.Valid()).To(g.BeTrue())
+	t.Run("valid probe types", func(t *testing.T) {
+		gomega.Expect(ProbeStartUp.Valid()).To(g.BeTrue())
+		gomega.Expect(ProbeReadiness.Valid()).To(g.BeTrue())
+		gomega.Expect(ProbeLiveness.Valid()).To(g.BeTrue())
 	})
 
-	t.Run("should return false for invalid probe types", func(t *testing.T) {
+	t.Run("invalid probe types", func(t *testing.T) {
 		invalidProbe := ProbeType(999)
-		g.Expect(invalidProbe.Valid()).To(g.BeFalse())
+		gomega.Expect(invalidProbe.Valid()).To(g.BeFalse())
 
 		zeroProbe := ProbeType(0)
-		g.Expect(zeroProbe.Valid()).To(g.BeFalse())
+		gomega.Expect(zeroProbe.Valid()).To(g.BeFalse())
 
 		combinedProbe := ProbeStartUp | ProbeReadiness
-		g.Expect(combinedProbe.Valid()).To(g.BeFalse())
+		gomega.Expect(combinedProbe.Valid()).To(g.BeFalse())
 	})
 }
 
-func TestNewManager(t *testing.T) {
-	g.RegisterTestingT(t)
+func TestManager_AddCheck(t *testing.T) {
+	gomega := g.NewWithT(t)
 
-	t.Run("should create a new manager with empty services map", func(t *testing.T) {
-		man := NewManager()
-		g.Expect(man).ToNot(g.BeNil())
-
-		// Cast to concrete type to access internal fields for testing
-		mgr, ok := man.(*manager)
-		g.Expect(ok).To(g.BeTrue())
-		g.Expect(mgr.svcs).ToNot(g.BeNil())
-		g.Expect(mgr.svcs).To(g.BeEmpty())
-	})
-}
-
-func TestManagerRegisterSvc(t *testing.T) {
-	g.RegisterTestingT(t)
-
-	t.Run("should successfully register service with valid probe types", func(t *testing.T) {
-		mgr := NewManager()
+	t.Run("successfully add check with single probe type", func(t *testing.T) {
+		manager := NewManager()
 		callback := func() error { return nil }
 
-		g.Expect(func() {
-			mgr.RegisterSvc("test-service", callback, ProbeReadiness)
+		gomega.Expect(func() {
+			manager.AddCheck(callback, ProbeReadiness)
 		}).ToNot(g.Panic())
-
-		// Verify service was registered
-		m := mgr.(*manager)
-		g.Expect(m.svcs).To(g.HaveKey("test-service"))
-		g.Expect(m.svcs["test-service"].probes).To(g.Equal(ProbeReadiness))
-		g.Expect(m.svcs["test-service"].cb).ToNot(g.BeNil())
 	})
 
-	t.Run("should successfully register service with multiple probe types", func(t *testing.T) {
-		mgr := NewManager()
+	t.Run("successfully add check with multiple probe types", func(t *testing.T) {
+		manager := NewManager()
 		callback := func() error { return nil }
 
-		g.Expect(func() {
-			mgr.RegisterSvc("multi-probe-service", callback, ProbeStartUp, ProbeReadiness, ProbeLiveness)
+		gomega.Expect(func() {
+			manager.AddCheck(callback, ProbeReadiness, ProbeLiveness)
 		}).ToNot(g.Panic())
-
-		m := mgr.(*manager)
-		expectedProbes := ProbeStartUp | ProbeReadiness | ProbeLiveness
-		g.Expect(m.svcs["multi-probe-service"].probes).To(g.Equal(expectedProbes))
 	})
 
-	t.Run("should panic when registering duplicate service ID", func(t *testing.T) {
-		mgr := NewManager()
+	t.Run("successfully add check with all probe types", func(t *testing.T) {
+		manager := NewManager()
 		callback := func() error { return nil }
 
-		mgr.RegisterSvc("duplicate-service", callback, ProbeReadiness)
-
-		g.Expect(func() {
-			mgr.RegisterSvc("duplicate-service", callback, ProbeLiveness)
-		}).To(g.PanicWith(g.MatchRegexp("Service duplicate-service already added")))
+		gomega.Expect(func() {
+			manager.AddCheck(callback, ProbeStartUp, ProbeReadiness, ProbeLiveness)
+		}).ToNot(g.Panic())
 	})
 
-	t.Run("should panic when registering with invalid probe type", func(t *testing.T) {
-		mgr := NewManager()
+	t.Run("panic on nil callback", func(t *testing.T) {
+		manager := NewManager()
+
+		gomega.Expect(func() {
+			manager.AddCheck(nil, ProbeReadiness)
+		}).To(g.PanicWith("nil callback"))
+	})
+
+	t.Run("panic on invalid probe type", func(t *testing.T) {
+		manager := NewManager()
 		callback := func() error { return nil }
 		invalidProbe := ProbeType(999)
 
-		g.Expect(func() {
-			mgr.RegisterSvc("invalid-probe-service", callback, invalidProbe)
-		}).To(g.PanicWith(g.MatchRegexp("Invalid probe type")))
+		gomega.Expect(func() {
+			manager.AddCheck(callback, invalidProbe)
+		}).To(g.PanicWith("Invalid probe type 999"))
 	})
 
-	t.Run("should panic when one of multiple probe types is invalid", func(t *testing.T) {
-		mgr := NewManager()
+	t.Run("panic on mix of valid and invalid probe types", func(t *testing.T) {
+		manager := NewManager()
 		callback := func() error { return nil }
 		invalidProbe := ProbeType(999)
 
-		g.Expect(func() {
-			mgr.RegisterSvc("mixed-probe-service", callback, ProbeReadiness, invalidProbe, ProbeLiveness)
-		}).To(g.PanicWith(g.MatchRegexp("Invalid probe type")))
+		gomega.Expect(func() {
+			manager.AddCheck(callback, ProbeReadiness, invalidProbe)
+		}).To(g.PanicWith("Invalid probe type 999"))
 	})
 }
 
-func TestManagerCheckReadiness(t *testing.T) {
-	g.RegisterTestingT(t)
+func TestManager_CheckReadiness(t *testing.T) {
+	gomega := g.NewWithT(t)
 
-	t.Run("should return nil when no services registered", func(t *testing.T) {
-		mgr := NewManager()
-		err := mgr.CheckReadiness()
-		g.Expect(err).To(g.BeNil())
+	t.Run("returns nil when no checks are added", func(t *testing.T) {
+		manager := NewManager()
+		err := manager.CheckReadiness()
+		gomega.Expect(err).To(g.BeNil())
 	})
 
-	t.Run("should return nil when all readiness probes pass", func(t *testing.T) {
-		mgr := NewManager()
+	t.Run("returns nil when no readiness checks are added", func(t *testing.T) {
+		manager := NewManager()
+		manager.AddCheck(func() error { return nil }, ProbeLiveness)
 
-		mgr.RegisterSvc("service1", func() error { return nil }, ProbeReadiness)
-		mgr.RegisterSvc("service2", func() error { return nil }, ProbeReadiness, ProbeLiveness)
-		mgr.RegisterSvc("service3", func() error { return nil }, ProbeStartUp) // Should be skipped
-
-		err := mgr.CheckReadiness()
-		g.Expect(err).To(g.BeNil())
+		err := manager.CheckReadiness()
+		gomega.Expect(err).To(g.BeNil())
 	})
 
-	t.Run("should return error when readiness probe fails", func(t *testing.T) {
-		mgr := NewManager()
-		expectedErr := errors.New("service failure")
+	t.Run("returns nil when readiness check succeeds", func(t *testing.T) {
+		manager := NewManager()
+		manager.AddCheck(func() error { return nil }, ProbeReadiness)
 
-		mgr.RegisterSvc("failing-service", func() error { return expectedErr }, ProbeReadiness)
-		mgr.RegisterSvc("healthy-service", func() error { return nil }, ProbeReadiness)
-
-		err := mgr.CheckReadiness()
-		g.Expect(err).To(g.HaveOccurred())
-		g.Expect(err.Error()).To(g.MatchRegexp("service failing-service is not ready.*service failure"))
+		err := manager.CheckReadiness()
+		gomega.Expect(err).To(g.BeNil())
 	})
 
-	t.Run("should return error when service callback is nil", func(t *testing.T) {
-		mgr := NewManager().(*manager)
-		mgr.svcs["nil-callback-service"] = service{
-			probes: ProbeReadiness,
-			cb:     nil,
-		}
+	t.Run("returns error when readiness check fails", func(t *testing.T) {
+		manager := NewManager()
+		expectedError := errors.New("service unavailable")
+		manager.AddCheck(func() error { return expectedError }, ProbeReadiness)
 
-		err := mgr.CheckReadiness()
-		g.Expect(err).To(g.HaveOccurred())
-		g.Expect(err.Error()).To(g.Equal("service nil-callback-service callback not set"))
-	})
-}
-
-func TestManagerCheckLiveness(t *testing.T) {
-	g.RegisterTestingT(t)
-
-	t.Run("should return nil when no services registered", func(t *testing.T) {
-		mgr := NewManager()
-		err := mgr.CheckLiveness()
-		g.Expect(err).To(g.BeNil())
+		err := manager.CheckReadiness()
+		gomega.Expect(err).To(g.HaveOccurred())
+		gomega.Expect(err.Error()).To(g.ContainSubstring("failed probe: "))
 	})
 
-	t.Run("should return nil when all liveness probes pass", func(t *testing.T) {
-		mgr := NewManager()
+	t.Run("runs multiple readiness checks successfully", func(t *testing.T) {
+		manager := NewManager()
+		manager.AddCheck(func() error { return nil }, ProbeReadiness)
+		manager.AddCheck(func() error { return nil }, ProbeReadiness)
 
-		mgr.RegisterSvc("service1", func() error { return nil }, ProbeLiveness)
-		mgr.RegisterSvc("service2", func() error { return nil }, ProbeReadiness, ProbeLiveness)
-		mgr.RegisterSvc("service3", func() error { return nil }, ProbeStartUp) // Should be skipped
-
-		err := mgr.CheckLiveness()
-		g.Expect(err).To(g.BeNil())
+		err := manager.CheckReadiness()
+		gomega.Expect(err).To(g.BeNil())
 	})
 
-	t.Run("should return error when liveness probe fails", func(t *testing.T) {
-		mgr := NewManager()
-		expectedErr := errors.New("service died")
+	t.Run("fails on first failing readiness check", func(t *testing.T) {
+		manager := NewManager()
+		manager.AddCheck(func() error { return errors.New("first error") }, ProbeReadiness)
+		manager.AddCheck(func() error { return errors.New("second error") }, ProbeReadiness)
 
-		mgr.RegisterSvc("dying-service", func() error { return expectedErr }, ProbeLiveness)
-
-		err := mgr.CheckLiveness()
-		g.Expect(err).To(g.HaveOccurred())
-		g.Expect(err.Error()).To(g.MatchRegexp("service dying-service is not ready.*service died"))
-	})
-}
-
-func TestManagerCheckStartup(t *testing.T) {
-	g.RegisterTestingT(t)
-
-	t.Run("should return nil when no services registered", func(t *testing.T) {
-		mgr := NewManager()
-		err := mgr.CheckStartup()
-		g.Expect(err).To(g.BeNil())
+		err := manager.CheckReadiness()
+		gomega.Expect(err).To(g.HaveOccurred())
+		gomega.Expect(err.Error()).To(g.ContainSubstring("failed probe: "))
 	})
 
-	t.Run("should return nil when all startup probes pass", func(t *testing.T) {
-		mgr := NewManager()
+	t.Run("runs only readiness checks when multiple probe types exist", func(t *testing.T) {
+		manager := NewManager()
+		readinessCalled := false
+		livenessCalled := false
 
-		mgr.RegisterSvc("service1", func() error { return nil }, ProbeStartUp)
-		mgr.RegisterSvc("service2", func() error { return nil }, ProbeStartUp, ProbeReadiness)
-		mgr.RegisterSvc("service3", func() error { return nil }, ProbeLiveness) // Should be skipped
-
-		err := mgr.CheckStartup()
-		g.Expect(err).To(g.BeNil())
-	})
-
-	t.Run("should return error when startup probe fails", func(t *testing.T) {
-		mgr := NewManager()
-		expectedErr := errors.New("startup failed")
-
-		mgr.RegisterSvc("startup-failing-service", func() error { return expectedErr }, ProbeStartUp)
-
-		err := mgr.CheckStartup()
-		g.Expect(err).To(g.HaveOccurred())
-		g.Expect(err.Error()).To(g.MatchRegexp("service startup-failing-service is not ready.*startup failed"))
-	})
-}
-
-func TestManagerRunCheck(t *testing.T) {
-	g.RegisterTestingT(t)
-
-	t.Run("should skip services without the specified probe type", func(t *testing.T) {
-		mgr := NewManager().(*manager)
-		callCount := 0
-
-		// Register service with only readiness probe
-		mgr.RegisterSvc("readiness-only", func() error {
-			callCount++
+		manager.AddCheck(func() error {
+			readinessCalled = true
 			return nil
 		}, ProbeReadiness)
 
-		// Check liveness - should skip the readiness-only service
-		err := mgr.runCheck(ProbeLiveness)
-		g.Expect(err).To(g.BeNil())
-		g.Expect(callCount).To(g.Equal(0))
+		manager.AddCheck(func() error {
+			livenessCalled = true
+			return nil
+		}, ProbeLiveness)
+
+		err := manager.CheckReadiness()
+		gomega.Expect(err).To(g.BeNil())
+		gomega.Expect(readinessCalled).To(g.BeTrue())
+		gomega.Expect(livenessCalled).To(g.BeFalse())
+	})
+}
+
+func TestManager_CheckLiveness(t *testing.T) {
+	gomega := g.NewWithT(t)
+
+	t.Run("returns nil when no checks are added", func(t *testing.T) {
+		manager := NewManager()
+		err := manager.CheckLiveness()
+		gomega.Expect(err).To(g.BeNil())
 	})
 
-	t.Run("should call services that have the specified probe type", func(t *testing.T) {
-		mgr := NewManager().(*manager)
-		callCount := 0
+	t.Run("returns nil when no liveness checks are added", func(t *testing.T) {
+		manager := NewManager()
+		manager.AddCheck(func() error { return nil }, ProbeReadiness)
 
-		mgr.RegisterSvc("multi-probe", func() error {
+		err := manager.CheckLiveness()
+		gomega.Expect(err).To(g.BeNil())
+	})
+
+	t.Run("returns nil when liveness check succeeds", func(t *testing.T) {
+		manager := NewManager()
+		manager.AddCheck(func() error { return nil }, ProbeLiveness)
+
+		err := manager.CheckLiveness()
+		gomega.Expect(err).To(g.BeNil())
+	})
+
+	t.Run("returns error when liveness check fails", func(t *testing.T) {
+		manager := NewManager()
+		expectedError := errors.New("service dead")
+		manager.AddCheck(func() error { return expectedError }, ProbeLiveness)
+
+		err := manager.CheckLiveness()
+		gomega.Expect(err).To(g.HaveOccurred())
+		gomega.Expect(err.Error()).To(g.ContainSubstring("failed probe: "))
+	})
+}
+
+func TestManager_CheckStartup(t *testing.T) {
+	gomega := g.NewWithT(t)
+
+	t.Run("returns nil when no checks are added", func(t *testing.T) {
+		manager := NewManager()
+		err := manager.CheckStartup()
+		gomega.Expect(err).To(g.BeNil())
+	})
+
+	t.Run("returns nil when no startup checks are added", func(t *testing.T) {
+		manager := NewManager()
+		manager.AddCheck(func() error { return nil }, ProbeReadiness)
+
+		err := manager.CheckStartup()
+		gomega.Expect(err).To(g.BeNil())
+	})
+
+	t.Run("returns nil when startup check succeeds", func(t *testing.T) {
+		manager := NewManager()
+		manager.AddCheck(func() error { return nil }, ProbeStartUp)
+
+		err := manager.CheckStartup()
+		gomega.Expect(err).To(g.BeNil())
+	})
+
+	t.Run("returns error when startup check fails", func(t *testing.T) {
+		manager := NewManager()
+		expectedError := errors.New("startup failed")
+		manager.AddCheck(func() error { return expectedError }, ProbeStartUp)
+
+		err := manager.CheckStartup()
+		gomega.Expect(err).To(g.HaveOccurred())
+		gomega.Expect(err.Error()).To(g.ContainSubstring("failed probe: "))
+	})
+}
+
+func TestManager_MultipleProbeTypes(t *testing.T) {
+	gomega := g.NewWithT(t)
+
+	t.Run("service with multiple probe types responds to all checks", func(t *testing.T) {
+		manager := NewManager()
+		callCount := 0
+		manager.AddCheck(func() error {
+			callCount++
+			return nil
+		}, ProbeReadiness, ProbeLiveness, ProbeStartUp)
+
+		err := manager.CheckReadiness()
+		gomega.Expect(err).To(g.BeNil())
+		gomega.Expect(callCount).To(g.Equal(1))
+
+		err = manager.CheckLiveness()
+		gomega.Expect(err).To(g.BeNil())
+		gomega.Expect(callCount).To(g.Equal(2))
+
+		err = manager.CheckStartup()
+		gomega.Expect(err).To(g.BeNil())
+		gomega.Expect(callCount).To(g.Equal(3))
+	})
+
+	t.Run("service with partial probe types responds only to matching checks", func(t *testing.T) {
+		manager := NewManager()
+		callCount := 0
+		manager.AddCheck(func() error {
 			callCount++
 			return nil
 		}, ProbeReadiness, ProbeLiveness)
 
-		// Both readiness and liveness checks should call the callback
-		err := mgr.runCheck(ProbeReadiness)
-		g.Expect(err).To(g.BeNil())
-		g.Expect(callCount).To(g.Equal(1))
+		err := manager.CheckReadiness()
+		gomega.Expect(err).To(g.BeNil())
+		gomega.Expect(callCount).To(g.Equal(1))
 
-		err = mgr.runCheck(ProbeLiveness)
-		g.Expect(err).To(g.BeNil())
-		g.Expect(callCount).To(g.Equal(2))
-	})
+		err = manager.CheckLiveness()
+		gomega.Expect(err).To(g.BeNil())
+		gomega.Expect(callCount).To(g.Equal(2))
 
-	t.Run("should return first error encountered", func(t *testing.T) {
-		mgr := NewManager()
-		firstErr := errors.New("first error")
-		secondErr := errors.New("second error")
-
-		mgr.RegisterSvc("first-failing", func() error { return firstErr }, ProbeReadiness)
-		mgr.RegisterSvc("second-failing", func() error { return secondErr }, ProbeReadiness)
-
-		err := mgr.CheckReadiness()
-		g.Expect(err).To(g.HaveOccurred())
-		// Should contain the first error (order may vary due to map iteration)
-		g.Expect(err.Error()).To(g.SatisfyAny(
-			g.ContainSubstring("first error"),
-			g.ContainSubstring("second error"),
-		))
-	})
-}
-
-func TestIntegrationScenarios(t *testing.T) {
-	g.RegisterTestingT(t)
-
-	t.Run("real-world health check scenario", func(t *testing.T) {
-		mgr := NewManager()
-
-		// Database service - has startup and readiness probes
-		dbStarted := false
-		mgr.RegisterSvc("database", func() error {
-			if !dbStarted {
-				return errors.New("database not started")
-			}
-			return nil
-		}, ProbeStartUp, ProbeReadiness)
-
-		// Cache service - has all probe types
-		cacheHealthy := true
-		mgr.RegisterSvc("cache", func() error {
-			if !cacheHealthy {
-				return errors.New("cache unhealthy")
-			}
-			return nil
-		}, ProbeStartUp, ProbeReadiness, ProbeLiveness)
-
-		// Web service - only liveness probe
-		mgr.RegisterSvc("web", func() error { return nil }, ProbeLiveness)
-
-		// Initially database not started
-		g.Expect(mgr.CheckStartup()).To(g.HaveOccurred())
-		g.Expect(mgr.CheckReadiness()).To(g.HaveOccurred())
-		g.Expect(mgr.CheckLiveness()).To(g.BeNil()) // Only cache and web, both healthy
-
-		// Start database
-		dbStarted = true
-		g.Expect(mgr.CheckStartup()).To(g.BeNil())
-		g.Expect(mgr.CheckReadiness()).To(g.BeNil())
-		g.Expect(mgr.CheckLiveness()).To(g.BeNil())
-
-		// Cache becomes unhealthy
-		cacheHealthy = false
-		g.Expect(mgr.CheckStartup()).To(g.HaveOccurred())
-		g.Expect(mgr.CheckReadiness()).To(g.HaveOccurred())
-		g.Expect(mgr.CheckLiveness()).To(g.HaveOccurred())
+		err = manager.CheckStartup()
+		gomega.Expect(err).To(g.BeNil())
+		gomega.Expect(callCount).To(g.Equal(2))
 	})
 }

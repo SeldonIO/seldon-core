@@ -241,13 +241,14 @@ func main() {
 
 func initHealthProbe(schedulerClient *pipeline.PipelineSchedulerClient) (health.Manager, error) {
 	manager := health.NewManager()
-	manager.RegisterSvc("pipeline_scheduler", func() error {
+	manager.AddCheck(func() error {
 		if !schedulerClient.IsConnected() {
 			return fmt.Errorf("not connected to scheduler")
 		}
 		return nil
 	}, health.ProbeStartUp)
 
+	// note this will not attempt connection handshake until req is sent
 	conn, err := grpc.NewClient(fmt.Sprintf(":%d", grpcPort),
 		grpc.WithConnectParams(grpc.ConnectParams{
 			Backoff: backoff.DefaultConfig,
@@ -259,7 +260,7 @@ func initHealthProbe(schedulerClient *pipeline.PipelineSchedulerClient) (health.
 	}
 	gRPCClient := v2_dataplane.NewGRPCInferenceServiceClient(conn)
 
-	manager.RegisterSvc("grpc_gateway", func() error {
+	manager.AddCheck(func() error {
 		_, err := gRPCClient.ServerReady(context.Background(), &v2_dataplane.ServerReadyRequest{})
 		return err
 	}, health.ProbeReadiness, health.ProbeLiveness)

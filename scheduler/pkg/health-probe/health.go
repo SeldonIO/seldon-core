@@ -14,7 +14,7 @@ const (
 )
 
 type Manager interface {
-	RegisterSvc(id string, cb ProbeCallback, probes ...ProbeType)
+	AddCheck(cb ProbeCallback, probes ...ProbeType)
 	CheckReadiness() error
 	CheckLiveness() error
 	CheckStartup() error
@@ -27,7 +27,7 @@ func (p ProbeType) Valid() bool {
 }
 
 type manager struct {
-	svcs map[string]service
+	svcs []service
 }
 
 type service struct {
@@ -37,13 +37,13 @@ type service struct {
 
 func NewManager() Manager {
 	return &manager{
-		svcs: make(map[string]service),
+		svcs: make([]service, 0),
 	}
 }
 
-func (m *manager) RegisterSvc(id string, cb ProbeCallback, probes ...ProbeType) {
-	if _, ok := m.svcs[id]; ok {
-		panic(fmt.Sprintf("Service %s already added", id))
+func (m *manager) AddCheck(cb ProbeCallback, probes ...ProbeType) {
+	if cb == nil {
+		panic("nil callback")
 	}
 
 	var probesSum ProbeType
@@ -54,10 +54,10 @@ func (m *manager) RegisterSvc(id string, cb ProbeCallback, probes ...ProbeType) 
 		probesSum |= probe
 	}
 
-	m.svcs[id] = service{
+	m.svcs = append(m.svcs, service{
 		probes: probesSum,
 		cb:     cb,
-	}
+	})
 }
 
 func (m *manager) CheckReadiness() error {
@@ -73,16 +73,12 @@ func (m *manager) CheckLiveness() error {
 }
 
 func (m *manager) runCheck(probe ProbeType) error {
-	for id, svc := range m.svcs {
+	for _, svc := range m.svcs {
 		if svc.probes&probe == 0 {
 			continue
 		}
-
-		if svc.cb == nil {
-			return fmt.Errorf("service %s callback not set", id)
-		}
 		if err := svc.cb(); err != nil {
-			return fmt.Errorf("service %s is not ready: %w", id, err)
+			return fmt.Errorf("failed probe: %w", err)
 		}
 	}
 	return nil
