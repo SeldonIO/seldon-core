@@ -330,7 +330,7 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 			}
 
 			// to allow events to propagate
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(1 * time.Second)
 
 			if test.connection {
 				if test.loadReqV2 != nil {
