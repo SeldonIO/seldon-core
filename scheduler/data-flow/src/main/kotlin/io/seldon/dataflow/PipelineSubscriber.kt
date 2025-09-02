@@ -43,6 +43,8 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -82,6 +84,7 @@ class PipelineSubscriber(
 
     val pipelines = ConcurrentHashMap<PipelineId, Pipeline>()
     private val queues = ConcurrentHashMap<PipelineId, QueueInfo>()
+    private val queuesMutex = Mutex()
 
     // Task factory for creating pipeline operation tasks
     private val taskFactory =
@@ -106,7 +109,7 @@ class PipelineSubscriber(
         // Start background cleanup task
         scope.launch {
             while (true) {
-                delay(5000L) // Check every 5 seconds
+                delay(10000L)
                 cleanupMarkedQueues()
             }
         }
@@ -116,26 +119,39 @@ class PipelineSubscriber(
         val currentTime = System.currentTimeMillis()
         val toCleanup = mutableListOf<Pair<PipelineId, QueueInfo>>()
 
-        queues.forEach { (pipelineId, queueInfo) ->
-            if (queueInfo.isMarkedForDeletion &&
-                currentTime - queueInfo.deletionScheduledAt > queueCleanupDelayMs
-            ) {
-                toCleanup.add(pipelineId to queueInfo)
+        queuesMutex.withLock {
+            queues.forEach { (pipelineId, queueInfo) ->
+                if (queueInfo.isMarkedForDeletion &&
+                    currentTime - queueInfo.deletionScheduledAt > queueCleanupDelayMs
+                ) {
+                    toCleanup.add(pipelineId to queueInfo)
+                }
             }
         }
 
         toCleanup.forEach { (pipelineId, queueInfo) ->
-            logger.debug("Cleaning up queue for pipeline $pipelineId after delay")
+            queuesMutex.withLock {
+                val currentQueueInfo = queues[pipelineId]
+                if (currentQueueInfo == queueInfo && currentQueueInfo.isMarkedForDeletion) {
+                    logger.debug("Cleaning up queue for pipeline $pipelineId after delay")
+                    try {
+                        queueInfo.queue.close()
+                        queueInfo.processingJob.cancel()
+                        queues.remove(pipelineId)
+                        logger.debug("Removed pipeline queue from map: $pipelineId")
+                    } catch (e: Exception) {
+                        logger.error("Error during queue cleanup for pipeline $pipelineId: ${e.message}", e)
+                        queues.remove(pipelineId)
+                    }
+                } else {
+                    logger.debug("Queue for pipeline $pipelineId was recreated or unmarked, skipping cleanup")
+                }
+            }
+
             try {
-                queueInfo.queue.close()
-                queueInfo.processingJob.cancel()
-                queueInfo.processingJob.join() // Wait for the job to actually finish
-                queues.remove(pipelineId)
-                logger.debug("Removed pipeline queue from map: $pipelineId")
+                queueInfo.processingJob.join()
             } catch (e: Exception) {
-                logger.error("Error during queue cleanup for pipeline $pipelineId: ${e.message}", e)
-                // Still remove it from the map to avoid memory leaks
-                queues.remove(pipelineId)
+                logger.error("Error waiting for processing job to finish for pipeline $pipelineId: ${e.message}", e)
             }
         }
     }
@@ -247,17 +263,19 @@ class PipelineSubscriber(
         kafkaConsumerGroupIdPrefix: String,
         namespace: String,
     ) {
-        val existingQueueInfo = queues[metadata.id]
-        if (existingQueueInfo == null) {
-            // Create new queue and processing job
-            val queue = Channel<Task>(Channel.CONFLATED)
-            val processingJob = startProcessing(scope, queue)
-            queues[metadata.id] = QueueInfo(queue, processingJob)
-        } else if (existingQueueInfo.isMarkedForDeletion) {
-            // Unmark for deletion since we're recreating
-            logger.debug("Unmarking queue for deletion due to recreate request for pipeline ${metadata.id}")
-            existingQueueInfo.isMarkedForDeletion = false
-            existingQueueInfo.deletionScheduledAt = 0L
+        queuesMutex.withLock {
+            val existingQueueInfo = queues[metadata.id]
+            if (existingQueueInfo == null) {
+                // Create new queue and processing job
+                val queue = Channel<Task>(Channel.CONFLATED)
+                val processingJob = startProcessing(scope, queue)
+                queues[metadata.id] = QueueInfo(queue, processingJob)
+            } else if (existingQueueInfo.isMarkedForDeletion) {
+                // Unmark for deletion since we're recreating
+                logger.debug("Unmarking queue for deletion due to recreate request for pipeline ${metadata.id}")
+                existingQueueInfo.isMarkedForDeletion = false
+                existingQueueInfo.deletionScheduledAt = 0L
+            }
         }
 
         queues[metadata.id]?.queue?.send(
@@ -277,23 +295,26 @@ class PipelineSubscriber(
         steps: List<PipelineStepUpdate>,
         timestamp: Long,
     ) {
-        val queueInfo = queues[metadata.id]
-        if (queueInfo != null) {
-            // Send deletion task first
-            queueInfo.queue.send(
-                taskFactory.createTask(
-                    operation = PipelineOperation.Delete,
-                    metadata = metadata,
-                    steps = steps,
-                    timestamp = timestamp,
-                )!!,
-            )
-
-            // Mark for delayed deletion instead of immediate removal
-            logger.debug("Marking queue for delayed deletion for pipeline ${metadata.id}")
-            queueInfo.isMarkedForDeletion = true
-            queueInfo.deletionScheduledAt = System.currentTimeMillis()
+        var queueToSendTask: Channel<Task>? = null
+        queuesMutex.withLock {
+            val queueInfo = queues[metadata.id]
+            if (queueInfo != null) {
+                // Mark for delayed deletion
+                logger.debug("Marking queue for delayed deletion for pipeline ${metadata.id}")
+                queueInfo.isMarkedForDeletion = true
+                queueInfo.deletionScheduledAt = System.currentTimeMillis()
+                queueToSendTask = queueInfo.queue
+            }
         }
+
+        queueToSendTask?.send(
+            taskFactory.createTask(
+                operation = PipelineOperation.Delete,
+                metadata = metadata,
+                steps = steps,
+                timestamp = timestamp,
+            )!!,
+        )
     }
 
     fun cancelPipelines(reason: String) {
