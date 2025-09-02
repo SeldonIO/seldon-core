@@ -255,7 +255,7 @@ class PipelineSubscriber(
             queues[metadata.id] = QueueInfo(queue, processingJob)
         } else if (existingQueueInfo.isMarkedForDeletion) {
             // Unmark for deletion since we're recreating
-            logger.info("Unmarking queue for deletion due to recreate request for pipeline ${metadata.id}")
+            logger.debug("Unmarking queue for deletion due to recreate request for pipeline ${metadata.id}")
             existingQueueInfo.isMarkedForDeletion = false
             existingQueueInfo.deletionScheduledAt = 0L
         }
@@ -290,7 +290,7 @@ class PipelineSubscriber(
             )
 
             // Mark for delayed deletion instead of immediate removal
-            logger.info("Marking queue for delayed deletion for pipeline ${metadata.id}")
+            logger.debug("Marking queue for delayed deletion for pipeline ${metadata.id}")
             queueInfo.isMarkedForDeletion = true
             queueInfo.deletionScheduledAt = System.currentTimeMillis()
         }
