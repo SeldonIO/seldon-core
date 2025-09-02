@@ -373,10 +373,11 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 func TestPipelineEvents(t *testing.T) {
 
 	type test struct {
-		name       string
-		loadReq    *scheduler.Pipeline
-		status     pipeline.PipelineStatus
-		connection bool
+		name                string
+		loadReq             *scheduler.Pipeline
+		status              pipeline.PipelineStatus
+		connection          bool
+		expectedEventStatus chainer.PipelineUpdateMessage_PipelineOperation
 	}
 
 	tests := []test{
@@ -393,8 +394,9 @@ func TestPipelineEvents(t *testing.T) {
 					},
 				},
 			},
-			status:     pipeline.PipelineCreate,
-			connection: true,
+			status:              pipeline.PipelineCreate,
+			expectedEventStatus: chainer.PipelineUpdateMessage_Create,
+			connection:          true,
 		},
 		{
 			name: "remove pipeline version",
@@ -409,8 +411,9 @@ func TestPipelineEvents(t *testing.T) {
 					},
 				},
 			},
-			status:     pipeline.PipelineTerminate,
-			connection: true,
+			status:              pipeline.PipelineTerminate,
+			expectedEventStatus: chainer.PipelineUpdateMessage_Delete,
+			connection:          true,
 		},
 		{
 			name: "no connection",
@@ -437,10 +440,15 @@ func TestPipelineEvents(t *testing.T) {
 			serverName := "dummy"
 			s, _ := createTestScheduler(t, serverName)
 
+			stream := newStubServerStatusServer(10)
+
 			err := s.pipelineHandler.AddPipeline(test.loadReq) // version 1
 			g.Expect(err).To(BeNil())
 
-			stream := newStubServerStatusServer(10)
+			// wait for the event to propagate to point it realises there's no subscribers and discards the
+			// "add pipeline" event
+			time.Sleep(500 * time.Millisecond)
+
 			if test.connection {
 				s.mu.Lock()
 				s.streams[serverName] = &ChainerSubscription{
@@ -452,11 +460,8 @@ func TestPipelineEvents(t *testing.T) {
 				s.mu.Unlock()
 			}
 
-			err = s.pipelineHandler.SetPipelineState(test.loadReq.Name, test.loadReq.Version, test.loadReq.Uid, test.status, "", sourceChainerServer)
+			err = s.pipelineHandler.SetPipelineState(test.loadReq.Name, test.loadReq.Version, test.loadReq.Uid, test.status, "", "some-source")
 			g.Expect(err).To(BeNil())
-
-			// to allow events to propagate and trigger derived events
-			time.Sleep(3000 * time.Millisecond)
 
 			if test.connection {
 				var psr *chainer.PipelineUpdateMessage
@@ -470,19 +475,17 @@ func TestPipelineEvents(t *testing.T) {
 				g.Expect(psr).ToNot(BeNil())
 				g.Expect(psr.Pipeline).To(Equal(test.loadReq.Name))
 				g.Expect(psr.Version).To(Equal(test.loadReq.Version))
-				if test.status == pipeline.PipelineCreate {
-					g.Expect(psr.Op).To(Equal(chainer.PipelineUpdateMessage_Create))
-				} else {
-					g.Expect(psr.Op).To(Equal(chainer.PipelineUpdateMessage_Delete))
-				}
-			} else {
-				// in this case we do not have a dataflow-engine connection so we should have an error message
-				pipeline, err := s.pipelineHandler.GetPipeline(test.loadReq.Name)
-				g.Expect(err).To(BeNil())
-				// error message should be set
-				g.Expect(pipeline.GetLatestPipelineVersion().State.Reason).To(Equal("no dataflow engines available to handle pipeline"))
+				g.Expect(psr.Op).To(Equal(test.expectedEventStatus))
+				return
 			}
 
+			// wait for events to be processed
+			time.Sleep(time.Second)
+			// in this case we do not have a dataflow-engine connection so we should have an error message
+			pipeline, err := s.pipelineHandler.GetPipeline(test.loadReq.Name)
+			g.Expect(err).To(BeNil())
+			// error message should be set
+			g.Expect(pipeline.GetLatestPipelineVersion().State.Reason).To(Equal("no dataflow engines available to handle pipeline"))
 		})
 	}
 }
