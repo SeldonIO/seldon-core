@@ -472,5 +472,4 @@ func (kc *InferKafkaHandler) Serve() {
 	logger.Info("Closing consumer")
 	close(cancelChan)
 	kc.closeProducer()
-	_ = kc.consumer.Close()
 }

@@ -111,6 +111,8 @@ func main() {
 	logger.Infof("Setting log level to %s", logLevel)
 	logger.SetLevel(logIntLevel)
 
+	defer logger.Info("Graceful shutdown complete")
+
 	updateNamespace()
 
 	errChan := make(chan error, 5)
@@ -179,16 +181,14 @@ func initHealthProbeServer(logger *log.Logger, schedulerClient *gateway.KafkaSch
 		return nil
 	}, health_probe.ProbeStartUp)
 	healthManager.AddCheck(func() error {
-		// we don't perform any business logic checks here, if we can respond with a HTTP 200 it means
-		// we still have available sockets to serve reqs.
+		// TODO add kafka checks producer/consumer not closed, check goroutines are running?
+		// we don't perform any business logic checks here, if we can respond with HTTP 200 it means
+		// we still have available sockets/memory to serve reqs.
 		return nil
 	}, health_probe.ProbeLiveness, health_probe.ProbeReadiness)
 
 	healthServer := health_probe.NewHTTPServer(healthProbeServicePort, healthManager, logger)
 	go func() {
-		healthServer.ConfigureReadiness("/ready")
-		healthServer.ConfigureLiveness("/live")
-		healthServer.ConfigureLiveness("/startup")
 		err := healthServer.Start()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.WithError(err).Error("HTP health server failed")
@@ -196,7 +196,7 @@ func initHealthProbeServer(logger *log.Logger, schedulerClient *gateway.KafkaSch
 		errChan <- err
 	}()
 
-	return healthServer, nil
+	return healthServer
 }
 
 func waitForTermSignalOrErr(logger *log.Logger, errChan <-chan error) {
