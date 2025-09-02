@@ -149,6 +149,10 @@ class PipelineSubscriber(
                 try {
                     task.run()
                 } catch (e: Exception) {
+                    // Useful for debugging - All the failure cases should be already
+                    // accounted for in the run method. In the future, we might consider
+                    // sending and update back to the scheduler in case the task fails for
+                    // some reason.
                     logger.error("Task failed permanently: ${e.message}")
                 }
             }
