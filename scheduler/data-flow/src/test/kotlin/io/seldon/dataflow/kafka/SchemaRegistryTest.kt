@@ -1,6 +1,7 @@
 package io.seldon.dataflow.kafka
 
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig
+import io.seldon.mlops.inference_schema.InferResponse.ModelInferResponse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -41,6 +42,28 @@ class SchemaRegistryTest {
         }
 
         @Test
+        fun `validate password is set when user is empty`() {
+            val config =
+                SchemaRegistryConfig(
+                    url = "mock://",
+                    password = "test-pass",
+                )
+
+            expectThat(config.userInfoConfig).isEqualTo(":test-pass")
+        }
+
+        @Test
+        fun `validate user name is set when password is empty`() {
+            val config =
+                SchemaRegistryConfig(
+                    url = "mock://",
+                    username = "test-user",
+                )
+
+            expectThat(config.userInfoConfig).isEqualTo("test-user:")
+        }
+
+        @Test
         fun `useSchemaRegistry auto-detects from non-blank url`() {
             val config = SchemaRegistryConfig(url = "mock://")
 
@@ -76,14 +99,13 @@ class SchemaRegistryTest {
 
             val properties = config.toSerializerProperties()
 
-            expectThat(properties).hasSize(8)
+            expectThat(properties).hasSize(7)
             expectThat(properties[AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG]).isEqualTo("mock://")
             expectThat(properties[AbstractKafkaSchemaSerDeConfig.AUTO_REGISTER_SCHEMAS]).isEqualTo(true)
             expectThat(properties[AbstractKafkaSchemaSerDeConfig.USE_LATEST_VERSION]).isEqualTo(false)
             expectThat(properties[AbstractKafkaSchemaSerDeConfig.NORMALIZE_SCHEMAS]).isEqualTo(true)
             expectThat(properties[AbstractKafkaSchemaSerDeConfig.USER_INFO_CONFIG]).isEqualTo("")
             expectThat(properties[AbstractKafkaSchemaSerDeConfig.BEARER_AUTH_TOKEN_CONFIG]).isEqualTo("")
-            expectThat(properties[AbstractKafkaSchemaSerDeConfig.BEARER_AUTH_IDENTITY_POOL_ID]).isEqualTo("")
             expectThat(properties[AbstractKafkaSchemaSerDeConfig.BASIC_AUTH_CREDENTIALS_SOURCE]).isEqualTo("USER_INFO")
         }
     }
@@ -141,6 +163,19 @@ class SchemaRegistryTest {
 
             expectThat(result).isEqualTo(protobufData)
         }
+
+        @Test
+        fun `deserialize returns same data if if does not include valid wire format`() {
+            val wireFormatData =
+                ModelInferResponse.newBuilder()
+                    .setModelName("test-model")
+                    .setId("test-id")
+                    .build().toByteArray()
+
+            val result = deserializer.deserialize("test-topic", wireFormatData)
+
+            expectThat(result).isEqualTo(wireFormatData)
+        }
     }
 
     @Nested
@@ -159,6 +194,28 @@ class SchemaRegistryTest {
             val factory = SchemaRegistrySerializerFactory(config)
 
             expectThat(factory.responseSerializer)
+        }
+
+        @Test
+        fun `responseSerializer serialising data`() {
+            val deserializer = ProtobufWireFormatDeserializer()
+            val config = SchemaRegistryConfig(url = "mock://")
+            val factory = SchemaRegistrySerializerFactory(config)
+
+            val testResponse =
+                ModelInferResponse.newBuilder()
+                    .setModelName("test-model")
+                    .setId("test-id")
+                    .build()
+
+            val result = factory.responseSerializer.serialize("test-topic", testResponse)
+
+            expectThat(result).isNotNull()
+
+            val responseBytes = deserializer.deserialize("test-topic", result)
+            val responseAfterDeserialisation = ModelInferResponse.parseFrom(responseBytes)
+
+            expectThat(testResponse).equals(responseAfterDeserialisation)
         }
     }
 }

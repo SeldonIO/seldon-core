@@ -30,7 +30,6 @@ import (
 
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 	pipeline "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/schema"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
@@ -349,38 +348,6 @@ func (kc *InferKafkaHandler) ensureTopicsExist(topicNames []string) error {
 	return nil
 }
 
-func (kc *InferKafkaHandler) createInputTopicSchema(topic string) error {
-	if kc.schemaRegistryClient == nil {
-		kc.logger.Debugf("schema registry client not initialized")
-		return nil
-	}
-
-	_, err := kc.schemaRegistryClient.Register(topic, schema.GetModelInferenceRequestSchema(), true)
-	if err != nil {
-		kc.logger.WithError(err).Errorf("failed to register schema for topic %s", topic)
-		return err
-	}
-
-	kc.logger.Infof("schema for topic %s created", topic)
-	return nil
-}
-
-func (kc *InferKafkaHandler) createOutputTopicSchema(topic string) error {
-	if kc.schemaRegistryClient == nil {
-		kc.logger.Debugf("schema registry client not initialized")
-		return nil
-	}
-
-	_, err := kc.schemaRegistryClient.Register(topic, schema.GetModelInferenceResponseSchema(), true)
-	if err != nil {
-		kc.logger.WithError(err).Errorf("failed to register schema for topic %s", topic)
-		return err
-	}
-
-	kc.logger.Infof("schema for topic %s created", topic)
-	return nil
-}
-
 func (kc *InferKafkaHandler) AddModel(modelName string) error {
 	kc.mu.Lock()
 	defer kc.mu.Unlock()
@@ -392,14 +359,6 @@ func (kc *InferKafkaHandler) AddModel(modelName string) error {
 	if err := kc.createTopics([]string{inputTopic, outputTopic}); err != nil {
 		return err
 	}
-
-	//if err := kc.createInputTopicSchema(inputTopic); err != nil {
-	//	kc.logger.WithError(err).Errorf("failed to create input topic schema for model %s", modelName)
-	//}
-	//
-	//if err := kc.createOutputTopicSchema(outputTopic); err != nil {
-	//	kc.logger.WithError(err).Errorf("failed to create input topic schema for model %s", modelName)
-	//}
 
 	kc.subscribedTopics[inputTopic] = true
 	err := kc.subscribeTopics()
