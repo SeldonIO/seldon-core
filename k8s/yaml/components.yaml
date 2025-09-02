@@ -745,12 +745,12 @@ spec:
           value: 'info'
         - name: MODELGATEWAY_MAX_NUM_CONSUMERS
           value: '100'
-        - name: HEALTH_PROBE_PORT
-          value: '8000'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
           value: "9044"
+        - name: HEALTH_PROBE_PORT
+          value: "8000"
         - name: POD_NAME
           valueFrom:
             fieldRef:

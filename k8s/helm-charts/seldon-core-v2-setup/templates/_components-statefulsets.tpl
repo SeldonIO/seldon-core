@@ -914,12 +914,12 @@ spec:
             .Values.logging.logLevel }}'
         - name: MODELGATEWAY_MAX_NUM_CONSUMERS
           value: '{{ .Values.modelgateway.maxNumConsumers }}'
-        - name: HEALTH_PROBE_PORT
-          value: '{{ .Values.modelgateway.healthProbePort }}'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
           value: "9044"
+        - name: HEALTH_PROBE_PORT
+          value: "8000"
         - name: POD_NAME
           valueFrom:
             fieldRef:
