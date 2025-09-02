@@ -104,22 +104,29 @@ class PipelineSubscriber(
 
     private suspend fun cleanupMarkedQueues() {
         val currentTime = System.currentTimeMillis()
-        val toRemove = mutableListOf<PipelineId>()
+        val toCleanup = mutableListOf<Pair<PipelineId, QueueInfo>>()
 
         queues.forEach { (pipelineId, queueInfo) ->
             if (queueInfo.isMarkedForDeletion &&
                 currentTime - queueInfo.deletionScheduledAt > queueCleanupDelayMs
             ) {
-                logger.info("Cleaning up queue for pipeline $pipelineId after delay")
-                queueInfo.queue.close()
-                queueInfo.processingJob.cancel()
-                toRemove.add(pipelineId)
+                toCleanup.add(pipelineId to queueInfo)
             }
         }
 
-        toRemove.forEach { pipelineId ->
-            queues.remove(pipelineId)
-            logger.debug("Removed pipeline queue from map: $pipelineId")
+        toCleanup.forEach { (pipelineId, queueInfo) ->
+            logger.debug("Cleaning up queue for pipeline $pipelineId after delay")
+            try {
+                queueInfo.queue.close()
+                queueInfo.processingJob.cancel()
+                queueInfo.processingJob.join() // Wait for the job to actually finish
+                queues.remove(pipelineId)
+                logger.debug("Removed pipeline queue from map: $pipelineId")
+            } catch (e: Exception) {
+                logger.error("Error during queue cleanup for pipeline $pipelineId: ${e.message}", e)
+                // Still remove it from the map to avoid memory leaks
+                queues.remove(pipelineId)
+            }
         }
     }
 
