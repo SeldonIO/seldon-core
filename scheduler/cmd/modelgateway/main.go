@@ -20,11 +20,11 @@ import (
 	"strconv"
 	"syscall"
 
-	health_probe "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
 	log "github.com/sirupsen/logrus"
 
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 
+	health_probe "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/gateway"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 )
@@ -167,7 +167,11 @@ func main() {
 	}()
 
 	healthServer := initHealthProbeServer(logger, kafkaSchedulerClient, kafkaConsumer, errChan)
-	defer healthServer.Shutdown(context.Background())
+	defer func() {
+		if err := healthServer.Shutdown(context.Background()); err != nil {
+			logger.WithError(err).Error("Health server shutdown failed")
+		}
+	}()
 
 	// Wait for completion
 	waitForTermSignalOrErr(logger, errChan)
