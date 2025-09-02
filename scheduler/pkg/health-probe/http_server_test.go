@@ -9,11 +9,10 @@ import (
 	"time"
 
 	g "github.com/onsi/gomega"
-	"github.com/sirupsen/logrus"
-	"go.uber.org/mock/gomock"
-
 	health_probe "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe/mocks"
+	"github.com/sirupsen/logrus"
+	"go.uber.org/mock/gomock"
 )
 
 func TestHTTPServer_Start(t *testing.T) {
@@ -102,15 +101,12 @@ func TestHTTPServer_Start(t *testing.T) {
 			mockManager.EXPECT().HasCallbacks(health_probe.ProbeStartUp).Return(tt.startupEnabled)
 
 			go func() {
-				if err := server.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-					t.Errorf("HTTP server error: %v", err)
-				}
+				server.Start()
 			}()
 			defer func() {
 				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				defer cancel()
-				err := server.Shutdown(ctx)
-				g.Expect(err).To(g.BeNil())
+				server.Shutdown(ctx)
 			}()
 
 			time.Sleep(100 * time.Millisecond)

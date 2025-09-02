@@ -74,6 +74,8 @@ spec:
             value: '{{ hasKey .Values.modelgateway "logLevel" | ternary .Values.modelgateway.logLevel .Values.logging.logLevel }}'
           - name: MODELGATEWAY_MAX_NUM_CONSUMERS
             value: '{{ .Values.modelgateway.maxNumConsumers }}'
+          - name: HEALTH_PROBE_PORT
+            value: '{{ .Values.modelgateway.healthProbePort }}'
         resources:
           requests:
             cpu: '{{ .Values.modelgateway.resources.cpu }}'

@@ -145,23 +145,27 @@ spec:
           requests:
             cpu: 100m
             memory: 1G
+        ports:
+          - containerPort: 8000
+            name: health
+            protocol: TCP
         startupProbe:
           httpGet:
             path: /startup
-            port: 8000
+            port: health
           initialDelaySeconds: 3
           periodSeconds: 5
           failureThreshold: 3
         readinessProbe:
           httpGet:
             path: /ready
-            port: 8000
+            port: health
           periodSeconds: 5
           failureThreshold: 3
         livenessProbe:
           httpGet:
             path: /live
-            port: 8000
+            port: health
           periodSeconds: 5
           failureThreshold: 3
         volumeMounts:

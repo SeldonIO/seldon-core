@@ -914,12 +914,12 @@ spec:
             .Values.logging.logLevel }}'
         - name: MODELGATEWAY_MAX_NUM_CONSUMERS
           value: '{{ .Values.modelgateway.maxNumConsumers }}'
+        - name: HEALTH_PROBE_PORT
+          value: '{{ .Values.modelgateway.healthProbePort }}'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
           value: "9044"
-        - name: HEALTH_PROBE_PORT
-          value: '{{ .Values.modelgateway.healthProbePort }}'
         - name: POD_NAME
           valueFrom:
             fieldRef:
@@ -935,14 +935,18 @@ spec:
           failureThreshold: 3
           httpGet:
             path: /live
-            port: '{{ .Values.modelgateway.healthProbePort }}'
+            port: health
           periodSeconds: 5
         name: modelgateway
+        ports:
+        - containerPort: 8000
+          name: health
+          protocol: TCP
         readinessProbe:
           failureThreshold: 3
           httpGet:
             path: /ready
-            port: '{{ .Values.modelgateway.healthProbePort }}'
+            port: health
           periodSeconds: 5
         resources:
           limits:
@@ -954,7 +958,7 @@ spec:
           failureThreshold: 3
           httpGet:
             path: /startup
-            port: '{{ .Values.modelgateway.healthProbePort }}'
+            port: health
           initialDelaySeconds: 3
           periodSeconds: 5
         volumeMounts:
