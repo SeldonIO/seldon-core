@@ -97,6 +97,10 @@ func (c *MultiTopicsKafkaConsumer) createConsumer(logger log.FieldLogger) error 
 	return nil
 }
 
+func (c *MultiTopicsKafkaConsumer) IsActive() bool {
+	return c.isActive.Load()
+}
+
 func (c *MultiTopicsKafkaConsumer) AddTopic(topic string, cb kafka.RebalanceCb) error {
 	c.topicMu.Lock()
 	defer c.topicMu.Unlock()

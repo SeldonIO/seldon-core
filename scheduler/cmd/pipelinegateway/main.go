@@ -198,7 +198,7 @@ func main() {
 		close(done)
 	}()
 
-	healthManager, err := initHealthProbe(schedulerClient)
+	healthManager, err := initHealthProbe(schedulerClient, km)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create health probe")
 	}
@@ -238,7 +238,7 @@ func main() {
 	schedulerClient.Stop()
 }
 
-func initHealthProbe(schedulerClient *pipeline.PipelineSchedulerClient) (health.Manager, error) {
+func initHealthProbe(schedulerClient *pipeline.PipelineSchedulerClient, kafka *pipeline.KafkaManager) (health.Manager, error) {
 	manager := health.NewManager()
 	manager.AddCheck(func() error {
 		if !schedulerClient.IsConnected() {
@@ -266,6 +266,16 @@ func initHealthProbe(schedulerClient *pipeline.PipelineSchedulerClient) (health.
 		}
 		return nil
 	}, health.ProbeReadiness, health.ProbeStartUp, health.ProbeLiveness)
+
+	manager.AddCheck(func() error {
+		if kafka.ProducerClosed() {
+			return fmt.Errorf("kafka producer closed")
+		}
+		if !kafka.ConsumersActive() {
+			return fmt.Errorf("kafka consumer(s) not active")
+		}
+		return nil
+	}, health.ProbeReadiness, health.ProbeLiveness)
 
 	return manager, nil
 }
