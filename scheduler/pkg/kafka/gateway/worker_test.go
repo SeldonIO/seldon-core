@@ -489,6 +489,7 @@ func TestProcessRequest(t *testing.T) {
 				InputTopic:  "input",
 				OutputTopic: "output",
 			}
+
 			mockMLGrpcServer := createMLMockGrpcServer(g)
 			// wait for server to spin up
 			time.Sleep(200 * time.Millisecond)
