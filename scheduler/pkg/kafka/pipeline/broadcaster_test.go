@@ -17,32 +17,30 @@ import (
 
 func TestSubscribe(t *testing.T) {
 	t.Parallel()
-
-	gm.RegisterFailHandler(func(message string, callerSkip ...int) {
+	gmTest := gm.NewGomega(func(message string, callerSkip ...int) {
 		t.Helper()
 		t.Fatal(message)
 	})
-
 	b := NewBroadcaster()
 
 	ch1 := b.Subscribe()
-	gm.Expect(ch1).ToNot(gm.BeNil())
+	gmTest.Expect(ch1).ToNot(gm.BeNil())
 
 	ch2 := b.Subscribe()
 	ch3 := b.Subscribe()
 
-	gm.Expect(ch2).ToNot(gm.BeNil())
-	gm.Expect(ch3).ToNot(gm.BeNil())
+	gmTest.Expect(ch2).ToNot(gm.BeNil())
+	gmTest.Expect(ch3).ToNot(gm.BeNil())
 
-	gm.Expect(ch1).To(gm.BeIdenticalTo(ch2))
-	gm.Expect(ch1).To(gm.BeIdenticalTo(ch3))
-	gm.Expect(ch2).To(gm.BeIdenticalTo(ch3))
+	gmTest.Expect(ch1).To(gm.BeIdenticalTo(ch2))
+	gmTest.Expect(ch1).To(gm.BeIdenticalTo(ch3))
+	gmTest.Expect(ch2).To(gm.BeIdenticalTo(ch3))
 }
 
 func TestBroadcast(t *testing.T) {
 	t.Parallel()
 
-	gm.RegisterFailHandler(func(message string, callerSkip ...int) {
+	gmTest := gm.NewGomega(func(message string, callerSkip ...int) {
 		t.Helper()
 		t.Fatal(message)
 	})
@@ -58,14 +56,14 @@ func TestBroadcast(t *testing.T) {
 
 	channels := []<-chan struct{}{ch1, ch2, ch3}
 	for i, ch := range channels {
-		gm.Expect(ch).Should(gm.BeClosed(), "channel %d did not receive broadcast", i+1)
+		gmTest.Expect(ch).Should(gm.BeClosed(), "channel %d did not receive broadcast", i+1)
 	}
 }
 
 func TestMultipleBroadcasts(t *testing.T) {
 	t.Parallel()
 
-	gm.RegisterFailHandler(func(message string, callerSkip ...int) {
+	gmTest := gm.NewGomega(func(message string, callerSkip ...int) {
 		t.Helper()
 		t.Fatal(message)
 	})
@@ -75,17 +73,17 @@ func TestMultipleBroadcasts(t *testing.T) {
 	ch1 := b.Subscribe()
 	b.Broadcast()
 
-	gm.Expect(ch1).Should(gm.BeClosed())
+	gmTest.Expect(ch1).Should(gm.BeClosed())
 	b.Broadcast()
 
 	ch2 := b.Subscribe()
 	ch3 := b.Subscribe()
 
-	gm.Expect(ch2).Should(gm.Not(gm.BeClosed()))
-	gm.Expect(ch3).Should(gm.Not(gm.BeClosed()))
+	gmTest.Expect(ch2).Should(gm.Not(gm.BeClosed()))
+	gmTest.Expect(ch3).Should(gm.Not(gm.BeClosed()))
 
 	b.Broadcast()
 
-	gm.Expect(ch2).Should(gm.BeClosed())
-	gm.Expect(ch3).Should(gm.BeClosed())
+	gmTest.Expect(ch2).Should(gm.BeClosed())
+	gmTest.Expect(ch3).Should(gm.BeClosed())
 }

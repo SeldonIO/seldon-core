@@ -28,9 +28,10 @@ import (
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
-// Checks a cluster remains until all routes are removed
+// Checks a cluster remains until all Routes are removed
 func TestAddRemoveHttpAndGrpcRoute(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
@@ -53,19 +54,27 @@ func TestAddRemoveHttpAndGrpcRoute(t *testing.T) {
 
 	err = c.RemoveRoute(route1)
 	g.Expect(err).To(BeNil())
-	_, ok = c.Clusters[httpCluster]
+	_, ok = c.Clusters.Load(httpCluster)
 	g.Expect(ok).To(BeTrue()) // http Cluster remains as r2 still connected
-	_, ok = c.Clusters[grpcCluster]
+	_, ok = c.Clusters.Load(grpcCluster)
 	g.Expect(ok).To(BeTrue()) // grpc Cluster remains as r2 still connected
 	err = c.RemoveRoute(route2)
 	g.Expect(err).To(BeNil())
-	_, ok = c.Clusters[httpCluster]
+	_, ok = c.Clusters.Load(httpCluster)
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
-	_, ok = c.Clusters[grpcCluster]
+	_, ok = c.Clusters.Load(grpcCluster)
 	g.Expect(ok).To(BeFalse()) // grpc Cluster removed
 }
 
-// Checks a cluster remains until all routes and versions are removed
+func mustFindVal[T any](c *util.CountedSyncMap[T], key string) T {
+	val, ok := c.Load(key)
+	if !ok {
+		panic("failed to find key")
+	}
+	return *val
+}
+
+// Checks a cluster remains until all Routes and versions are removed
 func TestAddRemoveHttpAndGrpcRouteVersions(t *testing.T) {
 	g := NewGomegaWithT(t)
 	logger := log.New()
@@ -94,37 +103,39 @@ func TestAddRemoveHttpAndGrpcRouteVersions(t *testing.T) {
 	g.Expect(ok).To(BeTrue()) // grpc Cluster to be added to cds
 
 	// check what we have added
-	g.Expect(len(c.Routes[route1].Clusters)).To(Equal(2))
-	clusters := c.Routes[route1].Clusters
+	g.Expect(len(mustFindVal(c.Routes, route1).Clusters)).To(Equal(2))
+	route, ok := c.Routes.Load(route1)
+	g.Expect(ok).To(BeTrue())
+	clusters := route.Clusters
 	g.Expect(clusters[0].TrafficWeight).To(Equal(uint32(40)))
 	g.Expect(clusters[1].TrafficWeight).To(Equal(uint32(60)))
-	g.Expect(len(c.Clusters[httpCluster1].Endpoints)).To(Equal(1))
-	g.Expect(len(c.Clusters[grpcCluster1].Endpoints)).To(Equal(1))
-	g.Expect(c.Clusters[httpCluster1].Grpc).To(BeFalse())
-	g.Expect(c.Clusters[grpcCluster1].Grpc).To(BeTrue())
-	g.Expect(c.Clusters[httpCluster1].Routes[RouteVersionKey{RouteName: route1, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcCluster1].Routes[RouteVersionKey{RouteName: route1, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[httpCluster2].Routes[RouteVersionKey{RouteName: route1, ModelName: model1, Version: 2}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcCluster2].Routes[RouteVersionKey{RouteName: route1, ModelName: model1, Version: 2}]).To(BeTrue())
+	g.Expect(len(mustFindVal(c.Clusters, httpCluster1).Endpoints)).To(Equal(1))
+	g.Expect(len(mustFindVal(c.Clusters, grpcCluster1).Endpoints)).To(Equal(1))
+	g.Expect(mustFindVal(c.Clusters, httpCluster1).Grpc).To(BeFalse())
+	g.Expect(mustFindVal(c.Clusters, grpcCluster1).Grpc).To(BeTrue())
+	g.Expect(mustFindVal(c.Clusters, httpCluster1).Routes[RouteVersionKey{RouteName: route1, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(mustFindVal(c.Clusters, grpcCluster1).Routes[RouteVersionKey{RouteName: route1, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(mustFindVal(c.Clusters, httpCluster2).Routes[RouteVersionKey{RouteName: route1, ModelName: model1, Version: 2}]).To(BeTrue())
+	g.Expect(mustFindVal(c.Clusters, grpcCluster2).Routes[RouteVersionKey{RouteName: route1, ModelName: model1, Version: 2}]).To(BeTrue())
 
 	addVersionedRoute(c, route2, model1, httpCluster1, grpcCluster1, 100, 1)
 
 	// check what we added
-	g.Expect(len(c.Routes[route2].Clusters)).To(Equal(1))
-	clusters = c.Routes[route2].Clusters
+	g.Expect(len(mustFindVal(c.Routes, route2).Clusters)).To(Equal(1))
+	clusters = mustFindVal(c.Routes, route2).Clusters
 	g.Expect(clusters[0].TrafficWeight).To(Equal(uint32(100)))
-	g.Expect(c.Clusters[httpCluster1].Routes[RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcCluster1].Routes[RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(len(c.Clusters[httpCluster1].Endpoints)).To(Equal(1))
-	g.Expect(len(c.Clusters[grpcCluster1].Endpoints)).To(Equal(1))
+	g.Expect(mustFindVal(c.Clusters, httpCluster1).Routes[RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(mustFindVal(c.Clusters, grpcCluster1).Routes[RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(len(mustFindVal(c.Clusters, httpCluster1).Endpoints)).To(Equal(1))
+	g.Expect(len(mustFindVal(c.Clusters, grpcCluster1).Endpoints)).To(Equal(1))
 
 	err = c.RemoveRoute(route1)
 	g.Expect(err).To(BeNil())
 	err = c.RemoveClusters() // remove clusters to clear clustersToRemove
 	g.Expect(err).To(BeNil())
-	_, ok = c.Clusters[httpCluster1]
+	_, ok = c.Clusters.Load(httpCluster1)
 	g.Expect(ok).To(BeTrue()) // http Cluster remains as r2 still connected
-	_, ok = c.Clusters[grpcCluster1]
+	_, ok = c.Clusters.Load(grpcCluster1)
 	g.Expect(ok).To(BeTrue()) // grpc Cluster remains as r2 still connected
 	_, ok = c.clustersToRemove[httpCluster1]
 	g.Expect(ok).To(BeFalse()) // http Cluster not to be removed from cds
@@ -136,9 +147,9 @@ func TestAddRemoveHttpAndGrpcRouteVersions(t *testing.T) {
 	g.Expect(ok).To(BeFalse()) // grpc Cluster not to be removed from cds
 	err = c.RemoveRoute(route2)
 	g.Expect(err).To(BeNil())
-	_, ok = c.Clusters[httpCluster1]
+	_, ok = c.Clusters.Load(httpCluster1)
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
-	_, ok = c.Clusters[grpcCluster1]
+	_, ok = c.Clusters.Load(grpcCluster1)
 	g.Expect(ok).To(BeFalse()) // grpc Cluster removed
 	_, ok = c.clustersToRemove[httpCluster1]
 	g.Expect(ok).To(BeTrue()) // http Cluster to be removed from cds
@@ -178,24 +189,24 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForSameModel(t *testing.T) {
 	g.Expect(ok).To(BeTrue()) // grpc Cluster to be added to cds
 
 	// check what we have added
-	g.Expect(len(c.Routes[routeName].Clusters)).To(Equal(2))
-	clusters := c.Routes[routeName].Clusters
+	g.Expect(len(mustFindVal(c.Routes, routeName).Clusters)).To(Equal(2))
+	clusters := mustFindVal(c.Routes, routeName).Clusters
 	g.Expect(clusters[0].TrafficWeight).To(Equal(uint32(40)))
 	g.Expect(clusters[1].TrafficWeight).To(Equal(uint32(60)))
-	g.Expect(len(c.Clusters[httpCluster1].Endpoints)).To(Equal(1))
-	g.Expect(len(c.Clusters[grpcCluster1].Endpoints)).To(Equal(1))
-	g.Expect(c.Clusters[httpCluster1].Grpc).To(BeFalse())
-	g.Expect(c.Clusters[grpcCluster1].Grpc).To(BeTrue())
-	g.Expect(c.Clusters[httpCluster1].Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcCluster1].Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[httpCluster2].Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 2}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcCluster2].Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 2}]).To(BeTrue())
+	g.Expect(len(mustFindVal(c.Clusters, httpCluster1).Endpoints)).To(Equal(1))
+	g.Expect(len(mustFindVal(c.Clusters, grpcCluster1).Endpoints)).To(Equal(1))
+	g.Expect(mustFindVal(c.Clusters, httpCluster1).Grpc).To(BeFalse())
+	g.Expect(mustFindVal(c.Clusters, grpcCluster1).Grpc).To(BeTrue())
+	g.Expect(mustFindVal(c.Clusters, httpCluster1).Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(mustFindVal(c.Clusters, grpcCluster1).Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(mustFindVal(c.Clusters, httpCluster2).Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 2}]).To(BeTrue())
+	g.Expect(mustFindVal(c.Clusters, grpcCluster2).Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 2}]).To(BeTrue())
 
 	err = c.RemoveRoute(routeName)
 	g.Expect(err).To(BeNil())
-	_, ok = c.Clusters[httpCluster1]
+	_, ok = c.Clusters.Load(httpCluster1)
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
-	_, ok = c.Clusters[grpcCluster1]
+	_, ok = c.Clusters.Load(grpcCluster1)
 	g.Expect(ok).To(BeFalse()) // grpc Cluster removed
 	_, ok = c.clustersToRemove[httpCluster1]
 	g.Expect(ok).To(BeTrue()) // http Cluster to be removed from cds
@@ -236,28 +247,28 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentModels(t *testing.T) {
 	g.Expect(ok).To(BeTrue()) // grpc Cluster to be added to cds
 
 	// check what we have added
-	g.Expect(len(c.Routes[routeName].Clusters)).To(Equal(2))
-	clusters := c.Routes[routeName].Clusters
+	g.Expect(len(mustFindVal(c.Routes, routeName).Clusters)).To(Equal(2))
+	clusters := mustFindVal(c.Routes, routeName).Clusters
 	g.Expect(clusters[0].TrafficWeight).To(Equal(uint32(40)))
 	g.Expect(clusters[1].TrafficWeight).To(Equal(uint32(60)))
-	g.Expect(len(c.Clusters[httpClusterModel1].Endpoints)).To(Equal(1))
-	g.Expect(len(c.Clusters[grpcClusterModel1].Endpoints)).To(Equal(1))
-	g.Expect(c.Clusters[httpClusterModel1].Grpc).To(BeFalse())
-	g.Expect(c.Clusters[grpcClusterModel1].Grpc).To(BeTrue())
-	g.Expect(c.Clusters[httpClusterModel1].Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcClusterModel1].Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[httpClusterModel2].Routes[RouteVersionKey{RouteName: routeName, ModelName: model2, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcClusterModel2].Routes[RouteVersionKey{RouteName: routeName, ModelName: model2, Version: 1}]).To(BeTrue())
+	g.Expect(len(mustFindVal(c.Clusters, httpClusterModel1).Endpoints)).To(Equal(1))
+	g.Expect(len(mustFindVal(c.Clusters, grpcClusterModel1).Endpoints)).To(Equal(1))
+	g.Expect(mustFindVal(c.Clusters, httpClusterModel1).Grpc).To(BeFalse())
+	g.Expect(mustFindVal(c.Clusters, grpcClusterModel1).Grpc).To(BeTrue())
+	g.Expect(mustFindVal(c.Clusters, httpClusterModel1).Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(mustFindVal(c.Clusters, grpcClusterModel1).Routes[RouteVersionKey{RouteName: routeName, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(mustFindVal(c.Clusters, httpClusterModel2).Routes[RouteVersionKey{RouteName: routeName, ModelName: model2, Version: 1}]).To(BeTrue())
+	g.Expect(mustFindVal(c.Clusters, grpcClusterModel2).Routes[RouteVersionKey{RouteName: routeName, ModelName: model2, Version: 1}]).To(BeTrue())
 
 	err = c.RemoveRoute(routeName)
 	g.Expect(err).To(BeNil())
-	_, ok = c.Clusters[httpClusterModel1]
+	_, ok = c.Clusters.Load(httpClusterModel1)
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
-	_, ok = c.Clusters[grpcClusterModel1]
+	_, ok = c.Clusters.Load(grpcClusterModel1)
 	g.Expect(ok).To(BeFalse()) // grpc Cluster removed
-	_, ok = c.Clusters[httpClusterModel2]
+	_, ok = c.Clusters.Load(httpClusterModel2)
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
-	_, ok = c.Clusters[grpcClusterModel2]
+	_, ok = c.Clusters.Load(grpcClusterModel2)
 	g.Expect(ok).To(BeFalse()) // grpc Cluster removed
 	_, ok = c.clustersToRemove[httpClusterModel1]
 	g.Expect(ok).To(BeTrue()) // http Cluster to be removed from cds
@@ -299,24 +310,25 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentRoutesSameModel(t *testing
 	g.Expect(ok).To(BeTrue()) // grpc Cluster to be added to cds
 
 	// check what we have added
-	g.Expect(len(c.Routes[route1].Clusters)).To(Equal(1))
-	g.Expect(len(c.Routes[route2].Clusters)).To(Equal(1))
-	clusters := c.Routes[route1].Clusters
+	g.Expect(len(mustFindVal(c.Routes, route1).Clusters)).To(Equal(1))
+	g.Expect(len(mustFindVal(c.Routes, route2).Clusters)).To(Equal(1))
+
+	clusters := mustFindVal(c.Routes, route1).Clusters
 	g.Expect(clusters[0].TrafficWeight).To(Equal(uint32(100)))
-	g.Expect(len(c.Clusters[httpClusterModel1].Endpoints)).To(Equal(1))
-	g.Expect(len(c.Clusters[grpcClusterModel1].Endpoints)).To(Equal(1))
-	g.Expect(c.Clusters[httpClusterModel1].Grpc).To(BeFalse())
-	g.Expect(c.Clusters[grpcClusterModel1].Grpc).To(BeTrue())
-	g.Expect(c.Clusters[httpClusterModel1].Routes[RouteVersionKey{RouteName: route1, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcClusterModel1].Routes[RouteVersionKey{RouteName: route1, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[httpClusterModel1].Routes[RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
-	g.Expect(c.Clusters[grpcClusterModel1].Routes[RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(len(mustFindVal(c.Clusters, httpClusterModel1).Endpoints)).To(Equal(1))
+	g.Expect(len(mustFindVal(c.Clusters, grpcClusterModel1).Endpoints)).To(Equal(1))
+	g.Expect(mustFindVal(c.Clusters, httpClusterModel1).Grpc).To(BeFalse())
+	g.Expect(mustFindVal(c.Clusters, grpcClusterModel1).Grpc).To(BeTrue())
+	g.Expect(mustFindVal(c.Clusters, httpClusterModel1).Routes[RouteVersionKey{RouteName: route1, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(mustFindVal(c.Clusters, grpcClusterModel1).Routes[RouteVersionKey{RouteName: route1, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(mustFindVal(c.Clusters, httpClusterModel1).Routes[RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
+	g.Expect(mustFindVal(c.Clusters, grpcClusterModel1).Routes[RouteVersionKey{RouteName: route2, ModelName: model1, Version: 1}]).To(BeTrue())
 
 	err = c.RemoveRoute(route1)
 	g.Expect(err).To(BeNil())
-	_, ok = c.Clusters[httpClusterModel1]
+	_, ok = c.Clusters.Load(httpClusterModel1)
 	g.Expect(ok).To(BeTrue()) // http Cluster not removed
-	_, ok = c.Clusters[grpcClusterModel1]
+	_, ok = c.Clusters.Load(grpcClusterModel1)
 	g.Expect(ok).To(BeTrue()) // grpc Cluster not removed
 	ok = c.shouldRemoveCluster(httpClusterModel1)
 	g.Expect(ok).To(BeFalse()) // http Cluster not to be removed from cds
@@ -324,9 +336,9 @@ func TestAddRemoveHttpAndGrpcRouteVersionsForDifferentRoutesSameModel(t *testing
 	g.Expect(ok).To(BeFalse()) // grpc Cluster not to be removed from cds
 	err = c.RemoveRoute(route2)
 	g.Expect(err).To(BeNil())
-	_, ok = c.Clusters[httpClusterModel1]
+	_, ok = c.Clusters.Load(httpClusterModel1)
 	g.Expect(ok).To(BeFalse()) // http Cluster removed
-	_, ok = c.Clusters[grpcClusterModel1]
+	_, ok = c.Clusters.Load(grpcClusterModel1)
 	g.Expect(ok).To(BeFalse()) // grpc Cluster removed
 	_, ok = c.clustersToRemove[httpClusterModel1]
 	g.Expect(ok).To(BeTrue()) // http Cluster to be removed from cds

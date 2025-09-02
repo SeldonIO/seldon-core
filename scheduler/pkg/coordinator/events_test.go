@@ -177,7 +177,7 @@ func TestRegisterHandler(t *testing.T) {
 			time.Sleep(5 * time.Millisecond)
 
 			require.Equal(t, tt.numHandlers, len(h.bus.HandlerKeys()))
-			require.Equal(t, numEvents*tt.numHandlers, int(counter))
+			require.Equal(t, numEvents*tt.numHandlers, int(atomic.LoadInt64(&counter)))
 		})
 	}
 }
@@ -406,7 +406,7 @@ func TestPublishModelEvent(t *testing.T) {
 			// Handlers are async, so need a little while to run
 			time.Sleep(5 * time.Millisecond)
 
-			require.Equal(t, tt.numPublishers*tt.numEventsAfter, int(counter))
+			require.Equal(t, tt.numPublishers*tt.numEventsAfter, int(atomic.LoadInt64(&counter)))
 		})
 	}
 }
@@ -631,7 +631,7 @@ func TestClose(t *testing.T) {
 
 			// Some events may not have been handled before close,
 			// hence the non-strict inequality.
-			require.LessOrEqual(t, tt.expectedCount, int(counter))
+			require.LessOrEqual(t, tt.expectedCount, int(atomic.LoadInt64(&counter)))
 		})
 	}
 }

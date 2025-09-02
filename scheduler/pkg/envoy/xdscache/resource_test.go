@@ -13,14 +13,16 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func TestMakeRoute(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
 		name                  string
-		modelRoutes           map[string]Route
-		pipelineRoutes        map[string]PipelineRoute
+		modelRoutes           func() *util.CountedSyncMap[Route]
+		pipelineRoutes        func() *util.CountedSyncMap[PipelineRoute]
 		expectedDefaultRoutes int
 		expectedMirrorRoutes  int
 	}
@@ -28,8 +30,9 @@ func TestMakeRoute(t *testing.T) {
 	tests := []test{
 		{
 			name: "one model",
-			modelRoutes: map[string]Route{
-				"r1": {
+			modelRoutes: func() *util.CountedSyncMap[Route] {
+				c := util.NewCountedSyncMap[Route]()
+				c.Store("r1", Route{
 					RouteName: "r1",
 					Clusters: []TrafficSplit{
 						{
@@ -40,15 +43,17 @@ func TestMakeRoute(t *testing.T) {
 							GrpcCluster:   "g1",
 						},
 					},
-				},
+				})
+				return c
 			},
 			expectedDefaultRoutes: 2,
 			expectedMirrorRoutes:  0,
 		},
 		{
 			name: "one pipeline",
-			pipelineRoutes: map[string]PipelineRoute{
-				"r1": {
+			pipelineRoutes: func() *util.CountedSyncMap[PipelineRoute] {
+				c := util.NewCountedSyncMap[PipelineRoute]()
+				c.Store("r1", PipelineRoute{
 					RouteName: "r1",
 					Clusters: []PipelineTrafficSplit{
 						{
@@ -56,15 +61,17 @@ func TestMakeRoute(t *testing.T) {
 							TrafficWeight: 100,
 						},
 					},
-				},
+				})
+				return c
 			},
 			expectedDefaultRoutes: 2,
 			expectedMirrorRoutes:  0,
 		},
 		{
 			name: "pipeline experiment",
-			pipelineRoutes: map[string]PipelineRoute{
-				"r1": {
+			pipelineRoutes: func() *util.CountedSyncMap[PipelineRoute] {
+				c := util.NewCountedSyncMap[PipelineRoute]()
+				c.Store("r1", PipelineRoute{
 					RouteName: "r1",
 					Clusters: []PipelineTrafficSplit{
 						{
@@ -76,15 +83,18 @@ func TestMakeRoute(t *testing.T) {
 							TrafficWeight: 50,
 						},
 					},
-				},
+				})
+				return c
 			},
 			expectedDefaultRoutes: 6,
 			expectedMirrorRoutes:  0,
 		},
 		{
 			name: "pipeline experiment with mirror",
-			pipelineRoutes: map[string]PipelineRoute{
-				"r1": {
+
+			pipelineRoutes: func() *util.CountedSyncMap[PipelineRoute] {
+				c := util.NewCountedSyncMap[PipelineRoute]()
+				c.Store("r1", PipelineRoute{
 					RouteName: "r1",
 					Clusters: []PipelineTrafficSplit{
 						{
@@ -100,15 +110,17 @@ func TestMakeRoute(t *testing.T) {
 						PipelineName:  "p3",
 						TrafficWeight: 100,
 					},
-				},
+				})
+				return c
 			},
 			expectedDefaultRoutes: 6,
 			expectedMirrorRoutes:  2,
 		},
 		{
 			name: "model experiment",
-			modelRoutes: map[string]Route{
-				"r1": {
+			modelRoutes: func() *util.CountedSyncMap[Route] {
+				c := util.NewCountedSyncMap[Route]()
+				c.Store("r1", Route{
 					RouteName: "r1",
 					Clusters: []TrafficSplit{
 						{
@@ -126,15 +138,17 @@ func TestMakeRoute(t *testing.T) {
 							GrpcCluster:   "g1",
 						},
 					},
-				},
+				})
+				return c
 			},
 			expectedDefaultRoutes: 6,
 			expectedMirrorRoutes:  0,
 		},
 		{
 			name: "experiment with model mirror",
-			modelRoutes: map[string]Route{
-				"r1": {
+			modelRoutes: func() *util.CountedSyncMap[Route] {
+				c := util.NewCountedSyncMap[Route]()
+				c.Store("r1", Route{
 					RouteName: "r1",
 					Clusters: []TrafficSplit{
 						{
@@ -159,7 +173,8 @@ func TestMakeRoute(t *testing.T) {
 						HttpCluster:   "h1",
 						GrpcCluster:   "g1",
 					},
-				},
+				})
+				return c
 			},
 			expectedDefaultRoutes: 6,
 			expectedMirrorRoutes:  2,
@@ -168,7 +183,18 @@ func TestMakeRoute(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			rcDef, rcMirror := makeRoutes(test.modelRoutes, test.pipelineRoutes)
+			routes := util.NewCountedSyncMap[Route]()
+			pipelines := util.NewCountedSyncMap[PipelineRoute]()
+
+			if test.pipelineRoutes != nil {
+				pipelines = test.pipelineRoutes()
+			}
+
+			if test.modelRoutes != nil {
+				routes = test.modelRoutes()
+			}
+
+			rcDef, rcMirror := makeRoutes(routes, pipelines)
 			g.Expect(len(rcDef.VirtualHosts[0].Routes)).To(Equal(test.expectedDefaultRoutes))
 			g.Expect(len(rcMirror.VirtualHosts[0].Routes)).To(Equal(test.expectedMirrorRoutes))
 		})
