@@ -209,3 +209,77 @@ class DeletionTask(
         )
     }
 }
+
+class PipelineTaskFactory(
+    private val pipelineSubscriber: PipelineSubscriber,
+    private val kafkaAdmin: KafkaAdmin,
+    private val kafkaProperties: KafkaProperties,
+    private val kafkaDomainParams: KafkaDomainParams,
+    private val name: String,
+    private val logger: Klogger,
+) {
+    private fun createCreationTask(
+        metadata: PipelineMetadata,
+        steps: List<PipelineStepUpdate>,
+        kafkaConsumerGroupIdPrefix: String,
+        namespace: String,
+        timestamp: Long,
+    ): Task {
+        return CreationTask(
+            pipelineSubscriber = pipelineSubscriber,
+            metadata = metadata,
+            steps = steps,
+            kafkaAdmin = kafkaAdmin,
+            kafkaProperties = kafkaProperties,
+            kafkaDomainParams = kafkaDomainParams,
+            kafkaConsumerGroupIdPrefix = kafkaConsumerGroupIdPrefix,
+            namespace = namespace,
+            timestamp = timestamp,
+            name = name,
+            logger = logger,
+        )
+    }
+
+    private fun createDeletionTask(
+        metadata: PipelineMetadata,
+        steps: List<PipelineStepUpdate>,
+        timestamp: Long,
+    ): Task {
+        return DeletionTask(
+            pipelineSubscriber = pipelineSubscriber,
+            metadata = metadata,
+            steps = steps,
+            kafkaAdmin = kafkaAdmin,
+            timestamp = timestamp,
+            name = name,
+            logger = logger,
+        )
+    }
+
+    /**
+     * Creates appropriate task based on operation type
+     */
+    suspend fun createTask(
+        operation: PipelineOperation,
+        metadata: PipelineMetadata,
+        steps: List<PipelineStepUpdate>,
+        timestamp: Long,
+        kafkaConsumerGroupIdPrefix: String? = null,
+        namespace: String? = null,
+    ): Task? {
+        return when (operation) {
+            PipelineOperation.Create -> {
+                require(kafkaConsumerGroupIdPrefix != null) { "kafkaConsumerGroupIdPrefix is required for Create operation" }
+                require(namespace != null) { "namespace is required for Create operation" }
+                createCreationTask(metadata, steps, kafkaConsumerGroupIdPrefix, namespace, timestamp)
+            }
+            PipelineOperation.Delete -> {
+                createDeletionTask(metadata, steps, timestamp)
+            }
+            else -> {
+                logger.warn("Unsupported pipeline operation: $operation")
+                null
+            }
+        }
+    }
+}

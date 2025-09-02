@@ -12,8 +12,6 @@ package io.seldon.dataflow
 import com.github.michaelbull.retry.policy.binaryExponentialBackoff
 import com.github.michaelbull.retry.retry
 import io.grpc.ManagedChannelBuilder
-import io.seldon.dataflow.kafka.CreationTask
-import io.seldon.dataflow.kafka.DeletionTask
 import io.seldon.dataflow.kafka.KafkaAdmin
 import io.seldon.dataflow.kafka.KafkaAdminProperties
 import io.seldon.dataflow.kafka.KafkaDomainParams
@@ -22,6 +20,7 @@ import io.seldon.dataflow.kafka.KafkaStreamsParams
 import io.seldon.dataflow.kafka.Pipeline
 import io.seldon.dataflow.kafka.PipelineId
 import io.seldon.dataflow.kafka.PipelineMetadata
+import io.seldon.dataflow.kafka.PipelineTaskFactory
 import io.seldon.dataflow.kafka.Task
 import io.seldon.dataflow.kafka.TopicWaitRetryParams
 import io.seldon.mlops.chainer.ChainerGrpcKt
@@ -83,6 +82,17 @@ class PipelineSubscriber(
 
     val pipelines = ConcurrentHashMap<PipelineId, Pipeline>()
     private val queues = ConcurrentHashMap<PipelineId, QueueInfo>()
+
+    // Task factory for creating pipeline operation tasks
+    private val taskFactory =
+        PipelineTaskFactory(
+            pipelineSubscriber = this,
+            kafkaAdmin = kafkaAdmin,
+            kafkaProperties = kafkaProperties,
+            kafkaDomainParams = kafkaDomainParams,
+            name = name,
+            logger = logger,
+        )
 
     // Track queues scheduled for deletion
     private data class QueueInfo(
@@ -255,19 +265,14 @@ class PipelineSubscriber(
         }
 
         queues[metadata.id]?.queue?.send(
-            CreationTask(
-                pipelineSubscriber = this@PipelineSubscriber,
+            taskFactory.createTask(
+                operation = PipelineOperation.Create,
                 metadata = metadata,
                 steps = steps,
-                kafkaAdmin = kafkaAdmin,
-                kafkaProperties = kafkaProperties,
-                kafkaDomainParams = kafkaDomainParams,
+                timestamp = timestamp,
                 kafkaConsumerGroupIdPrefix = kafkaConsumerGroupIdPrefix,
                 namespace = namespace,
-                timestamp = timestamp,
-                name = name,
-                logger = logger,
-            ),
+            )!!,
         )
     }
 
@@ -280,15 +285,12 @@ class PipelineSubscriber(
         if (queueInfo != null) {
             // Send deletion task first
             queueInfo.queue.send(
-                DeletionTask(
-                    pipelineSubscriber = this,
+                taskFactory.createTask(
+                    operation = PipelineOperation.Delete,
                     metadata = metadata,
                     steps = steps,
-                    kafkaAdmin = kafkaAdmin,
                     timestamp = timestamp,
-                    name = name,
-                    logger = logger,
-                ),
+                )!!,
             )
 
             // Mark for delayed deletion instead of immediate removal
