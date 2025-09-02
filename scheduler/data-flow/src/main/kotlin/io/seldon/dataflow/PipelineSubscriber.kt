@@ -32,11 +32,13 @@ import io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineO
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
@@ -61,6 +63,7 @@ class PipelineSubscriber(
     private val kafkaConsumerGroupIdPrefix: String,
     private val namespace: String,
     nThreads: Int,
+    private val queueCleanupDelayMs: Long = 30_000L,
 ) {
     private val kafkaAdmin = KafkaAdmin(kafkaAdminProperties, kafkaStreamsParams, topicWaitRetryParams)
     private val channel =
@@ -79,7 +82,61 @@ class PipelineSubscriber(
     val scope = CoroutineScope(SupervisorJob() + dispatcher)
 
     val pipelines = ConcurrentHashMap<PipelineId, Pipeline>()
-    val queues = ConcurrentHashMap<PipelineId, Channel<Task>>()
+    private val queues = ConcurrentHashMap<PipelineId, QueueInfo>()
+
+    // Track queues scheduled for deletion
+    private data class QueueInfo(
+        val queue: Channel<Task>,
+        val processingJob: Job,
+        var isMarkedForDeletion: Boolean = false,
+        var deletionScheduledAt: Long = 0L,
+    )
+
+    init {
+        // Start background cleanup task
+        scope.launch {
+            while (true) {
+                delay(5000L) // Check every 5 seconds
+                cleanupMarkedQueues()
+            }
+        }
+    }
+
+    private suspend fun cleanupMarkedQueues() {
+        val currentTime = System.currentTimeMillis()
+        val toRemove = mutableListOf<PipelineId>()
+
+        queues.forEach { (pipelineId, queueInfo) ->
+            if (queueInfo.isMarkedForDeletion &&
+                currentTime - queueInfo.deletionScheduledAt > queueCleanupDelayMs
+            ) {
+                logger.info("Cleaning up queue for pipeline $pipelineId after delay")
+                queueInfo.queue.close()
+                queueInfo.processingJob.cancel()
+                toRemove.add(pipelineId)
+            }
+        }
+
+        toRemove.forEach { pipelineId ->
+            queues.remove(pipelineId)
+            logger.debug("Removed pipeline queue from map: $pipelineId")
+        }
+    }
+
+    private fun startProcessing(
+        scope: CoroutineScope,
+        queue: Channel<Task>,
+    ): Job {
+        return scope.launch {
+            for (task in queue) {
+                try {
+                    task.run()
+                } catch (e: Exception) {
+                    logger.error("Task failed permanently: ${e.message}")
+                }
+            }
+        }
+    }
 
     suspend fun subscribe() {
         while (true) {
@@ -162,21 +219,6 @@ class PipelineSubscriber(
             .setName(name)
             .build()
 
-    private fun startProcessing(
-        scope: CoroutineScope,
-        queue: Channel<Task>,
-    ) {
-        scope.launch {
-            for (task in queue) {
-                try {
-                    task.run()
-                } catch (e: Exception) {
-                    logger.error("Task failed permanently: ${e.message}")
-                }
-            }
-        }
-    }
-
     private suspend fun handleCreate(
         metadata: PipelineMetadata,
         steps: List<PipelineStepUpdate>,
@@ -191,12 +233,21 @@ class PipelineSubscriber(
         // Flow<PipelineUpdateMessage> from subscribePipelines(). This allows us to sidestep issues
         // related to race conditions on `pipelines[metadata.id] below. If we ever move to
         // concurrent creation of pipelines, this needs to be revisited.
-        if (!queues.containsKey(metadata.id)) {
-            queues[metadata.id] = Channel<Task>(Channel.CONFLATED)
-            startProcessing(scope, queues[metadata.id]!!)
+        val existingQueueInfo = queues[metadata.id]
+
+        if (existingQueueInfo == null) {
+            // Create new queue and processing job
+            val queue = Channel<Task>(Channel.CONFLATED)
+            val processingJob = startProcessing(scope, queue)
+            queues[metadata.id] = QueueInfo(queue, processingJob)
+        } else if (existingQueueInfo.isMarkedForDeletion) {
+            // Unmark for deletion since we're recreating
+            logger.info("Unmarking queue for deletion due to recreate request for pipeline ${metadata.id}")
+            existingQueueInfo.isMarkedForDeletion = false
+            existingQueueInfo.deletionScheduledAt = 0L
         }
 
-        queues[metadata.id]?.send(
+        queues[metadata.id]?.queue?.send(
             CreationTask(
                 pipelineSubscriber = this@PipelineSubscriber,
                 metadata = metadata,
@@ -218,10 +269,10 @@ class PipelineSubscriber(
         steps: List<PipelineStepUpdate>,
         timestamp: Long,
     ) {
-        if (queues.containsKey(metadata.id)) {
-            // Send deletion task (pipeline is passed so the kafka stream app
-            // can be cleanly stopped)
-            queues[metadata.id]!!.send(
+        val queueInfo = queues[metadata.id]
+        if (queueInfo != null) {
+            // Send deletion task first
+            queueInfo.queue.send(
                 DeletionTask(
                     pipelineSubscriber = this,
                     metadata = metadata,
@@ -232,6 +283,11 @@ class PipelineSubscriber(
                     logger = logger,
                 ),
             )
+
+            // Mark for delayed deletion instead of immediate removal
+            logger.info("Marking queue for delayed deletion for pipeline ${metadata.id}")
+            queueInfo.isMarkedForDeletion = true
+            queueInfo.deletionScheduledAt = System.currentTimeMillis()
         }
     }
 
