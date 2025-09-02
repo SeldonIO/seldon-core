@@ -919,7 +919,7 @@ spec:
         - name: SELDON_SCHEDULER_TLS_PORT
           value: "9044"
         - name: HEALTH_PROBE_PORT
-          value: "8000"
+          value: '{{ .Values.modelgateway.healthProbePort }}'
         - name: POD_NAME
           valueFrom:
             fieldRef:
@@ -935,14 +935,14 @@ spec:
           failureThreshold: 3
           httpGet:
             path: /live
-            port: 8000
+            port: '{{ .Values.modelgateway.healthProbePort }}'
           periodSeconds: 5
         name: modelgateway
         readinessProbe:
           failureThreshold: 3
           httpGet:
             path: /ready
-            port: 8000
+            port: '{{ .Values.modelgateway.healthProbePort }}'
           periodSeconds: 5
         resources:
           limits:
@@ -954,7 +954,7 @@ spec:
           failureThreshold: 3
           httpGet:
             path: /startup
-            port: 8000
+            port: '{{ .Values.modelgateway.healthProbePort }}'
           initialDelaySeconds: 3
           periodSeconds: 5
         volumeMounts:

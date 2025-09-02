@@ -13,6 +13,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -165,25 +166,27 @@ func main() {
 		errChan <- err
 	}()
 
-	healthServer := initHealthProbeServer(logger, kafkaSchedulerClient, errChan)
+	healthServer := initHealthProbeServer(logger, kafkaSchedulerClient, kafkaConsumer, errChan)
 	defer healthServer.Shutdown(context.Background())
 
 	// Wait for completion
 	waitForTermSignalOrErr(logger, errChan)
 }
 
-func initHealthProbeServer(logger *log.Logger, schedulerClient *gateway.KafkaSchedulerClient, errChan chan<- error) *health_probe.HTTPServer {
+func initHealthProbeServer(logger *log.Logger, schedulerClient *gateway.KafkaSchedulerClient, kafkaConsumer *gateway.ConsumerManager, errChan chan<- error) *health_probe.HTTPServer {
 	healthManager := health_probe.NewManager()
+
 	healthManager.AddCheck(func() error {
 		if !schedulerClient.IsConnected() {
 			return errors.New("not connected to scheduler")
 		}
 		return nil
 	}, health_probe.ProbeStartUp)
+
 	healthManager.AddCheck(func() error {
-		// TODO add kafka checks producer/consumer not closed, check goroutines are running?
-		// we don't perform any business logic checks here, if we can respond with HTTP 200 it means
-		// we still have available sockets/memory to serve reqs.
+		if err := kafkaConsumer.Healthy(); err != nil {
+			return fmt.Errorf("kafka is not healthy: %w", err)
+		}
 		return nil
 	}, health_probe.ProbeLiveness, health_probe.ProbeReadiness)
 
@@ -191,7 +194,7 @@ func initHealthProbeServer(logger *log.Logger, schedulerClient *gateway.KafkaSch
 	go func() {
 		err := healthServer.Start()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.WithError(err).Error("HTP health server failed")
+			logger.WithError(err).Error("HTTP health server failed")
 		}
 		errChan <- err
 	}()

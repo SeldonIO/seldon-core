@@ -11,6 +11,7 @@ package gateway
 
 import (
 	"encoding/json"
+	"fmt"
 	"sync"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
@@ -31,7 +32,7 @@ const (
 
 type ConsumerManager struct {
 	logger log.FieldLogger
-	mu     sync.Mutex
+	mu     sync.RWMutex
 	// all consumers we have
 	consumers         map[string]*InferKafkaHandler
 	managerConfig     *ManagerConfig
@@ -155,6 +156,22 @@ func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) 
 		cm.consumers[consumerBucketId] = ic
 	}
 	return ic, nil
+}
+
+func (cm *ConsumerManager) Healthy() error {
+	cm.mu.RLock()
+	defer cm.mu.RUnlock()
+
+	for _, consumer := range cm.consumers {
+		if !consumer.producerIsActive() {
+			return fmt.Errorf("producer %s not active", consumer.producer.String())
+		}
+		if consumer.consumer.IsClosed() {
+			return fmt.Errorf("consumer %s is closed", consumer.consumer.String())
+		}
+	}
+
+	return nil
 }
 
 func (cm *ConsumerManager) AddModel(modelName string) error {

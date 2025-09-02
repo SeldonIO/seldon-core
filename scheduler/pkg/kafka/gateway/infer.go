@@ -195,6 +195,10 @@ func (kc *InferKafkaHandler) Produce(msg *kafka.Message, deliveryChan chan kafka
 	}
 }
 
+func (kc *InferKafkaHandler) producerIsActive() bool {
+	return kc.producerActive.Load()
+}
+
 func (kc *InferKafkaHandler) closeProducer() {
 	kc.producerMu.Lock()
 	defer kc.producerMu.Unlock()
