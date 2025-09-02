@@ -247,15 +247,7 @@ class PipelineSubscriber(
         kafkaConsumerGroupIdPrefix: String,
         namespace: String,
     ) {
-        // If a pipeline with the same id exists, we assume it has the same name & version
-        // If it's in an error state, try re-creating.
-        //
-        // WARNING: at the moment handleCreate is called sequentially on each update in
-        // Flow<PipelineUpdateMessage> from subscribePipelines(). This allows us to sidestep issues
-        // related to race conditions on `pipelines[metadata.id] below. If we ever move to
-        // concurrent creation of pipelines, this needs to be revisited.
         val existingQueueInfo = queues[metadata.id]
-
         if (existingQueueInfo == null) {
             // Create new queue and processing job
             val queue = Channel<Task>(Channel.CONFLATED)

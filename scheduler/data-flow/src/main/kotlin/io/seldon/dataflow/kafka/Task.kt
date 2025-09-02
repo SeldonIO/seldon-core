@@ -33,11 +33,6 @@ class CreationTask(
 
         // If a pipeline with the same id exists, we assume it has the same name & version
         // If it's in an error state, try re-creating.
-        //
-        // WARNING: at the moment handleCreate is called sequentially on each update in
-        // Flow<PipelineUpdateMessage> from subscribePipelines(). This allows us to sidestep issues
-        // related to race conditions on `pipelines.containsKey(...)` below. If we ever move to
-        // concurrent creation of pipelines, this needs to be revisited.
         if (pipelines.containsKey(metadata.id)) {
             val previous = pipelines[metadata.id]!!
             if (previous.status.isActive()) {
