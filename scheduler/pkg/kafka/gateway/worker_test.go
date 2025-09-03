@@ -189,8 +189,7 @@ func createMLMockGrpcServer(g *GomegaWithT) *mockGRPCMLServer {
 	err := mockMLServer.setup()
 	g.Expect(err).To(BeNil())
 	go func() {
-		err := mockMLServer.start()
-		g.Expect(err).To(BeNil())
+		_ = mockMLServer.start()
 	}()
 	return mockMLServer
 }
