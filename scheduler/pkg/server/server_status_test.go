@@ -854,7 +854,7 @@ func TestModelGwRebalanceMessage(t *testing.T) {
 			mem, ok := s.modelStore.(*store.TestMemoryStore)
 			g.Expect(ok).To(BeTrue())
 
-			err = mem.HACKDirectlyUpdateModelStatus(store.ModelID{
+			err = mem.DirectlyUpdateModelStatus(store.ModelID{
 				Name:    modelName,
 				Version: model.GetLatest().GetVersion(),
 			}, store.ModelStatus{
@@ -941,7 +941,7 @@ func TestModelGwRebalance(t *testing.T) {
 				mem, ok := s.modelStore.(*store.TestMemoryStore)
 				g.Expect(ok).To(BeTrue())
 
-				err = mem.HACKDirectlyUpdateModelStatus(store.ModelID{
+				err = mem.DirectlyUpdateModelStatus(store.ModelID{
 					Name:    modelName,
 					Version: model.GetLatest().GetVersion(),
 				}, store.ModelStatus{
@@ -1033,7 +1033,7 @@ func TestSendModelStatusEvent(t *testing.T) {
 			mem, ok := s.modelStore.(*store.TestMemoryStore)
 			g.Expect(ok).To(BeTrue())
 
-			err = mem.HACKDirectlyUpdateModelStatus(store.ModelID{
+			err = mem.DirectlyUpdateModelStatus(store.ModelID{
 				Name:    modelName,
 				Version: model.GetLatest().GetVersion(),
 			}, store.ModelStatus{

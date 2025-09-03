@@ -445,7 +445,7 @@ func TestPipelineEvents(t *testing.T) {
 			err := s.pipelineHandler.AddPipeline(test.loadReq) // version 1
 			g.Expect(err).To(BeNil())
 
-			// wait for the event to propagate to point it realises there's no subscribers and discards the
+			// wait for the event to propagate to point ChainerServer realises there's no subscribers and discards the
 			// "add pipeline" event
 			time.Sleep(500 * time.Millisecond)
 

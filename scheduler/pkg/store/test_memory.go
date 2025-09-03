@@ -17,7 +17,10 @@ type ModelID struct {
 	Version uint32
 }
 
-// NewTestMemory DO NOT USE for non-test code
+// NewTestMemory DO NOT USE for non-test code. This is purely meant for using in tests where an integration test is
+// wanted where the real memory store is needed, but the test needs the ability to directly manipulate the model
+// statuses, which can't be achieved with MemoryStore. TestMemoryStore embeds MemoryStore and adds DirectlyUpdateModelStatus
+// to modify the statuses.
 func NewTestMemory(
 	logger log.FieldLogger,
 	store *LocalSchedulerStore,
@@ -26,7 +29,7 @@ func NewTestMemory(
 	return &TestMemoryStore{m}
 }
 
-func (t *TestMemoryStore) HACKDirectlyUpdateModelStatus(model ModelID, state ModelStatus) error {
+func (t *TestMemoryStore) DirectlyUpdateModelStatus(model ModelID, state ModelStatus) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
