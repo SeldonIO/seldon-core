@@ -11,11 +11,180 @@ package store
 
 import (
 	"testing"
+	"time"
 
 	. "github.com/onsi/gomega"
+	"google.golang.org/protobuf/proto"
+	"knative.dev/pkg/ptr"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
+
+func TestModelVersion_DeepCopy(t *testing.T) {
+	uInt32Ptr := func(i uint32) *uint32 {
+		return &i
+	}
+	uInt64Ptr := func(i uint64) *uint64 {
+		return &i
+	}
+
+	tests := []struct {
+		name     string
+		setupMV  func() *ModelVersion
+		validate func(t *testing.T, original, copied *ModelVersion)
+	}{
+		{
+			name: "empty model version",
+			setupMV: func() *ModelVersion {
+				return &ModelVersion{}
+			},
+			validate: func(t *testing.T, original, copied *ModelVersion) {
+				RegisterTestingT(t)
+				Expect(copied).ToNot(BeNil())
+				Expect(copied.version).To(Equal(uint32(0)))
+				Expect(copied.server).To(Equal(""))
+				Expect(copied.state).To(Equal(ModelStatus{}))
+				Expect(copied.modelDefn).To(BeNil())
+				Expect(copied.replicas).To(BeNil())
+			},
+		},
+		{
+			name: "basic fields only",
+			setupMV: func() *ModelVersion {
+				return &ModelVersion{
+					version: 123,
+					server:  "test-server",
+					state: ModelStatus{
+						State:               ModelAvailable,
+						Reason:              "some reason",
+						AvailableReplicas:   1,
+						UnavailableReplicas: 2,
+						DrainingReplicas:    3,
+						Timestamp:           time.Now(),
+					},
+				}
+			},
+			validate: func(t *testing.T, original, copied *ModelVersion) {
+				RegisterTestingT(t)
+				Expect(copied.version).To(Equal(uint32(123)))
+				Expect(copied.server).To(Equal("test-server"))
+				Expect(copied.state).To(Equal(original.state))
+				Expect(copied.modelDefn).To(BeNil())
+				Expect(copied.replicas).To(BeNil())
+			},
+		},
+		{
+			name: "with model definition",
+			setupMV: func() *ModelVersion {
+				return &ModelVersion{
+					version: 456,
+					server:  "model-server",
+					replicas: map[int]ReplicaStatus{
+						1: {
+							State:     Available,
+							Reason:    "some reason",
+							Timestamp: time.Now(),
+						},
+						2: {
+							State:     LoadedUnavailable,
+							Reason:    "some other reason",
+							Timestamp: time.Now(),
+						},
+					},
+					state: ModelStatus{
+						State:               ModelAvailable,
+						Reason:              "some reason",
+						AvailableReplicas:   1,
+						UnavailableReplicas: 2,
+						DrainingReplicas:    3,
+						Timestamp:           time.Now(),
+					},
+					modelDefn: &pb.Model{
+						Meta: &pb.MetaData{
+							Name:    "some name",
+							Kind:    ptr.String("some kind"),
+							Version: ptr.String("some version"),
+							KubernetesMeta: &pb.KubernetesMeta{
+								Namespace:  "some namespace",
+								Generation: 1,
+							},
+						},
+						ModelSpec: &pb.ModelSpec{
+							Uri:             "some/url",
+							ArtifactVersion: uInt32Ptr(1),
+							Requirements:    []string{"some requirements"},
+							MemoryBytes:     uInt64Ptr(2),
+							Server:          ptr.String("some server"),
+							Parameters: []*pb.ParameterSpec{{
+								Name:  "some name",
+								Value: "some value",
+							}},
+							ModelRuntimeInfo: &pb.ModelRuntimeInfo{
+								ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{
+									Mlserver: &pb.MLServerModelSettings{ParallelWorkers: 2},
+								},
+							},
+							ModelSpec: &pb.ModelSpec_Explainer{
+								Explainer: &pb.ExplainerSpec{
+									Type:        "some type",
+									ModelRef:    ptr.String("some model ref"),
+									PipelineRef: ptr.String("some pipeline ref"),
+								},
+							},
+						},
+					},
+				}
+			},
+			validate: func(t *testing.T, original, copied *ModelVersion) {
+				RegisterTestingT(t)
+				Expect(copied.modelDefn).ToNot(BeNil())
+
+				// Verify it's a deep copy (different pointers)
+				Expect(copied.modelDefn).ToNot(BeIdenticalTo(original.modelDefn))
+
+				// Verify proto equality
+				Expect(proto.Equal(original.modelDefn, copied.modelDefn)).To(BeTrue())
+				Expect(copied.version).To(Equal(original.version))
+				Expect(copied.server).To(Equal(original.server))
+				Expect(copied.state).To(Equal(original.state))
+				Expect(copied.replicas).To(Equal(original.replicas))
+			},
+		},
+		{
+			name: "with empty replicas map",
+			setupMV: func() *ModelVersion {
+				return &ModelVersion{
+					version: 100,
+					server:  "empty-replica-server",
+					state: ModelStatus{
+						State:               ModelAvailable,
+						Reason:              "some reason",
+						AvailableReplicas:   1,
+						UnavailableReplicas: 2,
+						DrainingReplicas:    3,
+						Timestamp:           time.Now(),
+					},
+					replicas: make(map[int]ReplicaStatus),
+				}
+			},
+			validate: func(t *testing.T, original, copied *ModelVersion) {
+				RegisterTestingT(t)
+				Expect(copied.replicas).ToNot(BeNil())
+				Expect(len(copied.replicas)).To(Equal(0))
+				Expect(copied.state).To(Equal(original.state))
+				Expect(&copied.replicas).ToNot(BeIdenticalTo(&original.replicas))
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			original := tt.setupMV()
+			copied := original.DeepCopy()
+			tt.validate(t, original, copied)
+		})
+	}
+}
 
 func TestReplicaStateToString(t *testing.T) {
 	for _, state := range replicaStates {

@@ -383,6 +383,32 @@ func (m *Model) SetDeleted() {
 	m.deleted.Store(true)
 }
 
+func (m *ModelVersion) DeepCopy() *ModelVersion {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	state := m.state
+
+	newMV := ModelVersion{
+		version: m.version,
+		server:  m.server,
+		state:   state,
+	}
+
+	if m.modelDefn != nil {
+		newMV.modelDefn = proto.Clone(m.modelDefn).(*pb.Model)
+	}
+
+	if m.replicas != nil {
+		newMV.replicas = make(map[int]ReplicaStatus, len(m.replicas))
+		for k, v := range m.replicas {
+			newMV.replicas[k] = v
+		}
+	}
+
+	return &newMV
+}
+
 func (m *ModelVersion) GetVersion() uint32 {
 	return m.version
 }
