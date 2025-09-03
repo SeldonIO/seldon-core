@@ -131,8 +131,23 @@ class PipelineSubscriber(
 
         toCleanup.forEach { (pipelineId, queueInfo) ->
             queuesMutex.withLock {
+                // We need to verify three conditions:
+                // 1. `queueInfo` has not changed.
+                // 2. It is still marked for deletion.
+                // 3. The `pipelineId` entry in `pipelines` is null.
+                //
+                // The third condition prevents a race condition in the following scenario:
+                // - A deletion task is executing.
+                // - The pipeline cleanup process is executing.
+                // - A new pipeline creation is triggered.
+                //
+                // Without this check, the race occurs if a creation task (possibly running on a
+                // different thread and queue) writes to `pipelines` while the deletion task
+                // simultaneously uses that newly written pipeline instead of the old one.
+                // Checking for `pipelines[pipelineId]` is a guarantee that the deletion
+                // task completed (at least up to a point)
                 val currentQueueInfo = queues[pipelineId]
-                if (currentQueueInfo == queueInfo && currentQueueInfo.isMarkedForDeletion) {
+                if (currentQueueInfo == queueInfo && currentQueueInfo.isMarkedForDeletion && pipelines[pipelineId] == null) {
                     logger.debug("Cleaning up queue for pipeline $pipelineId after delay")
                     try {
                         queueInfo.queue.close()
