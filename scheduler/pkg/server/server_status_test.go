@@ -749,7 +749,7 @@ func createTestSchedulerImpl(config SchedulerServerConfig) (*SchedulerServer, *c
 
 	eventHub, _ := coordinator.NewEventHub(logger)
 
-	schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+	schedulerStore := store.NewTestMemory(logger, store.NewLocalSchedulerStore(), eventHub)
 	experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
 	pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
 
@@ -850,10 +850,18 @@ func TestModelGwRebalanceMessage(t *testing.T) {
 			// set the model to available
 			modelName := test.loadReq.Model.Meta.Name
 			model, _ := s.modelStore.GetModel(modelName)
-			model.GetLatest().SetModelState(store.ModelStatus{
+
+			mem, ok := s.modelStore.(*store.TestMemoryStore)
+			g.Expect(ok).To(BeTrue())
+
+			err = mem.HACKDirectlyUpdateModelStatus(store.ModelID{
+				Name:    modelName,
+				Version: model.GetLatest().GetVersion(),
+			}, store.ModelStatus{
 				State:             test.modelState,
 				AvailableReplicas: test.availableReplicas,
 			})
+			g.Expect(err).To(BeNil())
 
 			// trigger rebalance
 			s.modelGwRebalance()
@@ -929,10 +937,18 @@ func TestModelGwRebalance(t *testing.T) {
 
 				modelName := req.Model.Meta.Name
 				model, _ := s.modelStore.GetModel(modelName)
-				model.GetLatest().SetModelState(store.ModelStatus{
+
+				mem, ok := s.modelStore.(*store.TestMemoryStore)
+				g.Expect(ok).To(BeTrue())
+
+				err = mem.HACKDirectlyUpdateModelStatus(store.ModelID{
+					Name:    modelName,
+					Version: model.GetLatest().GetVersion(),
+				}, store.ModelStatus{
 					State:             store.ModelAvailable,
 					AvailableReplicas: 1,
 				})
+				g.Expect(err).To(BeNil())
 			}
 
 			s.modelGwRebalance()
@@ -1013,10 +1029,18 @@ func TestSendModelStatusEvent(t *testing.T) {
 			// set the model to available
 			modelName := test.loadReq.Model.Meta.Name
 			model, _ := s.modelStore.GetModel(modelName)
-			model.GetLatest().SetModelState(store.ModelStatus{
+
+			mem, ok := s.modelStore.(*store.TestMemoryStore)
+			g.Expect(ok).To(BeTrue())
+
+			err = mem.HACKDirectlyUpdateModelStatus(store.ModelID{
+				Name:    modelName,
+				Version: model.GetLatest().GetVersion(),
+			}, store.ModelStatus{
 				State:             store.ModelAvailable,
 				AvailableReplicas: 1,
 			})
+			g.Expect(err).To(BeNil())
 
 			err = s.sendModelStatusEvent(coordinator.ModelEventMsg{
 				ModelName:    modelName,
