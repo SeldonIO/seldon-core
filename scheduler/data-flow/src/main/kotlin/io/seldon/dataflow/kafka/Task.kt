@@ -7,8 +7,20 @@ import io.seldon.dataflow.withException
 import io.seldon.dataflow.withMessage
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlin.collections.set
+
+// Track queues scheduled for deletion
+data class QueueInfo(
+    val queue: Channel<Task>,
+    val processingJob: Job,
+    var isMarkedForDeletion: Boolean = false,
+    var deletionScheduledAt: Long = 0L,
+)
 
 abstract class Task(
     private val pipelineSubscriber: PipelineSubscriber,
@@ -162,9 +174,11 @@ class DeletionTask(
     private val metadata: PipelineMetadata,
     private val steps: List<PipelineStepUpdate>,
     private val kafkaAdmin: KafkaAdmin,
-    private val timestamp: Long,
-    private val name: String,
+    timestamp: Long,
+    name: String,
     private val logger: Klogger,
+    private val queueInfo: QueueInfo,
+    private val queuesMutex: Mutex,
 ) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Delete) {
     override suspend fun run() {
         logger.info(
@@ -194,6 +208,12 @@ class DeletionTask(
             success = pipelineError == null,
             reason = pipelineError?.getDescription() ?: "pipeline removed",
         )
+
+        // Once the stream is deleted, mark the queue as ready for deletion
+        queuesMutex.withLock {
+            queueInfo.isMarkedForDeletion = true
+            queueInfo.deletionScheduledAt = System.currentTimeMillis()
+        }
     }
 }
 
@@ -231,6 +251,8 @@ class PipelineTaskFactory(
         metadata: PipelineMetadata,
         steps: List<PipelineStepUpdate>,
         timestamp: Long,
+        queueInfo: QueueInfo,
+        queuesMutex: Mutex,
     ): Task {
         return DeletionTask(
             pipelineSubscriber = pipelineSubscriber,
@@ -240,6 +262,8 @@ class PipelineTaskFactory(
             timestamp = timestamp,
             name = name,
             logger = logger,
+            queueInfo = queueInfo,
+            queuesMutex = queuesMutex,
         )
     }
 
@@ -253,6 +277,8 @@ class PipelineTaskFactory(
         timestamp: Long,
         kafkaConsumerGroupIdPrefix: String? = null,
         namespace: String? = null,
+        queueInfo: QueueInfo? = null,
+        queuesMutex: Mutex? = null,
     ): Task? {
         return when (operation) {
             PipelineOperation.Create -> {
@@ -261,7 +287,7 @@ class PipelineTaskFactory(
                 createCreationTask(metadata, steps, kafkaConsumerGroupIdPrefix, namespace, timestamp)
             }
             PipelineOperation.Delete -> {
-                createDeletionTask(metadata, steps, timestamp)
+                createDeletionTask(metadata, steps, timestamp, queueInfo!!, queuesMutex!!)
             }
             else -> {
                 logger.warn("Unsupported pipeline operation: $operation")
