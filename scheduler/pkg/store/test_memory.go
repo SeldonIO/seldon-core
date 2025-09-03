@@ -3,8 +3,9 @@ package store
 import (
 	"errors"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 )
 
 type TestMemoryStore struct {
