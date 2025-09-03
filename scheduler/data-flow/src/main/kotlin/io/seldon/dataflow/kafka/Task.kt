@@ -10,8 +10,30 @@ import io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineO
 import kotlinx.coroutines.runBlocking
 import kotlin.collections.set
 
-abstract class Task {
+abstract class Task(
+    private val pipelineSubscriber: PipelineSubscriber,
+    private val metadata: PipelineMetadata,
+    private val timestamp: Long,
+    private val name: String,
+    private val operation: PipelineOperation,
+) {
     abstract suspend fun run()
+
+    suspend fun sendPipelineUpdateEvent(
+        success: Boolean,
+        reason: String,
+    ) {
+        pipelineSubscriber.client.pipelineUpdateEvent(
+            pipelineSubscriber.makePipelineUpdateEvent(
+                metadata = metadata,
+                operation = operation,
+                success = success,
+                reason = reason,
+                timestamp = timestamp,
+                stream = name,
+            ),
+        )
+    }
 }
 
 class CreationTask(
@@ -23,10 +45,10 @@ class CreationTask(
     private val kafkaDomainParams: KafkaDomainParams,
     private val kafkaConsumerGroupIdPrefix: String,
     private val namespace: String,
-    private val timestamp: Long,
-    private val name: String,
+    timestamp: Long,
+    name: String,
     private val logger: Klogger,
-) : Task() {
+) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Create) {
     override suspend fun run() {
         val defaultReason = "pipeline created"
         val pipelines = pipelineSubscriber.pipelines
@@ -36,15 +58,9 @@ class CreationTask(
         if (pipelines.containsKey(metadata.id)) {
             val previous = pipelines[metadata.id]!!
             if (previous.status.isActive()) {
-                pipelineSubscriber.client.pipelineUpdateEvent(
-                    pipelineSubscriber.makePipelineUpdateEvent(
-                        metadata = metadata,
-                        operation = PipelineOperation.Create,
-                        success = true,
-                        reason = previous.status.getDescription() ?: defaultReason,
-                        timestamp = timestamp,
-                        stream = name,
-                    ),
+                this.sendPipelineUpdateEvent(
+                    success = true,
+                    reason = previous.status.getDescription() ?: defaultReason,
                 )
                 logger.debug(
                     "response to scheduler: pipeline {pipelineName} continues to run normally; " +
@@ -94,15 +110,9 @@ class CreationTask(
             )
         if (err != null) {
             err.log(logger, Level.ERROR)
-            pipelineSubscriber.client.pipelineUpdateEvent(
-                pipelineSubscriber.makePipelineUpdateEvent(
-                    metadata = metadata,
-                    operation = PipelineOperation.Create,
-                    success = false,
-                    reason = err.getDescription() ?: "failed to initialize dataflow engine",
-                    timestamp = timestamp,
-                    stream = name,
-                ),
+            sendPipelineUpdateEvent(
+                success = false,
+                reason = err.getDescription() ?: "failed to initialize dataflow engine",
             )
             return
         }
@@ -110,15 +120,9 @@ class CreationTask(
         pipeline!! // assert pipeline is not null when err is null
         if (pipeline.size != steps.size) {
             pipeline.stop()
-            pipelineSubscriber.client.pipelineUpdateEvent(
-                pipelineSubscriber.makePipelineUpdateEvent(
-                    metadata = metadata,
-                    operation = PipelineOperation.Create,
-                    success = false,
-                    reason = "failed to create all pipeline steps",
-                    timestamp = timestamp,
-                    stream = name,
-                ),
+            sendPipelineUpdateEvent(
+                success = false,
+                reason = "failed to create all pipeline steps",
             )
             return
         }
@@ -146,15 +150,9 @@ class CreationTask(
             pipelineStatus.hasError = true
         }
         pipelineStatus.log(logger, Level.DEBUG)
-        pipelineSubscriber.client.pipelineUpdateEvent(
-            pipelineSubscriber.makePipelineUpdateEvent(
-                metadata = metadata,
-                operation = PipelineOperation.Create,
-                success = !pipelineStatus.isError(),
-                reason = pipelineStatus.getDescription() ?: defaultReason,
-                timestamp = timestamp,
-                stream = name,
-            ),
+        sendPipelineUpdateEvent(
+            success = !pipelineStatus.isError(),
+            reason = pipelineStatus.getDescription() ?: defaultReason,
         )
     }
 }
@@ -167,7 +165,7 @@ class DeletionTask(
     private val timestamp: Long,
     private val name: String,
     private val logger: Klogger,
-) : Task() {
+) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Delete) {
     override suspend fun run() {
         logger.info(
             "Delete pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
@@ -192,15 +190,9 @@ class DeletionTask(
                     .withMessage("kafka streams topic deletion error")
         }
 
-        pipelineSubscriber.client.pipelineUpdateEvent(
-            pipelineSubscriber.makePipelineUpdateEvent(
-                metadata = metadata,
-                operation = PipelineOperation.Delete,
-                success = pipelineError == null,
-                reason = pipelineError?.getDescription() ?: "pipeline removed",
-                timestamp = timestamp,
-                stream = name,
-            ),
+        sendPipelineUpdateEvent(
+            success = pipelineError == null,
+            reason = pipelineError?.getDescription() ?: "pipeline removed",
         )
     }
 }
