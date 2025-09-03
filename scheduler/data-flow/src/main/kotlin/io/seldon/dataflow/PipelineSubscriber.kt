@@ -109,7 +109,7 @@ class PipelineSubscriber(
         // Start background cleanup task
         scope.launch {
             while (true) {
-                delay(10000L)
+                delay(5000L)
                 cleanupMarkedQueues()
             }
         }
@@ -136,7 +136,6 @@ class PipelineSubscriber(
                     logger.debug("Cleaning up queue for pipeline $pipelineId after delay")
                     try {
                         queueInfo.queue.close()
-                        queueInfo.processingJob.cancel()
                         queues.remove(pipelineId)
                         logger.debug("Removed pipeline queue from map: $pipelineId")
                     } catch (e: Exception) {
