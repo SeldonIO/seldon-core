@@ -21,7 +21,6 @@ import io.seldon.dataflow.kafka.Pipeline
 import io.seldon.dataflow.kafka.PipelineId
 import io.seldon.dataflow.kafka.PipelineMetadata
 import io.seldon.dataflow.kafka.PipelineTaskFactory
-import io.seldon.dataflow.kafka.QueueInfo
 import io.seldon.dataflow.kafka.Task
 import io.seldon.dataflow.kafka.TopicWaitRetryParams
 import io.seldon.mlops.chainer.ChainerGrpcKt
@@ -97,6 +96,14 @@ class PipelineSubscriber(
             name = name,
             logger = logger,
         )
+
+    // Track queues scheduled for deletion
+    private data class QueueInfo(
+        val queue: Channel<Task>,
+        val processingJob: Job,
+        var isMarkedForDeletion: Boolean = false,
+        var deletionScheduledAt: Long = 0L,
+    )
 
     init {
         // Start background cleanup task
@@ -288,14 +295,24 @@ class PipelineSubscriber(
         steps: List<PipelineStepUpdate>,
         timestamp: Long,
     ) {
-        queues[metadata.id]?.queue?.send(
+        var queueToSendTask: Channel<Task>? = null
+        queuesMutex.withLock {
+            val queueInfo = queues[metadata.id]
+            if (queueInfo != null) {
+                // Mark for delayed deletion
+                logger.debug("Marking queue for delayed deletion for pipeline ${metadata.id}")
+                queueInfo.isMarkedForDeletion = true
+                queueInfo.deletionScheduledAt = System.currentTimeMillis()
+                queueToSendTask = queueInfo.queue
+            }
+        }
+
+        queueToSendTask?.send(
             taskFactory.createTask(
                 operation = PipelineOperation.Delete,
                 metadata = metadata,
                 steps = steps,
                 timestamp = timestamp,
-                queueInfo = queues[metadata.id],
-                queuesMutex = queuesMutex,
             )!!,
         )
     }
