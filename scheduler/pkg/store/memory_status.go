@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package store
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -105,29 +106,45 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 	}
 }
 
-func (m *MemoryStore) FailedScheduling(modelVersion *ModelVersion, reason string, reset bool) {
-	// we use len of GetAssignment instead of .state.AvailableReplicas as it is more accurate in this context
-	availableReplicas := uint32(len(modelVersion.GetAssignment()))
+func (m *MemoryStore) FailedScheduling(modelID string, version uint32, reason string, reset bool) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 
-	modelVersion.state = ModelStatus{
-		State:               ScheduleFailed,
-		Reason:              reason,
-		Timestamp:           time.Now(),
-		AvailableReplicas:   availableReplicas,
-		UnavailableReplicas: modelVersion.GetModel().GetDeploymentSpec().GetReplicas() - availableReplicas,
-	}
-	// make sure we reset server but only if there are no available replicas
-	if reset {
-		modelVersion.SetServer("")
+	model, ok := m.store.models[modelID]
+	if !ok {
+		return fmt.Errorf("model %s not found", modelID)
 	}
 
-	m.eventHub.PublishModelEvent(
-		modelFailureEventSource,
-		coordinator.ModelEventMsg{
-			ModelName:    modelVersion.GetMeta().GetName(),
-			ModelVersion: modelVersion.GetVersion(),
-		},
-	)
+	for _, modelVersion := range model.versions {
+		if modelVersion.version == version {
+			// we use len of GetAssignment instead of .state.AvailableReplicas as it is more accurate in this context
+			availableReplicas := uint32(len(modelVersion.GetAssignment()))
+
+			modelVersion.state = ModelStatus{
+				State:               ScheduleFailed,
+				Reason:              reason,
+				Timestamp:           time.Now(),
+				AvailableReplicas:   availableReplicas,
+				UnavailableReplicas: modelVersion.GetModel().GetDeploymentSpec().GetReplicas() - availableReplicas,
+			}
+			// make sure we reset server but only if there are no available replicas
+			if reset {
+				modelVersion.SetServer("")
+			}
+
+			m.eventHub.PublishModelEvent(
+				modelFailureEventSource,
+				coordinator.ModelEventMsg{
+					ModelName:    modelVersion.GetMeta().GetName(),
+					ModelVersion: modelVersion.GetVersion(),
+				},
+			)
+
+			return nil
+		}
+	}
+
+	return fmt.Errorf("model %s found, version %d not found", modelID, version)
 }
 
 func (m *MemoryStore) updateModelStatus(isLatest bool, deleted bool, modelVersion *ModelVersion, prevModelVersion *ModelVersion) {
