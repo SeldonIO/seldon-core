@@ -109,7 +109,7 @@ class PipelineSubscriber(
         // Start background cleanup task
         scope.launch {
             while (true) {
-                delay(5000L)
+                delay(300_000L)
                 cleanupMarkedQueues()
             }
         }
