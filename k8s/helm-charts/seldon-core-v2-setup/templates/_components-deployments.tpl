@@ -1111,6 +1111,8 @@ spec:
         - name: SELDON_LOG_LEVEL_KAFKA
           value: '{{ hasKey .Values.dataflow "logLevelKafka" | ternary .Values.dataflow.logLevelKafka
             .Values.logging.logLevel | upper }}'
+        - name: SELDON_PIPELINE_CTLOPS_THREADS
+          value: '{{ .Values.dataflow.pipelineCtlopsThreads }}'
         - name: SELDON_UPSTREAM_HOST
           value: seldon-scheduler
         - name: SELDON_UPSTREAM_PORT
