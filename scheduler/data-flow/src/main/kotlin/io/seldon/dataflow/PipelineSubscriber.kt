@@ -291,18 +291,17 @@ class PipelineSubscriber(
                 existingQueueInfo.isMarkedForDeletion = false
                 existingQueueInfo.deletionScheduledAt = 0L
             }
+            queues[metadata.id]?.queue?.send(
+                taskFactory.createTask(
+                    operation = PipelineOperation.Create,
+                    metadata = metadata,
+                    steps = steps,
+                    timestamp = timestamp,
+                    kafkaConsumerGroupIdPrefix = kafkaConsumerGroupIdPrefix,
+                    namespace = namespace,
+                )!!,
+            )
         }
-
-        queues[metadata.id]?.queue?.send(
-            taskFactory.createTask(
-                operation = PipelineOperation.Create,
-                metadata = metadata,
-                steps = steps,
-                timestamp = timestamp,
-                kafkaConsumerGroupIdPrefix = kafkaConsumerGroupIdPrefix,
-                namespace = namespace,
-            )!!,
-        )
     }
 
     private suspend fun handleDelete(
@@ -310,7 +309,6 @@ class PipelineSubscriber(
         steps: List<PipelineStepUpdate>,
         timestamp: Long,
     ) {
-        var queueToSendTask: Channel<Task>? = null
         queuesMutex.withLock {
             val queueInfo = queues[metadata.id]
             if (queueInfo != null) {
@@ -318,18 +316,16 @@ class PipelineSubscriber(
                 logger.debug("Marking queue for delayed deletion for pipeline ${metadata.id}")
                 queueInfo.isMarkedForDeletion = true
                 queueInfo.deletionScheduledAt = System.currentTimeMillis()
-                queueToSendTask = queueInfo.queue
+                queueInfo.queue.send(
+                    taskFactory.createTask(
+                        operation = PipelineOperation.Delete,
+                        metadata = metadata,
+                        steps = steps,
+                        timestamp = timestamp,
+                    )!!,
+                )
             }
         }
-
-        queueToSendTask?.send(
-            taskFactory.createTask(
-                operation = PipelineOperation.Delete,
-                metadata = metadata,
-                steps = steps,
-                timestamp = timestamp,
-            )!!,
-        )
     }
 
     fun cancelPipelines(reason: String) {
