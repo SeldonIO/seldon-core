@@ -145,60 +145,6 @@ func TestHttpServer(t *testing.T) {
 			req:        ``,
 			statusCode: http.StatusBadRequest,
 		},
-		{
-			name:       "liveness probe successful",
-			path:       "/live",
-			statusCode: http.StatusOK,
-			setupHealthChecker: func(c *mocks.MockManager) {
-				c.EXPECT().CheckLiveness().Return(nil)
-			},
-			doNotCheckReqID: true,
-		},
-		{
-			name:       "liveness probe failed",
-			path:       "/live",
-			statusCode: http.StatusInternalServerError,
-			setupHealthChecker: func(c *mocks.MockManager) {
-				c.EXPECT().CheckLiveness().Return(errors.New("some issue"))
-			},
-			doNotCheckReqID: true,
-		},
-		{
-			name:       "readiness probe successful",
-			path:       "/ready",
-			statusCode: http.StatusOK,
-			setupHealthChecker: func(c *mocks.MockManager) {
-				c.EXPECT().CheckReadiness().Return(nil)
-			},
-			doNotCheckReqID: true,
-		},
-		{
-			name:       "readiness probe failed",
-			path:       "/ready",
-			statusCode: http.StatusInternalServerError,
-			setupHealthChecker: func(c *mocks.MockManager) {
-				c.EXPECT().CheckReadiness().Return(errors.New("some issue"))
-			},
-			doNotCheckReqID: true,
-		},
-		{
-			name:       "startup probe successful",
-			path:       "/startup",
-			statusCode: http.StatusOK,
-			setupHealthChecker: func(c *mocks.MockManager) {
-				c.EXPECT().CheckStartup().Return(nil)
-			},
-			doNotCheckReqID: true,
-		},
-		{
-			name:       "startup probe failed",
-			path:       "/startup",
-			statusCode: http.StatusInternalServerError,
-			setupHealthChecker: func(c *mocks.MockManager) {
-				c.EXPECT().CheckStartup().Return(errors.New("some issue"))
-			},
-			doNotCheckReqID: true,
-		},
 	}
 
 	testRequestId := "test-id"
@@ -219,7 +165,7 @@ func TestHttpServer(t *testing.T) {
 				test.setupHealthChecker(mockHealthCheck)
 			}
 
-			httpServer := NewGatewayHttpServer(port, logrus.New(), mockInferer, fakePipelineMetricsHandler{}, &util.TLSOptions{}, nil, mockHealthCheck)
+			httpServer := NewGatewayHttpServer(port, logrus.New(), mockInferer, fakePipelineMetricsHandler{}, &util.TLSOptions{}, nil)
 			go func() {
 				err := httpServer.Start()
 				g.Expect(err).To(Equal(http.ErrServerClosed))
