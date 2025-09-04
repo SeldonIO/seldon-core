@@ -16,6 +16,7 @@ const (
 //go:generate go tool mockgen -source=health.go -destination=./mocks/mock_health.go -package=mocks Manager
 type Manager interface {
 	AddCheck(cb ProbeCallback, probes ...ProbeType)
+	HasCallbacks(probe ProbeType) bool
 	CheckReadiness() error
 	CheckLiveness() error
 	CheckStartup() error
@@ -28,18 +29,18 @@ func (p ProbeType) Valid() bool {
 }
 
 type manager struct {
-	svcs []service
-}
-
-type service struct {
-	probes ProbeType
-	cb     ProbeCallback
+	svcs map[ProbeType][]ProbeCallback
 }
 
 func NewManager() Manager {
 	return &manager{
-		svcs: make([]service, 0),
+		svcs: make(map[ProbeType][]ProbeCallback, 0),
 	}
+}
+
+func (m *manager) HasCallbacks(probe ProbeType) bool {
+	_, ok := m.svcs[probe]
+	return ok
 }
 
 func (m *manager) AddCheck(cb ProbeCallback, probes ...ProbeType) {
@@ -47,18 +48,15 @@ func (m *manager) AddCheck(cb ProbeCallback, probes ...ProbeType) {
 		panic("nil callback")
 	}
 
-	var probesSum ProbeType
 	for _, probe := range probes {
 		if !probe.Valid() {
 			panic(fmt.Sprintf("Invalid probe type %v", probe))
 		}
-		probesSum |= probe
+		if _, ok := m.svcs[probe]; !ok {
+			m.svcs[probe] = make([]ProbeCallback, 0)
+		}
+		m.svcs[probe] = append(m.svcs[probe], cb)
 	}
-
-	m.svcs = append(m.svcs, service{
-		probes: probesSum,
-		cb:     cb,
-	})
 }
 
 func (m *manager) CheckReadiness() error {
@@ -74,11 +72,8 @@ func (m *manager) CheckLiveness() error {
 }
 
 func (m *manager) runCheck(probe ProbeType) error {
-	for _, svc := range m.svcs {
-		if svc.probes&probe == 0 {
-			continue
-		}
-		if err := svc.cb(); err != nil {
+	for _, cb := range m.svcs[probe] {
+		if err := cb(); err != nil {
 			return fmt.Errorf("failed probe: %w", err)
 		}
 	}

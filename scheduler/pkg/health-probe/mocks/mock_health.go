@@ -97,3 +97,17 @@ func (mr *MockManagerMockRecorder) CheckStartup() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckStartup", reflect.TypeOf((*MockManager)(nil).CheckStartup))
 }
+
+// HasCallbacks mocks base method.
+func (m *MockManager) HasCallbacks(probe health_probe.ProbeType) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HasCallbacks", probe)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// HasCallbacks indicates an expected call of HasCallbacks.
+func (mr *MockManagerMockRecorder) HasCallbacks(probe any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasCallbacks", reflect.TypeOf((*MockManager)(nil).HasCallbacks), probe)
+}

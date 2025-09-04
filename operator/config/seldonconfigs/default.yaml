@@ -172,6 +172,7 @@ spec:
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --tracing-config-path=/mnt/tracing/tracing.json
         - --log-level=$(LOG_LEVEL)
+        - --health-probe-port=$(HEALTH_PROBE_PORT)
         command:
         - /bin/pipelinegateway
         env:
@@ -185,6 +186,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: HEALTH_PROBE_PORT
+          value: "9999"
         - name: POD_IP
           valueFrom:
             fieldRef:
@@ -206,6 +209,9 @@ spec:
         - containerPort: 9006
           name: metrics
           protocol: TCP
+        - containerPort: 9999
+          name: health
+          protocol: TCP
         resources:
           limits:
             memory: 1G
@@ -215,20 +221,20 @@ spec:
         startupProbe:
           httpGet:
             path: /startup
-            port: http
+            port: health
           initialDelaySeconds: 3
           periodSeconds: 5
           failureThreshold: 3
         readinessProbe:
           httpGet:
             path: /ready
-            port: http
+            port: health
           periodSeconds: 5
           failureThreshold: 3
         livenessProbe:
           httpGet:
             path: /live
-            port: http
+            port: health
           periodSeconds: 5
           failureThreshold: 3
         volumeMounts:
