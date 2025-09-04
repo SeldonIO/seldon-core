@@ -141,7 +141,6 @@ class Pipeline(
 
     companion object {
         private val logger = noCoLogger(Pipeline::class)
-        const val STATE_DIR_CONFIG = "state.dir"
 
         fun forSteps(
             metadata: PipelineMetadata,
@@ -153,11 +152,8 @@ class Pipeline(
         ): Pair<Pipeline?, PipelineStatus.Error?> {
             val (topology, numSteps) = buildTopology(metadata, steps, kafkaDomainParams)
             val pipelineProperties = localiseKafkaProperties(kafkaProperties, metadata, numSteps, kafkaConsumerGroupIdPrefix, namespace)
-            pipelineProperties[STATE_DIR_CONFIG] = "/tmp/kafka-streams/${metadata.id}"
-
             var streamsApp: KafkaStreams?
             var pipelineError: PipelineStatus.Error?
-
             try {
                 streamsApp = KafkaStreams(topology, pipelineProperties)
             } catch (e: Exception) {
