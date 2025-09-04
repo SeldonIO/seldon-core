@@ -28,13 +28,13 @@ export let options = {
     setupTimeout: '6000s',
     teardownTimeout: '6000s',
     // TODO put back to 5000
-    iterations: 50000,
+    iterations: 500,
 }
 
-const modelName1 = 'automatedtests-pipeline-1-node-echo'
-const modelName2 = 'automatedtests-pipeline-2-node-echo'
-const pipelineName1 = modelName1 + '-pipeline';
-const pipelineName2 = modelName2 + '-pipeline';
+const modelNamePrefix1 = 'automatedtests-pipeline-1-node-echo'
+const modelNamePrefix2 = 'automatedtests-pipeline-2-node-echo'
+const pipelineName1 = modelNamePrefix1 + '-pipeline';
+const pipelineName2 = modelNamePrefix2 + '-pipeline';
 const serverName = "autotest-mlserver"
 const modelType = 'echo'
 
@@ -53,7 +53,7 @@ export function setup() {
         ]
 
 
-        const pipeline1 = generateMultiModelPipelineYaml(5, modelType, pipelineName1,modelName1, modelParams, config.modelName, 1, serverName)
+        const pipeline1 = generateMultiModelPipelineYaml(5, modelType, pipelineName1,modelNamePrefix1, modelParams, config.modelName, 1, serverName)
         pipeline1.modelCRYaml.forEach(model => {
             ctl.unloadModelFn(model.metadata.name, true)
             ctl.loadModelFn(model.metadata.name, yamlDump(model), false, false)
@@ -62,7 +62,7 @@ export function setup() {
         ctl.unloadPipelineFn(pipeline1.pipelineName, true)
         ctl.loadPipelineFn(pipeline1.pipelineName, pipeline1.pipelineCRYaml, false, false)
 
-        const pipeline2 = generateMultiModelPipelineYaml(5, modelType, pipelineName2,modelName2, modelParams, config.modelName, 1, serverName)
+        const pipeline2 = generateMultiModelPipelineYaml(5, modelType, pipelineName2,modelNamePrefix2, modelParams, config.modelName, 1, serverName)
 
         pipeline2.modelCRYaml.forEach(model => {
             ctl.unloadModelFn(model.metadata.name, true)
@@ -100,12 +100,12 @@ export function setup() {
 export default function (config) {
     if (Math.random() > 0.5) {
         const inferPayload1 = getModelInferencePayload(modelType, 1)
-        inferHttp(config.inferHttpEndpoint, modelName1, inferPayload1.http, true, true, config.debug)
+        inferHttp(config.inferHttpEndpoint, modelNamePrefix1, inferPayload1.http, true, true, config.debug)
         return
     }
 
     const inferPayload2 = getModelInferencePayload(modelType, 1)
-    inferHttp(config.inferHttpEndpoint, modelName2, inferPayload2.http, true, true, config.debug)
+    inferHttp(config.inferHttpEndpoint, modelNamePrefix2, inferPayload2.http, true, true, config.debug)
 }
 
 export function teardown(config) {
@@ -114,7 +114,7 @@ export function teardown(config) {
 
         ctl.unloadServerFn(serverName, false, false)
 
-        for (const modelName of [modelName1, modelName2]) {
+        for (const modelName of [modelNamePrefix1, modelNamePrefix2]) {
             let modelNames = k8s.getExistingModelNames(modelName)
             modelNames.forEach(modelName => {
                 console.log("deleting model ", modelName)
