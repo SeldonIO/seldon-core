@@ -5,6 +5,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"testing"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 )
 
@@ -22,9 +24,13 @@ type ModelID struct {
 // statuses, which can't be achieved with MemoryStore. TestMemoryStore embeds MemoryStore and adds DirectlyUpdateModelStatus
 // to modify the statuses.
 func NewTestMemory(
+	t *testing.T,
 	logger log.FieldLogger,
 	store *LocalSchedulerStore,
 	eventHub *coordinator.EventHub) *TestMemoryStore {
+	if t == nil {
+		panic("testing.T is required, must only be run via tests")
+	}
 	m := NewMemoryStore(logger, store, eventHub)
 	return &TestMemoryStore{m}
 }

@@ -129,7 +129,7 @@ func TestExperimentStatusEvents(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, hub := createTestScheduler()
+			s, hub := createTestScheduler(t)
 			s.timeout = test.timeout
 			if test.loadReq != nil {
 				err := s.experimentServer.StartExperiment(test.loadReq)
