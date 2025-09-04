@@ -178,6 +178,9 @@ dataflow:
   logLevelKafka: warn
 
 controller:
+  annotations:
+    sidecar.istio.io/inject: "false"
+    kubectl.kubernetes.io/default-container: manager
   clusterwide: false
   skipOperatorClusterRoleCreation: false
   image:

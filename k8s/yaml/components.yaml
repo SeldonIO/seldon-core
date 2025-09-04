@@ -258,6 +258,7 @@ spec:
     metadata:
       annotations:
         kubectl.kubernetes.io/default-container: manager
+        sidecar.istio.io/inject: "false"
       labels:
         control-plane: v2-controller-manager
     spec:

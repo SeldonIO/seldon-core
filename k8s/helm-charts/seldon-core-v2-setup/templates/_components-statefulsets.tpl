@@ -400,8 +400,8 @@ spec:
       control-plane: v2-controller-manager
   template:
     metadata:
-      annotations:
-        kubectl.kubernetes.io/default-container: manager
+      annotations: {{- toYaml .Values.controller.annotations | nindent  8
+        }}
       labels:
         control-plane: v2-controller-manager
     spec:
