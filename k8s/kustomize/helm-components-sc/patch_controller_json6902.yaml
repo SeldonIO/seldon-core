@@ -5,3 +5,4 @@
 - op: add
   path: /spec/template/metadata/annotations
   value: HACK_REMOVE_ME{{- toYaml .Values.controller.annotations | nindent  8 }}
+  
