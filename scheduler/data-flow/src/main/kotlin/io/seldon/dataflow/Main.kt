@@ -117,6 +117,7 @@ object Main {
                 GrpcServiceConfigProvider.config,
                 config[Cli.kafkaConsumerGroupIdPrefix],
                 config[Cli.namespace],
+                config[Cli.pipelineCtlopsThreads],
             )
 
         addShutdownHandler(subscriber)

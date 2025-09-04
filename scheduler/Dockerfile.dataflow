@@ -27,6 +27,11 @@ RUN mkdir -p /tmp/certs/kafka/broker/ && \
     cp /etc/ssl/certs/ca-bundle.crt /tmp/certs/kafka/broker/ca.crt && \
     chmod -R 777 /tmp/certs/
 
+
+RUN mkdir -p /tmp/kafka-streams \
+    && chown 1000:1000 /tmp/kafka-streams \
+    && chmod 750 /tmp/kafka-streams
+
 USER default
 
 WORKDIR /app

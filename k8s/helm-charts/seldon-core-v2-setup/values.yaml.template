@@ -176,6 +176,7 @@ dataflow:
     runAsGroup: 1000
     runAsNonRoot: true
   logLevelKafka: warn
+  pipelineCtlopsThreads: 8
 
 controller:
   clusterwide: false

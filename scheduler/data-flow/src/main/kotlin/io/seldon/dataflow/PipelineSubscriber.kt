@@ -12,7 +12,6 @@ package io.seldon.dataflow
 import com.github.michaelbull.retry.policy.binaryExponentialBackoff
 import com.github.michaelbull.retry.retry
 import io.grpc.ManagedChannelBuilder
-import io.klogging.Level
 import io.seldon.dataflow.kafka.KafkaAdmin
 import io.seldon.dataflow.kafka.KafkaAdminProperties
 import io.seldon.dataflow.kafka.KafkaDomainParams
@@ -21,7 +20,8 @@ import io.seldon.dataflow.kafka.KafkaStreamsParams
 import io.seldon.dataflow.kafka.Pipeline
 import io.seldon.dataflow.kafka.PipelineId
 import io.seldon.dataflow.kafka.PipelineMetadata
-import io.seldon.dataflow.kafka.PipelineStatus
+import io.seldon.dataflow.kafka.PipelineTaskFactory
+import io.seldon.dataflow.kafka.Task
 import io.seldon.dataflow.kafka.TopicWaitRetryParams
 import io.seldon.mlops.chainer.ChainerGrpcKt
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate
@@ -29,14 +29,24 @@ import io.seldon.mlops.chainer.ChainerOuterClass.PipelineSubscriptionRequest
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateMessage.PipelineOperation
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineUpdateStatusMessage
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import io.klogging.logger as coLogger
 
@@ -53,6 +63,8 @@ class PipelineSubscriber(
     grpcServiceConfig: Map<String, Any>,
     private val kafkaConsumerGroupIdPrefix: String,
     private val namespace: String,
+    pipelineCtlopsThreads: Int,
+    private val queueCleanupDelayMs: Long = 30_000L,
 ) {
     private val kafkaAdmin = KafkaAdmin(kafkaAdminProperties, kafkaStreamsParams, topicWaitRetryParams)
     private val channel =
@@ -65,9 +77,118 @@ class PipelineSubscriber(
             .keepAliveTime(60L, TimeUnit.SECONDS)
             .keepAliveTimeout(2L, TimeUnit.SECONDS)
             .build()
-    private val client = ChainerGrpcKt.ChainerCoroutineStub(channel)
 
-    private val pipelines = ConcurrentHashMap<PipelineId, Pipeline>()
+    val client = ChainerGrpcKt.ChainerCoroutineStub(channel)
+    val dispatcher = Executors.newFixedThreadPool(pipelineCtlopsThreads).asCoroutineDispatcher()
+    val scope = CoroutineScope(SupervisorJob() + dispatcher)
+
+    val pipelines = ConcurrentHashMap<PipelineId, Pipeline>()
+    private val queues = ConcurrentHashMap<PipelineId, QueueInfo>()
+    private val queuesMutex = Mutex()
+
+    // Task factory for creating pipeline operation tasks
+    private val taskFactory =
+        PipelineTaskFactory(
+            pipelineSubscriber = this,
+            kafkaAdmin = kafkaAdmin,
+            kafkaProperties = kafkaProperties,
+            kafkaDomainParams = kafkaDomainParams,
+            name = name,
+            logger = logger,
+        )
+
+    // Track queues scheduled for deletion
+    private data class QueueInfo(
+        val queue: Channel<Task>,
+        val processingJob: Job,
+        var isMarkedForDeletion: Boolean = false,
+        var deletionScheduledAt: Long = 0L,
+    )
+
+    init {
+        // Start background cleanup task
+        scope.launch {
+            while (true) {
+                delay(300_000L)
+                cleanupMarkedQueues()
+            }
+        }
+    }
+
+    private suspend fun cleanupMarkedQueues() {
+        val currentTime = System.currentTimeMillis()
+        val toCleanup = mutableListOf<Pair<PipelineId, QueueInfo>>()
+
+        queuesMutex.withLock {
+            queues.forEach { (pipelineId, queueInfo) ->
+                if (queueInfo.isMarkedForDeletion &&
+                    currentTime - queueInfo.deletionScheduledAt > queueCleanupDelayMs
+                ) {
+                    toCleanup.add(pipelineId to queueInfo)
+                }
+            }
+        }
+
+        toCleanup.forEach { (pipelineId, queueInfo) ->
+            queuesMutex.withLock {
+                // We need to verify three conditions:
+                // 1. `queueInfo` has not changed.
+                // 2. It is still marked for deletion.
+                // 3. The `pipelineId` entry in `pipelines` is null.
+                //
+                // The third condition prevents a race condition in the following scenario:
+                // - A deletion task is executing.
+                // - The pipeline cleanup process is executing.
+                // - A new pipeline creation is triggered.
+                //
+                // Without this check, the race occurs if a creation task (possibly running on a
+                // different thread and queue) writes to `pipelines` while the deletion task
+                // simultaneously uses that newly written pipeline instead of the old one.
+                // Checking for `pipelines[pipelineId]` is a guarantee that the deletion
+                // task completed (at least up to a point)
+                val currentQueueInfo = queues[pipelineId]
+                if (currentQueueInfo == queueInfo && currentQueueInfo.isMarkedForDeletion && pipelines[pipelineId] == null) {
+                    logger.debug("Cleaning up queue for pipeline $pipelineId after delay")
+                    try {
+                        queueInfo.queue.close()
+                        queues.remove(pipelineId)
+                        logger.debug("Removed pipeline queue from map: $pipelineId")
+                    } catch (e: Exception) {
+                        logger.error("Error during queue cleanup for pipeline $pipelineId: ${e.message}", e)
+                        queues.remove(pipelineId)
+                    }
+                } else {
+                    logger.debug("Queue for pipeline $pipelineId was recreated or unmarked, skipping cleanup")
+                }
+            }
+
+            try {
+                queueInfo.processingJob.join()
+            } catch (e: Exception) {
+                logger.error("Error waiting for processing job to finish for pipeline $pipelineId: ${e.message}", e)
+            }
+        }
+    }
+
+    private fun startProcessing(
+        scope: CoroutineScope,
+        queue: Channel<Task>,
+    ): Job {
+        return scope.launch {
+            for (task in queue) {
+                try {
+                    task.run()
+                } catch (e: Exception) {
+                    val reason = "Pipeline ${task.operation.name.lowercase()} operation failed: ${e.message}"
+                    logger.error(reason)
+                    task.sendPipelineUpdateEvent(
+                        success = false,
+                        reason = reason,
+                    )
+                }
+            }
+        }
+    }
 
     suspend fun subscribe() {
         while (true) {
@@ -157,138 +278,30 @@ class PipelineSubscriber(
         kafkaConsumerGroupIdPrefix: String,
         namespace: String,
     ) {
-        val defaultReason = "pipeline created"
-        // If a pipeline with the same id exists, we assume it has the same name & version
-        // If it's in an error state, try re-creating.
-        //
-        // WARNING: at the moment handleCreate is called sequentially on each update in
-        // Flow<PipelineUpdateMessage> from subscribePipelines(). This allows us to sidestep issues
-        // related to race conditions on `pipelines.containsKey(...)` below. If we ever move to
-        // concurrent creation of pipelines, this needs to be revisited.
-        if (pipelines.containsKey(metadata.id)) {
-            val previous = pipelines[metadata.id]!!
-            if (previous.status.isActive()) {
-                client.pipelineUpdateEvent(
-                    makePipelineUpdateEvent(
-                        metadata = metadata,
-                        operation = PipelineOperation.Create,
-                        success = true,
-                        reason = previous.status.getDescription() ?: defaultReason,
-                        timestamp = timestamp,
-                        stream = name,
-                    ),
-                )
-                logger.debug(
-                    "response to scheduler: pipeline {pipelineName} continues to run normally; " +
-                        "pipeline version: {pipelineVersion}, id: {pipelineId}",
-                    metadata.name,
-                    metadata.version,
-                    metadata.id,
-                )
-                return
-            } else { // pipeline exists but in failed/stopped state; cleanup state and re-create
-                logger.info(
-                    "Recreating non-active pipeline {pipelineName} version: {pipelineVersion}, id: {pipelineId}",
-                    metadata.name,
-                    metadata.version,
-                    metadata.id,
-                )
-                logger.debug(
-                    "Previous state for non-active pipeline {pipelineName} version: {pipelineVersion}, id: {pipelineId}: {pipelineStatus}",
-                    metadata.name,
-                    metadata.version,
-                    metadata.id,
-                    previous.status.getDescription(),
-                )
-                // Calling stop() here may be superfluous (depending on the state in which the pipeline is in),
-                // but we want to ensure that we clean up the KafkaStreams state of the pipeline because
-                // otherwise we have issues in re-starting it.
-                // Calling stop() on an already stopped pipeline is safe.
-                previous.stop()
+        queuesMutex.withLock {
+            val existingQueueInfo = queues[metadata.id]
+            if (existingQueueInfo == null) {
+                // Create new queue and processing job
+                val queue = Channel<Task>(Channel.CONFLATED)
+                val processingJob = startProcessing(scope, queue)
+                queues[metadata.id] = QueueInfo(queue, processingJob)
+            } else if (existingQueueInfo.isMarkedForDeletion) {
+                // Unmark for deletion since we're recreating
+                logger.debug("Unmarking queue for deletion due to recreate request for pipeline ${metadata.id}")
+                existingQueueInfo.isMarkedForDeletion = false
+                existingQueueInfo.deletionScheduledAt = 0L
             }
-        } else { // pipeline doesn't exist
-            logger.info(
-                "Creating pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
-                metadata.name,
-                metadata.version,
-                metadata.id,
-            )
-        }
-
-        val (pipeline, err) =
-            Pipeline.forSteps(
-                metadata,
-                steps,
-                kafkaProperties,
-                kafkaDomainParams,
-                kafkaConsumerGroupIdPrefix,
-                namespace,
-            )
-        if (err != null) {
-            err.log(logger, Level.ERROR)
-            client.pipelineUpdateEvent(
-                makePipelineUpdateEvent(
-                    metadata = metadata,
+            queues[metadata.id]?.queue?.send(
+                taskFactory.createTask(
                     operation = PipelineOperation.Create,
-                    success = false,
-                    reason = err.getDescription() ?: "failed to initialize dataflow engine",
-                    timestamp = timestamp,
-                    stream = name,
-                ),
-            )
-            return
-        }
-
-        pipeline!! // assert pipeline is not null when err is null
-        if (pipeline.size != steps.size) {
-            pipeline.stop()
-            client.pipelineUpdateEvent(
-                makePipelineUpdateEvent(
                     metadata = metadata,
-                    operation = PipelineOperation.Create,
-                    success = false,
-                    reason = "failed to create all pipeline steps",
+                    steps = steps,
                     timestamp = timestamp,
-                    stream = name,
-                ),
+                    kafkaConsumerGroupIdPrefix = kafkaConsumerGroupIdPrefix,
+                    namespace = namespace,
+                )!!,
             )
-
-            return
         }
-
-        // This overwrites any previous pipelines with the same id. We can only get here if those previous pipelines
-        // are in a failed state and they are being re-created by the scheduler.
-        pipelines[metadata.id] = pipeline
-        val pipelineStatus: PipelineStatus
-        val errTopics = kafkaAdmin.ensureTopicsExist(steps)
-        if (errTopics == null) {
-            pipelineStatus = pipeline.start()
-        } else {
-            pipelineStatus =
-                PipelineStatus.Error(null)
-                    .withException(errTopics)
-                    .withMessage("kafka streams topic creation error")
-            pipeline.stop()
-        }
-
-        // We don't want to mark the PipelineOperation.Create as successful unless the
-        // pipeline has started. While states such as "StreamStarting" or "StreamStopped" are
-        // not in themselves errors, they are not expected at this stage. If the pipeline
-        // is not running here then it can't be marked as ready.
-        if (pipelineStatus !is PipelineStatus.Started) {
-            pipelineStatus.hasError = true
-        }
-        pipelineStatus.log(logger, Level.DEBUG)
-        client.pipelineUpdateEvent(
-            makePipelineUpdateEvent(
-                metadata = metadata,
-                operation = PipelineOperation.Create,
-                success = !pipelineStatus.isError(),
-                reason = pipelineStatus.getDescription() ?: defaultReason,
-                timestamp = timestamp,
-                stream = name,
-            ),
-        )
     }
 
     private suspend fun handleDelete(
@@ -296,39 +309,23 @@ class PipelineSubscriber(
         steps: List<PipelineStepUpdate>,
         timestamp: Long,
     ) {
-        logger.info(
-            "Delete pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
-            metadata.name,
-            metadata.version,
-            metadata.id,
-        )
-        pipelines
-            .remove(metadata.id)
-            ?.also { pipeline ->
-                runBlocking {
-                    pipeline.stop()
-                }
+        queuesMutex.withLock {
+            val queueInfo = queues[metadata.id]
+            if (queueInfo != null) {
+                // Mark for delayed deletion
+                logger.debug("Marking queue for delayed deletion for pipeline ${metadata.id}")
+                queueInfo.isMarkedForDeletion = true
+                queueInfo.deletionScheduledAt = System.currentTimeMillis()
+                queueInfo.queue.send(
+                    taskFactory.createTask(
+                        operation = PipelineOperation.Delete,
+                        metadata = metadata,
+                        steps = steps,
+                        timestamp = timestamp,
+                    )!!,
+                )
             }
-
-        var pipelineError: PipelineStatus? = null
-        val errTopics = kafkaAdmin.deleteTopics(steps)
-        if (errTopics != null) {
-            pipelineError =
-                PipelineStatus.Error(null)
-                    .withException(errTopics)
-                    .withMessage("kafka streams topic deletion error")
         }
-
-        client.pipelineUpdateEvent(
-            makePipelineUpdateEvent(
-                metadata = metadata,
-                operation = PipelineOperation.Delete,
-                success = pipelineError == null,
-                reason = pipelineError?.getDescription() ?: "pipeline removed",
-                timestamp = timestamp,
-                stream = name,
-            ),
-        )
     }
 
     fun cancelPipelines(reason: String) {
@@ -342,7 +339,7 @@ class PipelineSubscriber(
         }
     }
 
-    private fun makePipelineUpdateEvent(
+    fun makePipelineUpdateEvent(
         metadata: PipelineMetadata,
         operation: PipelineOperation,
         success: Boolean,
