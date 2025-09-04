@@ -24,7 +24,7 @@ abstract class Task(
     private val metadata: PipelineMetadata,
     private val timestamp: Long,
     private val name: String,
-    private val operation: PipelineOperation,
+    val operation: PipelineOperation,
 ) {
     abstract suspend fun run()
 

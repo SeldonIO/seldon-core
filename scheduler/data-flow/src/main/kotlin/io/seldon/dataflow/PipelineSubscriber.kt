@@ -179,7 +179,7 @@ class PipelineSubscriber(
                 try {
                     task.run()
                 } catch (e: Exception) {
-                    val reason = "Task failed permanently: ${e.message}"
+                    val reason = "Pipeline ${task.operation.name.lowercase()} operation failed: ${e.message}"
                     logger.error(reason)
                     task.sendPipelineUpdateEvent(
                         success = false,
