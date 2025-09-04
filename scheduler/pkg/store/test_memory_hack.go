@@ -2,10 +2,9 @@ package store
 
 import (
 	"errors"
+	"testing"
 
 	log "github.com/sirupsen/logrus"
-
-	"testing"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 )
