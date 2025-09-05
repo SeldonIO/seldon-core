@@ -205,7 +205,6 @@ func (s *Server) StartGrpcServer(allowPlainTxt bool, agentPort uint, agentTlsPor
 		if err != nil {
 			return err
 		}
-		return nil
 	} else {
 		logger.Info("Not starting scheduler plain text server")
 	}

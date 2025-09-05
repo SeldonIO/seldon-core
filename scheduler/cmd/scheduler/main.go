@@ -318,14 +318,14 @@ func main() {
 
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {
-		log.WithError(err).Fatalf("Failed to start server gRPC servers")
+		log.WithError(err).Fatal("Failed to start server gRPC servers")
 	}
 
 	// scheduler <-> agent  grpc
 	as := agent.NewAgentServer(logger, ss, sched, eventHub, autoscalingModelEnabled, *tlsOptions)
 	err = as.StartGrpcServer(allowPlaintxt, agentPort, agentMtlsPort)
 	if err != nil {
-		log.WithError(err).Fatalf("Failed to start agent gRPC server")
+		log.WithError(err).Fatal("Failed to start agent gRPC server")
 	}
 
 	// wait for model servers to be ready
