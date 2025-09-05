@@ -90,7 +90,7 @@ type PipelineState struct {
 }
 
 func (ps PipelineStatus) String() string {
-	return [...]string{"PipelineStatusUnknown", "PipelineCreate", "PipelineCreating", "PipelineReady", "PipelineFailed", "PipelineTerminate", "PipelineTerminating", "PipelineTerminated"}[ps]
+	return [...]string{"PipelineStatusUnknown", "PipelineCreate", "PipelineCreating", "PipelineReady", "PipelineFailed", "PipelineTerminate", "PipelineTerminating", "PipelineTerminated", "PipelineRebalancing"}[ps]
 }
 
 func (ps *PipelineState) setState(status PipelineStatus, reason string) {
