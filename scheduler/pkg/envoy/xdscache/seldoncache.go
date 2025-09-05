@@ -60,7 +60,7 @@ type SeldonXDSCache struct {
 	Clusters               *util.CountedSyncMap[Cluster]
 	Pipelines              *util.CountedSyncMap[PipelineRoute]
 	Routes                 *util.CountedSyncMap[Route]
-	muClustersToAdd        sync.RWMutex
+	mu                     sync.RWMutex
 	clustersToAdd          map[string]struct{}
 	clustersToRemove       map[string]struct{}
 	pipelineGatewayDetails *PipelineGatewayDetails
@@ -291,6 +291,9 @@ func (xds *SeldonXDSCache) ClusterResources() []types.Resource {
 }
 
 func (xds *SeldonXDSCache) RouteResources() []types.Resource {
+	xds.mu.RLock()
+	defer xds.mu.RUnlock()
+
 	defaultRoutes, mirrorRoutes := makeRoutes(xds.Routes, xds.Pipelines)
 	return []types.Resource{defaultRoutes, mirrorRoutes}
 }
@@ -318,8 +321,8 @@ func (xds *SeldonXDSCache) UpdateRoutes(nodeId string) error {
 }
 
 func (xds *SeldonXDSCache) AddClusters() error {
-	xds.muClustersToAdd.Lock()
-	defer xds.muClustersToAdd.Unlock()
+	xds.mu.Lock()
+	defer xds.mu.Unlock()
 
 	var clientSecret *Secret
 	if xds.tlsActive {
@@ -334,7 +337,6 @@ func (xds *SeldonXDSCache) AddClusters() error {
 		if ok {
 			resource := makeCluster(cluster.Name, cluster.Endpoints, cluster.Grpc, clientSecret)
 			resources[cluster.Name] = resource
-
 		}
 		delete(xds.clustersToAdd, clusterName)
 	}
@@ -343,6 +345,9 @@ func (xds *SeldonXDSCache) AddClusters() error {
 }
 
 func (xds *SeldonXDSCache) RemoveClusters() error {
+	xds.mu.Lock()
+	defer xds.mu.Unlock()
+
 	clustersToRemove := make([]string, 0)
 	for clusterName := range xds.clustersToRemove {
 		if xds.shouldRemoveCluster(clusterName) {
@@ -382,6 +387,9 @@ func (xds *SeldonXDSCache) AddPipelineClusters(event *coordinator.PipelineStream
 }
 
 func (xds *SeldonXDSCache) AddPipelineRoute(routeName string, trafficSplits []PipelineTrafficSplit, mirror *PipelineTrafficSplit) {
+	xds.mu.Lock()
+	defer xds.mu.Unlock()
+
 	xds.RemovePipelineRoute(routeName)
 	pipelineRoute, ok := xds.Pipelines.Load(routeName)
 	if !ok {
@@ -409,6 +417,8 @@ func (xds *SeldonXDSCache) AddRouteClusterTraffic(
 	logPayloads bool,
 	isMirror bool,
 ) {
+	xds.mu.Lock()
+	defer xds.mu.Unlock()
 
 	route, ok := xds.Routes.Load(routeName)
 	if !ok {
@@ -446,6 +456,9 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 	assignment []int,
 	server *store.ServerSnapshot,
 ) {
+	xds.mu.Lock()
+	defer xds.mu.Unlock()
+
 	logger := xds.logger.WithField("func", "AddClustersForRoute")
 
 	routeVersionKey := RouteVersionKey{RouteName: routeName, ModelName: modelName, Version: modelVersion}
@@ -490,9 +503,6 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 		}
 	}
 
-	xds.muClustersToAdd.Lock()
-	defer xds.muClustersToAdd.Unlock()
-
 	httpCluster.Routes[routeVersionKey] = true
 	xds.Clusters.Store(httpClusterName, *httpCluster)
 
@@ -505,6 +515,9 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 }
 
 func (xds *SeldonXDSCache) RemoveRoute(routeName string) error {
+	xds.mu.Lock()
+	defer xds.mu.Unlock()
+
 	logger := xds.logger.WithField("func", "RemoveRoute")
 	logger.Infof("Remove Routes for model %s", routeName)
 	route, ok := xds.Routes.Load(routeName)
@@ -567,6 +580,9 @@ func (xds *SeldonXDSCache) createEndpointsForStreams(streamNames []string, strea
 }
 
 func (xds *SeldonXDSCache) CreateClusterForStreams(clusterPrefix string, streamNames []string, streamIps []string, port uint32, isGrpc bool, logger *logrus.Entry) *Cluster {
+	xds.mu.Lock()
+	defer xds.mu.Unlock()
+
 	clusterName := getPipelineClusterName(clusterPrefix, isGrpc)
 	logger.Debugf("Creating cluster %s for streams: %v with ips: %v and port: %d", clusterName, streamNames, streamIps, port)
 
