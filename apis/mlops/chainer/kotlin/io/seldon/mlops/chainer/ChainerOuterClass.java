@@ -719,6 +719,10 @@ public final class ChainerOuterClass {
        * <code>Delete = 2;</code>
        */
       Delete(2),
+      /**
+       * <code>Rebalance = 3;</code>
+       */
+      Rebalance(3),
       UNRECOGNIZED(-1),
       ;
 
@@ -743,6 +747,10 @@ public final class ChainerOuterClass {
        * <code>Delete = 2;</code>
        */
       public static final int Delete_VALUE = 2;
+      /**
+       * <code>Rebalance = 3;</code>
+       */
+      public static final int Rebalance_VALUE = 3;
 
 
       public final int getNumber() {
@@ -772,6 +780,7 @@ public final class ChainerOuterClass {
           case 0: return Unknown;
           case 1: return Create;
           case 2: return Delete;
+          case 3: return Rebalance;
           default: return null;
         }
       }
@@ -8878,7 +8887,7 @@ public final class ChainerOuterClass {
     java.lang.String[] descriptorData = {
       "\n\rchainer.proto\022\024seldon.mlops.chainer\"+\n" +
       "\033PipelineSubscriptionRequest\022\014\n\004name\030\001 \001" +
-      "(\t\"\221\003\n\025PipelineUpdateMessage\022I\n\002op\030\001 \001(\016" +
+      "(\t\"\240\003\n\025PipelineUpdateMessage\022I\n\002op\030\001 \001(\016" +
       "2=.seldon.mlops.chainer.PipelineUpdateMe" +
       "ssage.PipelineOperation\022\020\n\010pipeline\030\002 \001(" +
       "\t\022\017\n\007version\030\003 \001(\r\022\013\n\003uid\030\004 \001(\t\0229\n\007updat" +
@@ -8886,43 +8895,43 @@ public final class ChainerOuterClass {
       "StepUpdate\022\033\n\023pipelineOutputTopic\030\006 \001(\t\022" +
       "\032\n\022pipelineErrorTopic\030\007 \001(\t\022\023\n\013allowCycl" +
       "es\030\010 \001(\010\022\027\n\017maxStepRevisits\030\t \001(\r\022\021\n\ttim" +
-      "estamp\030\n \001(\004\022\016\n\006stream\030\013 \001(\t\"8\n\021Pipeline" +
+      "estamp\030\n \001(\004\022\016\n\006stream\030\013 \001(\t\"G\n\021Pipeline" +
       "Operation\022\013\n\007Unknown\020\000\022\n\n\006Create\020\001\022\n\n\006De" +
-      "lete\020\002\"\313\004\n\022PipelineStepUpdate\0224\n\007sources" +
-      "\030\001 \003(\0132#.seldon.mlops.chainer.PipelineTo" +
-      "pic\0225\n\010triggers\030\002 \003(\0132#.seldon.mlops.cha" +
-      "iner.PipelineTopic\0221\n\004sink\030\003 \001(\0132#.seldo" +
-      "n.mlops.chainer.PipelineTopic\022N\n\013inputJo" +
-      "inTy\030\004 \001(\01629.seldon.mlops.chainer.Pipeli" +
-      "neStepUpdate.PipelineJoinType\022Q\n\016trigger" +
-      "sJoinTy\030\005 \001(\01629.seldon.mlops.chainer.Pip" +
-      "elineStepUpdate.PipelineJoinType\022\032\n\022pass" +
-      "EmptyResponses\030\006 \001(\010\022\031\n\014joinWindowMs\030\007 \001" +
-      "(\rH\000\210\001\001\022>\n\ttensorMap\030\010 \003(\0132+.seldon.mlop" +
-      "s.chainer.PipelineTensorMapping\022*\n\005batch" +
-      "\030\t \001(\0132\033.seldon.mlops.chainer.Batch\">\n\020P" +
-      "ipelineJoinType\022\013\n\007Unknown\020\000\022\t\n\005Inner\020\001\022" +
-      "\t\n\005Outer\020\002\022\007\n\003Any\020\003B\017\n\r_joinWindowMs\"Y\n\025" +
-      "PipelineTensorMapping\022\024\n\014pipelineName\030\001 " +
-      "\001(\t\022\026\n\016topicAndTensor\030\002 \001(\t\022\022\n\ntensorNam" +
-      "e\030\003 \001(\t\"X\n\rPipelineTopic\022\024\n\014pipelineName" +
-      "\030\001 \001(\t\022\021\n\ttopicName\030\002 \001(\t\022\023\n\006tensor\030\003 \001(" +
-      "\tH\000\210\001\001B\t\n\007_tensor\"X\n\005Batch\022\021\n\004size\030\001 \001(\r" +
-      "H\000\210\001\001\022\025\n\010windowMs\030\002 \001(\rH\001\210\001\001\022\017\n\007rolling\030" +
-      "\003 \001(\010B\007\n\005_sizeB\013\n\t_windowMs\"{\n\033PipelineU" +
-      "pdateStatusMessage\022;\n\006update\030\001 \001(\0132+.sel" +
-      "don.mlops.chainer.PipelineUpdateMessage\022" +
-      "\017\n\007success\030\002 \001(\010\022\016\n\006reason\030\003 \001(\t\"\036\n\034Pipe" +
-      "lineUpdateStatusResponse2\211\002\n\007Chainer\022~\n\030" +
-      "SubscribePipelineUpdates\0221.seldon.mlops." +
-      "chainer.PipelineSubscriptionRequest\032+.se" +
-      "ldon.mlops.chainer.PipelineUpdateMessage" +
-      "\"\0000\001\022~\n\023PipelineUpdateEvent\0221.seldon.mlo" +
-      "ps.chainer.PipelineUpdateStatusMessage\0322" +
-      ".seldon.mlops.chainer.PipelineUpdateStat" +
-      "usResponse\"\000BS\n\027io.seldon.mlops.chainerZ" +
-      "8github.com/seldonio/seldon-core/apis/go" +
-      "/v2/mlops/chainerb\006proto3"
+      "lete\020\002\022\r\n\tRebalance\020\003\"\313\004\n\022PipelineStepUp" +
+      "date\0224\n\007sources\030\001 \003(\0132#.seldon.mlops.cha" +
+      "iner.PipelineTopic\0225\n\010triggers\030\002 \003(\0132#.s" +
+      "eldon.mlops.chainer.PipelineTopic\0221\n\004sin" +
+      "k\030\003 \001(\0132#.seldon.mlops.chainer.PipelineT" +
+      "opic\022N\n\013inputJoinTy\030\004 \001(\01629.seldon.mlops" +
+      ".chainer.PipelineStepUpdate.PipelineJoin" +
+      "Type\022Q\n\016triggersJoinTy\030\005 \001(\01629.seldon.ml" +
+      "ops.chainer.PipelineStepUpdate.PipelineJ" +
+      "oinType\022\032\n\022passEmptyResponses\030\006 \001(\010\022\031\n\014j" +
+      "oinWindowMs\030\007 \001(\rH\000\210\001\001\022>\n\ttensorMap\030\010 \003(" +
+      "\0132+.seldon.mlops.chainer.PipelineTensorM" +
+      "apping\022*\n\005batch\030\t \001(\0132\033.seldon.mlops.cha" +
+      "iner.Batch\">\n\020PipelineJoinType\022\013\n\007Unknow" +
+      "n\020\000\022\t\n\005Inner\020\001\022\t\n\005Outer\020\002\022\007\n\003Any\020\003B\017\n\r_j" +
+      "oinWindowMs\"Y\n\025PipelineTensorMapping\022\024\n\014" +
+      "pipelineName\030\001 \001(\t\022\026\n\016topicAndTensor\030\002 \001" +
+      "(\t\022\022\n\ntensorName\030\003 \001(\t\"X\n\rPipelineTopic\022" +
+      "\024\n\014pipelineName\030\001 \001(\t\022\021\n\ttopicName\030\002 \001(\t" +
+      "\022\023\n\006tensor\030\003 \001(\tH\000\210\001\001B\t\n\007_tensor\"X\n\005Batc" +
+      "h\022\021\n\004size\030\001 \001(\rH\000\210\001\001\022\025\n\010windowMs\030\002 \001(\rH\001" +
+      "\210\001\001\022\017\n\007rolling\030\003 \001(\010B\007\n\005_sizeB\013\n\t_window" +
+      "Ms\"{\n\033PipelineUpdateStatusMessage\022;\n\006upd" +
+      "ate\030\001 \001(\0132+.seldon.mlops.chainer.Pipelin" +
+      "eUpdateMessage\022\017\n\007success\030\002 \001(\010\022\016\n\006reaso" +
+      "n\030\003 \001(\t\"\036\n\034PipelineUpdateStatusResponse2" +
+      "\211\002\n\007Chainer\022~\n\030SubscribePipelineUpdates\022" +
+      "1.seldon.mlops.chainer.PipelineSubscript" +
+      "ionRequest\032+.seldon.mlops.chainer.Pipeli" +
+      "neUpdateMessage\"\0000\001\022~\n\023PipelineUpdateEve" +
+      "nt\0221.seldon.mlops.chainer.PipelineUpdate" +
+      "StatusMessage\0322.seldon.mlops.chainer.Pip" +
+      "elineUpdateStatusResponse\"\000BS\n\027io.seldon" +
+      ".mlops.chainerZ8github.com/seldonio/seld" +
+      "on-core/apis/go/v2/mlops/chainerb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
