@@ -13,15 +13,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/rand"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
 	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde"
 	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde/protobuf"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/inference_schema"
 	"google.golang.org/protobuf/proto"
-	"math/rand"
-	"strconv"
-	"sync"
-	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka"
@@ -399,42 +400,14 @@ func (km *KafkaManager) infer(
 	kafkaHeaders = addRequestIdToKafkaHeadersIfMissing(kafkaHeaders, requestId)
 
 	if km.schemaRegistryClient != nil {
-		logger.Debugf("first 10 bytes before serialisation")
-		for _, b := range data[:10] {
-			logger.Debugf("%02x", b)
-		}
-
-		schemaConfig := protobuf.NewSerializerConfig()
-		schemaConfig.NormalizeSchemas = true
-
-		ser, err := protobuf.NewSerializer(km.schemaRegistryClient, serde.ValueSerde, schemaConfig)
+		payloadWithSchemaID, err := km.serializeModelInferReqWithSchemaRegistry(inputTopic, data)
 		if err != nil {
-			logger.WithError(err).Errorf("Failed to obtain a serialiser")
+			logger.Warnf("Failed to serialize model inference request with a schema id on topic %s "+
+				"defaulting to sending without schema id with err: %v", inputTopic, err)
 		}
-
-		v2Request := &inference_schema.ModelInferRequest{}
-		err = proto.Unmarshal(data, v2Request)
-		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal v2 request: %v", err)
+		if err == nil {
+			data = payloadWithSchemaID
 		}
-
-		b, err := ser.Serialize(inputTopic, v2Request)
-		if err != nil {
-			return nil, fmt.Errorf("failed to serialize v2 request: %v", err)
-		}
-
-		logger.Infof("sucesssfully serialised data with schema on topic %s", inputTopic)
-
-		logger.Debugf("first 10 bytes after serialisation")
-		for _, b := range data[:10] {
-			logger.Debugf("%02x", b)
-		}
-
-		if err != nil {
-
-		}
-
-		data = b
 	}
 
 	msg := &kafka.Message{
@@ -572,4 +545,37 @@ func (km *KafkaManager) consume(pipeline *Pipeline) error {
 		return err
 	}
 	return nil
+}
+
+func (km *KafkaManager) serializeModelInferReqWithSchemaRegistry(topic string, payload []byte) ([]byte, error) {
+	km.logger.Debugf("first 10 bytes before serialisation")
+	for _, b := range payload[:10] {
+		km.logger.Debugf("%02x", b)
+	}
+
+	v2Res := &inference_schema.ModelInferRequest{}
+	err := proto.Unmarshal(payload, v2Res)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal request to dataplane model: %w", err)
+	}
+
+	schemaConfig := protobuf.NewSerializerConfig()
+	schemaConfig.NormalizeSchemas = true
+
+	ser, err := protobuf.NewSerializer(km.schemaRegistryClient, serde.ValueSerde, schemaConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to obtain a serialiser: %w", err)
+	}
+
+	serializedPayload, err := ser.Serialize(topic, v2Res)
+	if err != nil {
+		return nil, fmt.Errorf("failed to serialise request to dataplane model: %w", err)
+	}
+
+	km.logger.Debugf("first 10 bytes after serialisation")
+	for _, b := range serializedPayload[:10] {
+		km.logger.Debugf("%02x", b)
+	}
+
+	return serializedPayload, nil
 }

@@ -52,3 +52,16 @@ func NewSchemaRegistryClient(log *log.Logger) schemaregistry.Client {
 	logger.Info("schema registry client created")
 	return srClient
 }
+
+func TrimSchemaID(payload []byte) []byte {
+	// If it's Schema Registry format (magic byte 0x0)
+	if len(payload) < 6 {
+		return payload
+	}
+	if payload[0] == 0x0 {
+		// Skip magic byte (1) + schema ID (4) + message index (0) = 6 bytes
+
+		payload = payload[6:]
+	}
+	return payload
+}

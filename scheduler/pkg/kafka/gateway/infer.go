@@ -20,6 +20,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/schema"
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
@@ -463,11 +464,7 @@ func (kc *InferKafkaHandler) Serve() {
 				}
 
 				if kc.schemaRegistryClient != nil {
-					// If it's Schema Registry format (magic byte 0x0)
-					if e.Value[0] == 0x0 {
-						// Skip magic byte (1) + schema ID (4) + message index (0) = 6 bytes
-						e.Value = e.Value[6:]
-					}
+					e.Value = schema.TrimSchemaID(e.Value)
 				}
 
 				// Add tracing span

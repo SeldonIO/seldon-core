@@ -13,9 +13,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
-	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde"
-	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde/protobuf"
 	"io"
 	"math"
 	"net"
@@ -24,6 +21,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde/protobuf"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
@@ -259,26 +260,14 @@ func (iw *InferWorker) produce(
 	}
 	logger.Debugf("Produce response to topic %s on partition %d", topic, job.msg.TopicPartition.Partition)
 
-	logger.Infof("the payload to write to the topic %s is %s", topic, b)
-
 	if iw.schemaRegistryClient != nil && !errorTopic {
-		srLogger := logger.WithField("source", "schema registry")
-		v2Res := &inference_schema.ModelInferResponse{}
-		err := proto.Unmarshal(b, v2Res)
+		payloadWithSchemaID, err := iw.serializeModelInferRespWithSchemaRegistry(topic, b)
 		if err != nil {
-			srLogger.WithError(err).Errorf("Failed to unmarshal response to dataplane model")
+			logger.Warnf("Failed to serialize model inference response with a schema id on topic %s "+
+				"defaulting to sending without schema id with err: %v", topic, err)
 		}
-
-		schemaConfig := protobuf.NewSerializerConfig()
-		schemaConfig.NormalizeSchemas = true
-
-		ser, err := protobuf.NewSerializer(iw.schemaRegistryClient, serde.ValueSerde, schemaConfig)
-		if err != nil {
-			srLogger.WithError(err).Errorf("Failed to obtain a serialiser")
-		}
-		b, err = ser.Serialize(topic, v2Res)
-		if err != nil {
-			srLogger.WithError(err).Errorf("Failed to serialise response to dataplane model")
+		if err == nil {
+			b = payloadWithSchemaID
 		}
 	}
 
@@ -436,6 +425,29 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), []byte(err.Error()), true, nil)
 	}
 	return nil
+}
+
+func (iw *InferWorker) serializeModelInferRespWithSchemaRegistry(topic string, payload []byte) ([]byte, error) {
+	v2Res := &inference_schema.ModelInferResponse{}
+	err := proto.Unmarshal(payload, v2Res)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response to dataplane model: %w", err)
+	}
+
+	schemaConfig := protobuf.NewSerializerConfig()
+	schemaConfig.NormalizeSchemas = true
+
+	ser, err := protobuf.NewSerializer(iw.schemaRegistryClient, serde.ValueSerde, schemaConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to obtain a serialiser: %w", err)
+	}
+
+	serializedPayload, err := ser.Serialize(topic, v2Res)
+	if err != nil {
+		return nil, fmt.Errorf("failed to serialise response to dataplane model: %w", err)
+	}
+
+	return serializedPayload, nil
 }
 
 // this is redundant code but is kept there to avoid circular dependencies

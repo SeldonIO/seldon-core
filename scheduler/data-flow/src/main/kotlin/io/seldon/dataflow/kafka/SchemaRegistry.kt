@@ -84,7 +84,6 @@ class SchemaRegistrySerializerFactory(private val config: SchemaRegistryConfig) 
             val serializer = KafkaProtobufSerializer<T>()
             serializer.configure(config.toSerializerProperties(), false)
 
-            logger.info("with user info properties ${config.toSerializerProperties()[AbstractKafkaSchemaSerDeConfig.USER_INFO_CONFIG]}")
             try {
                 serializer.schemaRegistryClient.allSubjects
             } catch (e: Exception) {
