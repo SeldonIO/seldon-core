@@ -342,6 +342,12 @@ class PipelineSubscriber(
         queuesMutex.withLock {
             val queueInfo = queues[metadata.id]
             if (queueInfo != null) {
+                val first = queueInfo.queue.tryReceive().getOrNull()
+                if (first != null && first.timestamp > timestamp) {
+                    queueInfo.queue.send(first)
+                    return
+                }
+
                 if (status == PipelineStatus.StreamRebalancing()) {
                     queueInfo.queue.send(
                         taskFactory.createTask(
