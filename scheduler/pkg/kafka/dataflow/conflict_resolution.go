@@ -85,15 +85,13 @@ func (cr *ConflictResolutioner) GetCountPipelineWithStatus(pipelineName string, 
 func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *chainer.PipelineUpdateStatusMessage) (pipeline.PipelineStatus, string) {
 	logger := cr.logger.WithField("func", "GetPipelineStatus")
 	streams := cr.vectorResponseStatus[pipelineName]
-	unknownCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineStatusUnknown)
+	failedCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineFailed)
 
 	if message.Update.Op == chainer.PipelineUpdateMessage_Create {
 		readyCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineReady)
-		failedCount := len(streams) - readyCount - unknownCount
 		message := fmt.Sprintf(
-			"%d/%d streams are ready, %d/%d still creating, %d/%d streams failed",
+			"%d/%d streams are ready, %d/%d streams failed",
 			readyCount, len(streams),
-			unknownCount, len(streams),
 			failedCount, len(streams),
 		)
 		// We log info this cause the reason doesn't not display in case of
@@ -102,10 +100,10 @@ func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *
 		// TODO: Implement something similar to models to display the numbers
 		// of available replicas
 		logger.Infof("Pipeline %s status message: %s", pipelineName, message)
-		if failedCount == len(streams) {
+		if failedCount > 0 {
 			return pipeline.PipelineFailed, message
 		}
-		if readyCount > 0 && unknownCount == 0 {
+		if readyCount == len(streams) {
 			return pipeline.PipelineReady, message
 		}
 		return pipeline.PipelineCreating, message
@@ -113,11 +111,9 @@ func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *
 
 	if message.Update.Op == chainer.PipelineUpdateMessage_Delete {
 		terminatedCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineTerminated)
-		failedCount := len(streams) - terminatedCount - unknownCount
 		message := fmt.Sprintf(
-			"%d/%d streams terminated, %d/%d still terminating, %d/%d streams failed to terminate",
+			"%d/%d streams terminated, %d/%d streams failed to terminate",
 			terminatedCount, len(streams),
-			unknownCount, len(streams),
 			failedCount, len(streams),
 		)
 		logger.Infof("Pipeline %s status message: %s", pipelineName, message)
@@ -128,6 +124,25 @@ func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *
 			return pipeline.PipelineTerminated, message
 		}
 		return pipeline.PipelineTerminating, message
+	}
+
+	if message.Update.Op == chainer.PipelineUpdateMessage_Rebalance {
+		rebalancingCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineRebalancing)
+		readyCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineReady)
+		message := fmt.Sprintf(
+			"%d/%d streams rebalancing, %d/%d streams ready, %d/%d streams failed",
+			rebalancingCount, len(streams),
+			readyCount, len(streams),
+			failedCount, len(streams),
+		)
+		logger.Infof("Pipeline %s status message: %s", pipelineName, message)
+		if failedCount > 0 {
+			return pipeline.PipelineFailed, message
+		}
+		if readyCount == len(streams) {
+			return pipeline.PipelineReady, message
+		}
+		return pipeline.PipelineRebalancing, message
 	}
 
 	return pipeline.PipelineStatusUnknown, "Unknown operation or status"

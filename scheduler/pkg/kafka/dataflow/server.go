@@ -123,6 +123,12 @@ func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chaine
 		} else {
 			statusVal = pipeline.PipelineFailed
 		}
+	case chainer.PipelineUpdateMessage_Rebalance:
+		if message.Success {
+			statusVal = pipeline.PipelineRebalancing
+		} else {
+			statusVal = pipeline.PipelineFailed
+		}
 	}
 
 	pipelineName := message.Update.Pipeline

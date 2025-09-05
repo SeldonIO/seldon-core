@@ -79,6 +79,7 @@ const (
 	PipelineTerminate                    // Received signal that pipeline should be terminated.
 	PipelineTerminating                  // In the process of doing cleanup/housekeeping for pipeline termination.
 	PipelineTerminated                   // Pipeline has been terminated.
+	PipelineRebalancing                  // Pipeline is rebalancing
 )
 
 type PipelineState struct {
