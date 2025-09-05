@@ -22,7 +22,7 @@ import kotlin.collections.set
 abstract class Task(
     private val pipelineSubscriber: PipelineSubscriber,
     private val metadata: PipelineMetadata,
-    private val timestamp: Long,
+    val timestamp: Long,
     private val name: String,
     val operation: PipelineOperation,
 ) {
@@ -68,6 +68,7 @@ class CreationTask(
         if (pipelines.containsKey(metadata.id)) {
             val previous = pipelines[metadata.id]!!
             if (previous.status.isActive()) {
+                previous.timestamp = timestamp
                 this.sendPipelineUpdateEvent(
                     success = true,
                     reason = previous.status.getDescription() ?: defaultReason,
@@ -118,6 +119,7 @@ class CreationTask(
                 kafkaConsumerGroupIdPrefix,
                 namespace,
                 kafkaStreamsSerdes,
+                timestamp,
             )
         if (err != null) {
             err.log(logger, Level.ERROR)
@@ -173,8 +175,8 @@ class DeletionTask(
     private val metadata: PipelineMetadata,
     private val steps: List<PipelineStepUpdate>,
     private val kafkaAdmin: KafkaAdmin,
-    private val timestamp: Long,
-    private val name: String,
+    timestamp: Long,
+    name: String,
     private val logger: Klogger,
 ) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Delete) {
     override suspend fun run() {

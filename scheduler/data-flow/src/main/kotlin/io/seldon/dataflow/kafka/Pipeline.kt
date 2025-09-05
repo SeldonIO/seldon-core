@@ -46,6 +46,7 @@ class Pipeline(
     private val streams: KafkaStreams,
     private val kafkaDomainParams: KafkaDomainParams,
     val size: Int,
+    var timestamp: Long,
 ) : StateListener {
     private val latch = CountDownLatch(1)
 
@@ -150,6 +151,7 @@ class Pipeline(
             kafkaConsumerGroupIdPrefix: String,
             namespace: String,
             kafkaStreamsSerdes: KafkaStreamsSerdes,
+            timestamp: Long,
         ): Pair<Pipeline?, PipelineStatus.Error?> {
             val (topology, numSteps) = buildTopology(metadata, steps, kafkaDomainParams, kafkaStreamsSerdes)
             val pipelineProperties = localiseKafkaProperties(kafkaProperties, metadata, numSteps, kafkaConsumerGroupIdPrefix, namespace)
@@ -182,7 +184,7 @@ class Pipeline(
             logger.info(
                 "AllowCycles: ${metadata.allowCycles}; maxStepRevisits: ${metadata.maxStepRevisits}",
             )
-            return Pipeline(metadata, topology, streamsApp, kafkaDomainParams, numSteps) to null
+            return Pipeline(metadata, topology, streamsApp, kafkaDomainParams, numSteps, timestamp) to null
         }
 
         private fun buildTopology(
