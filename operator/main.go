@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	//+kubebuilder:scaffold:imports
 	zap2 "go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -144,10 +145,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	tlsOptions, err := tls.CreateControlPlaneTLSOptions()
+	if err != nil {
+		logger.Info("Failed to create TLS options")
+		os.Exit(1)
+	}
+
 	// Create scheduler client
 	schedulerClient := scheduler.NewSchedulerClient(logger,
 		mgr.GetClient(),
-		mgr.GetEventRecorderFor("scheduler-client"))
+		mgr.GetEventRecorderFor("scheduler-client"),
+		*tlsOptions)
 
 	if err = (&mlopscontrollers.ModelReconciler{
 		Client:    mgr.GetClient(),

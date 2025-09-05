@@ -9,7 +9,9 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package util
 
-import seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
+import (
+	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
+)
 
 type TLSOptions struct {
 	TLS  bool

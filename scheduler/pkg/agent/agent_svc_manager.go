@@ -106,6 +106,7 @@ type AgentServiceConfig struct {
 	maxUnloadRetryCount                      uint8
 	unloadGraceTime                          time.Duration
 	runningInK8s                             bool
+	tlsOptions                               seldontls.TLSOptions
 }
 
 func NewAgentServiceConfig(
@@ -123,6 +124,7 @@ func NewAgentServiceConfig(
 	maxUnloadRetryCount uint8,
 	unloadGraceTime time.Duration,
 	runningInK8s bool,
+	tlsOptions seldontls.TLSOptions,
 ) *AgentServiceConfig {
 	return &AgentServiceConfig{
 		serverName:                               serverName,
@@ -139,6 +141,7 @@ func NewAgentServiceConfig(
 		maxUnloadRetryCount:                      maxUnloadRetryCount,
 		unloadGraceTime:                          unloadGraceTime,
 		runningInK8s:                             runningInK8s,
+		tlsOptions:                               tlsOptions,
 	}
 }
 
@@ -201,7 +204,7 @@ func NewAgentServiceManager(
 			serverName:            agentConfig.serverName,
 			replicaIdx:            agentConfig.replicaIdx,
 			callOptions:           opts,
-			certificateStore:      nil, // Needed to stop 1.48.0 lint failing
+			certificateStore:      agentConfig.tlsOptions.Cert,
 		},
 		KubernetesOptions: KubernetesOptions{
 			namespace:      namespace,
@@ -473,18 +476,6 @@ func (am *AgentServiceManager) UnloadAllModels() error {
 
 func (am *AgentServiceManager) getConnection(host string, plainTxtPort int, tlsPort int) (*grpc.ClientConn, error) {
 	logger := am.logger.WithField("func", "getConnection")
-
-	var err error
-	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
-	if protocol == seldontls.SecurityProtocolSSL {
-		am.certificateStore, err = seldontls.NewCertificateStore(
-			seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlaneClient),
-			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixControlPlaneServer),
-		)
-		if err != nil {
-			return nil, err
-		}
-	}
 
 	var transCreds credentials.TransportCredentials
 	var port int

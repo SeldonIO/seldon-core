@@ -71,3 +71,23 @@ func GetEndpointIdentificationMechanismFromEnv(prefix string) string {
 	}
 	return val
 }
+
+type TLSOptions struct {
+	Cert *CertificateStore
+}
+
+func CreateControlPlaneTLSOptions() (*TLSOptions, error) {
+	var err error
+	tlsOptions := TLSOptions{}
+
+	protocol := GetSecurityProtocolFromEnv(EnvSecurityPrefixControlPlane)
+	if protocol == SecurityProtocolSSL {
+		tlsOptions.Cert, err = NewCertificateStore(Prefix(EnvSecurityPrefixControlPlaneClient),
+			ValidationPrefix(EnvSecurityPrefixControlPlaneServer))
+		if err != nil {
+			return nil, fmt.Errorf("failed creating TLS options for server control plane: %v", err)
+		}
+	}
+
+	return &tlsOptions, nil
+}

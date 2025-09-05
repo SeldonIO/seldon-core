@@ -82,30 +82,24 @@ func NewSeldonCoreCollector(
 	schedulerPlaintxtPort uint,
 	schedulerTlsPort uint,
 	clusterId string,
+	tlsOptions *seldontls.TLSOptions,
 ) (*SeldonCoreCollector, error) {
 	logger = logger.WithField("source", "SeldonCoreCollector")
 	var certificateStore *seldontls.CertificateStore
 	var err error
-	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
-	if protocol == seldontls.SecurityProtocolSSL {
-		certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlaneClient),
-			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixControlPlaneServer))
-		if err != nil {
-			return nil, err
-		}
-	}
+
 	retryOpts := []grpc_retry.CallOption{
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
 	}
 	var transCreds credentials.TransportCredentials
 	var port uint
-	if certificateStore == nil {
+	if tlsOptions.Cert == nil {
 		logger.Info("Starting plaintxt client to scheduler")
 		transCreds = insecure.NewCredentials()
 		port = schedulerPlaintxtPort
 	} else {
 		logger.Info("Starting TLS client to scheduler")
-		transCreds = certificateStore.CreateClientTransportCredentials()
+		transCreds = tlsOptions.Cert.CreateClientTransportCredentials()
 		port = schedulerTlsPort
 	}
 	connectOptions := []grpc.DialOption{

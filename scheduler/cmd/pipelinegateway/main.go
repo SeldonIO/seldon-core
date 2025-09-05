@@ -184,7 +184,7 @@ func main() {
 
 	// Handle pipeline status updates
 	statusManager := status.NewPipelineStatusManager()
-	schedulerClient := pipeline.NewPipelineSchedulerClient(logger, statusManager, km)
+	schedulerClient := pipeline.NewPipelineSchedulerClient(logger, statusManager, km, tlsOptions)
 	go func() {
 		if err := schedulerClient.Start(schedulerHost, schedulerPlaintxtPort, schedulerTlsPort); err != nil {
 			logger.WithError(err).Error("Start client failed")

@@ -68,6 +68,12 @@ func NewEventHub(l log.FieldLogger) (*EventHub, error) {
 	return &hub, nil
 }
 
+func (h *EventHub) IsClosed() bool {
+	h.lock.RLock()
+	defer h.lock.RUnlock()
+	return h.closed
+}
+
 func (h *EventHub) Close() {
 	h.lock.Lock()
 	defer h.lock.Unlock()
