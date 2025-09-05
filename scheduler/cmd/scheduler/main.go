@@ -11,6 +11,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"math/rand"
 	"os"
 	"os/signal"
@@ -18,7 +19,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
+	health_probe "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/backoff"
+	"google.golang.org/grpc/credentials/insecure"
 
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 
@@ -340,4 +346,29 @@ func main() {
 	as.StopAgentStreams()
 
 	log.Info("Shutdown services")
+}
+
+func initHealthProbe(useTLS bool, grpcPort int) (health_probe.HTTPServer, error) {
+	manager := health_probe.NewManager()
+
+	opts := make([]grpc.DialOption, 0)
+	opts = append(opts, grpc.WithConnectParams(grpc.ConnectParams{
+		Backoff: backoff.DefaultConfig,
+	}), grpc.WithKeepaliveParams(util.GetClientKeepAliveParameters()))
+
+	if useTLS {
+		opts = append(opts, grpc.WithTransportCredentials(tlsOptions.Cert.CreateClientTransportCredentials()))
+	} else {
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	}
+
+	// note this will not attempt connection handshake until req is sent
+	conn, err := grpc.NewClient(fmt.Sprintf(":%d", grpcPort), opts...)
+	if err != nil {
+		return nil, fmt.Errorf("error creating gRPC connection: %v", err)
+	}
+	gRPCClient := v2_dataplane.NewGRPCInferenceServiceClient(conn)
+	manager.AddCheck(func() error {
+
+	}, health_probe.ProbeReadiness, health_probe.ProbeLiveness)
 }
