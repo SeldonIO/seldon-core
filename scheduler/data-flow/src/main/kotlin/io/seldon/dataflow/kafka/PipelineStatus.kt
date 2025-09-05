@@ -113,6 +113,10 @@ open class PipelineStatus(val state: KafkaStreams.State?, var hasError: Boolean)
         override var message: String? = "pipeline data streams: ready"
     }
 
+    class StreamRebalancing() : PipelineStatus(null, false) {
+        override var message: String? = "pipeline data streams: rebalancing"
+    }
+
     data class Error(val errorState: KafkaStreams.State?) : PipelineStatus(errorState, true)
 
     override var exception: Exception? = null

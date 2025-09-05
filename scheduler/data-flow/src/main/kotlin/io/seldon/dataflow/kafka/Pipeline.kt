@@ -10,10 +10,12 @@ the Change License after the Change Date as each is defined in accordance with t
 package io.seldon.dataflow.kafka
 
 import io.klogging.noCoLogger
+import io.seldon.dataflow.PipelineSubscriber
 import io.seldon.dataflow.hashutils.HashUtils
 import io.seldon.dataflow.withException
 import io.seldon.dataflow.withMessage
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate
+import kotlinx.coroutines.runBlocking
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.KafkaStreams.State
@@ -46,6 +48,7 @@ class Pipeline(
     private val streams: KafkaStreams,
     private val kafkaDomainParams: KafkaDomainParams,
     val size: Int,
+    val pipelineSubscriber: PipelineSubscriber,
     var timestamp: Long,
 ) : StateListener {
     private val latch = CountDownLatch(1)
@@ -111,33 +114,58 @@ class Pipeline(
                 metadata.version,
             )
         }
-        if (newState == State.RUNNING) {
-            // Only update the status if the pipeline is not already being stopped
-            // we wouldn't want the status to transition to Started after it was
-            // marked as StreamStopping. If status is StreamStopping, we guarantee
-            // that latch.countDown() will be called.
-            if (status !is PipelineStatus.StreamStopping) {
-                status = PipelineStatus.Started()
-                latch.countDown()
-            }
 
+        if (latch.count == 1L) {
+            if (newState == State.RUNNING) {
+                // Only update the status if the pipeline is not already being stopped
+                // we wouldn't want the status to transition to Started after it was
+                // marked as StreamStopping. If status is StreamStopping, we guarantee
+                // that latch.countDown() will be called.
+                if (status !is PipelineStatus.StreamStopping) {
+                    status = PipelineStatus.Started()
+                    latch.countDown()
+                }
+                return
+            }
+            // CREATED, REBALANCING and RUNNING (with the latter one already handled above)
+            // are the only non-error states. Everything else indicates an error or shutdown
+            // and we should release the lock on which start() awaits and return an error.
+            // see: https://kafka.apache.org/28/javadoc/org/apache/kafka/streams/KafkaStreams.State.html
+            if (newState != State.CREATED && newState != State.REBALANCING) {
+                if (status !is PipelineStatus.StreamStopping) {
+                    status =
+                        PipelineStatus.Error(newState)
+                            .withMessage("pipeline data streams error: kafka streams state: $newState")
+                    latch.countDown()
+                }
+            }
             return
         }
-        // CREATED, REBALANCING and RUNNING (with the latter one already handled above)
-        // are the only non-error states. Everything else indicates an error or shutdown
-        // and we should release the lock on which start() awaits and return an error.
-        // see: https://kafka.apache.org/28/javadoc/org/apache/kafka/streams/KafkaStreams.State.html
-        if (newState != State.CREATED && newState != State.REBALANCING) {
-            if (status !is PipelineStatus.StreamStopping) {
-                status =
-                    PipelineStatus.Error(newState)
-                        .withMessage("pipeline data streams error: kafka streams state: $newState")
-                latch.countDown()
+
+        if (newState == State.REBALANCING) {
+            status = PipelineStatus.StreamRebalancing()
+            runBlocking {
+                pipelineSubscriber.handleUpdate(
+                    metadata = metadata,
+                    timestamp = timestamp,
+                    status = status,
+                )
+            }
+            return
+        }
+
+        if (newState == State.RUNNING) {
+            status = PipelineStatus.Started()
+            runBlocking {
+                pipelineSubscriber.handleUpdate(
+                    metadata = metadata,
+                    timestamp = timestamp,
+                    status = status,
+                )
             }
         }
 
-        // TODO: propagate pipeline state after initial startup (i.e. if the pipeline moves
-        //       from RUNNING to REBALANCING or from RUNNING to an Error state)
+        // TODO: add error
     }
 
     companion object {
@@ -151,6 +179,7 @@ class Pipeline(
             kafkaConsumerGroupIdPrefix: String,
             namespace: String,
             kafkaStreamsSerdes: KafkaStreamsSerdes,
+            pipelineSubscriber: PipelineSubscriber,
             timestamp: Long,
         ): Pair<Pipeline?, PipelineStatus.Error?> {
             val (topology, numSteps) = buildTopology(metadata, steps, kafkaDomainParams, kafkaStreamsSerdes)
@@ -184,7 +213,7 @@ class Pipeline(
             logger.info(
                 "AllowCycles: ${metadata.allowCycles}; maxStepRevisits: ${metadata.maxStepRevisits}",
             )
-            return Pipeline(metadata, topology, streamsApp, kafkaDomainParams, numSteps, timestamp) to null
+            return Pipeline(metadata, topology, streamsApp, kafkaDomainParams, numSteps, pipelineSubscriber, timestamp) to null
         }
 
         private fun buildTopology(

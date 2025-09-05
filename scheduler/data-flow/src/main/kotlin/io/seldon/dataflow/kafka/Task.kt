@@ -119,6 +119,7 @@ class CreationTask(
                 kafkaConsumerGroupIdPrefix,
                 namespace,
                 kafkaStreamsSerdes,
+                pipelineSubscriber,
                 timestamp,
             )
         if (err != null) {
@@ -210,6 +211,55 @@ class DeletionTask(
     }
 }
 
+class RebalanceTask(
+    pipelineSubscriber: PipelineSubscriber,
+    private val metadata: PipelineMetadata,
+    timestamp: Long,
+    name: String,
+    private val logger: Klogger,
+) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Rebalance) {
+    override suspend fun run() {
+        logger.info(
+            "Rebalancing for pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
+            metadata.name,
+            metadata.version,
+            metadata.id,
+        )
+        sendPipelineUpdateEvent(
+            success = true,
+            reason = "pipeline rebalance",
+        )
+    }
+}
+
+class RebalancedTask(
+    pipelineSubscriber: PipelineSubscriber,
+    private val metadata: PipelineMetadata,
+    timestamp: Long,
+    name: String,
+    private val logger: Klogger,
+) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Create) {
+    override suspend fun run() {
+        logger.info(
+            "Rebalanced for pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
+            metadata.name,
+            metadata.version,
+            metadata.id,
+        )
+        sendPipelineUpdateEvent(
+            success = true,
+            reason = "pipeline rebalanced",
+        )
+    }
+}
+
+enum class TaskOperation {
+    Create,
+    Delete,
+    Rebalance,
+    Rebalanced,
+}
+
 class PipelineTaskFactory(
     private val pipelineSubscriber: PipelineSubscriber,
     private val kafkaAdmin: KafkaAdmin,
@@ -258,29 +308,57 @@ class PipelineTaskFactory(
         )
     }
 
+    private fun createRebalanceTask(
+        metadata: PipelineMetadata,
+        timestamp: Long,
+    ): Task {
+        return RebalanceTask(
+            pipelineSubscriber = pipelineSubscriber,
+            metadata = metadata,
+            timestamp = timestamp,
+            name = name,
+            logger = logger,
+        )
+    }
+
+    private fun createRebalancedTask(
+        metadata: PipelineMetadata,
+        timestamp: Long,
+    ): Task {
+        return RebalancedTask(
+            pipelineSubscriber = pipelineSubscriber,
+            metadata = metadata,
+            timestamp = timestamp,
+            name = name,
+            logger = logger,
+        )
+    }
+
     /**
      * Creates appropriate task based on operation type
      */
     suspend fun createTask(
-        operation: PipelineOperation,
+        taskOperation: TaskOperation,
         metadata: PipelineMetadata,
-        steps: List<PipelineStepUpdate>,
+        steps: List<PipelineStepUpdate>? = null,
         timestamp: Long,
         kafkaConsumerGroupIdPrefix: String? = null,
         namespace: String? = null,
-    ): Task? {
-        return when (operation) {
-            PipelineOperation.Create -> {
+    ): Task {
+        return when (taskOperation) {
+            TaskOperation.Create -> {
                 require(kafkaConsumerGroupIdPrefix != null) { "kafkaConsumerGroupIdPrefix is required for Create operation" }
                 require(namespace != null) { "namespace is required for Create operation" }
-                createCreationTask(metadata, steps, kafkaConsumerGroupIdPrefix, namespace, timestamp)
+                createCreationTask(metadata, steps!!, kafkaConsumerGroupIdPrefix, namespace, timestamp)
             }
-            PipelineOperation.Delete -> {
-                createDeletionTask(metadata, steps, timestamp)
+            TaskOperation.Delete -> {
+                createDeletionTask(metadata, steps!!, timestamp)
             }
-            else -> {
-                logger.warn("Unsupported pipeline operation: $operation")
-                null
+            TaskOperation.Rebalance -> {
+                createRebalanceTask(metadata, timestamp)
+            }
+            TaskOperation.Rebalanced -> {
+                createRebalancedTask(metadata, timestamp)
             }
         }
     }

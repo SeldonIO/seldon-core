@@ -21,8 +21,10 @@ import io.seldon.dataflow.kafka.KafkaStreamsSerdes
 import io.seldon.dataflow.kafka.Pipeline
 import io.seldon.dataflow.kafka.PipelineId
 import io.seldon.dataflow.kafka.PipelineMetadata
+import io.seldon.dataflow.kafka.PipelineStatus
 import io.seldon.dataflow.kafka.PipelineTaskFactory
 import io.seldon.dataflow.kafka.Task
+import io.seldon.dataflow.kafka.TaskOperation
 import io.seldon.dataflow.kafka.TopicWaitRetryParams
 import io.seldon.mlops.chainer.ChainerGrpcKt
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate
@@ -297,7 +299,7 @@ class PipelineSubscriber(
             }
             queues[metadata.id]?.queue?.send(
                 taskFactory.createTask(
-                    operation = PipelineOperation.Create,
+                    taskOperation = TaskOperation.Create,
                     metadata = metadata,
                     steps = steps,
                     timestamp = timestamp,
@@ -322,12 +324,41 @@ class PipelineSubscriber(
                 queueInfo.deletionScheduledAt = System.currentTimeMillis()
                 queueInfo.queue.send(
                     taskFactory.createTask(
-                        operation = PipelineOperation.Delete,
+                        taskOperation = TaskOperation.Delete,
                         metadata = metadata,
                         steps = steps,
                         timestamp = timestamp,
                     )!!,
                 )
+            }
+        }
+    }
+
+    suspend fun handleUpdate(
+        metadata: PipelineMetadata,
+        timestamp: Long,
+        status: PipelineStatus,
+    ) {
+        queuesMutex.withLock {
+            val queueInfo = queues[metadata.id]
+            if (queueInfo != null) {
+                if (status == PipelineStatus.StreamRebalancing()) {
+                    queueInfo.queue.send(
+                        taskFactory.createTask(
+                            taskOperation = TaskOperation.Rebalance,
+                            metadata = metadata,
+                            timestamp = timestamp,
+                        ),
+                    )
+                } else {
+                    queueInfo.queue.send(
+                        taskFactory.createTask(
+                            taskOperation = TaskOperation.Rebalanced,
+                            metadata = metadata,
+                            timestamp = timestamp,
+                        ),
+                    )
+                }
             }
         }
     }
