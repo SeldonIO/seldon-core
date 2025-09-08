@@ -11,8 +11,6 @@
     name: schema-registry
     namespace: "{{ schema_registry_namespace }}"
     chart_ref: "schema-registry"
-    chart_version: "{{ schema_registry_chart_version | default('24.0.0') }}"
     chart_repo_url: "https://charts.bitnami.com/bitnami"
     wait: true
     values: "{{ lookup('ansible.builtin.template', '../templates/schema-registry-values.yaml.j2') | from_yaml }}"
-
