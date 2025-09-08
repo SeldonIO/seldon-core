@@ -216,6 +216,7 @@ class RebalanceTask(
     private val metadata: PipelineMetadata,
     timestamp: Long,
     name: String,
+    private val reason: String,
     private val logger: Klogger,
 ) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Rebalance) {
     override suspend fun run() {
@@ -227,7 +228,7 @@ class RebalanceTask(
         )
         sendPipelineUpdateEvent(
             success = true,
-            reason = "pipeline rebalance",
+            reason = reason,
         )
     }
 }
@@ -237,6 +238,8 @@ class ReadyTask(
     private val metadata: PipelineMetadata,
     timestamp: Long,
     name: String,
+    private val success: Boolean,
+    private val reason: String,
     private val logger: Klogger,
 ) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Ready) {
     override suspend fun run() {
@@ -247,8 +250,8 @@ class ReadyTask(
             metadata.id,
         )
         sendPipelineUpdateEvent(
-            success = true,
-            reason = "pipeline ready",
+            success = success,
+            reason = reason,
         )
     }
 }
@@ -258,6 +261,7 @@ enum class TaskOperation {
     Delete,
     Rebalance,
     Ready,
+    Failed,
 }
 
 class PipelineTaskFactory(
@@ -311,12 +315,14 @@ class PipelineTaskFactory(
     private fun createRebalanceTask(
         metadata: PipelineMetadata,
         timestamp: Long,
+        reason: String,
     ): Task {
         return RebalanceTask(
             pipelineSubscriber = pipelineSubscriber,
             metadata = metadata,
             timestamp = timestamp,
             name = name,
+            reason = reason,
             logger = logger,
         )
     }
@@ -324,12 +330,16 @@ class PipelineTaskFactory(
     private fun createReadyTask(
         metadata: PipelineMetadata,
         timestamp: Long,
+        success: Boolean,
+        reason: String,
     ): Task {
         return ReadyTask(
             pipelineSubscriber = pipelineSubscriber,
             metadata = metadata,
             timestamp = timestamp,
             name = name,
+            success = success,
+            reason = reason,
             logger = logger,
         )
     }
@@ -337,13 +347,14 @@ class PipelineTaskFactory(
     /**
      * Creates appropriate task based on operation type
      */
-    suspend fun createTask(
+    fun createTask(
         taskOperation: TaskOperation,
         metadata: PipelineMetadata,
         steps: List<PipelineStepUpdate>? = null,
         timestamp: Long,
         kafkaConsumerGroupIdPrefix: String? = null,
         namespace: String? = null,
+        reason: String? = null,
     ): Task {
         return when (taskOperation) {
             TaskOperation.Create -> {
@@ -355,10 +366,13 @@ class PipelineTaskFactory(
                 createDeletionTask(metadata, steps!!, timestamp)
             }
             TaskOperation.Rebalance -> {
-                createRebalanceTask(metadata, timestamp)
+                createRebalanceTask(metadata, timestamp, reason!!)
             }
             TaskOperation.Ready -> {
-                createReadyTask(metadata, timestamp)
+                createReadyTask(metadata, timestamp, true, reason!!)
+            }
+            TaskOperation.Failed -> {
+                createReadyTask(metadata, timestamp, false, reason!!)
             }
         }
     }

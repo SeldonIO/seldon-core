@@ -352,12 +352,18 @@ class PipelineSubscriber(
                     return
                 }
 
-                val taskOperation = if (status == PipelineStatus.StreamRebalancing()) TaskOperation.Rebalance else TaskOperation.Ready
+                val taskOperation =
+                    when (status) {
+                        PipelineStatus.StreamRebalancing() -> TaskOperation.Rebalance
+                        PipelineStatus.Started() -> TaskOperation.Ready
+                        else -> TaskOperation.Failed
+                    }
                 queueInfo.queue.send(
                     taskFactory.createTask(
                         taskOperation = taskOperation,
                         metadata = metadata,
                         timestamp = timestamp,
+                        reason = status.toString(),
                     ),
                 )
             }
