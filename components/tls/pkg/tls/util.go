@@ -82,8 +82,9 @@ func CreateControlPlaneTLSOptions() (*TLSOptions, error) {
 
 	protocol := GetSecurityProtocolFromEnv(EnvSecurityPrefixControlPlane)
 	if protocol == SecurityProtocolSSL {
-		tlsOptions.Cert, err = NewCertificateStore(Prefix(EnvSecurityPrefixControlPlaneClient),
-			ValidationPrefix(EnvSecurityPrefixControlPlaneServer))
+		tlsOptions.Cert, err = NewCertificateStore(
+			Prefix(EnvSecurityPrefixControlPlaneServer),
+			ValidationPrefix(EnvSecurityPrefixControlPlaneClient))
 		if err != nil {
 			return nil, fmt.Errorf("failed creating TLS options for server control plane: %v", err)
 		}
