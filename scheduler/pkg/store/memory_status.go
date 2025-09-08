@@ -115,7 +115,10 @@ func (m *MemoryStore) FailedScheduling(modelID string, version uint32, reason st
 		return fmt.Errorf("model %s not found", modelID)
 	}
 
-	for _, modelVersion := range model.versions {
+	// likely the failed model version is the latest, so we loop through in reverse order
+	for i := len(model.versions) - 1; i >= 0; i-- {
+		modelVersion := model.versions[i]
+		
 		if modelVersion.version == version {
 			// we use len of GetAssignment instead of .state.AvailableReplicas as it is more accurate in this context
 			availableReplicas := uint32(len(modelVersion.GetAssignment()))
