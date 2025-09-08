@@ -319,12 +319,6 @@ func (iw *InferWorker) restRequest(ctx context.Context, job *InferWork, maybeCon
 	logger.Debugf("REST request to %s for %s", restUrl.String(), job.modelName)
 
 	data := job.msg.Value
-	logger.Infof("before schema checkkkk")
-	if iw.schemaRegistryClient != nil {
-		logger.Infof("the first 5 bytes of the request contain: %s", job.msg.Value[:5])
-		data = job.msg.Value[:]
-	}
-
 	if maybeConvert {
 		data = maybeChainRest(job.msg.Value)
 	}
@@ -444,7 +438,7 @@ func (iw *InferWorker) serializeModelInferRespWithSchemaRegistry(topic string, p
 
 	serializedPayload, err := ser.Serialize(topic, v2Res)
 	if err != nil {
-		return nil, fmt.Errorf("failed to serialise response to dataplane model: %w", err)
+		return nil, fmt.Errorf("failed to serialise response to dataplane model with schema id: %w", err)
 	}
 
 	return serializedPayload, nil

@@ -199,7 +199,6 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 
 				// deserialising logic
 				if c.schemaRegistryClient != nil {
-					// If it's Schema Registry format (magic byte 0x0)
 					e.Value = schema.TrimSchemaID(e.Value)
 				}
 				span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))

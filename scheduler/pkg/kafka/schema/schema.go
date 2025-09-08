@@ -53,6 +53,7 @@ func NewSchemaRegistryClient(log *log.Logger) schemaregistry.Client {
 	return srClient
 }
 
+// TrimSchemaID trims the magic byte, schema id and message index of a kafka message that was sent with a schema ID
 func TrimSchemaID(payload []byte) []byte {
 	// If it's Schema Registry format (magic byte 0x0)
 	if len(payload) < 6 {
