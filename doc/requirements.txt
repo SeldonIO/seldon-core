@@ -177,7 +177,7 @@ referencing==0.32.1
     # via
     #   jsonschema
     #   jsonschema-specifications
-requests==2.31.0
+requests==2.32.0
     # via
     #   sphinx
     #   sphinxcontrib-youtube
