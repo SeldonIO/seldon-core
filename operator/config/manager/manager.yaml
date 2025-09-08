@@ -53,7 +53,7 @@ spec:
         - name: MANAGER_LEADER_ELECTION_RENEW_DEADLINE_SECS
           value: "0"
         - name: MANAGER_LEADER_ELECTION_RETRY_PERIOD_SECS
-          value: ""
+          value: "0"
         - name: MANAGER_LOG_LEVEL
           value: "INFO"
         - name: WATCH_NAMESPACE
