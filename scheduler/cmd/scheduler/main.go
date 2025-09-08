@@ -13,7 +13,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-
 	"math/rand"
 	"os"
 	"os/signal"
@@ -21,20 +20,20 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/health"
-	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
-	health_probe "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/backoff"
 	"google.golang.org/grpc/credentials/insecure"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/health"
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
+	health_probe "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/dataflow"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/cleaner"
@@ -202,7 +201,9 @@ func main() {
 
 	namespace = getNamespace()
 
-	tlsOptions, err := tls.CreateControlPlaneTLSOptions()
+	tlsOptions, err := tls.CreateControlPlaneTLSOptions(
+		tls.Prefix(tls.EnvSecurityPrefixControlPlaneServer),
+		tls.ValidationPrefix(tls.EnvSecurityPrefixControlPlaneClient))
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create TLS Options")
 	}
@@ -223,7 +224,7 @@ func main() {
 			probe{port: int(schedulerMtlsPort), plaintText: false})
 	}
 
-	hs, err := initHealthProbe(tlsOptions, logger, probesConfig, int(healthProbePort))
+	httpServer, err := initHealthProbe(tlsOptions, logger, probesConfig, int(healthProbePort))
 	if err != nil {
 		log.WithError(err).Fatal("Failed to start health server")
 	}
@@ -231,7 +232,7 @@ func main() {
 	logger.WithField("port", healthProbePort).Info("Started HTTP health server")
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
-		if err := hs.Shutdown(ctx); err != nil {
+		if err := httpServer.Shutdown(ctx); err != nil {
 			logger.WithError(err).Warn("Failed to shutdown health server")
 		}
 		cancel()
@@ -410,7 +411,7 @@ func initHealthProbe(tlsOptions *tls.TLSOptions, log *log.Logger, config gRPCHea
 			cert = tlsOptions.Cert
 		}
 		if err := createGRPCHealthProbe(cert, probe.port, manager); err != nil {
-			return nil, fmt.Errorf("failed to create health probe: %v", err)
+			return nil, fmt.Errorf("failed to create health probe: %w", err)
 		}
 	}
 

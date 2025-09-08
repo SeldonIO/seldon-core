@@ -19,7 +19,6 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -27,6 +26,8 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
@@ -44,10 +45,10 @@ type PipelineSchedulerClient struct {
 	pipelineInferer       PipelineInferer
 	stop                  atomic.Bool
 	ready                 atomic.Bool
-	tlsOptions            tls.TLSOptions
+	tlsOptions            *tls.TLSOptions
 }
 
-func NewPipelineSchedulerClient(logger logrus.FieldLogger, pipelineStatusUpdater status.PipelineStatusUpdater, pipelineInferer PipelineInferer, tlsOptions tls.TLSOptions) *PipelineSchedulerClient {
+func NewPipelineSchedulerClient(logger logrus.FieldLogger, pipelineStatusUpdater status.PipelineStatusUpdater, pipelineInferer PipelineInferer, tlsOptions *tls.TLSOptions) *PipelineSchedulerClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),

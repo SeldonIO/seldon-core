@@ -23,7 +23,6 @@ import (
 
 	"github.com/jarcoal/httpmock"
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	log "github.com/sirupsen/logrus"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc"
@@ -37,6 +36,7 @@ import (
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/drainservice"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"

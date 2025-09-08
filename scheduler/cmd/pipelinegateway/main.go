@@ -28,6 +28,7 @@ import (
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	health "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline"
@@ -177,9 +178,16 @@ func main() {
 	}()
 	defer func() { _ = promMetrics.Stop() }()
 
-	tlsOptions, err := util.CreateUpstreamDataplaneServerTLSOptions()
+	tlsEnvoyOptions, err := util.CreateUpstreamDataplaneServerTLSOptions()
 	if err != nil {
 		logger.WithError(err).Fatalf("Failed to create TLS Options")
+	}
+
+	tlsOptions, err := tls.CreateControlPlaneTLSOptions(
+		tls.Prefix(tls.EnvSecurityPrefixControlPlaneClient),
+		tls.ValidationPrefix(tls.EnvSecurityPrefixControlPlaneServer))
+	if err != nil {
+		logger.WithError(err).Fatal("Failed to create TLS Options")
 	}
 
 	// Handle pipeline status updates
@@ -199,7 +207,7 @@ func main() {
 	}
 	pipelineReadyChecker := status.NewSimpleReadyChecker(statusManager, restModelChecker)
 
-	grpcServer := pipeline.NewGatewayGrpcServer(grpcPort, logger, km, promMetrics, &tlsOptions, pipelineReadyChecker)
+	grpcServer := pipeline.NewGatewayGrpcServer(grpcPort, logger, km, promMetrics, &tlsEnvoyOptions, pipelineReadyChecker)
 	go func() {
 		if err := grpcServer.Start(); err != nil {
 			logger.WithError(err).Error("Failed to start grpc server")
@@ -207,7 +215,7 @@ func main() {
 		}
 	}()
 
-	httpServer := pipeline.NewGatewayHttpServer(httpPort, logger, km, promMetrics, &tlsOptions, pipelineReadyChecker)
+	httpServer := pipeline.NewGatewayHttpServer(httpPort, logger, km, promMetrics, &tlsEnvoyOptions, pipelineReadyChecker)
 	go func() {
 		if err := httpServer.Start(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
@@ -217,7 +225,7 @@ func main() {
 		}
 	}()
 
-	healthManager, err := initHealthProbe(schedulerClient, km, &tlsOptions, logger, healthProbeServicePort, errChan, httpPort, httpServer)
+	healthManager, err := initHealthProbe(schedulerClient, km, &tlsEnvoyOptions, logger, healthProbeServicePort, errChan, httpPort, httpServer)
 	if err != nil {
 		logger.WithError(err).Error("Failed to start http health server")
 		errChan <- err

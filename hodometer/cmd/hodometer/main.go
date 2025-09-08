@@ -43,7 +43,9 @@ func main() {
 
 	punctuator := hodometer.NewPunctuator(logger, interval)
 
-	tlsOptions, err := tls.CreateControlPlaneTLSOptions()
+	tlsOptions, err := tls.CreateControlPlaneTLSOptions(
+		tls.Prefix(tls.EnvSecurityPrefixControlPlaneClient),
+		tls.ValidationPrefix(tls.EnvSecurityPrefixControlPlaneServer))
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create TLS options")
 	}

@@ -21,10 +21,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	log "github.com/sirupsen/logrus"
 
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	health_probe "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/gateway"
@@ -118,7 +118,9 @@ func main() {
 
 	errChan := make(chan error, 5)
 
-	tlsOptionsControlPlane, err := tls.CreateControlPlaneTLSOptions()
+	tlsOptionsControlPlane, err := tls.CreateControlPlaneTLSOptions(
+		tls.Prefix(tls.EnvSecurityPrefixControlPlaneClient),
+		tls.ValidationPrefix(tls.EnvSecurityPrefixControlPlaneServer))
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create control-plane TLS Options")
 	}

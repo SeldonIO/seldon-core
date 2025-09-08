@@ -16,7 +16,6 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,6 +26,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"

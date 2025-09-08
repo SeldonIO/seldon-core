@@ -18,7 +18,6 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -26,6 +25,7 @@ import (
 
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	scheduler2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"

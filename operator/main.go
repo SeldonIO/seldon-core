@@ -15,7 +15,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	//+kubebuilder:scaffold:imports
 	zap2 "go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -29,6 +28,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	mlopscontrollers "github.com/seldonio/seldon-core/operator/v2/controllers/mlops"
@@ -145,7 +146,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	tlsOptions, err := tls.CreateControlPlaneTLSOptions()
+	tlsOptions, err := tls.CreateControlPlaneTLSOptions(
+		tls.Prefix(tls.EnvSecurityPrefixControlPlaneClient),
+		tls.ValidationPrefix(tls.EnvSecurityPrefixControlPlaneServer),
+		tls.Namespace(namespace))
 	if err != nil {
 		logger.Info("Failed to create TLS options")
 		os.Exit(1)

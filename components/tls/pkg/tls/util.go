@@ -76,17 +76,15 @@ type TLSOptions struct {
 	Cert *CertificateStore
 }
 
-func CreateControlPlaneTLSOptions() (*TLSOptions, error) {
+func CreateControlPlaneTLSOptions(opt ...TLSServerOption) (*TLSOptions, error) {
 	var err error
 	tlsOptions := TLSOptions{}
 
 	protocol := GetSecurityProtocolFromEnv(EnvSecurityPrefixControlPlane)
 	if protocol == SecurityProtocolSSL {
-		tlsOptions.Cert, err = NewCertificateStore(
-			Prefix(EnvSecurityPrefixControlPlaneServer),
-			ValidationPrefix(EnvSecurityPrefixControlPlaneClient))
+		tlsOptions.Cert, err = NewCertificateStore(opt...)
 		if err != nil {
-			return nil, fmt.Errorf("failed creating TLS options for server control plane: %v", err)
+			return nil, fmt.Errorf("failed creating TLS options for server control plane: %w", err)
 		}
 	}
 
