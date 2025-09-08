@@ -17,6 +17,7 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -315,7 +316,7 @@ func TestSync(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			server := NewAgentServer(logger, test.store, nil, eventHub, false)
+			server := NewAgentServer(logger, test.store, nil, eventHub, false, tls.TLSOptions{})
 			server.agents = test.agents
 			server.Sync(test.modelName)
 			model, err := test.store.GetModel(test.modelName)
@@ -1028,7 +1029,7 @@ func TestSubscribe(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			server := NewAgentServer(logger, &mockStore{}, mockScheduler{}, eventHub, false)
+			server := NewAgentServer(logger, &mockStore{}, mockScheduler{}, eventHub, false, tls.TLSOptions{})
 			port, err := testing_utils.GetFreePortForTest()
 			if err != nil {
 				t.Fatal(err)

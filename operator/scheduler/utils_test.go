@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -310,6 +311,7 @@ func newMockControllerClient(objs ...client.Object) *SchedulerClient {
 		logger,
 		fakeClient,
 		fakeRecorder,
+		tls.TLSOptions{},
 	)
 }
 

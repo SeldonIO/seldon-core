@@ -16,6 +16,7 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -133,7 +134,7 @@ func TestSubscribeControlPlane(t *testing.T) {
 		modelGwLoadBalancer := util.NewRingLoadBalancer(1)
 		pipelineGwLoadBalancer := util.NewRingLoadBalancer(1)
 		s := NewSchedulerServer(
-			logger, nil, nil, nil, nil, eventHub, sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer, pipelineGwLoadBalancer,
+			logger, nil, nil, nil, nil, eventHub, sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer, pipelineGwLoadBalancer, tls.TLSOptions{},
 		)
 		sync.Signals(1)
 

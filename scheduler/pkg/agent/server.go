@@ -18,6 +18,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/health"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
@@ -105,6 +106,7 @@ type ServerKey struct {
 type Server struct {
 	mutex sync.RWMutex
 	pb.UnimplementedAgentServiceServer
+	health.UnimplementedHealthCheckServiceServer
 	logger                  log.FieldLogger
 	agents                  map[ServerKey]*AgentSubscriber
 	store                   store.ModelStore
@@ -181,6 +183,8 @@ func (s *Server) startServer(port uint, secure bool) error {
 	opts = append(opts, grpc.KeepaliveEnforcementPolicy(kaep))
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterAgentServiceServer(grpcServer, s)
+	health.RegisterHealthCheckServiceServer(grpcServer, s)
+
 	s.logger.Printf("Agent server running on %d mtls:%v", port, secure)
 	go func() {
 		err := grpcServer.Serve(lis)
@@ -197,7 +201,7 @@ func (s *Server) StartGrpcServer(allowPlainTxt bool, agentPort uint, agentTlsPor
 	logger := s.logger.WithField("func", "StartGrpcServer")
 
 	if !allowPlainTxt && s.tlsOptions.Cert == nil {
-		return fmt.Errorf("One of plain txt or mTLS needs to be defined. But have plain text [%v] and no TLS", allowPlainTxt)
+		return fmt.Errorf("one of plain txt or mTLS needs to be defined. But have plain text [%v] and no TLS", allowPlainTxt)
 	}
 
 	if allowPlainTxt {
@@ -220,8 +224,8 @@ func (s *Server) StartGrpcServer(allowPlainTxt bool, agentPort uint, agentTlsPor
 	return nil
 }
 
-func (s *Server) HealthCheck(_ context.Context, _ *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
-	return &pb.HealthCheckResponse{Ok: true}, nil
+func (s *Server) HealthCheck(_ context.Context, _ *health.HealthCheckRequest) (*health.HealthCheckResponse, error) {
+	return &health.HealthCheckResponse{Ok: true}, nil
 }
 
 func (s *Server) Sync(modelName string) {

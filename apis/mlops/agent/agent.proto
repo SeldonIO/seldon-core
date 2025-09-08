@@ -95,11 +95,6 @@ message ModelVersion {
   uint32 version = 2;
 }
 
-message HealthCheckRequest {}
-message HealthCheckResponse {
-  bool ok = 1;
-}
-
 // [END Messages]
 
 // [START Services]
@@ -109,7 +104,6 @@ service AgentService {
   rpc Subscribe(AgentSubscribeRequest) returns (stream ModelOperationMessage) {};
   rpc ModelScalingTrigger(stream ModelScalingTriggerMessage) returns (ModelScalingTriggerResponse) {};
   rpc AgentDrain(AgentDrainRequest) returns (AgentDrainResponse) {};
-  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {};
 }
 
 // [END Services]

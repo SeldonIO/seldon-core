@@ -45,7 +45,6 @@ const (
 	Scheduler_SubscribeExperimentStatus_FullMethodName = "/seldon.mlops.scheduler.Scheduler/SubscribeExperimentStatus"
 	Scheduler_SubscribePipelineStatus_FullMethodName   = "/seldon.mlops.scheduler.Scheduler/SubscribePipelineStatus"
 	Scheduler_SubscribeControlPlane_FullMethodName     = "/seldon.mlops.scheduler.Scheduler/SubscribeControlPlane"
-	Scheduler_HealthCheck_FullMethodName               = "/seldon.mlops.scheduler.Scheduler/HealthCheck"
 )
 
 // SchedulerClient is the client API for Scheduler service.
@@ -70,7 +69,6 @@ type SchedulerClient interface {
 	SubscribePipelineStatus(ctx context.Context, in *PipelineSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribePipelineStatusClient, error)
 	// control plane stream with controller
 	SubscribeControlPlane(ctx context.Context, in *ControlPlaneSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeControlPlaneClient, error)
-	HealthCheck(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error)
 }
 
 type schedulerClient struct {
@@ -458,16 +456,6 @@ func (x *schedulerSubscribeControlPlaneClient) Recv() (*ControlPlaneResponse, er
 	return m, nil
 }
 
-func (c *schedulerClient) HealthCheck(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(HealthCheckResponse)
-	err := c.cc.Invoke(ctx, Scheduler_HealthCheck_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // SchedulerServer is the server API for Scheduler service.
 // All implementations must embed UnimplementedSchedulerServer
 // for forward compatibility
@@ -490,7 +478,6 @@ type SchedulerServer interface {
 	SubscribePipelineStatus(*PipelineSubscriptionRequest, Scheduler_SubscribePipelineStatusServer) error
 	// control plane stream with controller
 	SubscribeControlPlane(*ControlPlaneSubscriptionRequest, Scheduler_SubscribeControlPlaneServer) error
-	HealthCheck(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error)
 	mustEmbedUnimplementedSchedulerServer()
 }
 
@@ -548,9 +535,6 @@ func (UnimplementedSchedulerServer) SubscribePipelineStatus(*PipelineSubscriptio
 }
 func (UnimplementedSchedulerServer) SubscribeControlPlane(*ControlPlaneSubscriptionRequest, Scheduler_SubscribeControlPlaneServer) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribeControlPlane not implemented")
-}
-func (UnimplementedSchedulerServer) HealthCheck(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method HealthCheck not implemented")
 }
 func (UnimplementedSchedulerServer) mustEmbedUnimplementedSchedulerServer() {}
 
@@ -898,24 +882,6 @@ func (x *schedulerSubscribeControlPlaneServer) Send(m *ControlPlaneResponse) err
 	return x.ServerStream.SendMsg(m)
 }
 
-func _Scheduler_HealthCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(HealthCheckRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SchedulerServer).HealthCheck(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Scheduler_HealthCheck_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SchedulerServer).HealthCheck(ctx, req.(*HealthCheckRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Scheduler_ServiceDesc is the grpc.ServiceDesc for Scheduler service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -954,10 +920,6 @@ var Scheduler_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SchedulerStatus",
 			Handler:    _Scheduler_SchedulerStatus_Handler,
-		},
-		{
-			MethodName: "HealthCheck",
-			Handler:    _Scheduler_HealthCheck_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

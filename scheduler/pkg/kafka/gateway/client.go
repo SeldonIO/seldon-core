@@ -43,10 +43,10 @@ type KafkaSchedulerClient struct {
 	stop            atomic.Bool
 	ready           atomic.Bool
 	subscriberName  string
-	tlsOptions      seldontls.TLSOptions
+	tlsOptions      *seldontls.TLSOptions
 }
 
-func NewKafkaSchedulerClient(logger logrus.FieldLogger, consumerManager *ConsumerManager, tlsOptions seldontls.TLSOptions) *KafkaSchedulerClient {
+func NewKafkaSchedulerClient(logger logrus.FieldLogger, consumerManager *ConsumerManager, tlsOptions *seldontls.TLSOptions) *KafkaSchedulerClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),

@@ -21,8 +21,7 @@ import (
 	"syscall"
 	"time"
 
-	agent2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
-	scheduler2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/health"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	health_probe "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
 	log "github.com/sirupsen/logrus"
@@ -55,6 +54,7 @@ var (
 	schedulerPort                uint
 	schedulerMtlsPort            uint
 	chainerPort                  uint
+	healthProbePort              uint
 	namespace                    string
 	pipelineGatewayHost          string
 	pipelineGatewayHttpPort      int
@@ -107,6 +107,9 @@ func init() {
 
 	// The dataflow port to listen for data flow agents
 	flag.UintVar(&chainerPort, "dataflow-port", 9008, "dataflow server port")
+
+	// The port the k8s HTTP health probe listens on
+	flag.UintVar(&healthProbePort, "health-probe-port", 9999, "http health probe server port")
 
 	// Tell Envoy to use this Node ID
 	flag.StringVar(&nodeID, "nodeID", "test-id", "Node ID")
@@ -203,6 +206,36 @@ func main() {
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create TLS Options")
 	}
+
+	probesConfig := gRPCHealthProbes{}
+	probesConfig.probes = append(probesConfig.probes, probe{
+		port:       int(chainerPort),
+		plaintText: true,
+	})
+	if allowPlaintxt {
+		probesConfig.probes = append(probesConfig.probes,
+			probe{port: int(agentPort), plaintText: true},
+			probe{port: int(schedulerPort), plaintText: true})
+	}
+	if tlsOptions.Cert != nil {
+		probesConfig.probes = append(probesConfig.probes,
+			probe{port: int(agentMtlsPort), plaintText: false},
+			probe{port: int(schedulerMtlsPort), plaintText: false})
+	}
+
+	hs, err := initHealthProbe(tlsOptions, logger, probesConfig, int(healthProbePort))
+	if err != nil {
+		log.WithError(err).Fatal("Failed to start health server")
+	}
+
+	logger.WithField("port", healthProbePort).Info("Started HTTP health server")
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+		if err := hs.Shutdown(ctx); err != nil {
+			logger.WithError(err).Warn("Failed to shutdown health server")
+		}
+		cancel()
+	}()
 
 	// Create event Hub
 	eventHub, err := coordinator.NewEventHub(logger)
@@ -318,18 +351,19 @@ func main() {
 
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {
-		log.WithError(err).Fatal("Failed to start server gRPC servers")
+		logger.WithError(err).Fatal("Failed to start server gRPC servers")
 	}
 
 	// scheduler <-> agent  grpc
 	as := agent.NewAgentServer(logger, ss, sched, eventHub, autoscalingModelEnabled, *tlsOptions)
 	err = as.StartGrpcServer(allowPlaintxt, agentPort, agentMtlsPort)
 	if err != nil {
-		log.WithError(err).Fatal("Failed to start agent gRPC server")
+		logger.WithError(err).Fatal("Failed to start agent gRPC server")
 	}
 
 	// wait for model servers to be ready
 	sync.WaitReady()
+	logger.Info("Inference servers ready")
 
 	// extra wait to allow routes state to get created
 	time.Sleep(xDSWaitTimeout)
@@ -338,7 +372,7 @@ func main() {
 	xdsServer := processor.NewXDSServer(incrementalProcessor, logger)
 	err = xdsServer.StartXDSServer(envoyPort)
 	if err != nil {
-		log.WithError(err).Fatal("Failed to start envoy xDS server")
+		logger.WithError(err).Fatal("Failed to start envoy xDS server")
 	}
 
 	log.Info("Scheduler is ready")
@@ -359,31 +393,59 @@ func main() {
 	log.Info("Shutdown services")
 }
 
-func initHealthProbe(tlsOptions tls.TLSOptions, agentGRPCPort, schedulerGRPCPort int) (*health_probe.HTTPServer, error) {
-	manager := health_probe.NewManager()
+type probe struct {
+	port       int
+	plaintText bool
+}
 
+type gRPCHealthProbes struct {
+	probes []probe
+}
+
+func initHealthProbe(tlsOptions *tls.TLSOptions, log *log.Logger, config gRPCHealthProbes, healthSrvPort int) (*health_probe.HTTPServer, error) {
+	manager := health_probe.NewManager()
+	for _, probe := range config.probes {
+		var cert *tls.CertificateStore
+		if !probe.plaintText {
+			cert = tlsOptions.Cert
+		}
+		if err := createGRPCHealthProbe(cert, probe.port, manager); err != nil {
+			return nil, fmt.Errorf("failed to create health probe: %v", err)
+		}
+	}
+
+	server := health_probe.NewHTTPServer(healthSrvPort, manager, log)
+	go func() {
+		if err := server.Start(); err != nil {
+			log.WithError(err).Fatal("Failed to running health probe HTTP server")
+		}
+	}()
+
+	return server, nil
+}
+
+func createGRPCHealthProbe(cert *tls.CertificateStore, port int, manager health_probe.Manager) error {
 	opts := make([]grpc.DialOption, 0)
 	opts = append(opts, grpc.WithConnectParams(grpc.ConnectParams{
 		Backoff: backoff.DefaultConfig,
 	}), grpc.WithKeepaliveParams(util.GetClientKeepAliveParameters()))
 
-	// TODO we need to check for other bool flag also???
-	if tlsOptions.Cert != nil {
-		opts = append(opts, grpc.WithTransportCredentials(tlsOptions.Cert.CreateClientTransportCredentials()))
+	if cert != nil {
+		opts = append(opts, grpc.WithTransportCredentials(cert.CreateClientTransportCredentials()))
 	} else {
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 
 	// note this will not attempt connection handshake until req is sent
-	conn, err := grpc.NewClient(fmt.Sprintf(":%d", agentGRPCPort), opts...)
+	conn, err := grpc.NewClient(fmt.Sprintf(":%d", port), opts...)
 	if err != nil {
-		return nil, fmt.Errorf("error creating gRPC connection: %v", err)
+		return fmt.Errorf("error creating gRPC connection: %v", err)
 	}
-	gRPCClient := agent2.NewAgentServiceClient(conn)
+	gRPCClient := health.NewHealthCheckServiceClient(conn)
 	manager.AddCheck(func() error {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
-		resp, err := gRPCClient.HealthCheck(ctx, &agent2.HealthCheckRequest{})
+		resp, err := gRPCClient.HealthCheck(ctx, &health.HealthCheckRequest{})
 		if err != nil {
 			return fmt.Errorf("gRPC health check error: %v", err)
 		}
@@ -393,23 +455,5 @@ func initHealthProbe(tlsOptions tls.TLSOptions, agentGRPCPort, schedulerGRPCPort
 		return nil
 	}, health_probe.ProbeReadiness, health_probe.ProbeLiveness)
 
-	// note this will not attempt connection handshake until req is sent
-	conn2, err := grpc.NewClient(fmt.Sprintf(":%d", schedulerGRPCPort), opts...)
-	if err != nil {
-		return nil, fmt.Errorf("error creating gRPC connection: %v", err)
-	}
-	gRPCClient1 := scheduler2.NewSchedulerClient(conn2)
-	manager.AddCheck(func() error {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		defer cancel()
-		resp, err := gRPCClient1.HealthCheck(ctx, &scheduler2.HealthCheckRequest{})
-		if err != nil {
-			return fmt.Errorf("gRPC health check error: %v", err)
-		}
-		if !resp.Ok {
-			return fmt.Errorf("non-health gRPC response")
-		}
-		return nil
-	}, health_probe.ProbeReadiness, health_probe.ProbeLiveness)
-
+	return nil
 }

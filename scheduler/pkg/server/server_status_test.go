@@ -16,6 +16,7 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	log "github.com/sirupsen/logrus"
 
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
@@ -768,7 +769,7 @@ func createTestSchedulerImpl(t *testing.T, config SchedulerServerConfig) (*Sched
 	s := NewSchedulerServer(
 		logger, schedulerStore, experimentServer, pipelineServer, scheduler,
 		eventHub, synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), config,
-		"", "", modelGwLoadBalancer, pipelineGwLoadBalancer,
+		"", "", modelGwLoadBalancer, pipelineGwLoadBalancer, tls.TLSOptions{},
 	)
 
 	return s, eventHub

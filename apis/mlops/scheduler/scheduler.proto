@@ -455,11 +455,6 @@ message ControlPlaneResponse {
   Event event = 1;
 }
 
-message HealthCheckRequest {}
-message HealthCheckResponse {
-  bool ok = 1;
-}
-
 // [END Messages]
 
 
@@ -490,8 +485,6 @@ service Scheduler {
 
   // control plane stream with controller
   rpc SubscribeControlPlane(ControlPlaneSubscriptionRequest) returns (stream ControlPlaneResponse) {};
-
-  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {};
 }
 
 // [END Services]

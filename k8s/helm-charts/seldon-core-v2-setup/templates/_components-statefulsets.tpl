@@ -520,6 +520,7 @@ spec:
         - --enable-model-autoscaling=$(ENABLE_MODEL_AUTOSCALING)
         - --enable-server-autoscaling=$(ENABLE_SERVER_AUTOSCALING)
         - --log-level=$(LOG_LEVEL)
+        - --health-probe-port=$(HEALTH_PROBE_PORT)
         command:
         - /bin/scheduler
         env:
@@ -595,9 +596,17 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: HEALTH_PROBE_PORT
+          value: "9999"
         image: '{{ .Values.scheduler.image.registry }}/{{ .Values.scheduler.image.repository
           }}:{{ .Values.scheduler.image.tag }}'
         imagePullPolicy: '{{ .Values.scheduler.image.pullPolicy }}'
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /live
+            port: health
+          periodSeconds: 5
         name: scheduler
         ports:
         - containerPort: 9002
@@ -612,6 +621,15 @@ spec:
           name: agent-mtls
         - containerPort: 9008
           name: dataflow
+        - containerPort: 9999
+          name: health
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ready
+            port: health
+          periodSeconds: 5
         resources:
           limits:
             memory: '{{ .Values.scheduler.resources.memory }}'

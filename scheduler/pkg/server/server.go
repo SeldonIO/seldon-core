@@ -19,6 +19,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/health"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
@@ -59,6 +60,7 @@ var ErrAddServerEmptyServerName = status.Errorf(codes.FailedPrecondition, "Empty
 
 type SchedulerServer struct {
 	pb.UnimplementedSchedulerServer
+	health.UnimplementedHealthCheckServiceServer
 	logger                 log.FieldLogger
 	modelStore             store.ModelStore
 	experimentServer       experiment.ExperimentServer
@@ -190,6 +192,8 @@ func (s *SchedulerServer) startServer(port uint, secure bool) error {
 	opts = append(opts, grpc.KeepaliveEnforcementPolicy(kaep))
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterSchedulerServer(grpcServer, s)
+	health.RegisterHealthCheckServiceServer(grpcServer, s)
+
 	s.logger.Printf("Scheduler server running on %d mtls:%v", port, secure)
 	go func() {
 		err := grpcServer.Serve(lis)
@@ -353,10 +357,11 @@ func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotify
 	return &pb.ServerNotifyResponse{}, nil
 }
 
-func (s *SchedulerServer) HealthCheck(_ context.Context, _ *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
+func (s *SchedulerServer) HealthCheck(_ context.Context, _ *health.HealthCheckRequest) (*health.HealthCheckResponse, error) {
 	if s.eventHub.IsClosed() {
 		return nil, errors.New("event hub closed")
 	}
+	return &health.HealthCheckResponse{Ok: true}, nil
 }
 
 func (s *SchedulerServer) rescheduleModels(serverKey string) {
