@@ -230,9 +230,21 @@ func main() {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
 
-	numPartitions, err := strconv.Atoi(kafkaConfigMap.Topics["numPartitions"].(string))
-	if err != nil {
-		logger.WithError(err).Fatal("Failed to parse numPartitions from Kafka config. Defaulting to 1")
+	var numPartitions int
+	if partitionsValue, exists := kafkaConfigMap.Topics["numPartitions"]; exists && partitionsValue != nil {
+		if partitionsStr, ok := partitionsValue.(string); ok {
+			var err error
+			numPartitions, err = strconv.Atoi(partitionsStr)
+			if err != nil {
+				logger.WithError(err).Error("Failed to parse numPartitions from Kafka config. Defaulting to 1")
+				numPartitions = 1
+			}
+		} else {
+			logger.Error("numPartitions in Kafka config is not a string. Defaulting to 1")
+			numPartitions = 1
+		}
+	} else {
+		logger.Info("numPartitions not found in Kafka config. Defaulting to 1")
 		numPartitions = 1
 	}
 
