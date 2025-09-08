@@ -220,7 +220,7 @@ class RebalanceTask(
 ) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Rebalance) {
     override suspend fun run() {
         logger.info(
-            "Rebalancing for pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
+            "Rebalancing pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
             metadata.name,
             metadata.version,
             metadata.id,
@@ -232,23 +232,23 @@ class RebalanceTask(
     }
 }
 
-class RebalancedTask(
+class ReadyTask(
     pipelineSubscriber: PipelineSubscriber,
     private val metadata: PipelineMetadata,
     timestamp: Long,
     name: String,
     private val logger: Klogger,
-) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Create) {
+) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Ready) {
     override suspend fun run() {
         logger.info(
-            "Rebalanced for pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
+            "Ready pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
             metadata.name,
             metadata.version,
             metadata.id,
         )
         sendPipelineUpdateEvent(
             success = true,
-            reason = "pipeline rebalanced",
+            reason = "pipeline ready",
         )
     }
 }
@@ -257,7 +257,7 @@ enum class TaskOperation {
     Create,
     Delete,
     Rebalance,
-    Rebalanced,
+    Ready,
 }
 
 class PipelineTaskFactory(
@@ -321,11 +321,11 @@ class PipelineTaskFactory(
         )
     }
 
-    private fun createRebalancedTask(
+    private fun createReadyTask(
         metadata: PipelineMetadata,
         timestamp: Long,
     ): Task {
-        return RebalancedTask(
+        return ReadyTask(
             pipelineSubscriber = pipelineSubscriber,
             metadata = metadata,
             timestamp = timestamp,
@@ -357,8 +357,8 @@ class PipelineTaskFactory(
             TaskOperation.Rebalance -> {
                 createRebalanceTask(metadata, timestamp)
             }
-            TaskOperation.Rebalanced -> {
-                createRebalancedTask(metadata, timestamp)
+            TaskOperation.Ready -> {
+                createReadyTask(metadata, timestamp)
             }
         }
     }

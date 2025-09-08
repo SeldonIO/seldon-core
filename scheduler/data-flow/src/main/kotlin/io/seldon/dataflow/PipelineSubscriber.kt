@@ -305,7 +305,7 @@ class PipelineSubscriber(
                     timestamp = timestamp,
                     kafkaConsumerGroupIdPrefix = kafkaConsumerGroupIdPrefix,
                     namespace = namespace,
-                )!!,
+                ),
             )
         }
     }
@@ -328,7 +328,7 @@ class PipelineSubscriber(
                         metadata = metadata,
                         steps = steps,
                         timestamp = timestamp,
-                    )!!,
+                    ),
                 )
             }
         }
@@ -348,23 +348,14 @@ class PipelineSubscriber(
                     return
                 }
 
-                if (status == PipelineStatus.StreamRebalancing()) {
-                    queueInfo.queue.send(
-                        taskFactory.createTask(
-                            taskOperation = TaskOperation.Rebalance,
-                            metadata = metadata,
-                            timestamp = timestamp,
-                        ),
-                    )
-                } else {
-                    queueInfo.queue.send(
-                        taskFactory.createTask(
-                            taskOperation = TaskOperation.Rebalanced,
-                            metadata = metadata,
-                            timestamp = timestamp,
-                        ),
-                    )
-                }
+                val taskOperation = if (status == PipelineStatus.StreamRebalancing()) TaskOperation.Rebalance else TaskOperation.Ready
+                queueInfo.queue.send(
+                    taskFactory.createTask(
+                        taskOperation = taskOperation,
+                        metadata = metadata,
+                        timestamp = timestamp,
+                    ),
+                )
             }
         }
     }
