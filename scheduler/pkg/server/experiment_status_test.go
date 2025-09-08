@@ -129,7 +129,7 @@ func TestExperimentStatusEvents(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, hub := createTestScheduler()
+			s, hub := createTestScheduler(t)
 			s.timeout = test.timeout
 			if test.loadReq != nil {
 				err := s.experimentServer.StartExperiment(test.loadReq)
@@ -150,7 +150,7 @@ func TestExperimentStatusEvents(t *testing.T) {
 				ExperimentName: "foo"})
 
 			// to allow events to propagate
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(1 * time.Second)
 
 			if test.err {
 				s.experimentEventStream.mu.Lock()

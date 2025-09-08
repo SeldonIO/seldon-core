@@ -453,6 +453,7 @@ func (s *SchedulerServer) modelStatusImpl(model *store.ModelSnapshot, allVersion
 			modelVersionStatuses = append(modelVersionStatuses, createModelVersionStatus(mv))
 		}
 	}
+
 	msr := &pb.ModelStatusResponse{
 		ModelName: model.Name,
 		Versions:  modelVersionStatuses,

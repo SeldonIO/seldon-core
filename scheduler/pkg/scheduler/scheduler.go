@@ -11,6 +11,7 @@ package scheduler
 
 import (
 	"errors"
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -186,8 +187,10 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) (*coordinator.Serve
 	filteredServers = s.filterServers(latestModel, servers)
 	if len(filteredServers) == 0 {
 		msg := "Failed to schedule model as no matching servers are available"
-		logger.Debug(msg)
-		s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas())
+		logger.Warn(msg)
+		if err := s.store.FailedScheduling(latestModel.Key(), latestModel.GetVersion(), msg, !latestModel.HasLiveReplicas()); err != nil {
+			return nil, fmt.Errorf("%s: got error making model as failed in memory store:  %w", msg, err)
+		}
 		return nil, errors.New(msg)
 	}
 
@@ -224,13 +227,17 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) (*coordinator.Serve
 		serverEvent = s.serverScaleUp(latestModel)
 		if !okWithMinReplicas {
 			msg := "Failed to schedule model as no matching server had enough suitable replicas"
-			logger.Debug(msg)
+			logger.Warn(msg)
 			// we do not want to reset the server if it has live replicas or loading replicas
 			// in the case of loading replicas, we need to make sure that we can unload them later.
 			// for example in the case that a model is just marked as loading on a particular server replica
 			// then it gets a delete request (before it is marked as loaded or available) we need to make sure
 			// that we can unload it from the server
-			s.store.FailedScheduling(latestModel, msg, !latestModel.HasLiveReplicas() && !latestModel.IsLoadingOrLoadedOnServer())
+			if err := s.store.FailedScheduling(latestModel.Key(),
+				latestModel.GetVersion(), msg,
+				!latestModel.HasLiveReplicas() && !latestModel.IsLoadingOrLoadedOnServer()); err != nil {
+				return nil, fmt.Errorf("%s: got error making model as failed in memory store:  %w", msg, err)
+			}
 			return serverEvent, errors.New(msg)
 		}
 	}

@@ -160,17 +160,26 @@ func (m *MemoryStore) UpdateModel(req *pb.LoadModelRequest) error {
 func (m *MemoryStore) getModelImpl(key string) *ModelSnapshot {
 	model, ok := m.store.models[key]
 	if ok {
-		return &ModelSnapshot{
-			Name:     key,
-			Versions: model.versions, // TODO make a copy for safety?
-			Deleted:  model.IsDeleted(),
-		}
-	} else {
-		return &ModelSnapshot{
-			Name:     key,
-			Versions: nil,
-		}
+		return m.deepCopy(model, key)
 	}
+
+	return &ModelSnapshot{
+		Name:     key,
+		Versions: nil,
+	}
+}
+
+func (m *MemoryStore) deepCopy(model *Model, key string) *ModelSnapshot {
+	snapshot := &ModelSnapshot{
+		Name:    key,
+		Deleted: model.IsDeleted(),
+	}
+
+	snapshot.Versions = make([]*ModelVersion, len(model.versions))
+	for i, version := range model.versions {
+		snapshot.Versions[i] = version.DeepCopy()
+	}
+	return snapshot
 }
 
 func (m *MemoryStore) LockModel(modelId string) {

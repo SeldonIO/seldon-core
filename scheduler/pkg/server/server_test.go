@@ -341,7 +341,7 @@ func TestLoadModel(t *testing.T) {
 			}
 			r, err := s.LoadModel(context.Background(), &lm)
 
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(200 * time.Millisecond)
 
 			// Then
 			g.Expect(r).ToNot(BeNil())

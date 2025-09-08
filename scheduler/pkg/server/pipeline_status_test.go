@@ -171,7 +171,7 @@ func TestPipelineStatusEvents(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, hub := createTestScheduler()
+			s, hub := createTestScheduler(t)
 			s.timeout = test.timeout
 			if test.loadReq != nil {
 				err := s.pipelineHandler.AddPipeline(test.loadReq.Pipeline)
@@ -311,7 +311,7 @@ func TestPipelineGwRebalanceMessage(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			// create a test scheduler - note it uses a load balancer with 1 partition
-			s, _ := createTestScheduler()
+			s, _ := createTestScheduler(t)
 
 			// create pipelinegw stream
 			stream := newStubPipelineStatusServer(1, 5*time.Millisecond)
@@ -421,7 +421,7 @@ func TestPipelineGwRebalance(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, _ := createTestScheduler()
+			s, _ := createTestScheduler(t)
 
 			var streams []*stubPipelineStatusServer
 			for i := 0; i < test.replicas; i++ {
