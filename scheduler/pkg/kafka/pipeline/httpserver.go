@@ -32,6 +32,7 @@ const (
 	ResourceNameVariable = "model"
 	v2ModelPathPrefix    = "/v2/models/"
 	v2PipelinePathPrefix = "/v2/pipelines/"
+	healthCheckPath      = "/ready"
 )
 
 type GatewayHttpServer struct {
@@ -117,6 +118,15 @@ func (g *GatewayHttpServer) setupRoutes() {
 		v2ModelPathPrefix + "{" + ResourceNameVariable + "}/ready").HandlerFunc(g.pipelineReadyFromModelPath)
 	g.router.NewRoute().Path(
 		v2PipelinePathPrefix + "{" + ResourceNameVariable + "}/ready").HandlerFunc(g.pipelineReadyFromPipelinePath)
+	g.setupHealthRoute()
+}
+
+func (g *GatewayHttpServer) setupHealthRoute() {
+	g.router.NewRoute().Path(healthCheckPath).HandlerFunc(g.healthCheck)
+}
+
+func (g *GatewayHttpServer) HealthPath() string {
+	return healthCheckPath
 }
 
 // Get or create a request ID
@@ -239,6 +249,10 @@ func (g *GatewayHttpServer) pipelineReady(w http.ResponseWriter, req *http.Reque
 			w.WriteHeader(http.StatusFailedDependency)
 		}
 	}
+}
+
+func (g *GatewayHttpServer) healthCheck(w http.ResponseWriter, _ *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }
 
 func (g *GatewayHttpServer) pipelineReadyFromPipelinePath(w http.ResponseWriter, req *http.Request) {

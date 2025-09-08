@@ -45,6 +45,7 @@ type PipelineSchedulerClient struct {
 	pipelineInferer       PipelineInferer
 	certificateStore      *seldontls.CertificateStore
 	stop                  atomic.Bool
+	ready                 atomic.Bool
 }
 
 func NewPipelineSchedulerClient(logger logrus.FieldLogger, pipelineStatusUpdater status.PipelineStatusUpdater, pipelineInferer PipelineInferer) *PipelineSchedulerClient {
@@ -59,6 +60,10 @@ func NewPipelineSchedulerClient(logger logrus.FieldLogger, pipelineStatusUpdater
 		pipelineStatusUpdater: pipelineStatusUpdater,
 		pipelineInferer:       pipelineInferer,
 	}
+}
+
+func (pc *PipelineSchedulerClient) IsConnected() bool {
+	return pc.ready.Load()
 }
 
 func (pc *PipelineSchedulerClient) connectToScheduler(host string, plainTxtPort int, tlsPort int) error {
@@ -180,6 +185,9 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 	if errSub != nil {
 		return errSub
 	}
+
+	pc.ready.Store(true)
+	defer pc.ready.Store(false)
 
 	for {
 		if pc.stop.Load() {

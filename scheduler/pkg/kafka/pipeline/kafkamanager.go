@@ -115,6 +115,29 @@ func NewKafkaManager(
 	return km, nil
 }
 
+func (km *KafkaManager) ProducerClosed() bool {
+	km.mu.RLock()
+	defer km.mu.RUnlock()
+	return km.producer.IsClosed()
+}
+
+func (km *KafkaManager) ConsumersActive() bool {
+	km.mu.RLock()
+	defer km.mu.RUnlock()
+
+	active := true
+	km.pipelines.Range(func(key, value interface{}) bool {
+		pipeline := value.(*Pipeline)
+		if !pipeline.consumer.IsActive() {
+			active = false
+			return false
+		}
+		return true
+	})
+
+	return active
+}
+
 func (km *KafkaManager) Stop() {
 	logger := km.logger.WithField("func", "Stop")
 	logger.Info("Stopping pipelines")

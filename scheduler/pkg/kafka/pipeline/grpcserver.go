@@ -158,6 +158,10 @@ func (g *GatewayGrpcServer) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	return resProto, nil
 }
 
+func (g *GatewayGrpcServer) ServerReady(context.Context, *v2.ServerReadyRequest) (*v2.ServerReadyResponse, error) {
+	return &v2.ServerReadyResponse{Ready: true}, nil
+}
+
 // This is presently used for pipeline ready use cases but the v2 protocol only has the concept of model ready calls
 func (g *GatewayGrpcServer) ModelReady(ctx context.Context, req *v2.ModelReadyRequest) (*v2.ModelReadyResponse, error) {
 	md, ok := metadata.FromIncomingContext(ctx)

@@ -10,18 +10,26 @@ the Change License after the Change Date as each is defined in accordance with t
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/backoff"
+	"google.golang.org/grpc/credentials/insecure"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 
+	health "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
@@ -40,6 +48,7 @@ const (
 	flagSchedulerTlsPort      = "scheduler-tls-port"
 	flagEnvoyHost             = "envoy-host"
 	flagEnvoyPort             = "envoy-port"
+	flagHealthPort            = "health-probe-port"
 )
 
 const (
@@ -49,22 +58,24 @@ const (
 	defaultSchedulerPlaintxtPort = 9004
 	defaultSchedulerTLSPort      = 9044
 	defaultEnvoyPort             = 9000
+	defaultHealthProbePort       = 9999
 	serviceTag                   = "seldon-pipelinegateway"
 )
 
 var (
-	httpPort              int
-	grpcPort              int
-	metricsPort           int
-	logLevel              string
-	namespace             string
-	kafkaConfigPath       string
-	tracingConfigPath     string
-	schedulerHost         string
-	schedulerPlaintxtPort int
-	schedulerTlsPort      int
-	envoyHost             string
-	envoyPort             int
+	httpPort               int
+	grpcPort               int
+	metricsPort            int
+	logLevel               string
+	namespace              string
+	kafkaConfigPath        string
+	tracingConfigPath      string
+	schedulerHost          string
+	schedulerPlaintxtPort  int
+	schedulerTlsPort       int
+	envoyHost              string
+	envoyPort              int
+	healthProbeServicePort int
 )
 
 func init() {
@@ -86,16 +97,7 @@ func init() {
 	flag.IntVar(&schedulerTlsPort, flagSchedulerTlsPort, defaultSchedulerTLSPort, "Scheduler TLS port")
 	flag.StringVar(&envoyHost, flagEnvoyHost, "0.0.0.0", "Envoy host")
 	flag.IntVar(&envoyPort, flagEnvoyPort, defaultEnvoyPort, "Envoy port")
-}
-
-func makeSignalHandler(logger *log.Logger, done chan<- bool) {
-	exit := make(chan os.Signal, 1)
-	signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
-
-	<-exit
-
-	logger.Info("shutting down due to SIGTERM or SIGINT")
-	close(done)
+	flag.IntVar(&healthProbeServicePort, flagHealthPort, defaultHealthProbePort, "Health probe port")
 }
 
 // TODO: move to a common util
@@ -136,8 +138,7 @@ func main() {
 	logger.Infof("Setting log level to %s", logLevel)
 	logger.SetLevel(logIntLevel)
 
-	done := make(chan bool, 1)
-	go makeSignalHandler(logger, done)
+	defer logger.Info("Graceful shutdown complete")
 
 	updateNamespace()
 
@@ -161,17 +162,18 @@ func main() {
 	}
 	defer km.Stop()
 
+	errChan := make(chan error, 10)
+
 	promMetrics, err := metrics.NewPrometheusPipelineMetrics(logger)
 	if err != nil {
 		logger.WithError(err).Fatalf("Can't create prometheus metrics")
 	}
 	go func() {
 		err := promMetrics.Start(metricsPort)
-		if errors.Is(err, http.ErrServerClosed) {
-			return
+		if !errors.Is(err, http.ErrServerClosed) {
+			logger.WithError(err).Error("Can't start metrics server")
 		}
-		logger.WithError(err).Error("Can't start metrics server")
-		close(done)
+		errChan <- err
 	}()
 	defer func() { _ = promMetrics.Stop() }()
 
@@ -182,45 +184,163 @@ func main() {
 
 	// Handle pipeline status updates
 	statusManager := status.NewPipelineStatusManager()
-	pipelineSchedulerClient := pipeline.NewPipelineSchedulerClient(logger, statusManager, km)
+	schedulerClient := pipeline.NewPipelineSchedulerClient(logger, statusManager, km)
 	go func() {
-		if err := pipelineSchedulerClient.Start(schedulerHost, schedulerPlaintxtPort, schedulerTlsPort); err != nil {
+		if err := schedulerClient.Start(schedulerHost, schedulerPlaintxtPort, schedulerTlsPort); err != nil {
 			logger.WithError(err).Error("Start client failed")
 		}
-		logger.Info("Scheduler client ended - closing done")
-		close(done)
+		logger.Info("Scheduler client ended")
+		errChan <- err
 	}()
 
 	restModelChecker, err := status.NewModelRestStatusCaller(logger, envoyHost, envoyPort)
 	if err != nil {
-		logger.WithError(err).Fatalf("Failed to create REST modelchecker")
+		logger.WithError(err).Fatal("Failed to create REST modelchecker")
 	}
 	pipelineReadyChecker := status.NewSimpleReadyChecker(statusManager, restModelChecker)
-	httpServer := pipeline.NewGatewayHttpServer(httpPort, logger, km, promMetrics, &tlsOptions, pipelineReadyChecker)
-	go func() {
-		if err := httpServer.Start(); err != nil {
-			if !errors.Is(err, http.ErrServerClosed) {
-				logger.WithError(err).Error("Failed to start http server")
-				close(done)
-			}
-		}
-	}()
 
 	grpcServer := pipeline.NewGatewayGrpcServer(grpcPort, logger, km, promMetrics, &tlsOptions, pipelineReadyChecker)
 	go func() {
 		if err := grpcServer.Start(); err != nil {
 			logger.WithError(err).Error("Failed to start grpc server")
-			close(done)
+			errChan <- err
 		}
 	}()
 
-	// Wait for completion
-	<-done
+	httpServer := pipeline.NewGatewayHttpServer(httpPort, logger, km, promMetrics, &tlsOptions, pipelineReadyChecker)
+	go func() {
+		if err := httpServer.Start(); err != nil {
+			if !errors.Is(err, http.ErrServerClosed) {
+				logger.WithError(err).Error("Failed to start http server")
+				errChan <- err
+			}
+		}
+	}()
+
+	healthManager, err := initHealthProbe(schedulerClient, km, &tlsOptions, logger, healthProbeServicePort, errChan, httpPort, httpServer)
+	if err != nil {
+		logger.WithError(err).Error("Failed to start http health server")
+		errChan <- err
+	}
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		if err := healthManager.Shutdown(ctx); err != nil {
+			logger.WithError(err).Error("Failed to shutdown health probe server")
+		}
+		cancel()
+	}()
+
+	waitForTermSignalOrErr(logger, errChan)
+
 	logger.Infof("Shutting down http server")
 	if err := httpServer.Stop(); err != nil {
 		logger.WithError(err).Error("Failed to stop http server")
 	}
 	logger.Infof("Shutting down scheduler client")
 	grpcServer.Stop()
-	pipelineSchedulerClient.Stop()
+	schedulerClient.Stop()
+}
+
+func waitForTermSignalOrErr(logger *log.Logger, errChan <-chan error) {
+	exit := make(chan os.Signal, 1)
+	signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
+
+	select {
+	case err := <-errChan:
+		logger.WithError(err).Error("Shutting down due to error")
+	case <-exit:
+		logger.Info("Shutting down due to SIGTERM or SIGINT")
+	}
+}
+
+func initHealthProbe(schedulerClient *pipeline.PipelineSchedulerClient, kafka *pipeline.KafkaManager,
+	tlsOptions *util.TLSOptions, log *log.Logger, listenPort int, errChan chan<- error, httpPort int, gwHTTPServer *pipeline.GatewayHttpServer) (*health.HTTPServer, error) {
+	manager := health.NewManager()
+
+	schedulerHealth(manager, schedulerClient)
+	if err := gRPCHealth(tlsOptions, manager); err != nil {
+		return nil, fmt.Errorf("failed setting up gRPC health probe: %w", err)
+	}
+	httpHealth(tlsOptions, manager, gwHTTPServer.HealthPath(), httpPort)
+	kafkaHealth(manager, kafka)
+
+	server := health.NewHTTPServer(listenPort, manager, log)
+	go func() {
+		errChan <- server.Start()
+	}()
+
+	return server, nil
+}
+
+func schedulerHealth(manager health.Manager, schedulerClient *pipeline.PipelineSchedulerClient) {
+	manager.AddCheck(func() error {
+		if !schedulerClient.IsConnected() {
+			return fmt.Errorf("not connected to scheduler")
+		}
+		return nil
+	}, health.ProbeStartUp)
+}
+
+func kafkaHealth(manager health.Manager, kafka *pipeline.KafkaManager) {
+	manager.AddCheck(func() error {
+		if kafka.ProducerClosed() {
+			return fmt.Errorf("kafka producer closed")
+		}
+		if !kafka.ConsumersActive() {
+			return fmt.Errorf("kafka consumer(s) not active")
+		}
+		return nil
+	}, health.ProbeReadiness, health.ProbeLiveness)
+}
+
+func gRPCHealth(tlsOptions *util.TLSOptions, manager health.Manager) error {
+	opts := make([]grpc.DialOption, 0)
+	opts = append(opts, grpc.WithConnectParams(grpc.ConnectParams{
+		Backoff: backoff.DefaultConfig,
+	}), grpc.WithKeepaliveParams(util.GetClientKeepAliveParameters()))
+
+	if tlsOptions.TLS {
+		opts = append(opts, grpc.WithTransportCredentials(tlsOptions.Cert.CreateClientTransportCredentials()))
+	} else {
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	}
+
+	// note this will not attempt connection handshake until req is sent
+	conn, err := grpc.NewClient(fmt.Sprintf(":%d", grpcPort), opts...)
+	if err != nil {
+		return fmt.Errorf("error creating gRPC connection: %v", err)
+	}
+	gRPCClient := v2_dataplane.NewGRPCInferenceServiceClient(conn)
+
+	manager.AddCheck(func() error {
+		_, err := gRPCClient.ServerReady(context.Background(), &v2_dataplane.ServerReadyRequest{})
+		if err != nil {
+			return fmt.Errorf("gRPC server check failed calling ServerReady: %w", err)
+		}
+		return nil
+	}, health.ProbeReadiness, health.ProbeStartUp, health.ProbeLiveness)
+
+	return nil
+}
+
+func httpHealth(tlsOptions *util.TLSOptions, manager health.Manager, path string, port int) {
+	httpClient := &http.Client{}
+	url := fmt.Sprintf("http://localhost:%d%s", port, path)
+	if tlsOptions.TLS {
+		url = fmt.Sprintf("https://localhost:%d%s", port, path)
+		httpClient.Transport = &http.Transport{
+			TLSClientConfig: tlsOptions.Cert.CreateClientTLSConfig(),
+		}
+	}
+
+	manager.AddCheck(func() error {
+		resp, err := httpClient.Get(url)
+		if err != nil {
+			return fmt.Errorf("failed HTTPs health request: %w", err)
+		}
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("failed HTTP health request got %d expected 200", resp.StatusCode)
+		}
+		return nil
+	}, health.ProbeReadiness, health.ProbeStartUp, health.ProbeLiveness)
 }

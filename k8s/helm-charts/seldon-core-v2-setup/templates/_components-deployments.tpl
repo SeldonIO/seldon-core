@@ -667,6 +667,7 @@ spec:
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --tracing-config-path=/mnt/tracing/tracing.json
         - --log-level=$(LOG_LEVEL)
+        - --health-probe-port=$(HEALTH_PROBE_PORT)
         command:
         - /bin/pipelinegateway
         env:
@@ -753,6 +754,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: HEALTH_PROBE_PORT
+          value: "9999"
         - name: POD_IP
           valueFrom:
             fieldRef:
@@ -764,6 +767,12 @@ spec:
         image: '{{ .Values.pipelinegateway.image.registry }}/{{ .Values.pipelinegateway.image.repository
           }}:{{ .Values.pipelinegateway.image.tag }}'
         imagePullPolicy: '{{ .Values.pipelinegateway.image.pullPolicy }}'
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /live
+            port: health
+          periodSeconds: 5
         name: pipelinegateway
         ports:
         - containerPort: 9010
@@ -775,12 +784,28 @@ spec:
         - containerPort: 9006
           name: metrics
           protocol: TCP
+        - containerPort: 9999
+          name: health
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ready
+            port: health
+          periodSeconds: 5
         resources:
           limits:
             memory: '{{ .Values.pipelinegateway.resources.memory }}'
           requests:
             cpu: '{{ .Values.pipelinegateway.resources.cpu }}'
             memory: '{{ .Values.pipelinegateway.resources.memory }}'
+        startupProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /startup
+            port: health
+          initialDelaySeconds: 3
+          periodSeconds: 5
         volumeMounts:
         - mountPath: /mnt/kafka
           name: kafka-config-volume
