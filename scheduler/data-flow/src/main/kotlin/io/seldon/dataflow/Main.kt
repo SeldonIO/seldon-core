@@ -138,7 +138,7 @@ object Main {
                 config[Cli.kafkaConsumerGroupIdPrefix],
                 config[Cli.namespace],
                 config[Cli.pipelineCtlopsThreads],
-                kafkaStreamsSerdes,
+                kafkaStreamsSerdes = kafkaStreamsSerdes,
             )
 
         // Set up health server

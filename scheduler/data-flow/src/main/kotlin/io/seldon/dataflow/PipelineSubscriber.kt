@@ -23,7 +23,6 @@ import io.seldon.dataflow.kafka.PipelineId
 import io.seldon.dataflow.kafka.PipelineMetadata
 import io.seldon.dataflow.kafka.PipelineTaskFactory
 import io.seldon.dataflow.kafka.Task
-import io.seldon.dataflow.kafka.SerdeFactory
 import io.seldon.dataflow.kafka.TopicWaitRetryParams
 import io.seldon.mlops.chainer.ChainerGrpcKt
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineStepUpdate
@@ -67,7 +66,6 @@ class PipelineSubscriber(
     private val namespace: String,
     pipelineCtlopsThreads: Int,
     private val queueCleanupDelayMs: Long = 30_000L,
-    private val kafkaStreamsSerdes: SerdeFactory.KafkaStreamsSerdes,
     private val kafkaStreamsSerdes: KafkaStreamsSerdes,
 ) {
     val kafkaAdmin = KafkaAdmin(kafkaAdminProperties, kafkaStreamsParams, topicWaitRetryParams)
@@ -99,6 +97,7 @@ class PipelineSubscriber(
             kafkaDomainParams = kafkaDomainParams,
             name = name,
             logger = logger,
+            kafkaStreamsSerdes = kafkaStreamsSerdes,
         )
 
     // Track queues scheduled for deletion

@@ -57,6 +57,7 @@ class CreationTask(
     timestamp: Long,
     name: String,
     private val logger: Klogger,
+    private val kafkaStreamsSerdes: KafkaStreamsSerdes,
 ) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Create) {
     override suspend fun run() {
         val defaultReason = "pipeline created"
@@ -116,6 +117,7 @@ class CreationTask(
                 kafkaDomainParams,
                 kafkaConsumerGroupIdPrefix,
                 namespace,
+                kafkaStreamsSerdes,
             )
         if (err != null) {
             err.log(logger, Level.ERROR)
@@ -213,6 +215,7 @@ class PipelineTaskFactory(
     private val kafkaDomainParams: KafkaDomainParams,
     private val name: String,
     private val logger: Klogger,
+    private val kafkaStreamsSerdes: KafkaStreamsSerdes,
 ) {
     private fun createCreationTask(
         metadata: PipelineMetadata,
@@ -233,6 +236,7 @@ class PipelineTaskFactory(
             timestamp = timestamp,
             name = name,
             logger = logger,
+            kafkaStreamsSerdes = kafkaStreamsSerdes,
         )
     }
 
