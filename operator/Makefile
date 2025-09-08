@@ -98,27 +98,27 @@ undeploy-lite: manifests
 
 deploy-local: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/local | kubectl apply -f -
+	kustomize build config/local | kubectl apply -f - --force-conflicts=true --server-side=true
 
 deploy-namespaced1: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/namespaced1 | kubectl apply -f -
+	kustomize build config/namespaced1 | kubectl apply -f - --force-conflicts=true --server-side=true
 
 deploy-namespaced2: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/namespaced2 | kubectl apply -f -
+	kustomize build config/namespaced2 | kubectl apply -f - --force-conflicts=true --server-side=true
 
 deploy-controllerid: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/controllerid | kubectl apply -f -
+	kustomize build config/controllerid | kubectl apply -f - --force-conflicts=true --server-side=true
 
 deploy-cert: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/cert | kubectl apply -f -
+	kustomize build config/cert | kubectl apply -f - --force-conflicts=true --server-side=true
 
 deploy-lite: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/lite | kubectl apply -f -
+	kustomize build config/lite | kubectl apply -f - --force-conflicts=true --server-side=true
 
 
 # Generate manifests e.g. CRD, RBAC etc.
