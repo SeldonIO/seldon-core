@@ -111,6 +111,7 @@ func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chaine
 	logger := c.logger.WithField("func", "PipelineUpdateEvent")
 	var statusVal pipeline.PipelineStatus
 	switch message.Update.Op {
+	// create, delete, rebalance operation from the scheduler
 	case chainer.PipelineUpdateMessage_Create:
 		if message.Success {
 			statusVal = pipeline.PipelineReady
@@ -123,9 +124,16 @@ func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chaine
 		} else {
 			statusVal = pipeline.PipelineFailed
 		}
+	// internal rebalancing operation
 	case chainer.PipelineUpdateMessage_Rebalance:
 		if message.Success {
 			statusVal = pipeline.PipelineRebalancing
+		} else {
+			statusVal = pipeline.PipelineFailed
+		}
+	case chainer.PipelineUpdateMessage_Ready:
+		if message.Success {
+			statusVal = pipeline.PipelineReady
 		} else {
 			statusVal = pipeline.PipelineFailed
 		}

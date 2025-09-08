@@ -85,64 +85,62 @@ func (cr *ConflictResolutioner) GetCountPipelineWithStatus(pipelineName string, 
 func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *chainer.PipelineUpdateStatusMessage) (pipeline.PipelineStatus, string) {
 	logger := cr.logger.WithField("func", "GetPipelineStatus")
 	streams := cr.vectorResponseStatus[pipelineName]
-	failedCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineFailed)
 
+	var messageStr = ""
+	readyCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineReady)
+	if readyCount > 0 {
+		messageStr += fmt.Sprintf("%d/%d ready ", readyCount, len(streams))
+	}
+
+	terminatedCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineTerminated)
+	if terminatedCount > 0 {
+		messageStr += fmt.Sprintf("%d/%d terminated ", terminatedCount, len(streams))
+	}
+
+	failedCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineFailed)
+	if failedCount > 0 {
+		messageStr += fmt.Sprintf("%d/%d failed ", failedCount, len(streams))
+	}
+
+	rebalancingCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineRebalancing)
+	if rebalancingCount > 0 {
+		messageStr += fmt.Sprintf("%d/%d rebalancing ", rebalancingCount, len(streams))
+	}
+
+	logger.Infof("Pipeline %s status counts: %s", pipelineName, messageStr)
 	if message.Update.Op == chainer.PipelineUpdateMessage_Create {
-		readyCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineReady)
-		message := fmt.Sprintf(
-			"%d/%d streams are ready, %d/%d streams failed",
-			readyCount, len(streams),
-			failedCount, len(streams),
-		)
 		// We log info this cause the reason doesn't not display in case of
 		// success in the message column of k9s
 		//
 		// TODO: Implement something similar to models to display the numbers
 		// of available replicas
-		logger.Infof("Pipeline %s status message: %s", pipelineName, message)
 		if failedCount > 0 {
-			return pipeline.PipelineFailed, message
+			return pipeline.PipelineFailed, messageStr
 		}
 		if readyCount == len(streams) {
-			return pipeline.PipelineReady, message
+			return pipeline.PipelineReady, messageStr
 		}
-		return pipeline.PipelineCreating, message
+		return pipeline.PipelineCreating, messageStr
 	}
 
 	if message.Update.Op == chainer.PipelineUpdateMessage_Delete {
-		terminatedCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineTerminated)
-		message := fmt.Sprintf(
-			"%d/%d streams terminated, %d/%d streams failed to terminate",
-			terminatedCount, len(streams),
-			failedCount, len(streams),
-		)
-		logger.Infof("Pipeline %s status message: %s", pipelineName, message)
 		if failedCount > 0 {
-			return pipeline.PipelineFailed, message
+			return pipeline.PipelineFailed, messageStr
 		}
 		if terminatedCount == len(streams) {
-			return pipeline.PipelineTerminated, message
+			return pipeline.PipelineTerminated, messageStr
 		}
-		return pipeline.PipelineTerminating, message
+		return pipeline.PipelineTerminating, messageStr
 	}
 
-	if message.Update.Op == chainer.PipelineUpdateMessage_Rebalance {
-		rebalancingCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineRebalancing)
-		readyCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineReady)
-		message := fmt.Sprintf(
-			"%d/%d streams rebalancing, %d/%d streams ready, %d/%d streams failed",
-			rebalancingCount, len(streams),
-			readyCount, len(streams),
-			failedCount, len(streams),
-		)
-		logger.Infof("Pipeline %s status message: %s", pipelineName, message)
+	if message.Update.Op == chainer.PipelineUpdateMessage_Rebalance || message.Update.Op == chainer.PipelineUpdateMessage_Ready {
 		if failedCount > 0 {
-			return pipeline.PipelineFailed, message
+			return pipeline.PipelineFailed, messageStr
 		}
 		if readyCount == len(streams) {
-			return pipeline.PipelineReady, message
+			return pipeline.PipelineReady, messageStr
 		}
-		return pipeline.PipelineRebalancing, message
+		return pipeline.PipelineRebalancing, messageStr
 	}
 
 	return pipeline.PipelineStatusUnknown, "Unknown operation or status"
