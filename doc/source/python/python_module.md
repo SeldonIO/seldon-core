@@ -9,9 +9,18 @@ Seldon Core has a python package `seldon-core` available on PyPI. The package ma
 
 Install from PyPI with:
 
+PS: If you are on mac with the M1 chip, please use this command to install grpcio before:
+
+```
+ LDFLAGS="-L$(/$(which brew) --prefix openssl)/lib -L$(/$(which brew) --prefix re2)/lib" CPPFLAGS="-I$(/$(which brew) --prefix openssl)/include -I$(/$(which brew) --prefix re2)/include" GRPC_BUILD_WITH_BORING_SSL_ASM="" GRPC_PYTHON_BUILD_SYSTEM_RE2=true GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=true GRPC_PYTHON_BUILD_SYSTEM_ZLIB=true pip install grpcio
+```
+
+Then install: 
+
 ```bash
 $ pip install seldon-core
 ```
+
 
 ### Tensorflow support
 
