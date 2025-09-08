@@ -150,7 +150,7 @@ func TestExperimentStatusEvents(t *testing.T) {
 				ExperimentName: "foo"})
 
 			// to allow events to propagate
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(1 * time.Second)
 
 			if test.err {
 				s.experimentEventStream.mu.Lock()
