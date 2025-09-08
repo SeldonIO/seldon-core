@@ -97,7 +97,7 @@ func init() {
 	flag.IntVar(&schedulerTlsPort, flagSchedulerTlsPort, defaultSchedulerTLSPort, "Scheduler TLS port")
 	flag.StringVar(&envoyHost, flagEnvoyHost, "0.0.0.0", "Envoy host")
 	flag.IntVar(&envoyPort, flagEnvoyPort, defaultEnvoyPort, "Envoy port")
-	flag.IntVar(&healthProbeServicePort, flagHealthPort, defaultHealthProbePort, "K8s health probe port")
+	flag.IntVar(&healthProbeServicePort, flagHealthPort, defaultHealthProbePort, "Health probe port")
 }
 
 // TODO: move to a common util
