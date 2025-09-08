@@ -26,9 +26,20 @@ import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
 import org.apache.kafka.streams.state.Stores
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.locks.Lock
+import java.util.concurrent.locks.ReentrantLock
 import kotlin.math.floor
 import kotlin.math.log2
 import kotlin.math.max
+
+inline fun <T> Lock.withLock(action: () -> T): T {
+    lock()
+    try {
+        return action()
+    } finally {
+        unlock()
+    }
+}
 
 typealias PipelineId = String
 
@@ -52,6 +63,7 @@ class Pipeline(
     var timestamp: Long,
 ) : StateListener {
     private val latch = CountDownLatch(1)
+    private val statusLock = ReentrantLock()
 
     // Never update status properties in-place, because we need it to have atomic
     // properties. Instead, just assign new values to it.
@@ -65,18 +77,23 @@ class Pipeline(
         logger.info("starting pipeline {pipelineName}, ({pipelineId}, {pipelineVersion})", metadata.name, metadata.id, metadata.version)
         logger.debug { topology.describe() }
         streams.setStateListener(this)
+
         try {
-            streams.start()
+            statusLock.withLock {
+                streams.start()
+                status = PipelineStatus.StreamStarting()
+            }
         } catch (e: Exception) {
-            streams.close()
-            streams.cleanUp()
-            status =
-                PipelineStatus.Error(State.NOT_RUNNING)
-                    .withException(e)
-                    .withMessage("kafka streams: failed to start")
+            statusLock.withLock {
+                streams.close()
+                streams.cleanUp()
+                status =
+                    PipelineStatus.Error(State.NOT_RUNNING)
+                        .withException(e)
+                        .withMessage("kafka streams: failed to start")
+            }
             return status
         }
-        status = PipelineStatus.StreamStarting()
 
         // Wait until the pipeline is successfully rebalanced or reaches an error state.
         // The pipeline status will be updated by the onChange callback, or by the stop() function
@@ -85,18 +102,23 @@ class Pipeline(
         // to stop. Therefore, it possible for the start function to return with status
         // PipelineStatus.StreamStopped.
         latch.await()
-
         return status
     }
 
     fun stop() {
-        val prevStatus = status
-        status = PipelineStatus.StreamStopping()
+        var prevStatus: PipelineStatus? = null
+        statusLock.withLock {
+            prevStatus = status
+            status = PipelineStatus.StreamStopping()
+        }
+
         // Close needs to be called even if streams.start() never gets called
         streams.close()
         // Does not clean up everything see https://issues.apache.org/jira/browse/KAFKA-13787
         streams.cleanUp()
-        status = PipelineStatus.StreamStopped(prevStatus)
+        statusLock.withLock {
+            status = PipelineStatus.StreamStopped(prevStatus)
+        }
 
         // if stop() is called while start() is still waiting on the latch, release it so that
         // it may return the stopped status
@@ -115,57 +137,59 @@ class Pipeline(
             )
         }
 
-        if (latch.count == 1L) {
-            if (newState == State.RUNNING) {
+        statusLock.withLock {
+            if (status is PipelineStatus.StreamStopping) {
+                return
+            }
+
+            if (latch.count == 1L) {
+                // count == 1 means that we are in the create phase of the pipeline
+                //
                 // Only update the status if the pipeline is not already being stopped
                 // we wouldn't want the status to transition to Started after it was
                 // marked as StreamStopping. If status is StreamStopping, we guarantee
                 // that latch.countDown() will be called.
-                if (status !is PipelineStatus.StreamStopping) {
-                    status = PipelineStatus.Started()
+                status =
+                    when (newState) {
+                        State.RUNNING -> PipelineStatus.Started()
+                        State.CREATED, State.REBALANCING -> status
+
+                        // CREATED, REBALANCING and RUNNING are the only non-error states. Everything
+                        // else indicates an error or shutdown, and we should release the lock on which
+                        // start() awaits and return an error.
+                        // see: https://kafka.apache.org/28/javadoc/org/apache/kafka/streams/KafkaStreams.State.html
+                        else ->
+                            PipelineStatus.Error(newState)
+                                .withMessage("pipeline data streams error: kafka streams state: $newState")
+                    }
+
+                // Release the latch when the pipeline is running, or it encountered and error
+                if (newState != State.CREATED && newState != State.REBALANCING) {
                     latch.countDown()
                 }
-                return
-            }
-            // CREATED, REBALANCING and RUNNING (with the latter one already handled above)
-            // are the only non-error states. Everything else indicates an error or shutdown
-            // and we should release the lock on which start() awaits and return an error.
-            // see: https://kafka.apache.org/28/javadoc/org/apache/kafka/streams/KafkaStreams.State.html
-            if (newState != State.CREATED && newState != State.REBALANCING) {
-                if (status !is PipelineStatus.StreamStopping) {
-                    status =
-                        PipelineStatus.Error(newState)
-                            .withMessage("pipeline data streams error: kafka streams state: $newState")
-                    latch.countDown()
+            } else {
+                // Pipeline is running, and it transitioned from RUNNING -> REBALANCING
+                // or from REBALANCING -> RUNNING. Other events must be errors since we
+                // handle pipeline shutdown in the stop function
+                status =
+                    when (newState) {
+                        State.RUNNING -> PipelineStatus.Started()
+                        State.REBALANCING -> PipelineStatus.StreamRebalancing()
+                        else ->
+                            PipelineStatus.Error(newState)
+                                .withMessage("pipeline data streams error: kafka streams state: $newState")
+                    }
+
+                // Send the new status to the scheduler.
+                runBlocking {
+                    pipelineSubscriber.handleUpdate(
+                        metadata = metadata,
+                        timestamp = timestamp,
+                        status = status,
+                    )
                 }
             }
-            return
         }
-
-        if (newState == State.REBALANCING) {
-            status = PipelineStatus.StreamRebalancing()
-            runBlocking {
-                pipelineSubscriber.handleUpdate(
-                    metadata = metadata,
-                    timestamp = timestamp,
-                    status = status,
-                )
-            }
-            return
-        }
-
-        if (newState == State.RUNNING) {
-            status = PipelineStatus.Started()
-            runBlocking {
-                pipelineSubscriber.handleUpdate(
-                    metadata = metadata,
-                    timestamp = timestamp,
-                    status = status,
-                )
-            }
-        }
-
-        // TODO: add error
     }
 
     companion object {
