@@ -12,6 +12,7 @@ package scheduler
 import (
 	"context"
 	"io"
+	"math"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -818,6 +819,8 @@ func TestHandleRegisteredServers(t *testing.T) {
 				{
 					Name:             "foo",
 					ExpectedReplicas: 1,
+					MinReplicas:      0,
+					MaxReplicas:      math.MaxUint32,
 					KubernetesMeta: &scheduler.KubernetesMeta{
 						Namespace:  "default",
 						Generation: 1,
@@ -847,6 +850,8 @@ func TestHandleRegisteredServers(t *testing.T) {
 				{
 					Name:             "bar",
 					ExpectedReplicas: 1,
+					MinReplicas:      0,
+					MaxReplicas:      math.MaxUint32,
 					KubernetesMeta: &scheduler.KubernetesMeta{
 						Namespace:  "default",
 						Generation: 2,
@@ -855,6 +860,8 @@ func TestHandleRegisteredServers(t *testing.T) {
 				{
 					Name:             "foo",
 					ExpectedReplicas: 1,
+					MinReplicas:      0,
+					MaxReplicas:      math.MaxUint32,
 					KubernetesMeta: &scheduler.KubernetesMeta{
 						Namespace:  "default",
 						Generation: 1,

@@ -11,8 +11,10 @@ package v1alpha1
 
 import (
 	"encoding/json"
+	"math"
 	"testing"
 
+	"github.com/gotidy/ptr"
 	. "github.com/onsi/gomega"
 	"github.com/tidwall/gjson"
 	v1 "k8s.io/api/core/v1"
@@ -89,8 +91,7 @@ func TestAsModelDetails(t *testing.T) {
 		modelpb *scheduler.Model
 		error   bool
 	}
-	replicas := int32(4)
-	replicas1 := int32(1)
+
 	secret := "secret"
 	modelType := "sklearn"
 	server := "server"
@@ -127,7 +128,7 @@ func TestAsModelDetails(t *testing.T) {
 				DeploymentSpec: &scheduler.DeploymentSpec{
 					Replicas:    1,
 					MinReplicas: 0,
-					MaxReplicas: 0,
+					MaxReplicas: math.MaxUint32,
 				},
 			},
 		},
@@ -147,7 +148,7 @@ func TestAsModelDetails(t *testing.T) {
 					},
 					Logger:       &LoggingSpec{},
 					Requirements: []string{"a", "b"},
-					ScalingSpec:  ScalingSpec{Replicas: &replicas},
+					ScalingSpec:  ScalingSpec{Replicas: ptr.Int32(4)},
 					Server:       &server,
 					Explainer: &ExplainerSpec{
 						Type:     "anchor_tabular",
@@ -199,7 +200,7 @@ func TestAsModelDetails(t *testing.T) {
 					Replicas:    4,
 					LogPayloads: true,
 					MinReplicas: 0,
-					MaxReplicas: 0,
+					MaxReplicas: math.MaxUint32,
 				},
 			},
 		},
@@ -219,7 +220,7 @@ func TestAsModelDetails(t *testing.T) {
 					},
 					Logger:       &LoggingSpec{},
 					Requirements: []string{"a", "b"},
-					ScalingSpec:  ScalingSpec{Replicas: &replicas},
+					ScalingSpec:  ScalingSpec{Replicas: ptr.Int32(4)},
 					Server:       &server,
 					Llm: &LlmSpec{
 						ModelRef: &llmModel,
@@ -269,7 +270,7 @@ func TestAsModelDetails(t *testing.T) {
 					Replicas:    4,
 					LogPayloads: true,
 					MinReplicas: 0,
-					MaxReplicas: 0,
+					MaxReplicas: math.MaxUint32,
 				},
 			},
 		},
@@ -285,7 +286,8 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					Memory: &m1,
+					Memory:      &m1,
+					ScalingSpec: ScalingSpec{Replicas: ptr.Int32(1)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -303,7 +305,7 @@ func TestAsModelDetails(t *testing.T) {
 				DeploymentSpec: &scheduler.DeploymentSpec{
 					Replicas:    1,
 					MinReplicas: 0,
-					MaxReplicas: 0,
+					MaxReplicas: math.MaxUint32,
 				},
 			},
 		},
@@ -320,7 +322,7 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					ScalingSpec: ScalingSpec{MinReplicas: &replicas},
+					ScalingSpec: ScalingSpec{MinReplicas: ptr.Int32(4)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -337,7 +339,7 @@ func TestAsModelDetails(t *testing.T) {
 				DeploymentSpec: &scheduler.DeploymentSpec{
 					Replicas:    4,
 					MinReplicas: 4,
-					MaxReplicas: 0,
+					MaxReplicas: math.MaxUint32,
 				},
 			},
 		},
@@ -354,7 +356,7 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					ScalingSpec: ScalingSpec{MaxReplicas: &replicas},
+					ScalingSpec: ScalingSpec{Replicas: ptr.Int32(1), MaxReplicas: ptr.Int32(4)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -388,7 +390,7 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					ScalingSpec: ScalingSpec{MinReplicas: &replicas, Replicas: &replicas1},
+					ScalingSpec: ScalingSpec{MinReplicas: ptr.Int32(4), Replicas: ptr.Int32(1)},
 				},
 			},
 			modelpb: &scheduler.Model{
@@ -423,7 +425,7 @@ func TestAsModelDetails(t *testing.T) {
 					InferenceArtifactSpec: InferenceArtifactSpec{
 						StorageURI: "gs://test",
 					},
-					ScalingSpec: ScalingSpec{Replicas: &replicas, MaxReplicas: &replicas1},
+					ScalingSpec: ScalingSpec{Replicas: ptr.Int32(4), MaxReplicas: ptr.Int32(1)},
 				},
 			},
 			modelpb: &scheduler.Model{

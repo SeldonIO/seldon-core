@@ -250,10 +250,11 @@ const (
 	ModelTerminated
 	ModelTerminateFailed
 	ScheduleFailed
+	ModelScaledDown
 )
 
 func (m ModelState) String() string {
-	return [...]string{"ModelStateUnknown", "ModelProgressing", "ModelAvailable", "ModelFailed", "ModelTerminating", "ModelTerminated", "ModelTerminateFailed", "ScheduleFailed"}[m]
+	return [...]string{"ModelStateUnknown", "ModelProgressing", "ModelAvailable", "ModelFailed", "ModelTerminating", "ModelTerminated", "ModelTerminateFailed", "ScheduleFailed", "ModelScaledDown"}[m]
 }
 
 type ModelReplicaState uint32
