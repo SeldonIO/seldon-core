@@ -107,7 +107,9 @@ func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *
 		messageStr += fmt.Sprintf("%d/%d rebalancing ", rebalancingCount, len(streams))
 	}
 
+	unknownCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineStatusUnknown)
 	logger.Infof("Pipeline %s status counts: %s", pipelineName, messageStr)
+
 	if message.Update.Op == chainer.PipelineUpdateMessage_Create {
 		// We log info this cause the reason doesn't not display in case of
 		// success in the message column of k9s
@@ -117,7 +119,7 @@ func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *
 		if failedCount == len(streams) {
 			return pipeline.PipelineFailed, messageStr
 		}
-		if readyCount == len(streams) {
+		if readyCount > 0 && unknownCount == 0 {
 			return pipeline.PipelineReady, messageStr
 		}
 		return pipeline.PipelineCreating, messageStr
@@ -134,10 +136,10 @@ func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *
 	}
 
 	if message.Update.Op == chainer.PipelineUpdateMessage_Rebalance || message.Update.Op == chainer.PipelineUpdateMessage_Ready {
-		if failedCount > 0 {
+		if failedCount == len(streams) {
 			return pipeline.PipelineFailed, messageStr
 		}
-		if readyCount == len(streams) {
+		if readyCount > 0 && rebalancingCount == 0 {
 			return pipeline.PipelineReady, messageStr
 		}
 		return pipeline.PipelineRebalancing, messageStr
