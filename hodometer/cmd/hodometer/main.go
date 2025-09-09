@@ -14,8 +14,9 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	"github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/hodometer/v2/pkg/hodometer"
 )
