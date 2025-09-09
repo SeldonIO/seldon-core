@@ -126,7 +126,7 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 			wantErr: "",
 		},
 		{
-			name:        "success - unset min and replicas defaults to 1 when max replicas is set",
+			name:        "success - unset minReplicas defaults to 0, unset replicas defaults to 1 when max replicas is set",
 			replicas:    nil,
 			minReplicas: nil,
 			maxReplicas: ptr.Int32(2),
