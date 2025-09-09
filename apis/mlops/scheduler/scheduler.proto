@@ -426,6 +426,7 @@ message PipelineVersionState {
     PipelineTerminate = 5;
     PipelineTerminating = 6;
     PipelineTerminated = 7;
+    PipelineRebalancing = 8;
   }
   uint32 pipelineVersion = 1;
   PipelineStatus status = 2;
