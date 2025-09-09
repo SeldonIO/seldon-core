@@ -181,7 +181,7 @@ func TestGetPipelineStatus(t *testing.T) {
 				"a": pipeline.PipelineReady,
 				"b": pipeline.PipelineFailed,
 			},
-			expected: pipeline.PipelineReady,
+			expected: pipeline.PipelineFailed,
 		},
 		{
 			name: "create failed",
@@ -202,10 +202,29 @@ func TestGetPipelineStatus(t *testing.T) {
 			expected: pipeline.PipelineTerminating,
 		},
 		{
+			name: "delete terminated (all terminated)",
+			op:   chainer.PipelineUpdateMessage_Delete,
+			statuses: map[string]pipeline.PipelineStatus{
+				"a": pipeline.PipelineTerminated,
+				"b": pipeline.PipelineTerminated,
+			},
+			expected: pipeline.PipelineTerminated,
+		},
+		{
+			name: "delete terminating (some terminated)",
+			op:   chainer.PipelineUpdateMessage_Delete,
+			statuses: map[string]pipeline.PipelineStatus{
+				"a": pipeline.PipelineTerminated,
+				"b": pipeline.PipelineFailed,
+			},
+			expected: pipeline.PipelineFailed,
+		},
+		{
 			name: "delete failed",
 			op:   chainer.PipelineUpdateMessage_Delete,
 			statuses: map[string]pipeline.PipelineStatus{
 				"a": pipeline.PipelineFailed,
+				"b": pipeline.PipelineFailed,
 			},
 			expected: pipeline.PipelineFailed,
 		},
