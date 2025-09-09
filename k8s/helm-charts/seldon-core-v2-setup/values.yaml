@@ -135,7 +135,6 @@ modelgateway:
     tag: latest
   workers: 8
   maxNumConsumers: 100
-  healthProbePort: 8000
   resources:
     cpu: 100m
     memory: 1G
