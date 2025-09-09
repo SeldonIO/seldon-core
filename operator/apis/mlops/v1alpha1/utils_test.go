@@ -114,13 +114,25 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 			wantErr: "",
 		},
 		{
-			name:        "success - unset replica params defaults to 1 when min replicas is set",
+			name:        "success - unset replica params defaults to value of min replicas",
 			replicas:    nil,
-			minReplicas: ptr.Int32(1),
+			minReplicas: ptr.Int32(2),
+			maxReplicas: nil,
+			expected: &ValidatedScalingSpec{
+				Replicas:    2,
+				MinReplicas: 2,
+				MaxReplicas: math.MaxUint32,
+			},
+			wantErr: "",
+		},
+		{
+			name:        "success - unset replica params defaults to 1 when min replicas is set to 0",
+			replicas:    nil,
+			minReplicas: ptr.Int32(0),
 			maxReplicas: nil,
 			expected: &ValidatedScalingSpec{
 				Replicas:    1,
-				MinReplicas: 1,
+				MinReplicas: 0,
 				MaxReplicas: math.MaxUint32,
 			},
 			wantErr: "",
