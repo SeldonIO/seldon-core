@@ -66,7 +66,7 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 			wantErr:     "min number of replicas 6 must be <= max number of replicas 4",
 		},
 		{
-			name:        "success - replicas stays at 0 when min replicas and max replicas is 4",
+			name:        "success - replicas stays at 0 when min replicas is 0 and max replicas is 4",
 			replicas:    ptr.Int32(0),
 			minReplicas: ptr.Int32(0),
 			maxReplicas: ptr.Int32(4),
