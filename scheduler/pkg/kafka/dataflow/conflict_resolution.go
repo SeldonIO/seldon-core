@@ -114,7 +114,7 @@ func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *
 		//
 		// TODO: Implement something similar to models to display the numbers
 		// of available replicas
-		if failedCount > 0 {
+		if failedCount == len(streams) {
 			return pipeline.PipelineFailed, messageStr
 		}
 		if readyCount == len(streams) {
