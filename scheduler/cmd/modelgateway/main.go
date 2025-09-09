@@ -19,6 +19,7 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -112,8 +113,6 @@ func main() {
 	logger.Infof("Setting log level to %s", logLevel)
 	logger.SetLevel(logIntLevel)
 
-	defer logger.Info("Graceful shutdown complete")
-
 	updateNamespace()
 
 	errChan := make(chan error, 5)
@@ -168,13 +167,17 @@ func main() {
 
 	healthServer := initHealthProbeServer(logger, kafkaSchedulerClient, kafkaConsumer, errChan)
 	defer func() {
-		if err := healthServer.Shutdown(context.Background()); err != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+		if err := healthServer.Shutdown(ctx); err != nil {
 			logger.WithError(err).Error("Health server shutdown failed")
 		}
+		cancel()
 	}()
 
 	// Wait for completion
 	waitForTermSignalOrErr(logger, errChan)
+
+	logger.Info("Graceful shutdown triggered")
 }
 
 func initHealthProbeServer(logger *log.Logger, schedulerClient *gateway.KafkaSchedulerClient, kafkaConsumer *gateway.ConsumerManager, errChan chan<- error) *health_probe.HTTPServer {
@@ -196,8 +199,8 @@ func initHealthProbeServer(logger *log.Logger, schedulerClient *gateway.KafkaSch
 
 	healthServer := health_probe.NewHTTPServer(healthProbeServicePort, healthManager, logger)
 	go func() {
-		err := healthServer.Start()
-		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+		var err error
+		if err = healthServer.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.WithError(err).Error("HTTP health server failed")
 		}
 		errChan <- err
