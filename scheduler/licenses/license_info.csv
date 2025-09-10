@@ -62,7 +62,7 @@ docker/compose,https://github.com/docker/compose/blob/main/LICENSE,Apache Licens
 docker/distribution,https://github.com/distribution/distribution/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/distribution/distribution/main/LICENSE
 docker/docker,https://github.com/moby/moby/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/moby/moby/master/LICENSE
 docker/docker-credential-helpers,https://github.com/docker/docker-credential-helpers/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/docker/docker-credential-helpers/master/LICENSE
-docker/go,https://github.com/docker/go/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/docker/go/master/LICENSE
+docker/go,https://github.com/docker-archive-public/docker.go/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/docker-archive-public/docker.go/master/LICENSE
 docker/go-connections,https://github.com/docker/go-connections/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/docker/go-connections/main/LICENSE
 docker/go-metrics,https://github.com/docker/go-metrics/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/docker/go-metrics/master/LICENSE
 docker/go-units,https://github.com/docker/go-units/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/docker/go-units/master/LICENSE
