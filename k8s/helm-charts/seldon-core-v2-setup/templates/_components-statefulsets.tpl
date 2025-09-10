@@ -919,7 +919,7 @@ spec:
         - name: SELDON_SCHEDULER_TLS_PORT
           value: "9044"
         - name: HEALTH_PROBE_PORT
-          value: "8000"
+          value: "9999"
         - name: POD_NAME
           valueFrom:
             fieldRef:
@@ -939,7 +939,7 @@ spec:
           periodSeconds: 5
         name: modelgateway
         ports:
-        - containerPort: 8000
+        - containerPort: 9999
           name: health
           protocol: TCP
         readinessProbe:

@@ -127,7 +127,7 @@ spec:
         - name: LOG_LEVEL
           value: "warn"
         - name: HEALTH_PROBE_PORT
-          value: "8000"
+          value: "9999"
         - name: POD_NAME
           valueFrom:
             fieldRef:
@@ -146,7 +146,7 @@ spec:
             cpu: 100m
             memory: 1G
         ports:
-          - containerPort: 8000
+          - containerPort: 9999
             name: health
             protocol: TCP
         startupProbe:

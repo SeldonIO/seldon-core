@@ -41,7 +41,7 @@ const (
 	defaultSchedulerPlaintxtPort = 9004
 	defaultSchedulerTLSPort      = 9044
 	defaultEnvoyPort             = 9000
-	defaultHealthProbePort       = 8000
+	defaultHealthProbePort       = 9999
 	kubernetesNamespacePath      = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 )
 
