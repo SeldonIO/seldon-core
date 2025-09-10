@@ -442,7 +442,7 @@ func (ps *PipelineStore) setPipelineGwPipelineStateImpl(name string, versionNumb
 	if pipeline, ok := ps.pipelines[name]; ok {
 		if pipelineVersion := pipeline.GetPipelineVersion(versionNumber); pipelineVersion != nil {
 			if pipelineVersion.UID == uid {
-				pipelineVersion.State.PipelineGwStatus = status
+				pipelineVersion.State.setPipelineGwState(status, reason)
 				evts = append(evts, &coordinator.PipelineEventMsg{
 					PipelineName:    pipelineVersion.Name,
 					PipelineVersion: pipelineVersion.Version,

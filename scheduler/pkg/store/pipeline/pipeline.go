@@ -100,6 +100,12 @@ func (ps *PipelineState) setState(status PipelineStatus, reason string) {
 	ps.Timestamp = time.Now()
 }
 
+func (ps *PipelineState) setPipelineGwState(status PipelineStatus, reason string) {
+	ps.PipelineGwStatus = status
+	ps.Reason = reason
+	ps.Timestamp = time.Now()
+}
+
 type JoinType uint32
 
 const (
