@@ -41,6 +41,28 @@ spec:
           requests:
             cpu: 100m
             memory: 1G
+        ports:
+          - containerPort: 8000
+            name: health
+        startupProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /startup
+            port: health
+          initialDelaySeconds: 3
+          periodSeconds: 5
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ready
+            port: health
+          periodSeconds: 5
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /live
+            port: health
+          periodSeconds: 5
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
   - name: seldon-envoy

@@ -40,6 +40,9 @@ object Cli {
     val dataflowReplicaId = Key("dataflow.replica.id", stringType)
     val pipelineCtlopsThreads = Key("pipeline.ctlops.threads", intType)
 
+    // Health probe server
+    val healthServerPort = Key("health.server.port", intType)
+
     // Seldon components
     val upstreamHost = Key("upstream.host", stringType)
     val upstreamPort = Key("upstream.port", intType)
@@ -82,6 +85,7 @@ object Cli {
             namespace,
             dataflowReplicaId,
             pipelineCtlopsThreads,
+            healthServerPort,
             upstreamHost,
             upstreamPort,
             kafkaBootstrapServers,

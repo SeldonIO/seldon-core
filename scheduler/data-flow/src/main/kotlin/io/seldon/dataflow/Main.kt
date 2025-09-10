@@ -10,6 +10,10 @@ the Change License after the Change Date as each is defined in accordance with t
 package io.seldon.dataflow
 
 import io.klogging.noCoLogger
+import io.seldon.dataflow.health.GrpcHealthCheck
+import io.seldon.dataflow.health.HealthServer
+import io.seldon.dataflow.health.HealthService
+import io.seldon.dataflow.health.ServiceHealthCheck
 import io.seldon.dataflow.kafka.KafkaDomainParams
 import io.seldon.dataflow.kafka.KafkaSecurityParams
 import io.seldon.dataflow.kafka.KafkaStreamsParams
@@ -19,6 +23,8 @@ import io.seldon.dataflow.kafka.getKafkaProperties
 import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms
 import io.seldon.dataflow.kafka.security.SaslConfig
 import io.seldon.dataflow.mtls.CertificateConfig
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.runBlocking
 
 object Main {
@@ -120,19 +126,43 @@ object Main {
                 config[Cli.pipelineCtlopsThreads],
             )
 
-        addShutdownHandler(subscriber)
+        // Set up health server
+        val healthService = HealthService()
+        val healthScope = CoroutineScope(SupervisorJob())
+        val healthServer = HealthServer(config[Cli.healthServerPort], healthService, healthScope)
+
+        // Register health checks
+        val gRPCSchedulerCheck = GrpcHealthCheck(subscriber.channel, "chainer")
+        val serviceHealthCheck = ServiceHealthCheck(subscriber)
+
+        // Startup checks - ensure critical connections are established
+        healthService.addStartupCheck(gRPCSchedulerCheck)
+
+        // Liveness checks - internal service health only (no external dependencies)
+        healthService.addLivenessCheck(serviceHealthCheck)
+
+        // Readiness checks - ready to handle requests
+        healthService.addReadinessCheck(serviceHealthCheck)
+
+        healthServer.start()
+
+        addShutdownHandler(subscriber, healthServer)
 
         runBlocking {
             subscriber.subscribe()
         }
     }
 
-    private fun addShutdownHandler(subscriber: PipelineSubscriber) {
+    private fun addShutdownHandler(
+        subscriber: PipelineSubscriber,
+        healthServer: HealthServer,
+    ) {
         Runtime.getRuntime().addShutdownHook(
             object : Thread() {
                 override fun run() {
                     logger.info("received shutdown signal")
                     subscriber.cancelPipelines("shutting down")
+                    healthServer.stop()
                 }
             },
         )
