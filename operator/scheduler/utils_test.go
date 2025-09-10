@@ -300,6 +300,10 @@ func (s *mockSchedulerGrpcClient) SubscribeControlPlane(ctx context.Context, in 
 	return newMockControlPlaneSubscribeGrpcClient(), nil
 }
 
+func (s *mockSchedulerGrpcClient) PipelineStatusEvent(ctx context.Context, message *scheduler.PipelineUpdateStatusMessage, opts ...grpc.CallOption) (*scheduler.PipelineUpdateStatusResponse, error) {
+	return nil, nil
+}
+
 // new mockSchedulerClient (not grpc)
 func newMockControllerClient(objs ...client.Object) *SchedulerClient {
 	logger := zap.New()

@@ -224,6 +224,13 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 						pv.State.Status.String(),
 					)
 				}
+				// Set pipelinegw ready
+				if pv.State.PipelineGwReady {
+					pipeline.Status.CreateAndSetCondition(v1alpha1.PipelineGwReady, true, "Pipeline ready in pipeline-gateway", "")
+				} else {
+					pipeline.Status.CreateAndSetCondition(v1alpha1.PipelineGwReady, false, "Pipeline not ready in pipeline-gateway", "")
+				}
+
 				// Set models ready
 				if pv.State.ModelsReady {
 					pipeline.Status.CreateAndSetCondition(v1alpha1.ModelsReady, true, "Models all available", "")
