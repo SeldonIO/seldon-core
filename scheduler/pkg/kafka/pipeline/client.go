@@ -201,11 +201,6 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 		}
 
 		if len(event.Versions) == 1 {
-			// check if the pipeline is already loaded
-			if _, err := pc.pipelineInferer.LoadOrStorePipeline(event.PipelineName, false, true); err == nil {
-				continue
-			}
-
 			pv, err := pipeline.CreatePipelineVersionWithStateFromProto(event.Versions[0])
 			if err != nil {
 				logger.Warningf("Failed to create pipeline state for pipeline %s with %s", event.PipelineName, protojson.Format(event))

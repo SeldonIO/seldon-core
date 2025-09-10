@@ -290,8 +290,14 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 		}
 	}
 
-	// send to pipeline gateway streams and other streams
-	s.sendPipelineEventsToStreams(event, status, pipelineGwStreams)
+	// send event to pipeline gateway streams only if the
+	// event did not originate from the pipeline status server
+	// to avoid echoing the event back to the sender
+	if event.Source != sourcePipelineStatusServer {
+		s.sendPipelineEventsToStreams(event, status, pipelineGwStreams)
+	}
+
+	// sent event and other streams
 	s.sendPipelineEventsToStreams(event, status, otherStreams)
 
 	// publish event for envoy
