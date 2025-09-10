@@ -10,6 +10,8 @@ the Change License after the Change Date as each is defined in accordance with t
 package server
 
 import (
+	"context"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -23,6 +25,12 @@ import (
 const (
 	addPipelineStreamEventSource = "pipeline.store.addpipelinestream"
 )
+
+func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *pb.PipelineUpdateStatusMessage) (*pb.PipelineUpdateStatusResponse, error) {
+	logger := s.logger.WithField("func", "SubscribePipelineStatus")
+	logger.Infof("Received pipeline status event %s", message.String())
+	return &pb.PipelineUpdateStatusResponse{}, nil
+}
 
 func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRequest, stream pb.Scheduler_SubscribePipelineStatusServer) error {
 	logger := s.logger.WithField("func", "SubscribePipelineStatus")

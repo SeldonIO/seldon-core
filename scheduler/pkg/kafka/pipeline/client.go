@@ -216,12 +216,36 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 				logger.WithError(err).Errorf("Failed to store pipeline %s", pv.Name)
 				continue
 			}
+
+			// Send ack back to scheduler
+			_, _ = grpcClient.PipelineStatusEvent(
+				context.Background(),
+				&scheduler.PipelineUpdateStatusMessage{
+					Update: &scheduler.PipelineUpdateMessage{
+						Op: scheduler.PipelineUpdateMessage_Create,
+					},
+					Success: true,
+					Reason:  fmt.Sprintf("Pipeline %s loaded", event.PipelineName),
+				},
+			)
 		} else {
 			logger.Debugf("Received event with no versions for pipeline %s", event.PipelineName)
 			err := pc.pipelineInferer.DeletePipeline(event.PipelineName, false)
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to delete pipeline %s", event.PipelineName)
 			}
+
+			// Send ack back to scheduler
+			_, _ = grpcClient.PipelineStatusEvent(
+				context.Background(),
+				&scheduler.PipelineUpdateStatusMessage{
+					Update: &scheduler.PipelineUpdateMessage{
+						Op: scheduler.PipelineUpdateMessage_Delete,
+					},
+					Success: true,
+					Reason:  fmt.Sprintf("Pipeline %s deleted", event.PipelineName),
+				},
+			)
 		}
 	}
 	logger.Infof("Closing connection to scheduler")

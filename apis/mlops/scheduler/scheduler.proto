@@ -456,6 +456,24 @@ message ControlPlaneResponse {
   Event event = 1;
 }
 
+message PipelineUpdateMessage {
+  enum PipelineOperation {
+    Unknown = 0;
+    Create = 1;
+    Delete = 2;
+  }
+  PipelineOperation op = 1;
+}
+
+message PipelineUpdateStatusMessage {
+  PipelineUpdateMessage update = 1;
+  bool success = 2;
+  string reason = 3;
+}
+
+message PipelineUpdateStatusResponse {
+}
+
 // [END Messages]
 
 
@@ -483,6 +501,8 @@ service Scheduler {
   rpc SubscribeModelStatus(ModelSubscriptionRequest) returns (stream ModelStatusResponse) {};
   rpc SubscribeExperimentStatus(ExperimentSubscriptionRequest) returns (stream ExperimentStatusResponse) {};
   rpc SubscribePipelineStatus(PipelineSubscriptionRequest) returns (stream PipelineStatusResponse) {};
+
+  rpc PipelineStatusEvent(PipelineUpdateStatusMessage) returns (PipelineUpdateStatusResponse) {};
 
   // control plane stream with controller
   rpc SubscribeControlPlane(ControlPlaneSubscriptionRequest) returns (stream ControlPlaneResponse) {};
