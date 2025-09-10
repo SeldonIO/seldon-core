@@ -26,13 +26,14 @@ import (
 )
 
 const (
-	pendingSyncsQueueSize             int = 1000
-	addPipelineEventSource                = "pipeline.store.addpipeline"
-	removePipelineEventSource             = "pipeline.store.removepipeline"
-	setStatusPipelineEventSource          = "pipeline.store.setstatus"
-	SetModelStatusPipelineEventSource     = "pipeline.store.setmodelstatus"
-	pipelineDbFolder                      = "pipelinedb"
-	modelEventHandlerName                 = "pipeline.store.models"
+	pendingSyncsQueueSize                  int = 1000
+	addPipelineEventSource                     = "pipeline.store.addpipeline"
+	removePipelineEventSource                  = "pipeline.store.removepipeline"
+	setStatusPipelineEventSource               = "pipeline.store.setstatus"
+	SetModelStatusPipelineEventSource          = "pipeline.store.setmodelstatus"
+	SetPipelineGwStatusPipelineEventSource     = "pipeline.store.setpipelinegwtatus"
+	pipelineDbFolder                           = "pipelinedb"
+	modelEventHandlerName                      = "pipeline.store.models"
 )
 
 type PipelineHandler interface {
@@ -49,7 +50,7 @@ type PipelineStore struct {
 	logger             logrus.FieldLogger
 	mu                 sync.RWMutex
 	eventHub           *coordinator.EventHub
-	pipelines          map[string]*Pipeline
+	Pipelines          map[string]*Pipeline
 	db                 *PipelineDBManager
 	modelStatusHandler ModelStatusHandler
 }
@@ -58,7 +59,7 @@ func NewPipelineStore(logger logrus.FieldLogger, eventHub *coordinator.EventHub,
 	ps := &PipelineStore{
 		logger:    logger.WithField("source", "pipelineStore"),
 		eventHub:  eventHub,
-		pipelines: make(map[string]*Pipeline),
+		Pipelines: make(map[string]*Pipeline),
 		db:        nil,
 		modelStatusHandler: ModelStatusHandler{
 			logger:          logger.WithField("source", "PipelineModelStatusHandler"),
@@ -118,7 +119,7 @@ func (ps *PipelineStore) restorePipeline(pipeline *Pipeline) {
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to set pipeline state for pipeline %s", pipeline.Name)
 	}
-	ps.pipelines[pipeline.Name] = pipeline
+	ps.Pipelines[pipeline.Name] = pipeline
 	ps.mu.Unlock()
 	pv := pipeline.GetLatestPipelineVersion()
 	if ps.eventHub != nil {
@@ -162,7 +163,7 @@ func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.
 	defer ps.mu.Unlock()
 	var pipeline *Pipeline
 	var ok bool
-	if pipeline, ok = ps.pipelines[req.Name]; !ok {
+	if pipeline, ok = ps.Pipelines[req.Name]; !ok {
 		pipeline = &Pipeline{
 			Name:        req.Name,
 			LastVersion: 0,
@@ -191,7 +192,7 @@ func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.
 	if err != nil {
 		return nil, err
 	}
-	ps.pipelines[req.Name] = pipeline
+	ps.Pipelines[req.Name] = pipeline
 	if ps.db != nil {
 		err = ps.db.save(pipeline)
 		if err != nil {
@@ -236,7 +237,7 @@ func (ps *PipelineStore) RemovePipeline(name string) error {
 func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineEventMsg, error) {
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
-	if pipeline, ok := ps.pipelines[name]; ok {
+	if pipeline, ok := ps.Pipelines[name]; ok {
 		lastPipelineVersion := pipeline.GetLatestPipelineVersion()
 		if lastPipelineVersion == nil {
 			return nil, &PipelineVersionNotFoundErr{pipeline: name, version: pipeline.LastVersion - 1}
@@ -269,7 +270,7 @@ func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineE
 func (ps *PipelineStore) GetPipelineVersion(name string, versionNumber uint32, uid string) (*PipelineVersion, error) {
 	ps.mu.RLock()
 	defer ps.mu.RUnlock()
-	if pipeline, ok := ps.pipelines[name]; ok {
+	if pipeline, ok := ps.Pipelines[name]; ok {
 		if pipelineVersion := pipeline.GetPipelineVersion(versionNumber); pipelineVersion != nil {
 			if pipelineVersion.UID == uid {
 				copiedPipelineVersion, err := copystructure.Copy(pipelineVersion)
@@ -291,7 +292,7 @@ func (ps *PipelineStore) GetPipelineVersion(name string, versionNumber uint32, u
 func (ps *PipelineStore) GetPipeline(name string) (*Pipeline, error) {
 	ps.mu.RLock()
 	defer ps.mu.RUnlock()
-	if pipeline, ok := ps.pipelines[name]; ok {
+	if pipeline, ok := ps.Pipelines[name]; ok {
 		copiedPipeline, err := copystructure.Copy(pipeline)
 		if err != nil {
 			return nil, err
@@ -306,7 +307,7 @@ func (ps *PipelineStore) GetAllRunningPipelineVersions() []coordinator.PipelineE
 	ps.mu.RLock()
 	defer ps.mu.RUnlock()
 	var events []coordinator.PipelineEventMsg
-	for _, p := range ps.pipelines {
+	for _, p := range ps.Pipelines {
 		pv := p.GetLatestPipelineVersion()
 		switch pv.State.Status {
 		// we consider PipelineTerminating as running as it is still active
@@ -326,7 +327,7 @@ func (ps *PipelineStore) GetPipelines() ([]*Pipeline, error) {
 	defer ps.mu.RUnlock()
 
 	foundPipelines := []*Pipeline{}
-	for _, p := range ps.pipelines {
+	for _, p := range ps.Pipelines {
 		copied, err := copystructure.Copy(p)
 		if err != nil {
 			return nil, err
@@ -377,7 +378,7 @@ func (ps *PipelineStore) setPipelineStateImpl(name string, versionNumber uint32,
 	var evts []*coordinator.PipelineEventMsg
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
-	if pipeline, ok := ps.pipelines[name]; ok {
+	if pipeline, ok := ps.Pipelines[name]; ok {
 		if pipelineVersion := pipeline.GetPipelineVersion(versionNumber); pipelineVersion != nil {
 			if pipelineVersion.UID == uid {
 				pipelineVersion.State.setState(status, reason)
@@ -432,7 +433,7 @@ func (ps *PipelineStore) handleModelEvents(event coordinator.ModelEventMsg) {
 				return
 			}
 			ps.mu.Lock()
-			evts := updatePipelinesFromModelAvailability(refs, event.ModelName, model != nil && model.GetLastAvailableModel() != nil, ps.pipelines, ps.logger)
+			evts := updatePipelinesFromModelAvailability(refs, event.ModelName, model != nil && model.GetLastAvailableModel() != nil, ps.Pipelines, ps.logger)
 			ps.mu.Unlock()
 			// Publish events for modified pipelines
 			if ps.eventHub != nil {
@@ -449,7 +450,7 @@ func (ps *PipelineStore) handleModelEvents(event coordinator.ModelEventMsg) {
 func (ps *PipelineStore) cleanupDeletedPipelines() {
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
-	for _, pipeline := range ps.pipelines {
+	for _, pipeline := range ps.Pipelines {
 		if pipeline.Deleted {
 			if pipeline.DeletedAt.IsZero() {
 				pipeline.DeletedAt = time.Now()
@@ -460,7 +461,7 @@ func (ps *PipelineStore) cleanupDeletedPipelines() {
 					}
 				}
 			} else if pipeline.DeletedAt.Add(ps.db.deletedResourceTTL).Before(time.Now()) {
-				delete(ps.pipelines, pipeline.Name)
+				delete(ps.Pipelines, pipeline.Name)
 				ps.logger.Info("cleaning up deleted pipeline: %s", pipeline.Name)
 			}
 		}

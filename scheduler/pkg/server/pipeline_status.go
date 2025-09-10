@@ -29,6 +29,47 @@ const (
 func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *pb.PipelineUpdateStatusMessage) (*pb.PipelineUpdateStatusResponse, error) {
 	logger := s.logger.WithField("func", "SubscribePipelineStatus")
 	logger.Infof("Received pipeline status event %s", message.String())
+
+	pipelineName := message.Update.Pipeline
+	versionNumber := message.Update.Version
+	uid := message.Update.Uid
+	stream := message.Update.Stream
+
+	var pipelineVersion *pipeline.PipelineVersion = nil
+	ps := s.pipelineHandler.(*pipeline.PipelineStore)
+
+	if pipeline, ok := ps.Pipelines[pipelineName]; ok {
+		if pv := pipeline.GetPipelineVersion(versionNumber); pv != nil {
+			if pv.UID == uid {
+				pipelineVersion = pv
+			}
+		}
+	}
+
+	if pipelineVersion == nil {
+		logger.Errorf("Pipeline version not found for event %s", message.String())
+		return &pb.PipelineUpdateStatusResponse{}, status.Errorf(codes.NotFound, "Pipeline version not found for event %s", message.String())
+	}
+
+	evts := make([]*coordinator.PipelineEventMsg, 0)
+	if pipelineVersion.UID == uid {
+		logger.Info("Setting pipeline gateway ready for ", pipelineName)
+		pipelineVersion.State.PipelineGwReady = true
+		evts = append(evts, &coordinator.PipelineEventMsg{
+			PipelineName:    pipelineVersion.Name,
+			PipelineVersion: pipelineVersion.Version,
+			UID:             pipelineVersion.UID,
+			Source:          stream,
+		})
+	}
+
+	eventHub := s.eventHub
+	if eventHub != nil {
+		for _, evt := range evts {
+			eventHub.PublishPipelineEvent(pipeline.SetPipelineGwStatusPipelineEventSource, *evt)
+		}
+	}
+
 	return &pb.PipelineUpdateStatusResponse{}, nil
 }
 
@@ -222,7 +263,10 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 		logger.WithError(err).Errorf("Failed to get pipeline from event %s", event.String())
 		return
 	}
-	logger.Debugf("Handling pipeline event for %s with state %v", event.String(), pv.State.Status)
+	logger.Debugf(
+		"Handling pipeline event for %s with state %v, pipelinegw %t, models %t",
+		event.String(), pv.State.Status, pv.State.PipelineGwReady, pv.State.ModelsReady,
+	)
 
 	var pipelineVersions []*pb.PipelineWithState
 	pipelineWithState := pipeline.CreatePipelineWithState(pv)

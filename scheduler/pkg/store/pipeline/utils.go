@@ -284,6 +284,7 @@ func CreatePipelineWithState(pv *PipelineVersion) *scheduler.PipelineWithState {
 		Reason:              pv.State.Reason,
 		LastChangeTimestamp: timestamppb.New(pv.State.Timestamp.UTC()),
 		ModelsReady:         pv.State.ModelsReady,
+		PipelineGwReady:     pv.State.PipelineGwReady,
 	}
 	return &scheduler.PipelineWithState{
 		Pipeline: CreateProtoFromPipelineVersion(pv),

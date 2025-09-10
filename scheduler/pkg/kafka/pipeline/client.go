@@ -201,6 +201,11 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 		}
 
 		if len(event.Versions) == 1 {
+			// check if the pipeline is already loaded
+			if _, err := pc.pipelineInferer.LoadOrStorePipeline(event.PipelineName, false, true); err == nil {
+				continue
+			}
+
 			pv, err := pipeline.CreatePipelineVersionWithStateFromProto(event.Versions[0])
 			if err != nil {
 				logger.Warningf("Failed to create pipeline state for pipeline %s with %s", event.PipelineName, protojson.Format(event))
@@ -222,17 +227,28 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 				context.Background(),
 				&scheduler.PipelineUpdateStatusMessage{
 					Update: &scheduler.PipelineUpdateMessage{
-						Op: scheduler.PipelineUpdateMessage_Create,
+						Op:       scheduler.PipelineUpdateMessage_Create,
+						Pipeline: pv.Name,
+						Version:  pv.Version,
+						Uid:      pv.UID,
+						Stream:   subscriberName,
 					},
 					Success: true,
 					Reason:  fmt.Sprintf("Pipeline %s loaded", event.PipelineName),
 				},
 			)
 		} else {
-			logger.Debugf("Received event with no versions for pipeline %s", event.PipelineName)
+			psm := pc.pipelineStatusUpdater.(*status.PipelineStatusManager)
+			pv := psm.Get(event.PipelineName)
+			if pv == nil {
+				logger.Warningf("No existing pipeline %s to delete", event.PipelineName)
+				continue
+			}
+
 			err := pc.pipelineInferer.DeletePipeline(event.PipelineName, false)
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to delete pipeline %s", event.PipelineName)
+				continue
 			}
 
 			// Send ack back to scheduler
@@ -240,7 +256,11 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 				context.Background(),
 				&scheduler.PipelineUpdateStatusMessage{
 					Update: &scheduler.PipelineUpdateMessage{
-						Op: scheduler.PipelineUpdateMessage_Delete,
+						Op:       scheduler.PipelineUpdateMessage_Delete,
+						Pipeline: pv.Name,
+						Version:  pv.Version,
+						Uid:      pv.UID,
+						Stream:   subscriberName,
 					},
 					Success: true,
 					Reason:  fmt.Sprintf("Pipeline %s deleted", event.PipelineName),

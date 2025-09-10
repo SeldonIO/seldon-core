@@ -49,7 +49,7 @@ func TestAddPipeline(t *testing.T) {
 			},
 			store: &PipelineStore{
 				logger:    logrus.New(),
-				pipelines: map[string]*Pipeline{},
+				Pipelines: map[string]*Pipeline{},
 				modelStatusHandler: ModelStatusHandler{
 					modelReferences: map[string]map[string]void{},
 					store:           fakeModelStore{status: map[string]store.ModelState{}},
@@ -77,7 +77,7 @@ func TestAddPipeline(t *testing.T) {
 			},
 			store: &PipelineStore{
 				logger:    logrus.New(),
-				pipelines: map[string]*Pipeline{},
+				Pipelines: map[string]*Pipeline{},
 				modelStatusHandler: ModelStatusHandler{
 					modelReferences: map[string]map[string]void{},
 					store:           fakeModelStore{status: map[string]store.ModelState{}},
@@ -101,7 +101,7 @@ func TestAddPipeline(t *testing.T) {
 			},
 			store: &PipelineStore{
 				logger: logrus.New(),
-				pipelines: map[string]*Pipeline{
+				Pipelines: map[string]*Pipeline{
 					"pipeline": {
 						Name:        "pipeline",
 						LastVersion: 1,
@@ -136,7 +136,7 @@ func TestAddPipeline(t *testing.T) {
 			},
 			store: &PipelineStore{
 				logger: logrus.New(),
-				pipelines: map[string]*Pipeline{
+				Pipelines: map[string]*Pipeline{
 					"pipeline": {
 						Name:        "pipeline",
 						LastVersion: 1,
@@ -172,7 +172,7 @@ func TestAddPipeline(t *testing.T) {
 			},
 			store: &PipelineStore{
 				logger: logrus.New(),
-				pipelines: map[string]*Pipeline{
+				Pipelines: map[string]*Pipeline{
 					"pipeline": {
 						Name:        "pipeline",
 						LastVersion: 1,
@@ -207,7 +207,7 @@ func TestAddPipeline(t *testing.T) {
 			},
 			store: &PipelineStore{
 				logger: logrus.New(),
-				pipelines: map[string]*Pipeline{
+				Pipelines: map[string]*Pipeline{
 					"pipeline": {
 						Name:        "pipeline",
 						LastVersion: 1,
@@ -239,7 +239,7 @@ func TestAddPipeline(t *testing.T) {
 			test.store.db = db
 			err := test.store.AddPipeline(test.proto)
 			if test.err == nil {
-				p := test.store.pipelines[test.proto.Name]
+				p := test.store.Pipelines[test.proto.Name]
 				g.Expect(p).ToNot(BeNil())
 				g.Expect(p.LastVersion).To(Equal(test.expectedVersion))
 				pv := p.GetLatestPipelineVersion()
@@ -279,7 +279,7 @@ func TestRemovePipeline(t *testing.T) {
 			pipelineName: "pipeline",
 			store: &PipelineStore{
 				logger:    logrus.New(),
-				pipelines: map[string]*Pipeline{},
+				Pipelines: map[string]*Pipeline{},
 			},
 			err: &PipelineNotFoundErr{pipeline: "pipeline"},
 		},
@@ -288,7 +288,7 @@ func TestRemovePipeline(t *testing.T) {
 			pipelineName: "pipeline",
 			store: &PipelineStore{
 				logger: logrus.New(),
-				pipelines: map[string]*Pipeline{
+				Pipelines: map[string]*Pipeline{
 					"pipeline": {
 						Name:        "pipeline",
 						LastVersion: 1,
@@ -311,7 +311,7 @@ func TestRemovePipeline(t *testing.T) {
 			pipelineName: "pipeline",
 			store: &PipelineStore{
 				logger: logrus.New(),
-				pipelines: map[string]*Pipeline{
+				Pipelines: map[string]*Pipeline{
 					"pipeline": {
 						Name:        "pipeline",
 						LastVersion: 1,
@@ -334,7 +334,7 @@ func TestRemovePipeline(t *testing.T) {
 			pipelineName: "pipeline",
 			store: &PipelineStore{
 				logger: logrus.New(),
-				pipelines: map[string]*Pipeline{
+				Pipelines: map[string]*Pipeline{
 					"pipeline": {
 						Name:        "pipeline",
 						LastVersion: 1,
@@ -356,7 +356,7 @@ func TestRemovePipeline(t *testing.T) {
 			pipelineName: "pipeline",
 			store: &PipelineStore{
 				logger: logrus.New(),
-				pipelines: map[string]*Pipeline{
+				Pipelines: map[string]*Pipeline{
 					"pipeline": {
 						Name:        "pipeline",
 						LastVersion: 1,
@@ -390,7 +390,7 @@ func TestRemovePipeline(t *testing.T) {
 			test.store.db = db
 			err := test.store.RemovePipeline(test.pipelineName)
 			if test.err == nil {
-				p := test.store.pipelines[test.pipelineName]
+				p := test.store.Pipelines[test.pipelineName]
 				g.Expect(p).ToNot(BeNil())
 				pv := p.GetLatestPipelineVersion()
 				g.Expect(pv).ToNot(BeNil())
@@ -403,7 +403,7 @@ func TestRemovePipeline(t *testing.T) {
 				}
 				_ = test.store.db.restore(restoreCb)
 				actualPipeline := pipelines[test.pipelineName]
-				expectedPipeline := test.store.pipelines[test.pipelineName]
+				expectedPipeline := test.store.Pipelines[test.pipelineName]
 				// TODO: check all fields
 				g.Expect(actualPipeline.Deleted).To(Equal(expectedPipeline.Deleted))
 				g.Expect(actualPipeline.LastVersion).To(Equal(expectedPipeline.LastVersion))
@@ -411,7 +411,7 @@ func TestRemovePipeline(t *testing.T) {
 				g.Expect(len(actualPipeline.Versions)).To(Equal(len(expectedPipeline.Versions)))
 				time.Sleep(1 * time.Second)
 				test.store.cleanupDeletedPipelines()
-				g.Expect(test.store.pipelines[test.pipelineName]).To(BeNil())
+				g.Expect(test.store.Pipelines[test.pipelineName]).To(BeNil())
 			} else {
 				g.Expect(err.Error()).To(Equal(test.err.Error()))
 			}
@@ -439,7 +439,7 @@ func TestGetPipelineVersion(t *testing.T) {
 			uid:             "uid",
 			store: &PipelineStore{
 				logger: logrus.New(),
-				pipelines: map[string]*Pipeline{
+				Pipelines: map[string]*Pipeline{
 					"p": {
 						Name:        "p",
 						LastVersion: 1,
@@ -464,7 +464,7 @@ func TestGetPipelineVersion(t *testing.T) {
 			uid:             "uid",
 			store: &PipelineStore{
 				logger: logrus.New(),
-				pipelines: map[string]*Pipeline{
+				Pipelines: map[string]*Pipeline{
 					"p": {
 						Name:        "p",
 						LastVersion: 1,
@@ -490,7 +490,7 @@ func TestGetPipelineVersion(t *testing.T) {
 			uid:             "uid",
 			store: &PipelineStore{
 				logger: logrus.New(),
-				pipelines: map[string]*Pipeline{
+				Pipelines: map[string]*Pipeline{
 					"p": {
 						Name:        "p",
 						LastVersion: 1,
@@ -516,7 +516,7 @@ func TestGetPipelineVersion(t *testing.T) {
 			uid:             "uid2",
 			store: &PipelineStore{
 				logger: logrus.New(),
-				pipelines: map[string]*Pipeline{
+				Pipelines: map[string]*Pipeline{
 					"p": {
 						Name:        "p",
 						LastVersion: 1,
@@ -576,7 +576,7 @@ func TestSetPipelineState(t *testing.T) {
 			reason:          "failed",
 			store: &PipelineStore{
 				logger: logrus.New(),
-				pipelines: map[string]*Pipeline{
+				Pipelines: map[string]*Pipeline{
 					"p": {
 						Name:        "p",
 						LastVersion: 1,
@@ -604,7 +604,7 @@ func TestSetPipelineState(t *testing.T) {
 			reason:          "",
 			store: &PipelineStore{
 				logger: logrus.New(),
-				pipelines: map[string]*Pipeline{
+				Pipelines: map[string]*Pipeline{
 					"p": {
 						Name:        "p",
 						LastVersion: 3,
@@ -648,7 +648,7 @@ func TestSetPipelineState(t *testing.T) {
 			reason:          "",
 			store: &PipelineStore{
 				logger: logrus.New(),
-				pipelines: map[string]*Pipeline{
+				Pipelines: map[string]*Pipeline{
 					"p": {
 						Name:        "p",
 						LastVersion: 2,
@@ -682,7 +682,7 @@ func TestSetPipelineState(t *testing.T) {
 			uid:             "uid",
 			store: &PipelineStore{
 				logger: logrus.New(),
-				pipelines: map[string]*Pipeline{
+				Pipelines: map[string]*Pipeline{
 					"p": {
 						Name:        "p",
 						LastVersion: 1,
@@ -708,7 +708,7 @@ func TestSetPipelineState(t *testing.T) {
 			uid:             "uid",
 			store: &PipelineStore{
 				logger: logrus.New(),
-				pipelines: map[string]*Pipeline{
+				Pipelines: map[string]*Pipeline{
 					"p": {
 						Name:        "p",
 						LastVersion: 1,
@@ -734,7 +734,7 @@ func TestSetPipelineState(t *testing.T) {
 			uid:             "uid",
 			store: &PipelineStore{
 				logger: logrus.New(),
-				pipelines: map[string]*Pipeline{
+				Pipelines: map[string]*Pipeline{
 					"p": {
 						Name:        "p",
 						LastVersion: 1,
@@ -768,7 +768,7 @@ func TestSetPipelineState(t *testing.T) {
 				g.Expect(pv.UID).To(Equal(test.uid))
 				g.Expect(pv.State.Status).To(Equal(test.status))
 				g.Expect(pv.State.Reason).To(Equal(test.reason))
-				for idx, pv := range test.store.pipelines[test.pipelineName].Versions {
+				for idx, pv := range test.store.Pipelines[test.pipelineName].Versions {
 					g.Expect(test.expectedPipelineVersionStats[idx]).To(Equal(pv.State.Status))
 				}
 			} else {
