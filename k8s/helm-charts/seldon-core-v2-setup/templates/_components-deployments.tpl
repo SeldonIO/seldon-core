@@ -842,6 +842,7 @@ spec:
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --tracing-config-path=/mnt/tracing/tracing.json
         - --log-level=$(LOG_LEVEL)
+        - --health-probe-port=$(HEALTH_PROBE_PORT)
         command:
         - /bin/modelgateway
         env:
@@ -917,6 +918,8 @@ spec:
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
           value: "9044"
+        - name: HEALTH_PROBE_PORT
+          value: "9999"
         - name: POD_NAME
           valueFrom:
             fieldRef:
@@ -928,13 +931,36 @@ spec:
         image: '{{ .Values.modelgateway.image.registry }}/{{ .Values.modelgateway.image.repository
           }}:{{ .Values.modelgateway.image.tag }}'
         imagePullPolicy: '{{ .Values.modelgateway.image.pullPolicy }}'
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /live
+            port: health
+          periodSeconds: 5
         name: modelgateway
+        ports:
+        - containerPort: 9999
+          name: health
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ready
+            port: health
+          periodSeconds: 5
         resources:
           limits:
             memory: '{{ .Values.modelgateway.resources.memory }}'
           requests:
             cpu: '{{ .Values.modelgateway.resources.cpu }}'
             memory: '{{ .Values.modelgateway.resources.memory }}'
+        startupProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /startup
+            port: health
+          initialDelaySeconds: 3
+          periodSeconds: 5
         volumeMounts:
         - mountPath: /mnt/kafka
           name: kafka-config-volume

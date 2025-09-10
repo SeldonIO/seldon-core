@@ -268,6 +268,9 @@ func TestProcessRequestGrpc(t *testing.T) {
 				OutputTopic: "output",
 			}
 			mockMLGrpcServer := createMLMockGrpcServer(g)
+			// wait for server to spin up
+			time.Sleep(200 * time.Millisecond)
+
 			defer mockMLGrpcServer.stop()
 			ic, iw := createInferWorkerWithMockConn(mockMLGrpcServer, logger, &kafkaServerConfig, &kafkaModelConfig, g)
 			defer ic.Stop()
@@ -486,7 +489,11 @@ func TestProcessRequest(t *testing.T) {
 				InputTopic:  "input",
 				OutputTopic: "output",
 			}
+
 			mockMLGrpcServer := createMLMockGrpcServer(g)
+			// wait for server to spin up
+			time.Sleep(200 * time.Millisecond)
+
 			defer mockMLGrpcServer.stop()
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()

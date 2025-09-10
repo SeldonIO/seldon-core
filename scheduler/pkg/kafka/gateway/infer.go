@@ -127,6 +127,7 @@ func NewInferKafkaHandler(
 		numPartitions:     numPartitions,
 		tlsClientOptions:  tlsClientOptions,
 	}
+
 	return ic, ic.setup(consumerConfigMap, producerConfigMap)
 }
 
@@ -192,6 +193,10 @@ func (kc *InferKafkaHandler) Produce(msg *kafka.Message, deliveryChan chan kafka
 		logger.WithError(err).Error("Failed to produce kafka message")
 		return err
 	}
+}
+
+func (kc *InferKafkaHandler) producerIsActive() bool {
+	return kc.producerActive.Load()
 }
 
 func (kc *InferKafkaHandler) closeProducer() {
@@ -471,5 +476,4 @@ func (kc *InferKafkaHandler) Serve() {
 	logger.Info("Closing consumer")
 	close(cancelChan)
 	kc.closeProducer()
-	_ = kc.consumer.Close()
 }

@@ -42,6 +42,7 @@ type KafkaSchedulerClient struct {
 	consumerManager  *ConsumerManager
 	certificateStore *seldontls.CertificateStore
 	stop             atomic.Bool
+	ready            atomic.Bool
 	subscriberName   string
 }
 
@@ -137,6 +138,10 @@ func (kc *KafkaSchedulerClient) Start() error {
 	}
 }
 
+func (kc *KafkaSchedulerClient) IsConnected() bool {
+	return kc.ready.Load()
+}
+
 func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
 	logger := kc.logger.WithField("func", "SubscribeModelEvents")
 	grpcClient := scheduler.NewSchedulerClient(kc.conn)
@@ -149,6 +154,10 @@ func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
 	if errSub != nil {
 		return errSub
 	}
+
+	kc.ready.Store(true)
+	defer kc.ready.Store(false)
+
 	for {
 		if kc.stop.Load() {
 			logger.Info("Stopping")

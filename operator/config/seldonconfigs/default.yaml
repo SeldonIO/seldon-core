@@ -114,6 +114,7 @@ spec:
         - --kafka-config-path=/mnt/kafka/kafka.json
         - --tracing-config-path=/mnt/tracing/tracing.json
         - --log-level=$(LOG_LEVEL)
+        - --health-probe-port=$(HEALTH_PROBE_PORT)
         command:
         - /bin/modelgateway
         env:
@@ -125,6 +126,8 @@ spec:
           value: "100"
         - name: LOG_LEVEL
           value: "warn"
+        - name: HEALTH_PROBE_PORT
+          value: "9999"
         - name: POD_NAME
           valueFrom:
             fieldRef:
@@ -142,6 +145,29 @@ spec:
           requests:
             cpu: 100m
             memory: 1G
+        ports:
+          - containerPort: 9999
+            name: health
+            protocol: TCP
+        startupProbe:
+          httpGet:
+            path: /startup
+            port: health
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: health
+          periodSeconds: 5
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /live
+            port: health
+          periodSeconds: 5
+          failureThreshold: 3
         volumeMounts:
         - mountPath: /mnt/kafka
           name: kafka-config-volume
