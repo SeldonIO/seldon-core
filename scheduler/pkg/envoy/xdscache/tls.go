@@ -59,6 +59,7 @@ func createDownstreamTransportSocket(serverSecret *Secret) *core.TransportSocket
 	if serverSecret != nil {
 		tlsCtx := tlsv3.DownstreamTlsContext{
 			CommonTlsContext: &tlsv3.CommonTlsContext{
+				AlpnProtocols: []string{"h2", "http/1.1"},
 				TlsCertificateSdsSecretConfigs: []*tlsv3.SdsSecretConfig{
 					{
 						Name:      serverSecret.Name,
@@ -96,6 +97,7 @@ func createUpstreamTransportSocket(clientSecret *Secret) *core.TransportSocket {
 	if clientSecret != nil {
 		tlsCtx := tlsv3.UpstreamTlsContext{
 			CommonTlsContext: &tlsv3.CommonTlsContext{
+				AlpnProtocols: []string{"h2", "http/1.1"},
 				TlsCertificateSdsSecretConfigs: []*tlsv3.SdsSecretConfig{
 					{
 						Name:      clientSecret.Name,

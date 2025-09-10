@@ -141,6 +141,7 @@ func TestCreateDownstreamTransportSocket(t *testing.T) {
 			},
 			expected: &tlsv3.DownstreamTlsContext{
 				CommonTlsContext: &tlsv3.CommonTlsContext{
+					AlpnProtocols: []string{"h2", "http/1.1"},
 					TlsCertificateSdsSecretConfigs: []*tlsv3.SdsSecretConfig{
 						{
 							Name:      "sec",
@@ -159,6 +160,7 @@ func TestCreateDownstreamTransportSocket(t *testing.T) {
 			},
 			expected: &tlsv3.DownstreamTlsContext{
 				CommonTlsContext: &tlsv3.CommonTlsContext{
+					AlpnProtocols: []string{"h2", "http/1.1"},
 					TlsCertificateSdsSecretConfigs: []*tlsv3.SdsSecretConfig{
 						{
 							Name:      "sec",
@@ -223,6 +225,7 @@ func TestCreateUpstreamTransportSocket(t *testing.T) {
 			},
 			expected: &tlsv3.UpstreamTlsContext{
 				CommonTlsContext: &tlsv3.CommonTlsContext{
+					AlpnProtocols: []string{"h2", "http/1.1"},
 					TlsCertificateSdsSecretConfigs: []*tlsv3.SdsSecretConfig{
 						{
 							Name:      "sec",
@@ -241,6 +244,7 @@ func TestCreateUpstreamTransportSocket(t *testing.T) {
 			},
 			expected: &tlsv3.UpstreamTlsContext{
 				CommonTlsContext: &tlsv3.CommonTlsContext{
+					AlpnProtocols: []string{"h2", "http/1.1"},
 					TlsCertificateSdsSecretConfigs: []*tlsv3.SdsSecretConfig{
 						{
 							Name:      "sec",
