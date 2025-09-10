@@ -31,6 +31,10 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
+const (
+	gracefulShutdownTimeout = 5 * time.Second
+)
+
 type GatewayGrpcServer struct {
 	v2.UnimplementedGRPCInferenceServiceServer
 	port                 int
@@ -63,7 +67,18 @@ const (
 )
 
 func (g *GatewayGrpcServer) Stop() {
-	g.grpcServer.Stop()
+	done := make(chan struct{})
+	go func() {
+		g.grpcServer.GracefulStop()
+		done <- struct{}{}
+	}()
+
+	select {
+	case <-done:
+		g.logger.Info("gRPC graceful shutdown complete")
+	case <-time.After(gracefulShutdownTimeout):
+		g.logger.Warn("Timed out waiting for gRPC graceful shutdown to complete")
+	}
 }
 
 func (g *GatewayGrpcServer) Start() error {
