@@ -83,11 +83,11 @@ const (
 )
 
 type PipelineState struct {
-	Status          PipelineStatus
-	ModelsReady     bool
-	PipelineGwReady bool
-	Reason          string
-	Timestamp       time.Time
+	Status           PipelineStatus
+	PipelineGwStatus PipelineStatus
+	ModelsReady      bool
+	Reason           string
+	Timestamp        time.Time
 }
 
 func (ps PipelineStatus) String() string {

@@ -281,10 +281,10 @@ func CreatePipelineWithState(pv *PipelineVersion) *scheduler.PipelineWithState {
 	pvs := &scheduler.PipelineVersionState{
 		PipelineVersion:     pv.Version,
 		Status:              scheduler.PipelineVersionState_PipelineStatus(scheduler.PipelineVersionState_PipelineStatus_value[pv.State.Status.String()]),
+		PipelineGwStatus:    scheduler.PipelineVersionState_PipelineStatus(scheduler.PipelineVersionState_PipelineStatus_value[pv.State.PipelineGwStatus.String()]),
 		Reason:              pv.State.Reason,
 		LastChangeTimestamp: timestamppb.New(pv.State.Timestamp.UTC()),
 		ModelsReady:         pv.State.ModelsReady,
-		PipelineGwReady:     pv.State.PipelineGwReady,
 	}
 	return &scheduler.PipelineWithState{
 		Pipeline: CreateProtoFromPipelineVersion(pv),

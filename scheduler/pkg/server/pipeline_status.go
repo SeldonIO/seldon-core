@@ -54,7 +54,7 @@ func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *pb.P
 	evts := make([]*coordinator.PipelineEventMsg, 0)
 	if pipelineVersion.UID == uid {
 		logger.Info("Setting pipeline gateway ready for ", pipelineName)
-		pipelineVersion.State.PipelineGwReady = true
+		pipelineVersion.State.PipelineGwStatus = pipeline.PipelineReady
 		evts = append(evts, &coordinator.PipelineEventMsg{
 			PipelineName:    pipelineVersion.Name,
 			PipelineVersion: pipelineVersion.Version,
@@ -264,8 +264,8 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 		return
 	}
 	logger.Debugf(
-		"Handling pipeline event for %s with state %v, pipelinegw %t, models %t",
-		event.String(), pv.State.Status, pv.State.PipelineGwReady, pv.State.ModelsReady,
+		"Handling pipeline event for %s with state %v, pipelinegw %v, models %t",
+		event.String(), pv.State.Status, pv.State.PipelineGwStatus, pv.State.ModelsReady,
 	)
 
 	var pipelineVersions []*pb.PipelineWithState

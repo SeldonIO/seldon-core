@@ -11,12 +11,15 @@ package scheduler
 
 import (
 	"context"
+	"fmt"
 	"io"
 
+	"github.com/go-logr/logr"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	v1 "k8s.io/api/core/v1"
 	api_errors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/util/retry"
+	"knative.dev/pkg/apis"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
@@ -197,39 +200,9 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 					return nil
 				}
 
-				// Handle status update
-				switch pv.State.Status {
-				case scheduler.PipelineVersionState_PipelineReady:
-					logger.Info(
-						"Setting pipeline to ready",
-						"pipeline", pipeline.Name,
-						"generation", pipeline.Generation,
-					)
-					pipeline.Status.CreateAndSetCondition(
-						v1alpha1.PipelineReady,
-						true,
-						pv.State.Reason,
-						pv.State.Status.String(),
-					)
-				default:
-					logger.Info(
-						"Setting pipeline to not ready",
-						"pipeline", pipeline.Name,
-						"generation", pipeline.Generation,
-					)
-					pipeline.Status.CreateAndSetCondition(
-						v1alpha1.PipelineReady,
-						false,
-						pv.State.Reason,
-						pv.State.Status.String(),
-					)
-				}
-				// Set pipelinegw ready
-				if pv.State.PipelineGwReady {
-					pipeline.Status.CreateAndSetCondition(v1alpha1.PipelineGwReady, true, "Pipeline ready in pipeline-gateway", "")
-				} else {
-					pipeline.Status.CreateAndSetCondition(v1alpha1.PipelineGwReady, false, "Pipeline not ready in pipeline-gateway", "")
-				}
+				// Handle status and pipeline-gw status update
+				setReadyCondition(&logger, pipeline, v1alpha1.PipelineReady, pv.State.Status, pv.State.Reason, "pipeline")
+				setReadyCondition(&logger, pipeline, v1alpha1.PipelineGwReady, pv.State.PipelineGwStatus, pv.State.Reason, "pipeline-gateway")
 
 				// Set models ready
 				if pv.State.ModelsReady {
@@ -246,6 +219,34 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 		}
 	}
 	return nil
+}
+
+func setReadyCondition(
+	logger *logr.Logger,
+	pipeline *v1alpha1.Pipeline,
+	conditionType apis.ConditionType,
+	status scheduler.PipelineVersionState_PipelineStatus,
+	reason string,
+	componentName string,
+) {
+	isReady := status == scheduler.PipelineVersionState_PipelineReady
+	readiness := "not ready"
+	if isReady {
+		readiness = "ready"
+	}
+
+	logger.Info(
+		fmt.Sprintf("Setting %s to %s", componentName, readiness),
+		"pipeline", pipeline.Name,
+		"generation", pipeline.Generation,
+	)
+
+	pipeline.Status.CreateAndSetCondition(
+		conditionType,
+		isReady,
+		reason,
+		status.String(),
+	)
 }
 
 func (s *SchedulerClient) updatePipelineStatusImpl(ctx context.Context, pipeline *v1alpha1.Pipeline) error {
