@@ -196,14 +196,18 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 
 		// The expected contract is just the latest version will be sent to us
 		if len(event.Versions) > 1 {
-			logger.Info("Expected at most a single model version", "numVersions", len(event.Versions), "name", event.GetPipelineName())
+			message := fmt.Sprint("Expected at most a single model version", "numVersions", len(event.Versions), "name", event.GetPipelineName())
+			logger.Info(message)
+			sendPipelineStatusEvent(grpcClient, scheduler.PipelineUpdateMessage_Create, nil, subscriberName, false, message, logger)
 			continue
 		}
 
 		if len(event.Versions) == 1 {
 			pv, err := pipeline.CreatePipelineVersionWithStateFromProto(event.Versions[0])
 			if err != nil {
-				logger.Warningf("Failed to create pipeline state for pipeline %s with %s", event.PipelineName, protojson.Format(event))
+				message := fmt.Sprintf("Failed to create pipeline version for pipeline %s with %s", event.PipelineName, protojson.Format(event))
+				logger.WithError(err).Error(message)
+				sendPipelineStatusEvent(grpcClient, scheduler.PipelineUpdateMessage_Create, pv, subscriberName, false, message, logger)
 				continue
 			}
 
@@ -211,56 +215,37 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 			pc.pipelineStatusUpdater.Update(pv)
 
 			_, err = pc.pipelineInferer.LoadOrStorePipeline(pv.Name, false, false)
-			logger.Debugf("Stored pipeline %s", pv.Name)
 			if err != nil {
-				logger.WithError(err).Errorf("Failed to store pipeline %s", pv.Name)
+				message := fmt.Sprintf("Failed to load/store pipeline %s", pv.Name)
+				logger.WithError(err).Errorf(message)
+				sendPipelineStatusEvent(grpcClient, scheduler.PipelineUpdateMessage_Create, pv, subscriberName, false, message, logger)
 				continue
 			}
 
-			// Send ack back to scheduler
-			_, _ = grpcClient.PipelineStatusEvent(
-				context.Background(),
-				&scheduler.PipelineUpdateStatusMessage{
-					Update: &scheduler.PipelineUpdateMessage{
-						Op:       scheduler.PipelineUpdateMessage_Create,
-						Pipeline: pv.Name,
-						Version:  pv.Version,
-						Uid:      pv.UID,
-						Stream:   subscriberName,
-					},
-					Success: true,
-					Reason:  fmt.Sprintf("Pipeline %s loaded", event.PipelineName),
-				},
-			)
+			message := fmt.Sprintf("Pipeline %s loaded", event.PipelineName)
+			logger.Debug(message)
+			sendPipelineStatusEvent(grpcClient, scheduler.PipelineUpdateMessage_Create, pv, subscriberName, true, message, logger)
 		} else {
 			psm := pc.pipelineStatusUpdater.(*status.PipelineStatusManager)
 			pv := psm.Get(event.PipelineName)
 			if pv == nil {
-				logger.Warningf("No existing pipeline %s to delete", event.PipelineName)
+				message := fmt.Sprintf("No existing pipeline %s to delete", event.PipelineName)
+				logger.Warningf(message)
+				sendPipelineStatusEvent(grpcClient, scheduler.PipelineUpdateMessage_Delete, pv, subscriberName, true, message, logger)
 				continue
 			}
 
 			err := pc.pipelineInferer.DeletePipeline(event.PipelineName, false)
 			if err != nil {
-				logger.WithError(err).Errorf("Failed to delete pipeline %s", event.PipelineName)
+				message := fmt.Sprintf("Failed to delete pipeline %s", event.PipelineName)
+				logger.WithError(err).Errorf(message)
+				sendPipelineStatusEvent(grpcClient, scheduler.PipelineUpdateMessage_Delete, pv, subscriberName, false, message, logger)
 				continue
 			}
 
-			// Send ack back to scheduler
-			_, _ = grpcClient.PipelineStatusEvent(
-				context.Background(),
-				&scheduler.PipelineUpdateStatusMessage{
-					Update: &scheduler.PipelineUpdateMessage{
-						Op:       scheduler.PipelineUpdateMessage_Delete,
-						Pipeline: pv.Name,
-						Version:  pv.Version,
-						Uid:      pv.UID,
-						Stream:   subscriberName,
-					},
-					Success: true,
-					Reason:  fmt.Sprintf("Pipeline %s deleted", event.PipelineName),
-				},
-			)
+			message := fmt.Sprintf("Pipeline %s deleted", event.PipelineName)
+			logger.Debugf(message)
+			sendPipelineStatusEvent(grpcClient, scheduler.PipelineUpdateMessage_Delete, pv, subscriberName, true, message, logger)
 		}
 	}
 	logger.Infof("Closing connection to scheduler")
@@ -268,4 +253,32 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 		_ = stream.CloseSend()
 	}()
 	return nil
+}
+
+func sendPipelineStatusEvent(
+	grpcClient scheduler.SchedulerClient,
+	op scheduler.PipelineUpdateMessage_PipelineOperation,
+	pv *pipeline.PipelineVersion,
+	subscriberName string,
+	success bool,
+	reason string,
+	logger *logrus.Entry,
+) {
+	_, err := grpcClient.PipelineStatusEvent(
+		context.Background(),
+		&scheduler.PipelineUpdateStatusMessage{
+			Update: &scheduler.PipelineUpdateMessage{
+				Op:       op,
+				Pipeline: pv.Name,
+				Version:  pv.Version,
+				Uid:      pv.UID,
+				Stream:   subscriberName,
+			},
+			Success: success,
+			Reason:  reason,
+		},
+	)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to send pipeline status event for pipeline %s", pv.Name)
+	}
 }
