@@ -195,7 +195,7 @@ func TestSaveAndRestore(t *testing.T) {
 			err = ps.InitialiseOrRestoreDB(path, 10)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
-				g.Expect(cmp.Equal(p, ps.Pipelines[p.Name])).To(BeTrue())
+				g.Expect(cmp.Equal(p, ps.pipelines[p.Name])).To(BeTrue())
 			}
 		})
 	}
@@ -278,12 +278,12 @@ func TestSaveAndRestoreDeletedPipelines(t *testing.T) {
 				})
 				g.Expect(err).To(BeNil())
 				g.Expect(item.ExpiresAt()).To(BeZero())
-				g.Expect(ps.Pipelines[test.pipeline.Name]).ToNot(BeNil())
-				g.Expect(ps.Pipelines[test.pipeline.Name].DeletedAt.IsZero()).To(BeTrue())
+				g.Expect(ps.pipelines[test.pipeline.Name]).ToNot(BeNil())
+				g.Expect(ps.pipelines[test.pipeline.Name].DeletedAt.IsZero()).To(BeTrue())
 
 				// check state after cleanup
 				ps.cleanupDeletedPipelines()
-				g.Expect(ps.Pipelines[test.pipeline.Name].DeletedAt.IsZero()).ToNot(BeTrue())
+				g.Expect(ps.pipelines[test.pipeline.Name].DeletedAt.IsZero()).ToNot(BeTrue())
 				err = ps.db.db.View(func(txn *badger.Txn) error {
 					item, err = txn.Get(([]byte(test.pipeline.Name)))
 					return err
@@ -292,7 +292,7 @@ func TestSaveAndRestoreDeletedPipelines(t *testing.T) {
 				g.Expect(item.ExpiresAt()).ToNot(BeZero())
 
 			} else {
-				g.Expect(ps.Pipelines[test.pipeline.Name].DeletedAt.IsZero()).ToNot(BeTrue())
+				g.Expect(ps.pipelines[test.pipeline.Name].DeletedAt.IsZero()).ToNot(BeTrue())
 			}
 		})
 	}
@@ -553,7 +553,7 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 
 			// make sure we still have the pipelines
 			for _, p := range test.pipelines {
-				g.Expect(cmp.Equal(p, ps.Pipelines[p.Name])).To(BeTrue())
+				g.Expect(cmp.Equal(p, ps.pipelines[p.Name])).To(BeTrue())
 			}
 
 			// make sure we have the correct version

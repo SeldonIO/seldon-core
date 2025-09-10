@@ -24,52 +24,47 @@ import (
 
 const (
 	addPipelineStreamEventSource = "pipeline.store.addpipelinestream"
+	sourcePipelineStatusServer   = "pipeline-status-server"
 )
 
 func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *pb.PipelineUpdateStatusMessage) (*pb.PipelineUpdateStatusResponse, error) {
+	s.pipelineEventStream.mu.Lock()
+	defer s.pipelineEventStream.mu.Unlock()
+
 	logger := s.logger.WithField("func", "SubscribePipelineStatus")
 	logger.Infof("Received pipeline status event %s", message.String())
 
+	var statusVal pipeline.PipelineStatus
+	switch message.Update.Op {
+	case pb.PipelineUpdateMessage_Create:
+		if message.Success {
+			statusVal = pipeline.PipelineReady
+		} else {
+			statusVal = pipeline.PipelineFailed
+		}
+	case pb.PipelineUpdateMessage_Delete:
+		if message.Success {
+			statusVal = pipeline.PipelineTerminated
+		} else {
+			statusVal = pipeline.PipelineFailed
+		}
+	}
+
 	pipelineName := message.Update.Pipeline
-	versionNumber := message.Update.Version
-	uid := message.Update.Uid
+	pipelineVersion := message.Update.Version
 	stream := message.Update.Stream
+	logger.Debugf(
+		"Received pipeline update event from %s for pipeline %s:%d with status %s",
+		stream, pipelineName, pipelineVersion, statusVal.String(),
+	)
 
-	var pipelineVersion *pipeline.PipelineVersion = nil
-	ps := s.pipelineHandler.(*pipeline.PipelineStore)
+	// TODO: add conflict resolution based on timestamps implementation
 
-	if pipeline, ok := ps.Pipelines[pipelineName]; ok {
-		if pv := pipeline.GetPipelineVersion(versionNumber); pv != nil {
-			if pv.UID == uid {
-				pipelineVersion = pv
-			}
-		}
+	err := s.pipelineHandler.SetPipelineGwPipelineState(message.Update.Pipeline, message.Update.Version, message.Update.Uid, statusVal, "", sourcePipelineStatusServer)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to update pipeline status for %s:%d (%s)", message.Update.Pipeline, message.Update.Version, message.Update.Uid)
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-
-	if pipelineVersion == nil {
-		logger.Errorf("Pipeline version not found for event %s", message.String())
-		return &pb.PipelineUpdateStatusResponse{}, status.Errorf(codes.NotFound, "Pipeline version not found for event %s", message.String())
-	}
-
-	evts := make([]*coordinator.PipelineEventMsg, 0)
-	if pipelineVersion.UID == uid {
-		logger.Info("Setting pipeline gateway ready for ", pipelineName)
-		pipelineVersion.State.PipelineGwStatus = pipeline.PipelineReady
-		evts = append(evts, &coordinator.PipelineEventMsg{
-			PipelineName:    pipelineVersion.Name,
-			PipelineVersion: pipelineVersion.Version,
-			UID:             pipelineVersion.UID,
-			Source:          stream,
-		})
-	}
-
-	eventHub := s.eventHub
-	if eventHub != nil {
-		for _, evt := range evts {
-			eventHub.PublishPipelineEvent(pipeline.SetPipelineGwStatusPipelineEventSource, *evt)
-		}
-	}
-
 	return &pb.PipelineUpdateStatusResponse{}, nil
 }
 

@@ -739,6 +739,10 @@ func (f fakePipelineStore) SetPipelineState(name string, version uint32, uid str
 	panic("implement me")
 }
 
+func (f fakePipelineStore) SetPipelineGwPipelineState(name string, version uint32, uid string, state pipeline.PipelineStatus, reason string, source string) error {
+	panic("implement me")
+}
+
 func (f fakePipelineStore) GetAllRunningPipelineVersions() []coordinator.PipelineEventMsg {
 	panic("implement me")
 }
