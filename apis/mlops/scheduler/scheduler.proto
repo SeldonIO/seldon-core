@@ -5,6 +5,7 @@ package seldon.mlops.scheduler;
 option go_package = "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler";
 
 import "google/protobuf/timestamp.proto";
+import "mlops/chainer/chainer.proto";
 
 // [START Messages]
 
@@ -409,6 +410,7 @@ message PipelineSubscriptionRequest {
 message PipelineStatusResponse {
   string pipelineName = 1;
   repeated PipelineWithState versions = 2;
+  uint64 timestamp = 3;
 }
 
 message PipelineWithState {
@@ -458,29 +460,6 @@ message ControlPlaneResponse {
   Event event = 1;
 }
 
-message PipelineUpdateMessage {
-  enum PipelineOperation {
-    Unknown = 0;
-    Create = 1;
-    Delete = 2;
-  }
-  PipelineOperation op = 1;
-  string pipeline = 2;
-  uint32 version = 3;
-  string uid = 4;
-  uint64 timestamp = 5;
-  string stream = 6;
-}
-
-message PipelineUpdateStatusMessage {
-  PipelineUpdateMessage update = 1;
-  bool success = 2;
-  string reason = 3;
-}
-
-message PipelineUpdateStatusResponse {
-}
-
 // [END Messages]
 
 
@@ -509,7 +488,7 @@ service Scheduler {
   rpc SubscribeExperimentStatus(ExperimentSubscriptionRequest) returns (stream ExperimentStatusResponse) {};
   rpc SubscribePipelineStatus(PipelineSubscriptionRequest) returns (stream PipelineStatusResponse) {};
 
-  rpc PipelineStatusEvent(PipelineUpdateStatusMessage) returns (PipelineUpdateStatusResponse) {};
+  rpc PipelineStatusEvent(chainer.PipelineUpdateStatusMessage) returns (chainer.PipelineUpdateStatusResponse) {};
 
   // control plane stream with controller
   rpc SubscribeControlPlane(ControlPlaneSubscriptionRequest) returns (stream ControlPlaneResponse) {};

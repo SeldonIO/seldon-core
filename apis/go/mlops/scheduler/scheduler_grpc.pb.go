@@ -17,6 +17,7 @@ package scheduler
 
 import (
 	context "context"
+	chainer "github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -68,7 +69,7 @@ type SchedulerClient interface {
 	SubscribeModelStatus(ctx context.Context, in *ModelSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeModelStatusClient, error)
 	SubscribeExperimentStatus(ctx context.Context, in *ExperimentSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeExperimentStatusClient, error)
 	SubscribePipelineStatus(ctx context.Context, in *PipelineSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribePipelineStatusClient, error)
-	PipelineStatusEvent(ctx context.Context, in *PipelineUpdateStatusMessage, opts ...grpc.CallOption) (*PipelineUpdateStatusResponse, error)
+	PipelineStatusEvent(ctx context.Context, in *chainer.PipelineUpdateStatusMessage, opts ...grpc.CallOption) (*chainer.PipelineUpdateStatusResponse, error)
 	// control plane stream with controller
 	SubscribeControlPlane(ctx context.Context, in *ControlPlaneSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeControlPlaneClient, error)
 }
@@ -425,9 +426,9 @@ func (x *schedulerSubscribePipelineStatusClient) Recv() (*PipelineStatusResponse
 	return m, nil
 }
 
-func (c *schedulerClient) PipelineStatusEvent(ctx context.Context, in *PipelineUpdateStatusMessage, opts ...grpc.CallOption) (*PipelineUpdateStatusResponse, error) {
+func (c *schedulerClient) PipelineStatusEvent(ctx context.Context, in *chainer.PipelineUpdateStatusMessage, opts ...grpc.CallOption) (*chainer.PipelineUpdateStatusResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PipelineUpdateStatusResponse)
+	out := new(chainer.PipelineUpdateStatusResponse)
 	err := c.cc.Invoke(ctx, Scheduler_PipelineStatusEvent_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -488,7 +489,7 @@ type SchedulerServer interface {
 	SubscribeModelStatus(*ModelSubscriptionRequest, Scheduler_SubscribeModelStatusServer) error
 	SubscribeExperimentStatus(*ExperimentSubscriptionRequest, Scheduler_SubscribeExperimentStatusServer) error
 	SubscribePipelineStatus(*PipelineSubscriptionRequest, Scheduler_SubscribePipelineStatusServer) error
-	PipelineStatusEvent(context.Context, *PipelineUpdateStatusMessage) (*PipelineUpdateStatusResponse, error)
+	PipelineStatusEvent(context.Context, *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error)
 	// control plane stream with controller
 	SubscribeControlPlane(*ControlPlaneSubscriptionRequest, Scheduler_SubscribeControlPlaneServer) error
 	mustEmbedUnimplementedSchedulerServer()
@@ -546,7 +547,7 @@ func (UnimplementedSchedulerServer) SubscribeExperimentStatus(*ExperimentSubscri
 func (UnimplementedSchedulerServer) SubscribePipelineStatus(*PipelineSubscriptionRequest, Scheduler_SubscribePipelineStatusServer) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribePipelineStatus not implemented")
 }
-func (UnimplementedSchedulerServer) PipelineStatusEvent(context.Context, *PipelineUpdateStatusMessage) (*PipelineUpdateStatusResponse, error) {
+func (UnimplementedSchedulerServer) PipelineStatusEvent(context.Context, *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PipelineStatusEvent not implemented")
 }
 func (UnimplementedSchedulerServer) SubscribeControlPlane(*ControlPlaneSubscriptionRequest, Scheduler_SubscribeControlPlaneServer) error {
@@ -878,7 +879,7 @@ func (x *schedulerSubscribePipelineStatusServer) Send(m *PipelineStatusResponse)
 }
 
 func _Scheduler_PipelineStatusEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PipelineUpdateStatusMessage)
+	in := new(chainer.PipelineUpdateStatusMessage)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -890,7 +891,7 @@ func _Scheduler_PipelineStatusEvent_Handler(srv interface{}, ctx context.Context
 		FullMethod: Scheduler_PipelineStatusEvent_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SchedulerServer).PipelineStatusEvent(ctx, req.(*PipelineUpdateStatusMessage))
+		return srv.(SchedulerServer).PipelineStatusEvent(ctx, req.(*chainer.PipelineUpdateStatusMessage))
 	}
 	return interceptor(ctx, in, info, handler)
 }

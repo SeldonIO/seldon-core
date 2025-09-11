@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	chainer "github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -27,7 +28,7 @@ const (
 	sourcePipelineStatusServer   = "pipeline-status-server"
 )
 
-func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *pb.PipelineUpdateStatusMessage) (*pb.PipelineUpdateStatusResponse, error) {
+func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
 	s.pipelineEventStream.mu.Lock()
 	defer s.pipelineEventStream.mu.Unlock()
 
@@ -36,13 +37,13 @@ func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *pb.P
 
 	var statusVal pipeline.PipelineStatus
 	switch message.Update.Op {
-	case pb.PipelineUpdateMessage_Create:
+	case chainer.PipelineUpdateMessage_Create:
 		if message.Success {
 			statusVal = pipeline.PipelineReady
 		} else {
 			statusVal = pipeline.PipelineFailed
 		}
-	case pb.PipelineUpdateMessage_Delete:
+	case chainer.PipelineUpdateMessage_Delete:
 		if message.Success {
 			statusVal = pipeline.PipelineTerminated
 		} else {
@@ -59,13 +60,24 @@ func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *pb.P
 	)
 
 	// TODO: add conflict resolution based on timestamps implementation
+	cr := s.pipelineEventStream.conflictResolutioner
+	if cr.IsMessageOutdated(message) {
+		logger.Debugf("Message for pipeline %s:%d is outdated, ignoring", pipelineName, pipelineVersion)
+		return &chainer.PipelineUpdateStatusResponse{}, nil
+	}
 
-	err := s.pipelineHandler.SetPipelineGwPipelineState(message.Update.Pipeline, message.Update.Version, message.Update.Uid, statusVal, "", sourcePipelineStatusServer)
+	cr.UpdatePipelineStatus(pipelineName, stream, statusVal)
+	pipelineStatusVal, reason := cr.GetPipelineStatus(pipelineName, message)
+	if pipelineStatusVal == pipeline.PipelineTerminated {
+		cr.DeletePipeline(pipelineName)
+	}
+
+	err := s.pipelineHandler.SetPipelineGwPipelineState(message.Update.Pipeline, message.Update.Version, message.Update.Uid, pipelineStatusVal, reason, sourcePipelineStatusServer)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to update pipeline status for %s:%d (%s)", message.Update.Pipeline, message.Update.Version, message.Update.Uid)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.PipelineUpdateStatusResponse{}, nil
+	return &chainer.PipelineUpdateStatusResponse{}, nil
 }
 
 func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRequest, stream pb.Scheduler_SubscribePipelineStatusServer) error {
@@ -216,6 +228,7 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 		} else {
 			pip, _ := s.pipelineHandler.GetPipeline(pv.Name)
 			consumerBucketId := s.getPipelineGatewayBucketId(pv.Name)
+
 			servers := s.pipelineGWLoadBalancer.GetServersForKey(consumerBucketId)
 			s.logger.Debugf("Servers for pipeline %s: %v", pv.Name, servers)
 			s.logger.Debug("Consumer bucket ID: ", consumerBucketId)
@@ -225,6 +238,9 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 				coordinator.PipelineEventMsg{PipelineName: pv.Name},
 				servers,
 			)
+
+			cr := s.pipelineEventStream.conflictResolutioner
+			cr.CreateNewIteration(pv.Name, servers)
 
 			// send messages to each pipeline gateway stream
 			for _, pipelineSubscription := range streams {
@@ -250,6 +266,8 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 						s.logger.WithError(err).Errorf("Failed to create pipelines status message for %s", pv.Name)
 						continue
 					}
+
+					msg.Timestamp = cr.GetTimestamp(pv.Name)
 					if err := stream.Send(msg); err != nil {
 						s.logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.Name)
 					}
@@ -260,7 +278,9 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 						s.logger.WithError(err).Errorf("Failed to create pipeline deletion message for %s", pv.Name)
 						continue
 					}
+
 					s.logger.Debugf("Sending deletion message for pipeline %s to server %s", pv.Name, server)
+					msg.Timestamp = cr.GetTimestamp(pv.Name)
 					if err := stream.Send(msg); err != nil {
 						s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.Name)
 					}
