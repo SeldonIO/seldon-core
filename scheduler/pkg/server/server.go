@@ -11,6 +11,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -25,6 +26,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/health"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
@@ -58,6 +60,7 @@ var ErrAddServerEmptyServerName = status.Errorf(codes.FailedPrecondition, "Empty
 
 type SchedulerServer struct {
 	pb.UnimplementedSchedulerServer
+	health.UnimplementedHealthCheckServiceServer
 	logger                 log.FieldLogger
 	modelStore             store.ModelStore
 	experimentServer       experiment.ExperimentServer
@@ -68,7 +71,6 @@ type SchedulerServer struct {
 	experimentEventStream  ExperimentEventStream
 	pipelineEventStream    PipelineEventStream
 	controlPlaneStream     ControlPlaneStream
-	certificateStore       *seldontls.CertificateStore
 	timeout                time.Duration
 	synchroniser           synchroniser.Synchroniser
 	config                 SchedulerServerConfig
@@ -76,6 +78,7 @@ type SchedulerServer struct {
 	pipelineGWLoadBalancer *util.RingLoadBalancer
 	consumerGroupConfig    *ConsumerGroupConfig
 	eventHub               *coordinator.EventHub
+	tlsOptions             seldontls.TLSOptions
 }
 
 type SchedulerServerConfig struct {
@@ -182,13 +185,15 @@ func (s *SchedulerServer) startServer(port uint, secure bool) error {
 
 	opts := []grpc.ServerOption{}
 	if secure {
-		opts = append(opts, grpc.Creds(s.certificateStore.CreateServerTransportCredentials()))
+		opts = append(opts, grpc.Creds(s.tlsOptions.Cert.CreateServerTransportCredentials()))
 	}
 	opts = append(opts, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
 	opts = append(opts, grpc.StatsHandler(otelgrpc.NewServerHandler()))
 	opts = append(opts, grpc.KeepaliveEnforcementPolicy(kaep))
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterSchedulerServer(grpcServer, s)
+	health.RegisterHealthCheckServiceServer(grpcServer, s)
+
 	s.logger.Printf("Scheduler server running on %d mtls:%v", port, secure)
 	go func() {
 		err := grpcServer.Serve(lis)
@@ -199,16 +204,8 @@ func (s *SchedulerServer) startServer(port uint, secure bool) error {
 
 func (s *SchedulerServer) StartGrpcServers(allowPlainTxt bool, schedulerPort uint, schedulerTlsPort uint) error {
 	logger := s.logger.WithField("func", "StartGrpcServers")
-	var err error
-	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
-	if protocol == seldontls.SecurityProtocolSSL {
-		s.certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlaneServer),
-			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixControlPlaneClient))
-		if err != nil {
-			return err
-		}
-	}
-	if !allowPlainTxt && s.certificateStore == nil {
+
+	if !allowPlainTxt && s.tlsOptions.Cert == nil {
 		return fmt.Errorf("one of plain txt or mTLS needs to be defined. But have plain text [%v] and no TLS", allowPlainTxt)
 	}
 	if allowPlainTxt {
@@ -219,7 +216,7 @@ func (s *SchedulerServer) StartGrpcServers(allowPlainTxt bool, schedulerPort uin
 	} else {
 		logger.Info("Not starting scheduler plain text server")
 	}
-	if s.certificateStore != nil {
+	if s.tlsOptions.Cert != nil {
 		err := s.startServer(schedulerTlsPort, true)
 		if err != nil {
 			return err
@@ -257,6 +254,7 @@ func NewSchedulerServer(
 	consumerGroupIdPrefix string,
 	modelGwLoadBalancer *util.RingLoadBalancer,
 	pipelineGWLoadBalancer *util.RingLoadBalancer,
+	tlsOptions seldontls.TLSOptions,
 ) *SchedulerServer {
 	loggerWithField := logger.WithField("source", "SchedulerServer")
 	modelGatewayMaxNumConsumers := getEnVar(loggerWithField, EnvModelGatewayMaxNumConsumers, DefaultMaxNumConsumers)
@@ -300,6 +298,7 @@ func NewSchedulerServer(
 		pipelineGWLoadBalancer: pipelineGWLoadBalancer,
 		consumerGroupConfig:    consumerGroupConfig,
 		eventHub:               eventHub,
+		tlsOptions:             tlsOptions,
 	}
 
 	eventHub.RegisterModelEventHandler(
@@ -356,6 +355,13 @@ func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotify
 		logger.Infof("Signalling synchroniser with %d expected server agents to connect", numExpectedReplicas)
 	}
 	return &pb.ServerNotifyResponse{}, nil
+}
+
+func (s *SchedulerServer) HealthCheck(_ context.Context, _ *health.HealthCheckRequest) (*health.HealthCheckResponse, error) {
+	if s.eventHub.IsClosed() {
+		return nil, errors.New("event hub closed")
+	}
+	return &health.HealthCheckResponse{Ok: true}, nil
 }
 
 func (s *SchedulerServer) rescheduleModels(serverKey string) {

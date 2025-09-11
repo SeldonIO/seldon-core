@@ -23,6 +23,7 @@ import (
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	testing_utils "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
@@ -315,7 +316,7 @@ func TestSync(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			server := NewAgentServer(logger, test.store, nil, eventHub, false)
+			server := NewAgentServer(logger, test.store, nil, eventHub, false, tls.TLSOptions{})
 			server.agents = test.agents
 			server.Sync(test.modelName)
 			model, err := test.store.GetModel(test.modelName)
@@ -1028,7 +1029,7 @@ func TestSubscribe(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			server := NewAgentServer(logger, &mockStore{}, mockScheduler{}, eventHub, false)
+			server := NewAgentServer(logger, &mockStore{}, mockScheduler{}, eventHub, false, tls.TLSOptions{})
 			port, err := testing_utils.GetFreePortForTest()
 			if err != nil {
 				t.Fatal(err)

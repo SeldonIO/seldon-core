@@ -36,17 +36,17 @@ const (
 )
 
 type KafkaSchedulerClient struct {
-	logger           logrus.FieldLogger
-	conn             *grpc.ClientConn
-	callOptions      []grpc.CallOption
-	consumerManager  *ConsumerManager
-	certificateStore *seldontls.CertificateStore
-	stop             atomic.Bool
-	ready            atomic.Bool
-	subscriberName   string
+	logger          logrus.FieldLogger
+	conn            *grpc.ClientConn
+	callOptions     []grpc.CallOption
+	consumerManager *ConsumerManager
+	stop            atomic.Bool
+	ready           atomic.Bool
+	subscriberName  string
+	tlsOptions      *seldontls.TLSOptions
 }
 
-func NewKafkaSchedulerClient(logger logrus.FieldLogger, consumerManager *ConsumerManager) *KafkaSchedulerClient {
+func NewKafkaSchedulerClient(logger logrus.FieldLogger, consumerManager *ConsumerManager, tlsOptions *seldontls.TLSOptions) *KafkaSchedulerClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
@@ -63,30 +63,22 @@ func NewKafkaSchedulerClient(logger logrus.FieldLogger, consumerManager *Consume
 		consumerManager: consumerManager,
 		stop:            atomic.Bool{},
 		subscriberName:  subscriberName,
+		tlsOptions:      tlsOptions,
 	}
 }
 
 func (kc *KafkaSchedulerClient) ConnectToScheduler(host string, plainTxtPort int, tlsPort int) error {
 	logger := kc.logger.WithField("func", "ConnectToScheduler")
-	var err error
-	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
-	if protocol == seldontls.SecurityProtocolSSL {
-		kc.certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlaneClient),
-			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixControlPlaneServer))
-		if err != nil {
-			return err
-		}
-	}
 
 	var transCreds credentials.TransportCredentials
 	var port int
-	if kc.certificateStore == nil {
+	if kc.tlsOptions.Cert == nil {
 		logger.Info("Starting plaintxt client to scheduler")
 		transCreds = insecure.NewCredentials()
 		port = plainTxtPort
 	} else {
 		logger.Info("Starting TLS client to scheduler")
-		transCreds = kc.certificateStore.CreateClientTransportCredentials()
+		transCreds = kc.tlsOptions.Cert.CreateClientTransportCredentials()
 		port = tlsPort
 	}
 

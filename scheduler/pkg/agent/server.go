@@ -25,6 +25,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/health"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
@@ -105,14 +106,15 @@ type ServerKey struct {
 type Server struct {
 	mutex sync.RWMutex
 	pb.UnimplementedAgentServiceServer
+	health.UnimplementedHealthCheckServiceServer
 	logger                  log.FieldLogger
 	agents                  map[ServerKey]*AgentSubscriber
 	store                   store.ModelStore
 	scheduler               scheduler.Scheduler
-	certificateStore        *seldontls.CertificateStore
 	waiter                  *modelRelocatedWaiter // waiter for when we want to drain a particular server replica
 	autoscalingModelEnabled bool
 	agentMutex              sync.Map // to force a serial order per agent (serverName, replicaIdx)
+	tlsOptions              seldontls.TLSOptions
 }
 
 type SchedulerAgent interface {
@@ -131,6 +133,7 @@ func NewAgentServer(
 	scheduler scheduler.Scheduler,
 	hub *coordinator.EventHub,
 	autoscalingModelEnabled bool,
+	tlsOptions seldontls.TLSOptions,
 ) *Server {
 	s := &Server{
 		logger:                  logger.WithField("source", "AgentServer"),
@@ -140,6 +143,7 @@ func NewAgentServer(
 		waiter:                  newModelRelocatedWaiter(),
 		autoscalingModelEnabled: autoscalingModelEnabled,
 		agentMutex:              sync.Map{},
+		tlsOptions:              tlsOptions,
 	}
 
 	hub.RegisterModelEventHandler(
@@ -172,13 +176,15 @@ func (s *Server) startServer(port uint, secure bool) error {
 
 	opts := []grpc.ServerOption{}
 	if secure {
-		opts = append(opts, grpc.Creds(s.certificateStore.CreateServerTransportCredentials()))
+		opts = append(opts, grpc.Creds(s.tlsOptions.Cert.CreateServerTransportCredentials()))
 	}
 	opts = append(opts, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
 	opts = append(opts, grpc.StatsHandler(otelgrpc.NewServerHandler()))
 	opts = append(opts, grpc.KeepaliveEnforcementPolicy(kaep))
 	grpcServer := grpc.NewServer(opts...)
 	pb.RegisterAgentServiceServer(grpcServer, s)
+	health.RegisterHealthCheckServiceServer(grpcServer, s)
+
 	s.logger.Printf("Agent server running on %d mtls:%v", port, secure)
 	go func() {
 		err := grpcServer.Serve(lis)
@@ -193,18 +199,11 @@ func (s *Server) startServer(port uint, secure bool) error {
 
 func (s *Server) StartGrpcServer(allowPlainTxt bool, agentPort uint, agentTlsPort uint) error {
 	logger := s.logger.WithField("func", "StartGrpcServer")
-	var err error
-	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
-	if protocol == seldontls.SecurityProtocolSSL {
-		s.certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlaneServer),
-			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixControlPlaneClient))
-		if err != nil {
-			return err
-		}
+
+	if !allowPlainTxt && s.tlsOptions.Cert == nil {
+		return fmt.Errorf("one of plain txt or mTLS needs to be defined. But have plain text [%v] and no TLS", allowPlainTxt)
 	}
-	if !allowPlainTxt && s.certificateStore == nil {
-		return fmt.Errorf("One of plain txt or mTLS needs to be defined. But have plain text [%v] and no TLS", allowPlainTxt)
-	}
+
 	if allowPlainTxt {
 		err := s.startServer(agentPort, false)
 		if err != nil {
@@ -213,7 +212,8 @@ func (s *Server) StartGrpcServer(allowPlainTxt bool, agentPort uint, agentTlsPor
 	} else {
 		logger.Info("Not starting scheduler plain text server")
 	}
-	if s.certificateStore != nil {
+
+	if s.tlsOptions.Cert != nil {
 		err := s.startServer(agentTlsPort, true)
 		if err != nil {
 			return err
@@ -222,6 +222,10 @@ func (s *Server) StartGrpcServer(allowPlainTxt bool, agentPort uint, agentTlsPor
 		logger.Info("Not starting scheduler mTLS server")
 	}
 	return nil
+}
+
+func (s *Server) HealthCheck(_ context.Context, _ *health.HealthCheckRequest) (*health.HealthCheckResponse, error) {
+	return &health.HealthCheckResponse{Ok: true}, nil
 }
 
 func (s *Server) Sync(modelName string) {

@@ -47,19 +47,19 @@ const (
 
 type SchedulerClient struct {
 	client.Client
-	logger           logr.Logger
-	callOptions      []grpc.CallOption
-	recorder         record.EventRecorder
-	certificateStore *tls.CertificateStore
-	seldonRuntimes   map[string]*grpc.ClientConn // map of namespace to grpc connection
-	mu               sync.Mutex
+	logger         logr.Logger
+	callOptions    []grpc.CallOption
+	recorder       record.EventRecorder
+	seldonRuntimes map[string]*grpc.ClientConn // map of namespace to grpc connection
+	tlsOptions     tls.TLSOptions
+	mu             sync.Mutex
 }
 
 //  connect on demand by add getConnection(namespace) which if not existing calls connect to scheduler.
 // For this will need to know ports (hardwire for now to 9004 and 9044 - ssl comes fom envvar - so always
 // the same for all schedulers
 
-func NewSchedulerClient(logger logr.Logger, client client.Client, recorder record.EventRecorder) *SchedulerClient {
+func NewSchedulerClient(logger logr.Logger, client client.Client, recorder record.EventRecorder, tlsOptions tls.TLSOptions) *SchedulerClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
@@ -71,6 +71,7 @@ func NewSchedulerClient(logger logr.Logger, client client.Client, recorder recor
 		callOptions:    opts,
 		recorder:       recorder,
 		seldonRuntimes: make(map[string]*grpc.ClientConn),
+		tlsOptions:     tlsOptions,
 	}
 }
 
@@ -226,16 +227,13 @@ func (s *SchedulerClient) getConnection(namespace string) (*grpc.ClientConn, err
 
 func (s *SchedulerClient) connectToScheduler(host string, namespace string, plainTxtPort int, tlsPort int) (*grpc.ClientConn, error) {
 	var err error
-	protocol := tls.GetSecurityProtocolFromEnv(tls.EnvSecurityPrefixControlPlane)
-	s.logger.Info("connect to scheduler", "protocol", protocol)
-	if protocol == tls.SecurityProtocolSSL {
-		s.certificateStore, err = tls.NewCertificateStore(tls.Prefix(tls.EnvSecurityPrefixControlPlaneClient),
-			tls.ValidationPrefix(tls.EnvSecurityPrefixControlPlaneServer),
-			tls.Namespace(namespace))
-		if err != nil {
-			return nil, err
-		}
+
+	if s.tlsOptions.Cert != nil {
+		s.logger.Info("Connecting to scheduler", "protocol", "tls")
+	} else {
+		s.logger.Info("Connecting to scheduler", "protocol", "plaintext")
 	}
+
 	kacp := keepalive.ClientParameters{
 		Time:                clientKeepAliveTime,
 		Timeout:             clientKeepAliveTimeout,
@@ -248,9 +246,9 @@ func (s *SchedulerClient) connectToScheduler(host string, namespace string, plai
 	opts := []grpc.DialOption{}
 
 	var port int
-	if s.certificateStore != nil {
+	if s.tlsOptions.Cert != nil {
 		port = tlsPort
-		opts = append(opts, grpc.WithTransportCredentials(s.certificateStore.CreateClientTransportCredentials()))
+		opts = append(opts, grpc.WithTransportCredentials(s.tlsOptions.Cert.CreateClientTransportCredentials()))
 		s.logger.Info("Running scheduler client in TLS mode", "port", port)
 	} else {
 		port = plainTxtPort

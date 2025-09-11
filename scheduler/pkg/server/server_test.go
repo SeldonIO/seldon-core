@@ -25,6 +25,7 @@ import (
 
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	scheduler2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
@@ -72,7 +73,7 @@ func TestLoadModel(t *testing.T) {
 		pipelineGwLoadBalancer := util.NewRingLoadBalancer(1)
 		s := NewSchedulerServer(
 			logger, schedulerStore, experimentServer, pipelineServer,
-			scheduler, eventHub, sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer, pipelineGwLoadBalancer)
+			scheduler, eventHub, sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer, pipelineGwLoadBalancer, tls.TLSOptions{})
 		sync.Signals(1)
 		mockAgent := &mockAgentHandler{}
 
@@ -378,7 +379,7 @@ func TestUnloadModel(t *testing.T) {
 		pipelineGwLoadBalancer := util.NewRingLoadBalancer(1)
 		s := NewSchedulerServer(
 			logger, schedulerStore, experimentServer, pipelineServer, scheduler, eventHub,
-			sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer, pipelineGwLoadBalancer)
+			sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer, pipelineGwLoadBalancer, tls.TLSOptions{})
 		sync.Signals(1)
 		return s, mockAgent, eventHub
 	}
@@ -717,7 +718,7 @@ func TestServerNotify(t *testing.T) {
 		pipelineGwLoadBalancer := util.NewRingLoadBalancer(1)
 		s := NewSchedulerServer(
 			logger, schedulerStore, nil, nil, scheduler, eventHub,
-			sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer, pipelineGwLoadBalancer)
+			sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer, pipelineGwLoadBalancer, tls.TLSOptions{})
 		return s, sync
 	}
 

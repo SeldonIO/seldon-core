@@ -16,6 +16,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
+
 	"github.com/seldonio/seldon-core/hodometer/v2/pkg/hodometer"
 )
 
@@ -42,12 +44,20 @@ func main() {
 
 	punctuator := hodometer.NewPunctuator(logger, interval)
 
+	tlsOptions, err := tls.CreateControlPlaneTLSOptions(
+		tls.Prefix(tls.EnvSecurityPrefixControlPlaneClient),
+		tls.ValidationPrefix(tls.EnvSecurityPrefixControlPlaneServer))
+	if err != nil {
+		logger.WithError(err).Fatal("Failed to create TLS options")
+	}
+
 	scc, err := hodometer.NewSeldonCoreCollector(
 		logger,
 		args.schedulerHost,
 		args.schedulerPlaintxtPort,
 		args.schedulerTlsPort,
 		args.clusterId,
+		tlsOptions,
 	)
 	if err != nil {
 		logger.WithError(err).Fatal()

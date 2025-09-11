@@ -26,7 +26,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
@@ -43,12 +43,12 @@ type PipelineSchedulerClient struct {
 	callOptions           []grpc.CallOption
 	pipelineStatusUpdater status.PipelineStatusUpdater
 	pipelineInferer       PipelineInferer
-	certificateStore      *seldontls.CertificateStore
 	stop                  atomic.Bool
 	ready                 atomic.Bool
+	tlsOptions            *tls.TLSOptions
 }
 
-func NewPipelineSchedulerClient(logger logrus.FieldLogger, pipelineStatusUpdater status.PipelineStatusUpdater, pipelineInferer PipelineInferer) *PipelineSchedulerClient {
+func NewPipelineSchedulerClient(logger logrus.FieldLogger, pipelineStatusUpdater status.PipelineStatusUpdater, pipelineInferer PipelineInferer, tlsOptions *tls.TLSOptions) *PipelineSchedulerClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
@@ -59,6 +59,7 @@ func NewPipelineSchedulerClient(logger logrus.FieldLogger, pipelineStatusUpdater
 		callOptions:           opts,
 		pipelineStatusUpdater: pipelineStatusUpdater,
 		pipelineInferer:       pipelineInferer,
+		tlsOptions:            tlsOptions,
 	}
 }
 
@@ -75,23 +76,16 @@ func (pc *PipelineSchedulerClient) connectToScheduler(host string, plainTxtPort 
 			logger.WithError(err).Error("Failed to close previous grpc connection to scheduler")
 		}
 	}
-	protocol := seldontls.GetSecurityProtocolFromEnv(seldontls.EnvSecurityPrefixControlPlane)
-	if protocol == seldontls.SecurityProtocolSSL {
-		pc.certificateStore, err = seldontls.NewCertificateStore(seldontls.Prefix(seldontls.EnvSecurityPrefixControlPlaneClient),
-			seldontls.ValidationPrefix(seldontls.EnvSecurityPrefixControlPlaneServer))
-		if err != nil {
-			return err
-		}
-	}
+
 	var transCreds credentials.TransportCredentials
 	var port int
-	if pc.certificateStore == nil {
+	if pc.tlsOptions.Cert == nil {
 		logger.Info("Starting plaintxt client to scheduler")
 		transCreds = insecure.NewCredentials()
 		port = plainTxtPort
 	} else {
 		logger.Info("Starting TLS client to scheduler")
-		transCreds = pc.certificateStore.CreateClientTransportCredentials()
+		transCreds = pc.tlsOptions.Cert.CreateClientTransportCredentials()
 		port = tlsPort
 	}
 

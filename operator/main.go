@@ -29,6 +29,8 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
+
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	mlopscontrollers "github.com/seldonio/seldon-core/operator/v2/controllers/mlops"
 	"github.com/seldonio/seldon-core/operator/v2/scheduler"
@@ -144,10 +146,20 @@ func main() {
 		os.Exit(1)
 	}
 
+	tlsOptions, err := tls.CreateControlPlaneTLSOptions(
+		tls.Prefix(tls.EnvSecurityPrefixControlPlaneClient),
+		tls.ValidationPrefix(tls.EnvSecurityPrefixControlPlaneServer),
+		tls.Namespace(namespace))
+	if err != nil {
+		logger.Info("Failed to create TLS options")
+		os.Exit(1)
+	}
+
 	// Create scheduler client
 	schedulerClient := scheduler.NewSchedulerClient(logger,
 		mgr.GetClient(),
-		mgr.GetEventRecorderFor("scheduler-client"))
+		mgr.GetEventRecorderFor("scheduler-client"),
+		*tlsOptions)
 
 	if err = (&mlopscontrollers.ModelReconciler{
 		Client:    mgr.GetClient(),

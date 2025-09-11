@@ -11,6 +11,7 @@ package dataflow
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"sync"
@@ -21,6 +22,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/health"
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -47,6 +49,7 @@ type ChainerServer struct {
 	conflictResolutioner *ConflictResolutioner
 	chainerMutex         sync.Map
 	chainer.UnimplementedChainerServer
+	health.UnimplementedHealthCheckServiceServer
 }
 
 type ChainerSubscription struct {
@@ -95,6 +98,8 @@ func (c *ChainerServer) StartGrpcServer(agentPort uint) error {
 	grpcOptions = append(grpcOptions, grpc.KeepaliveEnforcementPolicy(kaep))
 	grpcServer := grpc.NewServer(grpcOptions...)
 	chainer.RegisterChainerServer(grpcServer, c)
+	health.RegisterHealthCheckServiceServer(grpcServer, c)
+
 	c.logger.Printf("Chainer server running on %d", agentPort)
 	return grpcServer.Serve(lis)
 }
@@ -146,6 +151,13 @@ func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chaine
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &chainer.PipelineUpdateStatusResponse{}, nil
+}
+
+func (c *ChainerServer) HealthCheck(_ context.Context, _ *health.HealthCheckRequest) (*health.HealthCheckResponse, error) {
+	if c.eventHub.IsClosed() {
+		return nil, errors.New("event hub closed")
+	}
+	return &health.HealthCheckResponse{Ok: true}, nil
 }
 
 func (c *ChainerServer) SubscribePipelineUpdates(req *chainer.PipelineSubscriptionRequest, stream chainer.Chainer_SubscribePipelineUpdatesServer) error {

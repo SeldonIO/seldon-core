@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package seldon.mlops.health;
+
+option go_package = "github.com/seldonio/seldon-core/apis/go/v2/mlops/health";
+
+
+message HealthCheckRequest {}
+message HealthCheckResponse {
+  bool ok = 1;
+}
+
+service HealthCheckService {
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {};
+}

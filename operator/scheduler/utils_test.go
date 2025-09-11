@@ -26,6 +26,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
@@ -310,6 +311,7 @@ func newMockControllerClient(objs ...client.Object) *SchedulerClient {
 		logger,
 		fakeClient,
 		fakeRecorder,
+		tls.TLSOptions{},
 	)
 }
 

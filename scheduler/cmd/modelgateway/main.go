@@ -24,6 +24,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	health_probe "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/gateway"
@@ -117,6 +118,13 @@ func main() {
 
 	errChan := make(chan error, 5)
 
+	tlsOptionsControlPlane, err := tls.CreateControlPlaneTLSOptions(
+		tls.Prefix(tls.EnvSecurityPrefixControlPlaneClient),
+		tls.ValidationPrefix(tls.EnvSecurityPrefixControlPlaneServer))
+	if err != nil {
+		logger.WithError(err).Fatal("Failed to create control-plane TLS Options")
+	}
+
 	tracer, err := tracing.NewTraceProvider("seldon-modelgateway", &tracingConfigPath, logger)
 	if err != nil {
 		logger.WithError(err).Fatalf("Failed to configure otel tracer")
@@ -149,7 +157,7 @@ func main() {
 	}
 	defer kafkaConsumer.Stop()
 
-	kafkaSchedulerClient := gateway.NewKafkaSchedulerClient(logger, kafkaConsumer)
+	kafkaSchedulerClient := gateway.NewKafkaSchedulerClient(logger, kafkaConsumer, tlsOptionsControlPlane)
 	err = kafkaSchedulerClient.ConnectToScheduler(schedulerHost, schedulerPlaintxtPort, schedulerTlsPort)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to connect to scheduler")

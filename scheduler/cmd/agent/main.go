@@ -23,6 +23,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	agent2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
+	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/cmd/agent/cli"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
@@ -125,6 +126,13 @@ func main() {
 	}
 	logger.Infof("Setting log level to %s", cli.LogLevel)
 	logger.SetLevel(logIntLevel)
+
+	tlsOptions, err := tls.CreateControlPlaneTLSOptions(
+		tls.Prefix(tls.EnvSecurityPrefixControlPlaneClient),
+		tls.ValidationPrefix(tls.EnvSecurityPrefixControlPlaneServer))
+	if err != nil {
+		logger.WithError(err).Fatal("Failed to create TLS options")
+	}
 
 	// Start the service responding to readiness probes early in the agent lifecycle
 	readinessService := readyservice.NewReadyService(
@@ -278,6 +286,7 @@ func main() {
 			uint8(cli.MaxUnloadRetryCount),
 			time.Duration(cli.UnloadGraceSeconds)*time.Second,
 			runningInsideK8s(),
+			*tlsOptions,
 		),
 		logger,
 		modelRepository,
