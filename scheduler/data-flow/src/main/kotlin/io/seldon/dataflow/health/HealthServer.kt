@@ -12,6 +12,7 @@ package io.seldon.dataflow.health
 import io.klogging.noCoLogger
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.install
 import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.engine.embeddedServer
@@ -39,6 +40,45 @@ class HealthServer(
     private var serverJob: Job? = null
 
     /**
+     * Common handler for health check endpoints with consistent error handling and logging
+     */
+    private suspend fun handleHealthCheck(
+        call: ApplicationCall,
+        checkName: String,
+        healthCheckFunction: suspend () -> HealthCheckResult,
+    ) {
+        try {
+            val result = healthCheckFunction()
+            val statusCode = if (result.overallHealthy) HttpStatusCode.OK else HttpStatusCode.ServiceUnavailable
+            if (statusCode != HttpStatusCode.OK) {
+                logger.warn("$checkName health check failed: ${result.status}")
+            } else {
+                logger.debug("$checkName health check passed: ${result.status}")
+            }
+            call.response.status(statusCode)
+            call.respond(result)
+        } catch (e: Exception) {
+            logger.error("Exception occurred during $checkName health check: ${e.message}", e)
+            val errorResult =
+                HealthCheckResult(
+                    overallHealthy = false,
+                    status = "DOWN",
+                    checks =
+                        mapOf(
+                            "${checkName.lowercase()}-error" to
+                                HealthStatus(
+                                    isHealthy = false,
+                                    message = "$checkName health check failed with exception: ${e.message}",
+                                    details = mapOf("exception" to e.javaClass.simpleName),
+                                ),
+                        ),
+                )
+            call.response.status(HttpStatusCode.InternalServerError)
+            call.respond(errorResult)
+        }
+    }
+
+    /**
      * Start the health server
      */
     fun start() {
@@ -62,59 +102,15 @@ class HealthServer(
 
                 routing {
                     get("/live") {
-                        val result = healthService.checkLiveness()
-                        val statusCode = if (result.overallHealthy) HttpStatusCode.OK else HttpStatusCode.ServiceUnavailable
-                        if (statusCode != HttpStatusCode.OK) {
-                            logger.warn("Live health check failed: ${result.status}")
-                        } else {
-                            logger.debug("Live health check passed: ${result.status}")
-                        }
-                        call.response.status(statusCode)
-                        call.respond(result)
+                        handleHealthCheck(call, "Liveness") { healthService.checkLiveness() }
                     }
 
                     get("/ready") {
-                        val result = healthService.checkReadiness()
-                        val statusCode = if (result.overallHealthy) HttpStatusCode.OK else HttpStatusCode.ServiceUnavailable
-                        if (statusCode != HttpStatusCode.OK) {
-                            logger.warn("Ready health check failed: ${result.status}")
-                        } else {
-                            logger.debug("Ready health check passed: ${result.status}")
-                        }
-                        call.response.status(statusCode)
-                        call.respond(result)
+                        handleHealthCheck(call, "Readiness") { healthService.checkReadiness() }
                     }
 
                     get("/startup") {
-                        try {
-                            val result = healthService.checkStartup()
-                            val statusCode = if (result.overallHealthy) HttpStatusCode.OK else HttpStatusCode.ServiceUnavailable
-                            if (statusCode != HttpStatusCode.OK) {
-                                logger.warn("Startup health check failed: ${result.status}")
-                            } else {
-                                logger.debug("Startup health check passed: ${result.status}")
-                            }
-                            call.response.status(statusCode)
-                            call.respond(result)
-                        } catch (e: Exception) {
-                            logger.error("Exception occurred during startup health check: ${e.message}", e)
-                            val errorResult =
-                                HealthCheckResult(
-                                    overallHealthy = false,
-                                    status = "DOWN",
-                                    checks =
-                                        mapOf(
-                                            "startup-error" to
-                                                HealthStatus(
-                                                    isHealthy = false,
-                                                    message = "Startup health check failed with exception: ${e.message}",
-                                                    details = mapOf("exception" to e.javaClass.simpleName),
-                                                ),
-                                        ),
-                                )
-                            call.response.status(HttpStatusCode.InternalServerError)
-                            call.respond(errorResult)
-                        }
+                        handleHealthCheck(call, "Startup") { healthService.checkStartup() }
                     }
                 }
             }
