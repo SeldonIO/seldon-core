@@ -87,6 +87,7 @@ type PipelineState struct {
 	PipelineGwStatus PipelineStatus
 	ModelsReady      bool
 	Reason           string
+	PipelineGwReason string
 	Timestamp        time.Time
 }
 
@@ -102,7 +103,7 @@ func (ps *PipelineState) setState(status PipelineStatus, reason string) {
 
 func (ps *PipelineState) setPipelineGwState(status PipelineStatus, reason string) {
 	ps.PipelineGwStatus = status
-	ps.Reason = reason
+	ps.PipelineGwReason = reason
 	ps.Timestamp = time.Now()
 }
 

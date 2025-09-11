@@ -434,6 +434,7 @@ message PipelineVersionState {
   google.protobuf.Timestamp lastChangeTimestamp = 4;
   bool modelsReady = 5;
   PipelineStatus pipelineGwStatus = 6;
+  string pipelineGwReason = 7;
 }
 
 message SchedulerStatusRequest {

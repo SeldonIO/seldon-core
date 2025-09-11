@@ -201,8 +201,9 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 				}
 
 				// Handle status and pipeline-gw status update
-				setReadyCondition(&logger, pipeline, v1alpha1.PipelineReady, pv.State.Status, pv.State.Reason, "pipeline")
-				setReadyCondition(&logger, pipeline, v1alpha1.PipelineGwReady, pv.State.PipelineGwStatus, pv.State.Reason, "pipeline-gateway")
+				reason := combineReasons(pv.State.Reason, pv.State.PipelineGwReason)
+				setReadyCondition(&logger, pipeline, v1alpha1.PipelineReady, pv.State.Status, reason, "pipeline")
+				setReadyCondition(&logger, pipeline, v1alpha1.PipelineGwReady, pv.State.PipelineGwStatus, reason, "pipeline-gateway")
 
 				// Set models ready
 				if pv.State.ModelsReady {
@@ -247,6 +248,16 @@ func setReadyCondition(
 		reason,
 		status.String(),
 	)
+}
+
+func combineReasons(r1, r2 string) string {
+	if r1 != "" && r2 != "" {
+		return r1 + " | " + r2
+	}
+	if r1 != "" {
+		return r1
+	}
+	return r2
 }
 
 func (s *SchedulerClient) updatePipelineStatusImpl(ctx context.Context, pipeline *v1alpha1.Pipeline) error {
