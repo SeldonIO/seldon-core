@@ -156,20 +156,29 @@ func getSubsriberIp() (string, error) {
 
 func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 	logger := pc.logger.WithField("func", "SubscribePipelineEvents")
+
+	stream, processor, err := pc.setupSubscription(logger)
+	if err != nil {
+		return err
+	}
+
+	defer pc.cleanup(stream)
+	return pc.processEventStream(stream, processor, logger)
+
+}
+
+func (pc *PipelineSchedulerClient) setupSubscription(logger *logrus.Entry) (scheduler.Scheduler_SubscribePipelineStatusClient, *EventProcessor, error) {
 	grpcClient := scheduler.NewSchedulerClient(pc.conn)
 
 	subscriberName := getSubscriberName()
 	subscriberIp, err := getSubsriberIp()
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	logger.Infof("Subscriber (%s, %s) subscribing to pipeline status events", subscriberName, subscriberIp)
-	stream, errSub := grpcClient.SubscribePipelineStatus(
-		ctx,
+	stream, err := grpcClient.SubscribePipelineStatus(
+		context.Background(),
 		&scheduler.PipelineSubscriptionRequest{
 			SubscriberName:    subscriberName,
 			SubscriberIp:      subscriberIp,
@@ -177,110 +186,160 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 		},
 		grpc_retry.WithMax(util.MaxGRPCRetriesOnStream),
 	)
-	if errSub != nil {
-		return errSub
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	processor := &EventProcessor{
+		client:         pc,
+		grpcClient:     grpcClient,
+		subscriberName: subscriberName,
+		logger:         logger,
 	}
 
 	pc.ready.Store(true)
-	defer pc.ready.Store(false)
+	return stream, processor, nil
+}
 
+func (pc *PipelineSchedulerClient) processEventStream(stream scheduler.Scheduler_SubscribePipelineStatusClient, processor *EventProcessor, logger *logrus.Entry) error {
 	for {
 		if pc.stop.Load() {
 			logger.Info("Stopping")
-			break
+			return nil
 		}
+
 		event, err := stream.Recv()
 		if err != nil {
 			logger.WithError(err).Error("event recv failed")
-			break
+			return err
 		}
 
-		// The expected contract is just the latest version will be sent to us
-		if len(event.Versions) > 1 {
-			message := fmt.Sprint("Expected at most a single model version", "numVersions", len(event.Versions), "name", event.GetPipelineName())
-			logger.Info(message)
-			sendPipelineStatusEvent(
-				grpcClient, chainer.PipelineUpdateMessage_Create, nil, subscriberName, false, message, event.Timestamp, logger,
-			)
-			continue
-		}
-
-		if len(event.Versions) == 1 {
-			pv, err := pipeline.CreatePipelineVersionWithStateFromProto(event.Versions[0])
-			if err != nil {
-				message := fmt.Sprintf("Failed to create pipeline version for pipeline %s with %s", event.PipelineName, protojson.Format(event))
-				logger.WithError(err).Error(message)
-				sendPipelineStatusEvent(
-					grpcClient, chainer.PipelineUpdateMessage_Create, pv, subscriberName, false, message, event.Timestamp, logger,
-				)
-				continue
-			}
-
-			logger.Debugf("Processing pipeline %s version %d with state %s", pv.Name, pv.Version, pv.State.Status.String())
-			pc.pipelineStatusUpdater.Update(pv)
-
-			_, err = pc.pipelineInferer.LoadOrStorePipeline(pv.Name, false, false)
-			if err != nil {
-				message := fmt.Sprintf("Failed to load/store pipeline %s", pv.Name)
-				logger.WithError(err).Errorf(message)
-				sendPipelineStatusEvent(
-					grpcClient, chainer.PipelineUpdateMessage_Create, pv, subscriberName, false, message, event.Timestamp, logger,
-				)
-				continue
-			}
-
-			message := fmt.Sprintf("Pipeline %s loaded", event.PipelineName)
-			logger.Debug(message)
-			sendPipelineStatusEvent(
-				grpcClient, chainer.PipelineUpdateMessage_Create, pv, subscriberName, true, message, event.Timestamp, logger,
-			)
-		} else {
-			psm := pc.pipelineStatusUpdater.(*status.PipelineStatusManager)
-			pv := psm.Get(event.PipelineName)
-			if pv == nil {
-				message := fmt.Sprintf("No existing pipeline %s to delete", event.PipelineName)
-				logger.Warningf(message)
-				sendPipelineStatusEvent(
-					grpcClient, chainer.PipelineUpdateMessage_Delete, pv, subscriberName, true, message, event.Timestamp, logger,
-				)
-				continue
-			}
-
-			err := pc.pipelineInferer.DeletePipeline(event.PipelineName, false)
-			if err != nil {
-				message := fmt.Sprintf("Failed to delete pipeline %s", event.PipelineName)
-				logger.WithError(err).Errorf(message)
-				sendPipelineStatusEvent(
-					grpcClient, chainer.PipelineUpdateMessage_Delete, pv, subscriberName, false, message, event.Timestamp, logger,
-				)
-				continue
-			}
-
-			message := fmt.Sprintf("Pipeline %s deleted", event.PipelineName)
-			logger.Debugf(message)
-			sendPipelineStatusEvent(
-				grpcClient, chainer.PipelineUpdateMessage_Delete, pv, subscriberName, true, message, event.Timestamp, logger,
-			)
-		}
+		processor.handleEvent(event)
 	}
-	logger.Infof("Closing connection to scheduler")
-	defer func() {
-		_ = stream.CloseSend()
-	}()
-	return nil
 }
 
-func sendPipelineStatusEvent(
-	grpcClient scheduler.SchedulerClient,
+func (pc *PipelineSchedulerClient) cleanup(stream scheduler.Scheduler_SubscribePipelineStatusClient) {
+	pc.ready.Store(false)
+	pc.logger.Info("Closing connection to scheduler")
+	if stream != nil {
+		_ = stream.CloseSend()
+	}
+}
+
+func (ep *EventProcessor) handleEvent(event *scheduler.PipelineStatusResponse) {
+	switch len(event.Versions) {
+	case 0:
+		ep.handleDeletePipeline(event)
+	case 1:
+		ep.handleCreateOrUpdatePipeline(event)
+	default:
+		ep.handleInvalidVersionCount(event)
+	}
+}
+
+type EventProcessor struct {
+	client         *PipelineSchedulerClient
+	grpcClient     scheduler.SchedulerClient
+	subscriberName string
+	logger         *logrus.Entry
+}
+
+func (ep *EventProcessor) handleDeletePipeline(event *scheduler.PipelineStatusResponse) {
+	psm := ep.client.pipelineStatusUpdater.(*status.PipelineStatusManager)
+	pv := psm.Get(event.PipelineName)
+	if pv == nil {
+		ep.reportFailure(
+			chainer.PipelineUpdateMessage_Delete,
+			nil,
+			fmt.Sprintf("No existing pipeline %s to delete", event.PipelineName),
+			event.Timestamp,
+			nil,
+		)
+		return
+	}
+
+	err := ep.client.pipelineInferer.DeletePipeline(event.PipelineName, false)
+	if err != nil {
+		ep.reportFailure(
+			chainer.PipelineUpdateMessage_Delete,
+			pv,
+			fmt.Sprintf("Failed to delete pipeline %s", event.PipelineName),
+			event.Timestamp,
+			err,
+		)
+		return
+	}
+
+	message := fmt.Sprintf("Pipeline %s deleted", event.PipelineName)
+	ep.reportSuccess(chainer.PipelineUpdateMessage_Delete, pv, message, event.Timestamp)
+}
+
+func (ep *EventProcessor) handleCreateOrUpdatePipeline(event *scheduler.PipelineStatusResponse) {
+	pv, err := pipeline.CreatePipelineVersionWithStateFromProto(event.Versions[0])
+	if err != nil {
+		ep.reportFailure(
+			chainer.PipelineUpdateMessage_Create,
+			nil,
+			fmt.Sprintf("Failed to create pipeline version for pipeline %s with %s", event.PipelineName, protojson.Format(event)),
+			event.Timestamp,
+			err,
+		)
+		return
+	}
+
+	ep.logger.Debugf("Processing pipeline %s version %d with state %s", pv.Name, pv.Version, pv.State.Status.String())
+	ep.client.pipelineStatusUpdater.Update(pv)
+
+	_, err = ep.client.pipelineInferer.LoadOrStorePipeline(pv.Name, false, false)
+	if err != nil {
+		ep.reportFailure(
+			chainer.PipelineUpdateMessage_Create,
+			pv,
+			fmt.Sprintf("Failed to load/store pipeline %s", pv.Name),
+			event.Timestamp,
+			err,
+		)
+		return
+	}
+
+	message := fmt.Sprintf("Pipeline %s loaded", event.PipelineName)
+	ep.reportSuccess(chainer.PipelineUpdateMessage_Create, pv, message, event.Timestamp)
+}
+
+func (ep *EventProcessor) handleInvalidVersionCount(event *scheduler.PipelineStatusResponse) {
+	message := fmt.Sprint("Expected at most a single model version", "numVersions", len(event.Versions), "name", event.GetPipelineName())
+	ep.reportFailure(
+		chainer.PipelineUpdateMessage_Create,
+		nil,
+		message,
+		event.Timestamp,
+		fmt.Errorf("invalid version count"),
+	)
+}
+
+func (ep *EventProcessor) reportSuccess(op chainer.PipelineUpdateMessage_PipelineOperation, pv *pipeline.PipelineVersion, message string, timestamp uint64) {
+	ep.logger.Info(message)
+	ep.sendPipelineStatusEvent(op, pv, true, message, timestamp)
+}
+
+func (ep *EventProcessor) reportFailure(op chainer.PipelineUpdateMessage_PipelineOperation, pv *pipeline.PipelineVersion, message string, timestamp uint64, err error) {
+	if err != nil {
+		ep.logger.WithError(err).Error(message)
+	} else {
+		ep.logger.Error(message)
+	}
+	ep.sendPipelineStatusEvent(op, pv, false, message, timestamp)
+}
+
+func (ep *EventProcessor) sendPipelineStatusEvent(
 	op chainer.PipelineUpdateMessage_PipelineOperation,
 	pv *pipeline.PipelineVersion,
-	subscriberName string,
 	success bool,
 	reason string,
 	timestamp uint64,
-	logger *logrus.Entry,
 ) {
-	_, err := grpcClient.PipelineStatusEvent(
+	_, err := ep.grpcClient.PipelineStatusEvent(
 		context.Background(),
 		&chainer.PipelineUpdateStatusMessage{
 			Update: &chainer.PipelineUpdateMessage{
@@ -288,7 +347,7 @@ func sendPipelineStatusEvent(
 				Pipeline:  pv.Name,
 				Version:   pv.Version,
 				Uid:       pv.UID,
-				Stream:    subscriberName,
+				Stream:    ep.subscriberName,
 				Timestamp: timestamp,
 			},
 			Success: success,
@@ -296,6 +355,6 @@ func sendPipelineStatusEvent(
 		},
 	)
 	if err != nil {
-		logger.WithError(err).Errorf("Failed to send pipeline status event for pipeline %s", pv.Name)
+		ep.logger.WithError(err).Errorf("Failed to send pipeline status event for pipeline %s", pv.Name)
 	}
 }
