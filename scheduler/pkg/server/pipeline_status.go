@@ -72,7 +72,9 @@ func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *chai
 		cr.DeletePipeline(pipelineName)
 	}
 
-	err := s.pipelineHandler.SetPipelineGwPipelineState(message.Update.Pipeline, message.Update.Version, message.Update.Uid, pipelineStatusVal, reason, sourcePipelineStatusServer)
+	err := s.pipelineHandler.SetPipelineGwPipelineState(
+		message.Update.Pipeline, message.Update.Version, message.Update.Uid, pipelineStatusVal, reason, sourcePipelineStatusServer,
+	)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to update pipeline status for %s:%d (%s)", message.Update.Pipeline, message.Update.Version, message.Update.Uid)
 		return nil, status.Error(codes.Internal, err.Error())
@@ -302,6 +304,9 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 		return
 	}
 
+	s.pipelineEventStream.mu.Lock()
+	defer s.pipelineEventStream.mu.Unlock()
+
 	pv, err := s.pipelineHandler.GetPipelineVersion(event.PipelineName, event.PipelineVersion, event.UID)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to get pipeline from event %s", event.String())
@@ -319,9 +324,6 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 		PipelineName: pv.Name,
 		Versions:     pipelineVersions,
 	}
-
-	s.pipelineEventStream.mu.Lock()
-	defer s.pipelineEventStream.mu.Unlock()
 
 	// find pipelinegw serverNames that should receive this event
 	consumerBucketId := s.getPipelineGatewayBucketId(event.PipelineName)
@@ -343,6 +345,16 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 	// event did not originate from the pipeline status server
 	// to avoid echoing the event back to the sender
 	if event.Source != sourcePipelineStatusServer {
+		streamNames := make([]string, 0, len(pipelineGwStreams))
+		for _, subscription := range pipelineGwStreams {
+			streamNames = append(streamNames, subscription.name)
+		}
+
+		// assign a timestamp to the message
+		cr := s.pipelineEventStream.conflictResolutioner
+		cr.CreateNewIteration(pv.Name, streamNames)
+		status.Timestamp = cr.GetTimestamp(pv.Name)
+
 		s.sendPipelineEventsToStreams(event, status, pipelineGwStreams)
 	}
 

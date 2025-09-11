@@ -199,7 +199,9 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 		if len(event.Versions) > 1 {
 			message := fmt.Sprint("Expected at most a single model version", "numVersions", len(event.Versions), "name", event.GetPipelineName())
 			logger.Info(message)
-			sendPipelineStatusEvent(grpcClient, chainer.PipelineUpdateMessage_Create, nil, subscriberName, false, message, logger)
+			sendPipelineStatusEvent(
+				grpcClient, chainer.PipelineUpdateMessage_Create, nil, subscriberName, false, message, event.Timestamp, logger,
+			)
 			continue
 		}
 
@@ -208,7 +210,9 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 			if err != nil {
 				message := fmt.Sprintf("Failed to create pipeline version for pipeline %s with %s", event.PipelineName, protojson.Format(event))
 				logger.WithError(err).Error(message)
-				sendPipelineStatusEvent(grpcClient, chainer.PipelineUpdateMessage_Create, pv, subscriberName, false, message, logger)
+				sendPipelineStatusEvent(
+					grpcClient, chainer.PipelineUpdateMessage_Create, pv, subscriberName, false, message, event.Timestamp, logger,
+				)
 				continue
 			}
 
@@ -219,20 +223,26 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 			if err != nil {
 				message := fmt.Sprintf("Failed to load/store pipeline %s", pv.Name)
 				logger.WithError(err).Errorf(message)
-				sendPipelineStatusEvent(grpcClient, chainer.PipelineUpdateMessage_Create, pv, subscriberName, false, message, logger)
+				sendPipelineStatusEvent(
+					grpcClient, chainer.PipelineUpdateMessage_Create, pv, subscriberName, false, message, event.Timestamp, logger,
+				)
 				continue
 			}
 
 			message := fmt.Sprintf("Pipeline %s loaded", event.PipelineName)
 			logger.Debug(message)
-			sendPipelineStatusEvent(grpcClient, chainer.PipelineUpdateMessage_Create, pv, subscriberName, true, message, logger)
+			sendPipelineStatusEvent(
+				grpcClient, chainer.PipelineUpdateMessage_Create, pv, subscriberName, true, message, event.Timestamp, logger,
+			)
 		} else {
 			psm := pc.pipelineStatusUpdater.(*status.PipelineStatusManager)
 			pv := psm.Get(event.PipelineName)
 			if pv == nil {
 				message := fmt.Sprintf("No existing pipeline %s to delete", event.PipelineName)
 				logger.Warningf(message)
-				sendPipelineStatusEvent(grpcClient, chainer.PipelineUpdateMessage_Delete, pv, subscriberName, true, message, logger)
+				sendPipelineStatusEvent(
+					grpcClient, chainer.PipelineUpdateMessage_Delete, pv, subscriberName, true, message, event.Timestamp, logger,
+				)
 				continue
 			}
 
@@ -240,13 +250,17 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 			if err != nil {
 				message := fmt.Sprintf("Failed to delete pipeline %s", event.PipelineName)
 				logger.WithError(err).Errorf(message)
-				sendPipelineStatusEvent(grpcClient, chainer.PipelineUpdateMessage_Delete, pv, subscriberName, false, message, logger)
+				sendPipelineStatusEvent(
+					grpcClient, chainer.PipelineUpdateMessage_Delete, pv, subscriberName, false, message, event.Timestamp, logger,
+				)
 				continue
 			}
 
 			message := fmt.Sprintf("Pipeline %s deleted", event.PipelineName)
 			logger.Debugf(message)
-			sendPipelineStatusEvent(grpcClient, chainer.PipelineUpdateMessage_Delete, pv, subscriberName, true, message, logger)
+			sendPipelineStatusEvent(
+				grpcClient, chainer.PipelineUpdateMessage_Delete, pv, subscriberName, true, message, event.Timestamp, logger,
+			)
 		}
 	}
 	logger.Infof("Closing connection to scheduler")
@@ -263,17 +277,19 @@ func sendPipelineStatusEvent(
 	subscriberName string,
 	success bool,
 	reason string,
+	timestamp uint64,
 	logger *logrus.Entry,
 ) {
 	_, err := grpcClient.PipelineStatusEvent(
 		context.Background(),
 		&chainer.PipelineUpdateStatusMessage{
 			Update: &chainer.PipelineUpdateMessage{
-				Op:       op,
-				Pipeline: pv.Name,
-				Version:  pv.Version,
-				Uid:      pv.UID,
-				Stream:   subscriberName,
+				Op:        op,
+				Pipeline:  pv.Name,
+				Version:   pv.Version,
+				Uid:       pv.UID,
+				Stream:    subscriberName,
+				Timestamp: timestamp,
 			},
 			Success: success,
 			Reason:  reason,
