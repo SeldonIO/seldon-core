@@ -164,7 +164,6 @@ func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 
 	defer pc.cleanup(stream)
 	return pc.processEventStream(stream, processor, logger)
-
 }
 
 func (pc *PipelineSchedulerClient) setupSubscription(logger *logrus.Entry) (scheduler.Scheduler_SubscribePipelineStatusClient, *EventProcessor, error) {
