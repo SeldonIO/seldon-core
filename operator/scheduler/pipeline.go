@@ -129,7 +129,7 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 			"State", pv.GetState().String(),
 		)
 
-		if canRemovePipelineFinalizer(pv.State.Status) {
+		if canRemovePipelineFinalizer(pv.State.Status, pv.State.PipelineGwStatus) {
 			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
 				defer cancel()
@@ -201,9 +201,9 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 				}
 
 				// Handle status and pipeline-gw status update
-				reason := combineReasons(pv.State.Reason, pv.State.PipelineGwReason)
-				setReadyCondition(&logger, pipeline, v1alpha1.PipelineReady, pv.State.Status, reason, "pipeline")
+				reason := combineReasons(pv.State.PipelineGwReason, pv.State.Reason)
 				setReadyCondition(&logger, pipeline, v1alpha1.PipelineGwReady, pv.State.PipelineGwStatus, reason, "pipeline-gateway")
+				setReadyCondition(&logger, pipeline, v1alpha1.PipelineReady, pv.State.Status, reason, "pipeline")
 
 				// Set models ready
 				if pv.State.ModelsReady {
@@ -272,12 +272,12 @@ func (s *SchedulerClient) updatePipelineStatusImpl(ctx context.Context, pipeline
 	return nil
 }
 
-func canRemovePipelineFinalizer(state scheduler.PipelineVersionState_PipelineStatus) bool {
-	switch state {
-	// we should wait if the state is not terminal for deleting the finalizer, it should be Terminated in the case of delete
-	case scheduler.PipelineVersionState_PipelineTerminating, scheduler.PipelineVersionState_PipelineTerminate:
-		return false
-	default:
-		return true
-	}
+func canRemovePipelineFinalizer(
+	state scheduler.PipelineVersionState_PipelineStatus,
+	pipelineGwState scheduler.PipelineVersionState_PipelineStatus,
+) bool {
+	return !(state == scheduler.PipelineVersionState_PipelineTerminating ||
+		state == scheduler.PipelineVersionState_PipelineTerminate ||
+		pipelineGwState == scheduler.PipelineVersionState_PipelineTerminating ||
+		pipelineGwState == scheduler.PipelineVersionState_PipelineTerminate)
 }
