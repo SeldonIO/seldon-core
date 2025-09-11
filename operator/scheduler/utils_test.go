@@ -25,6 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
@@ -300,7 +301,7 @@ func (s *mockSchedulerGrpcClient) SubscribeControlPlane(ctx context.Context, in 
 	return newMockControlPlaneSubscribeGrpcClient(), nil
 }
 
-func (s *mockSchedulerGrpcClient) PipelineStatusEvent(ctx context.Context, message *scheduler.PipelineUpdateStatusMessage, opts ...grpc.CallOption) (*scheduler.PipelineUpdateStatusResponse, error) {
+func (s *mockSchedulerGrpcClient) PipelineStatusEvent(ctx context.Context, message *chainer.PipelineUpdateStatusMessage, opts ...grpc.CallOption) (*chainer.PipelineUpdateStatusResponse, error) {
 	return nil, nil
 }
 
