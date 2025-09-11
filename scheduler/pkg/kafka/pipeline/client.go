@@ -328,7 +328,10 @@ func (ep *EventProcessor) reportFailure(op chainer.PipelineUpdateMessage_Pipelin
 	} else {
 		ep.logger.Error(message)
 	}
-	ep.sendPipelineStatusEvent(op, pv, false, message, timestamp)
+
+	if pv != nil {
+		ep.sendPipelineStatusEvent(op, pv, false, message, timestamp)
+	}
 }
 
 func (ep *EventProcessor) sendPipelineStatusEvent(
