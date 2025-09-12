@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/translator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/translator"
 )
 
 type OpenAIEmbeddingsTranslator struct {

@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/translator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/translator"
 )
 
 type OpenAIChatCompletionsTranslator struct {

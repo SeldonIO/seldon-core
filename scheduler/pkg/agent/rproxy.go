@@ -29,9 +29,9 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/translator"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/translator/openai"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/translator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/translator/openai"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
