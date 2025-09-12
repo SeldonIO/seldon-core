@@ -91,6 +91,16 @@ func (t *lazyModelLoadTransport) TranslateFromOIPIfNeeded(res *http.Response, te
 	return res, nil
 }
 
+func (t *lazyModelLoadTransport) createErrorResponse(req *http.Request, statusCode int, message string) *http.Response {
+	return &http.Response{
+		Status:     http.StatusText(statusCode),
+		StatusCode: statusCode,
+		Body:       io.NopCloser(bytes.NewBufferString(message)),
+		Header:     make(http.Header),
+		Request:    req,
+	}
+}
+
 // RoundTrip implements http.RoundTripper for the Transport type.
 // It calls its underlying http.RoundTripper to execute the request, and
 // adds retry logic if we get 404
@@ -129,13 +139,14 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	// Translate the request to OIP format if needed
 	termination, err := translator.GetPathTermination(req)
 	if err != nil {
-		t.logger.WithError(err).Warn("Failed to get path termination for request")
-		return nil, err
+		message := fmt.Sprintf("Failed to get path termination for request: %v", err)
+		return t.createErrorResponse(req, http.StatusBadRequest, message), nil
 	}
+
 	req, err = t.TranslateToOIPIfNeeded(req, termination)
 	if err != nil {
-		t.logger.WithError(err).Warn("Failed to translate request to OIP format")
-		return nil, err
+		message := fmt.Sprintf("Failed to translate request to OIP format: %v", err)
+		return t.createErrorResponse(req, http.StatusBadRequest, message), nil
 	}
 
 	if req.Body != nil {
@@ -171,8 +182,8 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	// Translate the response from OIP format if needed
 	res, err = t.TranslateFromOIPIfNeeded(res, termination)
 	if err != nil {
-		t.logger.WithError(err).Warn("Failed to translate response from OIP format")
-		return nil, err
+		message := fmt.Sprintf("Failed to translate response from OIP format: %v", err)
+		return t.createErrorResponse(req, http.StatusInternalServerError, message), nil
 	}
 
 	addRequestIdToResponse(req, res)
