@@ -183,11 +183,7 @@ func translateLine(line string) (string, error) {
 		return "", fmt.Errorf("failed to unmarshal content: %w", err)
 	}
 
-	contentBytes, err := json.Marshal(mapContent)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal content: %w", err)
-	}
-
 	// Reconstruct the line with the original SSE format
+	contentBytes, _ := json.Marshal(mapContent)
 	return fmt.Sprintf("%s%s%s", SSEPrefix, string(contentBytes), SSESuffix), nil
 }
