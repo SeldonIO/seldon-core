@@ -263,6 +263,18 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 					} else {
 						s.logger.Debugf("Pipeline %s is available or progressing, sending creation message", pv.Name)
 						msg, err = s.createPipelineCreationMessage(pip)
+
+						// set pipeline gw status to creating and display rebalance reason
+						if err := s.pipelineHandler.SetPipelineGwPipelineState(
+							pv.Name,
+							pv.Version,
+							pv.UID,
+							pipeline.PipelineCreating,
+							"Rebalance",
+							sourcePipelineStatusServer,
+						); err != nil {
+							s.logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", pv.String())
+						}
 					}
 					if err != nil {
 						s.logger.WithError(err).Errorf("Failed to create pipelines status message for %s", pv.Name)
