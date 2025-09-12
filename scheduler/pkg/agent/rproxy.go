@@ -77,14 +77,14 @@ func addRequestIdToResponse(req *http.Request, res *http.Response) {
 	}
 }
 
-func (t *lazyModelLoadTransport) TranslateToOIP(req *http.Request, termination string) (*http.Request, error) {
+func (t *lazyModelLoadTransport) TranslateToOIPIfNeeded(req *http.Request, termination string) (*http.Request, error) {
 	if translator, ok := t.apiTranslators[termination]; ok {
 		return translator.TranslateToOIP(req)
 	}
 	return req, nil
 }
 
-func (t *lazyModelLoadTransport) TranslateFromOIP(res *http.Response, termination string) (*http.Response, error) {
+func (t *lazyModelLoadTransport) TranslateFromOIPIfNeeded(res *http.Response, termination string) (*http.Response, error) {
 	if translator, ok := t.apiTranslators[termination]; ok {
 		return translator.TranslateFromOIP(res)
 	}
@@ -132,7 +132,7 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 		t.logger.WithError(err).Warn("Failed to get path termination for request")
 		return nil, err
 	}
-	req, err = t.TranslateToOIP(req, termination)
+	req, err = t.TranslateToOIPIfNeeded(req, termination)
 	if err != nil {
 		t.logger.WithError(err).Warn("Failed to translate request to OIP format")
 		return nil, err
@@ -169,7 +169,7 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	}
 
 	// Translate the response from OIP format if needed
-	res, err = t.TranslateFromOIP(res, termination)
+	res, err = t.TranslateFromOIPIfNeeded(res, termination)
 	if err != nil {
 		t.logger.WithError(err).Warn("Failed to translate response from OIP format")
 		return nil, err
