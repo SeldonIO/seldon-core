@@ -177,13 +177,13 @@ func TestConstructStringTensor(t *testing.T) {
 		name      string
 		fieldName string
 		fieldData []string
-		expected  map[string]interface{}
+		expected  map[string]any
 	}{
 		{
 			name:      "Valid string tensor",
 			fieldName: "testField",
 			fieldData: []string{"value1", "value2"},
-			expected: map[string]interface{}{
+			expected: map[string]any{
 				"name":     "testField",
 				"shape":    []int{2},
 				"datatype": "BYTES",
@@ -205,24 +205,24 @@ func TestExtractTensorByName(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		outputs    []interface{}
+		outputs    []any
 		tensorName string
 		expectErr  bool
-		expected   map[string]interface{}
+		expected   map[string]any
 	}{
 		{
 			name: "Extract existing tensor",
-			outputs: []interface{}{
-				map[string]interface{}{"name": "tensor1", "data": []string{"a", "b"}},
-				map[string]interface{}{"name": "tensor2", "data": []string{"c", "d"}},
+			outputs: []any{
+				map[string]any{"name": "tensor1", "data": []string{"a", "b"}},
+				map[string]any{"name": "tensor2", "data": []string{"c", "d"}},
 			},
 			tensorName: "tensor1",
 			expectErr:  false,
-			expected:   map[string]interface{}{"name": "tensor1", "data": []string{"a", "b"}},
+			expected:   map[string]any{"name": "tensor1", "data": []string{"a", "b"}},
 		},
 		{
 			name:       "Extract non-existing tensor",
-			outputs:    []interface{}{},
+			outputs:    []any{},
 			tensorName: "tensor3",
 			expectErr:  true,
 		},
@@ -282,13 +282,13 @@ func TestCheckModelsMatch(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		jsonBody  map[string]interface{}
+		jsonBody  map[string]any
 		path      string
 		expectErr bool
 	}{
 		{
 			name: "Matching model names",
-			jsonBody: map[string]interface{}{
+			jsonBody: map[string]any{
 				"model": "my-model",
 			},
 			path:      "/v2/models/my-model/infer",
@@ -296,7 +296,7 @@ func TestCheckModelsMatch(t *testing.T) {
 		},
 		{
 			name: "Matching model names with underscore",
-			jsonBody: map[string]interface{}{
+			jsonBody: map[string]any{
 				"model": "my-model",
 			},
 			path:      "/v2/models/my-model_1/infer",
@@ -304,7 +304,7 @@ func TestCheckModelsMatch(t *testing.T) {
 		},
 		{
 			name: "Non-matching model names",
-			jsonBody: map[string]interface{}{
+			jsonBody: map[string]any{
 				"model": "my-model",
 			},
 			path:      "/v2/models/another-model_1/infer",
@@ -312,13 +312,13 @@ func TestCheckModelsMatch(t *testing.T) {
 		},
 		{
 			name:      "Missing model name in JSON body",
-			jsonBody:  map[string]interface{}{},
+			jsonBody:  map[string]any{},
 			path:      "/v2/models/my-model_1/infer",
 			expectErr: true,
 		},
 		{
 			name: "Invalid path format",
-			jsonBody: map[string]interface{}{
+			jsonBody: map[string]any{
 				"model": "my-model",
 			},
 			path:      "/v2/some-other-path/infer",

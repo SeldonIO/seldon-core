@@ -15,21 +15,21 @@ func TestImagesGenerationRequest(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
 		name               string
-		openAIContent      map[string]interface{}
-		expectedOipContent map[string]interface{}
+		openAIContent      map[string]any
+		expectedOipContent map[string]any
 	}
 
 	tests := []test{
 		{
 			name: "default",
-			openAIContent: map[string]interface{}{
+			openAIContent: map[string]any{
 				"model":  "gpt-image-1",
 				"prompt": "A cute baby sea otter",
 				"n":      1,
 				"size":   "1024x1024",
 			},
-			expectedOipContent: map[string]interface{}{
-				"inputs": []map[string]interface{}{
+			expectedOipContent: map[string]any{
+				"inputs": []map[string]any{
 					{
 						"name":     "prompt",
 						"shape":    []int{1},
@@ -37,8 +37,8 @@ func TestImagesGenerationRequest(t *testing.T) {
 						"data":     []string{"A cute baby sea otter"},
 					},
 				},
-				"parameters": map[string]interface{}{
-					"llm_parameters": map[string]interface{}{
+				"parameters": map[string]any{
+					"llm_parameters": map[string]any{
 						"n":    1,
 						"size": "1024x1024",
 					},

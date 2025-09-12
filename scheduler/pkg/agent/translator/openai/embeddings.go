@@ -58,7 +58,7 @@ func (t *OpenAIEmbeddingsTranslator) TranslateFromOIP(res *http.Response) (*http
 		return nil, fmt.Errorf("failed to decompress and parse the response: %w", err)
 	}
 
-	outputs, ok := jsonBody[translator.OutputsKey].([]interface{})
+	outputs, ok := jsonBody[translator.OutputsKey].([]any)
 	if !ok {
 		return nil, fmt.Errorf("`%s` field not found or not an array in the response", translator.OutputsKey)
 	}
@@ -76,8 +76,8 @@ func (t *OpenAIEmbeddingsTranslator) TranslateFromOIP(res *http.Response) (*http
 	return translator.CreateResponseFromContent(content, res.StatusCode, res.Header, isGzipped)
 }
 
-func getEmbeddingParameters(jsonBody map[string]interface{}) map[string]interface{} {
-	llmParameters := make(map[string]interface{})
+func getEmbeddingParameters(jsonBody map[string]any) map[string]any {
+	llmParameters := make(map[string]any)
 	skipKeys := []string{modelKey, inputKey}
 
 	for key, value := range jsonBody {
@@ -89,7 +89,7 @@ func getEmbeddingParameters(jsonBody map[string]interface{}) map[string]interfac
 	return llmParameters
 }
 
-func getInput(jsonBody map[string]interface{}) ([]string, error) {
+func getInput(jsonBody map[string]any) ([]string, error) {
 	input, ok := jsonBody[inputKey]
 	if !ok {
 		return nil, fmt.Errorf("OpenAI request body does not contain '%s' field", inputKey)
@@ -99,7 +99,7 @@ func getInput(jsonBody map[string]interface{}) ([]string, error) {
 	switch v := input.(type) {
 	case string:
 		return []string{v}, nil
-	case []interface{}:
+	case []any:
 		strs := make([]string, len(v))
 		for i, item := range v {
 			str, ok := item.(string)
@@ -114,9 +114,9 @@ func getInput(jsonBody map[string]interface{}) ([]string, error) {
 	}
 }
 
-func constructEmbeddingsInferenceRequest(input []string, llmParams map[string]interface{}) map[string]interface{} {
-	return map[string]interface{}{
-		inputsKey: []map[string]interface{}{
+func constructEmbeddingsInferenceRequest(input []string, llmParams map[string]any) map[string]any {
+	return map[string]any{
+		inputsKey: []map[string]any{
 			translator.ConstructStringTensor(inputKey, input),
 		},
 		// There is an inconsistency in the naming of the parameters field
@@ -125,45 +125,45 @@ func constructEmbeddingsInferenceRequest(input []string, llmParams map[string]in
 		// `embedding_parameters` for embedding models.
 		//
 		// To handle both cases, we set both fields to the same value.
-		parametersKey: map[string]interface{}{
+		parametersKey: map[string]any{
 			llmParametersKey:       llmParams,
 			embeddingParametersKey: llmParams,
 		},
 	}
 }
 
-func parseOutputEmbeddings(outputs []interface{}, modelName string) (string, error) {
+func parseOutputEmbeddings(outputs []any, modelName string) (string, error) {
 	tensor, err := translator.ExtractTensorByName(outputs, embeddingKey)
 	if err != nil {
 		return "", err
 	}
 
-	data, ok := tensor[translator.DataKey].([]interface{})
+	data, ok := tensor[translator.DataKey].([]any)
 	if !ok {
 		return "", fmt.Errorf("`%s` field not found or not an array in output tensor %s", translator.DataKey, embeddingKey)
 	}
 
-	shape, ok := tensor[translator.ShapeKey].([]interface{})
+	shape, ok := tensor[translator.ShapeKey].([]any)
 	if !ok || len(shape) != 2 {
 		return "", fmt.Errorf("`%s` field not found or not a 2D array in output tensor %s", translator.ShapeKey, embeddingKey)
 	}
 
 	rows, cols := int(shape[0].(float64)), int(shape[1].(float64))
-	openAIData := make([]map[string]interface{}, 0, len(outputs))
+	openAIData := make([]map[string]any, 0, len(outputs))
 
 	for i := 0; i < rows; i++ {
 		floatVector := make([]float64, cols)
 		for j := 0; j < cols; j++ {
 			floatVector[j] = data[i*cols+j].(float64)
 		}
-		openAIData = append(openAIData, map[string]interface{}{
+		openAIData = append(openAIData, map[string]any{
 			"object":    "embedding",
 			"embedding": floatVector,
 			"index":     i,
 		})
 	}
 
-	response := map[string]interface{}{
+	response := map[string]any{
 		"object": "list",
 		"data":   openAIData,
 		"model":  modelName,

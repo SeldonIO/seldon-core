@@ -101,7 +101,7 @@ func (t *OpenAIChatCompletionsTranslator) translateFromOIP(res *http.Response) (
 		return nil, fmt.Errorf("`%s` field not found or not a string in the response", modelNameKey)
 	}
 
-	outputs, ok := jsonBody[translator.OutputsKey].([]interface{})
+	outputs, ok := jsonBody[translator.OutputsKey].([]any)
 	if !ok {
 		return nil, fmt.Errorf("`%s` field not found or not an array in the response", translator.OutputsKey)
 	}
@@ -160,7 +160,7 @@ func translateLocalLine(line string) (string, error) {
 		return "", fmt.Errorf("`model_name` field not found or not a string in the response")
 	}
 
-	outputs, ok := jsonLine[translator.OutputsKey].([]interface{})
+	outputs, ok := jsonLine[translator.OutputsKey].([]any)
 	if !ok {
 		return "", fmt.Errorf("`%s` field not found or not an array in the response", translator.OutputsKey)
 	}
@@ -174,28 +174,28 @@ func translateLocalLine(line string) (string, error) {
 
 }
 
-func getTools(jsonBody map[string]interface{}) []interface{} {
-	tools, _ := jsonBody[toolsKey].([]interface{})
+func getTools(jsonBody map[string]any) []any {
+	tools, _ := jsonBody[toolsKey].([]any)
 	return tools
 }
 
-func getParallelToolCalls(jsonBody map[string]interface{}) []interface{} {
+func getParallelToolCalls(jsonBody map[string]any) []any {
 	parallelToolCalls, ok := jsonBody[parallelToolCallsKey]
 	if !ok {
-		return []interface{}{}
+		return []any{}
 	}
-	return []interface{}{parallelToolCalls}
+	return []any{parallelToolCalls}
 }
 
-func getToolChoice(jsonBody map[string]interface{}) []interface{} {
+func getToolChoice(jsonBody map[string]any) []any {
 	toolChoice, ok := jsonBody[toolChoiceKey]
 	if !ok {
-		return []interface{}{}
+		return []any{}
 	}
-	return []interface{}{toolChoice}
+	return []any{toolChoice}
 }
 
-func parseOuputChatCompletion(outputs []interface{}, id string, modelName string, isStream bool) (string, error) {
+func parseOuputChatCompletion(outputs []any, id string, modelName string, isStream bool) (string, error) {
 	role, err := translator.ExtractTensorContentFromResponse(outputs, roleKey)
 	if err != nil {
 		return "", err
@@ -207,17 +207,17 @@ func parseOuputChatCompletion(outputs []interface{}, id string, modelName string
 	}
 
 	// construct the OpenAI API response
-	var response map[string]interface{}
+	var response map[string]any
 	if isStream {
-		response = map[string]interface{}{
+		response = map[string]any{
 			"id":      id,
 			"model":   modelName,
 			"created": 0,
 			"object":  "chat.completion.chunk",
-			"choices": []map[string]interface{}{
+			"choices": []map[string]any{
 				{
 					"index": 0,
-					"delta": map[string]interface{}{
+					"delta": map[string]any{
 						"role":    role,
 						"content": content,
 					},
@@ -225,15 +225,15 @@ func parseOuputChatCompletion(outputs []interface{}, id string, modelName string
 			},
 		}
 	} else {
-		response = map[string]interface{}{
+		response = map[string]any{
 			"id":      id,
 			"model":   modelName,
 			"created": 0,
 			"object":  "chat.completion",
-			"choices": []map[string]interface{}{
+			"choices": []map[string]any{
 				{
 					"index": 0,
-					"message": map[string]interface{}{
+					"message": map[string]any{
 						"content": content,
 						"role":    role,
 					},
@@ -252,25 +252,25 @@ func parseOuputChatCompletion(outputs []interface{}, id string, modelName string
 
 type Messages struct {
 	Size       int
-	Role       []interface{}
-	Content    []interface{}
-	Type       []interface{}
-	ToolCalls  []interface{}
-	ToolCallId []interface{}
+	Role       []any
+	Content    []any
+	Type       []any
+	ToolCalls  []any
+	ToolCallId []any
 }
 
 func NewMessages(size int) *Messages {
 	return &Messages{
 		Size:       size,
-		Role:       make([]interface{}, size),
-		Content:    make([]interface{}, size),
-		Type:       make([]interface{}, size),
-		ToolCalls:  make([]interface{}, size),
-		ToolCallId: make([]interface{}, size),
+		Role:       make([]any, size),
+		Content:    make([]any, size),
+		Type:       make([]any, size),
+		ToolCalls:  make([]any, size),
+		ToolCallId: make([]any, size),
 	}
 }
 
-func getContentAndTypeFromMap(msgMap map[string]interface{}) (string, string, error) {
+func getContentAndTypeFromMap(msgMap map[string]any) (string, string, error) {
 	contentType, ok := msgMap[typeKey].(string)
 	if !ok {
 		return "", "", fmt.Errorf("field '%s' not found or not a string in message map", typeKey)
@@ -285,7 +285,7 @@ func getContentAndTypeFromMap(msgMap map[string]interface{}) (string, string, er
 	switch c := rawContentMessage.(type) {
 	case string:
 		contentMessage = c
-	case map[string]interface{}:
+	case map[string]any:
 		data, err := json.Marshal(c)
 		if err != nil {
 			return "", "", fmt.Errorf("failed to marshal content message map")
@@ -298,7 +298,7 @@ func getContentAndTypeFromMap(msgMap map[string]interface{}) (string, string, er
 	return contentMessage, contentType, nil
 }
 
-func getContentAndType(msgMap map[string]interface{}) ([]string, []string, error) {
+func getContentAndType(msgMap map[string]any) ([]string, []string, error) {
 	content, ok := msgMap[contentKey]
 	if !ok || content == nil {
 		return []string{""}, []string{"text"}, nil
@@ -307,12 +307,12 @@ func getContentAndType(msgMap map[string]interface{}) ([]string, []string, error
 	switch c := content.(type) {
 	case string:
 		return []string{c}, []string{"text"}, nil
-	case []interface{}:
+	case []any:
 		contentTypeArray := make([]string, len(c))
 		contentMessageArray := make([]string, len(c))
 
 		for i, item := range c {
-			if itemMap, ok := item.(map[string]interface{}); ok {
+			if itemMap, ok := item.(map[string]any); ok {
 				contentMessageI, contentTypeI, err := getContentAndTypeFromMap(itemMap)
 				if err != nil {
 					return nil, nil, err
@@ -327,13 +327,13 @@ func getContentAndType(msgMap map[string]interface{}) ([]string, []string, error
 	}
 }
 
-func getToolCalls(msgMap map[string]interface{}) ([]string, error) {
+func getToolCalls(msgMap map[string]any) ([]string, error) {
 	tcRaw, ok := msgMap[toolCallsKey]
 	if !ok {
 		return []string{}, nil
 	}
 
-	if tcSlice, ok := tcRaw.([]interface{}); ok {
+	if tcSlice, ok := tcRaw.([]any); ok {
 		toolCalls := make([]string, len(tcSlice))
 
 		for j, tc := range tcSlice {
@@ -349,8 +349,8 @@ func getToolCalls(msgMap map[string]interface{}) ([]string, error) {
 	return nil, fmt.Errorf("field '%s' is not a slice", toolCallsKey)
 }
 
-func getMessages(jsonBody map[string]interface{}) (*Messages, error) {
-	messagesList, ok := jsonBody[messagesKey].([]interface{})
+func getMessages(jsonBody map[string]any) (*Messages, error) {
+	messagesList, ok := jsonBody[messagesKey].([]any)
 	if !ok {
 		return nil, fmt.Errorf("`%s` field not found or not an array", messagesKey)
 	}
@@ -359,7 +359,7 @@ func getMessages(jsonBody map[string]interface{}) (*Messages, error) {
 	messages := NewMessages(len(messagesList))
 
 	for i, message := range messagesList {
-		msgMap, boolErr := message.(map[string]interface{})
+		msgMap, boolErr := message.(map[string]any)
 		if !boolErr {
 			return nil, fmt.Errorf("failed to parse message %d in OpenAI API request", i)
 		}
@@ -391,8 +391,8 @@ func getMessages(jsonBody map[string]interface{}) (*Messages, error) {
 	return messages, nil
 }
 
-func getLLMParameters(jsonBody map[string]interface{}) map[string]interface{} {
-	llmParameters := make(map[string]interface{})
+func getLLMParameters(jsonBody map[string]any) map[string]any {
+	llmParameters := make(map[string]any)
 	skipKeys := []string{
 		modelKey, messagesKey, toolsKey, parallelToolCallsKey, toolChoiceKey,
 	}
@@ -405,7 +405,7 @@ func getLLMParameters(jsonBody map[string]interface{}) map[string]interface{} {
 	return llmParameters
 }
 
-func marshalListContent(content []interface{}) ([]string, error) {
+func marshalListContent(content []any) ([]string, error) {
 	jsonContent := make([]string, len(content))
 
 	for i, item := range content {
@@ -430,7 +430,7 @@ func marshalListContent(content []interface{}) ([]string, error) {
 	return jsonContent, nil
 }
 
-func unwrapContentFromSlice(content []interface{}) ([]string, error) {
+func unwrapContentFromSlice(content []any) ([]string, error) {
 	switch c := content[0].(type) {
 	case string:
 		if len(c) == 0 {
@@ -444,7 +444,7 @@ func unwrapContentFromSlice(content []interface{}) ([]string, error) {
 	}
 }
 
-func prepareField(content []interface{}) ([]string, error) {
+func prepareField(content []any) ([]string, error) {
 	if len(content) == 0 {
 		return nil, fmt.Errorf("content is empty")
 	}
@@ -454,7 +454,7 @@ func prepareField(content []interface{}) ([]string, error) {
 	return marshalListContent(content)
 }
 
-func addFieldToInferenceRequestInputs(inferenceRequestInputs []interface{}, fieldName string, fieldContent []interface{}) ([]interface{}, error) {
+func addFieldToInferenceRequestInputs(inferenceRequestInputs []any, fieldName string, fieldContent []any) ([]any, error) {
 	strContent, err := prepareField(fieldContent)
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare field '%s' content: %v", fieldName, err)
@@ -467,8 +467,8 @@ func addFieldToInferenceRequestInputs(inferenceRequestInputs []interface{}, fiel
 	return inferenceRequestInputs, nil
 }
 
-func constructInferenceRequestInputs(messages *Messages) ([]interface{}, error) {
-	var inferenceRequestInputs []interface{}
+func constructInferenceRequestInputs(messages *Messages) ([]any, error) {
+	var inferenceRequestInputs []any
 	inferenceRequestInputs, err := addFieldToInferenceRequestInputs(
 		inferenceRequestInputs, roleKey, messages.Role,
 	)
@@ -506,7 +506,7 @@ func constructInferenceRequestInputs(messages *Messages) ([]interface{}, error) 
 	return inferenceRequestInputs, nil
 }
 
-func constructChatCompletionInferenceRequest(messages *Messages, tools []interface{}, parallelToolCalls []interface{}, toolChoice []interface{}, llmParams map[string]interface{}) (map[string]interface{}, error) {
+func constructChatCompletionInferenceRequest(messages *Messages, tools []any, parallelToolCalls []any, toolChoice []any, llmParams map[string]any) (map[string]any, error) {
 	inferenceRequestInputs, err := constructInferenceRequestInputs(messages)
 	if err != nil {
 		return nil, fmt.Errorf("failed to construct inference request inputs: %v", err)
@@ -547,14 +547,14 @@ func constructChatCompletionInferenceRequest(messages *Messages, tools []interfa
 		}
 	}
 
-	return map[string]interface{}{
+	return map[string]any{
 		inputsKey: inferenceRequestInputs,
 		// There is an inconsistency in the naming of the parameters field
 		// across the runtimes. The API runtime uses `llm_parameters` for all
 		// model types (not just LLMs), while local runtime uses `kwargs`
 		//
 		// To handle both cases, we set both fields to the same value.
-		parametersKey: map[string]interface{}{
+		parametersKey: map[string]any{
 			llmParametersKey:   llmParams,
 			localParametersKey: llmParams,
 		},

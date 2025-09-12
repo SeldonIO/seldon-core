@@ -15,8 +15,8 @@ const (
 	promptKey = "prompt"
 )
 
-func getImagesGenerationsParameters(jsonBody map[string]interface{}) map[string]interface{} {
-	llmParameters := make(map[string]interface{})
+func getImagesGenerationsParameters(jsonBody map[string]any) map[string]any {
+	llmParameters := make(map[string]any)
 	skipKeys := []string{modelKey, promptKey}
 	for key, value := range jsonBody {
 		if translator.Contains(skipKeys, key) {
@@ -27,7 +27,7 @@ func getImagesGenerationsParameters(jsonBody map[string]interface{}) map[string]
 	return llmParameters
 }
 
-func getPrompt(jsonBody map[string]interface{}) ([]string, error) {
+func getPrompt(jsonBody map[string]any) ([]string, error) {
 	prompt, ok := jsonBody[promptKey].(string)
 	if !ok {
 		return nil, fmt.Errorf("OpenAI request body does not contain '%s' field", promptKey)
@@ -37,12 +37,12 @@ func getPrompt(jsonBody map[string]interface{}) ([]string, error) {
 	return []string{prompt}, nil
 }
 
-func constructImagesGenerationsRequest(prompt []string, llmParams map[string]interface{}) map[string]interface{} {
-	return map[string]interface{}{
-		inputsKey: []map[string]interface{}{
+func constructImagesGenerationsRequest(prompt []string, llmParams map[string]any) map[string]any {
+	return map[string]any{
+		inputsKey: []map[string]any{
 			translator.ConstructStringTensor(promptKey, prompt),
 		},
-		parametersKey: map[string]interface{}{
+		parametersKey: map[string]any{
 			llmParametersKey: llmParams,
 		},
 	}

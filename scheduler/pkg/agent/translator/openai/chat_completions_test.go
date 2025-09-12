@@ -16,24 +16,24 @@ func TestChatCompletionsRequest(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
 		name               string
-		openAIContent      map[string]interface{}
-		expectedOipContent map[string]interface{}
+		openAIContent      map[string]any
+		expectedOipContent map[string]any
 	}
 
 	tests := []test{
 		{
 			name: "default-single-message",
-			openAIContent: map[string]interface{}{
+			openAIContent: map[string]any{
 				"model": "gpt-4.1",
-				"messages": []map[string]interface{}{
+				"messages": []map[string]any{
 					{
 						"role":    "user",
 						"content": "Hello!",
 					},
 				},
 			},
-			expectedOipContent: map[string]interface{}{
-				"inputs": []map[string]interface{}{
+			expectedOipContent: map[string]any{
+				"inputs": []map[string]any{
 					{
 						"name":     "role",
 						"shape":    []int{1},
@@ -53,17 +53,17 @@ func TestChatCompletionsRequest(t *testing.T) {
 						"data":     []string{"text"},
 					},
 				},
-				"parameters": map[string]interface{}{
-					"llm_parameters": map[string]interface{}{},
-					"kwargs":         map[string]interface{}{},
+				"parameters": map[string]any{
+					"llm_parameters": map[string]any{},
+					"kwargs":         map[string]any{},
 				},
 			},
 		},
 		{
 			name: "default-multiple-messages",
-			openAIContent: map[string]interface{}{
+			openAIContent: map[string]any{
 				"model": "gpt-4.1",
-				"messages": []map[string]interface{}{
+				"messages": []map[string]any{
 					{
 						"role":    "developer",
 						"content": "You are a helpful assistant.",
@@ -74,8 +74,8 @@ func TestChatCompletionsRequest(t *testing.T) {
 					},
 				},
 			},
-			expectedOipContent: map[string]interface{}{
-				"inputs": []map[string]interface{}{
+			expectedOipContent: map[string]any{
+				"inputs": []map[string]any{
 					{
 						"name":     "role",
 						"shape":    []int{2},
@@ -101,23 +101,23 @@ func TestChatCompletionsRequest(t *testing.T) {
 						},
 					},
 				},
-				"parameters": map[string]interface{}{
-					"llm_parameters": map[string]interface{}{},
-					"kwargs":         map[string]interface{}{},
+				"parameters": map[string]any{
+					"llm_parameters": map[string]any{},
+					"kwargs":         map[string]any{},
 				},
 			},
 		},
 		{
 			name: "tools",
-			openAIContent: map[string]interface{}{
+			openAIContent: map[string]any{
 				"model": "gpt-4.1",
-				"messages": []map[string]interface{}{
+				"messages": []map[string]any{
 					{
 						"role":    "user",
 						"content": "Hello! What is the weather like in New York?",
 					},
 				},
-				"tools": []map[string]interface{}{
+				"tools": []map[string]any{
 					{
 						"type":     "function",
 						"function": "foo",
@@ -128,8 +128,8 @@ func TestChatCompletionsRequest(t *testing.T) {
 					},
 				},
 			},
-			expectedOipContent: map[string]interface{}{
-				"inputs": []map[string]interface{}{
+			expectedOipContent: map[string]any{
+				"inputs": []map[string]any{
 					{
 						"name":     "role",
 						"shape":    []int{1},
@@ -158,17 +158,17 @@ func TestChatCompletionsRequest(t *testing.T) {
 						},
 					},
 				},
-				"parameters": map[string]interface{}{
-					"llm_parameters": map[string]interface{}{},
-					"kwargs":         map[string]interface{}{},
+				"parameters": map[string]any{
+					"llm_parameters": map[string]any{},
+					"kwargs":         map[string]any{},
 				},
 			},
 		},
 		{
 			name: "tools-calls",
-			openAIContent: map[string]interface{}{
+			openAIContent: map[string]any{
 				"model": "gpt-4.1",
-				"messages": []map[string]interface{}{
+				"messages": []map[string]any{
 					{
 						"role":    "system",
 						"content": "You are a helpful assistant",
@@ -179,7 +179,7 @@ func TestChatCompletionsRequest(t *testing.T) {
 					},
 					{
 						"role": "assistant",
-						"tool_calls": []map[string]interface{}{
+						"tool_calls": []map[string]any{
 							{
 								"function": "foo_function",
 								"id":       "foo_id",
@@ -198,7 +198,7 @@ func TestChatCompletionsRequest(t *testing.T) {
 					},
 					{
 						"role": "assistant",
-						"tool_calls": []map[string]interface{}{
+						"tool_calls": []map[string]any{
 							{
 								"function": "bar_function",
 								"id":       "bar_id",
@@ -212,7 +212,7 @@ func TestChatCompletionsRequest(t *testing.T) {
 						"content":      "bar_content",
 					},
 				},
-				"tools": []map[string]interface{}{
+				"tools": []map[string]any{
 					{
 						"type":     "function",
 						"function": "foo_function",
@@ -223,8 +223,8 @@ func TestChatCompletionsRequest(t *testing.T) {
 					},
 				},
 			},
-			expectedOipContent: map[string]interface{}{
-				"inputs": []map[string]interface{}{
+			expectedOipContent: map[string]any{
+				"inputs": []map[string]any{
 					{
 						"name":     "role",
 						"shape":    []int{7},
@@ -305,27 +305,27 @@ func TestChatCompletionsRequest(t *testing.T) {
 						},
 					},
 				},
-				"parameters": map[string]interface{}{
-					"llm_parameters": map[string]interface{}{},
-					"kwargs":         map[string]interface{}{},
+				"parameters": map[string]any{
+					"llm_parameters": map[string]any{},
+					"kwargs":         map[string]any{},
 				},
 			},
 		},
 		{
 			name: "image-input",
-			openAIContent: map[string]interface{}{
+			openAIContent: map[string]any{
 				"model": "gpt-4.1",
-				"messages": []map[string]interface{}{
+				"messages": []map[string]any{
 					{
 						"role": "user",
-						"content": []map[string]interface{}{
+						"content": []map[string]any{
 							{
 								"type": "text",
 								"text": "What is in this image?",
 							},
 							{
 								"type": "image_url",
-								"image_url": map[string]interface{}{
+								"image_url": map[string]any{
 									"url": "dummy_image_url",
 								},
 							},
@@ -334,8 +334,8 @@ func TestChatCompletionsRequest(t *testing.T) {
 				},
 				"max_tokens": 300,
 			},
-			expectedOipContent: map[string]interface{}{
-				"inputs": []map[string]interface{}{
+			expectedOipContent: map[string]any{
+				"inputs": []map[string]any{
 					{
 						"name":     "role",
 						"shape":    []int{1},
@@ -361,11 +361,11 @@ func TestChatCompletionsRequest(t *testing.T) {
 						},
 					},
 				},
-				"parameters": map[string]interface{}{
-					"llm_parameters": map[string]interface{}{
+				"parameters": map[string]any{
+					"llm_parameters": map[string]any{
 						"max_tokens": 300,
 					},
-					"kwargs": map[string]interface{}{
+					"kwargs": map[string]any{
 						"max_tokens": 300,
 					},
 				},
@@ -373,9 +373,9 @@ func TestChatCompletionsRequest(t *testing.T) {
 		},
 		{
 			name: "streaming",
-			openAIContent: map[string]interface{}{
+			openAIContent: map[string]any{
 				"model": "gpt-4.1",
-				"messages": []map[string]interface{}{
+				"messages": []map[string]any{
 					{
 						"role":    "user",
 						"content": "Hello!",
@@ -383,8 +383,8 @@ func TestChatCompletionsRequest(t *testing.T) {
 				},
 				"stream": true,
 			},
-			expectedOipContent: map[string]interface{}{
-				"inputs": []map[string]interface{}{
+			expectedOipContent: map[string]any{
+				"inputs": []map[string]any{
 					{
 						"name":     "role",
 						"shape":    []int{1},
@@ -404,11 +404,11 @@ func TestChatCompletionsRequest(t *testing.T) {
 						"data":     []string{"text"},
 					},
 				},
-				"parameters": map[string]interface{}{
-					"llm_parameters": map[string]interface{}{
+				"parameters": map[string]any{
+					"llm_parameters": map[string]any{
 						"stream": true,
 					},
-					"kwargs": map[string]interface{}{
+					"kwargs": map[string]any{
 						"stream": true,
 					},
 				},
@@ -416,9 +416,9 @@ func TestChatCompletionsRequest(t *testing.T) {
 		},
 		{
 			name: "params",
-			openAIContent: map[string]interface{}{
+			openAIContent: map[string]any{
 				"model": "gpt-4.1",
-				"messages": []map[string]interface{}{
+				"messages": []map[string]any{
 					{
 						"role":    "user",
 						"content": "Hello!",
@@ -427,8 +427,8 @@ func TestChatCompletionsRequest(t *testing.T) {
 				"logprobs":     true,
 				"top_logprobs": 2,
 			},
-			expectedOipContent: map[string]interface{}{
-				"inputs": []map[string]interface{}{
+			expectedOipContent: map[string]any{
+				"inputs": []map[string]any{
 					{
 						"name":     "role",
 						"shape":    []int{1},
@@ -448,12 +448,12 @@ func TestChatCompletionsRequest(t *testing.T) {
 						"data":     []string{"text"},
 					},
 				},
-				"parameters": map[string]interface{}{
-					"llm_parameters": map[string]interface{}{
+				"parameters": map[string]any{
+					"llm_parameters": map[string]any{
 						"logprobs":     true,
 						"top_logprobs": 2,
 					},
-					"kwargs": map[string]interface{}{
+					"kwargs": map[string]any{
 						"logprobs":     true,
 						"top_logprobs": 2,
 					},
@@ -462,15 +462,15 @@ func TestChatCompletionsRequest(t *testing.T) {
 		},
 		{
 			name: "parallel-tool-calls",
-			openAIContent: map[string]interface{}{
+			openAIContent: map[string]any{
 				"model": "gpt-4.1",
-				"messages": []map[string]interface{}{
+				"messages": []map[string]any{
 					{
 						"role":    "user",
 						"content": "Hello! What is the weather like in New York?",
 					},
 				},
-				"tools": []map[string]interface{}{
+				"tools": []map[string]any{
 					{
 						"type":     "function",
 						"function": "foo",
@@ -482,8 +482,8 @@ func TestChatCompletionsRequest(t *testing.T) {
 				},
 				"parallel_tool_calls": true,
 			},
-			expectedOipContent: map[string]interface{}{
-				"inputs": []map[string]interface{}{
+			expectedOipContent: map[string]any{
+				"inputs": []map[string]any{
 					{
 						"name":     "role",
 						"shape":    []int{1},
@@ -518,23 +518,23 @@ func TestChatCompletionsRequest(t *testing.T) {
 						"data":     []string{"true"},
 					},
 				},
-				"parameters": map[string]interface{}{
-					"llm_parameters": map[string]interface{}{},
-					"kwargs":         map[string]interface{}{},
+				"parameters": map[string]any{
+					"llm_parameters": map[string]any{},
+					"kwargs":         map[string]any{},
 				},
 			},
 		},
 		{
 			name: "tool-choice",
-			openAIContent: map[string]interface{}{
+			openAIContent: map[string]any{
 				"model": "gpt-4.1",
-				"messages": []map[string]interface{}{
+				"messages": []map[string]any{
 					{
 						"role":    "user",
 						"content": "Hello! What is the weather like in New York?",
 					},
 				},
-				"tools": []map[string]interface{}{
+				"tools": []map[string]any{
 					{
 						"type":     "function",
 						"function": "foo",
@@ -546,8 +546,8 @@ func TestChatCompletionsRequest(t *testing.T) {
 				},
 				"tool_choice": "foo",
 			},
-			expectedOipContent: map[string]interface{}{
-				"inputs": []map[string]interface{}{
+			expectedOipContent: map[string]any{
+				"inputs": []map[string]any{
 					{
 						"name":     "role",
 						"shape":    []int{1},
@@ -582,23 +582,23 @@ func TestChatCompletionsRequest(t *testing.T) {
 						"data":     []string{"foo"},
 					},
 				},
-				"parameters": map[string]interface{}{
-					"llm_parameters": map[string]interface{}{},
-					"kwargs":         map[string]interface{}{},
+				"parameters": map[string]any{
+					"llm_parameters": map[string]any{},
+					"kwargs":         map[string]any{},
 				},
 			},
 		},
 		{
 			name: "tool-choice-complex",
-			openAIContent: map[string]interface{}{
+			openAIContent: map[string]any{
 				"model": "gpt-4.1",
-				"messages": []map[string]interface{}{
+				"messages": []map[string]any{
 					{
 						"role":    "user",
 						"content": "Hello! What is the weather like in New York?",
 					},
 				},
-				"tools": []map[string]interface{}{
+				"tools": []map[string]any{
 					{
 						"type":     "function",
 						"function": "foo",
@@ -608,13 +608,13 @@ func TestChatCompletionsRequest(t *testing.T) {
 						"function": "bar",
 					},
 				},
-				"tool_choice": map[string]interface{}{
+				"tool_choice": map[string]any{
 					"type":     "function",
 					"function": "dummy_function",
 				},
 			},
-			expectedOipContent: map[string]interface{}{
-				"inputs": []map[string]interface{}{
+			expectedOipContent: map[string]any{
+				"inputs": []map[string]any{
 					{
 						"name":     "role",
 						"shape":    []int{1},
@@ -649,9 +649,9 @@ func TestChatCompletionsRequest(t *testing.T) {
 						"data":     []string{"{\"function\":\"dummy_function\",\"type\":\"function\"}"},
 					},
 				},
-				"parameters": map[string]interface{}{
-					"llm_parameters": map[string]interface{}{},
-					"kwargs":         map[string]interface{}{},
+				"parameters": map[string]any{
+					"llm_parameters": map[string]any{},
+					"kwargs":         map[string]any{},
 				},
 			},
 		},
@@ -692,23 +692,23 @@ func TestChatCompletionsResponse(t *testing.T) {
 
 	type test struct {
 		name                   string
-		oipResponse            map[string]interface{}
-		expectedOpenAIResponse map[string]interface{}
+		oipResponse            map[string]any
+		expectedOpenAIResponse map[string]any
 	}
 
 	tests := []test{
 		{
 			name: "api-response",
-			oipResponse: map[string]interface{}{
+			oipResponse: map[string]any{
 				"id":         "aa65a0ac-6aea-4284-9e55-7c74e299390e",
 				"model_name": "openai-chat-completions",
-				"outputs": []map[string]interface{}{
+				"outputs": []map[string]any{
 					{
 						"name":     "role",
 						"datatype": "BYTES",
 						"shape":    []int{1, 1},
 						"data":     []string{"assistant"},
-						"parameters": map[string]interface{}{
+						"parameters": map[string]any{
 							"content_type": "str",
 						},
 					},
@@ -717,7 +717,7 @@ func TestChatCompletionsResponse(t *testing.T) {
 						"datatype": "BYTES",
 						"shape":    []int{1, 1},
 						"data":     []string{"Hello! How can I assist you today?"},
-						"parameters": map[string]interface{}{
+						"parameters": map[string]any{
 							"content_type": "str",
 						},
 					},
@@ -726,7 +726,7 @@ func TestChatCompletionsResponse(t *testing.T) {
 						"datatype": "BYTES",
 						"shape":    []int{1, 1},
 						"data":     []string{"text"},
-						"parameters": map[string]interface{}{
+						"parameters": map[string]any{
 							"content_type": "str",
 						},
 					},
@@ -770,22 +770,22 @@ func TestChatCompletionsResponse(t *testing.T) {
 								"  }\n" +
 								"}",
 						},
-						"parameters": map[string]interface{}{
+						"parameters": map[string]any{
 							"content_type": "str",
 						},
 					},
 				},
-				"parameters": map[string]interface{}{},
+				"parameters": map[string]any{},
 			},
-			expectedOpenAIResponse: map[string]interface{}{
+			expectedOpenAIResponse: map[string]any{
 				"id":      "chatcmpl-AYD7ygNL8rqda0t5mG691k1aXpGLC",
 				"model":   "gpt-3.5-turbo-0125",
 				"created": 1732716978,
 				"object":  "chat.completion",
-				"choices": []map[string]interface{}{
+				"choices": []map[string]any{
 					{
 						"index": 0,
-						"message": map[string]interface{}{
+						"message": map[string]any{
 							"content": "Hello! How can I assist you today?",
 							"role":    "assistant",
 							"refusal": nil,
@@ -795,15 +795,15 @@ func TestChatCompletionsResponse(t *testing.T) {
 					},
 				},
 				"system_fingerprint": nil,
-				"usage": map[string]interface{}{
+				"usage": map[string]any{
 					"prompt_tokens":     21,
 					"completion_tokens": 9,
 					"total_tokens":      30,
-					"prompt_tokens_details": map[string]interface{}{
+					"prompt_tokens_details": map[string]any{
 						"cached_tokens": 0,
 						"audio_tokens":  0,
 					},
-					"completion_tokens_details": map[string]interface{}{
+					"completion_tokens_details": map[string]any{
 						"reasoning_tokens":           0,
 						"audio_tokens":               0,
 						"accepted_prediction_tokens": 0,
@@ -814,16 +814,16 @@ func TestChatCompletionsResponse(t *testing.T) {
 		},
 		{
 			name: "local-response",
-			oipResponse: map[string]interface{}{
+			oipResponse: map[string]any{
 				"id":         "aa65a0ac-6aea-4284-9e55-7c74e299390e",
 				"model_name": "local-chat-completions",
-				"outputs": []map[string]interface{}{
+				"outputs": []map[string]any{
 					{
 						"name":     "role",
 						"datatype": "BYTES",
 						"shape":    []int{1, 1},
 						"data":     []string{"assistant"},
-						"parameters": map[string]interface{}{
+						"parameters": map[string]any{
 							"content_type": "str",
 						},
 					},
@@ -832,7 +832,7 @@ func TestChatCompletionsResponse(t *testing.T) {
 						"datatype": "BYTES",
 						"shape":    []int{1, 1},
 						"data":     []string{"Hello! How can I assist you today?"},
-						"parameters": map[string]interface{}{
+						"parameters": map[string]any{
 							"content_type": "str",
 						},
 					},
@@ -841,21 +841,21 @@ func TestChatCompletionsResponse(t *testing.T) {
 						"datatype": "BYTES",
 						"shape":    []int{1, 1},
 						"data":     []string{"text"},
-						"parameters": map[string]interface{}{
+						"parameters": map[string]any{
 							"content_type": "str",
 						},
 					},
 				},
 			},
-			expectedOpenAIResponse: map[string]interface{}{
+			expectedOpenAIResponse: map[string]any{
 				"id":      "aa65a0ac-6aea-4284-9e55-7c74e299390e",
 				"model":   "local-chat-completions",
 				"created": 0, // Local responses do not have a created
 				"object":  "chat.completion",
-				"choices": []map[string]interface{}{
+				"choices": []map[string]any{
 					{
 						"index": 0,
-						"message": map[string]interface{}{
+						"message": map[string]any{
 							"content": "Hello! How can I assist you today?",
 							"role":    "assistant",
 						},
@@ -884,7 +884,7 @@ func TestChatCompletionsResponse(t *testing.T) {
 			g.Expect(err).To(BeNil(), "Error reading OpenAI response body")
 
 			// unmarsal and marshal to ensure formatting is correct
-			var openAIRespContent map[string]interface{}
+			var openAIRespContent map[string]any
 			err = json.Unmarshal(openAIRespBody, &openAIRespContent)
 			g.Expect(err).To(BeNil(), "Error unmarshalling OpenAI response content")
 
@@ -904,23 +904,23 @@ func TestChatCompletionStreamResponse(t *testing.T) {
 
 	type test struct {
 		name                   string
-		oipResponse            map[string]interface{}
-		expectedOpenAIResponse map[string]interface{}
+		oipResponse            map[string]any
+		expectedOpenAIResponse map[string]any
 	}
 
 	tests := []test{
 		{
 			name: "api-streaming-response",
-			oipResponse: map[string]interface{}{
+			oipResponse: map[string]any{
 				"id":         "aa65a0ac-6aea-4284-9e55-7c74e299390e",
 				"model_name": "openai-chat-completions",
-				"outputs": []map[string]interface{}{
+				"outputs": []map[string]any{
 					{
 						"name":     "role",
 						"datatype": "BYTES",
 						"shape":    []int{1, 1},
 						"data":     []string{"assistant"},
-						"parameters": map[string]interface{}{
+						"parameters": map[string]any{
 							"content_type": "str",
 						},
 					},
@@ -929,7 +929,7 @@ func TestChatCompletionStreamResponse(t *testing.T) {
 						"datatype": "BYTES",
 						"shape":    []int{1, 1},
 						"data":     []string{"Hello!"},
-						"parameters": map[string]interface{}{
+						"parameters": map[string]any{
 							"content_type": "str",
 						},
 					},
@@ -938,7 +938,7 @@ func TestChatCompletionStreamResponse(t *testing.T) {
 						"datatype": "BYTES",
 						"shape":    []int{1, 1},
 						"data":     []string{"text"},
-						"parameters": map[string]interface{}{
+						"parameters": map[string]any{
 							"content_type": "str",
 						},
 					},
@@ -981,22 +981,22 @@ func TestChatCompletionStreamResponse(t *testing.T) {
 								"  }\n" +
 								"}",
 						},
-						"parameters": map[string]interface{}{
+						"parameters": map[string]any{
 							"content_type": "str",
 						},
 					},
 				},
-				"parameters": map[string]interface{}{},
+				"parameters": map[string]any{},
 			},
-			expectedOpenAIResponse: map[string]interface{}{
+			expectedOpenAIResponse: map[string]any{
 				"id":      "chatcmpl-AYD7ygNL8rqda0t5mG691k1aXpGLC",
 				"model":   "gpt-3.5-turbo-0125",
 				"created": float64(1732716978), // JSON unmarshaling converts numbers to float64
 				"object":  "chat.completion.chunk",
-				"choices": []interface{}{
-					map[string]interface{}{
+				"choices": []any{
+					map[string]any{
 						"index": float64(0),
-						"delta": map[string]interface{}{
+						"delta": map[string]any{
 							"role":    "assistant",
 							"content": "Hello!",
 						},
@@ -1005,15 +1005,15 @@ func TestChatCompletionStreamResponse(t *testing.T) {
 					},
 				},
 				"system_fingerprint": nil,
-				"usage": map[string]interface{}{
+				"usage": map[string]any{
 					"prompt_tokens":     float64(21),
 					"completion_tokens": float64(9),
 					"total_tokens":      float64(30),
-					"prompt_tokens_details": map[string]interface{}{
+					"prompt_tokens_details": map[string]any{
 						"cached_tokens": float64(0),
 						"audio_tokens":  float64(0),
 					},
-					"completion_tokens_details": map[string]interface{}{
+					"completion_tokens_details": map[string]any{
 						"reasoning_tokens":           float64(0),
 						"audio_tokens":               float64(0),
 						"accepted_prediction_tokens": float64(0),
@@ -1024,16 +1024,16 @@ func TestChatCompletionStreamResponse(t *testing.T) {
 		},
 		{
 			name: "local-streaming-response",
-			oipResponse: map[string]interface{}{
+			oipResponse: map[string]any{
 				"id":         "aa65a0ac-6aea-4284-9e55-7c74e299390e",
 				"model_name": "local-chat-completions",
-				"outputs": []map[string]interface{}{
+				"outputs": []map[string]any{
 					{
 						"name":     "role",
 						"datatype": "BYTES",
 						"shape":    []int{1, 1},
 						"data":     []string{"assistant"},
-						"parameters": map[string]interface{}{
+						"parameters": map[string]any{
 							"content_type": "str",
 						},
 					},
@@ -1042,7 +1042,7 @@ func TestChatCompletionStreamResponse(t *testing.T) {
 						"datatype": "BYTES",
 						"shape":    []int{1, 1},
 						"data":     []string{"Hello!"},
-						"parameters": map[string]interface{}{
+						"parameters": map[string]any{
 							"content_type": "str",
 						},
 					},
@@ -1051,21 +1051,21 @@ func TestChatCompletionStreamResponse(t *testing.T) {
 						"datatype": "BYTES",
 						"shape":    []int{1, 1},
 						"data":     []string{"text"},
-						"parameters": map[string]interface{}{
+						"parameters": map[string]any{
 							"content_type": "str",
 						},
 					},
 				},
 			},
-			expectedOpenAIResponse: map[string]interface{}{
+			expectedOpenAIResponse: map[string]any{
 				"id":      "aa65a0ac-6aea-4284-9e55-7c74e299390e",
 				"model":   "local-chat-completions",
 				"created": float64(0), // Local responses do not have a created timestamp
 				"object":  "chat.completion.chunk",
-				"choices": []interface{}{
-					map[string]interface{}{
+				"choices": []any{
+					map[string]any{
 						"index": float64(0),
-						"delta": map[string]interface{}{
+						"delta": map[string]any{
 							"role":    "assistant",
 							"content": "Hello!",
 						},
@@ -1104,7 +1104,7 @@ func TestChatCompletionStreamResponse(t *testing.T) {
 			openAIRespBody = bytes.TrimPrefix(openAIRespBody, []byte("data: "))
 			openAIRespBody = bytes.TrimSuffix(openAIRespBody, []byte("\n\n"))
 
-			var openAIRespContent map[string]interface{}
+			var openAIRespContent map[string]any
 			err = json.Unmarshal([]byte(openAIRespBody), &openAIRespContent)
 			g.Expect(err).To(BeNil(), "Error unmarshalling OpenAI SSE response content")
 

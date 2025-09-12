@@ -27,7 +27,7 @@ const (
 	FirstLineKey = "First-Line"
 )
 
-func DecompressIfNeededAndConvertToJSON(res *http.Response) (map[string]interface{}, bool, error) {
+func DecompressIfNeededAndConvertToJSON(res *http.Response) (map[string]any, bool, error) {
 	// Decompress the response if needed - gzip
 	var err error
 	var isGzipped bool
@@ -77,7 +77,7 @@ func CreateResponseFromContent(content string, statusCode int, header http.Heade
 	}, nil
 }
 
-func ExtractTensorContentFromResponse(outputs []interface{}, tensorName string) (string, error) {
+func ExtractTensorContentFromResponse(outputs []any, tensorName string) (string, error) {
 	// Extract the output_all tensor form the inference response. This contains the full response
 	// OpenAI API response - only works for OpenAI runtime, since we return the original OpenAI API response
 	tensor, err := ExtractTensorByName(outputs, tensorName)
@@ -87,8 +87,8 @@ func ExtractTensorContentFromResponse(outputs []interface{}, tensorName string) 
 	return extractContentFromTensor(tensor, DataKey)
 }
 
-func extractContentFromTensor(tensor map[string]interface{}, key string) (string, error) {
-	data, ok := tensor[DataKey].([]interface{})
+func extractContentFromTensor(tensor map[string]any, key string) (string, error) {
+	data, ok := tensor[DataKey].([]any)
 	if !ok {
 		return "", fmt.Errorf("`%s` field not found or not an array of strings in output tensor %s", DataKey, OutputAllKey)
 	}
@@ -100,7 +100,7 @@ func extractContentFromTensor(tensor map[string]interface{}, key string) (string
 	return content, nil
 }
 
-func parseOutputAll(outputs []interface{}) (string, error) {
+func parseOutputAll(outputs []any) (string, error) {
 	return ExtractTensorContentFromResponse(outputs, OutputAllKey)
 }
 
@@ -118,7 +118,7 @@ func translateFromOIP(res *http.Response) (*http.Response, error) {
 		return nil, fmt.Errorf("failed to decompress and parse the response: %w", err)
 	}
 
-	outputs, ok := jsonBody[OutputsKey].([]interface{})
+	outputs, ok := jsonBody[OutputsKey].([]any)
 	if !ok {
 		return nil, fmt.Errorf("`%s` field not found or not an array in the response", OutputsKey)
 	}
@@ -166,7 +166,7 @@ func translateLine(line string) (string, error) {
 		return "", fmt.Errorf("failed to parse SSE line: %w", err)
 	}
 
-	outputs, ok := jsonLine[OutputsKey].([]interface{})
+	outputs, ok := jsonLine[OutputsKey].([]any)
 	if !ok {
 		return "", fmt.Errorf("`%s` field not found or not an array in the response", OutputsKey)
 	}
@@ -177,7 +177,7 @@ func translateLine(line string) (string, error) {
 	}
 
 	// Unmarshal and then marshal again to ensure proper formatting
-	mapContent := map[string]interface{}{}
+	mapContent := map[string]any{}
 	err = json.Unmarshal([]byte(content), &mapContent)
 	if err != nil {
 		return "", fmt.Errorf("failed to unmarshal content: %w", err)

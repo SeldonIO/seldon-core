@@ -14,8 +14,8 @@ import (
 	"strings"
 )
 
-func GetJsonBody(body []byte) (map[string]interface{}, error) {
-	var jsonBody map[string]interface{}
+func GetJsonBody(body []byte) (map[string]any, error) {
+	var jsonBody map[string]any
 	err := json.Unmarshal(body, &jsonBody)
 	if err != nil {
 		return nil, err
@@ -23,7 +23,7 @@ func GetJsonBody(body []byte) (map[string]interface{}, error) {
 	return jsonBody, nil
 }
 
-func GetJsonBodyStream(body []byte) (map[string]interface{}, error) {
+func GetJsonBodyStream(body []byte) (map[string]any, error) {
 	idx := bytes.Index(body, []byte(SSESuffix))
 	if idx == -1 {
 		return nil, fmt.Errorf("no SSE event found")
@@ -37,7 +37,7 @@ func GetJsonBodyStream(body []byte) (map[string]interface{}, error) {
 	return GetJsonBody(ev)
 }
 
-func GetModelName(jsonBody map[string]interface{}) (string, error) {
+func GetModelName(jsonBody map[string]any) (string, error) {
 	modelName, ok := jsonBody["model"].(string)
 	if !ok {
 		return "", errors.New("model name not found in request body")
@@ -46,8 +46,8 @@ func GetModelName(jsonBody map[string]interface{}) (string, error) {
 	return modelName, nil
 }
 
-func ConstructStringTensor(name string, data []string) map[string]interface{} {
-	return map[string]interface{}{
+func ConstructStringTensor(name string, data []string) map[string]any {
+	return map[string]any{
 		"name":     name,
 		"shape":    []int{len(data)},
 		"datatype": "BYTES",
@@ -55,9 +55,9 @@ func ConstructStringTensor(name string, data []string) map[string]interface{} {
 	}
 }
 
-func ExtractTensorByName(outputs []interface{}, name string) (map[string]interface{}, error) {
+func ExtractTensorByName(outputs []any, name string) (map[string]any, error) {
 	for i, output := range outputs {
-		outputMap, ok := output.(map[string]interface{})
+		outputMap, ok := output.(map[string]any)
 		if !ok {
 			return nil, fmt.Errorf("failed to parse output tensor %d", i)
 		}
@@ -103,7 +103,7 @@ func ReadResponseBody(res *http.Response) ([]byte, error) {
 	return body, nil
 }
 
-func ConvertRequestToJsonBody(req *http.Request) (map[string]interface{}, error) {
+func ConvertRequestToJsonBody(req *http.Request) (map[string]any, error) {
 	body, err := ReadRequestBody(req)
 	if err != nil {
 		return nil, err
@@ -117,7 +117,7 @@ func ConvertRequestToJsonBody(req *http.Request) (map[string]interface{}, error)
 	return jsonBody, nil
 }
 
-func ConvertInferenceRequestToHttpRequest(inferenceRequest map[string]interface{}, req *http.Request) (*http.Request, error) {
+func ConvertInferenceRequestToHttpRequest(inferenceRequest map[string]any, req *http.Request) (*http.Request, error) {
 	data, err := json.Marshal(inferenceRequest)
 	if err != nil {
 		return nil, err
@@ -255,7 +255,7 @@ func ExtractModelNameFromPath(p string) (string, error) {
 	return "", errors.New("model name not found in path")
 }
 
-func CheckModelsMatch(jsonBody map[string]interface{}, path string) error {
+func CheckModelsMatch(jsonBody map[string]any, path string) error {
 	modelName, err := GetModelName(jsonBody)
 	if err != nil {
 		return err

@@ -15,20 +15,20 @@ func TestEmbeddingsRequest(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
 		name               string
-		openAIContent      map[string]interface{}
-		expectedOipContent map[string]interface{}
+		openAIContent      map[string]any
+		expectedOipContent map[string]any
 	}
 
 	tests := []test{
 		{
 			name: "default",
-			openAIContent: map[string]interface{}{
+			openAIContent: map[string]any{
 				"model":           "text-embedding-ada-002",
 				"input":           "This is a test",
 				"encoding_format": "float",
 			},
-			expectedOipContent: map[string]interface{}{
-				"inputs": []map[string]interface{}{
+			expectedOipContent: map[string]any{
+				"inputs": []map[string]any{
 					{
 						"name":     "input",
 						"shape":    []int{1},
@@ -36,11 +36,11 @@ func TestEmbeddingsRequest(t *testing.T) {
 						"data":     []string{"This is a test"},
 					},
 				},
-				"parameters": map[string]interface{}{
-					"llm_parameters": map[string]interface{}{
+				"parameters": map[string]any{
+					"llm_parameters": map[string]any{
 						"encoding_format": "float",
 					},
-					"embedding_parameters": map[string]interface{}{
+					"embedding_parameters": map[string]any{
 						"encoding_format": "float",
 					},
 				},
@@ -82,21 +82,21 @@ func TestEmbeddingRespose(t *testing.T) {
 
 	type test struct {
 		name                   string
-		oipResponse            map[string]interface{}
-		expectedOpenAIResponse map[string]interface{}
+		oipResponse            map[string]any
+		expectedOpenAIResponse map[string]any
 	}
 
 	tests := []test{
 		{
 			name: "api response",
-			oipResponse: map[string]interface{}{
+			oipResponse: map[string]any{
 				"model_name": "text-embedding-ada-002",
-				"outputs": []map[string]interface{}{
+				"outputs": []map[string]any{
 					{
 						"name":     "embedding",
 						"shape":    []int{1, 3},
 						"datatype": "FP64",
-						"data":     []interface{}{0.0023064255, -0.009327292, -0.0028842222},
+						"data":     []any{0.0023064255, -0.009327292, -0.0028842222},
 					},
 					{
 						"name":     "output_all",
@@ -125,13 +125,13 @@ func TestEmbeddingRespose(t *testing.T) {
 						},
 					},
 				},
-				"parameters": map[string]interface{}{
+				"parameters": map[string]any{
 					"content_type": "str",
 				},
 			},
-			expectedOpenAIResponse: map[string]interface{}{
+			expectedOpenAIResponse: map[string]any{
 				"object": "list",
-				"data": []map[string]interface{}{
+				"data": []map[string]any{
 					{
 						"object":    "embedding",
 						"embedding": []float64{0.0023064255, -0.009327292, -0.0028842222},
@@ -139,7 +139,7 @@ func TestEmbeddingRespose(t *testing.T) {
 					},
 				},
 				"model": "text-embedding-ada-002",
-				"usage": map[string]interface{}{
+				"usage": map[string]any{
 					"prompt_tokens": 8,
 					"total_tokens":  8,
 				},
@@ -147,9 +147,9 @@ func TestEmbeddingRespose(t *testing.T) {
 		},
 		{
 			name: "local response - single",
-			oipResponse: map[string]interface{}{
+			oipResponse: map[string]any{
 				"model_name": "text-embedding-ada-002",
-				"outputs": []map[string]interface{}{
+				"outputs": []map[string]any{
 					{
 						"name":     "embedding",
 						"shape":    []int{1, 3},
@@ -157,13 +157,13 @@ func TestEmbeddingRespose(t *testing.T) {
 						"data":     []float64{0.0023064255, -0.009327292, -0.0028842222},
 					},
 				},
-				"parameters": map[string]interface{}{
+				"parameters": map[string]any{
 					"content_type": "str",
 				},
 			},
-			expectedOpenAIResponse: map[string]interface{}{
+			expectedOpenAIResponse: map[string]any{
 				"object": "list",
-				"data": []map[string]interface{}{
+				"data": []map[string]any{
 					{
 						"object":    "embedding",
 						"embedding": []float64{0.0023064255, -0.009327292, -0.0028842222},
@@ -175,9 +175,9 @@ func TestEmbeddingRespose(t *testing.T) {
 		},
 		{
 			name: "local response - multiple",
-			oipResponse: map[string]interface{}{
+			oipResponse: map[string]any{
 				"model_name": "text-embedding-ada-002",
-				"outputs": []map[string]interface{}{
+				"outputs": []map[string]any{
 					{
 						"name":     "embedding",
 						"shape":    []int{2, 3},
@@ -185,13 +185,13 @@ func TestEmbeddingRespose(t *testing.T) {
 						"data":     []float64{0.0023064255, -0.009327292, -0.0028842222, 0.0033064255, -0.008327292, -0.0018842222},
 					},
 				},
-				"parameters": map[string]interface{}{
+				"parameters": map[string]any{
 					"content_type": "str",
 				},
 			},
-			expectedOpenAIResponse: map[string]interface{}{
+			expectedOpenAIResponse: map[string]any{
 				"object": "list",
-				"data": []map[string]interface{}{
+				"data": []map[string]any{
 					{
 						"object":    "embedding",
 						"embedding": []float64{0.0023064255, -0.009327292, -0.0028842222},
@@ -225,7 +225,7 @@ func TestEmbeddingRespose(t *testing.T) {
 			openAIBody, err := io.ReadAll(openAIResp.Body)
 			g.Expect(err).To(BeNil(), "Error reading OpenAI response body")
 
-			var openAIRespContent map[string]interface{}
+			var openAIRespContent map[string]any
 			err = json.Unmarshal(openAIBody, &openAIRespContent)
 			g.Expect(err).To(BeNil(), "Error unmarshalling OpenAI response content")
 
