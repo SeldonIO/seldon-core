@@ -22,12 +22,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
 	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde"
 	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde/protobuf"
-
-	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
-	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -117,9 +116,9 @@ func getRestUrl(tls bool, host string, port int, modelName string) *url.URL {
 
 func (iw *InferWorker) getGrpcClient(host string, port int) (v2.GRPCInferenceServiceClient, error) {
 	logger := iw.logger.WithField("func", "getGrpcClient")
-	retryOpts := []grpc_retry.CallOption{
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GRPCRetryBackoff)),
-		grpc_retry.WithMax(util.GRPCRetryMaxCount), // retry envoy connection
+	retryOpts := []grpcretry.CallOption{
+		grpcretry.WithBackoff(grpcretry.BackoffExponential(util.GRPCRetryBackoff)),
+		grpcretry.WithMax(util.GRPCRetryMaxCount), // retry envoy connection
 	}
 
 	var creds credentials.TransportCredentials
@@ -142,7 +141,7 @@ func (iw *InferWorker) getGrpcClient(host string, port int) (v2.GRPCInferenceSer
 			otelgrpc.NewClientHandler(),
 		),
 		grpc.WithUnaryInterceptor(
-			grpc_retry.UnaryClientInterceptor(retryOpts...),
+			grpcretry.UnaryClientInterceptor(retryOpts...),
 		),
 	}
 

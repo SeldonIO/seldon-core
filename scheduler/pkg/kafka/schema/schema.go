@@ -32,9 +32,7 @@ func NewSchemaRegistryClient(log *log.Logger) schemaregistry.Client {
 		return nil
 	}
 
-	var conf *schemaregistry.Config
-
-	conf = schemaregistry.NewConfigWithBasicAuthentication(url, username, password)
+	conf := schemaregistry.NewConfigWithBasicAuthentication(url, username, password)
 
 	srClient, err := schemaregistry.NewClient(conf)
 	if err != nil {
