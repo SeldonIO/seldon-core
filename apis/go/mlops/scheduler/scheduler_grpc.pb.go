@@ -46,6 +46,7 @@ const (
 	Scheduler_SubscribeExperimentStatus_FullMethodName = "/seldon.mlops.scheduler.Scheduler/SubscribeExperimentStatus"
 	Scheduler_SubscribePipelineStatus_FullMethodName   = "/seldon.mlops.scheduler.Scheduler/SubscribePipelineStatus"
 	Scheduler_PipelineStatusEvent_FullMethodName       = "/seldon.mlops.scheduler.Scheduler/PipelineStatusEvent"
+	Scheduler_ModelStatusEvent_FullMethodName          = "/seldon.mlops.scheduler.Scheduler/ModelStatusEvent"
 	Scheduler_SubscribeControlPlane_FullMethodName     = "/seldon.mlops.scheduler.Scheduler/SubscribeControlPlane"
 )
 
@@ -70,6 +71,7 @@ type SchedulerClient interface {
 	SubscribeExperimentStatus(ctx context.Context, in *ExperimentSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeExperimentStatusClient, error)
 	SubscribePipelineStatus(ctx context.Context, in *PipelineSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribePipelineStatusClient, error)
 	PipelineStatusEvent(ctx context.Context, in *chainer.PipelineUpdateStatusMessage, opts ...grpc.CallOption) (*chainer.PipelineUpdateStatusResponse, error)
+	ModelStatusEvent(ctx context.Context, in *ModelUpdateStatusMessage, opts ...grpc.CallOption) (*ModelUpdateStatusResponse, error)
 	// control plane stream with controller
 	SubscribeControlPlane(ctx context.Context, in *ControlPlaneSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeControlPlaneClient, error)
 }
@@ -436,6 +438,16 @@ func (c *schedulerClient) PipelineStatusEvent(ctx context.Context, in *chainer.P
 	return out, nil
 }
 
+func (c *schedulerClient) ModelStatusEvent(ctx context.Context, in *ModelUpdateStatusMessage, opts ...grpc.CallOption) (*ModelUpdateStatusResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ModelUpdateStatusResponse)
+	err := c.cc.Invoke(ctx, Scheduler_ModelStatusEvent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *schedulerClient) SubscribeControlPlane(ctx context.Context, in *ControlPlaneSubscriptionRequest, opts ...grpc.CallOption) (Scheduler_SubscribeControlPlaneClient, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &Scheduler_ServiceDesc.Streams[8], Scheduler_SubscribeControlPlane_FullMethodName, cOpts...)
@@ -490,6 +502,7 @@ type SchedulerServer interface {
 	SubscribeExperimentStatus(*ExperimentSubscriptionRequest, Scheduler_SubscribeExperimentStatusServer) error
 	SubscribePipelineStatus(*PipelineSubscriptionRequest, Scheduler_SubscribePipelineStatusServer) error
 	PipelineStatusEvent(context.Context, *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error)
+	ModelStatusEvent(context.Context, *ModelUpdateStatusMessage) (*ModelUpdateStatusResponse, error)
 	// control plane stream with controller
 	SubscribeControlPlane(*ControlPlaneSubscriptionRequest, Scheduler_SubscribeControlPlaneServer) error
 	mustEmbedUnimplementedSchedulerServer()
@@ -549,6 +562,9 @@ func (UnimplementedSchedulerServer) SubscribePipelineStatus(*PipelineSubscriptio
 }
 func (UnimplementedSchedulerServer) PipelineStatusEvent(context.Context, *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PipelineStatusEvent not implemented")
+}
+func (UnimplementedSchedulerServer) ModelStatusEvent(context.Context, *ModelUpdateStatusMessage) (*ModelUpdateStatusResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ModelStatusEvent not implemented")
 }
 func (UnimplementedSchedulerServer) SubscribeControlPlane(*ControlPlaneSubscriptionRequest, Scheduler_SubscribeControlPlaneServer) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribeControlPlane not implemented")
@@ -896,6 +912,24 @@ func _Scheduler_PipelineStatusEvent_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Scheduler_ModelStatusEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ModelUpdateStatusMessage)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SchedulerServer).ModelStatusEvent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Scheduler_ModelStatusEvent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SchedulerServer).ModelStatusEvent(ctx, req.(*ModelUpdateStatusMessage))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Scheduler_SubscribeControlPlane_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(ControlPlaneSubscriptionRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -959,6 +993,10 @@ var Scheduler_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PipelineStatusEvent",
 			Handler:    _Scheduler_PipelineStatusEvent_Handler,
+		},
+		{
+			MethodName: "ModelStatusEvent",
+			Handler:    _Scheduler_ModelStatusEvent_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

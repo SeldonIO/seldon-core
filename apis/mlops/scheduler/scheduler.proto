@@ -468,6 +468,30 @@ message ControlPlaneResponse {
   Event event = 1;
 }
 
+
+message ModelUpdateMessage {
+    enum ModelOperation {
+      Unknown = 0;
+      Create = 1;
+      Delete = 2;
+    }
+    ModelOperation op = 1;
+    string model = 2;
+    uint32 version = 3;
+    string uid = 4;
+    uint64 timestamp = 5;
+    string stream = 6;
+}
+
+message ModelUpdateStatusMessage {
+  ModelUpdateMessage update = 1;
+  bool success = 2;
+  string reason = 3;
+}
+
+message ModelUpdateStatusResponse {
+}
+
 // [END Messages]
 
 
@@ -497,6 +521,7 @@ service Scheduler {
   rpc SubscribePipelineStatus(PipelineSubscriptionRequest) returns (stream PipelineStatusResponse) {};
 
   rpc PipelineStatusEvent(chainer.PipelineUpdateStatusMessage) returns (chainer.PipelineUpdateStatusResponse) {};
+  rpc ModelStatusEvent(ModelUpdateStatusMessage) returns (ModelUpdateStatusResponse) {};
 
   // control plane stream with controller
   rpc SubscribeControlPlane(ControlPlaneSubscriptionRequest) returns (stream ControlPlaneResponse) {};
