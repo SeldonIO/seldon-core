@@ -9,7 +9,7 @@ require (
 	github.com/otiai10/copy v1.14.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.10.0
-	google.golang.org/grpc v1.73.0
+	google.golang.org/grpc v1.75.1
 	istio.io/pkg v0.0.0-20250424180003-5bd6dc4b200f
 	k8s.io/api v0.33.2
 	k8s.io/apimachinery v0.33.2
