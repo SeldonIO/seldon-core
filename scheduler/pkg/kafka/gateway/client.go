@@ -213,3 +213,29 @@ func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
 	}()
 	return nil
 }
+
+func (kc *KafkaSchedulerClient) sendModelStatusEvent(
+	grpcClient scheduler.SchedulerClient,
+	op scheduler.ModelUpdateMessage_ModelOperation,
+	success bool,
+	reason string,
+	timestamp uint64,
+) {
+	_, err := grpcClient.ModelStatusEvent(
+		context.Background(),
+		&scheduler.ModelUpdateStatusMessage{
+			Update: &scheduler.ModelUpdateMessage{
+				Model:     "model",
+				Version:   0,
+				Uid:       "model-uid",
+				Timestamp: timestamp,
+				Stream:    "stream",
+			},
+			Success: success,
+			Reason:  reason,
+		},
+	)
+	if err != nil {
+		kc.logger.WithError(err).Errorf("Failed to send model status event %s", op.String())
+	}
+}

@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package server
 
 import (
+	"context"
 	"time"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
@@ -18,6 +19,36 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
+
+func (s *SchedulerServer) ModelStatusEvent(ctx context.Context, message *pb.ModelUpdateStatusMessage) (*pb.ModelUpdateStatusResponse, error) {
+	s.modelEventStream.mu.Lock()
+	defer s.modelEventStream.mu.Unlock()
+
+	logger := s.logger.WithField("func", "ModelStatusEvent")
+
+	var statusVal store.ModelState
+	switch message.Update.Op {
+	case pb.ModelUpdateMessage_Create:
+		if message.Success {
+			statusVal = store.ModelAvailable
+		} else {
+			statusVal = store.ModelFailed
+		}
+	case pb.ModelUpdateMessage_Delete:
+		if message.Success {
+			statusVal = store.ModelTerminated
+		} else {
+			statusVal = store.ModelFailed
+		}
+	}
+
+	logger.Infof(
+		"Received model status update for %s version %d to %s",
+		message.Update.Model, message.Update.Version, statusVal.String(),
+	)
+
+	return &pb.ModelUpdateStatusResponse{}, nil
+}
 
 func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest, stream pb.Scheduler_SubscribeModelStatusServer) error {
 	logger := s.logger.WithField("func", "SubscribeModelStatus")
