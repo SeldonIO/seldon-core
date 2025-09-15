@@ -3,7 +3,6 @@ package translator
 import (
 	"bufio"
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -175,15 +174,5 @@ func translateLine(line string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to parse %s field: %w", OutputAllKey, err)
 	}
-
-	// Unmarshal and then marshal again to ensure proper formatting
-	mapContent := map[string]any{}
-	err = json.Unmarshal([]byte(content), &mapContent)
-	if err != nil {
-		return "", fmt.Errorf("failed to unmarshal content: %w", err)
-	}
-
-	// Reconstruct the line with the original SSE format
-	contentBytes, _ := json.Marshal(mapContent)
-	return fmt.Sprintf("%s%s%s", SSEPrefix, string(contentBytes), SSESuffix), nil
+	return fmt.Sprintf("%s%s%s", SSEPrefix, content, SSESuffix), nil
 }
