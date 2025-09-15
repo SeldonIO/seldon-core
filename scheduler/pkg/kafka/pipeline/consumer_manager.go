@@ -13,10 +13,10 @@ import (
 	"sync"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
-	kafkaconfig "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel/trace"
 
+	kafkaconfig "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
