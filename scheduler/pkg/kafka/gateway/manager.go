@@ -19,6 +19,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	kafkaconfig "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+
 	configtls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 

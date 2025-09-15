@@ -28,6 +28,7 @@ import (
 
 	kafkaconfig "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/schema"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"

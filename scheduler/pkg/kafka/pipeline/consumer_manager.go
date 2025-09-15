@@ -10,13 +10,12 @@ the Change License after the Change Date as each is defined in accordance with t
 package pipeline
 
 import (
-	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
 	"sync"
 
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
+	kafkaconfig "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel/trace"
-
-	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -33,7 +32,7 @@ type ConsumerManager struct {
 	// all consumers we have
 	pipelinesConsumers   map[string]*MultiTopicsKafkaConsumer
 	modelsConsumers      map[string]*MultiTopicsKafkaConsumer
-	consumerConfig       *kafka_config.KafkaConfig
+	consumerConfig       *kafkaconfig.KafkaConfig
 	maxNumConsumers      int
 	tracer               trace.Tracer
 	namespace            string
@@ -43,7 +42,7 @@ type ConsumerManager struct {
 func NewConsumerManager(
 	namespace string,
 	logger log.FieldLogger,
-	consumerConfig *kafka_config.KafkaConfig,
+	consumerConfig *kafkaconfig.KafkaConfig,
 	maxNumConsumers int,
 	tracer trace.Tracer,
 	schemaRegistryClient schemaregistry.Client,
