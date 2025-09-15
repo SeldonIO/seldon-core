@@ -86,7 +86,7 @@ export function setup() {
         const seldonRuneTime = generateSeldonRuntime(replicaModelGw, replicaPipeLineGw, replicaDataFlowEngine)
         ctl.loadSeldonRuntimeFn(seldonRuneTime.object, true, true)
 
-        // wait for models to load onto server
+        // wait for pipeline to be ready since scaling data-plane services
         awaitPipelineStatus(pipelineName, "Ready")
 
         return config
@@ -104,14 +104,14 @@ export function teardown(config) {
     tearDownK6(config, function (config) {
         const ctl = connectControlPlaneOps(config)
 
-        ctl.unloadServerFn(serverName, false, false)
-
         for (const modelName of [inputModelName1, inputModelName2, outputModelName]) {
             console.log("deleting model ", modelName)
-            ctl.unloadModelFn(modelName, false)
+            ctl.unloadModelFn(modelName, true)
         }
 
         console.log("deleting pipeline ", pipelineName)
         ctl.unloadPipelineFn(pipelineName, false)
+
+        ctl.unloadServerFn(serverName, false, false)
     })
 }

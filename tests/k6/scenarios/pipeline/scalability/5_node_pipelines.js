@@ -13,7 +13,7 @@ import {connectControlPlaneOps,
 } from '../../../components/utils.js'
 import {generateMultiModelPipelineYaml, getModelInferencePayload} from '../../../components/model.js';
 import {inferHttp, setupK6, tearDownK6} from "../../../components/v2.js";
-import {generateSeldonRuntime, generateServer} from "../../../components/k8s.js";
+import {awaitPipelineStatus, generateSeldonRuntime, generateServer} from "../../../components/k8s.js";
 import { sleep } from 'k6';
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
@@ -52,6 +52,10 @@ export function setup() {
             }
         ]
 
+        const server = generateServer(serverName, "mlserver", 1, 1, 1)
+        ctl.unloadServerFn(server.object.metadata.name, true, true)
+        ctl.loadServerFn(server.yaml, server.object.metadata.name, false, true)
+
 
         const pipeline1 = generateMultiModelPipelineYaml(5, modelType, pipelineName1,modelNamePrefix1, modelParams, config.modelName, 1, serverName)
         pipeline1.modelCRYaml.forEach(model => {
@@ -69,17 +73,8 @@ export function setup() {
             ctl.loadModelFn(model.metadata.name, yamlDump(model), false, false)
         })
 
-        const server = generateServer(serverName, "mlserver", 1, 1, 1)
-        ctl.unloadServerFn(server.object.metadata.name, true, true)
-        ctl.loadServerFn(server.yaml, server.object.metadata.name, true, true, 35)
-
         ctl.unloadPipelineFn(pipeline2.pipelineName, true)
         ctl.loadPipelineFn(pipeline2.pipelineName, pipeline2.pipelineCRYaml, true, true)
-
-
-        // TODO we have to wait, as server's eagerly load models before they have IP available,
-        //   waiting for this fix to be merged then can take out sleep https://github.com/SeldonIO/seldon-core/pull/6636
-        sleep(10)
 
         const replicaModelGw = 2;
         const replicaDataFlowEngine = 2;
@@ -91,6 +86,10 @@ export function setup() {
         const seldonRuneTime = generateSeldonRuntime(replicaModelGw,replicaPipeLineGw,replicaDataFlowEngine)
         ctl.loadSeldonRuntimeFn(seldonRuneTime.object, true, true)
 
+        // wait for pipeline to be ready since scaling data-plane services
+        awaitPipelineStatus(pipelineName1, "Ready")
+        awaitPipelineStatus(pipelineName2, "Ready")
+
         return config
     }, {
         "useKubeControlPlane" : true,
@@ -100,25 +99,23 @@ export function setup() {
 export default function (config) {
     if (Math.random() > 0.5) {
         const inferPayload1 = getModelInferencePayload(modelType, 1)
-        inferHttp(config.inferHttpEndpoint, modelNamePrefix1, inferPayload1.http, true, true, config.debug)
+        inferHttp(config.inferHttpEndpoint, pipelineName1, inferPayload1.http, true, true, config.debug)
         return
     }
 
     const inferPayload2 = getModelInferencePayload(modelType, 1)
-    inferHttp(config.inferHttpEndpoint, modelNamePrefix2, inferPayload2.http, true, true, config.debug)
+    inferHttp(config.inferHttpEndpoint, pipelineName2, inferPayload2.http, true, true, config.debug)
 }
 
 export function teardown(config) {
     tearDownK6(config, function (config) {
         const ctl = connectControlPlaneOps(config)
 
-        ctl.unloadServerFn(serverName, false, false)
-
         for (const modelName of [modelNamePrefix1, modelNamePrefix2]) {
             let modelNames = k8s.getExistingModelNames(modelName)
             modelNames.forEach(modelName => {
                 console.log("deleting model ", modelName)
-                ctl.unloadModelFn(modelName, false)
+                ctl.unloadModelFn(modelName, true)
             })
         }
 
@@ -129,5 +126,7 @@ export function teardown(config) {
                 ctl.unloadPipelineFn(pipelineName, false)
             })
         }
+
+        ctl.unloadServerFn(serverName, false, false)
     })
 }
