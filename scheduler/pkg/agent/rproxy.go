@@ -30,7 +30,15 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/interfaces"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/modelscaling"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/translator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/translator/openai"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
+)
+
+const (
+	chatCompletionsPath   = "/chat/completions"
+	embeddingsPath        = "/embeddings"
+	imagesGenerationsPath = "/images/generations"
 )
 
 type reverseHTTPProxy struct {
@@ -54,6 +62,7 @@ type lazyModelLoadTransport struct {
 	metrics                    metrics.AgentMetricsHandler
 	modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector
 	logger                     log.FieldLogger
+	apiTranslators             map[string]translator.Translator
 }
 
 func addRequestIdToResponse(req *http.Request, res *http.Response) {
@@ -68,11 +77,35 @@ func addRequestIdToResponse(req *http.Request, res *http.Response) {
 	}
 }
 
+func (t *lazyModelLoadTransport) TranslateToOIPIfNeeded(req *http.Request, termination string) (*http.Request, error) {
+	if translator, ok := t.apiTranslators[termination]; ok {
+		return translator.TranslateToOIP(req)
+	}
+	return req, nil
+}
+
+func (t *lazyModelLoadTransport) TranslateFromOIPIfNeeded(res *http.Response, termination string) (*http.Response, error) {
+	if translator, ok := t.apiTranslators[termination]; ok {
+		return translator.TranslateFromOIP(res)
+	}
+	return res, nil
+}
+
+func (t *lazyModelLoadTransport) createErrorResponse(req *http.Request, statusCode int, message string) *http.Response {
+	return &http.Response{
+		Status:     http.StatusText(statusCode),
+		StatusCode: statusCode,
+		Body:       io.NopCloser(bytes.NewBufferString(message)),
+		Header:     make(http.Header),
+		Request:    req,
+	}
+}
+
 // RoundTrip implements http.RoundTripper for the Transport type.
 // It calls its underlying http.RoundTripper to execute the request, and
 // adds retry logic if we get 404
 func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	var originalBody []byte
+	var reqOriginalBody []byte
 	var err error
 
 	internalModelName := req.Header.Get(util.SeldonInternalModelHeader)
@@ -102,16 +135,29 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	}()
 
 	startTime := time.Now()
+
+	// Translate the request to OIP format if needed
+	termination, err := translator.GetPathTermination(req)
+	if err != nil {
+		message := fmt.Sprintf("Failed to get path termination for request: %v", err)
+		return t.createErrorResponse(req, http.StatusBadRequest, message), nil
+	}
+
+	req, err = t.TranslateToOIPIfNeeded(req, termination)
+	if err != nil {
+		message := fmt.Sprintf("Failed to translate request to OIP format: %v", err)
+		return t.createErrorResponse(req, http.StatusBadRequest, message), nil
+	}
+
 	if req.Body != nil {
-		originalBody, err = io.ReadAll(req.Body)
+		reqOriginalBody, err = io.ReadAll(req.Body)
 	}
 	if err != nil {
-
 		return nil, err
 	}
 
 	// reset main request body
-	req.Body = io.NopCloser(bytes.NewBuffer(originalBody))
+	req.Body = io.NopCloser(bytes.NewBuffer(reqOriginalBody))
 	res, err := t.RoundTripper.RoundTrip(req)
 	if err != nil {
 		return res, err
@@ -126,9 +172,18 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 		}
 
 		req2 := req.Clone(req.Context())
-
-		req2.Body = io.NopCloser(bytes.NewBuffer(originalBody))
+		req2.Body = io.NopCloser(bytes.NewBuffer(reqOriginalBody))
 		res, err = t.RoundTripper.RoundTrip(req2)
+		if err != nil {
+			return res, err
+		}
+	}
+
+	// Translate the response from OIP format if needed
+	res, err = t.TranslateFromOIPIfNeeded(res, termination)
+	if err != nil {
+		message := fmt.Sprintf("Failed to translate response from OIP format: %v", err)
+		return t.createErrorResponse(req, http.StatusInternalServerError, message), nil
 	}
 
 	addRequestIdToResponse(req, res)
@@ -197,12 +252,18 @@ func (rp *reverseHTTPProxy) Start() error {
 		MaxConnsPerHost:     util.MaxConnsPerHostHTTP,
 		IdleConnTimeout:     util.IdleConnTimeoutSeconds * time.Second,
 	}
+	apiTranslators := map[string]translator.Translator{
+		chatCompletionsPath:   &openai.OpenAIChatCompletionsTranslator{},
+		embeddingsPath:        &openai.OpenAIEmbeddingsTranslator{},
+		imagesGenerationsPath: &openai.OpenAIImagesGenerationsTranslator{},
+	}
 	proxy.Transport = &lazyModelLoadTransport{
 		rp.stateManager.v2Client.LoadModel,
 		t,
 		rp.metrics,
 		rp.modelScalingStatsCollector,
 		rp.logger,
+		apiTranslators,
 	}
 	rp.logger.Infof("Start reverse proxy on port %d for %s", rp.servicePort, backend)
 	var tlsConfig *tls.Config
@@ -289,7 +350,6 @@ func NewReverseHTTPProxy(
 	metrics metrics.AgentMetricsHandler,
 	modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector,
 ) *reverseHTTPProxy {
-
 	rp := reverseHTTPProxy{
 		logger:                     logger.WithField("Source", "HTTPProxy"),
 		backendHTTPServerHost:      backendHTTPServerHost,
