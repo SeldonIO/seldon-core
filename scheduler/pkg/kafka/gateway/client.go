@@ -225,66 +225,119 @@ func (ep *EventProcessor) handleEvent(event *scheduler.ModelStatusResponse) {
 
 	switch versionStatus.GetState().GetAvailableReplicas() {
 	case 0:
-		ep.handleDeleteModel(event, versionStatus)
+		ep.handleDeleteModel(event)
 	default:
-		ep.handleCreateModel(event, versionStatus)
+		ep.handleCreateModel(event)
 	}
 
 }
 
-func (ep *EventProcessor) handleCreateModel(event *scheduler.ModelStatusResponse, versionStatus *scheduler.ModelVersionStatus) {
+func (ep *EventProcessor) handleDeleteModel(event *scheduler.ModelStatusResponse) {
 	ep.logger.Infof("Removing model %s", event.ModelName)
 	keepTopics := event.GetKeepTopics()
+
+	versionStatus := event.Versions[0]
 	cleanTopicsOnDeletion := versionStatus.GetModelDefn().GetDataflowSpec().GetCleanTopicsOnDelete()
+
 	err := ep.client.consumerManager.RemoveModel(event.ModelName, cleanTopicsOnDeletion, keepTopics)
 	if err != nil {
-		ep.logger.WithError(err).Errorf("Failed to remove model %s", event.ModelName)
+		ep.reportFailure(
+			event,
+			scheduler.ModelUpdateMessage_Delete,
+			fmt.Sprintf("Failed to remove model %s", event.ModelName),
+			err,
+		)
+		return
 	}
+
+	ep.reportSuccess(
+		event,
+		scheduler.ModelUpdateMessage_Delete,
+		fmt.Sprintf("Model %s removed", event.ModelName),
+	)
 }
 
-func (ep *EventProcessor) handleDeleteModel(event *scheduler.ModelStatusResponse, versionStatus *scheduler.ModelVersionStatus) {
+func (ep *EventProcessor) handleCreateModel(event *scheduler.ModelStatusResponse) {
 	// if there are available replicas then we add the consumer for the model
 	// note that this will also get triggered if the model is already added but there is a status change (e.g. due to scale up)
 	// and in the case then it is a no-op
 	// note in the future we might want to check that available replicas > min replicas
+	versionStatus := event.Versions[0]
 	if versionStatus.GetState().GetState() != scheduler.ModelStatus_ModelAvailable {
 		ep.logger.Warnf("Model %s state is: %s", event.ModelName, versionStatus.GetState().GetState().String())
 	}
 
 	if ep.client.consumerManager.Exists(event.ModelName) {
-		ep.logger.Debugf("Model consumer %s already exists", event.ModelName)
+		ep.reportSuccess(
+			event,
+			scheduler.ModelUpdateMessage_Create,
+			fmt.Sprintf("Model consumer %s already exists", event.ModelName),
+		)
 		return
 	}
 
-	ep.logger.Infof("Adding model %s", event.ModelName)
 	err := ep.client.consumerManager.AddModel(event.ModelName)
 	if err != nil {
-		ep.client.logger.WithError(err).Errorf("Failed to add model %s", event.ModelName)
+		ep.reportFailure(
+			event,
+			scheduler.ModelUpdateMessage_Create,
+			fmt.Sprintf("Failed to add model %s", event.ModelName),
+			err,
+		)
+		return
 	}
+
+	ep.reportSuccess(
+		event,
+		scheduler.ModelUpdateMessage_Create,
+		fmt.Sprintf("Model %s added", event.ModelName),
+	)
 }
 
-func (kc *KafkaSchedulerClient) sendModelStatusEvent(
-	grpcClient scheduler.SchedulerClient,
+func (ep *EventProcessor) reportSuccess(
+	event *scheduler.ModelStatusResponse,
+	op scheduler.ModelUpdateMessage_ModelOperation,
+	message string,
+) {
+	ep.logger.Info(message)
+	ep.sendModelStatusEvent(event, op, true, message)
+}
+
+func (ep *EventProcessor) reportFailure(
+	event *scheduler.ModelStatusResponse,
+	op scheduler.ModelUpdateMessage_ModelOperation,
+	message string,
+	err error,
+) {
+	if err != nil {
+		ep.logger.WithError(err).Error(message)
+	} else {
+		ep.logger.Error(message)
+	}
+
+	ep.sendModelStatusEvent(event, op, false, message)
+}
+
+func (ep *EventProcessor) sendModelStatusEvent(
+	event *scheduler.ModelStatusResponse,
 	op scheduler.ModelUpdateMessage_ModelOperation,
 	success bool,
 	reason string,
-	timestamp uint64,
 ) {
-	_, err := grpcClient.ModelStatusEvent(
+	_, err := ep.grpcClient.ModelStatusEvent(
 		context.Background(),
 		&scheduler.ModelUpdateStatusMessage{
 			Update: &scheduler.ModelUpdateMessage{
-				Model:     "model",
-				Version:   0,
-				Uid:       "model-uid",
-				Timestamp: timestamp,
-				Stream:    "stream",
+				Model:     event.ModelName,
+				Version:   event.Versions[0].Version,
+				Timestamp: event.Timestamp,
+				Stream:    ep.subscriberName,
 			},
 			Success: success,
 			Reason:  reason,
 		},
 	)
 	if err != nil {
-		kc.logger.WithError(err).Errorf("Failed to send model status event %s", op.String())
+		ep.logger.WithError(err).Errorf("Failed to send model status event %s", op.String())
 	}
 }

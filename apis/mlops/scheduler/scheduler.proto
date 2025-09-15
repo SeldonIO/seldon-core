@@ -137,6 +137,7 @@ message ModelStatusResponse {
   repeated ModelVersionStatus versions = 2;
   bool deleted = 3;
   bool keepTopics = 4;
+  uint64 timestamp = 5;
 }
 
 message ModelVersionStatus {
