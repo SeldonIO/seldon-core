@@ -47,6 +47,10 @@ func (s *SchedulerServer) ModelStatusEvent(ctx context.Context, message *pb.Mode
 		message.Update.Model, message.Update.Version, statusVal.String(),
 	)
 
+	// model, _ := s.modelStore.GetModel(message.Update.Model)
+	// version := model.GetVersion(message.Update.Version)
+	// state := version.ModelState()
+
 	return &pb.ModelUpdateStatusResponse{}, nil
 }
 

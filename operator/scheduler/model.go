@@ -282,6 +282,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 				latestModel.Status.AvailableReplicas = int32(
 					modelStatus.GetAvailableReplicas(),
 				)
+				latestModel.Status.ModelGwReady = modelStatus.GetModelGwReady()
 				latestModel.Status.Selector = "server=" + latestVersionStatus.ServerName
 				return s.updateModelStatus(ctxWithTimeout, latestModel)
 			})

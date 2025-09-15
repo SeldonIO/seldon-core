@@ -141,7 +141,9 @@ type ModelStatus struct {
 	Selector string `json:"selector,omitempty"`
 	// Number of available replicas
 	AvailableReplicas int32 `json:"availableReplicas,omitempty"`
-	duckv1.Status     `json:",inline"`
+	// Model Gateway ready status
+	ModelGwReady  bool `json:"modelgwReady,omitempty"`
+	duckv1.Status `json:",inline"`
 }
 
 //+kubebuilder:object:root=true
@@ -151,6 +153,7 @@ type ModelStatus struct {
 //+kubebuilder:printcolumn:name="Ready",type=string,JSONPath=`.status.conditions[?(@.type=="ModelReady")].status`,description="Model ready status"
 //+kubebuilder:printcolumn:name="Desired Replicas",type=integer,JSONPath=`.spec.replicas`,description="Number of desired replicas"
 //+kubebuilder:printcolumn:name="Available Replicas",type=integer,JSONPath=`.status.availableReplicas`,description="Number of replicas available to receive inference requests"
+//+kubebuilder:printcolumn:name="ModelGw Ready",type=string,JSONPath=`.status.modelgwReady`,description="Model Gateway ready status"
 //+kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 
 // Model is the Schema for the models API
