@@ -31,8 +31,8 @@ export let options = {
     iterations: 500,
 }
 
-const modelNamePrefix1 = 'automatedtests-pipeline-1-node-echo'
-const modelNamePrefix2 = 'automatedtests-pipeline-2-node-echo'
+const modelNamePrefix1 = 'automatedtests-1-echo'
+const modelNamePrefix2 = 'automatedtests-2-echo'
 const pipelineName1 = modelNamePrefix1 + '-pipeline';
 const pipelineName2 = modelNamePrefix2 + '-pipeline';
 const serverName = "autotest-mlserver"
@@ -60,7 +60,7 @@ export function setup() {
         })
 
         ctl.unloadPipelineFn(pipeline1.pipelineName, true)
-        ctl.loadPipelineFn(pipeline1.pipelineName, pipeline1.pipelineCRYaml, false, false)
+        ctl.loadPipelineFn(pipeline1.pipelineName, pipeline1.pipelineCRYaml, true, true)
 
         const pipeline2 = generateMultiModelPipelineYaml(5, modelType, pipelineName2,modelNamePrefix2, modelParams, config.modelName, 1, serverName)
 

@@ -307,7 +307,6 @@ export function awaitServerStatus(serverName, status, throwError=false, maxRetri
     let retries = 0
     try {
         while (!serverConditionMet(serverName, status)) {
-            console.log("waiting for server status", serverName, status)
             sleep(1)
             retries++
             if(retries > maxRetries) {

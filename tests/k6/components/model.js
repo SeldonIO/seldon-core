@@ -12,6 +12,7 @@ const mlflow_wine = "mlflow_wine" // mlserver
 const add10 = "add10" // https://github.com/SeldonIO/triton-python-examples/tree/master/add10
 const sentiment = "sentiment" // mlserver
 const echo = "echo"
+const synth = "synth"
 
 const models = {
     mlflow_wine: {
@@ -97,6 +98,14 @@ const models = {
     echo: {
         "modelTemplate": {
             "uriTemplate": "gs://seldon-models/integration-tests/models/mlserver/echo",
+            "maxUriSuffix": 0,
+            "memoryBytes": 20000,
+            "requirements": ["mlserver"]
+        },
+    },
+    synth: {
+        "modelTemplate": {
+            "uriTemplate": "gs://seldon-models/integration-tests/models/mlserver/reference-workload-model",
             "maxUriSuffix": 0,
             "memoryBytes": 20000,
             "requirements": ["mlserver"]
@@ -227,7 +236,18 @@ export function getModelInferencePayload(modelType, inferBatchSize) {
             "http": { "inputs": [{ "name": "predict", "data": data, "datatype": datatype, "shape": shape }] },
             "grpc": { "inputs": [{ "name": "input_1", "contents": { "fp32_contents": grpcData }, "datatype": datatype, "shape": shape }] }
         }
+    } else if (modelType == synth) {
+        const shape = [1]
+        const data = new Array(1).fill("h")
+        const grpcData = new Int32Array(data)
+        const datatype = "BYTES"
+        return {
+            "http": { "inputs": [{ "data": data, "datatype": datatype, "shape": shape }] },
+            "grpc": { "inputs": [{ "name": "input_1", "contents": { "fp32_contents": grpcData }, "datatype": datatype, "shape": shape }] }
+        }
     }
+
+    throw Error(modelType + " not supported")
 }
 
 export function generateExperiment(experimentName, modelType, modelName1, modelName2, uriOffset, replicas, isProxy = false, memoryBytes = null, inferBatchSize = 1) {
@@ -421,6 +441,115 @@ export function generateModel(modelType, modelName, uriOffset, replicas, isProxy
     }
 }
 
+function isNonEmptyArray(value) {
+    return Array.isArray(value) && value.length > 0;
+}
+
+export function generateMultiModelParallelPipelineYaml(pipelineName,
+                                                       inputModelNames,
+                                                       inputModelType,
+                                                       inputModelParams,
+                                                       outputModelName,
+                                                       outputModelType,
+                                                       uriOffset,
+                                                       replicas,
+                                                       deployToServer,
+                                                       isProxy = false,
+                                                       memoryBytes = null,
+                                                       inferBatchSize = 1) {
+    if (!isNonEmptyArray(inputModelNames)) {
+        throw Error("inputModels should be array of at least 1")
+    }
+
+    const data = models[inputModelType]
+    const modelTemplate = data.modelTemplate
+    var uri = modelTemplate.uriTemplate
+    if (modelTemplate.maxUriSuffix > 0) {
+        uri = uri + (uriOffset % modelTemplate.maxUriSuffix).toString()
+    }
+
+    const pipelineCR = {
+        "apiVersion": "mlops.seldon.io/v1alpha1",
+        "kind": "Pipeline",
+        "metadata": {
+            "name": pipelineName,
+            "namespace": getConfig().namespace
+        },
+        "spec": {
+            "steps" : [],
+            "output" : {
+                "steps": [outputModelName]
+            }
+        }
+    }
+
+    let modelCRYaml = [];
+
+    for (let i = 0; i < inputModelNames.length; i++) {
+        const modelName = inputModelNames[i]
+
+        let modelCR = {
+            "apiVersion": "mlops.seldon.io/v1alpha1",
+            "kind": "Model",
+            "metadata": {
+                "name": modelName,
+                "namespace": getConfig().namespace
+            },
+            "spec": {
+                "storageUri": uri,
+                "requirements": modelTemplate.requirements,
+                "memory": (memoryBytes == null) ? modelTemplate.memoryBytes : memoryBytes,
+                "replicas": replicas,
+                "parameters": (inputModelParams != null) ? inputModelParams : [],
+                "server" : deployToServer,
+            }
+        }
+
+        modelCRYaml.push(modelCR)
+        pipelineCR.spec.steps.push({"name": modelName})
+    }
+
+    pipelineCR.spec.steps.push({
+        "name": outputModelName,
+        "inputsJoinType" : "inner",
+        "triggersJoinType": "inner",
+        "triggers" : inputModelNames.map(name => name + '.outputs'),
+        "inputs" : [ inputModelNames[0] + ".outputs.OUTPUT0" ]})
+
+    const outputModelData = models[outputModelType]
+    const outputModelTemplate = outputModelData.modelTemplate
+    var outputURI = outputModelTemplate.uriTemplate
+    if (outputModelTemplate.maxUriSuffix > 0) {
+        outputURI = outputURI + (uriOffset % outputModelTemplate.maxUriSuffix).toString()
+    }
+
+    const outputModelCR = {
+        "apiVersion": "mlops.seldon.io/v1alpha1",
+        "kind": "Model",
+        "metadata": {
+            "name": outputModelName,
+            "namespace": getConfig().namespace
+        },
+        "spec": {
+            "storageUri": outputURI,
+            "requirements": outputModelTemplate.requirements,
+            "memory": (memoryBytes == null) ? modelTemplate.memoryBytes : memoryBytes,
+            "replicas": replicas,
+            "parameters": (inputModelParams != null) ? inputModelParams : [],
+            "server" : deployToServer,
+        }
+    }
+    modelCRYaml.push(outputModelCR)
+
+    const pipelineCRYaml = yamlDump(pipelineCR)
+    const inference = getModelInferencePayload(inputModelType, inferBatchSize)
+    return {
+        "modelCRYaml": modelCRYaml,
+        "pipelineCRYaml": pipelineCRYaml,
+        "pipelineName" : pipelineCR.metadata.name,
+        "inference": JSON.parse(JSON.stringify(inference))
+    }
+}
 
 export function generateMultiModelPipelineYaml(numberOfModels, modelType, pipelineName, modelName, modelParams, uriOffset, replicas, deployToServer, isProxy = false, memoryBytes = null, inferBatchSize = 1) {
     if (numberOfModels < 1) {
@@ -497,6 +626,7 @@ export function generateMultiModelPipelineYaml(numberOfModels, modelType, pipeli
     }
 }
 
+// TODO fix tests since changing this func
 export function generatePipelineName(modelName) {
-    return modelName + "-pipeline"
+    return modelName
 }
