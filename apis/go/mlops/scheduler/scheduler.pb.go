@@ -2060,7 +2060,7 @@ type ModelStatus struct {
 	AvailableReplicas   uint32                 `protobuf:"varint,3,opt,name=availableReplicas,proto3" json:"availableReplicas,omitempty"`
 	UnavailableReplicas uint32                 `protobuf:"varint,4,opt,name=unavailableReplicas,proto3" json:"unavailableReplicas,omitempty"`
 	LastChangeTimestamp *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=lastChangeTimestamp,proto3" json:"lastChangeTimestamp,omitempty"`
-	ModelGwReady        bool                   `protobuf:"varint,6,opt,name=modelGwReady,proto3" json:"modelGwReady,omitempty"`
+	ModelGwState        ModelStatus_ModelState `protobuf:"varint,6,opt,name=modelGwState,proto3,enum=seldon.mlops.scheduler.ModelStatus_ModelState" json:"modelGwState,omitempty"`
 }
 
 func (x *ModelStatus) Reset() {
@@ -2130,11 +2130,11 @@ func (x *ModelStatus) GetLastChangeTimestamp() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *ModelStatus) GetModelGwReady() bool {
+func (x *ModelStatus) GetModelGwState() ModelStatus_ModelState {
 	if x != nil {
-		return x.ModelGwReady
+		return x.ModelGwState
 	}
-	return false
+	return ModelStatus_ModelStateUnknown
 }
 
 type ModelReplicaStatus struct {
@@ -4946,7 +4946,7 @@ var file_mlops_scheduler_scheduler_proto_rawDesc = []byte{
 	0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x52, 0x65, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x53, 0x74, 0x61, 0x74,
 	0x75, 0x73, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x42, 0x11, 0x0a,
 	0x0f, 0x5f, 0x6b, 0x75, 0x62, 0x65, 0x72, 0x6e, 0x65, 0x74, 0x65, 0x73, 0x4d, 0x65, 0x74, 0x61,
-	0x42, 0x0c, 0x0a, 0x0a, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x44, 0x65, 0x66, 0x6e, 0x22, 0x8c,
+	0x42, 0x0c, 0x0a, 0x0a, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x44, 0x65, 0x66, 0x6e, 0x22, 0xbc,
 	0x04, 0x0a, 0x0b, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x44,
 	0x0a, 0x05, 0x73, 0x74, 0x61, 0x74, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x2e, 0x2e,
 	0x73, 0x65, 0x6c, 0x64, 0x6f, 0x6e, 0x2e, 0x6d, 0x6c, 0x6f, 0x70, 0x73, 0x2e, 0x73, 0x63, 0x68,
@@ -4964,9 +4964,12 @@ var file_mlops_scheduler_scheduler_proto_rawDesc = []byte{
 	0x61, 0x6d, 0x70, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67,
 	0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65,
 	0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x13, 0x6c, 0x61, 0x73, 0x74, 0x43, 0x68, 0x61, 0x6e, 0x67,
-	0x65, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x22, 0x0a, 0x0c, 0x6d, 0x6f,
-	0x64, 0x65, 0x6c, 0x47, 0x77, 0x52, 0x65, 0x61, 0x64, 0x79, 0x18, 0x06, 0x20, 0x01, 0x28, 0x08,
-	0x52, 0x0c, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x47, 0x77, 0x52, 0x65, 0x61, 0x64, 0x79, 0x22, 0xcc,
+	0x65, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x52, 0x0a, 0x0c, 0x6d, 0x6f,
+	0x64, 0x65, 0x6c, 0x47, 0x77, 0x53, 0x74, 0x61, 0x74, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0e,
+	0x32, 0x2e, 0x2e, 0x73, 0x65, 0x6c, 0x64, 0x6f, 0x6e, 0x2e, 0x6d, 0x6c, 0x6f, 0x70, 0x73, 0x2e,
+	0x73, 0x63, 0x68, 0x65, 0x64, 0x75, 0x6c, 0x65, 0x72, 0x2e, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x53,
+	0x74, 0x61, 0x74, 0x75, 0x73, 0x2e, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x53, 0x74, 0x61, 0x74, 0x65,
+	0x52, 0x0c, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x47, 0x77, 0x53, 0x74, 0x61, 0x74, 0x65, 0x22, 0xcc,
 	0x01, 0x0a, 0x0a, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x15, 0x0a,
 	0x11, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x53, 0x74, 0x61, 0x74, 0x65, 0x55, 0x6e, 0x6b, 0x6e, 0x6f,
 	0x77, 0x6e, 0x10, 0x00, 0x12, 0x14, 0x0a, 0x10, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x50, 0x72, 0x6f,
@@ -5760,90 +5763,91 @@ var file_mlops_scheduler_scheduler_proto_depIdxs = []int32{
 	12, // 21: seldon.mlops.scheduler.ModelVersionStatus.modelDefn:type_name -> seldon.mlops.scheduler.Model
 	1,  // 22: seldon.mlops.scheduler.ModelStatus.state:type_name -> seldon.mlops.scheduler.ModelStatus.ModelState
 	80, // 23: seldon.mlops.scheduler.ModelStatus.lastChangeTimestamp:type_name -> google.protobuf.Timestamp
-	2,  // 24: seldon.mlops.scheduler.ModelReplicaStatus.state:type_name -> seldon.mlops.scheduler.ModelReplicaStatus.ModelReplicaState
-	80, // 25: seldon.mlops.scheduler.ModelReplicaStatus.lastChangeTimestamp:type_name -> google.protobuf.Timestamp
-	3,  // 26: seldon.mlops.scheduler.ServerStatusResponse.type:type_name -> seldon.mlops.scheduler.ServerStatusResponse.Type
-	37, // 27: seldon.mlops.scheduler.ServerStatusResponse.resources:type_name -> seldon.mlops.scheduler.ServerReplicaResources
-	24, // 28: seldon.mlops.scheduler.ServerStatusResponse.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
-	28, // 29: seldon.mlops.scheduler.ModelStatusRequest.model:type_name -> seldon.mlops.scheduler.ModelReference
-	41, // 30: seldon.mlops.scheduler.ServerNotifyRequest.servers:type_name -> seldon.mlops.scheduler.ServerNotify
-	24, // 31: seldon.mlops.scheduler.ServerNotify.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
-	45, // 32: seldon.mlops.scheduler.StartExperimentRequest.experiment:type_name -> seldon.mlops.scheduler.Experiment
-	47, // 33: seldon.mlops.scheduler.Experiment.candidates:type_name -> seldon.mlops.scheduler.ExperimentCandidate
-	48, // 34: seldon.mlops.scheduler.Experiment.mirror:type_name -> seldon.mlops.scheduler.ExperimentMirror
-	46, // 35: seldon.mlops.scheduler.Experiment.config:type_name -> seldon.mlops.scheduler.ExperimentConfig
-	24, // 36: seldon.mlops.scheduler.Experiment.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
-	0,  // 37: seldon.mlops.scheduler.Experiment.resourceType:type_name -> seldon.mlops.scheduler.ResourceType
-	24, // 38: seldon.mlops.scheduler.ExperimentStatusResponse.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
-	56, // 39: seldon.mlops.scheduler.LoadPipelineRequest.pipeline:type_name -> seldon.mlops.scheduler.Pipeline
-	57, // 40: seldon.mlops.scheduler.Pipeline.steps:type_name -> seldon.mlops.scheduler.PipelineStep
-	60, // 41: seldon.mlops.scheduler.Pipeline.output:type_name -> seldon.mlops.scheduler.PipelineOutput
-	24, // 42: seldon.mlops.scheduler.Pipeline.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
-	59, // 43: seldon.mlops.scheduler.Pipeline.input:type_name -> seldon.mlops.scheduler.PipelineInput
-	14, // 44: seldon.mlops.scheduler.Pipeline.dataflowSpec:type_name -> seldon.mlops.scheduler.DataflowSpec
-	77, // 45: seldon.mlops.scheduler.PipelineStep.tensorMap:type_name -> seldon.mlops.scheduler.PipelineStep.TensorMapEntry
-	4,  // 46: seldon.mlops.scheduler.PipelineStep.inputsJoin:type_name -> seldon.mlops.scheduler.PipelineStep.JoinOp
-	4,  // 47: seldon.mlops.scheduler.PipelineStep.triggersJoin:type_name -> seldon.mlops.scheduler.PipelineStep.JoinOp
-	58, // 48: seldon.mlops.scheduler.PipelineStep.batch:type_name -> seldon.mlops.scheduler.Batch
-	5,  // 49: seldon.mlops.scheduler.PipelineInput.joinType:type_name -> seldon.mlops.scheduler.PipelineInput.JoinOp
-	5,  // 50: seldon.mlops.scheduler.PipelineInput.triggersJoin:type_name -> seldon.mlops.scheduler.PipelineInput.JoinOp
-	78, // 51: seldon.mlops.scheduler.PipelineInput.tensorMap:type_name -> seldon.mlops.scheduler.PipelineInput.TensorMapEntry
-	6,  // 52: seldon.mlops.scheduler.PipelineOutput.stepsJoin:type_name -> seldon.mlops.scheduler.PipelineOutput.JoinOp
-	79, // 53: seldon.mlops.scheduler.PipelineOutput.tensorMap:type_name -> seldon.mlops.scheduler.PipelineOutput.TensorMapEntry
-	67, // 54: seldon.mlops.scheduler.PipelineStatusResponse.versions:type_name -> seldon.mlops.scheduler.PipelineWithState
-	7,  // 55: seldon.mlops.scheduler.PipelineStatusResponse.operation:type_name -> seldon.mlops.scheduler.PipelineStatusResponse.PipelineOperation
-	56, // 56: seldon.mlops.scheduler.PipelineWithState.pipeline:type_name -> seldon.mlops.scheduler.Pipeline
-	68, // 57: seldon.mlops.scheduler.PipelineWithState.state:type_name -> seldon.mlops.scheduler.PipelineVersionState
-	8,  // 58: seldon.mlops.scheduler.PipelineVersionState.status:type_name -> seldon.mlops.scheduler.PipelineVersionState.PipelineStatus
-	80, // 59: seldon.mlops.scheduler.PipelineVersionState.lastChangeTimestamp:type_name -> google.protobuf.Timestamp
-	8,  // 60: seldon.mlops.scheduler.PipelineVersionState.pipelineGwStatus:type_name -> seldon.mlops.scheduler.PipelineVersionState.PipelineStatus
-	9,  // 61: seldon.mlops.scheduler.ControlPlaneResponse.event:type_name -> seldon.mlops.scheduler.ControlPlaneResponse.Event
-	10, // 62: seldon.mlops.scheduler.ModelUpdateMessage.op:type_name -> seldon.mlops.scheduler.ModelUpdateMessage.ModelOperation
-	73, // 63: seldon.mlops.scheduler.ModelUpdateStatusMessage.update:type_name -> seldon.mlops.scheduler.ModelUpdateMessage
-	34, // 64: seldon.mlops.scheduler.ModelVersionStatus.ModelReplicaStateEntry.value:type_name -> seldon.mlops.scheduler.ModelReplicaStatus
-	40, // 65: seldon.mlops.scheduler.Scheduler.ServerNotify:input_type -> seldon.mlops.scheduler.ServerNotifyRequest
-	11, // 66: seldon.mlops.scheduler.Scheduler.LoadModel:input_type -> seldon.mlops.scheduler.LoadModelRequest
-	29, // 67: seldon.mlops.scheduler.Scheduler.UnloadModel:input_type -> seldon.mlops.scheduler.UnloadModelRequest
-	54, // 68: seldon.mlops.scheduler.Scheduler.LoadPipeline:input_type -> seldon.mlops.scheduler.LoadPipelineRequest
-	62, // 69: seldon.mlops.scheduler.Scheduler.UnloadPipeline:input_type -> seldon.mlops.scheduler.UnloadPipelineRequest
-	44, // 70: seldon.mlops.scheduler.Scheduler.StartExperiment:input_type -> seldon.mlops.scheduler.StartExperimentRequest
-	50, // 71: seldon.mlops.scheduler.Scheduler.StopExperiment:input_type -> seldon.mlops.scheduler.StopExperimentRequest
-	35, // 72: seldon.mlops.scheduler.Scheduler.ServerStatus:input_type -> seldon.mlops.scheduler.ServerStatusRequest
-	39, // 73: seldon.mlops.scheduler.Scheduler.ModelStatus:input_type -> seldon.mlops.scheduler.ModelStatusRequest
-	64, // 74: seldon.mlops.scheduler.Scheduler.PipelineStatus:input_type -> seldon.mlops.scheduler.PipelineStatusRequest
-	55, // 75: seldon.mlops.scheduler.Scheduler.ExperimentStatus:input_type -> seldon.mlops.scheduler.ExperimentStatusRequest
-	69, // 76: seldon.mlops.scheduler.Scheduler.SchedulerStatus:input_type -> seldon.mlops.scheduler.SchedulerStatusRequest
-	43, // 77: seldon.mlops.scheduler.Scheduler.SubscribeServerStatus:input_type -> seldon.mlops.scheduler.ServerSubscriptionRequest
-	38, // 78: seldon.mlops.scheduler.Scheduler.SubscribeModelStatus:input_type -> seldon.mlops.scheduler.ModelSubscriptionRequest
-	52, // 79: seldon.mlops.scheduler.Scheduler.SubscribeExperimentStatus:input_type -> seldon.mlops.scheduler.ExperimentSubscriptionRequest
-	65, // 80: seldon.mlops.scheduler.Scheduler.SubscribePipelineStatus:input_type -> seldon.mlops.scheduler.PipelineSubscriptionRequest
-	81, // 81: seldon.mlops.scheduler.Scheduler.PipelineStatusEvent:input_type -> seldon.mlops.chainer.PipelineUpdateStatusMessage
-	74, // 82: seldon.mlops.scheduler.Scheduler.ModelStatusEvent:input_type -> seldon.mlops.scheduler.ModelUpdateStatusMessage
-	71, // 83: seldon.mlops.scheduler.Scheduler.SubscribeControlPlane:input_type -> seldon.mlops.scheduler.ControlPlaneSubscriptionRequest
-	42, // 84: seldon.mlops.scheduler.Scheduler.ServerNotify:output_type -> seldon.mlops.scheduler.ServerNotifyResponse
-	27, // 85: seldon.mlops.scheduler.Scheduler.LoadModel:output_type -> seldon.mlops.scheduler.LoadModelResponse
-	30, // 86: seldon.mlops.scheduler.Scheduler.UnloadModel:output_type -> seldon.mlops.scheduler.UnloadModelResponse
-	61, // 87: seldon.mlops.scheduler.Scheduler.LoadPipeline:output_type -> seldon.mlops.scheduler.LoadPipelineResponse
-	63, // 88: seldon.mlops.scheduler.Scheduler.UnloadPipeline:output_type -> seldon.mlops.scheduler.UnloadPipelineResponse
-	49, // 89: seldon.mlops.scheduler.Scheduler.StartExperiment:output_type -> seldon.mlops.scheduler.StartExperimentResponse
-	51, // 90: seldon.mlops.scheduler.Scheduler.StopExperiment:output_type -> seldon.mlops.scheduler.StopExperimentResponse
-	36, // 91: seldon.mlops.scheduler.Scheduler.ServerStatus:output_type -> seldon.mlops.scheduler.ServerStatusResponse
-	31, // 92: seldon.mlops.scheduler.Scheduler.ModelStatus:output_type -> seldon.mlops.scheduler.ModelStatusResponse
-	66, // 93: seldon.mlops.scheduler.Scheduler.PipelineStatus:output_type -> seldon.mlops.scheduler.PipelineStatusResponse
-	53, // 94: seldon.mlops.scheduler.Scheduler.ExperimentStatus:output_type -> seldon.mlops.scheduler.ExperimentStatusResponse
-	70, // 95: seldon.mlops.scheduler.Scheduler.SchedulerStatus:output_type -> seldon.mlops.scheduler.SchedulerStatusResponse
-	36, // 96: seldon.mlops.scheduler.Scheduler.SubscribeServerStatus:output_type -> seldon.mlops.scheduler.ServerStatusResponse
-	31, // 97: seldon.mlops.scheduler.Scheduler.SubscribeModelStatus:output_type -> seldon.mlops.scheduler.ModelStatusResponse
-	53, // 98: seldon.mlops.scheduler.Scheduler.SubscribeExperimentStatus:output_type -> seldon.mlops.scheduler.ExperimentStatusResponse
-	66, // 99: seldon.mlops.scheduler.Scheduler.SubscribePipelineStatus:output_type -> seldon.mlops.scheduler.PipelineStatusResponse
-	82, // 100: seldon.mlops.scheduler.Scheduler.PipelineStatusEvent:output_type -> seldon.mlops.chainer.PipelineUpdateStatusResponse
-	75, // 101: seldon.mlops.scheduler.Scheduler.ModelStatusEvent:output_type -> seldon.mlops.scheduler.ModelUpdateStatusResponse
-	72, // 102: seldon.mlops.scheduler.Scheduler.SubscribeControlPlane:output_type -> seldon.mlops.scheduler.ControlPlaneResponse
-	84, // [84:103] is the sub-list for method output_type
-	65, // [65:84] is the sub-list for method input_type
-	65, // [65:65] is the sub-list for extension type_name
-	65, // [65:65] is the sub-list for extension extendee
-	0,  // [0:65] is the sub-list for field type_name
+	1,  // 24: seldon.mlops.scheduler.ModelStatus.modelGwState:type_name -> seldon.mlops.scheduler.ModelStatus.ModelState
+	2,  // 25: seldon.mlops.scheduler.ModelReplicaStatus.state:type_name -> seldon.mlops.scheduler.ModelReplicaStatus.ModelReplicaState
+	80, // 26: seldon.mlops.scheduler.ModelReplicaStatus.lastChangeTimestamp:type_name -> google.protobuf.Timestamp
+	3,  // 27: seldon.mlops.scheduler.ServerStatusResponse.type:type_name -> seldon.mlops.scheduler.ServerStatusResponse.Type
+	37, // 28: seldon.mlops.scheduler.ServerStatusResponse.resources:type_name -> seldon.mlops.scheduler.ServerReplicaResources
+	24, // 29: seldon.mlops.scheduler.ServerStatusResponse.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
+	28, // 30: seldon.mlops.scheduler.ModelStatusRequest.model:type_name -> seldon.mlops.scheduler.ModelReference
+	41, // 31: seldon.mlops.scheduler.ServerNotifyRequest.servers:type_name -> seldon.mlops.scheduler.ServerNotify
+	24, // 32: seldon.mlops.scheduler.ServerNotify.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
+	45, // 33: seldon.mlops.scheduler.StartExperimentRequest.experiment:type_name -> seldon.mlops.scheduler.Experiment
+	47, // 34: seldon.mlops.scheduler.Experiment.candidates:type_name -> seldon.mlops.scheduler.ExperimentCandidate
+	48, // 35: seldon.mlops.scheduler.Experiment.mirror:type_name -> seldon.mlops.scheduler.ExperimentMirror
+	46, // 36: seldon.mlops.scheduler.Experiment.config:type_name -> seldon.mlops.scheduler.ExperimentConfig
+	24, // 37: seldon.mlops.scheduler.Experiment.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
+	0,  // 38: seldon.mlops.scheduler.Experiment.resourceType:type_name -> seldon.mlops.scheduler.ResourceType
+	24, // 39: seldon.mlops.scheduler.ExperimentStatusResponse.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
+	56, // 40: seldon.mlops.scheduler.LoadPipelineRequest.pipeline:type_name -> seldon.mlops.scheduler.Pipeline
+	57, // 41: seldon.mlops.scheduler.Pipeline.steps:type_name -> seldon.mlops.scheduler.PipelineStep
+	60, // 42: seldon.mlops.scheduler.Pipeline.output:type_name -> seldon.mlops.scheduler.PipelineOutput
+	24, // 43: seldon.mlops.scheduler.Pipeline.kubernetesMeta:type_name -> seldon.mlops.scheduler.KubernetesMeta
+	59, // 44: seldon.mlops.scheduler.Pipeline.input:type_name -> seldon.mlops.scheduler.PipelineInput
+	14, // 45: seldon.mlops.scheduler.Pipeline.dataflowSpec:type_name -> seldon.mlops.scheduler.DataflowSpec
+	77, // 46: seldon.mlops.scheduler.PipelineStep.tensorMap:type_name -> seldon.mlops.scheduler.PipelineStep.TensorMapEntry
+	4,  // 47: seldon.mlops.scheduler.PipelineStep.inputsJoin:type_name -> seldon.mlops.scheduler.PipelineStep.JoinOp
+	4,  // 48: seldon.mlops.scheduler.PipelineStep.triggersJoin:type_name -> seldon.mlops.scheduler.PipelineStep.JoinOp
+	58, // 49: seldon.mlops.scheduler.PipelineStep.batch:type_name -> seldon.mlops.scheduler.Batch
+	5,  // 50: seldon.mlops.scheduler.PipelineInput.joinType:type_name -> seldon.mlops.scheduler.PipelineInput.JoinOp
+	5,  // 51: seldon.mlops.scheduler.PipelineInput.triggersJoin:type_name -> seldon.mlops.scheduler.PipelineInput.JoinOp
+	78, // 52: seldon.mlops.scheduler.PipelineInput.tensorMap:type_name -> seldon.mlops.scheduler.PipelineInput.TensorMapEntry
+	6,  // 53: seldon.mlops.scheduler.PipelineOutput.stepsJoin:type_name -> seldon.mlops.scheduler.PipelineOutput.JoinOp
+	79, // 54: seldon.mlops.scheduler.PipelineOutput.tensorMap:type_name -> seldon.mlops.scheduler.PipelineOutput.TensorMapEntry
+	67, // 55: seldon.mlops.scheduler.PipelineStatusResponse.versions:type_name -> seldon.mlops.scheduler.PipelineWithState
+	7,  // 56: seldon.mlops.scheduler.PipelineStatusResponse.operation:type_name -> seldon.mlops.scheduler.PipelineStatusResponse.PipelineOperation
+	56, // 57: seldon.mlops.scheduler.PipelineWithState.pipeline:type_name -> seldon.mlops.scheduler.Pipeline
+	68, // 58: seldon.mlops.scheduler.PipelineWithState.state:type_name -> seldon.mlops.scheduler.PipelineVersionState
+	8,  // 59: seldon.mlops.scheduler.PipelineVersionState.status:type_name -> seldon.mlops.scheduler.PipelineVersionState.PipelineStatus
+	80, // 60: seldon.mlops.scheduler.PipelineVersionState.lastChangeTimestamp:type_name -> google.protobuf.Timestamp
+	8,  // 61: seldon.mlops.scheduler.PipelineVersionState.pipelineGwStatus:type_name -> seldon.mlops.scheduler.PipelineVersionState.PipelineStatus
+	9,  // 62: seldon.mlops.scheduler.ControlPlaneResponse.event:type_name -> seldon.mlops.scheduler.ControlPlaneResponse.Event
+	10, // 63: seldon.mlops.scheduler.ModelUpdateMessage.op:type_name -> seldon.mlops.scheduler.ModelUpdateMessage.ModelOperation
+	73, // 64: seldon.mlops.scheduler.ModelUpdateStatusMessage.update:type_name -> seldon.mlops.scheduler.ModelUpdateMessage
+	34, // 65: seldon.mlops.scheduler.ModelVersionStatus.ModelReplicaStateEntry.value:type_name -> seldon.mlops.scheduler.ModelReplicaStatus
+	40, // 66: seldon.mlops.scheduler.Scheduler.ServerNotify:input_type -> seldon.mlops.scheduler.ServerNotifyRequest
+	11, // 67: seldon.mlops.scheduler.Scheduler.LoadModel:input_type -> seldon.mlops.scheduler.LoadModelRequest
+	29, // 68: seldon.mlops.scheduler.Scheduler.UnloadModel:input_type -> seldon.mlops.scheduler.UnloadModelRequest
+	54, // 69: seldon.mlops.scheduler.Scheduler.LoadPipeline:input_type -> seldon.mlops.scheduler.LoadPipelineRequest
+	62, // 70: seldon.mlops.scheduler.Scheduler.UnloadPipeline:input_type -> seldon.mlops.scheduler.UnloadPipelineRequest
+	44, // 71: seldon.mlops.scheduler.Scheduler.StartExperiment:input_type -> seldon.mlops.scheduler.StartExperimentRequest
+	50, // 72: seldon.mlops.scheduler.Scheduler.StopExperiment:input_type -> seldon.mlops.scheduler.StopExperimentRequest
+	35, // 73: seldon.mlops.scheduler.Scheduler.ServerStatus:input_type -> seldon.mlops.scheduler.ServerStatusRequest
+	39, // 74: seldon.mlops.scheduler.Scheduler.ModelStatus:input_type -> seldon.mlops.scheduler.ModelStatusRequest
+	64, // 75: seldon.mlops.scheduler.Scheduler.PipelineStatus:input_type -> seldon.mlops.scheduler.PipelineStatusRequest
+	55, // 76: seldon.mlops.scheduler.Scheduler.ExperimentStatus:input_type -> seldon.mlops.scheduler.ExperimentStatusRequest
+	69, // 77: seldon.mlops.scheduler.Scheduler.SchedulerStatus:input_type -> seldon.mlops.scheduler.SchedulerStatusRequest
+	43, // 78: seldon.mlops.scheduler.Scheduler.SubscribeServerStatus:input_type -> seldon.mlops.scheduler.ServerSubscriptionRequest
+	38, // 79: seldon.mlops.scheduler.Scheduler.SubscribeModelStatus:input_type -> seldon.mlops.scheduler.ModelSubscriptionRequest
+	52, // 80: seldon.mlops.scheduler.Scheduler.SubscribeExperimentStatus:input_type -> seldon.mlops.scheduler.ExperimentSubscriptionRequest
+	65, // 81: seldon.mlops.scheduler.Scheduler.SubscribePipelineStatus:input_type -> seldon.mlops.scheduler.PipelineSubscriptionRequest
+	81, // 82: seldon.mlops.scheduler.Scheduler.PipelineStatusEvent:input_type -> seldon.mlops.chainer.PipelineUpdateStatusMessage
+	74, // 83: seldon.mlops.scheduler.Scheduler.ModelStatusEvent:input_type -> seldon.mlops.scheduler.ModelUpdateStatusMessage
+	71, // 84: seldon.mlops.scheduler.Scheduler.SubscribeControlPlane:input_type -> seldon.mlops.scheduler.ControlPlaneSubscriptionRequest
+	42, // 85: seldon.mlops.scheduler.Scheduler.ServerNotify:output_type -> seldon.mlops.scheduler.ServerNotifyResponse
+	27, // 86: seldon.mlops.scheduler.Scheduler.LoadModel:output_type -> seldon.mlops.scheduler.LoadModelResponse
+	30, // 87: seldon.mlops.scheduler.Scheduler.UnloadModel:output_type -> seldon.mlops.scheduler.UnloadModelResponse
+	61, // 88: seldon.mlops.scheduler.Scheduler.LoadPipeline:output_type -> seldon.mlops.scheduler.LoadPipelineResponse
+	63, // 89: seldon.mlops.scheduler.Scheduler.UnloadPipeline:output_type -> seldon.mlops.scheduler.UnloadPipelineResponse
+	49, // 90: seldon.mlops.scheduler.Scheduler.StartExperiment:output_type -> seldon.mlops.scheduler.StartExperimentResponse
+	51, // 91: seldon.mlops.scheduler.Scheduler.StopExperiment:output_type -> seldon.mlops.scheduler.StopExperimentResponse
+	36, // 92: seldon.mlops.scheduler.Scheduler.ServerStatus:output_type -> seldon.mlops.scheduler.ServerStatusResponse
+	31, // 93: seldon.mlops.scheduler.Scheduler.ModelStatus:output_type -> seldon.mlops.scheduler.ModelStatusResponse
+	66, // 94: seldon.mlops.scheduler.Scheduler.PipelineStatus:output_type -> seldon.mlops.scheduler.PipelineStatusResponse
+	53, // 95: seldon.mlops.scheduler.Scheduler.ExperimentStatus:output_type -> seldon.mlops.scheduler.ExperimentStatusResponse
+	70, // 96: seldon.mlops.scheduler.Scheduler.SchedulerStatus:output_type -> seldon.mlops.scheduler.SchedulerStatusResponse
+	36, // 97: seldon.mlops.scheduler.Scheduler.SubscribeServerStatus:output_type -> seldon.mlops.scheduler.ServerStatusResponse
+	31, // 98: seldon.mlops.scheduler.Scheduler.SubscribeModelStatus:output_type -> seldon.mlops.scheduler.ModelStatusResponse
+	53, // 99: seldon.mlops.scheduler.Scheduler.SubscribeExperimentStatus:output_type -> seldon.mlops.scheduler.ExperimentStatusResponse
+	66, // 100: seldon.mlops.scheduler.Scheduler.SubscribePipelineStatus:output_type -> seldon.mlops.scheduler.PipelineStatusResponse
+	82, // 101: seldon.mlops.scheduler.Scheduler.PipelineStatusEvent:output_type -> seldon.mlops.chainer.PipelineUpdateStatusResponse
+	75, // 102: seldon.mlops.scheduler.Scheduler.ModelStatusEvent:output_type -> seldon.mlops.scheduler.ModelUpdateStatusResponse
+	72, // 103: seldon.mlops.scheduler.Scheduler.SubscribeControlPlane:output_type -> seldon.mlops.scheduler.ControlPlaneResponse
+	85, // [85:104] is the sub-list for method output_type
+	66, // [66:85] is the sub-list for method input_type
+	66, // [66:66] is the sub-list for extension type_name
+	66, // [66:66] is the sub-list for extension extendee
+	0,  // [0:66] is the sub-list for field type_name
 }
 
 func init() { file_mlops_scheduler_scheduler_proto_init() }

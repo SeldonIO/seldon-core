@@ -391,7 +391,7 @@ spec:
                 type: array
               modelgwReady:
                 description: Model Gateway ready status
-                type: boolean
+                type: string
               observedGeneration:
                 description: |-
                   ObservedGeneration is the 'Generation' of the Service that

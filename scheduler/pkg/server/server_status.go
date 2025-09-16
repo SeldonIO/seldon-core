@@ -20,6 +20,10 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
+const (
+	modelStatusEventSource = "model.store.modelgw"
+)
+
 func (s *SchedulerServer) ModelStatusEvent(ctx context.Context, message *pb.ModelUpdateStatusMessage) (*pb.ModelUpdateStatusResponse, error) {
 	s.modelEventStream.mu.Lock()
 	defer s.modelEventStream.mu.Unlock()
@@ -47,10 +51,24 @@ func (s *SchedulerServer) ModelStatusEvent(ctx context.Context, message *pb.Mode
 		message.Update.Model, message.Update.Version, statusVal.String(),
 	)
 
-	// model, _ := s.modelStore.GetModel(message.Update.Model)
-	// version := model.GetVersion(message.Update.Version)
-	// state := version.ModelState()
+	model, err := s.modelStore.GetModel(message.Update.Model)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to get model %s", message.Update.Model)
+		return nil, err
+	}
 
+	// update the model state
+	state := model.GetVersion(message.Update.Version).ModelState()
+	state.ModelGWState = statusVal
+
+	s.eventHub.PublishModelEvent(
+		modelStatusEventSource,
+		coordinator.ModelEventMsg{
+			ModelName:    message.Update.Model,
+			ModelVersion: message.Update.Version,
+			Source:       modelStatusEventSource,
+		},
+	)
 	return &pb.ModelUpdateStatusResponse{}, nil
 }
 
@@ -312,8 +330,13 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 			}
 		}
 
-		// send to model gateway streams
-		s.sendModelStatusEventToStreams(evt, ms, modelGwStreams)
+		// send to model gateway streams only if the message
+		// is not an ack from the model gateway itself
+		if evt.Source != modelStatusEventSource {
+			s.sendModelStatusEventToStreams(evt, ms, modelGwStreams)
+		}
+
+		// send to all other streams
 		s.sendModelStatusEventToStreams(evt, ms, otherStreams)
 	}
 	return nil

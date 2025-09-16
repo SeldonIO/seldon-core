@@ -142,7 +142,7 @@ type ModelStatus struct {
 	// Number of available replicas
 	AvailableReplicas int32 `json:"availableReplicas,omitempty"`
 	// Model Gateway ready status
-	ModelGwReady  bool `json:"modelgwReady,omitempty"`
+	ModelGwStatus string `json:"modelgwReady,omitempty"`
 	duckv1.Status `json:",inline"`
 }
 

@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-logr/logr"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -235,44 +236,10 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 
 				// Handle status update
 				modelStatus := latestVersionStatus.GetState()
-				switch modelStatus.GetState() {
-				case scheduler.ModelStatus_ModelAvailable:
-					logger.Info(
-						"Setting model to ready",
-						"name", event.ModelName,
-						"state", modelStatus.GetState().String(),
-					)
-					latestModel.Status.CreateAndSetCondition(
-						v1alpha1.ModelReady,
-						true,
-						modelStatus.GetState().String(),
-						modelStatus.GetReason(),
-					)
-				case scheduler.ModelStatus_ModelScaledDown:
-					logger.Info(
-						"Setting model to not ready",
-						"name", event.ModelName,
-						"state", modelStatus.GetState().String(),
-					)
-					latestModel.Status.CreateAndSetCondition(
-						v1alpha1.ModelReady,
-						false,
-						modelStatus.GetState().String(),
-						modelStatus.GetReason(),
-					)
-				default:
-					logger.Info(
-						"Setting model to not ready",
-						"name", event.ModelName,
-						"state", modelStatus.GetState().String(),
-					)
-					latestModel.Status.CreateAndSetCondition(
-						v1alpha1.ModelReady,
-						false,
-						modelStatus.GetState().String(),
-						modelStatus.GetReason(),
-					)
-				}
+				setModelStatus(modelStatus, event, latestModel, &logger)
+
+				// Set modelgw status
+				latestModel.Status.ModelGwStatus = modelStatus.GetModelGwState().String()
 
 				// Set the total number of replicas targeted by this model
 				latestModel.Status.Replicas = int32(
@@ -282,7 +249,6 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 				latestModel.Status.AvailableReplicas = int32(
 					modelStatus.GetAvailableReplicas(),
 				)
-				latestModel.Status.ModelGwReady = modelStatus.GetModelGwReady()
 				latestModel.Status.Selector = "server=" + latestVersionStatus.ServerName
 				return s.updateModelStatus(ctxWithTimeout, latestModel)
 			})
@@ -293,6 +259,51 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 
 	}
 	return nil
+}
+
+func setModelStatus(
+	modelStatus *scheduler.ModelStatus, event *scheduler.ModelStatusResponse, latestModel *v1alpha1.Model, logger *logr.Logger,
+) {
+	// Handle status update
+
+	switch modelStatus.GetState() {
+	case scheduler.ModelStatus_ModelAvailable:
+		logger.Info(
+			"Setting model to ready",
+			"name", event.ModelName,
+			"state", modelStatus.GetState().String(),
+		)
+		latestModel.Status.CreateAndSetCondition(
+			v1alpha1.ModelReady,
+			true,
+			modelStatus.GetState().String(),
+			modelStatus.GetReason(),
+		)
+	case scheduler.ModelStatus_ModelScaledDown:
+		logger.Info(
+			"Setting model to not ready",
+			"name", event.ModelName,
+			"state", modelStatus.GetState().String(),
+		)
+		latestModel.Status.CreateAndSetCondition(
+			v1alpha1.ModelReady,
+			false,
+			modelStatus.GetState().String(),
+			modelStatus.GetReason(),
+		)
+	default:
+		logger.Info(
+			"Setting model to not ready",
+			"name", event.ModelName,
+			"state", modelStatus.GetState().String(),
+		)
+		latestModel.Status.CreateAndSetCondition(
+			v1alpha1.ModelReady,
+			false,
+			modelStatus.GetState().String(),
+			modelStatus.GetReason(),
+		)
+	}
 }
 
 func canRemoveFinalizer(state scheduler.ModelStatus_ModelState) bool {

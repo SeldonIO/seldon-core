@@ -62,6 +62,7 @@ type ModelVersion struct {
 
 type ModelStatus struct {
 	State               ModelState
+	ModelGWState        ModelState
 	Reason              string
 	AvailableReplicas   uint32
 	UnavailableReplicas uint32
