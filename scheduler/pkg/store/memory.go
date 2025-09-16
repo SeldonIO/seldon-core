@@ -919,12 +919,13 @@ func (m *MemoryStore) setModelGwModelStateImpl(name string, versionNumber uint32
 		return nil, fmt.Errorf("version not found for model %s, version %d", name, versionNumber)
 	}
 
-	if modelVersion.state.ModelGWState != status {
+	if modelVersion.state.ModelGWState != status || modelVersion.state.ModelGWReason != reason {
 		modelVersion.state.ModelGWState = status
-		modelVersion.state.Reason = reason
+		modelVersion.state.ModelGWReason = reason
 		evt := &coordinator.ModelEventMsg{
 			ModelName:    modelVersion.GetMeta().GetName(),
 			ModelVersion: modelVersion.GetVersion(),
+			Source:       source,
 		}
 		evts = append(evts, evt)
 	}

@@ -64,6 +64,7 @@ type ModelStatus struct {
 	State               ModelState
 	ModelGWState        ModelState
 	Reason              string
+	ModelGWReason       string
 	AvailableReplicas   uint32
 	UnavailableReplicas uint32
 	DrainingReplicas    uint32

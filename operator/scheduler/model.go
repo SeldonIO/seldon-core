@@ -156,11 +156,12 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 			"version", latestVersionStatus.Version,
 			"generation", latestVersionStatus.GetKubernetesMeta().Generation,
 			"state", latestVersionStatus.State.State.String(),
+			"modelGwState", latestVersionStatus.State.ModelGwState.String(),
 			"reason", latestVersionStatus.State.Reason,
 		)
 
 		// Handle terminated event to remove finalizer
-		if canRemoveFinalizer(latestVersionStatus.State.State) {
+		if canRemoveFinalizer(latestVersionStatus.State.State, latestVersionStatus.State.ModelGwState) {
 			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
 				defer cancel()
@@ -235,13 +236,19 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 				}
 
 				// Handle status update
+				logger.Info("Before setting model status")
 				modelStatus := latestVersionStatus.GetState()
 				setModelStatus(modelStatus, event, latestModel, &logger)
+				logger.Info("After setting model status")
 
 				// Set modelgw status
+				logger.Info("Before setting modelgw status")
 				latestModel.Status.ModelGwStatus = modelStatus.GetModelGwState().String()
+				latestModel.Status.ModelGwStatus += fmt.Sprintf("(%s) ", modelStatus.GetModelGwReason())
+				logger.Info("After setting modelgw status")
 
 				// Set the total number of replicas targeted by this model
+				logger.Info("Before setting replicas")
 				latestModel.Status.Replicas = int32(
 					modelStatus.GetAvailableReplicas() +
 						modelStatus.GetUnavailableReplicas(),
@@ -249,6 +256,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 				latestModel.Status.AvailableReplicas = int32(
 					modelStatus.GetAvailableReplicas(),
 				)
+				logger.Info("After setting replicas")
 				latestModel.Status.Selector = "server=" + latestVersionStatus.ServerName
 				return s.updateModelStatus(ctxWithTimeout, latestModel)
 			})
@@ -265,7 +273,6 @@ func setModelStatus(
 	modelStatus *scheduler.ModelStatus, event *scheduler.ModelStatusResponse, latestModel *v1alpha1.Model, logger *logr.Logger,
 ) {
 	// Handle status update
-
 	switch modelStatus.GetState() {
 	case scheduler.ModelStatus_ModelAvailable:
 		logger.Info(
@@ -306,17 +313,15 @@ func setModelStatus(
 	}
 }
 
-func canRemoveFinalizer(state scheduler.ModelStatus_ModelState) bool {
-	switch state {
-	case scheduler.ModelStatus_ModelTerminated,
-		scheduler.ModelStatus_ModelTerminateFailed,
-		scheduler.ModelStatus_ModelFailed,
-		scheduler.ModelStatus_ModelStateUnknown,
-		scheduler.ModelStatus_ScheduleFailed:
-		return true
-	default:
-		return false
-	}
+func canRemoveFinalizer(state scheduler.ModelStatus_ModelState, modelGwState scheduler.ModelStatus_ModelState) bool {
+	stateCond := (state == scheduler.ModelStatus_ModelTerminated ||
+		state == scheduler.ModelStatus_ModelTerminateFailed ||
+		state == scheduler.ModelStatus_ModelFailed ||
+		state == scheduler.ModelStatus_ModelStateUnknown ||
+		state == scheduler.ModelStatus_ScheduleFailed)
+	modelGwCond := (modelGwState == scheduler.ModelStatus_ModelTerminated ||
+		modelGwState == scheduler.ModelStatus_ModelFailed)
+	return stateCond && modelGwCond
 }
 
 func modelReady(status v1alpha1.ModelStatus) bool {

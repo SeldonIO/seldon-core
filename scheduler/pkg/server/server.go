@@ -440,6 +440,7 @@ func createModelVersionStatus(mv *store.ModelVersion) *pb.ModelVersionStatus {
 			State:               pb.ModelStatus_ModelState(pb.ModelStatus_ModelState_value[modelState.State.String()]),
 			ModelGwState:        pb.ModelStatus_ModelState(pb.ModelStatus_ModelState_value[modelState.ModelGWState.String()]),
 			Reason:              modelState.Reason,
+			ModelGwReason:       modelState.ModelGWReason,
 			LastChangeTimestamp: timestamppb.New(modelState.Timestamp),
 			AvailableReplicas:   modelState.AvailableReplicas,
 			UnavailableReplicas: modelState.UnavailableReplicas,

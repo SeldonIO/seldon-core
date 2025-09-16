@@ -167,6 +167,7 @@ message ModelStatus {
   uint32 unavailableReplicas = 4;
   google.protobuf.Timestamp lastChangeTimestamp = 5;
   ModelState modelGwState = 6;
+  string modelGwReason = 7;
 }
 
 message ModelReplicaStatus {
