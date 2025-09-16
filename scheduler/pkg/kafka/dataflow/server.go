@@ -23,10 +23,10 @@ import (
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/health"
-	kafkaconfig "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
+	cr "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/conflict-resolution"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -45,7 +45,7 @@ type ChainerServer struct {
 	pipelineHandler      pipeline.PipelineHandler
 	topicNamer           *kafka.TopicNamer
 	loadBalancer         util.LoadBalancer
-	conflictResolutioner *ConflictResolutioner[pipeline.PipelineStatus]
+	conflictResolutioner *cr.ConflictResolutioner[pipeline.PipelineStatus]
 	chainerMutex         sync.Map
 	chainer.UnimplementedChainerServer
 	health.UnimplementedHealthCheckServiceServer
@@ -58,8 +58,8 @@ type ChainerSubscription struct {
 }
 
 func NewChainerServer(logger log.FieldLogger, eventHub *coordinator.EventHub, pipelineHandler pipeline.PipelineHandler,
-	namespace string, loadBalancer util.LoadBalancer, kafkaConfig *kafkaconfig.KafkaConfig) (*ChainerServer, error) {
-	conflictResolutioner := NewConflictResolution[pipeline.PipelineStatus](logger)
+	namespace string, loadBalancer util.LoadBalancer, kafkaConfig *kafka_config.KafkaConfig) (*ChainerServer, error) {
+	conflictResolutioner := cr.NewConflictResolution[pipeline.PipelineStatus](logger)
 	topicNamer, err := kafka.NewTopicNamer(namespace, kafkaConfig.TopicPrefix)
 	if err != nil {
 		return nil, err
@@ -146,14 +146,14 @@ func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chaine
 		stream, pipelineName, pipelineVersion, statusVal.String(),
 	)
 
-	if IsPipelineMessageOutdated(c.conflictResolutioner, message) {
+	if cr.IsPipelineMessageOutdated(c.conflictResolutioner, message) {
 		// Maybe in the future we can process the outdated message in case of an error
 		logger.Debugf("Message for pipeline %s:%d is outdated, ignoring", pipelineName, pipelineVersion)
 		return &chainer.PipelineUpdateStatusResponse{}, nil
 	}
 
 	c.conflictResolutioner.UpdateStatus(pipelineName, stream, statusVal)
-	pipelineStatusVal, reason := GetPipelineStatus(c.conflictResolutioner, pipelineName, message)
+	pipelineStatusVal, reason := cr.GetPipelineStatus(c.conflictResolutioner, pipelineName, message)
 	if pipelineStatusVal == pipeline.PipelineTerminated {
 		c.conflictResolutioner.Delete(pipelineName)
 	}
@@ -401,8 +401,8 @@ func (c *ChainerServer) sendPipelineMsgToSelectedServers(msg *chainer.PipelineUp
 	logger := c.logger.WithField("func", "sendPipelineMsg")
 	servers := c.loadBalancer.GetServersForKey(pv.UID)
 
-	CreateNewPipelineIteration(c.conflictResolutioner, pv.Name, servers)
-	msg.Timestamp = c.conflictResolutioner.vectorClock[pv.Name]
+	cr.CreateNewPipelineIteration(c.conflictResolutioner, pv.Name, servers)
+	msg.Timestamp = c.conflictResolutioner.VectorClock[pv.Name]
 
 	for _, serverId := range servers {
 		if subscription, ok := c.streams[serverId]; ok {
@@ -458,7 +458,7 @@ func (c *ChainerServer) rebalance() {
 		} else {
 			var msg *chainer.PipelineUpdateMessage
 			servers := c.loadBalancer.GetServersForKey(pv.UID)
-			CreateNewPipelineIteration(c.conflictResolutioner, pv.Name, servers)
+			cr.CreateNewPipelineIteration(c.conflictResolutioner, pv.Name, servers)
 
 			for server, subscription := range c.streams {
 				if contains(servers, server) {

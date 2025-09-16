@@ -7,7 +7,7 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package dataflow
+package conflict_resolution
 
 import (
 	"fmt"
@@ -22,40 +22,40 @@ import (
 )
 
 type ConflictResolutioner[Status comparable] struct {
-	vectorClock          map[string]uint64
-	vectorResponseStatus map[string]map[string]Status
+	VectorClock          map[string]uint64
+	VectorResponseStatus map[string]map[string]Status
 	logger               log.FieldLogger
 }
 
 func NewConflictResolution[Status comparable](logger log.FieldLogger) *ConflictResolutioner[Status] {
 	return &ConflictResolutioner[Status]{
-		vectorClock:          make(map[string]uint64),
-		vectorResponseStatus: make(map[string]map[string]Status),
+		VectorClock:          make(map[string]uint64),
+		VectorResponseStatus: make(map[string]map[string]Status),
 		logger:               logger.WithField("source", "dataflow-conflict-resolution"),
 	}
 }
 
 func (cr *ConflictResolutioner[Status]) Delete(name string) {
-	delete(cr.vectorClock, name)
-	delete(cr.vectorResponseStatus, name)
+	delete(cr.VectorClock, name)
+	delete(cr.VectorResponseStatus, name)
 }
 
 func (cr *ConflictResolutioner[Status]) UpdateStatus(name string, stream string, status Status) {
 	logger := cr.logger.WithField("func", "UpdatePipelineStatus")
 	logger.Debugf("Updating %s stream %s status to %v", name, stream, status)
-	cr.vectorResponseStatus[name][stream] = status
+	cr.VectorResponseStatus[name][stream] = status
 }
 
 func (cr *ConflictResolutioner[Status]) IsMessageOutdated(
 	timestamp uint64, name string, stream string,
 ) bool {
 	logger := cr.logger.WithField("func", "IsMessageOutdated")
-	if timestamp != cr.vectorClock[name] {
-		logger.Debugf("Message timestamp %d does not match current vector clock timestamp %d for %s, ignoring message", timestamp, cr.vectorClock[name], name)
+	if timestamp != cr.VectorClock[name] {
+		logger.Debugf("Message timestamp %d does not match current vector clock timestamp %d for %s, ignoring message", timestamp, cr.VectorClock[name], name)
 		return true
 	}
 
-	if _, ok := cr.vectorResponseStatus[name][stream]; !ok {
+	if _, ok := cr.VectorResponseStatus[name][stream]; !ok {
 		logger.Debugf("Stream %s not found in vector response status for pipeline %s, ignoring message", stream, name)
 		return true
 	}
@@ -64,17 +64,17 @@ func (cr *ConflictResolutioner[Status]) IsMessageOutdated(
 }
 
 func (cr *ConflictResolutioner[Status]) CreateNewIteration(name string, servers []string, status Status) {
-	cr.vectorClock[name]++
-	cr.vectorResponseStatus[name] = make(map[string]Status)
+	cr.VectorClock[name]++
+	cr.VectorResponseStatus[name] = make(map[string]Status)
 
 	for _, server := range servers {
-		cr.vectorResponseStatus[name][server] = status
+		cr.VectorResponseStatus[name][server] = status
 	}
 }
 
 func (cr *ConflictResolutioner[Status]) GetCountWithStatus(name string, status Status) int {
 	count := 0
-	for _, streamStatus := range cr.vectorResponseStatus[name] {
+	for _, streamStatus := range cr.VectorResponseStatus[name] {
 		if streamStatus == status {
 			count++
 		}
@@ -83,7 +83,7 @@ func (cr *ConflictResolutioner[Status]) GetCountWithStatus(name string, status S
 }
 
 func (cr *ConflictResolutioner[Status]) GetTimestamp(name string) uint64 {
-	if timestamp, ok := cr.vectorClock[name]; ok {
+	if timestamp, ok := cr.VectorClock[name]; ok {
 		return timestamp
 	}
 	cr.logger.Warnf("Timestamp for %s not found, returning 0", name)
@@ -104,7 +104,7 @@ func CreateNewPipelineIteration(
 
 func GetCountPipelineWithStatus(cr *ConflictResolutioner[pipeline.PipelineStatus], pipelineName string, status pipeline.PipelineStatus) int {
 	count := 0
-	for _, streamStatus := range cr.vectorResponseStatus[pipelineName] {
+	for _, streamStatus := range cr.VectorResponseStatus[pipelineName] {
 		if streamStatus == status {
 			count++
 		}
@@ -118,7 +118,7 @@ func GetPipelineStatus(
 	message *chainer.PipelineUpdateStatusMessage,
 ) (pipeline.PipelineStatus, string) {
 	logger := cr.logger.WithField("func", "GetPipelineStatus")
-	streams := cr.vectorResponseStatus[pipelineName]
+	streams := cr.VectorResponseStatus[pipelineName]
 
 	var messageStr = ""
 	readyCount := GetCountPipelineWithStatus(cr, pipelineName, pipeline.PipelineReady)
@@ -210,7 +210,7 @@ func GetModelStatus(
 	message *pb.ModelUpdateStatusMessage,
 ) (store.ModelState, string) {
 	logger := cr.logger.WithField("func", "GetModelStatus")
-	streams := cr.vectorResponseStatus[modelName]
+	streams := cr.VectorResponseStatus[modelName]
 	unknownCount := cr.GetCountWithStatus(modelName, store.ModelStateUnknown)
 
 	if message.Update.Op == pb.ModelUpdateMessage_Create {

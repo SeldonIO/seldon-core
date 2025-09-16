@@ -7,7 +7,7 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package dataflow
+package conflict_resolution
 
 import (
 	"testing"
@@ -47,9 +47,9 @@ func TestCreateNewIteration(t *testing.T) {
 			cr := newTestConflictResolutioner()
 			CreateNewPipelineIteration(cr, test.pipelineName, test.servers)
 
-			g.Expect(cr.vectorClock[test.pipelineName]).To(gomega.Equal(test.expectedClock))
+			g.Expect(cr.VectorClock[test.pipelineName]).To(gomega.Equal(test.expectedClock))
 			for _, server := range test.servers {
-				g.Expect(cr.vectorResponseStatus[test.pipelineName][server]).To(gomega.Equal(pipeline.PipelineStatusUnknown))
+				g.Expect(cr.VectorResponseStatus[test.pipelineName][server]).To(gomega.Equal(pipeline.PipelineStatusUnknown))
 			}
 		})
 	}
@@ -63,7 +63,7 @@ func TestUpdatePipelineStatus(t *testing.T) {
 		CreateNewPipelineIteration(cr, "pipeline1", []string{"a"})
 
 		cr.UpdateStatus("pipeline1", "a", pipeline.PipelineReady)
-		g.Expect(cr.vectorResponseStatus["pipeline1"]["a"]).To(gomega.Equal(pipeline.PipelineReady))
+		g.Expect(cr.VectorResponseStatus["pipeline1"]["a"]).To(gomega.Equal(pipeline.PipelineReady))
 	})
 }
 
@@ -75,8 +75,8 @@ func TestDeletePipeline(t *testing.T) {
 		CreateNewPipelineIteration(cr, "pipeline1", []string{"a"})
 		cr.Delete("pipeline1")
 
-		_, exists1 := cr.vectorClock["pipeline1"]
-		_, exists2 := cr.vectorResponseStatus["pipeline1"]
+		_, exists1 := cr.VectorClock["pipeline1"]
+		_, exists2 := cr.VectorResponseStatus["pipeline1"]
 
 		g.Expect(exists1).To(gomega.BeFalse())
 		g.Expect(exists2).To(gomega.BeFalse())
