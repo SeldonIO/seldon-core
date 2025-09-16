@@ -33,9 +33,9 @@ const outputModelName = 'automatedtests-combiner'
 const pipelineName = 'automatedtests-parallel';
 const serverName = "autotest-mlserver"
 
-const replicaModelGw = 2;
-const replicaDataFlowEngine = 2;
-const replicaPipeLineGw = 2;
+const replicaModelGw = 1;
+const replicaDataFlowEngine = 1;
+const replicaPipeLineGw = 1;
 
 
 export function setup() {
@@ -65,7 +65,7 @@ export function setup() {
 
         const server = generateServer(serverName, "mlserver", 1, 1, 1)
         ctl.unloadServerFn(server.object.metadata.name, true, true)
-        ctl.loadServerFn(server.yaml, server.object.metadata.name, true, true)
+        ctl.loadServerFn(server.yaml, server.object.metadata.name, true, true, 30)
 
         const pipeline = generateMultiModelParallelPipelineYaml(pipelineName,
             [inputModelName1, inputModelName2], inputModelType, inputModelParams, outputModelName,
@@ -79,7 +79,7 @@ export function setup() {
         ctl.unloadPipelineFn(pipeline.pipelineName, true)
         ctl.loadPipelineFn(pipeline.pipelineName, pipeline.pipelineCRYaml, true, true)
 
-        const seldonRuneTime = generateSeldonRuntime(1, 1, 1)
+        const seldonRuneTime = generateSeldonRuntime(replicaModelGw, replicaPipeLineGw, replicaDataFlowEngine)
         ctl.loadSeldonRuntimeFn(seldonRuneTime.object, false, true)
 
         // wait for pipeline to be ready since scaling data-plane services
@@ -91,48 +91,33 @@ export function setup() {
     })
 }
 
-// runScaleServicesOpTimes how many times to scale services up/down during test, it will be evenly distributed across
+// runScaleModelGwOpTimes how many times to scale up model-gw during test, it will be evenly distributed across
 // the progress of the test
-const runScaleServicesOpTimes = 4
+const runScaleModelGwOpTimes = 3
 // vuIDToRunScaleOps VU ID to run scale services operation from
 const vuIDToRunScaleOps = 1;
-// scaledOpRunHistory records how many times any scaling op has run during test
+// scaledOpRunHistory records how many times scaled up has run during test
 let scaledOpRunHistory = 0;
-
-
-// TODO make user stories
-// issues found:
-// 1. pipeline-gw doesn't get confirmation from envoy, route is removed before shutting down HTTP server, put in workaround for now
-// 2. reqs time out as they wait for dataflow-engines to rebalance when scaled
+// replicaCountModelGw how many replicas for model-gw
+let replicaCountModelGw = replicaModelGw;
 
 
 export default function (config) {
     if (exec.vu.idInTest === vuIDToRunScaleOps) {
-        if (exec.scenario.progress >= ((scaledOpRunHistory + 1) / (runScaleServicesOpTimes + 1))) {
+        if (exec.scenario.progress >= ((scaledOpRunHistory + 1) / (runScaleModelGwOpTimes + 1))) {
+            replicaCountModelGw++;
+            console.log("Scaling UP model-gw to " + replicaCountModelGw + " replicas at " + Math.round(exec.scenario.progress * 100) + "% progress");
+
             k8s.init()
             const ctl = connectControlPlaneOps(config)
-
-            let scaleModelGw, scalePipelineGw, scaleDataflowEngine;
-            if ((scaledOpRunHistory % 2) === 0) {
-                console.log("Scaling UP at progress " + exec.scenario.progress * 100 + "%")
-                scaleModelGw = replicaModelGw
-                scalePipelineGw = replicaPipeLineGw
-                scaleDataflowEngine = replicaDataFlowEngine
-            } else {
-                console.log("Scaling DOWN at progress " + exec.scenario.progress * 100 + "%")
-                scaleModelGw = replicaModelGw - 1
-                scalePipelineGw = replicaPipeLineGw - 1
-                scaleDataflowEngine = replicaDataFlowEngine - 1
-            }
-
-            const seldonRuneTime = generateSeldonRuntime(scaleModelGw, scalePipelineGw, scaleDataflowEngine)
+            const seldonRuneTime = generateSeldonRuntime(replicaCountModelGw, replicaPipeLineGw, replicaDataFlowEngine)
             ctl.loadSeldonRuntimeFn(seldonRuneTime.object, false, true)
             scaledOpRunHistory++;
         }
     }
 
     const inferPayload = getModelInferencePayload(inputModelType, 1)
-    inferHttp(config.inferHttpEndpoint, pipelineName, inferPayload.http, true, true, config.debug, null, "10s")
+    inferHttp(config.inferHttpEndpoint, pipelineName, inferPayload.http, true, true, config.debug, null)
 }
 
 export function teardown(config) {
