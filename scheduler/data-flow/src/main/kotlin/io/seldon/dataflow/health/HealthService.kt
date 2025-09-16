@@ -47,13 +47,6 @@ class HealthService {
         logger.debug("Added startup health check: ${healthCheck.name}")
     }
 
-    /**
-     * Register a health check for both liveness and readiness probes
-     */
-    fun addHealthCheck(healthCheck: HealthCheck) {
-        addLivenessCheck(healthCheck)
-        addReadinessCheck(healthCheck)
-    }
 
     /**
      * Execute liveness health checks

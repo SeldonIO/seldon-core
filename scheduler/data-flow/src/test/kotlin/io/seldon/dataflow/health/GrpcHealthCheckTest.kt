@@ -24,38 +24,7 @@ class GrpcHealthCheckTest {
     fun `should return healthy status when grpc channel is ready`() =
         runBlocking {
             // Given
-            val mockChannel =
-                object : ManagedChannel() {
-                    override fun getState(requestConnection: Boolean) = ConnectivityState.READY
-
-                    override fun authority() = "test-service:9000"
-
-                    override fun shutdown() = this
-
-                    override fun shutdownNow() = this
-
-                    override fun isShutdown() = false
-
-                    override fun isTerminated() = false
-
-                    override fun awaitTermination(
-                        timeout: Long,
-                        unit: TimeUnit,
-                    ) = false
-
-                    override fun notifyWhenStateChanged(
-                        source: ConnectivityState,
-                        callback: Runnable,
-                    ) {}
-
-                    override fun <RequestT, ResponseT> newCall(
-                        methodDescriptor: io.grpc.MethodDescriptor<RequestT, ResponseT>,
-                        callOptions: io.grpc.CallOptions,
-                    ) = throw UnsupportedOperationException("Mock implementation")
-
-                    override fun resetConnectBackoff() {}
-                }
-
+            val mockChannel = createMockChannel(ConnectivityState.READY)
             val healthCheck = GrpcHealthCheck(mockChannel, "test-service")
 
             // When
