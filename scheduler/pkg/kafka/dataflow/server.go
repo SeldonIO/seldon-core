@@ -45,7 +45,7 @@ type ChainerServer struct {
 	pipelineHandler      pipeline.PipelineHandler
 	topicNamer           *kafka.TopicNamer
 	loadBalancer         util.LoadBalancer
-	conflictResolutioner *ConflictResolutioner
+	conflictResolutioner *ConflictResolutioner[pipeline.PipelineStatus]
 	chainerMutex         sync.Map
 	chainer.UnimplementedChainerServer
 	health.UnimplementedHealthCheckServiceServer
@@ -59,7 +59,7 @@ type ChainerSubscription struct {
 
 func NewChainerServer(logger log.FieldLogger, eventHub *coordinator.EventHub, pipelineHandler pipeline.PipelineHandler,
 	namespace string, loadBalancer util.LoadBalancer, kafkaConfig *kafkaconfig.KafkaConfig) (*ChainerServer, error) {
-	conflictResolutioner := NewConflictResolution(logger)
+	conflictResolutioner := NewConflictResolution[pipeline.PipelineStatus](logger)
 	topicNamer, err := kafka.NewTopicNamer(namespace, kafkaConfig.TopicPrefix)
 	if err != nil {
 		return nil, err
@@ -146,16 +146,16 @@ func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chaine
 		stream, pipelineName, pipelineVersion, statusVal.String(),
 	)
 
-	if c.conflictResolutioner.IsMessageOutdated(message) {
+	if IsPipelineMessageOutdated(c.conflictResolutioner, message) {
 		// Maybe in the future we can process the outdated message in case of an error
 		logger.Debugf("Message for pipeline %s:%d is outdated, ignoring", pipelineName, pipelineVersion)
 		return &chainer.PipelineUpdateStatusResponse{}, nil
 	}
 
-	c.conflictResolutioner.UpdatePipelineStatus(pipelineName, stream, statusVal)
-	pipelineStatusVal, reason := c.conflictResolutioner.GetPipelineStatus(pipelineName, message)
+	c.conflictResolutioner.UpdateStatus(pipelineName, stream, statusVal)
+	pipelineStatusVal, reason := GetPipelineStatus(c.conflictResolutioner, pipelineName, message)
 	if pipelineStatusVal == pipeline.PipelineTerminated {
-		c.conflictResolutioner.DeletePipeline(pipelineName)
+		c.conflictResolutioner.Delete(pipelineName)
 	}
 
 	err := c.pipelineHandler.SetPipelineState(message.Update.Pipeline, message.Update.Version, message.Update.Uid, pipelineStatusVal, reason, util.SourceChainerServer)
@@ -401,7 +401,7 @@ func (c *ChainerServer) sendPipelineMsgToSelectedServers(msg *chainer.PipelineUp
 	logger := c.logger.WithField("func", "sendPipelineMsg")
 	servers := c.loadBalancer.GetServersForKey(pv.UID)
 
-	c.conflictResolutioner.CreateNewIteration(pv.Name, servers)
+	CreateNewPipelineIteration(c.conflictResolutioner, pv.Name, servers)
 	msg.Timestamp = c.conflictResolutioner.vectorClock[pv.Name]
 
 	for _, serverId := range servers {
@@ -458,7 +458,7 @@ func (c *ChainerServer) rebalance() {
 		} else {
 			var msg *chainer.PipelineUpdateMessage
 			servers := c.loadBalancer.GetServersForKey(pv.UID)
-			c.conflictResolutioner.CreateNewIteration(pv.Name, servers)
+			CreateNewPipelineIteration(c.conflictResolutioner, pv.Name, servers)
 
 			for server, subscription := range c.streams {
 				if contains(servers, server) {

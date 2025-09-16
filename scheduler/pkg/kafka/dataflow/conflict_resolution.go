@@ -15,64 +15,94 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
-type ConflictResolutioner struct {
-	vectorClock          map[string]uint64                             // key: pipeline name, value: vector clock timestamp
-	vectorResponseStatus map[string]map[string]pipeline.PipelineStatus // key: pipeline name, value: map of dataflow name to PipelineStatus
+type ConflictResolutioner[Status comparable] struct {
+	vectorClock          map[string]uint64
+	vectorResponseStatus map[string]map[string]Status
 	logger               log.FieldLogger
 }
 
-func NewConflictResolution(logger log.FieldLogger) *ConflictResolutioner {
-	return &ConflictResolutioner{
+func NewConflictResolution[Status comparable](logger log.FieldLogger) *ConflictResolutioner[Status] {
+	return &ConflictResolutioner[Status]{
 		vectorClock:          make(map[string]uint64),
-		vectorResponseStatus: make(map[string]map[string]pipeline.PipelineStatus),
+		vectorResponseStatus: make(map[string]map[string]Status),
 		logger:               logger.WithField("source", "dataflow-conflict-resolution"),
 	}
 }
 
-func (cr *ConflictResolutioner) DeletePipeline(pipelineName string) {
-	delete(cr.vectorClock, pipelineName)
-	delete(cr.vectorResponseStatus, pipelineName)
+func (cr *ConflictResolutioner[Status]) Delete(name string) {
+	delete(cr.vectorClock, name)
+	delete(cr.vectorResponseStatus, name)
 }
 
-func (cr *ConflictResolutioner) UpdatePipelineStatus(pipelineName string, stream string, status pipeline.PipelineStatus) {
+func (cr *ConflictResolutioner[Status]) UpdateStatus(name string, stream string, status Status) {
 	logger := cr.logger.WithField("func", "UpdatePipelineStatus")
-	logger.Debugf("Updating pipeline %s stream %s status to %s", pipelineName, stream, status)
-	cr.vectorResponseStatus[pipelineName][stream] = status
+	logger.Debugf("Updating %s stream %s status to %v", name, stream, status)
+	cr.vectorResponseStatus[name][stream] = status
 }
 
-func (cr *ConflictResolutioner) IsMessageOutdated(message *chainer.PipelineUpdateStatusMessage) bool {
+func (cr *ConflictResolutioner[Status]) IsMessageOutdated(
+	timestamp uint64, name string, stream string,
+) bool {
 	logger := cr.logger.WithField("func", "IsMessageOutdated")
-	timestamp := message.Update.Timestamp
-	pipelineName := message.Update.Pipeline
-	stream := message.Update.Stream
-
-	if timestamp != cr.vectorClock[pipelineName] {
-		logger.Debugf("Message timestamp %d does not match current vector clock timestamp %d for pipeline %s, ignoring message", timestamp, cr.vectorClock[pipelineName], pipelineName)
+	if timestamp != cr.vectorClock[name] {
+		logger.Debugf("Message timestamp %d does not match current vector clock timestamp %d for %s, ignoring message", timestamp, cr.vectorClock[name], name)
 		return true
 	}
 
-	if _, ok := cr.vectorResponseStatus[pipelineName][stream]; !ok {
-		logger.Debugf("Stream %s not found in vector response status for pipeline %s, ignoring message", stream, pipelineName)
+	if _, ok := cr.vectorResponseStatus[name][stream]; !ok {
+		logger.Debugf("Stream %s not found in vector response status for pipeline %s, ignoring message", stream, name)
 		return true
 	}
 
 	return false
 }
 
-func (cr *ConflictResolutioner) CreateNewIteration(pipelineName string, servers []string) {
-	cr.vectorClock[pipelineName]++
-	cr.vectorResponseStatus[pipelineName] = make(map[string]pipeline.PipelineStatus)
+func (cr *ConflictResolutioner[Status]) CreateNewIteration(name string, servers []string, status Status) {
+	cr.vectorClock[name]++
+	cr.vectorResponseStatus[name] = make(map[string]Status)
 
 	for _, server := range servers {
-		cr.vectorResponseStatus[pipelineName][server] = pipeline.PipelineStatusUnknown
+		cr.vectorResponseStatus[name][server] = status
 	}
 }
 
-func (cr *ConflictResolutioner) GetCountPipelineWithStatus(pipelineName string, status pipeline.PipelineStatus) int {
+func (cr *ConflictResolutioner[Status]) GetCountWithStatus(name string, status Status) int {
+	count := 0
+	for _, streamStatus := range cr.vectorResponseStatus[name] {
+		if streamStatus == status {
+			count++
+		}
+	}
+	return count
+}
+
+func (cr *ConflictResolutioner[Status]) GetTimestamp(name string) uint64 {
+	if timestamp, ok := cr.vectorClock[name]; ok {
+		return timestamp
+	}
+	cr.logger.Warnf("Timestamp for %s not found, returning 0", name)
+	return 0
+}
+
+// --------------------
+// Pipeline-specific
+// --------------------
+
+func CreateNewPipelineIteration(
+	cr *ConflictResolutioner[pipeline.PipelineStatus],
+	pipelineName string,
+	servers []string,
+) {
+	cr.CreateNewIteration(pipelineName, servers, pipeline.PipelineStatusUnknown)
+}
+
+func GetCountPipelineWithStatus(cr *ConflictResolutioner[pipeline.PipelineStatus], pipelineName string, status pipeline.PipelineStatus) int {
 	count := 0
 	for _, streamStatus := range cr.vectorResponseStatus[pipelineName] {
 		if streamStatus == status {
@@ -82,42 +112,36 @@ func (cr *ConflictResolutioner) GetCountPipelineWithStatus(pipelineName string, 
 	return count
 }
 
-func (cr *ConflictResolutioner) GetStreamsWithStatus(pipelineName string, status pipeline.PipelineStatus) []string {
-	streams := []string{}
-	for stream, streamStatus := range cr.vectorResponseStatus[pipelineName] {
-		if streamStatus == status {
-			streams = append(streams, stream)
-		}
-	}
-	return streams
-}
-
-func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *chainer.PipelineUpdateStatusMessage) (pipeline.PipelineStatus, string) {
+func GetPipelineStatus(
+	cr *ConflictResolutioner[pipeline.PipelineStatus],
+	pipelineName string,
+	message *chainer.PipelineUpdateStatusMessage,
+) (pipeline.PipelineStatus, string) {
 	logger := cr.logger.WithField("func", "GetPipelineStatus")
 	streams := cr.vectorResponseStatus[pipelineName]
 
 	var messageStr = ""
-	readyCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineReady)
+	readyCount := GetCountPipelineWithStatus(cr, pipelineName, pipeline.PipelineReady)
 	if readyCount > 0 {
 		messageStr += fmt.Sprintf("%d/%d ready ", readyCount, len(streams))
 	}
 
-	terminatedCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineTerminated)
+	terminatedCount := GetCountPipelineWithStatus(cr, pipelineName, pipeline.PipelineTerminated)
 	if terminatedCount > 0 {
 		messageStr += fmt.Sprintf("%d/%d terminated ", terminatedCount, len(streams))
 	}
 
-	failedCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineFailed)
+	failedCount := GetCountPipelineWithStatus(cr, pipelineName, pipeline.PipelineFailed)
 	if failedCount > 0 {
 		messageStr += fmt.Sprintf("%d/%d failed ", failedCount, len(streams))
 	}
 
-	rebalancingCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineRebalancing)
+	rebalancingCount := GetCountPipelineWithStatus(cr, pipelineName, pipeline.PipelineRebalancing)
 	if rebalancingCount > 0 {
 		messageStr += fmt.Sprintf("%d/%d rebalancing ", rebalancingCount, len(streams))
 	}
 
-	unknownCount := cr.GetCountPipelineWithStatus(pipelineName, pipeline.PipelineStatusUnknown)
+	unknownCount := GetCountPipelineWithStatus(cr, pipelineName, pipeline.PipelineStatusUnknown)
 	logger.Infof("Pipeline %s status counts: %s", pipelineName, messageStr)
 
 	if message.Update.Op == chainer.PipelineUpdateMessage_Create {
@@ -158,10 +182,89 @@ func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *
 	return pipeline.PipelineStatusUnknown, "Unknown operation or status"
 }
 
-func (cr *ConflictResolutioner) GetTimestamp(pipelineName string) uint64 {
-	if timestamp, ok := cr.vectorClock[pipelineName]; ok {
-		return timestamp
+func IsPipelineMessageOutdated(
+	cr *ConflictResolutioner[pipeline.PipelineStatus],
+	message *chainer.PipelineUpdateStatusMessage,
+) bool {
+	timestamp := message.Update.Timestamp
+	pipelineName := message.Update.Pipeline
+	stream := message.Update.Stream
+	return cr.IsMessageOutdated(timestamp, pipelineName, stream)
+}
+
+// --------------------
+// Model-specific
+// --------------------
+
+func CreateNewModelIteration(
+	cr *ConflictResolutioner[store.ModelState],
+	modelName string,
+	servers []string,
+) {
+	cr.CreateNewIteration(modelName, servers, store.ModelStateUnknown)
+}
+
+func GetModelStatus(
+	cr *ConflictResolutioner[store.ModelState],
+	modelName string,
+	message *pb.ModelUpdateStatusMessage,
+) (store.ModelState, string) {
+	logger := cr.logger.WithField("func", "GetModelStatus")
+	streams := cr.vectorResponseStatus[modelName]
+	unknownCount := cr.GetCountWithStatus(modelName, store.ModelStateUnknown)
+
+	if message.Update.Op == pb.ModelUpdateMessage_Create {
+		readyCount := cr.GetCountWithStatus(modelName, store.ModelAvailable)
+		failedCount := len(streams) - readyCount - unknownCount
+		message := fmt.Sprintf(
+			"%d/%d streams are ready, %d/%d still creating, %d/%d streams failed",
+			readyCount, len(streams),
+			unknownCount, len(streams),
+			failedCount, len(streams),
+		)
+		// We log info this cause the reason doesn't not display in case of
+		// success in the message column of k9s
+		//
+		// TODO: Implement something similar to models to display the numbers
+		// of available replicas
+		logger.Infof("Model %s status message: %s", modelName, message)
+		if failedCount == len(streams) {
+			return store.ModelFailed, message
+		}
+		if readyCount > 0 && unknownCount == 0 {
+			return store.ModelAvailable, message
+		}
+		return store.ModelProgressing, message
 	}
-	cr.logger.Warnf("Timestamp for pipeline %s not found, returning 0", pipelineName)
-	return 0
+
+	if message.Update.Op == pb.ModelUpdateMessage_Delete {
+		terminatedCount := cr.GetCountWithStatus(modelName, store.ModelTerminated)
+		failedCount := len(streams) - terminatedCount - unknownCount
+		message := fmt.Sprintf(
+			"%d/%d streams terminated, %d/%d still terminating, %d/%d streams failed to terminate",
+			terminatedCount, len(streams),
+			unknownCount, len(streams),
+			failedCount, len(streams),
+		)
+		logger.Infof("Model %s status message: %s", modelName, message)
+		if failedCount > 0 {
+			return store.ModelTerminateFailed, message
+		}
+		if terminatedCount == len(streams) {
+			return store.ModelTerminated, message
+		}
+		return store.ModelTerminating, message
+	}
+
+	return store.ModelStateUnknown, "Unknown operation or status"
+}
+
+func IsModelMessageOutdated(
+	cr *ConflictResolutioner[store.ModelState],
+	message *pb.ModelUpdateStatusMessage,
+) bool {
+	timestamp := message.Update.Timestamp
+	modelName := message.Update.Model
+	stream := message.Update.Stream
+	return cr.IsMessageOutdated(timestamp, modelName, stream)
 }
