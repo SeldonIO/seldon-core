@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -51,6 +52,8 @@ var (
 	cancel    context.CancelFunc
 
 	mockCtrl *gomock.Controller
+
+	muExpectedCalls sync.RWMutex
 )
 
 func TestAPIs(t *testing.T) {
@@ -110,6 +113,8 @@ var _ = BeforeSuite(func() {
 	//			}, "2s", "10ms").Should(BeTrue())
 	schedulerMock.EXPECT().ServerNotify(gomock.Any(), gomock.Any(), gomock.Any(), false).
 		DoAndReturn(func(_ context.Context, _ *scheduler.SchedulerClient, servers []mlopsv1alpha1.Server, isFirstSync bool) error {
+			muExpectedCalls.Lock()
+			defer muExpectedCalls.Unlock()
 
 			for _, server := range servers {
 				for serverName, check := range expectedServerNotifyCalls {
@@ -150,6 +155,8 @@ var _ = BeforeSuite(func() {
 }, 60)
 
 func addExpectedServerNotifyCall(serverName string, scalingSpec mlopsv1alpha1.ScalingSpec, successNotify *atomic.Bool) {
+	muExpectedCalls.Lock()
+	defer muExpectedCalls.Unlock()
 	expectedServerNotifyCalls[serverName] = expectedCallInfo{
 		spec:    scalingSpec,
 		success: successNotify,
