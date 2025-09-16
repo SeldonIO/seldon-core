@@ -101,6 +101,10 @@ func (f fakeModelStore) DrainServerReplica(serverName string, replicaIdx int) ([
 	panic("implement me")
 }
 
+func (f fakeModelStore) SetModelGwModelState(name string, versionNumber uint32, status store.ModelState, reason string, source string) error {
+	panic("implement me")
+}
+
 func TestUpdatePipelineModelAvailable(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {

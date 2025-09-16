@@ -129,6 +129,10 @@ func (f mockStore) AddModelEventListener(c chan *store.ModelSnapshot) {
 func (f mockStore) AddServerEventListener(c chan string) {
 }
 
+func (f mockStore) SetModelGwModelState(name string, versionNumber uint32, status store.ModelState, reason string, source string) error {
+	panic("implement me")
+}
+
 func TestScheduler(t *testing.T) {
 	logger := log.New()
 	g := NewGomegaWithT(t)

@@ -134,6 +134,10 @@ func (m *mockStore) GetAllModels() []string {
 	return modelNames
 }
 
+func (m *mockStore) SetModelGwModelState(name string, versionNumber uint32, status store.ModelState, reason string, source string) error {
+	panic("implement me")
+}
+
 type mockGrpcStream struct {
 	err error
 	grpc.ServerStream

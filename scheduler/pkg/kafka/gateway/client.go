@@ -328,6 +328,7 @@ func (ep *EventProcessor) sendModelStatusEvent(
 		context.Background(),
 		&scheduler.ModelUpdateStatusMessage{
 			Update: &scheduler.ModelUpdateMessage{
+				Op:        op,
 				Model:     event.ModelName,
 				Version:   event.Versions[0].Version,
 				Timestamp: event.Timestamp,

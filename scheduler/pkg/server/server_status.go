@@ -51,24 +51,18 @@ func (s *SchedulerServer) ModelStatusEvent(ctx context.Context, message *pb.Mode
 		message.Update.Model, message.Update.Version, statusVal.String(),
 	)
 
-	model, err := s.modelStore.GetModel(message.Update.Model)
+	err := s.modelStore.SetModelGwModelState(
+		message.Update.Model,
+		message.Update.Version,
+		statusVal,
+		message.Reason,
+		modelStatusEventSource,
+	)
 	if err != nil {
-		logger.WithError(err).Errorf("Failed to get model %s", message.Update.Model)
+		logger.WithError(err).Errorf("Failed to set model state for %s version %d to %s", message.Update.Model, message.Update.Version, statusVal.String())
 		return nil, err
 	}
 
-	// update the model state
-	state := model.GetVersion(message.Update.Version).ModelState()
-	state.ModelGWState = statusVal
-
-	s.eventHub.PublishModelEvent(
-		modelStatusEventSource,
-		coordinator.ModelEventMsg{
-			ModelName:    message.Update.Model,
-			ModelVersion: message.Update.Version,
-			Source:       modelStatusEventSource,
-		},
-	)
 	return &pb.ModelUpdateStatusResponse{}, nil
 }
 

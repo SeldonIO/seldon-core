@@ -527,6 +527,10 @@ func (f fakeModelStore) GetAllModels() []string {
 	panic("implement me")
 }
 
+func (f fakeModelStore) SetModelGwModelState(name string, versionNumber uint32, status store.ModelState, reason string, source string) error {
+	panic("implement me")
+}
+
 func TestHandleModelEvents(t *testing.T) {
 	g := NewGomegaWithT(t)
 
