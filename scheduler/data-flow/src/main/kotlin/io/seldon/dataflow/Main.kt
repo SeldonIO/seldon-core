@@ -9,6 +9,7 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow
 
+import com.natpryce.konfig.Configuration
 import io.klogging.noCoLogger
 import io.seldon.dataflow.health.GrpcHealthCheck
 import io.seldon.dataflow.health.HealthServer
@@ -127,30 +128,42 @@ object Main {
             )
 
         // Set up health server
-        val healthService = HealthService()
-        val healthScope = CoroutineScope(SupervisorJob())
-        val healthServer = HealthServer(config[Cli.healthServerPort], healthService, healthScope)
-
-        // Register health checks
-        val gRPCSchedulerCheck = GrpcHealthCheck(subscriber.channel, "chainer")
-        val serviceHealthCheck = ServiceHealthCheck(subscriber)
-
-        // Startup checks - ensure critical connections are established
-        healthService.addStartupCheck(gRPCSchedulerCheck)
-
-        // Liveness checks - internal service health only (no external dependencies)
-        healthService.addLivenessCheck(serviceHealthCheck)
-
-        // Readiness checks - ready to handle requests
-        healthService.addReadinessCheck(serviceHealthCheck)
-
-        healthServer.start()
+        val healthServer = setupHealthServer(config, subscriber)
 
         addShutdownHandler(subscriber, healthServer)
 
         runBlocking {
             subscriber.subscribe()
         }
+    }
+
+    /**
+     * Set up the health server with all necessary health checks
+     */
+    private fun setupHealthServer(
+        config: Configuration,
+        subscriber: PipelineSubscriber,
+    ): HealthServer {
+        logger.info("Setting up health server on port ${config[Cli.healthServerPort]}")
+
+        val healthService = HealthService()
+        val healthScope = CoroutineScope(SupervisorJob())
+        val healthServer = HealthServer(config[Cli.healthServerPort], healthService, healthScope)
+
+        // Create health checks
+        val gRPCSchedulerCheck = GrpcHealthCheck(subscriber.channel, "chainer")
+        val serviceHealthCheck = ServiceHealthCheck(subscriber)
+
+        // Register health checks
+        healthService.addStartupCheck(gRPCSchedulerCheck)
+        healthService.addLivenessCheck(serviceHealthCheck)
+        healthService.addReadinessCheck(serviceHealthCheck)
+
+        // Start the health server
+        healthServer.start()
+
+        logger.info("Health server setup completed")
+        return healthServer
     }
 
     private fun addShutdownHandler(
