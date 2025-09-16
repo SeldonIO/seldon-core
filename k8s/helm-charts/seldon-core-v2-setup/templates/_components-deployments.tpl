@@ -1182,6 +1182,8 @@ spec:
             .Values.logging.logLevel | upper }}'
         - name: SELDON_PIPELINE_CTLOPS_THREADS
           value: '{{ .Values.dataflow.pipelineCtlopsThreads }}'
+        - name: SELDON_HEALTH_SERVER_PORT
+          value: "8000"
         - name: SELDON_UPSTREAM_HOST
           value: seldon-scheduler
         - name: SELDON_UPSTREAM_PORT
@@ -1208,13 +1210,35 @@ spec:
         image: '{{ .Values.dataflow.image.registry }}/{{ .Values.dataflow.image.repository
           }}:{{ .Values.dataflow.image.tag }}'
         imagePullPolicy: '{{ .Values.dataflow.image.pullPolicy }}'
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /live
+            port: health
+          periodSeconds: 5
         name: dataflow-engine
+        ports:
+        - containerPort: 8000
+          name: health
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ready
+            port: health
+          periodSeconds: 5
         resources:
           limits:
             memory: '{{ .Values.dataflow.resources.memory }}'
           requests:
             cpu: '{{ .Values.dataflow.resources.cpu }}'
             memory: '{{ .Values.dataflow.resources.memory }}'
+        startupProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /startup
+            port: health
+          initialDelaySeconds: 3
+          periodSeconds: 5
 {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
       {{- toYaml . | nindent 8 }}

@@ -59,6 +59,8 @@ spec:
           value: '{{ hasKey .Values.dataflow "logLevelKafka" | ternary .Values.dataflow.logLevelKafka .Values.logging.logLevel | upper }}'
         - name: SELDON_PIPELINE_CTLOPS_THREADS
           value: '{{ .Values.dataflow.pipelineCtlopsThreads }}'
+        - name: SELDON_HEALTH_SERVER_PORT
+          value: "8000"
         resources:
           requests:
             cpu: '{{ .Values.dataflow.resources.cpu }}'

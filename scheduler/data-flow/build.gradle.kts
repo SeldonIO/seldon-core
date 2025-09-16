@@ -6,6 +6,7 @@ plugins {
     id("com.github.hierynomus.license-report") version "0.16.1"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     kotlin("jvm") version "2.1.0" // the kotlin version
+    kotlin("plugin.serialization") version "2.1.0" // kotlinx serialization plugin
     id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
     java
     application
@@ -53,6 +54,13 @@ dependencies {
 
     // k8s
     implementation("io.kubernetes:client-java:24.0.0")
+
+    // HTTP server for health probes
+    implementation("io.ktor:ktor-server-core:3.0.1")
+    implementation("io.ktor:ktor-server-netty:3.0.1")
+    implementation("io.ktor:ktor-server-content-negotiation:3.0.1")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.3")

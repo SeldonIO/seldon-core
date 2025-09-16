@@ -1005,6 +1005,8 @@ spec:
           value: 'WARN'
         - name: SELDON_PIPELINE_CTLOPS_THREADS
           value: '8'
+        - name: SELDON_HEALTH_SERVER_PORT
+          value: "8000"
         - name: SELDON_UPSTREAM_HOST
           value: seldon-scheduler
         - name: SELDON_UPSTREAM_PORT
@@ -1030,13 +1032,35 @@ spec:
               fieldPath: metadata.namespace
         image: 'docker.io/seldonio/seldon-dataflow-engine:latest'
         imagePullPolicy: 'IfNotPresent'
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /live
+            port: health
+          periodSeconds: 5
         name: dataflow-engine
+        ports:
+        - containerPort: 8000
+          name: health
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ready
+            port: health
+          periodSeconds: 5
         resources:
           limits:
             memory: '1G'
           requests:
             cpu: '100m'
             memory: '1G'
+        startupProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /startup
+            port: health
+          initialDelaySeconds: 3
+          periodSeconds: 5
       securityContext:
         fsGroup: 1000
         runAsGroup: 1000

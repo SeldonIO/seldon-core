@@ -9,7 +9,12 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow
 
+import com.natpryce.konfig.Configuration
 import io.klogging.noCoLogger
+import io.seldon.dataflow.health.GrpcHealthCheck
+import io.seldon.dataflow.health.HealthServer
+import io.seldon.dataflow.health.HealthService
+import io.seldon.dataflow.health.ServiceHealthCheck
 import io.seldon.dataflow.kafka.KafkaDomainParams
 import io.seldon.dataflow.kafka.KafkaSecurityParams
 import io.seldon.dataflow.kafka.KafkaStreamsParams
@@ -19,6 +24,8 @@ import io.seldon.dataflow.kafka.getKafkaProperties
 import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms
 import io.seldon.dataflow.kafka.security.SaslConfig
 import io.seldon.dataflow.mtls.CertificateConfig
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.runBlocking
 
 object Main {
@@ -120,19 +127,55 @@ object Main {
                 config[Cli.pipelineCtlopsThreads],
             )
 
-        addShutdownHandler(subscriber)
+        // Set up health server
+        val healthServer = setupHealthServer(config, subscriber)
+
+        addShutdownHandler(subscriber, healthServer)
 
         runBlocking {
             subscriber.subscribe()
         }
     }
 
-    private fun addShutdownHandler(subscriber: PipelineSubscriber) {
+    /**
+     * Set up the health server with all necessary health checks
+     */
+    private fun setupHealthServer(
+        config: Configuration,
+        subscriber: PipelineSubscriber,
+    ): HealthServer {
+        logger.info("Setting up health server on port ${config[Cli.healthServerPort]}")
+
+        val healthService = HealthService()
+        val healthScope = CoroutineScope(SupervisorJob())
+        val healthServer = HealthServer(config[Cli.healthServerPort], healthService, healthScope)
+
+        // Create health checks
+        val gRPCSchedulerCheck = GrpcHealthCheck(subscriber.channel, "chainer")
+        val serviceHealthCheck = ServiceHealthCheck(subscriber)
+
+        // Register health checks
+        healthService.addStartupCheck(gRPCSchedulerCheck)
+        healthService.addLivenessCheck(serviceHealthCheck)
+        healthService.addReadinessCheck(serviceHealthCheck)
+
+        // Start the health server
+        healthServer.start()
+
+        logger.info("Health server setup completed")
+        return healthServer
+    }
+
+    private fun addShutdownHandler(
+        subscriber: PipelineSubscriber,
+        healthServer: HealthServer,
+    ) {
         Runtime.getRuntime().addShutdownHook(
             object : Thread() {
                 override fun run() {
                     logger.info("received shutdown signal")
                     subscriber.cancelPipelines("shutting down")
+                    healthServer.stop()
                 }
             },
         )

@@ -66,8 +66,8 @@ class PipelineSubscriber(
     pipelineCtlopsThreads: Int,
     private val queueCleanupDelayMs: Long = 30_000L,
 ) {
-    private val kafkaAdmin = KafkaAdmin(kafkaAdminProperties, kafkaStreamsParams, topicWaitRetryParams)
-    private val channel =
+    val kafkaAdmin = KafkaAdmin(kafkaAdminProperties, kafkaStreamsParams, topicWaitRetryParams)
+    val channel =
         ManagedChannelBuilder
             .forAddress(upstreamHost, upstreamPort)
             .defaultServiceConfig(grpcServiceConfig)
