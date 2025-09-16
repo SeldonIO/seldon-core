@@ -35,14 +35,13 @@ import (
 	seldonreconcile "github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/seldon"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
-	scheduler "github.com/seldonio/seldon-core/operator/v2/scheduler"
 )
 
 // SeldonRuntimeReconciler reconciles a SeldonRuntime object
 type SeldonRuntimeReconciler struct {
 	client.Client
 	Scheme    *runtime.Scheme
-	Scheduler scheduler.Client
+	Scheduler SchedulerClient
 	Recorder  record.EventRecorder
 }
 

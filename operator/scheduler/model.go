@@ -34,7 +34,7 @@ import (
 // If the connection is not provided, get a new one
 // In the case of errors we check if the error is retryable and return a boolean to indicate if the error is retryable
 // For the cases we think we should retry, check logic in `checkErrorRetryable`
-func (s *schedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model, grpcClient scheduler.SchedulerClient) (bool, error) {
+func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model, grpcClient scheduler.SchedulerClient) (bool, error) {
 	logger := s.logger.WithName("LoadModel")
 	retryableError := false
 
@@ -74,7 +74,7 @@ func (s *schedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model, 
 // If the connection is not provided, get a new one
 // In the case of errors we check if the error is retryable and return a boolean to indicate if the error is retryable
 // For the cases we think we should retry, check logic in `checkErrorRetryable`
-func (s *schedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model, grpcClient scheduler.SchedulerClient) (bool, error) {
+func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model, grpcClient scheduler.SchedulerClient) (bool, error) {
 	logger := s.logger.WithName("UnloadModel")
 	retryableError := false
 
@@ -111,7 +111,7 @@ func (s *schedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 	return retryableError, nil
 }
 
-func (s *schedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
+func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeModelEvents")
 
 	stream, err := grpcClient.SubscribeModelStatus(
@@ -306,7 +306,7 @@ func modelReady(status v1alpha1.ModelStatus) bool {
 		status.GetCondition(apis.ConditionReady).Status == v1.ConditionTrue
 }
 
-func (s *schedulerClient) updateModelStatus(ctx context.Context, model *v1alpha1.Model) error {
+func (s *SchedulerClient) updateModelStatus(ctx context.Context, model *v1alpha1.Model) error {
 	existingModel := &v1alpha1.Model{}
 	namespacedName := types.NamespacedName{Name: model.Name, Namespace: model.Namespace}
 

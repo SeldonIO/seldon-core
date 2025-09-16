@@ -25,7 +25,7 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 )
 
-func (s *schedulerClient) StartExperiment(ctx context.Context, experiment *v1alpha1.Experiment, grpcClient scheduler.SchedulerClient) (bool, error) {
+func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alpha1.Experiment, grpcClient scheduler.SchedulerClient) (bool, error) {
 	logger := s.logger.WithName("StartExperiment")
 	var err error
 	if grpcClient == nil {
@@ -49,7 +49,7 @@ func (s *schedulerClient) StartExperiment(ctx context.Context, experiment *v1alp
 	return s.checkErrorRetryable(experiment.Kind, experiment.Name, err), err
 }
 
-func (s *schedulerClient) StopExperiment(ctx context.Context, experiment *v1alpha1.Experiment, grpcClient scheduler.SchedulerClient) (bool, error) {
+func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alpha1.Experiment, grpcClient scheduler.SchedulerClient) (bool, error) {
 	logger := s.logger.WithName("StopExperiment")
 	var err error
 	if grpcClient == nil {
@@ -73,7 +73,7 @@ func (s *schedulerClient) StopExperiment(ctx context.Context, experiment *v1alph
 }
 
 // namespace is not used in this function
-func (s *schedulerClient) SubscribeExperimentEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
+func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeExperimentEvents")
 
 	stream, err := grpcClient.SubscribeExperimentStatus(
@@ -173,7 +173,7 @@ func (s *schedulerClient) SubscribeExperimentEvents(ctx context.Context, grpcCli
 	return nil
 }
 
-func (s *schedulerClient) updateExperimentStatus(ctx context.Context, experiment *v1alpha1.Experiment) error {
+func (s *SchedulerClient) updateExperimentStatus(ctx context.Context, experiment *v1alpha1.Experiment) error {
 	if err := s.Status().Update(ctx, experiment); err != nil {
 		s.recorder.Eventf(experiment, v1.EventTypeWarning, "UpdateFailed",
 			"Failed to update status for experiment %q: %v", experiment.Name, err)

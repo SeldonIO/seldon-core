@@ -25,7 +25,7 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
 )
 
-func (s *schedulerClient) LoadPipeline(ctx context.Context, pipeline *v1alpha1.Pipeline, grpcClient scheduler.SchedulerClient) (bool, error) {
+func (s *SchedulerClient) LoadPipeline(ctx context.Context, pipeline *v1alpha1.Pipeline, grpcClient scheduler.SchedulerClient) (bool, error) {
 	logger := s.logger.WithName("LoadPipeline")
 	var err error
 	if grpcClient == nil {
@@ -48,7 +48,7 @@ func (s *schedulerClient) LoadPipeline(ctx context.Context, pipeline *v1alpha1.P
 	return s.checkErrorRetryable(pipeline.Kind, pipeline.Name, err), err
 }
 
-func (s *schedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1.Pipeline) (error, bool) {
+func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1.Pipeline) (error, bool) {
 	logger := s.logger.WithName("UnloadPipeline")
 	conn, err := s.getConnection(pipeline.Namespace)
 	if err != nil {
@@ -79,7 +79,7 @@ func (s *schedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 }
 
 // namespace is not used in this function
-func (s *schedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
+func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribePipelineEvents")
 
 	stream, err := grpcClient.SubscribePipelineStatus(
@@ -233,7 +233,7 @@ func (s *schedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 	return nil
 }
 
-func (s *schedulerClient) updatePipelineStatusImpl(ctx context.Context, pipeline *v1alpha1.Pipeline) error {
+func (s *SchedulerClient) updatePipelineStatusImpl(ctx context.Context, pipeline *v1alpha1.Pipeline) error {
 	if err := s.Status().Update(ctx, pipeline); err != nil {
 		s.recorder.Eventf(pipeline, v1.EventTypeWarning, "UpdateFailed",
 			"Failed to update status for pipeline %q: %v", pipeline.Name, err)

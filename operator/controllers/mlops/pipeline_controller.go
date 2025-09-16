@@ -27,14 +27,13 @@ import (
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
-	scheduler "github.com/seldonio/seldon-core/operator/v2/scheduler"
 )
 
 // PipelineReconciler reconciles a Pipeline object
 type PipelineReconciler struct {
 	client.Client
 	Scheme    *runtime.Scheme
-	Scheduler scheduler.Client
+	Scheduler SchedulerClient
 	Recorder  record.EventRecorder
 }
 

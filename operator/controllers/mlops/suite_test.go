@@ -39,7 +39,7 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
-	"github.com/seldonio/seldon-core/operator/v2/scheduler/mock"
+	mock2 "github.com/seldonio/seldon-core/operator/v2/controllers/mlops/mock"
 )
 
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to
@@ -102,7 +102,7 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 
 	mockCtrl = gomock.NewController(GinkgoT())
-	schedulerMock := mock.NewMockClient(mockCtrl)
+	schedulerMock := mock2.NewMockSchedulerClient(mockCtrl)
 
 	// due to fact that ServerNotify on scheduler will be called asynchronously, if we just setup
 	// the mock in the standard way of expecting a call signature we get failures of missed calls as the

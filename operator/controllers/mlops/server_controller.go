@@ -35,14 +35,13 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
 	serverreconcile "github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/server"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
-	scheduler "github.com/seldonio/seldon-core/operator/v2/scheduler"
 )
 
 // ServerReconciler reconciles a Server object
 type ServerReconciler struct {
 	client.Client
 	Scheme                   *runtime.Scheme
-	Scheduler                scheduler.Client
+	Scheduler                SchedulerClient
 	Recorder                 record.EventRecorder
 	UseDeploymentsForServers bool
 }

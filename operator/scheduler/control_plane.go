@@ -23,7 +23,7 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 )
 
-func (s *schedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
+func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeControlPlaneEvents")
 
 	stream, err := grpcClient.SubscribeControlPlane(
