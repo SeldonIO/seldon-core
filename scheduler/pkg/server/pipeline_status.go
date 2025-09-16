@@ -25,7 +25,7 @@ import (
 
 const (
 	addPipelineStreamEventSource = "pipeline.store.addpipelinestream"
-	sourcePipelineStatusServer   = "pipeline-status-server"
+	pipelineStatusEventSource    = "pipeline.status.server"
 )
 
 func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
@@ -73,7 +73,7 @@ func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *chai
 	}
 
 	err := s.pipelineHandler.SetPipelineGwPipelineState(
-		message.Update.Pipeline, message.Update.Version, message.Update.Uid, pipelineStatusVal, reason, sourcePipelineStatusServer,
+		message.Update.Pipeline, message.Update.Version, message.Update.Uid, pipelineStatusVal, reason, pipelineStatusEventSource,
 	)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to update pipeline status for %s:%d (%s)", message.Update.Pipeline, message.Update.Version, message.Update.Uid)
@@ -223,7 +223,7 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 				pv.UID,
 				pipelineState,
 				"no pipeline gateway available to handle pipeline",
-				sourcePipelineStatusServer,
+				pipelineStatusEventSource,
 			); err != nil {
 				s.logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", pv.String())
 			}
@@ -271,7 +271,7 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 							pv.UID,
 							pipeline.PipelineCreating,
 							"Rebalance",
-							sourcePipelineStatusServer,
+							pipelineStatusEventSource,
 						); err != nil {
 							s.logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", pv.String())
 						}
@@ -356,7 +356,7 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 	// send event to pipeline gateway streams only if the
 	// event did not originate from the pipeline status server
 	// to avoid echoing the event back to the sender
-	if event.Source != sourcePipelineStatusServer {
+	if event.Source != pipelineStatusEventSource {
 		streamNames := make([]string, 0, len(pipelineGwStreams))
 		for _, subscription := range pipelineGwStreams {
 			streamNames = append(streamNames, subscription.name)
