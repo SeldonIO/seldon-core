@@ -77,7 +77,7 @@ func TestServerNotify(t *testing.T) {
 					},
 					Spec: v1alpha1.ServerSpec{
 						ScalingSpec: v1alpha1.ScalingSpec{
-							MinReplicas: getIntPtr(1),
+							MinReplicas: ptr.Int32(1),
 						},
 					},
 				},
@@ -86,6 +86,7 @@ func TestServerNotify(t *testing.T) {
 				{
 					Name:             "foo",
 					MinReplicas:      1,
+					MaxReplicas:      math.MaxUint32,
 					ExpectedReplicas: 1,
 					KubernetesMeta: &scheduler.KubernetesMeta{
 						Namespace:  "default",

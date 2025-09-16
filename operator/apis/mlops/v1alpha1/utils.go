@@ -33,7 +33,7 @@ func GetValidatedScalingSpec(replicas *int32, minReplicas *int32, maxReplicas *i
 		return &validatedSpec, nil
 	}
 
-	if replicas != nil && *replicas >= 0 {
+	if replicas != nil && *replicas > 0 {
 		validatedSpec.Replicas = uint32(*replicas)
 	} else if replicas != nil && *replicas == 0 && minReplicas != nil && *minReplicas == 0 {
 		validatedSpec.Replicas = uint32(0)
