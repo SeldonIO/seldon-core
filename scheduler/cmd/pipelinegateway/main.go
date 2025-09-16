@@ -65,6 +65,10 @@ const (
 	serviceTag                   = "seldon-pipelinegateway"
 )
 
+const (
+	waitForRouteToBeRemovedFromEnvoy = 1 * time.Second
+)
+
 var (
 	httpPort               int
 	grpcPort               int
@@ -255,13 +259,14 @@ func main() {
 
 	waitForTermSignalOrErr(logger, errChan)
 
+	logger.Infof("Shutting down scheduler client")
+	schedulerClient.Stop()
+	time.Sleep(waitForRouteToBeRemovedFromEnvoy)
 	logger.Infof("Shutting down http server")
 	if err := httpServer.Stop(); err != nil {
 		logger.WithError(err).Error("Failed to stop http server")
 	}
-	logger.Infof("Shutting down scheduler client")
 	grpcServer.Stop()
-	schedulerClient.Stop()
 }
 
 func waitForTermSignalOrErr(logger *log.Logger, errChan <-chan error) {

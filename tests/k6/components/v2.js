@@ -9,7 +9,7 @@ const v2Client = new grpc.Client();
 v2Client.load([import.meta.resolve('../../../apis/mlops/v2_dataplane/')], 'v2_dataplane.proto');
 
 
-export function inferHttp(endpoint, modelName, payload, viaEnvoy, isPipeline = false, debug = false, requestIDPrefix = null) {
+export function inferHttp(endpoint, modelName, payload, viaEnvoy, isPipeline = false, debug = false, requestIDPrefix = null, timeout = null) {
     const url = endpoint + "/v2/models/"+modelName+"/infer"
     const payloadStr = JSON.stringify(payload);
     var metadata = {
@@ -31,6 +31,10 @@ export function inferHttp(endpoint, modelName, payload, viaEnvoy, isPipeline = f
     const params = {
         headers:  metadata
     };
+
+    if (timeout !== null) {
+        params.timeout = timeout
+    }
 
     const response = http.post(url, payloadStr, params);
 
