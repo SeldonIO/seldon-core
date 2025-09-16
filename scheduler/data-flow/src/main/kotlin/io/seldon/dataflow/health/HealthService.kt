@@ -47,7 +47,6 @@ class HealthService {
         logger.debug("Added startup health check: ${healthCheck.name}")
     }
 
-
     /**
      * Execute liveness health checks
      */
