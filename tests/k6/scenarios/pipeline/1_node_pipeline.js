@@ -21,14 +21,14 @@ export let options = {
     setupTimeout: '6000s',
     //duration: '5s',
     teardownTimeout: '6000s',
-    iterations: 5000,
+    iterations: 50000,
 }
 
 const modelType = 'echo'
 const modelName = 'tests-pipeline-1-node-echo';
 const pipelineName = 'tests-pipeline-1-node-echo-pipeline';
 const serverName = "autotest-mlserver";
-const modelServerReplicas = 1;
+const modelServerReplicas = 5;
 
 export function setup() {
     return setupK6(function (config) {
