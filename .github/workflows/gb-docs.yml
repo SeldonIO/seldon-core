@@ -6,7 +6,6 @@ on:
   workflow_dispatch:
   pull_request:
     branches:
-      - master
       - v2
 
 jobs:
