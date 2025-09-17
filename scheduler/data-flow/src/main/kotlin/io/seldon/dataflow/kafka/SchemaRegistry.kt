@@ -152,16 +152,18 @@ class ProtobufWireFormatSerializer(val serializerFactory: SchemaRegistrySerializ
     ): ByteArray? {
         if (data == null) return null
 
+        val topicSuffix = topic?.splitToSequence(".")?.last()
+
         return try {
-            when {
-                topic?.contains("input") == true -> {
+            when (topicSuffix) {
+                "inputs" -> {
                     val message = ModelInferRequest.parseFrom(data)
                     val serialized = serializerFactory.requestSerializer.serialize(topic, message)
                     logger.debug("Serialized input message for topic $topic")
                     serialized
                 }
 
-                topic?.contains("output") == true -> {
+                "outputs" -> {
                     val message = ModelInferResponse.parseFrom(data)
                     val serialized = serializerFactory.responseSerializer.serialize(topic, message)
                     logger.debug("Serialized output message for topic $topic")
