@@ -27,8 +27,7 @@ export let options = {
     },
     setupTimeout: '6000s',
     teardownTimeout: '6000s',
-    // TODO put back to 5000
-    iterations: 500,
+    iterations: 5000,
 }
 
 const modelNamePrefix1 = 'automatedtests-1-echo'
