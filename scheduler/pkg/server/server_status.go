@@ -43,7 +43,7 @@ func (s *SchedulerServer) ModelStatusEvent(ctx context.Context, message *pb.Mode
 		if message.Success {
 			statusVal = store.ModelTerminated
 		} else {
-			statusVal = store.ModelFailed
+			statusVal = store.ModelTerminateFailed
 		}
 	}
 
@@ -227,7 +227,7 @@ func (s *SchedulerServer) modelGwRebalance() {
 
 	for _, model := range runningModels {
 		if len(streams) == 0 {
-			modelState := store.ModelProgressing
+			modelState := store.ScheduleFailed
 			if model.GetLatest().ModelState().ModelGWState == store.ModelTerminating {
 				modelState = store.ModelTerminated
 			}
@@ -371,20 +371,51 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 			}
 		}
 
-		// send to model gateway streams only if the message
-		// is not an ack from the model gateway itself
-		if evt.Source != modelStatusEventSource {
-			streamNames := make([]string, 0, len(modelGwStreams))
-			for _, subscription := range modelGwStreams {
-				streamNames = append(streamNames, subscription.name)
+		switch len(modelGwStreams) {
+		case 0:
+			// handle case where we don't have any model-gateway streams
+			modelState := model.GetLatest().ModelState()
+			if modelState.ModelGWState == store.ModelTerminated {
+				break
 			}
 
-			// assign a new timestamp to the message
-			confRes := s.modelEventStream.conflictResolutioner
-			cr.CreateNewModelIteration(confRes, model.Name, streamNames)
-			ms.Timestamp = confRes.GetTimestamp(model.Name)
+			errMsg := "no model-gateway available to handle model"
+			logger.WithField("model", model.Name).Warn(errMsg)
 
-			s.sendModelStatusEventToStreams(evt, ms, modelGwStreams)
+			modelGwState := store.ScheduleFailed
+			if modelState.ModelGWState == store.ModelTerminating {
+				modelGwState = store.ModelTerminated
+			}
+
+			if err := s.modelStore.SetModelGwModelState(
+				model.Name,
+				model.GetLatest().GetVersion(),
+				modelGwState,
+				errMsg,
+				modelStatusEventSource,
+			); err != nil {
+				logger.
+					WithError(err).
+					WithField("model", model.Name).
+					WithField("modelGwState", modelGwState).
+					Error("failed to set model state")
+			}
+		default:
+			// send to model gateway streams only if the message
+			// is not an ack from the model gateway itself
+			if evt.Source != modelStatusEventSource {
+				streamNames := make([]string, 0, len(modelGwStreams))
+				for _, subscription := range modelGwStreams {
+					streamNames = append(streamNames, subscription.name)
+				}
+
+				// assign a new timestamp to the message
+				confRes := s.modelEventStream.conflictResolutioner
+				cr.CreateNewModelIteration(confRes, model.Name, streamNames)
+				ms.Timestamp = confRes.GetTimestamp(model.Name)
+
+				s.sendModelStatusEventToStreams(evt, ms, modelGwStreams)
+			}
 		}
 
 		// send to all other streams
