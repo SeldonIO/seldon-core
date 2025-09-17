@@ -47,7 +47,8 @@ export function setup() {
         ctl.unloadServerFn(server.object.metadata.name, true, true)
         ctl.loadServerFn(server.yaml, server.object.metadata.name, true, true, 30)
 
-        const pipeline = generateMultiModelPipelineYaml(1, modelType, pipelineName, modelName, modelParams, config.modelName, 1, serverName)
+        const pipeline = generateMultiModelPipelineYaml(1, modelType, pipelineName,
+            modelName, modelParams, config.modelName, modelServerReplicas, serverName)
 
 
         pipeline.modelCRYaml.forEach(model => {
