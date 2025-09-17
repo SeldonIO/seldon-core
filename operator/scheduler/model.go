@@ -316,7 +316,10 @@ func canRemoveFinalizer(state scheduler.ModelStatus_ModelState, modelGwState sch
 		state == scheduler.ModelStatus_ModelStateUnknown ||
 		state == scheduler.ModelStatus_ScheduleFailed)
 	modelGwCond := (modelGwState == scheduler.ModelStatus_ModelTerminated ||
-		modelGwState == scheduler.ModelStatus_ModelFailed)
+		modelGwState == scheduler.ModelStatus_ModelTerminateFailed ||
+		modelGwState == scheduler.ModelStatus_ModelFailed ||
+		modelGwState == scheduler.ModelStatus_ModelStateUnknown ||
+		modelGwState == scheduler.ModelStatus_ScheduleFailed)
 	return stateCond && modelGwCond
 }
 
