@@ -15,6 +15,7 @@ import (
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -121,8 +122,13 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 			continue
 		}
 		server := &v1alpha1.Server{}
-		err = s.Get(ctx, client.ObjectKey{Name: event.ServerName, Namespace: event.GetKubernetesMeta().GetNamespace()}, server)
-		if err != nil {
+		if err = s.Get(
+			ctx, client.ObjectKey{
+				Name:      event.ServerName,
+				Namespace: event.GetKubernetesMeta().GetNamespace(),
+			},
+			server,
+		); err != nil {
 			logger.Error(err, "Failed to get server", "name", event.ServerName, "namespace", event.GetKubernetesMeta().GetNamespace())
 			continue
 		}
@@ -133,8 +139,17 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 			defer cancel()
 
 			server := &v1alpha1.Server{}
-			err = s.Get(contextWithTimeout, client.ObjectKey{Name: event.ServerName, Namespace: event.GetKubernetesMeta().GetNamespace()}, server)
-			if err != nil {
+			if err = s.Get(
+				contextWithTimeout,
+				client.ObjectKey{
+					Name:      event.ServerName,
+					Namespace: event.GetKubernetesMeta().GetNamespace(),
+				},
+				server,
+			); err != nil {
+				if errors.IsNotFound(err) {
+					return nil
+				}
 				return err
 			}
 			// we allow scaling requests for any generation (coming from scheduler), but we ignore status updates for old generations
@@ -168,6 +183,9 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 
 func (s *SchedulerClient) updateServerStatus(ctx context.Context, server *v1alpha1.Server) error {
 	if err := s.Status().Update(ctx, server); err != nil {
+		if errors.IsNotFound(err) {
+			return nil
+		}
 		s.recorder.Eventf(server, v1.EventTypeWarning, "UpdateFailed",
 			"Failed to update status for Server %q: %v", server.Name, err)
 		return err
@@ -185,6 +203,9 @@ func (s *SchedulerClient) scaleServerReplicas(ctx context.Context, server *v1alp
 		newServer.Spec.Replicas = &event.ExpectedReplicas
 
 		if err := s.Patch(ctx, newServer, client.MergeFrom(server)); err != nil {
+			if errors.IsNotFound(err) {
+				return nil
+			}
 			s.recorder.Eventf(server, v1.EventTypeWarning, "PatchFailed",
 				"Failed to patch replicas for Server %q: %v", server.Name, err)
 			return err
