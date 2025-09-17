@@ -15,6 +15,7 @@ import (
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -110,14 +111,26 @@ func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, grpcCli
 				defer cancel()
 
 				latestExperiment := &v1alpha1.Experiment{}
-				err = s.Get(ctxWithTimeout, client.ObjectKey{Name: event.ExperimentName, Namespace: event.KubernetesMeta.Namespace}, latestExperiment)
-				if err != nil {
+				if err = s.Get(
+					ctxWithTimeout,
+					client.ObjectKey{
+						Name:      event.ExperimentName,
+						Namespace: event.KubernetesMeta.Namespace,
+					},
+					latestExperiment,
+				); err != nil {
+					if errors.IsNotFound(err) {
+						return nil
+					}
 					return err
 				}
 				if !latestExperiment.ObjectMeta.DeletionTimestamp.IsZero() { // Experiment is being deleted
 					// remove finalizer now we have completed successfully
 					latestExperiment.ObjectMeta.Finalizers = utils.RemoveStr(latestExperiment.ObjectMeta.Finalizers, constants.ExperimentFinalizerName)
 					if err := s.Update(ctxWithTimeout, latestExperiment); err != nil {
+						if errors.IsNotFound(err) {
+							return nil
+						}
 						logger.Error(err, "Failed to remove finalizer", "experiment", latestExperiment.GetName())
 						return err
 					}
@@ -136,8 +149,17 @@ func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, grpcCli
 				defer cancel()
 
 				experiment := &v1alpha1.Experiment{}
-				err = s.Get(ctxWithTimeout, client.ObjectKey{Name: event.ExperimentName, Namespace: event.KubernetesMeta.Namespace}, experiment)
-				if err != nil {
+				if err = s.Get(
+					ctxWithTimeout,
+					client.ObjectKey{
+						Name:      event.ExperimentName,
+						Namespace: event.KubernetesMeta.Namespace,
+					},
+					experiment,
+				); err != nil {
+					if errors.IsNotFound(err) {
+						return nil
+					}
 					return err
 				}
 				if event.KubernetesMeta.Generation != experiment.Generation {
@@ -175,6 +197,9 @@ func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, grpcCli
 
 func (s *SchedulerClient) updateExperimentStatus(ctx context.Context, experiment *v1alpha1.Experiment) error {
 	if err := s.Status().Update(ctx, experiment); err != nil {
+		if errors.IsNotFound(err) {
+			return nil
+		}
 		s.recorder.Eventf(experiment, v1.EventTypeWarning, "UpdateFailed",
 			"Failed to update status for experiment %q: %v", experiment.Name, err)
 		return err
