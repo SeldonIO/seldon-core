@@ -90,15 +90,16 @@ func NewInferWorker(
 		topicNamer:           topicNamer,
 		schemaRegistryClient: schemaRegistryClient,
 	}
-	// Create gRPC clients
-	grpcClient, err := iw.getGrpcClient(
+
+	// Create gRPC client
+	var err error
+	iw.grpcClient, err = iw.getGrpcClient(
 		consumer.consumerConfig.InferenceServerConfig.Host,
 		consumer.consumerConfig.InferenceServerConfig.GrpcPort,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create grpc client: %w", err)
 	}
-	iw.grpcClient = grpcClient
 
 	return iw, nil
 }
