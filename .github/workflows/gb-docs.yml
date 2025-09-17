@@ -1,0 +1,20 @@
+name: GB Docs Link Checker
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # every day at midnight UTC
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - v2
+
+jobs:
+  lychee-check:
+    if: github.repository == 'SeldonIO/seldon-core'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Lychee link checker on docs-gb
+        uses: lycheeverse/lychee-action@v1.10.0
+        with:
+          args: --verbose --no-progress docs-gb/*/.md
