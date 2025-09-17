@@ -45,7 +45,7 @@ export function setup() {
 
         const server = generateServer(serverName, "mlserver", modelServerReplicas, 1, modelServerReplicas)
         ctl.unloadServerFn(server.object.metadata.name, true, true)
-        ctl.loadServerFn(server.yaml, server.object.metadata.name, true, true, 30)
+        ctl.loadServerFn(server.yaml, server.object.metadata.name, true, true, 45)
 
         const pipeline = generateMultiModelPipelineYaml(1, modelType, pipelineName,
             modelName, modelParams, config.modelName, modelServerReplicas, serverName)
