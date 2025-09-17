@@ -196,8 +196,10 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 					}
 				}
 
+				logger.Info("Finalizer removed", "model", latestModel.GetName())
 				return nil
 			})
+
 			if retryErr != nil {
 				logger.Error(err, "Failed to remove finalizer after retries")
 			}
@@ -236,19 +238,14 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 				}
 
 				// Handle status update
-				logger.Info("Before setting model status")
 				modelStatus := latestVersionStatus.GetState()
 				setModelStatus(modelStatus, event, latestModel, &logger)
-				logger.Info("After setting model status")
 
 				// Set modelgw status
-				logger.Info("Before setting modelgw status")
 				latestModel.Status.ModelGwStatus = modelStatus.GetModelGwState().String()
 				latestModel.Status.ModelGwStatus += fmt.Sprintf("(%s) ", modelStatus.GetModelGwReason())
-				logger.Info("After setting modelgw status")
 
 				// Set the total number of replicas targeted by this model
-				logger.Info("Before setting replicas")
 				latestModel.Status.Replicas = int32(
 					modelStatus.GetAvailableReplicas() +
 						modelStatus.GetUnavailableReplicas(),
@@ -256,7 +253,6 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 				latestModel.Status.AvailableReplicas = int32(
 					modelStatus.GetAvailableReplicas(),
 				)
-				logger.Info("After setting replicas")
 				latestModel.Status.Selector = "server=" + latestVersionStatus.ServerName
 				return s.updateModelStatus(ctxWithTimeout, latestModel)
 			})
@@ -341,6 +337,11 @@ func (s *SchedulerClient) updateModelStatus(ctx context.Context, model *v1alpha1
 		return err
 	}
 
+	if !existingModel.ObjectMeta.DeletionTimestamp.IsZero() {
+		// Model is being deleted, skip status update
+		return nil
+	}
+
 	prevWasReady := modelReady(existingModel.Status)
 	if equality.Semantic.DeepEqual(existingModel.Status, model.Status) {
 		// Not updating as no difference
@@ -348,7 +349,7 @@ func (s *SchedulerClient) updateModelStatus(ctx context.Context, model *v1alpha1
 	}
 
 	if err := s.Status().Update(ctx, model); err != nil {
-		if errors.IsNotFound(err) {
+		if errors.IsNotFound(err) { //Ignore NotFound errors
 			return nil
 		}
 		s.recorder.Eventf(
@@ -378,5 +379,6 @@ func (s *SchedulerClient) updateModelStatus(ctx context.Context, model *v1alpha1
 			fmt.Sprintf("Model [%v] is Ready", model.GetName()),
 		)
 	}
+
 	return nil
 }

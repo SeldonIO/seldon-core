@@ -129,7 +129,8 @@ func TestSubscribeModelEvents(t *testing.T) {
 								Generation: 1,
 							},
 							State: &scheduler.ModelStatus{
-								State: scheduler.ModelStatus_ModelTerminated,
+								State:        scheduler.ModelStatus_ModelTerminated,
+								ModelGwState: scheduler.ModelStatus_ModelTerminated,
 							},
 						},
 					},
