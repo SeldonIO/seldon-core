@@ -6,7 +6,7 @@ import { getConfig } from '../../components/settings.js'
 import {connectControlPlaneOps,
 } from '../../components/utils.js'
 import {generateMultiModelPipelineYaml, getModelInferencePayload} from '../../components/model.js';
-import {inferHttp, setupK6, tearDownK6} from "../../components/v2.js";
+import {connectV2Grpc, inferGrpc, inferHttp, setupK6, tearDownK6} from "../../components/v2.js";
 import {generateServer} from "../../components/k8s.js";
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
@@ -58,14 +58,26 @@ export function setup() {
 
         ctl.unloadPipelineFn(pipeline.pipelineName, true)
         ctl.loadPipelineFn(pipeline.pipelineName, pipeline.pipelineCRYaml, true, true)
+
         return config
     }, {
         "useKubeControlPlane": true,
     })
 }
 
+let gRPCConnected = false
+
 export default function (config) {
     const inferPayload1 = getModelInferencePayload(modelType, 1)
+
+    if (config.useGRPC) {
+        if (!gRPCConnected) {
+            connectV2Grpc(config.inferGrpcEndpoint)
+            gRPCConnected = true
+        }
+        inferGrpc(pipelineName, inferPayload1.grpc, true, true)
+        return
+    }
     inferHttp(config.inferHttpEndpoint, pipelineName, inferPayload1.http, true, true, config.debug, config.requestIDPrefix)
 }
 

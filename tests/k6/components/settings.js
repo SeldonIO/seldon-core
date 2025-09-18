@@ -232,6 +232,13 @@ function experimentNamePrefix() {
     return "experiment"
 }
 
+function useGRPC() {
+    if (__ENV.USE_GRPC) {
+        return true
+    }
+    return false
+}
+
 function seldonRuntimeName() {
     if (__ENV.SELDON_RUNTIME_NAME) {
         return __ENV.SELDON_RUNTIME_NAME
@@ -389,6 +396,7 @@ function sleepBetweenModelReplicaChange() {
 
 export function getConfig() {
     return {
+        "useGRPC" : useGRPC(),
         "seldonRuntimeName": seldonRuntimeName(),
         "requestIDPrefix" : requestIDPrefix(),
         "skipSetup" : skipSetup(),
