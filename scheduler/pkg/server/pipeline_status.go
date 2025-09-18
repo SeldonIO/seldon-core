@@ -358,19 +358,50 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 	// to avoid echoing the event back to the sender
 	if event.Source != pipelineStatusEventSource {
 		streamNames := make([]string, 0, len(pipelineGwStreams))
-		for _, subscription := range pipelineGwStreams {
-			streamNames = append(streamNames, subscription.name)
+
+		switch len(pipelineGwStreams) {
+		case 0:
+			if pv.State.PipelineGwStatus == pipeline.PipelineTerminated {
+				break
+			}
+
+			errMsg := "No pipeline-gw available to handle pipeline"
+			logger.WithField("pipeline", pv.Name).Warn(errMsg)
+
+			pipelineGwStatus := pv.State.PipelineGwStatus
+			if pipelineGwStatus == pipeline.PipelineTerminating || pv.State.Status == pipeline.PipelineTerminate {
+				pipelineGwStatus = pipeline.PipelineTerminated
+			}
+
+			if err := s.pipelineHandler.SetPipelineGwPipelineState(
+				pv.Name,
+				pv.Version,
+				pv.UID,
+				pipelineGwStatus,
+				errMsg,
+				pipelineStatusEventSource,
+			); err != nil {
+				logger.
+					WithError(err).
+					WithField("pipeline", pv.Name).
+					WithField("status", pipelineGwStatus).
+					Errorf("Failed to set pipeline gw state")
+			}
+		default:
+			for _, subscription := range pipelineGwStreams {
+				streamNames = append(streamNames, subscription.name)
+			}
+
+			// assign a timestamp to the message
+			cr := s.pipelineEventStream.conflictResolutioner
+			cr.CreateNewIteration(pv.Name, streamNames)
+			status.Timestamp = cr.GetTimestamp(pv.Name)
+
+			s.sendPipelineEventsToStreams(event, status, pipelineGwStreams)
 		}
-
-		// assign a timestamp to the message
-		cr := s.pipelineEventStream.conflictResolutioner
-		cr.CreateNewIteration(pv.Name, streamNames)
-		status.Timestamp = cr.GetTimestamp(pv.Name)
-
-		s.sendPipelineEventsToStreams(event, status, pipelineGwStreams)
 	}
 
-	// sent event and other streams
+	// sent event and other streams (i.e. controller)
 	s.sendPipelineEventsToStreams(event, status, otherStreams)
 
 	// publish event for envoy
