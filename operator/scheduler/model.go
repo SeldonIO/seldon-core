@@ -165,15 +165,17 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 				defer cancel()
 
 				latestModel := &v1alpha1.Model{}
-				err = s.Get(
+				if err = s.Get(
 					ctxWithTimeout,
 					client.ObjectKey{
 						Name:      event.ModelName,
 						Namespace: latestVersionStatus.GetKubernetesMeta().Namespace,
 					},
 					latestModel,
-				)
-				if err != nil {
+				); err != nil {
+					if errors.IsNotFound(err) {
+						return nil
+					}
 					return err
 				}
 
@@ -184,6 +186,9 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 						constants.ModelFinalizerName,
 					)
 					if err := s.Update(ctxWithTimeout, latestModel); err != nil {
+						if errors.IsNotFound(err) {
+							return nil
+						}
 						logger.Error(err, "Failed to remove finalizer", "model", latestModel.GetName())
 						return err
 					}
@@ -204,15 +209,17 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 
 				latestModel := &v1alpha1.Model{}
 
-				err = s.Get(
+				if err = s.Get(
 					ctxWithTimeout,
 					client.ObjectKey{
 						Name:      event.ModelName,
 						Namespace: latestVersionStatus.GetKubernetesMeta().Namespace,
 					},
 					latestModel,
-				)
-				if err != nil {
+				); err != nil {
+					if errors.IsNotFound(err) {
+						return nil
+					}
 					return err
 				}
 
@@ -320,35 +327,39 @@ func (s *SchedulerClient) updateModelStatus(ctx context.Context, model *v1alpha1
 	prevWasReady := modelReady(existingModel.Status)
 	if equality.Semantic.DeepEqual(existingModel.Status, model.Status) {
 		// Not updating as no difference
-	} else {
-		if err := s.Status().Update(ctx, model); err != nil {
-			s.recorder.Eventf(
-				model,
-				v1.EventTypeWarning,
-				"UpdateFailed",
-				"Failed to update status for Model %q: %v",
-				model.Name,
-				err,
-			)
-			return err
-		} else {
-			currentIsReady := modelReady(model.Status)
-			if prevWasReady && !currentIsReady {
-				s.recorder.Eventf(
-					model,
-					v1.EventTypeWarning,
-					"ModelNotReady",
-					fmt.Sprintf("Model [%v] is no longer Ready", model.GetName()),
-				)
-			} else if !prevWasReady && currentIsReady {
-				s.recorder.Eventf(
-					model,
-					v1.EventTypeNormal,
-					"ModelReady",
-					fmt.Sprintf("Model [%v] is Ready", model.GetName()),
-				)
-			}
+		return nil
+	}
+
+	if err := s.Status().Update(ctx, model); err != nil {
+		if errors.IsNotFound(err) {
+			return nil
 		}
+		s.recorder.Eventf(
+			model,
+			v1.EventTypeWarning,
+			"UpdateFailed",
+			"Failed to update status for Model %q: %v",
+			model.Name,
+			err,
+		)
+		return err
+	}
+
+	currentIsReady := modelReady(model.Status)
+	if prevWasReady && !currentIsReady {
+		s.recorder.Eventf(
+			model,
+			v1.EventTypeWarning,
+			"ModelNotReady",
+			fmt.Sprintf("Model [%v] is no longer Ready", model.GetName()),
+		)
+	} else if !prevWasReady && currentIsReady {
+		s.recorder.Eventf(
+			model,
+			v1.EventTypeNormal,
+			"ModelReady",
+			fmt.Sprintf("Model [%v] is Ready", model.GetName()),
+		)
 	}
 	return nil
 }

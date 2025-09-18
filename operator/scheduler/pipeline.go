@@ -15,6 +15,7 @@ import (
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	v1 "k8s.io/api/core/v1"
+	api_errors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -131,15 +132,17 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 				defer cancel()
 
 				latestPipeline := &v1alpha1.Pipeline{}
-				err = s.Get(
+				if err = s.Get(
 					ctxWithTimeout,
 					client.ObjectKey{
 						Name:      event.PipelineName,
 						Namespace: pv.GetPipeline().GetKubernetesMeta().GetNamespace(),
 					},
 					latestPipeline,
-				)
-				if err != nil {
+				); err != nil {
+					if api_errors.IsNotFound(err) {
+						return nil
+					}
 					return err
 				}
 				if !latestPipeline.ObjectMeta.DeletionTimestamp.IsZero() { // Pipeline is being deleted
@@ -149,6 +152,9 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 						constants.PipelineFinalizerName,
 					)
 					if err := s.Update(ctxWithTimeout, latestPipeline); err != nil {
+						if api_errors.IsNotFound(err) {
+							return nil
+						}
 						logger.Error(err, "Failed to remove finalizer", "pipeline", latestPipeline.GetName())
 						return err
 					}
@@ -167,15 +173,17 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 				defer cancel()
 
 				pipeline := &v1alpha1.Pipeline{}
-				err = s.Get(
+				if err = s.Get(
 					ctxWithTimeout,
 					client.ObjectKey{
 						Name:      event.PipelineName,
 						Namespace: pv.GetPipeline().GetKubernetesMeta().GetNamespace(),
 					},
 					pipeline,
-				)
-				if err != nil {
+				); err != nil {
+					if api_errors.IsNotFound(err) {
+						return nil
+					}
 					return err
 				}
 
@@ -235,6 +243,9 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 
 func (s *SchedulerClient) updatePipelineStatusImpl(ctx context.Context, pipeline *v1alpha1.Pipeline) error {
 	if err := s.Status().Update(ctx, pipeline); err != nil {
+		if api_errors.IsNotFound(err) {
+			return nil
+		}
 		s.recorder.Eventf(pipeline, v1.EventTypeWarning, "UpdateFailed",
 			"Failed to update status for pipeline %q: %v", pipeline.Name, err)
 		return err

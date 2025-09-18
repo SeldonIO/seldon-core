@@ -229,6 +229,10 @@ func TestSubscribeModelEvents(t *testing.T) {
 					// we check if the model is not in k8s (existing_resources) then we should not act on it
 					if _, ok := isBeingDeleted[r.GetModelName()]; !ok {
 						g.Expect(err).ToNot(BeNil())
+
+						// status is only updated for models that are not being deleted
+						g.Expect(uint32(model.Status.Replicas)).To(Equal(r.Versions[0].State.GetAvailableReplicas() + r.Versions[0].State.GetUnavailableReplicas()))
+						g.Expect(model.Status.Selector).To(Equal("server=" + r.Versions[0].ServerName))
 					} else {
 						g.Expect(err).To(BeNil())
 					}
@@ -237,9 +241,6 @@ func TestSubscribeModelEvents(t *testing.T) {
 					} else {
 						g.Expect(model.Status.IsReady()).To(BeFalseBecause("Model state is not ModelAvailable"))
 					}
-
-					g.Expect(uint32(model.Status.Replicas)).To(Equal(r.Versions[0].State.GetAvailableReplicas() + r.Versions[0].State.GetUnavailableReplicas()))
-					g.Expect(model.Status.Selector).To(Equal("server=" + r.Versions[0].ServerName))
 				} else {
 					model := &mlopsv1alpha1.Model{}
 					err := controller.Get(
