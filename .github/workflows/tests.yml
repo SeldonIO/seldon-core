@@ -38,7 +38,7 @@ jobs:
         run: | 
           make -C k8s create
           git diff --exit-code
-      - name: check go generate
+      - name: check go generate and copyright
         run: |
           make go-generate-with-copyright
           git diff --exit-code
