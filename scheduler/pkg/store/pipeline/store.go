@@ -143,6 +143,7 @@ func validateAndAddPipelineVersion(req *scheduler.Pipeline, pipeline *Pipeline) 
 		return err
 	}
 	pv.State.setState(PipelineCreate, "")
+	pv.State.setPipelineGwState(PipelineCreate, "")
 	pipeline.LastVersion = pipeline.LastVersion + 1
 	pipeline.Versions = append(pipeline.Versions, pv)
 	return nil
@@ -253,6 +254,7 @@ func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineE
 			pipeline.Deleted = true
 			pipeline.DeletedAt = time.Now()
 			lastPipelineVersion.State.setState(PipelineTerminate, "pipeline removed")
+			lastPipelineVersion.State.setPipelineGwState(PipelineTerminate, "pipeline removed")
 			if err := ps.db.save(pipeline); err != nil {
 				ps.logger.WithError(err).Errorf("Failed to save pipeline %s", name)
 				return nil, err

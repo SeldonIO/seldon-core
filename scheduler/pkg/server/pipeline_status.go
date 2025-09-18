@@ -162,20 +162,20 @@ func (s *SchedulerServer) sendCurrentPipelineStatuses(
 	return nil
 }
 
-func (s *SchedulerServer) createPipelineDeletionMessage(pip *pipeline.Pipeline, keepTopics bool) (*pb.PipelineStatusResponse, error) {
+func (s *SchedulerServer) createPipelineDeletionMessage(pv *pipeline.PipelineVersion, keepTopics bool) *pb.PipelineStatusResponse {
 	return &pb.PipelineStatusResponse{
-		PipelineName: pip.Name,
+		PipelineName: pv.Name,
 		Versions:     []*pb.PipelineWithState{},
-	}, nil
+	}
 }
 
-func (s *SchedulerServer) createPipelineCreationMessage(pip *pipeline.Pipeline) (*pb.PipelineStatusResponse, error) {
-	pipelineVersion := pip.GetLatestPipelineVersion()
-	pipelineWithState := pipeline.CreatePipelineWithState(pipelineVersion)
+func (s *SchedulerServer) createPipelineCreationMessage(pv *pipeline.PipelineVersion) *pb.PipelineStatusResponse {
 	return &pb.PipelineStatusResponse{
-		PipelineName: pip.Name,
-		Versions:     []*pb.PipelineWithState{pipelineWithState},
-	}, nil
+		PipelineName: pv.Name,
+		Versions: []*pb.PipelineWithState{
+			pipeline.CreatePipelineWithState(pv),
+		},
+	}
 }
 
 func (s *SchedulerServer) pipelineGwRebalance() {
@@ -239,16 +239,14 @@ func (s *SchedulerServer) pipelineGWRebalanceNoStreams(pv *pipeline.PipelineVers
 func (s *SchedulerServer) pipelineGwRebalanceStreams(
 	pv *pipeline.PipelineVersion, streams []*PipelineSubscription,
 ) {
-	pip, _ := s.pipelineHandler.GetPipeline(pv.Name)
 	consumerBucketId := s.getPipelineGatewayBucketId(pv.Name)
-
 	servers := s.pipelineGWLoadBalancer.GetServersForKey(consumerBucketId)
 	s.logger.Debugf("Servers for pipeline %s: %v", pv.Name, servers)
 	s.logger.Debug("Consumer bucket ID: ", consumerBucketId)
 
 	// need to update envoy clusters
 	s.sendPipelineStreamsEventMsg(
-		coordinator.PipelineEventMsg{PipelineName: pv.Name},
+		&coordinator.PipelineEventMsg{PipelineName: pv.Name},
 		servers,
 	)
 
@@ -264,16 +262,15 @@ func (s *SchedulerServer) pipelineGwRebalanceStreams(
 		if contains(servers, server) {
 			s.logger.Debug("Server contains model, sending status update for ", server)
 
-			state := pip.GetLatestPipelineVersion().State.Status
 			var msg *pb.PipelineStatusResponse
 			var err error
 
-			if state == pipeline.PipelineTerminating {
+			if pv.State.Status == pipeline.PipelineTerminating {
 				s.logger.Debugf("Pipeline %s is terminating, sending deletion message", pv.Name)
-				msg, err = s.createPipelineDeletionMessage(pip, false)
+				msg = s.createPipelineDeletionMessage(pv, false)
 			} else {
 				s.logger.Debugf("Pipeline %s is available or progressing, sending creation message", pv.Name)
-				msg, err = s.createPipelineCreationMessage(pip)
+				msg = s.createPipelineCreationMessage(pv)
 
 				// set pipeline gw status to creating and display rebalance reason
 				if err := s.pipelineHandler.SetPipelineGwPipelineState(
@@ -298,13 +295,7 @@ func (s *SchedulerServer) pipelineGwRebalanceStreams(
 			}
 		} else {
 			s.logger.Debugf("Server %s does not contain pipeline %s, sending deletion message", server, pv.Name)
-			msg, err := s.createPipelineDeletionMessage(pip, true)
-			if err != nil {
-				s.logger.WithError(err).Errorf("Failed to create pipeline deletion message for %s", pv.Name)
-				continue
-			}
-
-			s.logger.Debugf("Sending deletion message for pipeline %s to server %s", pv.Name, server)
+			msg := s.createPipelineDeletionMessage(pv, true)
 			msg.Timestamp = cr.GetTimestamp(pv.Name)
 			if err := stream.Send(msg); err != nil {
 				s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.Name)
@@ -316,10 +307,10 @@ func (s *SchedulerServer) pipelineGwRebalanceStreams(
 func (s *SchedulerServer) handlePipelineEvents(event coordinator.PipelineEventMsg) {
 	logger := s.logger.WithField("func", "handlePipelineEvents")
 	logger.Debugf("Received pipeline event %s", event.String())
-	s.sendPipelineEvents(event)
+	s.sendPipelineEvents(&event)
 }
 
-func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg) {
+func (s *SchedulerServer) sendPipelineEvents(event *coordinator.PipelineEventMsg) {
 	logger := s.logger.WithField("func", "sendPipelineEvents")
 	if event.ExperimentUpdate {
 		return
@@ -328,6 +319,7 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 	s.pipelineEventStream.mu.Lock()
 	defer s.pipelineEventStream.mu.Unlock()
 
+	// create a pipeline status response message based on the pipeline version
 	pv, err := s.pipelineHandler.GetPipelineVersion(event.PipelineName, event.PipelineVersion, event.UID)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to get pipeline from event %s", event.String())
@@ -337,14 +329,6 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 		"Handling pipeline event for %s with state %v, pipelinegw %v, models %t",
 		event.String(), pv.State.Status, pv.State.PipelineGwStatus, pv.State.ModelsReady,
 	)
-
-	var pipelineVersions []*pb.PipelineWithState
-	pipelineWithState := pipeline.CreatePipelineWithState(pv)
-	pipelineVersions = append(pipelineVersions, pipelineWithState)
-	status := &pb.PipelineStatusResponse{
-		PipelineName: pv.Name,
-		Versions:     pipelineVersions,
-	}
 
 	// find pipelinegw serverNames that should receive this event
 	consumerBucketId := s.getPipelineGatewayBucketId(event.PipelineName)
@@ -362,18 +346,25 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 		}
 	}
 
+	// message to send to non-pipeline gateway streams (i.e. controller)
+	// we have to update the controller with all the pipeline status changes
+	// that includes messages originating from the `pipelineStatusEventSource`
+	s.sendPipelineEventsToStreams(
+		event,
+		&pb.PipelineStatusResponse{
+			PipelineName: pv.Name,
+			Versions: []*pb.PipelineWithState{
+				pipeline.CreatePipelineWithState(pv),
+			},
+		},
+		otherStreams,
+	)
+
 	// send event to pipeline gateway streams only if the
-	// event did not originate from the pipeline status server
+	// event did not originate from the `pipelineStatusEventSource`
 	// to avoid echoing the event back to the sender
 	if event.Source != pipelineStatusEventSource {
-		streamNames := make([]string, 0, len(pipelineGwStreams))
-
-		switch len(pipelineGwStreams) {
-		case 0:
-			if pv.State.PipelineGwStatus == pipeline.PipelineTerminated {
-				break
-			}
-
+		if len(pipelineGwStreams) == 0 && pv.State.PipelineGwStatus != pipeline.PipelineTerminated {
 			errMsg := "No pipeline-gw available to handle pipeline"
 			logger.WithField("pipeline", pv.Name).Warn(errMsg)
 
@@ -396,28 +387,36 @@ func (s *SchedulerServer) sendPipelineEvents(event coordinator.PipelineEventMsg)
 					WithField("status", pipelineGwStatus).
 					Errorf("Failed to set pipeline gw state")
 			}
-		default:
-			for _, subscription := range pipelineGwStreams {
-				streamNames = append(streamNames, subscription.name)
+		} else {
+			var status *pb.PipelineStatusResponse
+			switch pv.State.PipelineGwStatus {
+			case pipeline.PipelineCreate:
+				if err := s.pipelineHandler.SetPipelineGwPipelineState(
+					pv.Name, pv.Version, pv.UID, pipeline.PipelineCreating, "", pipelineStatusEventSource,
+				); err != nil {
+					logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", pv.String())
+				}
+				status = s.createPipelineCreationMessage(pv)
+			case pipeline.PipelineTerminate:
+				if err := s.pipelineHandler.SetPipelineGwPipelineState(
+					pv.Name, pv.Version, pv.UID, pipeline.PipelineTerminating, "", pipelineStatusEventSource,
+				); err != nil {
+					logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", pv.String())
+				}
+				status = s.createPipelineDeletionMessage(pv, false)
 			}
 
-			// assign a timestamp to the message
-			cr := s.pipelineEventStream.conflictResolutioner
-			cr.CreateNewIteration(pv.Name, streamNames)
-			status.Timestamp = cr.GetTimestamp(pv.Name)
-
-			s.sendPipelineEventsToStreams(event, status, pipelineGwStreams)
+			// for pipeline gateway streams, we need to assign a timestamp
+			// to we can identify the latest message (for conflict resolution)
+			s.sendPipelineEventsToStreamWithTimestamp(event, status, pipelineGwStreams)
 		}
+
+		// publish event for envoy
+		s.sendPipelineStreamsEventMsg(event, serverNames)
 	}
-
-	// sent event and other streams (i.e. controller)
-	s.sendPipelineEventsToStreams(event, status, otherStreams)
-
-	// publish event for envoy
-	s.sendPipelineStreamsEventMsg(event, serverNames)
 }
 
-func (s *SchedulerServer) sendPipelineStreamsEventMsg(event coordinator.PipelineEventMsg, streamNames []string) {
+func (s *SchedulerServer) sendPipelineStreamsEventMsg(event *coordinator.PipelineEventMsg, streamNames []string) {
 	streamIps := make([]string, 0, len(streamNames))
 	for _, streamName := range streamNames {
 		ip, exists := s.pipelineEventStream.namesToIps[streamName]
@@ -429,7 +428,7 @@ func (s *SchedulerServer) sendPipelineStreamsEventMsg(event coordinator.Pipeline
 	}
 
 	eventMsg := coordinator.PipelineStreamsEventMsg{
-		PipelineEventMsg: event,
+		PipelineEventMsg: *event,
 		StreamNames:      streamNames,
 		StreamIps:        streamIps,
 	}
@@ -437,7 +436,7 @@ func (s *SchedulerServer) sendPipelineStreamsEventMsg(event coordinator.Pipeline
 }
 
 func (s *SchedulerServer) sendPipelineEventsToStreams(
-	event coordinator.PipelineEventMsg,
+	event *coordinator.PipelineEventMsg,
 	status *pb.PipelineStatusResponse,
 	streams map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription,
 ) {
@@ -455,6 +454,24 @@ func (s *SchedulerServer) sendPipelineEventsToStreams(
 			logger.WithError(err).Errorf("Failed to send pipeline status event to %s for %s", subscription.name, event.String())
 		}
 	}
+}
+
+func (s *SchedulerServer) sendPipelineEventsToStreamWithTimestamp(
+	event *coordinator.PipelineEventMsg,
+	status *pb.PipelineStatusResponse,
+	streams map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription,
+) {
+	streamNames := make([]string, 0, len(streams))
+	for _, subscription := range streams {
+		streamNames = append(streamNames, subscription.name)
+	}
+
+	// assign a timestamp to the message
+	cr := s.pipelineEventStream.conflictResolutioner
+	cr.CreateNewIteration(event.PipelineName, streamNames)
+	status.Timestamp = cr.GetTimestamp(event.PipelineName)
+
+	s.sendPipelineEventsToStreams(event, status, streams)
 }
 
 func (s *SchedulerServer) StopSendPipelineEvents() {
