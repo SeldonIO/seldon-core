@@ -162,15 +162,6 @@ func (s *SchedulerServer) sendCurrentPipelineStatuses(
 	return nil
 }
 
-func (s *SchedulerServer) GetAllRunningPipelines() []string {
-	pipelineEventMessages := s.pipelineHandler.GetAllRunningPipelineVersions()
-	runningPipelines := make([]string, 0, len(pipelineEventMessages))
-	for _, pipelineEventMessage := range pipelineEventMessages {
-		runningPipelines = append(runningPipelines, pipelineEventMessage.PipelineName)
-	}
-	return runningPipelines
-}
-
 func (s *SchedulerServer) createPipelineDeletionMessage(pip *pipeline.Pipeline, keepTopics bool) (*pb.PipelineStatusResponse, error) {
 	return &pb.PipelineStatusResponse{
 		PipelineName: pip.Name,
@@ -191,9 +182,6 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 	s.pipelineEventStream.mu.Lock()
 	defer s.pipelineEventStream.mu.Unlock()
 
-	runningPipelines := s.GetAllRunningPipelines()
-	s.logger.Debugf("Rebalancing pipeline gateways for running pipelines: %v", runningPipelines)
-
 	// get only the pipeline gateway streams
 	streams := []*PipelineSubscription{}
 	for _, subscription := range s.pipelineEventStream.streams {
@@ -210,95 +198,116 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 			continue
 		}
 
-		s.logger.Debugf("Rebalancing pipeline %s:%d with state %s", event.PipelineName, event.PipelineVersion, pv.State.PipelineGwStatus.String())
-		if len(streams) == 0 {
-			pipelineState := pipeline.PipelineCreate
-			if pv.State.PipelineGwStatus == pipeline.PipelineTerminating {
-				pipelineState = pipeline.PipelineTerminated
+		s.logger.Debugf(
+			"Rebalancing pipeline %s:%d with state %s",
+			event.PipelineName, event.PipelineVersion, pv.State.PipelineGwStatus.String(),
+		)
+
+		switch len(streams) {
+		case 0:
+			s.pipelineGWRebalanceNoStreams(pv)
+		default:
+			s.pipelineGwRebalanceStreams(pv, streams)
+		}
+	}
+}
+
+func (s *SchedulerServer) pipelineGWRebalanceNoStreams(pv *pipeline.PipelineVersion) {
+	pipelineState := pipeline.PipelineCreate
+	if pv.State.PipelineGwStatus == pipeline.PipelineTerminating {
+		// since there are no streams, we can directly set the state to terminated
+		pipelineState = pipeline.PipelineTerminated
+	}
+
+	s.logger.Debugf(
+		"No pipeline-gw available to handle pipeline %s, setting state to %s",
+		pv.String(), pipelineState.String(),
+	)
+
+	if err := s.pipelineHandler.SetPipelineGwPipelineState(
+		pv.Name,
+		pv.Version,
+		pv.UID,
+		pipelineState,
+		"no pipeline gateway available to handle pipeline",
+		pipelineStatusEventSource,
+	); err != nil {
+		s.logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", pv.String())
+	}
+}
+
+func (s *SchedulerServer) pipelineGwRebalanceStreams(
+	pv *pipeline.PipelineVersion, streams []*PipelineSubscription,
+) {
+	pip, _ := s.pipelineHandler.GetPipeline(pv.Name)
+	consumerBucketId := s.getPipelineGatewayBucketId(pv.Name)
+
+	servers := s.pipelineGWLoadBalancer.GetServersForKey(consumerBucketId)
+	s.logger.Debugf("Servers for pipeline %s: %v", pv.Name, servers)
+	s.logger.Debug("Consumer bucket ID: ", consumerBucketId)
+
+	// need to update envoy clusters
+	s.sendPipelineStreamsEventMsg(
+		coordinator.PipelineEventMsg{PipelineName: pv.Name},
+		servers,
+	)
+
+	cr := s.pipelineEventStream.conflictResolutioner
+	cr.CreateNewIteration(pv.Name, servers)
+
+	// send messages to each pipeline gateway stream
+	for _, pipelineSubscription := range streams {
+		s.logger.Debug("Processing pipeline subscription for ", pipelineSubscription.name)
+		server := pipelineSubscription.name
+		stream := pipelineSubscription.stream
+
+		if contains(servers, server) {
+			s.logger.Debug("Server contains model, sending status update for ", server)
+
+			state := pip.GetLatestPipelineVersion().State.Status
+			var msg *pb.PipelineStatusResponse
+			var err error
+
+			if state == pipeline.PipelineTerminating {
+				s.logger.Debugf("Pipeline %s is terminating, sending deletion message", pv.Name)
+				msg, err = s.createPipelineDeletionMessage(pip, false)
+			} else {
+				s.logger.Debugf("Pipeline %s is available or progressing, sending creation message", pv.Name)
+				msg, err = s.createPipelineCreationMessage(pip)
+
+				// set pipeline gw status to creating and display rebalance reason
+				if err := s.pipelineHandler.SetPipelineGwPipelineState(
+					pv.Name,
+					pv.Version,
+					pv.UID,
+					pipeline.PipelineCreating,
+					"Rebalance",
+					pipelineStatusEventSource,
+				); err != nil {
+					s.logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", pv.String())
+				}
 			}
-			s.logger.Debugf("No pipeline-gw available to handle pipeline %s, setting state to %s", pv.String(), pipelineState.String())
-			if err := s.pipelineHandler.SetPipelineGwPipelineState(
-				pv.Name,
-				pv.Version,
-				pv.UID,
-				pipelineState,
-				"no pipeline gateway available to handle pipeline",
-				pipelineStatusEventSource,
-			); err != nil {
-				s.logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", pv.String())
+			if err != nil {
+				s.logger.WithError(err).Errorf("Failed to create pipelines status message for %s", pv.Name)
+				continue
+			}
+
+			msg.Timestamp = cr.GetTimestamp(pv.Name)
+			if err := stream.Send(msg); err != nil {
+				s.logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.Name)
 			}
 		} else {
-			pip, _ := s.pipelineHandler.GetPipeline(pv.Name)
-			consumerBucketId := s.getPipelineGatewayBucketId(pv.Name)
+			s.logger.Debugf("Server %s does not contain pipeline %s, sending deletion message", server, pv.Name)
+			msg, err := s.createPipelineDeletionMessage(pip, true)
+			if err != nil {
+				s.logger.WithError(err).Errorf("Failed to create pipeline deletion message for %s", pv.Name)
+				continue
+			}
 
-			servers := s.pipelineGWLoadBalancer.GetServersForKey(consumerBucketId)
-			s.logger.Debugf("Servers for pipeline %s: %v", pv.Name, servers)
-			s.logger.Debug("Consumer bucket ID: ", consumerBucketId)
-
-			// need to update envoy clusters
-			s.sendPipelineStreamsEventMsg(
-				coordinator.PipelineEventMsg{PipelineName: pv.Name},
-				servers,
-			)
-
-			cr := s.pipelineEventStream.conflictResolutioner
-			cr.CreateNewIteration(pv.Name, servers)
-
-			// send messages to each pipeline gateway stream
-			for _, pipelineSubscription := range streams {
-				s.logger.Debug("Processing pipeline subscription for ", pipelineSubscription.name)
-				server := pipelineSubscription.name
-				stream := pipelineSubscription.stream
-
-				if contains(servers, server) {
-					s.logger.Debug("Server contains model, sending status update for ", server)
-
-					state := pip.GetLatestPipelineVersion().State.Status
-					var msg *pb.PipelineStatusResponse
-					var err error
-
-					if state == pipeline.PipelineTerminating {
-						s.logger.Debugf("Pipeline %s is terminating, sending deletion message", pv.Name)
-						msg, err = s.createPipelineDeletionMessage(pip, false)
-					} else {
-						s.logger.Debugf("Pipeline %s is available or progressing, sending creation message", pv.Name)
-						msg, err = s.createPipelineCreationMessage(pip)
-
-						// set pipeline gw status to creating and display rebalance reason
-						if err := s.pipelineHandler.SetPipelineGwPipelineState(
-							pv.Name,
-							pv.Version,
-							pv.UID,
-							pipeline.PipelineCreating,
-							"Rebalance",
-							pipelineStatusEventSource,
-						); err != nil {
-							s.logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", pv.String())
-						}
-					}
-					if err != nil {
-						s.logger.WithError(err).Errorf("Failed to create pipelines status message for %s", pv.Name)
-						continue
-					}
-
-					msg.Timestamp = cr.GetTimestamp(pv.Name)
-					if err := stream.Send(msg); err != nil {
-						s.logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.Name)
-					}
-				} else {
-					s.logger.Debugf("Server %s does not contain pipeline %s, sending deletion message", server, pv.Name)
-					msg, err := s.createPipelineDeletionMessage(pip, true)
-					if err != nil {
-						s.logger.WithError(err).Errorf("Failed to create pipeline deletion message for %s", pv.Name)
-						continue
-					}
-
-					s.logger.Debugf("Sending deletion message for pipeline %s to server %s", pv.Name, server)
-					msg.Timestamp = cr.GetTimestamp(pv.Name)
-					if err := stream.Send(msg); err != nil {
-						s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.Name)
-					}
-				}
+			s.logger.Debugf("Sending deletion message for pipeline %s to server %s", pv.Name, server)
+			msg.Timestamp = cr.GetTimestamp(pv.Name)
+			if err := stream.Send(msg); err != nil {
+				s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.Name)
 			}
 		}
 	}
