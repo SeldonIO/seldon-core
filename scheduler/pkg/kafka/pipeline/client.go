@@ -229,8 +229,10 @@ func (pc *PipelineSchedulerClient) cleanup(stream scheduler.Scheduler_SubscribeP
 func (ep *EventProcessor) handleEvent(event *scheduler.PipelineStatusResponse) {
 	switch len(event.Versions) {
 	case 0:
+		ep.logger.Debugf("Handling delete event for pipeline %s", event.PipelineName)
 		ep.handleDeletePipeline(event)
 	case 1:
+		ep.logger.Debugf("Handling create/update event for pipeline %s", event.PipelineName)
 		ep.handleCreateOrUpdatePipeline(event)
 	default:
 		ep.handleInvalidVersionCount(event)

@@ -350,6 +350,7 @@ func (ps *PipelineStore) terminateOldUnterminatedPipelinesIfNeeded(pipeline *Pip
 				continue
 			default:
 				pv.State.setState(PipelineTerminate, "")
+				pv.State.setPipelineGwState(PipelineTerminate, "")
 				evts = append(evts, &coordinator.PipelineEventMsg{
 					PipelineName:    pv.Name,
 					PipelineVersion: pv.Version,

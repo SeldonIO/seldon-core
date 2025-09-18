@@ -25,7 +25,8 @@ import (
 
 const (
 	addPipelineStreamEventSource = "pipeline.store.addpipelinestream"
-	pipelineStatusEventSource    = "pipeline.status.server"
+	sourcePipelineStatusEvent    = "pipeline-status-server"
+	sourceChainerServer          = "chainer-server"
 )
 
 func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
@@ -73,7 +74,7 @@ func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *chai
 	}
 
 	err := s.pipelineHandler.SetPipelineGwPipelineState(
-		message.Update.Pipeline, message.Update.Version, message.Update.Uid, pipelineStatusVal, reason, pipelineStatusEventSource,
+		message.Update.Pipeline, message.Update.Version, message.Update.Uid, pipelineStatusVal, reason, sourcePipelineStatusEvent,
 	)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to update pipeline status for %s:%d (%s)", message.Update.Pipeline, message.Update.Version, message.Update.Uid)
@@ -230,7 +231,7 @@ func (s *SchedulerServer) pipelineGWRebalanceNoStreams(pv *pipeline.PipelineVers
 		pv.UID,
 		pipelineState,
 		"no pipeline gateway available to handle pipeline",
-		pipelineStatusEventSource,
+		sourcePipelineStatusEvent,
 	); err != nil {
 		s.logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", pv.String())
 	}
@@ -279,7 +280,7 @@ func (s *SchedulerServer) pipelineGwRebalanceStreams(
 					pv.UID,
 					pipeline.PipelineCreating,
 					"Rebalance",
-					pipelineStatusEventSource,
+					sourcePipelineStatusEvent,
 				); err != nil {
 					s.logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", pv.String())
 				}
@@ -326,8 +327,8 @@ func (s *SchedulerServer) sendPipelineEvents(event *coordinator.PipelineEventMsg
 		return
 	}
 	logger.Debugf(
-		"Handling pipeline event for %s with state %v, pipelinegw %v, models %t",
-		event.String(), pv.State.Status, pv.State.PipelineGwStatus, pv.State.ModelsReady,
+		"Handling pipeline event for %s with state %v, pipelinegw %v, models %t, source %s",
+		event.String(), pv.State.Status, pv.State.PipelineGwStatus, pv.State.ModelsReady, event.Source,
 	)
 
 	// find pipelinegw serverNames that should receive this event
@@ -357,59 +358,65 @@ func (s *SchedulerServer) sendPipelineEvents(event *coordinator.PipelineEventMsg
 	}
 	s.sendPipelineEventsToStreams(event, status, otherStreams)
 
-	// send event to pipeline gateway streams only if the
-	// event did not originate from the `pipelineStatusEventSource`
-	// to avoid echoing the event back to the sender
-	if event.Source != pipelineStatusEventSource {
-		if len(pipelineGwStreams) == 0 && pv.State.PipelineGwStatus != pipeline.PipelineTerminated {
-			errMsg := "No pipeline-gw available to handle pipeline"
-			logger.WithField("pipeline", pv.Name).Warn(errMsg)
+	// don't consider events from pipeline status or chainer server
+	var pipelineEventSources = map[string]struct{}{
+		sourcePipelineStatusEvent: {},
+		sourceChainerServer:       {},
+	}
+	if _, ok := pipelineEventSources[event.Source]; ok {
+		return
+	}
 
-			pipelineGwStatus := pv.State.PipelineGwStatus
-			if pipelineGwStatus == pipeline.PipelineTerminating || pv.State.Status == pipeline.PipelineTerminate {
-				pipelineGwStatus = pipeline.PipelineTerminated
-			}
+	if len(pipelineGwStreams) == 0 && pv.State.PipelineGwStatus != pipeline.PipelineTerminated {
+		errMsg := "No pipeline-gw available to handle pipeline"
+		logger.WithField("pipeline", pv.Name).Warn(errMsg)
 
-			if err := s.pipelineHandler.SetPipelineGwPipelineState(
-				pv.Name,
-				pv.Version,
-				pv.UID,
-				pipelineGwStatus,
-				errMsg,
-				pipelineStatusEventSource,
-			); err != nil {
-				logger.
-					WithError(err).
-					WithField("pipeline", pv.Name).
-					WithField("status", pipelineGwStatus).
-					Errorf("Failed to set pipeline gw state")
-			}
-		} else {
-			switch pv.State.PipelineGwStatus {
-			case pipeline.PipelineCreate:
-				if err := s.pipelineHandler.SetPipelineGwPipelineState(
-					pv.Name, pv.Version, pv.UID, pipeline.PipelineCreating, "", pipelineStatusEventSource,
-				); err != nil {
-					logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", pv.String())
-				}
-				status = s.createPipelineCreationMessage(pv)
-			case pipeline.PipelineTerminate:
-				if err := s.pipelineHandler.SetPipelineGwPipelineState(
-					pv.Name, pv.Version, pv.UID, pipeline.PipelineTerminating, "", pipelineStatusEventSource,
-				); err != nil {
-					logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", pv.String())
-				}
-				status = s.createPipelineDeletionMessage(pv, false)
-			}
-
-			// for pipeline gateway streams, we need to assign a timestamp
-			// to we can identify the latest message (for conflict resolution)
-			s.sendPipelineEventsToStreamWithTimestamp(event, status, pipelineGwStreams)
+		pipelineGwStatus := pv.State.PipelineGwStatus
+		if pipelineGwStatus == pipeline.PipelineTerminating || pv.State.Status == pipeline.PipelineTerminate {
+			pipelineGwStatus = pipeline.PipelineTerminated
 		}
 
-		// publish event for envoy
-		s.sendPipelineStreamsEventMsg(event, serverNames)
+		if err := s.pipelineHandler.SetPipelineGwPipelineState(
+			pv.Name,
+			pv.Version,
+			pv.UID,
+			pipelineGwStatus,
+			errMsg,
+			sourcePipelineStatusEvent,
+		); err != nil {
+			logger.
+				WithError(err).
+				WithField("pipeline", pv.Name).
+				WithField("status", pipelineGwStatus).
+				Errorf("Failed to set pipeline gw state")
+		}
+	} else {
+		switch pv.State.PipelineGwStatus {
+		case pipeline.PipelineCreate:
+			logger.Debug("Pipeline is being created, sending creation message")
+			if err := s.pipelineHandler.SetPipelineGwPipelineState(
+				pv.Name, pv.Version, pv.UID, pipeline.PipelineCreating, "", sourcePipelineStatusEvent,
+			); err != nil {
+				logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", pv.String())
+			}
+			status = s.createPipelineCreationMessage(pv)
+		case pipeline.PipelineTerminate:
+			logger.Debug("Pipeline is being terminated, sending deletion message")
+			if err := s.pipelineHandler.SetPipelineGwPipelineState(
+				pv.Name, pv.Version, pv.UID, pipeline.PipelineTerminating, "", sourcePipelineStatusEvent,
+			); err != nil {
+				logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", pv.String())
+			}
+			status = s.createPipelineDeletionMessage(pv, false)
+		}
+
+		// for pipeline gateway streams, we need to assign a timestamp
+		// to we can identify the latest message (for conflict resolution)
+		s.sendPipelineEventsToStreamWithTimestamp(event, status, pipelineGwStreams)
 	}
+
+	// publish event for envoy
+	s.sendPipelineStreamsEventMsg(event, serverNames)
 }
 
 func (s *SchedulerServer) sendPipelineStreamsEventMsg(event *coordinator.PipelineEventMsg, streamNames []string) {

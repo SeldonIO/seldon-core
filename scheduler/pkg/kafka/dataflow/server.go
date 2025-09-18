@@ -35,7 +35,9 @@ const (
 	grpcMaxConcurrentStreams     = 1_000_000
 	pipelineEventHandlerName     = "kafka.dataflow.server.pipelines"
 	pendingEventsQueueSize   int = 1000
-	sourceChainerServer          = "chainer-server"
+
+	sourcePipelineStatusEvent = "pipeline-status-event"
+	sourceChainerServer       = "chainer-server"
 )
 
 type ChainerServer struct {
@@ -494,7 +496,13 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 	if event.ExperimentUpdate {
 		return
 	}
-	if sourceChainerServer == event.Source {
+
+	// don't consider events from pipeline status or chainer server
+	var pipelineEventSources = map[string]struct{}{
+		sourcePipelineStatusEvent: {},
+		sourceChainerServer:       {},
+	}
+	if _, ok := pipelineEventSources[event.Source]; ok {
 		return
 	}
 
