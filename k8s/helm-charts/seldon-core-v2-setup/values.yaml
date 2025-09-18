@@ -37,6 +37,7 @@ security:
         brokerCaPath: /tmp/certs/kafka/broker/ca.crt
         endpointIdentificationAlgorithm:
   schemaRegistry:
+    configPath: /mnt/schema-registry
     client:
       URL:
       username:

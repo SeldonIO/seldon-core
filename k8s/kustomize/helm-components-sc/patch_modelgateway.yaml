@@ -74,12 +74,8 @@ spec:
             value: '{{ hasKey .Values.modelgateway "logLevel" | ternary .Values.modelgateway.logLevel .Values.logging.logLevel }}'
           - name: MODELGATEWAY_MAX_NUM_CONSUMERS
             value: '{{ .Values.modelgateway.maxNumConsumers }}'
-          - name: SCHEMA_REGISTRY_URL
-            value: '{{ .Values.security.schemaRegistry.client.URL }}'
-          - name: SCHEMA_REGISTRY_USERNAME
-            value: '{{ .Values.security.schemaRegistry.client.username }}'
-          - name: SCHEMA_REGISTRY_PASSWORD
-            value: '{{ .Values.security.schemaRegistry.client.password }}'
+          - name: SCHEMA_REGISTRY_CONFIG_PATH
+            value: '{{ .Values.security.schemaRegistry.configPath }}'
         resources:
           requests:
             cpu: '{{ .Values.modelgateway.resources.cpu }}'
