@@ -345,7 +345,7 @@ class PipelineSubscriber(
                 // We need to make sure we don't remove any messages
                 // from the scheduler, thus we have to fetch the
                 // last element in the queue and put it back in case
-                // it has a higher timestamp - there is no peak function
+                // it has a higher timestamp - there is no peek function
                 val first = queueInfo.queue.tryReceive().getOrNull()
                 if (first != null && first.timestamp > timestamp) {
                     queueInfo.queue.send(first)
