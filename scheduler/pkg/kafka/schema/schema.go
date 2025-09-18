@@ -10,34 +10,54 @@ the Change License after the Change Date as each is defined in accordance with t
 package schema
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
+	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/file"
+	"github.com/knadh/koanf/v2"
 	log "github.com/sirupsen/logrus"
 )
 
 const (
-	EnvURL      = "SCHEMA_REGISTRY_URL"
-	EnvUsername = "SCHEMA_REGISTRY_USERNAME"
-	EnvPassword = "SCHEMA_REGISTRY_PASSWORD"
+	EnvSchemaRegistryConfigPath = "SCHEMA_REGISTRY_CONFIG_PATH"
+	FileName                    = "confluent-schema.yaml"
 )
 
-func NewSchemaRegistryClient(log *log.Logger) schemaregistry.Client {
-	url := os.Getenv(EnvURL)
-	username := os.Getenv(EnvUsername)
-	password := os.Getenv(EnvPassword)
-	logger := log.WithField("func", "setup")
+type config struct {
+	URL      string `koanf:"schemaRegistry.client.URL"`
+	Username string `koanf:"schemaRegistry.client.username"`
+	Password string `koanf:"schemaRegistry.client.password"`
+}
 
-	if url == "" {
-		return nil
+func NewSchemaRegistryClient(log *log.Logger, k *koanf.Koanf) (schemaregistry.Client, error) {
+	logger := log.WithField("func", "NewSchemaRegistryClient")
+	schemaConfigPath := os.Getenv(EnvSchemaRegistryConfigPath)
+	if schemaConfigPath == "" {
+		return nil, nil
 	}
 
-	conf := schemaregistry.NewConfigWithBasicAuthentication(url, username, password)
+	if err := k.Load(file.Provider(schemaConfigPath+"/."+FileName), yaml.Parser()); err != nil {
+		return nil, fmt.Errorf("error loading schema registry config: %v", err)
+	}
+
+	var cfg config
+
+	err := k.UnmarshalWithConf("", &cfg, koanf.UnmarshalConf{Tag: "koanf", FlatPaths: true})
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling config: %v", err)
+	}
+
+	if cfg.URL == "" {
+		return nil, fmt.Errorf("configuration url is required for schema registry client")
+	}
+
+	conf := schemaregistry.NewConfigWithBasicAuthentication(cfg.URL, cfg.Username, cfg.Password)
 
 	srClient, err := schemaregistry.NewClient(conf)
 	if err != nil {
-		logger.Warnf("unable to create schema registry client: %v", err)
-		return nil
+		return nil, fmt.Errorf("error creating schema registry client: %v", err)
 	}
 
 	_, err = srClient.GetAllSubjects()
@@ -47,8 +67,7 @@ func NewSchemaRegistryClient(log *log.Logger) schemaregistry.Client {
 
 	srClient.Config()
 
-	logger.Info("schema registry client created")
-	return srClient
+	return srClient, nil
 }
 
 // TrimSchemaID trims the magic byte, schema id and message index of a kafka message that was sent with a schema ID

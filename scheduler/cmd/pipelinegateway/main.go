@@ -21,6 +21,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/knadh/koanf/v2"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/backoff"
@@ -78,6 +79,8 @@ var (
 	envoyHost              string
 	envoyPort              int
 	healthProbeServicePort int
+	// TODO: add file watcher cfg using koanf and in the future read all file config in one file
+	k = koanf.New(".")
 )
 
 func init() {
@@ -156,9 +159,15 @@ func main() {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
 
-	schemaRegistryClient := schema.NewSchemaRegistryClient(logger)
+	schemaRegistryClient, err := schema.NewSchemaRegistryClient(logger, k)
+	if err != nil {
+		logger.WithError(err).Fatal("Failed to create schema registry client")
+	}
+
 	if schemaRegistryClient != nil {
-		logger.Warn("Schema registry client was set")
+		logger.Infof("Schema registry client was set with host on %s", schemaRegistryClient.Config().SchemaRegistryURL)
+	} else {
+		logger.Debugf("Schema registry not set")
 	}
 
 	maxNumConsumers := getEnVar(logger, pipeline.EnvMaxNumConsumers, pipeline.DefaultMaxNumConsumers)
