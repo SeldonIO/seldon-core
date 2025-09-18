@@ -63,8 +63,8 @@ export function setup() {
         const server = generateServer(serverName, "mlserver", config.replicas.inferenceServer.actual,
             config.replicas.inferenceServer.min, config.replicas.inferenceServer.max)
 
-        ctl.unloadServerFn(server.object.metadata.name, true, true, 30)
-        sleep(2000)
+        // ctl.unloadServerFn(server.object.metadata.name, true, true, 30)
+        // sleep(2000)
         ctl.loadServerFn(server.yaml, server.object.metadata.name, false, true, 30)
 
         const pipeline = generateMultiModelParallelPipelineYaml(pipelineName,
