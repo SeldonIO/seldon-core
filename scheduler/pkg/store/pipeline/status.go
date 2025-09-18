@@ -64,6 +64,7 @@ func updatePipelineModelsReady(latestPipeline *PipelineVersion, modelAvailable b
 
 // Set pipeline models ready by finding out if all models are ready
 func (ms *ModelStatusHandler) setPipelineModelsReady(pipelineVersion *PipelineVersion) error {
+	// TODO: add modelgwState to step and check here
 	modelsReady := true
 	if pipelineVersion != nil && ms.store != nil {
 		for stepName, step := range pipelineVersion.Steps {
