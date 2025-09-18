@@ -349,16 +349,13 @@ func (s *SchedulerServer) sendPipelineEvents(event *coordinator.PipelineEventMsg
 	// message to send to non-pipeline gateway streams (i.e. controller)
 	// we have to update the controller with all the pipeline status changes
 	// that includes messages originating from the `pipelineStatusEventSource`
-	s.sendPipelineEventsToStreams(
-		event,
-		&pb.PipelineStatusResponse{
-			PipelineName: pv.Name,
-			Versions: []*pb.PipelineWithState{
-				pipeline.CreatePipelineWithState(pv),
-			},
+	status := &pb.PipelineStatusResponse{
+		PipelineName: pv.Name,
+		Versions: []*pb.PipelineWithState{
+			pipeline.CreatePipelineWithState(pv),
 		},
-		otherStreams,
-	)
+	}
+	s.sendPipelineEventsToStreams(event, status, otherStreams)
 
 	// send event to pipeline gateway streams only if the
 	// event did not originate from the `pipelineStatusEventSource`
@@ -388,7 +385,6 @@ func (s *SchedulerServer) sendPipelineEvents(event *coordinator.PipelineEventMsg
 					Errorf("Failed to set pipeline gw state")
 			}
 		} else {
-			var status *pb.PipelineStatusResponse
 			switch pv.State.PipelineGwStatus {
 			case pipeline.PipelineCreate:
 				if err := s.pipelineHandler.SetPipelineGwPipelineState(
