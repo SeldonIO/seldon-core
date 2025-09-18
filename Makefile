@@ -72,6 +72,10 @@ go-generate:
 	make -C hodometer go-generate
 	make -C components/tls go-generate
 	make -C components/kafka go-generate
+
+.PHONY: go-generate-with-copyright
+go-generate-with-copyright: go-generate update-copyright
+
 #
 # Release
 #

@@ -40,5 +40,5 @@ jobs:
           git diff --exit-code
       - name: check go generate
         run: |
-          make go-generate
+          make go-generate-with-copyright
           git diff --exit-code
