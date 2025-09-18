@@ -232,6 +232,41 @@ function experimentNamePrefix() {
     return "experiment"
 }
 
+function modelReplicasCount() {
+    if (__ENV.MODEL_REPLICAS) {
+        return __ENV.MODEL_REPLICAS
+    }
+    return 1
+}
+
+function serverMaxReplicas() {
+    if (__ENV.SERVER_MAX_REPLICAS) {
+        return __ENV.SERVER_MAX_REPLICAS
+    }
+    return 1
+}
+
+function serverMinReplicas() {
+    if (__ENV.SERVER_MIN_REPLICAS) {
+        return __ENV.SERVER_MIN_REPLICAS
+    }
+    return 1
+}
+
+function modelMinReplicas() {
+    if (__ENV.MODEL_MIN_REPLICAS) {
+        return __ENV.MODEL_MIN_REPLICAS
+    }
+    return 1
+}
+
+function inferenceServerReplicas() {
+    if (__ENV.INFERENCE_SERVER_REPLICAS) {
+        return __ENV.INFERENCE_SERVER_REPLICAS
+    }
+    return 1
+}
+
 function dataFlowEngineReplicas() {
     if (__ENV.DATAFLOW_ENGINE_REPLICAS) {
         return __ENV.DATAFLOW_ENGINE_REPLICAS
@@ -417,9 +452,17 @@ function sleepBetweenModelReplicaChange() {
 
 export function getConfig() {
     return {
-        "dataFlowEngineReplicas" : dataFlowEngineReplicas(),
-        "pipelineGwReplicas" : pipelineGwReplicas(),
-        "modelGwReplicas": modelGwReplicas(),
+        "replicas" : {
+            "model" : modelReplicasCount(),
+            "inferenceServer" : {
+              "actual" : inferenceServerReplicas(),
+              "min" : serverMinReplicas(),
+              "max" : serverMaxReplicas(),
+            },
+            "dataFlowEngine" : dataFlowEngineReplicas(),
+            "pipelineGw" : pipelineGwReplicas(),
+            "modelGw": modelGwReplicas(),
+        },
         "useGRPC" : useGRPC(),
         "seldonRuntimeName": seldonRuntimeName(),
         "requestIDPrefix" : requestIDPrefix(),

@@ -522,7 +522,7 @@ export function loadServer(data, serverName, awaitReady=true, throwError=false, 
     }
 }
 
-export function unloadServer(serverName, awaitReady=true, throwError=false) {
+export function unloadServer(serverName, awaitReady=true, throwError=false, maxRetries = MAX_RETRIES) {
     if(seldonObjExists(seldonObjectType.SERVER, serverName, seldon_target_ns)) {
         try {
             kubeclient.delete(seldonObjectType.SERVER.description, serverName, seldon_target_ns)
@@ -531,7 +531,7 @@ export function unloadServer(serverName, awaitReady=true, throwError=false) {
                 while (seldonObjExists(seldonObjectType.SERVER, serverName, seldon_target_ns)) {
                     sleep(1)
                     retries++
-                    if(retries > MAX_RETRIES) {
+                    if(retries > maxRetries) {
                         const msg = `Failed to unload server ${serverName} after ${MAX_RETRIES}, giving up`
                         if (throwError) {
                             throw msg

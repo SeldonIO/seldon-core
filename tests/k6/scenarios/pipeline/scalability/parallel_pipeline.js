@@ -59,13 +59,15 @@ export function setup() {
             }
         ]
 
-        const server = generateServer(serverName, "mlserver", 1, 1, 1)
-        ctl.unloadServerFn(server.object.metadata.name, true, true)
-        ctl.loadServerFn(server.yaml, server.object.metadata.name, false, true)
+        const server = generateServer(serverName, "mlserver", config.replicas.inferenceServer.actual,
+            config.replicas.inferenceServer.min, config.replicas.inferenceServer.max)
+
+        ctl.unloadServerFn(server.object.metadata.name, true, true, 30)
+        ctl.loadServerFn(server.yaml, server.object.metadata.name, false, true, 30)
 
         const pipeline = generateMultiModelParallelPipelineYaml(pipelineName,
             [inputModelName1, inputModelName2], inputModelType, inputModelParams, outputModelName,
-            outputModelType, 1, 1, serverName)
+            outputModelType, 1, config.replicas.model, serverName)
 
         pipeline.modelCRYaml.forEach(model => {
             ctl.unloadModelFn(model.metadata.name, true)
@@ -76,9 +78,9 @@ export function setup() {
         ctl.loadPipelineFn(pipeline.pipelineName, pipeline.pipelineCRYaml, true, true)
 
 
-        const replicaModelGw = config.modelGwReplicas
-        const replicaDataFlowEngine = config.dataFlowEngineReplicas
-        const replicaPipeLineGw = config.pipelineGwReplicas
+        const replicaModelGw = config.replicas.modelGw
+        const replicaDataFlowEngine = config.replicas.dataFlowEngine
+        const replicaPipeLineGw = config.replicas.pipelineGw
 
         // we have to scale the model-gw, dataflow-engine, pipeline-gw AFTER we have deployed the pipelines
         // as otherwise the seldon controller will prohibit the scaling and default to 1 replica as there's no
