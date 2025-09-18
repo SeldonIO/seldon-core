@@ -307,6 +307,7 @@ func newMockControllerClient(objs ...client.Object) *SchedulerClient {
 	scheme := runtime.NewScheme()
 	_ = mlopsv1alpha1.AddToScheme(scheme)
 	fakeClient := testing2.NewFakeClient(scheme, objs...)
+
 	return NewSchedulerClient(
 		logger,
 		fakeClient,

@@ -65,6 +65,16 @@ docs_dev_server: docs_clean
 docs_spellcheck:
 	misspell -w docs/source/contents
 
+.PHONY: go-generate
+go-generate:
+	make -C scheduler go-generate
+	make -C operator go-generate
+	make -C hodometer go-generate
+	make -C components/tls go-generate
+	make -C components/kafka go-generate
+
+.PHONY: go-generate-with-copyright
+go-generate-with-copyright: go-generate update-copyright
 
 #
 # Release

@@ -12,7 +12,7 @@ package cli
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/seldonio/seldon-core/operator/v2/pkg/cli"
+	clipkg "github.com/seldonio/seldon-core/operator/v2/pkg/cli"
 )
 
 func createConfigActivate() *cobra.Command {
@@ -23,7 +23,7 @@ func createConfigActivate() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			configKey := args[0]
-			configs, err := cli.LoadSeldonCLIConfigs()
+			configs, err := clipkg.LoadSeldonCLIConfigs()
 			if err != nil {
 				return err
 			}

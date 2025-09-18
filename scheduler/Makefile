@@ -106,6 +106,10 @@ test: test-go test-jvm
 benchmark-go:
 	go test -run=XXX -bench=. ./pkg/...
 
+.PHONY: go-generate
+go-generate:
+	go generate ./...
+
 
 #####################################
 # Build Docker

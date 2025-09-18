@@ -581,17 +581,17 @@ func (mr *MockExtendedClientMockRecorder) FlowcontrolV1beta3() *gomock.Call {
 }
 
 // HasPublishedIP mocks base method.
-func (m *MockExtendedClient) HasPublishedIP(ctx context.Context, name, fieldSelector string) error {
+func (m *MockExtendedClient) HasPublishedIP(ctx context.Context, name, optionalFieldSelector string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "HasPublishedIP", ctx, name, fieldSelector)
+	ret := m.ctrl.Call(m, "HasPublishedIP", ctx, name, optionalFieldSelector)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // HasPublishedIP indicates an expected call of HasPublishedIP.
-func (mr *MockExtendedClientMockRecorder) HasPublishedIP(ctx, name, fieldSelector any) *gomock.Call {
+func (mr *MockExtendedClientMockRecorder) HasPublishedIP(ctx, name, optionalFieldSelector any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasPublishedIP", reflect.TypeOf((*MockExtendedClient)(nil).HasPublishedIP), ctx, name, fieldSelector)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasPublishedIP", reflect.TypeOf((*MockExtendedClient)(nil).HasPublishedIP), ctx, name, optionalFieldSelector)
 }
 
 // InternalV1alpha1 mocks base method.
