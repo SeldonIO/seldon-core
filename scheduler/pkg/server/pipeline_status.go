@@ -266,7 +266,7 @@ func (s *SchedulerServer) pipelineGwRebalanceStreams(
 			var msg *pb.PipelineStatusResponse
 			var err error
 
-			if pv.State.Status == pipeline.PipelineTerminating {
+			if pv.State.PipelineGwStatus == pipeline.PipelineTerminating {
 				s.logger.Debugf("Pipeline %s is terminating, sending deletion message", pv.Name)
 				msg = s.createPipelineDeletionMessage(pv, false)
 			} else {
@@ -372,7 +372,7 @@ func (s *SchedulerServer) sendPipelineEvents(event *coordinator.PipelineEventMsg
 		logger.WithField("pipeline", pv.Name).Warn(errMsg)
 
 		pipelineGwStatus := pv.State.PipelineGwStatus
-		if pipelineGwStatus == pipeline.PipelineTerminating || pv.State.Status == pipeline.PipelineTerminate {
+		if pipelineGwStatus == pipeline.PipelineTerminating || pipelineGwStatus == pipeline.PipelineTerminate {
 			pipelineGwStatus = pipeline.PipelineTerminated
 		}
 
