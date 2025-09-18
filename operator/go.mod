@@ -19,10 +19,10 @@ require (
 	github.com/seldonio/seldon-core/apis/go/v2 v2.9.1
 	github.com/seldonio/seldon-core/components/kafka/v2 v2.9.1
 	github.com/seldonio/seldon-core/components/tls/v2 v2.9.1
-	github.com/spf13/cobra v1.8.1
-	github.com/spf13/pflag v1.0.6
-	github.com/stretchr/testify v1.10.0
+	github.com/spf13/cobra v1.10.1
+	github.com/spf13/pflag v1.0.9
 	github.com/tidwall/gjson v1.18.0
+	go.uber.org/mock v0.4.0
 	golang.org/x/exp v0.0.0-20250128182459-e0ece0dbea4c
 	google.golang.org/grpc v1.73.0
 	google.golang.org/protobuf v1.36.6
@@ -40,11 +40,9 @@ require (
 	github.com/fxamacker/cbor/v2 v2.8.0 // indirect
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/gnostic-models v0.7.0 // indirect
-	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
-	go.uber.org/mock v0.4.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/mod v0.25.0 // indirect
@@ -58,7 +56,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.6 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/evanphx/json-patch v5.9.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.9.11 // indirect
