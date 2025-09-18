@@ -8,6 +8,7 @@ import {
     getModelInferencePayload
 } from '../../../components/model.js';
 import {inferHttp, setupK6, tearDownK6} from "../../../components/v2.js";
+import exec from 'k6/execution';
 import {awaitPipelineStatus, generateSeldonRuntime, generateServer} from "../../../components/k8s.js";
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
@@ -21,8 +22,7 @@ export let options = {
     },
     setupTimeout: '6000s',
     teardownTimeout: '6000s',
-    // TODO put back to 5000
-    iterations: 500,
+    iterations: 5000,
 }
 
 const inputModelName1 = 'automatedtests-input-1'
@@ -76,9 +76,9 @@ export function setup() {
         ctl.loadPipelineFn(pipeline.pipelineName, pipeline.pipelineCRYaml, true, true)
 
 
-        const replicaModelGw = 2;
-        const replicaDataFlowEngine = 2;
-        const replicaPipeLineGw = 2;
+        const replicaModelGw = config.modelGwReplicas
+        const replicaDataFlowEngine = config.dataFlowEngineReplicas
+        const replicaPipeLineGw = config.pipelineGwReplicas
 
         // we have to scale the model-gw, dataflow-engine, pipeline-gw AFTER we have deployed the pipelines
         // as otherwise the seldon controller will prohibit the scaling and default to 1 replica as there's no

@@ -232,6 +232,27 @@ function experimentNamePrefix() {
     return "experiment"
 }
 
+function dataFlowEngineReplicas() {
+    if (__ENV.DATAFLOW_ENGINE_REPLICAS) {
+        return __ENV.DATAFLOW_ENGINE_REPLICAS
+    }
+    return 1
+}
+
+function pipelineGwReplicas() {
+    if (__ENV.PIPLINE_GW_REPLICAS) {
+        return __ENV.PIPLINE_GW_REPLICAS
+    }
+    return 1
+}
+
+function modelGwReplicas() {
+    if (__ENV.MODEL_GW_REPLICAS) {
+        return __ENV.MODEL_GW_REPLICAS
+    }
+    return 1
+}
+
 function useGRPC() {
     if (__ENV.USE_GRPC) {
         return true
@@ -396,6 +417,9 @@ function sleepBetweenModelReplicaChange() {
 
 export function getConfig() {
     return {
+        "dataFlowEngineReplicas" : dataFlowEngineReplicas(),
+        "pipelineGwReplicas" : pipelineGwReplicas(),
+        "modelGwReplicas": modelGwReplicas(),
         "useGRPC" : useGRPC(),
         "seldonRuntimeName": seldonRuntimeName(),
         "requestIDPrefix" : requestIDPrefix(),
