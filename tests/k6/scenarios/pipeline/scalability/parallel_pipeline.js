@@ -10,6 +10,7 @@ import {
 import {inferHttp, setupK6, tearDownK6} from "../../../components/v2.js";
 import exec from 'k6/execution';
 import {awaitPipelineStatus, generateSeldonRuntime, generateServer} from "../../../components/k8s.js";
+import { sleep } from 'k6';
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
 export let options = {
