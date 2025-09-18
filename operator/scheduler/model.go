@@ -324,11 +324,6 @@ func (s *SchedulerClient) updateModelStatus(ctx context.Context, model *v1alpha1
 		return err
 	}
 
-	if !existingModel.ObjectMeta.DeletionTimestamp.IsZero() {
-		// Don't update status on deleted objects
-		return nil
-	}
-
 	prevWasReady := modelReady(existingModel.Status)
 	if equality.Semantic.DeepEqual(existingModel.Status, model.Status) {
 		// Not updating as no difference
