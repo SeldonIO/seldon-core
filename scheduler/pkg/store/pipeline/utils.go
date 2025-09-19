@@ -295,9 +295,10 @@ func CreatePipelineWithState(pv *PipelineVersion) *scheduler.PipelineWithState {
 
 func createStateFromProto(pvs *scheduler.PipelineVersionState) *PipelineState {
 	return &PipelineState{
-		Status:    PipelineStatus(pvs.Status),
-		Reason:    pvs.Reason,
-		Timestamp: pvs.LastChangeTimestamp.AsTime(),
+		Status:           PipelineStatus(pvs.Status),
+		PipelineGwStatus: PipelineStatus(pvs.PipelineGwStatus),
+		Reason:           pvs.Reason,
+		Timestamp:        pvs.LastChangeTimestamp.AsTime(),
 	}
 }
 
