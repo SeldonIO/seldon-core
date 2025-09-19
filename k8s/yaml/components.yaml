@@ -684,10 +684,10 @@ spec:
       - configMap:
           name: seldon-tracing
         name: tracing-config-volume
-      - secret:
-          secretName: confluent-schema
+      - name: confluent-schema-volume
+        secret:
           optional: true
-        name: confluent-schema-volume
+          secretName: confluent-schema
     replicas: 1
   - annotations:
         null
@@ -843,10 +843,10 @@ spec:
       - configMap:
           name: seldon-tracing
         name: tracing-config-volume
-      - secret:
-          secretName: confluent-schema
+      - name: confluent-schema-volume
+        secret:
           optional: true
-        name: confluent-schema-volume
+          secretName: confluent-schema
     replicas: 1
   - annotations:
         null
@@ -1094,10 +1094,10 @@ spec:
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
       volumes:
-        - secret:
-            secretName: confluent-schema
-            optional: true
-          name: confluent-schema-volume
+      - name: confluent-schema-volume
+        secret:
+          optional: true
+          secretName: confluent-schema
     replicas: 1
   config:
     agentConfig:

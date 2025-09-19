@@ -849,10 +849,10 @@ spec:
       - configMap:
           name: seldon-tracing
         name: tracing-config-volume
-      - secret:
-          secretName: confluent-schema
+      - name: confluent-schema-volume
+        secret:
           optional: true
-        name: confluent-schema-volume
+          secretName: confluent-schema
     replicas: 1
   - annotations: {{- toYaml .Values.modelgateway.annotations | nindent
       8 }}
@@ -1013,10 +1013,10 @@ spec:
       - configMap:
           name: seldon-tracing
         name: tracing-config-volume
-      - secret:
-          secretName: confluent-schema
+      - name: confluent-schema-volume
+        secret:
           optional: true
-        name: confluent-schema-volume
+          secretName: confluent-schema
     replicas: 1
   - annotations: {{- toYaml .Values.hodometer.annotations | nindent
       8 }}
@@ -1272,10 +1272,10 @@ spec:
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
       volumes:
-      - secret:
-          secretName: confluent-schema
+      - name: confluent-schema-volume
+        secret:
           optional: true
-        name: confluent-schema-volume
+          secretName: confluent-schema
     replicas: 1
   config:
     agentConfig:
