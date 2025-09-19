@@ -201,7 +201,7 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 		}
 
 		s.logger.Debugf(
-			"Rebalancing pipeline %s:%d with pipeline-gw state %s",
+			"Rebalancing pipeline %s:%d with pipeline gateway state %s",
 			event.PipelineName, event.PipelineVersion, pv.State.PipelineGwStatus.String(),
 		)
 
@@ -222,7 +222,7 @@ func (s *SchedulerServer) pipelineGWRebalanceNoStreams(pv *pipeline.PipelineVers
 	}
 
 	s.logger.Debugf(
-		"No pipeline-gw available to handle pipeline %s, setting state to %s",
+		"No pipeline gateway available to handle pipeline %s, setting state to %s",
 		pv.String(), pipelineState.String(),
 	)
 
@@ -231,7 +231,7 @@ func (s *SchedulerServer) pipelineGWRebalanceNoStreams(pv *pipeline.PipelineVers
 		pv.Version,
 		pv.UID,
 		pipelineState,
-		"no pipeline gateway available to handle pipeline",
+		"No pipeline gateway available to handle pipeline",
 		util.SourcePipelineStatusEvent,
 	); err != nil {
 		s.logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", pv.String())
@@ -369,7 +369,7 @@ func (s *SchedulerServer) sendPipelineEvents(event *coordinator.PipelineEventMsg
 	}
 
 	if len(pipelineGwStreams) == 0 && pv.State.PipelineGwStatus != pipeline.PipelineTerminated {
-		errMsg := "No pipeline-gw available to handle pipeline"
+		errMsg := "No pipeline gateway available to handle pipeline"
 		logger.WithField("pipeline", pv.Name).Warn(errMsg)
 
 		pipelineGwStatus := pv.State.PipelineGwStatus
