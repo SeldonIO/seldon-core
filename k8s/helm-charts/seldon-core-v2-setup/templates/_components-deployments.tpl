@@ -1307,11 +1307,6 @@ spec:
       otelExporterEndpoint: '{{ .Values.opentelemetry.endpoint }}'
       otelExporterProtocol: '{{ .Values.opentelemetry.protocol }}'
       ratio: '{{ .Values.opentelemetry.ratio }}'
-    volumes:
-    - secret:
-        secretName: confluent-schema
-        optional: true
-      name: confluent-schema-volume
 ---
 apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig
