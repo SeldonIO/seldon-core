@@ -1114,11 +1114,12 @@ func TestPipelineStatusAfterDBRestart(t *testing.T) {
 	}
 
 	type test struct {
-		name                  string
-		pipelineName          string
-		store                 *PipelineStore
-		sequence              []testStep
-		wantEndPipelineStatus PipelineStatus
+		name                            string
+		pipelineName                    string
+		store                           *PipelineStore
+		sequence                        []testStep
+		wantEndPipelineStatus           PipelineStatus
+		wantEndPipelineGwPipelineStatus PipelineStatus
 	}
 
 	logger := logrus.New()
@@ -1154,7 +1155,14 @@ func TestPipelineStatusAfterDBRestart(t *testing.T) {
 
 						pipelineLatestVersion := pipeline.GetLatestPipelineVersion()
 
-						return handler.SetPipelineState("test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineCreating, "", "test-pipeline")
+						if err := handler.SetPipelineState(
+							"test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineCreating, "", "test-pipeline",
+						); err != nil {
+							return err
+						}
+						return handler.SetPipelineGwPipelineState(
+							"test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineCreating, "", "test-pipeline",
+						)
 					},
 				},
 				{
@@ -1167,11 +1175,19 @@ func TestPipelineStatusAfterDBRestart(t *testing.T) {
 
 						pipelineLatestVersion := pipeline.GetLatestPipelineVersion()
 
-						return handler.SetPipelineState("test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineReady, "", "test-pipeline")
+						if err := handler.SetPipelineState(
+							"test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineReady, "", "test-pipeline",
+						); err != nil {
+							return err
+						}
+						return handler.SetPipelineGwPipelineState(
+							"test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineReady, "", "test-pipeline",
+						)
 					},
 				},
 			},
-			wantEndPipelineStatus: PipelineReady,
+			wantEndPipelineStatus:           PipelineReady,
+			wantEndPipelineGwPipelineStatus: PipelineReady,
 		},
 		{
 			name:         "Load pipeline restarts after pipeline create",
@@ -1194,7 +1210,8 @@ func TestPipelineStatusAfterDBRestart(t *testing.T) {
 					},
 				},
 			},
-			wantEndPipelineStatus: PipelineCreate,
+			wantEndPipelineStatus:           PipelineCreate,
+			wantEndPipelineGwPipelineStatus: PipelineCreate,
 		},
 		{
 			name:         "Load pipeline restarts after pipeline creating",
@@ -1226,11 +1243,19 @@ func TestPipelineStatusAfterDBRestart(t *testing.T) {
 
 						pipelineLatestVersion := pipeline.GetLatestPipelineVersion()
 
-						return handler.SetPipelineState("test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineCreating, "", "test-pipeline")
+						if err := handler.SetPipelineState(
+							"test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineCreating, "", "test-pipeline",
+						); err != nil {
+							return err
+						}
+						return handler.SetPipelineGwPipelineState(
+							"test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineCreating, "", "test-pipeline",
+						)
 					},
 				},
 			},
-			wantEndPipelineStatus: PipelineCreating,
+			wantEndPipelineStatus:           PipelineCreating,
+			wantEndPipelineGwPipelineStatus: PipelineCreating,
 		},
 		{
 			name:         "Unload pipeline flow",
@@ -1268,7 +1293,14 @@ func TestPipelineStatusAfterDBRestart(t *testing.T) {
 
 						pipelineLatestVersion := pipeline.GetLatestPipelineVersion()
 
-						return handler.SetPipelineState("test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineTerminating, "", "test-pipeline")
+						if err := handler.SetPipelineState(
+							"test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineTerminating, "", "test-pipeline",
+						); err != nil {
+							return err
+						}
+						return handler.SetPipelineGwPipelineState(
+							"test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineTerminating, "", "test-pipeline",
+						)
 					},
 				},
 				{
@@ -1281,11 +1313,19 @@ func TestPipelineStatusAfterDBRestart(t *testing.T) {
 
 						pipelineLatestVersion := pipeline.GetLatestPipelineVersion()
 
-						return handler.SetPipelineState("test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineTerminated, "", "test-pipeline")
+						if err := handler.SetPipelineState(
+							"test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineTerminated, "", "test-pipeline",
+						); err != nil {
+							return err
+						}
+						return handler.SetPipelineGwPipelineState(
+							"test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineTerminated, "", "test-pipeline",
+						)
 					},
 				},
 			},
-			wantEndPipelineStatus: PipelineTerminated,
+			wantEndPipelineStatus:           PipelineTerminated,
+			wantEndPipelineGwPipelineStatus: PipelineTerminated,
 		},
 		{
 			name:         "Unload pipeline restarts after pipeline remove",
@@ -1314,7 +1354,8 @@ func TestPipelineStatusAfterDBRestart(t *testing.T) {
 					},
 				},
 			},
-			wantEndPipelineStatus: PipelineTerminate,
+			wantEndPipelineStatus:           PipelineTerminate,
+			wantEndPipelineGwPipelineStatus: PipelineTerminate,
 		},
 		{
 			name:         "Unload pipeline restarts after pipeline terminating",
@@ -1352,11 +1393,19 @@ func TestPipelineStatusAfterDBRestart(t *testing.T) {
 
 						pipelineLatestVersion := pipeline.GetLatestPipelineVersion()
 
-						return handler.SetPipelineState("test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineTerminating, "", "test-pipeline")
+						if err := handler.SetPipelineState(
+							"test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineTerminating, "", "test-pipeline",
+						); err != nil {
+							return err
+						}
+						return handler.SetPipelineGwPipelineState(
+							"test-pipeline", pipelineLatestVersion.Version, pipelineLatestVersion.UID, PipelineTerminating, "", "test-pipeline",
+						)
 					},
 				},
 			},
-			wantEndPipelineStatus: PipelineTerminating,
+			wantEndPipelineStatus:           PipelineTerminating,
+			wantEndPipelineGwPipelineStatus: PipelineTerminating,
 		},
 	}
 
@@ -1410,6 +1459,7 @@ func TestPipelineStatusAfterDBRestart(t *testing.T) {
 			for _, pipeline := range pipelines {
 				if pipeline.Name == test.pipelineName {
 					g.Expect(pipeline.GetLatestPipelineVersion().State.Status.String()).To(Equal(test.wantEndPipelineStatus.String()))
+					g.Expect(pipeline.GetLatestPipelineVersion().State.PipelineGwStatus.String()).To(Equal(test.wantEndPipelineGwPipelineStatus.String()))
 				}
 			}
 		})
