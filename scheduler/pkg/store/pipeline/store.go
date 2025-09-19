@@ -472,7 +472,12 @@ func (ps *PipelineStore) terminatePipelineGwOldUnterminatedPipelinesIfNeeded(pip
 	// the old version
 	for _, pv := range pipeline.Versions {
 		if pv.Version != pipeline.LastVersion {
-			pv.State.setPipelineGwState(PipelineTerminate, "")
+			switch pv.State.PipelineGwStatus {
+			case PipelineTerminating, PipelineTerminate, PipelineTerminated:
+				continue
+			default:
+				pv.State.setPipelineGwState(PipelineTerminate, "")
+			}
 		}
 	}
 }
