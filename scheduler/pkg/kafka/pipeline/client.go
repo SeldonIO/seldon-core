@@ -27,6 +27,7 @@ import (
 
 	chainer "github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
@@ -227,15 +228,11 @@ func (pc *PipelineSchedulerClient) cleanup(stream scheduler.Scheduler_SubscribeP
 }
 
 func (ep *EventProcessor) handleEvent(event *scheduler.PipelineStatusResponse) {
-	switch len(event.Versions) {
-	case 0:
-		ep.logger.Debugf("Handling delete event for pipeline %s", event.PipelineName)
+	switch event.Operation {
+	case pb.PipelineStatusResponse_PipelineDelete:
 		ep.handleDeletePipeline(event)
-	case 1:
-		ep.logger.Debugf("Handling create/update event for pipeline %s", event.PipelineName)
+	case pb.PipelineStatusResponse_PipelineCreate:
 		ep.handleCreateOrUpdatePipeline(event)
-	default:
-		ep.handleInvalidVersionCount(event)
 	}
 }
 
@@ -247,9 +244,8 @@ type EventProcessor struct {
 }
 
 func (ep *EventProcessor) handleDeletePipeline(event *scheduler.PipelineStatusResponse) {
-	psm := ep.client.pipelineStatusUpdater.(*status.PipelineStatusManager)
-	pv := psm.Get(event.PipelineName)
-	if pv == nil {
+	pv, err := pipeline.CreatePipelineVersionWithStateFromProto(event.Versions[0])
+	if err != nil {
 		ep.reportFailure(
 			chainer.PipelineUpdateMessage_Delete,
 			nil,
@@ -260,7 +256,7 @@ func (ep *EventProcessor) handleDeletePipeline(event *scheduler.PipelineStatusRe
 		return
 	}
 
-	err := ep.client.pipelineInferer.DeletePipeline(event.PipelineName, false)
+	err = ep.client.pipelineInferer.DeletePipeline(event.PipelineName, false)
 	if err != nil {
 		ep.reportFailure(
 			chainer.PipelineUpdateMessage_Delete,
@@ -306,17 +302,6 @@ func (ep *EventProcessor) handleCreateOrUpdatePipeline(event *scheduler.Pipeline
 
 	message := fmt.Sprintf("Pipeline %s loaded", event.PipelineName)
 	ep.reportSuccess(chainer.PipelineUpdateMessage_Create, pv, message, event.Timestamp)
-}
-
-func (ep *EventProcessor) handleInvalidVersionCount(event *scheduler.PipelineStatusResponse) {
-	message := fmt.Sprint("Expected at most a single model version", "numVersions", len(event.Versions), "name", event.GetPipelineName())
-	ep.reportFailure(
-		chainer.PipelineUpdateMessage_Create,
-		nil,
-		message,
-		event.Timestamp,
-		fmt.Errorf("invalid version count"),
-	)
 }
 
 func (ep *EventProcessor) reportSuccess(op chainer.PipelineUpdateMessage_PipelineOperation, pv *pipeline.PipelineVersion, message string, timestamp uint64) {

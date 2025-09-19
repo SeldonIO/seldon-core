@@ -163,13 +163,17 @@ func (s *SchedulerServer) sendCurrentPipelineStatuses(
 
 func (s *SchedulerServer) createPipelineDeletionMessage(pv *pipeline.PipelineVersion) *pb.PipelineStatusResponse {
 	return &pb.PipelineStatusResponse{
+		Operation:    pb.PipelineStatusResponse_PipelineDelete,
 		PipelineName: pv.Name,
-		Versions:     []*pb.PipelineWithState{},
+		Versions: []*pb.PipelineWithState{
+			pipeline.CreatePipelineWithState(pv),
+		},
 	}
 }
 
 func (s *SchedulerServer) createPipelineCreationMessage(pv *pipeline.PipelineVersion) *pb.PipelineStatusResponse {
 	return &pb.PipelineStatusResponse{
+		Operation:    pb.PipelineStatusResponse_PipelineCreate,
 		PipelineName: pv.Name,
 		Versions: []*pb.PipelineWithState{
 			pipeline.CreatePipelineWithState(pv),

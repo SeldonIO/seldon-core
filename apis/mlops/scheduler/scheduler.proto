@@ -408,9 +408,15 @@ message PipelineSubscriptionRequest {
 }
 
 message PipelineStatusResponse {
+  enum PipelineOperation {
+    PipelineOperationUnknown = 0;
+    PipelineCreate = 1;
+    PipelineDelete = 2;
+  }
   string pipelineName = 1;
   repeated PipelineWithState versions = 2;
   uint64 timestamp = 3;
+  PipelineOperation operation = 4;
 }
 
 message PipelineWithState {
