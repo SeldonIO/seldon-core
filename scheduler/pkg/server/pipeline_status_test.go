@@ -337,83 +337,115 @@ func TestAddAndRemovePipelineNoPipelineGw(t *testing.T) {
 	}
 }
 
-// func TestPipelineGwRebalanceNoPipelineGw(t *testing.T) {
-// 	g := NewGomegaWithT(t)
+func TestPipelineGwRebalanceNoPipelineGw(t *testing.T) {
+	g := NewGomegaWithT(t)
 
-// 	type test struct {
-// 		name             string
-// 		loadReq          *pb.Pipeline
-// 		opeartorConnectd bool
-// 	}
+	type test struct {
+		name        string
+		loadReq     *pb.Pipeline
+		initStatus  pipeline.PipelineStatus
+		finalStatus pipeline.PipelineStatus
+	}
 
-// 	tests := []test{
-// 		{
-// 			name: "rebalance - no pipelinegw, no operator connected",
-// 			loadReq: &pb.Pipeline{
-// 				Name:    "foo",
-// 				Version: 1,
-// 				Uid:     "x",
-// 				Steps: []*pb.PipelineStep{
-// 					{
-// 						Name: "a",
-// 					},
-// 					{
-// 						Name:   "b",
-// 						Inputs: []string{"a.outputs"},
-// 					},
-// 				},
-// 			},
-// 			opeartorConnectd: false,
-// 		},
-// 		{
-// 			name: "rebalance - no pipelinegw, operator connected",
-// 			loadReq: &pb.Pipeline{
-// 				Name:    "foo",
-// 				Version: 1,
-// 				Uid:     "x",
-// 				Steps: []*pb.PipelineStep{
-// 					{
-// 						Name: "a",
-// 					},
-// 					{
-// 						Name:   "b",
-// 						Inputs: []string{"a.outputs"},
-// 					},
-// 				},
-// 			},
-// 			opeartorConnectd: true,
-// 		},
-// 	}
+	tests := []test{
+		{
+			name: "rebalance - no pipelinegw, no operator connected (PipelineReady -> PipelineCreate)",
+			loadReq: &pb.Pipeline{
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*pb.PipelineStep{
+					{
+						Name: "a",
+					},
+					{
+						Name:   "b",
+						Inputs: []string{"a.outputs"},
+					},
+				},
+			},
+			initStatus:  pipeline.PipelineReady,
+			finalStatus: pipeline.PipelineCreate,
+		},
+		{
+			name: "rebalance - no pipelinegw, operator connected (PipelineTerminating -> PipelineTerminated)",
+			loadReq: &pb.Pipeline{
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*pb.PipelineStep{
+					{
+						Name: "a",
+					},
+					{
+						Name:   "b",
+						Inputs: []string{"a.outputs"},
+					},
+				},
+			},
+			initStatus:  pipeline.PipelineTerminating,
+			finalStatus: pipeline.PipelineTerminated,
+		},
+	}
 
-// 	for _, test := range tests {
-// 		t.Run(test.name, func(t *testing.T) {
-// 			s, _ := createTestScheduler(t)
-// 			var stream *stubPipelineStatusServer
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s, _ := createTestScheduler(t)
 
-// 			if test.opeartorConnectd {
-// 				// create operator stream
-// 				stream = newStubPipelineStatusServer(1, 5*time.Millisecond)
-// 				subscription := &PipelineSubscription{
-// 					name:   "dummy",
-// 					stream: stream,
-// 					fin:    make(chan bool),
-// 				}
-// 				s.pipelineEventStream.streams[stream] = subscription
-// 				g.Expect(s.pipelineEventStream.streams[stream]).ToNot(BeNil())
-// 			}
+			// add operator stream
+			stream := newStubPipelineStatusServer(1, 5*time.Millisecond)
+			subscription := &PipelineSubscription{
+				name:   "dummy",
+				stream: stream,
+				fin:    make(chan bool),
+			}
+			s.pipelineEventStream.streams[stream] = subscription
+			g.Expect(s.pipelineEventStream.streams[stream]).ToNot(BeNil())
 
-// 			// add a pipeline to the store and check no message is received
-// 			err := s.pipelineHandler.AddPipeline(test.loadReq)
-// 			g.Expect(err).To(BeNil())
+			// add a pipeline to the store and check no message is received
+			err := s.pipelineHandler.AddPipeline(test.loadReq)
+			g.Expect(err).To(BeNil())
 
-// 			if test.opeartorConnectd {
-// 				// check operator stream receives message
-// 				msg := receiveMessageFromStream(g, t, stream, test.loadReq.Name, 1)
-// 				g.Expect(msg).ToNot(BeNil())
-// 				g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
-// 				g.Expect(msg.Versions).To(HaveLen(1))
-// 			}
-// }
+			// receive message from adding the pipeline
+			msg := receiveMessageFromStream(g, t, stream, test.loadReq.Name, 1)
+			g.Expect(msg).ToNot(BeNil())
+			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
+			g.Expect(msg.Versions).To(HaveLen(1))
+
+			// check pipeline gw status and reason
+			pv := getPipelineVersion(g, s.pipelineHandler, test.loadReq.Name, 1)
+			g.Expect(pv.State.PipelineGwStatus).To(Equal(pipeline.PipelineCreate))
+			g.Expect(pv.State.PipelineGwReason).To(Equal("No pipeline-gw available to handle pipeline"))
+
+			// set pipeline to ready
+			err = s.pipelineHandler.SetPipelineGwPipelineState(test.loadReq.Name, 1, test.loadReq.Uid, test.initStatus, "", sourcePipelineStatusEvent)
+			g.Expect(err).To(BeNil())
+
+			// receive message from setting the pipeline to ready
+			msg = receiveMessageFromStream(g, t, stream, test.loadReq.Name, 1)
+			g.Expect(msg).ToNot(BeNil())
+			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
+			g.Expect(msg.Versions).To(HaveLen(1))
+
+			// check pipeline gw status and reason
+			pv = getPipelineVersion(g, s.pipelineHandler, test.loadReq.Name, 1)
+			g.Expect(pv.State.PipelineGwStatus).To(Equal(test.initStatus))
+
+			// trigger rebalance
+			s.pipelineGwRebalance()
+
+			// check no message is received
+			msg = receiveMessageFromStream(g, t, stream, test.loadReq.Name, 1)
+			g.Expect(msg).ToNot(BeNil())
+			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
+			g.Expect(msg.Versions).To(HaveLen(1))
+
+			// check pipeline gw status and reason
+			pv = getPipelineVersion(g, s.pipelineHandler, test.loadReq.Name, 1)
+			g.Expect(pv.State.PipelineGwStatus).To(Equal(test.finalStatus))
+		})
+	}
+}
 
 // func TestPipelineGwRebalanceMessage(t *testing.T) {
 // 	g := NewGomegaWithT(t)
