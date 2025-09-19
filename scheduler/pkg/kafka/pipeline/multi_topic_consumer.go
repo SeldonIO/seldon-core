@@ -16,8 +16,8 @@ import (
 	"sync/atomic"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
 	cmap "github.com/orcaman/concurrent-map"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/schema"
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
@@ -27,7 +27,7 @@ import (
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
 
-	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/schema"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 

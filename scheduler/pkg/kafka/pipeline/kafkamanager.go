@@ -29,12 +29,12 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/inference_schema"
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
+
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
-
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/inference_schema"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
