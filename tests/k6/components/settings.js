@@ -234,56 +234,49 @@ function experimentNamePrefix() {
 
 function modelReplicasCount() {
     if (__ENV.MODEL_REPLICAS) {
-        return __ENV.MODEL_REPLICAS
+        return parseInt(__ENV.MODEL_REPLICAS)
     }
     return 1
 }
 
 function serverMaxReplicas() {
     if (__ENV.SERVER_MAX_REPLICAS) {
-        return __ENV.SERVER_MAX_REPLICAS
+        return parseInt(__ENV.SERVER_MAX_REPLICAS)
     }
     return 1
 }
 
 function serverMinReplicas() {
     if (__ENV.SERVER_MIN_REPLICAS) {
-        return __ENV.SERVER_MIN_REPLICAS
-    }
-    return 1
-}
-
-function modelMinReplicas() {
-    if (__ENV.MODEL_MIN_REPLICAS) {
-        return __ENV.MODEL_MIN_REPLICAS
+        return parseInt(__ENV.SERVER_MIN_REPLICAS)
     }
     return 1
 }
 
 function inferenceServerReplicas() {
     if (__ENV.INFERENCE_SERVER_REPLICAS) {
-        return __ENV.INFERENCE_SERVER_REPLICAS
+        return  parseInt(__ENV.INFERENCE_SERVER_REPLICAS)
     }
     return 1
 }
 
 function dataFlowEngineReplicas() {
     if (__ENV.DATAFLOW_ENGINE_REPLICAS) {
-        return __ENV.DATAFLOW_ENGINE_REPLICAS
+        return parseInt(__ENV.DATAFLOW_ENGINE_REPLICAS)
     }
     return 1
 }
 
 function pipelineGwReplicas() {
     if (__ENV.PIPLINE_GW_REPLICAS) {
-        return __ENV.PIPLINE_GW_REPLICAS
+        return parseInt(__ENV.PIPLINE_GW_REPLICAS)
     }
     return 1
 }
 
 function modelGwReplicas() {
     if (__ENV.MODEL_GW_REPLICAS) {
-        return __ENV.MODEL_GW_REPLICAS
+        return parseInt(__ENV.MODEL_GW_REPLICAS)
     }
     return 1
 }
