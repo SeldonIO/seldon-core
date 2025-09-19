@@ -251,13 +251,13 @@ func setReadyCondition(
 }
 
 func combineReasons(r1, r2 string) string {
-	if r1 != "" && r2 != "" {
-		return r1 + " | " + r2
+	if r1 == "" {
+		r1 = "Empty reason"
 	}
-	if r1 != "" {
-		return r1
+	if r2 == "" {
+		r2 = "Empty reason"
 	}
-	return r2
+	return r1 + " | " + r2
 }
 
 func (s *SchedulerClient) updatePipelineStatusImpl(ctx context.Context, pipeline *v1alpha1.Pipeline) error {
