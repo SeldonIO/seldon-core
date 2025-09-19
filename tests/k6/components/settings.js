@@ -240,15 +240,15 @@ function modelReplicasCount() {
 }
 
 function serverMaxReplicas() {
-    if (__ENV.INFERENCE_SERVER_REPLICAS) {
-        return parseInt(__ENV.INFERENCE_SERVER_REPLICAS)
+    if (__ENV.INFERENCE_SERVER_MAX_REPLICAS) {
+        return parseInt(__ENV.INFERENCE_SERVER_MAX_REPLICAS)
     }
     return 1
 }
 
 function serverMinReplicas() {
-    if (__ENV.INFERENCE_SERVER_REPLICAS) {
-        return parseInt(__ENV.INFERENCE_SERVER_REPLICAS)
+    if (__ENV.INFERENCE_SERVER_MIN_REPLICAS) {
+        return parseInt(__ENV.INFERENCE_SERVER_MIN_REPLICAS)
     }
     return 1
 }
