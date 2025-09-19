@@ -58,7 +58,6 @@ func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *chai
 		stream, pipelineName, pipelineVersion, statusVal.String(),
 	)
 
-	// TODO: add conflict resolution based on timestamps implementation
 	cr := s.pipelineEventStream.conflictResolutioner
 	if cr.IsMessageOutdated(message) {
 		logger.Debugf("Message for pipeline %s:%d is outdated, ignoring", pipelineName, pipelineVersion)
