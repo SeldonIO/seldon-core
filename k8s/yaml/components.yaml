@@ -555,11 +555,7 @@ spec:
           value: ''
         - name: KAFKA_BROKER_TLS_CA_LOCATION
           value: '/tmp/certs/kafka/broker/ca.crt'
-        - name: SCHEMA_REGISTRY_URL
-          value: ''
-        - name: SCHEMA_REGISTRY_USERNAME
-          value: ''
-        - name: SCHEMA_REGISTRY_PASSWORD
+        - name: SCHEMA_REGISTRY_CONFIG_PATH
           value: ''
         - name: ENVOY_SECURITY_PROTOCOL
           value: 'PLAINTEXT'
@@ -671,6 +667,9 @@ spec:
           name: kafka-config-volume
         - mountPath: /mnt/tracing
           name: tracing-config-volume
+        - mountPath: /mnt/schema-registry
+          name: confluent-schema-volume
+          readOnly: true
       securityContext:
         fsGroup: 1000
         runAsGroup: 1000
@@ -685,6 +684,10 @@ spec:
       - configMap:
           name: seldon-tracing
         name: tracing-config-volume
+      - secret:
+          secretName: confluent-schema
+          optional: true
+        name: confluent-schema-volume
     replicas: 1
   - annotations:
         null
@@ -770,11 +773,7 @@ spec:
           value: 'info'
         - name: MODELGATEWAY_MAX_NUM_CONSUMERS
           value: '100'
-        - name: SCHEMA_REGISTRY_URL
-          value: ''
-        - name: SCHEMA_REGISTRY_USERNAME
-          value: ''
-        - name: SCHEMA_REGISTRY_PASSWORD
+        - name: SCHEMA_REGISTRY_CONFIG_PATH
           value: ''
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
@@ -827,6 +826,9 @@ spec:
           name: kafka-config-volume
         - mountPath: /mnt/tracing
           name: tracing-config-volume
+        - mountPath: /mnt/schema-registry
+          name: confluent-schema-volume
+          readOnly: true
       securityContext:
         fsGroup: 1000
         runAsGroup: 1000
@@ -841,6 +843,10 @@ spec:
       - configMap:
           name: seldon-tracing
         name: tracing-config-volume
+      - secret:
+          secretName: confluent-schema
+          optional: true
+        name: confluent-schema-volume
     replicas: 1
   - annotations:
         null
@@ -1008,11 +1014,7 @@ spec:
           value: ''
         - name: SELDON_KAFKA_SASL_PASSWORD_PATH
           value: 'password'
-        - name: SELDON_KAFKA_SCHEMA_REGISTRY_URL
-          value: ''
-        - name: SELDON_KAFKA_SCHEMA_REGISTRY_USERNAME
-          value: ''
-        - name: SELDON_KAFKA_SCHEMA_REGISTRY_PASSWORD
+        - name: SELDON_KAFKA_SCHEMA_REGISTRY_CONFIG_PATH
           value: ''
         - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
           value: ''
@@ -1080,6 +1082,10 @@ spec:
             port: health
           initialDelaySeconds: 3
           periodSeconds: 5
+        volumeMounts:
+        - mountPath: /mnt/schema-registry
+          name: confluent-schema-volume
+          readOnly: true
       securityContext:
         fsGroup: 1000
         runAsGroup: 1000
@@ -1087,6 +1093,11 @@ spec:
         runAsUser: 1000
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
+      volumes:
+        - secret:
+            secretName: confluent-schema
+            optional: true
+          name: confluent-schema-volume
     replicas: 1
   config:
     agentConfig:

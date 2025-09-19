@@ -831,7 +831,7 @@ spec:
           name: kafka-config-volume
         - mountPath: /mnt/tracing
           name: tracing-config-volume
-        - mountPath: '{{ .Values.security.schemaRegistry.configPath }}'
+        - mountPath: /mnt/schema-registry
           name: confluent-schema-volume
           readOnly: true
 {{- with .Values.imagePullSecrets }}
@@ -995,7 +995,7 @@ spec:
           name: kafka-config-volume
         - mountPath: /mnt/tracing
           name: tracing-config-volume
-        - mountPath: '{{ .Values.security.schemaRegistry.configPath }}'
+        - mountPath: /mnt/schema-registry
           name: confluent-schema-volume
           readOnly: true
 {{- with .Values.imagePullSecrets }}
@@ -1187,12 +1187,8 @@ spec:
           value: '{{ .Values.security.kafka.sasl.client.secret }}'
         - name: SELDON_KAFKA_SASL_PASSWORD_PATH
           value: '{{ .Values.security.kafka.sasl.client.passwordPath }}'
-        - name: SELDON_KAFKA_SCHEMA_REGISTRY_URL
-          value: '{{ .Values.security.schemaRegistry.client.URL }}'
-        - name: SELDON_KAFKA_SCHEMA_REGISTRY_USERNAME
-          value: '{{ .Values.security.schemaRegistry.client.username }}'
-        - name: SELDON_KAFKA_SCHEMA_REGISTRY_PASSWORD
-          value: '{{ .Values.security.schemaRegistry.client.password }}'
+        - name: SELDON_KAFKA_SCHEMA_REGISTRY_CONFIG_PATH
+          value: '{{ .Values.security.schemaRegistry.configPath }}'
         - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
           value: '{{ .Values.security.kafka.ssl.client.endpointIdentificationAlgorithm
             }}'
@@ -1263,6 +1259,10 @@ spec:
             port: health
           initialDelaySeconds: 3
           periodSeconds: 5
+        volumeMounts:
+        - mountPath: /mnt/schema-registry
+          name: confluent-schema-volume
+          readOnly: true
 {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
       {{- toYaml . | nindent 8 }}
@@ -1271,6 +1271,11 @@ spec:
         nindent 8 }}
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
+      volumes:
+      - secret:
+          secretName: confluent-schema
+          optional: true
+        name: confluent-schema-volume
     replicas: 1
   config:
     agentConfig:
@@ -1302,6 +1307,11 @@ spec:
       otelExporterEndpoint: '{{ .Values.opentelemetry.endpoint }}'
       otelExporterProtocol: '{{ .Values.opentelemetry.protocol }}'
       ratio: '{{ .Values.opentelemetry.ratio }}'
+    volumes:
+    - secret:
+        secretName: confluent-schema
+        optional: true
+      name: confluent-schema-volume
 ---
 apiVersion: mlops.seldon.io/v1alpha1
 kind: ServerConfig
