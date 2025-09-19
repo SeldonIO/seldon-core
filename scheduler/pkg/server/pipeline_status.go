@@ -163,7 +163,7 @@ func (s *SchedulerServer) sendCurrentPipelineStatuses(
 	return nil
 }
 
-func (s *SchedulerServer) createPipelineDeletionMessage(pv *pipeline.PipelineVersion, keepTopics bool) *pb.PipelineStatusResponse {
+func (s *SchedulerServer) createPipelineDeletionMessage(pv *pipeline.PipelineVersion) *pb.PipelineStatusResponse {
 	return &pb.PipelineStatusResponse{
 		PipelineName: pv.Name,
 		Versions:     []*pb.PipelineWithState{},
@@ -200,7 +200,7 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 		}
 
 		s.logger.Debugf(
-			"Rebalancing pipeline %s:%d with state %s",
+			"Rebalancing pipeline %s:%d with pipeline-gw state %s",
 			event.PipelineName, event.PipelineVersion, pv.State.PipelineGwStatus.String(),
 		)
 
@@ -268,7 +268,7 @@ func (s *SchedulerServer) pipelineGwRebalanceStreams(
 
 			if pv.State.PipelineGwStatus == pipeline.PipelineTerminating {
 				s.logger.Debugf("Pipeline %s is terminating, sending deletion message", pv.Name)
-				msg = s.createPipelineDeletionMessage(pv, false)
+				msg = s.createPipelineDeletionMessage(pv)
 			} else {
 				s.logger.Debugf("Pipeline %s is available or progressing, sending creation message", pv.Name)
 				msg = s.createPipelineCreationMessage(pv)
@@ -296,7 +296,7 @@ func (s *SchedulerServer) pipelineGwRebalanceStreams(
 			}
 		} else {
 			s.logger.Debugf("Server %s does not contain pipeline %s, sending deletion message", server, pv.Name)
-			msg := s.createPipelineDeletionMessage(pv, true)
+			msg := s.createPipelineDeletionMessage(pv)
 			msg.Timestamp = cr.GetTimestamp(pv.Name)
 			if err := stream.Send(msg); err != nil {
 				s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.Name)
@@ -407,7 +407,7 @@ func (s *SchedulerServer) sendPipelineEvents(event *coordinator.PipelineEventMsg
 			); err != nil {
 				logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", pv.String())
 			}
-			status = s.createPipelineDeletionMessage(pv, false)
+			status = s.createPipelineDeletionMessage(pv)
 		}
 
 		// for pipeline gateway streams, we need to assign a timestamp

@@ -267,9 +267,11 @@ func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineE
 		pipeline.DeletedAt = time.Now()
 		lastPipelineVersion.State.setState(PipelineTerminate, "pipeline removed")
 		lastPipelineVersion.State.setPipelineGwState(PipelineTerminate, "pipeline removed")
-		if err := ps.db.save(pipeline); err != nil {
-			ps.logger.WithError(err).Errorf("Failed to save pipeline %s", name)
-			return nil, err
+		if ps.db != nil {
+			if err := ps.db.save(pipeline); err != nil {
+				ps.logger.WithError(err).Errorf("Failed to save pipeline %s", name)
+				return nil, err
+			}
 		}
 		return &coordinator.PipelineEventMsg{
 			PipelineName:    lastPipelineVersion.Name,
