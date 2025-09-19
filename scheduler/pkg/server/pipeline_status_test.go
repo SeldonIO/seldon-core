@@ -21,6 +21,7 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func TestSendCurrentPipelineStatuses(t *testing.T) {
@@ -417,7 +418,9 @@ func TestPipelineGwRebalanceNoPipelineGw(t *testing.T) {
 			g.Expect(pv.State.PipelineGwReason).To(Equal("No pipeline-gw available to handle pipeline"))
 
 			// set pipeline to ready
-			err = s.pipelineHandler.SetPipelineGwPipelineState(test.loadReq.Name, 1, test.loadReq.Uid, test.initStatus, "", sourcePipelineStatusEvent)
+			err = s.pipelineHandler.SetPipelineGwPipelineState(
+				test.loadReq.Name, 1, test.loadReq.Uid, test.initStatus, "", util.SourcePipelineStatusEvent,
+			)
 			g.Expect(err).To(BeNil())
 
 			// receive message from setting the pipeline to ready
@@ -542,7 +545,9 @@ func TestPipelineGwRebalanceCorrectMessages(t *testing.T) {
 			g.Expect(msg.Versions).To(HaveLen(1))
 
 			// set pipelin gw status
-			err = s.pipelineHandler.SetPipelineGwPipelineState(test.loadReq.Name, 1, test.loadReq.Uid, test.pipelineGwStatus, "", sourcePipelineStatusEvent)
+			err = s.pipelineHandler.SetPipelineGwPipelineState(
+				test.loadReq.Name, 1, test.loadReq.Uid, test.pipelineGwStatus, "", util.SourcePipelineStatusEvent,
+			)
 			g.Expect(err).To(BeNil())
 
 			// receive status update message from operator only

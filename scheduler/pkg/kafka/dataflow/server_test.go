@@ -303,7 +303,7 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 			err := s.pipelineHandler.AddPipeline(test.loadReqV1) // version 1
 			g.Expect(err).To(BeNil())
 			if !test.err {
-				err = s.pipelineHandler.SetPipelineState(test.loadReqV1.Name, test.loadReqV1.Version, test.loadReqV1.Uid, pipeline.PipelineReady, "", sourceChainerServer)
+				err = s.pipelineHandler.SetPipelineState(test.loadReqV1.Name, test.loadReqV1.Version, test.loadReqV1.Uid, pipeline.PipelineReady, "", util.SourceChainerServer)
 			}
 			g.Expect(err).To(BeNil())
 
@@ -313,7 +313,7 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 			if test.loadReqV2 != nil {
 				err = s.pipelineHandler.AddPipeline(test.loadReqV2) // version 2
 				g.Expect(err).To(BeNil())
-				err = s.pipelineHandler.SetPipelineState(test.loadReqV2.Name, test.loadReqV2.Version, test.loadReqV2.Uid, pipeline.PipelineReady, "", sourceChainerServer)
+				err = s.pipelineHandler.SetPipelineState(test.loadReqV2.Name, test.loadReqV2.Version, test.loadReqV2.Uid, pipeline.PipelineReady, "", util.SourceChainerServer)
 				g.Expect(err).To(BeNil())
 			}
 
@@ -613,7 +613,7 @@ func TestPipelineRebalance(t *testing.T) {
 			//to allow events to propagate
 			time.Sleep(500 * time.Millisecond)
 
-			err = s.pipelineHandler.SetPipelineState(test.loadReq.Name, test.loadReq.Version, test.loadReq.Uid, test.status, "", sourceChainerServer)
+			err = s.pipelineHandler.SetPipelineState(test.loadReq.Name, test.loadReq.Version, test.loadReq.Uid, test.status, "", util.SourceChainerServer)
 			g.Expect(err).To(BeNil())
 
 			//to allow events to propagate
