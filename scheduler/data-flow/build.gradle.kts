@@ -63,6 +63,7 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:3.0.1")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation("com.charleskorn.kaml:kaml:0.61.0")
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.3")

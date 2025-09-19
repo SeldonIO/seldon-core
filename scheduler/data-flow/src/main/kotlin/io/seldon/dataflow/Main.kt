@@ -19,7 +19,6 @@ import io.seldon.dataflow.kafka.KafkaDomainParams
 import io.seldon.dataflow.kafka.KafkaSecurityParams
 import io.seldon.dataflow.kafka.KafkaStreamsParams
 import io.seldon.dataflow.kafka.KafkaStreamsSerdes
-import io.seldon.dataflow.kafka.SchemaRegistryConfig
 import io.seldon.dataflow.kafka.TopicWaitRetryParams
 import io.seldon.dataflow.kafka.getKafkaAdminProperties
 import io.seldon.dataflow.kafka.getKafkaProperties
@@ -115,14 +114,8 @@ object Main {
                 describeRetryDelayMillis = config[Cli.topicDescribeRetryDelayMillis],
             )
         val subscriberId = config[Cli.dataflowReplicaId]
-        val schemaRegistryConfig =
-            SchemaRegistryConfig(
-                url = config[Cli.schemaRegistryURL],
-                username = config[Cli.schemaRegistryUsername],
-                password = config[Cli.schemaRegistryPassword],
-            )
 
-        val kafkaStreamsSerdes = KafkaStreamsSerdes(schemaRegistryConfig)
+        val kafkaStreamsSerdes = KafkaStreamsSerdes(Cli.getSchemaConfig(config))
 
         val subscriber =
             PipelineSubscriber(

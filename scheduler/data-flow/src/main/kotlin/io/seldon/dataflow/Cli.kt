@@ -9,6 +9,7 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow
 
+import com.charleskorn.kaml.Yaml
 import com.natpryce.konfig.CommandLineOption
 import com.natpryce.konfig.Configuration
 import com.natpryce.konfig.ConfigurationMap
@@ -24,13 +25,34 @@ import com.natpryce.konfig.parseArgs
 import com.natpryce.konfig.stringType
 import io.klogging.Level
 import io.klogging.noCoLogger
+import io.seldon.dataflow.kafka.SchemaRegistryConfig
 import io.seldon.dataflow.kafka.security.KafkaSaslMechanisms
 import io.seldon.dataflow.kafka.security.KafkaSecurityProtocols
+import kotlinx.serialization.Serializable
+import java.io.File
 import java.net.InetAddress
 import java.util.UUID
 
+@Serializable
+data class ConfluentSchemaConfig(
+    val schemaRegistry: SchemaRegistrySection = SchemaRegistrySection(),
+) {
+    @Serializable
+    data class SchemaRegistrySection(
+        val client: ClientConfig = ClientConfig(),
+    )
+
+    @Serializable
+    data class ClientConfig(
+        val URL: String = "",
+        val username: String = "",
+        val password: String = "",
+    )
+}
+
 object Cli {
     private const val ENV_VAR_PREFIX = "SELDON_"
+    private const val CONFLUENTSCHEMAFILENAME = ".confluent-schema.yaml"
     private val logger = noCoLogger(Cli::class)
 
     // General setup
@@ -79,9 +101,7 @@ object Cli {
     val saslMechanism = Key("kafka.sasl.mechanism", enumType(KafkaSaslMechanisms.byName))
 
     // Schema Registry
-    val schemaRegistryURL = Key("kafka.schema.registry.url", stringType)
-    val schemaRegistryUsername = Key("kafka.schema.registry.username", stringType)
-    val schemaRegistryPassword = Key("kafka.schema.registry.password", stringType)
+    val schemaRegistryConfigPath = Key("kafka.schema.registry.config.path", stringType)
 
     fun args(): List<Key<Any>> {
         return listOf(
@@ -116,8 +136,45 @@ object Cli {
             saslSecret,
             saslPasswordPath,
             saslMechanism,
-            schemaRegistryURL,
+            schemaRegistryConfigPath,
         )
+    }
+
+    fun getSchemaConfig(config: Configuration): SchemaRegistryConfig {
+        if (config[schemaRegistryConfigPath] == "") {
+            logger.debug("not using schema registry")
+            return SchemaRegistryConfig(_useSchemaRegistry = false)
+        }
+
+        val configPath = config[schemaRegistryConfigPath]
+        val schemaConfigFile = File(configPath, CONFLUENTSCHEMAFILENAME)
+
+        if (!schemaConfigFile.exists()) {
+            val errorMsg = "Schema config file not found at: ${schemaConfigFile.absolutePath}"
+            logger.error(errorMsg)
+            throw IllegalStateException(errorMsg)
+        }
+
+        return try {
+            val yamlContent = schemaConfigFile.readText()
+            val confluentConfig = Yaml.default.decodeFromString(ConfluentSchemaConfig.serializer(), yamlContent)
+            logger.info("read config file for schema registry")
+
+            val clientConfig = confluentConfig.schemaRegistry.client
+            logger.info("the config is URL=${clientConfig.URL}, username=${clientConfig.username}")
+            val schemaConfig =
+                SchemaRegistryConfig(
+                    url = clientConfig.URL,
+                    username = clientConfig.username,
+                    password = clientConfig.password,
+                )
+            schemaConfig.validate()
+            schemaConfig
+        } catch (e: Exception) {
+            val errorMsg = "Failed to load or validate schema config from: ${schemaConfigFile.absolutePath}"
+            logger.error(errorMsg, e)
+            throw IllegalStateException(errorMsg, e)
+        }
     }
 
     fun configWith(rawArgs: Array<String>): Configuration {
