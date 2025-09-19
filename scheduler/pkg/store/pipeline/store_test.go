@@ -284,7 +284,7 @@ func TestRemovePipeline(t *testing.T) {
 			err: &PipelineNotFoundErr{pipeline: "pipeline"},
 		},
 		{
-			name:         "pipeline terminating err",
+			name:         "pipeline terminating err - (terminating, terminating)",
 			pipelineName: "pipeline",
 			store: &PipelineStore{
 				logger: logrus.New(),
@@ -297,7 +297,104 @@ func TestRemovePipeline(t *testing.T) {
 								Name:    "pipeline",
 								Version: 1,
 								State: &PipelineState{
-									Status: PipelineTerminating,
+									Status:           PipelineTerminating,
+									PipelineGwStatus: PipelineTerminating,
+								},
+							},
+						},
+					},
+				},
+			},
+			err: &PipelineTerminatingErr{pipeline: "pipeline"},
+		},
+		{
+			name:         "pipeline terminating err - (terminating, terminate)",
+			pipelineName: "pipeline",
+			store: &PipelineStore{
+				logger: logrus.New(),
+				pipelines: map[string]*Pipeline{
+					"pipeline": {
+						Name:        "pipeline",
+						LastVersion: 1,
+						Versions: []*PipelineVersion{
+							{
+								Name:    "pipeline",
+								Version: 1,
+								State: &PipelineState{
+									Status:           PipelineTerminating,
+									PipelineGwStatus: PipelineTerminate,
+								},
+							},
+						},
+					},
+				},
+			},
+			err: &PipelineTerminatingErr{pipeline: "pipeline"},
+		},
+		{
+			name:         "pipeline terminating err - (terminating, terminated)",
+			pipelineName: "pipeline",
+			store: &PipelineStore{
+				logger: logrus.New(),
+				pipelines: map[string]*Pipeline{
+					"pipeline": {
+						Name:        "pipeline",
+						LastVersion: 1,
+						Versions: []*PipelineVersion{
+							{
+								Name:    "pipeline",
+								Version: 1,
+								State: &PipelineState{
+									Status:           PipelineTerminating,
+									PipelineGwStatus: PipelineTerminated,
+								},
+							},
+						},
+					},
+				},
+			},
+			err: &PipelineTerminatingErr{pipeline: "pipeline"},
+		},
+		{
+			name:         "pipeline terminating err - (terminate, terminating)",
+			pipelineName: "pipeline",
+			store: &PipelineStore{
+				logger: logrus.New(),
+				pipelines: map[string]*Pipeline{
+					"pipeline": {
+						Name:        "pipeline",
+						LastVersion: 1,
+						Versions: []*PipelineVersion{
+							{
+								Name:    "pipeline",
+								Version: 1,
+								State: &PipelineState{
+									Status:           PipelineTerminate,
+									PipelineGwStatus: PipelineTerminating,
+								},
+							},
+						},
+					},
+				},
+			},
+			err: &PipelineTerminatingErr{pipeline: "pipeline"},
+		},
+		{
+			name:         "pipeline terminating err - (terminated, terminating)",
+			pipelineName: "pipeline",
+			store: &PipelineStore{
+				logger: logrus.New(),
+				pipelines: map[string]*Pipeline{
+					"pipeline": {
+						Name:        "pipeline",
+						LastVersion: 1,
+						Versions: []*PipelineVersion{
+							{
+								Name:    "pipeline",
+								Version: 1,
+								State: &PipelineState{
+									Status:           PipelineTerminated,
+									PipelineGwStatus: PipelineTerminating,
 								},
 							},
 						},
@@ -320,7 +417,8 @@ func TestRemovePipeline(t *testing.T) {
 								Name:    "pipeline",
 								Version: 1,
 								State: &PipelineState{
-									Status: PipelineTerminated,
+									Status:           PipelineTerminated,
+									PipelineGwStatus: PipelineTerminated,
 								},
 							},
 						},
@@ -343,7 +441,8 @@ func TestRemovePipeline(t *testing.T) {
 								Name:    "pipeline",
 								Version: 1,
 								State: &PipelineState{
-									Status: PipelineReady,
+									Status:           PipelineReady,
+									PipelineGwStatus: PipelineReady,
 								},
 							},
 						},
@@ -365,14 +464,16 @@ func TestRemovePipeline(t *testing.T) {
 								Name:    "pipeline",
 								Version: 1,
 								State: &PipelineState{
-									Status: PipelineCreating,
+									Status:           PipelineCreating,
+									PipelineGwStatus: PipelineCreating,
 								},
 							},
 							{
 								Name:    "pipeline",
 								Version: 2,
 								State: &PipelineState{
-									Status: PipelineCreating,
+									Status:           PipelineCreating,
+									PipelineGwStatus: PipelineCreating,
 								},
 							},
 						},
