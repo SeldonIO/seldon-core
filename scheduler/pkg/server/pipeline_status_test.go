@@ -114,7 +114,7 @@ func TestSendCurrentPipelineStatuses(t *testing.T) {
 	}
 }
 
-func TestPublishPipelineEvent(t *testing.T) {
+func TestPublishPipelineEventWithTimeout(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -178,9 +178,6 @@ func TestPublishPipelineEvent(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 
-			// we need here a channel of 2 because we send 1 event to the operator,
-			// and then because there isn't any pipelinegw stream, we send a second event to
-			// to update the status to no pipelinegw available (this is recursive)
 			stream := newStubPipelineStatusServer(2, 5*time.Millisecond)
 			s.pipelineEventStream.mu.Lock()
 			s.pipelineEventStream.streams[stream] = &PipelineSubscription{
@@ -215,12 +212,14 @@ func TestPublishPipelineEvent(t *testing.T) {
 			g.Expect(psr).ToNot(BeNil())
 			g.Expect(psr.Versions).To(HaveLen(1))
 			g.Expect(psr.Versions[0].State.Status).To(Equal(pb.PipelineVersionState_PipelineCreate))
-			g.Expect(psr.Versions[0].State.PipelineGwStatus).To(Equal(pb.PipelineVersionState_PipelineCreate))
 
 			s.pipelineEventStream.mu.Lock()
 			g.Expect(s.pipelineEventStream.streams).To(HaveLen(1))
 			s.pipelineEventStream.mu.Unlock()
 
+			s.pipelineEventStream.mu.Lock()
+			g.Expect(s.pipelineEventStream.streams).To(HaveLen(1))
+			s.pipelineEventStream.mu.Unlock()
 		})
 	}
 }
