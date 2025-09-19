@@ -747,6 +747,10 @@ func (f fakePipelineStore) GetAllRunningPipelineVersions() []coordinator.Pipelin
 	panic("implement me")
 }
 
+func (f fakePipelineStore) GetAllPipelineGwRunningPipelineVersions() []coordinator.PipelineEventMsg {
+	panic("implement me")
+}
+
 func TestSetCandidateAndMirrorPipelineReadiness(t *testing.T) {
 	g := NewGomegaWithT(t)
 

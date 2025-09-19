@@ -191,7 +191,7 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 		}
 	}
 
-	evts := s.pipelineHandler.GetAllRunningPipelineVersions()
+	evts := s.pipelineHandler.GetAllPipelineGwRunningPipelineVersions()
 	for _, event := range evts {
 		pv, err := s.pipelineHandler.GetPipelineVersion(event.PipelineName, event.PipelineVersion, event.UID)
 		if err != nil {
