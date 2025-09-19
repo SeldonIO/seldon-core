@@ -447,115 +447,138 @@ func TestPipelineGwRebalanceNoPipelineGw(t *testing.T) {
 	}
 }
 
-// func TestPipelineGwRebalanceMessage(t *testing.T) {
-// 	g := NewGomegaWithT(t)
+func TestPipelineGwRebalanceCorrectMessages(t *testing.T) {
+	g := NewGomegaWithT(t)
 
-// 	type test struct {
-// 		name    string
-// 		loadReq *pb.Pipeline
-// 	}
+	type test struct {
+		name             string
+		loadReq          *pb.Pipeline
+		pipelineGwStatus pipeline.PipelineStatus
+		versionLen       int
+	}
 
-// 	tests := []test{
-// 		{
-// 			name: "rebalance pipeline ready",
-// 			loadReq: &pb.Pipeline{
-// 				Name:    "foo",
-// 				Version: 1,
-// 				Uid:     "x",
-// 				Steps: []*pb.PipelineStep{
-// 					{
-// 						Name: "a",
-// 					},
-// 					{
-// 						Name:   "b",
-// 						Inputs: []string{"a.outputs"},
-// 					},
-// 				},
-// 			},
-// 		},
-// 		{
-// 			name: "rebalance pipeline create",
-// 			loadReq: &pb.Pipeline{
-// 				Name:    "foo",
-// 				Version: 1,
-// 				Uid:     "x",
-// 				Steps: []*pb.PipelineStep{
-// 					{
-// 						Name: "a",
-// 					},
-// 					{
-// 						Name:   "b",
-// 						Inputs: []string{"a.outputs"},
-// 					},
-// 				},
-// 			},
-// 		},
-// 		{
-// 			name: "rebalance pipeline creating",
-// 			loadReq: &pb.Pipeline{
-// 				Name:    "foo",
-// 				Version: 1,
-// 				Uid:     "x",
-// 				Steps: []*pb.PipelineStep{
-// 					{
-// 						Name: "a",
-// 					},
-// 					{
-// 						Name:   "b",
-// 						Inputs: []string{"a.outputs"},
-// 					},
-// 				},
-// 			},
-// 		},
-// 		{
-// 			name: "rebalance pipeline terminating",
-// 			loadReq: &pb.Pipeline{
-// 				Name:    "foo",
-// 				Version: 1,
-// 				Uid:     "x",
-// 				Steps: []*pb.PipelineStep{
-// 					{
-// 						Name: "a",
-// 					},
-// 					{
-// 						Name:   "b",
-// 						Inputs: []string{"a.outputs"},
-// 					},
-// 				},
-// 			},
-// 		},
-// 	}
+	tests := []test{
+		{
+			name: "rebalance message - create pipeline",
+			loadReq: &pb.Pipeline{
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*pb.PipelineStep{
+					{
+						Name: "a",
+					},
+					{
+						Name:   "b",
+						Inputs: []string{"a.outputs"},
+					},
+				},
+			},
+			pipelineGwStatus: pipeline.PipelineReady,
+			versionLen:       1,
+		},
+		{
+			name: "rebalance message - delete pipeline",
+			loadReq: &pb.Pipeline{
+				Name:    "foo",
+				Version: 1,
+				Uid:     "x",
+				Steps: []*pb.PipelineStep{
+					{
+						Name: "a",
+					},
+					{
+						Name:   "b",
+						Inputs: []string{"a.outputs"},
+					},
+				},
+			},
+			pipelineGwStatus: pipeline.PipelineTerminating,
+			versionLen:       0,
+		},
+	}
 
-// 	for _, test := range tests {
-// 		t.Run(test.name, func(t *testing.T) {
-// 			// create a test scheduler - note it uses a load balancer with 1 partition
-// 			s, _ := createTestScheduler(t)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// create a test scheduler - note it uses a load balancer with 1 partition
+			s, _ := createTestScheduler(t)
 
-// 			// create pipelinegw stream
-// 			stream := newStubPipelineStatusServer(1, 5*time.Millisecond)
-// 			subscription := &PipelineSubscription{
-// 				name:   "dummy",
-// 				stream: stream,
-// 				fin:    make(chan bool),
-// 				// isPipelineGateway: true,
-// 			}
-// 			s.pipelineEventStream.streams[stream] = subscription
-// 			g.Expect(s.pipelineEventStream.streams[stream]).ToNot(BeNil())
+			// create operator stream
+			operatorStream := newStubPipelineStatusServer(1, 5*time.Millisecond)
+			operatorSubscription := &PipelineSubscription{
+				name:   "dummy-operator",
+				stream: operatorStream,
+				fin:    make(chan bool),
+			}
+			s.pipelineEventStream.streams[operatorStream] = operatorSubscription
+			g.Expect(s.pipelineEventStream.streams[operatorStream]).ToNot(BeNil())
 
-// 			// add stream to the load balancer
-// 			s.pipelineGWLoadBalancer.AddServer(subscription.name)
+			// create pipelinegw stream
+			pipelineGwStream := newStubPipelineStatusServer(1, 5*time.Millisecond)
+			pipelineGwSubscription := &PipelineSubscription{
+				name:              "dummy-pipelinegw",
+				stream:            pipelineGwStream,
+				isPipelineGateway: true,
+				fin:               make(chan bool),
+			}
+			s.pipelineEventStream.streams[pipelineGwStream] = pipelineGwSubscription
+			g.Expect(s.pipelineEventStream.streams[pipelineGwStream]).ToNot(BeNil())
 
-// 			// add a pipeline to the store and check no message is received
-// 			err := s.pipelineHandler.AddPipeline(test.loadReq)
-// 			receiveAndCheckMessage(g, t, stream, test.loadReq.Name, 1)
-// 			g.Expect(err).To(BeNil())
+			// add stream to the load balancer
+			s.pipelineGWLoadBalancer.AddServer(pipelineGwSubscription.name)
 
-// 			// trigger rebalance and check rebalance message is received
-// 			s.pipelineGwRebalance()
-// 			receiveAndCheckMessage(g, t, stream, test.loadReq.Name, 1)
-// 		})
-// 	}
-// }
+			// add a pipeline to the store and check message is received by both operator and pipelinegw
+			err := s.pipelineHandler.AddPipeline(test.loadReq)
+			g.Expect(err).To(BeNil())
+
+			// receive add message from operator and pipelinegw
+			msg := receiveMessageFromStream(g, t, operatorStream, test.loadReq.Name, 1)
+			g.Expect(msg).ToNot(BeNil())
+			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
+			g.Expect(msg.Versions).To(HaveLen(1))
+
+			msg = receiveMessageFromStream(g, t, pipelineGwStream, test.loadReq.Name, 1)
+			g.Expect(msg).ToNot(BeNil())
+			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
+			g.Expect(msg.Versions).To(HaveLen(1))
+
+			// set pipelin gw status
+			err = s.pipelineHandler.SetPipelineGwPipelineState(test.loadReq.Name, 1, test.loadReq.Uid, test.pipelineGwStatus, "", sourcePipelineStatusEvent)
+			g.Expect(err).To(BeNil())
+
+			// receive status update message from operator only
+			msg = receiveMessageFromStream(g, t, operatorStream, test.loadReq.Name, 1)
+			g.Expect(msg).ToNot(BeNil())
+			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
+			g.Expect(msg.Versions).To(HaveLen(1))
+
+			pv := getPipelineVersion(g, s.pipelineHandler, test.loadReq.Name, 1)
+			g.Expect(pv.State.PipelineGwStatus).To(Equal(test.pipelineGwStatus))
+
+			// trigger rebalance and check rebalance message is received by pipelinegw only
+			s.pipelineGwRebalance()
+
+			// check message is received by operator
+			msg = receiveMessageFromStream(g, t, operatorStream, test.loadReq.Name, 1)
+			g.Expect(msg).ToNot(BeNil())
+			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
+			g.Expect(msg.Versions).To(HaveLen(1))
+
+			// operator should only change status if pipeline is not terminating
+			if test.versionLen > 0 {
+				pv = getPipelineVersion(g, s.pipelineHandler, test.loadReq.Name, 1)
+				g.Expect(pv.State.PipelineGwStatus).To(Equal(pipeline.PipelineCreating))
+				g.Expect(pv.State.PipelineGwReason).To(Equal("Rebalance"))
+			}
+
+			// check rebalance message is received by pipelinegw (create or delete based on the verisonLen)
+			msg = receiveMessageFromStream(g, t, pipelineGwStream, test.loadReq.Name, 1)
+			g.Expect(msg).ToNot(BeNil())
+			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
+			g.Expect(msg.Versions).To(HaveLen(test.versionLen))
+		})
+	}
+}
 
 func TestPipelineGwRebalance(t *testing.T) {
 	g := NewGomegaWithT(t)
