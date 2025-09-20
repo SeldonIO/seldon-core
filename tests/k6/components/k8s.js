@@ -525,6 +525,10 @@ export function loadServer(data, serverName, awaitReady=true, throwError=false, 
 export function unloadServer(serverName, awaitReady=true, throwError=false, maxRetries = MAX_RETRIES) {
     if(seldonObjExists(seldonObjectType.SERVER, serverName, seldon_target_ns)) {
         try {
+            // check pods have actually deleted
+            //
+            // let serverPods = kubeclient.get("Pod", )
+
             kubeclient.delete(seldonObjectType.SERVER.description, serverName, seldon_target_ns)
             if (awaitReady) {
                 let retries = 0

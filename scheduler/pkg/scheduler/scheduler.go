@@ -233,7 +233,8 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) (*coordinator.Serve
 			// for example in the case that a model is just marked as loading on a particular server replica
 			// then it gets a delete request (before it is marked as loaded or available) we need to make sure
 			// that we can unload it from the server
-			if err := s.store.FailedScheduling(latestModel.Key(),
+			if err := s.store.FailedScheduling(
+				latestModel.Key(),
 				latestModel.GetVersion(), msg,
 				!latestModel.HasLiveReplicas() && !latestModel.IsLoadingOrLoadedOnServer()); err != nil {
 				return nil, fmt.Errorf("%s: got error making model as failed in memory store:  %w", msg, err)

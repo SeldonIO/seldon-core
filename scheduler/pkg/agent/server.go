@@ -231,7 +231,7 @@ func (s *Server) HealthCheck(_ context.Context, _ *health.HealthCheckRequest) (*
 }
 
 func (s *Server) Sync(modelName string) {
-	logger := s.logger.WithField("func", "Sync")
+	logger := s.logger.WithFields(log.Fields{"func": "Sync", "modelName": modelName})
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 	s.store.LockModel(modelName)
@@ -278,6 +278,7 @@ func (s *Server) Sync(modelName string) {
 				AutoscalingEnabled: util.AutoscalingEnabled(model.DeploymentSpec.GetMinReplicas(), model.DeploymentSpec.GetMaxReplicas()) && s.autoscalingModelEnabled,
 			})
 			as.mutex.Unlock()
+
 			if err != nil {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				if errState := s.store.UpdateModelState(
@@ -489,9 +490,11 @@ func (s *Server) removeServerReplicaImpl(serverName string, serverReplicaIdx int
 }
 
 func (s *Server) drainServerReplicaImpl(serverName string, serverReplicaIdx int) {
+	logger := s.logger.WithFields(log.Fields{"func": "drainServerReplicaImpl", "server": fmt.Sprintf("%s:%d", serverName, serverReplicaIdx)})
+
 	modelsChanged, err := s.store.DrainServerReplica(serverName, serverReplicaIdx)
 	if err != nil {
-		s.logger.WithError(err).Errorf("Failed to remove replica and redeploy models for %s:%d", serverName, serverReplicaIdx)
+		logger.WithError(err).Error("Failed to remove replica and redeploy models")
 		return
 	}
 
@@ -503,19 +506,21 @@ func (s *Server) drainServerReplicaImpl(serverName string, serverReplicaIdx int)
 	time.Sleep(agentDrainCoolDownPeriod)
 
 	s.logger.Debugf("Draining models %v from server %s:%d", modelsChanged, serverName, serverReplicaIdx)
+
 	for _, modelName := range modelsChanged {
 		err = s.scheduler.Schedule(modelName)
 		if err != nil {
-			s.logger.Debugf("Failed to reschedule model %s when server %s replica %d draining", modelName, serverName, serverReplicaIdx)
+			logger.Debugf("Failed to reschedule model %s signalling not to wait for model re-schedule", modelName)
 			// we do not want to wait on this model to be ready, as it cant (for the time being)
 			s.waiter.signalModel(modelName)
 		}
 	}
+
 	s.waiter.wait(serverName, serverReplicaIdx)
 
 	// as we update envoy in batches and envoy is eventual consistent, give it time to settle down
 	time.Sleep(util.EnvoyUpdateDefaultBatchWait + (time.Millisecond * serverDrainingExtraWaitMillis))
-	s.logger.Debugf("Finished draining models %v from server %s:%d", modelsChanged, serverName, serverReplicaIdx)
+	logger.Debugf("Finished draining models %v", modelsChanged)
 }
 
 func (s *Server) applyModelScaling(message *pb.ModelScalingTriggerMessage) error {

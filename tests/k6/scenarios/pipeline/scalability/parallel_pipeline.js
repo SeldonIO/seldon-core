@@ -9,6 +9,7 @@ import {
 } from '../../../components/model.js';
 import {inferHttp, setupK6, tearDownK6} from "../../../components/v2.js";
 import {awaitPipelineStatus, generateSeldonRuntime, generateServer} from "../../../components/k8s.js";
+import { sleep } from 'k6';
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
 export let options = {
@@ -60,7 +61,14 @@ export function setup() {
 
         const server = generateServer(serverName, "mlserver", config.replicas.inferenceServer.actual,
             config.replicas.inferenceServer.min, config.replicas.inferenceServer.max)
+
+        console.log("Deleting server")
+        ctl.unloadServerFn(server.object.metadata.name, true, true)
+        console.log("Deleted server")
+        sleep(20)
+        console.log("Creating server")
         ctl.loadServerFn(server.yaml, server.object.metadata.name, true, true, 30)
+        console.log("Server created")
 
         const pipeline = generateMultiModelParallelPipelineYaml(pipelineName,
             [inputModelName1, inputModelName2], inputModelType, inputModelParams, outputModelName,
