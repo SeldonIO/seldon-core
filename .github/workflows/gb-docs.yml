@@ -17,4 +17,4 @@ jobs:
       - name: Run Lychee link checker on docs-gb
         uses: lycheeverse/lychee-action@v1.10.0
         with:
-          args: --verbose --no-progress docs-gb/*/.md
+          args: --verbose --no-progress docs-gb/**/*.md
