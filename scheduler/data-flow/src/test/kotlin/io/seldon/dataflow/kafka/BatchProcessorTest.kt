@@ -9,12 +9,12 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow.kafka
 
-import io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents
+import io.seldon.mlops.inference.v2.V2Dataplane
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest
-import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor
+import io.seldon.test.utils.MockFixedKeyProcessorContext
 import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.KeyValue
-import org.apache.kafka.streams.processor.MockProcessorContext
+import org.apache.kafka.streams.processor.api.InternalFixedKeyRecordFactory
+import org.apache.kafka.streams.processor.api.Record
 import org.apache.kafka.streams.state.Stores
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -25,13 +25,13 @@ import strikt.api.expectThat
 import strikt.assertions.isEmpty
 import strikt.assertions.isEqualTo
 import strikt.assertions.isGreaterThan
-import strikt.assertions.isNull
 import java.util.stream.Stream
 
 internal class BatchProcessorTest {
     @Test
     fun `should merge requests with standard tensor contents`() {
-        val mockContext = MockProcessorContext()
+        val mockContext =
+            MockFixedKeyProcessorContext<String, ModelInferRequest>()
         val batcher = BatchProcessor(3)
         val expected = makeRequest("3", listOf(12.34F, 12.34F, 12.34F))
         val requests =
@@ -49,7 +49,8 @@ internal class BatchProcessorTest {
 
     @Test
     fun `should merge requests with no tensor contents`() {
-        val mockContext = MockProcessorContext()
+        val mockContext =
+            MockFixedKeyProcessorContext<String, ModelInferRequest>()
         val batcher = BatchProcessor(3)
         val expected = makeRequest("3", emptyList())
         val requests =
@@ -67,7 +68,8 @@ internal class BatchProcessorTest {
 
     @Test
     fun `should merge requests with raw tensor contents`() {
-        val mockContext = MockProcessorContext()
+        val mockContext =
+            MockFixedKeyProcessorContext<String, ModelInferRequest>()
         val batcher = BatchProcessor(3)
         val expected = makeRequest("3", listOf(12.34F, 12.34F, 12.34F)).withBinaryContents()
         val requests =
@@ -85,7 +87,7 @@ internal class BatchProcessorTest {
 
     @Test
     fun `should only forward when batch size met`() {
-        val mockContext = MockProcessorContext()
+        val mockContext = MockFixedKeyProcessorContext<String, ModelInferRequest>()
         val store =
             Stores
                 .keyValueStoreBuilder(
@@ -100,39 +102,40 @@ internal class BatchProcessorTest {
         val batcher = BatchProcessor(batchSize)
         val streamKey = "789"
 
-        store.init(mockContext, store) // Deprecated, but docs recommend & tests break without it
-        mockContext.register(store, null)
+        store.init(mockContext.stateStoreContext, store)
         mockContext.setTopic("seldon.foo.model.bar.inputs")
         mockContext.setPartition(3)
         batcher.init(mockContext)
 
         (1 until batchSize).forEach {
             val preBatchRequest = makeRequest(it.toString(), listOf(it.toFloat()))
-            val actual = batcher.transform(streamKey, preBatchRequest)
-            expectThat(actual).isNull()
+            val actual = batcher.process(InternalFixedKeyRecordFactory.create(Record(streamKey, preBatchRequest, it.toLong())))
             expectThat(mockContext.forwarded()).isEmpty()
             expectThat(store.approximateNumEntries()).isGreaterThan(0)
         }
 
         val batchRequest = makeRequest(batchSize.toString(), listOf(batchSize.toFloat()))
-        val batched = batcher.transform(streamKey, batchRequest)
+        batcher.process(InternalFixedKeyRecordFactory.create(Record(streamKey, batchRequest, batchSize.toLong())))
         val expected =
-            KeyValue(
-                streamKey,
-                makeRequest(
-                    batchRequest.id,
-                    (1..batchSize).map { it.toFloat() },
+            InternalFixedKeyRecordFactory.create(
+                Record(
+                    streamKey,
+                    makeRequest(
+                        batchRequest.id,
+                        (1..batchSize).map { it.toFloat() },
+                    ),
+                    batchSize.toLong(),
                 ),
             )
-        expectThat(batched).isEqualTo(expected)
-        expectThat(mockContext.forwarded()).isEmpty()
+        expectThat(mockContext.forwarded().size).isEqualTo(1)
+        expectThat(mockContext.forwarded()[0].record()).isEqualTo(expected)
         expectThat(store.approximateNumEntries()).isEqualTo(0)
 
+        // make sure there are no more forwards until twice the batch size
         (1 + batchSize until 2 * batchSize).forEach {
             val postBatchRequest = makeRequest(it.toString(), listOf(it.toFloat()))
-            val actual = batcher.transform(streamKey, postBatchRequest)
-            expectThat(actual).isNull()
-            expectThat(mockContext.forwarded()).isEmpty()
+            batcher.process(InternalFixedKeyRecordFactory.create(Record(streamKey, postBatchRequest, it.toLong())))
+            expectThat(mockContext.forwarded().size).isEqualTo(1)
             expectThat(store.approximateNumEntries()).isGreaterThan(0)
         }
     }
@@ -144,7 +147,7 @@ internal class BatchProcessorTest {
         expected: ModelInferRequest,
         inputs: List<ModelInferRequest>,
     ) {
-        val mockContext = MockProcessorContext()
+        val mockContext = MockFixedKeyProcessorContext<String, ModelInferRequest>()
         val batchSize = 3
         val batcher = BatchProcessor(batchSize)
 
@@ -203,7 +206,7 @@ internal class BatchProcessorTest {
                 .newBuilder()
                 .setId(id)
                 .addInputs(
-                    InferInputTensor
+                    ModelInferRequest.InferInputTensor
                         .newBuilder()
                         .setName("preprocessed_image")
                         .setDatatype("FP32")
@@ -211,7 +214,7 @@ internal class BatchProcessorTest {
                             listOf(values.size.toLong(), 1, 1, 1),
                         )
                         .setContents(
-                            InferTensorContents
+                            V2Dataplane.InferTensorContents
                                 .newBuilder()
                                 .addAllFp32Contents(values)
                                 .build(),

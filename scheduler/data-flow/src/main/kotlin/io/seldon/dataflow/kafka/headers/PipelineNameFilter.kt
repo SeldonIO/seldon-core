@@ -10,25 +10,26 @@ the Change License after the Change Date as each is defined in accordance with t
 package io.seldon.dataflow.kafka.headers
 
 import io.seldon.dataflow.kafka.TRecord
-import org.apache.kafka.streams.kstream.ValueTransformer
-import org.apache.kafka.streams.processor.ProcessorContext
+import org.apache.kafka.streams.processor.api.FixedKeyProcessor
+import org.apache.kafka.streams.processor.api.FixedKeyProcessorContext
+import org.apache.kafka.streams.processor.api.FixedKeyRecord
 
-class PipelineNameFilter(private val pipelineName: String) : ValueTransformer<TRecord, TRecord> {
-    var context: ProcessorContext? = null
+class PipelineNameFilter<T>(private val pipelineName: String) : FixedKeyProcessor<T, TRecord, TRecord> {
+    private var context: FixedKeyProcessorContext<T, TRecord>? = null
 
-    override fun init(context: ProcessorContext?) {
+    override fun init(context: FixedKeyProcessorContext<T, TRecord>?) {
         this.context = context
     }
 
-    override fun transform(value: TRecord?): TRecord? {
+    override fun process(record: FixedKeyRecord<T, TRecord>?) {
         val shouldProcess =
-            context
+            record
                 ?.headers()
                 ?.headers(SeldonHeaders.PIPELINE_NAME)
                 ?.any { it.value().decodeToString() == pipelineName }
                 ?: false
-        return if (shouldProcess) value else null
+        if (shouldProcess) context?.forward(record)
     }
 
-    override fun close() {}
+    override fun close() = Unit
 }

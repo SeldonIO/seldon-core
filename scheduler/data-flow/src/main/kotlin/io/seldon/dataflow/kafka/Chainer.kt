@@ -89,8 +89,7 @@ class Chainer(
             s1,
             null,
         )
-            .headerRemover()
-            .headerSetter(pipelineName, pipelineVersion)
+            .headerAdjust(pipelineName, pipelineVersion)
     }
 
     private fun buildInputOutputStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
@@ -112,8 +111,7 @@ class Chainer(
             s1,
             null,
         )
-            .headerRemover()
-            .headerSetter(pipelineName, pipelineVersion)
+            .headerAdjust(pipelineName, pipelineVersion)
     }
 
     private fun buildOutputOutputStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
@@ -135,8 +133,7 @@ class Chainer(
             s1,
             null,
         )
-            .headerRemover()
-            .headerSetter(pipelineName, pipelineVersion)
+            .headerAdjust(pipelineName, pipelineVersion)
     }
 
     private fun buildOutputInputStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
@@ -159,8 +156,7 @@ class Chainer(
             s1,
             null,
         )
-            .headerRemover()
-            .headerSetter(pipelineName, pipelineVersion)
+            .headerAdjust(pipelineName, pipelineVersion)
     }
 
     private fun buildInputInputStream(builder: StreamsBuilder): KStream<RequestId, TRecord> {
@@ -183,8 +179,7 @@ class Chainer(
             s1,
             null,
         )
-            .headerRemover()
-            .headerSetter(pipelineName, pipelineVersion)
+            .headerAdjust(pipelineName, pipelineVersion)
     }
 
     companion object {
