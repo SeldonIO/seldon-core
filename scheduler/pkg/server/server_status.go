@@ -226,76 +226,85 @@ func (s *SchedulerServer) modelGwRebalance() {
 	}
 
 	for _, model := range runningModels {
-		if len(streams) == 0 {
-			modelState := store.ScheduleFailed
-			if model.GetLatest().ModelState().ModelGWState == store.ModelTerminating {
-				modelState = store.ModelTerminated
+		switch len(streams) {
+		case 0:
+			s.modelGwRebalanceNoStream(model)
+		default:
+			s.modelGwReblanceStreams(model)
+		}
+	}
+}
+
+func (s *SchedulerServer) modelGwRebalanceNoStream(model *store.ModelSnapshot) {
+	modelState := store.ScheduleFailed
+	if model.GetLatest().ModelState().ModelGWState == store.ModelTerminating {
+		modelState = store.ModelTerminated
+	}
+	s.logger.Debugf("No model-gw available to handle model %s, setting state to %s", model.Name, modelState.String())
+	if err := s.modelStore.SetModelGwModelState(
+		model.Name,
+		model.GetLatest().GetVersion(),
+		modelState,
+		"no model gateway available to handle model",
+		modelStatusEventSource,
+	); err != nil {
+		s.logger.WithError(err).Errorf("Failed to set model-gw state for %s", model.Name)
+	}
+}
+
+func (s *SchedulerServer) modelGwReblanceStreams(model *store.ModelSnapshot) {
+	consumerBucketId := s.getModelGatewayBucketId(model.Name)
+	s.logger.Debugf("Rebalancing model %s with consumber bucket id %s", model.Name, consumerBucketId)
+
+	servers := s.modelGwLoadBalancer.GetServersForKey(consumerBucketId)
+	s.logger.Debugf("Servers for model %s: %v", model.Name, servers)
+
+	confRes := s.modelEventStream.conflictResolutioner
+	cr.CreateNewModelIteration(confRes, model.Name, servers)
+
+	for _, modelSubscription := range s.modelEventStream.streams {
+		if !modelSubscription.isModelGateway {
+			s.logger.Debugf("Skipping non-model gateway stream for %s", modelSubscription.name)
+			continue
+		}
+
+		s.logger.Debug("Processing model subscription for ", modelSubscription.name)
+		server := modelSubscription.name
+		stream := modelSubscription.stream
+
+		if contains(servers, server) {
+			s.logger.Debug("Server contains model, sending status update for: ", server)
+
+			state := model.GetLatest().ModelState().State
+			var msg *pb.ModelStatusResponse
+			var err error
+
+			if state == store.ModelTerminating {
+				s.logger.Debugf("Model %s is terminating, sending deletion message", model.Name)
+				msg, err = s.createModelDeletionMessage(model, false)
+			} else {
+				s.logger.Debugf("Model %s is available or progressing, sending creation message", model.Name)
+				msg, err = s.createModelCreationMessage(model)
 			}
-			s.logger.Debugf("No model-gw available to handle model %s, setting state to %s", model.Name, modelState.String())
-			if err := s.modelStore.SetModelGwModelState(
-				model.Name,
-				model.GetLatest().GetVersion(),
-				modelState,
-				"no model gateway available to handle model",
-				modelStatusEventSource,
-			); err != nil {
-				s.logger.WithError(err).Errorf("Failed to set model-gw state for %s", model.Name)
+			if err != nil {
+				s.logger.WithError(err).Errorf("Failed to create model status message for %s", model.Name)
+				continue
+			}
+			msg.Timestamp = confRes.GetTimestamp(model.Name)
+			if err := stream.Send(msg); err != nil {
+				s.logger.WithError(err).Errorf("Failed to send create rebalance msg to model %s", model.Name)
 			}
 		} else {
-			consumerBucketId := s.getModelGatewayBucketId(model.Name)
-			s.logger.Debugf("Rebalancing model %s with consumber bucket id %s", model.Name, consumerBucketId)
-
-			servers := s.modelGwLoadBalancer.GetServersForKey(consumerBucketId)
-			s.logger.Debugf("Servers for model %s: %v", model.Name, servers)
-
-			confRes := s.modelEventStream.conflictResolutioner
-			cr.CreateNewModelIteration(confRes, model.Name, servers)
-
-			for _, modelSubscription := range s.modelEventStream.streams {
-				if !modelSubscription.isModelGateway {
-					s.logger.Debugf("Skipping non-model gateway stream for %s", modelSubscription.name)
-					continue
-				}
-
-				s.logger.Debug("Processing model subscription for ", modelSubscription.name)
-				server := modelSubscription.name
-				stream := modelSubscription.stream
-
-				if contains(servers, server) {
-					s.logger.Debug("Server contains model, sending status update for: ", server)
-
-					state := model.GetLatest().ModelState().State
-					var msg *pb.ModelStatusResponse
-					var err error
-
-					if state == store.ModelTerminating {
-						s.logger.Debugf("Model %s is terminating, sending deletion message", model.Name)
-						msg, err = s.createModelDeletionMessage(model, false)
-					} else {
-						s.logger.Debugf("Model %s is available or progressing, sending creation message", model.Name)
-						msg, err = s.createModelCreationMessage(model)
-					}
-					if err != nil {
-						s.logger.WithError(err).Errorf("Failed to create model status message for %s", model.Name)
-						continue
-					}
-					msg.Timestamp = confRes.GetTimestamp(model.Name)
-					if err := stream.Send(msg); err != nil {
-						s.logger.WithError(err).Errorf("Failed to send create rebalance msg to model %s", model.Name)
-					}
-				} else {
-					s.logger.Debugf("Server %s does not contain model %s, sending deletion message", server, model.Name)
-					msg, err := s.createModelDeletionMessage(model, true)
-					if err != nil {
-						s.logger.WithError(err).Errorf("Failed to create model deletion message for %s", model.Name)
-						continue
-					}
-					s.logger.Debugf("Sending deletion message for model %s to server %s", model.Name, server)
-					msg.Timestamp = confRes.GetTimestamp(model.Name)
-					if err := stream.Send(msg); err != nil {
-						s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to model %s", model.Name)
-					}
-				}
+			s.logger.Debugf("Server %s does not contain model %s, sending deletion message", server, model.Name)
+			msg, err := s.createModelDeletionMessage(model, true)
+			if err != nil {
+				s.logger.WithError(err).Errorf("Failed to create model deletion message for %s", model.Name)
+				continue
+			}
+			s.logger.Debugf("Sending deletion message for model %s to server %s", model.Name, server)
+			msg.Timestamp = confRes.GetTimestamp(model.Name)
+			if err := stream.Send(msg); err != nil {
+				s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to model %s", model.Name)
 			}
 		}
 	}
@@ -349,78 +358,88 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 	if err != nil {
 		return err
 	}
-	if model.GetLatest() != nil && model.GetLatest().GetVersion() == evt.ModelVersion {
-		ms, err := s.modelStatusImpl(model, false)
-		if err != nil {
-			logger.WithError(err).Errorf("Failed to create model status for model %s", evt.String())
-			return err
-		}
 
-		// find the modelgw servers that should receive this event
-		consumerBucketId := s.getModelGatewayBucketId(evt.ModelName)
-		servers := s.modelGwLoadBalancer.GetServersForKey(consumerBucketId)
-
-		// split streams into model gateway and other streams
-		modelGwStreams := make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription)
-		otherStreams := make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription)
-		for stream, subscription := range s.modelEventStream.streams {
-			if !subscription.isModelGateway {
-				otherStreams[stream] = subscription
-			} else if contains(servers, subscription.name) {
-				modelGwStreams[stream] = subscription
-			}
-		}
-
-		switch len(modelGwStreams) {
-		case 0:
-			// handle case where we don't have any model-gateway streams
-			modelState := model.GetLatest().ModelState()
-			if modelState.ModelGWState == store.ModelTerminated {
-				break
-			}
-
-			errMsg := "no model-gateway available to handle model"
-			logger.WithField("model", model.Name).Warn(errMsg)
-
-			modelGwState := store.ScheduleFailed
-			if modelState.ModelGWState == store.ModelTerminating {
-				modelGwState = store.ModelTerminated
-			}
-
-			if err := s.modelStore.SetModelGwModelState(
-				model.Name,
-				model.GetLatest().GetVersion(),
-				modelGwState,
-				errMsg,
-				modelStatusEventSource,
-			); err != nil {
-				logger.
-					WithError(err).
-					WithField("model", model.Name).
-					WithField("modelGwState", modelGwState).
-					Error("failed to set model state")
-			}
-		default:
-			// send to model gateway streams only if the message
-			// is not an ack from the model gateway itself
-			if evt.Source != modelStatusEventSource {
-				streamNames := make([]string, 0, len(modelGwStreams))
-				for _, subscription := range modelGwStreams {
-					streamNames = append(streamNames, subscription.name)
-				}
-
-				// assign a new timestamp to the message
-				confRes := s.modelEventStream.conflictResolutioner
-				cr.CreateNewModelIteration(confRes, model.Name, streamNames)
-				ms.Timestamp = confRes.GetTimestamp(model.Name)
-
-				s.sendModelStatusEventToStreams(evt, ms, modelGwStreams)
-			}
-		}
-
-		// send to all other streams
-		s.sendModelStatusEventToStreams(evt, ms, otherStreams)
+	if model.GetLatest() == nil {
+		logger.Warnf("Failed to find latest model version for %s so ignoring event", evt.String())
+		return nil
 	}
+
+	if model.GetLatest().GetVersion() != evt.ModelVersion {
+		logger.Warnf("Latest model version %d does not match event version %d for %s so ignoring event", model.GetLatest().GetVersion(), evt.ModelVersion, evt.String())
+		return nil
+	}
+
+	// ms, err := s.modelStatusImpl(model, false)
+	// if err != nil {
+	// 	logger.WithError(err).Errorf("Failed to create model status for model %s", evt.String())
+	// 	return err
+	// }
+
+	// find the modelgw servers that should receive this event
+	consumerBucketId := s.getModelGatewayBucketId(evt.ModelName)
+	servers := s.modelGwLoadBalancer.GetServersForKey(consumerBucketId)
+
+	// split streams into model gateway and other streams
+	modelGwStreams := make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription)
+	otherStreams := make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription)
+	for stream, subscription := range s.modelEventStream.streams {
+		if !subscription.isModelGateway {
+			otherStreams[stream] = subscription
+		} else if contains(servers, subscription.name) {
+			modelGwStreams[stream] = subscription
+		}
+	}
+
+	switch len(modelGwStreams) {
+	case 0:
+		// handle case where we don't have any model-gateway streams
+		modelState := model.GetLatest().ModelState()
+		modelGwState := modelState.ModelGWState
+
+		if modelGwState == store.ModelTerminated {
+			break
+		}
+
+		errMsg := "no model-gateway available to handle model"
+		logger.WithField("model", model.Name).Warn(errMsg)
+
+		if modelGwState == store.ModelTerminating {
+			modelGwState = store.ModelTerminated
+		}
+
+		if err := s.modelStore.SetModelGwModelState(
+			model.Name,
+			model.GetLatest().GetVersion(),
+			modelGwState,
+			errMsg,
+			modelStatusEventSource,
+		); err != nil {
+			logger.
+				WithError(err).
+				WithField("model", model.Name).
+				WithField("modelGwState", modelGwState).
+				Error("failed to set model state")
+		}
+	default:
+		// send to model gateway streams only if the message
+		// is not an ack from the model gateway itself
+		if evt.Source != modelStatusEventSource {
+			streamNames := make([]string, 0, len(modelGwStreams))
+			for _, subscription := range modelGwStreams {
+				streamNames = append(streamNames, subscription.name)
+			}
+
+			// assign a new timestamp to the message
+			confRes := s.modelEventStream.conflictResolutioner
+			cr.CreateNewModelIteration(confRes, model.Name, streamNames)
+			ms.Timestamp = confRes.GetTimestamp(model.Name)
+
+			s.sendModelStatusEventToStreams(evt, ms, modelGwStreams)
+		}
+	}
+
+	// send to all other streams
+	s.sendModelStatusEventToStreams(evt, ms, otherStreams)
 	return nil
 }
 
