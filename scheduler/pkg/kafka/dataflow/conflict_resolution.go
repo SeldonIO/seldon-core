@@ -82,6 +82,16 @@ func (cr *ConflictResolutioner) GetCountPipelineWithStatus(pipelineName string, 
 	return count
 }
 
+func (cr *ConflictResolutioner) GetStreamsWithStatus(pipelineName string, status pipeline.PipelineStatus) []string {
+	streams := []string{}
+	for stream, streamStatus := range cr.vectorResponseStatus[pipelineName] {
+		if streamStatus == status {
+			streams = append(streams, stream)
+		}
+	}
+	return streams
+}
+
 func (cr *ConflictResolutioner) GetPipelineStatus(pipelineName string, message *chainer.PipelineUpdateStatusMessage) (pipeline.PipelineStatus, string) {
 	logger := cr.logger.WithField("func", "GetPipelineStatus")
 	streams := cr.vectorResponseStatus[pipelineName]
