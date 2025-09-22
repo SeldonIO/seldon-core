@@ -142,7 +142,7 @@ func TestModelsStatusEvents(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 
-			stream := newStubModelStatusServer(1, 5*time.Millisecond)
+			stream := newStubModelStatusServer(2, 5*time.Millisecond)
 			s.modelEventStream.streams[stream] = &ModelSubscription{
 				name:   "dummy",
 				stream: stream,
