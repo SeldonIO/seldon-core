@@ -32,6 +32,19 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
+func receiveMessageFromStream(t *testing.T, stream *stubModelStatusServer) *pb.ModelStatusResponse {
+	time.Sleep(500 * time.Millisecond)
+
+	var msr *pb.ModelStatusResponse
+	select {
+	case next := <-stream.msgs:
+		msr = next
+	case <-time.After(2 * time.Second):
+		t.Fail()
+	}
+	return msr
+}
+
 func TestModelsStatusStream(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
@@ -85,33 +98,13 @@ func TestModelsStatusStream(t *testing.T) {
 			} else {
 				g.Expect(err).To(BeNil())
 
-				var msr *pb.ModelStatusResponse
-				select {
-				case next := <-stream.msgs:
-					msr = next
-				default:
-					t.Fail()
-				}
-
+				msr := receiveMessageFromStream(t, stream)
 				g.Expect(msr).ToNot(BeNil())
 				g.Expect(msr.Versions).To(HaveLen(1))
 				g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
 			}
 		})
 	}
-}
-
-func receiveMessageFromStream(t *testing.T, stream *stubModelStatusServer) *pb.ModelStatusResponse {
-	time.Sleep(500 * time.Millisecond)
-
-	var msr *pb.ModelStatusResponse
-	select {
-	case next := <-stream.msgs:
-		msr = next
-	case <-time.After(2 * time.Second):
-		t.Fail()
-	}
-	return msr
 }
 
 func TestPublishModelsStatusWithTimeout(t *testing.T) {
