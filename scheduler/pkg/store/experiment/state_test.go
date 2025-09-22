@@ -704,7 +704,8 @@ func TestSetCandidateAndMirrorModelReadiness(t *testing.T) {
 }
 
 type fakePipelineStore struct {
-	status map[string]pipeline.PipelineStatus
+	status           map[string]pipeline.PipelineStatus
+	pipelineGwStatus map[string]pipeline.PipelineStatus
 }
 
 func (f fakePipelineStore) AddPipeline(pipeline *scheduler.Pipeline) error {
@@ -724,7 +725,8 @@ func (f fakePipelineStore) GetPipeline(name string) (*pipeline.Pipeline, error) 
 		Versions: []*pipeline.PipelineVersion{
 			{
 				State: &pipeline.PipelineState{
-					Status: f.status[name],
+					Status:           f.status[name],
+					PipelineGwStatus: f.pipelineGwStatus[name],
 				},
 			},
 		},
@@ -758,13 +760,14 @@ func TestSetCandidateAndMirrorPipelineReadiness(t *testing.T) {
 		name                    string
 		experiment              *Experiment
 		pipelineStates          map[string]pipeline.PipelineStatus
+		pipelineGwStates        map[string]pipeline.PipelineStatus
 		expectedCandidatesReady bool
 		expectedMirrorReady     bool
 	}
 
 	tests := []test{
 		{
-			name: "candidate ready as pipeline is ready",
+			name: "candidate ready as pipeline and pipeline-gwis ready",
 			experiment: &Experiment{
 				Name:         "a",
 				ResourceType: PipelineResourceType,
@@ -775,11 +778,12 @@ func TestSetCandidateAndMirrorPipelineReadiness(t *testing.T) {
 				},
 			},
 			pipelineStates:          map[string]pipeline.PipelineStatus{"model1": pipeline.PipelineReady},
+			pipelineGwStates:        map[string]pipeline.PipelineStatus{"model1": pipeline.PipelineReady},
 			expectedCandidatesReady: true,
 			expectedMirrorReady:     true,
 		},
 		{
-			name: "candidates not ready as pipeline is not ready",
+			name: "candidates not ready as pipeline and pipeline-gw not ready",
 			experiment: &Experiment{
 				Name:         "a",
 				ResourceType: PipelineResourceType,
@@ -790,6 +794,39 @@ func TestSetCandidateAndMirrorPipelineReadiness(t *testing.T) {
 				},
 			},
 			pipelineStates:          map[string]pipeline.PipelineStatus{"model1": pipeline.PipelineFailed},
+			pipelineGwStates:        map[string]pipeline.PipelineStatus{"model1": pipeline.PipelineFailed},
+			expectedCandidatesReady: false,
+			expectedMirrorReady:     true,
+		},
+		{
+			name: "candidates not ready as pipeline-gw not ready",
+			experiment: &Experiment{
+				Name:         "a",
+				ResourceType: PipelineResourceType,
+				Candidates: []*Candidate{
+					{
+						Name: "model1",
+					},
+				},
+			},
+			pipelineStates:          map[string]pipeline.PipelineStatus{"model1": pipeline.PipelineReady},
+			pipelineGwStates:        map[string]pipeline.PipelineStatus{"model1": pipeline.PipelineFailed},
+			expectedCandidatesReady: false,
+			expectedMirrorReady:     true,
+		},
+		{
+			name: "candidates not ready as pipeline not ready",
+			experiment: &Experiment{
+				Name:         "a",
+				ResourceType: PipelineResourceType,
+				Candidates: []*Candidate{
+					{
+						Name: "model1",
+					},
+				},
+			},
+			pipelineStates:          map[string]pipeline.PipelineStatus{"model1": pipeline.PipelineFailed},
+			pipelineGwStates:        map[string]pipeline.PipelineStatus{"model1": pipeline.PipelineReady},
 			expectedCandidatesReady: false,
 			expectedMirrorReady:     true,
 		},
@@ -808,6 +845,7 @@ func TestSetCandidateAndMirrorPipelineReadiness(t *testing.T) {
 				},
 			},
 			pipelineStates:          map[string]pipeline.PipelineStatus{"pipeline1": pipeline.PipelineReady},
+			pipelineGwStates:        map[string]pipeline.PipelineStatus{"pipeline1": pipeline.PipelineReady},
 			expectedCandidatesReady: false,
 			expectedMirrorReady:     true,
 		},
@@ -826,11 +864,31 @@ func TestSetCandidateAndMirrorPipelineReadiness(t *testing.T) {
 				},
 			},
 			pipelineStates:          map[string]pipeline.PipelineStatus{"pipeline1": pipeline.PipelineReady, "pipeline2": pipeline.PipelineReady},
+			pipelineGwStates:        map[string]pipeline.PipelineStatus{"pipeline1": pipeline.PipelineReady, "pipeline2": pipeline.PipelineReady},
 			expectedCandidatesReady: true,
 			expectedMirrorReady:     true,
 		},
 		{
-			name: "mirror and candidate ready as pipeline is ready",
+			name: "multiple candidates not read as pipeline or pipeline-gw not ready",
+			experiment: &Experiment{
+				Name:         "a",
+				ResourceType: PipelineResourceType,
+				Candidates: []*Candidate{
+					{
+						Name: "pipeline1",
+					},
+					{
+						Name: "pipeline2",
+					},
+				},
+			},
+			pipelineStates:          map[string]pipeline.PipelineStatus{"pipeline1": pipeline.PipelineReady, "pipeline2": pipeline.PipelineFailed},
+			pipelineGwStates:        map[string]pipeline.PipelineStatus{"pipeline1": pipeline.PipelineFailed, "pipeline2": pipeline.PipelineReady},
+			expectedCandidatesReady: false,
+			expectedMirrorReady:     true,
+		},
+		{
+			name: "mirror and candidate ready as pipeline and pipeline-gw ready",
 			experiment: &Experiment{
 				Name:         "a",
 				ResourceType: PipelineResourceType,
@@ -844,6 +902,7 @@ func TestSetCandidateAndMirrorPipelineReadiness(t *testing.T) {
 				},
 			},
 			pipelineStates:          map[string]pipeline.PipelineStatus{"pipeline1": pipeline.PipelineReady, "pipeline2": pipeline.PipelineReady},
+			pipelineGwStates:        map[string]pipeline.PipelineStatus{"pipeline1": pipeline.PipelineReady, "pipeline2": pipeline.PipelineReady},
 			expectedCandidatesReady: true,
 			expectedMirrorReady:     true,
 		},
@@ -854,7 +913,7 @@ func TestSetCandidateAndMirrorPipelineReadiness(t *testing.T) {
 			logger := logrus.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			server := NewExperimentServer(logger, eventHub, nil, fakePipelineStore{status: test.pipelineStates})
+			server := NewExperimentServer(logger, eventHub, nil, fakePipelineStore{status: test.pipelineStates, pipelineGwStatus: test.pipelineGwStates})
 			err = server.StartExperiment(test.experiment)
 			g.Expect(err).To(BeNil())
 
