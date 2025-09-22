@@ -399,18 +399,14 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 		return nil
 	}
 
-	if len(modelGwStreams) == 0 {
+	modelState := model.GetLatest().ModelState()
+	if len(modelGwStreams) == 0 && modelState.ModelGWState != store.ModelTerminated {
 		// handle case where we don't have any model-gateway streams
-		modelState := model.GetLatest().ModelState()
-		modelGwState := modelState.ModelGWState
-		if modelGwState == store.ModelTerminated {
-			return nil
-		}
-
 		errMsg := "No model gateway available to handle model"
 		logger.WithField("model", model.Name).Warn(errMsg)
 
-		if modelGwState == store.ModelTerminating {
+		modelGwState := store.ScheduleFailed
+		if modelState.ModelGWState == store.ModelTerminating {
 			modelGwState = store.ModelTerminated
 		}
 

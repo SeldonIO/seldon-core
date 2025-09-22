@@ -274,6 +274,76 @@ func TestAddAndRemoveModelNoModelGw(t *testing.T) {
 			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelTerminated))
 		})
 	}
+}
+
+func TestModelGwRebalanceNoPipelineGw(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name    string
+		loadReq *pb.LoadModelRequest
+	}
+
+	tests := []test{
+		{
+			name: "rebalance - no model-gw",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s, hub := createTestScheduler(t)
+
+			stream := newStubModelStatusServer(1, 5*time.Millisecond)
+			s.modelEventStream.streams[stream] = &ModelSubscription{
+				name:           "dummy",
+				stream:         stream,
+				fin:            make(chan bool),
+				isModelGateway: false,
+			}
+			g.Expect(s.modelEventStream.streams[stream]).ToNot(BeNil())
+
+			// add model
+			modelName := test.loadReq.Model.Meta.Name
+			err := s.modelStore.UpdateModel(test.loadReq)
+			g.Expect(err).To(BeNil())
+			hub.PublishModelEvent(modelEventHandlerName, coordinator.ModelEventMsg{
+				ModelName: modelName, ModelVersion: 1,
+			})
+
+			// read first create message
+			msr := receiveMessageFromStream(t, stream)
+			g.Expect(msr).ToNot(BeNil())
+
+			// read second message due to no model-gw available
+			msr = receiveMessageFromStream(t, stream)
+			g.Expect(msr).ToNot(BeNil())
+
+			// check model-gw status update
+			ms, err := s.modelStore.GetModel(modelName)
+			g.Expect(err).To(BeNil())
+
+			mv := ms.GetLatest()
+			g.Expect(mv.ModelState().ModelGWState).To(Equal(store.ModelStateUnknown))
+			g.Expect(mv.ModelState().ModelGWReason).To(Equal("No model gateway available to handle model"))
+
+			// trigger rebalance
+			s.modelGwRebalance()
+
+			// read message due to no model-gw available
+			msr = receiveMessageFromStream(t, stream)
+			g.Expect(msr).ToNot(BeNil())
+			// g.Expect(msr.Versions).To(HaveLen(1))
+			// g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(store.ScheduleFailed))
+			// g.Expect(msr.Versions[0].State.ModelGwReason).To(Equal("No model gateway available to handle model"))
+
+		})
+	}
 
 }
 
