@@ -9,35 +9,35 @@ on:
       - v2
 
 jobs:
-  # Check if docs-gb files changed in PR (always runs but conditionally checks)
+  # Check docs changes for PRs only
   check-docs-changes:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     outputs:
       docs-changed: ${{ steps.changes.outputs.docs }}
-      should-run: ${{ steps.should-run.outputs.result }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
         id: changes
-        if: github.event_name == 'pull_request'
         with:
           filters: |
             docs:
               - 'docs-gb/**/*.md'
-      
-      - name: Determine if lychee should run
-        id: should-run
-        run: |
-          if [[ "${{ github.event_name }}" == "schedule" ]] || [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "result=true" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.event_name }}" == "pull_request" ]] && [[ "${{ steps.changes.outputs.docs }}" == "true" ]]; then
-            echo "result=true" >> $GITHUB_OUTPUT
-          else
-            echo "result=false" >> $GITHUB_OUTPUT
-          fi
 
-  lychee-check:
-    if: github.repository == 'SeldonIO/seldon-core' && needs.check-docs-changes.outputs.should-run == 'true'
+  # Run lychee for schedule and manual dispatch
+  lychee-check-always:
+    if: github.repository == 'SeldonIO/seldon-core' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Lychee link checker on docs-gb
+        uses: lycheeverse/lychee-action@v1.10.0
+        with:
+          args: --verbose --no-progress docs-gb/**/*.md
+
+  # Run lychee for PRs only if docs changed
+  lychee-check-pr:
+    if: github.repository == 'SeldonIO/seldon-core' && github.event_name == 'pull_request' && needs.check-docs-changes.outputs.docs-changed == 'true'
     needs: [check-docs-changes]
     runs-on: ubuntu-latest
     steps:
