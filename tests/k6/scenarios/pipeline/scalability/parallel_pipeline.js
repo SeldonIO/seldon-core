@@ -8,7 +8,12 @@ import {
     getModelInferencePayload
 } from '../../../components/model.js';
 import {inferHttp, setupK6, tearDownK6} from "../../../components/v2.js";
-import {awaitPipelineStatus, generateSeldonRuntime, generateServer} from "../../../components/k8s.js";
+import {
+    awaitPipelineStatus,
+    generateSeldonConfig,
+    generateSeldonRuntime,
+    generateServer
+} from "../../../components/k8s.js";
 import { sleep } from 'k6';
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
@@ -65,7 +70,6 @@ export function setup() {
         console.log("Deleting server")
         ctl.unloadServerFn(server.object.metadata.name, true, true)
         console.log("Deleted server")
-        sleep(20)
         console.log("Creating server")
         ctl.loadServerFn(server.yaml, server.object.metadata.name, true, true, 30)
         console.log("Server created")
@@ -87,10 +91,15 @@ export function setup() {
         const replicaDataFlowEngine = config.replicas.dataFlowEngine
         const replicaPipeLineGw = config.replicas.pipelineGw
 
+        // we require 4GB for dataflow-engine otherwise we get OOM
+        const seldonConfig = generateSeldonConfig("4G")
+        ctl.loadSeldonConfigFn(seldonConfig.object, true)
+
+
         // we have to scale the model-gw, dataflow-engine, pipeline-gw AFTER we have deployed the pipelines
         // as otherwise the seldon controller will prohibit the scaling and default to 1 replica as there's no
         // pipelines deployed
-        const seldonRuneTime = generateSeldonRuntime(replicaModelGw, replicaPipeLineGw, replicaDataFlowEngine)
+        const seldonRuneTime = generateSeldonRuntime(replicaModelGw, replicaPipeLineGw, replicaDataFlowEngine, "4G")
         ctl.loadSeldonRuntimeFn(seldonRuneTime.object, true, true)
 
         // wait for pipeline to be ready since scaling data-plane services

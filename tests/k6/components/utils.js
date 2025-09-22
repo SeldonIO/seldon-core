@@ -124,6 +124,7 @@ export function connectControlPlaneOps(config) {
     ctl.loadExperimentFn = k8s.loadExperiment
     ctl.unloadExperimentFn = k8s.unloadExperiment
     ctl.loadSeldonRuntimeFn = k8s.loadSeldonRuntime
+    ctl.loadSeldonConfigFn = k8s.loadSeldonConfig
     ctl.loadServerFn = k8s.loadServer
     ctl.unloadServerFn = k8s.unloadServer
   } else {

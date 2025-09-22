@@ -288,6 +288,13 @@ function useGRPC() {
     return false
 }
 
+function seldonConfigName() {
+    if (__ENV.SELDON_CONFIG_NAME) {
+        return __ENV.SELDON_CONFIG_NAME
+    }
+    return "default"
+}
+
 function seldonRuntimeName() {
     if (__ENV.SELDON_RUNTIME_NAME) {
         return __ENV.SELDON_RUNTIME_NAME
@@ -458,6 +465,7 @@ export function getConfig() {
         },
         "useGRPC" : useGRPC(),
         "seldonRuntimeName": seldonRuntimeName(),
+        "seldonConfigName": seldonConfigName(),
         "requestIDPrefix" : requestIDPrefix(),
         "skipSetup" : skipSetup(),
         "skipTearDown" : skipTeardown(),

@@ -406,6 +406,37 @@ export function unloadExperiment(experimentName, awaitReady=true) {
     }
 }
 
+
+/************
+ *
+ * SeldonConfig
+ *
+ *****/
+
+
+export function generateSeldonConfig(dataFlowEngineMemoryLimit = "1G") {
+    let seldonconfig = kubeclient.get("seldonconfig.mlops.seldon.io", getConfig().seldonConfigName, seldon_target_ns)
+
+    seldonconfig.spec.components.forEach(component => {
+        if (component.name === "seldon-dataflow-engine") {
+            component.podSpec.containers[0].resources = {
+                limits: {
+                    memory: dataFlowEngineMemoryLimit,
+                },
+                requests: {
+                    cpu: "500m",
+                    memory: "1G"
+                }
+            }
+        }
+    });
+
+    return {
+        "object" : seldonconfig,
+        "yaml" : yamlDump(seldonconfig)
+    }
+}
+
 /************
  *
  * SeldonRuntime
@@ -413,7 +444,7 @@ export function unloadExperiment(experimentName, awaitReady=true) {
  *****/
 
 
-export function generateSeldonRuntime(modelGwReplicas, pipelineGwReplicas, dataFlowEngineReplicas) {
+export function generateSeldonRuntime(modelGwReplicas, pipelineGwReplicas, dataFlowEngineReplicas, dataFlowEngineMemoryLimit = "1G") {
     let runtime = kubeclient.get("seldonruntime.mlops.seldon.io", getConfig().seldonRuntimeName, seldon_target_ns)
 
     const updatedReplicas = {
@@ -437,6 +468,20 @@ export function generateSeldonRuntime(modelGwReplicas, pipelineGwReplicas, dataF
                 {
                     name: "seldon-dataflow-engine",
                     replicas: dataFlowEngineReplicas,
+                    podSpec: {
+                        containers: [{
+                            name: "seldon-dataflow-engine",
+                            resources: {
+                                limits: {
+                                    memory: dataFlowEngineMemoryLimit,
+                                },
+                                requests: {
+                                    cpu: "500m",
+                                    memory: "1G"
+                                }
+                            }
+                        }],
+                    },
                 },
                 {
                     name: "seldon-modelgateway",
@@ -455,6 +500,18 @@ export function generateSeldonRuntime(modelGwReplicas, pipelineGwReplicas, dataF
     return {
         "object" : seldonRuntimeSpec,
         "yaml" : yamlDump(seldonRuntimeSpec)
+    }
+}
+
+export function loadSeldonConfig(data, throwError = false) {
+    try {
+        kubeclient.update(data)
+        return seldonOpExecStatus.OK
+    } catch (error) {
+        if (throwError) {
+            throw error
+        }
+        return seldonOpExecStatus.FAIL
     }
 }
 
