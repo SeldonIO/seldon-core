@@ -421,6 +421,13 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 }
 
 func (iw *InferWorker) serializeModelInferRespWithSchemaRegistry(topic string, payload []byte) ([]byte, error) {
+	iw.logger.Debugf("first 10 bytes before schema serialisation")
+	if len(payload) > 10 {
+		for _, b := range payload[:10] {
+			iw.logger.Debugf("%02x", b)
+		}
+	}
+
 	v2Res := &inference_schema.ModelInferResponse{}
 	err := proto.Unmarshal(payload, v2Res)
 	if err != nil {
@@ -438,6 +445,13 @@ func (iw *InferWorker) serializeModelInferRespWithSchemaRegistry(topic string, p
 	serializedPayload, err := ser.Serialize(topic, v2Res)
 	if err != nil {
 		return nil, fmt.Errorf("failed to serialise response to dataplane model with schema id: %w", err)
+	}
+
+	iw.logger.Debugf("first 10 bytes after schema serialisation")
+	if len(payload) > 10 {
+		for _, b := range payload[:10] {
+			iw.logger.Debugf("%02x", b)
+		}
 	}
 
 	return serializedPayload, nil
