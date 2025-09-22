@@ -300,23 +300,6 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 			serverName := "dummy"
 			s, _ := createTestScheduler(t, serverName)
 
-			err := s.pipelineHandler.AddPipeline(test.loadReqV1) // version 1
-			g.Expect(err).To(BeNil())
-			if !test.err {
-				err = s.pipelineHandler.SetPipelineState(test.loadReqV1.Name, test.loadReqV1.Version, test.loadReqV1.Uid, pipeline.PipelineReady, "", util.SourceChainerServer)
-			}
-			g.Expect(err).To(BeNil())
-
-			// to allow events to propagate
-			time.Sleep(500 * time.Millisecond)
-
-			if test.loadReqV2 != nil {
-				err = s.pipelineHandler.AddPipeline(test.loadReqV2) // version 2
-				g.Expect(err).To(BeNil())
-				err = s.pipelineHandler.SetPipelineState(test.loadReqV2.Name, test.loadReqV2.Version, test.loadReqV2.Uid, pipeline.PipelineReady, "", util.SourceChainerServer)
-				g.Expect(err).To(BeNil())
-			}
-
 			stream := newStubServerStatusServer(10)
 			if test.connection {
 				s.mu.Lock()
@@ -329,16 +312,71 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 				s.mu.Unlock()
 			}
 
-			// to allow events to propagate
-			time.Sleep(1 * time.Second)
+			err := s.pipelineHandler.AddPipeline(test.loadReqV1) // version 1
+			g.Expect(err).To(BeNil())
 
+			// to allow events to propagate
+			time.Sleep(500 * time.Millisecond)
+
+			// read create event
 			if test.connection {
-				if test.loadReqV2 != nil {
+				var psr *chainer.PipelineUpdateMessage
+				select {
+				case next := <-stream.msgs:
+					psr = next
+				case <-time.After(2 * time.Second):
+					t.Fail()
+				}
+				g.Expect(psr).ToNot(BeNil())
+				g.Expect(psr.Pipeline).To(Equal(test.loadReqV1.Name))
+				g.Expect(psr.Version).To(Equal(uint32(test.loadReqV1.Version)))
+				g.Expect(psr.Op).To(Equal(chainer.PipelineUpdateMessage_Create))
+
+				if !test.err {
+					// simulate an ack from dataflow-engine
+					err = s.pipelineHandler.SetPipelineState(test.loadReqV1.Name, test.loadReqV1.Version, test.loadReqV1.Uid, pipeline.PipelineReady, "", util.SourceChainerServer)
+					g.Expect(err).To(BeNil())
+				}
+			}
+
+			if test.loadReqV2 != nil {
+				err = s.pipelineHandler.AddPipeline(test.loadReqV2) // version 2
+				g.Expect(err).To(BeNil())
+
+				// to allow events to propagate
+				time.Sleep(500 * time.Millisecond)
+
+				// read new create event
+				if test.connection {
 					var psr *chainer.PipelineUpdateMessage
 					select {
 					case next := <-stream.msgs:
 						psr = next
-					default:
+					case <-time.After(2 * time.Second):
+						t.Fail()
+					}
+					g.Expect(psr).ToNot(BeNil())
+					g.Expect(psr.Pipeline).To(Equal(test.loadReqV2.Name))
+					g.Expect(psr.Version).To(Equal(uint32(test.loadReqV2.Version)))
+					g.Expect(psr.Op).To(Equal(chainer.PipelineUpdateMessage_Create))
+
+					if !test.err {
+						// simulate an ack from dataflow-engine
+						err = s.pipelineHandler.SetPipelineState(test.loadReqV2.Name, test.loadReqV2.Version, test.loadReqV2.Uid, pipeline.PipelineReady, "", util.SourceChainerServer)
+						g.Expect(err).To(BeNil())
+					}
+				}
+			}
+
+			if test.connection {
+				if test.loadReqV2 != nil && !test.err {
+					// read delete event for old version - this event is only triggered
+					// after the pipeline is marked as ready
+					var psr *chainer.PipelineUpdateMessage
+					select {
+					case next := <-stream.msgs:
+						psr = next
+					case <-time.After(2 * time.Second):
 						t.Fail()
 					}
 
@@ -346,16 +384,6 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 					g.Expect(psr.Pipeline).To(Equal(test.loadReqV1.Name))
 					g.Expect(psr.Version).To(Equal(uint32(test.loadReqV1.Version)))
 					g.Expect(psr.Op).To(Equal(chainer.PipelineUpdateMessage_Delete))
-				} else {
-					var psr *chainer.PipelineUpdateMessage
-					select {
-					case next := <-stream.msgs:
-						psr = next
-					default:
-						psr = nil
-					}
-
-					g.Expect(psr).To(BeNil())
 				}
 			} else {
 				// in this case we have a rolling update to a new version but the connection
