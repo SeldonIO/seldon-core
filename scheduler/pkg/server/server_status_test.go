@@ -17,6 +17,7 @@ import (
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/proto"
 
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
@@ -100,7 +101,20 @@ func TestModelsStatusStream(t *testing.T) {
 	}
 }
 
-func TestModelsStatusEvents(t *testing.T) {
+func receiveMessageFromStream(t *testing.T, stream *stubModelStatusServer) *pb.ModelStatusResponse {
+	time.Sleep(500 * time.Millisecond)
+
+	var msr *pb.ModelStatusResponse
+	select {
+	case next := <-stream.msgs:
+		msr = next
+	case <-time.After(2 * time.Second):
+		t.Fail()
+	}
+	return msr
+}
+
+func TestPublishModelsStatusWithTimeout(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -160,23 +174,114 @@ func TestModelsStatusEvents(t *testing.T) {
 				s.modelEventStream.mu.Lock()
 				g.Expect(s.modelEventStream.streams).To(HaveLen(0))
 				s.modelEventStream.mu.Unlock()
-			} else {
-
-				var msr *pb.ModelStatusResponse
-				select {
-				case next := <-stream.msgs:
-					msr = next
-				default:
-					t.Fail()
-				}
-
-				g.Expect(msr).ToNot(BeNil())
-				g.Expect(msr.Versions).To(HaveLen(1))
-				g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
-				g.Expect(s.modelEventStream.streams).To(HaveLen(1))
+				return
 			}
+
+			// read first create message
+			msr := receiveMessageFromStream(t, stream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
+			g.Expect(s.modelEventStream.streams).To(HaveLen(1))
+
+			// read message due to no model-gw available
+			msr = receiveMessageFromStream(t, stream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
 		})
 	}
+}
+
+func TestAddAndRemoveModelNoModelGw(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name      string
+		loadReq   *pb.LoadModelRequest
+		unloadReq *pb.UnloadModelRequest
+	}
+
+	tests := []test{
+		{
+			name: "add and remove model - no model-gw",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			unloadReq: &pb.UnloadModelRequest{
+				Model: &pb.ModelReference{
+					Name:    "foo",
+					Version: proto.Uint32(1),
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s, hub := createTestScheduler(t)
+
+			stream := newStubModelStatusServer(2, 5*time.Millisecond)
+			s.modelEventStream.streams[stream] = &ModelSubscription{
+				name:   "dummy",
+				stream: stream,
+				fin:    make(chan bool),
+			}
+			g.Expect(s.modelEventStream.streams[stream]).ToNot(BeNil())
+
+			// add model
+			modelName := test.loadReq.Model.Meta.Name
+			err := s.modelStore.UpdateModel(test.loadReq)
+			g.Expect(err).To(BeNil())
+			hub.PublishModelEvent(modelEventHandlerName, coordinator.ModelEventMsg{
+				ModelName: modelName, ModelVersion: 1,
+			})
+
+			// read first create message
+			msr := receiveMessageFromStream(t, stream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
+			g.Expect(s.modelEventStream.streams).To(HaveLen(1))
+
+			// read message due to no model-gw available
+			msr = receiveMessageFromStream(t, stream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
+			g.Expect(s.modelEventStream.streams).To(HaveLen(1))
+
+			// check model-gw status update
+			ms, err := s.modelStore.GetModel(modelName)
+			g.Expect(err).To(BeNil())
+
+			mv := ms.GetLatest()
+			g.Expect(mv.ModelState().ModelGWState).To(Equal(store.ModelStateUnknown))
+			g.Expect(mv.ModelState().ModelGWReason).To(Equal("No model gateway available to handle model"))
+
+			// remove model
+			err = s.modelStore.RemoveModel(test.unloadReq)
+			g.Expect(err).To(BeNil())
+			hub.PublishModelEvent(modelEventHandlerName, coordinator.ModelEventMsg{
+				ModelName: modelName, ModelVersion: 1,
+			})
+
+			// read message due to model removal
+			msr = receiveMessageFromStream(t, stream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelTerminated))
+
+			// read messsage duo to no model-gw available
+			msr = receiveMessageFromStream(t, stream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelTerminated))
+		})
+	}
+
 }
 
 func TestServersStatusStream(t *testing.T) {
