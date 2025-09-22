@@ -39,3 +39,48 @@ We provide automation around the installation of a Kafka cluster for Seldon Core
 development and testing use cases.
 You can follow the steps defined [here](../../getting-started/kubernetes-installation/ansible.md) to
 install Kafka via ansible.
+
+
+## Configuration Details
+
+### Service Integration
+
+When Schema Registry is configured, the following Seldon Core 2 services automatically integrate with it:
+
+- **Dataflow**: Handles data processing workflows
+- **Pipeline Gateway**: Manages pipeline inference requests
+- **Model Gateway**: Routes model inference traffic
+
+### Environment Configuration
+
+Setting `security.schemaRegistry.configPath` in the Helm values.yaml file configures the services as follows:
+
+1. Sets the `SELDON_KAFKA_SCHEMA_REGISTRY_CONFIG_PATH` environment variable
+2. Mounts the `confluent-schema` secret to `/mnt/schema-registry`
+3. Expects a `.confluent-schema.yaml` configuration file in the mounted directory
+
+### Configuration File Format
+
+The `.confluent-schema.yaml` file must follow this structure:
+
+```yaml
+schemaRegistry:
+  client:
+    URL: your-schema-registry-endpoint
+    username: api-key
+    password: api-secret
+```
+
+## Subject Registration
+
+Schema subjects are automatically registered when messages are first published to Kafka topics. This occurs during the initial inference request processing by any of the integrated services.
+
+### Subject Naming Strategy
+
+Seldon Core 2 uses the **topic name strategy** for Schema Registry subject naming:
+
+- Subject names are derived directly from Kafka topic names
+- Each model automatically creates subjects for both input and output topics
+- This ensures consistent schema management across the entire inference pipeline
+
+For more information, see the [Confluent Schema Registry documentation](https://docs.confluent.io/platform/current/schema-registry/fundamentals/serdes-develop/index.html#subject-name-strategy).
