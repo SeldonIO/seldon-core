@@ -118,8 +118,13 @@ func (p *IncrementalProcessor) handlePipelineStreamsEvents(event coordinator.Pip
 	// If models are ready or not has no bearing on whether we need to update pipeline
 	if !event.ModelStatusChange {
 		go func() {
-			p.xdsCache.AddPipelineClusters(&event, logger)
-			err := p.addPipeline(event.PipelineName)
+			err := p.xdsCache.AddPipelineClusters(&event, p.pipelineHandler, logger)
+			if err != nil {
+				logger.WithError(err).Errorf("Failed to add clusters for pipeline %s", event.PipelineName)
+				return
+			}
+
+			err = p.addPipeline(event.PipelineName)
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to add pipeline %s", event.PipelineName)
 			}

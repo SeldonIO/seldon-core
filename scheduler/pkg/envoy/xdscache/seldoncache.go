@@ -27,6 +27,7 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
@@ -365,7 +366,23 @@ func (xds *SeldonXDSCache) shouldRemoveCluster(name string) bool {
 	return !ok || len(cluster.Routes) < 1
 }
 
-func (xds *SeldonXDSCache) AddPipelineClusters(event *coordinator.PipelineStreamsEventMsg, logger *logrus.Entry) {
+func (xds *SeldonXDSCache) AddPipelineClusters(
+	event *coordinator.PipelineStreamsEventMsg,
+	p pipeline.PipelineHandler,
+	logger *logrus.Entry,
+) error {
+	pip, err := p.GetPipeline(event.PipelineName)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to get pipeline %s", event.PipelineName)
+		return err
+	}
+
+	if pip.Deleted {
+		xds.RemoveClusterForStreams(event.PipelineName, false, logger)
+		xds.RemoveClusterForStreams(event.PipelineName, true, logger)
+		return nil
+	}
+
 	// add http cluster
 	xds.CreateClusterForStreams(
 		event.PipelineName,
@@ -384,6 +401,8 @@ func (xds *SeldonXDSCache) AddPipelineClusters(event *coordinator.PipelineStream
 		true,
 		logger,
 	)
+
+	return nil
 }
 
 func (xds *SeldonXDSCache) AddPipelineRoute(routeName string, trafficSplits []PipelineTrafficSplit, mirror *PipelineTrafficSplit) {
@@ -596,4 +615,17 @@ func (xds *SeldonXDSCache) CreateClusterForStreams(clusterPrefix string, streamN
 	xds.Clusters.Store(clusterName, cluster)
 	xds.clustersToAdd[clusterName] = struct{}{}
 	return &cluster
+}
+
+// RemoveClusterForStreams removes a cluster created for streams by clusterPrefix and isGrpc flag.
+func (xds *SeldonXDSCache) RemoveClusterForStreams(clusterPrefix string, isGrpc bool, logger *logrus.Entry) {
+	xds.mu.Lock()
+	defer xds.mu.Unlock()
+
+	clusterName := getPipelineClusterName(clusterPrefix, isGrpc)
+	logger.Debugf("Removing cluster %s for streams", clusterName)
+
+	// Remove from Clusters map
+	xds.Clusters.Delete(clusterName)
+	xds.clustersToRemove[clusterName] = struct{}{}
 }
