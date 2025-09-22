@@ -79,6 +79,9 @@ func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *chai
 	}
 
 	if pipelineStatusVal == pipeline.PipelineReady {
+		// Once the pipeline is ready, send event for envoy to update the routes
+		// with the streams that have the pipeline ready (some streams may have failed,
+		// but we can still use the streams that are ready)
 		serverNames := cr.GetStreamsWithStatus(pipelineName, pipeline.PipelineReady)
 		logger.Debugf("Pipeline %s is ready on streams %v, sending event for envoy", pipelineName, serverNames)
 		s.sendPipelineStreamsEventMsg(
@@ -438,7 +441,6 @@ func (s *SchedulerServer) sendPipelineEvents(event *coordinator.PipelineEventMsg
 	// for pipeline gateway streams, we need to assign a timestamp
 	// to we can identify the latest message (for conflict resolution)
 	s.sendPipelineEventsToStreamWithTimestamp(event, status, pipelineGwStreams)
-
 }
 
 func (s *SchedulerServer) sendPipelineStreamsEventMsg(event *coordinator.PipelineEventMsg, streamNames []string) {
