@@ -798,21 +798,36 @@ func (m *MemoryStore) drainServerReplicaImpl(serverName string, replicaIdx int) 
 	// we mark this server replica as draining so should not be used in future scheduling decisions
 	serverReplica.SetIsDraining()
 
-	var modelNames []string
-	// Find models to reschedule due to this server replica being removed
-	for modelVersionID := range serverReplica.loadedModels {
+	loadedModels := m.findModelsToReSchedule(serverReplica.loadedModels, replicaIdx)
+	if len(loadedModels) > 0 {
+		logger.WithField("models", loadedModels).Debug("Found loaded models to re-schedule")
+	}
+	loadingModels := m.findModelsToReSchedule(serverReplica.loadingModels, replicaIdx)
+	if len(loadingModels) > 0 {
+		logger.WithField("models", loadingModels).Debug("Found loading models to re-schedule")
+	}
+
+	return append(loadedModels, loadingModels...), nil
+}
+
+func (m *MemoryStore) findModelsToReSchedule(models map[ModelVersionID]bool, replicaIdx int) []string {
+	logger := m.logger.WithField("func", "DrainServerReplica")
+	modelsReSchedule := make([]string, 0)
+
+	for modelVersionID := range models {
 		model, ok := m.store.models[modelVersionID.Name]
 		if ok {
 			modelVersion := model.GetVersion(modelVersionID.Version)
 			if modelVersion != nil {
 				modelVersion.SetReplicaState(replicaIdx, Draining, "trigger to drain")
-				modelNames = append(modelNames, modelVersionID.Name)
-			} else {
-				logger.Warnf("Can't find model version %s", modelVersionID.String())
+				modelsReSchedule = append(modelsReSchedule, modelVersionID.Name)
+				continue
 			}
+			logger.Warnf("Can't find model version %s", modelVersionID.String())
 		}
 	}
-	return modelNames, nil
+
+	return modelsReSchedule
 }
 
 func (m *MemoryStore) ServerNotify(request *pb.ServerNotify) error {

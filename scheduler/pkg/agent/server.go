@@ -41,6 +41,8 @@ const (
 	modelEventHandlerName              = "agent.server.models"
 	modelScalingCoolingDownSeconds     = 60 // this is currently used in scale down events
 	serverDrainingExtraWaitMillis      = 3000
+
+	agentDrainCoolDownPeriod = 500 * time.Millisecond
 )
 
 type modelRelocatedWaiter struct {
@@ -494,6 +496,11 @@ func (s *Server) drainServerReplicaImpl(serverName string, serverReplicaIdx int)
 	}
 
 	s.waiter.registerServerReplica(serverName, serverReplicaIdx, modelsChanged)
+
+	// we need to wait for other potential agent requests to drain before making any scheduling decisions, in order
+	// to not try scheduling models on server(s) that are in draining process. This can result in a race where we wait
+	// for a model which can never be loaded as no replicas available.
+	time.Sleep(agentDrainCoolDownPeriod)
 
 	s.logger.Debugf("Draining models %v from server %s:%d", modelsChanged, serverName, serverReplicaIdx)
 	for _, modelName := range modelsChanged {
