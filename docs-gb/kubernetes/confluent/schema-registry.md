@@ -4,45 +4,35 @@ description: Learn how to integrate Seldon Core 2 with Schema Registry on both C
 
 # Schema Registry
 
-[Schema Registry](https://docs.confluent.io/platform/current/schema-registry/index.html) allows producers and consumers to ensure data consistency and compatibilty 
-checks as schemas evolve. It also allows integration of further Confluent Cloud solutions such as connectors.
+[Schema Registry](https://docs.confluent.io/platform/current/schema-registry/index.html) provides centralized schema management for data consistency and compatibility.
 
-## Installation
-We recommend to use managed Schema registry for production installation. This allows to take away all the complexity on 
-running a secure schema registry cluster. 
+## Quick Installation
 
-We currently have tested integration with the following Schema registry solutions:
-- Confluent Cloud (security: SASL/PLAIN)
-- Self-hosted (security: SASL/PLAIN)
+**Prerequisites**: Schema Registry endpoint with SASL/PLAIN authentication (Confluent Cloud or self-hosted).
 
-# Helm installation
-To install and enable Schema Registry in your cluster with helm provide a configuration file with the following values filled in:
-```yaml
-security:
-  schemaRegistry:
-    client:
-      URL: (url or Public endpoint)
-      username: (api key)
-      password: (api key secret)
+### Step 1: Create Schema Registry Secret
+
+Replace the placeholder values with your actual credentials:
+
+```bash
+kubectl create secret generic confluent-schema --from-literal=.confluent-schema.yaml='
+schemaRegistry:
+  client:
+    URL: your-schema-registry-endpoint
+    username: api-key
+    password: api-secret'
 ```
 
-Installing using a values yaml file
-```shell
+### Step 2: Install with Helm
+
+```bash
 helm upgrade seldon-core-v2-setup seldon-charts/seldon-core-v2-setup \
- --namespace seldon-mesh --set controller.clusterwide=true \
- -f myvalues.yaml \
- --install
+  --namespace seldon-mesh \
+  --set security.schemaRegistry.configPath=/mnt/schema-registry \
+  --install
 ```
 
-set custom values 
-```shell
-helm upgrade seldon-core-v2-setup seldon-charts/seldon-core-v2-setup \
- --namespace seldon-mesh --set controller.clusterwide=true \
- --set security.schemaRegistry.client.URL=schema_registry_url_endpoint \
- --set security.schemaRegistry.client.username=schema_registry_username \
- --set security.schemaRegistry.client.password=schema_registry_password \
- --install
-```
+That's it! The model-gateway, pipeline-gateway, and dataflow services will automatically mount the secret at `/mnt/schema-registry` and use it for Schema Registry authentication.
 
 ## Ansible
 We provide automation around the installation of a Kafka cluster for Seldon Core 2 to help with
