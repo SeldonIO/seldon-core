@@ -84,7 +84,7 @@ func NewDefaultModelVersion(model *pb.Model, version uint32) *ModelVersion {
 		replicas:  make(map[int]ReplicaStatus),
 		state: ModelStatus{
 			State:        ModelStateUnknown,
-			ModelGWState: ModelStateUnknown,
+			ModelGWState: ModelCreate,
 		},
 		mu: sync.RWMutex{},
 	}
@@ -257,10 +257,24 @@ const (
 	ModelTerminateFailed
 	ScheduleFailed
 	ModelScaledDown
+	ModelCreate
+	ModelTerminate
 )
 
 func (m ModelState) String() string {
-	return [...]string{"ModelStateUnknown", "ModelProgressing", "ModelAvailable", "ModelFailed", "ModelTerminating", "ModelTerminated", "ModelTerminateFailed", "ScheduleFailed", "ModelScaledDown"}[m]
+	return [...]string{
+		"ModelStateUnknown",
+		"ModelProgressing",
+		"ModelAvailable",
+		"ModelFailed",
+		"ModelTerminating",
+		"ModelTerminated",
+		"ModelTerminateFailed",
+		"ScheduleFailed",
+		"ModelScaledDown",
+		"ModelCreate",
+		"ModelTerminate",
+	}[m]
 }
 
 type ModelReplicaState uint32
