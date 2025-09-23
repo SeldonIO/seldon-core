@@ -217,7 +217,8 @@ func TestSubscribeModelEvents(t *testing.T) {
 
 			// check state is correct for each model
 			for _, r := range test.results {
-				if r.Versions[0].State.GetState() != scheduler.ModelStatus_ModelTerminated {
+				if r.Versions[0].State.GetState() != scheduler.ModelStatus_ModelTerminated ||
+					r.Versions[0].State.GetModelGwState() != scheduler.ModelStatus_ModelTerminated {
 					model := &mlopsv1alpha1.Model{}
 					err := controller.Get(
 						context.Background(),

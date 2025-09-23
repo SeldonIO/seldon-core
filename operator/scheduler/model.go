@@ -315,11 +315,7 @@ func canRemoveFinalizer(state scheduler.ModelStatus_ModelState, modelGwState sch
 		state == scheduler.ModelStatus_ModelFailed ||
 		state == scheduler.ModelStatus_ModelStateUnknown ||
 		state == scheduler.ModelStatus_ScheduleFailed)
-	modelGwCond := (modelGwState == scheduler.ModelStatus_ModelTerminated ||
-		modelGwState == scheduler.ModelStatus_ModelTerminateFailed ||
-		modelGwState == scheduler.ModelStatus_ModelFailed ||
-		modelGwState == scheduler.ModelStatus_ModelStateUnknown ||
-		modelGwState == scheduler.ModelStatus_ScheduleFailed)
+	modelGwCond := modelGwState == scheduler.ModelStatus_ModelTerminated
 	return stateCond && modelGwCond
 }
 
@@ -338,11 +334,6 @@ func (s *SchedulerClient) updateModelStatus(ctx context.Context, model *v1alpha1
 			return nil
 		}
 		return err
-	}
-
-	if !existingModel.ObjectMeta.DeletionTimestamp.IsZero() {
-		// Model is being deleted, skip status update
-		return nil
 	}
 
 	prevWasReady := modelReady(existingModel.Status)
