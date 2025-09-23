@@ -445,7 +445,7 @@ func TestPipelineGwRebalanceNoPipelineGw(t *testing.T) {
 			// trigger rebalance
 			s.pipelineGwRebalance()
 
-			// check no message is received
+			// receive message with status updated and reason
 			msg = receiveMessageFromStream(t, stream)
 			g.Expect(msg).ToNot(BeNil())
 			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
