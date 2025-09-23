@@ -881,7 +881,6 @@ func (am *AgentServiceManager) drainOnRequest(drainer *drainservice.DrainerServi
 	drainer.WaitOnTrigger()
 	am.isDraining.Store(true)
 
-	am.logger.Info("Sending drain event to scheduler")
 	err := am.sendAgentDrainEvent()
 	if err != nil {
 		am.logger.WithError(err).Warn("Could not drain agent / server")

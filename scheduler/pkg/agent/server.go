@@ -231,7 +231,7 @@ func (s *Server) HealthCheck(_ context.Context, _ *health.HealthCheckRequest) (*
 }
 
 func (s *Server) Sync(modelName string) {
-	logger := s.logger.WithFields(log.Fields{"func": "Sync", "modelName": modelName})
+	logger := s.logger.WithField("func", "Sync")
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 	s.store.LockModel(modelName)

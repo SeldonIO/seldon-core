@@ -155,12 +155,9 @@ func (drainer *DrainerService) handleTerminate(_ http.ResponseWriter, req *http.
 	drainer.muTriggered.Lock()
 	defer drainer.muTriggered.Unlock()
 
-	drainer.logger.Info("Received terminate request")
-
 	if drainer.events >= eventsTarget {
 		var now time.Time
 		if !drainer.triggered {
-			drainer.logger.Info("Triggering drain")
 			drainer.triggered = true
 			now = time.Now()
 			drainer.triggeredWg.Done()

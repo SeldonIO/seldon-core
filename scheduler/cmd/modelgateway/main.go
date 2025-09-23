@@ -111,8 +111,6 @@ func main() {
 	logger := log.New()
 	flag.Parse()
 
-	defer logger.Infof("Graceful shutdown complete")
-
 	logIntLevel, err := log.ParseLevel(logLevel)
 	if err != nil {
 		logger.WithError(err).Fatalf("Failed to set log level %s", logLevel)
@@ -200,7 +198,7 @@ func main() {
 	}()
 
 	// Wait for completion
-	waitForErrOrKillSignal(logger, errChan)
+	waitForTermSignalOrErr(logger, errChan)
 
 	logger.Info("Graceful shutdown triggered")
 }
@@ -234,7 +232,7 @@ func initHealthProbeServer(logger *log.Logger, schedulerClient *gateway.KafkaSch
 	return healthServer
 }
 
-func waitForErrOrKillSignal(logger *log.Logger, errChan <-chan error) {
+func waitForTermSignalOrErr(logger *log.Logger, errChan <-chan error) {
 	exit := make(chan os.Signal, 1)
 	signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
 
