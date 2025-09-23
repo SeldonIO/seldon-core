@@ -490,11 +490,9 @@ func (s *Server) removeServerReplicaImpl(serverName string, serverReplicaIdx int
 }
 
 func (s *Server) drainServerReplicaImpl(serverName string, serverReplicaIdx int) {
-	logger := s.logger.WithFields(log.Fields{"func": "drainServerReplicaImpl", "server": fmt.Sprintf("%s:%d", serverName, serverReplicaIdx)})
-
 	modelsChanged, err := s.store.DrainServerReplica(serverName, serverReplicaIdx)
 	if err != nil {
-		logger.WithError(err).Error("Failed to remove replica and redeploy models")
+		s.logger.WithError(err).Errorf("Failed to remove replica and redeploy models for %s:%d", serverName, serverReplicaIdx)
 		return
 	}
 
@@ -510,7 +508,7 @@ func (s *Server) drainServerReplicaImpl(serverName string, serverReplicaIdx int)
 	for _, modelName := range modelsChanged {
 		err = s.scheduler.Schedule(modelName)
 		if err != nil {
-			logger.Debugf("Failed to reschedule model %s signalling not to wait for model re-schedule", modelName)
+			s.logger.Debugf("Failed to reschedule model %s when server %s replica %d draining", modelName, serverName, serverReplicaIdx)
 			// we do not want to wait on this model to be ready, as it cant (for the time being)
 			s.waiter.signalModel(modelName)
 		}
@@ -520,7 +518,7 @@ func (s *Server) drainServerReplicaImpl(serverName string, serverReplicaIdx int)
 
 	// as we update envoy in batches and envoy is eventual consistent, give it time to settle down
 	time.Sleep(util.EnvoyUpdateDefaultBatchWait + (time.Millisecond * serverDrainingExtraWaitMillis))
-	logger.Debugf("Finished draining models %v", modelsChanged)
+	s.logger.Debugf("Finished draining models %v from server %s:%d", modelsChanged, serverName, serverReplicaIdx)
 }
 
 func (s *Server) applyModelScaling(message *pb.ModelScalingTriggerMessage) error {

@@ -199,7 +199,7 @@ func (cm *ConsumerManager) stopEmptyConsumer(ic *InferKafkaHandler) {
 	numModelsInConsumer := ic.GetNumModels()
 	if numModelsInConsumer == 0 {
 		logger.Debugf("Deleting consumer with no models with bucket id %s", ic.consumerName)
-		ic.Stop(false)
+		ic.Stop()
 		delete(cm.consumers, ic.consumerName)
 	}
 }
@@ -266,8 +266,4 @@ func (cm *ConsumerManager) Stop() {
 			ic.Stop(true)
 		}()
 	}
-
-	cm.logger.Infof("Waiting for all consumers to stop")
-	wg.Wait()
-	cm.logger.Infof("All consumers stopped")
 }

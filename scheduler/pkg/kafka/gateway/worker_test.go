@@ -212,12 +212,12 @@ func createInferWorkerWithMockConn(
 	topicNamer, err := kafka2.NewTopicNamer("default", "seldon")
 	g.Expect(err).To(BeNil())
 	iw := &InferWorker{
-		logger:      logger,
-		grpcClients: v2.NewGRPCInferenceServiceClient(conn),
-		httpClient:  http.DefaultClient,
-		consumer:    ic,
-		tracer:      tp.GetTraceProvider().Tracer("test"),
-		topicNamer:  topicNamer,
+		logger:     logger,
+		grpcClient: v2.NewGRPCInferenceServiceClient(conn),
+		httpClient: http.DefaultClient,
+		consumer:   ic,
+		tracer:     tp.GetTraceProvider().Tracer("test"),
+		topicNamer: topicNamer,
 	}
 	return ic, iw
 }
