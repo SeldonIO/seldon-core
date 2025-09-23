@@ -502,7 +502,7 @@ func TestModelGwRebalance(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "rebalance multiple models across N replicas",
+			name: "rebalance 3 models across 4 replicas",
 			models: []*pb.LoadModelRequest{
 				{
 					Model: &pb.Model{
@@ -520,7 +520,59 @@ func TestModelGwRebalance(t *testing.T) {
 					},
 				},
 			},
-			replicas: 4, // test with 4 modelgw replicas
+			replicas: 4,
+		},
+		{
+			name: "rebalance 3 models across 7 replicas",
+			models: []*pb.LoadModelRequest{
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "foo"},
+					},
+				},
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "bar"},
+					},
+				},
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "baz"},
+					},
+				},
+			},
+			replicas: 7,
+		},
+		{
+			name: "rebalance 5 models across 9 replicas",
+			models: []*pb.LoadModelRequest{
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "foo"},
+					},
+				},
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "bar"},
+					},
+				},
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "baz"},
+					},
+				},
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "fizz"},
+					},
+				},
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "buzz"},
+					},
+				},
+			},
+			replicas: 9,
 		},
 	}
 
@@ -570,10 +622,11 @@ func TestModelGwRebalance(t *testing.T) {
 					select {
 					case msg := <-stream.msgs:
 						name := msg.ModelName
-						if msg.Versions[0].State.AvailableReplicas == 0 {
-							modelDeleteAssignments[name]++
-						} else {
+						switch msg.Operation {
+						case pb.ModelStatusResponse_ModelCreate:
 							modelCreateAssignments[name]++
+						case pb.ModelStatusResponse_ModelDelete:
+							modelDeleteAssignments[name]++
 						}
 					case <-time.After(500 * time.Millisecond):
 						break NextStream
