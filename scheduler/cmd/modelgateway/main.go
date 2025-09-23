@@ -242,5 +242,4 @@ func waitForTermSignalOrErr(logger *log.Logger, errChan <-chan error) {
 	case <-exit:
 		logger.Info("Shutting down due to SIGTERM or SIGINT")
 	}
-
 }
