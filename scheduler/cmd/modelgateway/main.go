@@ -203,7 +203,7 @@ func main() {
 	logger.Info("Graceful shutdown triggered")
 }
 
-func initHealthProbeServer(logger *log.Logger, schedulerClient *gateway.KafkaSchedulerClient, kafkaConsumer *gateway.ConsumerManager, errChan chan<- error) *health_probe.HTTPServer {
+func initHealthProbeServer(logger *log.Logger, schedulerClient *gateway.KafkaSchedulerClient, kafkaConsumer *gateway.KafkaConsumerManager, errChan chan<- error) *health_probe.HTTPServer {
 	healthManager := health_probe.NewManager()
 
 	healthManager.AddCheck(func() error {
