@@ -158,10 +158,10 @@ object Cli {
         return try {
             val yamlContent = schemaConfigFile.readText()
             val confluentConfig = Yaml.default.decodeFromString(ConfluentSchemaConfig.serializer(), yamlContent)
-            logger.info("read config file for schema registry")
+            logger.debug("read config file for schema registry")
 
             val clientConfig = confluentConfig.schemaRegistry.client
-            logger.info("the config is URL=${clientConfig.URL}, username=${clientConfig.username}")
+            logger.info("the config for schema registry is URL=${clientConfig.URL}, username=${clientConfig.username}")
             val schemaConfig =
                 SchemaRegistryConfig(
                     url = clientConfig.URL,
