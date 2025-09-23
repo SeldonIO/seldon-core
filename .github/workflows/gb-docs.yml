@@ -11,7 +11,7 @@ on:
 jobs:
   # Check docs changes for PRs only
   check-docs-changes:
-    if: github.event_name == 'pull_request'
+    if: github.repository == 'SeldonIO/seldon-core' && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     outputs:
       docs-changed: ${{ steps.changes.outputs.docs }}

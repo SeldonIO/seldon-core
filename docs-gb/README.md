@@ -43,4 +43,4 @@ Seldon Core 2 is built for scalability, efficiency, and cost-effective ML opera
 - Learn about the [feature of Seldon Core 2](./core-features.md)
 - [Join our Slack Community](https://seldondev.slack.com/join/shared_invite/zt-vejg6ttd-ksZiQs3O_HOtPQsen_labg#/shared-invite/email) for updates or for answers to any questions
 
-<!-- Test to trigger lychee link checker -->
+<!--- Test to trigger lychee link checker --->
