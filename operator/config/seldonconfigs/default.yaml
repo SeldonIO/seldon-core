@@ -65,7 +65,7 @@ spec:
           periodSeconds: 5
         volumeMounts:
           - mountPath: /mnt/schema-registry
-            name: confluent-schema-volume
+            name: kafka-schema-volume
             readOnly: true
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
@@ -73,7 +73,7 @@ spec:
         - secret:
             secretName: confluent-schema
             optional: true
-          name: confluent-schema-volume
+          name: kafka-schema-volume
   - name: seldon-envoy
     replicas: 1
     annotations:
@@ -205,7 +205,7 @@ spec:
         - mountPath: /mnt/tracing
           name: tracing-config-volume
         - mountPath: /mnt/schema-registry
-          name: confluent-schema-volume
+          name: kafka-schema-volume
           readOnly: true
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
@@ -219,7 +219,7 @@ spec:
       - secret:
           secretName: confluent-schema
           optional: true
-        name: confluent-schema-volume
+        name: kafka-schema-volume
   - name: seldon-pipelinegateway
     replicas: 1
     podSpec:
@@ -307,7 +307,7 @@ spec:
         - mountPath: /mnt/tracing
           name: tracing-config-volume
         - mountPath: /mnt/schema-registry
-          name: confluent-schema-volume
+          name: kafka-schema-volume
           readOnly: true
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
@@ -321,7 +321,7 @@ spec:
       - secret:
           secretName: confluent-schema
           optional: true
-        name: confluent-schema-volume
+        name: kafka-schema-volume
   - name: seldon-scheduler
     replicas: 1
     podSpec:

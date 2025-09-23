@@ -832,7 +832,7 @@ spec:
         - mountPath: /mnt/tracing
           name: tracing-config-volume
         - mountPath: /mnt/schema-registry
-          name: confluent-schema-volume
+          name: kafka-schema-volume
           readOnly: true
 {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -849,7 +849,7 @@ spec:
       - configMap:
           name: seldon-tracing
         name: tracing-config-volume
-      - name: confluent-schema-volume
+      - name: kafka-schema-volume
         secret:
           optional: true
           secretName: confluent-schema
@@ -996,7 +996,7 @@ spec:
         - mountPath: /mnt/tracing
           name: tracing-config-volume
         - mountPath: /mnt/schema-registry
-          name: confluent-schema-volume
+          name: kafka-schema-volume
           readOnly: true
 {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -1013,7 +1013,7 @@ spec:
       - configMap:
           name: seldon-tracing
         name: tracing-config-volume
-      - name: confluent-schema-volume
+      - name: kafka-schema-volume
         secret:
           optional: true
           secretName: confluent-schema
@@ -1261,7 +1261,7 @@ spec:
           periodSeconds: 5
         volumeMounts:
         - mountPath: /mnt/schema-registry
-          name: confluent-schema-volume
+          name: kafka-schema-volume
           readOnly: true
 {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -1272,7 +1272,7 @@ spec:
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
       volumes:
-      - name: confluent-schema-volume
+      - name: kafka-schema-volume
         secret:
           optional: true
           secretName: confluent-schema
