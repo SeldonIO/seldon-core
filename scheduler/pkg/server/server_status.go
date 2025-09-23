@@ -298,6 +298,17 @@ func (s *SchedulerServer) modelGwReblanceStreams(model *store.ModelSnapshot) {
 			} else {
 				s.logger.Debugf("Model %s is available or progressing, sending creation message", model.Name)
 				msg, err = s.createModelCreationMessage(model)
+
+				// set modelgw state to progressing and display rebalance reason
+				if err := s.modelStore.SetModelGwModelState(
+					model.Name,
+					model.GetLatest().GetVersion(),
+					store.ModelProgressing,
+					"Rebalance",
+					modelStatusEventSource,
+				); err != nil {
+					s.logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", model.Name)
+				}
 			}
 			if err != nil {
 				s.logger.WithError(err).Errorf("Failed to create model status message for %s", model.Name)
