@@ -41,14 +41,14 @@ dependencies {
     runtimeOnly("io.grpc:grpc-netty-shaded:1.73.0")
     implementation("com.google.protobuf:protobuf-java") {
         version {
-            strictly("[4.27.2,)")
-            prefer("4.27.2")
+            strictly("[4.29.3,)")
+            prefer("4.29.3")
         }
     }
     implementation("com.google.protobuf:protobuf-kotlin") {
         version {
-            strictly("[4.27.2,)")
-            prefer("4.27.2")
+            strictly("[4.29.3,)")
+            prefer("4.29.3")
         }
     }
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
