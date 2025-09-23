@@ -51,8 +51,7 @@ class Joiner(
                 dataStream,
                 null,
             )
-                .headerRemover()
-                .headerSetter(pipelineName, pipelineVersion)
+                .headerAdjust(pipelineName, pipelineVersion)
 
         if (allowCycles) {
             dataStream =

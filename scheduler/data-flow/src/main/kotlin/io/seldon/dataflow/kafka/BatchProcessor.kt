@@ -15,18 +15,17 @@ import io.seldon.mlops.inference.v2.V2Dataplane.InferTensorContents
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest.InferInputTensor
 import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.KeyValue
-import org.apache.kafka.streams.kstream.Transformer
-import org.apache.kafka.streams.processor.ProcessorContext
+import org.apache.kafka.streams.processor.api.FixedKeyProcessor
+import org.apache.kafka.streams.processor.api.FixedKeyProcessorContext
+import org.apache.kafka.streams.processor.api.FixedKeyRecord
 import org.apache.kafka.streams.state.KeyValueStore
 import org.apache.kafka.streams.state.StoreBuilder
 import org.apache.kafka.streams.state.Stores
 
-typealias TBatchRequest = KeyValue<String, ModelInferRequest>?
 typealias TBatchStore = KeyValueStore<String, ByteArray>
 
-class BatchProcessor(private val threshold: Int) : Transformer<String, ModelInferRequest, TBatchRequest> {
-    private var ctx: ProcessorContext? = null
+class BatchProcessor(private val threshold: Int) : FixedKeyProcessor<String, ModelInferRequest, ModelInferRequest> {
+    private var ctx: FixedKeyProcessorContext<String, ModelInferRequest>? = null
     private val aggregateStore: TBatchStore by lazy {
         when (ctx) {
             null -> throw IllegalStateException("processor context is null")
@@ -34,31 +33,27 @@ class BatchProcessor(private val threshold: Int) : Transformer<String, ModelInfe
         }
     }
 
-    override fun init(context: ProcessorContext) {
+    override fun init(context: FixedKeyProcessorContext<String, ModelInferRequest>) {
         this.ctx = context
     }
 
-    override fun transform(
-        key: String,
-        value: ModelInferRequest,
-    ): TBatchRequest {
+    override fun process(record: FixedKeyRecord<String, ModelInferRequest>?) {
         val stateStoreKey = "random-batch-id"
+        val value = record?.value()!!
         var batchedRequest = value
         val reqBytes = aggregateStore.putIfAbsent(stateStoreKey, value.toByteArray())
         if (reqBytes != null) {
             batchedRequest = merge(listOf(ModelInferRequest.parseFrom(reqBytes), value))
             aggregateStore.put(stateStoreKey, batchedRequest.toByteArray())
         }
-        val batchSize = batchedRequest.getInputs(0).getShape(0)
-        val returnValue =
-            when {
-                batchSize >= threshold -> {
-                    aggregateStore.delete(stateStoreKey)
-                    KeyValue.pair(key, batchedRequest)
-                }
-                else -> null
+        val batchSize = batchedRequest.getInputs(0)?.getShape(0)!!
+        when {
+            // only forward the batch downstream when we exceed the batch threshold
+            batchSize >= threshold -> {
+                aggregateStore.delete(stateStoreKey)
+                this.ctx?.forward(record.withValue(batchedRequest))
             }
-        return returnValue
+        }
     }
 
     // merge accepts a list of inference requests and combines them into a single request.
