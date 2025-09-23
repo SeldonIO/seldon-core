@@ -161,7 +161,7 @@ object Cli {
             logger.debug("read config file for schema registry")
 
             val clientConfig = confluentConfig.schemaRegistry.client
-            logger.info("the config for schema registry is URL=${clientConfig.URL}, username=${clientConfig.username}")
+            logger.debug("the config for schema registry is URL=${clientConfig.URL}, username=${clientConfig.username}")
             val schemaConfig =
                 SchemaRegistryConfig(
                     url = clientConfig.URL,
