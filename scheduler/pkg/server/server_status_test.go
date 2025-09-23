@@ -251,8 +251,8 @@ func TestAddAndRemoveModelNoModelGw(t *testing.T) {
 			g.Expect(err).To(BeNil())
 
 			mv := ms.GetLatest()
-			g.Expect(mv.ModelState().ModelGWState).To(Equal(store.ModelCreate))
-			g.Expect(mv.ModelState().ModelGWReason).To(Equal("No model gateway available to handle model"))
+			g.Expect(mv.ModelState().ModelGwState).To(Equal(store.ModelCreate))
+			g.Expect(mv.ModelState().ModelGwReason).To(Equal("No model gateway available to handle model"))
 
 			// remove model
 			err = s.modelStore.RemoveModel(test.unloadReq)
@@ -335,8 +335,8 @@ func TestModelGwRebalanceNoPipelineGw(t *testing.T) {
 			g.Expect(err).To(BeNil())
 
 			mv := ms.GetLatest()
-			g.Expect(mv.ModelState().ModelGWState).To(Equal(store.ModelCreate))
-			g.Expect(mv.ModelState().ModelGWReason).To(Equal("No model gateway available to handle model"))
+			g.Expect(mv.ModelState().ModelGwState).To(Equal(store.ModelCreate))
+			g.Expect(mv.ModelState().ModelGwReason).To(Equal("No model gateway available to handle model"))
 
 			// trigger rebalance
 			s.modelGwRebalance()
@@ -465,7 +465,7 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 			g.Expect(err).To(BeNil())
 
 			mv := ms.GetLatest()
-			g.Expect(mv.ModelState().ModelGWState).To(Equal(test.modelGwStatus))
+			g.Expect(mv.ModelState().ModelGwState).To(Equal(test.modelGwStatus))
 
 			// trigger rebalance
 			s.modelGwRebalance()
@@ -605,7 +605,7 @@ func TestModelGwRebalance(t *testing.T) {
 					Name:    modelName,
 					Version: model.GetLatest().GetVersion(),
 				}, store.ModelStatus{
-					ModelGWState:      store.ModelAvailable,
+					ModelGwState:      store.ModelAvailable,
 					AvailableReplicas: 1,
 				})
 				g.Expect(err).To(BeNil())

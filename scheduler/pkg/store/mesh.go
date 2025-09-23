@@ -62,9 +62,9 @@ type ModelVersion struct {
 
 type ModelStatus struct {
 	State               ModelState
-	ModelGWState        ModelState
+	ModelGwState        ModelState
 	Reason              string
-	ModelGWReason       string
+	ModelGwReason       string
 	AvailableReplicas   uint32
 	UnavailableReplicas uint32
 	DrainingReplicas    uint32
@@ -84,7 +84,7 @@ func NewDefaultModelVersion(model *pb.Model, version uint32) *ModelVersion {
 		replicas:  make(map[int]ReplicaStatus),
 		state: ModelStatus{
 			State:        ModelStateUnknown,
-			ModelGWState: ModelCreate,
+			ModelGwState: ModelCreate,
 		},
 		mu: sync.RWMutex{},
 	}

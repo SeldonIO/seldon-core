@@ -438,9 +438,9 @@ func createModelVersionStatus(mv *store.ModelVersion) *pb.ModelVersionStatus {
 		ModelReplicaState: stateMap,
 		State: &pb.ModelStatus{
 			State:               pb.ModelStatus_ModelState(pb.ModelStatus_ModelState_value[modelState.State.String()]),
-			ModelGwState:        pb.ModelStatus_ModelState(pb.ModelStatus_ModelState_value[modelState.ModelGWState.String()]),
+			ModelGwState:        pb.ModelStatus_ModelState(pb.ModelStatus_ModelState_value[modelState.ModelGwState.String()]),
 			Reason:              modelState.Reason,
-			ModelGwReason:       modelState.ModelGWReason,
+			ModelGwReason:       modelState.ModelGwReason,
 			LastChangeTimestamp: timestamppb.New(modelState.Timestamp),
 			AvailableReplicas:   modelState.AvailableReplicas,
 			UnavailableReplicas: modelState.UnavailableReplicas,

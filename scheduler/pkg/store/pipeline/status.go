@@ -74,7 +74,7 @@ func (ms *ModelStatusHandler) setPipelineModelsReady(pipelineVersion *PipelineVe
 			step.Available = false
 			if model != nil {
 				lastAvailableModelVersion := model.GetLastAvailableModel()
-				if lastAvailableModelVersion != nil && lastAvailableModelVersion.ModelState().ModelGWState == store.ModelAvailable {
+				if lastAvailableModelVersion != nil && lastAvailableModelVersion.ModelState().ModelGwState == store.ModelAvailable {
 					step.Available = true
 				}
 			}

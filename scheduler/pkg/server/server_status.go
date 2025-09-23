@@ -193,7 +193,7 @@ func (s *SchedulerServer) GetAllRunningModels() []*store.ModelSnapshot {
 			store.ModelTerminating: {},
 		}
 
-		if _, ok := runningStates[modelState.ModelGWState]; ok {
+		if _, ok := runningStates[modelState.ModelGwState]; ok {
 			runningModels = append(runningModels, model)
 		}
 	}
@@ -246,7 +246,7 @@ func (s *SchedulerServer) modelGwRebalance() {
 
 func (s *SchedulerServer) modelGwRebalanceNoStream(model *store.ModelSnapshot) {
 	modelState := store.ModelCreate
-	if model.GetLatest().ModelState().ModelGWState == store.ModelTerminating {
+	if model.GetLatest().ModelState().ModelGwState == store.ModelTerminating {
 		modelState = store.ModelTerminated
 	}
 
@@ -289,7 +289,7 @@ func (s *SchedulerServer) modelGwReblanceStreams(model *store.ModelSnapshot) {
 		if contains(servers, server) {
 			s.logger.Debug("Server contains model, sending status update for: ", server)
 
-			state := model.GetLatest().ModelState().ModelGWState
+			state := model.GetLatest().ModelState().ModelGwState
 			var msg *pb.ModelStatusResponse
 			var err error
 
@@ -425,13 +425,13 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 	}
 
 	modelState := model.GetLatest().ModelState()
-	if len(modelGwStreams) == 0 && modelState.ModelGWState != store.ModelTerminated {
+	if len(modelGwStreams) == 0 && modelState.ModelGwState != store.ModelTerminated {
 		// handle case where we don't have any model-gateway streams
 		errMsg := "No model gateway available to handle model"
 		logger.WithField("model", model.Name).Warn(errMsg)
 
-		modelGwState := modelState.ModelGWState
-		if modelState.ModelGWState == store.ModelTerminate || modelState.ModelGWState == store.ModelTerminating {
+		modelGwState := modelState.ModelGwState
+		if modelState.ModelGwState == store.ModelTerminate || modelState.ModelGwState == store.ModelTerminating {
 			modelGwState = store.ModelTerminated
 		}
 
@@ -451,7 +451,7 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 		return nil
 	}
 
-	switch modelState.ModelGWState {
+	switch modelState.ModelGwState {
 	case store.ModelCreate:
 		logger.Debugf("Model %s is in create state, sending creation message", model.Name)
 		if err := s.modelStore.SetModelGwModelState(
