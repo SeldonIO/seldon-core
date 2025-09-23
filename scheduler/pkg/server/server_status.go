@@ -419,7 +419,7 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 		logger.WithField("model", model.Name).Warn(errMsg)
 
 		modelGwState := modelState.ModelGWState
-		if modelState.ModelGWState == store.ModelTerminating {
+		if modelState.ModelGWState == store.ModelTerminate || modelState.ModelGWState == store.ModelTerminating {
 			modelGwState = store.ModelTerminated
 		}
 

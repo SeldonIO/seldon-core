@@ -32,7 +32,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
-func receiveMessageFromStream(t *testing.T, stream *stubModelStatusServer) *pb.ModelStatusResponse {
+func receiveMessageFromStream(stream *stubModelStatusServer) *pb.ModelStatusResponse {
 	time.Sleep(500 * time.Millisecond)
 
 	var msr *pb.ModelStatusResponse
@@ -40,7 +40,7 @@ func receiveMessageFromStream(t *testing.T, stream *stubModelStatusServer) *pb.M
 	case next := <-stream.msgs:
 		msr = next
 	case <-time.After(2 * time.Second):
-		t.Fail()
+		msr = nil
 	}
 	return msr
 }
@@ -98,7 +98,7 @@ func TestModelsStatusStream(t *testing.T) {
 			} else {
 				g.Expect(err).To(BeNil())
 
-				msr := receiveMessageFromStream(t, stream)
+				msr := receiveMessageFromStream(stream)
 				g.Expect(msr).ToNot(BeNil())
 				g.Expect(msr.Versions).To(HaveLen(1))
 				g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
@@ -171,14 +171,14 @@ func TestPublishModelsStatusWithTimeout(t *testing.T) {
 			}
 
 			// read first create message
-			msr := receiveMessageFromStream(t, stream)
+			msr := receiveMessageFromStream(stream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.Versions).To(HaveLen(1))
 			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
 			g.Expect(s.modelEventStream.streams).To(HaveLen(1))
 
 			// read message due to no model-gw available
-			msr = receiveMessageFromStream(t, stream)
+			msr = receiveMessageFromStream(stream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.Versions).To(HaveLen(1))
 			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
@@ -233,17 +233,17 @@ func TestAddAndRemoveModelNoModelGw(t *testing.T) {
 			})
 
 			// read first create message
-			msr := receiveMessageFromStream(t, stream)
+			msr := receiveMessageFromStream(stream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.Versions).To(HaveLen(1))
-			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
+			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelCreate))
 			g.Expect(s.modelEventStream.streams).To(HaveLen(1))
 
 			// read message due to no model-gw available
-			msr = receiveMessageFromStream(t, stream)
+			msr = receiveMessageFromStream(stream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.Versions).To(HaveLen(1))
-			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
+			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelCreate))
 			g.Expect(s.modelEventStream.streams).To(HaveLen(1))
 
 			// check model-gw status update
@@ -251,7 +251,7 @@ func TestAddAndRemoveModelNoModelGw(t *testing.T) {
 			g.Expect(err).To(BeNil())
 
 			mv := ms.GetLatest()
-			g.Expect(mv.ModelState().ModelGWState).To(Equal(store.ModelStateUnknown))
+			g.Expect(mv.ModelState().ModelGWState).To(Equal(store.ModelCreate))
 			g.Expect(mv.ModelState().ModelGWReason).To(Equal("No model gateway available to handle model"))
 
 			// remove model
@@ -262,13 +262,13 @@ func TestAddAndRemoveModelNoModelGw(t *testing.T) {
 			})
 
 			// read message due to model removal
-			msr = receiveMessageFromStream(t, stream)
+			msr = receiveMessageFromStream(stream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.Versions).To(HaveLen(1))
-			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelTerminated))
+			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelTerminate))
 
 			// read messsage duo to no model-gw available
-			msr = receiveMessageFromStream(t, stream)
+			msr = receiveMessageFromStream(stream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.Versions).To(HaveLen(1))
 			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelTerminated))
@@ -299,12 +299,11 @@ func TestModelGwRebalanceNoPipelineGw(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			s, hub := createTestScheduler(t)
 
-			stream := newStubModelStatusServer(1, 5*time.Millisecond)
+			stream := newStubModelStatusServer(2, 5*time.Millisecond)
 			s.modelEventStream.streams[stream] = &ModelSubscription{
-				name:           "dummy",
-				stream:         stream,
-				fin:            make(chan bool),
-				isModelGateway: false,
+				name:   "dummy",
+				stream: stream,
+				fin:    make(chan bool),
 			}
 			g.Expect(s.modelEventStream.streams[stream]).ToNot(BeNil())
 
@@ -317,31 +316,37 @@ func TestModelGwRebalanceNoPipelineGw(t *testing.T) {
 			})
 
 			// read first create message
-			msr := receiveMessageFromStream(t, stream)
+			msr := receiveMessageFromStream(stream)
 			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelCreate))
+			g.Expect(s.modelEventStream.streams).To(HaveLen(1))
 
 			// read second message due to no model-gw available
-			msr = receiveMessageFromStream(t, stream)
+			msr = receiveMessageFromStream(stream)
 			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelCreate))
+			g.Expect(msr.Versions[0].State.ModelGwReason).To(Equal("No model gateway available to handle model"))
+			g.Expect(s.modelEventStream.streams).To(HaveLen(1))
 
 			// check model-gw status update
 			ms, err := s.modelStore.GetModel(modelName)
 			g.Expect(err).To(BeNil())
 
 			mv := ms.GetLatest()
-			g.Expect(mv.ModelState().ModelGWState).To(Equal(store.ModelStateUnknown))
+			g.Expect(mv.ModelState().ModelGWState).To(Equal(store.ModelCreate))
 			g.Expect(mv.ModelState().ModelGWReason).To(Equal("No model gateway available to handle model"))
 
 			// trigger rebalance
 			s.modelGwRebalance()
 
-			// read message due to no model-gw available
-			msr = receiveMessageFromStream(t, stream)
-			g.Expect(msr).ToNot(BeNil())
-			// g.Expect(msr.Versions).To(HaveLen(1))
-			// g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(store.ScheduleFailed))
-			// g.Expect(msr.Versions[0].State.ModelGwReason).To(Equal("No model gateway available to handle model"))
+			// to allow events to propagate
+			time.Sleep(500 * time.Millisecond)
 
+			// no other message since the state and reason have not changed
+			msr = receiveMessageFromStream(stream)
+			g.Expect(msr).To(BeNil())
 		})
 	}
 
