@@ -12,6 +12,7 @@
     install_certmanager: "{{ full_install }}"
     install_jaeger: "{{ full_install }}"
     install_opentelemetry: "{{ full_install }}"
+    install_schema_registry: false
 
     configure_prometheus: "{{ install_prometheus }}"
     configure_grafana: "{{ install_grafana }}"
