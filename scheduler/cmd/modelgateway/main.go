@@ -165,7 +165,7 @@ func main() {
 		NumWorkers:            getEnVar(logger, gateway.EnvVarNumWorkers, gateway.DefaultNumWorkers),
 		WorkerTimeout:         getEnVar(logger, gateway.EnvVarWorkerTimeoutMs, gateway.DefaultWorkerTimeoutMs),
 	}
-	kafkaConsumer, err := gateway.NewConsumerManager(logger, &consumerConfig,
+	kafkaConsumer, err := gateway.NewKafkaConsumerManager(logger, &consumerConfig,
 		getEnVar(logger, gateway.EnvMaxNumConsumers, gateway.DefaultMaxNumConsumers), schemaRegistryClient)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create consumer manager")

@@ -75,8 +75,8 @@ func NewKafkaConsumerManager(
 	managerConfig *ManagerConfig,
 	maxNumConsumers int,
 	schemaRegistryClient schemaregistry.Client,
-) (*ConsumerManager, error) {
-	cm := &ConsumerManager{
+) (*KafkaConsumerManager, error) {
+	cm := &KafkaConsumerManager{
 		logger:               logger.WithField("source", "ConsumerManager"),
 		managerConfig:        managerConfig,
 		consumers:            make(map[string]*InferKafkaHandler),
