@@ -466,11 +466,15 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 				WithField("model", model.Name).
 				Error("failed to set model state to progressing")
 		}
+
 		ms, err = s.createModelCreationMessage(model)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to create model creation message for %s", model.Name)
 			return err
 		}
+
+		// send message to model gateway streams
+		s.sendModelStatusEventToStreamsWithTimestamp(evt, ms, modelGwStreams)
 	case store.ModelTerminate:
 		logger.Debugf("Model %s is in terminate state, sending deletion message", model.Name)
 		if err := s.modelStore.SetModelGwModelState(
@@ -485,15 +489,16 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 				WithField("model", model.Name).
 				Error("failed to set model state to terminating")
 		}
+
 		ms, err = s.createModelDeletionMessage(model, false)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to create model deletion message for %s", model.Name)
 			return err
 		}
-	}
 
-	// send message to model gateway streams
-	s.sendModelStatusEventToStreamsWithTimestamp(evt, ms, modelGwStreams)
+		// send message to model gateway streams
+		s.sendModelStatusEventToStreamsWithTimestamp(evt, ms, modelGwStreams)
+	}
 	return nil
 }
 

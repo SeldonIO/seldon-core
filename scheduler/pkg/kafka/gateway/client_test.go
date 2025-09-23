@@ -13,10 +13,9 @@ import (
 	"context"
 	"testing"
 
-	"google.golang.org/grpc"
-
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
