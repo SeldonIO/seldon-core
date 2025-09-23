@@ -214,9 +214,6 @@ func (ep *EventProcessor) handleEvent(event *scheduler.ModelStatusResponse) {
 		ep.handleDeleteModel(event)
 	case scheduler.ModelStatusResponse_ModelCreate:
 		ep.handleCreateModel(event)
-	default:
-		ep.logger.Warnf("Unknown operation %s for model %s", event.Operation.String(), event.GetModelName())
-		return
 	}
 }
 

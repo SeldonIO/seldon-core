@@ -70,7 +70,7 @@ func (s *SchedulerServer) ModelStatusEvent(ctx context.Context, message *pb.Mode
 	err := s.modelStore.SetModelGwModelState(
 		message.Update.Model,
 		message.Update.Version,
-		statusVal,
+		modelStatusVal,
 		reason,
 		modelStatusEventSource,
 	)
