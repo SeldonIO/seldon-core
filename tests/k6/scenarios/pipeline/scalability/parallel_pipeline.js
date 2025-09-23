@@ -91,8 +91,7 @@ export function setup() {
         const replicaDataFlowEngine = config.replicas.dataFlowEngine
         const replicaPipeLineGw = config.replicas.pipelineGw
 
-        // we require 4GB for dataflow-engine otherwise we get OOM
-        const seldonConfig = generateSeldonConfig("4G")
+        const seldonConfig = generateSeldonConfig(config.dataflow.limits.memory, config.modelGateway.numOfWorkers)
         ctl.loadSeldonConfigFn(seldonConfig.object, true)
 
 

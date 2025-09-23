@@ -274,6 +274,20 @@ function pipelineGwReplicas() {
     return 1
 }
 
+function dataflowEngineLimitMemory() {
+    if (__ENV.DATAFLOW_ENGINE_LIMIT_MEMORY) {
+        return __ENV.DATAFLOW_ENGINE_LIMIT_MEMORY
+    }
+    return "4G"
+}
+
+function modelGwNumWorkers() {
+    if (__ENV.MODEL_GW_NUM_WORKERS) {
+        return __ENV.MODEL_GW_NUM_WORKERS
+    }
+    return "4"
+}
+
 function modelGwReplicas() {
     if (__ENV.MODEL_GW_REPLICAS) {
         return parseInt(__ENV.MODEL_GW_REPLICAS)
@@ -462,6 +476,14 @@ export function getConfig() {
             "dataFlowEngine" : dataFlowEngineReplicas(),
             "pipelineGw" : pipelineGwReplicas(),
             "modelGw": modelGwReplicas(),
+        },
+        "dataflow" : {
+            "limits" : {
+                "memory" : dataflowEngineLimitMemory(),
+            }
+        },
+        "modelGateway" : {
+          "numOfWorkers" : modelGwNumWorkers(),
         },
         "useGRPC" : useGRPC(),
         "seldonRuntimeName": seldonRuntimeName(),

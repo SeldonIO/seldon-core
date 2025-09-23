@@ -414,7 +414,7 @@ export function unloadExperiment(experimentName, awaitReady=true) {
  *****/
 
 
-export function generateSeldonConfig(dataFlowEngineMemoryLimit = "1G") {
+export function generateSeldonConfig(dataFlowEngineMemoryLimit = "1G", modelGwNumWorkers = "4") {
     let seldonconfig = kubeclient.get("seldonconfig.mlops.seldon.io", getConfig().seldonConfigName, seldon_target_ns)
 
     seldonconfig.spec.components.forEach(component => {
@@ -428,6 +428,13 @@ export function generateSeldonConfig(dataFlowEngineMemoryLimit = "1G") {
                     memory: "1G"
                 }
             }
+        }
+        if (component.name === "seldon-modelgateway") {
+            component.podSpec.containers[0].env.forEach(env => {
+                if (env.name === "MODELGATEWAY_NUM_WORKERS") {
+                    env.value = modelGwNumWorkers
+                }
+            });
         }
     });
 
