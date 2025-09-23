@@ -87,7 +87,7 @@ class SchemaRegistrySerializerFactory(private val config: SchemaRegistryConfig) 
             try {
                 serializer.schemaRegistryClient.allSubjects
             } catch (e: Exception) {
-                logger.info("failed to ping schema registry client")
+                logger.error("failed to ping schema registry client", e)
                 throw IllegalStateException("could not ping schema registry client", e)
             }
 
