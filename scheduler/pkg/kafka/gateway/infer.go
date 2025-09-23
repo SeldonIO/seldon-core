@@ -57,6 +57,7 @@ type InferKafkaHandler struct {
 	consumer             *kafka.Consumer
 	producer             *kafka.Producer
 	done                 chan bool
+	shutdownComplete     chan struct{}
 	tracer               trace.Tracer
 	topicNamer           *kafka2.TopicNamer
 	consumerConfig       *ManagerConfig
@@ -125,6 +126,7 @@ func NewInferKafkaHandler(
 		topicNamer:           topicNamer,
 		loadedModels:         make(map[string]bool),
 		subscribedTopics:     make(map[string]bool),
+		shutdownComplete:     make(chan struct{}),
 		consumerConfig:       consumerConfig,
 		consumerName:         consumerName,
 		replicationFactor:    replicationFactor,
@@ -210,8 +212,11 @@ func (kc *InferKafkaHandler) closeProducer() {
 	kc.producer.Close()
 }
 
-func (kc *InferKafkaHandler) Stop() {
+func (kc *InferKafkaHandler) Stop(waitForShutdown bool) {
 	close(kc.done)
+	if waitForShutdown {
+		<-kc.shutdownComplete
+	}
 }
 
 func (kc *InferKafkaHandler) subscribeTopics() error {
@@ -500,4 +505,11 @@ func (kc *InferKafkaHandler) Serve() {
 	logger.Info("Closing consumer")
 	close(cancelChan)
 	kc.closeProducer()
+	if _, err := kc.consumer.Commit(); err != nil {
+		logger.WithError(err).Error("Failed to commit offsets")
+	}
+	if err := kc.consumer.Close(); err != nil {
+		logger.WithError(err).Error("Failure closing consumer")
+	}
+	close(kc.shutdownComplete)
 }
