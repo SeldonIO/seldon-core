@@ -278,7 +278,6 @@ func (s *Server) Sync(modelName string) {
 				AutoscalingEnabled: util.AutoscalingEnabled(model.DeploymentSpec.GetMinReplicas(), model.DeploymentSpec.GetMaxReplicas()) && s.autoscalingModelEnabled,
 			})
 			as.mutex.Unlock()
-
 			if err != nil {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				if errState := s.store.UpdateModelState(
@@ -513,7 +512,6 @@ func (s *Server) drainServerReplicaImpl(serverName string, serverReplicaIdx int)
 			s.waiter.signalModel(modelName)
 		}
 	}
-
 	s.waiter.wait(serverName, serverReplicaIdx)
 
 	// as we update envoy in batches and envoy is eventual consistent, give it time to settle down
