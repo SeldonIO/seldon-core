@@ -547,10 +547,15 @@ func (km *KafkaManager) consume(pipeline *Pipeline) error {
 }
 
 func (km *KafkaManager) serializeModelInferReqWithSchemaRegistry(topic string, payload []byte) ([]byte, error) {
-	km.logger.Debugf("first 10 bytes before schema serialisation")
+	logger := km.logger.WithField("func", "serializeModelInferReqWithSchemaRegistry")
 	if len(payload) > 10 {
+		logger.Trace("first 10 bytes before schema serialisation")
 		for _, b := range payload[:10] {
-			km.logger.Debugf("%02x", b)
+			logger.Tracef("%02x", b)
+		}
+		logger.Trace("last 10 bytes before schema serialisation")
+		for _, b := range payload[len(payload)-10:] {
+			logger.Tracef("%02x", b)
 		}
 	}
 
@@ -573,10 +578,14 @@ func (km *KafkaManager) serializeModelInferReqWithSchemaRegistry(topic string, p
 		return nil, fmt.Errorf("failed to serialise request to dataplane model: %w", err)
 	}
 
-	km.logger.Debugf("first 10 bytes after schema serialisation")
 	if len(payload) > 10 {
+		logger.Trace("first 10 bytes before schema serialisation")
 		for _, b := range payload[:10] {
-			km.logger.Debugf("%02x", b)
+			logger.Tracef("%02x", b)
+		}
+		logger.Trace("last 10 bytes before schema serialisation")
+		for _, b := range payload[len(payload)-10:] {
+			logger.Tracef("%02x", b)
 		}
 	}
 

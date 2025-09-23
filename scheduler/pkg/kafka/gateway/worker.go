@@ -26,7 +26,7 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
 	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde"
 	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde/protobuf"
-	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -116,9 +116,9 @@ func getRestUrl(tls bool, host string, port int, modelName string) *url.URL {
 
 func (iw *InferWorker) getGrpcClient(host string, port int) (v2.GRPCInferenceServiceClient, error) {
 	logger := iw.logger.WithField("func", "getGrpcClient")
-	retryOpts := []grpcretry.CallOption{
-		grpcretry.WithBackoff(grpcretry.BackoffExponential(util.GRPCRetryBackoff)),
-		grpcretry.WithMax(util.GRPCRetryMaxCount), // retry envoy connection
+	retryOpts := []grpc_retry.CallOption{
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(util.GRPCRetryBackoff)),
+		grpc_retry.WithMax(util.GRPCRetryMaxCount), // retry envoy connection
 	}
 
 	var creds credentials.TransportCredentials
@@ -141,7 +141,7 @@ func (iw *InferWorker) getGrpcClient(host string, port int) (v2.GRPCInferenceSer
 			otelgrpc.NewClientHandler(),
 		),
 		grpc.WithUnaryInterceptor(
-			grpcretry.UnaryClientInterceptor(retryOpts...),
+			grpc_retry.UnaryClientInterceptor(retryOpts...),
 		),
 	}
 
@@ -421,10 +421,16 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 }
 
 func (iw *InferWorker) serializeModelInferRespWithSchemaRegistry(topic string, payload []byte) ([]byte, error) {
-	iw.logger.Debugf("first 10 bytes before schema serialisation")
+	logger := iw.logger.WithField("func", "serializeModelInferRespWithSchemaRegistry")
+
 	if len(payload) > 10 {
+		logger.Trace("first 10 bytes before schema serialisation")
 		for _, b := range payload[:10] {
-			iw.logger.Debugf("%02x", b)
+			logger.Tracef("%02x", b)
+		}
+		logger.Trace("last 10 bytes before schema serialisation")
+		for _, b := range payload[len(payload)-10:] {
+			logger.Tracef("%02x", b)
 		}
 	}
 
@@ -449,11 +455,15 @@ func (iw *InferWorker) serializeModelInferRespWithSchemaRegistry(topic string, p
 
 	iw.logger.Debugf("first 10 bytes after schema serialisation")
 	if len(payload) > 10 {
+		logger.Trace("first 10 bytes before schema serialisation")
 		for _, b := range payload[:10] {
-			iw.logger.Debugf("%02x", b)
+			logger.Tracef("%02x", b)
+		}
+		logger.Trace("last 10 bytes before schema serialisation")
+		for _, b := range payload[len(payload)-10:] {
+			logger.Tracef("%02x", b)
 		}
 	}
-
 	return serializedPayload, nil
 }
 

@@ -77,7 +77,7 @@ func TrimSchemaID(payload []byte) []byte {
 		return payload
 	}
 	if payload[0] == 0x0 {
-		// Skip magic byte (1) + schema ID (4) + message index (0) = 6 bytes
+		// Skip magic byte (1) + schema ID (4) + message index (1) = 6 bytes
 
 		payload = payload[6:]
 	}
