@@ -71,13 +71,9 @@ class SchemaRegistrySerializerFactory(private val config: SchemaRegistryConfig) 
         }
     }
 
-    val requestSerializer: KafkaProtobufSerializer<ModelInferRequest> by lazy {
-        createAndConfigureSerializer()
-    }
+    val requestSerializer: KafkaProtobufSerializer<ModelInferRequest> = createAndConfigureSerializer()
 
-    val responseSerializer: KafkaProtobufSerializer<ModelInferResponse> by lazy {
-        createAndConfigureSerializer()
-    }
+    val responseSerializer: KafkaProtobufSerializer<ModelInferResponse> = createAndConfigureSerializer()
 
     private fun <T : Message> createAndConfigureSerializer(): KafkaProtobufSerializer<T> {
         return try {
