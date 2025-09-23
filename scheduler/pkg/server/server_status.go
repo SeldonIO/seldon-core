@@ -205,7 +205,7 @@ func (s *SchedulerServer) createModelDeletionMessage(model *store.ModelSnapshot,
 	if err != nil {
 		return nil, err
 	}
-	ms.Versions[0].State.AvailableReplicas = 0
+	ms.Operation = pb.ModelStatusResponse_ModelDelete
 	ms.KeepTopics = keepTopics
 	return ms, nil
 }
@@ -215,6 +215,7 @@ func (s *SchedulerServer) createModelCreationMessage(model *store.ModelSnapshot)
 	if err != nil {
 		return nil, err
 	}
+	ms.Operation = pb.ModelStatusResponse_ModelCreate
 	return ms, nil
 }
 

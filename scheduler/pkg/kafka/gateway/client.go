@@ -209,27 +209,15 @@ func (ep *EventProcessor) handleEvent(event *scheduler.ModelStatusResponse) {
 		return
 	}
 
-	// get latest version status
-	versionStatus := event.Versions[0]
-	ep.logger.Infof("Received event name %s version %d state %s", event.ModelName, versionStatus.Version, versionStatus.State.State.String())
-
-	// if the model is in a failed state and the consumer exists then we skip the removal
-	// this is to prevent the consumer from being removed during transient failures of the control plane
-	// in this way data plane can potentially continue to serve requests
-	if versionStatus.GetState().GetState() == scheduler.ModelStatus_ScheduleFailed || versionStatus.GetState().GetState() == scheduler.ModelStatus_ModelProgressing {
-		if ep.client.consumerManager.Exists(event.ModelName) {
-			ep.logger.Warnf("Model %s schedule failed / progressing and consumer exists, skipping from removal", event.ModelName)
-			return
-		}
-	}
-
-	switch versionStatus.GetState().GetAvailableReplicas() {
-	case 0:
+	switch event.Operation {
+	case scheduler.ModelStatusResponse_ModelDelete:
 		ep.handleDeleteModel(event)
-	default:
+	case scheduler.ModelStatusResponse_ModelCreate:
 		ep.handleCreateModel(event)
+	default:
+		ep.logger.Warnf("Unknown operation %s for model %s", event.Operation.String(), event.GetModelName())
+		return
 	}
-
 }
 
 func (ep *EventProcessor) handleDeleteModel(event *scheduler.ModelStatusResponse) {
@@ -258,15 +246,6 @@ func (ep *EventProcessor) handleDeleteModel(event *scheduler.ModelStatusResponse
 }
 
 func (ep *EventProcessor) handleCreateModel(event *scheduler.ModelStatusResponse) {
-	// if there are available replicas then we add the consumer for the model
-	// note that this will also get triggered if the model is already added but there is a status change (e.g. due to scale up)
-	// and in the case then it is a no-op
-	// note in the future we might want to check that available replicas > min replicas
-	versionStatus := event.Versions[0]
-	if versionStatus.GetState().GetState() != scheduler.ModelStatus_ModelAvailable {
-		ep.logger.Warnf("Model %s state is: %s", event.ModelName, versionStatus.GetState().GetState().String())
-	}
-
 	if ep.client.consumerManager.Exists(event.ModelName) {
 		ep.reportSuccess(
 			event,

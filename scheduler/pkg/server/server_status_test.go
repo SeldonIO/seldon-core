@@ -359,6 +359,7 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 		name          string
 		loadReq       *pb.LoadModelRequest
 		modelGwStatus store.ModelState
+		operation     pb.ModelStatusResponse_ModelOperation
 	}
 
 	tests := []test{
@@ -370,6 +371,7 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 				},
 			},
 			modelGwStatus: store.ModelAvailable,
+			operation:     pb.ModelStatusResponse_ModelCreate,
 		},
 		{
 			name: "rebalance message - create model (model progressing)",
@@ -379,6 +381,7 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 				},
 			},
 			modelGwStatus: store.ModelProgressing,
+			operation:     pb.ModelStatusResponse_ModelCreate,
 		},
 		{
 			name: "rebalance message - terminate model",
@@ -388,6 +391,7 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 				},
 			},
 			modelGwStatus: store.ModelTerminating,
+			operation:     pb.ModelStatusResponse_ModelDelete,
 		},
 	}
 
@@ -444,30 +448,18 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 			g.Expect(msr.Versions).To(HaveLen(1))
 			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelProgressing))
 
-			if true {
-				// set status directly in the memory store to simulate model-gw update
-				mem, ok := s.modelStore.(*store.TestMemoryStore)
-				g.Expect(ok).To(BeTrue())
-				err = mem.DirectlyUpdateModelStatus(store.ModelID{
-					Name:    modelName,
-					Version: 1,
-				}, store.ModelStatus{
-					ModelGWState:      test.modelGwStatus,
-					AvailableReplicas: 1,
-				})
-			} else {
-				// set modelgw status
-				err = s.modelStore.SetModelGwModelState(
-					modelName, 1, test.modelGwStatus, "", modelStatusEventSource,
-				)
-				// receive message on operator stream
-				msr = receiveMessageFromStream(operatorStream)
-				g.Expect(msr).ToNot(BeNil())
-				g.Expect(msr.Versions).To(HaveLen(1))
-				g.Expect(int32(msr.Versions[0].State.ModelGwState)).To(Equal(int32(test.modelGwStatus)))
-				g.Expect(msr.Versions[0].State.ModelGwReason).To(Equal(""))
-			}
+			// set modelgw status
+			err = s.modelStore.SetModelGwModelState(
+				modelName, 1, test.modelGwStatus, "", modelStatusEventSource,
+			)
 			g.Expect(err).To(BeNil())
+
+			// receive message on operator stream
+			msr = receiveMessageFromStream(operatorStream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(int32(msr.Versions[0].State.ModelGwState)).To(Equal(int32(test.modelGwStatus)))
+			g.Expect(msr.Versions[0].State.ModelGwReason).To(Equal(""))
 
 			ms, err := s.modelStore.GetModel(modelName)
 			g.Expect(err).To(BeNil())
@@ -493,12 +485,7 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.ModelName).To(Equal("foo"))
 			g.Expect(msr.Versions).To(HaveLen(1))
-			if test.modelGwStatus == store.ModelTerminating {
-				g.Expect(msr.Versions[0].State.AvailableReplicas).To(Equal(uint32(0)))
-			} else {
-				// TODO: fix me
-				g.Expect(msr.Versions[0].State.AvailableReplicas).To(Equal(uint32(1)))
-			}
+			g.Expect(msr.Operation).To(Equal(test.operation))
 		})
 	}
 

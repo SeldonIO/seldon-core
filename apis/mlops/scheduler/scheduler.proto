@@ -133,11 +133,17 @@ message UnloadModelResponse {
 /* ModelStatusResponse provides the current assignment of the model onto a server
 */
 message ModelStatusResponse {
+  enum ModelOperation {
+    ModelOperationUnknown = 0;
+    ModelCreate = 1;
+    ModelDelete = 2;
+  }
   string modelName = 1;
   repeated ModelVersionStatus versions = 2;
   bool deleted = 3;
   bool keepTopics = 4;
   uint64 timestamp = 5;
+  ModelOperation operation = 6;
 }
 
 message ModelVersionStatus {
