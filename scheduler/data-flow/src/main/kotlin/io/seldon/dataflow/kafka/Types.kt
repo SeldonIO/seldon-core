@@ -9,10 +9,6 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow.kafka
 
-import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.kstream.Consumed
-import org.apache.kafka.streams.kstream.Produced
-import org.apache.kafka.streams.kstream.StreamJoined
 import org.apache.kafka.streams.processor.StreamPartitioner
 import java.util.Optional
 import java.util.Properties
@@ -35,11 +31,6 @@ class SamePartitionForwarder : StreamPartitioner<String, TRecord> {
         return Optional.ofNullable(mutableSetOf<Int>(partitionTag?.coerceIn(0, numPartitions - 1) ?: 0))
     }
 }
-
-val consumerSerde: Consumed<RequestId, TRecord> = Consumed.with(Serdes.String(), Serdes.ByteArray())
-val producerSerde: Produced<RequestId, TRecord> = Produced.with(Serdes.String(), Serdes.ByteArray(), SamePartitionForwarder())
-val joinSerde: StreamJoined<RequestId, TRecord, TRecord> =
-    StreamJoined.with(Serdes.String(), Serdes.ByteArray(), Serdes.ByteArray())
 
 enum class ChainType {
     OUTPUT_OUTPUT,

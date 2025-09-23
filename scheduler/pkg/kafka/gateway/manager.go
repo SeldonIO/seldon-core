@@ -15,10 +15,11 @@ import (
 	"sync"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
 	log "github.com/sirupsen/logrus"
 
-	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
-	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
+	kafkaconfig "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+	configtls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
 
 	seldontracer "github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
@@ -34,16 +35,17 @@ type ConsumerManager struct {
 	logger log.FieldLogger
 	mu     sync.RWMutex
 	// all consumers we have
-	consumers         map[string]*InferKafkaHandler
-	managerConfig     *ManagerConfig
-	maxNumConsumers   int
-	consumerConfigMap kafka.ConfigMap
-	producerConfigMap kafka.ConfigMap
-	topicsConfigMap   kafka.ConfigMap
+	consumers            map[string]*InferKafkaHandler
+	managerConfig        *ManagerConfig
+	maxNumConsumers      int
+	consumerConfigMap    kafka.ConfigMap
+	producerConfigMap    kafka.ConfigMap
+	topicsConfigMap      kafka.ConfigMap
+	schemaRegistryClient schemaregistry.Client
 }
 
 type ManagerConfig struct {
-	SeldonKafkaConfig     *kafka_config.KafkaConfig
+	SeldonKafkaConfig     *kafkaconfig.KafkaConfig
 	Namespace             string
 	InferenceServerConfig *InferenceServerConfig
 	TraceProvider         *seldontracer.TracerProvider
@@ -63,12 +65,14 @@ func NewConsumerManager(
 	logger log.FieldLogger,
 	managerConfig *ManagerConfig,
 	maxNumConsumers int,
+	schemaRegistryClient schemaregistry.Client,
 ) (*ConsumerManager, error) {
 	cm := &ConsumerManager{
-		logger:          logger.WithField("source", "ConsumerManager"),
-		managerConfig:   managerConfig,
-		consumers:       make(map[string]*InferKafkaHandler),
-		maxNumConsumers: maxNumConsumers,
+		logger:               logger.WithField("source", "ConsumerManager"),
+		managerConfig:        managerConfig,
+		consumers:            make(map[string]*InferKafkaHandler),
+		maxNumConsumers:      maxNumConsumers,
+		schemaRegistryClient: schemaRegistryClient,
 	}
 	err := cm.createKafkaConfigs(managerConfig)
 	if err != nil {
@@ -81,14 +85,14 @@ func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error 
 	logger := cm.logger.WithField("func", "createKafkaConfigs")
 	var err error
 
-	producerConfig := kafka_config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Producer)
+	producerConfig := kafkaconfig.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Producer)
 	producerConfig["go.delivery.reports"] = true
-	err = config_tls.AddKafkaSSLOptions(producerConfig)
+	err = configtls.AddKafkaSSLOptions(producerConfig)
 	if err != nil {
 		return err
 	}
 
-	producerConfigMasked := kafka_config.WithoutSecrets(producerConfig)
+	producerConfigMasked := kafkaconfig.WithoutSecrets(producerConfig)
 	producerConfigMaskedJSON, err := json.Marshal(&producerConfigMasked)
 	if err != nil {
 		logger.WithField("config", &producerConfigMasked).Info("Creating producer config for use later")
@@ -96,13 +100,13 @@ func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error 
 		logger.WithField("config", string(producerConfigMaskedJSON)).Info("Creating producer config for use later")
 	}
 
-	consumerConfig := kafka_config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Consumer)
-	err = config_tls.AddKafkaSSLOptions(consumerConfig)
+	consumerConfig := kafkaconfig.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Consumer)
+	err = configtls.AddKafkaSSLOptions(consumerConfig)
 	if err != nil {
 		return err
 	}
 
-	consumerConfigMasked := kafka_config.WithoutSecrets(consumerConfig)
+	consumerConfigMasked := kafkaconfig.WithoutSecrets(consumerConfig)
 	consumerConfigMaskedJson, err := json.Marshal(&consumerConfigMasked)
 	if err != nil {
 		logger.WithField("config", &consumerConfigMasked).Info("Creating consumer config for use later")
@@ -110,7 +114,7 @@ func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error 
 		logger.WithField("config", string(consumerConfigMaskedJson)).Info("Creating consumer config for use later")
 	}
 
-	topicsConfig := kafka_config.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Topics)
+	topicsConfig := kafkaconfig.CloneKafkaConfigMap(kafkaConfig.SeldonKafkaConfig.Topics)
 	topicsConfigJSON, err := json.Marshal(&topicsConfig)
 	if err != nil {
 		logger.WithField("config", &topicsConfig).Info("Creating topics config for use later")
@@ -146,7 +150,7 @@ func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) 
 			cloneKafkaConfigMap(cm.consumerConfigMap),
 			cloneKafkaConfigMap(cm.producerConfigMap),
 			cloneKafkaConfigMap(cm.topicsConfigMap),
-			consumerBucketId)
+			consumerBucketId, cm.schemaRegistryClient)
 		if err != nil {
 			return nil, err
 		}

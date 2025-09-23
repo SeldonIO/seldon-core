@@ -19,12 +19,17 @@ import (
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde/protobuf"
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka"
 	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+	"google.golang.org/protobuf/proto"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/inference_schema"
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
 
@@ -57,14 +62,15 @@ type PipelineInferer interface {
 }
 
 type KafkaManager struct {
-	kafkaConfig     *kafka_config.KafkaConfig
-	producer        *kafka.Producer
-	pipelines       sync.Map
-	logger          logrus.FieldLogger
-	mu              sync.RWMutex
-	topicNamer      *kafka2.TopicNamer
-	tracer          trace.Tracer
-	consumerManager *ConsumerManager
+	kafkaConfig          *kafka_config.KafkaConfig
+	producer             *kafka.Producer
+	pipelines            sync.Map
+	logger               logrus.FieldLogger
+	mu                   sync.RWMutex
+	topicNamer           *kafka2.TopicNamer
+	tracer               trace.Tracer
+	consumerManager      *ConsumerManager
+	schemaRegistryClient schemaregistry.Client
 }
 
 type Pipeline struct {
@@ -91,6 +97,7 @@ func NewKafkaManager(
 	kafkaConfig *kafka_config.KafkaConfig,
 	traceProvider *seldontracer.TracerProvider,
 	maxNumConsumers int,
+	schemaRegistryClient schemaregistry.Client,
 ) (*KafkaManager, error) {
 	topicNamer, err := kafka2.NewTopicNamer(namespace, kafkaConfig.TopicPrefix)
 	if err != nil {
@@ -99,12 +106,13 @@ func NewKafkaManager(
 
 	tracer := traceProvider.GetTraceProvider().Tracer("KafkaManager")
 	km := &KafkaManager{
-		kafkaConfig:     kafkaConfig,
-		logger:          logger.WithField("source", "KafkaManager"),
-		topicNamer:      topicNamer,
-		tracer:          tracer,
-		consumerManager: NewConsumerManager(namespace, logger, kafkaConfig, maxNumConsumers, tracer),
-		mu:              sync.RWMutex{},
+		kafkaConfig:          kafkaConfig,
+		logger:               logger.WithField("source", "KafkaManager"),
+		topicNamer:           topicNamer,
+		tracer:               tracer,
+		consumerManager:      NewConsumerManager(namespace, logger, kafkaConfig, maxNumConsumers, tracer, schemaRegistryClient),
+		mu:                   sync.RWMutex{},
+		schemaRegistryClient: schemaRegistryClient,
 	}
 
 	err = km.createProducer()
@@ -390,6 +398,17 @@ func (km *KafkaManager) infer(
 	kafkaHeaders := append(headers, kafka.Header{Key: util.SeldonPipelineHeader, Value: []byte(resourceName)})
 	kafkaHeaders = addRequestIdToKafkaHeadersIfMissing(kafkaHeaders, requestId)
 
+	if km.schemaRegistryClient != nil {
+		payloadWithSchemaID, err := km.serializeModelInferReqWithSchemaRegistry(inputTopic, data)
+		if err != nil {
+			logger.Warnf("Failed to serialize model inference request with a schema id on topic %s "+
+				"defaulting to sending without schema id with err: %v", inputTopic, err)
+		}
+		if err == nil {
+			data = payloadWithSchemaID
+		}
+	}
+
 	msg := &kafka.Message{
 		TopicPartition: kafka.TopicPartition{
 			Topic:     &inputTopic,
@@ -525,4 +544,50 @@ func (km *KafkaManager) consume(pipeline *Pipeline) error {
 		return err
 	}
 	return nil
+}
+
+func (km *KafkaManager) serializeModelInferReqWithSchemaRegistry(topic string, payload []byte) ([]byte, error) {
+	logger := km.logger.WithField("func", "serializeModelInferReqWithSchemaRegistry")
+	if len(payload) > 10 {
+		logger.Trace("first 10 bytes before schema serialisation")
+		for _, b := range payload[:10] {
+			logger.Tracef("%02x", b)
+		}
+		logger.Trace("last 10 bytes before schema serialisation")
+		for _, b := range payload[len(payload)-10:] {
+			logger.Tracef("%02x", b)
+		}
+	}
+
+	v2Res := &inference_schema.ModelInferRequest{}
+	err := proto.Unmarshal(payload, v2Res)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal request to dataplane model: %w", err)
+	}
+
+	schemaConfig := protobuf.NewSerializerConfig()
+	schemaConfig.NormalizeSchemas = true
+
+	ser, err := protobuf.NewSerializer(km.schemaRegistryClient, serde.ValueSerde, schemaConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to obtain a serialiser: %w", err)
+	}
+
+	serializedPayload, err := ser.Serialize(topic, v2Res)
+	if err != nil {
+		return nil, fmt.Errorf("failed to serialise request to dataplane model: %w", err)
+	}
+
+	if len(payload) > 10 {
+		logger.Trace("first 10 bytes before schema serialisation")
+		for _, b := range payload[:10] {
+			logger.Tracef("%02x", b)
+		}
+		logger.Trace("last 10 bytes before schema serialisation")
+		for _, b := range payload[len(payload)-10:] {
+			logger.Tracef("%02x", b)
+		}
+	}
+
+	return serializedPayload, nil
 }

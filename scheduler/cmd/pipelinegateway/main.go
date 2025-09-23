@@ -21,6 +21,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/knadh/koanf/v2"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/backoff"
@@ -33,6 +34,7 @@ import (
 	health "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/schema"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
@@ -77,6 +79,8 @@ var (
 	envoyHost              string
 	envoyPort              int
 	healthProbeServicePort int
+	// TODO: add file watcher cfg using koanf and in the future read all file config in one file
+	k = koanf.New(".")
 )
 
 func init() {
@@ -155,9 +159,20 @@ func main() {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
 
+	schemaRegistryClient, err := schema.NewSchemaRegistryClient(logger, k)
+	if err != nil {
+		logger.WithError(err).Fatal("Failed to create schema registry client")
+	}
+
+	if schemaRegistryClient != nil {
+		logger.Infof("Schema registry client was set with host on %s", schemaRegistryClient.Config().SchemaRegistryURL)
+	} else {
+		logger.Debugf("Schema registry not set")
+	}
+
 	maxNumConsumers := getEnVar(logger, pipeline.EnvMaxNumConsumers, pipeline.DefaultMaxNumConsumers)
 	km, err := pipeline.NewKafkaManager(
-		logger, namespace, kafkaConfigMap, tracer, maxNumConsumers)
+		logger, namespace, kafkaConfigMap, tracer, maxNumConsumers, schemaRegistryClient)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create kafka manager")
 	}

@@ -23,7 +23,7 @@ import (
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/health"
-	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+	kafkaconfig "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
@@ -59,7 +59,7 @@ type ChainerSubscription struct {
 }
 
 func NewChainerServer(logger log.FieldLogger, eventHub *coordinator.EventHub, pipelineHandler pipeline.PipelineHandler,
-	namespace string, loadBalancer util.LoadBalancer, kafkaConfig *kafka_config.KafkaConfig) (*ChainerServer, error) {
+	namespace string, loadBalancer util.LoadBalancer, kafkaConfig *kafkaconfig.KafkaConfig) (*ChainerServer, error) {
 	conflictResolutioner := NewConflictResolution(logger)
 	topicNamer, err := kafka.NewTopicNamer(namespace, kafkaConfig.TopicPrefix)
 	if err != nil {

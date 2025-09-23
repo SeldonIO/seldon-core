@@ -47,6 +47,8 @@ spec:
           value: '{{ .Values.security.kafka.sasl.client.secret }}'
         - name: SELDON_KAFKA_SASL_PASSWORD_PATH
           value: '{{ .Values.security.kafka.sasl.client.passwordPath }}'
+        - name: SELDON_KAFKA_SCHEMA_REGISTRY_CONFIG_PATH
+          value: '{{ .Values.security.schemaRegistry.configPath }}'
         - name: SELDON_KAFKA_TLS_BROKER_SECRET
           value: '{{ .Values.security.kafka.ssl.client.brokerValidationSecret }}'
         - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM

@@ -44,6 +44,7 @@ fun stepFor(
     joinWindowMillis: Long,
     batchProperties: Batch,
     kafkaDomainParams: KafkaDomainParams,
+    kafkaStreamsSerdes: KafkaStreamsSerdes,
 ): PipelineStep? {
     val triggerTopicsToTensors = parseTriggers(triggerSources)
     val effectiveKafkaDomainParams =
@@ -74,6 +75,7 @@ fun stepFor(
                 triggerTopicsToTensors.keys,
                 triggerJoinType,
                 triggerTopicsToTensors,
+                kafkaStreamsSerdes,
             )
         is SourceProjection.SingleSubset ->
             Chainer(
@@ -93,6 +95,7 @@ fun stepFor(
                 triggerTopicsToTensors.keys,
                 triggerJoinType,
                 triggerTopicsToTensors,
+                kafkaStreamsSerdes,
             )
         is SourceProjection.Many ->
             Joiner(
@@ -112,6 +115,7 @@ fun stepFor(
                 triggerTopicsToTensors.keys,
                 triggerJoinType,
                 triggerTopicsToTensors,
+                kafkaStreamsSerdes,
             )
         is SourceProjection.ManySubsets ->
             Joiner(
@@ -131,6 +135,7 @@ fun stepFor(
                 triggerTopicsToTensors.keys,
                 triggerJoinType,
                 triggerTopicsToTensors,
+                kafkaStreamsSerdes,
             )
     }
 }
