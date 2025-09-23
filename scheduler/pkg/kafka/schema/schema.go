@@ -22,7 +22,7 @@ import (
 
 const (
 	EnvSchemaRegistryConfigPath = "SCHEMA_REGISTRY_CONFIG_PATH"
-	FileName                    = "confluent-schema.yaml"
+	FileName                    = ".confluent-schema.yaml"
 )
 
 type config struct {
@@ -38,7 +38,7 @@ func NewSchemaRegistryClient(log *log.Logger, k *koanf.Koanf) (schemaregistry.Cl
 		return nil, nil
 	}
 
-	if err := k.Load(file.Provider(schemaConfigPath+"/."+FileName), yaml.Parser()); err != nil {
+	if err := k.Load(file.Provider(schemaConfigPath+"/"+FileName), yaml.Parser()); err != nil {
 		return nil, fmt.Errorf("error loading schema registry config: %v", err)
 	}
 

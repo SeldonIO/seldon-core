@@ -227,34 +227,4 @@ class SchemaRegistryTest {
             expectThat(testResponse).equals(responseAfterDeserialisation)
         }
     }
-
-    @Nested
-    inner class SuffixTest {
-        @Test
-        fun `correct topic name`() {
-            val topic = "pipeline.test.output"
-
-            val lastSuffix = topic.splitToSequence(".").last()
-
-            expectThat(lastSuffix).isEqualTo("output")
-        }
-
-        @Test
-        fun `topic with output in the name`() {
-            val topic = "pipeline.test-output.outputs"
-
-            val lastSuffix = topic.splitToSequence(".").last()
-
-            expectThat(lastSuffix).isEqualTo("outputs")
-        }
-
-        @Test
-        fun `topic with input in the name and extra dots`() {
-            val topic = "pipeline.test.input..outputs"
-
-            val lastSuffix = topic.splitToSequence(".").last()
-
-            expectThat(lastSuffix).isEqualTo("outputs")
-        }
-    }
 }

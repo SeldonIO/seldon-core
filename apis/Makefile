@@ -169,14 +169,6 @@ build-go: \
 		./mlops/v2_dataplane/schema_registry/infer_request.proto \
 		./mlops/v2_dataplane/schema_registry/infer_response.proto
 
-	@echo "[INFO] Generating Go code for schema_registry"
-		@mkdir -p $(PROTOC_GO_OUTPUT_PREFIX)
-		@$(CMD_PROTOC) \
-			$(PROTOC_IMPORT_PATH) \
-			$(PROTOC_GO_OPTIONS) \
-			./mlops/v2_dataplane/schema_registry/infer_request.proto \
-			./mlops/v2_dataplane/schema_registry/infer_response.proto
-
 
 .PHONY: clean-go
 clean-go:
