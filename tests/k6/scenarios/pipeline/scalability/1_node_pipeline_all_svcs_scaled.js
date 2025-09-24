@@ -1,12 +1,3 @@
-// This test does following:
-//
-// - scales model gw replicas => 2
-// - scales dataflow engine replicas => 2
-// - scales pipeline gw replicas => 2
-// - scales server replicas => 5
-// - sets up pipeline of 1 node
-// - sends 5000 requests
-
 import { dump as yamlDump } from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.mjs";
 import * as k8s from '../../../components/k8s.js';
 import {connectControlPlaneOps,
@@ -34,6 +25,13 @@ const modelName = 'tests-pipeline-1-node-echo';
 const pipelineName = 'tests-pipeline-1-node-echo-pipeline';
 const serverName = "autotest-mlserver"
 
+// A 1 model pipeline, model is a simple echo model
+// which returns a constant string in the response.
+//
+// - scales model gw replicas => 2
+// - scales dataflow engine replicas => 2
+// - scales pipeline gw replicas => 2
+// - scales server replicas => 5
 export function setup() {
     return setupK6(function (config) {
         k8s.init()
@@ -49,7 +47,7 @@ export function setup() {
 
         const modelServerReplicas = 5
 
-        const server = generateServer(serverName, "mlserver", modelServerReplicas, 1, modelServerReplicas)
+        const server = generateServer(serverName, "mlserver", modelServerReplicas, modelServerReplicas, modelServerReplicas)
         ctl.unloadServerFn(server.object.metadata.name, true, true)
         ctl.loadServerFn(server.yaml, server.object.metadata.name, true, true, 30)
 
@@ -71,7 +69,7 @@ export function setup() {
         // we have to scale the model-gw, dataflow-engine, pipeline-gw AFTER we have deployed the pipelines
         // as otherwise the seldon controller will prohibit the scaling and default to 1 replica as there's no
         // pipelines deployed
-        const seldonRuneTime = generateSeldonRuntime(replicaModelGw,replicaPipeLineGw,replicaDataFlowEngine)
+        const seldonRuneTime = generateSeldonRuntime(replicaModelGw, replicaPipeLineGw, replicaDataFlowEngine)
         ctl.loadSeldonRuntimeFn(seldonRuneTime.object, true, true)
 
         // wait for pipeline to be ready since scaling data-plane services

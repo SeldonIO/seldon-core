@@ -1,12 +1,3 @@
-// This test does following:
-//
-// - model gw replicas => 2
-// - dataflow engine replicas => 2
-// - scales pipeline gw replicas => 2
-// - scales server replicas => 1
-// - sets up 2 pipeline of 5 nodes
-// - sends 5000 requests, split across both pipelines
-
 import { dump as yamlDump } from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.mjs";
 import * as k8s from '../../../components/k8s.js';
 import {connectControlPlaneOps,
@@ -14,7 +5,6 @@ import {connectControlPlaneOps,
 import {generateMultiModelPipelineYaml, getModelInferencePayload} from '../../../components/model.js';
 import {inferHttp, setupK6, tearDownK6} from "../../../components/v2.js";
 import {awaitPipelineStatus, generateSeldonRuntime, generateServer} from "../../../components/k8s.js";
-import { sleep } from 'k6';
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
 export let options = {
@@ -37,7 +27,14 @@ const pipelineName2 = modelNamePrefix2 + '-pipeline';
 const serverName = "autotest-mlserver"
 const modelType = 'echo'
 
-
+// This test does following:
+//
+// - model gw replicas => 2
+// - dataflow engine replicas => 2
+// - scales pipeline gw replicas => 2
+// - scales server replicas => 1
+// - sets up 2 pipeline of 5 models in series
+// - sends requests evently across both pipelines
 export function setup() {
     return setupK6(function (config) {
         k8s.init()

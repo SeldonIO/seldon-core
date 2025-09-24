@@ -14,7 +14,6 @@ import {
     generateSeldonRuntime,
     generateServer
 } from "../../../components/k8s.js";
-import { sleep } from 'k6';
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
 export let options = {
@@ -39,13 +38,19 @@ const pipelineName = 'automatedtests-parallel';
 const serverName = "autotest-mlserver"
 
 
+// Sets up parallel pipeline:
+// 2 input models runs in parallel
+// and we wait for both outputs to input
+// into the final model. Each model has an average
+// configured latency of 0.1 seconds with a standard
+// deviation of 1.
 export function setup() {
     return setupK6(function (config) {
         k8s.init()
 
         const ctl = connectControlPlaneOps(config)
 
-        const inputModelParams = [
+        const modelParams = [
             {
                 name: 'predict_latency_dist',
                 value: 'normal'
@@ -75,7 +80,7 @@ export function setup() {
         console.log("Server created")
 
         const pipeline = generateMultiModelParallelPipelineYaml(pipelineName,
-            [inputModelName1, inputModelName2], inputModelType, inputModelParams, outputModelName,
+            [inputModelName1, inputModelName2], inputModelType, modelParams, outputModelName,
             outputModelType, 1, config.replicas.model, serverName)
 
         pipeline.modelCRYaml.forEach(model => {

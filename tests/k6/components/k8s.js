@@ -475,20 +475,6 @@ export function generateSeldonRuntime(modelGwReplicas, pipelineGwReplicas, dataF
                 {
                     name: "seldon-dataflow-engine",
                     replicas: dataFlowEngineReplicas,
-                    podSpec: {
-                        containers: [{
-                            name: "seldon-dataflow-engine",
-                            resources: {
-                                limits: {
-                                    memory: dataFlowEngineMemoryLimit,
-                                },
-                                requests: {
-                                    cpu: "500m",
-                                    memory: "1G"
-                                }
-                            }
-                        }],
-                    },
                 },
                 {
                     name: "seldon-modelgateway",

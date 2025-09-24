@@ -1,8 +1,5 @@
 import { dump as yamlDump } from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.mjs";
 import * as k8s from '../../components/k8s.js';
-import * as scheduler from '../../components/scheduler.js'
-
-import { getConfig } from '../../components/settings.js'
 import {connectControlPlaneOps,
 } from '../../components/utils.js'
 import {generateMultiModelPipelineYaml, getModelInferencePayload} from '../../components/model.js';
@@ -19,7 +16,6 @@ export let options = {
         'data_sent{scenario:default}': [],
     },
     setupTimeout: '6000s',
-    //duration: '5s',
     teardownTimeout: '6000s',
     iterations: 50000,
 }
@@ -28,8 +24,15 @@ const modelType = 'echo'
 const modelName = 'tests-pipeline-1-node-echo';
 const pipelineName = 'tests-pipeline-1-node-echo-pipeline';
 const serverName = "autotest-mlserver";
-const modelServerReplicas = 5;
 
+// A 1 model pipeline, model is a simple echo model
+// which returns a constant string in the response.
+//
+// Environment variables config options:
+// - INFERENCE_SERVER_REPLICAS
+// - INFERENCE_SERVER_MIN_REPLICAS
+// - INFERENCE_SERVER_MAX_REPLICAS
+// - MODEL_REPLICAS
 export function setup() {
     return setupK6(function (config) {
         k8s.init()
@@ -43,12 +46,13 @@ export function setup() {
             }
         ]
 
-        const server = generateServer(serverName, "mlserver", modelServerReplicas, 1, modelServerReplicas)
+        const server = generateServer(serverName, "mlserver",  config.replicas.inferenceServer.actual,
+            config.replicas.inferenceServer.min, config.replicas.inferenceServer.max)
         ctl.unloadServerFn(server.object.metadata.name, true, true)
         ctl.loadServerFn(server.yaml, server.object.metadata.name, true, true, 45)
 
         const pipeline = generateMultiModelPipelineYaml(1, modelType, pipelineName,
-            modelName, modelParams, config.modelName, modelServerReplicas, serverName)
+            modelName, modelParams, config.modelName, config.replicas.model, serverName)
 
 
         pipeline.modelCRYaml.forEach(model => {

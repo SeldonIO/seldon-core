@@ -447,7 +447,7 @@ function isNonEmptyArray(value) {
 export function generateMultiModelParallelPipelineYaml(pipelineName,
                                                        inputModelNames,
                                                        inputModelType,
-                                                       inputModelParams,
+                                                       modelParams,
                                                        outputModelName,
                                                        outputModelType,
                                                        uriOffset,
@@ -499,7 +499,7 @@ export function generateMultiModelParallelPipelineYaml(pipelineName,
                 "requirements": modelTemplate.requirements,
                 "memory": (memoryBytes == null) ? modelTemplate.memoryBytes : memoryBytes,
                 "replicas": replicas,
-                "parameters": (inputModelParams != null) ? inputModelParams : [],
+                "parameters": (modelParams != null) ? modelParams : [],
                 "server" : deployToServer,
             }
         }
@@ -534,7 +534,7 @@ export function generateMultiModelParallelPipelineYaml(pipelineName,
             "requirements": outputModelTemplate.requirements,
             "memory": (memoryBytes == null) ? modelTemplate.memoryBytes : memoryBytes,
             "replicas": replicas,
-            "parameters": (inputModelParams != null) ? inputModelParams : [],
+            "parameters": (modelParams != null) ? modelParams : [],
             "server" : deployToServer,
         }
     }
