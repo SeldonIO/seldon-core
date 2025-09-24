@@ -66,6 +66,7 @@ because Helm automatically creates and mounts the volume at this path. For custo
 configure volumes or run outside of Kubernetes, you can set this to any directory path where your 
 `.confluent-schema.yaml` file is located.
 {% endhint %}
+
 ### Configuration File Format
 
 The `.confluent-schema.yaml` file must follow this structure:
