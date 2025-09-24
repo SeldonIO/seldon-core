@@ -39,7 +39,7 @@ import (
 )
 
 const (
-	pollTimeoutMillisecs           = 10000
+	pollTimeoutMillisecs           = 1000
 	timeoutWaitForPartitions       = 10 * time.Second
 	maxRequeueAfterPartitionRevoke = 1
 )
