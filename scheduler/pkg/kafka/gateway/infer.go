@@ -242,7 +242,8 @@ func (kc *InferKafkaHandler) createTopics(topicNames []string) error {
 		logger.Warnf("no kafka admin client, can't create any of the following topics: %v", topicNames)
 		// An error would typically be returned here, but a missing adminClient typically
 		// indicates we're running tests. Instead of failing tests, we return nil here.
-		// TODO: find a better way of mocking kafka
+		// TODO: we should create interfaces for adminClient and a wrapper around kafka so we can provide
+		//  interfaces which can be easily mocked with mockgen
 		return nil
 	}
 	t1 := time.Now()
@@ -378,6 +379,11 @@ func (kc *InferKafkaHandler) AddModel(modelName string) error {
 func (kc *InferKafkaHandler) RemoveModel(modelName string, cleanTopicsOnDeletion bool, keepTopics bool) error {
 	kc.mu.Lock()
 	defer kc.mu.Unlock()
+
+	if _, ok := kc.loadedModels[modelName]; !ok {
+		kc.logger.WithField("model", modelName).Info("Model does not exist, no topics to remove")
+		return nil
+	}
 
 	delete(kc.loadedModels, modelName)
 	delete(kc.subscribedTopics, kc.topicNamer.GetModelTopicInputs(modelName))
