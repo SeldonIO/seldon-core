@@ -99,21 +99,11 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 		}
 	}
 
-	modelGwState := modelVersion.state.ModelGwState
-	modelGwReason := modelVersion.state.ModelGwReason
-	if deleted {
-		modelGwState = ModelTerminate
-		modelGwReason = "Model deleted"
-	} else if !isLatest {
-		modelGwState = ModelTerminated
-		modelGwReason = "Not latest model version"
-	}
-
 	modelVersion.state = ModelStatus{
 		State:               modelState,
-		ModelGwState:        modelGwState,
+		ModelGwState:        modelVersion.state.ModelGwState,
 		Reason:              modelReason,
-		ModelGwReason:       modelGwReason,
+		ModelGwReason:       modelVersion.state.ModelGwReason,
 		Timestamp:           modelTimestamp,
 		AvailableReplicas:   stats.replicasAvailable,
 		UnavailableReplicas: stats.replicasLoading + stats.replicasLoadFailed,
@@ -137,10 +127,11 @@ func (m *MemoryStore) FailedScheduling(modelID string, version uint32, reason st
 		if modelVersion.version == version {
 			// we use len of GetAssignment instead of .state.AvailableReplicas as it is more accurate in this context
 			availableReplicas := uint32(len(modelVersion.GetAssignment()))
-
 			modelVersion.state = ModelStatus{
 				State:               ScheduleFailed,
+				ModelGwState:        modelVersion.state.ModelGwState,
 				Reason:              reason,
+				ModelGwReason:       modelVersion.state.ModelGwReason,
 				Timestamp:           time.Now(),
 				AvailableReplicas:   availableReplicas,
 				UnavailableReplicas: modelVersion.GetModel().GetDeploymentSpec().GetReplicas() - availableReplicas,
@@ -171,4 +162,9 @@ func (m *MemoryStore) updateModelStatus(isLatest bool, deleted bool, modelVersio
 	logger.Debugf("Stats %+v modelVersion %+v prev model %+v", stats, modelVersion, prevModelVersion)
 
 	updateModelState(isLatest, modelVersion, prevModelVersion, stats, deleted)
+}
+
+func (m *MemoryStore) setModelGwStatusToTerminate(modelVersion *ModelVersion) {
+	modelVersion.state.ModelGwState = ModelTerminate
+	modelVersion.state.ModelGwReason = "Model deleted"
 }
