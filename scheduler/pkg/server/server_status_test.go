@@ -111,7 +111,8 @@ func TestTerminateModelGwVersionModels(t *testing.T) {
 
 			// trigger cleanup
 			clr := cleaner.NewTestVersionCleaner(s.modelStore, s.logger)
-			clr.CleanupOldVersions(modelName)
+			err = clr.CleanupOldVersions(modelName)
+			g.Expect(err).To(BeNil())
 
 			// check first version is terminated
 			model, err = s.modelStore.GetModel(modelName)

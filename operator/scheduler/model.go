@@ -195,11 +195,8 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 						return err
 					}
 				}
-
-				logger.Info("Finalizer removed", "model", latestModel.GetName())
 				return nil
 			})
-
 			if retryErr != nil {
 				logger.Error(err, "Failed to remove finalizer after retries")
 			}
@@ -243,7 +240,9 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 
 				// Set modelgw status
 				latestModel.Status.ModelGwStatus = modelStatus.GetModelGwState().String()
-				latestModel.Status.ModelGwStatus += fmt.Sprintf("(%s) ", modelStatus.GetModelGwReason())
+				if modelStatus.GetModelGwReason() != "" {
+					latestModel.Status.ModelGwStatus += fmt.Sprintf("(%s) ", modelStatus.GetModelGwReason())
+				}
 
 				// Set the total number of replicas targeted by this model
 				latestModel.Status.Replicas = int32(
@@ -343,7 +342,7 @@ func (s *SchedulerClient) updateModelStatus(ctx context.Context, model *v1alpha1
 	}
 
 	if err := s.Status().Update(ctx, model); err != nil {
-		if errors.IsNotFound(err) { //Ignore NotFound errors
+		if errors.IsNotFound(err) {
 			return nil
 		}
 		s.recorder.Eventf(
@@ -373,6 +372,5 @@ func (s *SchedulerClient) updateModelStatus(ctx context.Context, model *v1alpha1
 			fmt.Sprintf("Model [%v] is Ready", model.GetName()),
 		)
 	}
-
 	return nil
 }
