@@ -4,7 +4,7 @@ description: Learn how to integrate Seldon Core 2 with Schema Registry on both C
 
 # Schema Registry
 
-[Schema Registry](https://docs.confluent.io/platform/current/schema-registry/index.html) provides centralized schema management for data consistency and compatibility.
+[Schema Registry](https://docs.confluent.io/platform/current/schema-registry/index.html) provides centralized schema management for data consistency and compatibility. Using Schema Registry in Core 2 enables seamless integration with Kafka Connect, ksqlDB, and other Confluent ecosystem components.
 
 ## Quick Installation
 
