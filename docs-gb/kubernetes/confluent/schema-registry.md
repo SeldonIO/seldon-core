@@ -55,7 +55,9 @@ When Schema Registry is configured, the following Seldon Core 2 services automat
 
 Setting `security.schemaRegistry.configPath` in the Helm values.yaml file configures the services as follows:
 
-1. Sets the `SELDON_KAFKA_SCHEMA_REGISTRY_CONFIG_PATH` environment variable to the value of `security.schemaRegistry.configPath`
+1. Sets environment variables to the value of `security.schemaRegistry.configPath`:
+   - Dataflow: `SELDON_KAFKA_SCHEMA_REGISTRY_CONFIG_PATH`
+   - Model Gateway and Pipeline Gateway: `SCHEMA_REGISTRY_CONFIG_PATH`
 2. Creates and mounts a volume `kafka-schema-volume` at `/mnt/schema-registry` for Dataflow, Pipeline Gateway, and Model Gateway
 3. Mounts the `confluent-schema` secret to the `kafka-schema-volume`
 4. Expects a `.confluent-schema.yaml` configuration file as a key in the `confluent-schema` secret
