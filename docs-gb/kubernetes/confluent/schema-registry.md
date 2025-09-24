@@ -55,10 +55,17 @@ When Schema Registry is configured, the following Seldon Core 2 services automat
 
 Setting `security.schemaRegistry.configPath` in the Helm values.yaml file configures the services as follows:
 
-1. Sets the `SELDON_KAFKA_SCHEMA_REGISTRY_CONFIG_PATH` environment variable
-2. Mounts the `confluent-schema` secret to `/mnt/schema-registry`
-3. Expects a `.confluent-schema.yaml` configuration file in the mounted directory
+1. Sets the `SELDON_KAFKA_SCHEMA_REGISTRY_CONFIG_PATH` environment variable to the value of `security.schemaRegistry.configPath`
+2. Creates and mounts a volume `kafka-schema-volume` at `/mnt/schema-registry` for Dataflow, Pipeline Gateway, and Model Gateway
+3. Mounts the `confluent-schema` secret to the `kafka-schema-volume`
+4. Expects a `.confluent-schema.yaml` configuration file as a key in the `confluent-schema` secret
 
+{% hint style="info" %}
+**Note**: When using Helm installation, `security.schemaRegistry.configPath` must be set to `/mnt/schema-registry` 
+because Helm automatically creates and mounts the volume at this path. For custom installations where you manually 
+configure volumes or run outside of Kubernetes, you can set this to any directory path where your 
+`.confluent-schema.yaml` file is located.
+{% endhint %}
 ### Configuration File Format
 
 The `.confluent-schema.yaml` file must follow this structure:
