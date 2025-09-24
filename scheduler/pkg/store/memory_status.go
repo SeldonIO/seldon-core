@@ -164,7 +164,30 @@ func (m *MemoryStore) updateModelStatus(isLatest bool, deleted bool, modelVersio
 	updateModelState(isLatest, modelVersion, prevModelVersion, stats, deleted)
 }
 
-func (m *MemoryStore) setModelGwStatusToTerminate(modelVersion *ModelVersion) {
-	modelVersion.state.ModelGwState = ModelTerminate
-	modelVersion.state.ModelGwReason = "Model deleted"
+func (m *MemoryStore) setModelGwStatusToTerminate(isLatest bool, modelVersion *ModelVersion) {
+	if !isLatest {
+		modelVersion.state.ModelGwState = ModelTerminated
+		modelVersion.state.ModelGwReason = "Not latest version"
+	} else {
+		modelVersion.state.ModelGwState = ModelTerminate
+		modelVersion.state.ModelGwReason = "Model deleted"
+	}
+}
+
+func (m *MemoryStore) UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	model, ok := m.store.models[modelKey]
+	if !ok {
+		return false, fmt.Errorf("failed to find model %s", modelKey)
+	}
+
+	modelVersion := model.GetVersion(version)
+	if modelVersion == nil {
+		return false, fmt.Errorf("version not found for model %s, version %d", modelKey, version)
+	}
+
+	m.setModelGwStatusToTerminate(false, modelVersion)
+	return true, nil
 }

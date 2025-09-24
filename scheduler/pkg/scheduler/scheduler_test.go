@@ -47,6 +47,10 @@ func (f mockStore) UnloadVersionModels(modelKey string, version uint32) (bool, e
 	return true, nil
 }
 
+func (f mockStore) UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error) {
+	return true, nil
+}
+
 func (f mockStore) ServerNotify(request *pb.ServerNotify) error {
 	return nil
 }

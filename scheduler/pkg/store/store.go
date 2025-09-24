@@ -122,6 +122,7 @@ type ModelStore interface {
 	GetServer(serverKey string, shallow bool, modelDetails bool) (*ServerSnapshot, error)
 	UpdateLoadedModels(modelKey string, version uint32, serverKey string, replicas []*ServerReplica) error
 	UnloadVersionModels(modelKey string, version uint32) (bool, error)
+	UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error)
 	UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState ModelReplicaState, reason string, runtimeInfo *pb.ModelRuntimeInfo) error
 	AddServerReplica(request *pba.AgentSubscribeRequest) error
 	ServerNotify(request *pb.ServerNotify) error

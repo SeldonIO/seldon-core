@@ -225,7 +225,7 @@ func (m *MemoryStore) removeModelImpl(req *pb.UnloadModelRequest) error {
 		}
 
 		model.SetDeleted()
-		m.setModelGwStatusToTerminate(model.Latest())
+		m.setModelGwStatusToTerminate(true, model.Latest())
 		m.updateModelStatus(true, true, model.Latest(), model.GetLastAvailableModelVersion())
 		return nil
 	} else {

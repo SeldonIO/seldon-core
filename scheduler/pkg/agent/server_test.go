@@ -100,6 +100,10 @@ func (m *mockStore) UnloadVersionModels(modelKey string, version uint32) (bool, 
 	panic("implement me")
 }
 
+func (m *mockStore) UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error) {
+	panic("implement me")
+}
+
 func (m *mockStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState store.ModelReplicaState, reason string, runtimeInfo *pbs.ModelRuntimeInfo) error {
 	model := m.models[modelKey]
 	for _, mv := range model.Versions {
