@@ -18,27 +18,27 @@ jobs:
           version: v1.64.8
           working-directory: operator
           skip-cache: true
-          args: --timeout 10m --verbose
+          args: --timeout 10m --verbose --out-format=colored-line-number
       - name: lint-scheduler
         uses: golangci/golangci-lint-action@v3
         with:
           version: v1.64.8
           working-directory: scheduler
           skip-cache: true
-          args: --timeout 10m --verbose
+          args: --timeout 10m --verbose --out-format=colored-line-number
       - name: lint-hodometer
         uses: golangci/golangci-lint-action@v3
         with:
           version: v1.64.8
           working-directory: hodometer
           skip-cache: true
-          args: --timeout 10m --verbose
+          args: --timeout 10m --verbose --out-format=colored-line-number
       - name: lint-tls
         uses: golangci/golangci-lint-action@v3
         with:
           version: v1.64.8
           working-directory: components/tls
           skip-cache: true
-          args: --timeout 10m --verbose
+          args: --timeout 10m --verbose --out-format=colored-line-number
       - name: lint-dataflow
         run: make -C scheduler/data-flow lint

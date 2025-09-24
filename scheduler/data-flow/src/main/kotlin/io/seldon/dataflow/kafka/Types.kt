@@ -9,11 +9,8 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow.kafka
 
-import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.kstream.Consumed
-import org.apache.kafka.streams.kstream.Produced
-import org.apache.kafka.streams.kstream.StreamJoined
 import org.apache.kafka.streams.processor.StreamPartitioner
+import java.util.Optional
 import java.util.Properties
 
 typealias KafkaProperties = Properties
@@ -22,24 +19,18 @@ typealias TopicName = String
 typealias TensorName = String
 typealias RequestId = String
 typealias TRecord = ByteArray
-typealias TopicsAndTensors = Pair<Set<TopicName>, Set<TensorName>>
 
 class SamePartitionForwarder : StreamPartitioner<String, TRecord> {
-    override fun partition(
+    override fun partitions(
         topic: String,
         key: String,
         value: TRecord,
         numPartitions: Int,
-    ): Int {
+    ): Optional<MutableSet<Int>>? {
         val partitionTag = key.substringBefore(".").toIntOrNull()
-        return partitionTag?.coerceIn(0, numPartitions - 1) ?: 0
+        return Optional.ofNullable(mutableSetOf<Int>(partitionTag?.coerceIn(0, numPartitions - 1) ?: 0))
     }
 }
-
-val consumerSerde: Consumed<RequestId, TRecord> = Consumed.with(Serdes.String(), Serdes.ByteArray())
-val producerSerde: Produced<RequestId, TRecord> = Produced.with(Serdes.String(), Serdes.ByteArray(), SamePartitionForwarder())
-val joinSerde: StreamJoined<RequestId, TRecord, TRecord> =
-    StreamJoined.with(Serdes.String(), Serdes.ByteArray(), Serdes.ByteArray())
 
 enum class ChainType {
     OUTPUT_OUTPUT,

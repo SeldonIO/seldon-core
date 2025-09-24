@@ -9,33 +9,51 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow.kafka
 
-import io.seldon.dataflow.kafka.headers.AlibiDetectRemover
-import io.seldon.dataflow.kafka.headers.PipelineHeaderSetter
+import io.seldon.dataflow.kafka.headers.PipelineHeaderProcessor
 import io.seldon.dataflow.kafka.headers.PipelineNameFilter
+import io.seldon.dataflow.kafka.headers.SeldonHeaders
 import io.seldon.mlops.chainer.ChainerOuterClass.Batch
 import io.seldon.mlops.chainer.ChainerOuterClass.PipelineTensorMapping
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferRequest
 import io.seldon.mlops.inference.v2.V2Dataplane.ModelInferResponse
 import org.apache.kafka.streams.kstream.KStream
-import org.apache.kafka.streams.kstream.ValueTransformerSupplier
 
 fun <T> KStream<T, TRecord>.filterForPipeline(pipelineName: String): KStream<T, TRecord> {
     return this
-        .transformValues(ValueTransformerSupplier { PipelineNameFilter(pipelineName) })
+        .processValues({ PipelineNameFilter(pipelineName) })
         .filterNot { _, value -> value == null }
 }
 
-fun <T> KStream<T, TRecord>.headerRemover(): KStream<T, TRecord> {
-    return this
-        .transformValues(ValueTransformerSupplier { AlibiDetectRemover() })
+fun <T> removeAlibiDetectHeaders(headerProcessor: PipelineHeaderProcessor<T>) {
+    SeldonHeaders.alibiDiscards
+        .forEach { header: String ->
+            headerProcessor.removeHeader(header)
+        }
 }
 
-fun <T> KStream<T, TRecord>.headerSetter(
+fun <T> addPipelineHeaders(
+    headerProcessor: PipelineHeaderProcessor<T>,
+    pipelineName: String,
+    pipelineVersion: String,
+) {
+    headerProcessor
+        .removeHeader(SeldonHeaders.PIPELINE_NAME)
+        .removeHeader(SeldonHeaders.PIPELINE_VERSION)
+        .addHeader(SeldonHeaders.PIPELINE_NAME, pipelineName)
+        .addHeader(SeldonHeaders.PIPELINE_VERSION, pipelineVersion)
+}
+
+fun <T> KStream<T, TRecord>.headerAdjust(
     pipelineName: String,
     pipelineVersion: String,
 ): KStream<T, TRecord> {
     return this
-        .transformValues(ValueTransformerSupplier { PipelineHeaderSetter(pipelineName, pipelineVersion) })
+        .processValues({
+            val headerProcessor = PipelineHeaderProcessor<T>()
+            removeAlibiDetectHeaders(headerProcessor)
+            addPipelineHeaders(headerProcessor, pipelineName, pipelineVersion)
+            headerProcessor
+        })
 }
 
 fun <T> KStream<T, ByteArray>.unmarshallInferenceV2Response(): KStream<T, ModelInferResponse> {
@@ -88,8 +106,7 @@ fun KStream<String, ModelInferRequest>.batchMessages(batchProperties: Batch): KS
     return when (batchProperties.size) {
         0 -> this
         else ->
-            this
-                .transform({ BatchProcessor(batchProperties.size) }, BatchProcessor.STATE_STORE_ID)
+            this.processValues({ BatchProcessor(batchProperties.size) }, BatchProcessor.STATE_STORE_ID)
     }
 }
 

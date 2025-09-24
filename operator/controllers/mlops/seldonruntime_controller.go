@@ -35,14 +35,13 @@ import (
 	seldonreconcile "github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/seldon"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/utils"
-	scheduler "github.com/seldonio/seldon-core/operator/v2/scheduler"
 )
 
 // SeldonRuntimeReconciler reconciles a SeldonRuntime object
 type SeldonRuntimeReconciler struct {
 	client.Client
 	Scheme    *runtime.Scheme
-	Scheduler *scheduler.SchedulerClient
+	Scheduler SchedulerClient
 	Recorder  record.EventRecorder
 }
 
@@ -246,23 +245,12 @@ func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromSeldonConfig(_ context.Co
 	return req
 }
 
-func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromPipeline(_ context.Context, obj client.Object) []reconcile.Request {
-	ctx, cancel := context.WithTimeout(context.Background(), constants.K8sAPICallsTxTimeout)
-	defer cancel()
-	logger := log.FromContext(ctx).WithName("mapSeldonRuntimesFromPipeline")
-
-	pipeline, ok := obj.(*mlopsv1alpha1.Pipeline)
-	if !ok {
-		logger.Error(fmt.Errorf("unexpected type %T", obj), "expected Pipeline")
-		return nil
-	}
-
+func (r *SeldonRuntimeReconciler) mapSeldonRuntimesByNamespace(ctx context.Context, namespace string, logger logr.Logger) []reconcile.Request {
 	var seldonRuntimes mlopsv1alpha1.SeldonRuntimeList
-	if err := r.Client.List(ctx, &seldonRuntimes, client.InNamespace(pipeline.Namespace)); err != nil {
+	if err := r.Client.List(ctx, &seldonRuntimes, client.InNamespace(namespace)); err != nil {
 		logger.Error(err, "error listing seldonRuntimes")
 		return nil
 	}
-
 	var req []reconcile.Request
 	for _, seldonRuntime := range seldonRuntimes.Items {
 		req = append(req, reconcile.Request{
@@ -273,6 +261,30 @@ func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromPipeline(_ context.Contex
 		})
 	}
 	return req
+}
+
+func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromPipeline(_ context.Context, obj client.Object) []reconcile.Request {
+	ctx, cancel := context.WithTimeout(context.Background(), constants.K8sAPICallsTxTimeout)
+	defer cancel()
+	logger := log.FromContext(ctx).WithName("mapSeldonRuntimesFromPipeline")
+	pipeline, ok := obj.(*mlopsv1alpha1.Pipeline)
+	if !ok {
+		logger.Error(fmt.Errorf("unexpected type %T", obj), "expected Pipeline")
+		return nil
+	}
+	return r.mapSeldonRuntimesByNamespace(ctx, pipeline.Namespace, logger)
+}
+
+func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromModel(_ context.Context, obj client.Object) []reconcile.Request {
+	ctx, cancel := context.WithTimeout(context.Background(), constants.K8sAPICallsTxTimeout)
+	defer cancel()
+	logger := log.FromContext(ctx).WithName("mapSeldonRuntimesFromModel")
+	model, ok := obj.(*mlopsv1alpha1.Model)
+	if !ok {
+		logger.Error(fmt.Errorf("unexpected type %T", obj), "expected Model")
+		return nil
+	}
+	return r.mapSeldonRuntimesByNamespace(ctx, model.Namespace, logger)
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -288,6 +300,10 @@ func (r *SeldonRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&auth.RoleBinding{}).
 		Owns(&v1.ServiceAccount{}).
 		Owns(&v1.ConfigMap{}).
+		Watches(
+			&mlopsv1alpha1.Model{},
+			handler.EnqueueRequestsFromMapFunc(r.mapSeldonRuntimesFromModel),
+		).
 		Watches(
 			&mlopsv1alpha1.Pipeline{},
 			handler.EnqueueRequestsFromMapFunc(r.mapSeldonRuntimesFromPipeline),

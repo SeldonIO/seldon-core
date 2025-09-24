@@ -17,6 +17,7 @@ import io.seldon.dataflow.kafka.KafkaAdminProperties
 import io.seldon.dataflow.kafka.KafkaDomainParams
 import io.seldon.dataflow.kafka.KafkaProperties
 import io.seldon.dataflow.kafka.KafkaStreamsParams
+import io.seldon.dataflow.kafka.KafkaStreamsSerdes
 import io.seldon.dataflow.kafka.Pipeline
 import io.seldon.dataflow.kafka.PipelineId
 import io.seldon.dataflow.kafka.PipelineMetadata
@@ -65,6 +66,7 @@ class PipelineSubscriber(
     private val namespace: String,
     pipelineCtlopsThreads: Int,
     private val queueCleanupDelayMs: Long = 30_000L,
+    private val kafkaStreamsSerdes: KafkaStreamsSerdes,
 ) {
     val kafkaAdmin = KafkaAdmin(kafkaAdminProperties, kafkaStreamsParams, topicWaitRetryParams)
     val channel =
@@ -95,6 +97,7 @@ class PipelineSubscriber(
             kafkaDomainParams = kafkaDomainParams,
             name = name,
             logger = logger,
+            kafkaStreamsSerdes = kafkaStreamsSerdes,
         )
 
     // Track queues scheduled for deletion
@@ -237,6 +240,7 @@ class PipelineSubscriber(
                             kafkaConsumerGroupIdPrefix,
                             namespace,
                         )
+
                     PipelineOperation.Delete -> handleDelete(metadata, update.updatesList, update.timestamp)
                     else -> logger.warn("unrecognised pipeline operation (${update.op})")
                 }

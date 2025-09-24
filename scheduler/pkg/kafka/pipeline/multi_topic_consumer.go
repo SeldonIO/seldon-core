@@ -16,6 +16,7 @@ import (
 	"sync/atomic"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka"
 	log "github.com/sirupsen/logrus"
@@ -26,6 +27,7 @@ import (
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 	config_tls "github.com/seldonio/seldon-core/components/tls/v2/pkg/config"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/schema"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
@@ -38,12 +40,13 @@ type MultiTopicsKafkaConsumer struct {
 	consumer   *kafka.Consumer
 	isActive   atomic.Bool
 	// map of kafka id to request
-	requests        cmap.ConcurrentMap
-	tracer          trace.Tracer
-	topicMu         sync.Mutex
-	rebalanceMu     sync.RWMutex
-	wg              sync.WaitGroup
-	partitionsReady *Broadcaster
+	requests             cmap.ConcurrentMap
+	tracer               trace.Tracer
+	topicMu              sync.Mutex
+	rebalanceMu          sync.RWMutex
+	wg                   sync.WaitGroup
+	partitionsReady      *Broadcaster
+	schemaRegistryClient schemaregistry.Client
 }
 
 func NewMultiTopicsKafkaConsumer(
@@ -51,15 +54,17 @@ func NewMultiTopicsKafkaConsumer(
 	consumerConfig *kafka_config.KafkaConfig,
 	id string,
 	tracer trace.Tracer,
+	schemaRegistryClient schemaregistry.Client,
 ) (*MultiTopicsKafkaConsumer, error) {
 	consumer := &MultiTopicsKafkaConsumer{
-		logger:          logger.WithField("source", "MultiTopicsKafkaConsumer"),
-		config:          consumerConfig,
-		topics:          make(map[string]struct{}),
-		id:              id,
-		requests:        cmap.New(),
-		tracer:          tracer,
-		partitionsReady: NewBroadcaster(),
+		logger:               logger.WithField("source", "MultiTopicsKafkaConsumer"),
+		config:               consumerConfig,
+		topics:               make(map[string]struct{}),
+		id:                   id,
+		requests:             cmap.New(),
+		tracer:               tracer,
+		partitionsReady:      NewBroadcaster(),
+		schemaRegistryClient: schemaRegistryClient,
 	}
 	err := consumer.createConsumer(logger)
 	return consumer, err
@@ -190,6 +195,11 @@ func (c *MultiTopicsKafkaConsumer) pollAndMatch() error {
 				requestId := GetRequestIdFromKafkaHeaders(e.Headers)
 				if requestId == "" {
 					logger.Warnf("Missing request id in Kafka headers for key %s", key)
+				}
+
+				// deserialising logic
+				if c.schemaRegistryClient != nil {
+					e.Value = schema.TrimSchemaID(e.Value)
 				}
 				span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
 

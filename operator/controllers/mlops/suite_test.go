@@ -15,33 +15,49 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	//+kubebuilder:scaffold:imports
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"go.uber.org/mock/gomock"
+	v1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
+	"k8s.io/utils/ptr"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	mock2 "github.com/seldonio/seldon-core/operator/v2/controllers/mlops/mock"
 )
 
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to
 // http://onsi.github.io/ginkgo/ to learn more about Ginkgo.
 
-var cfg *rest.Config
-var k8sClient client.Client
-var testEnv *envtest.Environment
+var (
+	k8sClient client.Client
+	testEnv   *envtest.Environment
+	ctx       context.Context
+	cancel    context.CancelFunc
+
+	mockCtrl *gomock.Controller
+
+	muExpectedCalls sync.RWMutex
+)
 
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
-
 	RunSpecsWithDefaultAndCustomReporters(
 		t,
 		"Controller Suite",
@@ -49,7 +65,20 @@ func TestAPIs(t *testing.T) {
 	)
 }
 
+const (
+	TestNamespace = "default"
+)
+
+type expectedCallInfo struct {
+	spec    mlopsv1alpha1.ScalingSpec
+	success *atomic.Bool
+}
+
+var expectedServerNotifyCalls = make(map[string]expectedCallInfo)
+
 var _ = BeforeSuite(func() {
+	ctx, cancel = context.WithCancel(context.TODO())
+
 	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 
 	By("bootstrapping test environment")
@@ -67,22 +96,82 @@ var _ = BeforeSuite(func() {
 
 	//+kubebuilder:scaffold:scheme
 
-	k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
-	Expect(err).NotTo(HaveOccurred())
-	Expect(k8sClient).NotTo(BeNil())
+	k8sManager, err := ctrl.NewManager(cfg, ctrl.Options{
+		Scheme: scheme.Scheme,
+	})
+	Expect(err).ToNot(HaveOccurred())
+
+	mockCtrl = gomock.NewController(GinkgoT())
+	schedulerMock := mock2.NewMockSchedulerClient(mockCtrl)
+
+	// due to fact that ServerNotify on scheduler will be called asynchronously, if we just setup
+	// the mock in the standard way of expecting a call signature we get failures of missed calls as the
+	// test finishes before call is made or failures of wrong arguments used in call. Instead when expected
+	// call is received, expectedServerNotifyCalls.success is marked as true and the test case verifies it's true with:
+	// 			Eventually(func() bool {
+	//				return serverNotifyCalled.Load()
+	//			}, "2s", "10ms").Should(BeTrue())
+	schedulerMock.EXPECT().ServerNotify(gomock.Any(), gomock.Any(), gomock.Any(), false).
+		DoAndReturn(func(_ context.Context, _ *scheduler.SchedulerClient, servers []mlopsv1alpha1.Server, isFirstSync bool) error {
+			muExpectedCalls.Lock()
+			defer muExpectedCalls.Unlock()
+
+			for _, server := range servers {
+				for serverName, check := range expectedServerNotifyCalls {
+					if serverName != server.Name {
+						continue
+					}
+					Expect(server.Spec.ScalingSpec).To(Equal(check.spec))
+					check.success.Store(true)
+				}
+			}
+
+			return nil
+		}).AnyTimes()
+
+	k8sClient = k8sManager.GetClient()
+
+	serverReconciler := &ServerReconciler{
+		Client:    k8sManager.GetClient(),
+		Scheme:    k8sManager.GetScheme(),
+		Scheduler: schedulerMock,
+	}
+
+	err = serverReconciler.SetupWithManager(k8sManager)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = (&ServerConfigReconciler{
+		Client: k8sManager.GetClient(),
+		Scheme: k8sManager.GetScheme(),
+	}).SetupWithManager(k8sManager)
+	Expect(err).ToNot(HaveOccurred())
+
+	go func() {
+		defer GinkgoRecover()
+		err = k8sManager.Start(ctx)
+		Expect(err).ToNot(HaveOccurred(), "failed to run manager")
+	}()
 
 }, 60)
 
+func addExpectedServerNotifyCall(serverName string, scalingSpec mlopsv1alpha1.ScalingSpec, successNotify *atomic.Bool) {
+	muExpectedCalls.Lock()
+	defer muExpectedCalls.Unlock()
+	expectedServerNotifyCalls[serverName] = expectedCallInfo{
+		spec:    scalingSpec,
+		success: successNotify,
+	}
+}
+
 var _ = AfterSuite(func() {
 	By("tearing down the test environment")
+	cancel()
+	mockCtrl.Finish()
 	err := testEnv.Stop()
 	Expect(err).NotTo(HaveOccurred())
 })
 
 var _ = Describe("Controller", func() {
-	const (
-		Namespace = "default"
-	)
 
 	Context("When creating a Pipeline", func() {
 		It("Rejects an invalid Spec", func() {
@@ -93,12 +182,12 @@ var _ = Describe("Controller", func() {
 
 			pipeline := &mlopsv1alpha1.Pipeline{
 				TypeMeta:   metav1.TypeMeta{APIVersion: "batch.tutorial.kubebuilder.io/v1", Kind: "Pipeline"},
-				ObjectMeta: metav1.ObjectMeta{Name: pipelineName, Namespace: Namespace},
+				ObjectMeta: metav1.ObjectMeta{Name: pipelineName, Namespace: TestNamespace},
 				Spec:       mlopsv1alpha1.PipelineSpec{},
 				Status:     mlopsv1alpha1.PipelineStatus{},
 			}
 
-			expectedError := &apierrors.StatusError{
+			expectedError := &errors.StatusError{
 				ErrStatus: metav1.Status{
 					TypeMeta: metav1.TypeMeta{Kind: "", APIVersion: ""},
 					ListMeta: metav1.ListMeta{
@@ -147,7 +236,7 @@ var _ = Describe("Controller", func() {
 
 			pipeline := &mlopsv1alpha1.Pipeline{
 				TypeMeta:   metav1.TypeMeta{APIVersion: "batch.tutorial.kubebuilder.io/v1", Kind: "Pipeline"},
-				ObjectMeta: metav1.ObjectMeta{Name: "test-pipeline-valid", Namespace: Namespace},
+				ObjectMeta: metav1.ObjectMeta{Name: "test-pipeline-valid", Namespace: TestNamespace},
 				Spec: mlopsv1alpha1.PipelineSpec{
 					Steps: []mlopsv1alpha1.PipelineStep{
 						{
@@ -187,7 +276,7 @@ var _ = Describe("Controller", func() {
 				}
 
 			err := k8sClient.Get(
-				ctx, client.ObjectKey{Name: pipelineName, Namespace: Namespace},
+				ctx, client.ObjectKey{Name: pipelineName, Namespace: TestNamespace},
 				retrievedPipeline,
 			)
 			Expect(err).To(BeNil())
@@ -203,7 +292,7 @@ var _ = Describe("Controller", func() {
 
 			model := &mlopsv1alpha1.Model{
 				TypeMeta:   metav1.TypeMeta{APIVersion: "batch.tutorial.kubebuilder.io/v1", Kind: "Model"},
-				ObjectMeta: metav1.ObjectMeta{Name: "test-model-valid", Namespace: Namespace},
+				ObjectMeta: metav1.ObjectMeta{Name: "test-model-valid", Namespace: TestNamespace},
 				Spec:       mlopsv1alpha1.ModelSpec{},
 				Status:     mlopsv1alpha1.ModelStatus{},
 			}
@@ -217,12 +306,12 @@ var _ = Describe("Controller", func() {
 			ctx := context.Background()
 			model := &mlopsv1alpha1.Model{
 				TypeMeta:   metav1.TypeMeta{APIVersion: "batch.tutorial.kubebuilder.io/v1", Kind: "Model"},
-				ObjectMeta: metav1.ObjectMeta{Name: "test-model-valid", Namespace: Namespace},
+				ObjectMeta: metav1.ObjectMeta{Name: "test-model-valid", Namespace: TestNamespace},
 				Spec:       mlopsv1alpha1.ModelSpec{},
 				Status:     mlopsv1alpha1.ModelStatus{},
 			}
 
-			expectedError := &apierrors.StatusError{
+			expectedError := &errors.StatusError{
 				ErrStatus: metav1.Status{
 					TypeMeta: metav1.TypeMeta{Kind: "", APIVersion: ""},
 					ListMeta: metav1.ListMeta{
@@ -265,14 +354,215 @@ var _ = Describe("Controller", func() {
 					},
 				}
 
-				// Fetch the model by name
+			// Fetch the model by name
 			err := k8sClient.Get(
-				ctx, client.ObjectKey{Name: modelName, Namespace: Namespace},
+				ctx, client.ObjectKey{Name: modelName, Namespace: TestNamespace},
 				retrievedModel,
 			)
 			Expect(err).To(BeNil())
 
 			Expect(retrievedModel.Spec).To(Equal(expectedModel))
+		})
+	})
+
+	Context("When creating a ServerConfig spec", func() {
+		It("Accepts a valid Spec", func() {
+			ctx := context.Background()
+
+			serverConfig := &mlopsv1alpha1.ServerConfig{
+				TypeMeta:   metav1.TypeMeta{APIVersion: "batch.tutorial.kubebuilder.io/v1", Kind: "ServerConfig"},
+				ObjectMeta: metav1.ObjectMeta{Name: "mlserver", Namespace: TestNamespace},
+				Spec: mlopsv1alpha1.ServerConfigSpec{
+					VolumeClaimTemplates: []mlopsv1alpha1.PersistentVolumeClaim{
+						{
+							Name: "vol1",
+							Spec: corev1.PersistentVolumeClaimSpec{},
+						},
+					},
+					PodSpec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name:  "container-1",
+								Image: "mlserver",
+								VolumeMounts: []corev1.VolumeMount{
+									{
+										Name:      "volume-1",
+										MountPath: "/mnt",
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+
+			Expect(k8sClient.Create(ctx, serverConfig)).Should(Succeed())
+
+			Eventually(func(g Gomega) {
+				By("By fetching the ServerConfig by name")
+				ctx := context.Background()
+				serverConfigName := "mlserver"
+
+				serverConfig := &mlopsv1alpha1.ServerConfig{}
+				err := k8sClient.Get(
+					ctx, client.ObjectKey{Name: serverConfigName, Namespace: TestNamespace},
+					serverConfig,
+				)
+				g.Expect(err).To(BeNil())
+				g.Expect(serverConfig.Name).To(Equal(serverConfigName))
+			}).Should(Succeed())
+		})
+	})
+
+	Context("When creating a Server spec", func() {
+		It("Accepts a valid Spec with minReplicas = 1 replicas = 1 ", func() {
+			testID := "test-mlserver"
+
+			serverNotifyCalled := &atomic.Bool{}
+			addExpectedServerNotifyCall(testID, mlopsv1alpha1.ScalingSpec{
+				MinReplicas: ptr.To(int32(1)),
+				Replicas:    ptr.To(int32(1)),
+				MaxReplicas: ptr.To(int32(2)),
+			}, serverNotifyCalled)
+
+			ctx := context.Background()
+
+			server := &mlopsv1alpha1.Server{
+				TypeMeta:   metav1.TypeMeta{APIVersion: "batch.tutorial.kubebuilder.io/v1", Kind: "Server"},
+				ObjectMeta: metav1.ObjectMeta{Name: testID, Namespace: TestNamespace},
+				Spec: mlopsv1alpha1.ServerSpec{
+					ServerConfig: "mlserver",
+					StatefulSetPersistentVolumeClaimRetentionPolicy: nil,
+					ScalingSpec: mlopsv1alpha1.ScalingSpec{
+						MinReplicas: ptr.To(int32(1)),
+						Replicas:    ptr.To(int32(1)),
+						MaxReplicas: ptr.To(int32(2)),
+					},
+					DisableAutoUpdate: false,
+				},
+			}
+
+			Expect(k8sClient.Create(ctx, server)).Should(Succeed())
+
+			// we need to wait for the expected call to ServerNotify
+			Eventually(func() bool {
+				return serverNotifyCalled.Load()
+			}, "2s", "10ms").Should(BeTrue())
+
+			Eventually(func(g Gomega) {
+				By("By fetching the StatefulSet by name")
+				ctx := context.Background()
+
+				statefulset := &v1.StatefulSet{}
+				err := k8sClient.Get(
+					ctx, client.ObjectKey{Name: testID, Namespace: TestNamespace},
+					statefulset,
+				)
+
+				g.Expect(err).To(BeNil())
+				g.Expect(statefulset.Name).To(Equal(testID))
+				g.Expect(statefulset.Spec.Replicas).To(Equal(ptr.To(int32(1))))
+			}).Should(Succeed())
+		})
+	})
+
+	Context("When creating a Server spec", func() {
+		It("Accepts a valid Spec with minReplicas = 2 replicas not set, therefore replicas should take minReplicas value of 1", func() {
+			testID := "test-mlserver-2"
+			minReplicas := ptr.To(int32(2))
+
+			serverNotifyCalled := &atomic.Bool{}
+			addExpectedServerNotifyCall(testID, mlopsv1alpha1.ScalingSpec{
+				MinReplicas: minReplicas,
+				MaxReplicas: ptr.To(int32(2)),
+			}, serverNotifyCalled)
+
+			ctx := context.Background()
+
+			server := &mlopsv1alpha1.Server{
+				TypeMeta:   metav1.TypeMeta{APIVersion: "batch.tutorial.kubebuilder.io/v1", Kind: "Server"},
+				ObjectMeta: metav1.ObjectMeta{Name: testID, Namespace: TestNamespace},
+				Spec: mlopsv1alpha1.ServerSpec{
+					ServerConfig: "mlserver",
+					ScalingSpec: mlopsv1alpha1.ScalingSpec{
+						MinReplicas: minReplicas,
+						MaxReplicas: ptr.To(int32(2)),
+					},
+				},
+			}
+
+			Expect(k8sClient.Create(ctx, server)).Should(Succeed())
+
+			// we need to wait for the expected call to ServerNotify
+			Eventually(func() bool {
+				return serverNotifyCalled.Load()
+			}, "2s", "10ms").Should(BeTrue())
+
+			Eventually(func(g Gomega) {
+				By("By fetching the StatefulSet by name")
+				ctx := context.Background()
+
+				statefulset := &v1.StatefulSet{}
+				err := k8sClient.Get(
+					ctx, client.ObjectKey{Name: testID, Namespace: TestNamespace},
+					statefulset,
+				)
+
+				g.Expect(err).To(BeNil())
+				g.Expect(statefulset.Name).To(Equal(testID))
+				g.Expect(statefulset.Spec.Replicas).To(Equal(minReplicas))
+			}).WithTimeout(5 * time.Second).Should(Succeed())
+		})
+	})
+
+	Context("When creating a Server spec", func() {
+		It("Rejects an invalid Spec with minReplicas = 2 replicas = 1", func() {
+			testID := "test-mlserver-3"
+			minReplicas := ptr.To(int32(2))
+			replicas := ptr.To(int32(1))
+
+			serverNotifyCalled := &atomic.Bool{}
+			addExpectedServerNotifyCall(testID, mlopsv1alpha1.ScalingSpec{
+				MinReplicas: minReplicas,
+				Replicas:    replicas,
+			}, serverNotifyCalled)
+
+			ctx := context.Background()
+
+			server := &mlopsv1alpha1.Server{
+				TypeMeta:   metav1.TypeMeta{APIVersion: "batch.tutorial.kubebuilder.io/v1", Kind: "Server"},
+				ObjectMeta: metav1.ObjectMeta{Name: testID, Namespace: TestNamespace},
+				Spec: mlopsv1alpha1.ServerSpec{
+					ServerConfig: "mlserver",
+					ScalingSpec: mlopsv1alpha1.ScalingSpec{
+						MinReplicas: minReplicas,
+						Replicas:    replicas,
+					},
+				},
+			}
+
+			Expect(k8sClient.Create(ctx, server)).Should(Succeed())
+
+			// we expect ServerNotify not to be called
+			Eventually(func() bool {
+				return serverNotifyCalled.Load()
+			}, "2s", "10ms").Should(BeFalse())
+
+			Eventually(func(g Gomega) {
+				By("By fetching the StatefulSet by name, verify does not exist")
+				ctx := context.Background()
+
+				statefulset := &v1.StatefulSet{}
+				err := k8sClient.Get(
+					ctx, client.ObjectKey{Name: testID, Namespace: TestNamespace},
+					statefulset,
+				)
+
+				g.Expect(err).ShouldNot(BeNil())
+				errStatus, ok := err.(*errors.StatusError)
+				g.Expect(ok).To(BeTrue())
+				g.Expect(errors.IsNotFound(errStatus)).Should(BeTrue())
+			}).WithTimeout(5 * time.Second).Should(Succeed())
 		})
 	})
 })

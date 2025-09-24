@@ -21,6 +21,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/knadh/koanf/v2"
 	log "github.com/sirupsen/logrus"
 
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
@@ -28,6 +29,7 @@ import (
 
 	health_probe "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/gateway"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/schema"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 )
 
@@ -57,6 +59,8 @@ var (
 	logLevel               string
 	tracingConfigPath      string
 	healthProbeServicePort int
+	// TODO: add file watcher cfg using koanf and in the future read all file config in one file
+	k = koanf.New(".")
 )
 
 func init() {
@@ -137,6 +141,17 @@ func main() {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
 
+	schemaRegistryClient, err := schema.NewSchemaRegistryClient(logger, k)
+	if err != nil {
+		logger.WithError(err).Fatal("Failed to create schema registry client")
+	}
+
+	if schemaRegistryClient != nil {
+		logger.Infof("Schema registry client was set with host on %s", schemaRegistryClient.Config().SchemaRegistryURL)
+	} else {
+		logger.Debugf("Schema registry not set")
+	}
+
 	inferServerConfig := &gateway.InferenceServerConfig{
 		Host:     envoyHost,
 		HttpPort: envoyPort,
@@ -151,7 +166,7 @@ func main() {
 		WorkerTimeout:         getEnVar(logger, gateway.EnvVarWorkerTimeoutMs, gateway.DefaultWorkerTimeoutMs),
 	}
 	kafkaConsumer, err := gateway.NewConsumerManager(logger, &consumerConfig,
-		getEnVar(logger, gateway.EnvMaxNumConsumers, gateway.DefaultMaxNumConsumers))
+		getEnVar(logger, gateway.EnvMaxNumConsumers, gateway.DefaultMaxNumConsumers), schemaRegistryClient)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create consumer manager")
 	}

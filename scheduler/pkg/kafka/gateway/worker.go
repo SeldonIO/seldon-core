@@ -23,6 +23,9 @@ import (
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry/serde/protobuf"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka"
 	log "github.com/sirupsen/logrus"
@@ -36,6 +39,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/inference_schema"
 	v2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
@@ -45,13 +49,14 @@ import (
 )
 
 type InferWorker struct {
-	logger      log.FieldLogger
-	grpcClient  v2.GRPCInferenceServiceClient
-	httpClient  *http.Client
-	consumer    *InferKafkaHandler
-	tracer      trace.Tracer
-	callOptions []grpc.CallOption
-	topicNamer  *kafka2.TopicNamer
+	logger               log.FieldLogger
+	grpcClient           v2.GRPCInferenceServiceClient
+	httpClient           *http.Client
+	consumer             *InferKafkaHandler
+	tracer               trace.Tracer
+	callOptions          []grpc.CallOption
+	topicNamer           *kafka2.TopicNamer
+	schemaRegistryClient schemaregistry.Client
 }
 
 type InferWork struct {
@@ -69,18 +74,20 @@ func NewInferWorker(
 	logger log.FieldLogger,
 	traceProvider *seldontracer.TracerProvider,
 	topicNamer *kafka2.TopicNamer,
+	schemaRegistryClient schemaregistry.Client,
 ) (*InferWorker, error) {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
 	iw := &InferWorker{
-		logger:      logger.WithField("source", "KafkaInferWorker"),
-		httpClient:  util.GetHttpClientFromTLSOptions(consumer.tlsClientOptions),
-		consumer:    consumer,
-		tracer:      traceProvider.GetTraceProvider().Tracer("Worker"),
-		callOptions: opts,
-		topicNamer:  topicNamer,
+		logger:               logger.WithField("source", "KafkaInferWorker"),
+		httpClient:           util.GetHttpClientFromTLSOptions(consumer.tlsClientOptions),
+		consumer:             consumer,
+		tracer:               traceProvider.GetTraceProvider().Tracer("Worker"),
+		callOptions:          opts,
+		topicNamer:           topicNamer,
+		schemaRegistryClient: schemaRegistryClient,
 	}
 	// Create gRPC clients
 	grpcClient, err := iw.getGrpcClient(
@@ -252,6 +259,17 @@ func (iw *InferWorker) produce(
 	}
 	logger.Debugf("Produce response to topic %s on partition %d", topic, job.msg.TopicPartition.Partition)
 
+	if iw.schemaRegistryClient != nil && !errorTopic {
+		payloadWithSchemaID, err := iw.serializeModelInferRespWithSchemaRegistry(topic, b)
+		if err != nil {
+			logger.Warnf("Failed to serialize model inference response with a schema id on topic %s "+
+				"defaulting to sending without schema id with err: %v", topic, err)
+		}
+		if err == nil {
+			b = payloadWithSchemaID
+		}
+	}
+
 	msg := &kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: job.msg.TopicPartition.Partition},
 		Key:            job.msg.Key,
@@ -400,6 +418,53 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), []byte(err.Error()), true, nil)
 	}
 	return nil
+}
+
+func (iw *InferWorker) serializeModelInferRespWithSchemaRegistry(topic string, payload []byte) ([]byte, error) {
+	logger := iw.logger.WithField("func", "serializeModelInferRespWithSchemaRegistry")
+
+	if len(payload) > 10 {
+		logger.Trace("first 10 bytes before schema serialisation")
+		for _, b := range payload[:10] {
+			logger.Tracef("%02x", b)
+		}
+		logger.Trace("last 10 bytes before schema serialisation")
+		for _, b := range payload[len(payload)-10:] {
+			logger.Tracef("%02x", b)
+		}
+	}
+
+	v2Res := &inference_schema.ModelInferResponse{}
+	err := proto.Unmarshal(payload, v2Res)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response to dataplane model: %w", err)
+	}
+
+	schemaConfig := protobuf.NewSerializerConfig()
+	schemaConfig.NormalizeSchemas = true
+
+	ser, err := protobuf.NewSerializer(iw.schemaRegistryClient, serde.ValueSerde, schemaConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to obtain a serialiser: %w", err)
+	}
+
+	serializedPayload, err := ser.Serialize(topic, v2Res)
+	if err != nil {
+		return nil, fmt.Errorf("failed to serialise response to dataplane model with schema id: %w", err)
+	}
+
+	iw.logger.Debugf("first 10 bytes after schema serialisation")
+	if len(payload) > 10 {
+		logger.Trace("first 10 bytes before schema serialisation")
+		for _, b := range payload[:10] {
+			logger.Tracef("%02x", b)
+		}
+		logger.Trace("last 10 bytes before schema serialisation")
+		for _, b := range payload[len(payload)-10:] {
+			logger.Tracef("%02x", b)
+		}
+	}
+	return serializedPayload, nil
 }
 
 // this is redundant code but is kept there to avoid circular dependencies

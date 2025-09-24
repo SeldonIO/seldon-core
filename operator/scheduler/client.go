@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	backoff "github.com/cenkalti/backoff/v4"
+	"github.com/cenkalti/backoff/v4"
 	"github.com/go-logr/logr"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"google.golang.org/grpc"
@@ -55,10 +55,10 @@ type SchedulerClient struct {
 	mu             sync.Mutex
 }
 
-//  connect on demand by add getConnection(namespace) which if not existing calls connect to scheduler.
+//	connect on demand by add getConnection(namespace) which if not existing calls connect to scheduler.
+//
 // For this will need to know ports (hardwire for now to 9004 and 9044 - ssl comes fom envvar - so always
 // the same for all schedulers
-
 func NewSchedulerClient(logger logr.Logger, client client.Client, recorder record.EventRecorder, tlsOptions tls.TLSOptions) *SchedulerClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
@@ -67,7 +67,7 @@ func NewSchedulerClient(logger logr.Logger, client client.Client, recorder recor
 
 	return &SchedulerClient{
 		Client:         client,
-		logger:         logger.WithName("schedulerClient"),
+		logger:         logger.WithName("SchedulerClient"),
 		callOptions:    opts,
 		recorder:       recorder,
 		seldonRuntimes: make(map[string]*grpc.ClientConn),

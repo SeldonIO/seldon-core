@@ -714,6 +714,8 @@ spec:
           value: '{{ .Values.security.kafka.ssl.client.brokerValidationSecret }}'
         - name: KAFKA_BROKER_TLS_CA_LOCATION
           value: '{{ .Values.security.kafka.ssl.client.brokerCaPath }}'
+        - name: SCHEMA_REGISTRY_CONFIG_PATH
+          value: '{{ .Values.security.schemaRegistry.configPath }}'
         - name: ENVOY_SECURITY_PROTOCOL
           value: '{{ .Values.security.envoy.protocol }}'
         - name: ENVOY_UPSTREAM_SERVER_TLS_SECRET_NAME
@@ -829,6 +831,9 @@ spec:
           name: kafka-config-volume
         - mountPath: /mnt/tracing
           name: tracing-config-volume
+        - mountPath: /mnt/schema-registry
+          name: kafka-schema-volume
+          readOnly: true
 {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
       {{- toYaml . | nindent 8 }}
@@ -844,6 +849,10 @@ spec:
       - configMap:
           name: seldon-tracing
         name: tracing-config-volume
+      - name: kafka-schema-volume
+        secret:
+          optional: true
+          secretName: confluent-schema
     replicas: 1
   - annotations: {{- toYaml .Values.modelgateway.annotations | nindent
       8 }}
@@ -932,6 +941,8 @@ spec:
             .Values.logging.logLevel }}'
         - name: MODELGATEWAY_MAX_NUM_CONSUMERS
           value: '{{ .Values.modelgateway.maxNumConsumers }}'
+        - name: SCHEMA_REGISTRY_CONFIG_PATH
+          value: '{{ .Values.security.schemaRegistry.configPath }}'
         - name: SELDON_SCHEDULER_PLAINTXT_PORT
           value: "9004"
         - name: SELDON_SCHEDULER_TLS_PORT
@@ -984,6 +995,9 @@ spec:
           name: kafka-config-volume
         - mountPath: /mnt/tracing
           name: tracing-config-volume
+        - mountPath: /mnt/schema-registry
+          name: kafka-schema-volume
+          readOnly: true
 {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
       {{- toYaml . | nindent 8 }}
@@ -999,6 +1013,10 @@ spec:
       - configMap:
           name: seldon-tracing
         name: tracing-config-volume
+      - name: kafka-schema-volume
+        secret:
+          optional: true
+          secretName: confluent-schema
     replicas: 1
   - annotations: {{- toYaml .Values.hodometer.annotations | nindent
       8 }}
@@ -1169,6 +1187,8 @@ spec:
           value: '{{ .Values.security.kafka.sasl.client.secret }}'
         - name: SELDON_KAFKA_SASL_PASSWORD_PATH
           value: '{{ .Values.security.kafka.sasl.client.passwordPath }}'
+        - name: SELDON_KAFKA_SCHEMA_REGISTRY_CONFIG_PATH
+          value: '{{ .Values.security.schemaRegistry.configPath }}'
         - name: SELDON_TLS_ENDPOINT_IDENTIFICATION_ALGORITHM
           value: '{{ .Values.security.kafka.ssl.client.endpointIdentificationAlgorithm
             }}'
@@ -1239,6 +1259,10 @@ spec:
             port: health
           initialDelaySeconds: 3
           periodSeconds: 5
+        volumeMounts:
+        - mountPath: /mnt/schema-registry
+          name: kafka-schema-volume
+          readOnly: true
 {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
       {{- toYaml . | nindent 8 }}
@@ -1247,6 +1271,11 @@ spec:
         nindent 8 }}
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
+      volumes:
+      - name: kafka-schema-volume
+        secret:
+          optional: true
+          secretName: confluent-schema
     replicas: 1
   config:
     agentConfig:

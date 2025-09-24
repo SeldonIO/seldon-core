@@ -85,7 +85,7 @@ lint: ${.GOLANGCILINT_PATH}/golangci-lint
 
 .PHONY: test
 test: manifests generate fmt vet envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -race -coverprofile cover.out
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" POD_NAMESPACE=default go test ./...  -race -coverprofile cover.out
 
 ##@ Build
 
@@ -146,6 +146,10 @@ kind-image-load-cli:
 
 .PHONY: kind-image-load-all
 kind-image-load-all: kind-image-load kind-image-load-cli
+
+.PHONY: go-generate
+go-generate:
+	go generate ./...
 
 ##@ Deployment
 

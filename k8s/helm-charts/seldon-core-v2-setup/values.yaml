@@ -36,6 +36,8 @@ security:
         caPath: /tmp/certs/kafka/client/ca.crt
         brokerCaPath: /tmp/certs/kafka/broker/ca.crt
         endpointIdentificationAlgorithm:
+  schemaRegistry:
+    configPath:
   envoy:
     protocol: PLAINTEXT
     ssl:

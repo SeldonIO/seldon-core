@@ -7,7 +7,9 @@ For production use cases follow [Helm installation](https://docs.seldon.io/proje
 
 ## Installing Ansible
 
-Provided Ansible playbooks and roles depends on [kubernetes.core](https://github.com/ansible-collections/kubernetes.core) Ansible Collection for performing `kubectl` and `helm` operations.
+Provided Ansible playbooks and roles depends
+on [kubernetes.core](https://github.com/ansible-collections/kubernetes.core) Ansible Collection for performing `kubectl`
+and `helm` operations.
 Check Ansible [documentation] for further information.
 
 We provide a make target to install Ansible together with dependencies and any required collections.
@@ -28,11 +30,10 @@ We have tested provided instructions on Python 3.8 - 3.11 with following version
 
 and `kubernetes.core` collection in version `2.4.0`.
 
-
-Once installed you can use the following Playbooks that you will find in [Ansible](https://github.com/SeldonIO/seldon-core/tree/v2/ansible) folder of Seldon Core 2 repository.
+Once installed you can use the following Playbooks that you will find
+in [Ansible](https://github.com/SeldonIO/seldon-core/tree/v2/ansible) folder of Seldon Core 2 repository.
 
 You also need to have installed [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/) CLI.
-
 
 ## Installing Seldon Core 2 using Ansible
 
@@ -52,9 +53,10 @@ checkout (`../k8s/helm-charts/`).
 
 Internally this runs, in order, the following playbooks (described in more detail
 in the sections below):
-  - kind-cluster.yaml
-  - setup-ecosystem.yaml
-  - setup-seldon.yaml
+
+- kind-cluster.yaml
+- setup-ecosystem.yaml
+- setup-seldon.yaml
 
 You may pass any of the additonal variables which are configurable for those playbooks
 to `seldon-all`. See the Customizing Ansible Instalation section for details.
@@ -69,10 +71,9 @@ Running the playbooks individually, as described in the sections below, will giv
 more control over what gets run and when (for example, if you want to install into an
 existing k8s cluster).
 
-
 ### Create Kind Cluster
 
-It is recommended to first install Seldon  inside Kind cluster.
+It is recommended to first install Seldon inside Kind cluster.
 This allow to test and trial the installation in isolated environment that is easy to remove.
 
 ```bash
@@ -81,7 +82,8 @@ ansible-playbook playbooks/kind-cluster.yaml
 
 ### Setup Ecosystem
 
-Seldon runs by default in `seldon-mesh` namespace and a Jaeger pod and  and OpenTelemetry collector are installed in the chosen namespace. Run the following:
+Seldon runs by default in `seldon-mesh` namespace and a Jaeger pod and and OpenTelemetry collector are installed in the
+chosen namespace. Run the following:
 
 ```bash
 ansible-playbook playbooks/setup-ecosystem.yaml
@@ -107,49 +109,49 @@ If you have changed the namespace you wish to use you will need to run with:
 ansible-playbook playbooks/setup-seldon.yaml -e seldon_mesh_namespace=<mynamespace>
 ```
 
-
 ## Customizing Ansible Installation
 
 ### Ecosystem configuration options
 
-The ecosystem setup can be parametrized by providing extra Ansible variables, e.g. using `-e` flag to `ansible-playbook` command.
+The ecosystem setup can be parametrized by providing extra Ansible variables, e.g. using `-e` flag to `ansible-playbook`
+command.
 
 For example run the following from the `ansible/` folder:
+
 ```bash
 ansible-playbook playbooks/setup-ecosystem.yaml -e full_install=no -e install_kafka=yes
 ```
+
 will only install Kafka when setting up the ecosystem.
 
-|                         | type   | default                       | comment                                                  |
-|-------------------------|--------|-------------------------------|----------------------------------------------------------|
-| seldon_mesh_namespace   | string | seldon-mesh                   | namespace to install Seldon Core 2                      |
+|                         | type   | default                       | comment                                                        |
+|-------------------------|--------|-------------------------------|----------------------------------------------------------------|
+| seldon_mesh_namespace   | string | seldon-mesh                   | namespace to install Seldon Core 2                             |
 | seldon_kafka_namespace  | string | seldon-mesh                   | namespace to install Kafka Cluster for Seldon Core 2           |
-| full_install            | bool   | yes                           | enables full ecosystem installation                      |
-| install_kafka           | bool   | `{{ full_install }}`          | installs Strimzi Kafka Operator                          |
-| install_prometheus      | bool   | `{{ full_install }}`          | installs Prometheus Operator                             |
-| install_grafana         | bool   | `{{ full_install }}`          | installs Grafana Operator                                |
-| install_certmanager     | bool   | `{{ full_install }}`          | installs Cert Manager                                    |
-| install_jaeger          | bool   | `{{ full_install }}`          | installs Jaeger                                          |
-| install_opentelemetry   | bool   | `{{ full_install }}`          | installs OpenTelemetry                                   |
+| full_install            | bool   | yes                           | enables full ecosystem installation                            |
+| install_kafka           | bool   | `{{ full_install }}`          | installs Strimzi Kafka Operator                                |
+| install_prometheus      | bool   | `{{ full_install }}`          | installs Prometheus Operator                                   |
+| install_grafana         | bool   | `{{ full_install }}`          | installs Grafana Operator                                      |
+| install_certmanager     | bool   | `{{ full_install }}`          | installs Cert Manager                                          |
+| install_jaeger          | bool   | `{{ full_install }}`          | installs Jaeger                                                |
+| install_opentelemetry   | bool   | `{{ full_install }}`          | installs OpenTelemetry                                         |
 | configure_kafka         | bool   | `{{ install_kafka }}`         | configures Kafka Cluster for Seldon Core 2                     |
 | configure_prometheus    | bool   | `{{ install_prometheus }}`    | configure Prometheus using Seldon Core 2 specific resources    |
 | configure_jaeger        | bool   | `{{ install_jaeger }}`        | configure Jaeger using Seldon Core 2 specific resources        |
 | configure_opentelemetry | bool   | `{{ install_opentelemetry }}` | configure OpenTelemetry using Seldon Core 2 specific resources |
-
-
+| install_schema_registry | bool   | `false`                       | installs Schema Registry                                       |
 
 ### Seldon Core 2 configuration options
 
-|                         | type   | default                       | comment                                                 |
-|-------------------------|--------|-------------------------------|---------------------------------------------------------|
-| seldon_kafka_namespace  | string | seldon-mesh                   | namespace to install Kafka                              |
-| seldon_mesh_namespace   | string | seldon-mesh                   | namespace to install Seldon                             |
-| seldon_crds_namespace   | string | default                       | namespace to install Seldon CRDs                        |`
-| full_install            | bool   | yes                           | enables full ecosystem installation                     |
-| install_crds            | bool   | `{{ full_install }}`          | installs Seldon CRDs                                    |
-| install_components      | bool   | `{{ full_install }}`          | install Seldon components                               |
-| install_servers         | bool   | `{{ full_install }}`          | install Seldon servers                                  |
-
+|                        | type   | default              | comment                             |
+|------------------------|--------|----------------------|-------------------------------------|
+| seldon_kafka_namespace | string | seldon-mesh          | namespace to install Kafka          |
+| seldon_mesh_namespace  | string | seldon-mesh          | namespace to install Seldon         |
+| seldon_crds_namespace  | string | default              | namespace to install Seldon CRDs    |`
+| full_install           | bool   | yes                  | enables full ecosystem installation |
+| install_crds           | bool   | `{{ full_install }}` | installs Seldon CRDs                |
+| install_components     | bool   | `{{ full_install }}` | install Seldon components           |
+| install_servers        | bool   | `{{ full_install }}` | install Seldon servers              |
 
 #### Custom Seldon images and private registries
 
@@ -203,10 +205,10 @@ separate values file, which could be used if deploying manually via helm.
 
 This is controlled via two variables:
 
-|                                      | type   | default                        | comment                             |
-|--------------------------------------|--------|--------------------------------|-------------------------------------|
-| save_helm_components_overrides       | bool   | false                          | enable saving helm values overrides |
-| save_helm_components_overrides_file  | string | ~/seldon_helm_comp_values.yaml | path/filename for saving overrides  |
+|                                     | type   | default                        | comment                             |
+|-------------------------------------|--------|--------------------------------|-------------------------------------|
+| save_helm_components_overrides      | bool   | false                          | enable saving helm values overrides |
+| save_helm_components_overrides_file | string | ~/seldon_helm_comp_values.yaml | path/filename for saving overrides  |
 
 You can either pass those within the custom images config file or directly when running the
 playbook. For example, for just saving the helm-chart overrides (without installing seldon
@@ -236,4 +238,5 @@ You may want to also remove cache resources used for the installation with
 rm -rf ~/.cache/seldon/
 ```
 
-If you used Ansible to install Seldon Core 2 and its ecosystem into K8s cluster other than Kind you need to manually remove all the components.
+If you used Ansible to install Seldon Core 2 and its ecosystem into K8s cluster other than Kind you need to manually
+remove all the components.

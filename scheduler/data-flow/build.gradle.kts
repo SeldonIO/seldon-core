@@ -29,8 +29,10 @@ dependencies {
     implementation("io.klogging:slf4j-klogging:0.11.1")
 
     // Kafka
-    implementation("org.apache.kafka:kafka-streams:7.7.0-ccs")
-    testImplementation("org.apache.kafka:kafka-streams-test-utils:7.7.0-ccs")
+    implementation("org.apache.kafka:kafka-streams:8.0.0-ccs")
+    testImplementation("org.apache.kafka:kafka-streams-test-utils:8.0.0-ccs")
+    // https://mvnrepository.com/artifact/io.confluent/kafka-streams-protobuf-serde
+    implementation("io.confluent:kafka-streams-protobuf-serde:8.0.0")
 
     // gRPC
     implementation("io.grpc:grpc-kotlin-stub:1.4.3")
@@ -39,14 +41,14 @@ dependencies {
     runtimeOnly("io.grpc:grpc-netty-shaded:1.73.0")
     implementation("com.google.protobuf:protobuf-java") {
         version {
-            strictly("[4.27.2,)")
-            prefer("4.27.2")
+            strictly("[4.29.3,)")
+            prefer("4.29.3")
         }
     }
     implementation("com.google.protobuf:protobuf-kotlin") {
         version {
-            strictly("[4.27.2,)")
-            prefer("4.27.2")
+            strictly("[4.29.3,)")
+            prefer("4.29.3")
         }
     }
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
@@ -61,11 +63,12 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:3.0.1")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation("com.charleskorn.kaml:kaml:0.61.0")
 
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.3")
     testImplementation("io.strikt:strikt-core:0.34.1")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("org.assertj:assertj-core:3.25.1")
 }
 
 sourceSets {

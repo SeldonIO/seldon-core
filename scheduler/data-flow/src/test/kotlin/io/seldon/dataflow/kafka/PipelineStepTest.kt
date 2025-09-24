@@ -49,6 +49,7 @@ internal class PipelineStepTest {
                 0L,
                 ChainerOuterClass.Batch.getDefaultInstance(),
                 kafkaDomainParams,
+                kafkaStreamsSerdes,
             )
 
         expect {
@@ -72,6 +73,7 @@ internal class PipelineStepTest {
                 .setPipelineName(DEFAULT_PIPELINE_NAME).build()
         private val defaultSink = TopicForPipeline(topicName = "seldon.namespace.sinkModel.inputs", pipelineName = DEFAULT_PIPELINE_NAME)
         private val kafkaDomainParams = KafkaDomainParams(useCleanState = true, joinWindowMillis = 1_000L)
+        private val kafkaStreamsSerdes = KafkaStreamsSerdes(SchemaRegistryConfig(_useSchemaRegistry = false))
 
         @JvmStatic
         fun stepFor(): Stream<Arguments> =
@@ -218,6 +220,7 @@ internal class PipelineStepTest {
                 triggerJoinType = ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner,
                 triggerTensorsByTopic = emptyMap(),
                 batchProperties = ChainerOuterClass.Batch.getDefaultInstance(),
+                kafkaStreamsSerdes = kafkaStreamsSerdes,
             )
 
         private fun makeJoinerFor(
@@ -241,6 +244,7 @@ internal class PipelineStepTest {
                 inputTriggerTopics = emptySet(),
                 triggerJoinType = ChainerOuterClass.PipelineStepUpdate.PipelineJoinType.Inner,
                 triggerTensorsByTopic = emptyMap(),
+                kafkaStreamsSerdes = kafkaStreamsSerdes,
             )
     }
 }

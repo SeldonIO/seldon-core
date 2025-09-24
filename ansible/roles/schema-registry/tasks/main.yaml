@@ -1,0 +1,16 @@
+---
+- name: Create a k8s namespace for schema registry
+  kubernetes.core.k8s:
+    name: "{{ schema_registry_namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Install Confluent Schema Registry
+  kubernetes.core.helm:
+    name: schema-registry
+    namespace: "{{ schema_registry_namespace }}"
+    chart_ref: "schema-registry"
+    chart_repo_url: "https://charts.bitnami.com/bitnami"
+    wait: true
+    values: "{{ lookup('ansible.builtin.template', '../templates/schema-registry-values.yaml.j2') | from_yaml }}"

@@ -19,16 +19,18 @@ import (
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/schemaregistry"
 	"github.com/signalfx/splunk-otel-go/instrumentation/github.com/confluentinc/confluent-kafka-go/v2/kafka/splunkkafka"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
-	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
+	kafkaconfig "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 
 	kafka2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
-	pipeline "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/schema"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
@@ -47,24 +49,25 @@ const (
 )
 
 type InferKafkaHandler struct {
-	logger            log.FieldLogger
-	mu                sync.RWMutex
-	loadedModels      map[string]bool
-	subscribedTopics  map[string]bool
-	workers           []*InferWorker
-	consumer          *kafka.Consumer
-	producer          *kafka.Producer
-	done              chan bool
-	tracer            trace.Tracer
-	topicNamer        *kafka2.TopicNamer
-	consumerConfig    *ManagerConfig
-	adminClient       *kafka.AdminClient
-	consumerName      string
-	replicationFactor int
-	numPartitions     int
-	tlsClientOptions  *util.TLSOptions
-	producerMu        sync.RWMutex
-	producerActive    atomic.Bool
+	logger               log.FieldLogger
+	mu                   sync.RWMutex
+	loadedModels         map[string]bool
+	subscribedTopics     map[string]bool
+	workers              []*InferWorker
+	consumer             *kafka.Consumer
+	producer             *kafka.Producer
+	done                 chan bool
+	tracer               trace.Tracer
+	topicNamer           *kafka2.TopicNamer
+	consumerConfig       *ManagerConfig
+	adminClient          *kafka.AdminClient
+	consumerName         string
+	replicationFactor    int
+	numPartitions        int
+	tlsClientOptions     *util.TLSOptions
+	producerMu           sync.RWMutex
+	producerActive       atomic.Bool
+	schemaRegistryClient schemaregistry.Client
 }
 
 func GetIntConfigMapValue(configMap kafka.ConfigMap, key string, defaultValue int) (int, error) {
@@ -88,6 +91,7 @@ func NewInferKafkaHandler(
 	producerConfigMap kafka.ConfigMap,
 	topicsConfigMap kafka.ConfigMap,
 	consumerName string,
+	schemaRegistryClient schemaregistry.Client,
 ) (*InferKafkaHandler, error) {
 	defaultReplicationFactor, err := util.GetIntEnvar(envDefaultReplicationFactor, defaultReplicationFactor)
 	if err != nil {
@@ -115,17 +119,18 @@ func NewInferKafkaHandler(
 	}
 
 	ic := &InferKafkaHandler{
-		logger:            logger.WithField("source", "InferConsumer"),
-		done:              make(chan bool),
-		tracer:            consumerConfig.TraceProvider.GetTraceProvider().Tracer("Worker"),
-		topicNamer:        topicNamer,
-		loadedModels:      make(map[string]bool),
-		subscribedTopics:  make(map[string]bool),
-		consumerConfig:    consumerConfig,
-		consumerName:      consumerName,
-		replicationFactor: replicationFactor,
-		numPartitions:     numPartitions,
-		tlsClientOptions:  tlsClientOptions,
+		logger:               logger.WithField("source", "InferConsumer"),
+		done:                 make(chan bool),
+		tracer:               consumerConfig.TraceProvider.GetTraceProvider().Tracer("Worker"),
+		topicNamer:           topicNamer,
+		loadedModels:         make(map[string]bool),
+		subscribedTopics:     make(map[string]bool),
+		consumerConfig:       consumerConfig,
+		consumerName:         consumerName,
+		replicationFactor:    replicationFactor,
+		numPartitions:        numPartitions,
+		tlsClientOptions:     tlsClientOptions,
+		schemaRegistryClient: schemaRegistryClient,
 	}
 
 	return ic, ic.setup(consumerConfigMap, producerConfigMap)
@@ -135,7 +140,7 @@ func (kc *InferKafkaHandler) setup(consumerConfig kafka.ConfigMap, producerConfi
 	logger := kc.logger.WithField("func", "setup")
 	var err error
 
-	producerConfigWithoutSecrets := kafka_config.WithoutSecrets(producerConfig)
+	producerConfigWithoutSecrets := kafkaconfig.WithoutSecrets(producerConfig)
 	kc.logger.Infof("Creating producer with config %v", producerConfigWithoutSecrets)
 	kc.producer, err = kafka.NewProducer(&producerConfig)
 	if err != nil {
@@ -148,7 +153,7 @@ func (kc *InferKafkaHandler) setup(consumerConfig kafka.ConfigMap, producerConfi
 	// for eg. hash(topic1) -> modelgateway-0
 	// this is done by the caller i.e. ConsumerManager (store.go)
 	consumerConfig["group.id"] = kc.consumerName
-	consumerConfigWithoutSecrets := kafka_config.WithoutSecrets(consumerConfig)
+	consumerConfigWithoutSecrets := kafkaconfig.WithoutSecrets(consumerConfig)
 	kc.logger.Infof("Creating consumer with config %v", consumerConfigWithoutSecrets)
 	kc.consumer, err = kafka.NewConsumer(&consumerConfig)
 	if err != nil {
@@ -164,7 +169,7 @@ func (kc *InferKafkaHandler) setup(consumerConfig kafka.ConfigMap, producerConfi
 	}
 
 	for i := 0; i < kc.consumerConfig.NumWorkers; i++ {
-		worker, err := NewInferWorker(kc, kc.logger, kc.consumerConfig.TraceProvider, kc.topicNamer)
+		worker, err := NewInferWorker(kc, kc.logger, kc.consumerConfig.TraceProvider, kc.topicNamer, kc.schemaRegistryClient)
 		if err != nil {
 			return err
 		}
@@ -379,14 +384,29 @@ func (kc *InferKafkaHandler) RemoveModel(modelName string, cleanTopicsOnDeletion
 		}
 	}
 
+	inputTopic := kc.topicNamer.GetModelTopicInputs(modelName)
+	outputTopic := kc.topicNamer.GetModelTopicOutputs(modelName)
+
 	if !keepTopics && cleanTopicsOnDeletion {
 		// delete input and output topics from kafka
-		inputTopic := kc.topicNamer.GetModelTopicInputs(modelName)
-		outputTopic := kc.topicNamer.GetModelTopicOutputs(modelName)
 		err := kc.deleteTopics([]string{inputTopic, outputTopic})
 		if err != nil {
 			return err
 		}
+	}
+
+	if kc.schemaRegistryClient == nil {
+		return nil
+	}
+
+	_, err := kc.schemaRegistryClient.DeleteSubject(inputTopic, cleanTopicsOnDeletion)
+	if err != nil {
+		kc.logger.WithError(err).Errorf("failed to delete schema for input topic %s and model name %s", inputTopic, modelName)
+	}
+
+	_, err = kc.schemaRegistryClient.DeleteSubject(outputTopic, cleanTopicsOnDeletion)
+	if err != nil {
+		kc.logger.WithError(err).Errorf("failed to delete schema for input topic %s and model name %s", outputTopic, modelName)
 	}
 
 	return nil
@@ -441,6 +461,10 @@ func (kc *InferKafkaHandler) Serve() {
 				if !kc.Exists(modelName) {
 					logger.Infof("Failed to find model %s in loaded models", modelName)
 					continue
+				}
+
+				if kc.schemaRegistryClient != nil {
+					e.Value = schema.TrimSchemaID(e.Value)
 				}
 
 				// Add tracing span
