@@ -177,6 +177,7 @@ func (m *MemoryStore) setModelGwStatusToTerminate(isLatest bool, modelVersion *M
 func (m *MemoryStore) UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	fmt.Println("UnloadModelGwVersionModels called for ", modelKey, " version ", version)
 
 	model, ok := m.store.models[modelKey]
 	if !ok {

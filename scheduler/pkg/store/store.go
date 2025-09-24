@@ -78,6 +78,19 @@ func (m *ModelSnapshot) getLastAvailableModelIdx() int {
 	return lastAvailableIdx
 }
 
+func (m *ModelSnapshot) getLastModelGwAvailableModelIdx() int {
+	if m == nil { // TODO Make safe by not working on actual object
+		return -1
+	}
+	lastAvailableIdx := -1
+	for idx, mv := range m.Versions {
+		if mv.state.ModelGwState == ModelAvailable {
+			lastAvailableIdx = idx
+		}
+	}
+	return lastAvailableIdx
+}
+
 func (m *ModelSnapshot) CanReceiveTraffic() bool {
 	if m.GetLastAvailableModel() != nil {
 		return true
@@ -105,6 +118,17 @@ func (m *ModelSnapshot) GetVersionsBeforeLastAvailable() []*ModelVersion {
 		return nil
 	}
 	lastAvailableIdx := m.getLastAvailableModelIdx()
+	if lastAvailableIdx != -1 {
+		return m.Versions[0:lastAvailableIdx]
+	}
+	return nil
+}
+
+func (m *ModelSnapshot) GetVersionsBeforeLastModelGwAvailable() []*ModelVersion {
+	if m == nil { // TODO Make safe by not working on actual object
+		return nil
+	}
+	lastAvailableIdx := m.getLastModelGwAvailableModelIdx()
 	if lastAvailableIdx != -1 {
 		return m.Versions[0:lastAvailableIdx]
 	}

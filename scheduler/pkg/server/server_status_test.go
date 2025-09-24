@@ -25,6 +25,7 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	scheduler2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/cleaner"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
@@ -43,6 +44,85 @@ func receiveMessageFromStream(stream *stubModelStatusServer) *pb.ModelStatusResp
 		msr = nil
 	}
 	return msr
+}
+
+func TestTerminateModelGwVersionModels(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name    string
+		loadReq []*pb.LoadModelRequest
+	}
+
+	tests := []test{
+		{
+			name: "model ok",
+			loadReq: []*pb.LoadModelRequest{
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "foo"},
+						ModelSpec: &pb.ModelSpec{
+							Uri: "gs://somewhere-1",
+						},
+					},
+				},
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "foo"},
+						ModelSpec: &pb.ModelSpec{
+							Uri: "gs://somewhere-2",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s, _ := createTestScheduler(t)
+			for _, lr := range test.loadReq {
+				err := s.modelStore.UpdateModel(lr)
+				g.Expect(err).To(BeNil())
+			}
+
+			modelName := test.loadReq[0].Model.Meta.Name
+			model, err := s.modelStore.GetModel(modelName)
+			g.Expect(err).To(BeNil())
+
+			// check number of versions
+			g.Expect(model.Versions).To(HaveLen(2))
+
+			// set model-gw status to available
+			mem, ok := s.modelStore.(*store.TestMemoryStore)
+			g.Expect(ok).To(BeTrue())
+
+			err = mem.DirectlyUpdateModelStatus(store.ModelID{
+				Name:    modelName,
+				Version: model.GetLatest().GetVersion(),
+			}, store.ModelStatus{
+				ModelGwState: store.ModelAvailable,
+			})
+			g.Expect(err).To(BeNil())
+
+			// check if latest version is available
+			model, err = s.modelStore.GetModel(modelName)
+			g.Expect(err).To(BeNil())
+			g.Expect(model.GetLatest().ModelState().ModelGwState).To(Equal(store.ModelAvailable))
+
+			// trigger cleanup
+			clr := cleaner.NewTestVersionCleaner(s.modelStore, s.logger)
+			clr.CleanupOldVersions(modelName)
+
+			// check first version is terminated
+			model, err = s.modelStore.GetModel(modelName)
+			g.Expect(err).To(BeNil())
+
+			mv := model.GetPrevious()
+			g.Expect(mv).ToNot(BeNil())
+			g.Expect(mv.ModelState().ModelGwState).To(Equal(store.ModelTerminated))
+		})
+	}
+
 }
 
 func TestModelsStatusStream(t *testing.T) {
