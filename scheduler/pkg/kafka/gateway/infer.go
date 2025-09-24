@@ -35,7 +35,7 @@ import (
 )
 
 const (
-	pollTimeoutMillisecs        = 10000
+	pollTimeoutMilliseconds     = 1000
 	DefaultNumWorkers           = 8
 	EnvVarNumWorkers            = "MODELGATEWAY_NUM_WORKERS"
 	DefaultWorkerTimeoutMs      = 2 * 60 * 1000
@@ -442,7 +442,7 @@ func (kc *InferKafkaHandler) Serve() {
 			kc.producerActive.Store(false)
 			run = false
 		default:
-			ev := kc.consumer.Poll(pollTimeoutMillisecs)
+			ev := kc.consumer.Poll(pollTimeoutMilliseconds)
 			if ev == nil {
 				continue
 			}
