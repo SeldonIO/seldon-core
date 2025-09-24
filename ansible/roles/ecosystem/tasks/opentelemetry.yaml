@@ -1,6 +1,6 @@
 - include_role:
     name: opentelemetry
-  when: install_opentelemetry | bool
+  when: install_opentelemetry | bool or install_clickhouse | bool
 
 - name: Configure OpenTelemetry
   kubernetes.core.k8s:
@@ -9,4 +9,14 @@
     template: "{{ repo_root_dir }}/{{ item }}"
   with_items:
     - tracing/k8s/otel-collector.yaml
-  when: configure_opentelemetry | bool
+  when: configure_opentelemetry | bool and not install_clickhouse | bool
+
+
+- name: Configure OpenTelemetry with ClickHouse
+  kubernetes.core.k8s:
+    state: present
+    namespace: "{{ seldon_mesh_namespace }}"
+    template: "{{ repo_root_dir }}/{{ item }}"
+  with_items:
+    - tracing/k8s/otel-collector-clickhouse.yaml
+  when: install_clickhouse | bool

@@ -13,7 +13,7 @@
     install_jaeger: "{{ full_install }}"
     install_opentelemetry: "{{ full_install }}"
     install_schema_registry: false
-    install_clickhouse : "{{ full_install }}"
+    install_clickhouse : false
 
     configure_prometheus: "{{ install_prometheus }}"
     configure_grafana: "{{ install_grafana }}"

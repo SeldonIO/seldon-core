@@ -140,6 +140,7 @@ will only install Kafka when setting up the ecosystem.
 | configure_jaeger        | bool   | `{{ install_jaeger }}`        | configure Jaeger using Seldon Core 2 specific resources        |
 | configure_opentelemetry | bool   | `{{ install_opentelemetry }}` | configure OpenTelemetry using Seldon Core 2 specific resources |
 | install_schema_registry | bool   | `false`                       | installs Schema Registry                                       |
+| install_clickhouse      | bool   | `false`                       | installs ClickHouse and OpenTelemetry                          |
 
 ### Seldon Core 2 configuration options
 
