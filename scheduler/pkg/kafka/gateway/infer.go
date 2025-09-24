@@ -57,6 +57,7 @@ type InferKafkaHandler struct {
 	consumer             *kafka.Consumer
 	producer             *kafka.Producer
 	done                 chan bool
+	shutdownComplete     chan struct{}
 	tracer               trace.Tracer
 	topicNamer           *kafka2.TopicNamer
 	consumerConfig       *ManagerConfig
@@ -210,8 +211,11 @@ func (kc *InferKafkaHandler) closeProducer() {
 	kc.producer.Close()
 }
 
-func (kc *InferKafkaHandler) Stop() {
+func (kc *InferKafkaHandler) Stop(waitForShutdown bool) {
 	close(kc.done)
+	if waitForShutdown {
+		<-kc.shutdownComplete
+	}
 }
 
 func (kc *InferKafkaHandler) subscribeTopics() error {
