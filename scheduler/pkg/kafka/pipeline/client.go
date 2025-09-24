@@ -215,7 +215,7 @@ func (pc *PipelineSchedulerClient) processEventStream(stream scheduler.Scheduler
 			return err
 		}
 
-		processor.handleEvent(event)
+		go processor.handleEvent(event)
 	}
 }
 
@@ -328,6 +328,11 @@ func (ep *EventProcessor) sendPipelineStatusEvent(
 	reason string,
 	timestamp uint64,
 ) {
+	callOpts := []grpc.CallOption{
+		grpc_retry.WithMax(5), // retry up to 5 times
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponentialWithJitter(100*time.Millisecond, 2.0)),
+	}
+
 	_, err := ep.grpcClient.PipelineStatusEvent(
 		context.Background(),
 		&chainer.PipelineUpdateStatusMessage{
@@ -342,6 +347,7 @@ func (ep *EventProcessor) sendPipelineStatusEvent(
 			Success: success,
 			Reason:  reason,
 		},
+		callOpts...,
 	)
 	if err != nil {
 		ep.logger.WithError(err).Errorf("Failed to send pipeline status event for pipeline %s", pv.Name)
