@@ -23,36 +23,74 @@ import (
 func TestAddRemoveModel(t *testing.T) {
 	g := NewGomegaWithT(t)
 
+	type expected struct {
+		models    int
+		consumers int
+	}
+
 	type test struct {
 		name             string
-		models           []string
+		removeModels     []string
+		addModels        []string
 		numConsumers     int
 		runningConsumers int
+		expected         expected
 	}
 	tests := []test{
 		{
 			name:             "one model - one consumer",
-			models:           []string{"foo"},
+			removeModels:     []string{"foo"},
+			addModels:        []string{"foo"},
 			numConsumers:     1,
 			runningConsumers: 1,
+			expected: expected{
+				models:    0,
+				consumers: 0,
+			},
 		},
 		{
 			name:             "one model - two consumers",
-			models:           []string{"foo"},
+			removeModels:     []string{"foo"},
+			addModels:        []string{"foo"},
 			numConsumers:     2,
 			runningConsumers: 1,
+			expected: expected{
+				models:    0,
+				consumers: 0,
+			},
 		},
 		{
 			name:             "two models - one consumer",
-			models:           []string{"foo", "bar"},
+			removeModels:     []string{"foo", "bar"},
+			addModels:        []string{"foo", "bar"},
 			numConsumers:     1,
 			runningConsumers: 1,
+			expected: expected{
+				models:    0,
+				consumers: 0,
+			},
 		},
 		{
 			name:             "two models - two consumers",
-			models:           []string{"foo", "bar"},
+			removeModels:     []string{"foo", "bar"},
+			addModels:        []string{"foo", "bar"},
 			numConsumers:     2,
 			runningConsumers: 2,
+			expected: expected{
+				models:    0,
+				consumers: 0,
+			},
+		},
+		{
+			name:             "remove model which does not exist - idempotent",
+			removeModels:     []string{"bar"},
+			addModels:        []string{"foo"},
+			numConsumers:     2,
+			runningConsumers: 1,
+			expected: expected{
+				models:    1,
+				consumers: 1,
+			},
 		},
 	}
 
@@ -70,18 +108,18 @@ func TestAddRemoveModel(t *testing.T) {
 			c := &ManagerConfig{SeldonKafkaConfig: &kafka_config.KafkaConfig{}, Namespace: "default", InferenceServerConfig: &kafkaServerConfig, TraceProvider: tp, NumWorkers: 0}
 			cm, err := NewConsumerManager(logger, c, test.numConsumers, nil)
 			g.Expect(err).To(BeNil())
-			for _, model := range test.models {
+			for _, model := range test.addModels {
 				err := cm.AddModel(model)
 				g.Expect(err).To(BeNil())
 			}
 			g.Expect(len(cm.consumers)).To(Equal(test.runningConsumers))
 
-			for _, model := range test.models {
+			for _, model := range test.removeModels {
 				err := cm.RemoveModel(model, false, false)
 				g.Expect(err).To(BeNil())
 			}
-			g.Expect(cm.GetNumModels()).To(Equal(0))
-			g.Expect(len(cm.consumers)).To(Equal(0))
+			g.Expect(cm.GetNumModels()).To(Equal(test.expected.models))
+			g.Expect(len(cm.consumers)).To(Equal(test.expected.consumers))
 		})
 	}
 }

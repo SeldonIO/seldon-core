@@ -214,6 +214,7 @@ func (cm *ConsumerManager) RemoveModel(modelName string, cleanTopicsOnDeletion b
 	if ic == nil {
 		return nil
 	}
+
 	err = ic.RemoveModel(modelName, cleanTopicsOnDeletion, keepTopics)
 	if err != nil {
 		return err
