@@ -215,6 +215,8 @@ func (cm *ConsumerManager) RemoveModel(modelName string, cleanTopicsOnDeletion b
 		return nil
 	}
 
+	cm.logger.WithField("model", modelName).Info("Removing model from consumer")
+
 	err = ic.RemoveModel(modelName, cleanTopicsOnDeletion, keepTopics)
 	if err != nil {
 		return err

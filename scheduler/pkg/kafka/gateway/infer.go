@@ -383,6 +383,7 @@ func (kc *InferKafkaHandler) RemoveModel(modelName string, cleanTopicsOnDeletion
 	delete(kc.loadedModels, modelName)
 	delete(kc.subscribedTopics, kc.topicNamer.GetModelTopicInputs(modelName))
 	if len(kc.subscribedTopics) > 0 {
+		kc.logger.WithField("topics", kc.subscribedTopics).Info("Re-subscribing to remaining topics after model deletion")
 		err := kc.subscribeTopics()
 		if err != nil {
 			kc.logger.WithError(err).Errorf("failed to subscribe to topics")

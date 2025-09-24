@@ -5,6 +5,7 @@ import {connectControlPlaneOps,
 import {generateMultiModelPipelineYaml, getModelInferencePayload} from '../../components/model.js';
 import {connectV2Grpc, inferGrpc, inferHttp, setupK6, tearDownK6} from "../../components/v2.js";
 import {generateServer} from "../../components/k8s.js";
+import { sleep } from 'k6'
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
 export let options = {
@@ -46,21 +47,27 @@ export function setup() {
             }
         ]
 
-        const server = generateServer(serverName, "mlserver",  config.replicas.inferenceServer.actual,
-            config.replicas.inferenceServer.min, config.replicas.inferenceServer.max)
-        ctl.unloadServerFn(server.object.metadata.name, true, true)
-        ctl.loadServerFn(server.yaml, server.object.metadata.name, true, true, 45)
+        // const server = generateServer(serverName, "mlserver",  config.replicas.inferenceServer.actual,
+        //     config.replicas.inferenceServer.min, config.replicas.inferenceServer.max)
+        // ctl.unloadServerFn(server.object.metadata.name, true, true)
+        // sleep(5)
+        // ctl.loadServerFn(server.yaml, server.object.metadata.name, true, true, 45)
 
         const pipeline = generateMultiModelPipelineYaml(1, modelType, pipelineName,
             modelName, modelParams, config.modelName, config.replicas.model, serverName)
 
 
         pipeline.modelCRYaml.forEach(model => {
+            console.log("deleting model")
             ctl.unloadModelFn(model.metadata.name, true)
+            console.log("deleted model")
             ctl.loadModelFn(model.metadata.name, yamlDump(model), true, true)
+            console.log("created model")
         })
 
+        console.log("deleting pipeline")
         ctl.unloadPipelineFn(pipeline.pipelineName, true)
+        console.log("creating pipeline")
         ctl.loadPipelineFn(pipeline.pipelineName, pipeline.pipelineCRYaml, true, true)
 
         return config
