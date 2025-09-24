@@ -179,7 +179,7 @@ func (kc *KafkaSchedulerClient) processEventsStream(
 			return err
 		}
 
-		processor.handleEvent(event)
+		go processor.handleEvent(event)
 	}
 }
 
@@ -300,6 +300,11 @@ func (ep *EventProcessor) sendModelStatusEvent(
 	success bool,
 	reason string,
 ) {
+	callOpts := []grpc.CallOption{
+		grpc_retry.WithMax(5), // retry up to 5 times
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponentialWithJitter(100*time.Millisecond, 2.0)),
+	}
+
 	_, err := ep.grpcClient.ModelStatusEvent(
 		context.Background(),
 		&scheduler.ModelUpdateStatusMessage{
@@ -313,8 +318,9 @@ func (ep *EventProcessor) sendModelStatusEvent(
 			Success: success,
 			Reason:  reason,
 		},
+		callOpts...,
 	)
 	if err != nil {
-		ep.logger.WithError(err).Errorf("Failed to send model status event %s", op.String())
+		ep.logger.WithError(err).Errorf("Failed to send model status event %s after retries", op.String())
 	}
 }
