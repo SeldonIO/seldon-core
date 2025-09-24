@@ -1,9 +1,6 @@
 # Confluent
 
-Seldon Core 2 requires Kafka to implement data-centric inference Pipelines. By this means it gives the
-opportunity to also provide support for the ecosystem of other products from Confluent, including
-Schema Registry, Connect, and ksqlDB to enable advanced data streaming and processing capabilities
-for machine learning workflows. 
+Seldon Core 2 leverages Kafka for implementing data-centric inference Pipelines. This also means that Core 2 users have the ability of integrating with other products from the Kafka ecosystem, such as Schema Registry, Connect or ksqlDB in order to build custom data streaming, processing and logging solutions for machine learning workflows. 
 
 * [Schema Registry](schema-registry.md)
 
