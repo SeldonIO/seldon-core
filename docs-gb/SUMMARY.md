@@ -120,7 +120,8 @@
   * [Istio](kubernetes/service-meshes/istio.md)
   * [Traefik](kubernetes/service-meshes/traefik.md)
   * [Secure Model Endpoints](models/securing-endpoints.md)
-
+* [Confluent](kubernetes/confluent/README.md)
+  * [Schema Registry](kubernetes/confluent/schema-registry.md)
 ## Resources
 
 * [Security](getting-started/kubernetes-installation/security/README.md)
