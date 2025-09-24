@@ -47,11 +47,11 @@ export function setup() {
             }
         ]
 
-        // const server = generateServer(serverName, "mlserver",  config.replicas.inferenceServer.actual,
-        //     config.replicas.inferenceServer.min, config.replicas.inferenceServer.max)
-        // ctl.unloadServerFn(server.object.metadata.name, true, true)
-        // sleep(5)
-        // ctl.loadServerFn(server.yaml, server.object.metadata.name, true, true, 45)
+        const server = generateServer(serverName, "mlserver",  config.replicas.inferenceServer.actual,
+            config.replicas.inferenceServer.min, config.replicas.inferenceServer.max)
+        ctl.unloadServerFn(server.object.metadata.name, true, true)
+        sleep(5)
+        ctl.loadServerFn(server.yaml, server.object.metadata.name, true, true, 45)
 
         const pipeline = generateMultiModelPipelineYaml(1, modelType, pipelineName,
             modelName, modelParams, config.modelName, config.replicas.model, serverName)

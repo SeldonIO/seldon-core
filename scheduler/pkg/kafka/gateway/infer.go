@@ -126,6 +126,7 @@ func NewInferKafkaHandler(
 		topicNamer:           topicNamer,
 		loadedModels:         make(map[string]bool),
 		subscribedTopics:     make(map[string]bool),
+		shutdownComplete:     make(chan struct{}),
 		consumerConfig:       consumerConfig,
 		consumerName:         consumerName,
 		replicationFactor:    replicationFactor,
