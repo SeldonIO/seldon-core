@@ -73,9 +73,7 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 	var modelState ModelState
 	var modelReason string
 	modelTimestamp := stats.latestTime
-	modelGwState := modelVersion.state.ModelGwState
 	if deleted || !isLatest {
-		modelGwState = ModelTerminate
 		if stats.replicasUnloadFailed > 0 {
 			modelState = ModelTerminateFailed
 			modelReason = stats.lastFailedReason
@@ -100,10 +98,22 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 			modelState = ModelProgressing
 		}
 	}
+
+	modelGwState := modelVersion.state.ModelGwState
+	modelGwReason := modelVersion.state.ModelGwReason
+	if deleted {
+		modelGwState = ModelTerminate
+		modelGwReason = "Model deleted"
+	} else if !isLatest {
+		modelGwState = ModelTerminated
+		modelGwReason = "Not latest model version"
+	}
+
 	modelVersion.state = ModelStatus{
 		State:               modelState,
 		ModelGwState:        modelGwState,
 		Reason:              modelReason,
+		ModelGwReason:       modelGwReason,
 		Timestamp:           modelTimestamp,
 		AvailableReplicas:   stats.replicasAvailable,
 		UnavailableReplicas: stats.replicasLoading + stats.replicasLoadFailed,
