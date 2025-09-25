@@ -317,11 +317,6 @@ func (s *SchedulerServer) modelGwReblanceStreams(model *store.ModelSnapshot) {
 			}
 			msg.Timestamp = confRes.GetTimestamp(model.Name)
 			if err := stream.Send(msg); err != nil {
-				if msg.Operation == pb.ModelStatusResponse_ModelCreate {
-					confRes.UpdateStatus(model.Name, server, store.ModelFailed)
-				} else {
-					confRes.UpdateStatus(model.Name, server, store.ModelTerminateFailed)
-				}
 				s.logger.WithError(err).Errorf("Failed to send create rebalance msg to model %s", model.Name)
 			}
 		} else {
@@ -334,7 +329,6 @@ func (s *SchedulerServer) modelGwReblanceStreams(model *store.ModelSnapshot) {
 			s.logger.Debugf("Sending deletion message for model %s to server %s", model.Name, server)
 			msg.Timestamp = confRes.GetTimestamp(model.Name)
 			if err := stream.Send(msg); err != nil {
-				confRes.UpdateStatus(model.Name, server, store.ModelTerminateFailed)
 				s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to model %s", model.Name)
 			}
 		}
@@ -375,11 +369,6 @@ func (s *SchedulerServer) sendModelStatusEventToStreams(
 			delete(s.modelEventStream.streams, stream)
 		}
 		if err != nil {
-			if ms.Operation == pb.ModelStatusResponse_ModelCreate {
-				s.modelEventStream.conflictResolutioner.UpdateStatus(evt.ModelName, subscription.name, store.ModelFailed)
-			} else {
-				s.modelEventStream.conflictResolutioner.UpdateStatus(evt.ModelName, subscription.name, store.ModelTerminateFailed)
-			}
 			logger.WithError(err).Errorf("Failed to send model status event to %s for %s", subscription.name, evt.String())
 		}
 	}
