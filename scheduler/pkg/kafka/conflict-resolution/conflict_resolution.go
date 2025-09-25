@@ -42,6 +42,12 @@ func (cr *ConflictResolutioner[Status]) Delete(name string) {
 
 func (cr *ConflictResolutioner[Status]) UpdateStatus(name string, stream string, status Status) {
 	logger := cr.logger.WithField("func", "UpdatePipelineStatus")
+	if _, ok := cr.VectorResponseStatus[name]; !ok {
+		return
+	}
+	if _, ok := cr.VectorResponseStatus[name][stream]; !ok {
+		return
+	}
 	logger.Debugf("Updating %s stream %s status to %v", name, stream, status)
 	cr.VectorResponseStatus[name][stream] = status
 }
