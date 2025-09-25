@@ -304,10 +304,6 @@ func (s *SchedulerServer) pipelineGwRebalanceStreams(
 
 			msg.Timestamp = cr.GetTimestamp(pv.Name)
 			if err := stream.Send(msg); err != nil {
-				// in case we fail to send the message to a particular pipeline gateway
-				// we set the pipeline status to failed for that stream
-				// Do we want to retry here with backoff?
-				cr.UpdatePipelineStatus(pv.Name, server, pipeline.PipelineFailed)
 				s.logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.Name)
 			}
 		} else {
@@ -315,10 +311,6 @@ func (s *SchedulerServer) pipelineGwRebalanceStreams(
 			msg := s.createPipelineDeletionMessage(pv)
 			msg.Timestamp = cr.GetTimestamp(pv.Name)
 			if err := stream.Send(msg); err != nil {
-				// in case we fail to send the message to a particular pipeline gateway
-				// we set the pipeline status to failed for that stream
-				// Do we want to retry here with backoff?
-				cr.UpdatePipelineStatus(pv.Name, server, pipeline.PipelineFailed)
 				s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.Name)
 			}
 		}
@@ -475,9 +467,8 @@ func (s *SchedulerServer) sendPipelineEventsToStreams(
 	status *pb.PipelineStatusResponse,
 	streams map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription,
 ) {
-	logger := s.logger.WithField("func", "sendPipelineEventsToStreams")
-	cr := s.pipelineEventStream.conflictResolutioner
 
+	logger := s.logger.WithField("func", "sendPipelineEventsToStreams")
 	for stream, subscription := range streams {
 		hasExpired, err := sendWithTimeout(func() error { return stream.Send(status) }, s.timeout)
 		if hasExpired {
@@ -487,7 +478,6 @@ func (s *SchedulerServer) sendPipelineEventsToStreams(
 			delete(s.pipelineEventStream.namesToIps, subscription.name)
 		}
 		if err != nil {
-			cr.UpdatePipelineStatus(event.PipelineName, subscription.name, pipeline.PipelineFailed)
 			logger.WithError(err).Errorf("Failed to send pipeline status event to %s for %s", subscription.name, event.String())
 		}
 	}
