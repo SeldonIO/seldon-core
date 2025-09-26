@@ -2174,10 +2174,10 @@ func TestDrainServerReplica(t *testing.T) {
 			},
 			serverName:     "server1",
 			replicaIdx:     0,
-			modelsReturned: nil,
+			modelsReturned: []string{},
 		},
 		{
-			name: "ReplicaSetDrainingWithModels",
+			name: "ReplicaSetDrainingWithLoadedModels",
 			store: &LocalSchedulerStore{
 				models: map[string]*Model{
 					"model1": {
@@ -2204,6 +2204,51 @@ func TestDrainServerReplica(t *testing.T) {
 			serverName:     "server1",
 			replicaIdx:     0,
 			modelsReturned: []string{"model1"},
+		},
+		{
+			name: "ReplicaSetDrainingWithLoadedAndLoadingModels",
+			store: &LocalSchedulerStore{
+				models: map[string]*Model{
+					"model1": {
+						versions: []*ModelVersion{
+							{
+								version: 1,
+								replicas: map[int]ReplicaStatus{
+									0: {State: Loaded}},
+							},
+						},
+					},
+					"model2": {
+						versions: []*ModelVersion{
+							{
+								version: 1,
+								replicas: map[int]ReplicaStatus{
+									0: {State: Loading}},
+							},
+						},
+					},
+				},
+				servers: map[string]*Server{
+					"server1": {
+						name: "server1",
+						replicas: map[int]*ServerReplica{
+							0: {loadedModels: map[ModelVersionID]bool{
+								{Name: "model1", Version: 1}: true,
+							},
+								loadingModels: map[ModelVersionID]bool{
+									{Name: "model2", Version: 1}: true,
+								},
+							},
+							1: {},
+						},
+						expectedReplicas: -1,
+						shared:           true,
+					},
+				},
+			},
+			serverName:     "server1",
+			replicaIdx:     0,
+			modelsReturned: []string{"model1", "model2"},
 		},
 	}
 
