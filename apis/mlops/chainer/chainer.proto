@@ -14,6 +14,8 @@ message PipelineUpdateMessage {
     Unknown = 0;
     Create = 1;
     Delete = 2;
+    Rebalance = 3;
+    Ready = 4;
   }
   PipelineOperation op = 1;
   string pipeline = 2;

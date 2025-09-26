@@ -79,6 +79,7 @@ const (
 	PipelineTerminate                    // Received signal that pipeline should be terminated.
 	PipelineTerminating                  // In the process of doing cleanup/housekeeping for pipeline termination.
 	PipelineTerminated                   // Pipeline has been terminated.
+	PipelineRebalancing                  // Pipeline is rebalancing
 )
 
 type PipelineState struct {
@@ -89,7 +90,7 @@ type PipelineState struct {
 }
 
 func (ps PipelineStatus) String() string {
-	return [...]string{"PipelineStatusUnknown", "PipelineCreate", "PipelineCreating", "PipelineReady", "PipelineFailed", "PipelineTerminate", "PipelineTerminating", "PipelineTerminated"}[ps]
+	return [...]string{"PipelineStatusUnknown", "PipelineCreate", "PipelineCreating", "PipelineReady", "PipelineFailed", "PipelineTerminate", "PipelineTerminating", "PipelineTerminated", "PipelineRebalancing"}[ps]
 }
 
 func (ps *PipelineState) setState(status PipelineStatus, reason string) {

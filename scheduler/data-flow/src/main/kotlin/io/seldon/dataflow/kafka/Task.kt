@@ -22,7 +22,7 @@ import kotlin.collections.set
 abstract class Task(
     private val pipelineSubscriber: PipelineSubscriber,
     private val metadata: PipelineMetadata,
-    private val timestamp: Long,
+    val timestamp: Long,
     private val name: String,
     val operation: PipelineOperation,
 ) {
@@ -68,6 +68,7 @@ class CreationTask(
         if (pipelines.containsKey(metadata.id)) {
             val previous = pipelines[metadata.id]!!
             if (previous.status.isActive()) {
+                previous.timestamp = timestamp
                 this.sendPipelineUpdateEvent(
                     success = true,
                     reason = previous.status.getDescription() ?: defaultReason,
@@ -118,6 +119,8 @@ class CreationTask(
                 kafkaConsumerGroupIdPrefix,
                 namespace,
                 kafkaStreamsSerdes,
+                pipelineSubscriber,
+                timestamp,
             )
         if (err != null) {
             err.log(logger, Level.ERROR)
@@ -173,8 +176,8 @@ class DeletionTask(
     private val metadata: PipelineMetadata,
     private val steps: List<PipelineStepUpdate>,
     private val kafkaAdmin: KafkaAdmin,
-    private val timestamp: Long,
-    private val name: String,
+    timestamp: Long,
+    name: String,
     private val logger: Klogger,
 ) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Delete) {
     override suspend fun run() {
@@ -206,6 +209,59 @@ class DeletionTask(
             reason = pipelineError?.getDescription() ?: "pipeline removed",
         )
     }
+}
+
+class RebalanceTask(
+    pipelineSubscriber: PipelineSubscriber,
+    private val metadata: PipelineMetadata,
+    timestamp: Long,
+    name: String,
+    private val reason: String,
+    private val logger: Klogger,
+) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Rebalance) {
+    override suspend fun run() {
+        logger.info(
+            "Rebalancing pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
+            metadata.name,
+            metadata.version,
+            metadata.id,
+        )
+        sendPipelineUpdateEvent(
+            success = true,
+            reason = reason,
+        )
+    }
+}
+
+class ReadyTask(
+    pipelineSubscriber: PipelineSubscriber,
+    private val metadata: PipelineMetadata,
+    timestamp: Long,
+    name: String,
+    private val success: Boolean,
+    private val reason: String,
+    private val logger: Klogger,
+) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Ready) {
+    override suspend fun run() {
+        logger.info(
+            "Ready pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
+            metadata.name,
+            metadata.version,
+            metadata.id,
+        )
+        sendPipelineUpdateEvent(
+            success = success,
+            reason = reason,
+        )
+    }
+}
+
+enum class TaskOperation {
+    Create,
+    Delete,
+    Rebalance,
+    Ready,
+    Failed,
 }
 
 class PipelineTaskFactory(
@@ -256,29 +312,67 @@ class PipelineTaskFactory(
         )
     }
 
+    private fun createRebalanceTask(
+        metadata: PipelineMetadata,
+        timestamp: Long,
+        reason: String,
+    ): Task {
+        return RebalanceTask(
+            pipelineSubscriber = pipelineSubscriber,
+            metadata = metadata,
+            timestamp = timestamp,
+            name = name,
+            reason = reason,
+            logger = logger,
+        )
+    }
+
+    private fun createReadyTask(
+        metadata: PipelineMetadata,
+        timestamp: Long,
+        success: Boolean,
+        reason: String,
+    ): Task {
+        return ReadyTask(
+            pipelineSubscriber = pipelineSubscriber,
+            metadata = metadata,
+            timestamp = timestamp,
+            name = name,
+            success = success,
+            reason = reason,
+            logger = logger,
+        )
+    }
+
     /**
      * Creates appropriate task based on operation type
      */
-    suspend fun createTask(
-        operation: PipelineOperation,
+    fun createTask(
+        taskOperation: TaskOperation,
         metadata: PipelineMetadata,
-        steps: List<PipelineStepUpdate>,
+        steps: List<PipelineStepUpdate>? = null,
         timestamp: Long,
         kafkaConsumerGroupIdPrefix: String? = null,
         namespace: String? = null,
-    ): Task? {
-        return when (operation) {
-            PipelineOperation.Create -> {
+        reason: String? = null,
+    ): Task {
+        return when (taskOperation) {
+            TaskOperation.Create -> {
                 require(kafkaConsumerGroupIdPrefix != null) { "kafkaConsumerGroupIdPrefix is required for Create operation" }
                 require(namespace != null) { "namespace is required for Create operation" }
-                createCreationTask(metadata, steps, kafkaConsumerGroupIdPrefix, namespace, timestamp)
+                createCreationTask(metadata, steps!!, kafkaConsumerGroupIdPrefix, namespace, timestamp)
             }
-            PipelineOperation.Delete -> {
-                createDeletionTask(metadata, steps, timestamp)
+            TaskOperation.Delete -> {
+                createDeletionTask(metadata, steps!!, timestamp)
             }
-            else -> {
-                logger.warn("Unsupported pipeline operation: $operation")
-                null
+            TaskOperation.Rebalance -> {
+                createRebalanceTask(metadata, timestamp, reason!!)
+            }
+            TaskOperation.Ready -> {
+                createReadyTask(metadata, timestamp, true, reason!!)
+            }
+            TaskOperation.Failed -> {
+                createReadyTask(metadata, timestamp, false, reason!!)
             }
         }
     }

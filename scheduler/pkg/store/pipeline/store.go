@@ -310,7 +310,7 @@ func (ps *PipelineStore) GetAllRunningPipelineVersions() []coordinator.PipelineE
 		pv := p.GetLatestPipelineVersion()
 		switch pv.State.Status {
 		// we consider PipelineTerminating as running as it is still active
-		case PipelineCreate, PipelineCreating, PipelineReady, PipelineTerminating:
+		case PipelineCreate, PipelineCreating, PipelineReady, PipelineRebalancing, PipelineTerminating:
 			events = append(events, coordinator.PipelineEventMsg{
 				PipelineName:    pv.Name,
 				PipelineVersion: pv.Version,

@@ -209,6 +209,51 @@ func TestGetPipelineStatus(t *testing.T) {
 			},
 			expected: pipeline.PipelineFailed,
 		},
+		{
+			name: "rebalance failed",
+			op:   chainer.PipelineUpdateMessage_Ready,
+			statuses: map[string]pipeline.PipelineStatus{
+				"a": pipeline.PipelineFailed,
+				"b": pipeline.PipelineFailed,
+			},
+			expected: pipeline.PipelineFailed,
+		},
+		{
+			name: "rebalanced",
+			op:   chainer.PipelineUpdateMessage_Ready,
+			statuses: map[string]pipeline.PipelineStatus{
+				"a": pipeline.PipelineReady,
+				"b": pipeline.PipelineReady,
+			},
+			expected: pipeline.PipelineReady,
+		},
+		{
+			name: "rebalanced (some ready)",
+			op:   chainer.PipelineUpdateMessage_Ready,
+			statuses: map[string]pipeline.PipelineStatus{
+				"a": pipeline.PipelineReady,
+				"b": pipeline.PipelineFailed,
+			},
+			expected: pipeline.PipelineReady,
+		},
+		{
+			name: "rebalancing all",
+			op:   chainer.PipelineUpdateMessage_Rebalance,
+			statuses: map[string]pipeline.PipelineStatus{
+				"a": pipeline.PipelineRebalancing,
+				"b": pipeline.PipelineRebalancing,
+			},
+			expected: pipeline.PipelineRebalancing,
+		},
+		{
+			name: "rebalancing some",
+			op:   chainer.PipelineUpdateMessage_Rebalance,
+			statuses: map[string]pipeline.PipelineStatus{
+				"a": pipeline.PipelineReady,
+				"b": pipeline.PipelineRebalancing,
+			},
+			expected: pipeline.PipelineRebalancing,
+		},
 	}
 
 	for _, test := range tests {
