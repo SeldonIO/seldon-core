@@ -1071,10 +1071,10 @@ spec:
           periodSeconds: 5
         resources:
           limits:
-            memory: '1G'
+            memory: '3G'
           requests:
             cpu: '100m'
-            memory: '1G'
+            memory: '3G'
         startupProbe:
           failureThreshold: 3
           httpGet:
