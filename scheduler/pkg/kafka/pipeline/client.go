@@ -215,7 +215,7 @@ func (pc *PipelineSchedulerClient) processEventStream(stream scheduler.Scheduler
 			return err
 		}
 
-		go processor.handleEvent(event)
+		processor.handleEvent(event)
 	}
 }
 
@@ -306,7 +306,7 @@ func (ep *EventProcessor) handleCreateOrUpdatePipeline(event *scheduler.Pipeline
 
 func (ep *EventProcessor) reportSuccess(op chainer.PipelineUpdateMessage_PipelineOperation, pv *pipeline.PipelineVersion, message string, timestamp uint64) {
 	ep.logger.Info(message)
-	ep.sendPipelineStatusEvent(op, pv, true, message, timestamp)
+	go ep.sendPipelineStatusEvent(op, pv, true, message, timestamp)
 }
 
 func (ep *EventProcessor) reportFailure(op chainer.PipelineUpdateMessage_PipelineOperation, pv *pipeline.PipelineVersion, message string, timestamp uint64, err error) {
@@ -317,7 +317,7 @@ func (ep *EventProcessor) reportFailure(op chainer.PipelineUpdateMessage_Pipelin
 	}
 
 	if pv != nil {
-		ep.sendPipelineStatusEvent(op, pv, false, message, timestamp)
+		go ep.sendPipelineStatusEvent(op, pv, false, message, timestamp)
 	}
 }
 
