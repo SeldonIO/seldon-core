@@ -179,7 +179,7 @@ func (kc *KafkaSchedulerClient) processEventsStream(
 			return err
 		}
 
-		go processor.handleEvent(event)
+		processor.handleEvent(event)
 	}
 }
 
@@ -276,7 +276,7 @@ func (ep *EventProcessor) reportSuccess(
 	message string,
 ) {
 	ep.logger.Info(message)
-	ep.sendModelStatusEvent(event, op, true, message)
+	go ep.sendModelStatusEvent(event, op, true, message)
 }
 
 func (ep *EventProcessor) reportFailure(
@@ -291,7 +291,7 @@ func (ep *EventProcessor) reportFailure(
 		ep.logger.Error(message)
 	}
 
-	ep.sendModelStatusEvent(event, op, false, message)
+	go ep.sendModelStatusEvent(event, op, false, message)
 }
 
 func (ep *EventProcessor) sendModelStatusEvent(
