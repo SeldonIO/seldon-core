@@ -171,7 +171,7 @@ dataflow:
   cores: 4
   resources:
     cpu: 100m
-    memory: 3G
+    memory: 1G
   securityContext:
     fsGroup: 1000
     runAsUser: 1000
