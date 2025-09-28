@@ -15,16 +15,16 @@ export let options = {
         'data_received{scenario:default}': [],
         'data_sent{scenario:default}': [],
     },
-    setupTimeout: '6000s',
-    teardownTimeout: '6000s',
+    setupTimeout: '120s',
+    teardownTimeout: '120s',
     iterations: 5000,
 }
 
-const modelNamePrefix1 = 'automatedtests-1-echo'
-const modelNamePrefix2 = 'automatedtests-2-echo'
+const modelNamePrefix1 = 'alpha-1-echo'
+const modelNamePrefix2 = 'alpha-2-echo'
 const pipelineName1 = modelNamePrefix1 + '-pipeline';
 const pipelineName2 = modelNamePrefix2 + '-pipeline';
-const serverName = "autotest-mlserver"
+const serverName = "alpha-mlserver"
 const modelType = 'echo'
 
 // This test does following:

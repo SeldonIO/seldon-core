@@ -16,15 +16,15 @@ export let options = {
         'data_received{scenario:default}': [],
         'data_sent{scenario:default}': [],
     },
-    setupTimeout: '6000s',
-    teardownTimeout: '6000s',
+    setupTimeout: '120s',
+    teardownTimeout: '120s',
     iterations: 50000,
 }
 
 const modelType = 'echo'
-const modelName = 'tests-pipeline-1-node-echo';
-const pipelineName = 'tests-pipeline-1-node-echo-pipeline';
-const serverName = "autotest-mlserver";
+const modelName = 'alpha-model';
+const pipelineName = 'alpha-pipeline';
+const serverName = "alpha-mlserver";
 
 // A 1 model pipeline, model is a simple echo model
 // which returns a constant string in the response.
@@ -50,7 +50,6 @@ export function setup() {
         const server = generateServer(serverName, "mlserver",  config.replicas.inferenceServer.actual,
             config.replicas.inferenceServer.min, config.replicas.inferenceServer.max)
         ctl.unloadServerFn(server.object.metadata.name, true, true)
-        sleep(5)
         ctl.loadServerFn(server.yaml, server.object.metadata.name, true, true, 45)
 
         const pipeline = generateMultiModelPipelineYaml(1, modelType, pipelineName,
@@ -96,7 +95,7 @@ export function teardown(config) {
     tearDownK6(config, function (config) {
         const ctl = connectControlPlaneOps(config)
         ctl.unloadServerFn(serverName, true, false)
-        ctl.unloadModelFn(modelName, true)
+        ctl.unloadModelFn(modelName + "-1", true)
         ctl.unloadPipelineFn(pipelineName, false)
     })
 }

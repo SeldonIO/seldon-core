@@ -20,24 +20,28 @@ export let options = {
         'data_received{scenario:default}': [],
         'data_sent{scenario:default}': [],
     },
-    setupTimeout: '6000s',
-    teardownTimeout: '6000s',
+    setupTimeout: '120s',
+    teardownTimeout: '120s',
     iterations: 5000,
 }
 
-const inputModelName1 = 'automatedtests-input-1'
-const inputModelName2 = 'automatedtests-input-2'
+const inputModelName1 = 'scale-input-1'
+const inputModelName2 = 'scale-input-2'
 const inputModelType = 'synth'
 const outputModelType = 'synth'
-const outputModelName = 'automatedtests-combiner'
-const pipelineName = 'automatedtests-parallel';
-const serverName = "autotest-mlserver"
+const outputModelName = 'scale-combiner'
+const pipelineName = 'scale-parallel';
+const serverName = "scale-mlserver"
 
 const replicaModelGw = 2;
 const replicaDataFlowEngine = 2;
 const replicaPipeLineGw = 2;
 
 
+// Sets up a parallel pipeline with 2 parallel
+// input models and a final combiner model.
+// During the test, pipeline-gw, dataflow-engine, model-gw
+// will be scaled up and down, amount of times governed by runScaleServicesOpTimes
 export function setup() {
     return setupK6(function (config) {
         k8s.init()
@@ -65,7 +69,7 @@ export function setup() {
 
         const server = generateServer(serverName, "mlserver", 1, 1, 1)
         ctl.unloadServerFn(server.object.metadata.name, true, true)
-        ctl.loadServerFn(server.yaml, server.object.metadata.name, true, true)
+        ctl.loadServerFn(server.yaml, server.object.metadata.name, true, true, 30)
 
         const pipeline = generateMultiModelParallelPipelineYaml(pipelineName,
             [inputModelName1, inputModelName2], inputModelType, inputModelParams, outputModelName,
@@ -105,12 +109,12 @@ export default function (config) {
         if (exec.scenario.progress >= ((scaledOpRunHistory + 1) / (runScaleServicesOpTimes + 1))) {
             let scaleModelGw, scalePipelineGw, scaleDataflowEngine;
             if ((scaledOpRunHistory % 2) === 0) {
-                console.log("Scaling UP at " + Math.Round(exec.scenario.progress * 100) + "% progress")
+                console.log("Scaling UP at " + Math.round(exec.scenario.progress * 100) + "% progress")
                 scaleModelGw = replicaModelGw
                 scalePipelineGw = replicaPipeLineGw
                 scaleDataflowEngine = replicaDataFlowEngine
             } else {
-                console.log("Scaling DOWN at " + Math.Round(exec.scenario.progress * 100) + "% progress")
+                console.log("Scaling DOWN at " + Math.round(exec.scenario.progress * 100) + "% progress")
                 scaleModelGw = replicaModelGw - 1
                 scalePipelineGw = replicaPipeLineGw - 1
                 scaleDataflowEngine = replicaDataFlowEngine - 1

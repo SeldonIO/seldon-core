@@ -48,17 +48,11 @@ function modelType() {
 }
 
 function skipTeardown() {
-    if (__ENV.SKIP_TEARDOWN) {
-        return true
-    }
-    return false
+    return String(__ENV.SKIP_TEARDOWN).toLowerCase() === 'true';
 }
 
 function skipSetup() {
-    if (__ENV.SKIP_SETUP) {
-        return true
-    }
-    return false
+    return String(__ENV.SKIP_SETUP).toLowerCase() === 'true';
 }
 
 function loadModel() {
@@ -296,10 +290,7 @@ function modelGwReplicas() {
 }
 
 function useGRPC() {
-    if (__ENV.USE_GRPC) {
-        return true
-    }
-    return false
+    return String(__ENV.USE_GRPC).toLowerCase() === 'true';
 }
 
 function seldonConfigName() {

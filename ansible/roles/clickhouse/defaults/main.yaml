@@ -1,3 +1,2 @@
 ---
 clickhouse_namespace: observability
-clickhouse_chart_version: 0.25.3

@@ -24,18 +24,18 @@ export let options = {
         'data_received{scenario:default}': [],
         'data_sent{scenario:default}': [],
     },
-    setupTimeout: '6000s',
-    teardownTimeout: '6000s',
+    setupTimeout: '120s',
+    teardownTimeout: '120s',
     iterations: 5000,
 }
 
-const inputModelName1 = 'automatedtests-input-1'
-const inputModelName2 = 'automatedtests-input-2'
+const inputModelName1 = 'hotel-model-1'
+const inputModelName2 = 'hotel-model-2'
 const inputModelType = 'synth'
 const outputModelType = 'synth'
-const outputModelName = 'automatedtests-combiner'
-const pipelineName = 'automatedtests-parallel';
-const serverName = "autotest-mlserver"
+const outputModelName = 'hotel-model-combiner'
+const pipelineName = 'hotel-pipeline';
+const serverName = "hotel-mlserver"
 
 
 // Sets up parallel pipeline:

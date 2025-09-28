@@ -20,24 +20,29 @@ export let options = {
         'data_received{scenario:default}': [],
         'data_sent{scenario:default}': [],
     },
-    setupTimeout: '6000s',
-    teardownTimeout: '6000s',
+    setupTimeout: '120s',
+    teardownTimeout: '120s',
     iterations: 5000,
 }
 
-const inputModelName1 = 'automatedtests-input-1'
-const inputModelName2 = 'automatedtests-input-2'
+const inputModelName1 = 'india-input-1'
+const inputModelName2 = 'india-input-2'
 const inputModelType = 'synth'
 const outputModelType = 'synth'
-const outputModelName = 'automatedtests-combiner'
-const pipelineName = 'automatedtests-parallel';
-const serverName = "autotest-mlserver"
+const outputModelName = 'india-combiner'
+const pipelineName = 'india-pipeline';
+const serverName = "india-mlserver"
 
 const replicaModelGw = 1;
 const replicaDataFlowEngine = 1;
 const replicaPipeLineGw = 1;
 
 
+// Sets up a parallel pipeline with 2 parallel
+// input models and a final combiner model.
+// During the test, pipeline-gw
+// will be scaled up multiple times,
+// amount of times governed by runScalePipelineGwOpTimes
 export function setup() {
     return setupK6(function (config) {
         k8s.init()

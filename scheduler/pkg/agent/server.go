@@ -503,7 +503,6 @@ func (s *Server) drainServerReplicaImpl(serverName string, serverReplicaIdx int)
 	time.Sleep(agentDrainCoolDownPeriod)
 
 	s.logger.Debugf("Draining models %v from server %s:%d", modelsChanged, serverName, serverReplicaIdx)
-
 	for _, modelName := range modelsChanged {
 		err = s.scheduler.Schedule(modelName)
 		if err != nil {

@@ -15,15 +15,15 @@ export let options = {
         'data_received{scenario:default}': [],
         'data_sent{scenario:default}': [],
     },
-    setupTimeout: '6000s',
-    teardownTimeout: '6000s',
+    setupTimeout: '120s',
+    teardownTimeout: '120s',
     iterations: 5000,
 }
 
 const modelType = 'echo'
-const modelName = 'tests-pipeline-1-node-echo';
-const pipelineName = 'tests-pipeline-1-node-echo-pipeline';
-const serverName = "autotest-mlserver"
+const modelName = 'delta-model';
+const pipelineName = 'delta-pipeline';
+const serverName = "delta-mlserver"
 
 // A 1 model pipeline, model is a simple echo model
 // which returns a constant string in the response.
