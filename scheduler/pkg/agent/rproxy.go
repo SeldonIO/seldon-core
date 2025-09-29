@@ -118,21 +118,23 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 		externalModelName = req.Header.Get(util.SeldonModelHeader)
 	}
 
-	// to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		if err := t.modelScalingStatsCollector.ScalingMetricsSetup(&wg, internalModelName); err != nil {
-			t.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
-		}
-	}()
-	defer func() {
+	if t.modelScalingStatsCollector != nil {
+		// to sync between scalingMetricsSetup and scalingMetricsTearDown calls running in go routines
+		var wg sync.WaitGroup
+		wg.Add(1)
 		go func() {
-			if err := t.modelScalingStatsCollector.ScalingMetricsTearDown(&wg, internalModelName); err != nil {
+			if err := t.modelScalingStatsCollector.ScalingMetricsSetup(&wg, internalModelName); err != nil {
 				t.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
 			}
 		}()
-	}()
+		defer func() {
+			go func() {
+				if err := t.modelScalingStatsCollector.ScalingMetricsTearDown(&wg, internalModelName); err != nil {
+					t.logger.WithError(err).Warnf("cannot collect scaling stats for model %s", internalModelName)
+				}
+			}()
+		}()
+	}
 
 	startTime := time.Now()
 

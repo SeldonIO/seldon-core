@@ -368,6 +368,11 @@ func (s *Server) AgentEvent(ctx context.Context, message *pb.ModelEventMessage) 
 }
 
 func (s *Server) ModelScalingTrigger(stream pb.AgentService_ModelScalingTriggerServer) error {
+	if !s.autoscalingModelEnabled {
+		s.logger.Warn("Model autoscaling trigger called even though its disabled")
+		return status.Error(codes.Unimplemented, "autoscaling models is disabled")
+	}
+
 	for {
 		message, err := stream.Recv()
 		if err == io.EOF {

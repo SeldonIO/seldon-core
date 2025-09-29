@@ -356,6 +356,8 @@ func main() {
 	}
 
 	// scheduler <-> agent  grpc
+	// auto-scaling has been disabled for time being, until issue is fixed for scaling models back up
+	autoscalingModelEnabled = false
 	as := agent.NewAgentServer(logger, ss, sched, eventHub, autoscalingModelEnabled, *tlsOptions)
 	err = as.StartGrpcServer(allowPlaintxt, agentPort, agentMtlsPort)
 	if err != nil {
