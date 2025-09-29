@@ -219,6 +219,7 @@ func NewAgentServiceManager(
 		agentConfig:              agentConfig,
 		modelTimestamps:          sync.Map{},
 		startTime:                time.Now(),
+		autoScalingEnabled:       autoScalingEnabled,
 	}
 	am.isStartup.Store(true)
 	readinessService.SetState(&am)
