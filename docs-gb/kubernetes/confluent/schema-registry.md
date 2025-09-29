@@ -15,7 +15,7 @@ description: Learn how to integrate Seldon Core 2 with Schema Registry on both C
 Replace the placeholder values with your actual credentials:
 
 ```bash
-kubectl create secret generic confluent-schema --from-literal=.confluent-schema.yaml='
+kubectl create secret generic confluent-schema -n seldon-mesh --from-literal=.confluent-schema.yaml='
 schemaRegistry:
   client:
     URL: your-schema-registry-endpoint

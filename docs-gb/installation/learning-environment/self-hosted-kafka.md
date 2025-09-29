@@ -202,7 +202,7 @@ settings for Kafka configuration. Update the `ConfigMap` only if you need to cus
     kubectl get configmaps -n seldon-mesh
     ```
 
-    You should the ConfigMaps for Kafka, Zookeeper, Strimzi operators, and others.
+    You should have the ConfigMaps for Kafka, Zookeeper, Strimzi operators, and others.
 
     ```
     NAME                       DATA   AGE
@@ -222,7 +222,7 @@ settings for Kafka configuration. Update the `ConfigMap` only if you need to cus
     kubectl get configmap seldon-kafka -n seldon-mesh -o yaml
     ```
 
-    You should see an output simialr to this:
+    You should see an output similar to this:
 
     ```
     apiVersion: v1
