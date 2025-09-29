@@ -8,6 +8,8 @@ IMG ?= ${DOCKERHUB_USERNAME}/seldon-k6:${CUSTOM_IMAGE_TAG}
 GIT_COMMIT := $(shell git rev-parse HEAD)
 GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 
+SELDON_CLUSTER=seldon
+
 CMD = kubectl describe pod ${POD} -n ${NAMESPACE} | grep IP: -m 1 | cut -d' ' -f2- | xargs
 CMD_SVC = kubectl describe svc seldon-mesh -n ${NAMESPACE} | grep IP: -m 1 | cut -d' ' -f2- | xargs
 
@@ -62,44 +64,107 @@ docker-run:
 
 build-push: docker-build docker-push
 
-deploy-envoy-test:
+kind-push-image:
+	kind load docker-image ${IMG} --name ${SELDON_CLUSTER}
+
+.PHONY: set-img-and-namespace
+set-img-and-namespace:
 	cd configs/k8s/base && kustomize edit set image k6=${IMG} && kustomize edit set namespace ${NAMESPACE}
+
+.PHONY: deploy-1-model-pipeline-test
+deploy-1-model-pipeline-test: set-img-and-namespace
+	kustomize build configs/k8s/overlays/pipeline/1_model_pipeline | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" ENVOY_ENDPOINT="${ENVOY_ENDPOINT}" envsubst | kubectl apply -f -
+
+undeploy-1-model-pipeline-test:
+	kustomize build configs/k8s/overlays/pipeline/1_model_pipeline | kubectl delete -f -
+
+.PHONY: deploy-1-model-pipeline-all_svcs_scaled-test
+deploy-1-model-pipeline-all_svcs_scaled-test: set-img-and-namespace
+	kustomize build configs/k8s/overlays/pipeline/scalability/1_model_pipeline_all_svcs_scaled | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" ENVOY_ENDPOINT="${ENVOY_ENDPOINT}" envsubst | kubectl apply -f -
+
+undeploy-1-model-pipeline-all_svcs_scaled-test:
+	kustomize build configs/k8s/overlays/pipeline/scalability/1_model_pipeline_all_svcs_scaled | kubectl delete -f -
+
+.PHONY: deploy-5-model-double-pipeline-test
+deploy-5-model-double-pipeline-test: set-img-and-namespace
+	kustomize build configs/k8s/overlays/pipeline/scalability/5_model_double_pipeline | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" ENVOY_ENDPOINT="${ENVOY_ENDPOINT}" envsubst | kubectl apply -f -
+
+undeploy-5-model-double-pipeline-test:
+	kustomize build configs/k8s/overlays/pipeline/scalability/5_model_double_pipeline | kubectl delete -f -
+
+.PHONY: deploy-parallel-pipeline-test
+deploy-parallel-pipeline-test: set-img-and-namespace
+	kustomize build configs/k8s/overlays/pipeline/scalability/parallel_pipeline | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" ENVOY_ENDPOINT="${ENVOY_ENDPOINT}" envsubst | kubectl apply -f -
+
+undeploy-parallel-pipeline-test:
+	kustomize build configs/k8s/overlays/pipeline/scalability/parallel_pipeline | kubectl delete -f -
+
+.PHONY: deploy-scale-all-up-down-during-test
+deploy-scale-all-up-down-during-test: set-img-and-namespace
+	kustomize build configs/k8s/overlays/pipeline/scalability/scale_all_up_down_during_test | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" ENVOY_ENDPOINT="${ENVOY_ENDPOINT}" envsubst | kubectl apply -f -
+
+undeploy-scale-all-up-down-during-test:
+	kustomize build configs/k8s/overlays/pipeline/scalability/scale_all_up_down_during_test | kubectl delete -f -
+
+.PHONY: deploy-scale-dataflow-engine-during-test
+deploy-scale-dataflow-engine-during-test: set-img-and-namespace
+	kustomize build configs/k8s/overlays/pipeline/scalability/scale_dataflow_engine_during_test | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" ENVOY_ENDPOINT="${ENVOY_ENDPOINT}" envsubst | kubectl apply -f -
+
+undeploy-scale-dataflow-engine-during-test:
+	kustomize build configs/k8s/overlays/pipeline/scalability/scale_dataflow_engine_during_test | kubectl delete -f -
+
+.PHONY: deploy-scale-model-gw-engine-during-test
+deploy-scale-model-gw-engine-during-test: set-img-and-namespace
+	kustomize build configs/k8s/overlays/pipeline/scalability/scale_model_gw_during_test | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" ENVOY_ENDPOINT="${ENVOY_ENDPOINT}" envsubst | kubectl apply -f -
+
+undeploy-scale-model-gw-engine-during-test:
+	kustomize build configs/k8s/overlays/pipeline/scalability/scale_model_gw_during_test | kubectl delete -f -
+
+.PHONY: deploy-scale-pipeline-gw-engine-during-test
+deploy-scale-pipeline-gw-engine-during-test: set-img-and-namespace
+	kustomize build configs/k8s/overlays/pipeline/scalability/scale_pipeline_gw_during_test | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" ENVOY_ENDPOINT="${ENVOY_ENDPOINT}" envsubst | kubectl apply -f -
+
+undeploy-scale-pipeline-gw-engine-during-test:
+	kustomize build configs/k8s/overlays/pipeline/scalability/scale_pipeline_gw_during_test | kubectl delete -f -
+
+.PHONY: deploy-envoy-test
+deploy-envoy-test: set-img-and-namespace
 	kustomize build configs/k8s/overlays/envoy | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" ENVOY_ENDPOINT="${ENVOY_ENDPOINT}" envsubst | kubectl apply -f -
 
 undeploy-envoy-test:
 	kustomize build configs/k8s/overlays/envoy | kubectl delete -f -
 
-deploy-rproxy-test:
-	cd configs/k8s/base && kustomize edit set image k6=${IMG} && kustomize edit set namespace ${NAMESPACE}
+.PHONY: deploy-rproxy-test
+deploy-rproxy-test: set-img-and-namespace
 	kustomize build configs/k8s/overlays/rproxy | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" RPROXY_ENDPOINT="${RPROXY_TRITON_ENDPOINT}" envsubst | kubectl apply -f -
 
-deploy-rproxy-mlserver-test:
-	cd configs/k8s/base && kustomize edit set image k6=${IMG} && kustomize edit set namespace ${NAMESPACE}
+.PHONY: deploy-rproxy-mlserver-test
+deploy-rproxy-mlserver-test: set-img-and-namespace
 	kustomize build configs/k8s/overlays/rproxy | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" RPROXY_ENDPOINT="${RPROXY_MLSERVER_ENDPOINT}" envsubst | kubectl apply -f -
 
 undeploy-rproxy-test:
 	kustomize build configs/k8s/overlays/rproxy | kubectl delete -f -
 
-deploy-server-test:
-	cd configs/k8s/base && kustomize edit set image k6=${IMG} && kustomize edit set namespace ${NAMESPACE}
+.PHONY: deploy-server-test
+deploy-server-test: set-img-and-namespace
 	kustomize build configs/k8s/overlays/server | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" RPROXY_ENDPOINT="${RPROXY_TRITON_ENDPOINT}" envsubst | kubectl apply -f -
 
-deploy-server-mlserver-test:
-	cd configs/k8s/base && kustomize edit set image k6=${IMG} && kustomize edit set namespace ${NAMESPACE}
+.PHONY: deploy-server-mlserver-test
+deploy-server-mlserver-test: set-img-and-namespace
 	kustomize build configs/k8s/overlays/server | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" RPROXY_ENDPOINT="${RPROXY_MLSERVER_ENDPOINT}" envsubst | kubectl apply -f -
 
 undeploy-server-test:
 	kustomize build configs/k8s/overlays/server | kubectl delete -f -
 
-deploy-kmodel-test:
-	cd configs/k8s/base && kustomize edit set image k6=${IMG} && kustomize edit set namespace ${NAMESPACE}
+.PHONY: deploy-kmodel-test
+deploy-kmodel-test: set-img-and-namespace
 	kustomize build configs/k8s/overlays/kmodel | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" PIPELINE_ENDPOINT="${PIPELINE_ENDPOINT}" envsubst | kubectl apply -f -
 
 undeploy-kmodel-test:
 	kustomize build configs/k8s/overlays/kmodel | kubectl delete -f -
 
-deploy-kpipeline-test:
-	cd configs/k8s/base && kustomize edit set image k6=${IMG} && kustomize edit set namespace ${NAMESPACE}
+.PHONY: deploy-kpipeline-test
+deploy-kpipeline-test: set-img-and-namespace
 	kustomize build configs/k8s/overlays/kpipeline | SCHEDULER_ENDPOINT="${SCHEDULER_ENDPOINT}" PIPELINE_ENDPOINT="${PIPELINE_ENDPOINT}" envsubst | kubectl apply -f -
 
 undeploy-kpipeline-test:

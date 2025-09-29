@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namePrefix: "5-model-double-pipeline"
+
+resources:
+  - ../../../../base
+
+patches:
+  - path: envs.yaml
