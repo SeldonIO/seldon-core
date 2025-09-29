@@ -90,6 +90,16 @@ func (cr *ConflictResolutioner[Status]) GetTimestamp(name string) uint64 {
 	return 0
 }
 
+func (cr *ConflictResolutioner[Status]) GetCountResourceWithStatus(resouceName string, status Status) int {
+	count := 0
+	for _, streamStatus := range cr.VectorResponseStatus[resouceName] {
+		if streamStatus == status {
+			count++
+		}
+	}
+	return count
+}
+
 // --------------------
 // Pipeline-specific
 // --------------------
@@ -102,16 +112,6 @@ func CreateNewPipelineIteration(
 	cr.CreateNewIteration(pipelineName, servers, pipeline.PipelineStatusUnknown)
 }
 
-func GetCountPipelineWithStatus(cr *ConflictResolutioner[pipeline.PipelineStatus], pipelineName string, status pipeline.PipelineStatus) int {
-	count := 0
-	for _, streamStatus := range cr.VectorResponseStatus[pipelineName] {
-		if streamStatus == status {
-			count++
-		}
-	}
-	return count
-}
-
 func GetPipelineStatus(
 	cr *ConflictResolutioner[pipeline.PipelineStatus],
 	pipelineName string,
@@ -121,27 +121,27 @@ func GetPipelineStatus(
 	streams := cr.VectorResponseStatus[pipelineName]
 
 	var messageStr = ""
-	readyCount := GetCountPipelineWithStatus(cr, pipelineName, pipeline.PipelineReady)
+	readyCount := cr.GetCountResourceWithStatus(pipelineName, pipeline.PipelineReady)
 	if readyCount > 0 {
 		messageStr += fmt.Sprintf("%d/%d ready ", readyCount, len(streams))
 	}
 
-	terminatedCount := GetCountPipelineWithStatus(cr, pipelineName, pipeline.PipelineTerminated)
+	terminatedCount := cr.GetCountResourceWithStatus(pipelineName, pipeline.PipelineTerminated)
 	if terminatedCount > 0 {
 		messageStr += fmt.Sprintf("%d/%d terminated ", terminatedCount, len(streams))
 	}
 
-	failedCount := GetCountPipelineWithStatus(cr, pipelineName, pipeline.PipelineFailed)
+	failedCount := cr.GetCountResourceWithStatus(pipelineName, pipeline.PipelineFailed)
 	if failedCount > 0 {
 		messageStr += fmt.Sprintf("%d/%d failed ", failedCount, len(streams))
 	}
 
-	rebalancingCount := GetCountPipelineWithStatus(cr, pipelineName, pipeline.PipelineRebalancing)
+	rebalancingCount := cr.GetCountResourceWithStatus(pipelineName, pipeline.PipelineRebalancing)
 	if rebalancingCount > 0 {
 		messageStr += fmt.Sprintf("%d/%d rebalancing ", rebalancingCount, len(streams))
 	}
 
-	unknownCount := GetCountPipelineWithStatus(cr, pipelineName, pipeline.PipelineStatusUnknown)
+	unknownCount := cr.GetCountResourceWithStatus(pipelineName, pipeline.PipelineStatusUnknown)
 	logger.Infof("Pipeline %s status counts: %s", pipelineName, messageStr)
 
 	if message.Update.Op == chainer.PipelineUpdateMessage_Create {
@@ -211,49 +211,54 @@ func GetModelStatus(
 ) (store.ModelState, string) {
 	logger := cr.logger.WithField("func", "GetModelStatus")
 	streams := cr.VectorResponseStatus[modelName]
+
+	var messageStr = ""
+	readyCount := cr.GetCountWithStatus(modelName, store.ModelAvailable)
+	if readyCount > 0 {
+		messageStr += fmt.Sprintf("%d/%d ready ", readyCount, len(streams))
+	}
+
+	terminatedCount := cr.GetCountWithStatus(modelName, store.ModelTerminated)
+	if terminatedCount > 0 {
+		messageStr += fmt.Sprintf("%d/%d terminated ", terminatedCount, len(streams))
+	}
+
+	failedCount := cr.GetCountWithStatus(modelName, store.ModelFailed)
+	if failedCount > 0 {
+		messageStr += fmt.Sprintf("%d/%d failed ", failedCount, len(streams))
+	}
+
+	terminatedFailedCount := cr.GetCountWithStatus(modelName, store.ModelTerminateFailed)
+	if terminatedFailedCount > 0 {
+		messageStr += fmt.Sprintf("%d/%d terminate failed ", terminatedFailedCount, len(streams))
+	}
+
 	unknownCount := cr.GetCountWithStatus(modelName, store.ModelStateUnknown)
+	logger.Infof("Model %s status counts: %s", modelName, messageStr)
 
 	if message.Update.Op == pb.ModelUpdateMessage_Create {
-		readyCount := cr.GetCountWithStatus(modelName, store.ModelAvailable)
-		failedCount := len(streams) - readyCount - unknownCount
-		message := fmt.Sprintf(
-			"%d/%d streams are ready, %d/%d still creating, %d/%d streams failed",
-			readyCount, len(streams),
-			unknownCount, len(streams),
-			failedCount, len(streams),
-		)
 		// We log info this cause the reason doesn't not display in case of
 		// success in the message column of k9s
 		//
 		// TODO: Implement something similar to models to display the numbers
 		// of available replicas
-		logger.Infof("Model %s status message: %s", modelName, message)
 		if failedCount == len(streams) {
-			return store.ModelFailed, message
+			return store.ModelFailed, messageStr
 		}
 		if readyCount > 0 && unknownCount == 0 {
-			return store.ModelAvailable, message
+			return store.ModelAvailable, messageStr
 		}
-		return store.ModelProgressing, message
+		return store.ModelProgressing, messageStr
 	}
 
 	if message.Update.Op == pb.ModelUpdateMessage_Delete {
-		terminatedCount := cr.GetCountWithStatus(modelName, store.ModelTerminated)
-		failedCount := len(streams) - terminatedCount - unknownCount
-		message := fmt.Sprintf(
-			"%d/%d streams terminated, %d/%d still terminating, %d/%d streams failed to terminate",
-			terminatedCount, len(streams),
-			unknownCount, len(streams),
-			failedCount, len(streams),
-		)
-		logger.Infof("Model %s status message: %s", modelName, message)
 		if failedCount > 0 {
-			return store.ModelTerminateFailed, message
+			return store.ModelTerminateFailed, messageStr
 		}
 		if terminatedCount == len(streams) {
-			return store.ModelTerminated, message
+			return store.ModelTerminated, messageStr
 		}
-		return store.ModelTerminating, message
+		return store.ModelTerminating, messageStr
 	}
 
 	return store.ModelStateUnknown, "Unknown operation or status"
