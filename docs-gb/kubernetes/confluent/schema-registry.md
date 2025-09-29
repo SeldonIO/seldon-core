@@ -12,7 +12,7 @@ description: Learn how to integrate Seldon Core 2 with Schema Registry on both C
 
 ### Step 1: Create Schema Registry Secret
 
-Replace the placeholder values with your actual credentials:
+Replace the placeholder values with your actual credentials and select a namespace where your seldon runtime is installed:
 
 ```bash
 kubectl create secret generic confluent-schema -n seldon-mesh --from-literal=.confluent-schema.yaml='
