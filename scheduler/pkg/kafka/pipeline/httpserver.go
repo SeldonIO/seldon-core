@@ -20,13 +20,14 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 const (
