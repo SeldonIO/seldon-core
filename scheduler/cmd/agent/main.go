@@ -116,6 +116,9 @@ func termSignalErrHandler(logger *log.Logger, errChan <-chan error) {
 }
 
 func main() {
+	// we force auto-scaling to be disabled until scale-up issue is resoled
+	autoScalingEnabled := false
+
 	logger := log.New()
 
 	cli.UpdateArgs()
@@ -223,8 +226,7 @@ func main() {
 		modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector
 		modelScalingService        *modelscaling.StatsAnalyserService
 	)
-	// we force auto-scaling to be disabled until scale-up issue is resoled
-	autoScalingEnabled := false
+
 	if autoScalingEnabled {
 		modelLagStatsWrapper := modelscaling.ModelScalingStatsWrapper{
 			Stats:     modelscaling.NewModelReplicaLagsKeeper(),
