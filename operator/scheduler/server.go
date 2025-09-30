@@ -11,6 +11,7 @@ package scheduler
 
 import (
 	"context"
+	e "errors"
 	"fmt"
 	"io"
 
@@ -27,18 +28,24 @@ import (
 )
 
 func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler.SchedulerClient, servers []v1alpha1.Server, isFirstSync bool) error {
+	if len(servers) == 0 {
+		return nil
+	}
+
 	logger := s.logger.WithName("NotifyServer")
 	if grpcClient == nil {
 		// we assume that all servers are in the same namespace
 		namespace := servers[0].Namespace
 		conn, err := s.getConnection(namespace)
 		if err != nil {
-			return err
+			return fmt.Errorf("get connection: %w", err)
 		}
 		grpcClient = scheduler.NewSchedulerClient(conn)
 	}
 
 	var requests []*scheduler.ServerNotify
+	var errs error
+
 	for _, server := range servers {
 		var scalingSpec *v1alpha1.ValidatedScalingSpec
 		var err error
@@ -52,7 +59,9 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 		} else {
 			scalingSpec, err = v1alpha1.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
 			if err != nil {
-				return fmt.Errorf("failed to validate scaling spec: %v", err)
+				logger.Error(err, "Server failed scaling spec, omitting from server notify list")
+				errs = e.Join(fmt.Errorf("server %s failed scaling spec check: %w", server.Name, err))
+				continue
 			}
 		}
 
@@ -74,6 +83,11 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 			},
 		})
 	}
+
+	if len(requests) == 0 {
+		return fmt.Errorf("all servers failed scaling spec check: %w", errs)
+	}
+
 	request := &scheduler.ServerNotifyRequest{
 		Servers:     requests,
 		IsFirstSync: isFirstSync,

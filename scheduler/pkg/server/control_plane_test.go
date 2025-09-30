@@ -79,7 +79,7 @@ func TestStartServerStream(t *testing.T) {
 				g.Expect(msr.Event).To(Equal(pb.ControlPlaneResponse_SEND_SERVERS))
 			}
 
-			err = test.server.sendResourcesMarker(stream)
+			err = test.server.sendExperimentsMarker(stream)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
 			} else {

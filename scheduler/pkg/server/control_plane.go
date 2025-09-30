@@ -25,10 +25,15 @@ func (s *SchedulerServer) SubscribeControlPlane(req *pb.ControlPlaneSubscription
 
 	s.synchroniser.WaitReady()
 
-	err = s.sendResourcesMarker(stream)
-	if err != nil {
-		logger.WithError(err).Errorf("Failed to send resources marker to %s", req.GetSubscriberName())
-		return err
+	resources := []pb.ControlPlaneResponse_Event{
+		pb.ControlPlaneResponse_SEND_EXPERIMENTS,
+		pb.ControlPlaneResponse_SEND_MODELS, pb.ControlPlaneResponse_SEND_PIPELINES}
+
+	for _, resource := range resources {
+		if err := s.sendResourceMarker(stream, resource); err != nil {
+			logger.WithError(err).Errorf("Failed to send expierments marker to %s", req.GetSubscriberName())
+			return err
+		}
 	}
 
 	fin := make(chan bool)
@@ -76,9 +81,18 @@ func (s *SchedulerServer) sendStartServerStreamMarker(stream pb.Scheduler_Subscr
 	return nil
 }
 
-// this is to mark a stage to send resources (models, pipelines, experiments) from the controller
-func (s *SchedulerServer) sendResourcesMarker(stream pb.Scheduler_SubscribeControlPlaneServer) error {
-	ssr := &pb.ControlPlaneResponse{Event: pb.ControlPlaneResponse_SEND_RESOURCES}
+// this is to mark a stage to send experiments from the controller
+func (s *SchedulerServer) sendExperimentsMarker(stream pb.Scheduler_SubscribeControlPlaneServer) error {
+	ssr := &pb.ControlPlaneResponse{Event: pb.ControlPlaneResponse_SEND_EXPERIMENTS}
+	_, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *SchedulerServer) sendResourceMarker(stream pb.Scheduler_SubscribeControlPlaneServer, event pb.ControlPlaneResponse_Event) error {
+	ssr := &pb.ControlPlaneResponse{Event: event}
 	_, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
 	if err != nil {
 		return err

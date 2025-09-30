@@ -11,6 +11,7 @@ package scheduler
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"k8s.io/client-go/util/retry"
@@ -35,7 +36,7 @@ func (s *SchedulerClient) handleLoadedExperiments(
 		client.InNamespace(namespace),
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to list experiments: %w", err)
 	}
 
 	for _, experiment := range experimentList.Items {
@@ -145,12 +146,10 @@ func (s *SchedulerClient) handleRegisteredServers(
 		client.InNamespace(namespace),
 	)
 	if err != nil {
-		s.logger.Error(err, "Failed to list servers", "namespace", namespace)
-		return err
+		return fmt.Errorf("failed to list servers: %w", err)
 	}
 
 	if err := s.ServerNotify(ctx, grpcClient, serverList.Items, true); err != nil {
-		s.logger.Error(err, "Failed to notify servers", "servers", serverList.Items)
 		return err
 	}
 
@@ -299,7 +298,6 @@ func getNumExperimentsFromScheduler(ctx context.Context, grpcClient scheduler.Sc
 				return 0, err
 			}
 		}
-		print(data)
 		numExperimentsFromScheduler++
 	}
 	return numExperimentsFromScheduler, nil

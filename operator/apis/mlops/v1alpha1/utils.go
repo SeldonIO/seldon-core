@@ -20,6 +20,14 @@ type ValidatedScalingSpec struct {
 	MaxReplicas uint32
 }
 
+type ErrScalingSpec struct {
+	error
+}
+
+func scalingErr(err error) ErrScalingSpec {
+	return ErrScalingSpec{err}
+}
+
 // TODO consider putting these rules via CEL into the CR definition for Server, this will allow customers earlier feedback
 // their CRs are invalid upon trying to apply them, instead of checking controller logs after applying.
 func GetValidatedScalingSpec(replicas *int32, minReplicas *int32, maxReplicas *int32) (*ValidatedScalingSpec, error) {
@@ -39,7 +47,7 @@ func GetValidatedScalingSpec(replicas *int32, minReplicas *int32, maxReplicas *i
 		validatedSpec.Replicas = uint32(0)
 	} else if minReplicas != nil && *minReplicas > 0 {
 		if replicas != nil && *replicas < *minReplicas {
-			return nil, fmt.Errorf("number of replicas %d cannot be less than minimum replica %d", *replicas, *minReplicas)
+			return nil, scalingErr(fmt.Errorf("number of replicas %d cannot be less than minimum replica %d", *replicas, *minReplicas))
 		}
 		// set replicas to the min replicas when replicas is not set explicitly
 		validatedSpec.Replicas = uint32(*minReplicas)
@@ -48,17 +56,17 @@ func GetValidatedScalingSpec(replicas *int32, minReplicas *int32, maxReplicas *i
 	if minReplicas != nil && *minReplicas > 0 {
 		validatedSpec.MinReplicas = uint32(*minReplicas)
 		if validatedSpec.Replicas < validatedSpec.MinReplicas {
-			return nil, fmt.Errorf("number of replicas %d must be >= min replicas %d", validatedSpec.Replicas, validatedSpec.MinReplicas)
+			return nil, scalingErr(fmt.Errorf("number of replicas %d must be >= min replicas %d", validatedSpec.Replicas, validatedSpec.MinReplicas))
 		}
 	}
 
 	if maxReplicas != nil && *maxReplicas > 0 {
 		validatedSpec.MaxReplicas = uint32(*maxReplicas)
 		if validatedSpec.MinReplicas > validatedSpec.MaxReplicas {
-			return nil, fmt.Errorf("min number of replicas %d must be <= max number of replicas %d", validatedSpec.MinReplicas, validatedSpec.MaxReplicas)
+			return nil, scalingErr(fmt.Errorf("min number of replicas %d must be <= max number of replicas %d", validatedSpec.MinReplicas, validatedSpec.MaxReplicas))
 		}
 		if validatedSpec.Replicas > validatedSpec.MaxReplicas {
-			return nil, fmt.Errorf("number of replicas %d must be <= max replicas %d", validatedSpec.Replicas, validatedSpec.MaxReplicas)
+			return nil, scalingErr(fmt.Errorf("number of replicas %d must be <= max replicas %d", validatedSpec.Replicas, validatedSpec.MaxReplicas))
 		}
 	}
 
