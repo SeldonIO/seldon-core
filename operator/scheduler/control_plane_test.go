@@ -238,6 +238,9 @@ func TestControlPlaneEvents(t *testing.T) {
 			err := controller.SubscribeControlPlaneEvents(context.Background(), &grpcClient, "")
 			g.Expect(err).To(BeNil())
 
+			// wait for all events to be consumed
+			time.Sleep(1 * time.Second)
+
 			// check state is correct for each resource
 			for _, r := range test.expected_requests_pipelines {
 				g.Expect(grpcClient.requests_pipelines).To(ContainElement(r))

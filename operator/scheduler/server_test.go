@@ -152,7 +152,7 @@ func TestServerNotify(t *testing.T) {
 			expectedProtos: []*scheduler.ServerNotify{},
 		},
 		{
-			name: "list of servers",
+			name: "list of valid servers",
 			servers: []v1alpha1.Server{
 				{
 					ObjectMeta: metav1.ObjectMeta{
@@ -184,6 +184,49 @@ func TestServerNotify(t *testing.T) {
 					Name:             "bar",
 					ExpectedReplicas: 1,
 					MinReplicas:      0,
+					MaxReplicas:      math.MaxUint32,
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 2,
+					},
+				},
+			},
+		},
+		{
+			name: "1 invalid scaling spec server, 1 valid server",
+			servers: []v1alpha1.Server{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: v1alpha1.ServerSpec{
+						ScalingSpec: v1alpha1.ScalingSpec{
+							Replicas:    ptr.Int32(1),
+							MinReplicas: ptr.Int32(2),
+						},
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "bar",
+						Namespace:  "default",
+						Generation: 2,
+					},
+					Spec: v1alpha1.ServerSpec{
+						ScalingSpec: v1alpha1.ScalingSpec{
+							Replicas:    ptr.Int32(2),
+							MinReplicas: ptr.Int32(1),
+						},
+					},
+				},
+			},
+			expectedProtos: []*scheduler.ServerNotify{
+				{
+					Name:             "bar",
+					ExpectedReplicas: 2,
+					MinReplicas:      1,
 					MaxReplicas:      math.MaxUint32,
 					KubernetesMeta: &scheduler.KubernetesMeta{
 						Namespace:  "default",

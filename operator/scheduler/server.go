@@ -60,7 +60,7 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 		} else {
 			scalingSpec, err = internal.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
 			if err != nil {
-				logger.Error(err, "Server failed scaling spec, omitting from server notify list")
+				logger.Error(err, "Server failed scaling spec, omitting from server notify list", "server", server.Name)
 				errs = e.Join(fmt.Errorf("server %s failed scaling spec check: %w", server.Name, err))
 				continue
 			}

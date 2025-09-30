@@ -49,7 +49,7 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 			}
 			return fmt.Errorf("got stream recv error: %w", err)
 		}
-		logger.Info("Received event to handle state", "event", event)
+		logger.Info("Received control plane event", "event", event)
 
 		fn := func(ctx context.Context) error {
 			return s.handleControlPlaneEvent(ctx, grpcClient, namespace, event.GetEvent())
@@ -60,7 +60,11 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 				// in general, we could have also handled timeout via a context with timeout
 				// but we want to handle the timeout in a more controlled way and not depending on the other side
 				_, err = execWithTimeout(ctx, fn, constants.ControlPlaneExecTimeOut)
-				return err
+				if err != nil {
+					logger.Error(err, "Failed to process control plane event", "event", event)
+					return err
+				}
+				return nil
 			}, backoff.NewExponentialBackOff(backoff.WithMaxElapsedTime(time.Minute*10)))
 			if err != nil {
 				logger.Error(err, "Failed to handle event", "namespace", namespace, "event", event)

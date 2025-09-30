@@ -151,8 +151,8 @@ func (s *SchedulerClient) handleControlPlaneEvent(ctx context.Context, grpcClien
 		// on new reconnects we send a list of servers to the schedule
 		err := s.handleRegisteredServers(ctx, grpcClient, namespace)
 		if err != nil {
-			if errors.Is(err, &internal.ErrScalingSpec{}) {
-				s.logger.Info("All servers have scaling spec errors, CRs needs correcting")
+			if errors.Is(err, internal.ErrScalingSpec) {
+				s.logger.Error(err, "All servers have scaling spec errors, CRs needs correcting")
 				// we don't retry scaling spec errors as they can't be fixed by retrying, customer has to manually fix,
 				// which will trigger a reconcile and notify scheduler
 				return nil
@@ -181,8 +181,9 @@ func (s *SchedulerClient) handleControlPlaneEvent(ctx context.Context, grpcClien
 		}
 		return nil
 	default:
-		s.logger.Info("Unknown operation", "operation", operation)
-		return fmt.Errorf("unknown operation %v", operation)
+		s.logger.Error(errors.New("unknown operation"), "Unsupported operation", "operation", operation)
+		// we don't want to retry unknow operations
+		return nil
 	}
 }
 
