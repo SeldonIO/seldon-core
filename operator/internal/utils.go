@@ -7,7 +7,7 @@ Use of this software is governed by
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package v1alpha1
+package internal
 
 import (
 	"fmt"
@@ -19,7 +19,6 @@ type ValidatedScalingSpec struct {
 	MinReplicas uint32
 	MaxReplicas uint32
 }
-
 type ErrScalingSpec struct {
 	error
 }

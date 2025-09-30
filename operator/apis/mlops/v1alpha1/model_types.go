@@ -12,6 +12,7 @@ package v1alpha1
 import (
 	"fmt"
 
+	"github.com/seldonio/seldon-core/operator/v2/internal"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
@@ -244,7 +245,7 @@ func (m Model) AsSchedulerModel() (*scheduler.Model, error) {
 		md.ModelSpec.Requirements = append(md.ModelSpec.Requirements, *m.Spec.ModelType)
 	}
 	// Set Replicas
-	scalingSpec, err := GetValidatedScalingSpec(m.Spec.Replicas, m.Spec.MinReplicas, m.Spec.MaxReplicas)
+	scalingSpec, err := internal.GetValidatedScalingSpec(m.Spec.Replicas, m.Spec.MinReplicas, m.Spec.MaxReplicas)
 	if err != nil {
 		return nil, err
 	}

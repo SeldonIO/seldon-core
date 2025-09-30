@@ -16,6 +16,7 @@ import (
 	"io"
 
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	"github.com/seldonio/seldon-core/operator/v2/internal"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/util/retry"
@@ -47,17 +48,17 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 	var errs error
 
 	for _, server := range servers {
-		var scalingSpec *v1alpha1.ValidatedScalingSpec
+		var scalingSpec *internal.ValidatedScalingSpec
 		var err error
 
 		if !server.ObjectMeta.DeletionTimestamp.IsZero() {
-			scalingSpec = &v1alpha1.ValidatedScalingSpec{
+			scalingSpec = &internal.ValidatedScalingSpec{
 				Replicas:    0,
 				MinReplicas: 0,
 				MaxReplicas: 0,
 			}
 		} else {
-			scalingSpec, err = v1alpha1.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
+			scalingSpec, err = internal.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
 			if err != nil {
 				logger.Error(err, "Server failed scaling spec, omitting from server notify list")
 				errs = e.Join(fmt.Errorf("server %s failed scaling spec check: %w", server.Name, err))
@@ -236,8 +237,8 @@ func (s *SchedulerClient) scaleServerReplicas(ctx context.Context, server *v1alp
 	return nil
 }
 
-func isValidScalingEvent(server *v1alpha1.Server, event *scheduler.ServerStatusResponse) (bool, *v1alpha1.ValidatedScalingSpec, error) {
-	validatedScalingSpec, err := v1alpha1.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
+func isValidScalingEvent(server *v1alpha1.Server, event *scheduler.ServerStatusResponse) (bool, *internal.ValidatedScalingSpec, error) {
+	validatedScalingSpec, err := internal.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
 	if err != nil {
 		return false, nil, err
 	}

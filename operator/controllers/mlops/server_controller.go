@@ -14,6 +14,7 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
+	"github.com/seldonio/seldon-core/operator/v2/internal"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -96,7 +97,7 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return reconcile.Result{}, nil
 	}
 
-	scalingSpec, err := v1alpha1.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
+	scalingSpec, err := internal.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
 	if err != nil {
 		r.updateStatusFromError(ctx, logger, server, err)
 		logger.Error(err, "Scaling spec failed validation", "name", req.Name, "namespace", req.Namespace, "spec", server.Spec)

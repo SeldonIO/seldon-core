@@ -27,11 +27,12 @@ func (s *SchedulerServer) SubscribeControlPlane(req *pb.ControlPlaneSubscription
 
 	resources := []pb.ControlPlaneResponse_Event{
 		pb.ControlPlaneResponse_SEND_EXPERIMENTS,
-		pb.ControlPlaneResponse_SEND_MODELS, pb.ControlPlaneResponse_SEND_PIPELINES}
+		pb.ControlPlaneResponse_SEND_MODELS,
+		pb.ControlPlaneResponse_SEND_PIPELINES}
 
 	for _, resource := range resources {
 		if err := s.sendResourceMarker(stream, resource); err != nil {
-			logger.WithError(err).Errorf("Failed to send expierments marker to %s", req.GetSubscriberName())
+			logger.WithError(err).Errorf("Failed to send resource req %s to %s", resource, req.GetSubscriberName())
 			return err
 		}
 	}

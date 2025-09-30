@@ -290,7 +290,7 @@ func getNumExperimentsFromScheduler(ctx context.Context, grpcClient scheduler.Sc
 		return 0, err
 	}
 	for {
-		data, err := streamForExperimentStatuses.Recv()
+		_, err := streamForExperimentStatuses.Recv()
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -313,7 +313,7 @@ func getNumPipelinesFromScheduler(ctx context.Context, grpcClient scheduler.Sche
 		return 0, err
 	}
 	for {
-		data, err := streamForPipelineStatuses.Recv()
+		_, err := streamForPipelineStatuses.Recv()
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -321,7 +321,6 @@ func getNumPipelinesFromScheduler(ctx context.Context, grpcClient scheduler.Sche
 				return 0, err
 			}
 		}
-		print(data)
 		numPipelinesFromScheduler++
 	}
 	return numPipelinesFromScheduler, nil

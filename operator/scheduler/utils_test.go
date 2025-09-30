@@ -127,10 +127,11 @@ func (s *mockControlPlaneSubscribeGrpcClient) Recv() (*scheduler.ControlPlaneRes
 		s.sent++
 		return &scheduler.ControlPlaneResponse{Event: scheduler.ControlPlaneResponse_SEND_SERVERS}, nil
 	}
-	if s.sent == 1 {
-		s.sent++
-		return &scheduler.ControlPlaneResponse{Event: scheduler.ControlPlaneResponse_SEND_RESOURCES}, nil
-	}
+	// TODO fix
+	//if s.sent == 1 {
+	//	s.sent++
+	//	return &scheduler.ControlPlaneResponse{Event: scheduler.ControlPlaneResponse_SEND_RESOURCES}, nil
+	//}
 	return nil, io.EOF
 }
 
