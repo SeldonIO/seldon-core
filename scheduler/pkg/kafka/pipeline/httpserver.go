@@ -22,6 +22,8 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/pipeline/status"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
@@ -108,6 +110,7 @@ func (g *GatewayHttpServer) createListener() net.Listener {
 }
 
 func (g *GatewayHttpServer) setupRoutes() {
+	// TODO we seem to always enforce tracing middleware even if tracing is not enabled via configmap?? needless latency
 	g.router.Use(mux.CORSMethodMiddleware(g.router))
 	g.router.Use(otelmux.Middleware("pipelinegateway"))
 	g.router.NewRoute().Path(
@@ -211,6 +214,8 @@ func getResourceFromHeaders(req *http.Request, logger log.FieldLogger) (string, 
 }
 
 func (g *GatewayHttpServer) inferModel(w http.ResponseWriter, req *http.Request) {
+	g.traceReqID(req)
+
 	logger := g.logger.WithField("func", "inferModel")
 	resourceName, isModel, err := getResourceFromHeaders(req, logger)
 	if err != nil {
@@ -221,7 +226,18 @@ func (g *GatewayHttpServer) inferModel(w http.ResponseWriter, req *http.Request)
 	g.infer(w, req, resourceName, isModel)
 }
 
+func (g *GatewayHttpServer) traceReqID(req *http.Request) {
+	if id := req.Header.Get(util.RequestIdHeader); id != "" {
+		span := trace.SpanFromContext(req.Context())
+		span.SetAttributes(
+			attribute.String(util.RequestIdHeader, id),
+		)
+	}
+}
+
 func (g *GatewayHttpServer) inferPipeline(w http.ResponseWriter, req *http.Request) {
+	g.traceReqID(req)
+
 	logger := g.logger.WithField("func", "inferPipeline")
 	resourceName, isModel, err := getResourceFromHeaders(req, logger)
 	if err != nil {

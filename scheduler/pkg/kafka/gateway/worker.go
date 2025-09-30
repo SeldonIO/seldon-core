@@ -63,6 +63,7 @@ type InferWork struct {
 	modelName string
 	headers   map[string]string
 	msg       *kafka.Message
+	span      trace.Span
 }
 
 type V2Error struct {
@@ -174,6 +175,10 @@ func (iw *InferWorker) Start(jobChan <-chan *InferWork, cancelChan <-chan struct
 			return
 
 		case job := <-jobChan:
+			if job.span != nil {
+				// records how long we had to wait for a worker to pick up the job
+				job.span.End()
+			}
 			ctx := createBaseContextFromKafkaMsg(job.msg)
 			err := iw.processRequest(ctx, job, time.Duration(inferTimeout)*time.Millisecond)
 			if err != nil {
@@ -385,6 +390,7 @@ func addMetadataToOutgoingContext(ctx context.Context, job *InferWork, logger lo
 func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.ModelInferRequest) error {
 	logger := iw.logger.WithField("func", "grpcRequest")
 	logger.Debugf("gRPC request for %s", job.modelName)
+
 	//Update req with correct modelName
 	req.ModelName = job.modelName
 	req.ModelVersion = fmt.Sprintf("%d", util.GetPinnedModelVersion())
@@ -394,7 +400,9 @@ func (iw *InferWorker) grpcRequest(ctx context.Context, job *InferWork, req *v2.
 	var header, trailer metadata.MD
 	opts := append(iw.callOptions, grpc.Header(&header))
 	opts = append(opts, grpc.Trailer(&trailer))
+
 	resp, err := iw.grpcClient.ModelInfer(ctx, req, opts...)
+
 	if err != nil {
 		logger.WithError(err).Warnf("Failed infer request")
 		return iw.produce(ctx, job, iw.topicNamer.GetModelErrorTopic(), []byte(err.Error()), true, nil)

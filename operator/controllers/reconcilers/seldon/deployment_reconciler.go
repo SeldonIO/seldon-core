@@ -168,6 +168,7 @@ func (s *ComponentDeploymentReconciler) Reconcile() error {
 		err = nil
 		logger.V(1).Info("Deployment No Change", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
 	case constants.ReconcileUnknown:
+		logger.Info("Unknown reconcile", "Name", s.Deployment.GetName())
 		if err != nil {
 			logger.Error(err, "Failed to get reconcile operation for Deployment", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
 			return err

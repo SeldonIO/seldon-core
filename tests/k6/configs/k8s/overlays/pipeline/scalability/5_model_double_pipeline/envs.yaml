@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: k6
+spec:
+  template:
+    spec:
+      containers:
+      - name: k6
+        args: [
+          "--no-teardown",
+          "--summary-export",
+          "results/base.json",
+          "--out",
+          "csv=results/base.gz",
+          "-u",
+          "5",
+          "-i",
+          "5000",
+          "-d",
+          "120m",
+          "scenarios/pipeline/scalability/5_model_double_pipelines.js",
+        ]
+        env:
+        - name: INFER_HTTP_ENDPOINT
+          value: "http://seldon-mesh:80"

@@ -1,0 +1,11 @@
+---
+
+- name: Install ClickHouse Operator
+  ansible.builtin.shell: |
+    curl -s https://raw.githubusercontent.com/Altinity/clickhouse-operator/master/deploy/operator-web-installer/clickhouse-operator-install.sh | OPERATOR_NAMESPACE={{ clickhouse_namespace }} bash
+
+- name: Create cluster CRD definition
+  kubernetes.core.k8s:
+    state: present
+    namespace: "{{ clickhouse_namespace }}"
+    template: "templates/cluster-definition.j2"

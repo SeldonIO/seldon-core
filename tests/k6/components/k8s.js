@@ -1,3 +1,4 @@
+import { dump as yamlDump } from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.mjs";
 import { Kubernetes } from "k6/x/kubernetes";
 import { getConfig } from '../components/settings.js'
 import {
@@ -148,7 +149,7 @@ export function getModelReadyCondition(modelCR) {
     return getObjectCondition(modelCR, "ModelReady", "message")
 }
 
-export function loadModel(modelName, data, awaitReady=true) {
+export function loadModel(modelName, data, awaitReady=true, throwError=false) {
     try {
         kubeclient.apply(data)
         let created = kubeclient.get(seldonObjectType.MODEL.description, modelName, seldon_target_ns)
@@ -158,7 +159,10 @@ export function loadModel(modelName, data, awaitReady=true) {
             }
         }
         return seldonOpExecStatus.OK
-    } catch (_) {
+    } catch (error) {
+        if (throwError) {
+            throw error
+        }
         // continue on error. the apply may be concurrent with a delete and fail
         return seldonOpExecStatus.CONCURRENT_OP_FAIL
     }
@@ -182,7 +186,7 @@ export function awaitStatus(modelName, status) {
     }
 }
 
-export function unloadModel(modelName, awaitReady=true) {
+export function unloadModel(modelName, awaitReady=true, throwError=false) {
     if(seldonObjExists(seldonObjectType.MODEL, modelName, seldon_target_ns)) {
         try {
             kubeclient.delete(seldonObjectType.MODEL.description, modelName, seldon_target_ns)
@@ -198,7 +202,10 @@ export function unloadModel(modelName, awaitReady=true) {
                 }
             }
             return seldonOpExecStatus.OK
-        } catch(_) {
+        } catch(error) {
+            if (throwError) {
+                throw error
+            }
             // catch case where model was deleted concurrently by another VU
         }
     }
@@ -245,11 +252,21 @@ export function pipelineConditionMet(pipelineName, targetCondition) {
     return getObjectCondition(pipelineObj, targetCondition, "status").met
 }
 
+export function serverConditionMet(serverName, targetCondition) {
+    let serverObj = kubeclient.get(seldonObjectType.SERVER.description, serverName, seldon_target_ns)
+    return getObjectCondition(serverObj, targetCondition, "status").met
+}
+
+export function seldonRuntimeConditionMet(targetCondition) {
+    let seldonRuntimeObj = kubeclient.get("seldonruntime.mlops.seldon.io", getConfig().seldonRuntimeName, seldon_target_ns)
+    return getObjectCondition(seldonRuntimeObj, targetCondition, "status").met
+}
+
 export function getPipelineReadyCondition(pipelineCR) {
     return getObjectCondition(pipelineCR, "PipelineReady", "reason")
 }
 
-export function loadPipeline(pipelineName, data, awaitReady=true) {
+export function loadPipeline(pipelineName, data, awaitReady=true, throwError=false) {
     try {
         kubeclient.apply(data)
         let created = kubeclient.get(seldonObjectType.PIPELINE.description, pipelineName, seldon_target_ns)
@@ -259,7 +276,10 @@ export function loadPipeline(pipelineName, data, awaitReady=true) {
             }
         }
         return seldonOpExecStatus.OK
-    } catch (_) {
+    } catch (error) {
+        if (throwError) {
+            throw error
+        }
         // continue on error. the apply may be concurrent with a delete and fail
         return seldonOpExecStatus.CONCURRENT_OP_FAIL
     }
@@ -283,7 +303,54 @@ export function awaitPipelineStatus(pipelineName, status) {
     }
 }
 
-export function unloadPipeline(pipelineName, awaitReady = true) {
+export function awaitServerStatus(serverName, status, throwError=false, maxRetries = 10) {
+    let retries = 0
+    try {
+        while (!serverConditionMet(serverName, status)) {
+            sleep(1)
+            retries++
+            if(retries > maxRetries) {
+                const msg = `Giving up on waiting for server ${serverName} to reach status ${status}, after ${maxRetries}`
+                if (throwError) {
+                    throw msg
+                }
+                console.log(msg)
+                return seldonOpExecStatus.FAIL
+            }
+        }
+        return seldonOpExecStatus.OK
+    } catch(error) {
+        if (throwError) {
+            throw error
+        }
+        return seldonOpExecStatus.CONCURRENT_OP_FAIL
+    }
+}
+
+export function awaitSeldonRuntime(retries = 0, throwError = false) {
+    try {
+        for (const condition of ['DataflowEngineReady', 'EnvoyReady', 'HodometerReady', 'ModelGatewayReady', 'PipelineGatewayReady','SchedulerReady']) {
+            if (!seldonRuntimeConditionMet(condition)) {
+                sleep(1)
+                retries++
+                if(retries > MAX_RETRIES) {
+                    console.log(`Giving up on waiting for SeldonRuntime ${condition} to reach status True, after ${MAX_RETRIES}`)
+                    return seldonOpExecStatus.FAIL
+                }
+                return awaitSeldonRuntime(retries)
+            }
+        }
+    } catch(error) {
+        if (throwError) {
+            throw error
+        }
+        return seldonOpExecStatus.FAIL
+    }
+
+    return seldonOpExecStatus.OK
+}
+
+export function unloadPipeline(pipelineName, awaitReady = true, throwError=false) {
     if(seldonObjExists(seldonObjectType.PIPELINE, pipelineName, seldon_target_ns)) {
         try {
             kubeclient.delete(seldonObjectType.PIPELINE.description, pipelineName, seldon_target_ns)
@@ -299,7 +366,10 @@ export function unloadPipeline(pipelineName, awaitReady = true) {
                 }
             }
             return seldonOpExecStatus.OK
-        } catch(_) {
+        } catch(error) {
+            if (throwError) {
+                throw error
+            }
             // catch case where model was deleted concurrently by another VU
         }
     }
@@ -332,6 +402,205 @@ export function unloadExperiment(experimentName, awaitReady=true) {
         kubeclient.delete(seldonObjExists.EXPERIMENT.description, experimentName, seldon_target_ns)
         if (awaitReady && schedulerClient != null) {
             awaitExperimentStop(experimentName)
+        }
+    }
+}
+
+
+/************
+ *
+ * SeldonConfig
+ *
+ *****/
+
+
+export function generateSeldonConfig(dataFlowEngineMemoryLimit = "1G", modelGwNumWorkers = "4") {
+    let seldonconfig = kubeclient.get("seldonconfig.mlops.seldon.io", getConfig().seldonConfigName, seldon_target_ns)
+
+    seldonconfig.spec.components.forEach(component => {
+        if (component.name === "seldon-dataflow-engine") {
+            component.podSpec.containers[0].resources = {
+                limits: {
+                    memory: dataFlowEngineMemoryLimit,
+                },
+                requests: {
+                    cpu: "500m",
+                    memory: "1G"
+                }
+            }
+        }
+        if (component.name === "seldon-modelgateway") {
+            component.podSpec.containers[0].env.forEach(env => {
+                if (env.name === "MODELGATEWAY_NUM_WORKERS") {
+                    env.value = modelGwNumWorkers
+                }
+            });
+        }
+    });
+
+    return {
+        "object" : seldonconfig,
+        "yaml" : yamlDump(seldonconfig)
+    }
+}
+
+/************
+ *
+ * SeldonRuntime
+ *
+ *****/
+
+
+export function generateSeldonRuntime(modelGwReplicas, pipelineGwReplicas, dataFlowEngineReplicas, dataFlowEngineMemoryLimit = "1G") {
+    let runtime = kubeclient.get("seldonruntime.mlops.seldon.io", getConfig().seldonRuntimeName, seldon_target_ns)
+
+    const updatedReplicas = {
+        spec : {
+            seldonConfig: "default",
+            overrides : [
+                {
+                    name: "hodometer",
+                    replicas: 1,
+                },
+                {
+                    name: "seldon-scheduler",
+                    replicas: 1,
+                    serviceType: "LoadBalancer"
+                },
+                {
+                    name: "seldon-envoy",
+                    replicas: 1,
+                    serviceType: "LoadBalancer"
+                },
+                {
+                    name: "seldon-dataflow-engine",
+                    replicas: dataFlowEngineReplicas,
+                },
+                {
+                    name: "seldon-modelgateway",
+                    replicas: modelGwReplicas,
+                },
+                {
+                    name: "seldon-pipelinegateway",
+                    replicas: pipelineGwReplicas,
+                }
+            ]
+        }
+    }
+
+    const seldonRuntimeSpec = { ...runtime, ...updatedReplicas };
+
+    return {
+        "object" : seldonRuntimeSpec,
+        "yaml" : yamlDump(seldonRuntimeSpec)
+    }
+}
+
+export function loadSeldonConfig(data, throwError = false) {
+    try {
+        kubeclient.update(data)
+        return seldonOpExecStatus.OK
+    } catch (error) {
+        if (throwError) {
+            throw error
+        }
+        return seldonOpExecStatus.FAIL
+    }
+}
+
+export function loadSeldonRuntime(data, awaitReady=true, throwError=false) {
+    try {
+        kubeclient.update(data)
+        if (awaitReady) {
+            return awaitSeldonRuntime(10, true)
+        }
+        return seldonOpExecStatus.OK
+    } catch (error) {
+        if (throwError) {
+            throw error
+        }
+        return seldonOpExecStatus.FAIL
+    }
+}
+
+/************
+ *
+ * Server
+ *
+ *****/
+
+
+export function generateServer(serverName, serverConfig, replicas, minReplicas, maxReplicas) {
+    const serverResource = {
+        apiVersion: "mlops.seldon.io/v1alpha1",
+        kind: "Server",
+        metadata: {
+            name: serverName,
+            namespace: seldon_target_ns,
+        },
+        spec: {
+            maxReplicas: maxReplicas,
+            minReplicas: minReplicas,
+            replicas: replicas,
+            serverConfig: serverConfig,
+            statefulSetPersistentVolumeClaimRetentionPolicy: {
+                whenDeleted: "Retain",
+                whenScaled: "Retain"
+            }
+        }
+    };
+
+    return {
+        "object" : serverResource,
+        "yaml" : yamlDump(serverResource)
+    }
+}
+
+
+export function loadServer(data, serverName, awaitReady=true, throwError=false, maxRetires = 10) {
+    try {
+        kubeclient.apply(data)
+        if (awaitReady) {
+            return awaitServerStatus(serverName, "Ready", throwError, maxRetires)
+        }
+        return seldonOpExecStatus.OK
+    } catch (error) {
+        if (throwError) {
+            throw error
+        }
+        return seldonOpExecStatus.FAIL
+    }
+}
+
+export function unloadServer(serverName, awaitReady=true, throwError=false, maxRetries = MAX_RETRIES) {
+    if(seldonObjExists(seldonObjectType.SERVER, serverName, seldon_target_ns)) {
+        try {
+            // check pods have actually deleted
+            //
+            // let serverPods = kubeclient.get("Pod", )
+
+            kubeclient.delete(seldonObjectType.SERVER.description, serverName, seldon_target_ns)
+            if (awaitReady) {
+                let retries = 0
+                while (seldonObjExists(seldonObjectType.SERVER, serverName, seldon_target_ns)) {
+                    sleep(1)
+                    retries++
+                    if(retries > maxRetries) {
+                        const msg = `Failed to unload server ${serverName} after ${MAX_RETRIES}, giving up`
+                        if (throwError) {
+                            throw msg
+                        }
+                        console.log(msg)
+                        return seldonOpExecStatus.FAIL
+                    }
+                }
+            }
+            return seldonOpExecStatus.OK
+        } catch(error) {
+            if (throwError) {
+                throw error
+            }
+            // catch case where model was deleted concurrently by another VU
         }
     }
 }

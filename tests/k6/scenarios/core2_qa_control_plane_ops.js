@@ -113,7 +113,7 @@ function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines)
     var modelName = config.modelNamePrefix[modelTypeIx]
     var modelCRYaml = {}
 
-    if (config.isLoadPipeline) {
+    if (config.viaPipeline) {
         var pipelineName = generatePipelineName(modelName)
         // targetPipelineName is modified to either point at pipelineName or
         // to an alternative, random pipeline from the existing ones, depending on
@@ -133,7 +133,7 @@ function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines)
             const i = modelTypeIx
             let m = generateModel(config.modelType[i], modelName, 1, config.modelReplicas[i], config.isSchedulerProxy, config.modelMemoryBytes[i], config.inferBatchSize[i])
             modelCRYaml = m.modelCRYaml
-            if (config.isLoadPipeline) {
+            if (config.viaPipeline) {
                 pipelineName = m.pipelineDefn.pipeline.name
                 targetPipelineName = pipelineName
                 pipelineCRYaml = m.pipelineCRYaml
@@ -145,7 +145,7 @@ function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines)
             modelName = existingModels[randomModelIx]
             let altPipelineName = ""
 
-            if (config.isLoadPipeline) {
+            if (config.viaPipeline) {
                 pipelineName = generatePipelineName(modelName)
                 targetPipelineName = pipelineName
                 let randomPipelineIx = Math.floor(Math.random() * existingPipelines.length)
@@ -153,7 +153,7 @@ function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines)
             }
 
             if (op === seldonOpType.DELETE) {
-                if (config.isLoadPipeline) {
+                if (config.viaPipeline) {
                     // We don't want to always delete the pipeline corresponding to
                     // the deleted model, because we also want to test the case
                     // where the pipeline remains without some of the component
@@ -206,7 +206,7 @@ function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines)
                     }
                 }
                 modelCRYaml = yamlDump(newModelCR)
-                if (config.isLoadPipeline) {
+                if (config.viaPipeline) {
                     // The pipeline associated with modelName might have been deleted,
                     // having been chosen at random while deleting another model.
                     // This is because when deleting a model, we don't always delete
@@ -239,7 +239,7 @@ function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines)
     }
 
     let msg = `VU ${vu.idInTest} executes ${op.description} on ${modelName}`
-    if(config.isLoadPipeline) {
+    if(config.viaPipeline) {
         msg += ` and ${targetPipelineName}`
     }
     console.log(msg)
@@ -251,13 +251,13 @@ function handleCtlOp(config, op, modelTypeIx, existingModels, existingPipelines)
         case seldonOpType.CREATE:
         case seldonOpType.UPDATE:
             opOk = k8s.loadModel(modelName, modelCRYaml, true)
-            if (opOk === seldonOpExecStatus.OK && config.isLoadPipeline) {
+            if (opOk === seldonOpExecStatus.OK && config.viaPipeline) {
                 opOk = k8s.loadPipeline(targetPipelineName, pipelineCRYaml, true)
             }
             break;
         case seldonOpType.DELETE:
             opOk = k8s.unloadModel(modelName, true)
-            if (opOk === seldonOpExecStatus.OK && config.isLoadPipeline) {
+            if (opOk === seldonOpExecStatus.OK && config.viaPipeline) {
                     opOk = k8s.unloadPipeline(targetPipelineName, true)
             }
             break;
@@ -330,7 +330,7 @@ export default function (config) {
             scheduler.getAllModels().then((schedModels) => {
                 let msc = checkModelsStateIsConsistent(k8sModels, schedModels)
 
-                if (config.isLoadPipeline) {
+                if (config.viaPipeline) {
                     let k8sPipelines = k8s.getAllPipelines()
                     scheduler.getAllPipelines().then((schedPipelines) => {
                         let psc = checkPipelinesStateIsConsistent(k8sPipelines, schedPipelines)

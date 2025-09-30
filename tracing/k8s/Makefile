@@ -43,6 +43,11 @@ uninstall-opentelemetry-operator:
 install-opentelemetry-collector:
 	kubectl create -f otel-collector.yaml
 
+
+.PHONY:install-opentelemetry-collector-export-to-clickhouse
+install-opentelemetry-collector:
+	kubectl create -f otel-collector-clickhouse.yaml
+
 .PHONY:uninstall-opentelemetry-collector
 uninstall-opentelemetry-collector:
 	kubectl delete -f otel-collector.yaml

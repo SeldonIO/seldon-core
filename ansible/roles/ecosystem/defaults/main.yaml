@@ -10,6 +10,7 @@ install_certmanager: true
 install_jaeger: true
 install_opentelemetry: true
 install_schema_registry: false
+install_clickhouse: false
 
 # Configuration on/off flags
 configure_prometheus: "{{ install_prometheus }}"
@@ -18,6 +19,7 @@ enable_kraft: "{{ install_kafka }}"
 configure_kafka: "{{ install_kafka }}"
 configure_jaeger: "{{ install_jaeger }}"
 configure_opentelemetry: "{{ install_opentelemetry }}"
+configure_clickhouse: "{{ install_clickhouse }}"
 
 # Seldon Kafka Cluster Configuration
 seldon_kafka_namespace: "{{ seldon_mesh_namespace }}"

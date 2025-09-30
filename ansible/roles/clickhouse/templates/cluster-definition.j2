@@ -1,0 +1,25 @@
+apiVersion: "clickhouse.altinity.com/v1"
+kind: "ClickHouseInstallation"
+metadata:
+  name: cluster
+spec:
+  templates:
+    podTemplates:
+      - name: clickhouse-pod-template
+        spec:
+          containers:
+            - name: clickhouse
+              image: altinity/clickhouse-server:25.3.6.10034.altinitystable
+  configuration:
+    users:
+        default/access_management: 1
+        default/networks/ip:
+        - 0.0.0.0/0
+        default/password: ""
+    clusters:
+      - name: clickhouse01
+        layout:
+          shardsCount: 1
+          replicasCount: 1
+        templates:
+          podTemplate: clickhouse-pod-template

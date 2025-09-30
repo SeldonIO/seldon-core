@@ -328,6 +328,7 @@ func NewSeldonRuntimeReconciler(
 			commonConfig.Logger.Info("Disabling component", "name", c.Name)
 		}
 	}
+
 	// Set last applied annotation for update
 	for _, cr := range componentReconcilers {
 		for _, res := range cr.GetResources() {

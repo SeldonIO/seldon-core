@@ -388,6 +388,7 @@ func (kc *InferKafkaHandler) RemoveModel(modelName string, cleanTopicsOnDeletion
 	delete(kc.loadedModels, modelName)
 	delete(kc.subscribedTopics, kc.topicNamer.GetModelTopicInputs(modelName))
 	if len(kc.subscribedTopics) > 0 {
+		kc.logger.WithField("topics", kc.subscribedTopics).Debug("Re-subscribing to remaining topics after model deletion")
 		err := kc.subscribeTopics()
 		if err != nil {
 			kc.logger.WithError(err).Errorf("failed to subscribe to topics")
@@ -482,19 +483,25 @@ func (kc *InferKafkaHandler) Serve() {
 				ctx := context.Background()
 				carrierIn := splunkkafka.NewMessageCarrier(e)
 				ctx = otel.GetTextMapPropagator().Extract(ctx, carrierIn)
+
 				_, span := kc.tracer.Start(ctx, "Consume")
 				requestId := pipeline.GetRequestIdFromKafkaHeaders(e.Headers)
 				if requestId == "" {
 					logger.Warnf("Missing request id in Kafka headers for key %s", string(e.Key))
 				}
 				span.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
+
 				headers := collectHeaders(e.Headers)
 				logger.Debugf("Headers received from kafka for model %s %v", modelName, e.Headers)
+
+				_, spanJob := kc.tracer.Start(ctx, "WaitForWorker")
+				spanJob.SetAttributes(attribute.String(util.RequestIdHeader, requestId))
 
 				job := InferWork{
 					modelName: modelName,
 					msg:       e,
 					headers:   headers,
+					span:      spanJob,
 				}
 				// enqueue a job
 				jobChan <- &job

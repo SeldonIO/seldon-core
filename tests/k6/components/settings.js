@@ -47,6 +47,10 @@ function modelType() {
     return ["iris"]
 }
 
+function skipSetup() {
+    return String(__ENV.SKIP_SETUP).toLowerCase() === 'true';
+}
+
 function loadModel() {
     if (__ENV.SKIP_LOAD_MODEL) {
         return false
@@ -184,18 +188,15 @@ function modelEndIdx() {
     return 0
 }
 
-function isLoadPipeline() {
-    if (__ENV.DATAFLOW_TAG) {
-        return !(__ENV.DATAFLOW_TAG === "")
+function debug() {
+    if (__ENV.K6_DEBUG) {
+        return (__ENV.K6_DEBUG === "true")
     }
     return false
 }
 
-function dataflowTag() {
-    if (__ENV.DATAFLOW_TAG) {
-        return __ENV.DATAFLOW_TAG
-    }
-    return ""  // empty means that we should not go via kafka
+function viaPipeline() {
+    return (__ENV.VIA_PIPELINE === "true")
 }
 
 function modelNamePrefix() {
@@ -219,6 +220,94 @@ function experimentNamePrefix() {
         return __ENV.EXPERIMENTNAME_PREFIX
     }
     return "experiment"
+}
+
+function modelReplicasCount() {
+    if (__ENV.MODEL_REPLICAS) {
+        return parseInt(__ENV.MODEL_REPLICAS)
+    }
+    return 1
+}
+
+function serverMaxReplicas() {
+    if (__ENV.INFERENCE_SERVER_MAX_REPLICAS) {
+        return parseInt(__ENV.INFERENCE_SERVER_MAX_REPLICAS)
+    }
+    return 1
+}
+
+function serverMinReplicas() {
+    if (__ENV.INFERENCE_SERVER_MIN_REPLICAS) {
+        return parseInt(__ENV.INFERENCE_SERVER_MIN_REPLICAS)
+    }
+    return 1
+}
+
+function inferenceServerReplicas() {
+    if (__ENV.INFERENCE_SERVER_REPLICAS) {
+        return  parseInt(__ENV.INFERENCE_SERVER_REPLICAS)
+    }
+    return 1
+}
+
+function dataFlowEngineReplicas() {
+    if (__ENV.DATAFLOW_ENGINE_REPLICAS) {
+        return parseInt(__ENV.DATAFLOW_ENGINE_REPLICAS)
+    }
+    return 1
+}
+
+function pipelineGwReplicas() {
+    if (__ENV.PIPLINE_GW_REPLICAS) {
+        return parseInt(__ENV.PIPLINE_GW_REPLICAS)
+    }
+    return 1
+}
+
+function dataflowEngineLimitMemory() {
+    if (__ENV.DATAFLOW_ENGINE_LIMIT_MEMORY) {
+        return __ENV.DATAFLOW_ENGINE_LIMIT_MEMORY
+    }
+    return "4G"
+}
+
+function modelGwNumWorkers() {
+    if (__ENV.MODEL_GW_NUM_WORKERS) {
+        return __ENV.MODEL_GW_NUM_WORKERS
+    }
+    return "4"
+}
+
+function modelGwReplicas() {
+    if (__ENV.MODEL_GW_REPLICAS) {
+        return parseInt(__ENV.MODEL_GW_REPLICAS)
+    }
+    return 1
+}
+
+function useGRPC() {
+    return String(__ENV.USE_GRPC).toLowerCase() === 'true';
+}
+
+function seldonConfigName() {
+    if (__ENV.SELDON_CONFIG_NAME) {
+        return __ENV.SELDON_CONFIG_NAME
+    }
+    return "default"
+}
+
+function seldonRuntimeName() {
+    if (__ENV.SELDON_RUNTIME_NAME) {
+        return __ENV.SELDON_RUNTIME_NAME
+    }
+    return "seldon"
+}
+
+function requestIDPrefix() {
+    if (__ENV.REQUEST_ID_PREFIX) {
+        return __ENV.REQUEST_ID_PREFIX
+    }
+    return null
 }
 
 function inferType() {
@@ -364,6 +453,31 @@ function sleepBetweenModelReplicaChange() {
 
 export function getConfig() {
     return {
+        "replicas" : {
+            "model" : modelReplicasCount(),
+            "inferenceServer" : {
+              "actual" : inferenceServerReplicas(),
+              "min" : serverMinReplicas(),
+              "max" : serverMaxReplicas(),
+            },
+            "dataFlowEngine" : dataFlowEngineReplicas(),
+            "pipelineGw" : pipelineGwReplicas(),
+            "modelGw": modelGwReplicas(),
+        },
+        "dataflow" : {
+            "limits" : {
+                "memory" : dataflowEngineLimitMemory(),
+            }
+        },
+        "modelGateway" : {
+          "numOfWorkers" : modelGwNumWorkers(),
+        },
+        "useGRPC" : useGRPC(),
+        "seldonRuntimeName": seldonRuntimeName(),
+        "seldonConfigName": seldonConfigName(),
+        "requestIDPrefix" : requestIDPrefix(),
+        "skipSetup" : skipSetup(),
+        "debug": debug(),
         "useKubeControlPlane": useKubeControlPlane(),
         "schedulerEndpoint": schedulerEndpoint(),
         "inferHttpEndpoint": inferHttpEndpoint(),
@@ -379,8 +493,7 @@ export function getConfig() {
         "isEnvoy": isEnvoy(),
         "modelMemoryBytes": modelMemoryBytes(),
         "inferBatchSize": inferBatchSize(),
-        "isLoadPipeline": isLoadPipeline(),
-        "dataflowTag": dataflowTag(),
+        "viaPipeline": viaPipeline(),
         "modelNamePrefix": modelNamePrefix(),
         "experimentNamePrefix": experimentNamePrefix(),
         "loadExperiment" : loadExperiment(),
