@@ -7,7 +7,7 @@ import {
     generateMultiModelParallelPipelineYaml,
     getModelInferencePayload
 } from '../../../components/model.js';
-import {inferHttp, setupK6, tearDownK6} from "../../../components/v2.js";
+import {inferHttp, setupK6} from "../../../components/v2.js";
 import {awaitPipelineStatus, generateSeldonRuntime, generateServer} from "../../../components/k8s.js";
 import exec from 'k6/execution';
 
