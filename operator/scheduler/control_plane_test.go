@@ -241,6 +241,9 @@ func TestControlPlaneEvents(t *testing.T) {
 			// wait for all events to be consumed
 			time.Sleep(1 * time.Second)
 
+			grpcClient.mu.Lock()
+			defer grpcClient.mu.Unlock()
+
 			// check state is correct for each resource
 			for _, r := range test.expected_requests_pipelines {
 				g.Expect(grpcClient.requests_pipelines).To(ContainElement(r))

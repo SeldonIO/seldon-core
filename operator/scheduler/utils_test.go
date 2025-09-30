@@ -13,6 +13,7 @@ import (
 	"context"
 	"io"
 	"math"
+	"sync"
 	"testing"
 
 	. "github.com/onsi/gomega"
@@ -220,6 +221,7 @@ func (s *mockSchedulerModelSubscribeGrpcClient) Recv() (*scheduler.ModelStatusRe
 // Scheduler mock grpc client
 
 type mockSchedulerGrpcClient struct {
+	mu                              sync.Mutex
 	responses_experiments           []*scheduler.ExperimentStatusResponse
 	responses_subscribe_experiments []*scheduler.ExperimentStatusResponse
 	responses_pipelines             []*scheduler.PipelineStatusResponse
@@ -245,15 +247,24 @@ func (s *mockSchedulerGrpcClient) ExperimentStatus(ctx context.Context, in *sche
 }
 
 func (s *mockSchedulerGrpcClient) ServerNotify(ctx context.Context, in *scheduler.ServerNotifyRequest, opts ...grpc.CallOption) (*scheduler.ServerNotifyResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	s.requests_servers = append(s.requests_servers, in.Servers...)
 	return nil, nil
 }
 
 func (s *mockSchedulerGrpcClient) LoadModel(ctx context.Context, in *scheduler.LoadModelRequest, opts ...grpc.CallOption) (*scheduler.LoadModelResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	s.requests_models = append(s.requests_models, in)
 	return nil, nil
 }
 func (s *mockSchedulerGrpcClient) UnloadModel(ctx context.Context, in *scheduler.UnloadModelRequest, opts ...grpc.CallOption) (*scheduler.UnloadModelResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	err, ok := s.errors["UnloadModel"]
 	if ok {
 		return nil, err
@@ -262,19 +273,32 @@ func (s *mockSchedulerGrpcClient) UnloadModel(ctx context.Context, in *scheduler
 		return nil, nil
 	}
 }
+
 func (s *mockSchedulerGrpcClient) LoadPipeline(ctx context.Context, in *scheduler.LoadPipelineRequest, opts ...grpc.CallOption) (*scheduler.LoadPipelineResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	s.requests_pipelines = append(s.requests_pipelines, in)
 	return nil, nil
 }
 func (s *mockSchedulerGrpcClient) UnloadPipeline(ctx context.Context, in *scheduler.UnloadPipelineRequest, opts ...grpc.CallOption) (*scheduler.UnloadPipelineResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	s.requests_pipelines_unload = append(s.requests_pipelines_unload, in)
 	return nil, nil
 }
 func (s *mockSchedulerGrpcClient) StartExperiment(ctx context.Context, in *scheduler.StartExperimentRequest, opts ...grpc.CallOption) (*scheduler.StartExperimentResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	s.requests_experiments = append(s.requests_experiments, in)
 	return nil, nil
 }
 func (s *mockSchedulerGrpcClient) StopExperiment(ctx context.Context, in *scheduler.StopExperimentRequest, opts ...grpc.CallOption) (*scheduler.StopExperimentResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	s.requests_experiments_unload = append(s.requests_experiments_unload, in)
 	return nil, nil
 }
