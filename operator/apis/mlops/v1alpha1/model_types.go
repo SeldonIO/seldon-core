@@ -12,12 +12,13 @@ package v1alpha1
 import (
 	"fmt"
 
-	"github.com/seldonio/seldon-core/operator/v2/internal"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 
 	scheduler "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+
+	"github.com/seldonio/seldon-core/operator/v2/internal"
 )
 
 // ModelSpec defines the desired state of Model

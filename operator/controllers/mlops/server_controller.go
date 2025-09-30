@@ -14,7 +14,6 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
-	"github.com/seldonio/seldon-core/operator/v2/internal"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -35,6 +34,7 @@ import (
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
 	serverreconcile "github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/server"
+	"github.com/seldonio/seldon-core/operator/v2/internal"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 )
 
