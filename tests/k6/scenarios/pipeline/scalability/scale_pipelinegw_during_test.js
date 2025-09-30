@@ -126,17 +126,15 @@ export default function (config) {
 }
 
 export function teardown(config) {
-    tearDownK6(config, function (config) {
-        const ctl = connectControlPlaneOps(config)
+    const ctl = connectControlPlaneOps(config)
 
-        for (const modelName of [inputModelName1, inputModelName2, outputModelName]) {
-            console.log("deleting model ", modelName)
-            ctl.unloadModelFn(modelName, true)
-        }
+    for (const modelName of [inputModelName1, inputModelName2, outputModelName]) {
+        console.log("deleting model ", modelName)
+        ctl.unloadModelFn(modelName, true)
+    }
 
-        console.log("deleting pipeline ", pipelineName)
-        ctl.unloadPipelineFn(pipelineName, false)
+    console.log("deleting pipeline ", pipelineName)
+    ctl.unloadPipelineFn(pipelineName, false)
 
-        ctl.unloadServerFn(serverName, false, false)
-    })
+    ctl.unloadServerFn(serverName, false, false)
 }

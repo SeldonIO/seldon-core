@@ -137,10 +137,3 @@ export function setupK6(setup, forceConfig = null) {
     }
     return setup(config)
 }
-
-export function tearDownK6(config, callbackTearDown) {
-    if (config.skipTearDown) {
-        return
-    }
-    return callbackTearDown(config)
-}

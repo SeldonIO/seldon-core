@@ -47,10 +47,6 @@ function modelType() {
     return ["iris"]
 }
 
-function skipTeardown() {
-    return String(__ENV.SKIP_TEARDOWN).toLowerCase() === 'true';
-}
-
 function skipSetup() {
     return String(__ENV.SKIP_SETUP).toLowerCase() === 'true';
 }
@@ -481,7 +477,6 @@ export function getConfig() {
         "seldonConfigName": seldonConfigName(),
         "requestIDPrefix" : requestIDPrefix(),
         "skipSetup" : skipSetup(),
-        "skipTearDown" : skipTeardown(),
         "debug": debug(),
         "useKubeControlPlane": useKubeControlPlane(),
         "schedulerEndpoint": schedulerEndpoint(),

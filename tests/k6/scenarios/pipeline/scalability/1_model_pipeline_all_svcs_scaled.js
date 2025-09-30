@@ -54,7 +54,9 @@ export function setup() {
 
         const pipeline = generateMultiModelPipelineYaml(1, modelType, pipelineName, modelName, modelParams, config.modelName, modelServerReplicas, serverName)
         pipeline.modelCRYaml.forEach(model => {
-            // we MUST unload/load models before loading server, otherwise it causes Server to scale down to 1, bug or design?
+            // we MUST unload/load models before loading server. Due to:
+            // Server scales down to the minimum number of replicas, but at least minReplicas such that no server
+            // replicas above minReplicas are empty (no models). The scale-down action is triggered on model replica unload.
             ctl.unloadModelFn(model.metadata.name, true)
             ctl.loadModelFn(model.metadata.name, yamlDump(model), true, true)
         })
@@ -87,19 +89,17 @@ export default function (config) {
 }
 
 export function teardown(config) {
-    tearDownK6(config, function (config) {
-        const ctl = connectControlPlaneOps(config)
+    const ctl = connectControlPlaneOps(config)
 
-        ctl.unloadServerFn(serverName, true, false)
+    ctl.unloadServerFn(serverName, true, false)
 
-        let modelNames = k8s.getExistingModelNames(modelName)
-        modelNames.forEach(modelName => {
-            ctl.unloadModelFn(modelName, false)
-        })
+    let modelNames = k8s.getExistingModelNames(modelName)
+    modelNames.forEach(modelName => {
+        ctl.unloadModelFn(modelName, false)
+    })
 
-        let pipelineNames = k8s.getExistingPipelineNames(pipelineName)
-        pipelineNames.forEach(pipelineName => {
-            ctl.unloadPipelineFn(pipelineName, false)
-        })
+    let pipelineNames = k8s.getExistingPipelineNames(pipelineName)
+    pipelineNames.forEach(pipelineName => {
+        ctl.unloadPipelineFn(pipelineName, false)
     })
 }

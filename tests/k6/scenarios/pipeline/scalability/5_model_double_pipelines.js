@@ -104,25 +104,23 @@ export default function (config) {
 }
 
 export function teardown(config) {
-    tearDownK6(config, function (config) {
-        const ctl = connectControlPlaneOps(config)
+    const ctl = connectControlPlaneOps(config)
 
-        for (const modelName of [modelNamePrefix1, modelNamePrefix2]) {
-            let modelNames = k8s.getExistingModelNames(modelName)
-            modelNames.forEach(modelName => {
-                console.log("deleting model ", modelName)
-                ctl.unloadModelFn(modelName, true)
-            })
-        }
+    for (const modelName of [modelNamePrefix1, modelNamePrefix2]) {
+        let modelNames = k8s.getExistingModelNames(modelName)
+        modelNames.forEach(modelName => {
+            console.log("deleting model ", modelName)
+            ctl.unloadModelFn(modelName, true)
+        })
+    }
 
-        for (const pipelineName of [pipelineName1, pipelineName2]) {
-            let pipelineNames = k8s.getExistingPipelineNames(pipelineName)
-            pipelineNames.forEach(pipelineName => {
-                console.log("deleting pipeline ", pipelineName)
-                ctl.unloadPipelineFn(pipelineName, false)
-            })
-        }
+    for (const pipelineName of [pipelineName1, pipelineName2]) {
+        let pipelineNames = k8s.getExistingPipelineNames(pipelineName)
+        pipelineNames.forEach(pipelineName => {
+            console.log("deleting pipeline ", pipelineName)
+            ctl.unloadPipelineFn(pipelineName, false)
+        })
+    }
 
-        ctl.unloadServerFn(serverName, false, false)
-    })
+    ctl.unloadServerFn(serverName, false, false)
 }

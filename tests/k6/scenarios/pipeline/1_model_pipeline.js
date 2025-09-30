@@ -92,10 +92,8 @@ export default function (config) {
 }
 
 export function teardown(config) {
-    tearDownK6(config, function (config) {
-        const ctl = connectControlPlaneOps(config)
-        ctl.unloadServerFn(serverName, true, false)
-        ctl.unloadModelFn(modelName + "-1", true)
-        ctl.unloadPipelineFn(pipelineName, false)
-    })
+    const ctl = connectControlPlaneOps(config)
+    ctl.unloadServerFn(serverName, true, false)
+    ctl.unloadModelFn(modelName + "-1", true)
+    ctl.unloadPipelineFn(pipelineName, false)
 }
