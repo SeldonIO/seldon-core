@@ -30,13 +30,13 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithCancel(ctx)
+	defer cancel()
 	stream, err := grpcClient.SubscribeControlPlane(
 		ctx,
 		&scheduler.ControlPlaneSubscriptionRequest{SubscriberName: "seldon manager"},
 		grpc_retry.WithMax(schedulerConnectMaxRetries),
 		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
 	)
-	defer cancel()
 	if err != nil {
 		return err
 	}
