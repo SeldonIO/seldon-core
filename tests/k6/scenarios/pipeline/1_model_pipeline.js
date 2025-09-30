@@ -3,7 +3,7 @@ import * as k8s from '../../components/k8s.js';
 import {connectControlPlaneOps,
 } from '../../components/utils.js'
 import {generateMultiModelPipelineYaml, getModelInferencePayload} from '../../components/model.js';
-import {connectV2Grpc, inferGrpc, inferHttp, setupK6, tearDownK6} from "../../components/v2.js";
+import {connectV2Grpc, inferGrpc, inferHttp, setupK6} from "../../components/v2.js";
 import {generateServer} from "../../components/k8s.js";
 import { sleep } from 'k6'
 

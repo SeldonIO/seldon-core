@@ -3,7 +3,7 @@ import * as k8s from '../../../components/k8s.js';
 import {connectControlPlaneOps,
 } from '../../../components/utils.js'
 import {generateMultiModelPipelineYaml, getModelInferencePayload} from '../../../components/model.js';
-import {inferHttp, setupK6, tearDownK6} from "../../../components/v2.js";
+import {inferHttp, setupK6} from "../../../components/v2.js";
 import {awaitPipelineStatus, generateSeldonRuntime, generateServer} from "../../../components/k8s.js";
 
 // workaround: https://community.k6.io/t/exclude-http-requests-made-in-the-setup-and-teardown-functions/1525
