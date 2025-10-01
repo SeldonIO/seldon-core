@@ -71,11 +71,6 @@ func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *chai
 	case pipeline.PipelineTerminated:
 		logger.Infof("Pipeline %s has been terminated, removing from conflict resolution and envoy", pipelineName)
 		cr.DeletePipeline(pipelineName)
-
-		// Once the pipeline is terminated, send event for envoy to remove the routes.
-		s.sendPipelineStreamsEventMsg(
-			&coordinator.PipelineEventMsg{PipelineName: pipelineName}, []string{},
-		)
 	case pipeline.PipelineReady:
 		// Once the pipeline is ready, send event for envoy to update the routes
 		// with the streams that have the pipeline ready (some streams may have failed,
@@ -406,6 +401,13 @@ func (s *SchedulerServer) sendPipelineEvents(event *coordinator.PipelineEventMsg
 	}
 	if _, ok := pipelineEventSources[event.Source]; ok {
 		return
+	}
+
+	// if deletion process was triggered, we remove the pipeline from envoy
+	if pv.State.PipelineGwStatus == pipeline.PipelineTerminate {
+		s.sendPipelineStreamsEventMsg(
+			&coordinator.PipelineEventMsg{PipelineName: pv.Name}, []string{},
+		)
 	}
 
 	if len(pipelineGwStreams) == 0 && pv.State.PipelineGwStatus != pipeline.PipelineTerminated {
