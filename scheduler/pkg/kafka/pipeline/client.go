@@ -215,7 +215,7 @@ func (pc *PipelineSchedulerClient) processEventStream(stream scheduler.Scheduler
 			return err
 		}
 
-		processor.handleEvent(event)
+		processor.HandleEvent(event)
 	}
 }
 
@@ -227,7 +227,28 @@ func (pc *PipelineSchedulerClient) cleanup(stream scheduler.Scheduler_SubscribeP
 	}
 }
 
-func (ep *EventProcessor) handleEvent(event *scheduler.PipelineStatusResponse) {
+type EventProcessor struct {
+	client         *PipelineSchedulerClient
+	grpcClient     scheduler.SchedulerClient
+	subscriberName string
+	logger         *logrus.Entry
+}
+
+func NewEventProcessor(
+	client *PipelineSchedulerClient,
+	grpcClient scheduler.SchedulerClient,
+	subscriberName string,
+	logger logrus.FieldLogger,
+) *EventProcessor {
+	return &EventProcessor{
+		client:         client,
+		grpcClient:     grpcClient,
+		subscriberName: subscriberName,
+		logger:         logger.WithField("component", "EventProcessor"),
+	}
+}
+
+func (ep *EventProcessor) HandleEvent(event *scheduler.PipelineStatusResponse) {
 	// The expected contract is just the latest version will be sent to us
 	if len(event.Versions) != 1 {
 		ep.logger.Info("Expected a single model version", "numVersions", len(event.Versions), "name", event.GetPipelineName())
@@ -240,13 +261,6 @@ func (ep *EventProcessor) handleEvent(event *scheduler.PipelineStatusResponse) {
 	case pb.PipelineStatusResponse_PipelineCreate:
 		ep.handleCreateOrUpdatePipeline(event)
 	}
-}
-
-type EventProcessor struct {
-	client         *PipelineSchedulerClient
-	grpcClient     scheduler.SchedulerClient
-	subscriberName string
-	logger         *logrus.Entry
 }
 
 func (ep *EventProcessor) handleDeletePipeline(event *scheduler.PipelineStatusResponse) {

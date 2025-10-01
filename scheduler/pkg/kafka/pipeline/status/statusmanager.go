@@ -15,6 +15,7 @@ import (
 	pipeline "github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
+//go:generate go tool mockgen -source=statusmanager.go -destination=./mocks/mock_statusmanager.go -package=mocks PipelineStatusUpdater
 type PipelineStatusUpdater interface {
 	Update(version *pipeline.PipelineVersion)
 }
