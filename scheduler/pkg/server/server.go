@@ -31,6 +31,7 @@ import (
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/dataflow"
 	scheduler2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
@@ -106,9 +107,10 @@ type ExperimentEventStream struct {
 }
 
 type PipelineEventStream struct {
-	mu         sync.Mutex
-	streams    map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription
-	namesToIps map[string]string // Maps pipeline names to their IPs
+	mu                   sync.Mutex
+	streams              map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription
+	namesToIps           map[string]string // Maps pipeline names to their IPs
+	conflictResolutioner *dataflow.ConflictResolutioner
 }
 
 type ControlPlaneStream struct {
@@ -282,8 +284,9 @@ func NewSchedulerServer(
 			pendingEvents: map[string]struct{}{},
 		},
 		pipelineEventStream: PipelineEventStream{
-			streams:    make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription),
-			namesToIps: make(map[string]string),
+			streams:              make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription),
+			namesToIps:           make(map[string]string),
+			conflictResolutioner: dataflow.NewConflictResolution(loggerWithField),
 		},
 		experimentEventStream: ExperimentEventStream{
 			streams: make(map[pb.Scheduler_SubscribeExperimentStatusServer]*ExperimentSubscription),

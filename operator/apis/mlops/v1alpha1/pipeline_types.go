@@ -23,6 +23,7 @@ import (
 //+kubebuilder:resource:shortName=mlp
 //+kubebuilder:printcolumn:name="Pipeline ready",type=string,JSONPath=`.status.conditions[?(@.type=='Ready')].status`,description="Pipeline ready status"
 //+kubebuilder:printcolumn:name="Models ready",type=string,JSONPath=`.status.conditions[?(@.type=='ModelsReady')].status`,description="Models ready status",priority=1
+//+kubebuilder:printcolumn:name="PipelineGw ready",type=string,JSONPath=`.status.conditions[?(@.type=='PipelineGwReady')].status`,description="PipelineGw ready status",priority=1
 //+kubebuilder:printcolumn:name="Dataflow ready",type=string,JSONPath=`.status.conditions[?(@.type=='PipelineReady')].status`,description="Dataflow ready status",priority=1
 //+kubebuilder:printcolumn:name="Message",type=string,JSONPath=`.status.conditions[?(@.type=='Ready')].message`,description="Status message"
 //+kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
@@ -268,12 +269,14 @@ func (p Pipeline) AsSchedulerPipeline() *scheduler.Pipeline {
 }
 
 const (
-	PipelineReady apis.ConditionType = "PipelineReady"
-	ModelsReady   apis.ConditionType = "ModelsReady"
+	PipelineReady   apis.ConditionType = "PipelineReady"
+	PipelineGwReady apis.ConditionType = "PipelineGwReady"
+	ModelsReady     apis.ConditionType = "ModelsReady"
 )
 
 var pipelineConditionSet = apis.NewLivingConditionSet(
 	PipelineReady,
+	PipelineGwReady,
 	ModelsReady,
 )
 

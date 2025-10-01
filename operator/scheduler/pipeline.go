@@ -11,12 +11,15 @@ package scheduler
 
 import (
 	"context"
+	"fmt"
 	"io"
 
+	"github.com/go-logr/logr"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	v1 "k8s.io/api/core/v1"
 	api_errors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/util/retry"
+	"knative.dev/pkg/apis"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
@@ -126,7 +129,7 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 			"State", pv.GetState().String(),
 		)
 
-		if canRemovePipelineFinalizer(pv.State.Status) {
+		if canRemovePipelineFinalizer(pv.State.Status, pv.State.PipelineGwStatus) {
 			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
 				defer cancel()
@@ -197,33 +200,11 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 					return nil
 				}
 
-				// Handle status update
-				switch pv.State.Status {
-				case scheduler.PipelineVersionState_PipelineReady:
-					logger.Info(
-						"Setting pipeline to ready",
-						"pipeline", pipeline.Name,
-						"generation", pipeline.Generation,
-					)
-					pipeline.Status.CreateAndSetCondition(
-						v1alpha1.PipelineReady,
-						true,
-						pv.State.Reason,
-						pv.State.Status.String(),
-					)
-				default:
-					logger.Info(
-						"Setting pipeline to not ready",
-						"pipeline", pipeline.Name,
-						"generation", pipeline.Generation,
-					)
-					pipeline.Status.CreateAndSetCondition(
-						v1alpha1.PipelineReady,
-						false,
-						pv.State.Reason,
-						pv.State.Status.String(),
-					)
-				}
+				// Handle status and pipeline-gw status update
+				reason := combineReasons(pv.State.PipelineGwReason, pv.State.Reason)
+				setReadyCondition(&logger, pipeline, v1alpha1.PipelineGwReady, pv.State.PipelineGwStatus, reason, "pipeline-gateway")
+				setReadyCondition(&logger, pipeline, v1alpha1.PipelineReady, pv.State.Status, reason, "pipeline")
+
 				// Set models ready
 				if pv.State.ModelsReady {
 					pipeline.Status.CreateAndSetCondition(v1alpha1.ModelsReady, true, "Models all available", "")
@@ -241,6 +222,44 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 	return nil
 }
 
+func setReadyCondition(
+	logger *logr.Logger,
+	pipeline *v1alpha1.Pipeline,
+	conditionType apis.ConditionType,
+	status scheduler.PipelineVersionState_PipelineStatus,
+	reason string,
+	componentName string,
+) {
+	isReady := status == scheduler.PipelineVersionState_PipelineReady
+	readiness := "not ready"
+	if isReady {
+		readiness = "ready"
+	}
+
+	logger.Info(
+		fmt.Sprintf("Setting %s to %s", componentName, readiness),
+		"pipeline", pipeline.Name,
+		"generation", pipeline.Generation,
+	)
+
+	pipeline.Status.CreateAndSetCondition(
+		conditionType,
+		isReady,
+		reason,
+		status.String(),
+	)
+}
+
+func combineReasons(r1, r2 string) string {
+	if r1 == "" {
+		r1 = "Empty reason"
+	}
+	if r2 == "" {
+		r2 = "Empty reason"
+	}
+	return r1 + " | " + r2
+}
+
 func (s *SchedulerClient) updatePipelineStatusImpl(ctx context.Context, pipeline *v1alpha1.Pipeline) error {
 	if err := s.Status().Update(ctx, pipeline); err != nil {
 		if api_errors.IsNotFound(err) {
@@ -253,12 +272,13 @@ func (s *SchedulerClient) updatePipelineStatusImpl(ctx context.Context, pipeline
 	return nil
 }
 
-func canRemovePipelineFinalizer(state scheduler.PipelineVersionState_PipelineStatus) bool {
-	switch state {
-	// we should wait if the state is not terminal for deleting the finalizer, it should be Terminated in the case of delete
-	case scheduler.PipelineVersionState_PipelineTerminating, scheduler.PipelineVersionState_PipelineTerminate:
-		return false
-	default:
-		return true
-	}
+func canRemovePipelineFinalizer(
+	state scheduler.PipelineVersionState_PipelineStatus,
+	pipelineGwState scheduler.PipelineVersionState_PipelineStatus,
+) bool {
+	canRemoveDataflowEngine := state != scheduler.PipelineVersionState_PipelineTerminating &&
+		state != scheduler.PipelineVersionState_PipelineTerminate
+	canRemovePipelineGateway := pipelineGwState != scheduler.PipelineVersionState_PipelineTerminating &&
+		pipelineGwState != scheduler.PipelineVersionState_PipelineTerminate
+	return canRemoveDataflowEngine && canRemovePipelineGateway
 }

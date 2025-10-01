@@ -69,3 +69,9 @@ const (
 	backOffExpMaxInterval     = time.Second * 15
 	backOffExpInitialInterval = time.Second
 )
+
+// Sources for events
+const (
+	SourcePipelineStatusEvent = "pipeline-status-server"
+	SourceChainerServer       = "chainer-server"
+)

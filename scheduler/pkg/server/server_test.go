@@ -651,9 +651,10 @@ func TestPipelineStatus(t *testing.T) {
 							},
 						},
 						State: &pb.PipelineVersionState{
-							PipelineVersion: 1,
-							Status:          pb.PipelineVersionState_PipelineCreate,
-							ModelsReady:     false,
+							PipelineVersion:  1,
+							Status:           pb.PipelineVersionState_PipelineCreate,
+							PipelineGwStatus: pb.PipelineVersionState_PipelineCreate,
+							ModelsReady:      false,
 						},
 					},
 				},

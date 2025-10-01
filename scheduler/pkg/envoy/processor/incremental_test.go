@@ -1190,7 +1190,9 @@ func createTestPipeline(pipelineName string, modelNames []string, version uint32
 			StreamNames: []string{"dummy-stream"},
 			StreamIps:   []string{"dummy-ip"},
 		}
-		inc.xdsCache.AddPipelineClusters(&event, inc.logger.WithField("source", "IncrementalProcessor"))
+		err = inc.xdsCache.AddPipelineClusters(&event, inc.pipelineHandler, inc.logger.WithField("source", "IncrementalProcessor"))
+		g.Expect(err).To(BeNil())
+
 		err = inc.addPipeline(pipelineName)
 		g.Expect(err).To(BeNil())
 

@@ -48,6 +48,7 @@ var (
 	errPartitionRevoked = errors.New("partition(s) revoked")
 )
 
+//go:generate go tool mockgen -source=kafkamanager.go -destination=./mocks/mock_kafkamanager.go -package=mocks PipelineInferer
 type PipelineInferer interface {
 	LoadOrStorePipeline(resourceName string, isModel bool, loadOnly bool) (*Pipeline, error)
 	DeletePipeline(resourceName string, isModel bool) error

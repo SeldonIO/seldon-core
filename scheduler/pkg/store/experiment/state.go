@@ -136,11 +136,10 @@ func (es *ExperimentStore) setCandidateAndMirrorReadiness(experiment *Experiment
 				if err != nil {
 					logger.WithError(err).Infof("Failed to get pipeline %s for candidate check for experiment %s", candidate.Name, experiment.Name)
 				} else {
-					if pipeline.GetLatestPipelineVersion() != nil && pipeline.GetLatestPipelineVersion().State.Status == pipeline2.PipelineReady {
-						candidate.Ready = true
-					} else {
-						candidate.Ready = false
-					}
+					pv := pipeline.GetLatestPipelineVersion()
+					candidate.Ready = pv != nil &&
+						pv.State.Status == pipeline2.PipelineReady &&
+						pv.State.PipelineGwStatus == pipeline2.PipelineReady
 				}
 			}
 			if experiment.Mirror != nil {
@@ -148,11 +147,10 @@ func (es *ExperimentStore) setCandidateAndMirrorReadiness(experiment *Experiment
 				if err != nil {
 					logger.WithError(err).Warnf("Failed to get pipeline %s for mirror check for experiment %s", experiment.Mirror.Name, experiment.Name)
 				} else {
-					if pipeline.GetLatestPipelineVersion() != nil && pipeline.GetLatestPipelineVersion().State.Status == pipeline2.PipelineReady {
-						experiment.Mirror.Ready = true
-					} else {
-						experiment.Mirror.Ready = false
-					}
+					pv := pipeline.GetLatestPipelineVersion()
+					experiment.Mirror.Ready = pv != nil &&
+						pv.State.Status == pipeline2.PipelineReady &&
+						pv.State.PipelineGwStatus == pipeline2.PipelineReady
 				}
 			}
 		}

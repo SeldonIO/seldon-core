@@ -436,6 +436,11 @@ spec:
       name: Models ready
       priority: 1
       type: string
+    - description: PipelineGw ready status
+      jsonPath: .status.conditions[?(@.type=='PipelineGwReady')].status
+      name: PipelineGw ready
+      priority: 1
+      type: string
     - description: Dataflow ready status
       jsonPath: .status.conditions[?(@.type=='PipelineReady')].status
       name: Dataflow ready

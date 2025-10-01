@@ -83,10 +83,12 @@ const (
 )
 
 type PipelineState struct {
-	Status      PipelineStatus
-	ModelsReady bool
-	Reason      string
-	Timestamp   time.Time
+	Status           PipelineStatus
+	PipelineGwStatus PipelineStatus
+	ModelsReady      bool
+	Reason           string
+	PipelineGwReason string
+	Timestamp        time.Time
 }
 
 func (ps PipelineStatus) String() string {
@@ -96,6 +98,12 @@ func (ps PipelineStatus) String() string {
 func (ps *PipelineState) setState(status PipelineStatus, reason string) {
 	ps.Status = status
 	ps.Reason = reason
+	ps.Timestamp = time.Now()
+}
+
+func (ps *PipelineState) setPipelineGwState(status PipelineStatus, reason string) {
+	ps.PipelineGwStatus = status
+	ps.PipelineGwReason = reason
 	ps.Timestamp = time.Now()
 }
 

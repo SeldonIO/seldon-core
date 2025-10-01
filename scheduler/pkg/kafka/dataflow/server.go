@@ -35,7 +35,6 @@ const (
 	grpcMaxConcurrentStreams     = 1_000_000
 	pipelineEventHandlerName     = "kafka.dataflow.server.pipelines"
 	pendingEventsQueueSize   int = 1000
-	sourceChainerServer          = "chainer-server"
 )
 
 type ChainerServer struct {
@@ -159,7 +158,7 @@ func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chaine
 		c.conflictResolutioner.DeletePipeline(pipelineName)
 	}
 
-	err := c.pipelineHandler.SetPipelineState(message.Update.Pipeline, message.Update.Version, message.Update.Uid, pipelineStatusVal, reason, sourceChainerServer)
+	err := c.pipelineHandler.SetPipelineState(message.Update.Pipeline, message.Update.Version, message.Update.Uid, pipelineStatusVal, reason, util.SourceChainerServer)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to update pipeline status for %s:%d (%s)", message.Update.Pipeline, message.Update.Version, message.Update.Uid)
 		return nil, status.Error(codes.Internal, err.Error())
@@ -452,7 +451,7 @@ func (c *ChainerServer) rebalance() {
 				pv.UID,
 				pipelineState,
 				"no dataflow engines available to handle pipeline",
-				sourceChainerServer,
+				util.SourceChainerServer,
 			); err != nil {
 				logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
 			}
@@ -469,7 +468,7 @@ func (c *ChainerServer) rebalance() {
 					} else {
 						msg = c.createPipelineCreationMessage(pv)
 						pipelineState := pipeline.PipelineCreating
-						if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipelineState, "Rebalance", sourceChainerServer); err != nil {
+						if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipelineState, "Rebalance", util.SourceChainerServer); err != nil {
 							logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
 						}
 					}
@@ -494,7 +493,13 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 	if event.ExperimentUpdate {
 		return
 	}
-	if sourceChainerServer == event.Source {
+
+	// don't consider events from pipeline status or chainer server
+	var pipelineEventSources = map[string]struct{}{
+		util.SourcePipelineStatusEvent: {},
+		util.SourceChainerServer:       {},
+	}
+	if _, ok := pipelineEventSources[event.Source]; ok {
 		return
 	}
 
@@ -523,7 +528,7 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 			if pv.State.Status == pipeline.PipelineTerminating || pv.State.Status == pipeline.PipelineTerminate {
 				status = pipeline.PipelineTerminated
 			}
-			err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, status, errMsg, sourceChainerServer)
+			err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, status, errMsg, util.SourceChainerServer)
 			if err != nil {
 				logger.
 					WithError(err).
@@ -536,7 +541,7 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 		}
 		switch pv.State.Status {
 		case pipeline.PipelineCreate:
-			err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineCreating, "", sourceChainerServer)
+			err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineCreating, "", util.SourceChainerServer)
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
 			}
@@ -545,7 +550,7 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 			c.sendPipelineMsgToSelectedServers(msg, pv)
 
 		case pipeline.PipelineTerminate:
-			err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineTerminating, "", sourceChainerServer)
+			err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineTerminating, "", util.SourceChainerServer)
 			if err != nil {
 				logger.WithError(err).Errorf("Failed to set pipeline state to terminating for %s", pv.String())
 			}

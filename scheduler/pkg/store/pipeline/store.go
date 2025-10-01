@@ -26,13 +26,14 @@ import (
 )
 
 const (
-	pendingSyncsQueueSize             int = 1000
-	addPipelineEventSource                = "pipeline.store.addpipeline"
-	removePipelineEventSource             = "pipeline.store.removepipeline"
-	setStatusPipelineEventSource          = "pipeline.store.setstatus"
-	SetModelStatusPipelineEventSource     = "pipeline.store.setmodelstatus"
-	pipelineDbFolder                      = "pipelinedb"
-	modelEventHandlerName                 = "pipeline.store.models"
+	pendingSyncsQueueSize                  int = 1000
+	addPipelineEventSource                     = "pipeline.store.addpipeline"
+	removePipelineEventSource                  = "pipeline.store.removepipeline"
+	setStatusPipelineEventSource               = "pipeline.store.setstatus"
+	SetModelStatusPipelineEventSource          = "pipeline.store.setmodelstatus"
+	SetPipelineGwStatusPipelineEventSource     = "pipeline.store.setpipelinegwtatus"
+	pipelineDbFolder                           = "pipelinedb"
+	modelEventHandlerName                      = "pipeline.store.models"
 )
 
 type PipelineHandler interface {
@@ -42,7 +43,9 @@ type PipelineHandler interface {
 	GetPipeline(name string) (*Pipeline, error)
 	GetPipelines() ([]*Pipeline, error)
 	SetPipelineState(name string, version uint32, uid string, state PipelineStatus, reason string, source string) error
+	SetPipelineGwPipelineState(name string, version uint32, uid string, state PipelineStatus, reason string, source string) error
 	GetAllRunningPipelineVersions() []coordinator.PipelineEventMsg
+	GetAllPipelineGwRunningPipelineVersions() []coordinator.PipelineEventMsg
 }
 
 type PipelineStore struct {
@@ -141,6 +144,7 @@ func validateAndAddPipelineVersion(req *scheduler.Pipeline, pipeline *Pipeline) 
 		return err
 	}
 	pv.State.setState(PipelineCreate, "")
+	pv.State.setPipelineGwState(PipelineCreate, "")
 	pipeline.LastVersion = pipeline.LastVersion + 1
 	pipeline.Versions = append(pipeline.Versions, pv)
 	return nil
@@ -169,14 +173,20 @@ func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.
 		}
 	} else {
 		latestPipeline := pipeline.GetLatestPipelineVersion()
+		isStatusTerminating := (latestPipeline.State.Status == PipelineTerminating ||
+			latestPipeline.State.Status == PipelineTerminate ||
+			latestPipeline.State.Status == PipelineTerminated)
+		isPipelineGwStatusTerminating := (latestPipeline.State.PipelineGwStatus == PipelineTerminating ||
+			latestPipeline.State.PipelineGwStatus == PipelineTerminate ||
+			latestPipeline.State.PipelineGwStatus == PipelineTerminated)
 
-		switch latestPipeline.State.Status {
-		case PipelineTerminate, PipelineTerminating, PipelineTerminated:
+		if isStatusTerminating || isPipelineGwStatusTerminating {
+			// If either status is terminating we allow a new version to be created
 			pipeline = &Pipeline{
 				Name:        req.Name,
 				LastVersion: 0,
 			}
-		default:
+		} else {
 			// Handle repeat Kubernetes resource calls for same generation
 			if ps.generationMatches(req, latestPipeline) {
 				return nil, nil
@@ -242,25 +252,32 @@ func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineE
 			return nil, &PipelineVersionNotFoundErr{pipeline: name, version: pipeline.LastVersion - 1}
 		}
 		lastState := lastPipelineVersion.State
-		switch lastState.Status {
-		case PipelineTerminating:
-			return nil, &PipelineTerminatingErr{pipeline: name}
-		case PipelineTerminated:
+		if lastState.Status == PipelineTerminated && lastState.PipelineGwStatus == PipelineTerminated {
+			// already terminated so just return
 			return nil, &PipelineAlreadyTerminatedErr{pipeline: name}
-		default:
-			pipeline.Deleted = true
-			pipeline.DeletedAt = time.Now()
-			lastPipelineVersion.State.setState(PipelineTerminate, "pipeline removed")
+		}
+		if lastState.Status == PipelineTerminating || lastState.PipelineGwStatus == PipelineTerminating {
+			// already terminating so just return - note it is enough that one of the statuses is terminating
+			// because we set both to terminate when we start the termination process (see below)
+			return nil, &PipelineTerminatingErr{pipeline: name}
+		}
+		// If either status is not terminated or al least one is terminating we set both to terminate
+		// This ensures that both the scheduler and pipeline-gw are aware of the termination
+		pipeline.Deleted = true
+		pipeline.DeletedAt = time.Now()
+		lastPipelineVersion.State.setState(PipelineTerminate, "pipeline removed")
+		lastPipelineVersion.State.setPipelineGwState(PipelineTerminate, "pipeline removed")
+		if ps.db != nil {
 			if err := ps.db.save(pipeline); err != nil {
 				ps.logger.WithError(err).Errorf("Failed to save pipeline %s", name)
 				return nil, err
 			}
-			return &coordinator.PipelineEventMsg{
-				PipelineName:    lastPipelineVersion.Name,
-				PipelineVersion: lastPipelineVersion.Version,
-				UID:             lastPipelineVersion.UID,
-			}, nil
 		}
+		return &coordinator.PipelineEventMsg{
+			PipelineName:    lastPipelineVersion.Name,
+			PipelineVersion: lastPipelineVersion.Version,
+			UID:             lastPipelineVersion.UID,
+		}, nil
 	} else {
 		return nil, &PipelineNotFoundErr{pipeline: name}
 	}
@@ -302,13 +319,16 @@ func (ps *PipelineStore) GetPipeline(name string) (*Pipeline, error) {
 	}
 }
 
-func (ps *PipelineStore) GetAllRunningPipelineVersions() []coordinator.PipelineEventMsg {
+func (ps *PipelineStore) getAllRunningPipelineVersions(
+	statusSelector func(pv *PipelineVersion) PipelineStatus,
+) []coordinator.PipelineEventMsg {
 	ps.mu.RLock()
 	defer ps.mu.RUnlock()
+
 	var events []coordinator.PipelineEventMsg
 	for _, p := range ps.pipelines {
 		pv := p.GetLatestPipelineVersion()
-		switch pv.State.Status {
+		switch statusSelector(pv) {
 		// we consider PipelineTerminating as running as it is still active
 		case PipelineCreate, PipelineCreating, PipelineReady, PipelineRebalancing, PipelineTerminating:
 			events = append(events, coordinator.PipelineEventMsg{
@@ -319,6 +339,20 @@ func (ps *PipelineStore) GetAllRunningPipelineVersions() []coordinator.PipelineE
 		}
 	}
 	return events
+}
+
+// Only used in rebalancing over dataflow so we return based on Status
+func (ps *PipelineStore) GetAllRunningPipelineVersions() []coordinator.PipelineEventMsg {
+	return ps.getAllRunningPipelineVersions(func(pv *PipelineVersion) PipelineStatus {
+		return pv.State.Status
+	})
+}
+
+// Only used in rebalancing over pipeline-gw so we return based on PipelineGwStatus
+func (ps *PipelineStore) GetAllPipelineGwRunningPipelineVersions() []coordinator.PipelineEventMsg {
+	return ps.getAllRunningPipelineVersions(func(pv *PipelineVersion) PipelineStatus {
+		return pv.State.PipelineGwStatus
+	})
 }
 
 func (ps *PipelineStore) GetPipelines() ([]*Pipeline, error) {
@@ -395,6 +429,81 @@ func (ps *PipelineStore) setPipelineStateImpl(name string, versionNumber uint32,
 				}
 				if ps.db != nil {
 					ps.logger.Debugf("saving pipeline %s to db with status %s", pipeline.Name, status.String())
+					err := ps.db.save(pipeline)
+					if err != nil {
+						return evts, err
+					}
+				}
+				return evts, nil
+			} else {
+				return evts, &PipelineVersionUidMismatchErr{
+					pipeline:    name,
+					version:     versionNumber,
+					uidActual:   pipelineVersion.UID,
+					uidExpected: uid,
+				}
+			}
+		} else {
+			return evts, &PipelineVersionNotFoundErr{pipeline: name, version: versionNumber}
+		}
+	} else {
+		return evts, &PipelineNotFoundErr{pipeline: name}
+	}
+}
+
+func (ps *PipelineStore) SetPipelineGwPipelineState(name string, versionNumber uint32, uid string, status PipelineStatus, reason string, source string) error {
+	logger := ps.logger.WithField("func", "SetPipelineGwPipelineState")
+	logger.Debugf("Attempt to set pipeline-gw state on pipeline %s:%d status:%s", name, versionNumber, status.String())
+	evts, err := ps.setPipelineGwPipelineStateImpl(name, versionNumber, uid, status, reason, source)
+	if err != nil {
+		return err
+	}
+	if ps.eventHub != nil {
+		for _, evt := range evts {
+			ps.eventHub.PublishPipelineEvent(setStatusPipelineEventSource, *evt)
+		}
+	}
+	return nil
+}
+
+func (ps *PipelineStore) terminatePipelineGwOldUnterminatedPipelinesIfNeeded(pipeline *Pipeline) {
+	// We do this step for consistency reason - we don't need to send
+	// any event/message to pipeline-gw since the pipeline is loaded
+	// based on name on the pipeline-gw side (we only need input and topics),
+	// not on a uid as in the case of dataflow side which requires stopping
+	// the old version
+	for _, pv := range pipeline.Versions {
+		if pv.Version != pipeline.LastVersion {
+			switch pv.State.PipelineGwStatus {
+			case PipelineTerminating, PipelineTerminate, PipelineTerminated:
+				continue
+			default:
+				pv.State.setPipelineGwState(PipelineTerminate, "")
+			}
+		}
+	}
+}
+
+func (ps *PipelineStore) setPipelineGwPipelineStateImpl(name string, versionNumber uint32, uid string, status PipelineStatus, reason, source string) ([]*coordinator.PipelineEventMsg, error) {
+	var evts []*coordinator.PipelineEventMsg
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
+
+	if pipeline, ok := ps.pipelines[name]; ok {
+		if pipelineVersion := pipeline.GetPipelineVersion(versionNumber); pipelineVersion != nil {
+			if pipelineVersion.UID == uid {
+				pipelineVersion.State.setPipelineGwState(status, reason)
+				evts = append(evts, &coordinator.PipelineEventMsg{
+					PipelineName:    pipelineVersion.Name,
+					PipelineVersion: pipelineVersion.Version,
+					UID:             pipelineVersion.UID,
+					Source:          source,
+				})
+				if status == PipelineReady {
+					ps.terminatePipelineGwOldUnterminatedPipelinesIfNeeded(pipeline)
+				}
+				if ps.db != nil {
+					ps.logger.Debugf("saving pipeline %s to db with pipeling-gw status %s", pipeline.Name, status.String())
 					err := ps.db.save(pipeline)
 					if err != nil {
 						return evts, err

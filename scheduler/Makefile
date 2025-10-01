@@ -111,6 +111,17 @@ go-generate:
 	go generate ./...
 
 
+.PHONY: mock-install
+mock-install:
+	go install go.uber.org/mock/mockgen@v0.4.0
+
+.PHONY: mockgen-scheduler-client
+mockgen-scheduler-client: mock-install
+	mockgen \
+	-package=mocks \
+	-destination=pkg/kafka/pipeline/mocks/mock_scheduler_client.go \
+	github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler SchedulerClient
+
 #####################################
 # Build Docker
 #####################################
