@@ -603,7 +603,7 @@ func (xds *SeldonXDSCache) CreateClusterForStreams(clusterPrefix string, streamN
 	defer xds.mu.Unlock()
 
 	clusterName := getPipelineClusterName(clusterPrefix, isGrpc)
-	logger.Debugf("Creating cluster %s for streams: %v with ips: %v and port: %d", clusterName, streamNames, streamIps, port)
+	logger.Debugf("Creating envoy cluster %s for streams: %v with ips: %v and port: %d", clusterName, streamNames, streamIps, port)
 
 	cluster := Cluster{
 		Name:      clusterName,
@@ -623,7 +623,7 @@ func (xds *SeldonXDSCache) RemoveClusterForStreams(clusterPrefix string, isGrpc 
 	defer xds.mu.Unlock()
 
 	clusterName := getPipelineClusterName(clusterPrefix, isGrpc)
-	logger.Debugf("Removing cluster %s for streams", clusterName)
+	logger.Debugf("Removing envoy cluster of pipeline-gw endpoints for %s", clusterName)
 
 	// Remove from Clusters map
 	xds.Clusters.Delete(clusterName)
