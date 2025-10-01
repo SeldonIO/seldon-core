@@ -66,19 +66,17 @@ func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *chai
 
 	cr.UpdatePipelineStatus(pipelineName, stream, statusVal)
 	pipelineStatusVal, reason := cr.GetPipelineStatus(pipelineName, message)
-	if pipelineStatusVal == pipeline.PipelineTerminated {
+
+	switch pipelineStatusVal {
+	case pipeline.PipelineTerminated:
+		logger.Infof("Pipeline %s has been terminated, removing from conflict resolution and envoy", pipelineName)
 		cr.DeletePipeline(pipelineName)
-	}
 
-	err := s.pipelineHandler.SetPipelineGwPipelineState(
-		message.Update.Pipeline, message.Update.Version, message.Update.Uid, pipelineStatusVal, reason, util.SourcePipelineStatusEvent,
-	)
-	if err != nil {
-		logger.WithError(err).Errorf("Failed to update pipeline status for %s:%d (%s)", message.Update.Pipeline, message.Update.Version, message.Update.Uid)
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	if pipelineStatusVal == pipeline.PipelineReady {
+		// Once the pipeline is terminated, send event for envoy to remove the routes.
+		s.sendPipelineStreamsEventMsg(
+			&coordinator.PipelineEventMsg{PipelineName: pipelineName}, []string{},
+		)
+	case pipeline.PipelineReady:
 		// Once the pipeline is ready, send event for envoy to update the routes
 		// with the streams that have the pipeline ready (some streams may have failed,
 		// but we can still use the streams that are ready)
@@ -87,6 +85,14 @@ func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *chai
 		s.sendPipelineStreamsEventMsg(
 			&coordinator.PipelineEventMsg{PipelineName: pipelineName}, serverNames,
 		)
+	}
+
+	err := s.pipelineHandler.SetPipelineGwPipelineState(
+		message.Update.Pipeline, message.Update.Version, message.Update.Uid, pipelineStatusVal, reason, util.SourcePipelineStatusEvent,
+	)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to update pipeline status for %s:%d (%s)", message.Update.Pipeline, message.Update.Version, message.Update.Uid)
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &chainer.PipelineUpdateStatusResponse{}, nil
@@ -217,11 +223,6 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 			event.PipelineName, event.PipelineVersion, pv.State.PipelineGwStatus.String(),
 		)
 
-		// no pipeline gateway available yet, publish event for envoy
-		s.sendPipelineStreamsEventMsg(
-			&coordinator.PipelineEventMsg{PipelineName: pv.Name}, []string{},
-		)
-
 		switch len(streams) {
 		case 0:
 			s.pipelineGWRebalanceNoStreams(pv)
@@ -232,6 +233,11 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 }
 
 func (s *SchedulerServer) pipelineGWRebalanceNoStreams(pv *pipeline.PipelineVersion) {
+	// no pipeline gateway available, publish event for envoy
+	s.sendPipelineStreamsEventMsg(
+		&coordinator.PipelineEventMsg{PipelineName: pv.Name}, []string{},
+	)
+
 	pipelineState := pipeline.PipelineCreate
 	if pv.State.PipelineGwStatus == pipeline.PipelineTerminating {
 		// since there are no streams, we can directly set the state to terminated
@@ -255,6 +261,26 @@ func (s *SchedulerServer) pipelineGWRebalanceNoStreams(pv *pipeline.PipelineVers
 	}
 }
 
+func (s *SchedulerServer) invalidateEnvoyRoutes(pipelineName string, servers []string) {
+	cr := s.pipelineEventStream.conflictResolutioner
+	oldServers := cr.GetStreamsWithStatus(pipelineName, pipeline.PipelineReady)
+
+	// find servers that are in both oldServers and servers
+	commonServers := []string{}
+	for _, oldServer := range oldServers {
+		if contains(servers, oldServer) {
+			commonServers = append(commonServers, oldServer)
+		}
+	}
+
+	if len(commonServers) < len(oldServers) {
+		s.logger.Debugf("Updated envoy routes for pipeline %s before rebalance to %v", pipelineName, commonServers)
+		s.sendPipelineStreamsEventMsg(
+			&coordinator.PipelineEventMsg{PipelineName: pipelineName}, commonServers,
+		)
+	}
+}
+
 func (s *SchedulerServer) pipelineGwRebalanceStreams(
 	pv *pipeline.PipelineVersion, streams []*PipelineSubscription,
 ) {
@@ -265,6 +291,9 @@ func (s *SchedulerServer) pipelineGwRebalanceStreams(
 
 	cr := s.pipelineEventStream.conflictResolutioner
 	cr.CreateNewIteration(pv.Name, servers)
+
+	// invalidate envoy routes if some servers are no longer valid
+	s.invalidateEnvoyRoutes(pv.Name, servers)
 
 	// send messages to each pipeline gateway stream
 	for _, pipelineSubscription := range streams {
@@ -378,10 +407,6 @@ func (s *SchedulerServer) sendPipelineEvents(event *coordinator.PipelineEventMsg
 	if _, ok := pipelineEventSources[event.Source]; ok {
 		return
 	}
-
-	// publish event for envoy with empty stream names since
-	// no pipeline gateway is available yet
-	s.sendPipelineStreamsEventMsg(event, []string{})
 
 	if len(pipelineGwStreams) == 0 && pv.State.PipelineGwStatus != pipeline.PipelineTerminated {
 		errMsg := "No pipeline gateway available to handle pipeline"
