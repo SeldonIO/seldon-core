@@ -31,7 +31,7 @@ func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *chai
 	s.pipelineEventStream.mu.Lock()
 	defer s.pipelineEventStream.mu.Unlock()
 
-	logger := s.logger.WithField("func", "SubscribePipelineStatus")
+	logger := s.logger.WithField("func", "PipelineStatusEvent")
 	logger.Infof("Received pipeline status event %s", message.String())
 
 	var statusVal pipeline.PipelineStatus
@@ -273,7 +273,7 @@ func (s *SchedulerServer) pipelineGwRebalanceStreams(
 		stream := pipelineSubscription.stream
 
 		if contains(servers, server) {
-			s.logger.Debug("Server contains model, sending status update for ", server)
+			s.logger.Debug("pipeline-gateway replica contains pipeline, sending status update for ", server)
 
 			var msg *pb.PipelineStatusResponse
 			var err error

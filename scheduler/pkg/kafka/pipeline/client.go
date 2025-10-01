@@ -228,6 +228,12 @@ func (pc *PipelineSchedulerClient) cleanup(stream scheduler.Scheduler_SubscribeP
 }
 
 func (ep *EventProcessor) handleEvent(event *scheduler.PipelineStatusResponse) {
+	// The expected contract is just the latest version will be sent to us
+	if len(event.Versions) != 1 {
+		ep.logger.Info("Expected a single model version", "numVersions", len(event.Versions), "name", event.GetPipelineName())
+		return
+	}
+
 	switch event.Operation {
 	case pb.PipelineStatusResponse_PipelineDelete:
 		ep.handleDeletePipeline(event)
