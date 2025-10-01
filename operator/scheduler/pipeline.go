@@ -276,8 +276,9 @@ func canRemovePipelineFinalizer(
 	state scheduler.PipelineVersionState_PipelineStatus,
 	pipelineGwState scheduler.PipelineVersionState_PipelineStatus,
 ) bool {
-	return !(state == scheduler.PipelineVersionState_PipelineTerminating ||
-		state == scheduler.PipelineVersionState_PipelineTerminate ||
-		pipelineGwState == scheduler.PipelineVersionState_PipelineTerminating ||
-		pipelineGwState == scheduler.PipelineVersionState_PipelineTerminate)
+	canRemoveDataflowEngine := state != scheduler.PipelineVersionState_PipelineTerminating &&
+		state != scheduler.PipelineVersionState_PipelineTerminate
+	canRemovePipelineGateway := pipelineGwState != scheduler.PipelineVersionState_PipelineTerminating &&
+		pipelineGwState != scheduler.PipelineVersionState_PipelineTerminate
+	return canRemoveDataflowEngine && canRemovePipelineGateway
 }
