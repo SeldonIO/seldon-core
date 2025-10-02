@@ -165,7 +165,7 @@ func main() {
 		NumWorkers:            getEnVar(logger, gateway.EnvVarNumWorkers, gateway.DefaultNumWorkers),
 		WorkerTimeout:         getEnVar(logger, gateway.EnvVarWorkerTimeoutMs, gateway.DefaultWorkerTimeoutMs),
 	}
-	kafkaConsumer, err := gateway.NewConsumerManager(logger, &consumerConfig,
+	kafkaConsumer, err := gateway.NewKafkaConsumerManager(logger, &consumerConfig,
 		getEnVar(logger, gateway.EnvMaxNumConsumers, gateway.DefaultMaxNumConsumers), schemaRegistryClient)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create consumer manager")
@@ -203,7 +203,7 @@ func main() {
 	logger.Info("Graceful shutdown triggered")
 }
 
-func initHealthProbeServer(logger *log.Logger, schedulerClient *gateway.KafkaSchedulerClient, kafkaConsumer *gateway.ConsumerManager, errChan chan<- error) *health_probe.HTTPServer {
+func initHealthProbeServer(logger *log.Logger, schedulerClient *gateway.KafkaSchedulerClient, kafkaConsumer *gateway.KafkaConsumerManager, errChan chan<- error) *health_probe.HTTPServer {
 	healthManager := health_probe.NewManager()
 
 	healthManager.AddCheck(func() error {

@@ -39,14 +39,14 @@ type KafkaSchedulerClient struct {
 	logger          logrus.FieldLogger
 	conn            *grpc.ClientConn
 	callOptions     []grpc.CallOption
-	consumerManager *ConsumerManager
+	consumerManager ConsumerManager
 	stop            atomic.Bool
 	ready           atomic.Bool
 	subscriberName  string
 	tlsOptions      *seldontls.TLSOptions
 }
 
-func NewKafkaSchedulerClient(logger logrus.FieldLogger, consumerManager *ConsumerManager, tlsOptions *seldontls.TLSOptions) *KafkaSchedulerClient {
+func NewKafkaSchedulerClient(logger logrus.FieldLogger, consumerManager ConsumerManager, tlsOptions *seldontls.TLSOptions) *KafkaSchedulerClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
@@ -134,82 +134,193 @@ func (kc *KafkaSchedulerClient) IsConnected() bool {
 	return kc.ready.Load()
 }
 
-func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
-	logger := kc.logger.WithField("func", "SubscribeModelEvents")
+func (kc *KafkaSchedulerClient) setupSubscription() (*EventProcessor, scheduler.Scheduler_SubscribeModelStatusClient, error) {
 	grpcClient := scheduler.NewSchedulerClient(kc.conn)
-	logger.Info("Subscribing to model status events")
-	stream, errSub := grpcClient.SubscribeModelStatus(
+	kc.logger.Info("Subscribing to model status events")
+	stream, err := grpcClient.SubscribeModelStatus(
 		context.Background(),
 		&scheduler.ModelSubscriptionRequest{SubscriberName: kc.subscriberName, IsModelGateway: true},
 		grpc_retry.WithMax(util.MaxGRPCRetriesOnStream),
 	)
-	if errSub != nil {
-		return errSub
+	if err != nil {
+		return nil, nil, err
 	}
 
+	processor := &EventProcessor{
+		client:         kc,
+		grpcClient:     grpcClient,
+		subscriberName: kc.subscriberName,
+		logger:         kc.logger.WithField("source", "EventProcessor"),
+	}
 	kc.ready.Store(true)
-	defer kc.ready.Store(false)
+	return processor, stream, nil
+}
 
+func (kc *KafkaSchedulerClient) cleanup(stream scheduler.Scheduler_SubscribeModelStatusClient) {
+	kc.logger.Infof("Closing connection to scheduler")
+	kc.ready.Store(false)
+	if stream != nil {
+		_ = stream.CloseSend()
+	}
+}
+
+func (kc *KafkaSchedulerClient) processEventsStream(
+	stream scheduler.Scheduler_SubscribeModelStatusClient, processor *EventProcessor, logger *logrus.Entry,
+) error {
 	for {
 		if kc.stop.Load() {
-			logger.Info("Stopping")
-			break
+			kc.logger.Info("Stopping")
+			return nil
 		}
+
 		event, err := stream.Recv()
 		if err != nil {
 			logger.WithError(err).Error("event recv failed")
-			break
-		}
-		// The expected contract is just the latest version will be sent to us
-		if len(event.Versions) != 1 {
-			logger.Info("Expected a single model version", "numVersions", len(event.Versions), "name", event.GetModelName())
-			continue
-		}
-		latestVersionStatus := event.Versions[0]
-
-		logger.Infof("Received event name %s version %d state %s", event.ModelName, latestVersionStatus.Version, latestVersionStatus.State.State.String())
-
-		// if the model is in a failed state and the consumer exists then we skip the removal
-		// this is to prevent the consumer from being removed during transient failures of the control plane
-		// in this way data plane can potentially continue to serve requests
-		if latestVersionStatus.GetState().GetState() == scheduler.ModelStatus_ScheduleFailed || latestVersionStatus.GetState().GetState() == scheduler.ModelStatus_ModelProgressing {
-			if kc.consumerManager.Exists(event.ModelName) {
-				logger.Warnf("Model %s schedule failed / progressing and consumer exists, skipping from removal", event.ModelName)
-				continue
-			}
+			return err
 		}
 
-		// if there are available replicas then we add the consumer for the model
-		// note that this will also get triggered if the model is already added but there is a status change (e.g. due to scale up)
-		// and in the case then it is a no-op
-		// note in the future we might want to check that available replicas > min replicas
-		if latestVersionStatus.GetState().GetAvailableReplicas() > 0 {
-			if latestVersionStatus.GetState().GetState() != scheduler.ModelStatus_ModelAvailable {
-				logger.Warnf("Model %s state is: %s", event.ModelName, latestVersionStatus.GetState().GetState().String())
-			}
-			if kc.consumerManager.Exists(event.ModelName) {
-				logger.Debugf("Model consumer %s already exists", event.ModelName)
-				continue
-			}
-			logger.Infof("Adding model %s", event.ModelName)
-			err := kc.consumerManager.AddModel(event.ModelName)
-			if err != nil {
-				kc.logger.WithError(err).Errorf("Failed to add model %s", event.ModelName)
-			}
-		} else {
-			logger.Infof("Removing model %s", event.ModelName)
-			keepTopics := event.GetKeepTopics()
-			cleanTopicsOnDeletion := latestVersionStatus.GetModelDefn().GetDataflowSpec().GetCleanTopicsOnDelete()
-			err := kc.consumerManager.RemoveModel(event.ModelName, cleanTopicsOnDeletion, keepTopics)
-			if err != nil {
-				kc.logger.WithError(err).Errorf("Failed to remove model %s", event.ModelName)
-			}
-		}
-
+		processor.handleEvent(event)
 	}
-	logger.Infof("Closing connection to scheduler")
-	defer func() {
-		_ = stream.CloseSend()
-	}()
-	return nil
+}
+
+func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
+	logger := kc.logger.WithField("func", "SubscribeModelEvents")
+
+	processor, stream, err := kc.setupSubscription()
+	if err != nil {
+		return err
+	}
+
+	defer kc.cleanup(stream)
+	return kc.processEventsStream(stream, processor, logger)
+}
+
+type EventProcessor struct {
+	client         *KafkaSchedulerClient
+	grpcClient     scheduler.SchedulerClient
+	subscriberName string
+	logger         *logrus.Entry
+}
+
+func (ep *EventProcessor) handleEvent(event *scheduler.ModelStatusResponse) {
+	// The expected contract is just the latest version will be sent to us
+	if len(event.Versions) != 1 {
+		ep.logger.Info("Expected a single model version", "numVersions", len(event.Versions), "name", event.GetModelName())
+		return
+	}
+
+	switch event.Operation {
+	case scheduler.ModelStatusResponse_ModelDelete:
+		ep.handleDeleteModel(event)
+	case scheduler.ModelStatusResponse_ModelCreate:
+		ep.handleCreateModel(event)
+	}
+}
+
+func (ep *EventProcessor) handleDeleteModel(event *scheduler.ModelStatusResponse) {
+	ep.logger.Infof("Removing model %s", event.ModelName)
+	keepTopics := event.GetKeepTopics()
+
+	versionStatus := event.Versions[0]
+	cleanTopicsOnDeletion := versionStatus.GetModelDefn().GetDataflowSpec().GetCleanTopicsOnDelete()
+
+	err := ep.client.consumerManager.RemoveModel(event.ModelName, cleanTopicsOnDeletion, keepTopics)
+	if err != nil {
+		ep.reportFailure(
+			event,
+			scheduler.ModelUpdateMessage_Delete,
+			fmt.Sprintf("Failed to remove model %s", event.ModelName),
+			err,
+		)
+		return
+	}
+
+	ep.reportSuccess(
+		event,
+		scheduler.ModelUpdateMessage_Delete,
+		fmt.Sprintf("Model %s removed", event.ModelName),
+	)
+}
+
+func (ep *EventProcessor) handleCreateModel(event *scheduler.ModelStatusResponse) {
+	if ep.client.consumerManager.Exists(event.ModelName) {
+		ep.reportSuccess(
+			event,
+			scheduler.ModelUpdateMessage_Create,
+			fmt.Sprintf("Model consumer %s already exists", event.ModelName),
+		)
+		return
+	}
+
+	err := ep.client.consumerManager.AddModel(event.ModelName)
+	if err != nil {
+		ep.reportFailure(
+			event,
+			scheduler.ModelUpdateMessage_Create,
+			fmt.Sprintf("Failed to add model %s", event.ModelName),
+			err,
+		)
+		return
+	}
+
+	ep.reportSuccess(
+		event,
+		scheduler.ModelUpdateMessage_Create,
+		fmt.Sprintf("Model %s added", event.ModelName),
+	)
+}
+
+func (ep *EventProcessor) reportSuccess(
+	event *scheduler.ModelStatusResponse,
+	op scheduler.ModelUpdateMessage_ModelOperation,
+	message string,
+) {
+	ep.logger.Info(message)
+	go ep.sendModelStatusEvent(event, op, true, message)
+}
+
+func (ep *EventProcessor) reportFailure(
+	event *scheduler.ModelStatusResponse,
+	op scheduler.ModelUpdateMessage_ModelOperation,
+	message string,
+	err error,
+) {
+	if err != nil {
+		ep.logger.WithError(err).Error(message)
+	} else {
+		ep.logger.Error(message)
+	}
+
+	go ep.sendModelStatusEvent(event, op, false, message)
+}
+
+func (ep *EventProcessor) sendModelStatusEvent(
+	event *scheduler.ModelStatusResponse,
+	op scheduler.ModelUpdateMessage_ModelOperation,
+	success bool,
+	reason string,
+) {
+	callOpts := []grpc.CallOption{
+		grpc_retry.WithMax(5), // retry up to 5 times
+		grpc_retry.WithBackoff(grpc_retry.BackoffExponentialWithJitter(100*time.Millisecond, 2.0)),
+	}
+
+	_, err := ep.grpcClient.ModelStatusEvent(
+		context.Background(),
+		&scheduler.ModelUpdateStatusMessage{
+			Update: &scheduler.ModelUpdateMessage{
+				Op:        op,
+				Model:     event.ModelName,
+				Version:   event.Versions[0].Version,
+				Timestamp: event.Timestamp,
+				Stream:    ep.subscriberName,
+			},
+			Success: success,
+			Reason:  reason,
+		},
+		callOpts...,
+	)
+	if err != nil {
+		ep.logger.WithError(err).Errorf("Failed to send model status event %s after retries", op.String())
+	}
 }

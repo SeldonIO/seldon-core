@@ -161,16 +161,17 @@ func TestCreateAndDeleteConfirmationMessages(t *testing.T) {
 			mockStatusUpdater := smock.NewMockPipelineStatusUpdater(ctrl)
 			mockInferer := pmock.NewMockPipelineInferer(ctrl)
 
-			// Add these lines to set up expectations:
-			mockInferer.EXPECT().
-				DeletePipeline(gomock.Any(), gomock.Any()).
-				Return(nil).
-				AnyTimes()
-
-			mockInferer.EXPECT().
-				LoadOrStorePipeline(gomock.Any(), gomock.Any(), gomock.Any()).
-				Return(nil, nil).
-				AnyTimes()
+			if test.name == "delete" {
+				mockInferer.EXPECT().
+					DeletePipeline("dummy-pipeline", false).
+					Return(nil).
+					Times(1)
+			} else if test.name == "create" {
+				mockInferer.EXPECT().
+					LoadOrStorePipeline(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(nil, nil).
+					Times(1)
+			}
 
 			mockStatusUpdater.EXPECT().
 				Update(gomock.Any()).

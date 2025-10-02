@@ -10,14 +10,77 @@ the Change License after the Change Date as each is defined in accordance with t
 package server
 
 import (
+	"context"
 	"time"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	cr "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/conflict-resolution"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
+
+const (
+	modelStatusEventSource = "model-status-server"
+)
+
+func (s *SchedulerServer) ModelStatusEvent(ctx context.Context, message *pb.ModelUpdateStatusMessage) (*pb.ModelUpdateStatusResponse, error) {
+	s.modelEventStream.mu.Lock()
+	defer s.modelEventStream.mu.Unlock()
+
+	logger := s.logger.WithField("func", "ModelStatusEvent")
+
+	var statusVal store.ModelState
+	switch message.Update.Op {
+	case pb.ModelUpdateMessage_Create:
+		if message.Success {
+			statusVal = store.ModelAvailable
+		} else {
+			statusVal = store.ModelFailed
+		}
+	case pb.ModelUpdateMessage_Delete:
+		if message.Success {
+			statusVal = store.ModelTerminated
+		} else {
+			statusVal = store.ModelTerminateFailed
+		}
+	}
+
+	modelName := message.Update.Model
+	modelVersion := message.Update.Version
+	stream := message.Update.Stream
+	logger.Debugf(
+		"Received model update event from %s for model %s:%d with status %s",
+		stream, modelName, modelVersion, statusVal.String(),
+	)
+
+	confRes := s.modelEventStream.conflictResolutioner
+	if cr.IsModelMessageOutdated(confRes, message) {
+		logger.Debugf("Message for model %s:%d is outdated, ignoring", modelName, modelVersion)
+		return &pb.ModelUpdateStatusResponse{}, nil
+	}
+
+	confRes.UpdateStatus(modelName, stream, statusVal)
+	modelStatusVal, reason := cr.GetModelStatus(confRes, modelName, message)
+	if modelStatusVal == store.ModelTerminated {
+		confRes.Delete(modelName)
+	}
+
+	err := s.modelStore.SetModelGwModelState(
+		message.Update.Model,
+		message.Update.Version,
+		modelStatusVal,
+		reason,
+		modelStatusEventSource,
+	)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to set model state for %s version %d to %s", message.Update.Model, message.Update.Version, statusVal.String())
+		return nil, err
+	}
+
+	return &pb.ModelUpdateStatusResponse{}, nil
+}
 
 func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest, stream pb.Scheduler_SubscribeModelStatusServer) error {
 	logger := s.logger.WithField("func", "SubscribeModelStatus")
@@ -107,8 +170,8 @@ func contains(slice []string, val string) bool {
 	return false
 }
 
-func (s *SchedulerServer) GetAllRunningModels() []string {
-	var runningModels []string
+func (s *SchedulerServer) GetAllRunningModels() []*store.ModelSnapshot {
+	var runningModels []*store.ModelSnapshot
 	modelNames := s.modelStore.GetAllModels()
 
 	for _, modelName := range modelNames {
@@ -121,9 +184,17 @@ func (s *SchedulerServer) GetAllRunningModels() []string {
 			s.logger.Warnf("Model %s has no versions, skipping running models", modelName)
 			continue
 		}
+
 		modelState := model.GetLatest().ModelState()
-		if modelState.State == store.ModelAvailable || modelState.State == store.ModelProgressing || modelState.State == store.ModelTerminating {
-			runningModels = append(runningModels, modelName)
+		runningStates := map[store.ModelState]struct{}{
+			store.ModelCreate:      {},
+			store.ModelProgressing: {},
+			store.ModelAvailable:   {},
+			store.ModelTerminating: {},
+		}
+
+		if _, ok := runningStates[modelState.ModelGwState]; ok {
+			runningModels = append(runningModels, model)
 		}
 	}
 	return runningModels
@@ -134,7 +205,7 @@ func (s *SchedulerServer) createModelDeletionMessage(model *store.ModelSnapshot,
 	if err != nil {
 		return nil, err
 	}
-	ms.Versions[0].State.AvailableReplicas = 0
+	ms.Operation = pb.ModelStatusResponse_ModelDelete
 	ms.KeepTopics = keepTopics
 	return ms, nil
 }
@@ -144,6 +215,7 @@ func (s *SchedulerServer) createModelCreationMessage(model *store.ModelSnapshot)
 	if err != nil {
 		return nil, err
 	}
+	ms.Operation = pb.ModelStatusResponse_ModelCreate
 	return ms, nil
 }
 
@@ -152,56 +224,112 @@ func (s *SchedulerServer) modelGwRebalance() {
 	defer s.modelEventStream.mu.Unlock()
 
 	runningModels := s.GetAllRunningModels()
-	for _, modelName := range runningModels {
-		model, _ := s.modelStore.GetModel(modelName)
-		consumerBucketId := s.getModelGatewayBucketId(modelName)
-		s.logger.Debugf("Rebalancing model %s with consumber bucket id %s", modelName, consumerBucketId)
+	s.logger.Debugf("Rebalancing model gateways for running models: %v", runningModels)
 
-		servers := s.modelGwLoadBalancer.GetServersForKey(consumerBucketId)
-		s.logger.Debugf("Servers for model %s: %v", modelName, servers)
+	// get only the model gateway streams
+	streams := []*ModelSubscription{}
+	for _, modelSubscription := range s.modelEventStream.streams {
+		if modelSubscription.isModelGateway {
+			streams = append(streams, modelSubscription)
+		}
+	}
 
-		for _, modelSubscription := range s.modelEventStream.streams {
-			if !modelSubscription.isModelGateway {
-				s.logger.Debugf("Skipping non-model gateway stream for %s", modelSubscription.name)
+	for _, model := range runningModels {
+		switch len(streams) {
+		case 0:
+			s.modelGwRebalanceNoStream(model)
+		default:
+			s.modelGwReblanceStreams(model)
+		}
+	}
+}
+
+func (s *SchedulerServer) modelGwRebalanceNoStream(model *store.ModelSnapshot) {
+	modelState := store.ModelCreate
+	if model.GetLatest().ModelState().ModelGwState == store.ModelTerminating {
+		modelState = store.ModelTerminated
+	}
+
+	s.logger.Debugf(
+		"No model gateway available to handle model %s, setting state to %s",
+		model.Name, modelState.String(),
+	)
+
+	if err := s.modelStore.SetModelGwModelState(
+		model.Name,
+		model.GetLatest().GetVersion(),
+		modelState,
+		"No model gateway available to handle model",
+		modelStatusEventSource,
+	); err != nil {
+		s.logger.WithError(err).Errorf("Failed to set model-gw state for %s", model.Name)
+	}
+}
+
+func (s *SchedulerServer) modelGwReblanceStreams(model *store.ModelSnapshot) {
+	consumerBucketId := s.getModelGatewayBucketId(model.Name)
+	s.logger.Debugf("Rebalancing model %s with consumber bucket id %s", model.Name, consumerBucketId)
+
+	servers := s.modelGwLoadBalancer.GetServersForKey(consumerBucketId)
+	s.logger.Debugf("Servers for model %s: %v", model.Name, servers)
+
+	confRes := s.modelEventStream.conflictResolutioner
+	cr.CreateNewModelIteration(confRes, model.Name, servers)
+
+	for _, modelSubscription := range s.modelEventStream.streams {
+		if !modelSubscription.isModelGateway {
+			s.logger.Debugf("Skipping non-model gateway stream for %s", modelSubscription.name)
+			continue
+		}
+
+		s.logger.Debug("Processing model subscription for ", modelSubscription.name)
+		server := modelSubscription.name
+		stream := modelSubscription.stream
+
+		if contains(servers, server) {
+			s.logger.Debug("Server contains model, sending status update for: ", server)
+
+			state := model.GetLatest().ModelState().ModelGwState
+			var msg *pb.ModelStatusResponse
+			var err error
+
+			if state == store.ModelTerminating {
+				s.logger.Debugf("Model %s is terminating, sending deletion message", model.Name)
+				msg, err = s.createModelDeletionMessage(model, false)
+			} else {
+				s.logger.Debugf("Model %s is available or progressing, sending creation message", model.Name)
+				msg, err = s.createModelCreationMessage(model)
+
+				// set modelgw state to progressing and display rebalance reason
+				if err := s.modelStore.SetModelGwModelState(
+					model.Name,
+					model.GetLatest().GetVersion(),
+					store.ModelProgressing,
+					"Rebalance",
+					modelStatusEventSource,
+				); err != nil {
+					s.logger.WithError(err).Errorf("Failed to set pipeline gw state for %s", model.Name)
+				}
+			}
+			if err != nil {
+				s.logger.WithError(err).Errorf("Failed to create model status message for %s", model.Name)
 				continue
 			}
-
-			s.logger.Debug("Processing model subscription for ", modelSubscription.name)
-			server := modelSubscription.name
-			stream := modelSubscription.stream
-
-			if contains(servers, server) {
-				s.logger.Debug("Server contains model, sending status update for: ", server)
-
-				state := model.GetLatest().ModelState().State
-				var msg *pb.ModelStatusResponse
-				var err error
-
-				if state == store.ModelTerminating {
-					s.logger.Debugf("Model %s is terminating, sending deletion message", modelName)
-					msg, err = s.createModelDeletionMessage(model, false)
-				} else {
-					s.logger.Debugf("Model %s is available or progressing, sending creation message", modelName)
-					msg, err = s.createModelCreationMessage(model)
-				}
-				if err != nil {
-					s.logger.WithError(err).Errorf("Failed to create model status message for %s", modelName)
-					continue
-				}
-				if err := stream.Send(msg); err != nil {
-					s.logger.WithError(err).Errorf("Failed to send create rebalance msg to model %s", modelName)
-				}
-			} else {
-				s.logger.Debugf("Server %s does not contain model %s, sending deletion message", server, modelName)
-				msg, err := s.createModelDeletionMessage(model, true)
-				if err != nil {
-					s.logger.WithError(err).Errorf("Failed to create model deletion message for %s", modelName)
-					continue
-				}
-				s.logger.Debugf("Sending deletion message for model %s to server %s", modelName, server)
-				if err := stream.Send(msg); err != nil {
-					s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to model %s", modelName)
-				}
+			msg.Timestamp = confRes.GetTimestamp(model.Name)
+			if err := stream.Send(msg); err != nil {
+				s.logger.WithError(err).Errorf("Failed to send create rebalance msg to model %s", model.Name)
+			}
+		} else {
+			s.logger.Debugf("Server %s does not contain model %s, sending deletion message", server, model.Name)
+			msg, err := s.createModelDeletionMessage(model, true)
+			if err != nil {
+				s.logger.WithError(err).Errorf("Failed to create model deletion message for %s", model.Name)
+				continue
+			}
+			s.logger.Debugf("Sending deletion message for model %s to server %s", model.Name, server)
+			msg.Timestamp = confRes.GetTimestamp(model.Name)
+			if err := stream.Send(msg); err != nil {
+				s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to model %s", model.Name)
 			}
 		}
 	}
@@ -255,33 +383,142 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 	if err != nil {
 		return err
 	}
-	if model.GetLatest() != nil && model.GetLatest().GetVersion() == evt.ModelVersion {
-		ms, err := s.modelStatusImpl(model, false)
+
+	if model.GetLatest() == nil {
+		logger.Warnf("Failed to find latest model version for %s so ignoring event", evt.String())
+		return nil
+	}
+
+	if model.GetLatest().GetVersion() != evt.ModelVersion {
+		logger.Warnf("Latest model version %d does not match event version %d for %s so ignoring event", model.GetLatest().GetVersion(), evt.ModelVersion, evt.String())
+		return nil
+	}
+
+	// find the modelgw servers that should receive this event
+	consumerBucketId := s.getModelGatewayBucketId(evt.ModelName)
+	servers := s.modelGwLoadBalancer.GetServersForKey(consumerBucketId)
+
+	// split streams into model gateway and other streams
+	modelGwStreams := make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription)
+	otherStreams := make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription)
+	for stream, subscription := range s.modelEventStream.streams {
+		if !subscription.isModelGateway {
+			otherStreams[stream] = subscription
+		} else if contains(servers, subscription.name) {
+			modelGwStreams[stream] = subscription
+		}
+	}
+
+	ms, err := s.modelStatusImpl(model, false)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to create model status for model %s", evt.String())
+		return err
+	}
+
+	// send to all other streams
+	s.sendModelStatusEventToStreams(evt, ms, otherStreams)
+
+	// send to model gateway streams only if the message
+	// is not an ack from the model gateway itself
+	if evt.Source == modelStatusEventSource {
+		return nil
+	}
+
+	modelState := model.GetLatest().ModelState()
+	if len(modelGwStreams) == 0 && modelState.ModelGwState != store.ModelTerminated {
+		// handle case where we don't have any model-gateway streams
+		errMsg := "No model gateway available to handle model"
+		logger.WithField("model", model.Name).Warn(errMsg)
+
+		modelGwState := modelState.ModelGwState
+		if modelState.ModelGwState == store.ModelTerminate || modelState.ModelGwState == store.ModelTerminating {
+			modelGwState = store.ModelTerminated
+		}
+
+		if err := s.modelStore.SetModelGwModelState(
+			model.Name,
+			model.GetLatest().GetVersion(),
+			modelGwState,
+			errMsg,
+			modelStatusEventSource,
+		); err != nil {
+			logger.
+				WithError(err).
+				WithField("model", model.Name).
+				WithField("modelGwState", modelGwState).
+				Error("failed to set model state")
+		}
+		return nil
+	}
+
+	switch modelState.ModelGwState {
+	case store.ModelCreate:
+		logger.Debugf("Model %s is in create state, sending creation message", model.Name)
+		if err := s.modelStore.SetModelGwModelState(
+			model.Name,
+			model.GetLatest().GetVersion(),
+			store.ModelProgressing,
+			"Model is being loaded onto model gateway",
+			modelStatusEventSource,
+		); err != nil {
+			logger.
+				WithError(err).
+				WithField("model", model.Name).
+				Error("failed to set model state to progressing")
+		}
+
+		ms, err = s.createModelCreationMessage(model)
 		if err != nil {
-			logger.WithError(err).Errorf("Failed to create model status for model %s", evt.String())
+			logger.WithError(err).Errorf("Failed to create model creation message for %s", model.Name)
 			return err
 		}
 
-		// find the modelgw servers that should receive this event
-		consumerBucketId := s.getModelGatewayBucketId(evt.ModelName)
-		servers := s.modelGwLoadBalancer.GetServersForKey(consumerBucketId)
-
-		// split streams into model gateway and other streams
-		modelGwStreams := make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription)
-		otherStreams := make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription)
-		for stream, subscription := range s.modelEventStream.streams {
-			if !subscription.isModelGateway {
-				otherStreams[stream] = subscription
-			} else if contains(servers, subscription.name) {
-				modelGwStreams[stream] = subscription
-			}
+		// send message to model gateway streams
+		s.sendModelStatusEventToStreamsWithTimestamp(evt, ms, modelGwStreams)
+	case store.ModelTerminate:
+		logger.Debugf("Model %s is in terminate state, sending deletion message", model.Name)
+		if err := s.modelStore.SetModelGwModelState(
+			model.Name,
+			model.GetLatest().GetVersion(),
+			store.ModelTerminating,
+			"Model is being unloaded from model gateway",
+			modelStatusEventSource,
+		); err != nil {
+			logger.
+				WithError(err).
+				WithField("model", model.Name).
+				Error("failed to set model state to terminating")
 		}
 
-		// send to model gateway streams
-		s.sendModelStatusEventToStreams(evt, ms, modelGwStreams)
-		s.sendModelStatusEventToStreams(evt, ms, otherStreams)
+		ms, err = s.createModelDeletionMessage(model, false)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to create model deletion message for %s", model.Name)
+			return err
+		}
+
+		// send message to model gateway streams
+		s.sendModelStatusEventToStreamsWithTimestamp(evt, ms, modelGwStreams)
 	}
 	return nil
+}
+
+func (s *SchedulerServer) sendModelStatusEventToStreamsWithTimestamp(
+	evt coordinator.ModelEventMsg,
+	ms *pb.ModelStatusResponse,
+	streams map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription,
+) {
+	// send message to model gateway streams
+	streamNames := make([]string, 0, len(streams))
+	for _, subscription := range streams {
+		streamNames = append(streamNames, subscription.name)
+	}
+
+	// assign a new timestamp to the message
+	confRes := s.modelEventStream.conflictResolutioner
+	cr.CreateNewModelIteration(confRes, evt.ModelName, streamNames)
+	ms.Timestamp = confRes.GetTimestamp(evt.ModelName)
+
+	s.sendModelStatusEventToStreams(evt, ms, streams)
 }
 
 func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionRequest, stream pb.Scheduler_SubscribeServerStatusServer) error {

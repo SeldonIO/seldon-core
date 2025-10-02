@@ -332,6 +332,9 @@ func (s *mockSchedulerGrpcClient) SubscribePipelineStatus(ctx context.Context, i
 func (s *mockSchedulerGrpcClient) SubscribeControlPlane(ctx context.Context, in *scheduler.ControlPlaneSubscriptionRequest, opts ...grpc.CallOption) (scheduler.Scheduler_SubscribeControlPlaneClient, error) {
 	return newMockControlPlaneSubscribeGrpcClient(), nil
 }
+func (s *mockSchedulerGrpcClient) ModelStatusEvent(ctx context.Context, in *scheduler.ModelUpdateStatusMessage, opts ...grpc.CallOption) (*scheduler.ModelUpdateStatusResponse, error) {
+	return nil, nil
+}
 
 func (s *mockSchedulerGrpcClient) PipelineStatusEvent(ctx context.Context, message *chainer.PipelineUpdateStatusMessage, opts ...grpc.CallOption) (*chainer.PipelineUpdateStatusResponse, error) {
 	return nil, nil

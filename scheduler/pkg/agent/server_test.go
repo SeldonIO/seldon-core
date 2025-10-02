@@ -100,6 +100,10 @@ func (m *mockStore) UnloadVersionModels(modelKey string, version uint32) (bool, 
 	panic("implement me")
 }
 
+func (m *mockStore) UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error) {
+	panic("implement me")
+}
+
 func (m *mockStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState store.ModelReplicaState, reason string, runtimeInfo *pbs.ModelRuntimeInfo) error {
 	model := m.models[modelKey]
 	for _, mv := range model.Versions {
@@ -132,6 +136,10 @@ func (m *mockStore) GetAllModels() []string {
 		modelNames = append(modelNames, modelName)
 	}
 	return modelNames
+}
+
+func (m *mockStore) SetModelGwModelState(name string, versionNumber uint32, status store.ModelState, reason string, source string) error {
+	panic("implement me")
 }
 
 type mockGrpcStream struct {

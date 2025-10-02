@@ -17,6 +17,7 @@ import (
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/proto"
 
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
@@ -24,12 +25,106 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	scheduler2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/cleaner"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
+
+func receiveMessageFromModelStream(stream *stubModelStatusServer) *pb.ModelStatusResponse {
+	time.Sleep(500 * time.Millisecond)
+
+	var msr *pb.ModelStatusResponse
+	select {
+	case next := <-stream.msgs:
+		msr = next
+	case <-time.After(2 * time.Second):
+		msr = nil
+	}
+	return msr
+}
+
+func TestTerminateModelGwVersionModels(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name    string
+		loadReq []*pb.LoadModelRequest
+	}
+
+	tests := []test{
+		{
+			name: "model ok",
+			loadReq: []*pb.LoadModelRequest{
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "foo"},
+						ModelSpec: &pb.ModelSpec{
+							Uri: "gs://somewhere-1",
+						},
+					},
+				},
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "foo"},
+						ModelSpec: &pb.ModelSpec{
+							Uri: "gs://somewhere-2",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s, _ := createTestScheduler(t)
+			for _, lr := range test.loadReq {
+				err := s.modelStore.UpdateModel(lr)
+				g.Expect(err).To(BeNil())
+			}
+
+			modelName := test.loadReq[0].Model.Meta.Name
+			model, err := s.modelStore.GetModel(modelName)
+			g.Expect(err).To(BeNil())
+
+			// check number of versions
+			g.Expect(model.Versions).To(HaveLen(2))
+
+			// set model-gw status to available
+			mem, ok := s.modelStore.(*store.TestMemoryStore)
+			g.Expect(ok).To(BeTrue())
+
+			err = mem.DirectlyUpdateModelStatus(store.ModelID{
+				Name:    modelName,
+				Version: model.GetLatest().GetVersion(),
+			}, store.ModelStatus{
+				ModelGwState: store.ModelAvailable,
+			})
+			g.Expect(err).To(BeNil())
+
+			// check if latest version is available
+			model, err = s.modelStore.GetModel(modelName)
+			g.Expect(err).To(BeNil())
+			g.Expect(model.GetLatest().ModelState().ModelGwState).To(Equal(store.ModelAvailable))
+
+			// trigger cleanup
+			clr := cleaner.NewTestVersionCleaner(s.modelStore, s.logger)
+			err = clr.CleanupOldVersions(modelName)
+			g.Expect(err).To(BeNil())
+
+			// check first version is terminated
+			model, err = s.modelStore.GetModel(modelName)
+			g.Expect(err).To(BeNil())
+
+			mv := model.GetPrevious()
+			g.Expect(mv).ToNot(BeNil())
+			g.Expect(mv.ModelState().ModelGwState).To(Equal(store.ModelTerminated))
+		})
+	}
+
+}
 
 func TestModelsStatusStream(t *testing.T) {
 	g := NewGomegaWithT(t)
@@ -84,14 +179,7 @@ func TestModelsStatusStream(t *testing.T) {
 			} else {
 				g.Expect(err).To(BeNil())
 
-				var msr *pb.ModelStatusResponse
-				select {
-				case next := <-stream.msgs:
-					msr = next
-				default:
-					t.Fail()
-				}
-
+				msr := receiveMessageFromModelStream(stream)
 				g.Expect(msr).ToNot(BeNil())
 				g.Expect(msr.Versions).To(HaveLen(1))
 				g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
@@ -100,7 +188,7 @@ func TestModelsStatusStream(t *testing.T) {
 	}
 }
 
-func TestModelsStatusEvents(t *testing.T) {
+func TestPublishModelsStatusWithTimeout(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
@@ -142,7 +230,7 @@ func TestModelsStatusEvents(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 
-			stream := newStubModelStatusServer(1, 5*time.Millisecond)
+			stream := newStubModelStatusServer(2, 5*time.Millisecond)
 			s.modelEventStream.streams[stream] = &ModelSubscription{
 				name:   "dummy",
 				stream: stream,
@@ -160,20 +248,491 @@ func TestModelsStatusEvents(t *testing.T) {
 				s.modelEventStream.mu.Lock()
 				g.Expect(s.modelEventStream.streams).To(HaveLen(0))
 				s.modelEventStream.mu.Unlock()
-			} else {
+				return
+			}
 
-				var msr *pb.ModelStatusResponse
-				select {
-				case next := <-stream.msgs:
-					msr = next
-				default:
-					t.Fail()
-				}
+			// read first create message
+			msr := receiveMessageFromModelStream(stream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
+			g.Expect(s.modelEventStream.streams).To(HaveLen(1))
 
+			// read message due to no model-gw available
+			msr = receiveMessageFromModelStream(stream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
+		})
+	}
+}
+
+func TestAddAndRemoveModelNoModelGw(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name      string
+		loadReq   *pb.LoadModelRequest
+		unloadReq *pb.UnloadModelRequest
+	}
+
+	tests := []test{
+		{
+			name: "add and remove model - no model-gw",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			unloadReq: &pb.UnloadModelRequest{
+				Model: &pb.ModelReference{
+					Name:    "foo",
+					Version: proto.Uint32(1),
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s, hub := createTestScheduler(t)
+
+			stream := newStubModelStatusServer(2, 5*time.Millisecond)
+			s.modelEventStream.streams[stream] = &ModelSubscription{
+				name:   "dummy",
+				stream: stream,
+				fin:    make(chan bool),
+			}
+			g.Expect(s.modelEventStream.streams[stream]).ToNot(BeNil())
+
+			// add model
+			modelName := test.loadReq.Model.Meta.Name
+			err := s.modelStore.UpdateModel(test.loadReq)
+			g.Expect(err).To(BeNil())
+			hub.PublishModelEvent(modelEventHandlerName, coordinator.ModelEventMsg{
+				ModelName: modelName, ModelVersion: 1,
+			})
+
+			// read first create message
+			msr := receiveMessageFromModelStream(stream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelCreate))
+			g.Expect(s.modelEventStream.streams).To(HaveLen(1))
+
+			// read message due to no model-gw available
+			msr = receiveMessageFromModelStream(stream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelCreate))
+			g.Expect(s.modelEventStream.streams).To(HaveLen(1))
+
+			// check model-gw status update
+			ms, err := s.modelStore.GetModel(modelName)
+			g.Expect(err).To(BeNil())
+
+			mv := ms.GetLatest()
+			g.Expect(mv.ModelState().ModelGwState).To(Equal(store.ModelCreate))
+			g.Expect(mv.ModelState().ModelGwReason).To(Equal("No model gateway available to handle model"))
+
+			// remove model
+			err = s.modelStore.RemoveModel(test.unloadReq)
+			g.Expect(err).To(BeNil())
+			hub.PublishModelEvent(modelEventHandlerName, coordinator.ModelEventMsg{
+				ModelName: modelName, ModelVersion: 1,
+			})
+
+			// read message due to model removal
+			msr = receiveMessageFromModelStream(stream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelTerminate))
+
+			// read messsage duo to no model-gw available
+			msr = receiveMessageFromModelStream(stream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelTerminated))
+		})
+	}
+}
+
+func TestModelGwRebalanceNoPipelineGw(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name    string
+		loadReq *pb.LoadModelRequest
+	}
+
+	tests := []test{
+		{
+			name: "rebalance - no model-gw",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s, hub := createTestScheduler(t)
+
+			stream := newStubModelStatusServer(2, 5*time.Millisecond)
+			s.modelEventStream.streams[stream] = &ModelSubscription{
+				name:   "dummy",
+				stream: stream,
+				fin:    make(chan bool),
+			}
+			g.Expect(s.modelEventStream.streams[stream]).ToNot(BeNil())
+
+			// add model
+			modelName := test.loadReq.Model.Meta.Name
+			err := s.modelStore.UpdateModel(test.loadReq)
+			g.Expect(err).To(BeNil())
+			hub.PublishModelEvent(modelEventHandlerName, coordinator.ModelEventMsg{
+				ModelName: modelName, ModelVersion: 1,
+			})
+
+			// read first create message
+			msr := receiveMessageFromModelStream(stream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelCreate))
+			g.Expect(s.modelEventStream.streams).To(HaveLen(1))
+
+			// read second message due to no model-gw available
+			msr = receiveMessageFromModelStream(stream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelCreate))
+			g.Expect(msr.Versions[0].State.ModelGwReason).To(Equal("No model gateway available to handle model"))
+			g.Expect(s.modelEventStream.streams).To(HaveLen(1))
+
+			// check model-gw status update
+			ms, err := s.modelStore.GetModel(modelName)
+			g.Expect(err).To(BeNil())
+
+			mv := ms.GetLatest()
+			g.Expect(mv.ModelState().ModelGwState).To(Equal(store.ModelCreate))
+			g.Expect(mv.ModelState().ModelGwReason).To(Equal("No model gateway available to handle model"))
+
+			// trigger rebalance
+			s.modelGwRebalance()
+
+			// to allow events to propagate
+			time.Sleep(500 * time.Millisecond)
+
+			// no other message since the state and reason have not changed
+			msr = receiveMessageFromModelStream(stream)
+			g.Expect(msr).To(BeNil())
+		})
+	}
+
+}
+
+func TestModelGwRebalanceCorrectMessages(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name          string
+		loadReq       *pb.LoadModelRequest
+		modelGwStatus store.ModelState
+		operation     pb.ModelStatusResponse_ModelOperation
+	}
+
+	tests := []test{
+		{
+			name: "rebalance message - create model (model available)",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			modelGwStatus: store.ModelAvailable,
+			operation:     pb.ModelStatusResponse_ModelCreate,
+		},
+		{
+			name: "rebalance message - create model (model progressing)",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			modelGwStatus: store.ModelProgressing,
+			operation:     pb.ModelStatusResponse_ModelCreate,
+		},
+		{
+			name: "rebalance message - terminate model",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			modelGwStatus: store.ModelTerminating,
+			operation:     pb.ModelStatusResponse_ModelDelete,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s, hub := createTestScheduler(t)
+
+			// create operator stream
+			operatorStream := newStubModelStatusServer(1, 5*time.Millisecond)
+			s.modelEventStream.streams[operatorStream] = &ModelSubscription{
+				name:   "dummy-operator",
+				stream: operatorStream,
+				fin:    make(chan bool),
+			}
+
+			// create modelgw stream
+			modelGwStream := newStubModelStatusServer(1, 5*time.Millisecond)
+			modelGwSubscription := &ModelSubscription{
+				name:           "dummy-modelgw",
+				stream:         modelGwStream,
+				fin:            make(chan bool),
+				isModelGateway: true,
+			}
+			s.modelEventStream.streams[modelGwStream] = modelGwSubscription
+			g.Expect(s.modelEventStream.streams[modelGwStream]).ToNot(BeNil())
+
+			// add modelgw stream to the load balancer
+			s.modelGwLoadBalancer.AddServer(modelGwSubscription.name)
+
+			// add model
+			modelName := test.loadReq.Model.Meta.Name
+			err := s.modelStore.UpdateModel(test.loadReq)
+			g.Expect(err).To(BeNil())
+			hub.PublishModelEvent(modelEventHandlerName, coordinator.ModelEventMsg{
+				ModelName: modelName, ModelVersion: 1,
+			})
+
+			// receive message on operator stream
+			msr := receiveMessageFromModelStream(operatorStream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelCreate))
+			g.Expect(s.modelEventStream.streams).To(HaveLen(2))
+
+			// receive message on model-gw stream
+			msr = receiveMessageFromModelStream(modelGwStream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelCreate))
+
+			// receive transition to progressing on operator stream
+			msr = receiveMessageFromModelStream(operatorStream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelProgressing))
+
+			// set modelgw status
+			err = s.modelStore.SetModelGwModelState(
+				modelName, 1, test.modelGwStatus, "", modelStatusEventSource,
+			)
+			g.Expect(err).To(BeNil())
+
+			// receive message on operator stream
+			msr = receiveMessageFromModelStream(operatorStream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(int32(msr.Versions[0].State.ModelGwState)).To(Equal(int32(test.modelGwStatus)))
+			g.Expect(msr.Versions[0].State.ModelGwReason).To(Equal(""))
+
+			ms, err := s.modelStore.GetModel(modelName)
+			g.Expect(err).To(BeNil())
+
+			mv := ms.GetLatest()
+			g.Expect(mv.ModelState().ModelGwState).To(Equal(test.modelGwStatus))
+
+			// trigger rebalance
+			s.modelGwRebalance()
+
+			// check message is received by the operator
+			if test.modelGwStatus != store.ModelTerminating {
+				msr = receiveMessageFromModelStream(operatorStream)
 				g.Expect(msr).ToNot(BeNil())
+				g.Expect(msr.ModelName).To(Equal("foo"))
 				g.Expect(msr.Versions).To(HaveLen(1))
-				g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
-				g.Expect(s.modelEventStream.streams).To(HaveLen(1))
+				g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelProgressing))
+				g.Expect(msr.Versions[0].State.ModelGwReason).To(Equal("Rebalance"))
+			}
+
+			// check message is received by the model-gw (create or delete)
+			msr = receiveMessageFromModelStream(modelGwStream)
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.ModelName).To(Equal("foo"))
+			g.Expect(msr.Versions).To(HaveLen(1))
+			g.Expect(msr.Operation).To(Equal(test.operation))
+		})
+	}
+
+}
+
+func TestModelGwRebalance(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	type test struct {
+		name     string
+		models   []*pb.LoadModelRequest
+		replicas int // number of modelgw instances
+	}
+
+	tests := []test{
+		{
+			name: "rebalance 3 models across 4 replicas",
+			models: []*pb.LoadModelRequest{
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "foo"},
+					},
+				},
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "bar"},
+					},
+				},
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "baz"},
+					},
+				},
+			},
+			replicas: 4,
+		},
+		{
+			name: "rebalance 3 models across 7 replicas",
+			models: []*pb.LoadModelRequest{
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "foo"},
+					},
+				},
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "bar"},
+					},
+				},
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "baz"},
+					},
+				},
+			},
+			replicas: 7,
+		},
+		{
+			name: "rebalance 5 models across 9 replicas",
+			models: []*pb.LoadModelRequest{
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "foo"},
+					},
+				},
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "bar"},
+					},
+				},
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "baz"},
+					},
+				},
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "fizz"},
+					},
+				},
+				{
+					Model: &pb.Model{
+						Meta: &pb.MetaData{Name: "buzz"},
+					},
+				},
+			},
+			replicas: 9,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			s, _ := createTestScheduler(t)
+
+			var streams []*stubModelStatusServer
+			for i := 0; i < test.replicas; i++ {
+				name := fmt.Sprintf("dummy%d", i)
+				stream := newStubModelStatusServer(10, 5*time.Millisecond)
+				subscription := &ModelSubscription{
+					name:           name,
+					stream:         stream,
+					fin:            make(chan bool),
+					isModelGateway: true,
+				}
+				s.modelEventStream.streams[stream] = subscription
+				s.modelGwLoadBalancer.AddServer(subscription.name)
+				streams = append(streams, stream)
+				g.Expect(s.modelEventStream.streams[stream]).ToNot(BeNil())
+			}
+
+			// Load all models into the store and mark them as available
+			for _, req := range test.models {
+				err := s.modelStore.UpdateModel(req)
+				g.Expect(err).To(BeNil())
+
+				modelName := req.Model.Meta.Name
+				model, _ := s.modelStore.GetModel(modelName)
+
+				mem, ok := s.modelStore.(*store.TestMemoryStore)
+				g.Expect(ok).To(BeTrue())
+
+				err = mem.DirectlyUpdateModelStatus(store.ModelID{
+					Name:    modelName,
+					Version: model.GetLatest().GetVersion(),
+				}, store.ModelStatus{
+					ModelGwState:      store.ModelAvailable,
+					AvailableReplicas: 1,
+				})
+				g.Expect(err).To(BeNil())
+			}
+
+			s.modelGwRebalance()
+
+			modelCreateAssignments := make(map[string]int)
+			modelDeleteAssignments := make(map[string]int)
+
+			for _, stream := range streams {
+			NextStream:
+				for {
+					select {
+					case msg := <-stream.msgs:
+						name := msg.ModelName
+						switch msg.Operation {
+						case pb.ModelStatusResponse_ModelCreate:
+							modelCreateAssignments[name]++
+						case pb.ModelStatusResponse_ModelDelete:
+							modelDeleteAssignments[name]++
+						}
+					case <-time.After(500 * time.Millisecond):
+						break NextStream
+					}
+				}
+			}
+
+			// Expect each model to have exactly 1 replica assigned
+			g.Expect(modelCreateAssignments).To(HaveLen(len(test.models)))
+			g.Expect(modelDeleteAssignments).To(HaveLen(len(test.models)))
+
+			for _, req := range test.models {
+				modelName := req.Model.Meta.Name
+				g.Expect(modelCreateAssignments[modelName]).To(Equal(1),
+					fmt.Sprintf("model %q should have exactly 1 replica assigned", modelName),
+				)
+				g.Expect(modelDeleteAssignments[modelName]).To(Equal(test.replicas-1),
+					fmt.Sprintf("model %q should have %d delete assignments", modelName, test.replicas-1),
+				)
 			}
 		})
 	}
@@ -773,296 +1332,4 @@ func createTestSchedulerImpl(t *testing.T, config SchedulerServerConfig) (*Sched
 	)
 
 	return s, eventHub
-}
-
-func createStream(name string, isModelGateway bool) (*stubModelStatusServer, *ModelSubscription) {
-	stream := newStubModelStatusServer(20, 0)
-	subscription := ModelSubscription{
-		name:           name,
-		stream:         stream,
-		fin:            make(chan bool),
-		isModelGateway: isModelGateway,
-	}
-	return stream, &subscription
-}
-
-func TestModelGwRebalanceMessage(t *testing.T) {
-	g := NewGomegaWithT(t)
-
-	type test struct {
-		name              string
-		loadReq           *pb.LoadModelRequest
-		modelState        store.ModelState
-		availableReplicas uint32
-		KeepTopics        bool
-	}
-
-	tests := []test{
-		{
-			name: "rebalance model available",
-			loadReq: &pb.LoadModelRequest{
-				Model: &pb.Model{
-					Meta: &pb.MetaData{Name: "foo"},
-				},
-			},
-			modelState:        store.ModelAvailable,
-			availableReplicas: 1,
-			KeepTopics:        false,
-		},
-		{
-			name: "rebalance model progressing",
-			loadReq: &pb.LoadModelRequest{
-				Model: &pb.Model{
-					Meta: &pb.MetaData{Name: "foo"},
-				},
-			},
-			modelState:        store.ModelProgressing,
-			availableReplicas: 1,
-			KeepTopics:        false,
-		},
-		{
-			name: "rebalance model terminating",
-			loadReq: &pb.LoadModelRequest{
-				Model: &pb.Model{
-					Meta: &pb.MetaData{Name: "foo"},
-				},
-			},
-			modelState:        store.ModelTerminating,
-			availableReplicas: 0,
-			KeepTopics:        false,
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			// create a test scheduler - note it uses a load balancer with 1 partition
-			s, _ := createTestScheduler(t)
-
-			// create modelgw stream
-			stream, subscription := createStream("dummy", true)
-			s.modelEventStream.streams[stream] = subscription
-			g.Expect(s.modelEventStream.streams[stream]).ToNot(BeNil())
-
-			// add stream to the load balancer
-			s.modelGwLoadBalancer.AddServer(subscription.name)
-
-			// add a model to the store
-			err := s.modelStore.UpdateModel(test.loadReq)
-			g.Expect(err).To(BeNil())
-
-			// set the model to available
-			modelName := test.loadReq.Model.Meta.Name
-			model, _ := s.modelStore.GetModel(modelName)
-
-			mem, ok := s.modelStore.(*store.TestMemoryStore)
-			g.Expect(ok).To(BeTrue())
-
-			err = mem.DirectlyUpdateModelStatus(store.ModelID{
-				Name:    modelName,
-				Version: model.GetLatest().GetVersion(),
-			}, store.ModelStatus{
-				State:             test.modelState,
-				AvailableReplicas: test.availableReplicas,
-			})
-			g.Expect(err).To(BeNil())
-
-			// trigger rebalance
-			s.modelGwRebalance()
-
-			var msr *pb.ModelStatusResponse
-			select {
-			case next := <-stream.msgs:
-				msr = next
-			default:
-				t.Fail()
-			}
-
-			g.Expect(msr).ToNot(BeNil())
-			g.Expect(msr.ModelName).To(Equal(modelName))
-			g.Expect(msr.Versions).To(HaveLen(1))
-			g.Expect(msr.Versions[0].State.AvailableReplicas).To(Equal(test.availableReplicas))
-			g.Expect(msr.KeepTopics).To(Equal(test.KeepTopics))
-		})
-	}
-}
-
-func TestModelGwRebalance(t *testing.T) {
-	g := NewGomegaWithT(t)
-
-	type test struct {
-		name     string
-		models   []*pb.LoadModelRequest
-		replicas int // number of modelgw instances
-	}
-
-	tests := []test{
-		{
-			name: "rebalance multiple models across N replicas",
-			models: []*pb.LoadModelRequest{
-				{
-					Model: &pb.Model{
-						Meta: &pb.MetaData{Name: "foo"},
-					},
-				},
-				{
-					Model: &pb.Model{
-						Meta: &pb.MetaData{Name: "bar"},
-					},
-				},
-				{
-					Model: &pb.Model{
-						Meta: &pb.MetaData{Name: "baz"},
-					},
-				},
-			},
-			replicas: 4, // test with 4 modelgw replicas
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			s, _ := createTestScheduler(t)
-
-			var streams []*stubModelStatusServer
-			for i := 0; i < test.replicas; i++ {
-				name := fmt.Sprintf("dummy%d", i)
-				stream, subscription := createStream(name, true)
-				s.modelEventStream.streams[stream] = subscription
-				s.modelGwLoadBalancer.AddServer(subscription.name)
-				streams = append(streams, stream)
-				g.Expect(s.modelEventStream.streams[stream]).ToNot(BeNil())
-			}
-
-			// Load all models into the store and mark them as available
-			for _, req := range test.models {
-				err := s.modelStore.UpdateModel(req)
-				g.Expect(err).To(BeNil())
-
-				modelName := req.Model.Meta.Name
-				model, _ := s.modelStore.GetModel(modelName)
-
-				mem, ok := s.modelStore.(*store.TestMemoryStore)
-				g.Expect(ok).To(BeTrue())
-
-				err = mem.DirectlyUpdateModelStatus(store.ModelID{
-					Name:    modelName,
-					Version: model.GetLatest().GetVersion(),
-				}, store.ModelStatus{
-					State:             store.ModelAvailable,
-					AvailableReplicas: 1,
-				})
-				g.Expect(err).To(BeNil())
-			}
-
-			s.modelGwRebalance()
-
-			modelAssignments := make(map[string]int)
-			for _, stream := range streams {
-			NextStream:
-				for {
-					select {
-					case msg := <-stream.msgs:
-						name := msg.ModelName
-						count := int(msg.Versions[0].State.AvailableReplicas)
-						modelAssignments[name] += count
-					default:
-						break NextStream
-					}
-				}
-			}
-
-			// Expect each model to have exactly 1 replica assigned
-			g.Expect(modelAssignments).To(HaveLen(len(test.models)))
-			for _, req := range test.models {
-				modelName := req.Model.Meta.Name
-				g.Expect(modelAssignments[modelName]).To(Equal(1),
-					fmt.Sprintf("model %q should have exactly 1 replica assigned", modelName))
-			}
-		})
-	}
-}
-
-func TestSendModelStatusEvent(t *testing.T) {
-	g := NewGomegaWithT(t)
-
-	type test struct {
-		name    string
-		loadReq *pb.LoadModelRequest
-	}
-
-	tests := []test{
-		{
-			name: "rebalance model",
-			loadReq: &pb.LoadModelRequest{
-				Model: &pb.Model{
-					Meta: &pb.MetaData{Name: "foo"},
-				},
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			// create a test scheduler - note it uses a load balancer with 1 partition
-			s, _ := createTestScheduler(t)
-
-			// create operator stream
-			operatorStream, operatorSubscription := createStream("dummy_operator", false)
-			s.modelEventStream.streams[operatorStream] = operatorSubscription
-			g.Expect(s.modelEventStream.streams[operatorStream]).ToNot(BeNil())
-
-			// create first modelgw stream
-			firstMgwStream, firstMgwSubscription := createStream("dummy_mgw_1", true)
-			s.modelEventStream.streams[firstMgwStream] = firstMgwSubscription
-			g.Expect(s.modelEventStream.streams[firstMgwStream]).ToNot(BeNil())
-
-			// create second modelgw stream
-			secondMgwStream, secondMgwSubscription := createStream("dummy_mgw_2", true)
-			s.modelEventStream.streams[secondMgwStream] = secondMgwSubscription
-			g.Expect(s.modelEventStream.streams[secondMgwStream]).ToNot(BeNil())
-
-			// add modelgw streams to the load balancer
-			s.modelGwLoadBalancer.AddServer(firstMgwSubscription.name)
-			s.modelGwLoadBalancer.AddServer(secondMgwSubscription.name)
-
-			// add a model to the store
-			err := s.modelStore.UpdateModel(test.loadReq)
-			g.Expect(err).To(BeNil())
-
-			// set the model to available
-			modelName := test.loadReq.Model.Meta.Name
-			model, _ := s.modelStore.GetModel(modelName)
-
-			mem, ok := s.modelStore.(*store.TestMemoryStore)
-			g.Expect(ok).To(BeTrue())
-
-			err = mem.DirectlyUpdateModelStatus(store.ModelID{
-				Name:    modelName,
-				Version: model.GetLatest().GetVersion(),
-			}, store.ModelStatus{
-				State:             store.ModelAvailable,
-				AvailableReplicas: 1,
-			})
-			g.Expect(err).To(BeNil())
-
-			err = s.sendModelStatusEvent(coordinator.ModelEventMsg{
-				ModelName:    modelName,
-				ModelVersion: 1,
-			})
-			g.Expect(err).To(BeNil())
-
-			// read message from all streams
-			messages := make([]*pb.ModelStatusResponse, 0, 3)
-			for _, stream := range []*stubModelStatusServer{operatorStream, firstMgwStream, secondMgwStream} {
-				select {
-				case next := <-stream.msgs:
-					messages = append(messages, next)
-				default:
-				}
-			}
-
-			// we only expect to get message from the operator and one modelgw streams
-			g.Expect(messages).To(HaveLen(2))
-		})
-	}
 }

@@ -73,5 +73,13 @@ func (v *VersionCleaner) cleanupOldVersions(modelName string) error {
 			}
 		}
 	}
+	if latest.ModelState().ModelGwState == store.ModelAvailable {
+		for _, mv := range model.GetVersionsBeforeLastModelGwAvailable() {
+			_, err := v.store.UnloadModelGwVersionModels(modelName, mv.GetVersion())
+			if err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }

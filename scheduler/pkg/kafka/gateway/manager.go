@@ -31,7 +31,16 @@ const (
 	DefaultMaxNumConsumers         = 100
 )
 
-type ConsumerManager struct {
+type ConsumerManager interface {
+	Healthy() error
+	AddModel(modelName string) error
+	RemoveModel(modelName string, cleanTopicsOnDeletion bool, keepTopics bool) error
+	GetNumModels() int
+	Exists(modelName string) bool
+	Stop()
+}
+
+type KafkaConsumerManager struct {
 	logger log.FieldLogger
 	mu     sync.RWMutex
 	// all consumers we have
@@ -61,13 +70,13 @@ func cloneKafkaConfigMap(m kafka.ConfigMap) kafka.ConfigMap {
 	return m2
 }
 
-func NewConsumerManager(
+func NewKafkaConsumerManager(
 	logger log.FieldLogger,
 	managerConfig *ManagerConfig,
 	maxNumConsumers int,
 	schemaRegistryClient schemaregistry.Client,
-) (*ConsumerManager, error) {
-	cm := &ConsumerManager{
+) (*KafkaConsumerManager, error) {
+	cm := &KafkaConsumerManager{
 		logger:               logger.WithField("source", "ConsumerManager"),
 		managerConfig:        managerConfig,
 		consumers:            make(map[string]*InferKafkaHandler),
@@ -81,7 +90,7 @@ func NewConsumerManager(
 	return cm, nil
 }
 
-func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error {
+func (cm *KafkaConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error {
 	logger := cm.logger.WithField("func", "createKafkaConfigs")
 	var err error
 
@@ -128,7 +137,7 @@ func (cm *ConsumerManager) createKafkaConfigs(kafkaConfig *ManagerConfig) error 
 	return nil
 }
 
-func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) (*InferKafkaHandler, error) {
+func (cm *KafkaConsumerManager) getInferKafkaConsumer(modelName string, create bool) (*InferKafkaHandler, error) {
 	logger := cm.logger.WithField("func", "getInferKafkaConsumer")
 
 	consumerBucketId := util.GetKafkaConsumerName(
@@ -162,7 +171,7 @@ func (cm *ConsumerManager) getInferKafkaConsumer(modelName string, create bool) 
 	return ic, nil
 }
 
-func (cm *ConsumerManager) Healthy() error {
+func (cm *KafkaConsumerManager) Healthy() error {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()
 
@@ -178,7 +187,7 @@ func (cm *ConsumerManager) Healthy() error {
 	return nil
 }
 
-func (cm *ConsumerManager) AddModel(modelName string) error {
+func (cm *KafkaConsumerManager) AddModel(modelName string) error {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 
@@ -194,7 +203,7 @@ func (cm *ConsumerManager) AddModel(modelName string) error {
 	return nil
 }
 
-func (cm *ConsumerManager) stopEmptyConsumer(ic *InferKafkaHandler) {
+func (cm *KafkaConsumerManager) stopEmptyConsumer(ic *InferKafkaHandler) {
 	logger := cm.logger.WithField("func", "stopEmptyConsumer")
 	numModelsInConsumer := ic.GetNumModels()
 	if numModelsInConsumer == 0 {
@@ -204,7 +213,7 @@ func (cm *ConsumerManager) stopEmptyConsumer(ic *InferKafkaHandler) {
 	}
 }
 
-func (cm *ConsumerManager) RemoveModel(modelName string, cleanTopicsOnDeletion bool, keepTopics bool) error {
+func (cm *KafkaConsumerManager) RemoveModel(modelName string, cleanTopicsOnDeletion bool, keepTopics bool) error {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	ic, err := cm.getInferKafkaConsumer(modelName, false)
@@ -225,7 +234,7 @@ func (cm *ConsumerManager) RemoveModel(modelName string, cleanTopicsOnDeletion b
 	return nil
 }
 
-func (cm *ConsumerManager) GetNumModels() int {
+func (cm *KafkaConsumerManager) GetNumModels() int {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	tot := 0
@@ -235,7 +244,7 @@ func (cm *ConsumerManager) GetNumModels() int {
 	return tot
 }
 
-func (cm *ConsumerManager) Exists(modelName string) bool {
+func (cm *KafkaConsumerManager) Exists(modelName string) bool {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 
@@ -247,7 +256,7 @@ func (cm *ConsumerManager) Exists(modelName string) bool {
 	return ic != nil && ic.Exists(modelName)
 }
 
-func (cm *ConsumerManager) Stop() {
+func (cm *KafkaConsumerManager) Stop() {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 	cm.logger.Infof("Stopping")

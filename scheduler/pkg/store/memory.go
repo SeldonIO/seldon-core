@@ -225,6 +225,7 @@ func (m *MemoryStore) removeModelImpl(req *pb.UnloadModelRequest) error {
 		}
 
 		model.SetDeleted()
+		m.setModelGwStatusToTerminate(true, model.Latest())
 		m.updateModelStatus(true, true, model.Latest(), model.GetLastAvailableModelVersion())
 		return nil
 	} else {
@@ -884,4 +885,50 @@ func toSchedulerLoadedModels(agentLoadedModels []*agent.ModelVersion) map[ModelV
 		loadedModels[key] = true
 	}
 	return loadedModels
+}
+
+func (m *MemoryStore) SetModelGwModelState(name string, versionNumber uint32, status ModelState, reason string, source string) error {
+	logger := m.logger.WithField("func", "SetModelGwModelState")
+	logger.Debugf("Attempt to set model-gw state on model %s:%d status:%s", name, versionNumber, status.String())
+
+	evts, err := m.setModelGwModelStateImpl(name, versionNumber, status, reason, source)
+	if err != nil {
+		return err
+	}
+
+	if m.eventHub != nil {
+		for _, evt := range evts {
+			m.eventHub.PublishModelEvent(source, *evt)
+		}
+	}
+
+	return nil
+}
+
+func (m *MemoryStore) setModelGwModelStateImpl(name string, versionNumber uint32, status ModelState, reason, source string) ([]*coordinator.ModelEventMsg, error) {
+	var evts []*coordinator.ModelEventMsg
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	model, ok := m.store.models[name]
+	if !ok {
+		return nil, fmt.Errorf("failed to find model %s", name)
+	}
+	modelVersion := model.GetVersion(versionNumber)
+	if modelVersion == nil {
+		return nil, fmt.Errorf("version not found for model %s, version %d", name, versionNumber)
+	}
+
+	if modelVersion.state.ModelGwState != status || modelVersion.state.ModelGwReason != reason {
+		modelVersion.state.ModelGwState = status
+		modelVersion.state.ModelGwReason = reason
+		evt := &coordinator.ModelEventMsg{
+			ModelName:    modelVersion.GetMeta().GetName(),
+			ModelVersion: modelVersion.GetVersion(),
+			Source:       source,
+		}
+		evts = append(evts, evt)
+	}
+	return evts, nil
 }

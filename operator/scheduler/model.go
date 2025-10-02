@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-logr/logr"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -155,11 +156,12 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 			"version", latestVersionStatus.Version,
 			"generation", latestVersionStatus.GetKubernetesMeta().Generation,
 			"state", latestVersionStatus.State.State.String(),
+			"modelGwState", latestVersionStatus.State.ModelGwState.String(),
 			"reason", latestVersionStatus.State.Reason,
 		)
 
 		// Handle terminated event to remove finalizer
-		if canRemoveFinalizer(latestVersionStatus.State.State) {
+		if canRemoveFinalizer(latestVersionStatus.State.State, latestVersionStatus.State.ModelGwState) {
 			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 				ctxWithTimeout, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
 				defer cancel()
@@ -193,7 +195,6 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 						return err
 					}
 				}
-
 				return nil
 			})
 			if retryErr != nil {
@@ -235,43 +236,12 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 
 				// Handle status update
 				modelStatus := latestVersionStatus.GetState()
-				switch modelStatus.GetState() {
-				case scheduler.ModelStatus_ModelAvailable:
-					logger.Info(
-						"Setting model to ready",
-						"name", event.ModelName,
-						"state", modelStatus.GetState().String(),
-					)
-					latestModel.Status.CreateAndSetCondition(
-						v1alpha1.ModelReady,
-						true,
-						modelStatus.GetState().String(),
-						modelStatus.GetReason(),
-					)
-				case scheduler.ModelStatus_ModelScaledDown:
-					logger.Info(
-						"Setting model to not ready",
-						"name", event.ModelName,
-						"state", modelStatus.GetState().String(),
-					)
-					latestModel.Status.CreateAndSetCondition(
-						v1alpha1.ModelReady,
-						false,
-						modelStatus.GetState().String(),
-						modelStatus.GetReason(),
-					)
-				default:
-					logger.Info(
-						"Setting model to not ready",
-						"name", event.ModelName,
-						"state", modelStatus.GetState().String(),
-					)
-					latestModel.Status.CreateAndSetCondition(
-						v1alpha1.ModelReady,
-						false,
-						modelStatus.GetState().String(),
-						modelStatus.GetReason(),
-					)
+				setModelStatus(modelStatus, event, latestModel, &logger)
+
+				// Set modelgw status
+				latestModel.Status.ModelGwStatus = modelStatus.GetModelGwState().String()
+				if modelStatus.GetModelGwReason() != "" {
+					latestModel.Status.ModelGwStatus += fmt.Sprintf("(%s) ", modelStatus.GetModelGwReason())
 				}
 
 				// Set the total number of replicas targeted by this model
@@ -294,17 +264,58 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 	return nil
 }
 
-func canRemoveFinalizer(state scheduler.ModelStatus_ModelState) bool {
-	switch state {
-	case scheduler.ModelStatus_ModelTerminated,
-		scheduler.ModelStatus_ModelTerminateFailed,
-		scheduler.ModelStatus_ModelFailed,
-		scheduler.ModelStatus_ModelStateUnknown,
-		scheduler.ModelStatus_ScheduleFailed:
-		return true
+func setModelStatus(
+	modelStatus *scheduler.ModelStatus, event *scheduler.ModelStatusResponse, latestModel *v1alpha1.Model, logger *logr.Logger,
+) {
+	// Handle status update
+	switch modelStatus.GetState() {
+	case scheduler.ModelStatus_ModelAvailable:
+		logger.Info(
+			"Setting model to ready",
+			"name", event.ModelName,
+			"state", modelStatus.GetState().String(),
+		)
+		latestModel.Status.CreateAndSetCondition(
+			v1alpha1.ModelReady,
+			true,
+			modelStatus.GetState().String(),
+			modelStatus.GetReason(),
+		)
+	case scheduler.ModelStatus_ModelScaledDown:
+		logger.Info(
+			"Setting model to not ready",
+			"name", event.ModelName,
+			"state", modelStatus.GetState().String(),
+		)
+		latestModel.Status.CreateAndSetCondition(
+			v1alpha1.ModelReady,
+			false,
+			modelStatus.GetState().String(),
+			modelStatus.GetReason(),
+		)
 	default:
-		return false
+		logger.Info(
+			"Setting model to not ready",
+			"name", event.ModelName,
+			"state", modelStatus.GetState().String(),
+		)
+		latestModel.Status.CreateAndSetCondition(
+			v1alpha1.ModelReady,
+			false,
+			modelStatus.GetState().String(),
+			modelStatus.GetReason(),
+		)
 	}
+}
+
+func canRemoveFinalizer(state scheduler.ModelStatus_ModelState, modelGwState scheduler.ModelStatus_ModelState) bool {
+	stateCond := (state == scheduler.ModelStatus_ModelTerminated ||
+		state == scheduler.ModelStatus_ModelTerminateFailed ||
+		state == scheduler.ModelStatus_ModelFailed ||
+		state == scheduler.ModelStatus_ModelStateUnknown ||
+		state == scheduler.ModelStatus_ScheduleFailed)
+	modelGwCond := modelGwState == scheduler.ModelStatus_ModelTerminated
+	return stateCond && modelGwCond
 }
 
 func modelReady(status v1alpha1.ModelStatus) bool {

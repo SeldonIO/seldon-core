@@ -62,7 +62,9 @@ type ModelVersion struct {
 
 type ModelStatus struct {
 	State               ModelState
+	ModelGwState        ModelState
 	Reason              string
+	ModelGwReason       string
 	AvailableReplicas   uint32
 	UnavailableReplicas uint32
 	DrainingReplicas    uint32
@@ -80,12 +82,16 @@ func NewDefaultModelVersion(model *pb.Model, version uint32) *ModelVersion {
 		version:   version,
 		modelDefn: model,
 		replicas:  make(map[int]ReplicaStatus),
-		state:     ModelStatus{State: ModelStateUnknown},
-		mu:        sync.RWMutex{},
+		state: ModelStatus{
+			State:        ModelStateUnknown,
+			ModelGwState: ModelCreate,
+		},
+		mu: sync.RWMutex{},
 	}
 }
 
 // TODO: remove deleted from here and reflect in callers
+// This is only used in tests, thus we don't need to worry about modelGWState
 func NewModelVersion(model *pb.Model, version uint32, server string, replicas map[int]ReplicaStatus, deleted bool, state ModelState) *ModelVersion {
 	return &ModelVersion{
 		version:   version,
@@ -251,10 +257,24 @@ const (
 	ModelTerminateFailed
 	ScheduleFailed
 	ModelScaledDown
+	ModelCreate
+	ModelTerminate
 )
 
 func (m ModelState) String() string {
-	return [...]string{"ModelStateUnknown", "ModelProgressing", "ModelAvailable", "ModelFailed", "ModelTerminating", "ModelTerminated", "ModelTerminateFailed", "ScheduleFailed", "ModelScaledDown"}[m]
+	return [...]string{
+		"ModelStateUnknown",
+		"ModelProgressing",
+		"ModelAvailable",
+		"ModelFailed",
+		"ModelTerminating",
+		"ModelTerminated",
+		"ModelTerminateFailed",
+		"ScheduleFailed",
+		"ModelScaledDown",
+		"ModelCreate",
+		"ModelTerminate",
+	}[m]
 }
 
 type ModelReplicaState uint32

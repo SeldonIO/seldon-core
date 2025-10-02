@@ -540,9 +540,13 @@ func (ps *PipelineStore) handleModelEvents(event coordinator.ModelEventMsg) {
 				logger.Warningf("Failed to get model %s from store", event.ModelName)
 				return
 			}
+
 			ps.mu.Lock()
-			evts := updatePipelinesFromModelAvailability(refs, event.ModelName, model != nil && model.GetLastAvailableModel() != nil, ps.pipelines, ps.logger)
+			modelVersion := model.GetLastAvailableModel()
+			modelAvailable := model != nil && modelVersion != nil && modelVersion.ModelState().ModelGwState == store.ModelAvailable
+			evts := updatePipelinesFromModelAvailability(refs, event.ModelName, modelAvailable, ps.pipelines, ps.logger)
 			ps.mu.Unlock()
+
 			// Publish events for modified pipelines
 			if ps.eventHub != nil {
 				for _, evt := range evts {

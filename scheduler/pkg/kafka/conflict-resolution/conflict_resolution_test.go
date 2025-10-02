@@ -7,7 +7,7 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package dataflow
+package conflict_resolution
 
 import (
 	"testing"
@@ -20,9 +20,9 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
-func newTestConflictResolutioner() *ConflictResolutioner {
+func newTestConflictResolutioner() *ConflictResolutioner[pipeline.PipelineStatus] {
 	logger, _ := test.NewNullLogger()
-	return NewConflictResolution(logger)
+	return NewConflictResolution[pipeline.PipelineStatus](logger)
 }
 
 func TestCreateNewIteration(t *testing.T) {
@@ -45,11 +45,11 @@ func TestCreateNewIteration(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			cr := newTestConflictResolutioner()
-			cr.CreateNewIteration(test.pipelineName, test.servers)
+			CreateNewPipelineIteration(cr, test.pipelineName, test.servers)
 
-			g.Expect(cr.vectorClock[test.pipelineName]).To(gomega.Equal(test.expectedClock))
+			g.Expect(cr.VectorClock[test.pipelineName]).To(gomega.Equal(test.expectedClock))
 			for _, server := range test.servers {
-				g.Expect(cr.vectorResponseStatus[test.pipelineName][server]).To(gomega.Equal(pipeline.PipelineStatusUnknown))
+				g.Expect(cr.VectorResponseStatus[test.pipelineName][server]).To(gomega.Equal(pipeline.PipelineStatusUnknown))
 			}
 		})
 	}
@@ -60,10 +60,10 @@ func TestUpdatePipelineStatus(t *testing.T) {
 
 	t.Run("should update status for a stream", func(t *testing.T) {
 		cr := newTestConflictResolutioner()
-		cr.CreateNewIteration("pipeline1", []string{"a"})
+		CreateNewPipelineIteration(cr, "pipeline1", []string{"a"})
 
-		cr.UpdatePipelineStatus("pipeline1", "a", pipeline.PipelineReady)
-		g.Expect(cr.vectorResponseStatus["pipeline1"]["a"]).To(gomega.Equal(pipeline.PipelineReady))
+		cr.UpdateStatus("pipeline1", "a", pipeline.PipelineReady)
+		g.Expect(cr.VectorResponseStatus["pipeline1"]["a"]).To(gomega.Equal(pipeline.PipelineReady))
 	})
 }
 
@@ -72,11 +72,11 @@ func TestDeletePipeline(t *testing.T) {
 
 	t.Run("should delete vector clock and statuses", func(t *testing.T) {
 		cr := newTestConflictResolutioner()
-		cr.CreateNewIteration("pipeline1", []string{"a"})
-		cr.DeletePipeline("pipeline1")
+		CreateNewPipelineIteration(cr, "pipeline1", []string{"a"})
+		cr.Delete("pipeline1")
 
-		_, exists1 := cr.vectorClock["pipeline1"]
-		_, exists2 := cr.vectorResponseStatus["pipeline1"]
+		_, exists1 := cr.VectorClock["pipeline1"]
+		_, exists2 := cr.VectorResponseStatus["pipeline1"]
 
 		g.Expect(exists1).To(gomega.BeFalse())
 		g.Expect(exists2).To(gomega.BeFalse())
@@ -88,14 +88,14 @@ func TestIsMessageOutdated(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		prepare    func(cr *ConflictResolutioner)
+		prepare    func(cr *ConflictResolutioner[pipeline.PipelineStatus])
 		message    *chainer.PipelineUpdateStatusMessage
 		expectTrue bool
 	}{
 		{
 			name: "timestamp mismatch",
-			prepare: func(cr *ConflictResolutioner) {
-				cr.CreateNewIteration("p1", []string{"a"})
+			prepare: func(cr *ConflictResolutioner[pipeline.PipelineStatus]) {
+				CreateNewPipelineIteration(cr, "p1", []string{"a"})
 			},
 			message: &chainer.PipelineUpdateStatusMessage{
 				Update: &chainer.PipelineUpdateMessage{
@@ -108,8 +108,8 @@ func TestIsMessageOutdated(t *testing.T) {
 		},
 		{
 			name: "unknown stream",
-			prepare: func(cr *ConflictResolutioner) {
-				cr.CreateNewIteration("p1", []string{"a"})
+			prepare: func(cr *ConflictResolutioner[pipeline.PipelineStatus]) {
+				CreateNewPipelineIteration(cr, "p1", []string{"a"})
 			},
 			message: &chainer.PipelineUpdateStatusMessage{
 				Update: &chainer.PipelineUpdateMessage{
@@ -122,8 +122,8 @@ func TestIsMessageOutdated(t *testing.T) {
 		},
 		{
 			name: "message is not outdated",
-			prepare: func(cr *ConflictResolutioner) {
-				cr.CreateNewIteration("p1", []string{"a"})
+			prepare: func(cr *ConflictResolutioner[pipeline.PipelineStatus]) {
+				CreateNewPipelineIteration(cr, "p1", []string{"a"})
 			},
 			message: &chainer.PipelineUpdateStatusMessage{
 				Update: &chainer.PipelineUpdateMessage{
@@ -141,7 +141,7 @@ func TestIsMessageOutdated(t *testing.T) {
 			cr := newTestConflictResolutioner()
 			test.prepare(cr)
 
-			result := cr.IsMessageOutdated(test.message)
+			result := IsPipelineMessageOutdated(cr, test.message)
 			g.Expect(result).To(gomega.Equal(test.expectTrue))
 		})
 	}
@@ -263,9 +263,9 @@ func TestGetPipelineStatus(t *testing.T) {
 			for stream := range test.statuses {
 				streams = append(streams, stream)
 			}
-			cr.CreateNewIteration("p1", streams)
+			CreateNewPipelineIteration(cr, "p1", streams)
 			for s, st := range test.statuses {
-				cr.UpdatePipelineStatus("p1", s, st)
+				cr.UpdateStatus("p1", s, st)
 			}
 
 			msg := &chainer.PipelineUpdateStatusMessage{
@@ -275,7 +275,7 @@ func TestGetPipelineStatus(t *testing.T) {
 				},
 			}
 
-			status, _ := cr.GetPipelineStatus("p1", msg)
+			status, _ := GetPipelineStatus(cr, "p1", msg)
 			g.Expect(status).To(gomega.Equal(test.expected))
 		})
 	}

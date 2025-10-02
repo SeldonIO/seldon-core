@@ -47,6 +47,10 @@ func (f mockStore) UnloadVersionModels(modelKey string, version uint32) (bool, e
 	return true, nil
 }
 
+func (f mockStore) UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error) {
+	return true, nil
+}
+
 func (f mockStore) ServerNotify(request *pb.ServerNotify) error {
 	return nil
 }
@@ -127,6 +131,10 @@ func (f mockStore) AddModelEventListener(c chan *store.ModelSnapshot) {
 }
 
 func (f mockStore) AddServerEventListener(c chan string) {
+}
+
+func (f mockStore) SetModelGwModelState(name string, versionNumber uint32, status store.ModelState, reason string, source string) error {
+	panic("implement me")
 }
 
 func TestScheduler(t *testing.T) {

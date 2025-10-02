@@ -185,6 +185,10 @@ spec:
       jsonPath: .status.availableReplicas
       name: Available Replicas
       type: integer
+    - description: Model Gateway ready status
+      jsonPath: .status.modelgwReady
+      name: ModelGw Ready
+      type: string
     - jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
@@ -382,6 +386,9 @@ spec:
                   - type
                   type: object
                 type: array
+              modelgwReady:
+                description: Model Gateway ready status
+                type: string
               observedGeneration:
                 description: |-
                   ObservedGeneration is the 'Generation' of the Service that

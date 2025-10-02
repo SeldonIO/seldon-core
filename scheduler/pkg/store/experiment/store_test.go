@@ -499,6 +499,10 @@ func (f fakeModelStore) UnloadVersionModels(modelKey string, version uint32) (bo
 	panic("implement me")
 }
 
+func (f fakeModelStore) UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error) {
+	panic("implement me")
+}
+
 func (f fakeModelStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState store.ModelReplicaState, reason string, runtimeInfo *scheduler.ModelRuntimeInfo) error {
 	panic("implement me")
 }
@@ -524,6 +528,10 @@ func (f fakeModelStore) FailedScheduling(modelID string, version uint32, reason 
 }
 
 func (f fakeModelStore) GetAllModels() []string {
+	panic("implement me")
+}
+
+func (f fakeModelStore) SetModelGwModelState(name string, versionNumber uint32, status store.ModelState, reason string, source string) error {
 	panic("implement me")
 }
 

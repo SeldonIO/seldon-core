@@ -131,6 +131,26 @@ func (mr *MockSchedulerClientMockRecorder) ModelStatus(arg0, arg1 any, arg2 ...a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ModelStatus", reflect.TypeOf((*MockSchedulerClient)(nil).ModelStatus), varargs...)
 }
 
+// ModelStatusEvent mocks base method.
+func (m *MockSchedulerClient) ModelStatusEvent(arg0 context.Context, arg1 *scheduler.ModelUpdateStatusMessage, arg2 ...grpc.CallOption) (*scheduler.ModelUpdateStatusResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ModelStatusEvent", varargs...)
+	ret0, _ := ret[0].(*scheduler.ModelUpdateStatusResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ModelStatusEvent indicates an expected call of ModelStatusEvent.
+func (mr *MockSchedulerClientMockRecorder) ModelStatusEvent(arg0, arg1 any, arg2 ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ModelStatusEvent", reflect.TypeOf((*MockSchedulerClient)(nil).ModelStatusEvent), varargs...)
+}
+
 // PipelineStatus mocks base method.
 func (m *MockSchedulerClient) PipelineStatus(arg0 context.Context, arg1 *scheduler.PipelineStatusRequest, arg2 ...grpc.CallOption) (scheduler.Scheduler_PipelineStatusClient, error) {
 	m.ctrl.T.Helper()

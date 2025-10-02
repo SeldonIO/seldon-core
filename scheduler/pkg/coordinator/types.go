@@ -23,6 +23,7 @@ const (
 type ModelEventMsg struct {
 	ModelName    string
 	ModelVersion uint32
+	Source       string
 }
 
 func (m ModelEventMsg) String() string {

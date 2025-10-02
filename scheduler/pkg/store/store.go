@@ -78,6 +78,19 @@ func (m *ModelSnapshot) getLastAvailableModelIdx() int {
 	return lastAvailableIdx
 }
 
+func (m *ModelSnapshot) getLastModelGwAvailableModelIdx() int {
+	if m == nil { // TODO Make safe by not working on actual object
+		return -1
+	}
+	lastAvailableIdx := -1
+	for idx, mv := range m.Versions {
+		if mv.state.ModelGwState == ModelAvailable {
+			lastAvailableIdx = idx
+		}
+	}
+	return lastAvailableIdx
+}
+
 func (m *ModelSnapshot) CanReceiveTraffic() bool {
 	if m.GetLastAvailableModel() != nil {
 		return true
@@ -111,6 +124,17 @@ func (m *ModelSnapshot) GetVersionsBeforeLastAvailable() []*ModelVersion {
 	return nil
 }
 
+func (m *ModelSnapshot) GetVersionsBeforeLastModelGwAvailable() []*ModelVersion {
+	if m == nil { // TODO Make safe by not working on actual object
+		return nil
+	}
+	lastAvailableIdx := m.getLastModelGwAvailableModelIdx()
+	if lastAvailableIdx != -1 {
+		return m.Versions[0:lastAvailableIdx]
+	}
+	return nil
+}
+
 type ModelStore interface {
 	UpdateModel(config *pb.LoadModelRequest) error
 	GetModel(key string) (*ModelSnapshot, error)
@@ -122,6 +146,7 @@ type ModelStore interface {
 	GetServer(serverKey string, shallow bool, modelDetails bool) (*ServerSnapshot, error)
 	UpdateLoadedModels(modelKey string, version uint32, serverKey string, replicas []*ServerReplica) error
 	UnloadVersionModels(modelKey string, version uint32) (bool, error)
+	UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error)
 	UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState ModelReplicaState, reason string, runtimeInfo *pb.ModelRuntimeInfo) error
 	AddServerReplica(request *pba.AgentSubscribeRequest) error
 	ServerNotify(request *pb.ServerNotify) error
@@ -129,4 +154,5 @@ type ModelStore interface {
 	DrainServerReplica(serverName string, replicaIdx int) ([]string, error)  // return previously loaded models
 	FailedScheduling(modelID string, version uint32, reason string, reset bool) error
 	GetAllModels() []string
+	SetModelGwModelState(name string, versionNumber uint32, status ModelState, reason string, source string) error
 }

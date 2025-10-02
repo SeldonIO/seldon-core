@@ -133,10 +133,17 @@ message UnloadModelResponse {
 /* ModelStatusResponse provides the current assignment of the model onto a server
 */
 message ModelStatusResponse {
+  enum ModelOperation {
+    ModelOperationUnknown = 0;
+    ModelCreate = 1;
+    ModelDelete = 2;
+  }
   string modelName = 1;
   repeated ModelVersionStatus versions = 2;
   bool deleted = 3;
   bool keepTopics = 4;
+  uint64 timestamp = 5;
+  ModelOperation operation = 6;
 }
 
 message ModelVersionStatus {
@@ -159,12 +166,16 @@ message ModelStatus {
       ModelTerminateFailed = 6;
       ScheduleFailed = 7;
       ModelScaledDown = 8;
+      ModelCreate = 9;
+      ModelTerminate = 10;
   }
   ModelState state = 1;
   string reason = 2;
   uint32 availableReplicas = 3;
   uint32 unavailableReplicas = 4;
   google.protobuf.Timestamp lastChangeTimestamp = 5;
+  ModelState modelGwState = 6;
+  string modelGwReason = 7;
 }
 
 message ModelReplicaStatus {
@@ -468,6 +479,30 @@ message ControlPlaneResponse {
   Event event = 1;
 }
 
+
+message ModelUpdateMessage {
+    enum ModelOperation {
+      Unknown = 0;
+      Create = 1;
+      Delete = 2;
+    }
+    ModelOperation op = 1;
+    string model = 2;
+    uint32 version = 3;
+    string uid = 4;
+    uint64 timestamp = 5;
+    string stream = 6;
+}
+
+message ModelUpdateStatusMessage {
+  ModelUpdateMessage update = 1;
+  bool success = 2;
+  string reason = 3;
+}
+
+message ModelUpdateStatusResponse {
+}
+
 // [END Messages]
 
 
@@ -497,6 +532,7 @@ service Scheduler {
   rpc SubscribePipelineStatus(PipelineSubscriptionRequest) returns (stream PipelineStatusResponse) {};
 
   rpc PipelineStatusEvent(chainer.PipelineUpdateStatusMessage) returns (chainer.PipelineUpdateStatusResponse) {};
+  rpc ModelStatusEvent(ModelUpdateStatusMessage) returns (ModelUpdateStatusResponse) {};
 
   // control plane stream with controller
   rpc SubscribeControlPlane(ControlPlaneSubscriptionRequest) returns (stream ControlPlaneResponse) {};

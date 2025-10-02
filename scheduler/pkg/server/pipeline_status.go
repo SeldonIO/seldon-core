@@ -19,6 +19,7 @@ import (
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	cr "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/conflict-resolution"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -58,24 +59,24 @@ func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *chai
 		stream, pipelineName, pipelineVersion, statusVal.String(),
 	)
 
-	cr := s.pipelineEventStream.conflictResolutioner
-	if cr.IsMessageOutdated(message) {
+	confRes := s.pipelineEventStream.conflictResolutioner
+	if cr.IsPipelineMessageOutdated(confRes, message) {
 		logger.Debugf("Message for pipeline %s:%d is outdated, ignoring", pipelineName, pipelineVersion)
 		return &chainer.PipelineUpdateStatusResponse{}, nil
 	}
 
-	cr.UpdatePipelineStatus(pipelineName, stream, statusVal)
-	pipelineStatusVal, reason := cr.GetPipelineStatus(pipelineName, message)
+	confRes.UpdateStatus(pipelineName, stream, statusVal)
+	pipelineStatusVal, reason := cr.GetPipelineStatus(confRes, pipelineName, message)
 
 	switch pipelineStatusVal {
 	case pipeline.PipelineTerminated:
 		logger.Infof("Pipeline %s has been terminated, removing from conflict resolution and envoy", pipelineName)
-		cr.DeletePipeline(pipelineName)
+		confRes.Delete(pipelineName)
 	case pipeline.PipelineReady:
 		// Once the pipeline is ready, send event for envoy to update the routes
 		// with the streams that have the pipeline ready (some streams may have failed,
 		// but we can still use the streams that are ready)
-		serverNames := cr.GetStreamsWithStatus(pipelineName, pipeline.PipelineReady)
+		serverNames := confRes.GetStreamsWithStatus(pipelineName, pipeline.PipelineReady)
 		logger.Debugf("Pipeline %s is ready on streams %v, sending event for envoy", pipelineName, serverNames)
 		s.sendPipelineStreamsEventMsg(
 			&coordinator.PipelineEventMsg{PipelineName: pipelineName}, serverNames,
@@ -284,8 +285,8 @@ func (s *SchedulerServer) pipelineGwRebalanceStreams(
 	s.logger.Debugf("Servers for pipeline %s: %v", pv.Name, servers)
 	s.logger.Debug("Consumer bucket ID: ", consumerBucketId)
 
-	cr := s.pipelineEventStream.conflictResolutioner
-	cr.CreateNewIteration(pv.Name, servers)
+	confRes := s.pipelineEventStream.conflictResolutioner
+	cr.CreateNewPipelineIteration(confRes, pv.Name, servers)
 
 	// invalidate envoy routes if some servers are no longer valid
 	s.invalidateEnvoyRoutes(pv.Name, servers)
@@ -326,14 +327,14 @@ func (s *SchedulerServer) pipelineGwRebalanceStreams(
 				continue
 			}
 
-			msg.Timestamp = cr.GetTimestamp(pv.Name)
+			msg.Timestamp = confRes.GetTimestamp(pv.Name)
 			if err := stream.Send(msg); err != nil {
 				s.logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.Name)
 			}
 		} else {
 			s.logger.Debugf("Server %s does not contain pipeline %s, sending deletion message", server, pv.Name)
 			msg := s.createPipelineDeletionMessage(pv)
-			msg.Timestamp = cr.GetTimestamp(pv.Name)
+			msg.Timestamp = confRes.GetTimestamp(pv.Name)
 			if err := stream.Send(msg); err != nil {
 				s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.Name)
 			}
@@ -521,9 +522,9 @@ func (s *SchedulerServer) sendPipelineEventsToStreamWithTimestamp(
 	}
 
 	// assign a timestamp to the message
-	cr := s.pipelineEventStream.conflictResolutioner
-	cr.CreateNewIteration(event.PipelineName, streamNames)
-	status.Timestamp = cr.GetTimestamp(event.PipelineName)
+	confRes := s.pipelineEventStream.conflictResolutioner
+	cr.CreateNewPipelineIteration(confRes, event.PipelineName, streamNames)
+	status.Timestamp = confRes.GetTimestamp(event.PipelineName)
 
 	s.sendPipelineEventsToStreams(event, status, streams)
 }

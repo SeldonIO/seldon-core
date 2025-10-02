@@ -98,9 +98,12 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 			modelState = ModelProgressing
 		}
 	}
+
 	modelVersion.state = ModelStatus{
 		State:               modelState,
+		ModelGwState:        modelVersion.state.ModelGwState,
 		Reason:              modelReason,
+		ModelGwReason:       modelVersion.state.ModelGwReason,
 		Timestamp:           modelTimestamp,
 		AvailableReplicas:   stats.replicasAvailable,
 		UnavailableReplicas: stats.replicasLoading + stats.replicasLoadFailed,
@@ -124,10 +127,11 @@ func (m *MemoryStore) FailedScheduling(modelID string, version uint32, reason st
 		if modelVersion.version == version {
 			// we use len of GetAssignment instead of .state.AvailableReplicas as it is more accurate in this context
 			availableReplicas := uint32(len(modelVersion.GetAssignment()))
-
 			modelVersion.state = ModelStatus{
 				State:               ScheduleFailed,
+				ModelGwState:        modelVersion.state.ModelGwState,
 				Reason:              reason,
+				ModelGwReason:       modelVersion.state.ModelGwReason,
 				Timestamp:           time.Now(),
 				AvailableReplicas:   availableReplicas,
 				UnavailableReplicas: modelVersion.GetModel().GetDeploymentSpec().GetReplicas() - availableReplicas,
@@ -158,4 +162,33 @@ func (m *MemoryStore) updateModelStatus(isLatest bool, deleted bool, modelVersio
 	logger.Debugf("Stats %+v modelVersion %+v prev model %+v", stats, modelVersion, prevModelVersion)
 
 	updateModelState(isLatest, modelVersion, prevModelVersion, stats, deleted)
+}
+
+func (m *MemoryStore) setModelGwStatusToTerminate(isLatest bool, modelVersion *ModelVersion) {
+	if !isLatest {
+		modelVersion.state.ModelGwState = ModelTerminated
+		modelVersion.state.ModelGwReason = "Not latest version"
+	} else {
+		modelVersion.state.ModelGwState = ModelTerminate
+		modelVersion.state.ModelGwReason = "Model deleted"
+	}
+}
+
+func (m *MemoryStore) UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	fmt.Println("UnloadModelGwVersionModels called for ", modelKey, " version ", version)
+
+	model, ok := m.store.models[modelKey]
+	if !ok {
+		return false, fmt.Errorf("failed to find model %s", modelKey)
+	}
+
+	modelVersion := model.GetVersion(version)
+	if modelVersion == nil {
+		return false, fmt.Errorf("version not found for model %s, version %d", modelKey, version)
+	}
+
+	m.setModelGwStatusToTerminate(false, modelVersion)
+	return true, nil
 }

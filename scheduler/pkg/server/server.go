@@ -31,7 +31,7 @@ import (
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/dataflow"
+	cr "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/conflict-resolution"
 	scheduler2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
@@ -88,8 +88,9 @@ type SchedulerServerConfig struct {
 }
 
 type ModelEventStream struct {
-	mu      sync.Mutex
-	streams map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription
+	mu                   sync.Mutex
+	streams              map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription
+	conflictResolutioner *cr.ConflictResolutioner[store.ModelState]
 }
 
 type ServerEventStream struct {
@@ -110,7 +111,7 @@ type PipelineEventStream struct {
 	mu                   sync.Mutex
 	streams              map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription
 	namesToIps           map[string]string // Maps pipeline names to their IPs
-	conflictResolutioner *dataflow.ConflictResolutioner
+	conflictResolutioner *cr.ConflictResolutioner[pipeline.PipelineStatus]
 }
 
 type ControlPlaneStream struct {
@@ -275,7 +276,8 @@ func NewSchedulerServer(
 		pipelineHandler:  pipelineHandler,
 		scheduler:        scheduler,
 		modelEventStream: ModelEventStream{
-			streams: make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription),
+			streams:              make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription),
+			conflictResolutioner: cr.NewConflictResolution[store.ModelState](logger),
 		},
 		serverEventStream: ServerEventStream{
 			streams:       make(map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription),
@@ -286,7 +288,7 @@ func NewSchedulerServer(
 		pipelineEventStream: PipelineEventStream{
 			streams:              make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription),
 			namesToIps:           make(map[string]string),
-			conflictResolutioner: dataflow.NewConflictResolution(loggerWithField),
+			conflictResolutioner: cr.NewConflictResolution[pipeline.PipelineStatus](loggerWithField),
 		},
 		experimentEventStream: ExperimentEventStream{
 			streams: make(map[pb.Scheduler_SubscribeExperimentStatusServer]*ExperimentSubscription),
@@ -436,7 +438,9 @@ func createModelVersionStatus(mv *store.ModelVersion) *pb.ModelVersionStatus {
 		ModelReplicaState: stateMap,
 		State: &pb.ModelStatus{
 			State:               pb.ModelStatus_ModelState(pb.ModelStatus_ModelState_value[modelState.State.String()]),
+			ModelGwState:        pb.ModelStatus_ModelState(pb.ModelStatus_ModelState_value[modelState.ModelGwState.String()]),
 			Reason:              modelState.Reason,
+			ModelGwReason:       modelState.ModelGwReason,
 			LastChangeTimestamp: timestamppb.New(modelState.Timestamp),
 			AvailableReplicas:   modelState.AvailableReplicas,
 			UnavailableReplicas: modelState.UnavailableReplicas,
