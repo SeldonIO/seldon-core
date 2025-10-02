@@ -32,6 +32,14 @@ spec:
         tcpSocket:
           port: 5572
         timeoutSeconds: 1
+      livenessProbe:
+        failureThreshold: 2
+        initialDelaySeconds: 5
+        periodSeconds: 5
+        successThreshold: 1
+        tcpSocket:
+          port: 5572
+        timeoutSeconds: 1
       volumeMounts:
       - mountPath: /mnt/agent
         name: triton-models

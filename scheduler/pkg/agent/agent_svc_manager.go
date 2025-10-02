@@ -698,7 +698,10 @@ func (am *AgentServiceManager) LoadModel(request *agent_pb.ModelOperationMessage
 	}
 
 	// Copy model artifact
+	// TODO we should probably set a ctx timeout for how long rclone takes trying to download.. maybe configurable
+	// via env var?
 	chosenVersionPath, err := am.ModelRepository.DownloadModelVersion(
+		context.TODO(),
 		modelWithVersion,
 		pinnedModelVersion,
 		request.GetModelVersion().GetModel().GetModelSpec(),

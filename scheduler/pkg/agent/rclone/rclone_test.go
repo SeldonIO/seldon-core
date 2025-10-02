@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package rclone
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -138,7 +139,7 @@ func TestRcloneCopy(t *testing.T) {
 			defer httpmock.DeactivateAndReset()
 
 			r := createFakeRcloneClientForCopy(t, test.status, test.body, test.createLocalFolder)
-			_, err := r.Copy(test.modelName, test.uri, []byte{})
+			_, err := r.Copy(context.Background(), test.modelName, test.uri, []byte{})
 
 			if !test.expectError {
 				g.Expect(err).To(BeNil())

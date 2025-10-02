@@ -1328,6 +1328,14 @@ spec:
           httpGet:
             path: terminate
             port: 9007
+      livenessProbe:
+        failureThreshold: 2
+        initialDelaySeconds: 5
+        periodSeconds: 5
+        successThreshold: 1
+        tcpSocket:
+          port: 5572
+        timeoutSeconds: 1
       name: rclone
       ports:
       - containerPort: 5572
@@ -1619,6 +1627,14 @@ spec:
           httpGet:
             path: terminate
             port: 9007
+      livenessProbe:
+        failureThreshold: 2
+        initialDelaySeconds: 5
+        periodSeconds: 5
+        successThreshold: 1
+        tcpSocket:
+          port: 5572
+        timeoutSeconds: 1
       name: rclone
       ports:
       - containerPort: 5572

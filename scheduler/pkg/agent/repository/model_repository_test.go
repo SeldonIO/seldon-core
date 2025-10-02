@@ -10,24 +10,32 @@ the Change License after the Change Date as each is defined in accordance with t
 package repository
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
 	"net/http"
+	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"testing"
+	"time"
 
+	"github.com/aws/smithy-go/ptr"
 	"github.com/jarcoal/httpmock"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+	"go.uber.org/mock/gomock"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/filemanager/mocks"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/rclone"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/mlserver"
+	mocks2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/mocks"
 )
 
 const (
@@ -46,6 +54,174 @@ func createFakeRcloneClient(path string, responder httpmock.Responder) *rclone.R
 	r := rclone.NewRCloneClient(RcloneHost, RclonePort, path, logger, "default", config)
 	createTestRCloneMockResponders(RcloneHost, RclonePort, responder)
 	return r
+}
+
+func TestDownloadModelBackoffRetry(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	repoPath, err := os.MkdirTemp(os.TempDir(), "")
+	g.Expect(err).To(BeNil())
+
+	type expect struct {
+		error  bool
+		folder string
+	}
+
+	type test struct {
+		name         string
+		modelSpec    *scheduler.ModelSpec
+		modelName    string
+		modelVersion uint32
+		config       []byte
+		setupMocks   func(fileManager *mocks.MockFileManager, modelRepo *mocks2.MockModelRepositoryHandler, t *test)
+		expect       expect
+	}
+
+	tests := []test{
+		{
+			name: "success - no retry required",
+			modelSpec: &scheduler.ModelSpec{
+				Uri:             "/some-model-uri",
+				ArtifactVersion: ptr.Uint32(1234),
+			},
+			modelName:    "my-model",
+			modelVersion: 1,
+			config:       []byte("{}"),
+			setupMocks: func(fileManager *mocks.MockFileManager, modelRepo *mocks2.MockModelRepositoryHandler, t *test) {
+				tempModelDir, err := os.MkdirTemp(os.TempDir(), "")
+				g.Expect(err).To(BeNil())
+				rClonePath := path.Join(tempModelDir, "rclone-client")
+
+				fileManager.EXPECT().Copy(gomock.Any(), t.modelName, t.modelSpec.Uri, t.config).
+					Return(rClonePath, nil)
+
+				fileManager.EXPECT().PurgeLocal(rClonePath).Return(nil)
+
+				modelVersionFolder, err := os.MkdirTemp(os.TempDir(), "")
+				t.expect.folder = modelVersionFolder
+				g.Expect(err).To(BeNil())
+
+				modelPath := filepath.Join(repoPath, t.modelName, fmt.Sprintf("%d", t.modelVersion))
+
+				modelRepo.EXPECT().FindModelVersionFolder(t.modelName, t.modelSpec.ArtifactVersion, rClonePath).Return(modelVersionFolder, true, nil)
+				modelRepo.EXPECT().UpdateModelVersion(t.modelName, t.modelVersion, modelPath, t.modelSpec).Return(nil)
+				modelRepo.EXPECT().SetExtraParameters(modelPath, nil).Return(nil)
+				modelRepo.EXPECT().UpdateModelRepository(t.modelName, modelVersionFolder, true, filepath.Join(repoPath, t.modelName)).Return(nil)
+			},
+			expect: expect{
+				error: false,
+			},
+		},
+		{
+			name: "success - one Copy retry required",
+			modelSpec: &scheduler.ModelSpec{
+				Uri:             "/some-model-uri",
+				ArtifactVersion: ptr.Uint32(1234),
+			},
+			modelName:    "my-model",
+			modelVersion: 1,
+			config:       []byte("{}"),
+			setupMocks: func(fileManager *mocks.MockFileManager, modelRepo *mocks2.MockModelRepositoryHandler, t *test) {
+				tempModelDir, err := os.MkdirTemp(os.TempDir(), "")
+				g.Expect(err).To(BeNil())
+				rClonePath := path.Join(tempModelDir, "rclone-client")
+
+				// first attempts errors
+				fileManager.EXPECT().Copy(gomock.Any(), t.modelName, t.modelSpec.Uri, t.config).
+					Return(rClonePath, &url.Error{})
+
+				// second attempt successful
+				fileManager.EXPECT().Copy(gomock.Any(), t.modelName, t.modelSpec.Uri, t.config).
+					Return(rClonePath, nil)
+
+				fileManager.EXPECT().PurgeLocal(rClonePath).Return(nil)
+
+				modelVersionFolder, err := os.MkdirTemp(os.TempDir(), "")
+				t.expect.folder = modelVersionFolder
+				g.Expect(err).To(BeNil())
+
+				modelPath := filepath.Join(repoPath, t.modelName, fmt.Sprintf("%d", t.modelVersion))
+
+				modelRepo.EXPECT().FindModelVersionFolder(t.modelName, t.modelSpec.ArtifactVersion, rClonePath).Return(modelVersionFolder, true, nil)
+				modelRepo.EXPECT().UpdateModelVersion(t.modelName, t.modelVersion, modelPath, t.modelSpec).Return(nil)
+				modelRepo.EXPECT().SetExtraParameters(modelPath, nil).Return(nil)
+				modelRepo.EXPECT().UpdateModelRepository(t.modelName, modelVersionFolder, true, filepath.Join(repoPath, t.modelName)).Return(nil)
+			},
+			expect: expect{
+				error: false,
+			},
+		},
+		{
+			name: "failure - max retries exceeded",
+			modelSpec: &scheduler.ModelSpec{
+				Uri:             "/some-model-uri",
+				ArtifactVersion: ptr.Uint32(1234),
+			},
+			modelName:    "my-model",
+			modelVersion: 1,
+			config:       []byte("{}"),
+			setupMocks: func(fileManager *mocks.MockFileManager, modelRepo *mocks2.MockModelRepositoryHandler, t *test) {
+				tempModelDir, err := os.MkdirTemp(os.TempDir(), "")
+				g.Expect(err).To(BeNil())
+				rClonePath := path.Join(tempModelDir, "rclone-client")
+
+				// 2 or more attempts fail to download
+				fileManager.EXPECT().Copy(gomock.Any(), t.modelName, t.modelSpec.Uri, t.config).
+					Return(rClonePath, &url.Error{}).MinTimes(2)
+			},
+			expect: expect{
+				error: true,
+			},
+		},
+		{
+			name: "failure - don't retry, non url.Error is returned",
+			modelSpec: &scheduler.ModelSpec{
+				Uri:             "/some-model-uri",
+				ArtifactVersion: ptr.Uint32(1234),
+			},
+			modelName:    "my-model",
+			modelVersion: 1,
+			config:       []byte("{}"),
+			setupMocks: func(fileManager *mocks.MockFileManager, modelRepo *mocks2.MockModelRepositoryHandler, t *test) {
+				tempModelDir, err := os.MkdirTemp(os.TempDir(), "")
+				g.Expect(err).To(BeNil())
+				rClonePath := path.Join(tempModelDir, "rclone-client")
+
+				fileManager.EXPECT().Copy(gomock.Any(), t.modelName, t.modelSpec.Uri, t.config).
+					Return(rClonePath, errors.New("some error"))
+			},
+			expect: expect{
+				error: true,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			logger := log.New()
+
+			tempModelDir, err := os.MkdirTemp(os.TempDir(), "")
+			g.Expect(err).To(BeNil())
+			test.modelSpec.Uri = tempModelDir + "/" + test.modelName
+
+			rcloneMock := mocks.NewMockFileManager(ctrl)
+			modelRepoHandlerMock := mocks2.NewMockModelRepositoryHandler(ctrl)
+
+			test.setupMocks(rcloneMock, modelRepoHandlerMock, &test)
+
+			mr := NewModelRepository(logger, rcloneMock,
+				repoPath, modelRepoHandlerMock, "0.0.0.0", 9000, 2*time.Second)
+
+			folder, err := mr.DownloadModelVersion(context.Background(), test.modelName, test.modelVersion, test.modelSpec, test.config)
+			if test.expect.error {
+				g.Expect(err).To(HaveOccurred())
+				return
+			}
+
+			g.Expect(*folder).To(Equal(test.expect.folder))
+		})
+	}
 }
 
 func TestDownloadModelVersion(t *testing.T) {
@@ -284,8 +460,9 @@ func TestDownloadModelVersion(t *testing.T) {
 			rcloneClient := createFakeRcloneClient(rclonePath, responder)
 
 			modelRepoPath := t.TempDir()
-			mr := NewModelRepository(logger, rcloneClient, modelRepoPath, mlserver.NewMLServerRepositoryHandler(logger), "0.0.0.0", 9000)
-			chosenFolder, err := mr.DownloadModelVersion(test.modelName, test.modelVersion, test.modelSpec, nil)
+			mr := NewModelRepository(logger, rcloneClient, modelRepoPath,
+				mlserver.NewMLServerRepositoryHandler(logger), "0.0.0.0", 9000, time.Second)
+			chosenFolder, err := mr.DownloadModelVersion(context.Background(), test.modelName, test.modelVersion, test.modelSpec, nil)
 
 			if test.error {
 				g.Expect(err).ToNot(BeNil())
@@ -350,7 +527,7 @@ func TestRemoveModelVersion(t *testing.T) {
 			}
 			logger := log.New()
 			logger.SetLevel(log.DebugLevel)
-			mr := NewModelRepository(logger, nil, path, nil, "0.0.0.0", 9000)
+			mr := NewModelRepository(logger, nil, path, nil, "0.0.0.0", 9000, time.Second)
 			err := mr.RemoveModelVersion(test.modelName)
 			g.Expect(err).To(BeNil())
 			modelPath := filepath.Join(path, test.modelName)

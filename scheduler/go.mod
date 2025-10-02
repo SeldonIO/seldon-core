@@ -6,6 +6,7 @@ toolchain go1.24.4
 
 require (
 	github.com/OneOfOne/xxhash v1.2.8
+	github.com/aws/smithy-go v1.20.2
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/confluentinc/confluent-kafka-go/v2 v2.10.1
 	github.com/dgraph-io/badger/v3 v3.2103.5
@@ -17,6 +18,9 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/jarcoal/httpmock v1.4.0
+	github.com/knadh/koanf/parsers/yaml v1.1.0
+	github.com/knadh/koanf/providers/file v1.2.0
+	github.com/knadh/koanf/v2 v2.3.0
 	github.com/mitchellh/copystructure v1.2.0
 	github.com/mustafaturan/bus/v3 v3.0.3
 	github.com/onsi/gomega v1.36.2
@@ -92,9 +96,6 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/knadh/koanf/maps v0.1.2 // indirect
-	github.com/knadh/koanf/parsers/yaml v1.1.0 // indirect
-	github.com/knadh/koanf/providers/file v1.2.0 // indirect
-	github.com/knadh/koanf/v2 v2.3.0 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect
