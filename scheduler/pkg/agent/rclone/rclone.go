@@ -169,11 +169,13 @@ func (r *RCloneClient) call(op []byte, path string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if err := response.Body.Close(); err != nil {
+			r.logger.WithError(err).WithField("url", rcloneUrl).Error("Failed to close rclone response body")
+		}
+	}()
+
 	b, err := io.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-	err = response.Body.Close()
 	if err != nil {
 		return nil, err
 	}

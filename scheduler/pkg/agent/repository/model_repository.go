@@ -14,7 +14,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	copy2 "github.com/otiai10/copy"
 	log "github.com/sirupsen/logrus"
 
@@ -88,11 +90,22 @@ func (r *V2ModelRepository) DownloadModelVersion(
 
 	logger.Debugf("running with model %s:%d srcUri %s", modelName, version, srcUri)
 
-	// Run rclone copy sync
-	rclonePath, err := r.rcloneClient.Copy(modelName, srcUri, config)
+	var rclonePath string
+	err := backoff.RetryNotify(func() error {
+		// Run rclone copy sync
+		var err error
+		rclonePath, err = r.rcloneClient.Copy(modelName, srcUri, config)
+		if err != nil {
+			return err
+		}
+		return nil
+	}, backoff.NewExponentialBackOff(backoff.WithMaxElapsedTime(time.Second*30)), func(err error, t time.Duration) {
+		logger.WithError(err).Warnf("Failed to download model, retrying in %s", t)
+	})
 	if err != nil {
 		return nil, err
 	}
+
 	defer func() {
 		// Once the model artifact has been downloaded via rclone, ensure that we clean it up,
 		// even in the presence of errors (e.g. if the PVC doesn't have enough space to copy the
