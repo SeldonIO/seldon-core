@@ -9,6 +9,10 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package io.seldon.dataflow.kafka
 
+import com.github.michaelbull.retry.policy.fullJitterBackoff
+import com.github.michaelbull.retry.policy.plus
+import com.github.michaelbull.retry.policy.stopAtAttempts
+import com.github.michaelbull.retry.retry
 import io.klogging.Klogger
 import io.klogging.Level
 import io.seldon.dataflow.PipelineSubscriber
@@ -25,6 +29,7 @@ abstract class Task(
     val timestamp: Long,
     private val name: String,
     val operation: PipelineOperation,
+    private val logger: Klogger,
 ) {
     abstract suspend fun run()
 
@@ -32,16 +37,22 @@ abstract class Task(
         success: Boolean,
         reason: String,
     ) {
-        pipelineSubscriber.client.pipelineUpdateEvent(
-            pipelineSubscriber.makePipelineUpdateEvent(
-                metadata = metadata,
-                operation = operation,
-                success = success,
-                reason = reason,
-                timestamp = timestamp,
-                stream = name,
-            ),
-        )
+        try {
+            retry(fullJitterBackoff<Throwable>(100L..3_200L) + stopAtAttempts(5)) {
+                pipelineSubscriber.client.pipelineUpdateEvent(
+                    pipelineSubscriber.makePipelineUpdateEvent(
+                        metadata = metadata,
+                        operation = operation,
+                        success = success,
+                        reason = reason,
+                        timestamp = timestamp,
+                        stream = name,
+                    ),
+                )
+            }
+        } catch (e: Exception) {
+            logger.warn("Failed to send pipeline update event $operation after retries", e)
+        }
     }
 }
 
@@ -58,7 +69,7 @@ class CreationTask(
     name: String,
     private val logger: Klogger,
     private val kafkaStreamsSerdes: KafkaStreamsSerdes,
-) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Create) {
+) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Create, logger) {
     override suspend fun run() {
         val defaultReason = "pipeline created"
         val pipelines = pipelineSubscriber.pipelines
@@ -179,7 +190,7 @@ class DeletionTask(
     timestamp: Long,
     name: String,
     private val logger: Klogger,
-) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Delete) {
+) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Delete, logger) {
     override suspend fun run() {
         logger.info(
             "Delete pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
@@ -218,7 +229,7 @@ class RebalanceTask(
     name: String,
     private val reason: String,
     private val logger: Klogger,
-) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Rebalance) {
+) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Rebalance, logger) {
     override suspend fun run() {
         logger.info(
             "Rebalancing pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
@@ -241,7 +252,7 @@ class ReadyTask(
     private val success: Boolean,
     private val reason: String,
     private val logger: Klogger,
-) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Ready) {
+) : Task(pipelineSubscriber, metadata, timestamp, name, PipelineOperation.Ready, logger) {
     override suspend fun run() {
         logger.info(
             "Ready pipeline {pipelineName} version: {pipelineVersion} id: {pipelineId}",
