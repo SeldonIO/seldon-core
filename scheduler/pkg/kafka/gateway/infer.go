@@ -116,7 +116,7 @@ func NewInferKafkaHandler(
 	}
 	replicationFactor, err := GetIntConfigMapValue(topicsConfigMap, replicationFactorKey, defaultReplicationFactor)
 	if err != nil {
-		return nil, fmt.Errorf("error getting replication factor: %v", err)
+		return nil, fmt.Errorf("invalid Kafka topic configuration: %v", err)
 	}
 	defaultNumPartitions, err := util.GetIntEnvar(envDefaultNumPartitions, defaultNumPartitions)
 	if err != nil {
@@ -124,7 +124,7 @@ func NewInferKafkaHandler(
 	}
 	numPartitions, err := GetIntConfigMapValue(topicsConfigMap, numPartitionsKey, defaultNumPartitions)
 	if err != nil {
-		return nil, fmt.Errorf("error getting num partitions: %v", err)
+		return nil, fmt.Errorf("invalid Kafka topic configuration: %w", err)
 	}
 	tlsClientOptions, err := util.CreateTLSClientOptions()
 	if err != nil {
