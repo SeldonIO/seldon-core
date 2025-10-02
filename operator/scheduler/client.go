@@ -11,6 +11,7 @@ package scheduler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"sync"
@@ -29,6 +30,8 @@ import (
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
+
+	"github.com/seldonio/seldon-core/operator/v2/internal"
 )
 
 const (
@@ -143,36 +146,45 @@ func (s *SchedulerClient) startEventHanders(namespace string, conn *grpc.ClientC
 	}()
 }
 
-func (s *SchedulerClient) handleStateOnReconnect(context context.Context, grpcClient scheduler.SchedulerClient, namespace string, operation scheduler.ControlPlaneResponse_Event) error {
+func (s *SchedulerClient) handleControlPlaneEvent(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string, operation scheduler.ControlPlaneResponse_Event) error {
 	switch operation {
 	case scheduler.ControlPlaneResponse_SEND_SERVERS:
 		// on new reconnects we send a list of servers to the schedule
-		err := s.handleRegisteredServers(context, grpcClient, namespace)
+		err := s.handleRegisteredServers(ctx, grpcClient, namespace)
 		if err != nil {
+			if errors.Is(err, internal.ErrScalingSpec) {
+				s.logger.Error(err, "All servers have scaling spec errors, CRs needs correcting")
+				// we don't retry scaling spec errors as they can't be fixed by retrying, customer has to manually fix,
+				// which will trigger a reconcile and notify scheduler
+				return nil
+			}
 			s.logger.Error(err, "Failed to send registered server to scheduler")
+			return err
 		}
-		return err
-	case scheduler.ControlPlaneResponse_SEND_RESOURCES:
-		err := s.handleExperiments(context, grpcClient, namespace)
+
+		return nil
+	case scheduler.ControlPlaneResponse_SEND_EXPERIMENTS:
+		err := s.handleExperiments(ctx, grpcClient, namespace)
 		if err != nil {
-			s.logger.Error(err, "Failed to send experiments to scheduler")
+			return fmt.Errorf("failed sending experiments: %w", err)
 		}
-		if err == nil {
-			err = s.handlePipelines(context, grpcClient, namespace)
-			if err != nil {
-				s.logger.Error(err, "Failed to send pipelines to scheduler")
-			}
+		return nil
+	case scheduler.ControlPlaneResponse_SEND_PIPELINES:
+		err := s.handlePipelines(ctx, grpcClient, namespace)
+		if err != nil {
+			return fmt.Errorf("failed sending pipelines: %w", err)
 		}
-		if err == nil {
-			err = s.handleModels(context, grpcClient, namespace)
-			if err != nil {
-				s.logger.Error(err, "Failed to send models to scheduler")
-			}
+		return nil
+	case scheduler.ControlPlaneResponse_SEND_MODELS:
+		err := s.handleModels(ctx, grpcClient, namespace)
+		if err != nil {
+			return fmt.Errorf("failed sending models: %w", err)
 		}
-		return err
+		return nil
 	default:
-		s.logger.Info("Unknown operation", "operation", operation)
-		return fmt.Errorf("Unknown operation %v", operation)
+		s.logger.Error(errors.New("unknown operation"), "Unsupported operation", "operation", operation)
+		// we don't want to retry unknow operations
+		return nil
 	}
 }
 

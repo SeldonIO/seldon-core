@@ -79,23 +79,24 @@ func TestStartServerStream(t *testing.T) {
 				g.Expect(msr.Event).To(Equal(pb.ControlPlaneResponse_SEND_SERVERS))
 			}
 
-			err = test.server.sendResourcesMarker(stream)
+			err = test.server.sendResourceMarker(stream, pb.ControlPlaneResponse_SEND_EXPERIMENTS)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
-			} else {
-				g.Expect(err).To(BeNil())
-
-				var msr *pb.ControlPlaneResponse
-				select {
-				case next := <-stream.msgs:
-					msr = next
-				default:
-					t.Fail()
-				}
-
-				g.Expect(msr).ToNot(BeNil())
-				g.Expect(msr.Event).To(Equal(pb.ControlPlaneResponse_SEND_RESOURCES))
+				return
 			}
+
+			g.Expect(err).To(BeNil())
+
+			var msr *pb.ControlPlaneResponse
+			select {
+			case next := <-stream.msgs:
+				msr = next
+			default:
+				t.Fail()
+			}
+
+			g.Expect(msr).ToNot(BeNil())
+			g.Expect(msr.Event).To(Equal(pb.ControlPlaneResponse_SEND_EXPERIMENTS))
 		})
 	}
 }
@@ -144,23 +145,29 @@ func TestSubscribeControlPlane(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			server := createTestScheduler()
+
 			port, err := testing_utils.GetFreePortForTest()
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			err = server.startServer(uint(port), false)
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			time.Sleep(100 * time.Millisecond)
 
 			conn, client := getStream(context.Background(), port)
 
-			msg, _ := client.Recv()
-			g.Expect(msg.GetEvent()).To(Equal(pb.ControlPlaneResponse_SEND_SERVERS))
+			expectedMsgs := []pb.ControlPlaneResponse_Event{pb.ControlPlaneResponse_SEND_SERVERS,
+				pb.ControlPlaneResponse_SEND_EXPERIMENTS, pb.ControlPlaneResponse_SEND_MODELS, pb.ControlPlaneResponse_SEND_PIPELINES}
 
-			msg, _ = client.Recv()
-			g.Expect(msg.Event).To(Equal(pb.ControlPlaneResponse_SEND_RESOURCES))
+			for _, resource := range expectedMsgs {
+				msg, err := client.Recv()
+				g.Expect(err).To(BeNil())
+				g.Expect(msg.Event).To(Equal(resource))
+			}
 
 			conn.Close()
 			server.StopSendControlPlaneEvents()

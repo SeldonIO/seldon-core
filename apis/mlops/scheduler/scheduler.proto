@@ -461,7 +461,9 @@ message ControlPlaneResponse {
   enum Event {
     UNKNOWN_EVENT = 0;
     SEND_SERVERS = 1;  // initial sync for the servers
-    SEND_RESOURCES = 2;  // send models / pipelines / experiments
+    SEND_MODELS = 2;
+    SEND_PIPELINES = 3;
+    SEND_EXPERIMENTS = 4;
   }
   Event event = 1;
 }

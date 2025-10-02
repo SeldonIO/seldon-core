@@ -11,6 +11,7 @@ package scheduler
 
 import (
 	"context"
+	e "errors"
 	"fmt"
 	"io"
 
@@ -23,36 +24,45 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/internal"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 )
 
 func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler.SchedulerClient, servers []v1alpha1.Server, isFirstSync bool) error {
+	if len(servers) == 0 {
+		return nil
+	}
+
 	logger := s.logger.WithName("NotifyServer")
 	if grpcClient == nil {
 		// we assume that all servers are in the same namespace
 		namespace := servers[0].Namespace
 		conn, err := s.getConnection(namespace)
 		if err != nil {
-			return err
+			return fmt.Errorf("get connection: %w", err)
 		}
 		grpcClient = scheduler.NewSchedulerClient(conn)
 	}
 
 	var requests []*scheduler.ServerNotify
+	var errs error
+
 	for _, server := range servers {
-		var scalingSpec *v1alpha1.ValidatedScalingSpec
+		var scalingSpec *internal.ValidatedScalingSpec
 		var err error
 
 		if !server.ObjectMeta.DeletionTimestamp.IsZero() {
-			scalingSpec = &v1alpha1.ValidatedScalingSpec{
+			scalingSpec = &internal.ValidatedScalingSpec{
 				Replicas:    0,
 				MinReplicas: 0,
 				MaxReplicas: 0,
 			}
 		} else {
-			scalingSpec, err = v1alpha1.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
+			scalingSpec, err = internal.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
 			if err != nil {
-				return fmt.Errorf("failed to validate scaling spec: %v", err)
+				logger.Error(err, "Server failed scaling spec, omitting from server notify list", "server", server.Name)
+				errs = e.Join(fmt.Errorf("server %s failed scaling spec check: %w", server.Name, err))
+				continue
 			}
 		}
 
@@ -74,6 +84,11 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 			},
 		})
 	}
+
+	if len(requests) == 0 {
+		return fmt.Errorf("all servers failed scaling spec check: %w", errs)
+	}
+
 	request := &scheduler.ServerNotifyRequest{
 		Servers:     requests,
 		IsFirstSync: isFirstSync,
@@ -222,8 +237,8 @@ func (s *SchedulerClient) scaleServerReplicas(ctx context.Context, server *v1alp
 	return nil
 }
 
-func isValidScalingEvent(server *v1alpha1.Server, event *scheduler.ServerStatusResponse) (bool, *v1alpha1.ValidatedScalingSpec, error) {
-	validatedScalingSpec, err := v1alpha1.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
+func isValidScalingEvent(server *v1alpha1.Server, event *scheduler.ServerStatusResponse) (bool, *internal.ValidatedScalingSpec, error) {
+	validatedScalingSpec, err := internal.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
 	if err != nil {
 		return false, nil, err
 	}

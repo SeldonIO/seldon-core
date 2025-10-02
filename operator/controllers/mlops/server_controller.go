@@ -34,6 +34,7 @@ import (
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
 	serverreconcile "github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/server"
+	"github.com/seldonio/seldon-core/operator/v2/internal"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 )
 
@@ -96,7 +97,7 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return reconcile.Result{}, nil
 	}
 
-	scalingSpec, err := v1alpha1.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
+	scalingSpec, err := internal.GetValidatedScalingSpec(server.Spec.Replicas, server.Spec.MinReplicas, server.Spec.MaxReplicas)
 	if err != nil {
 		r.updateStatusFromError(ctx, logger, server, err)
 		logger.Error(err, "Scaling spec failed validation", "name", req.Name, "namespace", req.Namespace, "spec", server.Spec)

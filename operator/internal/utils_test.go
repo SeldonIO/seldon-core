@@ -7,7 +7,7 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package v1alpha1
+package internal
 
 import (
 	"math"
@@ -48,7 +48,7 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 			minReplicas: ptr.Int32(2),
 			maxReplicas: ptr.Int32(4),
 			expected:    nil,
-			wantErr:     "number of replicas 1 must be >= min replicas 2",
+			wantErr:     "scaling spec is invalid: number of replicas 1 must be >= min replicas 2",
 		},
 		{
 			name:        "error - replicas is bigger than max replicas",
@@ -56,7 +56,7 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 			minReplicas: ptr.Int32(1),
 			maxReplicas: ptr.Int32(4),
 			expected:    nil,
-			wantErr:     "number of replicas 5 must be <= max replicas 4",
+			wantErr:     "scaling spec is invalid: number of replicas 5 must be <= max replicas 4",
 		},
 		{
 			name:        "error - replica is less than min replicas",
@@ -64,7 +64,7 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 			minReplicas: ptr.Int32(1),
 			maxReplicas: nil,
 			expected:    nil,
-			wantErr:     "number of replicas 0 cannot be less than minimum replica 1",
+			wantErr:     "scaling spec is invalid: number of replicas 0 cannot be less than minimum replica 1",
 		},
 		{
 			name:        "error - min replica is bigger than max replicas",
@@ -72,7 +72,7 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 			minReplicas: ptr.Int32(6),
 			maxReplicas: ptr.Int32(4),
 			expected:    nil,
-			wantErr:     "min number of replicas 6 must be <= max number of replicas 4",
+			wantErr:     "scaling spec is invalid: min number of replicas 6 must be <= max number of replicas 4",
 		},
 		{
 			name:        "success - replicas stays at 0 when min replicas is 0 and max replicas is 4",

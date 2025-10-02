@@ -11,9 +11,11 @@ package scheduler
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -26,6 +28,9 @@ import (
 func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeControlPlaneEvents")
 
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithCancel(ctx)
+	defer cancel()
 	stream, err := grpcClient.SubscribeControlPlane(
 		ctx,
 		&scheduler.ControlPlaneSubscriptionRequest{SubscriberName: "seldon manager"},
@@ -42,24 +47,32 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 			if err == io.EOF {
 				break
 			}
-			logger.Error(err, "event recv failed")
-			return err
+			return fmt.Errorf("got stream recv error: %w", err)
 		}
-		logger.Info("Received event to handle state", "event", event)
+		logger.Info("Received control plane event", "event", event)
 
 		fn := func(ctx context.Context) error {
-			return s.handleStateOnReconnect(ctx, grpcClient, namespace, event.GetEvent())
-		}
-		// in general we could have also handled timeout via a context with timeout
-		// but we want to handle the timeout in a more controlled way and not depending on the other side
-		_, err = execWithTimeout(ctx, fn, constants.ControlPlaneExecTimeOut)
-		if err != nil {
-			logger.Error(err, "Failed to handle state on reconnect")
-			return err
+			return s.handleControlPlaneEvent(ctx, grpcClient, namespace, event.GetEvent())
 		}
 
-		logger.Info("Handled state on reconnect")
+		go func() {
+			err := backoff.Retry(func() error {
+				// in general, we could have also handled timeout via a context with timeout
+				// but we want to handle the timeout in a more controlled way and not depending on the other side
+				_, err = execWithTimeout(ctx, fn, constants.ControlPlaneExecTimeOut)
+				if err != nil {
+					logger.Error(err, "Failed to process control plane event", "event", event)
+					return err
+				}
+				return nil
+			}, backoff.NewExponentialBackOff(backoff.WithMaxElapsedTime(time.Minute*10)))
+			if err != nil {
+				logger.Error(err, "Failed to handle event", "namespace", namespace, "event", event)
+				return
+			}
 
+			logger.Info("Handled control plane event", "event", event)
+		}()
 	}
 	return nil
 }
