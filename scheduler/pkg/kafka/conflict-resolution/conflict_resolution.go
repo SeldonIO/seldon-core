@@ -100,6 +100,16 @@ func (cr *ConflictResolutioner[Status]) GetCountResourceWithStatus(resouceName s
 	return count
 }
 
+func (cr *ConflictResolutioner[Status]) GetStreamsWithStatus(resourceName string, status Status) []string {
+	streams := []string{}
+	for stream, streamStatus := range cr.VectorResponseStatus[resourceName] {
+		if streamStatus == status {
+			streams = append(streams, stream)
+		}
+	}
+	return streams
+}
+
 // --------------------
 // Pipeline-specific
 // --------------------

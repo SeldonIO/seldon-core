@@ -111,7 +111,7 @@ type PipelineEventStream struct {
 	mu                   sync.Mutex
 	streams              map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription
 	namesToIps           map[string]string // Maps pipeline names to their IPs
-	conflictResolutioner *cr.ConflictResolutioner[pipeline.PipelineState]
+	conflictResolutioner *cr.ConflictResolutioner[pipeline.PipelineStatus]
 }
 
 type ControlPlaneStream struct {
@@ -288,7 +288,7 @@ func NewSchedulerServer(
 		pipelineEventStream: PipelineEventStream{
 			streams:              make(map[pb.Scheduler_SubscribePipelineStatusServer]*PipelineSubscription),
 			namesToIps:           make(map[string]string),
-			conflictResolutioner: cr.NewConflictResolution[pipeline.PipelineState](loggerWithField),
+			conflictResolutioner: cr.NewConflictResolution[pipeline.PipelineStatus](loggerWithField),
 		},
 		experimentEventStream: ExperimentEventStream{
 			streams: make(map[pb.Scheduler_SubscribeExperimentStatusServer]*ExperimentSubscription),
