@@ -77,9 +77,25 @@ func GetIntConfigMapValue(configMap kafka.ConfigMap, key string, defaultValue in
 		return defaultValue, nil
 	}
 
-	value, err := strconv.Atoi(configMapValue.(string))
+	if configMapValueInt, ok := configMapValue.(int); ok {
+		if configMapValueInt < 0 {
+			return -1, fmt.Errorf("%s: %d must not be negative", key, configMapValueInt)
+		}
+		return configMapValueInt, nil
+	}
+
+	configMapValueStr, ok := configMapValue.(string)
+	if !ok {
+		return defaultValue, fmt.Errorf("%s key has wrong type: %T", key, configMapValue)
+	}
+
+	value, err := strconv.Atoi(configMapValueStr)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("invalid value %s in %s with error: %v", configMapValueStr, key, err)
+	}
+
+	if value < 0 {
+		return -1, fmt.Errorf("%s: %d must be bigger than 0", key, value)
 	}
 
 	return value, nil
@@ -96,19 +112,19 @@ func NewInferKafkaHandler(
 ) (*InferKafkaHandler, error) {
 	defaultReplicationFactor, err := util.GetIntEnvar(envDefaultReplicationFactor, defaultReplicationFactor)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting default replication factor: %v", err)
 	}
 	replicationFactor, err := GetIntConfigMapValue(topicsConfigMap, replicationFactorKey, defaultReplicationFactor)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting replication factor: %v", err)
 	}
 	defaultNumPartitions, err := util.GetIntEnvar(envDefaultNumPartitions, defaultNumPartitions)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting default number of partitions: %v", err)
 	}
 	numPartitions, err := GetIntConfigMapValue(topicsConfigMap, numPartitionsKey, defaultNumPartitions)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting num partitions: %v", err)
 	}
 	tlsClientOptions, err := util.CreateTLSClientOptions()
 	if err != nil {

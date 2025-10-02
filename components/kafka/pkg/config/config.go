@@ -209,7 +209,7 @@ func (kc KafkaConfig) GetNumPartitions() (int, error) {
 
 	numPartitions, err := strconv.Atoi(partitionStr)
 	if err != nil {
-		return -1, fmt.Errorf("invalid numPartitions: %v", numPartition)
+		return -1, err
 	}
 
 	if numPartitions < 1 {
