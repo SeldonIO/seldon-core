@@ -1137,9 +1137,19 @@ metadata:
 spec:
   podSpec:
     containers:
-    - env:
+    - args:
+      - rcd
+      - --rc-no-auth
+      - --config=/rclone/rclone.conf
+      - --rc-addr=0.0.0.0:5572
+      - --max-buffer-memory=$(MAX_BUFFER_MEMORY)
+      command:
+      - rclone
+      env:
       - name: RCLONE_LOG_LEVEL
         value: 'INFO'
+      - name: MAX_BUFFER_MEMORY
+        value: 16M
       image: 'docker.io/seldonio/seldon-rclone:latest'
       imagePullPolicy: 'IfNotPresent'
       lifecycle:
@@ -1424,9 +1434,19 @@ metadata:
 spec:
   podSpec:
     containers:
-    - env:
+    - args:
+      - rcd
+      - --rc-no-auth
+      - --config=/rclone/rclone.conf
+      - --rc-addr=0.0.0.0:5572
+      - --max-buffer-memory=$(MAX_BUFFER_MEMORY)
+      command:
+      - rclone
+      env:
       - name: RCLONE_LOG_LEVEL
         value: 'INFO'
+      - name: MAX_BUFFER_MEMORY
+        value: 16M
       image: 'docker.io/seldonio/seldon-rclone:latest'
       imagePullPolicy: 'IfNotPresent'
       lifecycle:

@@ -1316,10 +1316,20 @@ metadata:
 spec:
   podSpec:
     containers:
-    - env:
+    - args:
+      - rcd
+      - --rc-no-auth
+      - --config=/rclone/rclone.conf
+      - --rc-addr=0.0.0.0:5572
+      - --max-buffer-memory=$(MAX_BUFFER_MEMORY)
+      command:
+      - rclone
+      env:
       - name: RCLONE_LOG_LEVEL
         value: '{{ hasKey .Values.serverConfig.rclone "logLevel" | ternary .Values.serverConfig.rclone.logLevel
           .Values.logging.logLevel | upper }}'
+      - name: MAX_BUFFER_MEMORY
+        value: 16M
       image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository
         }}:{{ .Values.serverConfig.rclone.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
@@ -1615,10 +1625,20 @@ metadata:
 spec:
   podSpec:
     containers:
-    - env:
+    - args:
+      - rcd
+      - --rc-no-auth
+      - --config=/rclone/rclone.conf
+      - --rc-addr=0.0.0.0:5572
+      - --max-buffer-memory=$(MAX_BUFFER_MEMORY)
+      command:
+      - rclone
+      env:
       - name: RCLONE_LOG_LEVEL
         value: '{{ hasKey .Values.serverConfig.rclone "logLevel" | ternary .Values.serverConfig.rclone.logLevel
           .Values.logging.logLevel | upper }}'
+      - name: MAX_BUFFER_MEMORY
+        value: 16M
       image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository
         }}:{{ .Values.serverConfig.rclone.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'

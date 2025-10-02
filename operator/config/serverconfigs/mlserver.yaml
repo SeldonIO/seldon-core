@@ -11,6 +11,17 @@ spec:
     - image: rclone:latest
       imagePullPolicy: IfNotPresent
       name: rclone
+      command:
+        - rclone
+      args:
+        - rcd
+        - --rc-no-auth
+        - --config=/rclone/rclone.conf
+        - --rc-addr=0.0.0.0:5572
+        - --max-buffer-memory=$(MAX_BUFFER_MEMORY)
+      env:
+        - name: MAX_BUFFER_MEMORY
+          value: "16M"
       ports:
       - containerPort: 5572
         name: rclone
