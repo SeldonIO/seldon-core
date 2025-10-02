@@ -14,7 +14,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
@@ -183,40 +182,6 @@ func convertConfigMap(cm kafka.ConfigMap) (kafka.ConfigMap, error) {
 func (kc KafkaConfig) HasKafkaBootstrapServer() bool {
 	bs := kc.Consumer[KafkaBootstrapServers]
 	return bs != nil && bs != ""
-}
-
-// GetNumPartitions retrieves the number of partitions from a kafka config.
-// The number of partitions must be bigger than 1.
-func (kc KafkaConfig) GetNumPartitions() (int, error) {
-	numPartition, ok := kc.Topics["numPartitions"]
-	if !ok {
-		return -1, fmt.Errorf("no numPartitions topic found")
-	}
-
-	// Try int first (most common case)
-	if partitionInt, ok := numPartition.(int); ok {
-		if partitionInt < 1 {
-			return -1, fmt.Errorf("numPartitions %d must be bigger than 0", partitionInt)
-		}
-		return partitionInt, nil
-	}
-
-	// Try string
-	partitionStr, ok := numPartition.(string)
-	if !ok {
-		return -1, fmt.Errorf("numPartitions topic has wrong type: %T", numPartition)
-	}
-
-	numPartitions, err := strconv.Atoi(partitionStr)
-	if err != nil {
-		return -1, err
-	}
-
-	if numPartitions < 1 {
-		return -1, fmt.Errorf("numPartitions %d must be bigger than 0", numPartitions)
-	}
-
-	return numPartitions, nil
 }
 
 func WithoutSecrets(c kafka.ConfigMap) kafka.ConfigMap {
