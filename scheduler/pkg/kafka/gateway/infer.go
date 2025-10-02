@@ -91,7 +91,7 @@ func GetIntConfigMapValue(configMap kafka.ConfigMap, key string, defaultValue in
 
 	value, err := strconv.Atoi(configMapValueStr)
 	if err != nil {
-		return 0, fmt.Errorf("invalid value %s in %s with error: %v", configMapValueStr, key, err)
+		return -1, fmt.Errorf("invalid value %s in %s with error: %v", configMapValueStr, key, err)
 	}
 
 	if value < 0 {
