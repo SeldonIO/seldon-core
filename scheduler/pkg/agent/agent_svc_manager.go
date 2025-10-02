@@ -65,6 +65,7 @@ type AgentServiceManager struct {
 	agentConfig              *AgentServiceConfig
 	modelTimestamps          sync.Map
 	startTime                time.Time
+	autoScalingEnabled       bool
 	StorageManager
 	SchedulerGrpcClientOptions
 	KubernetesOptions
@@ -169,6 +170,7 @@ func NewAgentServiceManager(
 	readinessService interfaces.DependencyServiceInterface,
 	metrics metrics.AgentMetricsHandler,
 	k8sClient k8s.ExtendedClient,
+	autoScalingEnabled bool,
 ) *AgentServiceManager {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
@@ -217,6 +219,7 @@ func NewAgentServiceManager(
 		agentConfig:              agentConfig,
 		modelTimestamps:          sync.Map{},
 		startTime:                time.Now(),
+		autoScalingEnabled:       autoScalingEnabled,
 	}
 	am.isStartup.Store(true)
 	readinessService.SetState(&am)
@@ -392,9 +395,13 @@ func (am *AgentServiceManager) WaitReadySubServices(isStartup bool) error {
 		am.rpHTTP,
 		am.rpGRPC,
 		am.agentDebugService,
-		am.modelScalingService,
 		am.drainerService,
 	}
+
+	if am.autoScalingEnabled {
+		internalSubServices = append(internalSubServices, am.modelScalingService)
+	}
+
 	wg.Add(2)                        // wait for subservices from other containers in the same pod (rclone, inference server)
 	wg.Add(len(internalSubServices)) // wait for internal subservices
 
@@ -534,16 +541,18 @@ func (am *AgentServiceManager) handleSchedulerSubscription() error {
 
 	logger.Info("Subscribed to scheduler")
 
-	// start model scaling events consumer
-	clientStream, err := grpcClient.ModelScalingTrigger(context.Background())
-	if err != nil {
-		return err
-	}
+	if am.autoScalingEnabled {
+		// start model scaling events consumer
+		clientStream, err := grpcClient.ModelScalingTrigger(context.Background())
+		if err != nil {
+			return err
+		}
 
-	am.modelScalingClientStream = clientStream
-	defer func() {
-		_, _ = clientStream.CloseAndRecv()
-	}()
+		am.modelScalingClientStream = clientStream
+		defer func() {
+			_, _ = clientStream.CloseAndRecv()
+		}()
+	}
 
 	// Mark startup as completed once we have an initial connection to the scheduler
 	// This connection may break and will be retried, but we define the agent as "started"
@@ -737,11 +746,15 @@ func (am *AgentServiceManager) LoadModel(request *agent_pb.ModelOperationMessage
 	// if scheduler ask for autoscaling, add pointers in model scaling stats
 	// we have done it via the scaling service as not to expose here all the model scaling stats
 	// that we have and then call Add on each one of them
-	if request.AutoscalingEnabled {
+	if request.AutoscalingEnabled && am.autoScalingEnabled {
 		logger.Debugf("Enabling autoscaling checks for model %s", modelWithVersion)
 		if err := am.modelScalingService.(*modelscaling.StatsAnalyserService).AddModel(modelWithVersion); err != nil {
 			logger.WithError(err).Warnf("Cannot add model %s to scaling service", modelWithVersion)
 		}
+	}
+
+	if request.AutoscalingEnabled && !am.autoScalingEnabled {
+		logger.Warn("Autoscaling enabled on scheduler but not agent")
 	}
 
 	logger.Infof("Load model %s:%d success", modelName, modelVersion)
@@ -790,15 +803,17 @@ func (am *AgentServiceManager) UnloadModel(request *agent_pb.ModelOperationMessa
 		return err
 	}
 
-	// remove pointers in model scaling stats
-	// we have done it via the scaling service as not to expose here all the model scaling stats that we have and then call Delete on
-	// each one of them
-	// note that we do not check if the model is already enabled for autoscaling, should we?
-	if err := am.modelScalingService.(*modelscaling.StatsAnalyserService).DeleteModel(modelWithVersion); err != nil {
-		logger.WithError(err).Warnf(
-			"Cannot delete model %s from scaling service, likely that it was not enabled in the first place",
-			modelWithVersion,
-		)
+	if am.autoScalingEnabled {
+		// remove pointers in model scaling stats
+		// we have done it via the scaling service as not to expose here all the model scaling stats that we have and then call Delete on
+		// each one of them
+		// note that we do not check if the model is already enabled for autoscaling, should we?
+		if err := am.modelScalingService.(*modelscaling.StatsAnalyserService).DeleteModel(modelWithVersion); err != nil {
+			logger.WithError(err).Warnf(
+				"Cannot delete model %s from scaling service, likely that it was not enabled in the first place",
+				modelWithVersion,
+			)
+		}
 	}
 
 	err := am.ModelRepository.RemoveModelVersion(modelWithVersion)
@@ -927,6 +942,9 @@ func (am *AgentServiceManager) sendModelScalingTriggerEvent(
 }
 
 func (am *AgentServiceManager) modelScalingEventsConsumer() {
+	if !am.autoScalingEnabled {
+		return
+	}
 	ch := am.modelScalingService.(*modelscaling.StatsAnalyserService).GetEventChannel()
 	for am.modelScalingService.Ready() {
 		e := <-ch

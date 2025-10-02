@@ -116,6 +116,9 @@ func termSignalErrHandler(logger *log.Logger, errChan <-chan error) {
 }
 
 func main() {
+	// we force auto-scaling to be disabled until scale-up issue is resoled
+	autoScalingEnabled := false
+
 	logger := log.New()
 
 	cli.UpdateArgs()
@@ -219,24 +222,35 @@ func main() {
 	}()
 	defer func() { _ = promMetrics.Stop() }()
 
-	modelLagStatsWrapper := modelscaling.ModelScalingStatsWrapper{
-		Stats:     modelscaling.NewModelReplicaLagsKeeper(),
-		Operator:  interfaces.Gte,
-		Threshold: uint(cli.ModelInferenceLagThreshold),
-		Reset:     true,
-		EventType: modelscaling.ScaleUpEvent,
-	}
-	modelLastUsedStatsWrapper := modelscaling.ModelScalingStatsWrapper{
-		Stats:     modelscaling.NewModelReplicaLastUsedKeeper(),
-		Operator:  interfaces.Gte,
-		Threshold: uint(cli.ModelInactiveSecondsThreshold),
-		Reset:     false,
-		EventType: modelscaling.ScaleDownEvent,
-	}
-	modelScalingStatsCollector := modelscaling.NewDataPlaneStatsCollector(
-		modelLagStatsWrapper.Stats,
-		modelLastUsedStatsWrapper.Stats,
+	var (
+		modelScalingStatsCollector *modelscaling.DataPlaneStatsCollector
+		modelScalingService        *modelscaling.StatsAnalyserService
 	)
+
+	if autoScalingEnabled {
+		modelLagStatsWrapper := modelscaling.ModelScalingStatsWrapper{
+			Stats:     modelscaling.NewModelReplicaLagsKeeper(),
+			Operator:  interfaces.Gte,
+			Threshold: uint(cli.ModelInferenceLagThreshold),
+			Reset:     true,
+			EventType: modelscaling.ScaleUpEvent,
+		}
+		modelLastUsedStatsWrapper := modelscaling.ModelScalingStatsWrapper{
+			Stats:     modelscaling.NewModelReplicaLastUsedKeeper(),
+			Operator:  interfaces.Gte,
+			Threshold: uint(cli.ModelInactiveSecondsThreshold),
+			Reset:     false,
+			EventType: modelscaling.ScaleDownEvent,
+		}
+		modelScalingStatsCollector = modelscaling.NewDataPlaneStatsCollector(
+			modelLagStatsWrapper.Stats,
+			modelLastUsedStatsWrapper.Stats,
+		)
+
+		modelScalingService = modelscaling.NewStatsAnalyserService(
+			[]modelscaling.ModelScalingStatsWrapper{modelLagStatsWrapper, modelLastUsedStatsWrapper}, logger, uint(cli.ScalingStatsPeriodSeconds))
+		defer func() { _ = modelScalingService.Stop() }()
+	}
 
 	rpHTTP := agent.NewReverseHTTPProxy(
 		logger,
@@ -260,10 +274,6 @@ func main() {
 
 	agentDebugService := agent.NewAgentDebug(logger, uint(cli.DebugGrpcPort))
 	defer func() { _ = agentDebugService.Stop() }()
-
-	modelScalingService := modelscaling.NewStatsAnalyserService(
-		[]modelscaling.ModelScalingStatsWrapper{modelLagStatsWrapper, modelLastUsedStatsWrapper}, logger, uint(cli.ScalingStatsPeriodSeconds))
-	defer func() { _ = modelScalingService.Stop() }()
 
 	drainerService := drainservice.NewDrainerService(
 		logger, uint(cli.DrainerServicePort))
@@ -301,6 +311,7 @@ func main() {
 		readinessService,
 		promMetrics,
 		clientset,
+		autoScalingEnabled,
 	)
 
 	// Wait for required services to be ready

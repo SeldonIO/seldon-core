@@ -241,8 +241,10 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	r.ModelName = internalModelName
 	r.ModelVersion = ""
 
-	// handle scaling metrics
-	rp.syncScalingMetrics(internalModelName)
+	if rp.modelScalingStatsCollector != nil {
+		// handle scaling metrics
+		rp.syncScalingMetrics(internalModelName)
+	}
 
 	startTime := time.Now()
 	err = rp.ensureLoadModel(r.ModelName)
@@ -345,8 +347,10 @@ func (rp *reverseGRPCProxy) ModelStreamInfer(stream v2.GRPCInferenceService_Mode
 		return err
 	}
 
-	// handle scaling metrics
-	rp.syncScalingMetrics(internalModelName)
+	if rp.modelScalingStatsCollector != nil {
+		// handle scaling metrics
+		rp.syncScalingMetrics(internalModelName)
+	}
 
 	startTime := time.Now()
 	// TODO: check the model is still loaded while the stream is going, not just at the start of the stream
