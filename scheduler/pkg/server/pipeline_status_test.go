@@ -24,7 +24,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
-func receiveMessageFromStream(
+func receiveMessageFromPipelineStream(
 	t *testing.T, stream *stubPipelineStatusServer,
 ) *pb.PipelineStatusResponse {
 	time.Sleep(500 * time.Millisecond)
@@ -123,7 +123,7 @@ func TestSendCurrentPipelineStatuses(t *testing.T) {
 			} else {
 				g.Expect(err).To(BeNil())
 
-				psr := receiveMessageFromStream(t, stream)
+				psr := receiveMessageFromPipelineStream(t, stream)
 				g.Expect(psr).ToNot(BeNil())
 				g.Expect(psr.Versions).To(HaveLen(1))
 				g.Expect(psr.Versions[0].State.Status).To(Equal(pb.PipelineVersionState_PipelineCreate))
@@ -219,7 +219,7 @@ func TestPublishPipelineEventWithTimeout(t *testing.T) {
 				return
 			}
 
-			psr := receiveMessageFromStream(t, stream)
+			psr := receiveMessageFromPipelineStream(t, stream)
 			g.Expect(psr).ToNot(BeNil())
 			g.Expect(psr.Versions).To(HaveLen(1))
 			g.Expect(psr.Versions[0].State.Status).To(Equal(pb.PipelineVersionState_PipelineCreate))
@@ -285,7 +285,7 @@ func TestAddAndRemovePipelineNoPipelineGw(t *testing.T) {
 			g.Expect(err).To(BeNil())
 
 			// check operator stream receives add message
-			msg := receiveMessageFromStream(t, stream)
+			msg := receiveMessageFromPipelineStream(t, stream)
 			g.Expect(msg).ToNot(BeNil())
 			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
 			g.Expect(msg.Versions).To(HaveLen(1))
@@ -293,7 +293,7 @@ func TestAddAndRemovePipelineNoPipelineGw(t *testing.T) {
 			g.Expect(msg.Versions[0].State.PipelineGwReason).To(Equal(""))
 
 			// check operator stream receives message with status updated and reason
-			msg = receiveMessageFromStream(t, stream)
+			msg = receiveMessageFromPipelineStream(t, stream)
 			g.Expect(msg).ToNot(BeNil())
 			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
 			g.Expect(msg.Versions).To(HaveLen(1))
@@ -310,7 +310,7 @@ func TestAddAndRemovePipelineNoPipelineGw(t *testing.T) {
 			g.Expect(err).To(BeNil())
 
 			// check operator stream receives remove message
-			msg = receiveMessageFromStream(t, stream)
+			msg = receiveMessageFromPipelineStream(t, stream)
 			g.Expect(msg).ToNot(BeNil())
 			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
 			g.Expect(msg.Versions).To(HaveLen(1))
@@ -318,7 +318,7 @@ func TestAddAndRemovePipelineNoPipelineGw(t *testing.T) {
 			g.Expect(msg.Versions[0].State.PipelineGwReason).To(Equal(pipelineRemovedMessage))
 
 			// check operator stream receives message with status updated and reason
-			msg = receiveMessageFromStream(t, stream)
+			msg = receiveMessageFromPipelineStream(t, stream)
 			g.Expect(msg).ToNot(BeNil())
 			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
 			g.Expect(msg.Versions).To(HaveLen(1))
@@ -404,7 +404,7 @@ func TestPipelineGwRebalanceNoPipelineGw(t *testing.T) {
 			g.Expect(err).To(BeNil())
 
 			// receive message from adding the pipeline
-			msg := receiveMessageFromStream(t, stream)
+			msg := receiveMessageFromPipelineStream(t, stream)
 			g.Expect(msg).ToNot(BeNil())
 			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
 			g.Expect(msg.Versions).To(HaveLen(1))
@@ -412,7 +412,7 @@ func TestPipelineGwRebalanceNoPipelineGw(t *testing.T) {
 			g.Expect(msg.Versions[0].State.PipelineGwReason).To(Equal(""))
 
 			// receive message with status updated and reason
-			msg = receiveMessageFromStream(t, stream)
+			msg = receiveMessageFromPipelineStream(t, stream)
 			g.Expect(msg).ToNot(BeNil())
 			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
 			g.Expect(msg.Versions).To(HaveLen(1))
@@ -431,7 +431,7 @@ func TestPipelineGwRebalanceNoPipelineGw(t *testing.T) {
 			g.Expect(err).To(BeNil())
 
 			// receive message from setting the pipeline to ready
-			msg = receiveMessageFromStream(t, stream)
+			msg = receiveMessageFromPipelineStream(t, stream)
 			g.Expect(msg).ToNot(BeNil())
 			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
 			g.Expect(msg.Versions).To(HaveLen(1))
@@ -446,7 +446,7 @@ func TestPipelineGwRebalanceNoPipelineGw(t *testing.T) {
 			s.pipelineGwRebalance()
 
 			// receive message with status updated and reason
-			msg = receiveMessageFromStream(t, stream)
+			msg = receiveMessageFromPipelineStream(t, stream)
 			g.Expect(msg).ToNot(BeNil())
 			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
 			g.Expect(msg.Versions).To(HaveLen(1))
@@ -548,7 +548,7 @@ func TestPipelineGwRebalanceCorrectMessages(t *testing.T) {
 			g.Expect(err).To(BeNil())
 
 			// receive add message from operator
-			msg := receiveMessageFromStream(t, operatorStream)
+			msg := receiveMessageFromPipelineStream(t, operatorStream)
 			g.Expect(msg).ToNot(BeNil())
 			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
 			g.Expect(msg.Versions).To(HaveLen(1))
@@ -556,7 +556,7 @@ func TestPipelineGwRebalanceCorrectMessages(t *testing.T) {
 			g.Expect(msg.Versions[0].State.PipelineGwReason).To(Equal(""))
 
 			// receive add message from pipelinegw
-			msg = receiveMessageFromStream(t, pipelineGwStream)
+			msg = receiveMessageFromPipelineStream(t, pipelineGwStream)
 			g.Expect(msg).ToNot(BeNil())
 			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
 			g.Expect(msg.Versions).To(HaveLen(1))
@@ -566,7 +566,7 @@ func TestPipelineGwRebalanceCorrectMessages(t *testing.T) {
 			g.Expect(msg.Timestamp).To(Equal(uint64(1)))
 
 			// receive transition to creating message from operator
-			msg = receiveMessageFromStream(t, operatorStream)
+			msg = receiveMessageFromPipelineStream(t, operatorStream)
 			g.Expect(msg).ToNot(BeNil())
 			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
 			g.Expect(msg.Versions).To(HaveLen(1))
@@ -580,7 +580,7 @@ func TestPipelineGwRebalanceCorrectMessages(t *testing.T) {
 			g.Expect(err).To(BeNil())
 
 			// receive status update message from operator only
-			msg = receiveMessageFromStream(t, operatorStream)
+			msg = receiveMessageFromPipelineStream(t, operatorStream)
 			g.Expect(msg).ToNot(BeNil())
 			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
 			g.Expect(msg.Versions).To(HaveLen(1))
@@ -595,7 +595,7 @@ func TestPipelineGwRebalanceCorrectMessages(t *testing.T) {
 
 			// check message is received by operator
 			if test.pipelineGwStatus != pipeline.PipelineTerminating {
-				msg = receiveMessageFromStream(t, operatorStream)
+				msg = receiveMessageFromPipelineStream(t, operatorStream)
 				g.Expect(msg).ToNot(BeNil())
 				g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
 				g.Expect(msg.Versions).To(HaveLen(1))
@@ -604,7 +604,7 @@ func TestPipelineGwRebalanceCorrectMessages(t *testing.T) {
 			}
 
 			// check rebalance message is received by pipelinegw (create or delete based on the verisonLen)
-			msg = receiveMessageFromStream(t, pipelineGwStream)
+			msg = receiveMessageFromPipelineStream(t, pipelineGwStream)
 			g.Expect(msg).ToNot(BeNil())
 			g.Expect(msg.PipelineName).To(Equal(test.loadReq.Name))
 			g.Expect(msg.Versions).To(HaveLen(test.versionLen))

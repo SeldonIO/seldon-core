@@ -33,7 +33,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
-func receiveMessageFromStream(stream *stubModelStatusServer) *pb.ModelStatusResponse {
+func receiveMessageFromModelStream(stream *stubModelStatusServer) *pb.ModelStatusResponse {
 	time.Sleep(500 * time.Millisecond)
 
 	var msr *pb.ModelStatusResponse
@@ -179,7 +179,7 @@ func TestModelsStatusStream(t *testing.T) {
 			} else {
 				g.Expect(err).To(BeNil())
 
-				msr := receiveMessageFromStream(stream)
+				msr := receiveMessageFromModelStream(stream)
 				g.Expect(msr).ToNot(BeNil())
 				g.Expect(msr.Versions).To(HaveLen(1))
 				g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
@@ -252,14 +252,14 @@ func TestPublishModelsStatusWithTimeout(t *testing.T) {
 			}
 
 			// read first create message
-			msr := receiveMessageFromStream(stream)
+			msr := receiveMessageFromModelStream(stream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.Versions).To(HaveLen(1))
 			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
 			g.Expect(s.modelEventStream.streams).To(HaveLen(1))
 
 			// read message due to no model-gw available
-			msr = receiveMessageFromStream(stream)
+			msr = receiveMessageFromModelStream(stream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.Versions).To(HaveLen(1))
 			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelStateUnknown))
@@ -314,14 +314,14 @@ func TestAddAndRemoveModelNoModelGw(t *testing.T) {
 			})
 
 			// read first create message
-			msr := receiveMessageFromStream(stream)
+			msr := receiveMessageFromModelStream(stream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.Versions).To(HaveLen(1))
 			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelCreate))
 			g.Expect(s.modelEventStream.streams).To(HaveLen(1))
 
 			// read message due to no model-gw available
-			msr = receiveMessageFromStream(stream)
+			msr = receiveMessageFromModelStream(stream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.Versions).To(HaveLen(1))
 			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelCreate))
@@ -343,13 +343,13 @@ func TestAddAndRemoveModelNoModelGw(t *testing.T) {
 			})
 
 			// read message due to model removal
-			msr = receiveMessageFromStream(stream)
+			msr = receiveMessageFromModelStream(stream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.Versions).To(HaveLen(1))
 			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelTerminate))
 
 			// read messsage duo to no model-gw available
-			msr = receiveMessageFromStream(stream)
+			msr = receiveMessageFromModelStream(stream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.Versions).To(HaveLen(1))
 			g.Expect(msr.Versions[0].State.State).To(Equal(pb.ModelStatus_ModelTerminated))
@@ -397,14 +397,14 @@ func TestModelGwRebalanceNoPipelineGw(t *testing.T) {
 			})
 
 			// read first create message
-			msr := receiveMessageFromStream(stream)
+			msr := receiveMessageFromModelStream(stream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.Versions).To(HaveLen(1))
 			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelCreate))
 			g.Expect(s.modelEventStream.streams).To(HaveLen(1))
 
 			// read second message due to no model-gw available
-			msr = receiveMessageFromStream(stream)
+			msr = receiveMessageFromModelStream(stream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.Versions).To(HaveLen(1))
 			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelCreate))
@@ -426,7 +426,7 @@ func TestModelGwRebalanceNoPipelineGw(t *testing.T) {
 			time.Sleep(500 * time.Millisecond)
 
 			// no other message since the state and reason have not changed
-			msr = receiveMessageFromStream(stream)
+			msr = receiveMessageFromModelStream(stream)
 			g.Expect(msr).To(BeNil())
 		})
 	}
@@ -511,20 +511,20 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 			})
 
 			// receive message on operator stream
-			msr := receiveMessageFromStream(operatorStream)
+			msr := receiveMessageFromModelStream(operatorStream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.Versions).To(HaveLen(1))
 			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelCreate))
 			g.Expect(s.modelEventStream.streams).To(HaveLen(2))
 
 			// receive message on model-gw stream
-			msr = receiveMessageFromStream(modelGwStream)
+			msr = receiveMessageFromModelStream(modelGwStream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.Versions).To(HaveLen(1))
 			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelCreate))
 
 			// receive transition to progressing on operator stream
-			msr = receiveMessageFromStream(operatorStream)
+			msr = receiveMessageFromModelStream(operatorStream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.Versions).To(HaveLen(1))
 			g.Expect(msr.Versions[0].State.ModelGwState).To(Equal(pb.ModelStatus_ModelProgressing))
@@ -536,7 +536,7 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 			g.Expect(err).To(BeNil())
 
 			// receive message on operator stream
-			msr = receiveMessageFromStream(operatorStream)
+			msr = receiveMessageFromModelStream(operatorStream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.Versions).To(HaveLen(1))
 			g.Expect(int32(msr.Versions[0].State.ModelGwState)).To(Equal(int32(test.modelGwStatus)))
@@ -553,7 +553,7 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 
 			// check message is received by the operator
 			if test.modelGwStatus != store.ModelTerminating {
-				msr = receiveMessageFromStream(operatorStream)
+				msr = receiveMessageFromModelStream(operatorStream)
 				g.Expect(msr).ToNot(BeNil())
 				g.Expect(msr.ModelName).To(Equal("foo"))
 				g.Expect(msr.Versions).To(HaveLen(1))
@@ -562,7 +562,7 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 			}
 
 			// check message is received by the model-gw (create or delete)
-			msr = receiveMessageFromStream(modelGwStream)
+			msr = receiveMessageFromModelStream(modelGwStream)
 			g.Expect(msr).ToNot(BeNil())
 			g.Expect(msr.ModelName).To(Equal("foo"))
 			g.Expect(msr.Versions).To(HaveLen(1))

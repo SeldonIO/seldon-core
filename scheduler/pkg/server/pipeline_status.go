@@ -17,9 +17,9 @@ import (
 
 	chainer "github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	cr "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/conflict-resolution"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	cr "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/conflict-resolution"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
