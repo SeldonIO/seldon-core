@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package io.seldon.dataflow.kafka
 
 import com.github.michaelbull.retry.policy.fullJitterBackoff
+import com.github.michaelbull.retry.policy.plus
 import com.github.michaelbull.retry.policy.stopAtAttempts
 import com.github.michaelbull.retry.retry
 import io.klogging.Klogger
@@ -37,8 +38,8 @@ abstract class Task(
         reason: String,
     ) {
         try {
-            retry(fullJitterBackoff(100L..3_200L) + stopAtAttempts(5)) {
-               pipelineSubscriber.client.pipelineUpdateEvent(
+            retry(fullJitterBackoff<Throwable>(100L..3_200L) + stopAtAttempts(5)) {
+                pipelineSubscriber.client.pipelineUpdateEvent(
                     pipelineSubscriber.makePipelineUpdateEvent(
                         metadata = metadata,
                         operation = operation,
