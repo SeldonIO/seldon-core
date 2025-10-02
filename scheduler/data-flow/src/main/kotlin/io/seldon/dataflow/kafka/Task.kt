@@ -35,11 +35,9 @@ abstract class Task(
         success: Boolean,
         reason: String,
     ) {
-        var attempt = 0
         try {
-            retry(fullJitterBackoff(100L..3_200L)) {
-                if (++attempt > 5) throw Exception("Max attempts reached")
-                pipelineSubscriber.client.pipelineUpdateEvent(
+            retry(fullJitterBackoff(100L..3_200L) + stopAtAttempts(5)) {
+               pipelineSubscriber.client.pipelineUpdateEvent(
                     pipelineSubscriber.makePipelineUpdateEvent(
                         metadata = metadata,
                         operation = operation,
