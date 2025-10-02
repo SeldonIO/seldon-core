@@ -16,7 +16,6 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
@@ -279,10 +278,9 @@ func main() {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
 
-	numPartitions, err := strconv.Atoi(kafkaConfigMap.Topics["numPartitions"].(string))
+	numPartitions, err := kafkaConfigMap.GetNumPartitions()
 	if err != nil {
-		logger.WithError(err).Fatal("Failed to parse numPartitions from Kafka config. Defaulting to 1")
-		numPartitions = 1
+		logger.WithError(err).Fatal("Failed to parse numPartitions from Kafka config")
 	}
 
 	dataFlowLoadBalancer := util.NewRingLoadBalancer(numPartitions)
