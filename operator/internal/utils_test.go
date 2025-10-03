@@ -64,7 +64,7 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 			minReplicas: ptr.Int32(1),
 			maxReplicas: nil,
 			expected:    nil,
-			wantErr:     "scaling spec is invalid: number of replicas 0 cannot be less than minimum replica 1",
+			wantErr:     "scaling spec is invalid: number of replicas 0 must be >= min replicas 1",
 		},
 		{
 			name:        "error - min replica is bigger than max replicas",
@@ -83,6 +83,16 @@ func TestGetValidatedScalingSpec(t *testing.T) {
 				Replicas:    0,
 				MinReplicas: 0,
 				MaxReplicas: 4,
+			},
+			wantErr: "",
+		},
+		{
+			name:     "success - replicas = 0",
+			replicas: ptr.Int32(0),
+			expected: &ValidatedScalingSpec{
+				Replicas:    0,
+				MinReplicas: 0,
+				MaxReplicas: math.MaxUint32,
 			},
 			wantErr: "",
 		},

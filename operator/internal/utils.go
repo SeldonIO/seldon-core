@@ -36,10 +36,8 @@ func GetValidatedScalingSpec(replicas *int32, minReplicas *int32, maxReplicas *i
 		return &validatedSpec, nil
 	}
 
-	if replicas != nil && *replicas > 0 {
+	if replicas != nil && *replicas >= 0 {
 		validatedSpec.Replicas = uint32(*replicas)
-	} else if replicas != nil && *replicas == 0 && minReplicas != nil && *minReplicas == 0 {
-		validatedSpec.Replicas = uint32(0)
 	} else if minReplicas != nil && *minReplicas > 0 {
 		if replicas != nil && *replicas < *minReplicas {
 			return nil, fmt.Errorf("%w: number of replicas %d cannot be less than minimum replica %d", ErrScalingSpec, *replicas, *minReplicas)
