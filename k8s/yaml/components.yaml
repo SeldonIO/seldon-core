@@ -623,6 +623,13 @@ spec:
               fieldPath: metadata.namespace
         image: 'docker.io/seldonio/seldon-pipelinegateway:latest'
         imagePullPolicy: 'IfNotPresent'
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - sleep 2
         livenessProbe:
           failureThreshold: 3
           httpGet:
