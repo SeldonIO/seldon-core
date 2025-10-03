@@ -14,4 +14,10 @@ Explore how to configure Core 2 components for optimal pipeline performance:
 - Optimizing Kafka integration
 - Configuring Core 2 services
 
+## [Scalability of Pipelines](scalability-pipelines.md)
+Understand how Core 2 components scale with the number of deployed pipelines and models:
+- Dynamic scaling of dataflow engine, model gateway, and pipeline gateway
+- Loading and unloading of models and pipelines
+- Assignment of pipelines and models to replicas
+
 Each of these aspects plays a crucial role in achieving optimal pipeline performance. We recommend starting with testing individual models in your pipeline, then using those insights to inform your Core 2 configuration and overall pipeline optimization strategies.
