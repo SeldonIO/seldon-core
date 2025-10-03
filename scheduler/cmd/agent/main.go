@@ -42,6 +42,10 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 )
 
+const (
+	maxBackoffRetryModelDownload = 30 * time.Second
+)
+
 func makeDirs() (string, string, error) {
 	modelRepositoryDir := filepath.Join(cli.AgentFolder, "models")
 	rcloneRepositoryDir := filepath.Join(cli.AgentFolder, "rclone")
@@ -193,6 +197,7 @@ func main() {
 		getRepositoryHandler(logger),
 		cli.EnvoyHost,
 		cli.EnvoyPort,
+		maxBackoffRetryModelDownload,
 	)
 
 	// Create model server control plane client

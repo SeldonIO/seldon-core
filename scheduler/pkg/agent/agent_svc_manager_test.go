@@ -77,7 +77,7 @@ func (f *FakeModelRepository) GetModelRuntimeInfo(modelName string) (*pbs.ModelR
 	return &pbs.ModelRuntimeInfo{ModelRuntimeInfo: &pbs.ModelRuntimeInfo_Mlserver{Mlserver: &pbs.MLServerModelSettings{ParallelWorkers: uint32(1)}}}, nil
 }
 
-func (f *FakeModelRepository) DownloadModelVersion(modelName string, version uint32, modelSpec *pbs.ModelSpec, config []byte) (*string, error) {
+func (f *FakeModelRepository) DownloadModelVersion(ctx context.Context, modelName string, version uint32, modelSpec *pbs.ModelSpec, config []byte) (*string, error) {
 	f.modelDownloads++
 	if f.err != nil {
 		return nil, f.err

@@ -11,6 +11,7 @@ package rclone
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -26,6 +27,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/filemanager"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
@@ -103,6 +105,8 @@ func createConfigUpdateFromCreate(create *RcloneConfigCreate) *RcloneConfigUpdat
 	return &update
 }
 
+var _ filemanager.FileManager = &RCloneClient{}
+
 func NewRCloneClient(
 	host string,
 	port int,
@@ -153,27 +157,29 @@ func (r *RCloneClient) listenForConfigUpdates() {
 }
 
 // Sends a serialised operation (op) payload to Rclone's HTTP API.
-func (r *RCloneClient) call(op []byte, path string) ([]byte, error) {
+func (r *RCloneClient) call(ctx context.Context, op []byte, path string) ([]byte, error) {
 	rcloneUrl := url.URL{
 		Scheme: "http",
 		Host:   net.JoinHostPort(r.host, strconv.Itoa(r.port)),
 		Path:   path,
 	}
 
-	req, err := http.NewRequest("POST", rcloneUrl.String(), bytes.NewBuffer(op))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, rcloneUrl.String(), bytes.NewBuffer(op))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Add(ContentType, ContentTypeJSON)
 	response, err := r.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed making http post to %s: %w", rcloneUrl.String(), err)
 	}
+	defer func() {
+		if err := response.Body.Close(); err != nil {
+			r.logger.WithError(err).WithField("url", rcloneUrl).Error("Failed to close rclone response body")
+		}
+	}()
+
 	b, err := io.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-	err = response.Body.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +200,7 @@ func (r *RCloneClient) Ready() error {
 		return err
 	}
 	// It's a no-op, so ignore the response.
-	_, err = r.call(b, RcloneNoopPath)
+	_, err = r.call(context.TODO(), b, RcloneNoopPath)
 	return err
 }
 
@@ -310,7 +316,7 @@ func pathExists(path string) (bool, error) {
 }
 
 // Call Rclone /sync/copy
-func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (string, error) {
+func (r *RCloneClient) Copy(ctx context.Context, modelName string, srcUri string, config []byte) (string, error) {
 	logger := r.logger.WithField("func", "Copy")
 
 	var srcUpdated string
@@ -335,7 +341,7 @@ func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (str
 	}
 
 	dst := fmt.Sprintf("%s/%d", r.localPath, hash)
-	copy := RcloneCopy{
+	rcloneCopy := RcloneCopy{
 		SrcFs:              srcUpdated,
 		DstFs:              dst,
 		CreateEmptySrcDirs: true,
@@ -346,16 +352,16 @@ func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (str
 		WithField("destination_uri", dst).
 		Info("will copy model artifacts")
 
-	b, err := json.Marshal(copy)
+	b, err := json.Marshal(rcloneCopy)
 	if err != nil {
 		return "", err
 	}
 
 	// It might be the case that rclone server restarted and we have not set it up yet
 	// with the config, so we try one more time
-	err = r.copyWithConfigResync(b)
+	err = r.copyWithConfigResync(ctx, b)
 	if err != nil {
-		return "", fmt.Errorf("Failed to sync/copy %s to %s %w", srcUri, dst, err)
+		return "", fmt.Errorf("failed to sync/copy %s to %s: %w", srcUri, dst, err)
 	}
 
 	// Even if we had success from rclone the src may be empty so need to check
@@ -370,14 +376,14 @@ func (r *RCloneClient) Copy(modelName string, srcUri string, config []byte) (str
 	return dst, nil
 }
 
-func (r *RCloneClient) copyWithConfigResync(b []byte) error {
-	_, err := r.call(b, RcloneSyncCopyPath)
+func (r *RCloneClient) copyWithConfigResync(ctx context.Context, b []byte) error {
+	_, err := r.call(ctx, b, RcloneSyncCopyPath)
 	if err != nil {
 		rcloneConfigErr := r.loadRcloneConfiguration(r.configHandler.GetConfiguration())
 		if rcloneConfigErr != nil {
 			return rcloneConfigErr
 		} else {
-			_, err = r.call(b, RcloneSyncCopyPath)
+			_, err = r.call(ctx, b, RcloneSyncCopyPath)
 			if err != nil {
 				return err
 			}
@@ -395,7 +401,7 @@ func (r *RCloneClient) PurgeLocal(path string) error {
 	if err != nil {
 		return err
 	}
-	_, err = r.call(b, RcloneOperationsPurgePath)
+	_, err = r.call(context.TODO(), b, RcloneOperationsPurgePath)
 	if err != nil {
 		return fmt.Errorf("Failed to run %s for %s %w", RcloneOperationsPurgePath, path, err)
 	}
@@ -409,7 +415,7 @@ func (r *RCloneClient) configExists(rcloneRemoteKey string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	res, err := r.call(b, RcloneConfigGetPath)
+	res, err := r.call(context.TODO(), b, RcloneConfigGetPath)
 	if err != nil {
 		return false, err
 	}
@@ -431,7 +437,7 @@ func (r *RCloneClient) configCreate(configCreate *RcloneConfigCreate) error {
 	if err != nil {
 		return err
 	}
-	_, err = r.call(b, RcloneConfigCreatePath)
+	_, err = r.call(context.TODO(), b, RcloneConfigCreatePath)
 	return err
 }
 
@@ -442,13 +448,13 @@ func (r *RCloneClient) configUpdate(configCreate *RcloneConfigCreate) error {
 	if err != nil {
 		return err
 	}
-	_, err = r.call(b, RcloneConfigUpdatePath)
+	_, err = r.call(context.TODO(), b, RcloneConfigUpdatePath)
 	return err
 }
 
 // Call Rclone /config/listremotes
 func (r *RCloneClient) ListRemotes() ([]string, error) {
-	res, err := r.call([]byte("{}"), RcloneListRemotesPath)
+	res, err := r.call(context.TODO(), []byte("{}"), RcloneListRemotesPath)
 	if err != nil {
 		return nil, err
 	}
@@ -466,6 +472,6 @@ func (r *RCloneClient) DeleteRemote(name string) error {
 	if err != nil {
 		return err
 	}
-	_, err = r.call(b, RcloneConfigDeletePath)
+	_, err = r.call(context.TODO(), b, RcloneConfigDeletePath)
 	return err
 }

@@ -1316,10 +1316,20 @@ metadata:
 spec:
   podSpec:
     containers:
-    - env:
+    - args:
+      - rcd
+      - --rc-no-auth
+      - --config=/rclone/rclone.conf
+      - --rc-addr=0.0.0.0:5572
+      - --max-buffer-memory=$(MAX_BUFFER_MEMORY)
+      command:
+      - rclone
+      env:
       - name: RCLONE_LOG_LEVEL
         value: '{{ hasKey .Values.serverConfig.rclone "logLevel" | ternary .Values.serverConfig.rclone.logLevel
           .Values.logging.logLevel | upper }}'
+      - name: MAX_BUFFER_MEMORY
+        value: 64M
       image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository
         }}:{{ .Values.serverConfig.rclone.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
@@ -1328,6 +1338,17 @@ spec:
           httpGet:
             path: terminate
             port: 9007
+      livenessProbe:
+        exec:
+          command:
+          - rclone
+          - rc
+          - rc/noop
+        failureThreshold: 1
+        initialDelaySeconds: 5
+        periodSeconds: 5
+        successThreshold: 1
+        timeoutSeconds: 1
       name: rclone
       ports:
       - containerPort: 5572
@@ -1343,7 +1364,7 @@ spec:
         timeoutSeconds: 1
       resources:
         limits:
-          memory: '{{ .Values.serverConfig.rclone.resources.memory }}'
+          memory: '{{ .Values.serverConfig.rclone.resources.limits.memory }}'
         requests:
           cpu: '{{ .Values.serverConfig.rclone.resources.cpu }}'
           memory: '{{ .Values.serverConfig.rclone.resources.memory }}'
@@ -1607,10 +1628,20 @@ metadata:
 spec:
   podSpec:
     containers:
-    - env:
+    - args:
+      - rcd
+      - --rc-no-auth
+      - --config=/rclone/rclone.conf
+      - --rc-addr=0.0.0.0:5572
+      - --max-buffer-memory=$(MAX_BUFFER_MEMORY)
+      command:
+      - rclone
+      env:
       - name: RCLONE_LOG_LEVEL
         value: '{{ hasKey .Values.serverConfig.rclone "logLevel" | ternary .Values.serverConfig.rclone.logLevel
           .Values.logging.logLevel | upper }}'
+      - name: MAX_BUFFER_MEMORY
+        value: 64M
       image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository
         }}:{{ .Values.serverConfig.rclone.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
@@ -1619,6 +1650,17 @@ spec:
           httpGet:
             path: terminate
             port: 9007
+      livenessProbe:
+        exec:
+          command:
+          - rclone
+          - rc
+          - rc/noop
+        failureThreshold: 1
+        initialDelaySeconds: 5
+        periodSeconds: 5
+        successThreshold: 1
+        timeoutSeconds: 1
       name: rclone
       ports:
       - containerPort: 5572
@@ -1634,7 +1676,7 @@ spec:
         timeoutSeconds: 1
       resources:
         limits:
-          memory: '{{ .Values.serverConfig.rclone.resources.memory }}'
+          memory: '{{ .Values.serverConfig.rclone.resources.limits.memory }}'
         requests:
           cpu: '{{ .Values.serverConfig.rclone.resources.cpu }}'
           memory: '{{ .Values.serverConfig.rclone.resources.memory }}'

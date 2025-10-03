@@ -11,6 +11,17 @@ spec:
     - image: rclone:latest
       imagePullPolicy: IfNotPresent
       name: rclone
+      command:
+        - rclone
+      args:
+        - rcd
+        - --rc-no-auth
+        - --config=/rclone/rclone.conf
+        - --rc-addr=0.0.0.0:5572
+        - --max-buffer-memory=$(MAX_BUFFER_MEMORY)
+      env:
+        - name: MAX_BUFFER_MEMORY
+          value: "64M"
       ports:
       - containerPort: 5572
         name: rclone
@@ -21,6 +32,8 @@ spec:
             port: 9007
             path: terminate
       resources:
+        limits:
+          memory: '256M'
         requests:
           cpu: "200m"
           memory: '100M'
@@ -31,6 +44,17 @@ spec:
         successThreshold: 1
         tcpSocket:
           port: 5572
+        timeoutSeconds: 1
+      livenessProbe:
+        failureThreshold: 1
+        initialDelaySeconds: 5
+        periodSeconds: 5
+        successThreshold: 1
+        exec:
+          command:
+            - rclone
+            - rc
+            - rc/noop
         timeoutSeconds: 1
       volumeMounts:
       - mountPath: /mnt/agent

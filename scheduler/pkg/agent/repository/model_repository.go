@@ -10,19 +10,24 @@ the Change License after the Change Date as each is defined in accordance with t
 package repository
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
+	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	copy2 "github.com/otiai10/copy"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/rclone"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/filemanager"
 )
 
+//go:generate go tool mockgen -source=model_repository.go -destination=./mocks/mock_model_repository.go -package=mocks ModelRepositoryHandler
 type ModelRepositoryHandler interface {
 	FindModelVersionFolder(modelName string, version *uint32, path string) (string, bool, error)
 	UpdateModelVersion(modelName string, version uint32, path string, modelSpec *scheduler.ModelSpec) error
@@ -34,35 +39,38 @@ type ModelRepositoryHandler interface {
 }
 
 type ModelRepository interface {
-	DownloadModelVersion(modelName string, version uint32, modelSpec *scheduler.ModelSpec, config []byte) (*string, error)
+	DownloadModelVersion(ctx context.Context, modelName string, version uint32, modelSpec *scheduler.ModelSpec, config []byte) (*string, error)
 	RemoveModelVersion(modelName string) error
 	GetModelRuntimeInfo(modelName string) (*scheduler.ModelRuntimeInfo, error)
 	Ready() error
 }
 
 type V2ModelRepository struct {
-	logger                 log.FieldLogger
-	rcloneClient           *rclone.RCloneClient
-	repoPath               string
-	modelRepositoryHandler ModelRepositoryHandler
-	envoyHost              string
-	envoyPort              int
+	logger                       log.FieldLogger
+	fileManager                  filemanager.FileManager
+	repoPath                     string
+	modelRepositoryHandler       ModelRepositoryHandler
+	envoyHost                    string
+	envoyPort                    int
+	maxBackoffRetryModelDownload time.Duration
 }
 
 func NewModelRepository(logger log.FieldLogger,
-	rcloneClient *rclone.RCloneClient,
+	rcloneClient filemanager.FileManager,
 	repoPath string,
 	modelRepositoryHandler ModelRepositoryHandler,
 	envoyHost string,
 	envoyPort int,
+	maxBackoffRetryModelDownload time.Duration,
 ) *V2ModelRepository {
 	return &V2ModelRepository{
-		logger:                 logger.WithField("Name", "V2ModelRepository"),
-		rcloneClient:           rcloneClient,
-		repoPath:               repoPath,
-		modelRepositoryHandler: modelRepositoryHandler,
-		envoyHost:              envoyHost,
-		envoyPort:              envoyPort,
+		logger:                       logger.WithField("Name", "V2ModelRepository"),
+		fileManager:                  rcloneClient,
+		repoPath:                     repoPath,
+		modelRepositoryHandler:       modelRepositoryHandler,
+		envoyHost:                    envoyHost,
+		envoyPort:                    envoyPort,
+		maxBackoffRetryModelDownload: maxBackoffRetryModelDownload,
 	}
 }
 
@@ -72,6 +80,7 @@ func (r *V2ModelRepository) GetModelRuntimeInfo(modelName string) (*scheduler.Mo
 }
 
 func (r *V2ModelRepository) DownloadModelVersion(
+	ctx context.Context,
 	modelName string,
 	version uint32,
 	modelSpec *scheduler.ModelSpec,
@@ -88,16 +97,33 @@ func (r *V2ModelRepository) DownloadModelVersion(
 
 	logger.Debugf("running with model %s:%d srcUri %s", modelName, version, srcUri)
 
-	// Run rclone copy sync
-	rclonePath, err := r.rcloneClient.Copy(modelName, srcUri, config)
+	var rclonePath string
+	err = backoff.RetryNotify(func() error {
+		// Run rclone copy sync
+		var err error
+		rclonePath, err = r.fileManager.Copy(ctx, modelName, srcUri, config)
+		if err != nil {
+			var urlError *url.Error
+			if errors.As(err, &urlError) {
+				return err
+			}
+			// we only want to retry errors from making the HTTP call to rclone
+			logger.WithError(err).Warn("Got permanent error, not retrying to download model")
+			return backoff.Permanent(err)
+		}
+		return nil
+	}, backoff.NewExponentialBackOff(backoff.WithMaxElapsedTime(r.maxBackoffRetryModelDownload)), func(err error, t time.Duration) {
+		logger.WithError(err).Warnf("Failed to download model, retrying in %s", t)
+	})
 	if err != nil {
 		return nil, err
 	}
+
 	defer func() {
 		// Once the model artifact has been downloaded via rclone, ensure that we clean it up,
 		// even in the presence of errors (e.g. if the PVC doesn't have enough space to copy the
 		// artifact into the inference server's model repository path).
-		err_purge := r.rcloneClient.PurgeLocal(rclonePath)
+		err_purge := r.fileManager.PurgeLocal(rclonePath)
 		if err_purge != nil {
 			err = errors.Join(err, err_purge)
 		}
@@ -211,5 +237,5 @@ func (r *V2ModelRepository) RemoveModelVersion(modelName string) error {
 }
 
 func (r *V2ModelRepository) Ready() error {
-	return r.rcloneClient.Ready()
+	return r.fileManager.Ready()
 }
