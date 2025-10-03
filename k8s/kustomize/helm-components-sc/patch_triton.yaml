@@ -17,7 +17,7 @@ spec:
           cpu: '{{ .Values.serverConfig.rclone.resources.cpu }}'
           memory: '{{ .Values.serverConfig.rclone.resources.memory }}'
         limits:
-          memory: '{{ .Values.serverConfig.rclone.resources.memory }}'
+          memory: '{{ .Values.serverConfig.rclone.resources.limits.memory }}'
     - env:
       - name: SELDON_SERVER_CAPABILITIES
         value: '{{ .Values.serverConfig.triton.serverCapabilities }}'

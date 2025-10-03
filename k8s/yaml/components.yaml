@@ -1149,7 +1149,7 @@ spec:
       - name: RCLONE_LOG_LEVEL
         value: 'INFO'
       - name: MAX_BUFFER_MEMORY
-        value: 16M
+        value: 64M
       image: 'docker.io/seldonio/seldon-rclone:latest'
       imagePullPolicy: 'IfNotPresent'
       lifecycle:
@@ -1158,12 +1158,15 @@ spec:
             path: terminate
             port: 9007
       livenessProbe:
-        failureThreshold: 2
+        exec:
+          command:
+          - rclone
+          - rc
+          - rc/noop
+        failureThreshold: 1
         initialDelaySeconds: 5
         periodSeconds: 5
         successThreshold: 1
-        tcpSocket:
-          port: 5572
         timeoutSeconds: 1
       name: rclone
       ports:
@@ -1180,7 +1183,7 @@ spec:
         timeoutSeconds: 1
       resources:
         limits:
-          memory: '128Mi'
+          memory: '256Mi'
         requests:
           cpu: '50m'
           memory: '128Mi'
@@ -1446,7 +1449,7 @@ spec:
       - name: RCLONE_LOG_LEVEL
         value: 'INFO'
       - name: MAX_BUFFER_MEMORY
-        value: 16M
+        value: 64M
       image: 'docker.io/seldonio/seldon-rclone:latest'
       imagePullPolicy: 'IfNotPresent'
       lifecycle:
@@ -1455,12 +1458,15 @@ spec:
             path: terminate
             port: 9007
       livenessProbe:
-        failureThreshold: 2
+        exec:
+          command:
+          - rclone
+          - rc
+          - rc/noop
+        failureThreshold: 1
         initialDelaySeconds: 5
         periodSeconds: 5
         successThreshold: 1
-        tcpSocket:
-          port: 5572
         timeoutSeconds: 1
       name: rclone
       ports:
@@ -1477,7 +1483,7 @@ spec:
         timeoutSeconds: 1
       resources:
         limits:
-          memory: '128Mi'
+          memory: '256Mi'
         requests:
           cpu: '50m'
           memory: '128Mi'

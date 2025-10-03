@@ -21,6 +21,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	log "github.com/sirupsen/logrus"
@@ -117,10 +118,22 @@ func NewRCloneClient(
 ) *RCloneClient {
 	logger.Infof("Rclone server %s:%d with model-cache:%s", host, port, localPath)
 	return &RCloneClient{
-		host:          host,
-		port:          port,
-		localPath:     localPath,
-		httpClient:    http.DefaultClient,
+		host:      host,
+		port:      port,
+		localPath: localPath,
+		httpClient: &http.Client{
+			Transport: &http.Transport{
+				DialContext: (&net.Dialer{
+					Timeout:   2 * time.Second,
+					KeepAlive: 30 * time.Second,
+				}).DialContext,
+				ForceAttemptHTTP2:     true,
+				MaxIdleConns:          100,
+				IdleConnTimeout:       90 * time.Second,
+				TLSHandshakeTimeout:   5 * time.Second,
+				ExpectContinueTimeout: 1 * time.Second,
+			},
+		},
 		logger:        logger.WithField("Source", "RCloneClient"),
 		validate:      validator.New(),
 		namespace:     namespace,
@@ -171,7 +184,7 @@ func (r *RCloneClient) call(ctx context.Context, op []byte, path string) ([]byte
 	req.Header.Add(ContentType, ContentTypeJSON)
 	response, err := r.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed making http post to %s: %w", rcloneUrl.String(), err)
 	}
 	defer func() {
 		if err := response.Body.Close(); err != nil {
@@ -361,7 +374,7 @@ func (r *RCloneClient) Copy(ctx context.Context, modelName string, srcUri string
 	// with the config, so we try one more time
 	err = r.copyWithConfigResync(ctx, b)
 	if err != nil {
-		return "", fmt.Errorf("Failed to sync/copy %s to %s %w", srcUri, dst, err)
+		return "", fmt.Errorf("failed to sync/copy %s to %s: %w", srcUri, dst, err)
 	}
 
 	// Even if we had success from rclone the src may be empty so need to check

@@ -270,6 +270,8 @@ serverConfig:
     resources:
       cpu: 50m
       memory: 128Mi
+      limits:
+        memory: 256Mi
     # should follow `log-level` from https://rclone.org/docs/
     logLevel: info
 

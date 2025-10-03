@@ -108,6 +108,7 @@ func (r *V2ModelRepository) DownloadModelVersion(
 				return err
 			}
 			// we only want to retry errors from making the HTTP call to rclone
+			logger.WithError(err).Warn("Got permanent error, not retrying to download model")
 			return backoff.Permanent(err)
 		}
 		return nil

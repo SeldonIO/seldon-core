@@ -1329,7 +1329,7 @@ spec:
         value: '{{ hasKey .Values.serverConfig.rclone "logLevel" | ternary .Values.serverConfig.rclone.logLevel
           .Values.logging.logLevel | upper }}'
       - name: MAX_BUFFER_MEMORY
-        value: 16M
+        value: 64M
       image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository
         }}:{{ .Values.serverConfig.rclone.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
@@ -1339,12 +1339,15 @@ spec:
             path: terminate
             port: 9007
       livenessProbe:
-        failureThreshold: 2
+        exec:
+          command:
+          - rclone
+          - rc
+          - rc/noop
+        failureThreshold: 1
         initialDelaySeconds: 5
         periodSeconds: 5
         successThreshold: 1
-        tcpSocket:
-          port: 5572
         timeoutSeconds: 1
       name: rclone
       ports:
@@ -1361,7 +1364,7 @@ spec:
         timeoutSeconds: 1
       resources:
         limits:
-          memory: '{{ .Values.serverConfig.rclone.resources.memory }}'
+          memory: '{{ .Values.serverConfig.rclone.resources.limits.memory }}'
         requests:
           cpu: '{{ .Values.serverConfig.rclone.resources.cpu }}'
           memory: '{{ .Values.serverConfig.rclone.resources.memory }}'
@@ -1638,7 +1641,7 @@ spec:
         value: '{{ hasKey .Values.serverConfig.rclone "logLevel" | ternary .Values.serverConfig.rclone.logLevel
           .Values.logging.logLevel | upper }}'
       - name: MAX_BUFFER_MEMORY
-        value: 16M
+        value: 64M
       image: '{{ .Values.serverConfig.rclone.image.registry }}/{{ .Values.serverConfig.rclone.image.repository
         }}:{{ .Values.serverConfig.rclone.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.rclone.image.pullPolicy }}'
@@ -1648,12 +1651,15 @@ spec:
             path: terminate
             port: 9007
       livenessProbe:
-        failureThreshold: 2
+        exec:
+          command:
+          - rclone
+          - rc
+          - rc/noop
+        failureThreshold: 1
         initialDelaySeconds: 5
         periodSeconds: 5
         successThreshold: 1
-        tcpSocket:
-          port: 5572
         timeoutSeconds: 1
       name: rclone
       ports:
@@ -1670,7 +1676,7 @@ spec:
         timeoutSeconds: 1
       resources:
         limits:
-          memory: '{{ .Values.serverConfig.rclone.resources.memory }}'
+          memory: '{{ .Values.serverConfig.rclone.resources.limits.memory }}'
         requests:
           cpu: '{{ .Values.serverConfig.rclone.resources.cpu }}'
           memory: '{{ .Values.serverConfig.rclone.resources.memory }}'

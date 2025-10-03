@@ -10,6 +10,8 @@ the Change License after the Change Date as each is defined in accordance with t
 package rclone
 
 import (
+	"fmt"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/k8s"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
@@ -45,7 +47,7 @@ func (r *RCloneClient) loadRcloneConfiguration(config *config.AgentConfiguration
 
 	existingRemotes, err := r.ListRemotes()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to list remotes: %w", err)
 	}
 
 	logger.Infof("After update current set of remotes is %v", existingRemotes)
