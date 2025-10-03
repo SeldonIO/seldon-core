@@ -21,7 +21,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/go-playground/validator/v10"
 	log "github.com/sirupsen/logrus"
@@ -118,22 +117,10 @@ func NewRCloneClient(
 ) *RCloneClient {
 	logger.Infof("Rclone server %s:%d with model-cache:%s", host, port, localPath)
 	return &RCloneClient{
-		host:      host,
-		port:      port,
-		localPath: localPath,
-		httpClient: &http.Client{
-			Transport: &http.Transport{
-				DialContext: (&net.Dialer{
-					Timeout:   2 * time.Second,
-					KeepAlive: 30 * time.Second,
-				}).DialContext,
-				ForceAttemptHTTP2:     true,
-				MaxIdleConns:          100,
-				IdleConnTimeout:       90 * time.Second,
-				TLSHandshakeTimeout:   5 * time.Second,
-				ExpectContinueTimeout: 1 * time.Second,
-			},
-		},
+		host:          host,
+		port:          port,
+		localPath:     localPath,
+		httpClient:    http.DefaultClient,
 		logger:        logger.WithField("Source", "RCloneClient"),
 		validate:      validator.New(),
 		namespace:     namespace,
