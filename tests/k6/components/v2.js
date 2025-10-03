@@ -6,7 +6,9 @@ import {getConfig} from "./settings.js";
 import {connectControlPlaneOps} from "./utils.js";
 
 const v2Client = new grpc.Client();
-v2Client.load([import.meta.resolve('../../../apis/mlops/v2_dataplane/')], 'v2_dataplane.proto');
+v2Client.load([
+    import.meta.resolve('../../../apis'),
+    import.meta.resolve('../../../apis/mlops/v2_dataplane/')], 'v2_dataplane.proto');
 
 
 export function inferHttp(endpoint, modelName, payload, viaEnvoy, isPipeline = false, debug = false, requestIDPrefix = null, timeout = null) {
