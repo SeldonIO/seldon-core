@@ -17,4 +17,5 @@ There are many different levers that can be considered to tune performance for M
 ### **Pipelines**
 
 1. [**Testing Pipelines**](pipelines/testing-pipelines.md) to identify the critical path based on performance of underlying models
-2. [**Core 2 Configuration**](pipelines/core-2-configuration.md) to optimize data-processing through pipelines  
+2. [**Core 2 Configuration**](pipelines/core-2-configuration.md) to optimize data-processing through pipelines
+3. [**Scalability of Pipelines**](pipelines/scalability-pipelines.md) to understand how Core 2 components scale with the number of deployed pipelines and models
