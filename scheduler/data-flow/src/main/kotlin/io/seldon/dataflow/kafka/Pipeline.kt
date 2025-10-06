@@ -246,11 +246,18 @@ class Pipeline(
             kafkaDomainParams: KafkaDomainParams,
             kafkaStreamsSerdes: KafkaStreamsSerdes,
         ): Pair<Topology, Int> {
-            // Sort the steps by the sink to ensure the same
-            // order when building the topology amongst multiple
-            // replicas. The scheduler doesn't send the same message
-            // because the steps are created from iterating over a map
-            val sortedSteps = steps.sortedBy { it.sink.topicName }
+            // Sort ensure the same order when building the topology amongst multiple
+            // replicas. The scheduler doesn't send the same message because the steps
+            // are created from iterating over a map
+            val sortedSteps =
+                steps.sortedWith(
+                    compareBy(
+                        { step -> step.sink.topicName },
+                        { step -> step.sourcesList.joinToString(",") { it.topicName } },
+                        { step -> step.triggersList.joinToString(",") { it.topicName } },
+                    ),
+                )
+
             val builder = StreamsBuilder()
 
             if (metadata.allowCycles) {
