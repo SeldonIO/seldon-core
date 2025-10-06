@@ -91,3 +91,10 @@ spec:
             value: '{{ hasKey .Values.pipelinegateway "logLevel" | ternary .Values.pipelinegateway.logLevel .Values.logging.logLevel }}'
           - name: PIPELINEGATEWAY_MAX_NUM_CONSUMERS
             value: '{{ .Values.pipelinegateway.maxNumConsumers }}'
+        lifecycle:
+          preStop:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - sleep 2
