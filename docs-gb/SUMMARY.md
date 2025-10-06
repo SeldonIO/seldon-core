@@ -87,6 +87,7 @@
   * [Pipelines](performance-tuning/pipelines/README.md)
     * [Testing Pipelines](performance-tuning/pipelines/testing-pipelines.md)
     * [Core 2 Configuration](performance-tuning/pipelines/core-2-configuration.md)
+    * [Scalability of Pipelines](performance-tuning/pipelines/scalability-pipelines.md)
 * [Experiments](kubernetes/resources/experiment.md)
 * [Examples](examples/README.md)
   * [Local examples](examples/local-examples.md)
