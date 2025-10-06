@@ -252,8 +252,8 @@ class Pipeline(
             val sortedSteps =
                 steps.sortedWith(
                     compareBy(
-                        { step -> step.sourcesList.joinToString(",") { it.topicName } },
                         { step -> step.sink.topicName },
+                        { step -> step.sourcesList.joinToString(",") { it.topicName } },
                         { step -> step.triggersList.joinToString(",") { it.topicName } },
                     ),
                 )
