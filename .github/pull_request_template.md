@@ -14,5 +14,3 @@
 
 ## Testing
 
-
-<!-- Test to not trigger lychee link checker ->
