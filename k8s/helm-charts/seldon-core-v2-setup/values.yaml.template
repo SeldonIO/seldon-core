@@ -85,7 +85,7 @@ opentelemetry:
 
 # logging
 # this is a global setting, in the case individual components logLevel is not set
-# Users should set a value from: 
+# Users should set a value from:
 # fatal, error, warn, info, debug, trace
 # if used also for .rclone.logLevel, the allowed set reduces to:
 # debug, info, error
@@ -245,7 +245,7 @@ scheduler:
     runAsGroup: 1000
     runAsNonRoot: true
   schedulerReadyTimeoutSeconds: 600
-  
+
 autoscaling:
   autoscalingModelEnabled: false
   autoscalingServerEnabled: true

@@ -1,0 +1,15 @@
+- op: add
+  path: /spec/config/scalingConfig/models/enabled
+  value: HACK_REMOVE_ME{{ .Values.autoscaling.autoscalingModelEnabled }}
+- op: add
+  path: /spec/config/scalingConfig/servers/enabled
+  value: HACK_REMOVE_ME{{ .Values.autoscaling.autoscalingServerEnabled }}
+- op: add
+  path: /spec/config/scalingConfig/servers/scaleDownPackingEnabled
+  value: HACK_REMOVE_ME{{ .Values.autoscaling.serverPackingEnabled }}
+- op: add
+  path: /spec/config/scalingConfig/servers/scaleDownPackingPercentage
+  value: HACK_REMOVE_ME{{ .Values.autoscaling.serverPackingPercentage }}
+- op: add
+  path: /spec/config/scalingConfig/pipelines/maxShardCountMultiplier
+  value: HACK_REMOVE_ME{{ .Values.kafka.topics.numPartitions }}

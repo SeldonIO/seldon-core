@@ -4,32 +4,33 @@ seldonConfig: default
 hodometer:
   disable: false
   replicas: 1
-  
+
 scheduler:
   disable: false
   replicas: 1
   # controlplane exposure
-  serviceType: LoadBalancer 
-  
+  serviceType: LoadBalancer
+
 envoy:
   disable: false
   replicas: 1
   # dataplane exposure
-  serviceType: LoadBalancer 
-  
+  serviceType: LoadBalancer
+
 dataflow:
   disable: false
   replicas: 1
-  
+
 modelgateway:
   disable: false
   replicas: 1
-  
+
 pipelinegateway:
   disable: false
   replicas: 1
 
 config:
+  scalingConfig:
   agentConfig:
     rclone:
       configSecrets:
@@ -48,4 +49,4 @@ config:
   serviceConfig:
     serviceGRPCPrefix:
     serviceType:
-  
+

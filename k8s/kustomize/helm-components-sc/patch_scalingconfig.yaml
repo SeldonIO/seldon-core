@@ -1,0 +1,15 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: SeldonConfig
+metadata:
+  name: default
+spec:
+  config:
+    scalingConfig:
+      models:
+        enabled:
+      servers:
+        enabled:
+        scaleDownPackingEnabled:
+        scaleDownPackingPercentage:
+      pipelines:
+        maxShardCountMultiplier:
