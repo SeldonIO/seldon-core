@@ -135,7 +135,7 @@ func TestSubscribeControlPlane(t *testing.T) {
 		modelGwLoadBalancer := util.NewRingLoadBalancer(1)
 		pipelineGwLoadBalancer := util.NewRingLoadBalancer(1)
 		s := NewSchedulerServer(
-			logger, nil, nil, nil, nil, eventHub, sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer, pipelineGwLoadBalancer, tls.TLSOptions{},
+			logger, nil, nil, nil, nil, eventHub, sync, SchedulerServerConfig{}, "", "", modelGwLoadBalancer, pipelineGwLoadBalancer, nil, tls.TLSOptions{},
 		)
 		sync.Signals(1)
 

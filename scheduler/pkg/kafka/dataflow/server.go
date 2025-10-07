@@ -28,6 +28,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 	cr "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/conflict-resolution"
+	scaling_config "github.com/seldonio/seldon-core/scheduler/v2/pkg/scaling/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -48,6 +49,11 @@ type ChainerServer struct {
 	loadBalancer         util.LoadBalancer
 	conflictResolutioner *cr.ConflictResolutioner[pipeline.PipelineStatus]
 	chainerMutex         sync.Map
+	configUpdatesMutex   sync.Mutex
+	scalingConfigUpdates chan scaling_config.ScalingConfig
+	currentScalingConfig scaling_config.ScalingConfig
+	done                 chan struct{}
+	grpcServer           *grpc.Server
 	chainer.UnimplementedChainerServer
 	health.UnimplementedHealthCheckServiceServer
 }
@@ -58,8 +64,15 @@ type ChainerSubscription struct {
 	fin    chan bool
 }
 
-func NewChainerServer(logger log.FieldLogger, eventHub *coordinator.EventHub, pipelineHandler pipeline.PipelineHandler,
-	namespace string, loadBalancer util.LoadBalancer, kafkaConfig *kafka_config.KafkaConfig) (*ChainerServer, error) {
+func NewChainerServer(
+	logger log.FieldLogger,
+	eventHub *coordinator.EventHub,
+	pipelineHandler pipeline.PipelineHandler,
+	namespace string,
+	loadBalancer util.LoadBalancer,
+	kafkaConfig *kafka_config.KafkaConfig,
+	scalingConfigHdl *scaling_config.ScalingConfigHandler,
+) (*ChainerServer, error) {
 	conflictResolutioner := cr.NewConflictResolution[pipeline.PipelineStatus](logger)
 	topicNamer, err := kafka.NewTopicNamer(namespace, kafkaConfig.TopicPrefix)
 	if err != nil {
@@ -74,6 +87,8 @@ func NewChainerServer(logger log.FieldLogger, eventHub *coordinator.EventHub, pi
 		loadBalancer:         loadBalancer,
 		conflictResolutioner: conflictResolutioner,
 		chainerMutex:         sync.Map{},
+		scalingConfigUpdates: make(chan scaling_config.ScalingConfig),
+		done:                 make(chan struct{}),
 	}
 
 	eventHub.RegisterPipelineEventHandler(
@@ -82,7 +97,30 @@ func NewChainerServer(logger log.FieldLogger, eventHub *coordinator.EventHub, pi
 		c.logger,
 		c.handlePipelineEvent,
 	)
+
+	if scalingConfigHdl != nil {
+		c.currentScalingConfig = scalingConfigHdl.GetConfiguration()
+		scalingConfigHdl.AddListener(c.scalingConfigUpdates)
+		go c.handleScalingConfigChanges()
+	} else {
+		c.currentScalingConfig = scaling_config.DefaultScalingConfig
+	}
+
+	c.configUpdatesMutex.Lock()
+	scaling_config.LogWhenUsingDefaultScalingConfig(&c.currentScalingConfig, c.logger)
+	c.configUpdatesMutex.Unlock()
+
 	return c, nil
+}
+
+func (c *ChainerServer) Stop() {
+	if c.grpcServer != nil {
+		c.grpcServer.GracefulStop()
+		c.logger.Info("Scheduler closing gRPC server managing connections from dataflow-engine replicas")
+	}
+	c.logger.Info("Stop watching for scaling config changes")
+	close(c.done)
+	c.StopSendPipelineEvents()
 }
 
 func (c *ChainerServer) StartGrpcServer(agentPort uint) error {
@@ -99,6 +137,7 @@ func (c *ChainerServer) StartGrpcServer(agentPort uint) error {
 	grpcServer := grpc.NewServer(grpcOptions...)
 	chainer.RegisterChainerServer(grpcServer, c)
 	health.RegisterHealthCheckServiceServer(grpcServer, c)
+	c.grpcServer = grpcServer
 
 	c.logger.Printf("Chainer server running on %d", agentPort)
 	return grpcServer.Serve(lis)
@@ -485,6 +524,33 @@ func (c *ChainerServer) rebalance() {
 					}
 				}
 			}
+		}
+	}
+}
+
+func (c *ChainerServer) handleScalingConfigChanges() {
+	logger := c.logger.WithField("func", "handleScalingConfigChanges")
+	for {
+		select {
+		case newConfig := <-c.scalingConfigUpdates:
+			if newConfig.Pipelines == nil {
+				continue
+			}
+			c.configUpdatesMutex.Lock()
+			if newConfig.Pipelines.MaxShardCountMultiplier != c.currentScalingConfig.Pipelines.MaxShardCountMultiplier {
+				logger.Info("Updating mapping of Pipelines onto dataflow-engine replicas following scaling config change")
+				// lock Mutex to avoid updating load balancer if a concurrent rebalance is in progress
+				c.mu.Lock()
+				c.currentScalingConfig = newConfig
+				scaling_config.LogWhenUsingDefaultScalingConfig(&c.currentScalingConfig, logger)
+				c.loadBalancer.UpdatePartitions(newConfig.Pipelines.MaxShardCountMultiplier)
+				c.mu.Unlock()
+				// rebalance all pipelines onto available dataflow-engine replicas according to new config
+				c.rebalance()
+			}
+			c.configUpdatesMutex.Unlock()
+		case <-c.done:
+			return
 		}
 	}
 }
