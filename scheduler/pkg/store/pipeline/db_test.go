@@ -106,10 +106,10 @@ func TestSaveAndRestore(t *testing.T) {
 								"a": {Name: "a"},
 							},
 							State: &PipelineState{
-								Status:    PipelineReady,
+								Status:           PipelineReady,
 								PipelineGwStatus: PipelineReady,
-								Reason:    "deployed",
-								Timestamp: time.Now().UTC(),
+								Reason:           "deployed",
+								Timestamp:        time.Now().UTC(),
 							},
 							Output: &PipelineOutput{},
 							KubernetesMeta: &KubernetesMeta{
@@ -140,10 +140,10 @@ func TestSaveAndRestore(t *testing.T) {
 								"a": {Name: "a"},
 							},
 							State: &PipelineState{
-								Status:    PipelineReady,
+								Status:           PipelineReady,
 								PipelineGwStatus: PipelineReady,
-								Reason:    "deployed",
-								Timestamp: time.Now().UTC(),
+								Reason:           "deployed",
+								Timestamp:        time.Now().UTC(),
 							},
 							Output: &PipelineOutput{},
 							KubernetesMeta: &KubernetesMeta{
@@ -165,10 +165,10 @@ func TestSaveAndRestore(t *testing.T) {
 								"b": {Name: "b"},
 							},
 							State: &PipelineState{
-								Status:    PipelineTerminating,
+								Status:           PipelineTerminating,
 								PipelineGwStatus: PipelineTerminating,
-								Reason:    "deployed",
-								Timestamp: time.Now().UTC(),
+								Reason:           "deployed",
+								Timestamp:        time.Now().UTC(),
 							},
 							Output: &PipelineOutput{},
 							KubernetesMeta: &KubernetesMeta{
@@ -466,10 +466,10 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 								"a": {Name: "a"},
 							},
 							State: &PipelineState{
-								Status:    PipelineReady,
+								Status:           PipelineReady,
 								PipelineGwStatus: PipelineReady,
-								Reason:    "deployed",
-								Timestamp: time.Now().UTC(),
+								Reason:           "deployed",
+								Timestamp:        time.Now().UTC(),
 							},
 							Output: &PipelineOutput{},
 							KubernetesMeta: &KubernetesMeta{
@@ -500,10 +500,10 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 								"a": {Name: "a"},
 							},
 							State: &PipelineState{
-								Status:    PipelineReady,
+								Status:           PipelineReady,
 								PipelineGwStatus: PipelineReady,
-								Reason:    "deployed",
-								Timestamp: time.Now().UTC(),
+								Reason:           "deployed",
+								Timestamp:        time.Now().UTC(),
 							},
 							Output: &PipelineOutput{},
 							KubernetesMeta: &KubernetesMeta{
@@ -525,10 +525,10 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 								"b": {Name: "b"},
 							},
 							State: &PipelineState{
-								Status:    PipelineTerminating,
+								Status:           PipelineTerminating,
 								PipelineGwStatus: PipelineTerminating,
-								Reason:    "deployed",
-								Timestamp: time.Now().UTC(),
+								Reason:           "deployed",
+								Timestamp:        time.Now().UTC(),
 							},
 							Output: &PipelineOutput{},
 							KubernetesMeta: &KubernetesMeta{
@@ -621,10 +621,10 @@ func TestMigrateToCore210(t *testing.T) {
 								"a": {Name: "a"},
 							},
 							State: &PipelineState{
-								Status:    PipelineReady,
+								Status:           PipelineReady,
 								PipelineGwStatus: PipelineReady,
-								Reason:    "deployed",
-								Timestamp: timestamp,
+								Reason:           "deployed",
+								Timestamp:        timestamp,
 							},
 							Output: &PipelineOutput{},
 							KubernetesMeta: &KubernetesMeta{
