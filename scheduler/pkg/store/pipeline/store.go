@@ -31,7 +31,7 @@ const (
 	removePipelineEventSource                  = "pipeline.store.removepipeline"
 	setStatusPipelineEventSource               = "pipeline.store.setstatus"
 	SetModelStatusPipelineEventSource          = "pipeline.store.setmodelstatus"
-	SetPipelineGwStatusPipelineEventSource     = "pipeline.store.setpipelinegwtatus"
+	SetPipelineGwStatusPipelineEventSource     = "pipeline.store.setpipelinegwstatus"
 	pipelineDbFolder                           = "pipelinedb"
 	modelEventHandlerName                      = "pipeline.store.models"
 )
@@ -471,7 +471,7 @@ func (ps *PipelineStore) SetPipelineGwPipelineState(name string, versionNumber u
 	}
 	if ps.eventHub != nil {
 		for _, evt := range evts {
-			ps.eventHub.PublishPipelineEvent(setStatusPipelineEventSource, *evt)
+			ps.eventHub.PublishPipelineEvent(SetPipelineGwStatusPipelineEventSource, *evt)
 		}
 	}
 	return nil
