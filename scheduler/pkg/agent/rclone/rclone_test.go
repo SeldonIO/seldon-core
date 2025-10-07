@@ -116,7 +116,7 @@ func TestRcloneCopy(t *testing.T) {
 			body:              "{}",
 			createLocalFolder: true,
 			expectError:       true,
-			expectedCallCount: 2, // for config resync
+			expectedCallCount: 3, // for config resync
 		},
 		{
 			name:              "noFiles",

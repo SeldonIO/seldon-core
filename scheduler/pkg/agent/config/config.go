@@ -10,25 +10,30 @@ the Change License after the Change Date as each is defined in accordance with t
 package config
 
 import (
-	"fmt"
-	"os"
-	"path"
-	"sync"
 	"time"
 
-	"github.com/fsnotify/fsnotify"
 	log "github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
-	"knative.dev/pkg/configmap"
-	"knative.dev/pkg/configmap/informer"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/config"
 )
 
 const (
 	AgentConfigYamlFilename      = "agent.yaml"
 	ConfigMapName                = "seldon-agent"
 	ServiceReadyRetryMaxInterval = 30 * time.Second
+)
+
+var (
+	DefaultAgentConfiguration = AgentConfiguration{
+		Rclone: &RcloneConfiguration{
+			ConfigSecrets: []string{},
+			Config:        []string{},
+		},
+		Kafka: &KafkaConfiguration{
+			Active: false,
+		},
+	}
 )
 
 type AgentConfiguration struct {
@@ -46,203 +51,67 @@ type KafkaConfiguration struct {
 	Broker string `json:"broker,omitempty" yaml:"broker,omitempty"`
 }
 
-type AgentConfigHandler struct {
-	logger               log.FieldLogger
-	mu                   sync.RWMutex
-	config               *AgentConfiguration
-	listeners            []chan<- AgentConfiguration
-	watcher              *fsnotify.Watcher
-	fileWatcherDone      chan struct{}
-	namespace            string
-	configFilePath       string
-	configMapWatcherDone chan struct{}
+type AgentConfigHandler = config.ConfigWatcher[AgentConfiguration, *AgentConfiguration]
+
+func (ac *AgentConfiguration) DeepCopy() AgentConfiguration {
+	var rcloneCopy *RcloneConfiguration
+	var kafkaCopy *KafkaConfiguration
+
+	if ac.Rclone != nil {
+		// Maintain nil slices if settings are not present.
+		// This is important because json.Marshal treats nil and empty slices differently.
+		var cs []string
+		if len(ac.Rclone.ConfigSecrets) > 0 {
+			cs = make([]string, len(ac.Rclone.ConfigSecrets))
+			copy(cs, ac.Rclone.ConfigSecrets)
+		}
+		var cfg []string
+		if len(ac.Rclone.Config) > 0 {
+			cfg = make([]string, len(ac.Rclone.Config))
+			copy(cfg, ac.Rclone.Config)
+		}
+		rcloneDeepCopy := RcloneConfiguration{
+			ConfigSecrets: cs,
+			Config:        cfg,
+		}
+		rcloneCopy = &rcloneDeepCopy
+	} else {
+		rcloneCopy = nil
+	}
+
+	if ac.Kafka != nil {
+		kafkaDeepCopy := *ac.Kafka
+		kafkaCopy = &kafkaDeepCopy
+	} else {
+		kafkaCopy = nil
+	}
+
+	return AgentConfiguration{
+		Rclone: rcloneCopy,
+		Kafka:  kafkaCopy,
+	}
+}
+
+func (ac *AgentConfiguration) Default() AgentConfiguration {
+	return DefaultAgentConfiguration.DeepCopy()
 }
 
 func NewAgentConfigHandler(configPath string, namespace string, logger log.FieldLogger, clientset kubernetes.Interface) (*AgentConfigHandler, error) {
-	configHandler := &AgentConfigHandler{
-		logger:    logger.WithField("source", "AgentConfigHandler"),
-		namespace: namespace,
-	}
-	if configPath != "" {
-		logger.Infof("Init config from path %s", configPath)
-		err := configHandler.initConfigFromPath(configPath)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	err := configHandler.initWatcher(configPath, namespace, clientset)
-	if err != nil {
-		return nil, err
-	}
-
-	return configHandler, nil
+	return config.NewConfigWatcher(
+		configPath,
+		AgentConfigYamlFilename,
+		namespace,
+		false, // watch mounted config file rather than using k8s informer on the config map
+		ConfigMapName,
+		clientset,
+		onConfigUpdate,
+		logger.WithField("source", "AgentConfigHandler"),
+	)
 }
 
-func (a *AgentConfigHandler) initConfigFromPath(configPath string) error {
-	m, err := configmap.Load(configPath)
-	if err != nil {
-		return err
-	}
-
-	if v, ok := m[AgentConfigYamlFilename]; ok {
-		err = a.updateConfig([]byte(v))
-		if err != nil {
-			return err
-		}
-		a.configFilePath = path.Join(configPath, AgentConfigYamlFilename)
-		return nil
-	}
-	return fmt.Errorf("Failed to find config file %s", AgentConfigYamlFilename)
-}
-
-func (a *AgentConfigHandler) initWatcher(configPath string, namespace string, clientset kubernetes.Interface) error {
-	logger := a.logger.WithField("func", "initWatcher")
-	if namespace != "" { // Running in k8s
-		err := a.watchConfigMap(clientset)
-		if err != nil {
-			return err
-		}
-	} else if configPath != "" { // Watch local file
-		err := a.watchFile(a.configFilePath)
-		if err != nil {
-			return err
-		}
-	} else {
-		logger.Warnf("No config available on initialization")
-	}
-	return nil
-}
-
-func (a *AgentConfigHandler) Close() error {
-	if a == nil {
-		return nil
-	}
-	a.logger.Info("Starting graceful shutdown")
-	if a.fileWatcherDone != nil {
-		close(a.fileWatcherDone)
-	}
-	if a.configMapWatcherDone != nil {
-		close(a.configMapWatcherDone)
-	}
-	if a.watcher != nil {
-		return a.watcher.Close()
-	}
-	for _, c := range a.listeners {
-		close(c)
-	}
-	a.logger.Infof("Finished graceful shutdown")
-	return nil
-}
-
-func (a *AgentConfigHandler) AddListener(c chan<- AgentConfiguration) *AgentConfiguration {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	a.listeners = append(a.listeners, c)
-	return a.config
-}
-
-func (a *AgentConfigHandler) GetConfiguration() *AgentConfiguration {
-	a.mu.RLock()
-	defer a.mu.RUnlock()
-	return a.config
-}
-
-func (a *AgentConfigHandler) updateConfig(configData []byte) error {
-	logger := a.logger.WithField("func", "updateConfig")
-	logger.Infof("Updating config %s", configData)
-
-	a.mu.Lock()
-	defer a.mu.Unlock()
-
-	config := AgentConfiguration{}
-	err := yaml.Unmarshal(configData, &config)
-	if err != nil {
-		return err
-	}
-
+func onConfigUpdate(config *AgentConfiguration, logger log.FieldLogger) error {
 	if config.Rclone != nil {
 		logger.Infof("Rclone Config loaded %v", config.Rclone)
-	}
-
-	a.config = &config
-	return nil
-}
-
-// Watch the config file passed for changes and reload and signal listeners when it does
-func (a *AgentConfigHandler) watchFile(filePath string) error {
-	logger := a.logger.WithField("func", "watchFile")
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		logger.Error(err, "Failed to create watcher")
-		return err
-	}
-	a.watcher = watcher
-	a.fileWatcherDone = make(chan struct{})
-
-	go func() {
-		for {
-			select {
-			case event := <-watcher.Events:
-				logger.Infof("Processing event %v", event)
-				isCreate := event.Op&fsnotify.Create != 0
-				isWrite := event.Op&fsnotify.Write != 0
-				if isCreate || isWrite {
-					b, err := os.ReadFile(filePath)
-					if err != nil {
-						logger.WithError(err).Errorf("Failed to read %s", filePath)
-					} else {
-						err := a.updateConfig(b)
-						if err != nil {
-							logger.WithError(err).Errorf("Failed to update config %s", filePath)
-						} else {
-							a.mu.RLock()
-							for _, ch := range a.listeners {
-								ch <- *a.config
-							}
-							a.mu.RUnlock()
-						}
-					}
-				}
-			case err := <-watcher.Errors:
-				logger.Error(err, "watcher error")
-			case <-a.fileWatcherDone:
-				return
-			}
-		}
-	}()
-
-	if err = watcher.Add(filePath); err != nil {
-		a.logger.Errorf("Failed add filePath %s to watcher", filePath)
-		return err
-	}
-	a.logger.Infof("Start to watch config file %s", filePath)
-
-	return nil
-}
-
-func (a *AgentConfigHandler) watchConfigMap(clientset kubernetes.Interface) error {
-	logger := a.logger.WithField("func", "watchConfigMap")
-
-	watcher := informer.NewInformedWatcher(clientset, a.namespace)
-	watcher.Watch(ConfigMapName, func(updated *corev1.ConfigMap) {
-		if data, ok := updated.Data[AgentConfigYamlFilename]; ok {
-			err := a.updateConfig([]byte(data))
-			if err != nil {
-				logger.Errorf("Failed to update configmap from data in %s", AgentConfigYamlFilename)
-			} else {
-				a.mu.RLock()
-				for _, ch := range a.listeners {
-					ch <- *a.config
-				}
-				a.mu.RUnlock()
-			}
-		}
-	})
-	a.configMapWatcherDone = make(chan struct{})
-	err := watcher.Start(a.configMapWatcherDone)
-	if err != nil {
-		return err
 	}
 	return nil
 }

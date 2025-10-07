@@ -135,7 +135,8 @@ func (r *RCloneClient) StartConfigListener() error {
 	go r.listenForConfigUpdates()
 	// Add ourself as listener on channel and handle initial config
 	logger.Info("Loading initial rclone configuration")
-	err := r.loadRcloneConfiguration(r.configHandler.AddListener(r.configChan))
+	r.configHandler.AddListener(r.configChan)
+	err := r.loadRcloneConfiguration(r.configHandler.GetConfiguration())
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to load rclone defaults")
 		return err
@@ -148,7 +149,7 @@ func (r *RCloneClient) listenForConfigUpdates() {
 	for config := range r.configChan {
 		logger.Info("Received config update")
 		go func() {
-			err := r.loadRcloneConfiguration(&config)
+			err := r.loadRcloneConfiguration(config)
 			if err != nil {
 				logger.WithError(err).Error("Failed to load rclone defaults")
 			}
