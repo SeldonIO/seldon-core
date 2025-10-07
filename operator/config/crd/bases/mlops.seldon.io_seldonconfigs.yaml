@@ -8372,6 +8372,44 @@ spec:
                           x-kubernetes-int-or-string: true
                         type: object
                     type: object
+                  scalingConfig:
+                    description: Control scaling parameters for various components
+                    properties:
+                      models:
+                        properties:
+                          enabled:
+                            type: boolean
+                        type: object
+                      pipelines:
+                        description: Scaling config impacting pipeline-gateway, dataflow-engine
+                          and model-gateway
+                        properties:
+                          maxShardCountMultiplier:
+                            description: |-
+                              MaxShardCountMultiplier influences the way the inferencing workload is sharded over the
+                              replicas of pipeline components.
+
+                              - For each of pipeline-gateway and dataflow-engine, the max number of replicas is
+                                `maxShardCountMultiplier * number of pipelines`
+                              - For model-gateway, the max number of replicas is
+                                `maxShardCountMultiplier * number of consumers`
+
+                              It doesn't make sense to set this to a value larger than the number of partitions for kafka
+                              topics used in the Core 2 install.
+                            format: int32
+                            type: integer
+                        type: object
+                      servers:
+                        properties:
+                          enabled:
+                            type: boolean
+                          scaleDownPackingEnabled:
+                            type: boolean
+                          scaleDownPackingPercentage:
+                            format: int32
+                            type: integer
+                        type: object
+                    type: object
                   serviceConfig:
                     properties:
                       grpcServicePrefix:

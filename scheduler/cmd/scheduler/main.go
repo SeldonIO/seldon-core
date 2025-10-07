@@ -16,7 +16,6 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
@@ -35,6 +34,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
 	health_probe "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/dataflow"
+	scaling_config "github.com/seldonio/seldon-core/scheduler/v2/pkg/scaling/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/cleaner"
 	schedulerServer "github.com/seldonio/seldon-core/scheduler/v2/pkg/server"
@@ -66,6 +66,7 @@ var (
 	autoscalingModelEnabled      bool
 	autoscalingServerEnabled     bool
 	kafkaConfigPath              string
+	scalingConfigPath            string
 	schedulerReadyTimeoutSeconds uint
 	deletedResourceTTLSeconds    uint
 	serverPackingEnabled         bool
@@ -127,6 +128,13 @@ func init() {
 	flag.BoolVar(&allowPlaintxt, "allow-plaintxt", true, "Allow plain text scheduler server")
 
 	// Autoscaling
+	// Scaling config path
+	flag.StringVar(
+		&scalingConfigPath,
+		"scaling-config-path",
+		"/mnt/config/scaling.json",
+		"Path to scaling configuration file",
+	)
 	flag.BoolVar(&autoscalingModelEnabled, "enable-model-autoscaling", false, "Enable native model autoscaling feature")
 	flag.BoolVar(&autoscalingServerEnabled, "enable-server-autoscaling", true, "Enable native server autoscaling feature")
 
@@ -278,20 +286,25 @@ func main() {
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to load Kafka config")
 	}
-
-	numPartitions, err := strconv.Atoi(kafkaConfigMap.Topics["numPartitions"].(string))
+	scalingConfigHdl, err := scaling_config.NewScalingConfigHandler(scalingConfigPath, namespace, logger)
 	if err != nil {
-		logger.WithError(err).Fatal("Failed to parse numPartitions from Kafka config. Defaulting to 1")
-		numPartitions = 1
+		logger.WithError(err).Fatalf("Failed to load Scaling config from %s", scalingConfigPath)
 	}
+	defer func() {
+		_ = scalingConfigHdl.Close()
+		logger.Info("Closed scheduler scaling config watcher")
+	}()
 
-	dataFlowLoadBalancer := util.NewRingLoadBalancer(numPartitions)
-	log.Info("Using ring load balancer for data flow with numPartitions: ", numPartitions)
+	maxShardCountMultiplier := scalingConfigHdl.GetConfiguration().Pipelines.MaxShardCountMultiplier
 
-	cs, err := dataflow.NewChainerServer(logger, eventHub, ps, namespace, dataFlowLoadBalancer, kafkaConfigMap)
+	dataFlowLoadBalancer := util.NewRingLoadBalancer(maxShardCountMultiplier)
+	log.Info("Using ring load balancer for data flow with numPartitions: ", maxShardCountMultiplier)
+
+	cs, err := dataflow.NewChainerServer(logger, eventHub, ps, namespace, dataFlowLoadBalancer, kafkaConfigMap, scalingConfigHdl)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to start data engine chainer server")
 	}
+	defer cs.Stop()
 	go func() {
 		err := cs.StartGrpcServer(chainerPort)
 		if err != nil {
@@ -334,9 +347,9 @@ func main() {
 		eventHub,
 	)
 
-	// scheduler <-> controller grpc
-	modelGwLoadBalancer := util.NewRingLoadBalancer(numPartitions)
-	pipelineGWLoadBalancer := util.NewRingLoadBalancer(numPartitions)
+	// scheduler <-> controller and {pipeline,model-gw} grpc
+	modelGwLoadBalancer := util.NewRingLoadBalancer(maxShardCountMultiplier)
+	pipelineGWLoadBalancer := util.NewRingLoadBalancer(maxShardCountMultiplier)
 	s := schedulerServer.NewSchedulerServer(
 		logger, ss, es, ps, sched, eventHub, sync,
 		schedulerServer.SchedulerServerConfig{
@@ -347,8 +360,10 @@ func main() {
 		kafkaConfigMap.ConsumerGroupIdPrefix,
 		modelGwLoadBalancer,
 		pipelineGWLoadBalancer,
+		scalingConfigHdl,
 		*tlsOptions,
 	)
+	defer s.Stop()
 
 	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
 	if err != nil {
@@ -390,10 +405,9 @@ func main() {
 	s.StopSendExperimentEvents()
 	s.StopSendPipelineEvents()
 	s.StopSendControlPlaneEvents()
-	cs.StopSendPipelineEvents()
 	as.StopAgentStreams()
 
-	log.Info("Shutdown services")
+	log.Info("All services have shut down cleanly")
 }
 
 type probe struct {

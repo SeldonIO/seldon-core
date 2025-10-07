@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	DEFAULT_NUM_PARTITIONS                    = 1
+	DEFAULT_MAX_SHARD_COUNT_MULTIPLIER        = 1
 	DEFAULT_MODELGATEWAY_MAX_NUM_CONSUMERS    = 100
 	DEFAULT_PIPELINEGATEWAY_MAX_NUM_CONSUMERS = 100
 
@@ -81,12 +81,10 @@ func validateScaleSpec(
 ) error {
 	ctx, clt, recorder := commonConfig.Ctx, commonConfig.Client, commonConfig.Recorder
 
-	numPartitions, err := ParseInt32(
-		runtime.Spec.Config.KafkaConfig.Topics["numPartitions"].StrVal,
-		DEFAULT_NUM_PARTITIONS,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to parse numPartitions from KafkaConfig: %w", err)
+	var maxShardCountMultiplier int32 = DEFAULT_MAX_SHARD_COUNT_MULTIPLIER
+	pipelineScaleConfig := runtime.Spec.Config.ScalingConfig.Pipelines
+	if pipelineScaleConfig != nil {
+		maxShardCountMultiplier = runtime.Spec.Config.ScalingConfig.Pipelines.MaxShardCountMultiplier
 	}
 
 	var resourceCount int32 = 0
@@ -97,9 +95,10 @@ func validateScaleSpec(
 		resourceCount = int32(countResources(resourceListObj))
 	}
 
-	var maxConsumers int32 = defaultMaxConsumers
+	var maxConsumers = defaultMaxConsumers
 	if maxConsumersEnvName != "" {
 		maxConsumersEnv := getEnvVarValue(component.PodSpec, maxConsumersEnvName, "")
+		var err error
 		maxConsumers, err = ParseInt32(maxConsumersEnv, defaultMaxConsumers)
 		if err != nil {
 			return fmt.Errorf("failed to parse %s: %w", maxConsumersEnvName, err)
@@ -109,7 +108,7 @@ func validateScaleSpec(
 		}
 	}
 
-	maxReplicas := replicaCalc(resourceCount, maxConsumers, numPartitions)
+	maxReplicas := replicaCalc(resourceCount, maxConsumers, maxShardCountMultiplier)
 	if component.Replicas != nil && *component.Replicas > maxReplicas {
 		component.Replicas = &maxReplicas
 		recorder.Eventf(

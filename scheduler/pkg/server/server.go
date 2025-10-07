@@ -32,6 +32,7 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	cr "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/conflict-resolution"
+	scaling_config "github.com/seldonio/seldon-core/scheduler/v2/pkg/scaling/config"
 	scheduler2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
@@ -77,6 +78,11 @@ type SchedulerServer struct {
 	config                 SchedulerServerConfig
 	modelGwLoadBalancer    *util.RingLoadBalancer
 	pipelineGWLoadBalancer *util.RingLoadBalancer
+	scalingConfigUpdates   chan scaling_config.ScalingConfig
+	currentScalingConfig   *scaling_config.ScalingConfig
+	mu                     sync.Mutex
+	done                   chan struct{}
+	grpcServer             *grpc.Server
 	consumerGroupConfig    *ConsumerGroupConfig
 	eventHub               *coordinator.EventHub
 	tlsOptions             seldontls.TLSOptions
@@ -194,6 +200,7 @@ func (s *SchedulerServer) startServer(port uint, secure bool) error {
 	opts = append(opts, grpc.StatsHandler(otelgrpc.NewServerHandler()))
 	opts = append(opts, grpc.KeepaliveEnforcementPolicy(kaep))
 	grpcServer := grpc.NewServer(opts...)
+	s.grpcServer = grpcServer
 	pb.RegisterSchedulerServer(grpcServer, s)
 	health.RegisterHealthCheckServiceServer(grpcServer, s)
 
@@ -257,6 +264,7 @@ func NewSchedulerServer(
 	consumerGroupIdPrefix string,
 	modelGwLoadBalancer *util.RingLoadBalancer,
 	pipelineGWLoadBalancer *util.RingLoadBalancer,
+	scalingConfigHdl *scaling_config.ScalingConfigHandler,
 	tlsOptions seldontls.TLSOptions,
 ) *SchedulerServer {
 	loggerWithField := logger.WithField("source", "SchedulerServer")
@@ -301,6 +309,8 @@ func NewSchedulerServer(
 		config:                 config,
 		modelGwLoadBalancer:    modelGwLoadBalancer,
 		pipelineGWLoadBalancer: pipelineGWLoadBalancer,
+		scalingConfigUpdates:   make(chan scaling_config.ScalingConfig),
+		done:                   make(chan struct{}),
 		consumerGroupConfig:    consumerGroupConfig,
 		eventHub:               eventHub,
 		tlsOptions:             tlsOptions,
@@ -337,7 +347,75 @@ func NewSchedulerServer(
 		s.handleServerEvents,
 	)
 
+	if scalingConfigHdl != nil {
+		initScalingConfig := scalingConfigHdl.GetConfiguration()
+		s.currentScalingConfig = &initScalingConfig
+		scalingConfigHdl.AddListener(s.scalingConfigUpdates)
+		go s.handleScalingConfigChanges()
+	} else {
+		s.currentScalingConfig = &scaling_config.DefaultScalingConfig
+	}
+
+	s.mu.Lock()
+	scaling_config.LogWhenUsingDefaultScalingConfig(s.currentScalingConfig, loggerWithField)
+	s.mu.Unlock()
+
 	return s
+}
+
+func (s *SchedulerServer) Stop() {
+	if s.grpcServer != nil {
+		s.grpcServer.GracefulStop()
+		s.logger.Info("Scheduler closing gRPC server managing connections from controller and gateways")
+	}
+	close(s.done)
+}
+
+func (s *SchedulerServer) handleScalingConfigChanges() {
+	logger := s.logger.WithField("func", "handleScalingConfigChanges")
+	for {
+		select {
+		case newScalingConfig := <-s.scalingConfigUpdates:
+			if newScalingConfig.Pipelines == nil {
+				continue
+			}
+			s.mu.Lock()
+			if newScalingConfig.Pipelines.MaxShardCountMultiplier != s.currentScalingConfig.Pipelines.MaxShardCountMultiplier {
+				logger.Info("Updating mapping of Pipelines and Models onto pipeline-gateway and model-gateway replicas following scaling config change")
+				wg := sync.WaitGroup{}
+				wg.Add(2)
+				s.currentScalingConfig = &newScalingConfig
+				scaling_config.LogWhenUsingDefaultScalingConfig(s.currentScalingConfig, logger)
+				go func() {
+					// lock Mutex to avoid updating load balancer if a concurrent rebalance is in progress
+					s.pipelineEventStream.mu.Lock()
+					s.pipelineGWLoadBalancer.UpdatePartitions(newScalingConfig.Pipelines.MaxShardCountMultiplier)
+					s.pipelineEventStream.mu.Unlock()
+
+					// There is a chance that another concurrent rebalance will start here (applying the
+					// updated partitions), but it means we'll just do one extra rebalance that will
+					// distribute the pipelines in the exact same way (given no other infra changes)
+					// Given that config changes should be infrequent, this should be ok.
+
+					// rebalance all pipelines onto available pipeline-gw replicas according to new config
+					s.pipelineGwRebalance()
+					wg.Done()
+				}()
+
+				go func() {
+					s.modelEventStream.mu.Lock()
+					s.modelGwLoadBalancer.UpdatePartitions(newScalingConfig.Pipelines.MaxShardCountMultiplier)
+					s.modelEventStream.mu.Unlock()
+					s.modelGwRebalance()
+					wg.Done()
+				}()
+				wg.Wait()
+			}
+			s.mu.Unlock()
+		case <-s.done:
+			return
+		}
+	}
 }
 
 func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotifyRequest) (*pb.ServerNotifyResponse, error) {

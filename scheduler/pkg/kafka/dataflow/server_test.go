@@ -870,7 +870,7 @@ func createTestScheduler(t *testing.T, serverName string) (*ChainerServer, *coor
 	kc, _ := kafka_config.NewKafkaConfig(configFilePath, "debug")
 	b := util.NewRingLoadBalancer(1)
 	b.AddServer(serverName)
-	s, _ := NewChainerServer(logger, eventHub, pipelineServer, "test-ns", b, kc)
+	s, _ := NewChainerServer(logger, eventHub, pipelineServer, "test-ns", b, kc, nil)
 
 	return s, eventHub
 }

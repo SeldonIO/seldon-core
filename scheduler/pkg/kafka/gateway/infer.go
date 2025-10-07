@@ -110,19 +110,11 @@ func NewInferKafkaHandler(
 	consumerName string,
 	schemaRegistryClient schemaregistry.Client,
 ) (*InferKafkaHandler, error) {
-	defaultReplicationFactor, err := util.GetIntEnvar(envDefaultReplicationFactor, defaultReplicationFactor)
+	replicationFactor, err := util.GetIntEnvar(envDefaultReplicationFactor, defaultReplicationFactor)
 	if err != nil {
 		return nil, fmt.Errorf("error getting default replication factor: %v", err)
 	}
-	replicationFactor, err := GetIntConfigMapValue(topicsConfigMap, replicationFactorKey, defaultReplicationFactor)
-	if err != nil {
-		return nil, fmt.Errorf("invalid Kafka topic configuration: %v", err)
-	}
-	defaultNumPartitions, err := util.GetIntEnvar(envDefaultNumPartitions, defaultNumPartitions)
-	if err != nil {
-		return nil, fmt.Errorf("error getting default number of partitions: %v", err)
-	}
-	numPartitions, err := GetIntConfigMapValue(topicsConfigMap, numPartitionsKey, defaultNumPartitions)
+	numPartitions, err := util.GetIntEnvar(envDefaultNumPartitions, defaultNumPartitions)
 	if err != nil {
 		return nil, fmt.Errorf("invalid Kafka topic configuration: %w", err)
 	}

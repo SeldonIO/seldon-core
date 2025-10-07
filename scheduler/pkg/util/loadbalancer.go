@@ -10,17 +10,21 @@ the Change License after the Change Date as each is defined in accordance with t
 package util
 
 import (
+	"sync"
+
 	"github.com/serialx/hashring"
 )
 
 type LoadBalancer interface {
 	AddServer(serverName string)
 	RemoveServer(serverName string)
+	UpdatePartitions(numPartitions int)
 	GetServersForKey(key string) []string
 }
 
 type RingLoadBalancer struct {
 	ring              *hashring.HashRing
+	mu                sync.RWMutex
 	nodes             map[string]bool
 	replicationFactor int
 	numPartitions     int
@@ -34,19 +38,32 @@ func NewRingLoadBalancer(numPartitions int) *RingLoadBalancer {
 	}
 }
 
+func (lb *RingLoadBalancer) UpdatePartitions(numPartitions int) {
+	lb.mu.Lock()
+	defer lb.mu.Unlock()
+	lb.numPartitions = numPartitions
+	lb.replicationFactor = min(len(lb.nodes), lb.numPartitions)
+}
+
 func (lb *RingLoadBalancer) AddServer(serverName string) {
+	lb.mu.Lock()
+	defer lb.mu.Unlock()
 	lb.ring = lb.ring.AddNode(serverName)
 	lb.nodes[serverName] = true
 	lb.replicationFactor = min(len(lb.nodes), lb.numPartitions)
 }
 
 func (lb *RingLoadBalancer) RemoveServer(serverName string) {
+	lb.mu.Lock()
+	defer lb.mu.Unlock()
 	lb.ring = lb.ring.RemoveNode(serverName)
 	delete(lb.nodes, serverName)
 	lb.replicationFactor = min(len(lb.nodes), lb.numPartitions)
 }
 
 func (lb *RingLoadBalancer) GetServersForKey(key string) []string {
+	lb.mu.RLock()
+	defer lb.mu.RUnlock()
 	nodes, _ := lb.ring.GetNodes(key, lb.replicationFactor)
 	return nodes
 }

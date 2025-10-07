@@ -1328,7 +1328,7 @@ func createTestSchedulerImpl(t *testing.T, config SchedulerServerConfig) (*Sched
 	s := NewSchedulerServer(
 		logger, schedulerStore, experimentServer, pipelineServer, scheduler,
 		eventHub, synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), config,
-		"", "", modelGwLoadBalancer, pipelineGwLoadBalancer, tls.TLSOptions{},
+		"", "", modelGwLoadBalancer, pipelineGwLoadBalancer, nil, tls.TLSOptions{},
 	)
 
 	return s, eventHub

@@ -183,7 +183,7 @@ func main() {
 	}
 	defer func() {
 		_ = agentConfigHandler.Close()
-		logger.Info("Closed agent handler")
+		logger.Info("Closed agent config watcher")
 	}()
 
 	// Create Rclone client

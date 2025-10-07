@@ -358,6 +358,7 @@ spec:
         - --db-path=/mnt/scheduler/db
         - --allow-plaintxt=$(ALLOW_PLAINTXT)
         - --kafka-config-path=/mnt/kafka/kafka.json
+        - --scaling-config-path=/mnt/scaling/scaling.yaml
         - --scheduler-ready-timeout-seconds=$(SCHEDULER_READY_TIMEOUT_SECONDS)
         - --server-packing-enabled=$(SERVER_PACKING_ENABLED)
         - --server-packing-percentage=$(SERVER_PACKING_PERCENTAGE)
@@ -481,6 +482,8 @@ spec:
         volumeMounts:
         - mountPath: /mnt/kafka
           name: kafka-config-volume
+        - mountPath: /mnt/scaling
+          name: scaling-config-volume
         - mountPath: /mnt/tracing
           name: tracing-config-volume
         - mountPath: /mnt/scheduler
@@ -493,6 +496,9 @@ spec:
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
       volumes:
+      - configMap:
+          name: seldon-scaling
+        name: scaling-config-volume
       - configMap:
           name: seldon-kafka
         name: kafka-config-volume
@@ -1127,6 +1133,15 @@ spec:
       topics:
         numPartitions: '1'
         replicationFactor: '1'
+    scalingConfig:
+      models:
+        enabled: false
+      pipelines:
+        maxShardCountMultiplier: 1
+      servers:
+        enabled: true
+        scaleDownPackingEnabled: false
+        scaleDownPackingPercentage: 0
     serviceConfig:
       grpcServicePrefix: ''
       serviceType: 'LoadBalancer'

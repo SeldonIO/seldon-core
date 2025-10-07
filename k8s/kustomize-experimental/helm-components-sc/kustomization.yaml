@@ -18,6 +18,7 @@ patchesStrategicMerge:
 - ../../kustomize/helm-components-sc/patch_scheduler.yaml
 - ../../kustomize/helm-components-sc/patch_kafkaconfig.yaml
 - ../../kustomize/helm-components-sc/patch_tracingconfig.yaml
+- ../../kustomize/helm-components-sc/patch_scalingconfig.yaml
 - ../../kustomize/helm-components-sc/patch_agentconfig.yaml
 - ../../kustomize/helm-components-sc/patch_serviceconfig.yaml
 - patch_mlserver.yaml
@@ -55,6 +56,11 @@ patches:
     kind: SeldonConfig
     name: default
 - path: ../../kustomize/helm-components-sc/patch_modelgateway_json6902.yaml
+  target:
+    version: v1alpha1
+    kind: SeldonConfig
+    name: default
+- path: ../../kustomize/helm-components-sc/patch_scalingconfig_json6902.yaml
   target:
     version: v1alpha1
     kind: SeldonConfig

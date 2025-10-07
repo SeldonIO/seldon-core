@@ -58,10 +58,10 @@ dependencies {
     implementation("io.kubernetes:client-java:24.0.0")
 
     // HTTP server for health probes
-    implementation("io.ktor:ktor-server-core:3.0.1")
-    implementation("io.ktor:ktor-server-netty:3.0.1")
-    implementation("io.ktor:ktor-server-content-negotiation:3.0.1")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.1")
+    implementation("io.ktor:ktor-server-core:3.3.0")
+    implementation("io.ktor:ktor-server-netty:3.3.0")
+    implementation("io.ktor:ktor-server-content-negotiation:3.3.0")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.3.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation("com.charleskorn.kaml:kaml:0.61.0")
 

@@ -147,7 +147,7 @@ func TestLoadRcloneConfig(t *testing.T) {
 				httpmock.NewStringResponder(200, "{}"))
 
 			g.Expect(err).To(gomega.BeNil())
-			err = rcloneClient.loadRcloneConfiguration(test.agentConfiguration)
+			err = rcloneClient.loadRcloneConfiguration(*test.agentConfiguration)
 			if test.error {
 				g.Expect(err).ToNot(gomega.BeNil())
 			} else {

@@ -17,13 +17,8 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
-func (r *RCloneClient) loadRcloneConfiguration(config *config.AgentConfiguration) error {
+func (r *RCloneClient) loadRcloneConfiguration(config config.AgentConfiguration) error {
 	logger := r.logger.WithField("func", "loadRcloneConfiguration")
-
-	if config == nil {
-		logger.Warn("nil config passed")
-		return nil
-	}
 
 	// Load any secrets that have Rclone config
 	addedFromSecrets, err := r.loadRcloneSecretsConfiguration(config)
@@ -55,11 +50,11 @@ func (r *RCloneClient) loadRcloneConfiguration(config *config.AgentConfiguration
 	return nil
 }
 
-func (r *RCloneClient) loadRcloneRawConfiguration(config *config.AgentConfiguration) ([]string, error) {
+func (r *RCloneClient) loadRcloneRawConfiguration(config config.AgentConfiguration) ([]string, error) {
 	logger := r.logger.WithField("func", "loadRcloneRawConfiguration")
 
 	var rcloneNamesAdded []string
-	if len(config.Rclone.Config) > 0 {
+	if config.Rclone != nil && len(config.Rclone.Config) > 0 {
 		logger.Infof("found %d Rclone configs", len(config.Rclone.Config))
 
 		for _, config := range config.Rclone.Config {
@@ -77,7 +72,7 @@ func (r *RCloneClient) loadRcloneRawConfiguration(config *config.AgentConfigurat
 	return rcloneNamesAdded, nil
 }
 
-func (r *RCloneClient) deleteUnusedRcloneConfiguration(config *config.AgentConfiguration, rcloneNamesAdded []string) error {
+func (r *RCloneClient) deleteUnusedRcloneConfiguration(config config.AgentConfiguration, rcloneNamesAdded []string) error {
 	logger := r.logger.WithField("func", "deleteUnusedRcloneConfiguration")
 
 	existingRemotes, err := r.ListRemotes()
@@ -107,12 +102,12 @@ func (r *RCloneClient) deleteUnusedRcloneConfiguration(config *config.AgentConfi
 	return nil
 }
 
-func (r *RCloneClient) loadRcloneSecretsConfiguration(config *config.AgentConfiguration) ([]string, error) {
+func (r *RCloneClient) loadRcloneSecretsConfiguration(config config.AgentConfiguration) ([]string, error) {
 	logger := r.logger.WithField("func", "loadRcloneSecretsConfiguration")
 
 	var rcloneNamesAdded []string
 	// Load any secrets that have Rclone config
-	if len(config.Rclone.ConfigSecrets) > 0 {
+	if config.Rclone != nil && len(config.Rclone.ConfigSecrets) > 0 {
 		secretClientSet, err := k8s.CreateClientset()
 		if err != nil {
 			return nil, err
