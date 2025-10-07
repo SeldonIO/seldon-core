@@ -107,8 +107,9 @@ func TestSaveAndRestore(t *testing.T) {
 							},
 							State: &PipelineState{
 								Status:    PipelineReady,
+								PipelineGwStatus: PipelineReady,
 								Reason:    "deployed",
-								Timestamp: time.Now(),
+								Timestamp: time.Now().UTC(),
 							},
 							Output: &PipelineOutput{},
 							KubernetesMeta: &KubernetesMeta{
@@ -140,8 +141,9 @@ func TestSaveAndRestore(t *testing.T) {
 							},
 							State: &PipelineState{
 								Status:    PipelineReady,
+								PipelineGwStatus: PipelineReady,
 								Reason:    "deployed",
-								Timestamp: time.Now(),
+								Timestamp: time.Now().UTC(),
 							},
 							Output: &PipelineOutput{},
 							KubernetesMeta: &KubernetesMeta{
@@ -164,8 +166,9 @@ func TestSaveAndRestore(t *testing.T) {
 							},
 							State: &PipelineState{
 								Status:    PipelineTerminating,
+								PipelineGwStatus: PipelineTerminating,
 								Reason:    "deployed",
-								Timestamp: time.Now(),
+								Timestamp: time.Now().UTC(),
 							},
 							Output: &PipelineOutput{},
 							KubernetesMeta: &KubernetesMeta{
@@ -195,7 +198,7 @@ func TestSaveAndRestore(t *testing.T) {
 			err = ps.InitialiseOrRestoreDB(path, 10)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
-				g.Expect(cmp.Equal(p, ps.pipelines[p.Name])).To(BeTrue())
+				g.Expect(*p).To(Equal(*ps.pipelines[p.Name]))
 			}
 		})
 	}
@@ -224,7 +227,7 @@ func TestSaveAndRestoreDeletedPipelines(t *testing.T) {
 					State: &PipelineState{
 						Status:    PipelineReady,
 						Reason:    "deployed",
-						Timestamp: time.Now(),
+						Timestamp: time.Now().UTC(),
 					},
 					Output: &PipelineOutput{},
 					KubernetesMeta: &KubernetesMeta{
@@ -325,7 +328,7 @@ func TestGetPipelineFromDB(t *testing.T) {
 							State: &PipelineState{
 								Status:    PipelineReady,
 								Reason:    "deployed",
-								Timestamp: time.Now(),
+								Timestamp: time.Now().UTC(),
 							},
 							Output: &PipelineOutput{},
 							KubernetesMeta: &KubernetesMeta{
@@ -401,7 +404,7 @@ func TestDeletePipelineFromDB(t *testing.T) {
 							State: &PipelineState{
 								Status:    PipelineReady,
 								Reason:    "deployed",
-								Timestamp: time.Now(),
+								Timestamp: time.Now().UTC(),
 							},
 							Output: &PipelineOutput{},
 							KubernetesMeta: &KubernetesMeta{
@@ -464,8 +467,9 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 							},
 							State: &PipelineState{
 								Status:    PipelineReady,
+								PipelineGwStatus: PipelineReady,
 								Reason:    "deployed",
-								Timestamp: time.Now(),
+								Timestamp: time.Now().UTC(),
 							},
 							Output: &PipelineOutput{},
 							KubernetesMeta: &KubernetesMeta{
@@ -497,8 +501,9 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 							},
 							State: &PipelineState{
 								Status:    PipelineReady,
+								PipelineGwStatus: PipelineReady,
 								Reason:    "deployed",
-								Timestamp: time.Now(),
+								Timestamp: time.Now().UTC(),
 							},
 							Output: &PipelineOutput{},
 							KubernetesMeta: &KubernetesMeta{
@@ -521,8 +526,9 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 							},
 							State: &PipelineState{
 								Status:    PipelineTerminating,
+								PipelineGwStatus: PipelineTerminating,
 								Reason:    "deployed",
-								Timestamp: time.Now(),
+								Timestamp: time.Now().UTC(),
 							},
 							Output: &PipelineOutput{},
 							KubernetesMeta: &KubernetesMeta{
@@ -553,7 +559,7 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 
 			// make sure we still have the pipelines
 			for _, p := range test.pipelines {
-				g.Expect(cmp.Equal(p, ps.pipelines[p.Name])).To(BeTrue())
+				g.Expect(*p).To(Equal(*ps.pipelines[p.Name]))
 			}
 
 			// make sure we have the correct version
@@ -564,6 +570,97 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 	}
 }
 
+func TestMigrateToCore210(t *testing.T) {
+	g := NewGomegaWithT(t)
+	type test struct {
+		name      string
+		pipelines []*Pipeline
+		expected  []*Pipeline
+	}
+	timestamp := time.Now().UTC()
+
+	tests := []test{
+		{
+			name: "test pipeline",
+			pipelines: []*Pipeline{
+				{
+					Name:        "test",
+					LastVersion: 0,
+					Versions: []*PipelineVersion{
+						{
+							Name:    "p1",
+							Version: 0,
+							UID:     "x",
+							Steps: map[string]*PipelineStep{
+								"a": {Name: "a"},
+							},
+							State: &PipelineState{
+								Status:    PipelineReady,
+								Reason:    "deployed",
+								Timestamp: timestamp,
+							},
+							Output: &PipelineOutput{},
+							KubernetesMeta: &KubernetesMeta{
+								Namespace: "default",
+							},
+						},
+					},
+					Deleted: false,
+				},
+			},
+			expected: []*Pipeline{
+				{
+					Name:        "test",
+					LastVersion: 0,
+					Versions: []*PipelineVersion{
+						{
+							Name:    "p1",
+							Version: 0,
+							UID:     "x",
+							Steps: map[string]*PipelineStep{
+								"a": {Name: "a"},
+							},
+							State: &PipelineState{
+								Status:    PipelineReady,
+								PipelineGwStatus: PipelineReady,
+								Reason:    "deployed",
+								Timestamp: timestamp,
+							},
+							Output: &PipelineOutput{},
+							KubernetesMeta: &KubernetesMeta{
+								Namespace: "default",
+							},
+						},
+					},
+					Deleted: false,
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			path := fmt.Sprintf("%s/db", t.TempDir())
+			ps := NewPipelineStore(log.New(), nil, fakeModelStore{status: map[string]store.ModelState{}})
+			err := ps.InitialiseOrRestoreDB(path, 10)
+			g.Expect(err).To(BeNil())
+			for _, p := range test.pipelines {
+				err := ps.db.save(p)
+				g.Expect(err).To(BeNil())
+			}
+			err = ps.db.db.Close()
+			g.Expect(err).To(BeNil())
+
+			err = ps.InitialiseOrRestoreDB(path, 10)
+			g.Expect(err).To(BeNil())
+
+			// make sure we still have the pipelines
+			for _, p := range test.expected {
+				g.Expect(*p).To(Equal(*ps.pipelines[p.Name]))
+			}
+		})
+	}
+}
 func saveWithOutTTL(pipeline *Pipeline, db *badger.DB) error {
 	pipelineProto := CreatePipelineSnapshotFromPipeline(pipeline)
 	pipelineBytes, err := proto.Marshal(pipelineProto)
