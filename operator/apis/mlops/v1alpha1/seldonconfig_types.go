@@ -41,6 +41,8 @@ type SeldonConfigSpec struct {
 }
 
 type SeldonConfiguration struct {
+	// Control scaling parameters for various components
+	ScalingConfig ScalingConfig      `json:"scalingConfig,omitempty"`
 	TracingConfig TracingConfig      `json:"tracingConfig,omitempty"`
 	KafkaConfig   KafkaConfig        `json:"kafkaConfig,omitempty"`
 	AgentConfig   AgentConfiguration `json:"agentConfig,omitempty"`
@@ -77,6 +79,37 @@ type TracingConfig struct {
 	OtelExporterEndpoint string `json:"otelExporterEndpoint,omitempty"`
 	OtelExporterProtocol string `json:"otelExporterProtocol,omitempty"`
 	Ratio                string `json:"ratio,omitempty"`
+}
+
+type ScalingConfig struct {
+	Models  *ModelScalingConfig  `json:"models,omitempty"`
+	Servers *ServerScalingConfig `json:"servers,omitempty"`
+	// Scaling config impacting pipeline-gateway, dataflow-engine and model-gateway
+	Pipelines *PipelineScalingConfig `json:"pipelines,omitempty"`
+}
+
+type ModelScalingConfig struct {
+	Enable bool `json:"enabled,omitempty"`
+}
+
+type ServerScalingConfig struct {
+	Enable                     bool  `json:"enabled,omitempty"`
+	ScaleDownPackingEnabled    bool  `json:"scaleDownPackingEnabled,omitempty"`
+	ScaleDownPackingPercentage int32 `json:"scaleDownPackingPercentage,omitempty"`
+}
+
+type PipelineScalingConfig struct {
+	// MaxShardCountMultiplier influences the way the inferencing workload is sharded over the
+	// replicas of pipeline components.
+	//
+	// - For each of pipeline-gateway and dataflow-engine, the max number of replicas is
+	//   `maxShardCountMultiplier * number of pipelines`
+	// - For model-gateway, the max number of replicas is
+	//   `maxShardCountMultiplier * number of consumers`
+	//
+	// It doesn't make sense to set this to a value larger than the number of partitions for kafka
+	// topics used in the Core 2 install.
+	MaxShardCountMultiplier int32 `json:"maxShardCountMultiplier,omitempty"`
 }
 
 type ComponentDefn struct {
@@ -135,6 +168,7 @@ func (s *SeldonConfiguration) AddDefaults(defaults SeldonConfiguration) {
 	s.KafkaConfig.addDefaults(defaults.KafkaConfig)
 	s.AgentConfig.addDefaults(defaults.AgentConfig)
 	s.ServiceConfig.addDefaults(defaults.ServiceConfig)
+	s.ScalingConfig.addDefaults(defaults.ScalingConfig)
 }
 
 func (k *KafkaConfig) addDefaults(defaults KafkaConfig) {
@@ -181,6 +215,18 @@ func (k *KafkaConfig) addDefaults(defaults KafkaConfig) {
 	}
 	if k.TopicPrefix == "" {
 		k.TopicPrefix = defaults.TopicPrefix
+	}
+}
+
+func (sc *ScalingConfig) addDefaults(defaults ScalingConfig) {
+	if sc.Models == nil && defaults.Models != nil {
+		sc.Models = defaults.Models
+	}
+	if sc.Servers == nil && defaults.Servers != nil {
+		sc.Servers = defaults.Servers
+	}
+	if sc.Pipelines == nil && defaults.Pipelines != nil {
+		sc.Pipelines = defaults.Pipelines
 	}
 }
 

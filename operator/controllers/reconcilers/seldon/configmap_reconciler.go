@@ -30,9 +30,10 @@ import (
 )
 
 const (
-	agentConfigMapName = "seldon-agent"
-	kafkaConfigMapName = "seldon-kafka"
-	traceConfigMapName = "seldon-tracing"
+	agentConfigMapName   = "seldon-agent"
+	scalingConfigMapName = "seldon-scaling"
+	kafkaConfigMapName   = "seldon-kafka"
+	traceConfigMapName   = "seldon-tracing"
 )
 
 type ConfigMapReconciler struct {
@@ -76,10 +77,15 @@ func toConfigMaps(config *mlopsv1alpha1.SeldonConfiguration, meta metav1.ObjectM
 	if err != nil {
 		return nil, err
 	}
+	scalingConfigMap, err := getScalingConfigMap(config.ScalingConfig, meta.Namespace)
+	if err != nil {
+		return nil, err
+	}
 	return []*v1.ConfigMap{
 		agentConfigMap,
 		kafkaConfigMap,
 		tracingConfigMap,
+		scalingConfigMap,
 	}, nil
 }
 
@@ -95,6 +101,22 @@ func getAgentConfigMap(agentConfig mlopsv1alpha1.AgentConfiguration, namespace s
 		},
 		Data: map[string]string{
 			"agent.yaml": string(agentJson),
+		},
+	}, nil
+}
+
+func getScalingConfigMap(scalingConfig mlopsv1alpha1.ScalingConfig, namespace string) (*v1.ConfigMap, error) {
+	scalingJson, err := yaml.Marshal(scalingConfig)
+	if err != nil {
+		return nil, err
+	}
+	return &v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      scalingConfigMapName,
+			Namespace: namespace,
+		},
+		Data: map[string]string{
+			"scaling.yaml": string(scalingJson),
 		},
 	}, nil
 }
