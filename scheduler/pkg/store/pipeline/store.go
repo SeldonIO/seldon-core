@@ -121,8 +121,11 @@ func (ps *PipelineStore) restorePipeline(pipeline *Pipeline) {
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to set pipeline state for pipeline %s", pipeline.Name)
 	}
+	ps.updatePipelineState(pipeline)
+
 	ps.pipelines[pipeline.Name] = pipeline
 	ps.mu.Unlock()
+
 	pv := pipeline.GetLatestPipelineVersion()
 	if ps.eventHub != nil {
 		ps.eventHub.PublishPipelineEvent(addPipelineEventSource, coordinator.PipelineEventMsg{
@@ -130,6 +133,14 @@ func (ps *PipelineStore) restorePipeline(pipeline *Pipeline) {
 			PipelineVersion: pv.Version,
 			UID:             pv.UID,
 		})
+	}
+}
+
+func (ps *PipelineStore) updatePipelineState(pipeline *Pipeline) {
+	pv := pipeline.GetLatestPipelineVersion()
+	// We're upgrading from a Core version that did not store PipelineGwStatus
+	if pv.State.PipelineGwStatus == PipelineStatusUnknown {
+		pv.State.PipelineGwStatus = pv.State.Status
 	}
 }
 
