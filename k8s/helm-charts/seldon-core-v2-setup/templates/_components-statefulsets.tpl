@@ -511,6 +511,7 @@ spec:
         - --db-path=/mnt/scheduler/db
         - --allow-plaintxt=$(ALLOW_PLAINTXT)
         - --kafka-config-path=/mnt/kafka/kafka.json
+        - --scaling-config-path=/mnt/scaling/scaling.yaml
         - --scheduler-ready-timeout-seconds=$(SCHEDULER_READY_TIMEOUT_SECONDS)
         - --server-packing-enabled=$(SERVER_PACKING_ENABLED)
         - --server-packing-percentage=$(SERVER_PACKING_PERCENTAGE)
@@ -639,6 +640,8 @@ spec:
         volumeMounts:
         - mountPath: /mnt/kafka
           name: kafka-config-volume
+        - mountPath: /mnt/scaling
+          name: scaling-config-volume
         - mountPath: /mnt/tracing
           name: tracing-config-volume
         - mountPath: /mnt/scheduler
@@ -652,6 +655,9 @@ spec:
       serviceAccountName: seldon-scheduler
       terminationGracePeriodSeconds: 5
       volumes:
+      - configMap:
+          name: seldon-scaling
+        name: scaling-config-volume
       - configMap:
           name: seldon-kafka
         name: kafka-config-volume
@@ -1306,6 +1312,18 @@ spec:
       topics:
         numPartitions: '{{ .Values.kafka.topics.numPartitions }}'
         replicationFactor: '{{ .Values.kafka.topics.replicationFactor }}'
+    scalingConfig:
+      models:
+        enabled: {{ .Values.autoscaling.autoscalingModelEnabled }}
+      pipelines:
+        maxShardCountMultiplier: {{ .Values.kafka.topics.numPartitions
+          }}
+      servers:
+        enabled: {{ .Values.autoscaling.autoscalingServerEnabled }}
+        scaleDownPackingEnabled: {{ .Values.autoscaling.serverPackingEnabled
+          }}
+        scaleDownPackingPercentage: {{ .Values.autoscaling.serverPackingPercentage
+          }}
     serviceConfig:
       grpcServicePrefix: '{{ .Values.services.serviceGRPCPrefix }}'
       serviceType: '{{ .Values.services.defaultServiceType }}'
