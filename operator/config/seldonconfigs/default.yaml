@@ -45,12 +45,12 @@ spec:
           - containerPort: 8000
             name: health
         startupProbe:
-          failureThreshold: 3
+          failureThreshold: 10
           httpGet:
             path: /startup
             port: health
-          initialDelaySeconds: 3
-          periodSeconds: 5
+          initialDelaySeconds: 10
+          periodSeconds: 10
         readinessProbe:
           failureThreshold: 3
           httpGet:
@@ -184,9 +184,9 @@ spec:
           httpGet:
             path: /startup
             port: health
-          initialDelaySeconds: 3
-          periodSeconds: 5
-          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 10
         readinessProbe:
           httpGet:
             path: /ready
@@ -286,9 +286,9 @@ spec:
           httpGet:
             path: /startup
             port: health
-          initialDelaySeconds: 3
-          periodSeconds: 5
-          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 10
         readinessProbe:
           httpGet:
             path: /ready
@@ -399,12 +399,14 @@ spec:
             port: health
           periodSeconds: 5
           failureThreshold: 3
+          initialDelaySeconds: 10
         livenessProbe:
           httpGet:
             path: /live
             port: health
           periodSeconds: 5
           failureThreshold: 3
+          initialDelaySeconds: 10
         resources:
           limits:
             memory: 1G

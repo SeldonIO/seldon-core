@@ -607,6 +607,7 @@ spec:
           httpGet:
             path: /live
             port: health
+          initialDelaySeconds: 10
           periodSeconds: 5
         name: scheduler
         ports:
@@ -630,6 +631,7 @@ spec:
           httpGet:
             path: /ready
             port: health
+          initialDelaySeconds: 10
           periodSeconds: 5
         resources:
           limits:
@@ -833,12 +835,12 @@ spec:
             cpu: '{{ .Values.pipelinegateway.resources.cpu }}'
             memory: '{{ .Values.pipelinegateway.resources.memory }}'
         startupProbe:
-          failureThreshold: 3
+          failureThreshold: 10
           httpGet:
             path: /startup
             port: health
-          initialDelaySeconds: 3
-          periodSeconds: 5
+          initialDelaySeconds: 10
+          periodSeconds: 10
         volumeMounts:
         - mountPath: /mnt/kafka
           name: kafka-config-volume
@@ -997,12 +999,12 @@ spec:
             cpu: '{{ .Values.modelgateway.resources.cpu }}'
             memory: '{{ .Values.modelgateway.resources.memory }}'
         startupProbe:
-          failureThreshold: 3
+          failureThreshold: 10
           httpGet:
             path: /startup
             port: health
-          initialDelaySeconds: 3
-          periodSeconds: 5
+          initialDelaySeconds: 10
+          periodSeconds: 10
         volumeMounts:
         - mountPath: /mnt/kafka
           name: kafka-config-volume
@@ -1266,12 +1268,12 @@ spec:
             cpu: '{{ .Values.dataflow.resources.cpu }}'
             memory: '{{ .Values.dataflow.resources.memory }}'
         startupProbe:
-          failureThreshold: 3
+          failureThreshold: 10
           httpGet:
             path: /startup
             port: health
-          initialDelaySeconds: 3
-          periodSeconds: 5
+          initialDelaySeconds: 10
+          periodSeconds: 10
         volumeMounts:
         - mountPath: /mnt/schema-registry
           name: kafka-schema-volume
