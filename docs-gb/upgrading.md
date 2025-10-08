@@ -1,5 +1,13 @@
 # Upgrading
 
+## Upgrading from 2.9 - 2.10
+
+All CRD changes maintain backward compatibility with existing CRs. We introduce new Core 2 scaling configuration options in SeldonConfig (`config.ScalingConfig.*`), with a wider goal of centralising Core 2 configuration and allowing for configuration changes after the Core 2 cluster is deployed. To ensure a smooth transition, some of the configuration options will only take effect starting from the next releases, but end-users are encouraged to set them to the desired values before upgrading to the next release (2.11).
+
+Upgrading when using helm is seamless, with existing helm values being used to fill in new configuration options. If not using helm, previous SeldonConfig CRs remain valid, but restrictive defaults will be used for the scaling configuration. One parameter in particular, maxShardCountMultiplier [docs](https://docs.seldon.ai/seldon-core-2/user-guide/performance-tuning/pipelines/scalability-pipelines) will need to be set in order to take advantage of the new pipeline scalability features. This parameter can be changed and the effects of its value will be propagated to all components that use the config. 
+
+For full release notes, see [here](https://github.com/SeldonIO/seldon-core/releases/tag/v2.10.0).
+
 ## Upgrading from 2.8 - 2.9
 
 Though there are no breaking changes between 2.8 and 2.9, there are some new functionalties offered that require changes to fields in our CRDs:
