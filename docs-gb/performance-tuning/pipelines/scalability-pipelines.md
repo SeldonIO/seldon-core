@@ -6,31 +6,48 @@ This guide explains **how scaling works**, **what configuration controls it**, a
 
 ## 1. How scaling works (at a glance)
 
-| Component            | What it scales with                                                       | Max replicas used                                                 |
-|----------------------|---------------------------------------------------------------------------|-------------------------------------------------------------------|
-| **Dataflow engine**  | `#pipelines × #Kafka partitions` (capped by replicas)                     | `min(replicas, pipelines × partitions)`                           |
-| **Model gateway**    | `#models × #Kafka partitions` (capped by replicas and maxNumConsumers)    | `min(replicas, min(models, maxNumConsumers) × partitions)`        |
-| **Pipeline gateway** | `#pipelines × #Kafka partitions` (capped by replicas and maxNumConsumers) | `min(replicas, min(pipelines, maxNumConsumers) × partitions)`     |
+| Component            | What it scales with (max `maxShardCountMultiplier` = #partitions )              | Max replicas used                                                 |
+|----------------------|---------------------------------------------------------------------------------|-------------------------------------------------------------------|
+| **Dataflow engine**  | `#pipelines × maxShardCountMultiplier` (capped by configured replicas)          | `min(replicas, pipelines × partitions)`                           |
+| **Model gateway**    | `#models × maxShardCountMultiplier` (capped by replicas and maxNumConsumers)    | `min(replicas, min(models, maxNumConsumers) × partitions)`        |
+| **Pipeline gateway** | `#pipelines × maxShardCountMultiplier` (capped by replicas and maxNumConsumers) | `min(replicas, min(pipelines, maxNumConsumers) × partitions)`     |
 
 
 Each pipeline/model **is loaded only on a subset of replicas**, and **automatically rebalanced** when:
 1. You **scale replicas up/down**
 2. You **deploy or delete pipelines / models**
 
+The configuration parameter determining the maximum number of component replicas on which a
+pipeline/model can be loaded is `maxShardCountMultiplier`. It can be set in `SeldonConfig` under
+`config.scalingConfig.pipelines.maxShardCountMultiplier`. For installs via helm, the value of
+this parameter defaults to `{{ .Values.kafka.topics.numPartitions }}`. In fact, the number of
+kafka partitions per topic is the maximum value that `maxShardCountMultiplier` should be set to.
+Increasing this value beyond the number of kafka partitions not only does not bring any
+additional performance benefits, but may actually lead to dropped requests due to the extra
+replicas receiving requests but managing no kafka partitions within their consumer groups.
+
+This parameter may be changed during cluster operation, with the new value being propagated to
+all components over a ~1 minute interval. Changing this value will cause pipelines/models to be
+rebalanced across the `dataflow-engine`, `model-gateway`, and `pipeline-gateway` replicas and
+may lead to downtime depending on the configured kafka partition assignment strategy. If the
+used Kafka version supports cooperative rebalancing of consumer groups, then setting the
+partition assignment strategy to `cooperative-sticky` will ensure that rebalancing happens with
+minimal disruption. `dataflow-engine` uses a cooperative rebalancing strategy by default.
+
 You **do not** need to manually assign work — it’s handled automatically.
 
 ## 2. Scaling the dataflow engine
 
-**Dataflow engine** is responsible for **executing pipeline logic**. Core 2 now supports running **multiple pipelines in parallel across multiple dataflow engine replicas**.
+**Dataflow engine** is responsible for **executing pipeline logic** and moving data between pipeline stages. Core 2 now supports running **multiple pipelines in parallel across multiple dataflow engine replicas**.
 
 ### 2.1. What controls scaling?
 
 You control scaling using:
 
-| Config                             | Location        | Purpose                                                        |
-|------------------------------------|-----------------|----------------------------------------------------------------|
-| `spec.replicas`                    | `SeldonRuntime` | Maximum number of dataflow engine instances                    | 
-| `kafkaConfig.topics.numPartitions` | `SeldonConfig`  | Determines max replication per pipeline (`#Kafka partitions`)  |
+| Config                                                   | Location        | Purpose                                                                      |
+|----------------------------------------------------------|-----------------|------------------------------------------------------------------------------|
+| `spec.replicas`                                          | `SeldonRuntime` | Maximum number of dataflow engine instances                                  |
+| `config.scalingConfig.pipelines.maxShardCountMultiplier` | `SeldonConfig`  | Determines max replication per pipeline (max possible: `#Kafka partitions`)  |
 
 ### 2.2. How many replicas will actually be used?
 
@@ -40,18 +57,18 @@ $\text{FinalReplicaCount} = \min(\text{spec.replicas},\ \text{pipelines} \times 
 
 **Example**
 
-| Pipelines deployed | Kafka partitions	 | spec.replicas	 | Final dataflow replicas used      |
-|--------------------|-------------------|-------------------|-----------------------------------|
-| 3	                 | 4                 | 9	             | `min(9, 3 x 4 = 12)` → 9 replicas |
-| 2	                 | 4	             | 9         	     | `min(9, 2 x 4 = 8)` → 8 replicas  |
-| 1                  | 4                 | 9	             | `min(9. 1 x 4 = 4)` → 4 replicas  |
+| Pipelines deployed | maxShardCountMultiplier | spec.replicas	 | Final dataflow replicas used      |
+|--------------------|-------------------------|-----------------|-----------------------------------|
+| 3	                 | 4                       | 9	             | `min(9, 3 x 4 = 12)` → 9 replicas |
+| 2	                 | 4	                   | 9         	     | `min(9, 2 x 4 = 8)` → 8 replicas  |
+| 1                  | 4                       | 9	             | `min(9. 1 x 4 = 4)` → 4 replicas  |
 
 **Note**: Unused replicas are automatically scaled down. As more pipelines are added, dataflow engine automatically scales up, capped by the maximum number of replicas.
 
 ### 2.3. How are pipeline assigned to replicas?
 
 - Core 2 uses **consistent hashing** to distribute pipelines evenly across dataflow replicas. This ensures a **balanced workload**, but it does *not* guarantee a perfect one-to-one mapping.
-    - Even if the number of replicas equals `pipelines × partitions`, some replicas may host **multiple pipelines** while others may **host none**, depending on how the hash falls. In practice, the distribution is **statistically uniform**, not strictly exact.
+    - Even if the number of replicas equals `pipelines × partitions`, small imbalances between the number of pipelines handled by each replica may exist. In practice, the distribution is **statistically uniform**.
 - Each pipeline is **replicated across multiple dataflow engines** (up to number of Kafka partitions).
 - When instances are added or removed, **pipelines are automatically rebalanced**.
 
@@ -59,7 +76,7 @@ $\text{FinalReplicaCount} = \min(\text{spec.replicas},\ \text{pipelines} \times 
 
 ### 2.4. Loading/unloading of the pipelines from dataflow engine
 
-- Loading/unloading of the pipeline from the dataflow engine is performed when the model CR is loaded/unloaded.
+- Loading/unloading of the pipeline from the dataflow engine is performed when the pipeline CR is loaded/unloaded.
 - The scheduler confirms whether the loading/unloading was performed successfully through the `Pipeline` status under the CR.
 
 Rebalancing happens in the background — you don’t need to intervene.
@@ -72,26 +89,26 @@ The **model gateway** is responsible for routing inference requests to models wh
 
 ### 3.1. What controls scaling?
 
-| Config	                         | Location	                                                | Purpose                                                    |
-|------------------------------------|----------------------------------------------------------|------------------------------------------------------------|
-| `spec.replcias`	                 | `SeldonRuntime`	                                        | Maximum number of model gateway instances                  |
-| `kafkaConfig.topics.numPartitions` | `SeldonConfig`	                                        | Determines max replication per model (`#Kafka partitions`) |
-| `maxNumConsumers`	                 | `SeldonConfig` - model gateway enc var (default: 100)	| Caps how many distinct consumer groups can exist           |
+| Config	                                               | Location	                                                | Purpose                                                    |
+|----------------------------------------------------------|------------------------------------------------------------|------------------------------------------------------------|
+| `spec.replcias`	                                       | `SeldonRuntime`	                                        | Maximum number of model gateway instances                  |
+| `config.scalingConfig.pipelines.maxShardCountMultiplier` | `SeldonConfig`	                                            | Determines max replication per model (`#Kafka partitions`) |
+| `maxNumConsumers`	                                       | `SeldonConfig` - model gateway enc var (default: 100)   	| Caps how many distinct consumer groups can exist           |
 
 ### 3.2. How many replicas will actually be used?
 
-Model gateway replicas are dynamically adjusted based on **number of models deployed**, **Kafka partitions**, and **maxNumConsumers**. The final number of model gateway replicas is given by: 
+Model gateway replicas are dynamically adjusted based on **number of models deployed**, **Kafka partitions**, and **maxNumConsumers**. The final number of model gateway replicas is given by:
 
 $\text{FinalReplicaCount} = \min(\text{spec.replicas},\ \min(\text{models}, \text{maxNumConsumers}) \times \text{partitions})$
 
 **Example**
 
-| Models Deployed |	Kafka Partitions | spec.replicas | maxNumConsumers | Final model gateway replicas                       |
-|-----------------|------------------|---------------|-----------------|----------------------------------------------------|
-| 5	              | 4	             | 20	         | 100	           | `min(20, min(5, 100) x 4 = 20) = 20` → 20 replicas |
-| 1	              | 4	             | 20	         | 100	           | `min(20, min(1, 100) x 4 = 4) = 4` → 4 replicas    |
+| Models Deployed |	maxShardCountMultiplier | spec.replicas  | maxNumConsumers | Final model gateway replicas                       |
+|-----------------|-------------------------|----------------|-----------------|----------------------------------------------------|
+| 5	              | 4	                    | 20	         | 100	           | `min(20, min(5, 100) x 4 = 20) = 20` → 20 replicas |
+| 1	              | 4	                    | 20	         | 100	           | `min(20, min(1, 100) x 4 = 4) = 4` → 4 replicas    |
 
-**Note:** If you remove models, the model gateway automatically scales down, and if we add model, the model gateway automatically scales up, capped by the maximum number of replicas.
+**Note:** If you remove models, the model gateway automatically scales down, and if we add models, the model gateway automatically scales up, capped by the maximum number of replicas.
 
 ### 3.3. How are models assigned to replicas?
 
@@ -104,9 +121,9 @@ Model gateway doesn’t load every model on every replica but only on a subset o
 
 Rebalancing happens in the background — you don’t need to intervene.
 
-**Note:** `ModelGw` status does not represent a condition for the model to be available. If the loading was successful on the dedicated servers, the model itself is ready for inference. 
+**Note:** `ModelGw` status does not represent a condition for the model to be available. If the loading was successful on the dedicated servers, the model itself is ready for inference.
 
-- The `ModelGw` status becomes relevant for pipeline and whether the end user wants to perform inference via the async path (i.e., writing the requests in the model input topic and reading the responses from the model output topic from Kafka).
+- The `ModelGw` status becomes relevant for pipelines, or whether the end user wants to perform inference via the async path (i.e., writing the requests in the model input topic and reading the responses from the model output topic from Kafka).
 - In the context of pipelines, the `ModelReady` status becomes a conjunction on whether the model is available on servers and if the model has been loaded successfully on the model gateway.
 
 ## 4. Scaling the pipeline gateway
@@ -115,25 +132,25 @@ The **pipeline gateway** is responsible for writing the requests in the input to
 
 ### 4.1. What Controls Scaling?
 
-| Config	                        | Location	                                               | Purpose                                                      |
-|-----------------------------------|----------------------------------------------------------|--------------------------------------------------------------|
-| `spec.replcias`	                | `SeldonRuntime`	                                       | Maximum number of pipeline gateway instances                 |
-| `kafkaConfig.topics.numPartitions`| `SeldonConfig`	                                       | Determines max replication per pipeline (`# Kafka partitions`)  |
-| `maxNumConsumers`	                | `SeldonConfig` - Pipeline gateway enc var (default: 100) | Caps how many distinct consumer groups can exist             |
+| Config	                                              | Location	                                               | Purpose                                                        |
+|---------------------------------------------------------|------------------------------------------------------------|----------------------------------------------------------------|
+| `spec.replcias`	                                      | `SeldonRuntime`	                                           | Maximum number of pipeline gateway instances                   |
+| `config.scalingConfig.pipelines.maxShardCountMultiplier`| `SeldonConfig`	                                           | Determines max replication per pipeline (`# Kafka partitions`) |
+| `maxNumConsumers`	                                      | `SeldonConfig` - Pipeline gateway enc var (default: 100)   | Caps how many distinct consumer groups can exist               |
 
 ### 4.2. How many replicas will actually be used?
 
-Pipeline gateway replicas are dynamically adjusted based on **number of pipelines deployed**, **Kafka partitions**, and **maxNumConsumers**. The final number of pipeline gateway replicas is given by: 
+Pipeline gateway replicas are dynamically adjusted based on **number of pipelines deployed**, **Kafka partitions**, and **maxNumConsumers**. The final number of pipeline gateway replicas is given by:
 
 $\text{FinalReplicaCount} = \min(\text{spec.replicas},\ \min(\text{pipelines}, \text{maxNumConsumers}) \times \text{partitions})$
 
 **Example**
 
-| Pipelines Deployed | Kafka Partitions	| spec.replicas	| maxNumConsumers	| Final pipeline gateway replicas                    |
-|--------------------|------------------|---------------|-------------------|----------------------------------------------------|   
-| 8	                 | 4	            | 10	        | 100	            | `min(10, min(8, 100) x 4 = 32) = 10` → 10 replicas |
-| 2	                 | 4	            | 10	        | 100	            | `min(10, min(2, 100) x 4 = 8) = 8` → 8 replicas    | 
-| 1	                 | 4	            | 10	        | 100	            | `min(10, min(1, 100) x 4 = 4) = 4`→ 4 replicas     |
+| Pipelines Deployed | maxShardCountMultiplier	| spec.replicas	| maxNumConsumers	| Final pipeline gateway replicas                    |
+|--------------------|--------------------------|---------------|-------------------|----------------------------------------------------|
+| 8	                 | 4	                    | 10	        | 100	            | `min(10, min(8, 100) x 4 = 32) = 10` → 10 replicas |
+| 2	                 | 4	                    | 10	        | 100	            | `min(10, min(2, 100) x 4 = 8) = 8` → 8 replicas    |
+| 1	                 | 4	                    | 10	        | 100	            | `min(10, min(1, 100) x 4 = 4) = 4`→ 4 replicas     |
 
 
 **Note:** Similarly to dataflow engine, pipeline gateway scales up and down as pipeline are added and removed.
@@ -142,9 +159,9 @@ $\text{FinalReplicaCount} = \min(\text{spec.replicas},\ \min(\text{pipelines}, \
 
 Pipeline gateway doesn’t load every pipeline on every replica but only on a subset of replicas. The same principle as for dataflow engine and model gateway applies for pipeline gateway (sharding through consistent hashing).
 
-### 4.4. Loading/unloading of the models from Pipeline Gateway
+### 4.4. Loading/unloading of the pipelines from Pipeline Gateway
 
-- Loading/unloading of the pipeline from the pipeline gateway is performed when the model CR is loaded/unloaded.
+- Loading/unloading of the pipeline from the pipeline gateway is performed when the pipeline CR is loaded/unloaded.
 - The scheduler confirms whether the loading/unloading was performed successfully through the `PipelineGw` status under the CR.
 
 Analogous with the previous services, rebalancing happens in the background — you don’t need to intervene.
