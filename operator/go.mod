@@ -87,8 +87,8 @@ require (
 
 exclude github.com/go-logr/logr v1.0.0
 
-replace k8s.io/client-go => k8s.io/client-go v0.28.4
-
-replace k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20250628140032-d90c4fd18f59
-
-replace golang.org/x/oauth2 => golang.org/x/oauth2 v0.32.0
+replace (
+	k8s.io/client-go => k8s.io/client-go v0.28.4
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20250628140032-d90c4fd18f59
+	golang.org/x/oauth2 => golang.org/x/oauth2 v0.32.0
+)

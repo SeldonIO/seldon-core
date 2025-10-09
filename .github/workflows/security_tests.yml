@@ -3,14 +3,14 @@ name: V1 Security Tests
 on:
   push:
     branches: [ master ]
+  pull_request:
+    branches: [ master ]
   workflow_dispatch:
 
 jobs:
   security-python:
-
     runs-on: ubuntu-latest
     container: snyk/snyk:python-3.8
-
     steps:
     - uses: actions/checkout@v2
     - name: security-python
@@ -21,9 +21,7 @@ jobs:
         snyk test --file=python/setup.py --fail-on=upgradable --severity-threshold=high
 
   security-operator:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: security-operator
@@ -38,9 +36,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   security-executor:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - uses: snyk/actions/setup@master
@@ -61,7 +57,6 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   security-image-executor:
-
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -74,7 +69,6 @@ jobs:
         args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=executor/Dockerfile.executor
 
   security-image-operator:
-
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -87,7 +81,6 @@ jobs:
         args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=operator/Dockerfile
 
   security-image-python-base:
-
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -100,7 +93,6 @@ jobs:
         args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
 
   security-image-python-sklearn:
-
     runs-on: ubuntu-latest
     steps:
     - name: security-image-python-sklearn
@@ -112,7 +104,6 @@ jobs:
         args: --fail-on=upgradable --app-vulns --severity-threshold=high
 
   security-image-python-mlflow:
-
     runs-on: ubuntu-latest
     steps:
     - name: security-image-python-mlflow
@@ -124,7 +115,6 @@ jobs:
         args: --fail-on=upgradable --app-vulns --severity-threshold=high
 
   security-image-python-xgboost:
-
     runs-on: ubuntu-latest
     steps:
     - name: security-image-python-xgboost
@@ -136,7 +126,6 @@ jobs:
         args: --fail-on=upgradable --app-vulns --severity-threshold=high
 
   security-image-alibi-explain:
-
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -149,7 +138,6 @@ jobs:
         args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/alibi-explain-server/Dockerfile
 
   security-image-alibi-detect:
-
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -162,7 +150,6 @@ jobs:
         args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/alibi-detect-server/Dockerfile
 
   security-image-initializer-rclone:
-
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
