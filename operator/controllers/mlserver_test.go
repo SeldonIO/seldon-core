@@ -46,7 +46,9 @@ var _ = Describe("MLServer helpers", func() {
 				},
 			}
 
-			mlServer, _ = getMLServerContainer(pu, "default")
+			var err error
+			mlServer, err = getMLServerContainer(pu, "default")
+			Expect(err).To(BeNil())
 		})
 
 		It("should merge containers adding extra env", func() {

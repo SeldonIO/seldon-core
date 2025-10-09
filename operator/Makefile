@@ -7,8 +7,9 @@ DOCKER_REGISTRY ?= seldonio
 IMAGE_NAME_BASE=seldon-core-operator
 IMG ?= ${DOCKER_REGISTRY}/${IMAGE_NAME_BASE}:${VERSION}
 
-ENVTEST_K8S_VERSION = 1.24
+SUPPORTED_K8S_VERSIONS := 1.23 1.24 1.25 1.26 1.27 1.28 1.29 1.30 1.31 1.32 1.33
 KIND_NAME ?= kind
+
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -39,9 +40,28 @@ lint: licenses/dep.txt
 
 # Run tests
 test: generate fmt vet manifests_all generate-resources envtest
-	ACK_GINKGO_RC=true \
-	ACK_GINKGO_DEPRECATIONS=1.16.4 \
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go tool ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
+	@export ACK_GINKGO_RC=true; \
+	export ACK_GINKGO_DEPRECATIONS=1.16.4; \
+	failed_versions=""; \
+	for k8s_version in $(SUPPORTED_K8S_VERSIONS); do \
+		printf "Testing K8s %s\n" "$$k8s_version"; \
+		if KUBEBUILDER_ASSETS="$$($(ENVTEST) use $$k8s_version -p path)" go test -v ./controllers/... ./utils/... ./apis/... -coverprofile=cover_$$k8s_version.out; then \
+			echo "✓ K8s $$k8s_version passed"; \
+		else \
+			echo "✗ K8s $$k8s_version FAILED"; \
+			failed_versions="$$failed_versions $$k8s_version"; \
+		fi; \
+	done; \
+	if [ -n "$$failed_versions" ]; then \
+		echo ""; \
+		echo "================================================"; \
+		echo "FAILED: Tests failed for K8s versions:$$failed_versions"; \
+		echo "================================================"; \
+		exit 1; \
+	else \
+		echo ""; \
+		echo "✓ All tests passed for all K8s versions!"; \
+	fi
 
 # Build manager binary
 manager: generate fmt vet
@@ -164,7 +184,6 @@ kind-image-install: docker-build
 # find or download controller-gn
 # download controller-gen if necessary
 
-CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
 	go mod tidy
