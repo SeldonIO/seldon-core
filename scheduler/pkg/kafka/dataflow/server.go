@@ -384,7 +384,7 @@ func (c *ChainerServer) createPipelineDeletionMessage(pv *pipeline.PipelineVersi
 		Uid:      pv.UID,
 		Op:       chainer.PipelineUpdateMessage_Delete,
 	}
-	if !keepTopics && pv.DataflowSepec != nil && pv.DataflowSepec.CleanTopicsOnDelete {
+	if !keepTopics && pv.DataflowSpec != nil && pv.DataflowSpec.CleanTopicsOnDelete {
 		// Both topics are always created. The input topic is created
 		// when creating the topics for each step. The output topic
 		// is created when creating the error topic.

@@ -220,7 +220,7 @@ func CreatePipelineVersionFromProto(pipelineProto *scheduler.Pipeline) (*Pipelin
 		Steps:           steps,
 		State:           &PipelineState{},
 		Output:          output,
-		DataflowSepec:   dataflowSpec,
+		DataflowSpec:    dataflowSpec,
 		KubernetesMeta:  kubernetesMeta,
 		AllowCycles:     pipelineProto.AllowCycles,
 		MaxStepRevisits: pipelineProto.MaxStepRevisits,
