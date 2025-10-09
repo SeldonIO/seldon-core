@@ -38,10 +38,10 @@ lint: licenses/dep.txt
 		./licenses
 
 # Run tests
-test: kustomize install-ginkgo generate fmt vet manifests_all generate-resources envtest
+test: generate fmt vet manifests_all generate-resources envtest
 	ACK_GINKGO_RC=true \
 	ACK_GINKGO_DEPRECATIONS=1.16.4 \
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" $(GINKGO) -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go tool ginkgo -r -outputdir=. -cover -coverprofile=cover.out ./controllers ./utils ./apis
 
 # Build manager binary
 manager: generate fmt vet
@@ -65,60 +65,60 @@ manifests_all: manifests manifests_v1_small
 # Install CRDs into a cluster
 # Note use of create to stop too long annotation being created. See https://github.com/kubernetes-sigs/kubebuilder/issues/1140
 install: manifests
-	kustomize build config/crd | kubectl create -f -
+	go tool kustomize build config/crd | kubectl create -f -
 
 # Install CRDs into a cluster
 uninstall: manifests
-	kustomize build config/crd | kubectl delete -f -
+	go tool kustomize build config/crd | kubectl delete -f -
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/default | kubectl apply -f - --force-conflicts=true --server-side=true
+	go tool kustomize build config/default | kubectl apply -f - --force-conflicts=true --server-side=true
 
 undeploy: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/default | kubectl delete -f -
+	go tool kustomize build config/default | kubectl delete -f -
 
 undeploy-namespaced1: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/namespaced1 | kubectl delete -f -
+	go tool kustomize build config/namespaced1 | kubectl delete -f -
 
 undeploy-namespaced2: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/namespaced2 | kubectl delete -f -
+	go tool kustomize build config/namespaced2 | kubectl delete -f -
 
 undeploy-controllerid: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/controllerid | kubectl delete -f -
+	go tool kustomize build config/controllerid | kubectl delete -f -
 
 undeploy-lite: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/lite | kubectl delete -f -
+	go tool kustomize build config/lite | kubectl delete -f -
 
 deploy-local: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/local | kubectl apply -f -
+	go tool kustomize build config/local | kubectl apply -f -
 
 deploy-namespaced1: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/namespaced1 | kubectl apply -f -
+	go tool kustomize build config/namespaced1 | kubectl apply -f -
 
 deploy-namespaced2: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/namespaced2 | kubectl apply -f -
+	go tool  kustomize build config/namespaced2 | kubectl apply -f -
 
 deploy-controllerid: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/controllerid | kubectl apply -f -
+	go tool kustomize build config/controllerid | kubectl apply -f -
 
 deploy-cert: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/cert | kubectl apply -f -
+	go tool kustomize build config/cert | kubectl apply -f -
 
 deploy-lite: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
-	kustomize build config/lite | kubectl apply -f -
+	go tool kustomize build config/lite | kubectl apply -f -
 
 
 # Generate manifests e.g. CRD, RBAC etc.
@@ -128,10 +128,10 @@ deploy-lite: manifests
 # See https://github.com/operator-framework/operator-registry/issues/385
 # Solution may be to drop v1alpha2 and v1alpha3 versions to decrease size by 2/3
 manifests: controller-gen
-	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./apis/machinelearning.seldon.io/..." output:crd:artifacts:config=config/crd/bases crd:crdVersions=v1
+	go tool controller-gen rbac:roleName=manager-role webhook paths="./apis/machinelearning.seldon.io/..." output:crd:artifacts:config=config/crd/bases crd:crdVersions=v1
 
 manifests_v1_small: controller-gen
-	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./apis/machinelearning.seldon.io/v1" output:crd:artifacts:config=config/crd_v1_small/bases crd:crdVersions=v1
+	go tool controller-gen rbac:roleName=manager-role paths="./apis/machinelearning.seldon.io/v1" output:crd:artifacts:config=config/crd_v1_small/bases crd:crdVersions=v1
 
 # Run go fmt against code
 fmt:
@@ -141,22 +141,17 @@ fmt:
 vet:
 	go vet ./...
 
-# Getting Kustomize
-KUSTOMIZE = $(shell pwd)/bin/kustomize
-.PHONY: kustomize
-kustomize: ## Download kustomize locally if necessary.
-	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v4@v4.5.4)
 
 # Generate code
 generate: controller-gen
-	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths="./apis/machinelearning.seldon.io/..."
+	go tool controller-gen object:headerFile=./hack/boilerplate.go.txt paths="./apis/machinelearning.seldon.io/..."
 
 # Generate Clientset
 create-client: test
 	./hack/update-codegen.sh
 
 # Build the docker image
-docker-build: kustomize generate-resources
+docker-build: generate-resources
 	docker build . -t ${IMG}
 
 docker-push:
@@ -172,38 +167,14 @@ kind-image-install: docker-build
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
-	$(call go-get-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.9.2)
+	go mod tidy
 
 
 ENVTEST = $(shell pwd)/bin/setup-envtest
 .PHONY: envtest
 envtest: ## Download envtest-setup locally if necessary.
-	$(call go-get-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@v0.0.0-20221206203637-3da2de04734a)
+	go mod tidy
 
-
-# go-get-tool will 'go get' any package $2 and install it to $1.
-PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
-define go-get-tool
-@[ -f $(1) ] || { \
-set -e ;\
-TMP_DIR=$$(mktemp -d) ;\
-cd $$TMP_DIR ;\
-go mod init tmp ;\
-echo "Downloading $(2)" ;\
-GOBIN=$(PROJECT_DIR)/bin go install $(2) ;\
-rm -rf $$TMP_DIR ;\
-}
-endef
-
-.PHONY: install-ginkgo
-install-ginkgo:
-ifeq (, $(shell command -v ginkgo))
-	go install github.com/onsi/ginkgo/ginkgo@v1.16.4
-
-GINKGO=$(GOBIN)/ginkgo
-else
-GINKGO=$(shell type -p ginkgo)
-endif
 
 WEBHOOK_DIR=/tmp/k8s-webhook-server/serving-certs
 
@@ -247,7 +218,7 @@ licenses: licenses/dep.txt
 generate-resources:
 	rm -rf generated
 	mkdir generated
-	$(KUSTOMIZE) build config/default/ -o generated
+	go tool kustomize build config/default/ -o generated
 	cp generated/apiextensions.k8s.io_v1_customresourcedefinition_seldondeployments.machinelearning.seldon.io.yaml testing/machinelearning.seldon.io_seldondeployments.yaml
 
 config/crd/patches/graph_children.yaml:
@@ -265,7 +236,7 @@ OPENSHIFT_VERSIONS=v4.8-v4.11
 .PHONY: bundle
 recreate_bundle:
 	rm -fr bundle
-	kustomize build config/manifests | operator-sdk --verbose generate bundle --default-channel stable --version ${VERSION} --channels stable
+	go tool kustomize build config/manifests | operator-sdk --verbose generate bundle --default-channel stable --version ${VERSION} --channels stable
 	python hack/csv_hack.py bundle/manifests/seldon-operator.clusterserviceversion.yaml ${VERSION}
 	echo '  com.redhat.openshift.versions: "${OPENSHIFT_VERSIONS}"' >> bundle/metadata/annotations.yaml
 	echo 'LABEL com.redhat.openshift.versions=${OPENSHIFT_VERSIONS}' >> bundle.Dockerfile
