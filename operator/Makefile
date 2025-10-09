@@ -170,7 +170,7 @@ controller-gen: ## Download controller-gen locally if necessary.
 	go mod tidy
 
 
-ENVTEST = $(shell pwd)/bin/setup-envtest
+ENVTEST = go tool setup-envtest
 .PHONY: envtest
 envtest: ## Download envtest-setup locally if necessary.
 	go mod tidy
