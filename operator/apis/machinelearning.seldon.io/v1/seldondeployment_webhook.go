@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package v1
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -312,24 +313,23 @@ func (r *SeldonDeploymentSpec) ValidateSeldonDeployment() error {
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
 // +kubebuilder:webhook:webhookVersions=v1,verbs=create;update,path=/validate-machinelearning-seldon-io-v1-seldondeployment,mutating=false,failurePolicy=fail,sideEffects=None,admissionReviewVersions=v1;v1beta1,groups=machinelearning.seldon.io,resources=seldondeployments,versions=v1,name=v1.vseldondeployment.kb.io
 
-var _ webhook.Validator = &SeldonDeployment{}
+var _ webhook.CustomValidator = &SeldonDeployment{}
 
-// ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *SeldonDeployment) ValidateCreate() (warnings admission.Warnings, err error) {
-	seldondeploymentLog.Info("Validating v1 Webhook called for CREATE", "name", r.Name)
+// ValidateCreate implements webhook.CustomValidator so a webhook will be registered for the type
+func (r *SeldonDeployment) ValidateCreate(_ context.Context, _ runtime.Object) (warnings admission.Warnings, err error) {
+	seldondeploymentLog.Info("Validating v1 Webhook called for CREATE")
 	return []string{}, r.Spec.ValidateSeldonDeployment()
 }
 
-// ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *SeldonDeployment) ValidateUpdate(_ runtime.Object) (warnings admission.Warnings, err error) {
-	seldondeploymentLog.Info("Validating v1 webhook called for UPDATE", "name", r.Name)
+// ValidateUpdate implements webhook.CustomValidator so a webhook will be registered for the type
+func (r *SeldonDeployment) ValidateUpdate(_ context.Context, _, _ runtime.Object) (warnings admission.Warnings, err error) {
+	seldondeploymentLog.Info("Validating v1 webhook called for UPDATE")
 	return []string{}, r.Spec.ValidateSeldonDeployment()
 }
 
-// ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *SeldonDeployment) ValidateDelete() (warnings admission.Warnings, err error) {
+// ValidateDelete implements webhook.CustomValidator so a webhook will be registered for the type
+func (r *SeldonDeployment) ValidateDelete(_ context.Context, _ runtime.Object) (warnings admission.Warnings, err error) {
 	seldondeploymentLog.Info("Validating v1 webhook called for DELETE", "name", r.Name)
-
 	// TODO(user): fill in your validation logic upon object deletion.
 	return []string{}, nil
 }
