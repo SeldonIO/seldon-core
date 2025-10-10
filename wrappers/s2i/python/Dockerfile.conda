@@ -21,7 +21,6 @@ RUN wget https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_
     /bin/bash ~/miniforge.sh -b -p /opt/conda && \
     rm ~/miniforge.sh && \
     /opt/conda/bin/conda init bash && \
-    /opt/conda/bin/conda install -y python=3.10.18 && \
     /opt/conda/bin/conda clean -afy && \
     ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
     echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \

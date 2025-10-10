@@ -19,7 +19,7 @@ SELDON_CORE_DIR = ../../..
 
 # Base images to build the s2i builder images from
 BASE_IMAGE = continuumio/miniconda3
-CONDA_BASE_IMAGE = ${DOCKER_REGISTRY}/conda-ubi8
+CONDA_BASE_IMAGE = ${DOCKER_REGISTRY}/conda-ubi9
 
 .PHONY: get_local_repo
 get_local_repo:
