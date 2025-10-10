@@ -84,6 +84,7 @@ jobs:
         env:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
+        # uses $IMG env var to tag image
           make docker-build
       - name: Scan docker image for CVEs
         uses: snyk/actions/docker@master
@@ -93,7 +94,7 @@ jobs:
           image: ${{ env.IMG }}
           # NOTE: the arg --file=Dockerfile.executor purpose is: Specifying a Dockerfile provides more context and
           # allows Snyk to provide clear recommendations on how to fix discovered vulnerabilities.
-          args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=Dockerfile.executor
+          args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=./executor/Dockerfile.executor
 #
 #  security-image-operator:
 #
