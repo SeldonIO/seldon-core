@@ -77,20 +77,20 @@ jobs:
       - name: Generate and set docker image tag
         run: |
           TAG="executor-test-$(date +%s)-$(openssl rand -hex 4)"
-          echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
+          echo "IMG=$TAG" >> $GITHUB_ENV
           echo "Generated tag: $TAG"
       - name: Build docker image
         working-directory: ./executor/
         env:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
-          IMG=$(IMAGE_TAG) make docker-build
+          make docker-build
       - name: Scan docker image for CVEs
         uses: snyk/actions/docker@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          image: $(IMAGE_TAG)
+          image: ${{ env.IMG }}
           args: --severity-threshold=high
 #
 #  security-image-operator:
