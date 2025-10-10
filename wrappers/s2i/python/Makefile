@@ -3,9 +3,11 @@ VERSION ?= $(shell cat ../../../version.txt)
 
 DOCKER_REGISTRY ?= seldonio
 
-CONDA_DOWNLOAD_VERSION ?= py38_23.3.1-0
-CONDA_VERSION ?= 23.5.0
-PYTHON_VERSION ?= 3.8.10
+CONDA_DOWNLOAD_VERSION ?= py310_25.7.0-2
+CONDA_VERSION ?= 25.7.0
+PYTHON_VERSION ?= 3.10.0
+MINIFORGE_VERSION ?= 24.3.0-0 # 24.1.2-0 3.10.14 # 23.11.0-0 - 3.10.13 # 25.3.1-0 comes with Python 3.12.11
+
 
 IMAGE_PYTHON_VERSION = $(shell echo -n $(PYTHON_VERSION) | cut -d. -f1-2 | sed 's/\.//g')
 DEFAULT_IMAGE_PYTHON_VERSION = $(shell echo -n $(PYTHON_VERSION) | cut -d. -f1)
@@ -28,7 +30,7 @@ get_local_repo:
 
 # Building Conda Base
 docker-build-conda-base:
-	docker build -f Dockerfile.conda --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg CONDA_DOWNLOAD_VERSION=${CONDA_DOWNLOAD_VERSION} -t ${CONDA_BASE_IMAGE}:${VERSION} .
+	docker build -f Dockerfile.conda --build-arg MINIFORGE_VERSION=${MINIFORGE_VERSION} -t ${CONDA_BASE_IMAGE}:${VERSION} .
 
 docker-push-conda-base:
 	docker push ${CONDA_BASE_IMAGE}:${VERSION}
