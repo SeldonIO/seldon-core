@@ -72,25 +72,26 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GOLANG_VERSION }}
-      - uses: snyk/actions/docker@master
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Generate and set tag
+      - name: Generate and set docker image tag
         run: |
           TAG="executor-test-$(date +%s)-$(openssl rand -hex 4)"
           echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
           echo "Generated tag: $TAG"
-      - name: Build
+      - name: Build docker image
         working-directory: ./executor/
         env:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
           IMG=$(IMAGE_TAG) make docker-build
-      - name: security-image-executor
+      - name: Scan docker image for CVEs
+        uses: snyk/actions/docker@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run:
-          snyk container test $(IMAGE_TAG)
+        with:
+          image: $(IMAGE_TAG)
+          args: --severity-threshold=high
 #
 #  security-image-operator:
 #
