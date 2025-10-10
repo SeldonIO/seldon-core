@@ -1,0 +1,194 @@
+name: V1 Security Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+env:
+  GOLANG_VERSION: 1.20.9
+
+jobs:
+#  security-python:
+#
+#    runs-on: ubuntu-latest
+#    container: snyk/snyk:python-3.8
+#
+#    steps:
+#    - uses: actions/checkout@v2
+#    - name: security-python
+#      env:
+#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+#      run: |
+#        pip install -e python/.
+#        snyk test --file=python/setup.py --fail-on=upgradable --severity-threshold=high
+#
+#  security-operator:
+#
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#    - uses: actions/checkout@v2
+#    - name: security-operator
+#      # NOTE: We use the Snyk action (instead of the Snyk base image) so that
+#      # it respects the Go version we use.
+#      uses: snyk/actions/golang@master
+#      with:
+#        args: --fail-on=upgradable
+#          --severity-threshold=high
+#          --file=operator/go.mod
+#      env:
+#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+#
+#  security-executor:
+#
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#    - uses: actions/checkout@v2
+#    - uses: snyk/actions/setup@master
+#    - uses: actions/setup-go@v3
+#      with:
+#        go-version: '^1.17.0'
+#    - name: Set up executor's environmnet
+#      # NOTE: The executor needs a couple extra steps before we can build it,
+#      # like copying the operator's package into the executor's folder so that
+#      # it's accessible.
+#      run: make -C executor/ executor
+#    - name: security-executor
+#      run: snyk test \
+#        --fail-on=upgradable
+#        --severity-threshold=high
+#        --file=executor/go.mod
+#      env:
+#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  security-image-executor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GOLANG_VERSION }}
+      - uses: snyk/actions/docker@master
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Generate and set tag
+        run: |
+          TAG="executor-test-$(date +%s)-$(openssl rand -hex 4)"
+          echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
+          echo "Generated tag: $TAG"
+      - name: Build
+        working-directory: ./executor/
+        env:
+          VERSION: ${{ steps.docker-tag.outputs.value }}
+        run: |
+          IMG=$(IMAGE_TAG) make docker-build
+      - name: security-image-executor
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run:
+          snyk container test $(IMAGE_TAG)
+#
+#  security-image-operator:
+#
+#    runs-on: ubuntu-latest
+#    steps:
+#    - uses: actions/checkout@v2
+#    - name: security-image-operator
+#      uses: snyk/actions/docker@master
+#      env:
+#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+#      with:
+#        image: seldonio/seldon-core-operator:1.18.2
+#        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=operator/Dockerfile
+#
+#  security-image-python-base:
+#
+#    runs-on: ubuntu-latest
+#    steps:
+#    - uses: actions/checkout@v2
+#    - name: security-image-python-base
+#      uses: snyk/actions/docker@master
+#      env:
+#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+#      with:
+#        image: seldonio/seldon-core-s2i-python3:1.18.2
+#        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
+#
+#  security-image-python-sklearn:
+#
+#    runs-on: ubuntu-latest
+#    steps:
+#    - name: security-image-python-sklearn
+#      uses: snyk/actions/docker@master
+#      env:
+#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+#      with:
+#        image: seldonio/sklearnserver:1.18.2
+#        args: --fail-on=upgradable --app-vulns --severity-threshold=high
+#
+#  security-image-python-mlflow:
+#
+#    runs-on: ubuntu-latest
+#    steps:
+#    - name: security-image-python-mlflow
+#      uses: snyk/actions/docker@master
+#      env:
+#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+#      with:
+#        image: seldonio/mlflowserver:1.18.2
+#        args: --fail-on=upgradable --app-vulns --severity-threshold=high
+#
+#  security-image-python-xgboost:
+#
+#    runs-on: ubuntu-latest
+#    steps:
+#    - name: security-image-python-xgboost
+#      uses: snyk/actions/docker@master
+#      env:
+#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+#      with:
+#        image: seldonio/xgboostserver:1.18.2
+#        args: --fail-on=upgradable --app-vulns --severity-threshold=high
+#
+#  security-image-alibi-explain:
+#
+#    runs-on: ubuntu-latest
+#    steps:
+#    - uses: actions/checkout@v2
+#    - name: security-image-alibi-explain
+#      uses: snyk/actions/docker@master
+#      env:
+#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+#      with:
+#        image: seldonio/alibiexplainer:1.18.2
+#        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/alibi-explain-server/Dockerfile
+#
+#  security-image-alibi-detect:
+#
+#    runs-on: ubuntu-latest
+#    steps:
+#    - uses: actions/checkout@v2
+#    - name: security-image-alibi-detect
+#      uses: snyk/actions/docker@master
+#      env:
+#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+#      with:
+#        image: seldonio/alibi-detect-server:1.18.2
+#        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/alibi-detect-server/Dockerfile
+#
+#  security-image-initializer-rclone:
+#
+#    runs-on: ubuntu-latest
+#    steps:
+#    - uses: actions/checkout@v2
+#    - name: security-image-request-logger
+#      uses: snyk/actions/docker@master
+#      env:
+#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+#      with:
+#        image: seldonio/rclone-storage-initializer:1.18.2
+#        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/rclone-storage-initializer/Dockerfile
