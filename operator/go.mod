@@ -44,7 +44,7 @@ require (
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
-	github.com/gobuffalo/flect v0.2.4 // indirect
+	github.com/gobuffalo/flect v0.2.5 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/gnostic-models v0.7.0 // indirect
@@ -116,6 +116,7 @@ replace (
 	k8s.io/apimachinery => k8s.io/apimachinery v0.29.0-alpha.3
 	k8s.io/client-go => k8s.io/client-go v0.28.4
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00
+	sigs.k8s.io/controller-tools => sigs.k8s.io/controller-tools v0.9.2
 	sigs.k8s.io/kustomize/kyaml => sigs.k8s.io/kustomize/kyaml v0.14.3
 )
 

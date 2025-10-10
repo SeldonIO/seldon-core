@@ -23,7 +23,8 @@ const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 // Specifies one or more fully independent input Examples.
 // See examples at:
-//     https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/example/example.proto
+//
+//	https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/example/example.proto
 type ExampleList struct {
 	Examples             []*example.Example `protobuf:"bytes,1,rep,name=examples,proto3" json:"examples,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
@@ -72,50 +73,53 @@ func (m *ExampleList) GetExamples() []*example.Example {
 // See example below with a search query as the context and multiple restaurants
 // to perform some inference on.
 //
-// context: {
-//   features: {
-//     feature: {
-//       key  : "query"
-//       value: {
-//         bytes_list: {
-//           value: [ "pizza" ]
-//         }
-//       }
-//     }
-//   }
-// }
-// examples: {
-//   features: {
-//     feature: {
-//       key  : "cuisine"
-//       value: {
-//         bytes_list: {
-//           value: [ "Pizzeria" ]
-//         }
-//       }
-//     }
-//   }
-// }
-// examples: {
-//   features: {
-//     feature: {
-//       key  : "cuisine"
-//       value: {
-//         bytes_list: {
-//           value: [ "Taqueria" ]
-//         }
-//       }
-//     }
-//   }
-// }
+//	context: {
+//	  features: {
+//	    feature: {
+//	      key  : "query"
+//	      value: {
+//	        bytes_list: {
+//	          value: [ "pizza" ]
+//	        }
+//	      }
+//	    }
+//	  }
+//	}
+//
+//	examples: {
+//	  features: {
+//	    feature: {
+//	      key  : "cuisine"
+//	      value: {
+//	        bytes_list: {
+//	          value: [ "Pizzeria" ]
+//	        }
+//	      }
+//	    }
+//	  }
+//	}
+//
+//	examples: {
+//	  features: {
+//	    feature: {
+//	      key  : "cuisine"
+//	      value: {
+//	        bytes_list: {
+//	          value: [ "Taqueria" ]
+//	        }
+//	      }
+//	    }
+//	  }
+//	}
 //
 // Implementations of ExampleListWithContext merge the context Example into each
 // of the Examples. Note that feature keys must not be duplicated between the
 // Examples and context Example, or the behavior is undefined.
 //
 // See also:
-//     tensorflow/core/example/example.proto
-//     https://developers.google.com/protocol-buffers/docs/proto3#maps
+//
+//	tensorflow/core/example/example.proto
+//	https://developers.google.com/protocol-buffers/docs/proto3#maps
 type ExampleListWithContext struct {
 	Examples             []*example.Example `protobuf:"bytes,1,rep,name=examples,proto3" json:"examples,omitempty"`
 	Context              *example.Example   `protobuf:"bytes,2,opt,name=context,proto3" json:"context,omitempty"`
