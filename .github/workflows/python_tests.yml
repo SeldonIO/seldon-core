@@ -2,7 +2,6 @@ name: V1 Python Tests
 
 on:
   push:
-    branches: [ master ]
   pull_request:
     # TODO revert before merge to master
     branches: [ fix/core-1-CVEs ]
