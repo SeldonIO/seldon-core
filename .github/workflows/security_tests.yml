@@ -88,6 +88,7 @@ jobs:
           make docker-build
       - name: Scan docker image for CVEs
         uses: snyk/actions/docker@master
+        continue-on-error: false
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
