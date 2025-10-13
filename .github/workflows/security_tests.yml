@@ -85,15 +85,14 @@ jobs:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
           make docker-build
-      - name: Scan docker image for CVEs
-        uses: snyk/actions/docker@master
-        continue-on-error: false
+      - uses: snyk/actions/setup@master
+        id: snyk
+        with:
+          snyk-version: v1.391.0
+      - name: Snyk monitor
+        run: snyk test --fail-on=upgradable --app-vulns --severity-threshold=high --file=executor/Dockerfile.executor --docker ${{ env.SELDON_EXECUTOR_IMG }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          image: ${{ env.SELDON_EXECUTOR_IMG }}
-          args: --fail-on=all --app-vulns --severity-threshold=high --file=executor/Dockerfile.executor
-          sarif: false
 #
 #  security-image-operator:
 #
