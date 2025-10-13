@@ -54,7 +54,7 @@ COPY api/rest/openapi/ /openapi/
 RUN chmod -R 666 /openapi/ \
     && chmod 777 /openapi/open-inference
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6-1754000177
 
 WORKDIR /
 COPY --from=builder /workspace/executor .
