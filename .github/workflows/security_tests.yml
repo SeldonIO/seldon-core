@@ -90,7 +90,7 @@ jobs:
         with:
           snyk-version: v1.1300.0
       - name: Snyk monitor
-        run: snyk test --fail-on=all --app-vulns --severity-threshold=high --file=executor/Dockerfile.executor --docker ${{ env.SELDON_EXECUTOR_IMG }}
+        run: cd executor && snyk test --fail-on=all --app-vulns --severity-threshold=high --file=./Dockerfile.executor --docker ${{ env.SELDON_EXECUTOR_IMG }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 #
