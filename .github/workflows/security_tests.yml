@@ -91,7 +91,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          image: ${{ env.IMG }}
+          image: ${{ env.SELDON_EXECUTOR_IMG }}
           args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=./executor/Dockerfile.executor
 #
 #  security-image-operator:
