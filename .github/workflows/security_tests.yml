@@ -85,8 +85,12 @@ jobs:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
           make docker-build
+      - uses: snyk/actions/setup@master
+        id: snyk
+        with:
+          snyk-version: v1.1300.0
       - name: Snyk monitor
-        run: exit 1
+        run: snyk test --fail-on=upgradable --app-vulns --severity-threshold=high --file=executor/Dockerfile.executor --docker ${{ env.SELDON_EXECUTOR_IMG }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 #
