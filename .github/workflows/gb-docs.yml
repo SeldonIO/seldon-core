@@ -2,16 +2,42 @@ name: GB Docs Link Checker
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # every day at midnight UTC
+    - cron: '0 0 */14 * *'  # every two weeks at midnight UTC
   workflow_dispatch:
   pull_request:
     branches:
       - master
-      - v2
 
 jobs:
-  lychee-check:
-    if: github.repository == 'SeldonIO/seldon-core'
+  check-docs-changes:
+    if: github.repository == 'SeldonIO/seldon-core' && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      docs-changed: ${{ steps.changes.outputs.docs }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            docs:
+              - 'docs-gb/**/*.md'
+
+  # Run lychee for schedule and manual dispatch
+  lychee-check-always:
+    if: github.repository == 'SeldonIO/seldon-core' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Lychee link checker on docs-gb
+        uses: lycheeverse/lychee-action@v1.10.0
+        with:
+          args: --verbose --no-progress docs-gb/**/*.md
+
+  # Run lychee for PRs only if docs changed
+  lychee-check-pr:
+    if: github.repository == 'SeldonIO/seldon-core' && github.event_name == 'pull_request' && needs.check-docs-changes.outputs.docs-changed == 'true'
+    needs: [check-docs-changes]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
