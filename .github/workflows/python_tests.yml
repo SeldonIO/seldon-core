@@ -10,17 +10,10 @@ jobs:
   python-tests:
 
     runs-on: ubuntu-latest
+    container: seldonio/python-builder:0.8
 
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Build python builder image
-      run: docker build -t seldonio/python-builder:ci python-builder
-   
+    - uses: actions/checkout@v2
     - name: test-python
       run: |
-        docker run --rm \
-          -v "${{ github.workspace }}:/work" \
-          -w /work \
-          seldonio/python-builder:ci \
-          bash -lc "make -C python update_package install_dev test"
+        make -C python update_package install_dev test
