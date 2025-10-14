@@ -11,67 +11,22 @@ env:
   GOLANG_VERSION: 1.20.9
 
 jobs:
-#  security-python:
-#
-#    runs-on: ubuntu-latest
-#    container: snyk/snyk:python-3.8
-#
-#    steps:
-#    - uses: actions/checkout@v2
-#    - name: security-python
-#      env:
-#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-#      run: |
-#        pip install -e python/.
-#        snyk test --file=python/setup.py --fail-on=upgradable --severity-threshold=high
-#
-#  security-operator:
-#
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#    - uses: actions/checkout@v2
-#    - name: security-operator
-#      # NOTE: We use the Snyk action (instead of the Snyk base image) so that
-#      # it respects the Go version we use.
-#      uses: snyk/actions/golang@master
-#      with:
-#        args: --fail-on=upgradable
-#          --severity-threshold=high
-#          --file=operator/go.mod
-#      env:
-#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-#
-#  security-executor:
-#
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#    - uses: actions/checkout@v2
-#    - uses: snyk/actions/setup@master
-#    - uses: actions/setup-go@v3
-#      with:
-#        go-version: '^1.17.0'
-#    - name: Set up executor's environmnet
-#      # NOTE: The executor needs a couple extra steps before we can build it,
-#      # like copying the operator's package into the executor's folder so that
-#      # it's accessible.
-#      run: make -C executor/ executor
-#    - name: security-executor
-#      run: snyk test \
-#        --fail-on=upgradable
-#        --severity-threshold=high
-#        --file=executor/go.mod
-#      env:
-#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  security-python:
+    runs-on: ubuntu-latest
+    container: snyk/snyk:python-3.8
+    steps:
+    - uses: actions/checkout@v2
+    - name: security-python
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      run: |
+        pip install -e python/.
+        snyk test --file=python/setup.py --fail-on=upgradable --severity-threshold=high
 
   security-image-executor:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v3
-        with:
-          go-version: ${{ env.GOLANG_VERSION }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Generate and set docker image tag
@@ -93,44 +48,56 @@ jobs:
         with:
           image: ${{ env.SELDON_EXECUTOR_IMG }}
           args: --app-vulns --severity-threshold=high --file=executor/Dockerfile.executor
-#
-#  security-image-operator:
-#
-#    runs-on: ubuntu-latest
-#    steps:
-#    - uses: actions/checkout@v2
-#    - name: security-image-operator
-#      uses: snyk/actions/docker@master
-#      env:
-#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-#      with:
-#        image: seldonio/seldon-core-operator:1.18.2
-#        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=operator/Dockerfile
-#
-#  security-image-python-base:
-#
-#    runs-on: ubuntu-latest
-#    steps:
-#    - uses: actions/checkout@v2
-#    - name: security-image-python-base
-#      uses: snyk/actions/docker@master
-#      env:
-#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-#      with:
-#        image: seldonio/seldon-core-s2i-python3:1.18.2
-#        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
-#
-#  security-image-python-sklearn:
-#
-#    runs-on: ubuntu-latest
-#    steps:
-#    - name: security-image-python-sklearn
-#      uses: snyk/actions/docker@master
-#      env:
-#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-#      with:
-#        image: seldonio/sklearnserver:1.18.2
-#        args: --fail-on=upgradable --app-vulns --severity-threshold=high
+
+  security-image-operator:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Generate and set docker image tag
+      run: |
+        TAG="operator-test-$(date +%s)-$(openssl rand -hex 4)"
+        echo "SELDON_OPERATOR_IMG=$TAG" >> $GITHUB_ENV
+        echo "Generated tag: SELDON_OPERATOR_IMG"
+    - name: Build docker image
+      env:
+        VERSION: ${{ steps.docker-tag.outputs.value }}
+      run: |
+        make docker-build
+    - name: Scan docker image for CVEs
+      uses: snyk/actions/docker@master
+      continue-on-error: false
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: ${{ env.SELDON_OPERATOR_IMG }}
+        args:  --app-vulns --severity-threshold=high --file=operator/Dockerfile
+
+
+  security-image-python-base:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: security-image-python-base
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/seldon-core-s2i-python3:1.18.2
+        args:  --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
+
+  security-image-python-sklearn:
+    runs-on: ubuntu-latest
+    steps:
+    - name: security-image-python-sklearn
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: seldonio/sklearnserver:1.18.2
+        args: --fail-on=upgradable --app-vulns --severity-threshold=high
+
 #
 #  security-image-python-mlflow:
 #

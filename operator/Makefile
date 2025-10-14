@@ -5,7 +5,7 @@ VERSION ?= $(shell cat ../version.txt)
 DOCKER_REGISTRY ?= seldonio
 
 IMAGE_NAME_BASE=seldon-core-operator
-IMG ?= ${DOCKER_REGISTRY}/${IMAGE_NAME_BASE}:${VERSION}
+SELDON_OPERATOR_IMG ?= ${DOCKER_REGISTRY}/${IMAGE_NAME_BASE}:${VERSION}
 
 SUPPORTED_K8S_VERSIONS := 1.23 1.24 1.25 1.26 1.27 1.28 1.29 1.30 1.31 1.32 1.33
 KIND_NAME ?= kind
@@ -26,7 +26,7 @@ endif
 
 .PHONY:show_image
 show_image:
-	echo ${IMG}
+	echo ${SELDON_OPERATOR_IMG}
 
 all: manager
 
@@ -93,51 +93,51 @@ uninstall: manifests
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: manifests
-	cd config/manager && kustomize edit set image controller=${IMG}
+	cd config/manager && kustomize edit set image controller=${SELDON_OPERATOR_IMG}
 	go tool kustomize build config/default | kubectl apply -f - --force-conflicts=true --server-side=true
 
 undeploy: manifests
-	cd config/manager && kustomize edit set image controller=${IMG}
+	cd config/manager && kustomize edit set image controller=${SELDON_OPERATOR_IMG}
 	go tool kustomize build config/default | kubectl delete -f -
 
 undeploy-namespaced1: manifests
-	cd config/manager && kustomize edit set image controller=${IMG}
+	cd config/manager && kustomize edit set image controller=${SELDON_OPERATOR_IMG}
 	go tool kustomize build config/namespaced1 | kubectl delete -f -
 
 undeploy-namespaced2: manifests
-	cd config/manager && kustomize edit set image controller=${IMG}
+	cd config/manager && kustomize edit set image controller=${SELDON_OPERATOR_IMG}
 	go tool kustomize build config/namespaced2 | kubectl delete -f -
 
 undeploy-controllerid: manifests
-	cd config/manager && kustomize edit set image controller=${IMG}
+	cd config/manager && kustomize edit set image controller=${SELDON_OPERATOR_IMG}
 	go tool kustomize build config/controllerid | kubectl delete -f -
 
 undeploy-lite: manifests
-	cd config/manager && kustomize edit set image controller=${IMG}
+	cd config/manager && kustomize edit set image controller=${SELDON_OPERATOR_IMG}
 	go tool kustomize build config/lite | kubectl delete -f -
 
 deploy-local: manifests
-	cd config/manager && kustomize edit set image controller=${IMG}
+	cd config/manager && kustomize edit set image controller=${SELDON_OPERATOR_IMG}
 	go tool kustomize build config/local | kubectl apply -f -
 
 deploy-namespaced1: manifests
-	cd config/manager && kustomize edit set image controller=${IMG}
+	cd config/manager && kustomize edit set image controller=${SELDON_OPERATOR_IMG}
 	go tool kustomize build config/namespaced1 | kubectl apply -f -
 
 deploy-namespaced2: manifests
-	cd config/manager && kustomize edit set image controller=${IMG}
+	cd config/manager && kustomize edit set image controller=${SELDON_OPERATOR_IMG}
 	go tool  kustomize build config/namespaced2 | kubectl apply -f -
 
 deploy-controllerid: manifests
-	cd config/manager && kustomize edit set image controller=${IMG}
+	cd config/manager && kustomize edit set image controller=${SELDON_OPERATOR_IMG}
 	go tool kustomize build config/controllerid | kubectl apply -f -
 
 deploy-cert: manifests
-	cd config/manager && kustomize edit set image controller=${IMG}
+	cd config/manager && kustomize edit set image controller=${SELDON_OPERATOR_IMG}
 	go tool kustomize build config/cert | kubectl apply -f -
 
 deploy-lite: manifests
-	cd config/manager && kustomize edit set image controller=${IMG}
+	cd config/manager && kustomize edit set image controller=${SELDON_OPERATOR_IMG}
 	go tool kustomize build config/lite | kubectl apply -f -
 
 
@@ -172,14 +172,14 @@ create-client: test
 
 # Build the docker image
 docker-build: generate-resources
-	docker build . -t ${IMG}
+	docker build . -t ${SELDON_OPERATOR_IMG}
 
 docker-push:
-	docker push ${IMG}
+	docker push ${SELDON_OPERATOR_IMG}
 
 # Installing Images in Kind CLusters
 kind-image-install: docker-build
-	kind load -v 3 docker-image ${IMG} --name ${KIND_NAME}
+	kind load -v 3 docker-image ${SELDON_OPERATOR_IMG} --name ${KIND_NAME}
 
 # find or download controller-gn
 # download controller-gen if necessary
@@ -352,10 +352,10 @@ update_openshift_certified: create_certified_bundle_image push_certified_bundle_
 # password can be found at: https://connect.redhat.com/projects/5e6352370307ea9e345f6084/overview
 project=5e6352370307ea9e345f6084
 redhat-image-scan:
-	docker pull ${IMG}
+	docker pull ${SELDON_OPERATOR_IMG}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_operator} | docker login -u redhat-isv-containers+${project}-robot quay.io --password-stdin
-	docker tag ${IMG} quay.io/redhat-isv-containers/${project}:${VERSION}
+	docker tag ${SELDON_OPERATOR_IMG} quay.io/redhat-isv-containers/${project}:${VERSION}
 	docker push quay.io/redhat-isv-containers/${project}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		preflight check container quay.io/redhat-isv-containers/${project}:${VERSION} --docker-config=${HOME}/.docker/config.json --certification-project-id=${project} --pyxis-api-token=$${pyxis_api_token} --submit
