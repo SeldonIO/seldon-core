@@ -2,12 +2,11 @@ name: GB Docs Link Checker
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # every day at midnight UTC
+    - cron: '0 0 */14 * *'  # every two weeks at midnight UTC
   workflow_dispatch:
   pull_request:
     branches:
       - master
-      - v2
 
 jobs:
   lychee-check:
