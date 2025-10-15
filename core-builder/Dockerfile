@@ -73,16 +73,17 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends zlib1g zlib1g-dev libssl-dev libbz2-dev liblzma-dev && \
     rm -rf /var/lib/apt/lists/*
 
-ENV CONDA_DOWNLOAD_VERSION="py38_23.3.1-0"
-ENV CONDA_VERSION="23.5.0"
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-${CONDA_DOWNLOAD_VERSION}-Linux-x86_64.sh -O ~/miniconda.sh && \
-    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
-    rm ~/miniconda.sh && \
-    /opt/conda/bin/conda clean -tipy && \
+ENV MINIFORGE_VERSION=22.11.1-4
+ENV CONDA_VERSION=22.11.1
+RUN wget -q https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Miniforge3-${MINIFORGE_VERSION}-Linux-x86_64.sh -O ~/miniforge.sh && \
+    /bin/bash ~/miniforge.sh -b -p /opt/conda && \
+    rm ~/miniforge.sh && \
+    /opt/conda/bin/conda clean -afy && \
     ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
     echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
     echo "conda activate base" >> ~/.bashrc && \
     chgrp -R root /opt/conda && chmod -R g+rw /opt/conda
+
 ENV PATH="/opt/conda/bin:${PATH}"
 ENV PYTHON_VERSION="3.8.10"
 
