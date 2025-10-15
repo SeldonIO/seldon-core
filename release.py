@@ -417,9 +417,7 @@ def update_image_metadata_json(seldon_core_version, debug=False):
 
 def update_dockerfile_label_version(seldon_core_version, debug=False):
     paths = [
-        "operator/Dockerfile.redhat",
         "executor/Dockerfile.executor",
-        "executor/Dockerfile.executor.redhat",
         "servers/tfserving/Dockerfile.redhat",
         "components/alibi-detect-server/Dockerfile",
         "components/alibi-explain-server/Dockerfile",
