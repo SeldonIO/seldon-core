@@ -14,7 +14,7 @@ RUN printf '%s\n' \
 # install docker
 RUN \
     apt-get update && \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends \
     apt-transport-https \
     ca-certificates \
     curl \
@@ -27,7 +27,7 @@ RUN \
     $(lsb_release -cs) \
     stable" && \
     apt-get update && \
-    apt-get install -y docker-ce
+    apt-get install -y --no-install-recommends docker-ce
 
 # Installing source to image (s2i)
 RUN wget https://github.com/openshift/source-to-image/releases/download/v1.1.14/source-to-image-v1.1.14-874754de-linux-386.tar.gz && \
@@ -69,13 +69,9 @@ ENV MAVEN_HOME=/usr/share/maven
 ENV MAVEN_CONFIG="$USER_HOME_DIR/.m2"
 
 # compression and ssl libs required for installation python and dependencies (pandas)
-RUN apt-get upgrade && \
-    apt-get update && \
-    apt-get install zlib1g -y && \
-    apt-get install zlib1g-dev -y && \
-    apt-get install libssl-dev -y && \
-    apt-get install libbz2-dev -y && \
-    apt-get install liblzma-dev -y
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends zlib1g zlib1g-dev libssl-dev libbz2-dev liblzma-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 ENV CONDA_DOWNLOAD_VERSION="py38_23.3.1-0"
 ENV CONDA_VERSION="23.5.0"
@@ -102,8 +98,8 @@ RUN apt-get remove -y --auto-remove \
 
 # INSTALL GO
 ENV PATH=/usr/local/go/bin:$PATH
-RUN wget https://dl.google.com/go/go1.21.13.linux-amd64.tar.gz && \
-    tar -zxvf go1.21.13.linux-amd64.tar.gz && \
+RUN wget https://dl.google.com/go/go1.24.7.linux-amd64.tar.gz && \
+    tar -zxvf go1.24.7.linux-amd64.tar.gz && \
     mv go/ /usr/local/go
 
 # Install kubebuilder (using github link)
@@ -126,7 +122,7 @@ RUN \
     update-alternatives --set iptables /usr/sbin/iptables-legacy
 
 # install jupyter
-RUN pip install jupyter
+RUN pip install --no-cache-dir jupyter==1.1.1
 
 # Install grpcurl
 RUN go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
@@ -135,7 +131,7 @@ ENV PATH="${PATH}:/root/go/bin"
 
 # Notebooks python requirements
 COPY dev_requirements.txt /tmp/requirements.txt
-RUN pip install -r /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 # Ginkgo
 RUN go install github.com/onsi/ginkgo/ginkgo@v1.16.5
