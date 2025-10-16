@@ -13,11 +13,14 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strconv"
 
 	v1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
@@ -152,6 +155,8 @@ func (s *SchedulerClient) handleRegisteredServers(
 		return fmt.Errorf("failed to list servers: %w", err)
 	}
 
+	servers := make([]*v1alpha1.Server, 0)
+
 	for _, server := range serverList.Items {
 		if !server.ObjectMeta.DeletionTimestamp.IsZero() {
 			continue
@@ -169,7 +174,9 @@ func (s *SchedulerClient) handleRegisteredServers(
 		}, found)
 		if err != nil {
 			if errors.IsNotFound(err) {
-				// TODO
+				// this may not have been deployed due to it being invalid i.e. invalid scaling spec
+				s.logger.V(1).Info("Statefulset not found, skipping", "server", server.Name)
+				continue
 			}
 			return fmt.Errorf("failed to get statefulset: %w", err)
 		}
@@ -178,14 +185,45 @@ func (s *SchedulerClient) handleRegisteredServers(
 		if !ok {
 			return fmt.Errorf("missing minReplicas label")
 		}
+
+		intMinReplicas, err := strconv.ParseInt(minReplicas, 10, 32)
+		if err != nil {
+			return fmt.Errorf("failed to parse minReplicas: %w", err)
+		}
+
 		maxReplicas, ok := found.Labels["seldon/maxReplicas"]
 		if !ok {
 			return fmt.Errorf("missing maxReplicas label")
 		}
+
+		intMaxReplicas, err := strconv.ParseInt(maxReplicas, 10, 32)
+		if err != nil {
+			return fmt.Errorf("failed to parse maxReplicas: %w", err)
+		}
+
 		generation, ok := found.Labels["seldon/generation"]
 		if !ok {
 			return fmt.Errorf("missing generation label")
 		}
+
+		intGeneration, err := strconv.ParseInt(generation, 10, 32)
+		if err != nil {
+			return fmt.Errorf("failed to parse generation: %w", err)
+		}
+
+		servers = append(servers, &v1alpha1.Server{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace:  server.Namespace,
+				Generation: intGeneration,
+			},
+			Spec: v1alpha1.ServerSpec{
+				ScalingSpec: v1alpha1.ScalingSpec{
+					MinReplicas: ptr.To(int32(intMinReplicas)),
+					MaxReplicas: ptr.To(int32(intMaxReplicas)),
+					Replicas:    found.Spec.Replicas,
+				},
+			},
+		})
 
 	}
 

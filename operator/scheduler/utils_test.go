@@ -353,6 +353,7 @@ func newMockControllerClient(objs ...client.Object) *SchedulerClient {
 		fakeClient,
 		fakeRecorder,
 		tls.TLSOptions{},
+		false,
 	)
 }
 
