@@ -245,6 +245,28 @@ stringData:
   client_id: "a-secret-client-id"
 ```
 
+## Install Delve - experimental
+
+Install Delve (Go debugger) onto the Kind node with:
+
+```shell
+./install-delve.sh
+```
+
+You can then docker exec into the Kind node and attach delve to the process you want to debug. For example to attach to
+the scheduler:
+
+```shell
+dlv --listen=:40000 --headless=true --api-version=2 --log attach $(pgrep -f "^/bin/scheduler")
+```
+
+This will listen on port `40,000`. The Kind cluster setup playbook has been configured to expose this port and map to localhost.
+It attaches to the PID of the scheduler determined by `$(pgrep -f "^/bin/scheduler")`.
+
+You then need to configure your IDE to connect to remote debug on `localhost:40000`. It does crash on occasion and needs
+restarting. This will need investigating to make more stable. Potential improvements of building a custom image from the
+Kind base image with Delve installed and any other packages to improve stability.
+
 ## Mounting local (host) path into the rclone container of a Server pod
 
 For this, you first need to enable local mounts into kind (configuring the `kind_local_mount`,
