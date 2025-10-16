@@ -81,20 +81,23 @@ func (s *SimpleScheduler) Schedule(modelKey string) error {
 }
 
 func (s *SimpleScheduler) ScheduleFailedModels() ([]string, error) {
-	s.muScheduleFailed.Lock()
-	defer s.muScheduleFailed.Unlock()
-
 	if !s.synchroniser.IsReady() {
 		s.logger.Debug("Waiting for servers to connect")
 		s.synchroniser.WaitReady()
+		s.logger.Debug("Waiting for servers complete")
 	}
+
+	s.muScheduleFailed.Lock()
+	defer s.muScheduleFailed.Unlock()
 
 	failedModels, err := s.getFailedModels()
 	if err != nil {
 		return nil, err
 	}
 
-	s.logger.WithField("failed_models", failedModels).Debug("Got failed models to schedule")
+	if len(failedModels) > 0 {
+		s.logger.WithField("failed_models", failedModels).Debug("Got failed models to schedule")
+	}
 
 	var updatedModels []string
 	for _, modelName := range failedModels {
