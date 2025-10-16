@@ -406,6 +406,7 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 	defer mu.(*sync.Mutex).Unlock()
 
 	logger.Infof("Received subscribe request from %s:%d", request.ServerName, request.ReplicaIdx)
+	defer logger.Infof("Agent subscribe stream closed for %s:%d", request.ServerName, request.ReplicaIdx)
 
 	fin := make(chan bool)
 
@@ -419,29 +420,31 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 	s.logger.Debugf("Add Server Replica %+v with config %+v", request, request.ReplicaConfig)
 	err := s.store.AddServerReplica(request)
 	if err != nil {
+		s.logger.WithError(err).WithField("req", request).Error("Failed to add server replica")
 		return err
 	}
+
 	err = s.scheduleModelsFromRequest(request)
 	if err != nil {
+		s.logger.WithError(err).WithField("req", request).Error("Failed to schedule models")
 		return err
 	}
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
-	for {
-		select {
-		case <-fin:
-			logger.Infof("Closing stream for replica: %s:%d", request.ServerName, request.ReplicaIdx)
-			return nil
-		case <-ctx.Done():
-			logger.Infof("Client replica %s:%d has disconnected", request.ServerName, request.ReplicaIdx)
-			s.mutex.Lock()
-			delete(s.agents, key)
-			s.mutex.Unlock()
-			s.removeServerReplicaImpl(request.GetServerName(), int(request.GetReplicaIdx())) // this is non-blocking beyond rescheduling models on removed server
-			return nil
-		}
+	select {
+	case <-fin:
+		logger.Infof("Closing stream for replica: %s:%d", request.ServerName, request.ReplicaIdx)
+	case <-ctx.Done():
+		logger.WithError(ctx.Err()).Warnf("Client replica %s:%d has disconnected", request.ServerName, request.ReplicaIdx)
+		s.mutex.Lock()
+		delete(s.agents, key)
+		s.mutex.Unlock()
+		logger.WithField("request", request).Info("Removing server replica and re-scheduling model(s)")
+		s.removeServerReplicaImpl(request.GetServerName(), int(request.GetReplicaIdx())) // this is non-blocking beyond rescheduling models on removed server
 	}
+
+	return nil
 }
 
 func (s *Server) StopAgentStreams() {
@@ -476,18 +479,27 @@ func (s *Server) removeServerReplicaImpl(serverName string, serverReplicaIdx int
 	if err != nil {
 		s.logger.WithError(err).Errorf("Failed to remove replica and redeploy models for %s:%d", serverName, serverReplicaIdx)
 	}
+
 	s.logger.Debugf("Removing models %v from server %s:%d", modelsChanged, serverName, serverReplicaIdx)
 	for _, modelName := range modelsChanged {
+		s.logger.WithField("model", modelName).Debug("Scheduling model")
 		err = s.scheduler.Schedule(modelName)
 		if err != nil {
 			s.logger.Debugf("Failed to reschedule model %s when server %s replica %d disconnected", modelName, serverName, serverReplicaIdx)
+			continue
 		}
+		s.logger.WithField("model", modelName).Debug("Scheduling complete")
 	}
+
 	// retry failed models
 	// this is perhaps counterintuitive, but we want to retry failed models on other servers
 	// specifically in the case of model state `LoadFailed` and the server replica disconnects, we want to reconcile
 	// the model state with th new set of active servers
 	// note that this will also retry `ScheduleFailed`, which is a side effect of calling `ScheduleFailedModels`
+	s.logger.WithFields(log.Fields{
+		"serverName": serverName,
+		"replicaID":  serverReplicaIdx,
+	}).Debug("Scheduling failed models")
 	if _, err := s.scheduler.ScheduleFailedModels(); err != nil {
 		s.logger.WithError(err).Errorf("Failed to reschedule failed models when server %s replica %d disconnected", serverName, serverReplicaIdx)
 	}

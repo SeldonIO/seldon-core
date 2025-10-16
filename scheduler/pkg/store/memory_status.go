@@ -141,6 +141,8 @@ func (m *MemoryStore) FailedScheduling(modelID string, version uint32, reason st
 				modelVersion.SetServer("")
 			}
 
+			model.versions[i] = modelVersion
+
 			m.eventHub.PublishModelEvent(
 				modelFailureEventSource,
 				coordinator.ModelEventMsg{
