@@ -1019,47 +1019,6 @@ func TestScheduleFailedModels(t *testing.T) {
 	}
 }
 
-// Helper functions to create test data
-//
-//func createModelVersion(name string, version uint32, state store.ModelState, availableReplicas, desiredReplicas int) *store.ModelVersion {
-//	mv := &store.ModelVersion{
-//		Model: &store.Model{
-//			Name: name,
-//		},
-//	}
-//
-//	// Set up the model state
-//	modelState := store.ModelStatus{
-//		State:             state,
-//		AvailableReplicas: uint32(availableReplicas),
-//	}
-//
-//	// Use reflection or mock the methods needed
-//	// This is simplified - you'd need to set up the actual structure based on your implementation
-//	mv.SetModelState(modelState)
-//
-//	// Set deployment spec with desired replicas
-//	deploymentSpec := &store.DeploymentSpec{
-//		Replicas: uint32(desiredReplicas),
-//	}
-//	mv.SetDeploymentSpec(deploymentSpec)
-//
-//	return mv
-//}
-
-//func createModelVersionWithReplicas(name string, version uint32, state store.ModelState, availableReplicas, desiredReplicas int) *store.ModelVersion {
-//	mv := createModelVersion(name, version, state, availableReplicas, desiredReplicas)
-//
-//	// Additional setup for replicas if needed
-//	modelStatus := store.ModelStatus{
-//		State:             state,
-//		AvailableReplicas: uint32(availableReplicas),
-//	}
-//	mv.SetModelState(modelStatus)
-//
-//	return mv
-//}
-
 func createServerSnapshot(name string, numReplicas int, availableMemory uint64) *store.ServerSnapshot {
 	replicas := make(map[int]*store.ServerReplica, numReplicas)
 	server := store.NewServer(name, false)
