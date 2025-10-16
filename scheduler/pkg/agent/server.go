@@ -485,7 +485,7 @@ func (s *Server) removeServerReplicaImpl(serverName string, serverReplicaIdx int
 		s.logger.WithField("model", modelName).Debug("Scheduling model")
 		err = s.scheduler.Schedule(modelName)
 		if err != nil {
-			s.logger.Debugf("Failed to reschedule model %s when server %s replica %d disconnected", modelName, serverName, serverReplicaIdx)
+			s.logger.WithError(err).Debugf("Failed to reschedule model %s when server %s replica %d disconnected", modelName, serverName, serverReplicaIdx)
 			continue
 		}
 		s.logger.WithField("model", modelName).Debug("Scheduling complete")
