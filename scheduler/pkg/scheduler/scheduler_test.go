@@ -10,20 +10,29 @@ the Change License after the Change Date as each is defined in accordance with t
 package scheduler
 
 import (
+	"errors"
+	"maps"
+	"slices"
 	"sort"
 	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/gotidy/ptr"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/mock"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
+	mock2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser/mock"
 )
 
 type mockStore struct {
@@ -753,5 +762,317 @@ func TestRemoveAllVersions(t *testing.T) {
 
 			g.Expect(mockStore.unloadedModels[test.model.Name]).To(Equal(uint32(test.numVersions)))
 		})
+	}
+}
+
+func TestScheduleFailedModels(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		setupMocks     func(*mock.MockModelStore, *mock2.MockSynchroniser)
+		expectedModels []string
+		expectError    bool
+		errorContains  string
+	}{
+		{
+			name: "success - schedules single failed model",
+			setupMocks: func(ms *mock.MockModelStore, sync *mock2.MockSynchroniser) {
+				sync.EXPECT().IsReady().Return(true)
+
+				model1 := &store.ModelSnapshot{
+					Name: "model1",
+					Versions: []*store.ModelVersion{store.NewModelVersion(&pb.Model{
+						Meta: &pb.MetaData{
+							Name:           "model1",
+							Kind:           nil,
+							Version:        nil,
+							KubernetesMeta: nil,
+						},
+						ModelSpec: &pb.ModelSpec{
+							Uri:              "",
+							ArtifactVersion:  nil,
+							StorageConfig:    nil,
+							Requirements:     nil,
+							MemoryBytes:      nil,
+							Server:           ptr.String("server1"),
+							Parameters:       nil,
+							ModelRuntimeInfo: nil,
+							ModelSpec:        nil,
+						},
+						DeploymentSpec: &pb.DeploymentSpec{
+							Replicas:    1,
+							MinReplicas: 0,
+							MaxReplicas: 0,
+							LogPayloads: false,
+						},
+						StreamSpec:   nil,
+						DataflowSpec: nil,
+					}, 1, "server1", map[int]store.ReplicaStatus{}, false, store.ScheduleFailed)},
+				}
+
+				ms.EXPECT().GetModels().Return([]*store.ModelSnapshot{model1}, nil)
+
+				ms.EXPECT().LockModel("model1")
+				ms.EXPECT().UnlockModel("model1")
+				ms.EXPECT().GetModel("model1").Return(model1, nil)
+
+				servers := []*store.ServerSnapshot{
+					createServerSnapshot("server1", 1, 16000),
+				}
+				ms.EXPECT().GetServers(false, true).Return(servers, nil)
+				ms.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server1", slices.Collect(maps.Values(servers[0].Replicas))).Return(nil)
+			},
+			expectedModels: []string{"model1"},
+			expectError:    false,
+		},
+		{
+			name: "success - schedules 2 failed models",
+			setupMocks: func(ms *mock.MockModelStore, sync *mock2.MockSynchroniser) {
+				sync.EXPECT().IsReady().Return(true)
+
+				model1 := &store.ModelSnapshot{
+					Name: "model1",
+					Versions: []*store.ModelVersion{store.NewModelVersion(&pb.Model{
+						Meta: &pb.MetaData{
+							Name:           "model1",
+							Kind:           nil,
+							Version:        nil,
+							KubernetesMeta: nil,
+						},
+						ModelSpec: &pb.ModelSpec{
+							Uri:              "",
+							ArtifactVersion:  nil,
+							StorageConfig:    nil,
+							Requirements:     nil,
+							MemoryBytes:      nil,
+							Server:           ptr.String("server1"),
+							Parameters:       nil,
+							ModelRuntimeInfo: nil,
+							ModelSpec:        nil,
+						},
+						DeploymentSpec: &pb.DeploymentSpec{
+							Replicas:    1,
+							MinReplicas: 0,
+							MaxReplicas: 0,
+							LogPayloads: false,
+						},
+						StreamSpec:   nil,
+						DataflowSpec: nil,
+					}, 1, "server1", map[int]store.ReplicaStatus{}, false, store.ScheduleFailed)},
+				}
+
+				model2 := &store.ModelSnapshot{
+					Name: "model2",
+					Versions: []*store.ModelVersion{store.NewModelVersion(&pb.Model{
+						Meta: &pb.MetaData{
+							Name:           "model2",
+							Kind:           nil,
+							Version:        nil,
+							KubernetesMeta: nil,
+						},
+						ModelSpec: &pb.ModelSpec{
+							Uri:              "",
+							ArtifactVersion:  nil,
+							StorageConfig:    nil,
+							Requirements:     nil,
+							MemoryBytes:      nil,
+							Server:           ptr.String("server1"),
+							Parameters:       nil,
+							ModelRuntimeInfo: nil,
+							ModelSpec:        nil,
+						},
+						DeploymentSpec: &pb.DeploymentSpec{
+							Replicas:    1,
+							MinReplicas: 0,
+							MaxReplicas: 0,
+							LogPayloads: false,
+						},
+						StreamSpec:   nil,
+						DataflowSpec: nil,
+					}, 1, "server1", map[int]store.ReplicaStatus{}, false, store.ScheduleFailed)},
+				}
+
+				ms.EXPECT().GetModels().Return([]*store.ModelSnapshot{model1, model2}, nil)
+
+				// model1
+				ms.EXPECT().LockModel("model1")
+				ms.EXPECT().UnlockModel("model1")
+				ms.EXPECT().GetModel("model1").Return(model1, nil)
+
+				servers := []*store.ServerSnapshot{
+					createServerSnapshot("server1", 1, 16000),
+				}
+				ms.EXPECT().GetServers(false, true).Return(servers, nil)
+				ms.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server1", slices.Collect(maps.Values(servers[0].Replicas))).Return(nil)
+
+				// model2
+
+				ms.EXPECT().LockModel("model2")
+				ms.EXPECT().UnlockModel("model2")
+				ms.EXPECT().GetModel("model2").Return(model2, nil)
+
+				ms.EXPECT().GetServers(false, true).Return(servers, nil)
+				ms.EXPECT().UpdateLoadedModels("model2", uint32(1),
+					"server1", slices.Collect(maps.Values(servers[0].Replicas))).Return(nil)
+			},
+			expectedModels: []string{"model1", "model2"},
+			expectError:    false,
+		},
+		{
+			name: "failure - unable to schedule model on desired replicas or min replicas",
+			setupMocks: func(ms *mock.MockModelStore, sync *mock2.MockSynchroniser) {
+				sync.EXPECT().IsReady().Return(true)
+
+				model1 := &store.ModelSnapshot{
+					Name: "model1",
+					Versions: []*store.ModelVersion{store.NewModelVersion(&pb.Model{
+						Meta: &pb.MetaData{
+							Name:           "model1",
+							Kind:           nil,
+							Version:        nil,
+							KubernetesMeta: nil,
+						},
+						ModelSpec: &pb.ModelSpec{
+							Uri:              "",
+							ArtifactVersion:  nil,
+							StorageConfig:    nil,
+							Requirements:     nil,
+							MemoryBytes:      nil,
+							Server:           ptr.String("server1"),
+							Parameters:       nil,
+							ModelRuntimeInfo: nil,
+							ModelSpec:        nil,
+						},
+						DeploymentSpec: &pb.DeploymentSpec{
+							Replicas:    3,
+							MinReplicas: 2,
+							MaxReplicas: 0,
+							LogPayloads: false,
+						},
+						StreamSpec:   nil,
+						DataflowSpec: nil,
+					}, 1, "server1", map[int]store.ReplicaStatus{}, false, store.ScheduleFailed)},
+				}
+
+				ms.EXPECT().GetModels().Return([]*store.ModelSnapshot{model1}, nil)
+
+				ms.EXPECT().LockModel("model1")
+				ms.EXPECT().UnlockModel("model1")
+				ms.EXPECT().GetModel("model1").Return(model1, nil)
+
+				servers := []*store.ServerSnapshot{
+					createServerSnapshot("server1", 1, 16000),
+				}
+				ms.EXPECT().GetServers(false, true).Return(servers, nil)
+				ms.EXPECT().FailedScheduling("model1", uint32(1),
+					"Failed to schedule model as no matching server had enough suitable replicas", true).Return(nil)
+			},
+			expectedModels: []string{},
+		},
+		{
+			name: "failure - failed getting models",
+			setupMocks: func(ms *mock.MockModelStore, sync *mock2.MockSynchroniser) {
+				sync.EXPECT().IsReady().Return(true)
+				ms.EXPECT().GetModels().Return(nil, errors.New("some error"))
+			},
+			expectedModels: []string{},
+			expectError:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			ctrl := gomock.NewController(t)
+
+			mockStore := mock.NewMockModelStore(ctrl)
+			mockSync := mock2.NewMockSynchroniser(ctrl)
+
+			tt.setupMocks(mockStore, mockSync)
+
+			eventHub, err := coordinator.NewEventHub(log.New())
+			require.NoError(t, err)
+
+			scheduler := NewSimpleScheduler(
+				log.New(),
+				mockStore,
+				DefaultSchedulerConfig(mockStore),
+				mockSync,
+				eventHub)
+
+			updatedModels, err := scheduler.ScheduleFailedModels()
+
+			if tt.expectError {
+				require.Error(t, err)
+				if tt.errorContains != "" {
+					assert.Contains(t, err.Error(), tt.errorContains)
+				}
+				return
+			}
+
+			require.NoError(t, err)
+			assert.ElementsMatch(t, tt.expectedModels, updatedModels)
+		})
+	}
+}
+
+// Helper functions to create test data
+//
+//func createModelVersion(name string, version uint32, state store.ModelState, availableReplicas, desiredReplicas int) *store.ModelVersion {
+//	mv := &store.ModelVersion{
+//		Model: &store.Model{
+//			Name: name,
+//		},
+//	}
+//
+//	// Set up the model state
+//	modelState := store.ModelStatus{
+//		State:             state,
+//		AvailableReplicas: uint32(availableReplicas),
+//	}
+//
+//	// Use reflection or mock the methods needed
+//	// This is simplified - you'd need to set up the actual structure based on your implementation
+//	mv.SetModelState(modelState)
+//
+//	// Set deployment spec with desired replicas
+//	deploymentSpec := &store.DeploymentSpec{
+//		Replicas: uint32(desiredReplicas),
+//	}
+//	mv.SetDeploymentSpec(deploymentSpec)
+//
+//	return mv
+//}
+
+//func createModelVersionWithReplicas(name string, version uint32, state store.ModelState, availableReplicas, desiredReplicas int) *store.ModelVersion {
+//	mv := createModelVersion(name, version, state, availableReplicas, desiredReplicas)
+//
+//	// Additional setup for replicas if needed
+//	modelStatus := store.ModelStatus{
+//		State:             state,
+//		AvailableReplicas: uint32(availableReplicas),
+//	}
+//	mv.SetModelState(modelStatus)
+//
+//	return mv
+//}
+
+func createServerSnapshot(name string, numReplicas int, availableMemory uint64) *store.ServerSnapshot {
+	replicas := make(map[int]*store.ServerReplica, numReplicas)
+	server := store.NewServer(name, false)
+
+	for i := 0; i < numReplicas; i++ {
+		replicas[i] = store.NewServerReplica(name+"-svc",
+			4000, 5000, i, server, nil,
+			availableMemory, availableMemory, availableMemory, nil, 0)
+	}
+
+	return &store.ServerSnapshot{
+		Name:             name,
+		Replicas:         replicas,
+		ExpectedReplicas: numReplicas,
 	}
 }
