@@ -139,6 +139,7 @@ func (s *ServerReconciler) createStatefulSetReconciler(server *mlopsv1alpha1.Ser
 		&server.Spec.ScalingSpec,
 		server.Spec.StatefulSetPersistentVolumeClaimRetentionPolicy,
 		serverConfig.ObjectMeta,
-		annotator)
+		annotator,
+		server.GetGeneration())
 	return statefulSetReconciler, nil
 }

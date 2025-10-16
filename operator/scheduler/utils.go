@@ -14,6 +14,9 @@ import (
 	"fmt"
 	"io"
 
+	v1 "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -147,6 +150,43 @@ func (s *SchedulerClient) handleRegisteredServers(
 	)
 	if err != nil {
 		return fmt.Errorf("failed to list servers: %w", err)
+	}
+
+	for _, server := range serverList.Items {
+		if !server.ObjectMeta.DeletionTimestamp.IsZero() {
+			continue
+		}
+
+		if s.useDeploymentsForServers {
+			// TODO
+			continue
+		}
+
+		found := &v1.StatefulSet{}
+		err := s.Client.Get(ctx, types.NamespacedName{
+			Name:      server.Name,
+			Namespace: namespace,
+		}, found)
+		if err != nil {
+			if errors.IsNotFound(err) {
+				// TODO
+			}
+			return fmt.Errorf("failed to get statefulset: %w", err)
+		}
+
+		minReplicas, ok := found.Labels["seldon/minReplicas"]
+		if !ok {
+			return fmt.Errorf("missing minReplicas label")
+		}
+		maxReplicas, ok := found.Labels["seldon/maxReplicas"]
+		if !ok {
+			return fmt.Errorf("missing maxReplicas label")
+		}
+		generation, ok := found.Labels["seldon/generation"]
+		if !ok {
+			return fmt.Errorf("missing generation label")
+		}
+
 	}
 
 	if err := s.ServerNotify(ctx, grpcClient, serverList.Items, true); err != nil {
