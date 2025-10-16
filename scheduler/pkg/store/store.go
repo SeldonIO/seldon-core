@@ -135,6 +135,7 @@ func (m *ModelSnapshot) GetVersionsBeforeLastModelGwAvailable() []*ModelVersion 
 	return nil
 }
 
+//go:generate go tool mockgen -source=./store.go -destination=./mock/store.go -package=mock ModelStore
 type ModelStore interface {
 	UpdateModel(config *pb.LoadModelRequest) error
 	GetModel(key string) (*ModelSnapshot, error)

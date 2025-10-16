@@ -18,6 +18,7 @@ import (
 	"time"
 )
 
+//go:generate go tool mockgen -source=./sync.go -destination=./mock/sync.go -package=mock Synchroniser
 type Synchroniser interface {
 	// mainly for testing, this api should mean little in production as the synchroniser should be
 	// rely on the other methods to determine if it is ready.

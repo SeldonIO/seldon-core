@@ -598,6 +598,7 @@ func (m *ModelVersion) HasLiveReplicas() bool {
 func (m *ModelVersion) GetAssignment() []int {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
+
 	var assignment []int
 	var draining []int
 	for k, v := range m.replicas {

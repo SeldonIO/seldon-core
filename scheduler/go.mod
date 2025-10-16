@@ -16,6 +16,7 @@ require (
 	github.com/go-playground/validator/v10 v10.27.0
 	github.com/google/go-cmp v0.7.0
 	github.com/gorilla/mux v1.8.1
+	github.com/gotidy/ptr v1.4.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/jarcoal/httpmock v1.4.0
 	github.com/knadh/koanf/parsers/yaml v1.1.0
