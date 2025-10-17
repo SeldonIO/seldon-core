@@ -42,7 +42,7 @@ func TestStartServerStream(t *testing.T) {
 		{
 			name: "ok",
 			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerService(log.New(), store.NewLocalSchedulerStore(), nil),
 				logger:     log.New(),
 				timeout:    10 * time.Millisecond,
 			},
@@ -50,7 +50,7 @@ func TestStartServerStream(t *testing.T) {
 		{
 			name: "timeout",
 			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerService(log.New(), store.NewLocalSchedulerStore(), nil),
 				logger:     log.New(),
 				timeout:    1 * time.Millisecond,
 			},

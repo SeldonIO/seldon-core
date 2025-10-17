@@ -19,7 +19,7 @@ import (
 )
 
 type TestMemoryStore struct {
-	*MemoryStore
+	*ModelServerService
 }
 
 type ModelID struct {
@@ -28,8 +28,8 @@ type ModelID struct {
 }
 
 // NewTestMemory DO NOT USE for non-test code. This is purely meant for using in tests where an integration test is
-// wanted where the real memory store is needed, but the test needs the ability to directly manipulate the model
-// statuses, which can't be achieved with MemoryStore. TestMemoryStore embeds MemoryStore and adds DirectlyUpdateModelStatus
+// wanted where the real memory cache is needed, but the test needs the ability to directly manipulate the model
+// statuses, which can't be achieved with ModelServerService. TestMemoryStore embeds ModelServerService and adds DirectlyUpdateModelStatus
 // to modify the statuses.
 func NewTestMemory(
 	t *testing.T,
@@ -39,7 +39,7 @@ func NewTestMemory(
 	if t == nil {
 		panic("testing.T is required, must only be run via tests")
 	}
-	m := NewMemoryStore(logger, store, eventHub)
+	m := NewModelServerService(logger, store, eventHub)
 	return &TestMemoryStore{m}
 }
 
@@ -47,7 +47,7 @@ func (t *TestMemoryStore) DirectlyUpdateModelStatus(model ModelID, state ModelSt
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	found, ok := t.store.models[model.Name]
+	found, ok := t.cache.models[model.Name]
 	if !ok {
 		return errors.New("model not found")
 	}

@@ -342,7 +342,7 @@ func TestRollingUpdate(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			modelStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil)
+			modelStore := store.NewModelServerService(log.New(), store.NewLocalSchedulerStore(), nil)
 			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}, nil)
 			g.Expect(err).To(BeNil())
 			inc := &IncrementalProcessor{
@@ -420,7 +420,7 @@ func TestDraining(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			modelStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil)
+			modelStore := store.NewModelServerService(log.New(), store.NewLocalSchedulerStore(), nil)
 			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}, nil)
 			g.Expect(err).To(BeNil())
 			inc := &IncrementalProcessor{
@@ -564,7 +564,7 @@ func TestModelSync(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			modelStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil)
+			modelStore := store.NewModelServerService(log.New(), store.NewLocalSchedulerStore(), nil)
 			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}, nil)
 			g.Expect(err).To(BeNil())
 			inc := &IncrementalProcessor{
@@ -808,7 +808,7 @@ func TestEnvoySettings(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			logger := log.New()
 			eventHub, _ := coordinator.NewEventHub(logger)
-			memoryStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), eventHub)
+			memoryStore := store.NewModelServerService(log.New(), store.NewLocalSchedulerStore(), eventHub)
 			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}, nil)
 			g.Expect(err).To(BeNil())
 			inc := &IncrementalProcessor{
