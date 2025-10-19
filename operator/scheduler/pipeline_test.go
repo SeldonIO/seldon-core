@@ -419,7 +419,7 @@ func TestSubscribePipelineEvents(t *testing.T) {
 					responses_subscribe_pipelines: test.results,
 				}
 			}
-			controller := newMockControllerClient(test.existing_resources...)
+			controller := newMockControllerClient(false, test.existing_resources...)
 			err := controller.handlePipelines(context.Background(), &grpcClient, "")
 			g.Expect(err).To(BeNil())
 			err = controller.SubscribePipelineEvents(context.Background(), &grpcClient, "")

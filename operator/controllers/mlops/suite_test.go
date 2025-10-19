@@ -467,7 +467,7 @@ var _ = Describe("Controller", func() {
 	})
 
 	Context("When creating a Server spec", func() {
-		It("Accepts a valid Spec with minReplicas = 2 replicas not set, therefore replicas should take minReplicas value of 1", func() {
+		It("Accepts a valid Spec with minReplicas = 2, replicas not set, therefore replicas should take minReplicas value of 2", func() {
 			testID := "test-mlserver-2"
 			minReplicas := ptr.To(int32(2))
 
@@ -475,6 +475,7 @@ var _ = Describe("Controller", func() {
 			addExpectedServerNotifyCall(testID, mlopsv1alpha1.ScalingSpec{
 				MinReplicas: minReplicas,
 				MaxReplicas: ptr.To(int32(2)),
+				Replicas:    minReplicas,
 			}, serverNotifyCalled)
 
 			ctx := context.Background()

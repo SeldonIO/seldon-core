@@ -16,10 +16,12 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/gotidy/ptr"
 	. "github.com/onsi/gomega"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
@@ -341,11 +343,12 @@ func (s *mockSchedulerGrpcClient) PipelineStatusEvent(ctx context.Context, messa
 }
 
 // new mockSchedulerClient (not grpc)
-func newMockControllerClient(objs ...client.Object) *SchedulerClient {
+func newMockControllerClient(useDeploymentsForServers bool, objs ...client.Object) *SchedulerClient {
 	logger := zap.New()
 	fakeRecorder := record.NewFakeRecorder(3)
 	scheme := runtime.NewScheme()
 	_ = mlopsv1alpha1.AddToScheme(scheme)
+	_ = appsv1.AddToScheme(scheme)
 	fakeClient := testing2.NewFakeClient(scheme, objs...)
 
 	return NewSchedulerClient(
@@ -353,7 +356,7 @@ func newMockControllerClient(objs ...client.Object) *SchedulerClient {
 		fakeClient,
 		fakeRecorder,
 		tls.TLSOptions{},
-		false,
+		useDeploymentsForServers,
 	)
 }
 
@@ -416,7 +419,7 @@ func TestHandleLoadedExperiments(t *testing.T) {
 			t.Parallel()
 
 			grpcClient := mockSchedulerGrpcClient{}
-			client := newMockControllerClient(test.resources...)
+			client := newMockControllerClient(false, test.resources...)
 			err := client.handleLoadedExperiments(context.Background(), &grpcClient, "")
 			g.Expect(err).To(BeNil())
 			activeResources := 0
@@ -491,7 +494,7 @@ func TestHandleLoadedModels(t *testing.T) {
 			t.Parallel()
 
 			grpcClient := mockSchedulerGrpcClient{}
-			client := newMockControllerClient(test.resources...)
+			client := newMockControllerClient(false, test.resources...)
 			err := client.handleLoadedModels(context.Background(), &grpcClient, "")
 			g.Expect(err).To(BeNil())
 			activeResources := 0
@@ -566,7 +569,7 @@ func TestHandleLoadedPipelines(t *testing.T) {
 			t.Parallel()
 
 			grpcClient := mockSchedulerGrpcClient{}
-			client := newMockControllerClient(test.resources...)
+			client := newMockControllerClient(false, test.resources...)
 			err := client.handleLoadedPipelines(context.Background(), &grpcClient, "")
 			g.Expect(err).To(BeNil())
 			activeResources := 0
@@ -640,7 +643,7 @@ func TestHandleDeletedExperiments(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			s := newMockControllerClient(test.resources...)
+			s := newMockControllerClient(false, test.resources...)
 			err := s.handlePendingDeleteExperiments(context.Background(), "")
 			g.Expect(err).To(BeNil())
 
@@ -723,7 +726,7 @@ func TestHandleDeletedPipelines(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			s := newMockControllerClient(test.resources...)
+			s := newMockControllerClient(false, test.resources...)
 			err := s.handlePendingDeletePipelines(context.Background(), "")
 			g.Expect(err).To(BeNil())
 
@@ -811,7 +814,7 @@ func TestHandleDeletedModels(t *testing.T) {
 					"UnloadModel": status.Error(codes.FailedPrecondition, "no models"),
 				},
 			}
-			s := newMockControllerClient(test.resources...)
+			s := newMockControllerClient(false, test.resources...)
 			err := s.handlePendingDeleteModels(context.Background(), &grpcClient, "")
 			g.Expect(err).To(BeNil())
 
@@ -842,20 +845,31 @@ func TestHandleRegisteredServers(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name      string
-		resources []client.Object
-		expected  []*scheduler.ServerNotify
+		name                     string
+		useDeploymentsForServers bool
+		resources                []client.Object
+		expected                 []*scheduler.ServerNotify
 	}
 
 	tests := []test{
 		{
-			name: "with 1 server",
+			name: "statefulset - with 1 server",
 			resources: []client.Object{
 				&mlopsv1alpha1.Server{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:       "foo",
 						Namespace:  "default",
 						Generation: 1,
+					},
+				},
+				&appsv1.StatefulSet{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: appsv1.StatefulSetSpec{
+						Replicas: ptr.Int32(1),
 					},
 				},
 			},
@@ -873,7 +887,88 @@ func TestHandleRegisteredServers(t *testing.T) {
 			},
 		},
 		{
-			name: "with multiple servers",
+			name:                     "deployments - 1 server with different replicas deployed",
+			useDeploymentsForServers: true,
+			resources: []client.Object{
+				&mlopsv1alpha1.Server{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: mlopsv1alpha1.ServerSpec{
+						ScalingSpec: mlopsv1alpha1.ScalingSpec{
+							MinReplicas: ptr.Int32(1),
+							Replicas:    ptr.Int32(2),
+						},
+					},
+				},
+				&appsv1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: appsv1.DeploymentSpec{
+						Replicas: ptr.Int32(1),
+					},
+				},
+			},
+			expected: []*scheduler.ServerNotify{
+				{
+					Name:             "foo",
+					ExpectedReplicas: 1,
+					MinReplicas:      1,
+					MaxReplicas:      math.MaxUint32,
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+			},
+		},
+		{
+			name: "statefulset - 1 server with different replicas deployed",
+			resources: []client.Object{
+				&mlopsv1alpha1.Server{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: mlopsv1alpha1.ServerSpec{
+						ScalingSpec: mlopsv1alpha1.ScalingSpec{
+							MinReplicas: ptr.Int32(1),
+							Replicas:    ptr.Int32(2),
+						},
+					},
+				},
+				&appsv1.StatefulSet{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: appsv1.StatefulSetSpec{
+						Replicas: ptr.Int32(1),
+					},
+				},
+			},
+			expected: []*scheduler.ServerNotify{
+				{
+					Name:             "foo",
+					ExpectedReplicas: 1,
+					MinReplicas:      1,
+					MaxReplicas:      math.MaxUint32,
+					KubernetesMeta: &scheduler.KubernetesMeta{
+						Namespace:  "default",
+						Generation: 1,
+					},
+				},
+			},
+		},
+		{
+			name: "statefulset - with multiple servers",
 			resources: []client.Object{
 				&mlopsv1alpha1.Server{
 					ObjectMeta: metav1.ObjectMeta{
@@ -887,6 +982,28 @@ func TestHandleRegisteredServers(t *testing.T) {
 						Name:       "bar",
 						Namespace:  "default",
 						Generation: 2,
+					},
+				},
+				&appsv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: appsv1.StatefulSetSpec{
+						Replicas: ptr.Int32(1),
+					},
+				},
+				&appsv1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "bar",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: appsv1.StatefulSetSpec{
+						Replicas: ptr.Int32(1),
 					},
 				},
 			},
@@ -924,7 +1041,7 @@ func TestHandleRegisteredServers(t *testing.T) {
 			t.Parallel()
 
 			grpcClient := mockSchedulerGrpcClient{}
-			client := newMockControllerClient(test.resources...)
+			client := newMockControllerClient(test.useDeploymentsForServers, test.resources...)
 			err := client.handleRegisteredServers(context.Background(), &grpcClient, "")
 			g.Expect(err).To(BeNil())
 			g.Expect(grpcClient.requests_servers).To(Equal(test.expected))

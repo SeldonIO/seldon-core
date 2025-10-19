@@ -341,7 +341,7 @@ func TestStatefulSetReconcile(t *testing.T) {
 				test.scaling,
 				test.statefulSetPersistentVolumeClaimRetentionPolicy,
 				test.metaServerConfig,
-				annotator, 1)
+				annotator)
 			rop, err := r.getReconcileOperation()
 			g.Expect(rop).To(Equal(test.expectedReconcileOp))
 			g.Expect(err).To(BeNil())
@@ -642,7 +642,7 @@ func TestLabelsAnnotations(t *testing.T) {
 				&mlopsv1alpha1.ScalingSpec{},
 				&appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy{},
 				test.metaServerConfig,
-				annotator, 1)
+				annotator)
 			for k, v := range test.expectedLabels {
 				g.Expect(r.StatefulSet.Labels[k]).To(Equal(v))
 			}

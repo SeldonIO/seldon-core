@@ -325,7 +325,7 @@ func TestSubscribeExperimentsEvents(t *testing.T) {
 					responses_subscribe_experiments: test.results,
 				}
 			}
-			controller := newMockControllerClient(test.existing_resources...)
+			controller := newMockControllerClient(false, test.existing_resources...)
 			err := controller.handleExperiments(context.Background(), &grpcClient, "")
 			g.Expect(err).To(BeNil())
 			err = controller.SubscribeExperimentEvents(context.Background(), &grpcClient, "")

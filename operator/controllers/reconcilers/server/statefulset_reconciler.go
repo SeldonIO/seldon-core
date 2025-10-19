@@ -13,7 +13,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strconv"
 
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	appsv1 "k8s.io/api/apps/v1"
@@ -45,13 +44,8 @@ func NewServerStatefulSetReconciler(
 	volumeClaimRetentionPolicy *appsv1.StatefulSetPersistentVolumeClaimRetentionPolicy,
 	serverConfigMeta metav1.ObjectMeta,
 	annotator *patch.Annotator,
-	serverGeneration int64,
 ) *ServerStatefulSetReconciler {
 	labels := utils.MergeMaps(meta.Labels, serverConfigMeta.Labels)
-	labels["seldon/minReplicas"] = strconv.FormatInt(int64(*scaling.MinReplicas), 10)
-	labels["seldon/maxReplicas"] = strconv.FormatInt(int64(*scaling.MaxReplicas), 10)
-	labels["seldon/generation"] = strconv.FormatInt(serverGeneration, 10)
-
 	annotations := utils.MergeMaps(meta.Annotations, serverConfigMeta.Annotations)
 	return &ServerStatefulSetReconciler{
 		ReconcilerConfig: common,

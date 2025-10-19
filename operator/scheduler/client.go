@@ -163,7 +163,6 @@ func (s *SchedulerClient) handleControlPlaneEvent(ctx context.Context, grpcClien
 			s.logger.Error(err, "Failed to send registered server to scheduler")
 			return err
 		}
-
 		return nil
 	case scheduler.ControlPlaneResponse_SEND_EXPERIMENTS:
 		err := s.handleExperiments(ctx, grpcClient, namespace)
