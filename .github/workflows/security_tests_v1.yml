@@ -11,7 +11,7 @@ env:
   GOLANG_VERSION: 1.20.9
 
 jobs:
-  security-python:
+  python:
     runs-on: ubuntu-latest
     container: snyk/snyk:python-3.8
     steps:
@@ -23,7 +23,7 @@ jobs:
         pip install -e python/.
         snyk test --file=python/setup.py --fail-on=upgradable --severity-threshold=high
 
-  security-image-executor:
+  image-executor:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -49,7 +49,7 @@ jobs:
           image: ${{ env.SELDON_EXECUTOR_IMG }}
           args: --app-vulns --severity-threshold=high --file=executor/Dockerfile.executor
 
-  security-image-operator:
+  image-operator:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -75,28 +75,45 @@ jobs:
         args:  --app-vulns --severity-threshold=high --file=operator/Dockerfile
 
 
-  security-image-python-base:
+  image-python-base:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: security-image-python-base
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Generate and set docker Conda image tag
+      run: |
+        TAG_CONDA="conda-base-$(date +%s)-$(openssl rand -hex 4)"
+        echo "CONDA_BASE_IMAGE=$TAG_CONDA" >> $GITHUB_ENV
+        TAG_PYTHON="python-base-$(date +%s)-$(openssl rand -hex 4)"
+        echo "PYTHON_BASE_IMAGE=$TAG_PYTHON" >> $GITHUB_ENV        
+        echo "Generated tag: PYTHON_BASE_IMAGE"
+    - name: Build (Conda Base Image)
+      working-directory: ./wrappers/s2i/python
+      run: |
+        make docker-build-conda-base
+    - name: Build and push (Base Wrapper)
+      working-directory: ./wrappers/s2i/python
+      run: |
+        IMAGE_NAME=${{ env.PYTHON_BASE_IMAGE}} make docker-build PYTHON_VERSION=3.8.10
+    - name: Scan Python base image
       uses: snyk/actions/docker@master
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        image: seldonio/seldon-core-s2i-python3:1.18.2
+        image: ${{ env.PYTHON_BASE_IMAGE}}
         args:  --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
 
-  security-image-python-sklearn:
-    runs-on: ubuntu-latest
-    steps:
-    - name: security-image-python-sklearn
-      uses: snyk/actions/docker@master
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        image: seldonio/sklearnserver:1.18.2
-        args: --fail-on=upgradable --app-vulns --severity-threshold=high
+#  security-image-python-sklearn:
+#    runs-on: ubuntu-latest
+#    steps:
+#    - name: security-image-python-sklearn
+#      uses: snyk/actions/docker@master
+#      env:
+#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+#      with:
+#        image: seldonio/sklearnserver:1.18.2
+#        args: --fail-on=upgradable --app-vulns --severity-threshold=high
 
 #
 #  security-image-python-mlflow:
