@@ -92,11 +92,11 @@ jobs:
     - name: Build (Conda Base Image)
       working-directory: ./wrappers/s2i/python
       run: |
-        make CONDA_BASE_IMAGE=${{ env.CONDA_BASE_IMAGE}} docker-build-conda-base
+        make CONDA_BASE_IMAGE=${{ env.CONDA_BASE_IMAGE}} VERSION=test docker-build-conda-base
     - name: Build (Base Wrapper)
       working-directory: ./wrappers/s2i/python
       run: |
-        make IMAGE_NAME=${{ env.PYTHON_BASE_IMAGE}} docker-build PYTHON_VERSION=3.8.10
+        make CONDA_BASE_IMAGE=${{ env.CONDA_BASE_IMAGE}}:test IMAGE_NAME=${{ env.PYTHON_BASE_IMAGE}} docker-build PYTHON_VERSION=3.8.10
     - name: Scan Python base image
       uses: snyk/actions/docker@master
       env:
