@@ -82,6 +82,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
+
     - name: Generate and set docker Conda image tag
       run: |
         TAG_CONDA="sec-tests/conda-base-$(date +%s)-$(openssl rand -hex 4)"
@@ -93,6 +94,7 @@ jobs:
       working-directory: ./wrappers/s2i/python
       run: |
         make CONDA_BASE_IMAGE=${{ env.CONDA_BASE_IMAGE}} VERSION=test docker-build-conda-base
+
     - name: Build (Base Wrapper)
       working-directory: ./wrappers/s2i/python
       run: |
@@ -105,18 +107,24 @@ jobs:
       with:
         image: ${{ env.PYTHON_BASE_IMAGE}}:test
         args:  --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
+
     - name: Install CLI tools from OpenShift Mirror
       uses: redhat-actions/openshift-tools-installer@v1
       with:
         github_pat: ${{ github.token }}
         source: "github"
         s2i: "latest"
+
     - name: Build (sklearn)
+      id: build-sklearn
+      continue-on-error: true
       working-directory: ./servers/sklearnserver
       run: |
         export SKLEARN_IMAGE_TAG="sec-tests/sklearn-$(date +%s)-$(openssl rand -hex 4)"
+        echo "SKLEARN_IMAGE_TAG=$SKLEARN_IMAGE_TAG" >> $GITHUB_ENV
         make IMAGE_NAME=${{ env.SKLEARN_IMAGE_TAG}} VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
     - name: Scan Python sklearn
+      if: steps.build-sklearn.outcome == 'success'
       uses: snyk/actions/docker@master
       continue-on-error: true
       env:
@@ -124,12 +132,17 @@ jobs:
       with:
         image: ${{ env.SKLEARN_IMAGE_TAG}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high
+
     - name: Build (mlflow)
+      id: build-mlflow
+      continue-on-error: true
       working-directory: ./servers/mlflowserver
       run: |
         export MLFLOW_IMAGE_TAG="sec-tests/mlflow-$(date +%s)-$(openssl rand -hex 4)"
+        echo "MLFLOW_IMAGE_TAG=$MLFLOW_IMAGE_TAG" >> $GITHUB_ENV
         make IMAGE_NAME=${{ env.MLFLOW_IMAGE_TAG}} VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
     - name: Scan Python mlflow
+      if: steps.build-mlflow.outcome == 'success'
       uses: snyk/actions/docker@master
       continue-on-error: true
       env:
@@ -137,12 +150,17 @@ jobs:
       with:
         image: ${{ env.MLFLOW_IMAGE_TAG}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high
+
     - name: Build (xgboost)
+      id: build-xgboost
+      continue-on-error: true
       working-directory: ./servers/xgboostserver
       run: |
         export XGBOOST_IMAGE_TAG="sec-tests/xgbost-$(date +%s)-$(openssl rand -hex 4)"
+        echo "XGBOOST_IMAGE_TAG=$XGBOOST_IMAGE_TAG" >> $GITHUB_ENV
         make IMAGE_NAME=${{ env.XGBOOST_IMAGE_TAG}} VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
     - name: Scan Python xgboost
+      if: steps.build-xgboost.outcome == 'success'
       uses: snyk/actions/docker@master
       continue-on-error: true
       env:
@@ -150,12 +168,17 @@ jobs:
       with:
         image: ${{ env.XGBOOST_IMAGE_TAG}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high
+
     - name: Build (alibi explain)
+      id: build-alibi-explain
+      continue-on-error: true
       working-directory: ./components/alibi-explain-server
       run: |
         export ALIBI_EXPLAIN_IMAGE_TAG="sec-tests/alibi-explain-$(date +%s)-$(openssl rand -hex 4)"
+        echo "ALIBI_EXPLAIN_IMAGE_TAG=$ALIBI_EXPLAIN_IMAGE_TAG" >> $GITHUB_ENV
         make IMAGE=${{ env.ALIBI_EXPLAIN_IMAGE_TAG}} VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
     - name: Scan Python alibi explain
+      if: steps.build-alibi-explain.outcome == 'success'
       uses: snyk/actions/docker@master
       continue-on-error: true
       env:
@@ -163,12 +186,17 @@ jobs:
       with:
         image: ${{ env.ALIBI_EXPLAIN_IMAGE_TAG}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/alibi-explain-server/Dockerfile
+
     - name: Build (alibi detect)
+      id: build-alibi-detect
+      continue-on-error: true
       working-directory: ./components/alibi-detect-server
       run: |
         export ALIBI_DETECT_IMAGE_TAG="sec-tests/alibi-detect-$(date +%s)-$(openssl rand -hex 4)"
+        echo "ALIBI_DETECT_IMAGE_TAG=$ALIBI_DETECT_IMAGE_TAG" >> $GITHUB_ENV
         make IMAGE=${{ env.ALIBI_DETECT_IMAGE_TAG}} VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
     - name: Scan Python alibi detect
+      if: steps.build-alibi-detect.outcome == 'success'
       uses: snyk/actions/docker@master
       continue-on-error: true
       env:
@@ -185,6 +213,7 @@ jobs:
       working-directory: ./components/rclone-storage-initializer
       run: |
         export RCLONE_IMAGE_TAG="sec-tests/rclone-$(date +%s)-$(openssl rand -hex 4):test"
+        echo "RCLONE_IMAGE_TAG=$RCLONE_IMAGE_TAG" >> $GITHUB_ENV
         make IMAGE_TAG=${{ env.RCLONE_IMAGE_TAG}} docker-build
     - name: Scan rclone
       uses: snyk/actions/docker@master
