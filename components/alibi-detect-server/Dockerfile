@@ -13,6 +13,8 @@ LABEL name="Seldon Alibi Detect Server" \
 
 FROM base as builder
 
+USER root
+
 RUN microdnf update -y && \
     microdnf install -y \
       unzip \
@@ -71,6 +73,8 @@ COPY version.txt version.txt
 
 FROM base as final
 WORKDIR /microservice
+
+USER root
 
 ENV RCLONE_CONFIG_GS_TYPE="google cloud storage" \
     RCLONE_CONFIG_GS_ANONYMOUS="true" \

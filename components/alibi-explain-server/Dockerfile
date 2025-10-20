@@ -1,4 +1,3 @@
-USER root
 ARG VERSION
 ARG BASE_IMAGE
 FROM ${BASE_IMAGE}:${VERSION} as base
@@ -12,6 +11,8 @@ LABEL name="Seldon Alibi Wrapper" \
       description="Allows Seldon Core inference models to run with a black box model explanation model from the Alibi:Explain project"
 
 FROM base as builder
+
+USER root
 
 # Install Python / Conda
 RUN microdnf update -y && \
