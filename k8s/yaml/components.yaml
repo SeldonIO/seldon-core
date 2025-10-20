@@ -307,7 +307,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: 'docker.io/seldonio/seldonv2-controller:latest'
+        image: 'docker.io/seldonio/seldonv2-controller:2.10.1'
         imagePullPolicy: 'IfNotPresent'
         livenessProbe:
           httpGet:
@@ -442,7 +442,7 @@ spec:
               fieldPath: metadata.namespace
         - name: HEALTH_PROBE_PORT
           value: "9999"
-        image: 'docker.io/seldonio/seldon-scheduler:latest'
+        image: 'docker.io/seldonio/seldon-scheduler:2.10.1'
         imagePullPolicy: 'IfNotPresent'
         livenessProbe:
           failureThreshold: 3
@@ -629,7 +629,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: 'docker.io/seldonio/seldon-pipelinegateway:latest'
+        image: 'docker.io/seldonio/seldon-pipelinegateway:2.10.1'
         imagePullPolicy: 'IfNotPresent'
         lifecycle:
           preStop:
@@ -804,7 +804,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: 'docker.io/seldonio/seldon-modelgateway:latest'
+        image: 'docker.io/seldonio/seldon-modelgateway:2.10.1'
         imagePullPolicy: 'IfNotPresent'
         livenessProbe:
           failureThreshold: 3
@@ -903,7 +903,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: 'docker.io/seldonio/seldon-hodometer:latest'
+        image: 'docker.io/seldonio/seldon-hodometer:2.10.1'
         imagePullPolicy: 'IfNotPresent'
         name: hodometer
         resources:
@@ -950,7 +950,7 @@ spec:
               key: ca.crt
               name: 'seldon-controlplane-server'
               optional: true
-        image: 'docker.io/seldonio/seldon-envoy:latest'
+        image: 'docker.io/seldonio/seldon-envoy:2.10.1'
         imagePullPolicy: 'IfNotPresent'
         lifecycle:
           preStop:
@@ -1066,7 +1066,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: 'docker.io/seldonio/seldon-dataflow-engine:latest'
+        image: 'docker.io/seldonio/seldon-dataflow-engine:2.10.1'
         imagePullPolicy: 'IfNotPresent'
         livenessProbe:
           failureThreshold: 3
@@ -1174,7 +1174,7 @@ spec:
         value: 'INFO'
       - name: MAX_BUFFER_MEMORY
         value: 64M
-      image: 'docker.io/seldonio/seldon-rclone:latest'
+      image: 'docker.io/seldonio/seldon-rclone:2.10.1'
       imagePullPolicy: 'IfNotPresent'
       lifecycle:
         preStop:
@@ -1322,7 +1322,7 @@ spec:
           resourceFieldRef:
             containerName: mlserver
             resource: requests.memory
-      image: 'docker.io/seldonio/seldon-agent:latest'
+      image: 'docker.io/seldonio/seldon-agent:2.10.1'
       imagePullPolicy: 'IfNotPresent'
       lifecycle:
         preStop:
@@ -1474,7 +1474,7 @@ spec:
         value: 'INFO'
       - name: MAX_BUFFER_MEMORY
         value: 64M
-      image: 'docker.io/seldonio/seldon-rclone:latest'
+      image: 'docker.io/seldonio/seldon-rclone:2.10.1'
       imagePullPolicy: 'IfNotPresent'
       lifecycle:
         preStop:
@@ -1614,7 +1614,7 @@ spec:
           resourceFieldRef:
             containerName: triton
             resource: requests.memory
-      image: 'docker.io/seldonio/seldon-agent:latest'
+      image: 'docker.io/seldonio/seldon-agent:2.10.1'
       imagePullPolicy: 'IfNotPresent'
       lifecycle:
         preStop:
