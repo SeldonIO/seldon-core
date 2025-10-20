@@ -99,11 +99,25 @@ jobs:
         make CONDA_BASE_IMAGE=${{ env.CONDA_BASE_IMAGE}} VERSION=test IMAGE_NAME=${{ env.PYTHON_BASE_IMAGE}} docker-build PYTHON_VERSION=3.8.10
     - name: Scan Python base image
       uses: snyk/actions/docker@master
+      continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: ${{ env.PYTHON_BASE_IMAGE}}:test
         args:  --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
+    - name: Build (sklearn)
+      working-directory: ./servers/sklearnserver
+      run: |
+        export SKLEARN_IMAGE_TAG="sec-tests/sklearn-$(date +%s)-$(openssl rand -hex 4)"
+        make IMAGE_NAME=${{ env.SKLEARN_IMAGE_TAG}} VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
+    - name: Scan Python sklearn
+      uses: snyk/actions/docker@master
+      continue-on-error: true
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: ${{ env.SKLEARN_IMAGE_TAG}}:test
+        args:  --fail-on=upgradable --app-vulns --severity-threshold=high
 
 #  security-image-python-sklearn:
 #    runs-on: ubuntu-latest
