@@ -214,7 +214,7 @@ jobs:
       run: |
         export RCLONE_IMAGE_TAG="sec-tests/rclone-$(date +%s)-$(openssl rand -hex 4):test"
         echo "RCLONE_IMAGE_TAG=$RCLONE_IMAGE_TAG" >> $GITHUB_ENV
-        make IMAGE_TAG=${{ env.RCLONE_IMAGE_TAG}} docker-build
+        make IMAGE_TAG=$RCLONE_IMAGE_TAG docker-build
     - name: Scan rclone
       uses: snyk/actions/docker@master
       env:
