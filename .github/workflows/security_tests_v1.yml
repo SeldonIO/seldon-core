@@ -122,7 +122,7 @@ jobs:
       run: |
         export SKLEARN_IMAGE_TAG="sec-tests/sklearn-$(date +%s)-$(openssl rand -hex 4)"
         echo "SKLEARN_IMAGE_TAG=$SKLEARN_IMAGE_TAG" >> $GITHUB_ENV
-        make IMAGE_NAME=${{ env.SKLEARN_IMAGE_TAG}} VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
+        make IMAGE_NAME=$SKLEARN_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
     - name: Scan Python sklearn
       if: steps.build-sklearn.outcome == 'success'
       uses: snyk/actions/docker@master
@@ -140,7 +140,7 @@ jobs:
       run: |
         export MLFLOW_IMAGE_TAG="sec-tests/mlflow-$(date +%s)-$(openssl rand -hex 4)"
         echo "MLFLOW_IMAGE_TAG=$MLFLOW_IMAGE_TAG" >> $GITHUB_ENV
-        make IMAGE_NAME=${{ env.MLFLOW_IMAGE_TAG}} VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
+        make IMAGE_NAME=$MLFLOW_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
     - name: Scan Python mlflow
       if: steps.build-mlflow.outcome == 'success'
       uses: snyk/actions/docker@master
@@ -158,7 +158,7 @@ jobs:
       run: |
         export XGBOOST_IMAGE_TAG="sec-tests/xgbost-$(date +%s)-$(openssl rand -hex 4)"
         echo "XGBOOST_IMAGE_TAG=$XGBOOST_IMAGE_TAG" >> $GITHUB_ENV
-        make IMAGE_NAME=${{ env.XGBOOST_IMAGE_TAG}} VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
+        make IMAGE_NAME=$XGBOOST_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
     - name: Scan Python xgboost
       if: steps.build-xgboost.outcome == 'success'
       uses: snyk/actions/docker@master
@@ -176,7 +176,7 @@ jobs:
       run: |
         export ALIBI_EXPLAIN_IMAGE_TAG="sec-tests/alibi-explain-$(date +%s)-$(openssl rand -hex 4)"
         echo "ALIBI_EXPLAIN_IMAGE_TAG=$ALIBI_EXPLAIN_IMAGE_TAG" >> $GITHUB_ENV
-        make IMAGE=${{ env.ALIBI_EXPLAIN_IMAGE_TAG}} VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
+        make IMAGE=$ALIBI_EXPLAIN_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
     - name: Scan Python alibi explain
       if: steps.build-alibi-explain.outcome == 'success'
       uses: snyk/actions/docker@master
@@ -194,7 +194,7 @@ jobs:
       run: |
         export ALIBI_DETECT_IMAGE_TAG="sec-tests/alibi-detect-$(date +%s)-$(openssl rand -hex 4)"
         echo "ALIBI_DETECT_IMAGE_TAG=$ALIBI_DETECT_IMAGE_TAG" >> $GITHUB_ENV
-        make IMAGE=${{ env.ALIBI_DETECT_IMAGE_TAG}} VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
+        make IMAGE=$ALIBI_DETECT_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
     - name: Scan Python alibi detect
       if: steps.build-alibi-detect.outcome == 'success'
       uses: snyk/actions/docker@master
