@@ -133,6 +133,10 @@ jobs:
         image: ${{ env.SKLEARN_IMAGE_TAG}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high
 
+    - name: Clean up Docker image
+      if: always()
+      run: docker rmi ${{ env.SKLEARN_IMAGE_TAG}}:test
+
     - name: Build (mlflow)
       id: build-mlflow
       continue-on-error: true
@@ -150,6 +154,11 @@ jobs:
       with:
         image: ${{ env.MLFLOW_IMAGE_TAG}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high
+
+
+    - name: Clean up Docker image
+      if: always()
+      run: docker rmi ${{ env.MLFLOW_IMAGE_TAG}}:test
 
     - name: Build (xgboost)
       id: build-xgboost
@@ -169,6 +178,10 @@ jobs:
         image: ${{ env.XGBOOST_IMAGE_TAG}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high
 
+    - name: Clean up Docker image
+      if: always()
+      run: docker rmi ${{ env.XGBOOST_IMAGE_TAG}}:test
+
     - name: Build (alibi explain)
       id: build-alibi-explain
       continue-on-error: true
@@ -186,6 +199,11 @@ jobs:
       with:
         image: ${{ env.ALIBI_EXPLAIN_IMAGE_TAG}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/alibi-explain-server/Dockerfile
+
+
+    - name: Clean up Docker image
+      if: always()
+      run: docker rmi ${{ env.ALIBI_EXPLAIN_IMAGE_TAG}}:test
 
     - name: Build (alibi detect)
       id: build-alibi-detect
