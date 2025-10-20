@@ -76,7 +76,7 @@ jobs:
         args:  --app-vulns --severity-threshold=high --file=operator/Dockerfile
 
 
-  image-python-base:
+  build-and-scan-python-images:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -105,6 +105,12 @@ jobs:
       with:
         image: ${{ env.PYTHON_BASE_IMAGE}}:test
         args:  --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
+    - name: Install CLI tools from OpenShift Mirror
+      uses: redhat-actions/openshift-tools-installer@v1
+      with:
+        github_pat: ${{ github.token }}
+        source: "github"
+        s2i: "latest"
     - name: Build (sklearn)
       working-directory: ./servers/sklearnserver
       run: |
@@ -118,78 +124,72 @@ jobs:
       with:
         image: ${{ env.SKLEARN_IMAGE_TAG}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high
+    - name: Build (mlflow)
+      working-directory: ./servers/mlflowserver
+      run: |
+        export MLFLOW_IMAGE_TAG="sec-tests/mlflow-$(date +%s)-$(openssl rand -hex 4)"
+        make IMAGE_NAME=${{ env.MLFLOW_IMAGE_TAG}} VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
+    - name: Scan Python mlflow
+      uses: snyk/actions/docker@master
+      continue-on-error: true
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: ${{ env.MLFLOW_IMAGE_TAG}}:test
+        args:  --fail-on=upgradable --app-vulns --severity-threshold=high
+    - name: Build (xgboost)
+      working-directory: ./servers/xgboostserver
+      run: |
+        export XGBOOST_IMAGE_TAG="sec-tests/xgbost-$(date +%s)-$(openssl rand -hex 4)"
+        make IMAGE_NAME=${{ env.XGBOOST_IMAGE_TAG}} VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
+    - name: Scan Python xgboost
+      uses: snyk/actions/docker@master
+      continue-on-error: true
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: ${{ env.XGBOOST_IMAGE_TAG}}:test
+        args:  --fail-on=upgradable --app-vulns --severity-threshold=high
+    - name: Build (alibi explain)
+      working-directory: ./components/alibi-explain-server
+      run: |
+        export ALIBI_EXPLAIN_IMAGE_TAG="sec-tests/alibi-explain-$(date +%s)-$(openssl rand -hex 4)"
+        make IMAGE=${{ env.ALIBI_EXPLAIN_IMAGE_TAG}} VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
+    - name: Scan Python alibi explain
+      uses: snyk/actions/docker@master
+      continue-on-error: true
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: ${{ env.ALIBI_EXPLAIN_IMAGE_TAG}}:test
+        args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/alibi-explain-server/Dockerfile
+    - name: Build (alibi detect)
+      working-directory: ./components/alibi-detect-server
+      run: |
+        export ALIBI_DETECT_IMAGE_TAG="sec-tests/alibi-detect-$(date +%s)-$(openssl rand -hex 4)"
+        make IMAGE=${{ env.ALIBI_DETECT_IMAGE_TAG}} VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
+    - name: Scan Python alibi detect
+      uses: snyk/actions/docker@master
+      continue-on-error: true
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: ${{ env.ALIBI_DETECT_IMAGE_TAG}}:test
+        args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/alibi-detect-server/Dockerfile
 
-#  security-image-python-sklearn:
-#    runs-on: ubuntu-latest
-#    steps:
-#    - name: security-image-python-sklearn
-#      uses: snyk/actions/docker@master
-#      env:
-#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-#      with:
-#        image: seldonio/sklearnserver:1.18.2
-#        args: --fail-on=upgradable --app-vulns --severity-threshold=high
-
-#
-#  security-image-python-mlflow:
-#
-#    runs-on: ubuntu-latest
-#    steps:
-#    - name: security-image-python-mlflow
-#      uses: snyk/actions/docker@master
-#      env:
-#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-#      with:
-#        image: seldonio/mlflowserver:1.18.2
-#        args: --fail-on=upgradable --app-vulns --severity-threshold=high
-#
-#  security-image-python-xgboost:
-#
-#    runs-on: ubuntu-latest
-#    steps:
-#    - name: security-image-python-xgboost
-#      uses: snyk/actions/docker@master
-#      env:
-#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-#      with:
-#        image: seldonio/xgboostserver:1.18.2
-#        args: --fail-on=upgradable --app-vulns --severity-threshold=high
-#
-#  security-image-alibi-explain:
-#
-#    runs-on: ubuntu-latest
-#    steps:
-#    - uses: actions/checkout@v2
-#    - name: security-image-alibi-explain
-#      uses: snyk/actions/docker@master
-#      env:
-#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-#      with:
-#        image: seldonio/alibiexplainer:1.18.2
-#        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/alibi-explain-server/Dockerfile
-#
-#  security-image-alibi-detect:
-#
-#    runs-on: ubuntu-latest
-#    steps:
-#    - uses: actions/checkout@v2
-#    - name: security-image-alibi-detect
-#      uses: snyk/actions/docker@master
-#      env:
-#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-#      with:
-#        image: seldonio/alibi-detect-server:1.18.2
-#        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/alibi-detect-server/Dockerfile
-#
-#  security-image-initializer-rclone:
-#
-#    runs-on: ubuntu-latest
-#    steps:
-#    - uses: actions/checkout@v2
-#    - name: security-image-request-logger
-#      uses: snyk/actions/docker@master
-#      env:
-#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-#      with:
-#        image: seldonio/rclone-storage-initializer:1.18.2
-#        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/rclone-storage-initializer/Dockerfile
+  security-image-initializer-rclone:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build (rclone initializer)
+      working-directory: ./components/rclone-storage-initializer
+      run: |
+        export RCLONE_IMAGE_TAG="sec-tests/rclone-$(date +%s)-$(openssl rand -hex 4):test"
+        make IMAGE_TAG=${{ env.RCLONE_IMAGE_TAG}} docker-build
+    - name: Scan rclone
+      uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: ${{ env.RCLONE_IMAGE_TAG}}
+        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/rclone-storage-initializer/Dockerfile

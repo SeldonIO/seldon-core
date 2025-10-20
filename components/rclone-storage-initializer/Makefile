@@ -5,8 +5,10 @@ VERSION ?= $(shell cat ../../version.txt)
 DOCKER_REGISTRY ?= seldonio
 KIND_NAME ?= kind
 
+IMAGE_TAG = ${DOCKER_REGISTRY}/${IMAGE}:${VERSION}
+
 docker-build:
-	docker build --file=Dockerfile --force-rm=true -t ${DOCKER_REGISTRY}/${IMAGE}:${VERSION} .
+	docker build --file=Dockerfile --force-rm=true -t ${IMAGE_TAG} .
 
 docker-push:
 	docker push ${DOCKER_REGISTRY}/${IMAGE}:${VERSION}
