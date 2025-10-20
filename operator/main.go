@@ -159,7 +159,7 @@ func main() {
 	schedulerClient := scheduler.NewSchedulerClient(logger,
 		mgr.GetClient(),
 		mgr.GetEventRecorderFor("scheduler-client"),
-		*tlsOptions)
+		*tlsOptions, useDeploymentsForServers)
 
 	if err = (&mlopscontrollers.ModelReconciler{
 		Client:    mgr.GetClient(),

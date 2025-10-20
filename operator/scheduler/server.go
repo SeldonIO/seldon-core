@@ -29,11 +29,12 @@ import (
 )
 
 func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler.SchedulerClient, servers []v1alpha1.Server, isFirstSync bool) error {
+	logger := s.logger.WithName("NotifyServer")
 	if len(servers) == 0 {
+		logger.Info("No servers to notify scheduler, skipping")
 		return nil
 	}
 
-	logger := s.logger.WithName("NotifyServer")
 	if grpcClient == nil {
 		// we assume that all servers are in the same namespace
 		namespace := servers[0].Namespace

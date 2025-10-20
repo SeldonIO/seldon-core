@@ -16,7 +16,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gotidy/ptr"
 	. "github.com/onsi/gomega"
+	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -161,6 +163,17 @@ func TestControlPlaneEvents(t *testing.T) {
 					},
 					Spec: mlopsv1alpha1.ServerSpec{},
 				},
+				&v1.StatefulSet{
+					TypeMeta: metav1.TypeMeta{},
+					ObjectMeta: metav1.ObjectMeta{
+						Name:       "foo",
+						Namespace:  "default",
+						Generation: 1,
+					},
+					Spec: v1.StatefulSetSpec{
+						Replicas: ptr.Int32(1),
+					},
+				},
 			},
 			expected_requests_pipelines: []*scheduler.LoadPipelineRequest{
 				{
@@ -233,7 +246,7 @@ func TestControlPlaneEvents(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			grpcClient := mockSchedulerGrpcClient{}
 
-			controller := newMockControllerClient(test.existing_resources...)
+			controller := newMockControllerClient(false, test.existing_resources...)
 
 			err := controller.SubscribeControlPlaneEvents(context.Background(), &grpcClient, "")
 			g.Expect(err).To(BeNil())

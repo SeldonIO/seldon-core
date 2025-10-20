@@ -14,6 +14,9 @@ import (
 	"fmt"
 	"io"
 
+	v1 "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -136,6 +139,54 @@ func (s *SchedulerClient) handleLoadedModels(
 	return nil
 }
 
+func (s *SchedulerClient) handleServerStatefulSet(ctx context.Context, namespace string, servers *[]v1alpha1.Server, server *v1alpha1.Server) error {
+	found := &v1.StatefulSet{}
+	err := s.Client.Get(ctx, types.NamespacedName{
+		Name:      server.Name,
+		Namespace: namespace,
+	}, found)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// this may not have been deployed due to it being invalid i.e. invalid scaling spec
+			s.logger.V(1).Info("Statefulset not found, skipping", "server", server.Name)
+			return nil
+		}
+		return fmt.Errorf("failed to get statefulset: %w", err)
+	}
+
+	server.Spec.Replicas = found.Spec.Replicas
+	*servers = append(*servers, *server)
+	return nil
+}
+
+func (s *SchedulerClient) handleServerDeployment(ctx context.Context, namespace string, servers *[]v1alpha1.Server, server *v1alpha1.Server) error {
+	found := &v1.Deployment{}
+	err := s.Client.Get(ctx, types.NamespacedName{
+		Name:      server.Name,
+		Namespace: namespace,
+	}, found)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// this may not have been deployed due to it being invalid i.e. invalid scaling spec
+			s.logger.V(1).Info("Deployment not found, skipping", "server", server.Name)
+			return nil
+		}
+		return fmt.Errorf("failed to get deployment: %w", err)
+	}
+
+	server.Spec.Replicas = found.Spec.Replicas
+	*servers = append(*servers, *server)
+	return nil
+}
+
+// handleRegisteredServers we need to inform the scheduler of the Servers deployed, in particular their:
+// - replicas
+// - max/min replicas
+// It is possible for a customer to change their Server CR to an invalid state which can not be deployed i.e. invalid
+// scaling spec, ServerConfig CR field is changed such as VPC size, which can not be changed when a StatefulSet is already
+// deployed. In which case, we can't rely on the Server CR as the source of truth of what's deployed. Instead, we
+// get each Server CR and then check how many replicas are actually deployed. This mitigates the scheduler waiting
+// the 10-minute timeout window for Servers to connect which haven't been deployed.
 func (s *SchedulerClient) handleRegisteredServers(
 	ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	serverList := &v1alpha1.ServerList{}
@@ -149,10 +200,30 @@ func (s *SchedulerClient) handleRegisteredServers(
 		return fmt.Errorf("failed to list servers: %w", err)
 	}
 
-	if err := s.ServerNotify(ctx, grpcClient, serverList.Items, true); err != nil {
-		return err
+	servers := make([]v1alpha1.Server, 0)
+
+	for _, server := range serverList.Items {
+		if !server.ObjectMeta.DeletionTimestamp.IsZero() {
+			// ServerNotify will handle setting replicas = 0 before sending to scheduler
+			servers = append(servers, server)
+			continue
+		}
+
+		if s.useDeploymentsForServers {
+			if err := s.handleServerDeployment(ctx, server.Namespace, &servers, &server); err != nil {
+				return fmt.Errorf("failed to handle server deployment: %w", err)
+			}
+			continue
+		}
+
+		if err := s.handleServerStatefulSet(ctx, server.Namespace, &servers, &server); err != nil {
+			return fmt.Errorf("failed to handle server statefulset: %w", err)
+		}
 	}
 
+	if err := s.ServerNotify(ctx, grpcClient, servers, true); err != nil {
+		return err
+	}
 	return nil
 }
 

@@ -244,7 +244,7 @@ func TestServerNotify(t *testing.T) {
 			grpcClient := mockSchedulerGrpcClient{
 				requests_servers: []*scheduler.ServerNotify{},
 			}
-			controller := newMockControllerClient()
+			controller := newMockControllerClient(false)
 			err := controller.ServerNotify(context.Background(), &grpcClient, test.servers, false)
 			g.Expect(err).To(BeNil())
 
@@ -470,7 +470,7 @@ func TestSubscribeServerEvents(t *testing.T) {
 			}
 
 			existing_resources := []client.Object{&test.existingServer}
-			controller := newMockControllerClient(existing_resources...)
+			controller := newMockControllerClient(false, existing_resources...)
 			err := controller.SubscribeServerEvents(context.Background(), &grpcClient, "")
 			g.Expect(err).To(BeNil())
 

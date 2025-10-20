@@ -30,7 +30,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/common"
 	serverreconcile "github.com/seldonio/seldon-core/operator/v2/controllers/reconcilers/server"
@@ -106,12 +105,6 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return reconcile.Result{}, reconcile.TerminalError(err)
 	}
 
-	if err := r.Scheduler.ServerNotify(ctx, nil, []v1alpha1.Server{*server}, false); err != nil {
-		logger.Error(err, "Failed calling ServerNotify", "name", req.Name, "namespace", req.Namespace, "spec", server.Spec)
-		r.updateStatusFromError(ctx, logger, server, err)
-		return reconcile.Result{}, err
-	}
-
 	server.Spec.Replicas = ptr.To(int32(scalingSpec.Replicas))
 
 	var sr common.Reconciler
@@ -142,9 +135,19 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return reconcile.Result{}, err
 	}
 
+	// attempt to deploy
 	err = sr.Reconcile()
 	if err != nil {
 		logger.Error(err, "Failed reconciling", "name", req.Name, "namespace", req.Namespace, "spec", server.Spec)
+		r.updateStatusFromError(ctx, logger, server, err)
+		return reconcile.Result{}, err
+	}
+
+	// only after successful deployment of the pods, we notify the scheduler of the number of Servers it can expect that
+	// will try and connect. It's important we do this after we deploy, otherwise if deployment fails, the scheduler
+	// may expect the wrong number, and end up waiting for the 10-minute timeout until loading models onto the Servers.
+	if err := r.Scheduler.ServerNotify(ctx, nil, []mlopsv1alpha1.Server{*server}, false); err != nil {
+		logger.Error(err, "Failed calling ServerNotify", "name", req.Name, "namespace", req.Namespace, "spec", server.Spec)
 		r.updateStatusFromError(ctx, logger, server, err)
 		return reconcile.Result{}, err
 	}

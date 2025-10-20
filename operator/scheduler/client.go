@@ -50,31 +50,33 @@ const (
 
 type SchedulerClient struct {
 	client.Client
-	logger         logr.Logger
-	callOptions    []grpc.CallOption
-	recorder       record.EventRecorder
-	seldonRuntimes map[string]*grpc.ClientConn // map of namespace to grpc connection
-	tlsOptions     tls.TLSOptions
-	mu             sync.Mutex
+	logger                   logr.Logger
+	callOptions              []grpc.CallOption
+	recorder                 record.EventRecorder
+	seldonRuntimes           map[string]*grpc.ClientConn // map of namespace to grpc connection
+	tlsOptions               tls.TLSOptions
+	useDeploymentsForServers bool
+	mu                       sync.Mutex
 }
 
 //	connect on demand by add getConnection(namespace) which if not existing calls connect to scheduler.
 //
 // For this will need to know ports (hardwire for now to 9004 and 9044 - ssl comes fom envvar - so always
 // the same for all schedulers
-func NewSchedulerClient(logger logr.Logger, client client.Client, recorder record.EventRecorder, tlsOptions tls.TLSOptions) *SchedulerClient {
+func NewSchedulerClient(logger logr.Logger, client client.Client, recorder record.EventRecorder, tlsOptions tls.TLSOptions, useDeploymentsForServers bool) *SchedulerClient {
 	opts := []grpc.CallOption{
 		grpc.MaxCallSendMsgSize(math.MaxInt32),
 		grpc.MaxCallRecvMsgSize(math.MaxInt32),
 	}
 
 	return &SchedulerClient{
-		Client:         client,
-		logger:         logger.WithName("SchedulerClient"),
-		callOptions:    opts,
-		recorder:       recorder,
-		seldonRuntimes: make(map[string]*grpc.ClientConn),
-		tlsOptions:     tlsOptions,
+		Client:                   client,
+		logger:                   logger.WithName("SchedulerClient"),
+		callOptions:              opts,
+		recorder:                 recorder,
+		seldonRuntimes:           make(map[string]*grpc.ClientConn),
+		tlsOptions:               tlsOptions,
+		useDeploymentsForServers: useDeploymentsForServers,
 	}
 }
 
@@ -161,7 +163,6 @@ func (s *SchedulerClient) handleControlPlaneEvent(ctx context.Context, grpcClien
 			s.logger.Error(err, "Failed to send registered server to scheduler")
 			return err
 		}
-
 		return nil
 	case scheduler.ControlPlaneResponse_SEND_EXPERIMENTS:
 		err := s.handleExperiments(ctx, grpcClient, namespace)
