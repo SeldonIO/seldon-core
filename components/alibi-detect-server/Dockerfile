@@ -76,7 +76,7 @@ ENV RCLONE_CONFIG_GS_TYPE="google cloud storage" \
     DRIFT_ARTIFACTS_DIR="/mnt/artifacts/"
 
 # mesa-libGL: this is to avoid "ImportError: libGL.so.1" from opencv
-RUN microdnf install -y mesa-libGL
+RUN  microdnf clean all && microdnf install -y mesa-libGL
 RUN microdnf update -y
 
 COPY --from=builder /microservice /microservice
