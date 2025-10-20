@@ -176,7 +176,7 @@ jobs:
       run: |
         export ALIBI_EXPLAIN_IMAGE_TAG="sec-tests/alibi-explain-$(date +%s)-$(openssl rand -hex 4)"
         echo "ALIBI_EXPLAIN_IMAGE_TAG=$ALIBI_EXPLAIN_IMAGE_TAG" >> $GITHUB_ENV
-        make IMAGE=$ALIBI_EXPLAIN_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
+        make IMAGE=$ALIBI_EXPLAIN_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}} docker-build
     - name: Scan Python alibi explain
       if: steps.build-alibi-explain.outcome == 'success'
       uses: snyk/actions/docker@master
@@ -194,7 +194,7 @@ jobs:
       run: |
         export ALIBI_DETECT_IMAGE_TAG="sec-tests/alibi-detect-$(date +%s)-$(openssl rand -hex 4)"
         echo "ALIBI_DETECT_IMAGE_TAG=$ALIBI_DETECT_IMAGE_TAG" >> $GITHUB_ENV
-        make IMAGE=$ALIBI_DETECT_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
+        make IMAGE=$ALIBI_DETECT_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}} docker-build
     - name: Scan Python alibi detect
       if: steps.build-alibi-detect.outcome == 'success'
       uses: snyk/actions/docker@master
@@ -216,6 +216,7 @@ jobs:
         echo "RCLONE_IMAGE_TAG=$RCLONE_IMAGE_TAG" >> $GITHUB_ENV
         make IMAGE_TAG=$RCLONE_IMAGE_TAG docker-build
     - name: Scan rclone
+      continue-on-error: false
       uses: snyk/actions/docker@master
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
