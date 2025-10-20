@@ -61,6 +61,7 @@ jobs:
         echo "SELDON_OPERATOR_IMG=$TAG" >> $GITHUB_ENV
         echo "Generated tag: SELDON_OPERATOR_IMG"
     - name: Build docker image
+      working-directory: ./operator/
       env:
         VERSION: ${{ steps.docker-tag.outputs.value }}
       run: |
@@ -91,8 +92,8 @@ jobs:
     - name: Build (Conda Base Image)
       working-directory: ./wrappers/s2i/python
       run: |
-        make docker-build-conda-base
-    - name: Build and push (Base Wrapper)
+        CONDA_BASE_IMAGE=${{ env.CONDA_BASE_IMAGE}} make docker-build-conda-base
+    - name: Build (Base Wrapper)
       working-directory: ./wrappers/s2i/python
       run: |
         IMAGE_NAME=${{ env.PYTHON_BASE_IMAGE}} make docker-build PYTHON_VERSION=3.8.10
