@@ -84,9 +84,9 @@ jobs:
       uses: docker/setup-buildx-action@v3
     - name: Generate and set docker Conda image tag
       run: |
-        TAG_CONDA="conda-base-$(date +%s)-$(openssl rand -hex 4)"
+        TAG_CONDA="sec-tests/conda-base-$(date +%s)-$(openssl rand -hex 4)"
         echo "CONDA_BASE_IMAGE=$TAG_CONDA" >> $GITHUB_ENV
-        TAG_PYTHON="python-base-$(date +%s)-$(openssl rand -hex 4)"
+        TAG_PYTHON="sec-tests/python-base-$(date +%s)-$(openssl rand -hex 4)"
         echo "PYTHON_BASE_IMAGE=$TAG_PYTHON" >> $GITHUB_ENV        
         echo "Generated tag: PYTHON_BASE_IMAGE"
     - name: Build (Conda Base Image)
@@ -102,7 +102,7 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        image: ${{ env.PYTHON_BASE_IMAGE}}
+        image: ${{ env.PYTHON_BASE_IMAGE}}:test
         args:  --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
 
 #  security-image-python-sklearn:
