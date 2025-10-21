@@ -94,11 +94,22 @@ jobs:
       working-directory: ./wrappers/s2i/python
       run: |
         make CONDA_BASE_IMAGE=${{ env.CONDA_BASE_IMAGE}} VERSION=test docker-build-conda-base
-
+        docker save -o /tmp/conda-image.tar ${{ env.CONDA_BASE_IMAGE}}:${VERSION}
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: conda-image
+        path: /tmp/conda-image.tar
     - name: Build (Base Wrapper)
       working-directory: ./wrappers/s2i/python
       run: |
         make CONDA_BASE_IMAGE=${{ env.CONDA_BASE_IMAGE}} VERSION=test IMAGE_NAME=${{ env.PYTHON_BASE_IMAGE}} docker-build PYTHON_VERSION=3.8.10
+        docker save -o /tmp/python-base-image.tar ${{ env.PYTHON_BASE_IMAGE}}:test
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: python-base-image
+        path: /tmp/python-base-image.tar
     - name: Scan Python base image
       uses: snyk/actions/docker@master
       continue-on-error: true
