@@ -4,7 +4,8 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ master ]
+    # TODO revert before merge to master
+    branches: [ fix/core-1-CVEs ]
   workflow_dispatch:
 
 env:
