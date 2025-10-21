@@ -266,6 +266,7 @@ jobs:
 #        image: ${{ env.ALIBI_DETECT_IMAGE_TAG}}:test
 #        args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/alibi-detect-server/Dockerfile
 
+
   security-image-initializer-rclone:
     runs-on: ubuntu-latest
     steps:
