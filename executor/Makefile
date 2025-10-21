@@ -7,8 +7,6 @@ DOCKER_REGISTRY ?= seldonio
 IMAGE_NAME_BASE=seldon-core-executor
 IMG ?= ${DOCKER_REGISTRY}/${IMAGE_NAME_BASE}:${VERSION}
 
-EXECUTOR_FOLDERS ?= ./api/... ./predictor/... ./k8s/... ./logger/...
-
 KIND_NAME ?= kind
 
 # # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
@@ -20,11 +18,11 @@ KIND_NAME ?= kind
 
 # Run go fmt against code
 fmt:
-	go fmt ${EXECUTOR_FOLDERS}
+	go fmt ./...
 
 # Run go vet against code
 vet:
-	go vet ${EXECUTOR_FOLDERS}
+	go vet ./...
 
 
 # Build manager binary
@@ -82,7 +80,7 @@ add_protos:
 
 # Run tests
 test: copy_operator fmt vet
-	go test ${EXECUTOR_FOLDERS} -coverprofile cover.out
+	go test ./... -coverprofile cover.out
 
 copy_openapi_resources:
 	mkdir -p api/rest/openapi
