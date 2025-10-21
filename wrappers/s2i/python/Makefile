@@ -24,6 +24,7 @@ get_local_repo:
 	mkdir -p _python
 	cp ../../../version.txt version.txt
 	cp -r $(SELDON_CORE_DIR)/python _python
+	rm -rf _python/.tox
 
 
 # Building Conda Base
