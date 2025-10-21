@@ -94,7 +94,7 @@ jobs:
       working-directory: ./wrappers/s2i/python
       run: |
         make CONDA_BASE_IMAGE=${{ env.CONDA_BASE_IMAGE}} VERSION=test docker-build-conda-base
-        docker save -o /tmp/conda-image.tar ${{ env.CONDA_BASE_IMAGE}}:${VERSION}
+        docker save -o /tmp/conda-image.tar ${{ env.CONDA_BASE_IMAGE}}:test
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
