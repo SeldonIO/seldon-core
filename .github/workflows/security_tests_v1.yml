@@ -278,6 +278,7 @@ jobs:
         echo "RCLONE_IMAGE_TAG=$RCLONE_IMAGE_TAG" >> $GITHUB_ENV
         make IMAGE_TAG=$RCLONE_IMAGE_TAG docker-build
     - name: Scan rclone
+      id: scan-rclone
       uses: snyk/actions/docker@master
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -285,3 +286,10 @@ jobs:
         image: ${{ env.RCLONE_IMAGE_TAG}}
 #        TODO fix, passes even if CVEs found
         args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/rclone-storage-initializer/Dockerfile
+    - name: Check for image scan failures
+      if: always()
+      run: |
+        if [ "${{ steps.scan-rclone.outcome }}" != "success" ]; then
+          echo "Rclone docker image scan failed"
+          exit 1
+        fi    
