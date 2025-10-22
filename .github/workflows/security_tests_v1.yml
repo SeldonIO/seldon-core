@@ -283,7 +283,7 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        image: ${{ env.RCLONE_IMAGE_TAG}}
+        image: ${{ env.RCLONE_IMAGE_TAG }}
 #        TODO fix, passes even if CVEs found
         args: --fail-on=all --severity-threshold=high 
     - name: Check for image scan failures
