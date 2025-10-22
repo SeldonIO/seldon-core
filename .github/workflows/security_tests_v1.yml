@@ -285,7 +285,12 @@ jobs:
       with:
         image: ${{ env.RCLONE_IMAGE_TAG }}
 #        TODO fix, passes even if CVEs found
-        args: --fail-on=all --severity-threshold=high 
+        args: --fail-on=all --severity-threshold=high --sarif-file-output=snyk.sarif
+    - name: Upload Snyk results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: snyk.sarif
     - name: Check for image scan failures
       if: always()
       run: |
