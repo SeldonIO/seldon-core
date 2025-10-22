@@ -286,7 +286,7 @@ jobs:
           -e SNYK_TOKEN="${SNYK_TOKEN}" \
           -v /var/run/docker.sock:/var/run/docker.sock \
           snyk/snyk:docker \
-          snyk container test ${{ env.RCLONE_IMAGE_TAG }} \
+          snyk test ${{ env.RCLONE_IMAGE_TAG }} \
           --severity-threshold=high -d \
           --fail-on=all
          echo "got return code $?" 
