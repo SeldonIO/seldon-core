@@ -281,5 +281,5 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        image: ${{ env.RCLONE_IMAGE_TAG }
+        image: ${{ env.RCLONE_IMAGE_TAG }}
         args: --app-vulns --severity-threshold=high --file=components/rclone-storage-initializer/Dockerfile
