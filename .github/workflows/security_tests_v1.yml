@@ -279,20 +279,9 @@ jobs:
         make IMAGE_TAG=$RCLONE_IMAGE_TAG docker-build
     - name: Scan rclone
       id: scan-rclone
+      uses: snyk/actions/docker@master
       env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }} 
-      run: |
-         docker run --rm \
-          -e SNYK_TOKEN="${SNYK_TOKEN}" \
-          -v /var/run/docker.sock:/var/run/docker.sock \
-          snyk/snyk:docker \
-          snyk container test ${{ env.RCLONE_IMAGE_TAG }} \
-          --severity-threshold=high -d 
-         echo "got return code $?" 
-    - name: Check for image scan failures
-      if: always()
-      run: |
-        if [ "${{ steps.scan-rclone.outcome }}" != "success" ]; then
-          echo "Rclone docker image scan failed"
-          exit 1
-        fi    
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: ${{ env.RCLONE_IMAGE_TAG }
+        args: --app-vulns --severity-threshold=high --file=components/rclone-storage-initializer/Dockerfile 
