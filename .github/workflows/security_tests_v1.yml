@@ -289,6 +289,7 @@ jobs:
           snyk container test ${{ env.RCLONE_IMAGE_TAG }} \
           --severity-threshold=high \
           --fail-on=all
+         echo "got return code $?" 
     - name: Check for image scan failures
       if: always()
       run: |
