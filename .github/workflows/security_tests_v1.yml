@@ -287,7 +287,7 @@ jobs:
           -v /var/run/docker.sock:/var/run/docker.sock \
           snyk/snyk:docker \
           snyk container test ${{ env.RCLONE_IMAGE_TAG }} \
-          --severity-threshold=high \
+          --severity-threshold=high -d \
           --fail-on=all
          echo "got return code $?" 
     - name: Check for image scan failures
