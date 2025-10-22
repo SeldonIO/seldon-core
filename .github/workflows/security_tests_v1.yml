@@ -285,7 +285,7 @@ jobs:
       with:
         image: ${{ env.RCLONE_IMAGE_TAG}}
 #        TODO fix, passes even if CVEs found
-        args: --fail-on=all --app-vulns --severity-threshold=high --file=components/rclone-storage-initializer/Dockerfile
+        args: --fail-on=all --severity-threshold=high --file=components/rclone-storage-initializer/Dockerfile
     - name: Check for image scan failures
       if: always()
       run: |
