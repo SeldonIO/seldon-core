@@ -12,6 +12,8 @@ LABEL name="Seldon Alibi Detect Server" \
 
 FROM base as builder
 
+USER root
+
 RUN microdnf update -y && \
     microdnf install -y \
       unzip \
@@ -51,7 +53,7 @@ ENV POETRY_VIRTUALENVS_CREATE false
 ## dependencies causing false positives in Snyk.
 COPY poetry.lock pyproject.toml ./
 COPY _seldon_core ./_seldon_core
-RUN poetry install && \
+RUN poetry install --no-dev && \
     rm ~/.cache/pip -rf && \
     rm -f /opt/conda/lib/python3.8/site-packages/gslib/vendored/boto/requirements.txt \
           /opt/conda/lib/python3.8/site-packages/gslib/vendored/oauth2client/docs/requirements.txt \
@@ -59,7 +61,7 @@ RUN poetry install && \
 
 # Add licences
 RUN mkdir /licenses
-RUN mkdir ./licenses && pip-licenses --from=mixed --format=csv --output-file=./licenses/license_info.csv && \
+RUN mkdir ./licenses && pip install pip-licenses &&  pip-licenses --from=mixed --format=csv --output-file=./licenses/license_info.csv && \
     pip-licenses --from=mixed --format=plain-vertical --with-license-file --no-license-path --output-file=./licenses/license.txt
 RUN cp ./licenses/* /licenses
 
@@ -71,12 +73,14 @@ COPY version.txt version.txt
 FROM base as final
 WORKDIR /microservice
 
+USER root
+
 ENV RCLONE_CONFIG_GS_TYPE="google cloud storage" \
     RCLONE_CONFIG_GS_ANONYMOUS="true" \
     DRIFT_ARTIFACTS_DIR="/mnt/artifacts/"
 
 # mesa-libGL: this is to avoid "ImportError: libGL.so.1" from opencv
-RUN microdnf install -y mesa-libGL
+RUN  microdnf clean all && microdnf install -y mesa-libGL
 RUN microdnf update -y
 
 COPY --from=builder /microservice /microservice
@@ -86,7 +90,7 @@ COPY --from=builder /licenses /licenses
 
 # This is to have writable numba and keops cache directories
 ENV NUMBA_CACHE_DIR /tmp/numba-cache
-RUN mkdir /.cache && \
+RUN mkdir -p /.cache && \
     chown -R 8888:0 /.cache && \
     chmod -R 776 /.cache
 

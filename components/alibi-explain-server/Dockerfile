@@ -12,6 +12,8 @@ LABEL name="Seldon Alibi Wrapper" \
 
 FROM base as builder
 
+USER root
+
 # Install Python / Conda
 RUN microdnf update -y && \
     pip install --upgrade pip setuptools wheel && \
