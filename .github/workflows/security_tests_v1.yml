@@ -138,6 +138,30 @@ jobs:
         source: "github"
         s2i: "latest"
 
+
+    - name: Build (tfserving proxy)
+      id: build-tfserving-proxy
+      continue-on-error: true
+      working-directory: ./servers/tfserving_proxy
+      run: |
+        export TFSERVING_IMAGE_TAG="sec-tests/tfserving-$(date +%s)-$(openssl rand -hex 4)"
+        echo "TFSERVING_IMAGE_TAG=$TFSERVING_IMAGE_TAG" >> $GITHUB_ENV
+        make IMAGE_NAME=$TFSERVING_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
+    - name: Scan TF-serving proxy
+      id: scan-tfserving-proxy
+      if: steps.build-tfserving-proxy.outcome == 'success'
+      uses: snyk/actions/docker@master
+      continue-on-error: true
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: ${{ env.TFSERVING_IMAGE_TAG}}:test
+        args:  --fail-on=upgradable --app-vulns --severity-threshold=high
+
+    - name: Clean up Docker image
+      if: always()
+      run: docker rmi ${{ env.SKLEARN_IMAGE_TAG}}:test
+
     - name: Build (sklearn)
       id: build-sklearn
       continue-on-error: true
@@ -239,6 +263,7 @@ jobs:
         if [ "${{ steps.scan-alibi-explain.outcome }}" != "success" ] || \
            [ "${{ steps.scan-xgboost.outcome }}" != "success" ] || \
            [ "${{ steps.scan-sklearn.outcome }}" != "success" ] || \
+           [ "${{ steps.scan-tfserving-proxy.outcome }}" != "success" ] || \
            [ "${{ steps.scan-python-base.outcome }}" != "success" ] || \
            [ "${{ steps.scan-conda.outcome }}" != "success" ] || \
            [ "${{ steps.scan-mlflow.outcome }}" != "success" ]; then
