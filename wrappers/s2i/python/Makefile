@@ -3,9 +3,9 @@ VERSION ?= $(shell cat ../../../version.txt)
 
 DOCKER_REGISTRY ?= seldonio
 
-CONDA_VERSION ?= 24.3.0
-PYTHON_VERSION ?= 3.10.18
-MINIFORGE_VERSION ?= 24.3.0-0 # comes with Python 3.10.14
+MINIFORGE_VERSION ?= 25.3.1-0 # comes with Python 3.12.11
+CONDA_VERSION ?= 25.3.1
+PYTHON_VERSION ?= 3.12.12
 
 
 IMAGE_PYTHON_VERSION = $(shell echo -n $(PYTHON_VERSION) | cut -d. -f1-2 | sed 's/\.//g')

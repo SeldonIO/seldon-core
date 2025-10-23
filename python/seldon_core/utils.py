@@ -44,7 +44,7 @@ def get_request_path():
 
 
 def json_to_seldon_message(
-    message_json: Union[List, Dict]
+    message_json: Union[List, Dict],
 ) -> prediction_pb2.SeldonMessage:
     """
     Parses JSON input to a SeldonMessage proto

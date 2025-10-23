@@ -94,9 +94,6 @@ push_conda:
 	@echo "Subsequent pushes: need to for the python-seldon-core feedstock"
 	@echo "Alternatively use anaconda upload to publish on own channel"
 
-setup_linter:
-	pip install black==20.8b1 isort==5.7.0 nbqa==0.10.0
-
 fmt:
 	black \
 		./ ../testing/scripts ../operator/helm ../operator/hack \
