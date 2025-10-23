@@ -280,7 +280,7 @@ def test_transform_input_no_json():
     app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     uo = UserObject()
-    rv = client.get("/transform-input?")
+    rv = client.get("/transform-input?", headers={"Content-Type": "application/json"})
     j = json.loads(rv.data)
     logging.info(j)
     assert rv.status_code == 400
@@ -493,7 +493,7 @@ def test_transform_output_no_json():
     app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     uo = UserObject()
-    rv = client.get("/transform-output?")
+    rv = client.get("/transform-output?", headers={"Content-Type": "application/json"})
     j = json.loads(rv.data)
     logging.info(j)
     assert rv.status_code == 400

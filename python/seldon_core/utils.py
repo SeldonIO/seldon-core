@@ -588,9 +588,7 @@ def construct_response(
         )
 
 
-def extract_request_parts_json(
-    request: Union[Dict, List]
-) -> Tuple[
+def extract_request_parts_json(request: Union[Dict, List]) -> Tuple[
     Union[np.ndarray, str, bytes, Dict, List],
     Union[Dict, None],
     Union[np.ndarray, str, bytes, Dict, List, None],

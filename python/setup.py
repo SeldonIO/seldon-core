@@ -4,7 +4,7 @@ from itertools import chain
 from setuptools import find_packages, setup
 
 # Extra dependencies, with special 'all' key
-extras = {"tensorflow": ["tensorflow"]}
+extras = {"tensorflow": ["tensorflow==2.20.0"]}
 all_extra_deps = chain.from_iterable(extras.values())
 extras["all"] = list(set(all_extra_deps))
 
@@ -19,33 +19,28 @@ setup(
     license_files=["LICENSE"],
     packages=find_packages(),
     include_package_data=True,
-    python_requires=">=3.6",
+    python_requires=">=3.10.18,<3.12",  # distutils removed in 3.12
     install_requires=[
-        "Flask >= 2.0.0, <3.0.0",
-        "jsonschema<4.0.0",
-        "Flask-cors<4.0.0",
+        "Flask >= 3.0.0, <3.1.2",
+        "jsonschema==4.2.0",
+        "Flask-cors>=6.0.0",
         "requests<3.0.0",
-        "numpy<2.0.0",
-        "protobuf>=3.20.2,<4.0.0",
-        "grpcio<2.0.0",
-        "Flask-OpenTracing >= 1.1.0, < 1.2.0",
-        "opentracing >= 2.2.0, < 2.5.0",
-        "jaeger-client >= 4.1.0, < 4.5.0",
-        "grpcio-opentracing >= 1.1.4, < 1.2.0",
-        "grpcio-reflection < 2.0.0",
-        "gunicorn >= 19.9.0, < 20.2.0",
+        "numpy==2.2.6",  # Latest compatible with Python 3.10
+        "protobuf==5.29.5",
+        "grpcio==1.75.1",
+        "Flask-OpenTracing >= 2.0.0",
+        "opentracing >= 2.2.0, < 2.5.0",  # latest release is from 2020
+        "jaeger-client >= 4.8.0",  # latest release is from 2021
+        "grpcio-opentracing >= 1.1.4",  # latest release is from 2019
+        "grpcio-reflection==1.59.0",
+        "gunicorn >= 23.0.0",
         "setuptools >= 65.5.1",
-        "prometheus_client >= 0.7.1, < 0.9.0",
-        "werkzeug >= 2.1.1, < 2.3",
-        # Addresses CVE SNYK-PYTHON-CRYPTOGRAPHY-3315328
-        "cryptography >= 39.0.1, < 41.1",
-        # Addresses CVE SNYK-PYTHON-PYYAML-590151
-        "PyYAML >= 5.4, <= 6.0.1",
-        # Addresses CVE PRISMA-2021-0020
-        "click >= 8.0.0a1, < 8.1",
-        # Addresses CVE CVE-2019-11236 and CVE-2020-26137 and SNYK-PYTHON-URLLIB3-1533435
-        "urllib3 >= 1.26.5, < 1.27",
-        "importlib-metadata<5; python_version < '3.8'",
+        "prometheus_client >= 0.23.1",
+        "werkzeug >= 3.1.3",
+        "cryptography >= 46.0.2",
+        "PyYAML >= 6.0.3",
+        "click >= 8.3.0",
+        "urllib3 >= 2.5.0",
     ],
     extras_require=extras,
     entry_points={

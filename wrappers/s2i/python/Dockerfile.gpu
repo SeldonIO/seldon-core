@@ -1,6 +1,6 @@
 # Use same version as Triton 21.08-py3 (default Triton used in this version of
 # SC)
-FROM nvidia/cuda:11.4.3-cudnn8-runtime-ubuntu20.04
+FROM nvidia/cuda:12.2.2-cudnn8-runtime-ubuntu22.04
 
 LABEL io.openshift.s2i.scripts-url="image:///s2i/bin"
 
@@ -20,18 +20,20 @@ ENV PATH /opt/conda/bin:$PATH
 # MPL based licenses
 RUN wget -O certifi-python-certifi.tar.gz https://github.com/certifi/python-certifi/archive/master.tar.gz
 
-# Install Miniconda3
-ARG CONDA_DOWNLOAD_VERSION
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-${CONDA_DOWNLOAD_VERSION}-Linux-x86_64.sh -O ~/miniconda.sh && \
-    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
-    rm ~/miniconda.sh && \
-    /opt/conda/bin/conda clean -tipy && \
+# Install Miniforge (BSD-3-Clause)
+ARG MINIFORGE_VERSION
+RUN wget https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Miniforge3-${MINIFORGE_VERSION}-Linux-x86_64.sh -O ~/miniforge.sh && \
+    /bin/bash ~/miniforge.sh -b -p /opt/conda && \
+    rm ~/miniforge.sh && \
+    /opt/conda/bin/conda init bash && \
+    /opt/conda/bin/conda clean -afy && \
+    find /opt/conda -type f -name '*.a' -delete && \
+    find /opt/conda -type f -name '*.pyc' -delete && \
+    find /opt/conda -type f -name '*.js.map' -delete && \
     ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
     echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
     echo "conda activate base" >> ~/.bashrc && \
-    find /opt/conda/ -follow -type f -name '*.a' -delete && \
-    find /opt/conda/ -follow -type f -name '*.js.map' -delete && \
-    /opt/conda/bin/conda clean -afy
+    chgrp -R root /opt/conda && chmod -R g+rw /opt/conda
 
 # This is to install desired version of Python without updating conda version
 ARG PYTHON_VERSION
@@ -51,7 +53,7 @@ RUN cd /microservice/python && pip install .
 
 RUN mkdir -p /.conda && chmod a+rwx /.conda
 
-# Default user is 8888 so changing for permissiosn to modify (needed in mlflow server)
+# Default user is 8888 so changing for permissions to modify (needed in mlflow server)
 RUN chown -R 8888 /microservice
 
 EXPOSE 5000

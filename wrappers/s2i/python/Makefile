@@ -3,10 +3,9 @@ VERSION ?= $(shell cat ../../../version.txt)
 
 DOCKER_REGISTRY ?= seldonio
 
-CONDA_DOWNLOAD_VERSION ?= py310_25.7.0-2
-CONDA_VERSION ?= 25.7.0
-PYTHON_VERSION ?= 3.10.0
-MINIFORGE_VERSION ?= 24.3.0-0 # 24.1.2-0 3.10.14 # 23.11.0-0 - 3.10.13 # 25.3.1-0 comes with Python 3.12.11
+CONDA_VERSION ?= 24.3.0
+PYTHON_VERSION ?= 3.10.18
+MINIFORGE_VERSION ?= 24.3.0-0 # comes with Python 3.10.14
 
 
 IMAGE_PYTHON_VERSION = $(shell echo -n $(PYTHON_VERSION) | cut -d. -f1-2 | sed 's/\.//g')
@@ -18,11 +17,11 @@ GPU_IMAGE_NAME = ${DOCKER_REGISTRY}/seldon-core-s2i-python${IMAGE_PYTHON_VERSION
 SELDON_CORE_DIR = ../../..
 
 # Base images to build the s2i builder images from
-BASE_IMAGE = continuumio/miniconda3
 CONDA_BASE_IMAGE = ${DOCKER_REGISTRY}/conda-ubi9
 
 .PHONY: get_local_repo
 get_local_repo:
+	rm -rf ./_python
 	mkdir -p _python
 	cp ../../../version.txt version.txt
 	cp -r $(SELDON_CORE_DIR)/python _python
@@ -51,22 +50,19 @@ docker-push-base-python:
 
 # GPU Image (probably not in used so skipping build/push to private repositories)
 docker-build-gpu: get_local_repo
-	docker build -f Dockerfile.gpu --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg CONDA_DOWNLOAD_VERSION=${CONDA_DOWNLOAD_VERSION} -t ${GPU_IMAGE_NAME}:${VERSION} .
+	docker build -f Dockerfile.gpu --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg MINIFORGE_VERSION=${MINIFORGE_VERSION} -t ${GPU_IMAGE_NAME}:${VERSION} .
 
 docker-push-gpu:
 	docker push ${GPU_IMAGE_NAME}:${VERSION}
 
 
 ### OLD target to be reviewed if still required
+### Passing for 3.10 and miniforge
+
 .PHONY: test
 test:
-	docker build --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} -t ${IMAGE_NAME}-candidate .
+	docker build --build-arg VERSION=${VERSION} --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${CONDA_BASE_IMAGE} -t ${IMAGE_NAME}-candidate .
 	IMAGE_NAME=${IMAGE_NAME}-candidate test/run
-
-.PHONY: test_local
-test_local:
-	docker build -f Dockerfile --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} -t ${IMAGE_NAME}-candidate .
-	IMAGE_NAME=$(IMAGE_NAME)-candidate test/run
 
 .PHONY: clean
 clean:
@@ -77,4 +73,4 @@ clean:
 	rm -rf test/transformer-template-app/.git
 
 after_build_image_seldon_core_check:
-	docker run --rm -it ${DOCKER_REGISTRY}/seldon-core-s2i-python37:${VERSION} python -c 'import seldon_core; print(seldon_core.version.__version__)'
+	docker run --rm -it ${IMAGE_NAME}:${VERSION} python -c 'import seldon_core; print(seldon_core.version.__version__)'
