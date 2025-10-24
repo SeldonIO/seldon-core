@@ -110,7 +110,7 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 		return fmt.Errorf("server notify failed: %w", err)
 	}
 
-	logger.V(1).Info("Sent notify server to scheduler", "servers", len(servers), "isFirstSync", isFirstSync)
+	logger.Info("Sent notify server to scheduler", "servers", len(servers), "isFirstSync", isFirstSync)
 	return nil
 }
 
