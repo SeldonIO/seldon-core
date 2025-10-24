@@ -522,6 +522,7 @@ spec:
         - --enable-server-autoscaling=$(ENABLE_SERVER_AUTOSCALING)
         - --log-level=$(LOG_LEVEL)
         - --health-probe-port=$(HEALTH_PROBE_PORT)
+        - --enable-pprof=$(ENABLE_PPROF)
         command:
         - /bin/scheduler
         env:
@@ -599,6 +600,8 @@ spec:
               fieldPath: metadata.namespace
         - name: HEALTH_PROBE_PORT
           value: "9999"
+        - name: ENABLE_PPROF
+          value: "false"
         image: '{{ .Values.scheduler.image.registry }}/{{ .Values.scheduler.image.repository
           }}:{{ .Values.scheduler.image.tag }}'
         imagePullPolicy: '{{ .Values.scheduler.image.pullPolicy }}'
