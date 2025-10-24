@@ -99,7 +99,7 @@ func (r *PipelineReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	now := time.Now()
 	defer func() {
-		logger.V(1).Info("Finished Pipeline Reconcile", "duration", time.Since(now))
+		logger.Info("Finished Pipeline Reconcile", "duration", time.Since(now))
 	}()
 
 	pipeline := &mlopsv1alpha1.Pipeline{}

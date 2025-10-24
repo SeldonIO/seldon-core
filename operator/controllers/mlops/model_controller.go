@@ -83,7 +83,7 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	now := time.Now()
 	defer func() {
-		logger.V(1).Info("Finished Model Reconcile", "duration", time.Since(now))
+		logger.Info("Finished Model Reconcile", "duration", time.Since(now))
 	}()
 
 	model := &mlopsv1alpha1.Model{}

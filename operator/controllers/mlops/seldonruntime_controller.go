@@ -126,7 +126,7 @@ func (r *SeldonRuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	now := time.Now()
 	defer func() {
-		logger.V(1).Info("Finished SeldonRuntime Reconcile", "duration", time.Since(now))
+		logger.Info("Finished SeldonRuntime Reconcile", "duration", time.Since(now))
 	}()
 
 	seldonRuntime := &mlopsv1alpha1.SeldonRuntime{}

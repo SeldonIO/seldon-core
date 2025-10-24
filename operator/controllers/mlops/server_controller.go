@@ -75,7 +75,7 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 	now := time.Now()
 	defer func() {
-		logger.V(1).Info("Finished Server Reconcile", "duration", time.Since(now))
+		logger.Info("Finished Server Reconcile", "duration", time.Since(now))
 	}()
 
 	logger.Info("Received reconcile for Server", "name", req.Name, "namespace", req.NamespacedName.Namespace)

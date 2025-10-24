@@ -89,7 +89,7 @@ func (r *ExperimentReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	now := time.Now()
 	defer func() {
-		logger.V(1).Info("Finished Experiment Reconcile", "duration", time.Since(now))
+		logger.Info("Finished Experiment Reconcile", "duration", time.Since(now))
 	}()
 
 	experiment := &mlopsv1alpha1.Experiment{}
