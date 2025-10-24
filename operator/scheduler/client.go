@@ -17,7 +17,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cenkalti/backoff/v4"
+	v4backoff "github.com/cenkalti/backoff/v4"
 	"github.com/go-logr/logr"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"google.golang.org/grpc"
@@ -35,9 +35,15 @@ import (
 )
 
 const (
-	// these 2 constants in combination with the backoff exponential function will give us a max backoff of 13.5 minutes
-	schedulerConnectMaxRetries    = 100
-	schedulerConnectBackoffScalar = 200 * time.Millisecond
+	// schedulerConstantBackoff time to backoff between retries. We use a constant backoff as the k8s controller
+	// reconciller will handle exponential backoff and there is a risk of using max retries with too high a value
+	// and we end up backoff retrying forever.
+	schedulerConstantBackoff = 2 * time.Second
+	// schedulerConnectMaxRetries maximum amount of retries to attempt with failed gRPC requests to scheduler
+	schedulerConnectMaxRetries = 2
+)
+
+const (
 	// these keep alive settings need to match the scheduler counterpart in scheduler/pkg/util/constants.go
 	clientKeepAliveTime    = 60 * time.Second
 	clientKeepAliveTimeout = 2 * time.Second
@@ -337,7 +343,7 @@ func retryFn(
 		grpcClient := scheduler.NewSchedulerClient(conn)
 		return fn(context.Background(), grpcClient, namespace)
 	}
-	err := backoff.RetryNotify(fnWithArgs, backOffExp, logFailure)
+	err := v4backoff.RetryNotify(fnWithArgs, backOffExp, logFailure)
 	if err != nil {
 		logger.Error(err, "Failed to connect to scheduler", "namespace", namespace)
 		return err
@@ -345,8 +351,8 @@ func retryFn(
 	return nil
 }
 
-func getClientExponentialBackoff() *backoff.ExponentialBackOff {
-	backOffExp := backoff.NewExponentialBackOff()
+func getClientExponentialBackoff() *v4backoff.ExponentialBackOff {
+	backOffExp := v4backoff.NewExponentialBackOff()
 	backOffExp.MaxElapsedTime = backoffMaxElapsedTime
 	backOffExp.MaxInterval = backOffMaxInterval
 	backOffExp.InitialInterval = backOffInitialInterval

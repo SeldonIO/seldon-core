@@ -11,6 +11,7 @@ package mlops
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -82,9 +83,14 @@ func (r *ExperimentReconciler) handleFinalizer(ctx context.Context, logger logr.
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.10.0/pkg/reconcile
 func (r *ExperimentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := log.FromContext(ctx).WithName("Reconcile")
+	logger := log.FromContext(ctx).WithName("ExperimentReconcile")
 	ctx, cancel := context.WithTimeout(ctx, constants.ReconcileTimeout)
 	defer cancel()
+
+	now := time.Now()
+	defer func() {
+		logger.V(1).Info("Finished Experiment Reconcile", "duration", time.Since(now))
+	}()
 
 	experiment := &mlopsv1alpha1.Experiment{}
 	if err := r.Get(ctx, req.NamespacedName, experiment); err != nil {

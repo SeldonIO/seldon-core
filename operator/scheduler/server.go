@@ -14,8 +14,8 @@ import (
 	e "errors"
 	"fmt"
 	"io"
+	"time"
 
-	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/util/retry"
@@ -90,20 +90,26 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 		return fmt.Errorf("all servers failed scaling spec check: %w", errs)
 	}
 
-	request := &scheduler.ServerNotifyRequest{
-		Servers:     requests,
-		IsFirstSync: isFirstSync,
-	}
-	_, err := grpcClient.ServerNotify(
-		ctx,
-		request,
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
-	)
-	if err != nil {
-		logger.Error(err, "Failed to send notify server to scheduler")
+	err := backoff(func() error {
+		ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+		defer cancel()
+
+		_, err := grpcClient.ServerNotify(
+			ctx,
+			&scheduler.ServerNotifyRequest{
+				Servers:     requests,
+				IsFirstSync: isFirstSync,
+			},
+		)
 		return err
+	}, func(err error, duration time.Duration) {
+		logger.Error(err, "gRPC ServerNotify failed, retrying", "duration", duration)
+	})
+
+	if err != nil {
+		return fmt.Errorf("server notify failed: %w", err)
 	}
+
 	logger.V(1).Info("Sent notify server to scheduler", "servers", len(servers), "isFirstSync", isFirstSync)
 	return nil
 }
@@ -112,14 +118,24 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeServerEvents")
 
-	stream, err := grpcClient.SubscribeServerStatus(
-		ctx,
-		&scheduler.ServerSubscriptionRequest{SubscriberName: "seldon manager"},
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
-	)
-	if err != nil {
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithCancel(ctx)
+	defer cancel()
+
+	var stream scheduler.Scheduler_SubscribeServerStatusClient
+	err := backoff(func() error {
+		var err error
+		stream, err = grpcClient.SubscribeServerStatus(
+			ctx,
+			&scheduler.ServerSubscriptionRequest{SubscriberName: "seldon manager"},
+		)
 		return err
+	}, func(err error, duration time.Duration) {
+		logger.Error(err, "SubscribeServerStatus failed, retrying", "duration", duration)
+	})
+
+	if err != nil {
+		return fmt.Errorf("SubscribeServerStatus failed: %w", err)
 	}
 
 	for {

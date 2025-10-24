@@ -92,13 +92,13 @@ func TestServiceReconcile(t *testing.T) {
 			}
 			client = testing2.NewFakeClient(scheme)
 			sr := NewComponentServiceReconciler(
-				common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client},
+				common.ReconcilerConfig{Logger: logger, Client: client},
 				meta,
 				test.serviceConfig,
 				test.overrides,
 				annotator)
 			g.Expect(err).To(BeNil())
-			err = sr.Reconcile()
+			err = sr.Reconcile(context.TODO())
 
 			g.Expect(err).To(BeNil())
 			for _, svcName := range test.expectedSvcNames {

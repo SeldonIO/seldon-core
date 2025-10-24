@@ -178,21 +178,21 @@ func (s *ConfigMapReconciler) getReconcileOperation(idx int, configMap *v1.Confi
 	return constants.ReconcileUpdateNeeded, nil
 }
 
-func (s *ConfigMapReconciler) Reconcile() error {
+func (s *ConfigMapReconciler) Reconcile(ctx context.Context) error {
 	logger := s.Logger.WithName("ConfigMapReconcile")
 	for idx, configMap := range s.configMaps {
 		op, err := s.getReconcileOperation(idx, configMap)
 		switch op {
 		case constants.ReconcileCreateNeeded:
 			logger.V(1).Info("ConfigMap Create", "Name", configMap.GetName(), "Namespace", configMap.GetNamespace())
-			err = s.Client.Create(s.Ctx, configMap)
+			err = s.Client.Create(ctx, configMap)
 			if err != nil {
 				logger.Error(err, "Failed to create configmap", "Name", configMap.GetName(), "Namespace", configMap.GetNamespace())
 				return err
 			}
 		case constants.ReconcileUpdateNeeded:
 			logger.V(1).Info("ConfigMap Update", "Name", configMap.GetName(), "Namespace", configMap.GetNamespace())
-			err = s.Client.Update(s.Ctx, configMap)
+			err = s.Client.Update(ctx, configMap)
 			if err != nil {
 				logger.Error(err, "Failed to update configmap", "Name", configMap.GetName(), "Namespace", configMap.GetNamespace())
 				return err

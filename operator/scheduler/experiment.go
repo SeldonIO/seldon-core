@@ -11,9 +11,10 @@ package scheduler
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"time"
 
-	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/util/retry"
@@ -41,12 +42,20 @@ func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alp
 		Experiment: experiment.AsSchedulerExperimentRequest(),
 	}
 	logger.Info("Start", "experiment name", experiment.Name)
-	_, err = grpcClient.StartExperiment(
-		ctx,
-		req,
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
-	)
+
+	err = backoff(func() error {
+		ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+		defer cancel()
+
+		_, err := grpcClient.StartExperiment(
+			ctx,
+			req,
+		)
+		return err
+	}, func(err error, duration time.Duration) {
+		logger.Error(err, "StartExperiment failed, retrying", "duration", duration)
+	})
+
 	return s.checkErrorRetryable(experiment.Kind, experiment.Name, err), err
 }
 
@@ -64,12 +73,20 @@ func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alph
 		Name: experiment.Name,
 	}
 	logger.Info("Stop", "experiment name", experiment.Name)
-	_, err = grpcClient.StopExperiment(
-		ctx,
-		req,
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
-	)
+
+	err = backoff(func() error {
+		ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+		defer cancel()
+
+		_, err := grpcClient.StopExperiment(
+			ctx,
+			req,
+		)
+		return err
+	}, func(err error, duration time.Duration) {
+		logger.Error(err, "StopExperiment failed, retrying", "duration", duration)
+	})
+
 	return s.checkErrorRetryable(experiment.Kind, experiment.Name, err), err
 }
 
@@ -77,14 +94,24 @@ func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alph
 func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeExperimentEvents")
 
-	stream, err := grpcClient.SubscribeExperimentStatus(
-		ctx,
-		&scheduler.ExperimentSubscriptionRequest{SubscriberName: "seldon manager"},
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
-	)
-	if err != nil {
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithCancel(ctx)
+	defer cancel()
+
+	var stream scheduler.Scheduler_SubscribeExperimentStatusClient
+	err := backoff(func() error {
+		var err error
+		stream, err = grpcClient.SubscribeExperimentStatus(
+			ctx,
+			&scheduler.ExperimentSubscriptionRequest{SubscriberName: "seldon manager"},
+		)
 		return err
+	}, func(err error, duration time.Duration) {
+		logger.Error(err, "SubscribeExperimentStatus failed, retrying", "duration", duration)
+	})
+
+	if err != nil {
+		return fmt.Errorf("gRPC SubscribeExperimentStatus failed: %w", err)
 	}
 
 	for {

@@ -13,9 +13,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/go-logr/logr"
-	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	v1 "k8s.io/api/core/v1"
 	api_errors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/util/retry"
@@ -43,12 +43,20 @@ func (s *SchedulerClient) LoadPipeline(ctx context.Context, pipeline *v1alpha1.P
 		Pipeline: pipeline.AsSchedulerPipeline(),
 	}
 	logger.Info("Load", "pipeline name", pipeline.Name)
-	_, err = grpcClient.LoadPipeline(
-		ctx,
-		&req,
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
-	)
+
+	err = backoff(func() error {
+		ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+		defer cancel()
+
+		_, err := grpcClient.LoadPipeline(
+			ctx,
+			&req,
+		)
+		return err
+	}, func(err error, duration time.Duration) {
+		logger.Error(err, "LoadPipeline failed, retrying", "duration", duration)
+	})
+
 	return s.checkErrorRetryable(pipeline.Kind, pipeline.Name, err), err
 }
 
@@ -63,15 +71,24 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 		Name: pipeline.Name,
 	}
 	logger.Info("Unload", "pipeline name", pipeline.Name)
-	_, err = grpcClient.UnloadPipeline(
-		ctx,
-		&req,
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
-	)
+
+	err = backoff(func() error {
+		ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+		defer cancel()
+
+		_, err = grpcClient.UnloadPipeline(
+			ctx,
+			&req,
+		)
+		return err
+	}, func(err error, duration time.Duration) {
+		logger.Error(err, "UnloadPipeline failed, retrying", "duration", duration)
+	})
+
 	if err != nil {
 		return err, s.checkErrorRetryable(pipeline.Kind, pipeline.Name, err)
 	}
+
 	pipeline.Status.CreateAndSetCondition(
 		v1alpha1.PipelineReady,
 		false,
@@ -86,14 +103,24 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribePipelineEvents")
 
-	stream, err := grpcClient.SubscribePipelineStatus(
-		ctx,
-		&scheduler.PipelineSubscriptionRequest{SubscriberName: "seldon manager"},
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
-	)
-	if err != nil {
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithCancel(ctx)
+	defer cancel()
+
+	var stream scheduler.Scheduler_SubscribePipelineStatusClient
+	err := backoff(func() error {
+		var err error
+		stream, err = grpcClient.SubscribePipelineStatus(
+			ctx,
+			&scheduler.PipelineSubscriptionRequest{SubscriberName: "seldon manager"},
+		)
 		return err
+	}, func(err error, duration time.Duration) {
+		logger.Error(err, "SubscribePipelineStatus failed, retrying", "duration", duration)
+	})
+
+	if err != nil {
+		return fmt.Errorf("gRPC SubscribePipelineStatus failed: %v", err)
 	}
 
 	for {

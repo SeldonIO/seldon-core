@@ -11,6 +11,7 @@ package mlops
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -92,9 +93,14 @@ func (r *PipelineReconciler) handleFinalizer(
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.10.0/pkg/reconcile
 func (r *PipelineReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := log.FromContext(ctx).WithName("Reconcile")
+	logger := log.FromContext(ctx).WithName("PipelineReconcile")
 	ctx, cancel := context.WithTimeout(ctx, constants.ReconcileTimeout)
 	defer cancel()
+
+	now := time.Now()
+	defer func() {
+		logger.V(1).Info("Finished Pipeline Reconcile", "duration", time.Since(now))
+	}()
 
 	pipeline := &mlopsv1alpha1.Pipeline{}
 	if err := r.Get(ctx, req.NamespacedName, pipeline); err != nil {

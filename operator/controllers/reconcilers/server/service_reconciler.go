@@ -131,11 +131,11 @@ func (s *ServerServiceReconciler) getReconcileOperation(idx int, svc *v1.Service
 
 // Get the expected number of replicas of server specific services that currently should exist
 // This is found by extracting the annotation added to the main svc
-func (s *ServerServiceReconciler) getCurrentSvcReplicas() (int, error) {
+func (s *ServerServiceReconciler) getCurrentSvcReplicas(ctx context.Context) (int, error) {
 	founds := &v1.ServiceList{}
 	matchingLabel := client.MatchingLabels{constants.ServerReplicaLabelKey: s.meta.Name}
 	namespace := client.InNamespace(s.Namespace)
-	err := s.Client.List(s.Ctx, founds, matchingLabel, namespace)
+	err := s.Client.List(ctx, founds, matchingLabel, namespace)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return 0, nil
@@ -146,8 +146,8 @@ func (s *ServerServiceReconciler) getCurrentSvcReplicas() (int, error) {
 }
 
 // Delete svc replicas not needed
-func (s *ServerServiceReconciler) removeExtraSvcReplicas() error {
-	existingReplicas, err := s.getCurrentSvcReplicas()
+func (s *ServerServiceReconciler) removeExtraSvcReplicas(ctx context.Context) error {
+	existingReplicas, err := s.getCurrentSvcReplicas(ctx)
 	if err != nil {
 		return err
 	}
@@ -155,7 +155,7 @@ func (s *ServerServiceReconciler) removeExtraSvcReplicas() error {
 	if existingReplicas > numReplicas {
 		svcsNow := toServices(s.meta, existingReplicas)
 		for i := numReplicas; i < existingReplicas; i++ {
-			err = s.Client.Delete(s.Ctx, svcsNow[i])
+			err = s.Client.Delete(ctx, svcsNow[i])
 			if err != nil {
 				return err
 			}
@@ -164,9 +164,9 @@ func (s *ServerServiceReconciler) removeExtraSvcReplicas() error {
 	return nil
 }
 
-func (s *ServerServiceReconciler) Reconcile() error {
+func (s *ServerServiceReconciler) Reconcile(ctx context.Context) error {
 	logger := s.Logger.WithName("ServiceReconcile")
-	err := s.removeExtraSvcReplicas()
+	err := s.removeExtraSvcReplicas(ctx)
 	if err != nil {
 		return err
 	}
@@ -175,14 +175,14 @@ func (s *ServerServiceReconciler) Reconcile() error {
 		switch op {
 		case constants.ReconcileCreateNeeded:
 			logger.V(1).Info("Service Create", "Name", svc.GetName(), "Namespace", svc.GetNamespace())
-			err = s.Client.Create(s.Ctx, svc)
+			err = s.Client.Create(ctx, svc)
 			if err != nil {
 				logger.Error(err, "Failed to create service", "Name", svc.GetName(), "Namespace", svc.GetNamespace())
 				return err
 			}
 		case constants.ReconcileUpdateNeeded:
 			logger.V(1).Info("Service Update", "Name", svc.GetName(), "Namespace", svc.GetNamespace())
-			err = s.Client.Update(s.Ctx, svc)
+			err = s.Client.Update(ctx, svc)
 			if err != nil {
 				logger.Error(err, "Failed to update service", "Name", svc.GetName(), "Namespace", svc.GetNamespace())
 				return err

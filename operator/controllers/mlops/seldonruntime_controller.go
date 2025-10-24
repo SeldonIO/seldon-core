@@ -12,6 +12,7 @@ package mlops
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
@@ -119,9 +120,14 @@ func (r *SeldonRuntimeReconciler) handleFinalizer(ctx context.Context, logger lo
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.17.4/pkg/reconcile
 func (r *SeldonRuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := log.FromContext(ctx).WithName("Reconcile")
+	logger := log.FromContext(ctx).WithName("SeldonRunitmeReconcile")
 	ctx, cancel := context.WithTimeout(ctx, constants.ReconcileTimeout)
 	defer cancel()
+
+	now := time.Now()
+	defer func() {
+		logger.V(1).Info("Finished SeldonRuntime Reconcile", "duration", time.Since(now))
+	}()
 
 	seldonRuntime := &mlopsv1alpha1.SeldonRuntime{}
 	if err := r.Get(ctx, req.NamespacedName, seldonRuntime); err != nil {
@@ -141,9 +147,9 @@ func (r *SeldonRuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	sr, err := seldonreconcile.NewSeldonRuntimeReconciler(
+		ctx,
 		seldonRuntime,
 		common.ReconcilerConfig{
-			Ctx:      ctx,
 			Logger:   logger,
 			Client:   r.Client,
 			Recorder: r.Recorder,
@@ -160,7 +166,7 @@ func (r *SeldonRuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return reconcile.Result{}, err
 	}
 
-	err = sr.Reconcile()
+	err = sr.Reconcile(ctx)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -219,10 +225,10 @@ func (r *SeldonRuntimeReconciler) updateStatus(seldonRuntime *mlopsv1alpha1.Seld
 }
 
 // Find SeldonRuntimes that reference the changes SeldonConfig
-// TODO: pass an actual context from the caller to be used here
-func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromSeldonConfig(_ context.Context, obj client.Object) []reconcile.Request {
-	ctx, cancel := context.WithTimeout(context.Background(), constants.K8sAPICallsTxTimeout)
+func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromSeldonConfig(ctx context.Context, obj client.Object) []reconcile.Request {
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
 	defer cancel()
+
 	logger := log.FromContext(ctx).WithName("mapSeldonRuntimesFromSeldonConfig")
 	var seldonRuntimes mlopsv1alpha1.SeldonRuntimeList
 	if err := r.Client.List(ctx, &seldonRuntimes); err != nil {
@@ -263,9 +269,10 @@ func (r *SeldonRuntimeReconciler) mapSeldonRuntimesByNamespace(ctx context.Conte
 	return req
 }
 
-func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromPipeline(_ context.Context, obj client.Object) []reconcile.Request {
-	ctx, cancel := context.WithTimeout(context.Background(), constants.K8sAPICallsTxTimeout)
+func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromPipeline(ctx context.Context, obj client.Object) []reconcile.Request {
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
 	defer cancel()
+
 	logger := log.FromContext(ctx).WithName("mapSeldonRuntimesFromPipeline")
 	pipeline, ok := obj.(*mlopsv1alpha1.Pipeline)
 	if !ok {
@@ -275,9 +282,10 @@ func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromPipeline(_ context.Contex
 	return r.mapSeldonRuntimesByNamespace(ctx, pipeline.Namespace, logger)
 }
 
-func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromModel(_ context.Context, obj client.Object) []reconcile.Request {
-	ctx, cancel := context.WithTimeout(context.Background(), constants.K8sAPICallsTxTimeout)
+func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromModel(ctx context.Context, obj client.Object) []reconcile.Request {
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
 	defer cancel()
+
 	logger := log.FromContext(ctx).WithName("mapSeldonRuntimesFromModel")
 	model, ok := obj.(*mlopsv1alpha1.Model)
 	if !ok {

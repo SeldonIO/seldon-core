@@ -11,6 +11,7 @@ package mlops
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -76,9 +77,14 @@ func (r *ModelReconciler) handleFinalizer(ctx context.Context, logger logr.Logge
 //+kubebuilder:rbac:groups="",resources=events,verbs=create;patch
 
 func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := log.FromContext(ctx).WithName("Reconcile")
+	logger := log.FromContext(ctx).WithName("ModelReconcile")
 	ctx, cancel := context.WithTimeout(ctx, constants.ReconcileTimeout)
 	defer cancel()
+
+	now := time.Now()
+	defer func() {
+		logger.V(1).Info("Finished Model Reconcile", "duration", time.Since(now))
+	}()
 
 	model := &mlopsv1alpha1.Model{}
 	if err := r.Get(ctx, req.NamespacedName, model); err != nil {

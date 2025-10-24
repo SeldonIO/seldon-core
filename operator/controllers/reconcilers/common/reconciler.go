@@ -20,7 +20,7 @@ import (
 )
 
 type Reconciler interface {
-	Reconcile() error
+	Reconcile(ctx context.Context) error
 	GetResources() []client.Object
 	GetConditions() []*apis.Condition
 }
@@ -50,7 +50,6 @@ type LabelHandler interface {
 }
 
 type ReconcilerConfig struct {
-	Ctx      context.Context
 	Client   client.Client
 	Recorder record.EventRecorder
 	Logger   logr.Logger

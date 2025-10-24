@@ -15,8 +15,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/cenkalti/backoff/v4"
-	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	v4backoff "github.com/cenkalti/backoff/v4"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -31,14 +30,21 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithCancel(ctx)
 	defer cancel()
-	stream, err := grpcClient.SubscribeControlPlane(
-		ctx,
-		&scheduler.ControlPlaneSubscriptionRequest{SubscriberName: "seldon manager"},
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
-	)
-	if err != nil {
+
+	var stream scheduler.Scheduler_SubscribeControlPlaneClient
+	err := backoff(func() error {
+		var err error
+		stream, err = grpcClient.SubscribeControlPlane(
+			ctx,
+			&scheduler.ControlPlaneSubscriptionRequest{SubscriberName: "seldon manager"},
+		)
 		return err
+	}, func(err error, duration time.Duration) {
+		logger.Error(err, "SubscribeControlPlane failed, retrying", "duration", duration)
+	})
+
+	if err != nil {
+		return fmt.Errorf("gRPC SubscribeControlPlane failed: %w", err)
 	}
 
 	for {
@@ -56,7 +62,7 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 		}
 
 		go func() {
-			err := backoff.Retry(func() error {
+			err := v4backoff.Retry(func() error {
 				// in general, we could have also handled timeout via a context with timeout
 				// but we want to handle the timeout in a more controlled way and not depending on the other side
 				_, err = execWithTimeout(ctx, fn, constants.ControlPlaneExecTimeOut)
@@ -65,7 +71,7 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 					return err
 				}
 				return nil
-			}, backoff.NewExponentialBackOff(backoff.WithMaxElapsedTime(time.Minute*10)))
+			}, v4backoff.NewExponentialBackOff(v4backoff.WithMaxElapsedTime(time.Minute*10)))
 			if err != nil {
 				logger.Error(err, "Failed to handle event", "namespace", namespace, "event", event)
 				return

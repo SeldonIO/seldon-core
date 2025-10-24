@@ -99,7 +99,7 @@ func TestServiceReconcile(t *testing.T) {
 	tests := []test{
 		{
 			name: "Create",
-			reconcilerTime2: NewServerServiceReconciler(common.ReconcilerConfig{Ctx: context.Background(), Logger: logger},
+			reconcilerTime2: NewServerServiceReconciler(common.ReconcilerConfig{Logger: logger},
 				metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",
@@ -110,7 +110,7 @@ func TestServiceReconcile(t *testing.T) {
 		},
 		{
 			name: "Existing svcs from previous reconcile",
-			reconcilerTime1: NewServerServiceReconciler(common.ReconcilerConfig{Ctx: context.Background(), Logger: logger},
+			reconcilerTime1: NewServerServiceReconciler(common.ReconcilerConfig{Logger: logger},
 				metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",
@@ -118,7 +118,7 @@ func TestServiceReconcile(t *testing.T) {
 				&mlopsv1alpha1.ScalingSpec{
 					Replicas: getIntPtr(1),
 				}),
-			reconcilerTime2: NewServerServiceReconciler(common.ReconcilerConfig{Ctx: context.Background(), Logger: logger},
+			reconcilerTime2: NewServerServiceReconciler(common.ReconcilerConfig{Logger: logger},
 				metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",
@@ -129,7 +129,7 @@ func TestServiceReconcile(t *testing.T) {
 		},
 		{
 			name: "decrease in number of replicas",
-			reconcilerTime1: NewServerServiceReconciler(common.ReconcilerConfig{Ctx: context.Background(), Logger: logger},
+			reconcilerTime1: NewServerServiceReconciler(common.ReconcilerConfig{Logger: logger},
 				metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",
@@ -137,7 +137,7 @@ func TestServiceReconcile(t *testing.T) {
 				&mlopsv1alpha1.ScalingSpec{
 					Replicas: getIntPtr(3),
 				}),
-			reconcilerTime2: NewServerServiceReconciler(common.ReconcilerConfig{Ctx: context.Background(), Logger: logger},
+			reconcilerTime2: NewServerServiceReconciler(common.ReconcilerConfig{Logger: logger},
 				metav1.ObjectMeta{
 					Name:      "foo",
 					Namespace: "default",
@@ -169,7 +169,7 @@ func TestServiceReconcile(t *testing.T) {
 			}
 
 			test.reconcilerTime2.ReconcilerConfig.Client = client
-			err = test.reconcilerTime2.Reconcile()
+			err = test.reconcilerTime2.Reconcile(context.TODO())
 			g.Expect(err).To(BeNil())
 			for _, svc := range test.reconcilerTime2.Services {
 				found := &v1.Service{}

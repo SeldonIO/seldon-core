@@ -146,21 +146,21 @@ func (s *ServerDeploymentReconciler) getReconcileOperation() (constants.Reconcil
 	return constants.ReconcileUpdateNeeded, nil
 }
 
-func (s *ServerDeploymentReconciler) Reconcile() error {
+func (s *ServerDeploymentReconciler) Reconcile(ctx context.Context) error {
 	logger := s.Logger.WithName("DeploymentReconcile")
 	op, err := s.getReconcileOperation()
 
 	switch op {
 	case constants.ReconcileCreateNeeded:
 		logger.V(1).Info("Deployment Create", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
-		err = s.Client.Create(s.Ctx, s.Deployment)
+		err = s.Client.Create(ctx, s.Deployment)
 		if err != nil {
 			logger.Error(err, "Failed to create deployment", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
 			return err
 		}
 	case constants.ReconcileUpdateNeeded:
 		logger.V(1).Info("Deployment Update", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
-		err = s.Client.Update(s.Ctx, s.Deployment)
+		err = s.Client.Update(ctx, s.Deployment)
 		if err != nil {
 			logger.Error(err, "Failed to update deployment", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
 			return err

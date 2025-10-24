@@ -144,7 +144,7 @@ func TestStatefulSetReconcile(t *testing.T) {
 			component, _ = ComponentOverride(component, test.override)
 			sr, err := NewComponentStatefulSetReconciler(
 				test.statefulSetName,
-				common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client},
+				common.ReconcilerConfig{Logger: logger, Client: client},
 				meta,
 				*component.Replicas,
 				component.PodSpec,
@@ -154,7 +154,7 @@ func TestStatefulSetReconcile(t *testing.T) {
 				test.seldonConfigMeta,
 				annotator)
 			g.Expect(err).To(BeNil())
-			err = sr.Reconcile()
+			err = sr.Reconcile(context.TODO())
 			if test.error {
 				g.Expect(err).ToNot(BeNil())
 			} else {

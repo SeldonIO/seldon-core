@@ -133,7 +133,7 @@ func TestDeploymentReconcile(t *testing.T) {
 			component, _ = ComponentOverride(component, test.override)
 			sr, err := NewComponentDeploymentReconciler(
 				test.deploymentName,
-				common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client},
+				common.ReconcilerConfig{Logger: logger, Client: client},
 				meta,
 				*component.Replicas,
 				component.PodSpec,
@@ -142,7 +142,7 @@ func TestDeploymentReconcile(t *testing.T) {
 				test.seldonConfigMeta,
 				annotator)
 			g.Expect(err).To(BeNil())
-			err = sr.Reconcile()
+			err = sr.Reconcile(context.TODO())
 			if test.error {
 				g.Expect(err).ToNot(BeNil())
 			} else {
@@ -248,7 +248,7 @@ func TestDeploymentOverride(t *testing.T) {
 			component, _ = ComponentOverride(component, test.override)
 			sr, err := NewComponentDeploymentReconciler(
 				test.deploymentName,
-				common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client},
+				common.ReconcilerConfig{Logger: logger, Client: client},
 				meta,
 				*component.Replicas,
 				component.PodSpec,
@@ -257,7 +257,7 @@ func TestDeploymentOverride(t *testing.T) {
 				metav1.ObjectMeta{},
 				annotator)
 			g.Expect(err).To(BeNil())
-			err = sr.Reconcile()
+			err = sr.Reconcile(context.TODO())
 			g.Expect(err).To(BeNil())
 
 			dep := &appsv1.Deployment{}

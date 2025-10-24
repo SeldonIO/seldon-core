@@ -185,20 +185,20 @@ func (s *ComponentStatefulSetReconciler) getReconcileOperation() (constants.Reco
 	return constants.ReconcileUpdateNeeded, nil
 }
 
-func (s *ComponentStatefulSetReconciler) Reconcile() error {
+func (s *ComponentStatefulSetReconciler) Reconcile(ctx context.Context) error {
 	logger := s.Logger.WithName("StatefulSetReconcile")
 	op, err := s.getReconcileOperation()
 	switch op {
 	case constants.ReconcileCreateNeeded:
 		logger.V(1).Info("StatefulSet Create", "Name", s.StatefulSet.GetName(), "Namespace", s.StatefulSet.GetNamespace())
-		err = s.Client.Create(s.Ctx, s.StatefulSet)
+		err = s.Client.Create(ctx, s.StatefulSet)
 		if err != nil {
 			logger.Error(err, "Failed to create statefulset", "Name", s.StatefulSet.GetName(), "Namespace", s.StatefulSet.GetNamespace())
 			return err
 		}
 	case constants.ReconcileUpdateNeeded:
 		logger.V(1).Info("StatefulSet Update", "Name", s.StatefulSet.GetName(), "Namespace", s.StatefulSet.GetNamespace())
-		err = s.Client.Update(s.Ctx, s.StatefulSet)
+		err = s.Client.Update(ctx, s.StatefulSet)
 		if err != nil {
 			logger.Error(err, "Failed to update statefulset", "Name", s.StatefulSet.GetName(), "Namespace", s.StatefulSet.GetNamespace())
 			return err
