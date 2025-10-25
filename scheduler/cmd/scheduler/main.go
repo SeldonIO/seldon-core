@@ -248,7 +248,8 @@ func main() {
 
 	if enablePprof {
 		logger.Info("Enabling pprof endpoints")
-		enablePprofEndpoints(httpServer.Router())
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+		//enablePprofEndpoints(httpServer.Router())
 	}
 
 	go func() {
