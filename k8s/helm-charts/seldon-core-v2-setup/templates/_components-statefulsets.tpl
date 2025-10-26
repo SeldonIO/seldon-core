@@ -523,6 +523,9 @@ spec:
         - --log-level=$(LOG_LEVEL)
         - --health-probe-port=$(HEALTH_PROBE_PORT)
         - --enable-pprof=$(ENABLE_PPROF)
+        - --pprof-port=$(PPROF_PORT)
+        - --pprof-block-rate=$(PPROF_BLOCK_RATE)
+        - --pprof-mutex-rate=$(PPROF_MUTEX_RATE)
         command:
         - /bin/scheduler
         env:
@@ -602,6 +605,12 @@ spec:
           value: "9999"
         - name: ENABLE_PPROF
           value: "false"
+        - name: PPROF_PORT
+          value: "6060"
+        - name: PPROF_BLOCK_RATE
+          value: "0"
+        - name: PPROF_MUTEX_RATE
+          value: "0"
         image: '{{ .Values.scheduler.image.registry }}/{{ .Values.scheduler.image.repository
           }}:{{ .Values.scheduler.image.tag }}'
         imagePullPolicy: '{{ .Values.scheduler.image.pullPolicy }}'

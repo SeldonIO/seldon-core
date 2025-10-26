@@ -15,9 +15,7 @@ import (
 	"flag"
 	"fmt"
 	"math/rand"
-	"net"
 	"net/http"
-	"net/http/pprof"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
@@ -25,7 +23,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/backoff"
@@ -82,6 +79,9 @@ var (
 	enableAccessLog              bool
 	includeSuccessfulRequests    bool
 	enablePprof                  bool
+	pprofPort                    int
+	pprofMutexRate               int
+	pprofBlockRate               int
 )
 
 const (
@@ -169,6 +169,9 @@ func init() {
 	flag.BoolVar(&enableAccessLog, "enable-envoy-accesslog", true, "Enable Envoy access log")
 	flag.BoolVar(&includeSuccessfulRequests, "include-successful-requests-envoy-accesslog", false, "Include successful requests in Envoy access log")
 	flag.BoolVar(&enablePprof, "enable-pprof", false, "Enables pprof on localhost - do not use in production, will affect performance")
+	flag.IntVar(&pprofPort, "pprof-port", 6060, "pprof HTTP server port")
+	flag.IntVar(&pprofBlockRate, "pprof-block-rate", 0, "pprof block rate")
+	flag.IntVar(&pprofMutexRate, "pprof-mutex-rate", 0, "pprof mutex rate")
 }
 
 func getNamespace() string {
@@ -243,20 +246,13 @@ func main() {
 
 	httpServer, err := initHealthProbe(tlsOptions, logger, probesConfig, int(healthProbePort))
 	if err != nil {
-		log.WithError(err).Fatal("Failed to start health server")
+		logger.WithError(err).Fatal("Failed to start health server")
 	}
 
 	if enablePprof {
-		logger.Info("Enabling pprof endpoints")
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-		//enablePprofEndpoints(httpServer.Router())
+		logger.Info("Starting pprof server")
+		startPprofServer(pprofPort, pprofBlockRate, pprofMutexRate, logger)
 	}
-
-	go func() {
-		if err := httpServer.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.WithError(err).Fatal("Failed to running health probe HTTP server")
-		}
-	}()
 
 	logger.WithField("port", healthProbePort).Info("Started HTTP health server")
 	defer func() {
@@ -431,46 +427,15 @@ func main() {
 	log.Info("All services have shut down cleanly")
 }
 
-func enablePprofEndpoints(r *mux.Router) {
-	runtime.SetBlockProfileRate(1)
-	runtime.SetMutexProfileFraction(1)
+func startPprofServer(port int, blockRate, mutexRate int, log *log.Logger) {
+	runtime.SetBlockProfileRate(blockRate)
+	runtime.SetMutexProfileFraction(mutexRate)
 
-	r.Handle("/debug/pprof/", localhostOnly(pprof.Index))
-	r.Handle("/debug/pprof/cmdline", localhostOnly(pprof.Cmdline))
-	r.Handle("/debug/pprof/profile", localhostOnly(pprof.Profile))
-	r.Handle("/debug/pprof/symbol", localhostOnly((pprof.Symbol)))
-	r.Handle("/debug/pprof/trace", localhostOnly(pprof.Trace))
-	r.Handle("/debug/pprof/goroutine", localhostOnly(pprof.Handler("goroutine").ServeHTTP))
-	r.Handle("/debug/pprof/heap", localhostOnly(pprof.Handler("heap").ServeHTTP))
-	r.Handle("/debug/pprof/threadcreate", localhostOnly(pprof.Handler("threadcreate").ServeHTTP))
-	r.Handle("/debug/pprof/block", localhostOnly(pprof.Handler("block").ServeHTTP))
-	r.Handle("/debug/pprof/mutex", localhostOnly(pprof.Handler("mutex").ServeHTTP))
-	r.Handle("/debug/pprof/allocs", localhostOnly(pprof.Handler("allocs").ServeHTTP))
-}
-
-func localhostOnly(f func(http.ResponseWriter, *http.Request)) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		host, _, err := net.SplitHostPort(r.RemoteAddr)
-		if err != nil {
-			http.Error(w, "Invalid remote address", http.StatusForbidden)
-			return
+	go func() {
+		if err := http.ListenAndServe(fmt.Sprintf("localhost:%d", port), nil); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.WithError(err).Error("Failed running pprof server")
 		}
-
-		if !isLocalhost(host) {
-			http.Error(w, "Access denied: localhost only", http.StatusForbidden)
-			return
-		}
-
-		f(w, r)
-	})
-}
-
-func isLocalhost(ip string) bool {
-	parsedIP := net.ParseIP(ip)
-	if parsedIP == nil {
-		return false
-	}
-	return parsedIP.IsLoopback()
+	}()
 }
 
 type probe struct {
@@ -494,7 +459,14 @@ func initHealthProbe(tlsOptions *tls.TLSOptions, log *log.Logger, config gRPCHea
 		}
 	}
 
-	return health_probe.NewHTTPServer(healthSrvPort, manager, log), nil
+	server := health_probe.NewHTTPServer(healthSrvPort, manager, log)
+	go func() {
+		if err := server.Start(); err != nil {
+			log.WithError(err).Fatal("Failed to running health probe HTTP server")
+		}
+	}()
+
+	return server, nil
 }
 
 func createGRPCHealthProbe(cert *tls.CertificateStore, port int, manager health_probe.Manager) error {

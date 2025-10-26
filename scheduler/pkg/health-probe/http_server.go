@@ -26,7 +26,6 @@ const (
 
 type HTTPServer struct {
 	srv     *http.Server
-	rtr     *mux.Router
 	log     *log.Logger
 	manager Manager
 }
@@ -35,7 +34,6 @@ func NewHTTPServer(port int, manager Manager, log *log.Logger) *HTTPServer {
 	return &HTTPServer{
 		manager: manager,
 		log:     log,
-		rtr:     mux.NewRouter(),
 		srv: &http.Server{
 			Addr: fmt.Sprintf(":%d", port),
 		},
@@ -44,24 +42,22 @@ func NewHTTPServer(port int, manager Manager, log *log.Logger) *HTTPServer {
 
 // Start is blocking until server encounters an error and shuts down.
 func (h *HTTPServer) Start() error {
+	rtr := mux.NewRouter()
+
 	if h.manager.HasCallbacks(ProbeReadiness) {
-		h.rtr.HandleFunc(pathReadiness, h.healthCheck(h.manager.CheckReadiness)).Methods(http.MethodGet)
+		rtr.HandleFunc(pathReadiness, h.healthCheck(h.manager.CheckReadiness)).Methods(http.MethodGet)
 	}
 
 	if h.manager.HasCallbacks(ProbeLiveness) {
-		h.rtr.HandleFunc(pathLiveness, h.healthCheck(h.manager.CheckLiveness)).Methods(http.MethodGet)
+		rtr.HandleFunc(pathLiveness, h.healthCheck(h.manager.CheckLiveness)).Methods(http.MethodGet)
 	}
 
 	if h.manager.HasCallbacks(ProbeStartUp) {
-		h.rtr.HandleFunc(pathStartup, h.healthCheck(h.manager.CheckStartup)).Methods(http.MethodGet)
+		rtr.HandleFunc(pathStartup, h.healthCheck(h.manager.CheckStartup)).Methods(http.MethodGet)
 	}
 
-	h.srv.Handler = h.rtr
+	h.srv.Handler = rtr
 	return h.srv.ListenAndServe()
-}
-
-func (h *HTTPServer) Router() *mux.Router {
-	return h.rtr
 }
 
 func (h *HTTPServer) healthCheck(fn func() error) http.HandlerFunc {
