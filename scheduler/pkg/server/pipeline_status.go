@@ -130,28 +130,28 @@ func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRe
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
-	for {
-		select {
-		case <-fin:
-			logger.Infof("Closing stream for %s", req.GetSubscriberName())
-			return nil
-		case <-ctx.Done():
-			logger.Infof("Stream disconnected %s", req.GetSubscriberName())
-			s.pipelineEventStream.mu.Lock()
-			delete(s.pipelineEventStream.streams, stream)
-			delete(s.pipelineEventStream.namesToIps, req.GetSubscriberName())
-			if req.IsPipelineGateway {
-				s.pipelineGWLoadBalancer.RemoveServer(req.GetSubscriberName())
-			}
-			s.pipelineEventStream.mu.Unlock()
-
-			// rebalance the streams when a subscriber is removed
-			if req.IsPipelineGateway {
-				s.pipelineGwRebalance()
-			}
-			return nil
+	select {
+	case <-fin:
+		logger.Infof("Closing pipeline status stream for %s", req.GetSubscriberName())
+	case <-ctx.Done():
+		logger.Infof("Pipeline status stream disconnected %s", req.GetSubscriberName())
+		s.pipelineEventStream.mu.Lock()
+		delete(s.pipelineEventStream.streams, stream)
+		delete(s.pipelineEventStream.namesToIps, req.GetSubscriberName())
+		if req.IsPipelineGateway {
+			s.pipelineGWLoadBalancer.RemoveServer(req.GetSubscriberName())
 		}
+		s.pipelineEventStream.mu.Unlock()
+
+		// rebalance the streams when a subscriber is removed
+		if req.IsPipelineGateway {
+			s.pipelineGwRebalance()
+		}
+
+		logger.Infof("Pipeline status stream disconnection for %s finished", req.GetSubscriberName())
 	}
+
+	return nil
 }
 
 func (s *SchedulerServer) sendCurrentPipelineStatuses(
@@ -321,15 +321,28 @@ func (s *SchedulerServer) pipelineGwRebalanceStreams(
 				}
 			}
 			msg.Timestamp = confRes.GetTimestamp(pv.Name)
-			if err := stream.Send(msg); err != nil {
-				s.logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.Name)
+
+			select {
+			case <-stream.Context().Done():
+				s.logger.WithError(stream.Context().Err()).Errorf("Failed to send create rebalance msg to pipeline %s stream ctx cancelled", pv.Name)
+			default:
+				if err := stream.Send(msg); err != nil {
+					s.logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.Name)
+				}
 			}
+
 		} else {
 			s.logger.Debugf("Server %s does not contain pipeline %s, sending deletion message", server, pv.Name)
 			msg := s.createPipelineDeletionMessage(pv)
 			msg.Timestamp = confRes.GetTimestamp(pv.Name)
-			if err := stream.Send(msg); err != nil {
-				s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.Name)
+
+			select {
+			case <-stream.Context().Done():
+				s.logger.WithError(stream.Context().Err()).Errorf("Failed to send delete rebalance msg to pipeline %s stream ctx cancelled", pv.Name)
+			default:
+				if err := stream.Send(msg); err != nil {
+					s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.Name)
+				}
 			}
 		}
 	}

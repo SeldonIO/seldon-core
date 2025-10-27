@@ -17,6 +17,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 )
@@ -65,28 +67,34 @@ func (pc *ProxyChainer) SubscribePipelineUpdates(
 	for i := 0; i < 5; i++ {
 		time.Sleep(1 * time.Second)
 		// TODO - support an actual stream of requests
-		err := subscription.Send(
-			&chainer.PipelineUpdateMessage{
-				Op:       chainer.PipelineUpdateMessage_Create,
-				Pipeline: "some-pipeline",
-				Version:  1,
-				Uid:      "1234",
-				Updates: []*chainer.PipelineStepUpdate{
-					{
-						Sources:     []*chainer.PipelineTopic{{PipelineName: "some-pipeline", TopicName: chainerInputTopic1}},
-						Sink:        &chainer.PipelineTopic{PipelineName: "some-pipeline", TopicName: chainerOutputTopic1},
-						InputJoinTy: chainer.PipelineStepUpdate_Inner,
-					},
-					{
-						Sources:     []*chainer.PipelineTopic{{PipelineName: "some-pipeline", TopicName: chainerInputTopic2}},
-						Sink:        &chainer.PipelineTopic{PipelineName: "some-pipeline", TopicName: chainerOutputTopic2},
-						InputJoinTy: chainer.PipelineStepUpdate_Inner,
+
+		select {
+		case <-subscription.Context().Done():
+			return status.Errorf(codes.Canceled, "stream ctx cancelled: %s", subscription.Context().Err())
+		default:
+			err := subscription.Send(
+				&chainer.PipelineUpdateMessage{
+					Op:       chainer.PipelineUpdateMessage_Create,
+					Pipeline: "some-pipeline",
+					Version:  1,
+					Uid:      "1234",
+					Updates: []*chainer.PipelineStepUpdate{
+						{
+							Sources:     []*chainer.PipelineTopic{{PipelineName: "some-pipeline", TopicName: chainerInputTopic1}},
+							Sink:        &chainer.PipelineTopic{PipelineName: "some-pipeline", TopicName: chainerOutputTopic1},
+							InputJoinTy: chainer.PipelineStepUpdate_Inner,
+						},
+						{
+							Sources:     []*chainer.PipelineTopic{{PipelineName: "some-pipeline", TopicName: chainerInputTopic2}},
+							Sink:        &chainer.PipelineTopic{PipelineName: "some-pipeline", TopicName: chainerOutputTopic2},
+							InputJoinTy: chainer.PipelineStepUpdate_Inner,
+						},
 					},
 				},
-			},
-		)
-		if err != nil {
-			return err
+			)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

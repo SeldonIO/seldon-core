@@ -575,9 +575,14 @@ func (s *SchedulerServer) ModelStatus(
 				return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 			}
 
-			err = stream.Send(resp)
-			if err != nil {
-				return status.Errorf(codes.Internal, "%s", err.Error())
+			select {
+			case <-stream.Context().Done():
+				return status.Errorf(codes.Canceled, "stream ctx cancelled: %s", stream.Context().Err())
+			default:
+				err = stream.Send(resp)
+				if err != nil {
+					return status.Errorf(codes.Internal, "%s", err.Error())
+				}
 			}
 		}
 		return nil
@@ -601,10 +606,17 @@ func (s *SchedulerServer) ModelStatus(
 		if err != nil {
 			return status.Errorf(codes.Internal, "%s", err.Error())
 		}
-		err = stream.Send(resp)
-		if err != nil {
-			return status.Errorf(codes.Internal, "%s", err.Error())
+
+		select {
+		case <-stream.Context().Done():
+			return status.Errorf(codes.Canceled, "stream ctx cancelled: %s", stream.Context().Err())
+		default:
+			err = stream.Send(resp)
+			if err != nil {
+				return status.Errorf(codes.Internal, "%s", err.Error())
+			}
 		}
+
 		return nil
 	}
 }
@@ -625,9 +637,14 @@ func (s *SchedulerServer) ServerStatus(
 
 		for _, s := range servers {
 			resp := createServerStatusUpdateResponse(s)
-			err := stream.Send(resp)
-			if err != nil {
-				return status.Errorf(codes.Internal, "%s", err.Error())
+			select {
+			case <-stream.Context().Done():
+				return status.Errorf(codes.Canceled, "stream ctx cancelled: %s", stream.Context().Err())
+			default:
+				err := stream.Send(resp)
+				if err != nil {
+					return status.Errorf(codes.Internal, "%s", err.Error())
+				}
 			}
 		}
 		return nil
@@ -638,10 +655,17 @@ func (s *SchedulerServer) ServerStatus(
 			return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 		}
 		resp := createServerStatusUpdateResponse(server)
-		err = stream.Send(resp)
-		if err != nil {
-			return status.Errorf(codes.Internal, "%s", err.Error())
+
+		select {
+		case <-stream.Context().Done():
+			return status.Errorf(codes.Canceled, "stream ctx cancelled: %s", stream.Context().Err())
+		default:
+			err = stream.Send(resp)
+			if err != nil {
+				return status.Errorf(codes.Internal, "%s", err.Error())
+			}
 		}
+
 		return nil
 	}
 }
@@ -726,10 +750,16 @@ func (s *SchedulerServer) ExperimentStatus(
 
 		for _, e := range experiments {
 			resp := createExperimentStatus(e)
-			err = stream.Send(resp)
-			if err != nil {
-				return status.Errorf(codes.Internal, "%s", err.Error())
+			select {
+			case <-stream.Context().Done():
+				return status.Errorf(codes.Canceled, "stream ctx cancelled: %s", stream.Context().Err())
+			default:
+				err = stream.Send(resp)
+				if err != nil {
+					return status.Errorf(codes.Internal, "%s", err.Error())
+				}
 			}
+
 		}
 		return nil
 	} else {
@@ -740,10 +770,17 @@ func (s *SchedulerServer) ExperimentStatus(
 		}
 
 		resp := createExperimentStatus(exp)
-		err = stream.Send(resp)
-		if err != nil {
-			return status.Errorf(codes.Internal, "%s", err.Error())
+
+		select {
+		case <-stream.Context().Done():
+			return status.Errorf(codes.Canceled, "stream ctx cancelled: %s", stream.Context().Err())
+		default:
+			err = stream.Send(resp)
+			if err != nil {
+				return status.Errorf(codes.Internal, "%s", err.Error())
+			}
 		}
+
 		return nil
 	}
 }
@@ -815,10 +852,17 @@ func (s *SchedulerServer) PipelineStatus(
 			return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 		}
 		resp := createPipelineStatus(p, req.GetAllVersions())
-		err = stream.Send(resp)
-		if err != nil {
-			return status.Errorf(codes.Internal, "%s", err.Error())
+
+		select {
+		case <-stream.Context().Done():
+			return status.Errorf(codes.Canceled, "stream ctx cancelled: %s", stream.Context().Err())
+		default:
+			err = stream.Send(resp)
+			if err != nil {
+				return status.Errorf(codes.Internal, "%s", err.Error())
+			}
 		}
+
 		return nil
 	}
 }

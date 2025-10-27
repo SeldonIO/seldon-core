@@ -43,19 +43,17 @@ func (s *SchedulerServer) SubscribeExperimentStatus(req *pb.ExperimentSubscripti
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
-	for {
-		select {
-		case <-fin:
-			logger.Infof("Closing stream for %s", req.GetSubscriberName())
-			return nil
-		case <-ctx.Done():
-			logger.Infof("Stream disconnected %s", req.GetSubscriberName())
-			s.experimentEventStream.mu.Lock()
-			delete(s.experimentEventStream.streams, stream)
-			s.experimentEventStream.mu.Unlock()
-			return nil
-		}
+	select {
+	case <-fin:
+		logger.Infof("Closing stream for %s", req.GetSubscriberName())
+	case <-ctx.Done():
+		logger.Infof("Stream disconnected %s", req.GetSubscriberName())
+		s.experimentEventStream.mu.Lock()
+		delete(s.experimentEventStream.streams, stream)
+		s.experimentEventStream.mu.Unlock()
 	}
+
+	return nil
 }
 
 func asKubernetesMeta(event coordinator.ExperimentEventMsg) *pb.KubernetesMeta {
@@ -123,7 +121,14 @@ func (s *SchedulerServer) sendExperimentStatus(event coordinator.ExperimentEvent
 			StatusDescription: event.Status.StatusDescription,
 			KubernetesMeta:    asKubernetesMeta(event),
 		}
-		hasExpired, err := sendWithTimeout(func() error { return stream.Send(msg) }, s.timeout)
+		hasExpired, err := sendWithTimeout(func() error {
+			select {
+			case <-stream.Context().Done():
+				return stream.Context().Err()
+			default:
+				return stream.Send(msg)
+			}
+		}, s.timeout)
 		if hasExpired {
 			// this should trigger a reconnect from the client
 			close(subscription.fin)
