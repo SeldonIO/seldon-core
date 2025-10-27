@@ -11,11 +11,15 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"math/rand"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 	"time"
 
@@ -74,6 +78,10 @@ var (
 	accessLogPath                string
 	enableAccessLog              bool
 	includeSuccessfulRequests    bool
+	enablePprof                  bool
+	pprofPort                    int
+	pprofMutexRate               int
+	pprofBlockRate               int
 )
 
 const (
@@ -160,6 +168,10 @@ func init() {
 	flag.StringVar(&accessLogPath, "envoy-accesslog-path", "/tmp/envoy-accesslog.txt", "Envoy access log path")
 	flag.BoolVar(&enableAccessLog, "enable-envoy-accesslog", true, "Enable Envoy access log")
 	flag.BoolVar(&includeSuccessfulRequests, "include-successful-requests-envoy-accesslog", false, "Include successful requests in Envoy access log")
+	flag.BoolVar(&enablePprof, "enable-pprof", false, "Enables pprof on localhost - do not use in production, will affect performance")
+	flag.IntVar(&pprofPort, "pprof-port", 6060, "pprof HTTP server port")
+	flag.IntVar(&pprofBlockRate, "pprof-block-rate", 0, "pprof block rate")
+	flag.IntVar(&pprofMutexRate, "pprof-mutex-rate", 0, "pprof mutex rate")
 }
 
 func getNamespace() string {
@@ -234,7 +246,12 @@ func main() {
 
 	httpServer, err := initHealthProbe(tlsOptions, logger, probesConfig, int(healthProbePort))
 	if err != nil {
-		log.WithError(err).Fatal("Failed to start health server")
+		logger.WithError(err).Fatal("Failed to start health server")
+	}
+
+	if enablePprof {
+		logger.Info("Starting pprof server")
+		startPprofServer(pprofPort, pprofBlockRate, pprofMutexRate, logger)
 	}
 
 	logger.WithField("port", healthProbePort).Info("Started HTTP health server")
@@ -408,6 +425,23 @@ func main() {
 	as.StopAgentStreams()
 
 	log.Info("All services have shut down cleanly")
+}
+
+func startPprofServer(port int, blockRate, mutexRate int, log *log.Logger) {
+	if blockRate > 0 {
+		log.Warn("Block rate > 0 - performance will be affected")
+	}
+	if mutexRate > 0 {
+		log.Warn("Mutex rate > 0 - performance will be affected")
+	}
+	runtime.SetBlockProfileRate(blockRate)
+	runtime.SetMutexProfileFraction(mutexRate)
+
+	go func() {
+		if err := http.ListenAndServe(fmt.Sprintf("localhost:%d", port), nil); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.WithError(err).Error("Failed running pprof server")
+		}
+	}()
 }
 
 type probe struct {
