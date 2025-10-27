@@ -428,6 +428,12 @@ func main() {
 }
 
 func startPprofServer(port int, blockRate, mutexRate int, log *log.Logger) {
+	if blockRate > 0 {
+		log.Warn("Block rate > 0 - performance will be affected")
+	}
+	if mutexRate > 0 {
+		log.Warn("Mutex rate > 0 - performance will be affected")
+	}
 	runtime.SetBlockProfileRate(blockRate)
 	runtime.SetMutexProfileFraction(mutexRate)
 
