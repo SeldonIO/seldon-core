@@ -145,15 +145,22 @@ func (m *mockStore) SetModelGwModelState(name string, versionNumber uint32, stat
 type mockGrpcStream struct {
 	err error
 	grpc.ServerStream
+	ctx context.Context
 }
 
 func (ms *mockGrpcStream) Send(msg *pb.ModelOperationMessage) error {
 	return ms.err
 }
 
+func (ms *mockGrpcStream) Context() context.Context {
+	return ms.ctx
+}
+
 func TestSync(t *testing.T) {
 	log.SetLevel(log.DebugLevel)
 	g := NewGomegaWithT(t)
+	cancelledCtx, cancel := context.WithTimeout(context.Background(), 0)
+	defer cancel()
 
 	type ExpectedVersionState struct {
 		version        uint32
@@ -168,10 +175,10 @@ func TestSync(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name:      "simple",
+			name:      "success - simple",
 			modelName: "iris",
 			agents: map[ServerKey]*AgentSubscriber{
-				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{}},
+				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{ctx: context.Background()}},
 			},
 			store: &mockStore{
 				models: map[string]*store.ModelSnapshot{
@@ -196,10 +203,10 @@ func TestSync(t *testing.T) {
 			},
 		},
 		{
-			name:      "simple - error load",
+			name:      "failure - stream ctx cancelled",
 			modelName: "iris",
 			agents: map[ServerKey]*AgentSubscriber{
-				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{err: fmt.Errorf("error send")}},
+				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{ctx: cancelledCtx}},
 			},
 			store: &mockStore{
 				models: map[string]*store.ModelSnapshot{
@@ -224,10 +231,38 @@ func TestSync(t *testing.T) {
 			},
 		},
 		{
-			name:      "simple - unload",
+			name:      "failure - simple - error load",
 			modelName: "iris",
 			agents: map[ServerKey]*AgentSubscriber{
-				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{}},
+				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{ctx: context.Background(), err: fmt.Errorf("error send")}},
+			},
+			store: &mockStore{
+				models: map[string]*store.ModelSnapshot{
+					"iris": {
+						Name: "iris",
+						Versions: []*store.ModelVersion{
+							store.NewModelVersion(&pbs.Model{Meta: &pbs.MetaData{Name: "iris"}}, 1, "server1",
+								map[int]store.ReplicaStatus{
+									1: {State: store.LoadRequested},
+								}, false, store.ModelProgressing),
+						},
+					},
+				},
+			},
+			expectedVersionStates: []ExpectedVersionState{
+				{
+					version: 1,
+					expectedStates: map[int]store.ReplicaStatus{
+						1: {State: store.LoadFailed},
+					},
+				},
+			},
+		},
+		{
+			name:      "success - simple - unload",
+			modelName: "iris",
+			agents: map[ServerKey]*AgentSubscriber{
+				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{ctx: context.Background()}},
 			},
 			store: &mockStore{
 				models: map[string]*store.ModelSnapshot{
@@ -252,10 +287,10 @@ func TestSync(t *testing.T) {
 			},
 		},
 		{
-			name:      "simple - error unload",
+			name:      "failure - simple - error unload",
 			modelName: "iris",
 			agents: map[ServerKey]*AgentSubscriber{
-				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{err: fmt.Errorf("error send")}},
+				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{ctx: context.Background(), err: fmt.Errorf("error send")}},
 			},
 			store: &mockStore{
 				models: map[string]*store.ModelSnapshot{
@@ -280,10 +315,10 @@ func TestSync(t *testing.T) {
 			},
 		},
 		{
-			name:      "OlderVersions",
+			name:      "success - OlderVersions",
 			modelName: "iris",
 			agents: map[ServerKey]*AgentSubscriber{
-				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{}},
+				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{ctx: context.Background()}},
 			},
 			store: &mockStore{
 				models: map[string]*store.ModelSnapshot{
