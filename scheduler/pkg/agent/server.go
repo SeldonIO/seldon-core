@@ -414,6 +414,19 @@ func (s *Server) ModelScalingTrigger(stream pb.AgentService_ModelScalingTriggerS
 	}
 }
 
+func (s *Server) heartbeat(tick time.Duration) {
+	logger := s.logger.WithField("func", "heartbeat")
+
+	for {
+		select {
+		case <-time.After(tick):
+			s.mutex.Lock()
+			s.mutex.Unlock()
+
+		}
+	}
+}
+
 func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentService_SubscribeServer) error {
 	logger := s.logger.WithField("func", "Subscribe")
 	key := ServerKey{serverName: request.ServerName, replicaIdx: request.ReplicaIdx}
