@@ -601,6 +601,7 @@ func TestPipelineStatus(t *testing.T) {
 		statusRes *pb.PipelineStatusResponse
 		server    *SchedulerServer
 		err       bool
+		ctx       context.Context
 	}
 
 	tests := []test{
@@ -612,6 +613,7 @@ func TestPipelineStatus(t *testing.T) {
 				logger:          log.New(),
 			},
 			err: true,
+			ctx: context.Background(),
 		},
 		{
 			name: "pipeline status",
@@ -663,6 +665,7 @@ func TestPipelineStatus(t *testing.T) {
 				pipelineHandler: pipeline.NewPipelineStore(log.New(), nil, nil),
 				logger:          log.New(),
 			},
+			ctx: context.Background(),
 		},
 	}
 
@@ -673,7 +676,7 @@ func TestPipelineStatus(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 
-			stream := newStubPipelineStatusServer(1, 1*time.Millisecond)
+			stream := newStubPipelineStatusServer(1, 1*time.Millisecond, test.ctx)
 			err := test.server.PipelineStatus(test.statusReq, stream)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
@@ -826,16 +829,22 @@ func TestServerNotify(t *testing.T) {
 type stubPipelineStatusServer struct {
 	msgs      chan *pb.PipelineStatusResponse
 	sleepTime time.Duration
+	ctx       context.Context
 	grpc.ServerStream
 }
 
 var _ pb.Scheduler_PipelineStatusServer = (*stubPipelineStatusServer)(nil)
 
-func newStubPipelineStatusServer(capacity int, sleepTime time.Duration) *stubPipelineStatusServer {
+func newStubPipelineStatusServer(capacity int, sleepTime time.Duration, ctx context.Context) *stubPipelineStatusServer {
 	return &stubPipelineStatusServer{
 		msgs:      make(chan *pb.PipelineStatusResponse, capacity),
 		sleepTime: sleepTime,
+		ctx:       ctx,
 	}
+}
+
+func (s *stubPipelineStatusServer) Context() context.Context {
+	return s.ctx
 }
 
 func (s *stubPipelineStatusServer) Send(r *pb.PipelineStatusResponse) error {
@@ -847,16 +856,22 @@ func (s *stubPipelineStatusServer) Send(r *pb.PipelineStatusResponse) error {
 type stubModelStatusServer struct {
 	msgs      chan *pb.ModelStatusResponse
 	sleepTime time.Duration
+	ctx       context.Context
 	grpc.ServerStream
 }
 
 var _ pb.Scheduler_ModelStatusServer = (*stubModelStatusServer)(nil)
 
-func newStubModelStatusServer(capacity int, sleepTime time.Duration) *stubModelStatusServer {
+func newStubModelStatusServer(capacity int, sleepTime time.Duration, ctx context.Context) *stubModelStatusServer {
 	return &stubModelStatusServer{
 		msgs:      make(chan *pb.ModelStatusResponse, capacity),
 		sleepTime: sleepTime,
+		ctx:       ctx,
 	}
+}
+
+func (s *stubModelStatusServer) Context() context.Context {
+	return s.ctx
 }
 
 func (s *stubModelStatusServer) Send(r *pb.ModelStatusResponse) error {
@@ -868,16 +883,22 @@ func (s *stubModelStatusServer) Send(r *pb.ModelStatusResponse) error {
 type stubServerStatusServer struct {
 	msgs      chan *pb.ServerStatusResponse
 	sleepTime time.Duration
+	ctx       context.Context
 	grpc.ServerStream
 }
 
 var _ pb.Scheduler_ServerStatusServer = (*stubServerStatusServer)(nil)
 
-func newStubServerStatusServer(capacity int, sleepTime time.Duration) *stubServerStatusServer {
+func newStubServerStatusServer(capacity int, sleepTime time.Duration, ctx context.Context) *stubServerStatusServer {
 	return &stubServerStatusServer{
 		msgs:      make(chan *pb.ServerStatusResponse, capacity),
+		ctx:       ctx,
 		sleepTime: sleepTime,
 	}
+}
+
+func (s *stubServerStatusServer) Context() context.Context {
+	return s.ctx
 }
 
 func (s *stubServerStatusServer) Send(r *pb.ServerStatusResponse) error {
@@ -887,6 +908,7 @@ func (s *stubServerStatusServer) Send(r *pb.ServerStatusResponse) error {
 }
 
 type stubControlPlaneServer struct {
+	ctx       context.Context
 	msgs      chan *pb.ControlPlaneResponse
 	sleepTime time.Duration
 	grpc.ServerStream
@@ -894,11 +916,16 @@ type stubControlPlaneServer struct {
 
 var _ pb.Scheduler_SubscribeControlPlaneServer = (*stubControlPlaneServer)(nil)
 
-func newStubControlPlaneServer(capacity int, sleepTime time.Duration) *stubControlPlaneServer {
+func newStubControlPlaneServer(capacity int, sleepTime time.Duration, ctx context.Context) *stubControlPlaneServer {
 	return &stubControlPlaneServer{
 		msgs:      make(chan *pb.ControlPlaneResponse, capacity),
 		sleepTime: sleepTime,
+		ctx:       ctx,
 	}
+}
+
+func (s *stubControlPlaneServer) Context() context.Context {
+	return s.ctx
 }
 
 func (s *stubControlPlaneServer) Send(r *pb.ControlPlaneResponse) error {
@@ -910,16 +937,22 @@ func (s *stubControlPlaneServer) Send(r *pb.ControlPlaneResponse) error {
 type stubExperimentStatusServer struct {
 	msgs      chan *pb.ExperimentStatusResponse
 	sleepTime time.Duration
+	ctx       context.Context
 	grpc.ServerStream
 }
 
 var _ pb.Scheduler_ExperimentStatusServer = (*stubExperimentStatusServer)(nil)
 
-func newStubExperimentStatusServer(capacity int, sleepTime time.Duration) *stubExperimentStatusServer {
+func newStubExperimentStatusServer(capacity int, sleepTime time.Duration, ctx context.Context) *stubExperimentStatusServer {
 	return &stubExperimentStatusServer{
 		msgs:      make(chan *pb.ExperimentStatusResponse, capacity),
 		sleepTime: sleepTime,
+		ctx:       ctx,
 	}
+}
+
+func (s *stubExperimentStatusServer) Context() context.Context {
+	return s.ctx
 }
 
 func (s *stubExperimentStatusServer) Send(r *pb.ExperimentStatusResponse) error {

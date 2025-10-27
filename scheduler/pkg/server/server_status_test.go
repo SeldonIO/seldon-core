@@ -128,16 +128,20 @@ func TestTerminateModelGwVersionModels(t *testing.T) {
 
 func TestModelsStatusStream(t *testing.T) {
 	g := NewGomegaWithT(t)
+	cancelledCtx, cancel := context.WithTimeout(context.Background(), 0)
+	defer cancel()
+
 	type test struct {
 		name    string
 		loadReq *pb.LoadModelRequest
 		server  *SchedulerServer
 		err     bool
+		ctx     context.Context
 	}
 
 	tests := []test{
 		{
-			name: "model ok",
+			name: "success - model ok",
 			loadReq: &pb.LoadModelRequest{
 				Model: &pb.Model{
 					Meta: &pb.MetaData{Name: "foo"},
@@ -148,9 +152,25 @@ func TestModelsStatusStream(t *testing.T) {
 				logger:     log.New(),
 				timeout:    10 * time.Millisecond,
 			},
+			ctx: context.Background(),
 		},
 		{
-			name: "timeout",
+			name: "failure - stream ctx cancelled",
+			loadReq: &pb.LoadModelRequest{
+				Model: &pb.Model{
+					Meta: &pb.MetaData{Name: "foo"},
+				},
+			},
+			server: &SchedulerServer{
+				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				logger:     log.New(),
+				timeout:    10 * time.Millisecond,
+			},
+			ctx: cancelledCtx,
+			err: true,
+		},
+		{
+			name: "failure - timeout",
 			loadReq: &pb.LoadModelRequest{
 				Model: &pb.Model{
 					Meta: &pb.MetaData{Name: "foo"},
@@ -162,6 +182,7 @@ func TestModelsStatusStream(t *testing.T) {
 				timeout:    1 * time.Millisecond,
 			},
 			err: true,
+			ctx: context.Background(),
 		},
 	}
 
@@ -172,7 +193,7 @@ func TestModelsStatusStream(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 
-			stream := newStubModelStatusServer(1, 5*time.Millisecond)
+			stream := newStubModelStatusServer(1, 5*time.Millisecond, test.ctx)
 			err := test.server.sendCurrentModelStatuses(stream)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
@@ -196,6 +217,7 @@ func TestPublishModelsStatusWithTimeout(t *testing.T) {
 		loadReq *pb.LoadModelRequest
 		timeout time.Duration
 		err     bool
+		ctx     context.Context
 	}
 
 	tests := []test{
@@ -208,6 +230,7 @@ func TestPublishModelsStatusWithTimeout(t *testing.T) {
 			},
 			timeout: 10 * time.Millisecond,
 			err:     false,
+			ctx:     context.Background(),
 		},
 		{
 			name: "timeout",
@@ -218,6 +241,7 @@ func TestPublishModelsStatusWithTimeout(t *testing.T) {
 			},
 			timeout: 1 * time.Millisecond,
 			err:     true,
+			ctx:     context.Background(),
 		},
 	}
 
@@ -230,7 +254,7 @@ func TestPublishModelsStatusWithTimeout(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 
-			stream := newStubModelStatusServer(2, 5*time.Millisecond)
+			stream := newStubModelStatusServer(2, 5*time.Millisecond, test.ctx)
 			s.modelEventStream.streams[stream] = &ModelSubscription{
 				name:   "dummy",
 				stream: stream,
@@ -297,7 +321,7 @@ func TestAddAndRemoveModelNoModelGw(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			s, hub := createTestScheduler(t)
 
-			stream := newStubModelStatusServer(2, 5*time.Millisecond)
+			stream := newStubModelStatusServer(2, 5*time.Millisecond, context.Background())
 			s.modelEventStream.streams[stream] = &ModelSubscription{
 				name:   "dummy",
 				stream: stream,
@@ -380,7 +404,7 @@ func TestModelGwRebalanceNoPipelineGw(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			s, hub := createTestScheduler(t)
 
-			stream := newStubModelStatusServer(2, 5*time.Millisecond)
+			stream := newStubModelStatusServer(2, 5*time.Millisecond, context.Background())
 			s.modelEventStream.streams[stream] = &ModelSubscription{
 				name:   "dummy",
 				stream: stream,
@@ -441,6 +465,7 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 		loadReq       *pb.LoadModelRequest
 		modelGwStatus store.ModelState
 		operation     pb.ModelStatusResponse_ModelOperation
+		ctx           context.Context
 	}
 
 	tests := []test{
@@ -453,6 +478,7 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 			},
 			modelGwStatus: store.ModelAvailable,
 			operation:     pb.ModelStatusResponse_ModelCreate,
+			ctx:           context.Background(),
 		},
 		{
 			name: "rebalance message - create model (model progressing)",
@@ -463,6 +489,7 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 			},
 			modelGwStatus: store.ModelProgressing,
 			operation:     pb.ModelStatusResponse_ModelCreate,
+			ctx:           context.Background(),
 		},
 		{
 			name: "rebalance message - terminate model",
@@ -473,6 +500,7 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 			},
 			modelGwStatus: store.ModelTerminating,
 			operation:     pb.ModelStatusResponse_ModelDelete,
+			ctx:           context.Background(),
 		},
 	}
 
@@ -481,7 +509,7 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 			s, hub := createTestScheduler(t)
 
 			// create operator stream
-			operatorStream := newStubModelStatusServer(1, 5*time.Millisecond)
+			operatorStream := newStubModelStatusServer(1, 5*time.Millisecond, test.ctx)
 			s.modelEventStream.streams[operatorStream] = &ModelSubscription{
 				name:   "dummy-operator",
 				stream: operatorStream,
@@ -489,7 +517,7 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 			}
 
 			// create modelgw stream
-			modelGwStream := newStubModelStatusServer(1, 5*time.Millisecond)
+			modelGwStream := newStubModelStatusServer(1, 5*time.Millisecond, context.Background())
 			modelGwSubscription := &ModelSubscription{
 				name:           "dummy-modelgw",
 				stream:         modelGwStream,
@@ -664,7 +692,7 @@ func TestModelGwRebalance(t *testing.T) {
 			var streams []*stubModelStatusServer
 			for i := 0; i < test.replicas; i++ {
 				name := fmt.Sprintf("dummy%d", i)
-				stream := newStubModelStatusServer(10, 5*time.Millisecond)
+				stream := newStubModelStatusServer(10, 5*time.Millisecond, context.Background())
 				subscription := &ModelSubscription{
 					name:           name,
 					stream:         stream,
@@ -877,7 +905,7 @@ func TestServersStatusStream(t *testing.T) {
 				}
 			}
 
-			stream := newStubServerStatusServer(1, 5*time.Millisecond)
+			stream := newStubServerStatusServer(1, 5*time.Millisecond, context.Background())
 			err := test.server.sendCurrentServerStatuses(stream)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
@@ -910,6 +938,7 @@ func TestModelEventsForServerStatus(t *testing.T) {
 		loadReq *pba.AgentSubscribeRequest
 		timeout time.Duration
 		err     bool
+		ctx     context.Context
 	}
 
 	tests := []test{
@@ -920,6 +949,7 @@ func TestModelEventsForServerStatus(t *testing.T) {
 			},
 			timeout: 10 * time.Millisecond,
 			err:     false,
+			ctx:     context.Background(),
 		},
 		{
 			name: "timeout",
@@ -928,6 +958,7 @@ func TestModelEventsForServerStatus(t *testing.T) {
 			},
 			timeout: 1 * time.Millisecond,
 			err:     true,
+			ctx:     context.Background(),
 		},
 	}
 
@@ -952,7 +983,7 @@ func TestModelEventsForServerStatus(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 
-			stream := newStubServerStatusServer(1, 5*time.Millisecond)
+			stream := newStubServerStatusServer(1, 5*time.Millisecond, test.ctx)
 			s.serverEventStream.mu.Lock()
 			s.serverEventStream.streams[stream] = &ServerSubscription{
 				name:   "dummy",
@@ -1109,7 +1140,7 @@ func TestServerScaleUpEvents(t *testing.T) {
 			// to allow events to propagate
 			time.Sleep(1 * time.Second)
 
-			stream := newStubServerStatusServer(1, 5*time.Millisecond)
+			stream := newStubServerStatusServer(1, 5*time.Millisecond, context.Background())
 
 			s.serverEventStream.mu.Lock()
 			s.serverEventStream.streams[stream] = &ServerSubscription{
@@ -1253,7 +1284,7 @@ func TestServerScaleDownEvents(t *testing.T) {
 			)
 			g.Expect(err).To(BeNil())
 
-			stream := newStubServerStatusServer(1, 200*time.Millisecond)
+			stream := newStubServerStatusServer(1, 200*time.Millisecond, context.Background())
 			s.serverEventStream.streams[stream] = &ServerSubscription{
 				name:   "dummy",
 				stream: stream,

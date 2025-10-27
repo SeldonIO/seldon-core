@@ -90,7 +90,14 @@ func (s *SchedulerServer) sendCurrentExperimentStatuses(stream pb.Scheduler_Expe
 			StatusDescription: exp.StatusDescription,
 			KubernetesMeta:    asKubernetesMetaFromExperiment(exp.KubernetesMeta),
 		}
-		_, err := sendWithTimeout(func() error { return stream.Send(msg) }, s.timeout)
+		_, err := sendWithTimeout(func() error {
+			select {
+			case <-stream.Context().Done():
+				return stream.Context().Err()
+			default:
+				return stream.Send(msg)
+			}
+		}, s.timeout)
 		if err != nil {
 			return err
 		}

@@ -151,7 +151,14 @@ func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_Subscribe
 		if err != nil {
 			return err
 		}
-		_, err = sendWithTimeout(func() error { return stream.Send(ms) }, s.timeout)
+		_, err = sendWithTimeout(func() error {
+			select {
+			case <-stream.Context().Done():
+				return stream.Context().Err()
+			default:
+				return stream.Send(ms)
+			}
+		}, s.timeout)
 		if err != nil {
 			return err
 		}
@@ -373,7 +380,14 @@ func (s *SchedulerServer) sendModelStatusEventToStreams(
 ) {
 	logger := s.logger.WithField("func", "sendModelStatusEventToStreams")
 	for stream, subscription := range streams {
-		hasExpired, err := sendWithTimeout(func() error { return stream.Send(ms) }, s.timeout)
+		hasExpired, err := sendWithTimeout(func() error {
+			select {
+			case <-stream.Context().Done():
+				return stream.Context().Err()
+			default:
+				return stream.Send(ms)
+			}
+		}, s.timeout)
 		if hasExpired {
 			// this should trigger a reconnect from the client
 			close(subscription.fin)
@@ -702,7 +716,14 @@ func (s *SchedulerServer) sendCurrentServerStatuses(stream pb.Scheduler_ServerSt
 	}
 	for _, server := range servers {
 		ssr := createServerStatusUpdateResponse(server)
-		_, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
+		_, err := sendWithTimeout(func() error {
+			select {
+			case <-stream.Context().Done():
+				return stream.Context().Err()
+			default:
+				return stream.Send(ssr)
+			}
+		}, s.timeout)
 		if err != nil {
 			return err
 		}

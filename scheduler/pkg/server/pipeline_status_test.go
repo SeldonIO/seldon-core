@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package server
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -55,6 +56,7 @@ func TestSendCurrentPipelineStatuses(t *testing.T) {
 		loadReq *pb.LoadPipelineRequest
 		server  *SchedulerServer
 		err     bool
+		ctx     context.Context
 	}
 
 	tests := []test{
@@ -81,6 +83,7 @@ func TestSendCurrentPipelineStatuses(t *testing.T) {
 				logger:          log.New(),
 				timeout:         10 * time.Millisecond,
 			},
+			ctx: context.Background(),
 		},
 		{
 			name: "timeout",
@@ -106,6 +109,7 @@ func TestSendCurrentPipelineStatuses(t *testing.T) {
 				timeout:         1 * time.Millisecond,
 			},
 			err: true,
+			ctx: context.Background(),
 		},
 	}
 
@@ -116,7 +120,7 @@ func TestSendCurrentPipelineStatuses(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 
-			stream := newStubPipelineStatusServer(1, 5*time.Millisecond)
+			stream := newStubPipelineStatusServer(1, 5*time.Millisecond, test.ctx)
 			err := test.server.sendCurrentPipelineStatuses(stream, false)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
@@ -140,11 +144,12 @@ func TestPublishPipelineEventWithTimeout(t *testing.T) {
 		loadReq *pb.LoadPipelineRequest
 		timeout time.Duration
 		err     bool
+		ctx     context.Context
 	}
 
 	tests := []test{
 		{
-			name: "pipeline ok",
+			name: "success - pipeline ok",
 			loadReq: &pb.LoadPipelineRequest{
 				Pipeline: &pb.Pipeline{
 					Name:    "foo",
@@ -163,9 +168,10 @@ func TestPublishPipelineEventWithTimeout(t *testing.T) {
 			},
 			timeout: 10 * time.Millisecond,
 			err:     false,
+			ctx:     context.Background(),
 		},
 		{
-			name: "timeout",
+			name: "failure - timeout",
 			loadReq: &pb.LoadPipelineRequest{
 				Pipeline: &pb.Pipeline{
 					Name:    "foo",
@@ -184,6 +190,7 @@ func TestPublishPipelineEventWithTimeout(t *testing.T) {
 			},
 			timeout: 1 * time.Millisecond,
 			err:     true,
+			ctx:     context.Background(),
 		},
 	}
 
@@ -196,7 +203,7 @@ func TestPublishPipelineEventWithTimeout(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 
-			stream := newStubPipelineStatusServer(2, 5*time.Millisecond)
+			stream := newStubPipelineStatusServer(2, 5*time.Millisecond, test.ctx)
 			s.pipelineEventStream.mu.Lock()
 			s.pipelineEventStream.streams[stream] = &PipelineSubscription{
 				name:   "dummy",
@@ -241,6 +248,7 @@ func TestAddAndRemovePipelineNoPipelineGw(t *testing.T) {
 	type test struct {
 		name    string
 		loadReq *pb.Pipeline
+		ctx     context.Context
 	}
 
 	pipelineRemovedMessage := "pipeline removed"
@@ -263,6 +271,7 @@ func TestAddAndRemovePipelineNoPipelineGw(t *testing.T) {
 					},
 				},
 			},
+			ctx: context.Background(),
 		},
 	}
 
@@ -271,7 +280,7 @@ func TestAddAndRemovePipelineNoPipelineGw(t *testing.T) {
 			s, _ := createTestScheduler(t)
 
 			// add operator stream
-			stream := newStubPipelineStatusServer(100, 5*time.Millisecond)
+			stream := newStubPipelineStatusServer(100, 5*time.Millisecond, test.ctx)
 			subscription := &PipelineSubscription{
 				name:   "dummy",
 				stream: stream,
@@ -341,6 +350,7 @@ func TestPipelineGwRebalanceNoPipelineGw(t *testing.T) {
 		loadReq     *pb.Pipeline
 		initStatus  pipeline.PipelineStatus
 		finalStatus pipeline.PipelineStatus
+		ctx         context.Context
 	}
 
 	noPipelineGwMessage := "No pipeline gateway available to handle pipeline"
@@ -363,6 +373,7 @@ func TestPipelineGwRebalanceNoPipelineGw(t *testing.T) {
 			},
 			initStatus:  pipeline.PipelineReady,
 			finalStatus: pipeline.PipelineCreate,
+			ctx:         context.Background(),
 		},
 		{
 			name: "rebalance - no pipelinegw, operator connected (PipelineTerminating -> PipelineTerminated)",
@@ -382,6 +393,7 @@ func TestPipelineGwRebalanceNoPipelineGw(t *testing.T) {
 			},
 			initStatus:  pipeline.PipelineTerminating,
 			finalStatus: pipeline.PipelineTerminated,
+			ctx:         context.Background(),
 		},
 	}
 
@@ -390,7 +402,7 @@ func TestPipelineGwRebalanceNoPipelineGw(t *testing.T) {
 			s, _ := createTestScheduler(t)
 
 			// add operator stream
-			stream := newStubPipelineStatusServer(1, 5*time.Millisecond)
+			stream := newStubPipelineStatusServer(1, 5*time.Millisecond, test.ctx)
 			subscription := &PipelineSubscription{
 				name:   "dummy",
 				stream: stream,
@@ -469,6 +481,7 @@ func TestPipelineGwRebalanceCorrectMessages(t *testing.T) {
 		pipelineGwStatus pipeline.PipelineStatus
 		versionLen       int
 		operation        pb.PipelineStatusResponse_PipelineOperation
+		ctx              context.Context
 	}
 
 	tests := []test{
@@ -491,6 +504,7 @@ func TestPipelineGwRebalanceCorrectMessages(t *testing.T) {
 			pipelineGwStatus: pipeline.PipelineReady,
 			versionLen:       1,
 			operation:        pb.PipelineStatusResponse_PipelineCreate,
+			ctx:              context.Background(),
 		},
 		{
 			name: "rebalance message - delete pipeline",
@@ -511,6 +525,7 @@ func TestPipelineGwRebalanceCorrectMessages(t *testing.T) {
 			pipelineGwStatus: pipeline.PipelineTerminating,
 			versionLen:       1,
 			operation:        pb.PipelineStatusResponse_PipelineDelete,
+			ctx:              context.Background(),
 		},
 	}
 
@@ -520,7 +535,7 @@ func TestPipelineGwRebalanceCorrectMessages(t *testing.T) {
 			s, _ := createTestScheduler(t)
 
 			// create operator stream
-			operatorStream := newStubPipelineStatusServer(1, 5*time.Millisecond)
+			operatorStream := newStubPipelineStatusServer(1, 5*time.Millisecond, test.ctx)
 			operatorSubscription := &PipelineSubscription{
 				name:   "dummy-operator",
 				stream: operatorStream,
@@ -530,7 +545,7 @@ func TestPipelineGwRebalanceCorrectMessages(t *testing.T) {
 			g.Expect(s.pipelineEventStream.streams[operatorStream]).ToNot(BeNil())
 
 			// create pipelinegw stream
-			pipelineGwStream := newStubPipelineStatusServer(10, 5*time.Millisecond)
+			pipelineGwStream := newStubPipelineStatusServer(10, 5*time.Millisecond, test.ctx)
 			pipelineGwSubscription := &PipelineSubscription{
 				name:              "dummy-pipelinegw",
 				stream:            pipelineGwStream,
@@ -621,11 +636,13 @@ func TestPipelineGwRebalance(t *testing.T) {
 		name      string
 		pipelines []*pb.Pipeline
 		replicas  int // number of pipelinegw instances
+		ctx       context.Context
 	}
 
 	tests := []test{
 		{
 			name: "rebalance 3 pipelines across 4 replicas",
+			ctx:  context.Background(),
 			pipelines: []*pb.Pipeline{
 				{
 					Name:    "pipeline1",
@@ -674,6 +691,7 @@ func TestPipelineGwRebalance(t *testing.T) {
 		},
 		{
 			name: "rebalance 3 pipelines across 7 replicas",
+			ctx:  context.Background(),
 			pipelines: []*pb.Pipeline{
 				{
 					Name:    "pipeline1",
@@ -722,6 +740,7 @@ func TestPipelineGwRebalance(t *testing.T) {
 		},
 		{
 			name: "rebalance 2 pipelines across 9 replicas",
+			ctx:  context.Background(),
 			pipelines: []*pb.Pipeline{
 				{
 					Name:    "pipeline1",
@@ -763,7 +782,7 @@ func TestPipelineGwRebalance(t *testing.T) {
 			var streams []*stubPipelineStatusServer
 			for i := 0; i < test.replicas; i++ {
 				// create pipelinegw stream
-				stream := newStubPipelineStatusServer(20, 5*time.Millisecond)
+				stream := newStubPipelineStatusServer(20, 5*time.Millisecond, test.ctx)
 				subscription := &PipelineSubscription{
 					name:              fmt.Sprintf("dummy%d", i),
 					ip:                fmt.Sprintf("127.0.0.%d", i+1),

@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package server
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -24,16 +25,20 @@ import (
 
 func TestExperimentStatusStream(t *testing.T) {
 	g := NewGomegaWithT(t)
+	cancelledCtx, cancel := context.WithTimeout(context.Background(), 0)
+	defer cancel()
+
 	type test struct {
 		name    string
 		loadReq *experiment.Experiment
 		server  *SchedulerServer
 		err     bool
+		ctx     context.Context
 	}
 
 	tests := []test{
 		{
-			name: "experiment ok",
+			name: "success - experiment ok",
 			loadReq: &experiment.Experiment{
 				Name: "foo",
 				Mirror: &experiment.Mirror{
@@ -45,9 +50,26 @@ func TestExperimentStatusStream(t *testing.T) {
 				logger:           log.New(),
 				timeout:          10 * time.Millisecond,
 			},
+			ctx: context.Background(),
 		},
 		{
-			name: "timeout",
+			name: "failure - stream ctx cancelled",
+			loadReq: &experiment.Experiment{
+				Name: "foo",
+				Mirror: &experiment.Mirror{
+					Name: "bar",
+				},
+			},
+			server: &SchedulerServer{
+				experimentServer: experiment.NewExperimentServer(log.New(), nil, nil, nil),
+				logger:           log.New(),
+				timeout:          10 * time.Millisecond,
+			},
+			ctx: cancelledCtx,
+			err: true,
+		},
+		{
+			name: "failure - timeout",
 			loadReq: &experiment.Experiment{
 				Name: "foo",
 				Mirror: &experiment.Mirror{
@@ -60,6 +82,7 @@ func TestExperimentStatusStream(t *testing.T) {
 				timeout:          1 * time.Millisecond,
 			},
 			err: true,
+			ctx: context.Background(),
 		},
 	}
 
@@ -70,7 +93,7 @@ func TestExperimentStatusStream(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 
-			stream := newStubExperimentStatusServer(1, 5*time.Millisecond)
+			stream := newStubExperimentStatusServer(1, 5*time.Millisecond, test.ctx)
 			err := test.server.sendCurrentExperimentStatuses(stream)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
@@ -100,11 +123,12 @@ func TestExperimentStatusEvents(t *testing.T) {
 		loadReq *experiment.Experiment
 		timeout time.Duration
 		err     bool
+		ctx     context.Context
 	}
 
 	tests := []test{
 		{
-			name: "experiment ok",
+			name: "success - experiment ok",
 			loadReq: &experiment.Experiment{
 				Name: "foo",
 				Mirror: &experiment.Mirror{
@@ -113,9 +137,10 @@ func TestExperimentStatusEvents(t *testing.T) {
 			},
 			timeout: 10 * time.Millisecond,
 			err:     false,
+			ctx:     context.Background(),
 		},
 		{
-			name: "timeout",
+			name: "failure - timeout",
 			loadReq: &experiment.Experiment{
 				Name: "foo",
 				Mirror: &experiment.Mirror{
@@ -124,6 +149,7 @@ func TestExperimentStatusEvents(t *testing.T) {
 			},
 			timeout: 1 * time.Millisecond,
 			err:     true,
+			ctx:     context.Background(),
 		},
 	}
 
@@ -136,7 +162,7 @@ func TestExperimentStatusEvents(t *testing.T) {
 				g.Expect(err).To(BeNil())
 			}
 
-			stream := newStubExperimentStatusServer(1, 5*time.Millisecond)
+			stream := newStubExperimentStatusServer(1, 5*time.Millisecond, test.ctx)
 			s.experimentEventStream.mu.Lock()
 			s.experimentEventStream.streams[stream] = &ExperimentSubscription{
 				name:   "dummy",

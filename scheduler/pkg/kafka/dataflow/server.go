@@ -446,8 +446,14 @@ func (c *ChainerServer) sendPipelineMsgToSelectedServers(msg *chainer.PipelineUp
 
 	for _, serverId := range servers {
 		if subscription, ok := c.streams[serverId]; ok {
-			if err := subscription.stream.Send(msg); err != nil {
-				logger.WithError(err).Errorf("Failed to send msg to pipeline %s", pv.String())
+
+			select {
+			case <-subscription.stream.Context().Done():
+				logger.WithError(subscription.stream.Context().Err()).Errorf("Failed to send msg to pipeline %s - stream ctx cancelled", pv.String())
+			default:
+				if err := subscription.stream.Send(msg); err != nil {
+					logger.WithError(err).Errorf("Failed to send msg to pipeline %s", pv.String())
+				}
 			}
 		} else {
 			logger.Errorf("Failed to get pipeline subscription with key %s", serverId)
@@ -513,15 +519,31 @@ func (c *ChainerServer) rebalance() {
 						}
 					}
 					msg.Timestamp = c.conflictResolutioner.GetTimestamp(pv.Name)
-					if err := subscription.stream.Send(msg); err != nil {
-						logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.String())
+
+					select {
+					case <-subscription.stream.Context().Done():
+						err := subscription.stream.Context().Err()
+						logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s stream ctx cancelled", pv.String())
+					default:
+						if err := subscription.stream.Send(msg); err != nil {
+							logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.String())
+						}
 					}
+
 				} else {
 					msg = c.createPipelineDeletionMessage(pv, true)
 					msg.Timestamp = c.conflictResolutioner.GetTimestamp(pv.Name)
-					if err := subscription.stream.Send(msg); err != nil {
-						logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.String())
+
+					select {
+					case <-subscription.stream.Context().Done():
+						err := subscription.stream.Context().Err()
+						logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s stream ctx cancelled", pv.String())
+					default:
+						if err := subscription.stream.Send(msg); err != nil {
+							logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.String())
+						}
 					}
+
 				}
 			}
 		}
