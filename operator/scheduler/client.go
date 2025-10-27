@@ -210,11 +210,9 @@ func (s *SchedulerClient) RemoveConnection(namespace string) {
 func (s *SchedulerClient) smokeTestConnection(conn *grpc.ClientConn) error {
 	grpcClient := scheduler.NewSchedulerClient(conn)
 
-	stream, err := grpcClient.SubscribeModelStatus(context.TODO(), &scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
-	if err != nil {
-		return err
-	}
-	err = stream.CloseSend()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	_, err := grpcClient.SubscribeModelStatus(ctx, &scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager"}, grpc_retry.WithMax(1))
 	if err != nil {
 		return err
 	}
