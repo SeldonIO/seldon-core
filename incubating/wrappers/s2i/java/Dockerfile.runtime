@@ -1,8 +1,16 @@
 ARG IMAGE_SOURCE=openjdk:13.0.1-jdk-buster
 FROM $IMAGE_SOURCE
 
-RUN apt-get upgrade && \
-        apt-get update
+RUN printf '%s\n' \
+        'deb http://archive.debian.org/debian buster main contrib non-free' \
+        'deb http://archive.debian.org/debian-security buster/updates main contrib non-free' \
+        > /etc/apt/sources.list \
+        && printf 'Acquire::Check-Valid-Until "false";\n' \
+        'Acquire::Retries "3";\n' \
+        > /etc/apt/apt.conf.d/99archive \
+        && apt-get update
+
+RUN apt-get update
 
 RUN mkdir /build
 

@@ -1,3 +1,4 @@
+#ARG IMAGE_SOURCE=seldonio/core-builder:0.31
 ARG IMAGE_SOURCE=seldonio/core-builder:0.19
 FROM $IMAGE_SOURCE
 
