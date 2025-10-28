@@ -15,7 +15,7 @@ import (
 
 func (s *SchedulerServer) SubscribeControlPlane(req *pb.ControlPlaneSubscriptionRequest, stream pb.Scheduler_SubscribeControlPlaneServer) error {
 	logger := s.logger.WithField("func", "SubscribeControlPlane")
-	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
+	logger.Infof("Received control-plane subscribe request from %s", req.GetSubscriberName())
 
 	err := s.sendStartServerStreamMarker(stream)
 	if err != nil {

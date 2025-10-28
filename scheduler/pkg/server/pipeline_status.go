@@ -96,7 +96,7 @@ func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *chai
 
 func (s *SchedulerServer) SubscribePipelineStatus(req *pb.PipelineSubscriptionRequest, stream pb.Scheduler_SubscribePipelineStatusServer) error {
 	logger := s.logger.WithField("func", "SubscribePipelineStatus")
-	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
+	logger.Infof("Received pipeline status subscription request from %s", req.GetSubscriberName())
 
 	s.synchroniser.WaitReady()
 

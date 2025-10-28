@@ -21,7 +21,7 @@ import (
 
 func (s *SchedulerServer) SubscribeExperimentStatus(req *pb.ExperimentSubscriptionRequest, stream pb.Scheduler_SubscribeExperimentStatusServer) error {
 	logger := s.logger.WithField("func", "SubscribeExperimentStatus")
-	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
+	logger.Infof("Received experiment-status subscribe request from %s", req.GetSubscriberName())
 
 	s.synchroniser.WaitReady()
 

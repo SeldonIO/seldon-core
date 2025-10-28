@@ -84,7 +84,7 @@ func (s *SchedulerServer) ModelStatusEvent(ctx context.Context, message *pb.Mode
 
 func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest, stream pb.Scheduler_SubscribeModelStatusServer) error {
 	logger := s.logger.WithField("func", "SubscribeModelStatus")
-	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
+	logger.Infof("Received model-status subscribe request from %s", req.GetSubscriberName())
 
 	s.synchroniser.WaitReady()
 
@@ -548,7 +548,7 @@ func (s *SchedulerServer) sendModelStatusEventToStreamsWithTimestamp(
 
 func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionRequest, stream pb.Scheduler_SubscribeServerStatusServer) error {
 	logger := s.logger.WithField("func", "SubscribeServerStatus")
-	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
+	logger.Infof("Received server-status subscribe request from %s", req.GetSubscriberName())
 
 	err := s.sendCurrentServerStatuses(stream)
 	if err != nil {
