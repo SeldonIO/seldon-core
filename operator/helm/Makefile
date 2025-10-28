@@ -2,6 +2,7 @@ MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR := $(dir $(MKFILE_PATH))
 SELDON_CORE_DIR := $(realpath $(MKFILE_DIR)/../..)
 
+# TODO: change `seldonio/core-builder` image version to 0.31 after push
 .PHONY: create
 create:
 	docker run --rm -it \

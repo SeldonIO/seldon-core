@@ -18,6 +18,7 @@ run_jupyter_notebook:
 list_jupyter_notebooks:
 	@jupyter notebook list
 
+# TODO: change `seldonio/core-builder` image version to 0.31 after push
 run_core_builder_in_host:
 	unset DOCKER_TLS_VERIFY && \
 		unset DOCKER_HOST && \
@@ -31,6 +32,7 @@ run_core_builder_in_host:
 			seldonio/core-builder:0.20 bash
 
 
+# TODO: change `seldonio/core-builder` image version to 0.31 after push
 run_core_builder_in_minikube:
 	eval $$(minikube docker-env) && \
 		docker run --rm -it \

@@ -8,6 +8,7 @@ STARTUP_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
 MAVEN_REPOSITORY_LOCATION=/tmp/.m2/repository
 
+# TODO: change `seldonio/core-builder` image version to 0.31 after push
 docker run --rm -it \
     --user=$(id -u):$(id -g) \
     -e MAVEN_REPOSITORY_LOCATION=${MAVEN_REPOSITORY_LOCATION} \
