@@ -620,7 +620,8 @@ spec:
             path: /live
             port: health
           initialDelaySeconds: 10
-          periodSeconds: 5
+          periodSeconds: 20
+          timeoutSeconds: 10
         name: scheduler
         ports:
         - containerPort: 9002

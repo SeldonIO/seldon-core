@@ -20,6 +20,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/heartbeat"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
@@ -134,6 +135,19 @@ func (es *ExperimentStore) InitialiseOrRestoreDB(path string, deletedResourceTTL
 	}()
 
 	return nil
+}
+
+func (es *ExperimentStore) Heartbeat() heartbeat.Check {
+	logger := es.logger.WithField("func", "heartbeat")
+	return func() error {
+		logger.Debug("Starting Expierment store heartbeat")
+		es.mu.Lock()
+		logger.Debug("Locked experiment store lock")
+		es.mu.Unlock()
+		logger.Debug("Unlocked experiment lock")
+
+		return nil
+	}
 }
 
 func (es *ExperimentStore) publishExperimentEvent(experiment *Experiment, source string, updatedExperiment bool) {

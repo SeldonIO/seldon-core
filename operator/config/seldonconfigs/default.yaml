@@ -416,9 +416,10 @@ spec:
           httpGet:
             path: /live
             port: health
-          periodSeconds: 5
+          periodSeconds: 20
           failureThreshold: 3
           initialDelaySeconds: 10
+          timeoutSeconds: 10
         resources:
           limits:
             memory: 1G

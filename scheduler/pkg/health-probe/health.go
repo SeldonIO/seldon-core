@@ -12,6 +12,7 @@ package health_probe
 import (
 	"fmt"
 	"slices"
+	"sync"
 )
 
 type ProbeType int
@@ -38,16 +39,20 @@ func (p ProbeType) Valid() bool {
 }
 
 type manager struct {
+	mu   sync.RWMutex
 	svcs map[ProbeType][]ProbeCallback
 }
 
 func NewManager() Manager {
 	return &manager{
+		mu:   sync.RWMutex{},
 		svcs: make(map[ProbeType][]ProbeCallback, 0),
 	}
 }
 
 func (m *manager) HasCallbacks(probe ProbeType) bool {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	_, ok := m.svcs[probe]
 	return ok
 }
@@ -56,6 +61,8 @@ func (m *manager) AddCheck(cb ProbeCallback, probes ...ProbeType) {
 	if cb == nil {
 		panic("nil callback")
 	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
 
 	for _, probe := range probes {
 		if !probe.Valid() {
@@ -81,6 +88,9 @@ func (m *manager) CheckLiveness() error {
 }
 
 func (m *manager) runCheck(probe ProbeType) error {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
 	for _, cb := range m.svcs[probe] {
 		if err := cb(); err != nil {
 			return fmt.Errorf("failed probe: %w", err)

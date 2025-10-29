@@ -31,6 +31,7 @@ import (
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/heartbeat"
 	cr "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/conflict-resolution"
 	scaling_config "github.com/seldonio/seldon-core/scheduler/v2/pkg/scaling/config"
 	scheduler2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
@@ -369,6 +370,44 @@ func (s *SchedulerServer) Stop() {
 		s.logger.Info("Scheduler closing gRPC server managing connections from controller and gateways")
 	}
 	close(s.done)
+}
+
+func (s *SchedulerServer) Heartbeat() heartbeat.Check {
+	logger := s.logger.WithField("func", "heartbeat")
+	return func() error {
+		logger.Debug("Starting scheduler server gRPC heartbeat")
+		s.mu.Lock()
+		logger.Debug("Locked scaling config lock")
+		s.mu.Unlock()
+		logger.Debug("Unlocked scaling config lock")
+
+		s.modelEventStream.mu.Lock()
+		logger.Debug("Locked model event stream")
+		s.modelEventStream.mu.Unlock()
+		logger.Debug("Unlocked model event stream")
+
+		s.pipelineEventStream.mu.Lock()
+		logger.Debug("Locked pipeline event stream")
+		s.pipelineEventStream.mu.Unlock()
+		logger.Debug("Unlocked pipeline event stream")
+
+		s.experimentEventStream.mu.Lock()
+		logger.Debug("Locked experiment event stream")
+		s.experimentEventStream.mu.Unlock()
+		logger.Debug("Unlocked experiment event stream")
+
+		s.serverEventStream.mu.Lock()
+		logger.Debug("Locked server event stream")
+		s.serverEventStream.mu.Unlock()
+		logger.Debug("Unlocked server event stream")
+
+		s.controlPlaneStream.mu.Lock()
+		logger.Debug("Locked control plane event stream")
+		s.controlPlaneStream.mu.Unlock()
+		logger.Debug("Unlocked control plane event stream")
+
+		return nil
+	}
 }
 
 func (s *SchedulerServer) handleScalingConfigChanges() {

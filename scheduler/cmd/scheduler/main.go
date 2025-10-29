@@ -37,6 +37,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
 	health_probe "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/heartbeat"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/dataflow"
 	scaling_config "github.com/seldonio/seldon-core/scheduler/v2/pkg/scaling/config"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
@@ -244,7 +245,7 @@ func main() {
 			probe{port: int(schedulerMtlsPort), plaintText: false})
 	}
 
-	httpServer, err := initHealthProbe(tlsOptions, logger, probesConfig, int(healthProbePort))
+	httpServer, healthManager, err := initHealthProbe(tlsOptions, logger, probesConfig, int(healthProbePort))
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to start health server")
 	}
@@ -390,11 +391,14 @@ func main() {
 	// scheduler <-> agent  grpc
 	// auto-scaling has been disabled for time being, until issue is fixed for scaling models back up
 	autoscalingModelEnabled = false
-	as := agent.NewAgentServer(logger, ss, sched, eventHub, autoscalingModelEnabled, *tlsOptions)
-	err = as.StartGrpcServer(allowPlaintxt, agentPort, agentMtlsPort)
+	agentServer := agent.NewAgentServer(logger, ss, sched, eventHub, autoscalingModelEnabled, *tlsOptions)
+	err = agentServer.StartGrpcServer(allowPlaintxt, agentPort, agentMtlsPort)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to start agent gRPC server")
 	}
+
+	ctx, cancelHeartbeat := context.WithCancel(context.Background())
+	createLivenessHeartbeat(ctx, logger, healthManager, agentServer, s, cs, es)
 
 	// wait for model servers to be ready
 	sync.WaitReady()
@@ -416,13 +420,14 @@ func main() {
 	<-done
 
 	log.Info("Shutting down services")
+	cancelHeartbeat()
 
 	s.StopSendModelEvents()
 	s.StopSendServerEvents()
 	s.StopSendExperimentEvents()
 	s.StopSendPipelineEvents()
 	s.StopSendControlPlaneEvents()
-	as.StopAgentStreams()
+	agentServer.StopAgentStreams()
 
 	log.Info("All services have shut down cleanly")
 }
@@ -453,7 +458,25 @@ type gRPCHealthProbes struct {
 	probes []probe
 }
 
-func initHealthProbe(tlsOptions *tls.TLSOptions, log *log.Logger, config gRPCHealthProbes, healthSrvPort int) (*health_probe.HTTPServer, error) {
+func createLivenessHeartbeat(ctx context.Context, logger *log.Logger, hm health_probe.Manager, as *agent.Server, s *schedulerServer.SchedulerServer, cs *dataflow.ChainerServer, es *experiment.ExperimentStore) {
+	hbManager := heartbeat.NewManager(logger)
+
+	for _, hb := range []*heartbeat.Svc{
+		heartbeat.NewService("agent-grpc-server", as.Heartbeat()),
+		heartbeat.NewService("scheduler-grpc-server", s.Heartbeat()),
+		heartbeat.NewService("dataflow-engine-grpc-server", cs.Heartbeat()),
+		heartbeat.NewService("experiment-store", es.Heartbeat()),
+	} {
+		go hb.Listen(ctx)
+		hbManager.Register(hb)
+	}
+
+	hm.AddCheck(func() error {
+		return hbManager.CheckHeartbeats(ctx)
+	}, health_probe.ProbeLiveness)
+}
+
+func initHealthProbe(tlsOptions *tls.TLSOptions, log *log.Logger, config gRPCHealthProbes, healthSrvPort int) (*health_probe.HTTPServer, health_probe.Manager, error) {
 	manager := health_probe.NewManager()
 	for _, probe := range config.probes {
 		var cert *tls.CertificateStore
@@ -461,7 +484,7 @@ func initHealthProbe(tlsOptions *tls.TLSOptions, log *log.Logger, config gRPCHea
 			cert = tlsOptions.Cert
 		}
 		if err := createGRPCHealthProbe(cert, probe.port, manager); err != nil {
-			return nil, fmt.Errorf("failed to create health probe: %w", err)
+			return nil, nil, fmt.Errorf("failed to create health probe: %w", err)
 		}
 	}
 
@@ -472,7 +495,7 @@ func initHealthProbe(tlsOptions *tls.TLSOptions, log *log.Logger, config gRPCHea
 		}
 	}()
 
-	return server, nil
+	return server, manager, nil
 }
 
 func createGRPCHealthProbe(cert *tls.CertificateStore, port int, manager health_probe.Manager) error {
