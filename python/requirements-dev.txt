@@ -5,7 +5,7 @@ flake8==7.3.0              # Updated linter engine
 
 # === Type Checking ===
 mypy==1.18.2               # Actively maintained type checker
-mypy-protobuf==3.6.0       # Works with newer mypy versions
+mypy-protobuf==3.5.0       # Works with newer mypy versions
 
 # === Testing ===
 pytest==8.4.2              # Modern pytest with py3.10+ support
@@ -21,7 +21,7 @@ pip-licenses==5.5.0        # Fetch OSS licenses
 
 # === Data & ML Related (for test_gen etc.) ===
 pandas==2.3.3              # Modern release; requires numpy>=1.23
-pillow==12.0.0             # Stable, supports Python 3.10+
-grpcio-tools==1.76.0       # Prebuilt wheels for all py3.10+
+pillow==10.4.0             # Stable, supports Python 3.10+
+grpcio-tools==1.62.3       # Prebuilt wheels for all py3.10+
 conda==3.5.0
 pip-audit==2.9.0

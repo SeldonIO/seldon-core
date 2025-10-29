@@ -4,7 +4,7 @@ from itertools import chain
 from setuptools import find_packages, setup
 
 # Extra dependencies, with special 'all' key
-extras = {"tensorflow": ["tensorflow==2.20.0"]}
+extras = {"tensorflow": ["tensorflow==2.17.1"]}
 all_extra_deps = chain.from_iterable(extras.values())
 extras["all"] = list(set(all_extra_deps))
 
@@ -25,14 +25,14 @@ setup(
         "jsonschema>=4.25.1",
         "flask-cors>=6.0.1",
         "requests>=2.32.5",
-        "numpy>=2.3.4",
-        "protobuf>=6.33.0",
+        "numpy>=1.26.4, <2.0.0",
+        "protobuf==4.25.8",
         "grpcio>=1.76.0",
         "flask-opentracing>=2.0.0",
         "opentracing>=2.4.0",  # latest release is from Nov 2020
         "jaeger-client>=4.8.0",  # latest release is from Sep 2021
         "grpcio-opentracing>=1.1.4",  # latest release is from Apr 2019
-        "grpcio-reflection>=1.76.0",
+        "grpcio-reflection==1.62.3",
         "gunicorn>=23.0.0",
         "setuptools>=80.9.0",
         "prometheus_client>=0.23.1",
