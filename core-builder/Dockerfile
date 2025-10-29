@@ -140,24 +140,6 @@ RUN go install github.com/onsi/ginkgo/ginkgo@v1.16.5
 # Helm docs
 RUN go install github.com/norwoodj/helm-docs/cmd/helm-docs@f66fdbd6fe
 
-# Argo workflows CLI
-RUN wget https://github.com/argoproj/argo-workflows/releases/download/v3.0.8/argo-linux-amd64.gz && \
-    gunzip argo-linux-amd64.gz && \
-    mv argo-linux-amd64 argo && \
-    chmod a+x argo && \
-    mv argo /usr/local/bin/argo
-
-# Installing jx
-RUN wget https://github.com/jenkins-x/jx-cli/releases/download/v3.1.242/jx-cli-linux-amd64.tar.gz && \
-    tar -zxvf jx-cli-linux-amd64.tar.gz && \
-    chmod a+x jx && \
-    mv jx /usr/local/bin/jx
-
-RUN curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-349.0.0-linux-x86_64.tar.gz && \
-    tar xvfz google-cloud-sdk-349.0.0-linux-x86_64.tar.gz -C /tmp/ && \
-    mv /tmp/google-cloud-sdk /usr/local/google-cloud-sdk
-ENV PATH=/usr/local/google-cloud-sdk/bin:$PATH
-
 WORKDIR /work
 
 # Define default command.
