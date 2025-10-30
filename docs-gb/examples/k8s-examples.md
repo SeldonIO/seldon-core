@@ -7,27 +7,24 @@
 **Note**:  The Seldon CLI allows you to view information about underlying Seldon resources and make changes to them through the scheduler in non-Kubernetes environments. However, it cannot modify underlying manifests within a Kubernetes cluster. Therefore, using the Seldon CLI for control plane operations in a Kubernetes environment is not recommended. For more details, see [Seldon CLI](../cli/).
 {% endhint %}
 
-### Seldon V2 Kubernetes Examples
+## Before you begin
 
-```python
-import os
-os.environ["NAMESPACE"] = "seldon-mesh"
-```
+1. Ensure that you have [installed Seldon Core 2](../installation/production-environment/README.md#installing-seldon-core-2) in the namespace `seldon-mesh`.
 
-```python
-MESH_IP=!kubectl get svc seldon-mesh -n ${NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
-MESH_IP=MESH_IP[0]
-import os
-os.environ['MESH_IP'] = MESH_IP
-MESH_IP
-```
+2. Ensure that you are performing these steps in the directory where you have downloaded the [samples](https://github.com/SeldonIO/seldon-core/tree/v2/samples).
 
-```
-'172.18.255.2'
+3. Get the IP address of the Seldon Core 2 instance running with Istio:
 
-```
+  ```bash
+  ISTIO_INGRESS=$(kubectl get svc seldon-mesh -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
-#### Model
+  echo "Seldon Core 2: http://$ISTIO_INGRESS"
+  ```
+  {% hint style="info" %}
+  Make a note of the IP address that is displayed in the output. Replace <INGRESS_IP> with your service mesh's ingress IP address in the following commands.
+  {% endhint %}
+
+#### Create a Model
 
 ```bash
 cat ./models/sklearn-iris-gs.yaml
@@ -47,7 +44,7 @@ spec:
 ```
 
 ```bash
-kubectl create -f ./models/sklearn-iris-gs.yaml -n ${NAMESPACE}
+kubectl create -f ./models/sklearn-iris-gs.yaml -n seldon-mesh
 ```
 
 ```outputs
@@ -56,7 +53,7 @@ model.mlops.seldon.io/iris created
 ```
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
 ```
 
 ```outputs
@@ -65,7 +62,7 @@ model.mlops.seldon.io/iris condition met
 ```
 
 ```bash
-kubectl get model iris -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
+kubectl get model iris -n seldon-mesh -o jsonpath='{.status}' | jq -M .
 ```
 
 ```json
@@ -85,13 +82,40 @@ kubectl get model iris -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
   ],
   "replicas": 1
 }
+Make a REST inference call
+```
+{% tabs %}
+{% tab title="curl" %}
+```bash
+curl -k http://<INGRESS_IP>:80/v2/models/iris/infer \
+  -H "Host: seldon-mesh.inference.seldon" \
+  -H "Content-Type: application/json" \
+  -H "Seldon-Model: iris" \
+  -d '{
+    "inputs": [
+      {
+        "name": "predict",
+        "shape": [1, 4],
+        "datatype": "FP32",
+        "data": [[1, 2, 3, 4]]
+      }
+    ]
+  }' | jq
 
 ```
 
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
-seldon model infer iris --inference-host ${MESH_IP}:80 \
+seldon model infer iris --inference-host <INGRESS_IP>:80 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
+
+{% endtab %}
+{% endtabs %}
+
+Output is similar to:
 
 ```json
 {
@@ -118,9 +142,10 @@ seldon model infer iris --inference-host ${MESH_IP}:80 \
 }
 
 ```
+Make a gRPC inference call
 
 ```bash
-seldon model infer iris --inference-mode grpc --inference-host ${MESH_IP}:80 \
+seldon model infer iris --inference-mode grpc --inference-host <INGRESS_IP>:80 \
    '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' | jq -M .
 ```
 
@@ -153,7 +178,7 @@ seldon model infer iris --inference-mode grpc --inference-host ${MESH_IP}:80 \
 ```
 
 ```bash
-kubectl get server mlserver -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
+kubectl get server mlserver -n seldon-mesh -o jsonpath='{.status}' | jq -M .
 ```
 
 ```json
@@ -178,8 +203,10 @@ kubectl get server mlserver -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
 
 ```
 
+Delete the model
+
 ```bash
-kubectl delete -f ./models/sklearn-iris-gs.yaml -n ${NAMESPACE}
+kubectl delete -f ./models/sklearn-iris-gs.yaml -n seldon-mesh
 ```
 
 ```outputs
@@ -222,8 +249,8 @@ spec:
 ```
 
 ```bash
-kubectl create -f ./models/sklearn1.yaml -n ${NAMESPACE}
-kubectl create -f ./models/sklearn2.yaml -n ${NAMESPACE}
+kubectl create -f ./models/sklearn1.yaml -n seldon-mesh
+kubectl create -f ./models/sklearn2.yaml -n seldon-mesh
 ```
 
 ```outputs
@@ -233,7 +260,7 @@ model.mlops.seldon.io/iris2 created
 ```
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
 ```
 
 ```outputs
@@ -262,7 +289,7 @@ spec:
 ```
 
 ```bash
-kubectl create -f ./experiments/ab-default-model.yaml -n ${NAMESPACE}
+kubectl create -f ./experiments/ab-default-model.yaml -n seldon-mesh
 ```
 
 ```outputs
@@ -271,7 +298,7 @@ experiment.mlops.seldon.io/experiment-sample created
 ```
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s experiment --all -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s experiment --all -n seldon-mesh
 ```
 
 ```outputs
@@ -279,20 +306,44 @@ experiment.mlops.seldon.io/experiment-sample condition met
 
 ```
 
+{% tabs %}
+{% tab title="curl" %}
 ```bash
-seldon model infer --inference-host ${MESH_IP}:80 -i 50 iris \
+for i in {1..10}; do 
+  curl -s -k <INGRESS_IP>:80/v2/models/experiment-sample/infer \
+    -H "Host: seldon-mesh.inference.seldon" \
+    -H "Content-Type: application/json" \
+    -H "Seldon-Model: experiment-sample.experiment" \
+    -d '{"inputs":[{"name":"predict","shape":[1,4],"datatype":"FP32","data":[[1,2,3,4]]}]}' \
+    | jq -r .model_name
+done | sort | uniq -c
+
+```
+```outputs
+ 4 iris2_1
+ 6 iris_1
+
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+```bash
+seldon model infer --inference-host <INGRESS_IP>:80 -i 10 iris \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
-
 ```outputs
-Success: map[:iris2_1::29 :iris_1::21]
+Success: map[:iris2_1::4 :iris_1::6]
 
 ```
 
+{% endtab %}
+{% endtabs %}
+
+
 ```bash
-kubectl delete -f ./experiments/ab-default-model.yaml -n ${NAMESPACE}
-kubectl delete -f ./models/sklearn1.yaml -n ${NAMESPACE}
-kubectl delete -f ./models/sklearn2.yaml -n ${NAMESPACE}
+kubectl delete -f ./experiments/ab-default-model.yaml -n seldon-mesh
+kubectl delete -f ./models/sklearn1.yaml -n seldon-mesh
+kubectl delete -f ./models/sklearn2.yaml -n seldon-mesh
 ```
 
 ```outputs
@@ -332,8 +383,8 @@ spec:
 ```
 
 ```bash
-kubectl create -f ./models/tfsimple1.yaml -n ${NAMESPACE}
-kubectl create -f ./models/tfsimple2.yaml -n ${NAMESPACE}
+kubectl create -f ./models/tfsimple1.yaml -n seldon-mesh
+kubectl create -f ./models/tfsimple2.yaml -n seldon-mesh
 ```
 
 ```outputs
@@ -343,7 +394,7 @@ model.mlops.seldon.io/tfsimple2 created
 ```
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
 ```
 
 ```outputs
@@ -377,7 +428,7 @@ spec:
 ```
 
 ```bash
-kubectl create -f ./pipelines/tfsimples.yaml -n ${NAMESPACE}
+kubectl create -f ./pipelines/tfsimples.yaml -n seldon-mesh
 ```
 
 ```outputs
@@ -386,19 +437,105 @@ pipeline.mlops.seldon.io/tfsimples created
 ```
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s pipeline --all -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
 ```
 
 ```outputs
 pipeline.mlops.seldon.io/tfsimples condition met
 
 ```
-
+{% tabs %}
+{% tab title="curl" %}
 ```bash
-seldon pipeline infer tfsimples --inference-mode grpc --inference-host ${MESH_IP}:80 \
-    '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
+curl -k <INGRESS_IP>:80/v2/models/tfsimples/infer \
+  -H "Host: seldon-mesh.inference.seldon" \
+  -H "Content-Type: application/json" \
+  -H "Seldon-Model: tfsimples.pipeline" \
+  -d '{
+    "inputs": [
+      {
+        "name": "INPUT0",
+        "datatype": "INT32",
+        "shape": [1, 16],
+        "data": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+      },
+      {
+        "name": "INPUT1",
+        "datatype": "INT32",
+        "shape": [1, 16],
+        "data": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+      }
+    ]
+  }' |jq 
+
+```
+```json
+{
+  "model_name": "",
+  "outputs": [
+    {
+      "data": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20,
+        22,
+        24,
+        26,
+        28,
+        30,
+        32
+      ],
+      "name": "OUTPUT0",
+      "shape": [
+        1,
+        16
+      ],
+      "datatype": "INT32"
+    },
+    {
+      "data": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20,
+        22,
+        24,
+        26,
+        28,
+        30,
+        32
+      ],
+      "name": "OUTPUT1",
+      "shape": [
+        1,
+        16
+      ],
+      "datatype": "INT32"
+    }
+  ]
+}
 ```
 
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+```bash
+seldon pipeline infer tfsimples --inference-mode grpc --inference-host <INGRESS_IP>:80 \
+    '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
+```
 ```json
 {
   "outputs": [
@@ -463,8 +600,12 @@ seldon pipeline infer tfsimples --inference-mode grpc --inference-host ${MESH_IP
 
 ```
 
+{% endtab %}
+{% endtabs %}
+
+
 ```bash
-kubectl delete -f ./pipelines/tfsimples.yaml -n ${NAMESPACE}
+kubectl delete -f ./pipelines/tfsimples.yaml -n seldon-mesh
 ```
 
 ```outputs
@@ -473,8 +614,8 @@ pipeline.mlops.seldon.io "tfsimples" deleted
 ```
 
 ```bash
-kubectl delete -f ./models/tfsimple1.yaml -n ${NAMESPACE}
-kubectl delete -f ./models/tfsimple2.yaml -n ${NAMESPACE}
+kubectl delete -f ./models/tfsimple1.yaml -n seldon-mesh
+kubectl delete -f ./models/tfsimple2.yaml -n seldon-mesh
 ```
 
 ```outputs
@@ -523,9 +664,9 @@ spec:
 ```
 
 ```bash
-kubectl create -f ./models/tfsimple1.yaml -n ${NAMESPACE}
-kubectl create -f ./models/tfsimple2.yaml -n ${NAMESPACE}
-kubectl create -f ./models/tfsimple3.yaml -n ${NAMESPACE}
+kubectl create -f ./models/tfsimple1.yaml -n seldon-mesh
+kubectl create -f ./models/tfsimple2.yaml -n seldon-mesh
+kubectl create -f ./models/tfsimple3.yaml -n seldon-mesh
 ```
 
 ```outputs
@@ -536,7 +677,7 @@ model.mlops.seldon.io/tfsimple3 created
 ```
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
 ```
 
 ```outputs
@@ -573,7 +714,7 @@ spec:
 ```
 
 ```bash
-kubectl create -f ./pipelines/tfsimples-join.yaml -n ${NAMESPACE}
+kubectl create -f ./pipelines/tfsimples-join.yaml -n seldon-mesh
 ```
 
 ```outputs
@@ -582,17 +723,108 @@ pipeline.mlops.seldon.io/join created
 ```
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s pipeline --all -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
 ```
 
 ```outputs
 pipeline.mlops.seldon.io/join condition met
 
 ```
+{% tabs %}
+
+{% tab title="curl" %} 
+```bash
+curl -k <INGRESS_IP>:80/v2/models/join/infer \
+  -H "Host: seldon-mesh.inference.seldon" \
+  -H "Content-Type: application/json" \
+  -H "Seldon-Model: join.pipeline" \
+  -d '{
+    "model_name": "simple",
+    "inputs": [
+      {
+        "name": "INPUT0",
+        "datatype": "INT32",
+        "shape": [1, 16],
+        "data": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+      },
+      {
+        "name": "INPUT1",
+        "datatype": "INT32",
+        "shape": [1, 16],
+        "data": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+      }
+    ]
+  }' |jq
+
+```
+```json
+{
+  "model_name": "",
+  "outputs": [
+    {
+      "data": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20,
+        22,
+        24,
+        26,
+        28,
+        30,
+        32
+      ],
+      "name": "OUTPUT0",
+      "shape": [
+        1,
+        16
+      ],
+      "datatype": "INT32"
+    },
+    {
+      "data": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20,
+        22,
+        24,
+        26,
+        28,
+        30,
+        32
+      ],
+      "name": "OUTPUT1",
+      "shape": [
+        1,
+        16
+      ],
+      "datatype": "INT32"
+    }
+  ]
+}
+```
+
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 
 ```bash
-seldon pipeline infer join --inference-mode grpc --inference-host ${MESH_IP}:80 \
+seldon pipeline infer join --inference-mode grpc --inference-host <INGRESS_IP>:80 \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
+
 ```
 
 ```json
@@ -656,11 +888,15 @@ seldon pipeline infer join --inference-mode grpc --inference-host ${MESH_IP}:80 
     }
   ]
 }
-
 ```
+{% endtab %}
+
+
+{% endtabs %}
+
 
 ```bash
-kubectl delete -f ./pipelines/tfsimples-join.yaml -n ${NAMESPACE}
+kubectl delete -f ./pipelines/tfsimples-join.yaml -n seldon-mesh
 ```
 
 ```outputs
@@ -669,9 +905,9 @@ pipeline.mlops.seldon.io "join" deleted
 ```
 
 ```bash
-kubectl delete -f ./models/tfsimple1.yaml -n ${NAMESPACE}
-kubectl delete -f ./models/tfsimple2.yaml -n ${NAMESPACE}
-kubectl delete -f ./models/tfsimple3.yaml -n ${NAMESPACE}
+kubectl delete -f ./models/tfsimple1.yaml -n seldon-mesh
+kubectl delete -f ./models/tfsimple2.yaml -n seldon-mesh
+kubectl delete -f ./models/tfsimple3.yaml -n seldon-mesh
 ```
 
 ```outputs
@@ -700,7 +936,7 @@ spec:
 ```
 
 ```bash
-kubectl create -f ./models/income.yaml -n ${NAMESPACE}
+kubectl create -f ./models/income.yaml -n seldon-mesh
 ```
 
 ```outputs
@@ -709,7 +945,7 @@ model.mlops.seldon.io/income created
 ```
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
 ```
 
 ```outputs
@@ -718,31 +954,33 @@ model.mlops.seldon.io/income condition met
 ```
 
 ```bash
-kubectl get model income -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
+kubectl get model income -n seldon-mesh -o jsonpath='{.status}' | jq -M .
 ```
 
 ```json
 {
+  "availableReplicas": 1,
   "conditions": [
     {
-      "lastTransitionTime": "2023-06-30T10:02:53Z",
+      "lastTransitionTime": "2025-10-30T08:37:24Z",
       "message": "ModelAvailable",
       "status": "True",
       "type": "ModelReady"
     },
     {
-      "lastTransitionTime": "2023-06-30T10:02:53Z",
+      "lastTransitionTime": "2025-10-30T08:37:24Z",
       "status": "True",
       "type": "Ready"
     }
   ],
-  "replicas": 1
+  "modelgwReady": "ModelAvailable(1/1 ready ) ",
+  "replicas": 1,
+  "selector": "server=mlserver"
 }
-
 ```
 
 ```bash
-seldon model infer income --inference-host ${MESH_IP}:80 \
+seldon model infer income --inference-host <INGRESS_IP>:80 \
      '{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[47,4,1,1,1,3,4,1,0,0,40,9]]}]}'
 ```
 
@@ -750,7 +988,7 @@ seldon model infer income --inference-host ${MESH_IP}:80 \
 {
 	"model_name": "income_1",
 	"model_version": "1",
-	"id": "f52acfeb-0f22-429f-8c7a-785ef17cd470",
+	"id": "cdf32df2-eb42-42d8-9f66-404bcab95540",
 	"parameters": {},
 	"outputs": [
 		{
@@ -790,7 +1028,7 @@ spec:
 ```
 
 ```bash
-kubectl create -f ./models/income-explainer.yaml -n ${NAMESPACE}
+kubectl create -f ./models/income-explainer.yaml -n seldon-mesh
 ```
 
 ```outputs
@@ -799,7 +1037,7 @@ model.mlops.seldon.io/income-explainer created
 ```
 
 ```bash
-kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
+kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
 ```
 
 ```outputs
@@ -809,7 +1047,7 @@ model.mlops.seldon.io/income-explainer condition met
 ```
 
 ```bash
-kubectl get model income-explainer -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
+kubectl get model income-explainer -n seldon-mesh -o jsonpath='{.status}' | jq -M .
 ```
 
 ```json
@@ -833,7 +1071,7 @@ kubectl get model income-explainer -n ${NAMESPACE} -o jsonpath='{.status}' | jq 
 ```
 
 ```bash
-seldon model infer income-explainer --inference-host ${MESH_IP}:80 \
+seldon model infer income-explainer --inference-host <INGRESS_IP>:80 \
      '{"inputs": [{"name": "predict", "shape": [1, 12], "datatype": "FP32", "data": [[47,4,1,1,1,3,4,1,0,0,40,9]]}]}'
 ```
 
@@ -864,8 +1102,8 @@ seldon model infer income-explainer --inference-host ${MESH_IP}:80 \
 ```
 
 ```bash
-kubectl delete -f ./models/income.yaml -n ${NAMESPACE}
-kubectl delete -f ./models/income-explainer.yaml -n ${NAMESPACE}
+kubectl delete -f ./models/income.yaml -n seldon-mesh
+kubectl delete -f ./models/income-explainer.yaml -n seldon-mesh
 ```
 
 ```outputs
