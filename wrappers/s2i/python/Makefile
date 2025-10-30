@@ -29,14 +29,14 @@ get_local_repo:
 
 # Building Conda Base
 docker-build-conda-base:
-	docker build -f Dockerfile.conda --build-arg MINIFORGE_VERSION=${MINIFORGE_VERSION} -t ${CONDA_BASE_IMAGE}:${VERSION} .
+	docker build --platform=linux/amd64 -f Dockerfile.conda --build-arg MINIFORGE_VERSION=${MINIFORGE_VERSION} -t ${CONDA_BASE_IMAGE}:${VERSION} .
 
 docker-push-conda-base:
 	docker push ${CONDA_BASE_IMAGE}:${VERSION}
 
 # Standard Python Wrapper
 docker-build: get_local_repo
-	docker build -f Dockerfile --build-arg VERSION=${VERSION} --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${CONDA_BASE_IMAGE} -t ${IMAGE_NAME}:${VERSION} .
+	docker build --platform=linux/amd64 -f Dockerfile --build-arg VERSION=${VERSION} --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${CONDA_BASE_IMAGE} -t ${IMAGE_NAME}:${VERSION} .
 
 docker-push:
 	docker push ${IMAGE_NAME}:${VERSION}
@@ -50,14 +50,14 @@ docker-push-base-python:
 
 # GPU Image (probably not in used so skipping build/push to private repositories)
 docker-build-gpu: get_local_repo
-	docker build -f Dockerfile.gpu --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg MINIFORGE_VERSION=${MINIFORGE_VERSION} -t ${GPU_IMAGE_NAME}:${VERSION} .
+	docker build --platform=linux/amd64 -f Dockerfile.gpu --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg MINIFORGE_VERSION=${MINIFORGE_VERSION} -t ${GPU_IMAGE_NAME}:${VERSION} .
 
 docker-push-gpu:
 	docker push ${GPU_IMAGE_NAME}:${VERSION}
 
 .PHONY: test
 test:
-	docker build --build-arg VERSION=${VERSION} --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${CONDA_BASE_IMAGE} -t ${IMAGE_NAME}-candidate .
+	docker build --platform=linux/amd64 --build-arg VERSION=${VERSION} --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${CONDA_BASE_IMAGE} -t ${IMAGE_NAME}-candidate .
 	IMAGE_NAME=${IMAGE_NAME}-candidate test/run
 
 after_build_image_seldon_core_check:
