@@ -84,7 +84,7 @@ func (s *SchedulerServer) ModelStatusEvent(ctx context.Context, message *pb.Mode
 
 func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest, stream pb.Scheduler_SubscribeModelStatusServer) error {
 	logger := s.logger.WithField("func", "SubscribeModelStatus")
-	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
+	logger.Infof("Received model-status subscribe request from %s", req.GetSubscriberName())
 
 	s.synchroniser.WaitReady()
 
@@ -116,27 +116,25 @@ func (s *SchedulerServer) SubscribeModelStatus(req *pb.ModelSubscriptionRequest,
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
-	for {
-		select {
-		case <-fin:
-			logger.Infof("Closing stream for %s", req.GetSubscriberName())
-			return nil
-		case <-ctx.Done():
-			logger.Infof("Stream disconnected %s", req.GetSubscriberName())
-			s.modelEventStream.mu.Lock()
-			delete(s.modelEventStream.streams, stream)
-			if req.IsModelGateway {
-				s.modelGwLoadBalancer.RemoveServer(req.GetSubscriberName())
-			}
-			s.modelEventStream.mu.Unlock()
-
-			// rebalance the streams when a subscription is removed
-			if req.IsModelGateway {
-				s.modelGwRebalance()
-			}
-			return nil
+	select {
+	case <-fin:
+		logger.Infof("Closing model status stream for %s", req.GetSubscriberName())
+	case <-ctx.Done():
+		logger.Infof("Model status stream disconnected: %s", req.GetSubscriberName())
+		s.modelEventStream.mu.Lock()
+		delete(s.modelEventStream.streams, stream)
+		if req.IsModelGateway {
+			s.modelGwLoadBalancer.RemoveServer(req.GetSubscriberName())
 		}
+		s.modelEventStream.mu.Unlock()
+		// rebalance the streams when a subscription is removed
+		if req.IsModelGateway {
+			s.modelGwRebalance()
+		}
+		logger.Infof("Model status stream %s removed", req.GetSubscriberName())
 	}
+
+	return nil
 }
 
 func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_SubscribeModelStatusServer) error {
@@ -153,7 +151,14 @@ func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_Subscribe
 		if err != nil {
 			return err
 		}
-		_, err = sendWithTimeout(func() error { return stream.Send(ms) }, s.timeout)
+		_, err = sendWithTimeout(func() error {
+			select {
+			case <-stream.Context().Done():
+				return stream.Context().Err()
+			default:
+				return stream.Send(ms)
+			}
+		}, s.timeout)
 		if err != nil {
 			return err
 		}
@@ -316,9 +321,16 @@ func (s *SchedulerServer) modelGwReblanceStreams(model *store.ModelSnapshot) {
 				continue
 			}
 			msg.Timestamp = confRes.GetTimestamp(model.Name)
-			if err := stream.Send(msg); err != nil {
-				s.logger.WithError(err).Errorf("Failed to send create rebalance msg to model %s", model.Name)
+
+			select {
+			case <-stream.Context().Done():
+				s.logger.WithError(err).Errorf("Failed to send create rebalance msg to model %s stream ctx cancelled", model.Name)
+			default:
+				if err := stream.Send(msg); err != nil {
+					s.logger.WithError(err).Errorf("Failed to send create rebalance msg to model %s", model.Name)
+				}
 			}
+
 		} else {
 			s.logger.Debugf("Server %s does not contain model %s, sending deletion message", server, model.Name)
 			msg, err := s.createModelDeletionMessage(model, true)
@@ -328,8 +340,14 @@ func (s *SchedulerServer) modelGwReblanceStreams(model *store.ModelSnapshot) {
 			}
 			s.logger.Debugf("Sending deletion message for model %s to server %s", model.Name, server)
 			msg.Timestamp = confRes.GetTimestamp(model.Name)
-			if err := stream.Send(msg); err != nil {
-				s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to model %s", model.Name)
+
+			select {
+			case <-stream.Context().Done():
+				s.logger.WithError(err).Errorf("Failed to send deletion message for %s stream ctx cancelled", model.Name)
+			default:
+				if err := stream.Send(msg); err != nil {
+					s.logger.WithError(err).Errorf("Failed to send delete rebalance msg to model %s", model.Name)
+				}
 			}
 		}
 	}
@@ -362,7 +380,14 @@ func (s *SchedulerServer) sendModelStatusEventToStreams(
 ) {
 	logger := s.logger.WithField("func", "sendModelStatusEventToStreams")
 	for stream, subscription := range streams {
-		hasExpired, err := sendWithTimeout(func() error { return stream.Send(ms) }, s.timeout)
+		hasExpired, err := sendWithTimeout(func() error {
+			select {
+			case <-stream.Context().Done():
+				return stream.Context().Err()
+			default:
+				return stream.Send(ms)
+			}
+		}, s.timeout)
 		if hasExpired {
 			// this should trigger a reconnect from the client
 			close(subscription.fin)
@@ -523,7 +548,7 @@ func (s *SchedulerServer) sendModelStatusEventToStreamsWithTimestamp(
 
 func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionRequest, stream pb.Scheduler_SubscribeServerStatusServer) error {
 	logger := s.logger.WithField("func", "SubscribeServerStatus")
-	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
+	logger.Infof("Received server-status subscribe request from %s", req.GetSubscriberName())
 
 	err := s.sendCurrentServerStatuses(stream)
 	if err != nil {
@@ -543,19 +568,18 @@ func (s *SchedulerServer) SubscribeServerStatus(req *pb.ServerSubscriptionReques
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
-	for {
-		select {
-		case <-fin:
-			logger.Infof("Closing stream for %s", req.GetSubscriberName())
-			return nil
-		case <-ctx.Done():
-			logger.Infof("Stream disconnected %s", req.GetSubscriberName())
-			s.serverEventStream.mu.Lock()
-			delete(s.serverEventStream.streams, stream)
-			s.serverEventStream.mu.Unlock()
-			return nil
-		}
+	select {
+	case <-fin:
+		logger.Infof("Closing server stream for %s", req.GetSubscriberName())
+	case <-ctx.Done():
+		logger.Infof("Server stream disconnected %s", req.GetSubscriberName())
+		s.serverEventStream.mu.Lock()
+		delete(s.serverEventStream.streams, stream)
+		s.serverEventStream.mu.Unlock()
+		logger.Infof("Removed server stream %s from map", req.GetSubscriberName())
 	}
+
+	return nil
 }
 
 func (s *SchedulerServer) handleModelEventForServerStatus(event coordinator.ModelEventMsg) {
@@ -665,7 +689,14 @@ func (s *SchedulerServer) sendServerScale(server *store.ServerSnapshot, expected
 func (s *SchedulerServer) sendServerResponse(ssr *pb.ServerStatusResponse) {
 	logger := s.logger.WithField("func", "sendServerResponse")
 	for stream, subscription := range s.serverEventStream.streams {
-		hasExpired, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
+		hasExpired, err := sendWithTimeout(func() error {
+			select {
+			case <-stream.Context().Done():
+				return stream.Context().Err()
+			default:
+				return stream.Send(ssr)
+			}
+		}, s.timeout)
 		if hasExpired {
 			// this should trigger a reconnect from the client
 			close(subscription.fin)
@@ -685,7 +716,14 @@ func (s *SchedulerServer) sendCurrentServerStatuses(stream pb.Scheduler_ServerSt
 	}
 	for _, server := range servers {
 		ssr := createServerStatusUpdateResponse(server)
-		_, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
+		_, err := sendWithTimeout(func() error {
+			select {
+			case <-stream.Context().Done():
+				return stream.Context().Err()
+			default:
+				return stream.Send(ssr)
+			}
+		}, s.timeout)
 		if err != nil {
 			return err
 		}

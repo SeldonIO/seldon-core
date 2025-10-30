@@ -10,6 +10,8 @@ the Change License after the Change Date as each is defined in accordance with t
 package server
 
 import (
+	"context"
+	"errors"
 	"math/rand/v2"
 	"time"
 
@@ -32,6 +34,9 @@ func sendWithTimeout(f func() error, d time.Duration) (bool, error) {
 	case err := <-errChan:
 		if !t.Stop() {
 			<-t.C
+		}
+		if errors.Is(err, context.Canceled) {
+			return true, status.Errorf(codes.Canceled, "Stream disconnected")
 		}
 		return false, err
 	}

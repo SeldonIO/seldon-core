@@ -134,16 +134,18 @@ func (kc *KafkaSchedulerClient) IsConnected() bool {
 	return kc.ready.Load()
 }
 
-func (kc *KafkaSchedulerClient) setupSubscription() (*EventProcessor, scheduler.Scheduler_SubscribeModelStatusClient, error) {
+func (kc *KafkaSchedulerClient) setupSubscription() (*EventProcessor, scheduler.Scheduler_SubscribeModelStatusClient, context.CancelFunc, error) {
 	grpcClient := scheduler.NewSchedulerClient(kc.conn)
 	kc.logger.Info("Subscribing to model status events")
+	ctx, cancel := context.WithCancel(context.Background())
 	stream, err := grpcClient.SubscribeModelStatus(
-		context.Background(),
+		ctx,
 		&scheduler.ModelSubscriptionRequest{SubscriberName: kc.subscriberName, IsModelGateway: true},
 		grpc_retry.WithMax(util.MaxGRPCRetriesOnStream),
 	)
 	if err != nil {
-		return nil, nil, err
+		cancel()
+		return nil, nil, nil, err
 	}
 
 	processor := &EventProcessor{
@@ -153,15 +155,13 @@ func (kc *KafkaSchedulerClient) setupSubscription() (*EventProcessor, scheduler.
 		logger:         kc.logger.WithField("source", "EventProcessor"),
 	}
 	kc.ready.Store(true)
-	return processor, stream, nil
+	return processor, stream, cancel, nil
 }
 
-func (kc *KafkaSchedulerClient) cleanup(stream scheduler.Scheduler_SubscribeModelStatusClient) {
+func (kc *KafkaSchedulerClient) cleanup(closeStream context.CancelFunc) {
 	kc.logger.Infof("Closing connection to scheduler")
 	kc.ready.Store(false)
-	if stream != nil {
-		_ = stream.CloseSend()
-	}
+	closeStream()
 }
 
 func (kc *KafkaSchedulerClient) processEventsStream(
@@ -186,12 +186,12 @@ func (kc *KafkaSchedulerClient) processEventsStream(
 func (kc *KafkaSchedulerClient) SubscribeModelEvents() error {
 	logger := kc.logger.WithField("func", "SubscribeModelEvents")
 
-	processor, stream, err := kc.setupSubscription()
+	processor, stream, closeStream, err := kc.setupSubscription()
 	if err != nil {
 		return err
 	}
 
-	defer kc.cleanup(stream)
+	defer kc.cleanup(closeStream)
 	return kc.processEventsStream(stream, processor, logger)
 }
 

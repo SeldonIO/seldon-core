@@ -106,9 +106,14 @@ func (a *AgentServer) HandleModelEvent(event ModelEvent) error {
 
 	var lastError error
 	for _, subscriber := range a.agents {
-		err := subscriber.stream.Send(event.ModelOperationMessage)
-		if err != nil {
-			lastError = err
+		select {
+		case <-subscriber.stream.Context().Done():
+			lastError = subscriber.stream.Context().Err()
+		default:
+			err := subscriber.stream.Send(event.ModelOperationMessage)
+			if err != nil {
+				lastError = err
+			}
 		}
 	}
 

@@ -158,27 +158,28 @@ func getSubsriberIp() (string, error) {
 func (pc *PipelineSchedulerClient) SubscribePipelineEvents() error {
 	logger := pc.logger.WithField("func", "SubscribePipelineEvents")
 
-	stream, processor, err := pc.setupSubscription(logger)
+	stream, processor, closeStream, err := pc.setupSubscription(logger)
 	if err != nil {
 		return err
 	}
 
-	defer pc.cleanup(stream)
+	defer pc.cleanup(closeStream)
 	return pc.processEventStream(stream, processor, logger)
 }
 
-func (pc *PipelineSchedulerClient) setupSubscription(logger *logrus.Entry) (scheduler.Scheduler_SubscribePipelineStatusClient, *EventProcessor, error) {
+func (pc *PipelineSchedulerClient) setupSubscription(logger *logrus.Entry) (scheduler.Scheduler_SubscribePipelineStatusClient, *EventProcessor, context.CancelFunc, error) {
 	grpcClient := scheduler.NewSchedulerClient(pc.conn)
 
 	subscriberName := getSubscriberName()
 	subscriberIp, err := getSubsriberIp()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	logger.Infof("Subscriber (%s, %s) subscribing to pipeline status events", subscriberName, subscriberIp)
+	ctx, cancel := context.WithCancel(context.Background())
 	stream, err := grpcClient.SubscribePipelineStatus(
-		context.Background(),
+		ctx,
 		&scheduler.PipelineSubscriptionRequest{
 			SubscriberName:    subscriberName,
 			SubscriberIp:      subscriberIp,
@@ -188,7 +189,8 @@ func (pc *PipelineSchedulerClient) setupSubscription(logger *logrus.Entry) (sche
 	)
 
 	if err != nil {
-		return nil, nil, err
+		cancel()
+		return nil, nil, nil, err
 	}
 
 	processor := &EventProcessor{
@@ -199,7 +201,7 @@ func (pc *PipelineSchedulerClient) setupSubscription(logger *logrus.Entry) (sche
 	}
 
 	pc.ready.Store(true)
-	return stream, processor, nil
+	return stream, processor, cancel, nil
 }
 
 func (pc *PipelineSchedulerClient) processEventStream(stream scheduler.Scheduler_SubscribePipelineStatusClient, processor *EventProcessor, logger *logrus.Entry) error {
@@ -219,12 +221,10 @@ func (pc *PipelineSchedulerClient) processEventStream(stream scheduler.Scheduler
 	}
 }
 
-func (pc *PipelineSchedulerClient) cleanup(stream scheduler.Scheduler_SubscribePipelineStatusClient) {
+func (pc *PipelineSchedulerClient) cleanup(closeStream context.CancelFunc) {
 	pc.ready.Store(false)
 	pc.logger.Info("Closing connection to scheduler")
-	if stream != nil {
-		_ = stream.CloseSend()
-	}
+	closeStream()
 }
 
 type EventProcessor struct {

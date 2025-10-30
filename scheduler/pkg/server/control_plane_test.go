@@ -32,15 +32,20 @@ import (
 
 func TestStartServerStream(t *testing.T) {
 	g := NewGomegaWithT(t)
+	cancellCtx, cancel := context.WithTimeout(context.Background(), 0)
+	defer cancel()
+
 	type test struct {
 		name   string
+		ctx    context.Context
 		server *SchedulerServer
 		err    bool
 	}
 
 	tests := []test{
 		{
-			name: "ok",
+			name: "success - ok",
+			ctx:  context.Background(),
 			server: &SchedulerServer{
 				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
 				logger:     log.New(),
@@ -48,7 +53,18 @@ func TestStartServerStream(t *testing.T) {
 			},
 		},
 		{
-			name: "timeout",
+			name: "failure - stream ctx cancelled",
+			ctx:  cancellCtx,
+			server: &SchedulerServer{
+				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				logger:     log.New(),
+				timeout:    10 * time.Millisecond,
+			},
+			err: true,
+		},
+		{
+			name: "failure - timeout",
+			ctx:  context.Background(),
 			server: &SchedulerServer{
 				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
 				logger:     log.New(),
@@ -60,7 +76,7 @@ func TestStartServerStream(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			stream := newStubControlPlaneServer(1, 5*time.Millisecond)
+			stream := newStubControlPlaneServer(1, 5*time.Millisecond, test.ctx)
 			err := test.server.sendStartServerStreamMarker(stream)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())

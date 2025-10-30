@@ -193,6 +193,7 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 		loadReqV2  *scheduler.Pipeline
 		err        bool // when true old version was not marked as ready
 		connection bool
+		ctx        context.Context
 	}
 
 	tests := []test{
@@ -222,6 +223,7 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 			},
 			err:        false,
 			connection: true,
+			ctx:        context.Background(),
 		},
 		{
 			name: "old version removed - was not ready",
@@ -249,6 +251,7 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 			},
 			err:        true,
 			connection: true,
+			ctx:        context.Background(),
 		},
 		{
 			name: "no new version",
@@ -265,6 +268,7 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 			},
 			err:        false,
 			connection: true,
+			ctx:        context.Background(),
 		},
 		{
 			name: "no connection",
@@ -292,6 +296,7 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 			},
 			err:        false,
 			connection: false,
+			ctx:        context.Background(),
 		},
 	}
 
@@ -300,7 +305,7 @@ func TestPipelineRollingUpgradeEvents(t *testing.T) {
 			serverName := "dummy"
 			s, _ := createTestScheduler(t, serverName)
 
-			stream := newStubServerStatusServer(10)
+			stream := newStubServerStatusServer(10, test.ctx)
 			if test.connection {
 				s.mu.Lock()
 				s.streams[serverName] = &ChainerSubscription{
@@ -468,7 +473,7 @@ func TestPipelineEvents(t *testing.T) {
 			serverName := "dummy"
 			s, _ := createTestScheduler(t, serverName)
 
-			stream := newStubServerStatusServer(10)
+			stream := newStubServerStatusServer(10, context.Background())
 
 			err := s.pipelineHandler.AddPipeline(test.loadReq) // version 1
 			g.Expect(err).To(BeNil())
@@ -625,7 +630,7 @@ func TestPipelineRebalance(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			serverName := "dummy"
 			s, _ := createTestScheduler(t, serverName)
-			stream := newStubServerStatusServer(20)
+			stream := newStubServerStatusServer(20, context.Background())
 			if test.connection {
 				s.streams[serverName] = &ChainerSubscription{
 					name:   "dummy",
@@ -830,15 +835,21 @@ func TestPipelineSubscribe(t *testing.T) {
 
 type stubChainerServer struct {
 	msgs chan *chainer.PipelineUpdateMessage
+	ctx  context.Context
 	grpc.ServerStream
 }
 
 var _ chainer.Chainer_SubscribePipelineUpdatesServer = (*stubChainerServer)(nil)
 
-func newStubServerStatusServer(capacity int) *stubChainerServer {
+func newStubServerStatusServer(capacity int, ctx context.Context) *stubChainerServer {
 	return &stubChainerServer{
+		ctx:  ctx,
 		msgs: make(chan *chainer.PipelineUpdateMessage, capacity),
 	}
+}
+
+func (s *stubChainerServer) Context() context.Context {
+	return s.ctx
 }
 
 func (s *stubChainerServer) Send(r *chainer.PipelineUpdateMessage) error {

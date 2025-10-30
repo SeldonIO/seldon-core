@@ -520,8 +520,9 @@ func (am *AgentServiceManager) handleSchedulerSubscription() error {
 	grpcClient := agent_pb.NewAgentServiceClient(am.schedulerConn)
 
 	// Connect to the scheduler for server-side streaming
+	ctx, cancel := context.WithCancel(context.Background())
 	stream, err := grpcClient.Subscribe(
-		context.Background(),
+		ctx,
 		&agent_pb.AgentSubscribeRequest{
 			ServerName:           am.serverName,
 			ReplicaIdx:           am.replicaIdx,
@@ -532,12 +533,10 @@ func (am *AgentServiceManager) handleSchedulerSubscription() error {
 		},
 		grpc_retry.WithMax(util.MaxGRPCRetriesOnStream),
 	) // TODO make configurable
+	defer cancel()
 	if err != nil {
 		return err
 	}
-	defer func() {
-		_ = stream.CloseSend()
-	}()
 
 	logger.Info("Subscribed to scheduler")
 

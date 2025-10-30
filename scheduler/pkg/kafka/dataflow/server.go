@@ -223,7 +223,7 @@ func (c *ChainerServer) SubscribePipelineUpdates(req *chainer.PipelineSubscripti
 	mu.(*sync.Mutex).Lock()
 	defer mu.(*sync.Mutex).Unlock()
 
-	logger.Infof("Received subscribe request from %s", req.GetName())
+	logger.Infof("Received pipeline updates subscribe request from %s", req.GetName())
 
 	fin := make(chan bool)
 
@@ -243,22 +243,21 @@ func (c *ChainerServer) SubscribePipelineUpdates(req *chainer.PipelineSubscripti
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
-	for {
-		select {
-		case <-fin:
-			logger.Infof("Closing stream for %s", key)
-			return nil
-		case <-ctx.Done():
-			logger.Infof("Stream disconnected %s", key)
-			c.mu.Lock()
-			c.loadBalancer.RemoveServer(key)
-			delete(c.streams, key)
-			c.mu.Unlock()
-			// Handle removal of server
-			c.rebalance()
-			return nil
-		}
+
+	select {
+	case <-fin:
+		logger.Infof("Closing stream for %s", key)
+	case <-ctx.Done():
+		logger.Infof("Stream disconnected %s", key)
+		c.mu.Lock()
+		c.loadBalancer.RemoveServer(key)
+		delete(c.streams, key)
+		c.mu.Unlock()
+		// Handle removal of server
+		c.rebalance()
 	}
+
+	return nil
 }
 
 func (c *ChainerServer) StopSendPipelineEvents() {
@@ -446,8 +445,14 @@ func (c *ChainerServer) sendPipelineMsgToSelectedServers(msg *chainer.PipelineUp
 
 	for _, serverId := range servers {
 		if subscription, ok := c.streams[serverId]; ok {
-			if err := subscription.stream.Send(msg); err != nil {
-				logger.WithError(err).Errorf("Failed to send msg to pipeline %s", pv.String())
+
+			select {
+			case <-subscription.stream.Context().Done():
+				logger.WithError(subscription.stream.Context().Err()).Errorf("Failed to send msg to pipeline %s - stream ctx cancelled", pv.String())
+			default:
+				if err := subscription.stream.Send(msg); err != nil {
+					logger.WithError(err).Errorf("Failed to send msg to pipeline %s", pv.String())
+				}
 			}
 		} else {
 			logger.Errorf("Failed to get pipeline subscription with key %s", serverId)
@@ -513,15 +518,31 @@ func (c *ChainerServer) rebalance() {
 						}
 					}
 					msg.Timestamp = c.conflictResolutioner.GetTimestamp(pv.Name)
-					if err := subscription.stream.Send(msg); err != nil {
-						logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.String())
+
+					select {
+					case <-subscription.stream.Context().Done():
+						err := subscription.stream.Context().Err()
+						logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s stream ctx cancelled", pv.String())
+					default:
+						if err := subscription.stream.Send(msg); err != nil {
+							logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.String())
+						}
 					}
+
 				} else {
 					msg = c.createPipelineDeletionMessage(pv, true)
 					msg.Timestamp = c.conflictResolutioner.GetTimestamp(pv.Name)
-					if err := subscription.stream.Send(msg); err != nil {
-						logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.String())
+
+					select {
+					case <-subscription.stream.Context().Done():
+						err := subscription.stream.Context().Err()
+						logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s stream ctx cancelled", pv.String())
+					default:
+						if err := subscription.stream.Send(msg); err != nil {
+							logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.String())
+						}
 					}
+
 				}
 			}
 		}

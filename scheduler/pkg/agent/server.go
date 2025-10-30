@@ -129,6 +129,26 @@ type AgentSubscriber struct {
 	stream   pb.AgentService_SubscribeServer
 }
 
+func newAgentSubscriber(finished chan<- bool, stream pb.AgentService_SubscribeServer) *AgentSubscriber {
+	return &AgentSubscriber{
+		finished: finished,
+		stream:   stream,
+		mutex:    sync.Mutex{},
+	}
+}
+
+func (a *AgentSubscriber) Send(message *pb.ModelOperationMessage) error {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+
+	select {
+	case <-a.stream.Context().Done():
+		return a.stream.Context().Err()
+	default:
+		return a.stream.Send(message)
+	}
+}
+
 func NewAgentServer(
 	logger log.FieldLogger,
 	store store.ModelStore,
@@ -270,14 +290,13 @@ func (s *Server) Sync(modelName string) {
 				continue
 			}
 
-			as.mutex.Lock()
 			model := latestModel.GetModel()
-			err = as.stream.Send(&pb.ModelOperationMessage{
+			err = as.Send(&pb.ModelOperationMessage{
 				Operation:          pb.ModelOperationMessage_LOAD_MODEL,
 				ModelVersion:       &pb.ModelVersion{Model: model, Version: latestModel.GetVersion()},
 				AutoscalingEnabled: util.AutoscalingEnabled(model.DeploymentSpec.GetMinReplicas(), model.DeploymentSpec.GetMaxReplicas()) && s.autoscalingModelEnabled,
 			})
-			as.mutex.Unlock()
+
 			if err != nil {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				if errState := s.store.UpdateModelState(
@@ -304,12 +323,12 @@ func (s *Server) Sync(modelName string) {
 				logger.Errorf("Failed to find server replica for %s:%d", modelVersion.Server(), replicaIdx)
 				continue
 			}
-			as.mutex.Lock()
-			err = as.stream.Send(&pb.ModelOperationMessage{
+
+			err = as.Send(&pb.ModelOperationMessage{
 				Operation:    pb.ModelOperationMessage_UNLOAD_MODEL,
 				ModelVersion: &pb.ModelVersion{Model: modelVersion.GetModel(), Version: modelVersion.GetVersion()},
 			})
-			as.mutex.Unlock()
+
 			if err != nil {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				if errState := s.store.UpdateModelState(
@@ -405,16 +424,13 @@ func (s *Server) Subscribe(request *pb.AgentSubscribeRequest, stream pb.AgentSer
 	mu.(*sync.Mutex).Lock()
 	defer mu.(*sync.Mutex).Unlock()
 
-	logger.Infof("Received subscribe request from %s:%d", request.ServerName, request.ReplicaIdx)
+	logger.Infof("Received agent subscribe request from %s:%d", request.ServerName, request.ReplicaIdx)
 	defer logger.Infof("Agent subscribe stream closed for %s:%d", request.ServerName, request.ReplicaIdx)
 
 	fin := make(chan bool)
 
 	s.mutex.Lock()
-	s.agents[key] = &AgentSubscriber{
-		finished: fin,
-		stream:   stream,
-	}
+	s.agents[key] = newAgentSubscriber(fin, stream)
 	s.mutex.Unlock()
 
 	s.logger.Debugf("Add Server Replica %+v with config %+v", request, request.ReplicaConfig)

@@ -15,7 +15,7 @@ import (
 
 func (s *SchedulerServer) SubscribeControlPlane(req *pb.ControlPlaneSubscriptionRequest, stream pb.Scheduler_SubscribeControlPlaneServer) error {
 	logger := s.logger.WithField("func", "SubscribeControlPlane")
-	logger.Infof("Received subscribe request from %s", req.GetSubscriberName())
+	logger.Infof("Received control-plane subscribe request from %s", req.GetSubscriberName())
 
 	err := s.sendStartServerStreamMarker(stream)
 	if err != nil {
@@ -48,19 +48,18 @@ func (s *SchedulerServer) SubscribeControlPlane(req *pb.ControlPlaneSubscription
 
 	ctx := stream.Context()
 	// Keep this scope alive because once this scope exits - the stream is closed
-	for {
-		select {
-		case <-fin:
-			logger.Infof("Closing stream for %s", req.GetSubscriberName())
-			return nil
-		case <-ctx.Done():
-			logger.Infof("Stream disconnected %s", req.GetSubscriberName())
-			s.controlPlaneStream.mu.Lock()
-			delete(s.controlPlaneStream.streams, stream)
-			s.controlPlaneStream.mu.Unlock()
-			return nil
-		}
+	select {
+	case <-fin:
+		logger.Infof("Closing control plane stream for %s", req.GetSubscriberName())
+	case <-ctx.Done():
+		logger.Infof("Control plane stream disconnected %s", req.GetSubscriberName())
+		s.controlPlaneStream.mu.Lock()
+		delete(s.controlPlaneStream.streams, stream)
+		s.controlPlaneStream.mu.Unlock()
+		logger.Infof("Control plane stream %s finished disconnection", req.GetSubscriberName())
 	}
+
+	return nil
 }
 
 func (s *SchedulerServer) StopSendControlPlaneEvents() {
@@ -75,7 +74,14 @@ func (s *SchedulerServer) StopSendControlPlaneEvents() {
 // as otherwise the other side sometimes doesnt know if the scheduler has established a new stream explicitly
 func (s *SchedulerServer) sendStartServerStreamMarker(stream pb.Scheduler_SubscribeControlPlaneServer) error {
 	ssr := &pb.ControlPlaneResponse{Event: pb.ControlPlaneResponse_SEND_SERVERS}
-	_, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
+	_, err := sendWithTimeout(func() error {
+		select {
+		case <-stream.Context().Done():
+			return stream.Context().Err()
+		default:
+			return stream.Send(ssr)
+		}
+	}, s.timeout)
 	if err != nil {
 		return err
 	}
@@ -84,7 +90,14 @@ func (s *SchedulerServer) sendStartServerStreamMarker(stream pb.Scheduler_Subscr
 
 func (s *SchedulerServer) sendResourceMarker(stream pb.Scheduler_SubscribeControlPlaneServer, event pb.ControlPlaneResponse_Event) error {
 	ssr := &pb.ControlPlaneResponse{Event: event}
-	_, err := sendWithTimeout(func() error { return stream.Send(ssr) }, s.timeout)
+	_, err := sendWithTimeout(func() error {
+		select {
+		case <-stream.Context().Done():
+			return stream.Context().Err()
+		default:
+			return stream.Send(ssr)
+		}
+	}, s.timeout)
 	if err != nil {
 		return err
 	}
