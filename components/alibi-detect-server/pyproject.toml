@@ -11,7 +11,7 @@ alibi-detect = {version = "^0.12.0"}
 seldon-core = {path = "_seldon_core", develop = false}
 numpy = "1.26.4"
 cloudevents = "1.2.0"
-tensorflow = "^2.12.0"
+tensorflow = "2.17.1"
 scikit-learn = "1.7.2"
 
 elasticsearch = "7.9.1"
