@@ -156,9 +156,11 @@ func getTracingConfigMap(tracingConfig mlopsv1alpha1.TracingConfig, namespace st
 	}, nil
 }
 
-func (s *ConfigMapReconciler) getReconcileOperation(idx int, configMap *v1.ConfigMap) (constants.ReconcileOperation, error) {
+func (s *ConfigMapReconciler) getReconcileOperation(ctx context.Context, idx int, configMap *v1.ConfigMap) (constants.ReconcileOperation, error) {
 	found := &v1.ConfigMap{}
-	err := s.Client.Get(context.TODO(), types.NamespacedName{
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPISingleCallTimeout)
+	defer cancel()
+	err := s.Client.Get(ctx, types.NamespacedName{
 		Name:      configMap.GetName(),
 		Namespace: configMap.GetNamespace(),
 	}, found)
@@ -181,7 +183,7 @@ func (s *ConfigMapReconciler) getReconcileOperation(idx int, configMap *v1.Confi
 func (s *ConfigMapReconciler) Reconcile(ctx context.Context) error {
 	logger := s.Logger.WithName("ConfigMapReconcile")
 	for idx, configMap := range s.configMaps {
-		op, err := s.getReconcileOperation(idx, configMap)
+		op, err := s.getReconcileOperation(ctx, idx, configMap)
 		switch op {
 		case constants.ReconcileCreateNeeded:
 			logger.V(1).Info("ConfigMap Create", "Name", configMap.GetName(), "Namespace", configMap.GetNamespace())

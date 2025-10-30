@@ -212,9 +212,11 @@ func getRoles(meta metav1.ObjectMeta) []*auth.Role {
 	}
 }
 
-func (s *ComponentRBACReconciler) getReconcileOperationForRole(idx int, role *auth.Role) (constants.ReconcileOperation, error) {
+func (s *ComponentRBACReconciler) getReconcileOperationForRole(ctx context.Context, idx int, role *auth.Role) (constants.ReconcileOperation, error) {
 	found := &auth.Role{}
-	err := s.Client.Get(context.TODO(), types.NamespacedName{
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPISingleCallTimeout)
+	defer cancel()
+	err := s.Client.Get(ctx, types.NamespacedName{
 		Name:      role.GetName(),
 		Namespace: role.GetNamespace(),
 	}, found)
@@ -234,9 +236,11 @@ func (s *ComponentRBACReconciler) getReconcileOperationForRole(idx int, role *au
 	return constants.ReconcileUpdateNeeded, nil
 }
 
-func (s *ComponentRBACReconciler) getReconcileOperationForRoleBinding(idx int, roleBinding *auth.RoleBinding) (constants.ReconcileOperation, error) {
+func (s *ComponentRBACReconciler) getReconcileOperationForRoleBinding(ctx context.Context, idx int, roleBinding *auth.RoleBinding) (constants.ReconcileOperation, error) {
 	found := &auth.RoleBinding{}
-	err := s.Client.Get(context.TODO(), types.NamespacedName{
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPISingleCallTimeout)
+	defer cancel()
+	err := s.Client.Get(ctx, types.NamespacedName{
 		Name:      roleBinding.GetName(),
 		Namespace: roleBinding.GetNamespace(),
 	}, found)
@@ -256,9 +260,11 @@ func (s *ComponentRBACReconciler) getReconcileOperationForRoleBinding(idx int, r
 	s.Roles[idx].SetResourceVersion(found.ResourceVersion)
 	return constants.ReconcileUpdateNeeded, nil
 }
-func (s *ComponentRBACReconciler) getReconcileOperationForServiceAccount(idx int, serviceAccount *v1.ServiceAccount) (constants.ReconcileOperation, error) {
+func (s *ComponentRBACReconciler) getReconcileOperationForServiceAccount(ctx context.Context, serviceAccount *v1.ServiceAccount) (constants.ReconcileOperation, error) {
 	found := &v1.ServiceAccount{}
-	err := s.Client.Get(context.TODO(), types.NamespacedName{
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPISingleCallTimeout)
+	defer cancel()
+	err := s.Client.Get(ctx, types.NamespacedName{
 		Name:      serviceAccount.GetName(),
 		Namespace: serviceAccount.GetNamespace(),
 	}, found)
@@ -275,7 +281,7 @@ func (s *ComponentRBACReconciler) getReconcileOperationForServiceAccount(idx int
 func (s *ComponentRBACReconciler) reconcileRoles(ctx context.Context) error {
 	logger := s.Logger.WithName("ReconcileRoles")
 	for idx, role := range s.Roles {
-		op, err := s.getReconcileOperationForRole(idx, role)
+		op, err := s.getReconcileOperationForRole(ctx, idx, role)
 		switch op {
 		case constants.ReconcileCreateNeeded:
 			logger.V(1).Info("Role Create", "Name", role.GetName(), "Namespace", role.GetNamespace())
@@ -304,7 +310,7 @@ func (s *ComponentRBACReconciler) reconcileRoles(ctx context.Context) error {
 func (s *ComponentRBACReconciler) reconcileRoleBindings(ctx context.Context) error {
 	logger := s.Logger.WithName("ReconcileRoles")
 	for idx, roleBinding := range s.RoleBindings {
-		op, err := s.getReconcileOperationForRoleBinding(idx, roleBinding)
+		op, err := s.getReconcileOperationForRoleBinding(ctx, idx, roleBinding)
 		switch op {
 		case constants.ReconcileCreateNeeded:
 			logger.V(1).Info("RoleBinding Create", "Name", roleBinding.GetName(), "Namespace", roleBinding.GetNamespace())
@@ -332,8 +338,8 @@ func (s *ComponentRBACReconciler) reconcileRoleBindings(ctx context.Context) err
 
 func (s *ComponentRBACReconciler) reconcileServiceAccounts(ctx context.Context) error {
 	logger := s.Logger.WithName("ReconcileServiceAccounts")
-	for idx, serviceAccount := range s.ServiceAccounts {
-		op, err := s.getReconcileOperationForServiceAccount(idx, serviceAccount)
+	for _, serviceAccount := range s.ServiceAccounts {
+		op, err := s.getReconcileOperationForServiceAccount(ctx, serviceAccount)
 		switch op {
 		case constants.ReconcileCreateNeeded:
 			logger.V(1).Info("ServiceAccount Create", "Name", serviceAccount.GetName(), "Namespace", serviceAccount.GetNamespace())

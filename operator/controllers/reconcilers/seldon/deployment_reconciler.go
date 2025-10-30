@@ -107,9 +107,11 @@ func (s *ComponentDeploymentReconciler) GetLabelSelector() string {
 	return fmt.Sprintf("%s=%s", constants.KubernetesNameLabelKey, s.Name)
 }
 
-func (s *ComponentDeploymentReconciler) getReconcileOperation() (constants.ReconcileOperation, error) {
+func (s *ComponentDeploymentReconciler) getReconcileOperation(ctx context.Context) (constants.ReconcileOperation, error) {
 	found := &appsv1.Deployment{}
-	err := s.Client.Get(context.TODO(), types.NamespacedName{
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPISingleCallTimeout)
+	defer cancel()
+	err := s.Client.Get(ctx, types.NamespacedName{
 		Name:      s.Deployment.GetName(),
 		Namespace: s.Deployment.GetNamespace(),
 	}, found)
@@ -148,7 +150,7 @@ func (s *ComponentDeploymentReconciler) getReconcileOperation() (constants.Recon
 
 func (s *ComponentDeploymentReconciler) Reconcile(ctx context.Context) error {
 	logger := s.Logger.WithName("DeploymentReconcile")
-	op, err := s.getReconcileOperation()
+	op, err := s.getReconcileOperation(ctx)
 	switch op {
 	case constants.ReconcileCreateNeeded:
 		logger.V(1).Info("Deployment Create", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())

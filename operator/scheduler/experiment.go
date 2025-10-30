@@ -43,7 +43,7 @@ func (s *SchedulerClient) StartExperiment(ctx context.Context, experiment *v1alp
 	}
 	logger.Info("Start", "experiment name", experiment.Name)
 
-	err = backoff(func() error {
+	err = retryFnConstBackoff(func() error {
 		ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 		defer cancel()
 
@@ -74,7 +74,7 @@ func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alph
 	}
 	logger.Info("Stop", "experiment name", experiment.Name)
 
-	err = backoff(func() error {
+	err = retryFnConstBackoff(func() error {
 		ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 		defer cancel()
 
@@ -99,7 +99,7 @@ func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, grpcCli
 	defer cancel()
 
 	var stream scheduler.Scheduler_SubscribeExperimentStatusClient
-	err := backoff(func() error {
+	err := retryFnConstBackoff(func() error {
 		var err error
 		stream, err = grpcClient.SubscribeExperimentStatus(
 			ctx,

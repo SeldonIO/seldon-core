@@ -42,7 +42,7 @@ func CopyMap[K, V comparable](m map[K]V) map[K]V {
 }
 
 type ReplicaHandler interface {
-	GetReplicas() (int32, error)
+	GetReplicas(ctx context.Context) (int32, error)
 }
 
 type LabelHandler interface {

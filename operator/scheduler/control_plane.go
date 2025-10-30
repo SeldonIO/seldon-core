@@ -32,7 +32,7 @@ func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcC
 	defer cancel()
 
 	var stream scheduler.Scheduler_SubscribeControlPlaneClient
-	err := backoff(func() error {
+	err := retryFnConstBackoff(func() error {
 		var err error
 		stream, err = grpcClient.SubscribeControlPlane(
 			ctx,

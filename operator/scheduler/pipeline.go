@@ -44,7 +44,7 @@ func (s *SchedulerClient) LoadPipeline(ctx context.Context, pipeline *v1alpha1.P
 	}
 	logger.Info("Load", "pipeline name", pipeline.Name)
 
-	err = backoff(func() error {
+	err = retryFnConstBackoff(func() error {
 		ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 		defer cancel()
 
@@ -72,7 +72,7 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 	}
 	logger.Info("Unload", "pipeline name", pipeline.Name)
 
-	err = backoff(func() error {
+	err = retryFnConstBackoff(func() error {
 		ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 		defer cancel()
 
@@ -108,7 +108,7 @@ func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClien
 	defer cancel()
 
 	var stream scheduler.Scheduler_SubscribePipelineStatusClient
-	err := backoff(func() error {
+	err := retryFnConstBackoff(func() error {
 		var err error
 		stream, err = grpcClient.SubscribePipelineStatus(
 			ctx,

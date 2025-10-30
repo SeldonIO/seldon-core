@@ -46,10 +46,12 @@ type SeldonRuntimeReconciler struct {
 	Recorder  record.EventRecorder
 }
 
-func (r *SeldonRuntimeReconciler) getNumberOfServers(namespace string) (int, error) {
+func (r *SeldonRuntimeReconciler) getNumberOfServers(ctx context.Context, namespace string) (int, error) {
 	servers := mlopsv1alpha1.ServerList{}
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPISingleCallTimeout)
+	defer cancel()
 	inNamespace := client.InNamespace(namespace)
-	err := r.List(context.TODO(), &servers, inNamespace)
+	err := r.List(ctx, &servers, inNamespace)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return 0, nil
@@ -70,7 +72,7 @@ func (r *SeldonRuntimeReconciler) handleFinalizer(ctx context.Context, logger lo
 			}
 		}
 	} else { // runtime is being deleted
-		numServers, err := r.getNumberOfServers(runtime.Namespace)
+		numServers, err := r.getNumberOfServers(ctx, runtime.Namespace)
 		logger.Info("Runtime being deleted", "namespace", runtime.Namespace, "numServers", numServers)
 		if err != nil {
 			return true, err
@@ -193,7 +195,10 @@ func seldonRuntimeReady(status mlopsv1alpha1.SeldonRuntimeStatus) bool {
 func (r *SeldonRuntimeReconciler) updateStatus(seldonRuntime *mlopsv1alpha1.SeldonRuntime, logger logr.Logger) error {
 	existingRuntime := &mlopsv1alpha1.SeldonRuntime{}
 	namespacedName := types.NamespacedName{Name: seldonRuntime.Name, Namespace: seldonRuntime.Namespace}
-	if err := r.Get(context.TODO(), namespacedName, existingRuntime); err != nil {
+
+	ctx, cancel := context.WithTimeout(context.Background(), constants.K8sAPICallsTxTimeout)
+	defer cancel()
+	if err := r.Get(ctx, namespacedName, existingRuntime); err != nil {
 		if apimachinary_errors.IsNotFound(err) { //Ignore NotFound errors
 			return nil
 		}
@@ -201,32 +206,34 @@ func (r *SeldonRuntimeReconciler) updateStatus(seldonRuntime *mlopsv1alpha1.Seld
 	}
 
 	if equality.Semantic.DeepEqual(existingRuntime.Status, seldonRuntime.Status) {
+		return nil
 		// Not updating as no difference
+	}
+
+	if err := r.Status().Update(ctx, seldonRuntime); err != nil {
+		logger.Info("Failed to update status", "name", seldonRuntime.Name, "namespace", seldonRuntime.Namespace)
+		r.Recorder.Eventf(seldonRuntime, v1.EventTypeWarning, "UpdateFailed",
+			"Failed to update status for SeldonRuntime %q: %v", seldonRuntime.Name, err)
+		return err
 	} else {
-		if err := r.Status().Update(context.TODO(), seldonRuntime); err != nil {
-			logger.Info("Failed to update status", "name", seldonRuntime.Name, "namespace", seldonRuntime.Namespace)
-			r.Recorder.Eventf(seldonRuntime, v1.EventTypeWarning, "UpdateFailed",
-				"Failed to update status for SeldonRuntime %q: %v", seldonRuntime.Name, err)
-			return err
-		} else {
-			logger.Info("Successfully updated status", "name", seldonRuntime.Name, "namespace", seldonRuntime.Namespace)
-			prevWasReady := seldonRuntimeReady(existingRuntime.Status)
-			currentIsReady := seldonRuntimeReady(seldonRuntime.Status)
-			if prevWasReady && !currentIsReady {
-				r.Recorder.Eventf(seldonRuntime, v1.EventTypeWarning, "SeldonRuntimeNotReady",
-					fmt.Sprintf("SeldonRuntime %v is no longer Ready", seldonRuntime.GetName()))
-			} else if !prevWasReady && currentIsReady {
-				r.Recorder.Eventf(seldonRuntime, v1.EventTypeNormal, "RuntimeReady",
-					fmt.Sprintf("SeldonRuntime %v is Ready", seldonRuntime.GetName()))
-			}
+		logger.Info("Successfully updated status", "name", seldonRuntime.Name, "namespace", seldonRuntime.Namespace)
+		prevWasReady := seldonRuntimeReady(existingRuntime.Status)
+		currentIsReady := seldonRuntimeReady(seldonRuntime.Status)
+		if prevWasReady && !currentIsReady {
+			r.Recorder.Eventf(seldonRuntime, v1.EventTypeWarning, "SeldonRuntimeNotReady",
+				fmt.Sprintf("SeldonRuntime %v is no longer Ready", seldonRuntime.GetName()))
+		} else if !prevWasReady && currentIsReady {
+			r.Recorder.Eventf(seldonRuntime, v1.EventTypeNormal, "RuntimeReady",
+				fmt.Sprintf("SeldonRuntime %v is Ready", seldonRuntime.GetName()))
 		}
 	}
+
 	return nil
 }
 
 // Find SeldonRuntimes that reference the changes SeldonConfig
 func (r *SeldonRuntimeReconciler) mapSeldonRuntimesFromSeldonConfig(ctx context.Context, obj client.Object) []reconcile.Request {
-	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPICallsTxTimeout)
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPISingleCallTimeout)
 	defer cancel()
 
 	logger := log.FromContext(ctx).WithName("mapSeldonRuntimesFromSeldonConfig")

@@ -58,7 +58,7 @@ func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model, 
 		Model: md,
 	}
 
-	err = backoff(func() error {
+	err = retryFnConstBackoff(func() error {
 		ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 		defer cancel()
 
@@ -107,7 +107,7 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 		},
 	}
 
-	err = backoff(func() error {
+	err = retryFnConstBackoff(func() error {
 		ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 		defer cancel()
 
@@ -134,7 +134,7 @@ func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient s
 	defer cancel()
 
 	var stream scheduler.Scheduler_SubscribeModelStatusClient
-	err := backoff(func() error {
+	err := retryFnConstBackoff(func() error {
 		var err error
 		stream, err = grpcClient.SubscribeModelStatus(
 			ctx,

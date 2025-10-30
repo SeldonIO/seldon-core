@@ -66,8 +66,8 @@ func (s *ServerReconciler) GetLabelSelector() string {
 	return s.StatefulSetReconciler.(common.LabelHandler).GetLabelSelector()
 }
 
-func (s *ServerReconciler) GetReplicas() (int32, error) {
-	return s.StatefulSetReconciler.(common.ReplicaHandler).GetReplicas()
+func (s *ServerReconciler) GetReplicas(ctx context.Context) (int32, error) {
+	return s.StatefulSetReconciler.(common.ReplicaHandler).GetReplicas(ctx)
 }
 
 func (s *ServerReconciler) GetResources() []client.Object {

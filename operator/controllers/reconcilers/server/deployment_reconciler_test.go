@@ -268,7 +268,7 @@ func TestServerDeploymentReconcile(t *testing.T) {
 				test.deploymentStrategy,
 				test.metaServerConfig,
 				annotator)
-			rop, err := r.getReconcileOperation()
+			rop, err := r.getReconcileOperation(context.Background())
 			g.Expect(rop).To(Equal(test.expectedReconcileOp))
 			g.Expect(err).To(BeNil())
 			err = r.Reconcile(context.Background())

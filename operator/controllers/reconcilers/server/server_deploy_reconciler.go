@@ -56,8 +56,8 @@ func (s *ServerReconcilerWithDeployment) GetLabelSelector() string {
 	return s.DeploymentReconciler.(common.LabelHandler).GetLabelSelector()
 }
 
-func (s *ServerReconcilerWithDeployment) GetReplicas() (int32, error) {
-	return s.DeploymentReconciler.(common.ReplicaHandler).GetReplicas()
+func (s *ServerReconcilerWithDeployment) GetReplicas(ctx context.Context) (int32, error) {
+	return s.DeploymentReconciler.(common.ReplicaHandler).GetReplicas(ctx)
 }
 
 func (s *ServerReconcilerWithDeployment) GetResources() []client.Object {

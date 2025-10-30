@@ -90,8 +90,8 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 		return fmt.Errorf("all servers failed scaling spec check: %w", errs)
 	}
 
-	err := backoff(func() error {
-		ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	err := retryFnConstBackoff(func() error {
+		ctx, cancel := context.WithTimeout(ctx, time.Second*30)
 		defer cancel()
 
 		_, err := grpcClient.ServerNotify(
@@ -123,7 +123,7 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 	defer cancel()
 
 	var stream scheduler.Scheduler_SubscribeServerStatusClient
-	err := backoff(func() error {
+	err := retryFnConstBackoff(func() error {
 		var err error
 		stream, err = grpcClient.SubscribeServerStatus(
 			ctx,

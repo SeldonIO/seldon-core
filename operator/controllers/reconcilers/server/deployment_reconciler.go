@@ -97,10 +97,12 @@ func toDeploymentTest(
 	}
 }
 
-func (s *ServerDeploymentReconciler) getReconcileOperation() (constants.ReconcileOperation, error) {
+func (s *ServerDeploymentReconciler) getReconcileOperation(ctx context.Context) (constants.ReconcileOperation, error) {
 	found := &appsv1.Deployment{}
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPISingleCallTimeout)
+	defer cancel()
 	err := s.Client.Get(
-		context.TODO(),
+		ctx,
 		types.NamespacedName{
 			Name:      s.Deployment.GetName(),
 			Namespace: s.Deployment.GetNamespace(),
@@ -148,7 +150,7 @@ func (s *ServerDeploymentReconciler) getReconcileOperation() (constants.Reconcil
 
 func (s *ServerDeploymentReconciler) Reconcile(ctx context.Context) error {
 	logger := s.Logger.WithName("DeploymentReconcile")
-	op, err := s.getReconcileOperation()
+	op, err := s.getReconcileOperation(ctx)
 
 	switch op {
 	case constants.ReconcileCreateNeeded:
