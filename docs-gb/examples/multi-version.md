@@ -77,6 +77,7 @@ model.mlops.seldon.io/math condition met
 {% tabs %}
 
 {% tab title="curl" %} 
+
 ```bash
 curl -k http://<INGRESS_IP>:80/v2/models/math/infer \                           
   -H "Host: seldon-mesh.inference.seldon" \
@@ -193,7 +194,8 @@ model.mlops.seldon.io/math condition met
 ```
 {% tabs %}
 
-{% tab title="curl" %} 
+{% tab title="curl" %}
+ 
 ```bash
 curl -k http://<INGRESS_IP>:80/v2/models/math/infer \
   -H "Host: seldon-mesh.inference.seldon" \
