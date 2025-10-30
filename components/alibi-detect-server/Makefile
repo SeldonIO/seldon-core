@@ -12,7 +12,7 @@ SELDON_CORE_DIR=../..
 
 get_local_repo: clean
 	cp $(SELDON_CORE_DIR)/version.txt version.txt
-	cp -rT $(SELDON_CORE_DIR)/python/ _seldon_core/
+	cp -R "$(SELDON_CORE_DIR)/python/." _seldon_core/
 
 clean:
 	rm version.txt || true
