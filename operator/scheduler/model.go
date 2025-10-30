@@ -129,21 +129,13 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeModelEvents")
 
-	var cancel context.CancelFunc
-	ctx, cancel = context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	var stream scheduler.Scheduler_SubscribeModelStatusClient
-	err := retryFnConstBackoff(func() error {
-		var err error
-		stream, err = grpcClient.SubscribeModelStatus(
-			ctx,
-			&scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager"},
-		)
-		return err
-	}, func(err error, duration time.Duration) {
-		logger.Error(err, "SubscribeModelStatus failed, retrying", "duration", duration)
-	})
+	stream, err := grpcClient.SubscribeModelStatus(
+		ctx,
+		&scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager"},
+	)
 
 	if err != nil {
 		return fmt.Errorf("gRPC SubscribeModelStatus failed: %w", err)

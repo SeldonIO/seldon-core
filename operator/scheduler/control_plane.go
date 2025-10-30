@@ -27,21 +27,13 @@ import (
 func (s *SchedulerClient) SubscribeControlPlaneEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeControlPlaneEvents")
 
-	var cancel context.CancelFunc
-	ctx, cancel = context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	var stream scheduler.Scheduler_SubscribeControlPlaneClient
-	err := retryFnConstBackoff(func() error {
-		var err error
-		stream, err = grpcClient.SubscribeControlPlane(
-			ctx,
-			&scheduler.ControlPlaneSubscriptionRequest{SubscriberName: "seldon manager"},
-		)
-		return err
-	}, func(err error, duration time.Duration) {
-		logger.Error(err, "SubscribeControlPlane failed, retrying", "duration", duration)
-	})
+	stream, err := grpcClient.SubscribeControlPlane(
+		ctx,
+		&scheduler.ControlPlaneSubscriptionRequest{SubscriberName: "seldon manager"},
+	)
 
 	if err != nil {
 		return fmt.Errorf("gRPC SubscribeControlPlane failed: %w", err)

@@ -118,21 +118,13 @@ func (s *SchedulerClient) ServerNotify(ctx context.Context, grpcClient scheduler
 func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeServerEvents")
 
-	var cancel context.CancelFunc
-	ctx, cancel = context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	var stream scheduler.Scheduler_SubscribeServerStatusClient
-	err := retryFnConstBackoff(func() error {
-		var err error
-		stream, err = grpcClient.SubscribeServerStatus(
-			ctx,
-			&scheduler.ServerSubscriptionRequest{SubscriberName: "seldon manager"},
-		)
-		return err
-	}, func(err error, duration time.Duration) {
-		logger.Error(err, "SubscribeServerStatus failed, retrying", "duration", duration)
-	})
+	stream, err := grpcClient.SubscribeServerStatus(
+		ctx,
+		&scheduler.ServerSubscriptionRequest{SubscriberName: "seldon manager"},
+	)
 
 	if err != nil {
 		return fmt.Errorf("SubscribeServerStatus failed: %w", err)

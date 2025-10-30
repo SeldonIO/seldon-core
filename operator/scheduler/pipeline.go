@@ -103,21 +103,13 @@ func (s *SchedulerClient) UnloadPipeline(ctx context.Context, pipeline *v1alpha1
 func (s *SchedulerClient) SubscribePipelineEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribePipelineEvents")
 
-	var cancel context.CancelFunc
-	ctx, cancel = context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	var stream scheduler.Scheduler_SubscribePipelineStatusClient
-	err := retryFnConstBackoff(func() error {
-		var err error
-		stream, err = grpcClient.SubscribePipelineStatus(
-			ctx,
-			&scheduler.PipelineSubscriptionRequest{SubscriberName: "seldon manager"},
-		)
-		return err
-	}, func(err error, duration time.Duration) {
-		logger.Error(err, "SubscribePipelineStatus failed, retrying", "duration", duration)
-	})
+	stream, err := grpcClient.SubscribePipelineStatus(
+		ctx,
+		&scheduler.PipelineSubscriptionRequest{SubscriberName: "seldon manager"},
+	)
 
 	if err != nil {
 		return fmt.Errorf("gRPC SubscribePipelineStatus failed: %v", err)

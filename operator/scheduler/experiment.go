@@ -94,21 +94,13 @@ func (s *SchedulerClient) StopExperiment(ctx context.Context, experiment *v1alph
 func (s *SchedulerClient) SubscribeExperimentEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeExperimentEvents")
 
-	var cancel context.CancelFunc
-	ctx, cancel = context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	var stream scheduler.Scheduler_SubscribeExperimentStatusClient
-	err := retryFnConstBackoff(func() error {
-		var err error
-		stream, err = grpcClient.SubscribeExperimentStatus(
-			ctx,
-			&scheduler.ExperimentSubscriptionRequest{SubscriberName: "seldon manager"},
-		)
-		return err
-	}, func(err error, duration time.Duration) {
-		logger.Error(err, "SubscribeExperimentStatus failed, retrying", "duration", duration)
-	})
+	stream, err := grpcClient.SubscribeExperimentStatus(
+		ctx,
+		&scheduler.ExperimentSubscriptionRequest{SubscriberName: "seldon manager"},
+	)
 
 	if err != nil {
 		return fmt.Errorf("gRPC SubscribeExperimentStatus failed: %w", err)
