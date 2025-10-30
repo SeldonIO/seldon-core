@@ -420,6 +420,8 @@ func (s *SchedulerServer) handleScalingConfigChanges() {
 
 func (s *SchedulerServer) ServerNotify(ctx context.Context, req *pb.ServerNotifyRequest) (*pb.ServerNotifyResponse, error) {
 	logger := s.logger.WithField("func", "ServerNotify")
+	logger.Info("Received ServerNotify request", "req", req)
+
 	// numExpectedReplicas is only used when we are doing the first sync
 	numExpectedReplicas := uint(0)
 	for _, server := range req.GetServers() {

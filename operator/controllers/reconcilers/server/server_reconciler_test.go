@@ -128,9 +128,9 @@ func TestServerReconcile(t *testing.T) {
 				client = testing2.NewFakeClient(scheme)
 			}
 			g.Expect(err).To(BeNil())
-			sr, err := NewServerReconciler(test.server, common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client})
+			sr, err := NewServerReconciler(test.server, common.ReconcilerConfig{Logger: logger, Client: client})
 			g.Expect(err).To(BeNil())
-			err = sr.Reconcile()
+			err = sr.Reconcile(context.Background())
 			if test.error {
 				g.Expect(err).ToNot(BeNil())
 			} else {
@@ -251,7 +251,7 @@ func TestNewServerReconciler(t *testing.T) {
 				client = testing2.NewFakeClient(scheme)
 			}
 			g.Expect(err).To(BeNil())
-			_, err = NewServerReconciler(test.server, common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client})
+			_, err = NewServerReconciler(test.server, common.ReconcilerConfig{Logger: logger, Client: client})
 			if test.error {
 				g.Expect(err).ToNot(BeNil())
 			} else {

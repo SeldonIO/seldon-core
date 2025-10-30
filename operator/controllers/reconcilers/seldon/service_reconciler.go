@@ -186,9 +186,11 @@ func getSchedulerService(meta metav1.ObjectMeta, serviceConfig mlopsv1alpha1.Ser
 	return svc
 }
 
-func (s *ComponentServiceReconciler) getReconcileOperation(idx int, svc *v1.Service) (constants.ReconcileOperation, error) {
+func (s *ComponentServiceReconciler) getReconcileOperation(ctx context.Context, idx int, svc *v1.Service) (constants.ReconcileOperation, error) {
 	found := &v1.Service{}
-	err := s.Client.Get(context.TODO(), types.NamespacedName{
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPISingleCallTimeout)
+	defer cancel()
+	err := s.Client.Get(ctx, types.NamespacedName{
 		Name:      svc.GetName(),
 		Namespace: svc.GetNamespace(),
 	}, found)
@@ -224,21 +226,21 @@ func (s *ComponentServiceReconciler) getReconcileOperation(idx int, svc *v1.Serv
 	return constants.ReconcileUpdateNeeded, nil
 }
 
-func (s *ComponentServiceReconciler) Reconcile() error {
+func (s *ComponentServiceReconciler) Reconcile(ctx context.Context) error {
 	logger := s.Logger.WithName("ServiceReconcile")
 	for idx, svc := range s.Services {
-		op, err := s.getReconcileOperation(idx, svc)
+		op, err := s.getReconcileOperation(ctx, idx, svc)
 		switch op {
 		case constants.ReconcileCreateNeeded:
 			logger.V(1).Info("Service Create", "Name", svc.GetName(), "Namespace", svc.GetNamespace())
-			err = s.Client.Create(s.Ctx, svc)
+			err = s.Client.Create(ctx, svc)
 			if err != nil {
 				logger.Error(err, "Failed to create service", "Name", svc.GetName(), "Namespace", svc.GetNamespace())
 				return err
 			}
 		case constants.ReconcileUpdateNeeded:
 			logger.V(1).Info("Service Update", "Name", svc.GetName(), "Namespace", svc.GetNamespace())
-			err = s.Client.Update(s.Ctx, svc)
+			err = s.Client.Update(ctx, svc)
 			if err != nil {
 				logger.Error(err, "Failed to update service", "Name", svc.GetName(), "Namespace", svc.GetNamespace())
 				return err

@@ -12,6 +12,7 @@ package mlops
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
@@ -68,9 +69,14 @@ type ServerReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.10.0/pkg/reconcile
 func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := log.FromContext(ctx).WithName("Reconcile")
+	logger := log.FromContext(ctx).WithName("ServerReconcile")
 	ctx, cancel := context.WithTimeout(ctx, constants.ReconcileTimeout)
 	defer cancel()
+
+	now := time.Now()
+	defer func() {
+		logger.Info("Finished Server Reconcile", "duration", time.Since(now))
+	}()
 
 	logger.Info("Received reconcile for Server", "name", req.Name, "namespace", req.NamespacedName.Namespace)
 
@@ -110,13 +116,11 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	var sr common.Reconciler
 	if r.UseDeploymentsForServers {
 		sr, err = serverreconcile.NewServerReconcilerWithDeployment(server, common.ReconcilerConfig{
-			Ctx:    ctx,
 			Logger: logger,
 			Client: r.Client,
 		})
 	} else {
 		sr, err = serverreconcile.NewServerReconciler(server, common.ReconcilerConfig{
-			Ctx:    ctx,
 			Logger: logger,
 			Client: r.Client,
 		})
@@ -136,7 +140,7 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	// attempt to deploy
-	err = sr.Reconcile()
+	err = sr.Reconcile(ctx)
 	if err != nil {
 		logger.Error(err, "Failed reconciling", "name", req.Name, "namespace", req.Namespace, "spec", server.Spec)
 		r.updateStatusFromError(ctx, logger, server, err)
@@ -162,7 +166,7 @@ func (r *ServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	server.Status.Selector = selector
 	server.Status.Replicas = *server.Spec.Replicas
 
-	err = r.updateStatus(server)
+	err = r.updateStatus(ctx, server)
 	if err != nil {
 		logger.Error(err, "Failed updating status", "name", req.Name, "namespace", req.Namespace, "spec", server.Spec)
 		return reconcile.Result{}, err
@@ -184,10 +188,10 @@ func (r *ServerReconciler) updateStatusFromError(ctx context.Context, logger log
 	}
 }
 
-func (r *ServerReconciler) updateStatus(server *mlopsv1alpha1.Server) error {
+func (r *ServerReconciler) updateStatus(ctx context.Context, server *mlopsv1alpha1.Server) error {
 	existingServer := &mlopsv1alpha1.Server{}
 	namespacedName := types.NamespacedName{Name: server.Name, Namespace: server.Namespace}
-	if err := r.Get(context.TODO(), namespacedName, existingServer); err != nil {
+	if err := r.Get(ctx, namespacedName, existingServer); err != nil {
 		if apimachinary_errors.IsNotFound(err) { //Ignore NotFound errors
 			return nil
 		}
@@ -197,7 +201,7 @@ func (r *ServerReconciler) updateStatus(server *mlopsv1alpha1.Server) error {
 	if equality.Semantic.DeepEqual(existingServer.Status, server.Status) {
 		// Not updating as no difference
 	} else {
-		if err := r.Status().Update(context.TODO(), server); err != nil {
+		if err := r.Status().Update(ctx, server); err != nil {
 			r.Recorder.Eventf(server, v1.EventTypeWarning, "UpdateFailed",
 				"Failed to update status for Model %q: %v", server.Name, err)
 			return err
@@ -217,10 +221,10 @@ func (r *ServerReconciler) updateStatus(server *mlopsv1alpha1.Server) error {
 }
 
 // Find Servers that need reconcilliation from a change to a given ServerConfig
-// TODO: pass an actual context from the caller to be used here
-func (r *ServerReconciler) mapServerFromServerConfig(_ context.Context, obj client.Object) []reconcile.Request {
-	ctx, cancel := context.WithTimeout(context.Background(), constants.K8sAPICallsTxTimeout)
+func (r *ServerReconciler) mapServerFromServerConfig(ctx context.Context, obj client.Object) []reconcile.Request {
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPISingleCallTimeout)
 	defer cancel()
+
 	logger := log.FromContext(ctx).WithName("mapServerFromServerConfig")
 	var servers mlopsv1alpha1.ServerList
 	if err := r.Client.List(ctx, &servers); err != nil {

@@ -74,7 +74,9 @@ func GetServerConfigForServer(serverConfig string, client client.Client) (*Serve
 		return nil, fmt.Errorf("ServerType not specified and is required")
 	}
 	sc := ServerConfig{}
-	err := client.Get(context.TODO(), types.NamespacedName{Name: serverConfig, Namespace: constants.SeldonNamespace}, &sc)
+	ctx, cancel := context.WithTimeout(context.Background(), constants.K8sAPISingleCallTimeout)
+	defer cancel()
+	err := client.Get(ctx, types.NamespacedName{Name: serverConfig, Namespace: constants.SeldonNamespace}, &sc)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get ServerConfig: %w", err)
 	}

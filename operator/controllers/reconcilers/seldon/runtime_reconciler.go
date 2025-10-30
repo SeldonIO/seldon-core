@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package server
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
@@ -69,6 +70,7 @@ func replicaCalc(resourceCount, maxConsumers, partitions int32) int32 {
 }
 
 func validateScaleSpec(
+	ctx context.Context,
 	component *mlopsv1alpha1.ComponentDefn,
 	runtime *mlopsv1alpha1.SeldonRuntime,
 	commonConfig common.ReconcilerConfig,
@@ -79,7 +81,7 @@ func validateScaleSpec(
 	resourceListObj client.ObjectList,
 	countResources func(client.ObjectList) int,
 ) error {
-	ctx, clt, recorder := commonConfig.Ctx, commonConfig.Client, commonConfig.Recorder
+	clt, recorder := commonConfig.Client, commonConfig.Recorder
 
 	var maxShardCountMultiplier int32 = DEFAULT_MAX_SHARD_COUNT_MULTIPLIER
 	pipelineScaleConfig := runtime.Spec.Config.ScalingConfig.Pipelines
@@ -126,6 +128,7 @@ func validateScaleSpec(
 }
 
 func ValidateScaleSpecPipelines(
+	ctx context.Context,
 	component *mlopsv1alpha1.ComponentDefn,
 	runtime *mlopsv1alpha1.SeldonRuntime,
 	commonConfig common.ReconcilerConfig,
@@ -134,6 +137,7 @@ func ValidateScaleSpecPipelines(
 	reason string,
 ) error {
 	return validateScaleSpec(
+		ctx,
 		component,
 		runtime,
 		commonConfig,
@@ -149,12 +153,14 @@ func ValidateScaleSpecPipelines(
 }
 
 func ValidateDataflowScaleSpec(
+	ctx context.Context,
 	component *mlopsv1alpha1.ComponentDefn,
 	runtime *mlopsv1alpha1.SeldonRuntime,
 	commonConfig common.ReconcilerConfig,
 	namespace *string,
 ) error {
 	return ValidateScaleSpecPipelines(
+		ctx,
 		component,
 		runtime,
 		commonConfig,
@@ -165,12 +171,14 @@ func ValidateDataflowScaleSpec(
 }
 
 func ValidatePipelineGatewaySpec(
+	ctx context.Context,
 	component *mlopsv1alpha1.ComponentDefn,
 	runtime *mlopsv1alpha1.SeldonRuntime,
 	commonConfig common.ReconcilerConfig,
 	namespace *string,
 ) error {
 	return ValidateScaleSpecPipelines(
+		ctx,
 		component,
 		runtime,
 		commonConfig,
@@ -181,12 +189,14 @@ func ValidatePipelineGatewaySpec(
 }
 
 func ValidateModelGatewaySpec(
+	ctx context.Context,
 	component *mlopsv1alpha1.ComponentDefn,
 	runtime *mlopsv1alpha1.SeldonRuntime,
 	commonConfig common.ReconcilerConfig,
 	namespace *string,
 ) error {
 	return validateScaleSpec(
+		ctx,
 		component,
 		runtime,
 		commonConfig,
@@ -202,6 +212,7 @@ func ValidateModelGatewaySpec(
 }
 
 func ValidateComponent(
+	ctx context.Context,
 	component *mlopsv1alpha1.ComponentDefn,
 	runtime *mlopsv1alpha1.SeldonRuntime,
 	commonConfig common.ReconcilerConfig,
@@ -209,6 +220,7 @@ func ValidateComponent(
 ) error {
 	if component.Name == mlopsv1alpha1.DataflowEngineName {
 		return ValidateDataflowScaleSpec(
+			ctx,
 			component,
 			runtime,
 			commonConfig,
@@ -217,6 +229,7 @@ func ValidateComponent(
 	}
 	if component.Name == mlopsv1alpha1.PipelineGatewayName {
 		return ValidatePipelineGatewaySpec(
+			ctx,
 			component,
 			runtime,
 			commonConfig,
@@ -225,6 +238,7 @@ func ValidateComponent(
 	}
 	if component.Name == mlopsv1alpha1.ModelGatewayName {
 		return ValidateModelGatewaySpec(
+			ctx,
 			component,
 			runtime,
 			commonConfig,
@@ -252,6 +266,7 @@ func ComponentOverride(component *mlopsv1alpha1.ComponentDefn, override *mlopsv1
 }
 
 func NewSeldonRuntimeReconciler(
+	ctx context.Context,
 	runtime *mlopsv1alpha1.SeldonRuntime,
 	commonConfig common.ReconcilerConfig,
 	namespace string,
@@ -280,6 +295,7 @@ func NewSeldonRuntimeReconciler(
 			commonConfig.Logger.Info("Creating component", "name", c.Name)
 			c, _ = ComponentOverride(c, override)
 			err = ValidateComponent(
+				ctx,
 				c,
 				runtime,
 				commonConfig,
@@ -380,24 +396,17 @@ func (s *SeldonRuntimeReconciler) GetConditions() []*apis.Condition {
 	return conditions
 }
 
-func (s *SeldonRuntimeReconciler) Reconcile() error {
-	err := s.rbacReconciler.Reconcile()
-	if err != nil {
-		return err
+func (s *SeldonRuntimeReconciler) Reconcile(ctx context.Context) error {
+	reconcilers := []common.Reconciler{
+		s.rbacReconciler, s.configMapReconciler, s.serviceReconciler,
 	}
-	err = s.configMapReconciler.Reconcile()
-	if err != nil {
-		return err
-	}
-	err = s.serviceReconciler.Reconcile()
-	if err != nil {
-		return err
-	}
-	for _, c := range s.componentReconcilers {
-		err := c.Reconcile()
-		if err != nil {
+	reconcilers = append(reconcilers, s.componentReconcilers...)
+
+	for _, reconciler := range reconcilers {
+		if err := reconciler.Reconcile(ctx); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }

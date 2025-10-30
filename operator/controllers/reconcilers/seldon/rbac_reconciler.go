@@ -11,6 +11,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 
 	v1 "k8s.io/api/core/v1"
 	auth "k8s.io/api/rbac/v1"
@@ -211,9 +212,11 @@ func getRoles(meta metav1.ObjectMeta) []*auth.Role {
 	}
 }
 
-func (s *ComponentRBACReconciler) getReconcileOperationForRole(idx int, role *auth.Role) (constants.ReconcileOperation, error) {
+func (s *ComponentRBACReconciler) getReconcileOperationForRole(ctx context.Context, idx int, role *auth.Role) (constants.ReconcileOperation, error) {
 	found := &auth.Role{}
-	err := s.Client.Get(context.TODO(), types.NamespacedName{
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPISingleCallTimeout)
+	defer cancel()
+	err := s.Client.Get(ctx, types.NamespacedName{
 		Name:      role.GetName(),
 		Namespace: role.GetNamespace(),
 	}, found)
@@ -233,9 +236,11 @@ func (s *ComponentRBACReconciler) getReconcileOperationForRole(idx int, role *au
 	return constants.ReconcileUpdateNeeded, nil
 }
 
-func (s *ComponentRBACReconciler) getReconcileOperationForRoleBinding(idx int, roleBinding *auth.RoleBinding) (constants.ReconcileOperation, error) {
+func (s *ComponentRBACReconciler) getReconcileOperationForRoleBinding(ctx context.Context, idx int, roleBinding *auth.RoleBinding) (constants.ReconcileOperation, error) {
 	found := &auth.RoleBinding{}
-	err := s.Client.Get(context.TODO(), types.NamespacedName{
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPISingleCallTimeout)
+	defer cancel()
+	err := s.Client.Get(ctx, types.NamespacedName{
 		Name:      roleBinding.GetName(),
 		Namespace: roleBinding.GetNamespace(),
 	}, found)
@@ -255,9 +260,11 @@ func (s *ComponentRBACReconciler) getReconcileOperationForRoleBinding(idx int, r
 	s.Roles[idx].SetResourceVersion(found.ResourceVersion)
 	return constants.ReconcileUpdateNeeded, nil
 }
-func (s *ComponentRBACReconciler) getReconcileOperationForServiceAccount(idx int, serviceAccount *v1.ServiceAccount) (constants.ReconcileOperation, error) {
+func (s *ComponentRBACReconciler) getReconcileOperationForServiceAccount(ctx context.Context, serviceAccount *v1.ServiceAccount) (constants.ReconcileOperation, error) {
 	found := &v1.ServiceAccount{}
-	err := s.Client.Get(context.TODO(), types.NamespacedName{
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPISingleCallTimeout)
+	defer cancel()
+	err := s.Client.Get(ctx, types.NamespacedName{
 		Name:      serviceAccount.GetName(),
 		Namespace: serviceAccount.GetNamespace(),
 	}, found)
@@ -271,21 +278,21 @@ func (s *ComponentRBACReconciler) getReconcileOperationForServiceAccount(idx int
 	return constants.ReconcileNoChange, nil
 }
 
-func (s *ComponentRBACReconciler) reconcileRoles() error {
+func (s *ComponentRBACReconciler) reconcileRoles(ctx context.Context) error {
 	logger := s.Logger.WithName("ReconcileRoles")
 	for idx, role := range s.Roles {
-		op, err := s.getReconcileOperationForRole(idx, role)
+		op, err := s.getReconcileOperationForRole(ctx, idx, role)
 		switch op {
 		case constants.ReconcileCreateNeeded:
 			logger.V(1).Info("Role Create", "Name", role.GetName(), "Namespace", role.GetNamespace())
-			err = s.Client.Create(s.Ctx, role)
+			err = s.Client.Create(ctx, role)
 			if err != nil {
 				logger.Error(err, "Failed to create service", "Name", role.GetName(), "Namespace", role.GetNamespace())
 				return err
 			}
 		case constants.ReconcileUpdateNeeded:
 			logger.V(1).Info("Role Update", "Name", role.GetName(), "Namespace", role.GetNamespace())
-			err = s.Client.Update(s.Ctx, role)
+			err = s.Client.Update(ctx, role)
 			if err != nil {
 				logger.Error(err, "Failed to update service", "Name", role.GetName(), "Namespace", role.GetNamespace())
 				return err
@@ -300,21 +307,21 @@ func (s *ComponentRBACReconciler) reconcileRoles() error {
 	return nil
 }
 
-func (s *ComponentRBACReconciler) reconcileRoleBindings() error {
+func (s *ComponentRBACReconciler) reconcileRoleBindings(ctx context.Context) error {
 	logger := s.Logger.WithName("ReconcileRoles")
 	for idx, roleBinding := range s.RoleBindings {
-		op, err := s.getReconcileOperationForRoleBinding(idx, roleBinding)
+		op, err := s.getReconcileOperationForRoleBinding(ctx, idx, roleBinding)
 		switch op {
 		case constants.ReconcileCreateNeeded:
 			logger.V(1).Info("RoleBinding Create", "Name", roleBinding.GetName(), "Namespace", roleBinding.GetNamespace())
-			err = s.Client.Create(s.Ctx, roleBinding)
+			err = s.Client.Create(ctx, roleBinding)
 			if err != nil {
 				logger.Error(err, "Failed to create service", "Name", roleBinding.GetName(), "Namespace", roleBinding.GetNamespace())
 				return err
 			}
 		case constants.ReconcileUpdateNeeded:
 			logger.V(1).Info("RoleBinding Update", "Name", roleBinding.GetName(), "Namespace", roleBinding.GetNamespace())
-			err = s.Client.Update(s.Ctx, roleBinding)
+			err = s.Client.Update(ctx, roleBinding)
 			if err != nil {
 				logger.Error(err, "Failed to update service", "Name", roleBinding.GetName(), "Namespace", roleBinding.GetNamespace())
 				return err
@@ -329,21 +336,21 @@ func (s *ComponentRBACReconciler) reconcileRoleBindings() error {
 	return nil
 }
 
-func (s *ComponentRBACReconciler) reconcileServiceAccounts() error {
+func (s *ComponentRBACReconciler) reconcileServiceAccounts(ctx context.Context) error {
 	logger := s.Logger.WithName("ReconcileServiceAccounts")
-	for idx, serviceAccount := range s.ServiceAccounts {
-		op, err := s.getReconcileOperationForServiceAccount(idx, serviceAccount)
+	for _, serviceAccount := range s.ServiceAccounts {
+		op, err := s.getReconcileOperationForServiceAccount(ctx, serviceAccount)
 		switch op {
 		case constants.ReconcileCreateNeeded:
 			logger.V(1).Info("ServiceAccount Create", "Name", serviceAccount.GetName(), "Namespace", serviceAccount.GetNamespace())
-			err = s.Client.Create(s.Ctx, serviceAccount)
+			err = s.Client.Create(ctx, serviceAccount)
 			if err != nil {
 				logger.Error(err, "Failed to create service", "Name", serviceAccount.GetName(), "Namespace", serviceAccount.GetNamespace())
 				return err
 			}
 		case constants.ReconcileUpdateNeeded:
 			logger.V(1).Info("ServiceAccount Update", "Name", serviceAccount.GetName(), "Namespace", serviceAccount.GetNamespace())
-			err = s.Client.Update(s.Ctx, serviceAccount)
+			err = s.Client.Update(ctx, serviceAccount)
 			if err != nil {
 				logger.Error(err, "Failed to update service", "Name", serviceAccount.GetName(), "Namespace", serviceAccount.GetNamespace())
 				return err
@@ -358,18 +365,18 @@ func (s *ComponentRBACReconciler) reconcileServiceAccounts() error {
 	return nil
 }
 
-func (s *ComponentRBACReconciler) Reconcile() error {
-	err := s.reconcileServiceAccounts()
+func (s *ComponentRBACReconciler) Reconcile(ctx context.Context) error {
+	err := s.reconcileServiceAccounts(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to reconcile service accounts: %w", err)
 	}
-	err = s.reconcileRoles()
+	err = s.reconcileRoles(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to reconcile role roles: %w", err)
 	}
-	err = s.reconcileRoleBindings()
+	err = s.reconcileRoleBindings(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to reconcile role bindings: %w", err)
 	}
 	return nil
 }

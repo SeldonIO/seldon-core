@@ -13,9 +13,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/go-logr/logr"
-	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -58,12 +58,19 @@ func (s *SchedulerClient) LoadModel(ctx context.Context, model *v1alpha1.Model, 
 		Model: md,
 	}
 
-	_, err = grpcClient.LoadModel(
-		ctx,
-		&loadModelRequest,
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
-	)
+	err = retryFnConstBackoff(func() error {
+		ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+		defer cancel()
+
+		_, err := grpcClient.LoadModel(
+			ctx,
+			&loadModelRequest,
+		)
+		return err
+	}, func(err error, duration time.Duration) {
+		logger.Error(err, "LoadModel failed, retrying", "duration", duration)
+	})
+
 	if err != nil {
 		return s.checkErrorRetryable(model.Kind, model.Name, err), err
 	}
@@ -100,12 +107,19 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 		},
 	}
 
-	_, err = grpcClient.UnloadModel(
-		ctx,
-		modelRef,
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
-	)
+	err = retryFnConstBackoff(func() error {
+		ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+		defer cancel()
+
+		_, err := grpcClient.UnloadModel(
+			ctx,
+			modelRef,
+		)
+		return err
+	}, func(err error, duration time.Duration) {
+		logger.Error(err, "UnloadModel failed, retrying", "duration", duration)
+	})
+
 	if err != nil {
 		return s.checkErrorRetryable(model.Kind, model.Name, err), err
 	}
@@ -115,14 +129,16 @@ func (s *SchedulerClient) UnloadModel(ctx context.Context, model *v1alpha1.Model
 func (s *SchedulerClient) SubscribeModelEvents(ctx context.Context, grpcClient scheduler.SchedulerClient, namespace string) error {
 	logger := s.logger.WithName("SubscribeModelEvents")
 
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	stream, err := grpcClient.SubscribeModelStatus(
 		ctx,
 		&scheduler.ModelSubscriptionRequest{SubscriberName: "seldon manager"},
-		grpc_retry.WithMax(schedulerConnectMaxRetries),
-		grpc_retry.WithBackoff(grpc_retry.BackoffExponential(schedulerConnectBackoffScalar)),
 	)
+
 	if err != nil {
-		return err
+		return fmt.Errorf("gRPC SubscribeModelStatus failed: %w", err)
 	}
 
 	for {

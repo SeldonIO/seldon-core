@@ -125,9 +125,11 @@ func (s *ComponentStatefulSetReconciler) GetLabelSelector() string {
 	return fmt.Sprintf("%s=%s", constants.KubernetesNameLabelKey, s.Name)
 }
 
-func (s *ComponentStatefulSetReconciler) GetReplicas() (int32, error) {
+func (s *ComponentStatefulSetReconciler) GetReplicas(ctx context.Context) (int32, error) {
 	found := &appsv1.StatefulSet{}
-	err := s.Client.Get(context.TODO(), types.NamespacedName{
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPISingleCallTimeout)
+	defer cancel()
+	err := s.Client.Get(ctx, types.NamespacedName{
 		Name:      s.StatefulSet.GetName(),
 		Namespace: s.StatefulSet.GetNamespace(),
 	}, found)
@@ -140,9 +142,11 @@ func (s *ComponentStatefulSetReconciler) GetReplicas() (int32, error) {
 	return found.Status.Replicas, nil
 }
 
-func (s *ComponentStatefulSetReconciler) getReconcileOperation() (constants.ReconcileOperation, error) {
+func (s *ComponentStatefulSetReconciler) getReconcileOperation(ctx context.Context) (constants.ReconcileOperation, error) {
 	found := &appsv1.StatefulSet{}
-	err := s.Client.Get(context.TODO(), types.NamespacedName{
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPISingleCallTimeout)
+	defer cancel()
+	err := s.Client.Get(ctx, types.NamespacedName{
 		Name:      s.StatefulSet.GetName(),
 		Namespace: s.StatefulSet.GetNamespace(),
 	}, found)
@@ -185,20 +189,20 @@ func (s *ComponentStatefulSetReconciler) getReconcileOperation() (constants.Reco
 	return constants.ReconcileUpdateNeeded, nil
 }
 
-func (s *ComponentStatefulSetReconciler) Reconcile() error {
+func (s *ComponentStatefulSetReconciler) Reconcile(ctx context.Context) error {
 	logger := s.Logger.WithName("StatefulSetReconcile")
-	op, err := s.getReconcileOperation()
+	op, err := s.getReconcileOperation(ctx)
 	switch op {
 	case constants.ReconcileCreateNeeded:
 		logger.V(1).Info("StatefulSet Create", "Name", s.StatefulSet.GetName(), "Namespace", s.StatefulSet.GetNamespace())
-		err = s.Client.Create(s.Ctx, s.StatefulSet)
+		err = s.Client.Create(ctx, s.StatefulSet)
 		if err != nil {
 			logger.Error(err, "Failed to create statefulset", "Name", s.StatefulSet.GetName(), "Namespace", s.StatefulSet.GetNamespace())
 			return err
 		}
 	case constants.ReconcileUpdateNeeded:
 		logger.V(1).Info("StatefulSet Update", "Name", s.StatefulSet.GetName(), "Namespace", s.StatefulSet.GetNamespace())
-		err = s.Client.Update(s.Ctx, s.StatefulSet)
+		err = s.Client.Update(ctx, s.StatefulSet)
 		if err != nil {
 			logger.Error(err, "Failed to update statefulset", "Name", s.StatefulSet.GetName(), "Namespace", s.StatefulSet.GetNamespace())
 			return err

@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package server
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -65,8 +66,8 @@ func (s *ServerReconciler) GetLabelSelector() string {
 	return s.StatefulSetReconciler.(common.LabelHandler).GetLabelSelector()
 }
 
-func (s *ServerReconciler) GetReplicas() (int32, error) {
-	return s.StatefulSetReconciler.(common.ReplicaHandler).GetReplicas()
+func (s *ServerReconciler) GetReplicas(ctx context.Context) (int32, error) {
+	return s.StatefulSetReconciler.(common.ReplicaHandler).GetReplicas(ctx)
 }
 
 func (s *ServerReconciler) GetResources() []client.Object {
@@ -81,14 +82,14 @@ func (s *ServerReconciler) GetConditions() []*apis.Condition {
 	return conditions
 }
 
-func (s *ServerReconciler) Reconcile() error {
+func (s *ServerReconciler) Reconcile(ctx context.Context) error {
 	// Reconcile Services
-	err := s.ServiceReconciler.Reconcile()
+	err := s.ServiceReconciler.Reconcile(ctx)
 	if err != nil {
 		return err
 	}
 	// Reconcile StatefulSet
-	err = s.StatefulSetReconciler.Reconcile()
+	err = s.StatefulSetReconciler.Reconcile(ctx)
 	if err != nil {
 		return err
 	}

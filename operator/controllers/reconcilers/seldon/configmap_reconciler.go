@@ -156,9 +156,11 @@ func getTracingConfigMap(tracingConfig mlopsv1alpha1.TracingConfig, namespace st
 	}, nil
 }
 
-func (s *ConfigMapReconciler) getReconcileOperation(idx int, configMap *v1.ConfigMap) (constants.ReconcileOperation, error) {
+func (s *ConfigMapReconciler) getReconcileOperation(ctx context.Context, idx int, configMap *v1.ConfigMap) (constants.ReconcileOperation, error) {
 	found := &v1.ConfigMap{}
-	err := s.Client.Get(context.TODO(), types.NamespacedName{
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPISingleCallTimeout)
+	defer cancel()
+	err := s.Client.Get(ctx, types.NamespacedName{
 		Name:      configMap.GetName(),
 		Namespace: configMap.GetNamespace(),
 	}, found)
@@ -178,21 +180,21 @@ func (s *ConfigMapReconciler) getReconcileOperation(idx int, configMap *v1.Confi
 	return constants.ReconcileUpdateNeeded, nil
 }
 
-func (s *ConfigMapReconciler) Reconcile() error {
+func (s *ConfigMapReconciler) Reconcile(ctx context.Context) error {
 	logger := s.Logger.WithName("ConfigMapReconcile")
 	for idx, configMap := range s.configMaps {
-		op, err := s.getReconcileOperation(idx, configMap)
+		op, err := s.getReconcileOperation(ctx, idx, configMap)
 		switch op {
 		case constants.ReconcileCreateNeeded:
 			logger.V(1).Info("ConfigMap Create", "Name", configMap.GetName(), "Namespace", configMap.GetNamespace())
-			err = s.Client.Create(s.Ctx, configMap)
+			err = s.Client.Create(ctx, configMap)
 			if err != nil {
 				logger.Error(err, "Failed to create configmap", "Name", configMap.GetName(), "Namespace", configMap.GetNamespace())
 				return err
 			}
 		case constants.ReconcileUpdateNeeded:
 			logger.V(1).Info("ConfigMap Update", "Name", configMap.GetName(), "Namespace", configMap.GetNamespace())
-			err = s.Client.Update(s.Ctx, configMap)
+			err = s.Client.Update(ctx, configMap)
 			if err != nil {
 				logger.Error(err, "Failed to update configmap", "Name", configMap.GetName(), "Namespace", configMap.GetNamespace())
 				return err

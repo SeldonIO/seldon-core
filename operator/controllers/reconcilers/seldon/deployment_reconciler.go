@@ -107,9 +107,11 @@ func (s *ComponentDeploymentReconciler) GetLabelSelector() string {
 	return fmt.Sprintf("%s=%s", constants.KubernetesNameLabelKey, s.Name)
 }
 
-func (s *ComponentDeploymentReconciler) getReconcileOperation() (constants.ReconcileOperation, error) {
+func (s *ComponentDeploymentReconciler) getReconcileOperation(ctx context.Context) (constants.ReconcileOperation, error) {
 	found := &appsv1.Deployment{}
-	err := s.Client.Get(context.TODO(), types.NamespacedName{
+	ctx, cancel := context.WithTimeout(ctx, constants.K8sAPISingleCallTimeout)
+	defer cancel()
+	err := s.Client.Get(ctx, types.NamespacedName{
 		Name:      s.Deployment.GetName(),
 		Namespace: s.Deployment.GetNamespace(),
 	}, found)
@@ -146,20 +148,20 @@ func (s *ComponentDeploymentReconciler) getReconcileOperation() (constants.Recon
 	return constants.ReconcileUpdateNeeded, nil
 }
 
-func (s *ComponentDeploymentReconciler) Reconcile() error {
+func (s *ComponentDeploymentReconciler) Reconcile(ctx context.Context) error {
 	logger := s.Logger.WithName("DeploymentReconcile")
-	op, err := s.getReconcileOperation()
+	op, err := s.getReconcileOperation(ctx)
 	switch op {
 	case constants.ReconcileCreateNeeded:
 		logger.V(1).Info("Deployment Create", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
-		err = s.Client.Create(s.Ctx, s.Deployment)
+		err = s.Client.Create(ctx, s.Deployment)
 		if err != nil {
 			logger.Error(err, "Failed to create Deployment", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
 			return err
 		}
 	case constants.ReconcileUpdateNeeded:
 		logger.V(1).Info("Deployment Update", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
-		err = s.Client.Update(s.Ctx, s.Deployment)
+		err = s.Client.Update(ctx, s.Deployment)
 		if err != nil {
 			logger.Error(err, "Failed to update statefuleset", "Name", s.Deployment.GetName(), "Namespace", s.Deployment.GetNamespace())
 			return err

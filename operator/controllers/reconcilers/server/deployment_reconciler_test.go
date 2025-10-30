@@ -260,7 +260,6 @@ func TestServerDeploymentReconcile(t *testing.T) {
 			annotator := patch.NewAnnotator(constants.LastAppliedConfig)
 			r := NewServerDeploymentReconciler(
 				common.ReconcilerConfig{
-					Ctx:    context.TODO(),
 					Logger: logger,
 					Client: client},
 				test.metaServer,
@@ -269,10 +268,10 @@ func TestServerDeploymentReconcile(t *testing.T) {
 				test.deploymentStrategy,
 				test.metaServerConfig,
 				annotator)
-			rop, err := r.getReconcileOperation()
+			rop, err := r.getReconcileOperation(context.Background())
 			g.Expect(rop).To(Equal(test.expectedReconcileOp))
 			g.Expect(err).To(BeNil())
-			err = r.Reconcile()
+			err = r.Reconcile(context.Background())
 			g.Expect(err).To(BeNil())
 			found := &appsv1.Deployment{}
 			err = client.Get(context.TODO(), types.NamespacedName{
@@ -423,7 +422,6 @@ func TestLabelsAnnotationsDeployment(t *testing.T) {
 			annotator := patch.NewAnnotator(constants.LastAppliedConfig)
 			r := NewServerDeploymentReconciler(
 				common.ReconcilerConfig{
-					Ctx:    context.TODO(),
 					Logger: logger,
 					Client: client},
 				test.metaServer,

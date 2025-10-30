@@ -69,10 +69,10 @@ func TestRBACReconcile(t *testing.T) {
 			}
 			client = testing2.NewFakeClient(scheme)
 			sr := NewComponentRBACReconciler(
-				common.ReconcilerConfig{Ctx: context.TODO(), Logger: logger, Client: client},
+				common.ReconcilerConfig{Logger: logger, Client: client},
 				meta)
 			g.Expect(err).To(BeNil())
-			err = sr.Reconcile()
+			err = sr.Reconcile(context.TODO())
 			g.Expect(err).To(BeNil())
 			for _, roleName := range test.expectedRoles {
 				svc := &auth.Role{}

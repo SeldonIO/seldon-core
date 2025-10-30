@@ -159,7 +159,9 @@ func GetSeldonConfigForSeldonRuntime(seldonConfigName string, client client.Clie
 		return nil, fmt.Errorf("SeldonConfig not specified and is required")
 	}
 	sc := SeldonConfig{}
-	err := client.Get(context.TODO(), types.NamespacedName{Name: seldonConfigName, Namespace: constants.SeldonNamespace}, &sc)
+	ctx, cancel := context.WithTimeout(context.Background(), constants.K8sAPISingleCallTimeout)
+	defer cancel()
+	err := client.Get(ctx, types.NamespacedName{Name: seldonConfigName, Namespace: constants.SeldonNamespace}, &sc)
 	return &sc, err
 }
 

@@ -10,6 +10,8 @@ the Change License after the Change Date as each is defined in accordance with t
 package server
 
 import (
+	"context"
+
 	"github.com/banzaicloud/k8s-objectmatcher/patch"
 	"knative.dev/pkg/apis"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -54,8 +56,8 @@ func (s *ServerReconcilerWithDeployment) GetLabelSelector() string {
 	return s.DeploymentReconciler.(common.LabelHandler).GetLabelSelector()
 }
 
-func (s *ServerReconcilerWithDeployment) GetReplicas() (int32, error) {
-	return s.DeploymentReconciler.(common.ReplicaHandler).GetReplicas()
+func (s *ServerReconcilerWithDeployment) GetReplicas(ctx context.Context) (int32, error) {
+	return s.DeploymentReconciler.(common.ReplicaHandler).GetReplicas(ctx)
 }
 
 func (s *ServerReconcilerWithDeployment) GetResources() []client.Object {
@@ -68,8 +70,8 @@ func (s *ServerReconcilerWithDeployment) GetConditions() []*apis.Condition {
 	return conditions
 }
 
-func (s *ServerReconcilerWithDeployment) Reconcile() error {
-	err := s.DeploymentReconciler.Reconcile()
+func (s *ServerReconcilerWithDeployment) Reconcile(ctx context.Context) error {
+	err := s.DeploymentReconciler.Reconcile(ctx)
 	if err != nil {
 		return err
 	}

@@ -20,7 +20,7 @@ import (
 )
 
 type Reconciler interface {
-	Reconcile() error
+	Reconcile(ctx context.Context) error
 	GetResources() []client.Object
 	GetConditions() []*apis.Condition
 }
@@ -42,7 +42,7 @@ func CopyMap[K, V comparable](m map[K]V) map[K]V {
 }
 
 type ReplicaHandler interface {
-	GetReplicas() (int32, error)
+	GetReplicas(ctx context.Context) (int32, error)
 }
 
 type LabelHandler interface {
@@ -50,7 +50,6 @@ type LabelHandler interface {
 }
 
 type ReconcilerConfig struct {
-	Ctx      context.Context
 	Client   client.Client
 	Recorder record.EventRecorder
 	Logger   logr.Logger
