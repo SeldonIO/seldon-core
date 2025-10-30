@@ -1,26 +1,26 @@
 ARG VERSION
 ARG BASE_IMAGE
-FROM ${BASE_IMAGE}:${VERSION} as base
+FROM ${BASE_IMAGE}:${VERSION} AS base
 
 ARG VERSION
 LABEL name="Seldon Alibi Detect Server" \
-      vendor="Seldon Technologies" \
-      version="1.19.0-dev" \
-      release="1" \
-      summary="Alibi Detect Server for Seldon Core" \
-      description="The Alibi Detect Server provides outlier, drift and adversarial detection services for Seldon Core"
+    vendor="Seldon Technologies" \
+    version="1.19.0-dev" \
+    release="1" \
+    summary="Alibi Detect Server for Seldon Core" \
+    description="The Alibi Detect Server provides outlier, drift and adversarial detection services for Seldon Core"
 
-FROM base as builder
+FROM base AS builder
 
 USER root
 
 RUN microdnf update -y && \
     microdnf install -y \
-      unzip \
-      make \
-      automake \
-      gcc \
-      gcc-c++
+    unzip \
+    make \
+    automake \
+    gcc \
+    gcc-c++
 
 # Install Rclone Binary to be present in the image
 RUN wget https://downloads.rclone.org/v1.64.2/rclone-v1.64.2-linux-amd64.zip && \
@@ -31,11 +31,11 @@ RUN wget https://downloads.rclone.org/v1.64.2/rclone-v1.64.2-linux-amd64.zip && 
 # Note that we need to force Conda to use the system's std-c++ library, as
 # otherwise PyStan won't compile with Conda's older stdc++ library:
 # https://github.com/stan-dev/pystan/issues/294#issuecomment-870711100
-RUN pip install --upgrade pip setuptools wheel && \
+RUN python -m pip install --upgrade pip setuptools wheel && \
     cd /opt/conda/lib && \
-      rm libstdc++.so libstdc++.so.6 && \
-      ln -s /usr/lib64/libstdc++.so.6.0.29 libstdc++.so && \
-      ln -s /usr/lib64/libstdc++.so.6.0.29 libstdc++.so.6
+    rm libstdc++.so libstdc++.so.6 && \
+    ln -s /usr/lib64/libstdc++.so.6.0.29 libstdc++.so && \
+    ln -s /usr/lib64/libstdc++.so.6.0.29 libstdc++.so.6
 
 # Make home dir
 RUN mkdir microservice
@@ -43,7 +43,7 @@ WORKDIR /microservice
 
 # Install Poetry
 ENV POETRY_HOME /microservice/.poetry
-RUN curl -sSL https://install.python-poetry.org | python3 - --version 1.1.15
+RUN curl -sSL https://install.python-poetry.org | python3 - --version 1.8.2
 
 ENV PATH "$POETRY_HOME/bin:$PATH"
 ENV POETRY_VIRTUALENVS_CREATE false
@@ -55,9 +55,9 @@ COPY poetry.lock pyproject.toml ./
 COPY _seldon_core ./_seldon_core
 RUN poetry install --no-dev && \
     rm ~/.cache/pip -rf && \
-    rm -f /opt/conda/lib/python3.8/site-packages/gslib/vendored/boto/requirements.txt \
-          /opt/conda/lib/python3.8/site-packages/gslib/vendored/oauth2client/docs/requirements.txt \
-          /opt/conda/lib/python3.8/site-packages/tests/conda_env/support/requirements.txt
+    rm -f /opt/conda/lib/python3.*/site-packages/gslib/vendored/boto/requirements.txt \
+    /opt/conda/lib/python3.*/site-packages/gslib/vendored/oauth2client/docs/requirements.txt \
+    /opt/conda/lib/python3.*/site-packages/tests/conda_env/support/requirements.txt
 
 # Add licences
 RUN mkdir /licenses

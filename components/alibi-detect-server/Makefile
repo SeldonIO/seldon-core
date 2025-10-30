@@ -99,7 +99,7 @@ curl-metrics-server-metrics:
 # image building logic
 
 docker-build: get_local_repo
-	docker build -f Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg VERSION=${VERSION} -t ${IMAGE}:${VERSION} .
+	docker build --platform linux/amd64 -f Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg VERSION=${VERSION} -t ${IMAGE}:${VERSION} .
 
 docker-build-gpu:
 	docker build -f Dockerfile.gpu -t ${IMAGE}-gpu:${VERSION} .
