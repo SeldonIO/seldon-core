@@ -1,3 +1,12 @@
+/*
+Copyright (c) 2024 Seldon Technologies Ltd.
+
+Use of this software is governed BY
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
+*/
+
 package fsm
 
 import (
@@ -11,24 +20,9 @@ import (
 type KVStore interface {
 	// Get retrieves value and current version
 	Get(ctx context.Context, key string) (value []byte, version int64, err error)
-	// Set with version check (returns ErrVersionConflict if version doesn't match)
-	SetWithVersion(ctx context.Context, key string, value []byte, expectedVersion int64) (newVersion int64, err error)
 	// Set without version check (for initial writes)
 	Set(ctx context.Context, key string, value []byte) (int64, error)
 	Delete(ctx context.Context, key string) error
-}
-
-// ErrVersionConflict indicates an optimistic locking conflict
-var ErrVersionConflict = fmt.Errorf("version conflict")
-
-// EventLog interface for append-only event storage
-type EventLog interface {
-	// Append writes an event to the log and returns its sequence number
-	Append(ctx context.Context, event Event) (int64, error)
-	// MarkCommitted marks an event as successfully processed
-	MarkCommitted(ctx context.Context, seqNum int64) error
-	// GetUncommitted returns all uncommitted events (for crash recovery)
-	GetUncommitted(ctx context.Context) ([]Event, error)
 }
 
 // Event represents an incoming event to the FSM
@@ -53,7 +47,6 @@ type OutputEvent interface {
 type Fsm struct {
 	name     string
 	store    KVStore
-	log      EventLog
 	handlers map[EventType]Handler
 }
 
@@ -61,11 +54,10 @@ type Handler interface {
 	Handle(ctx context.Context, ev Event) ([]OutputEvent, error)
 }
 
-func NewFSM(name string, store KVStore, log EventLog) *Fsm {
+func NewFSM(name string, store KVStore) *Fsm {
 	fsm := &Fsm{
 		name:     name,
 		store:    store,
-		log:      log,
 		handlers: make(map[EventType]Handler),
 	}
 

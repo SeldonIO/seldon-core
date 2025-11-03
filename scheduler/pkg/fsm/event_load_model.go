@@ -1,3 +1,12 @@
+/*
+Copyright (c) 2024 Seldon Technologies Ltd.
+
+Use of this software is governed BY
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
+*/
+
 package fsm
 
 import (
@@ -5,6 +14,7 @@ import (
 	"fmt"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/statemachine"
 )
 
 // Concrete event types
@@ -23,36 +33,29 @@ func (e *LoadModelEvent) Marshal() ([]byte, error) {
 
 type LoadModelEventHandler struct {
 	store KVStore
+	fsm   statemachine.FSM
 }
 
 func NewLoadModelEventHandler(store KVStore) *LoadModelEventHandler {
-	return &LoadModelEventHandler{store: store}
+	return &LoadModelEventHandler{store: store, fsm: statemachine.NewStateMachine()}
 }
 
 // Handle implementations (business logic goes here)
 func (e *LoadModelEventHandler) Handle(ctx context.Context, event Event) ([]OutputEvent, error) {
 	loadEvent, ok := event.(*LoadModelEvent)
 	if !ok {
-		return nil, fmt.Errorf("invalid event type")
+		return nil, fmt.Errorf("invalid event type, expected LoadModelEvent")
 	}
 
-	// save new model to storage if new
+	// 1. Load current cluster state from KVStore
 
-	// if not new update model storage
+	// 2. Call pure business logic from state machine statemachine.ApplyLoadModel
 
-	// generate model event status for other services to ingest
+	// 3. Get resulting state in cluster
 
-	// schedule model into server
+	// 4. convert domain events into infrastructure events
 
-	// retrieve servers and their models
-
-	// filter out the server
-
-	// find a suitable server to schedule
-
-	// generate agent schedule event
-
-	// generate event to update pipeline status if pipeline is affected by model
+	// 5. save cluster state and fan out events
 
 	/*
 		Errors:
@@ -68,13 +71,6 @@ func (e *LoadModelEventHandler) Handle(ctx context.Context, event Event) ([]Outp
 			-
 
 	*/
-
-	// TODO: Implement business logic
-	// - Validate request
-	// - Update model state in KVStore
-	// - Generate output events (e.g., "ModelLoadStarted", "NotifyServer", etc.)
-
-	_ = loadEvent // use the event
 
 	return []OutputEvent{}, nil
 }
