@@ -28,6 +28,7 @@ This architecture implements a clean three-layer separation: pure state computat
 - Easy to reason about
 - Can be extracted into a separate library
 - Time-travel debugging possible
+- could open the door to event sourcing
 
 **Example**:
 ```go
@@ -122,8 +123,8 @@ func (fsm *FSM) Apply(ctx, inputEvent) ([]OutputEvent, error) {
 
 ```mermaid
 sequenceDiagram
-    participant K8s as K8s Operator
-    participant Server as Agent Server
+    participant K8s as K8s Operator Client
+    participant Server as Agent Server Client
     participant Coord as Coordinator
     participant FSM as FSM Orchestrator
     participant SM as State Machine
@@ -275,3 +276,8 @@ Subscribers can submit new events back to the coordinator, creating reactive wor
 - Use optimistic locking (version numbers) to detect conflicts
 - Consider MVCC (etcd) for atomic state snapshots
 - Entire cluster state snapshot may be more efficient than per-entity reads
+
+# Future implementations
+
+## Event Sourcing
+
