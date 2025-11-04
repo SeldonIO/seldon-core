@@ -7,27 +7,21 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package statemachine
+package state_generator
 
 import (
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
-type StateMachine struct {
+type stateGenerator struct {
 }
 
-func NewStateMachine() *StateMachine {
-	return &StateMachine{}
+func NewStateMachine() StateGenerator {
+	return &stateGenerator{}
 }
 
-type FSM interface {
-	ApplyLoadModel(current ClusterState, request *pb.LoadModelRequest) (StateTransitionResult, []DomainEvent)
-}
-
-type StateTransitionResult struct {
-	Model       map[string]*pb.ModelSnapshot
-	Pipelines   map[string]*pb.PipelineSnapshot
-	Experiments map[string]*pb.ExperimentSnapshot
+type StateGenerator interface {
+	ApplyLoadModel(current ClusterState, request *pb.LoadModelRequest) (ClusterState, error)
 }
 
 // DomainEvent todo: further define the domain events
@@ -38,10 +32,10 @@ type DomainEvent interface {
 
 // ApplyLoadModel applies business logic for loading a model
 // Pure function: same inputs → same outputs
-func (sm *StateMachine) ApplyLoadModel(
+func (sm *stateGenerator) ApplyLoadModel(
 	current ClusterState,
 	request *pb.LoadModelRequest,
-) (StateTransitionResult, []DomainEvent) {
+) (ClusterState, error) {
 	modelName := request.GetModel().GetMeta().GetName()
 
 	// calculate the future model state

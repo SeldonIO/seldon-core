@@ -33,11 +33,11 @@ func (e *LoadModelEvent) Marshal() ([]byte, error) {
 
 type LoadModelEventHandler struct {
 	store KVStore
-	fsm   statemachine.FSM
+	fsm   state_generator.FSM
 }
 
 func NewLoadModelEventHandler(store KVStore) *LoadModelEventHandler {
-	return &LoadModelEventHandler{store: store, fsm: statemachine.NewStateMachine()}
+	return &LoadModelEventHandler{store: store, fsm: state_generator.NewStateMachine()}
 }
 
 // Handle implementations (business logic goes here)

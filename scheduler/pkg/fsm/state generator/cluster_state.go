@@ -1,4 +1,4 @@
-package statemachine
+package state_generator
 
 import pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 

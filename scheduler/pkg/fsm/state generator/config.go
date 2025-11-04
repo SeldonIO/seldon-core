@@ -1,4 +1,4 @@
-package statemachine
+package state_generator
 
 //type Config struct {
 //	// ========================================
@@ -178,7 +178,7 @@ package statemachine
 //
 //
 //// In your state machine methods
-//func (sm *StateMachine) selectServer(
+//func (sm *stateGenerator) selectServer(
 //	state ClusterState,
 //	modelName string,
 //	replicas int,
@@ -195,7 +195,7 @@ package statemachine
 //	}
 //}
 //
-//func (sm *StateMachine) calculatePipelineStatus(
+//func (sm *stateGenerator) calculatePipelineStatus(
 //	pipeline *PipelineState,
 //	models map[string]*ModelState,
 //) PipelineStatus {
