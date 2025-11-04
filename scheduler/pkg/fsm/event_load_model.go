@@ -14,7 +14,7 @@ import (
 	"fmt"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/statemachine"
+	state_generator "github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state generator"
 )
 
 // Concrete event types
@@ -32,12 +32,12 @@ func (e *LoadModelEvent) Marshal() ([]byte, error) {
 }
 
 type LoadModelEventHandler struct {
-	store KVStore
-	fsm   state_generator.FSM
+	store               KVStore
+	modelStateGenerator state_generator.Model
 }
 
 func NewLoadModelEventHandler(store KVStore) *LoadModelEventHandler {
-	return &LoadModelEventHandler{store: store, fsm: state_generator.NewStateMachine()}
+	return &LoadModelEventHandler{store: store, modelStateGenerator: state_generator.NewModelStateGenerator()}
 }
 
 // Handle implementations (business logic goes here)
@@ -51,6 +51,7 @@ func (e *LoadModelEventHandler) Handle(ctx context.Context, event Event) ([]Outp
 
 	// 2. Call pure business logic from state machine statemachine.ApplyLoadModel
 
+	e.modelStateGenerator.ApplyLoadModel()
 	// 3. Get resulting state in cluster
 
 	// 4. convert domain events into infrastructure events
@@ -61,13 +62,13 @@ func (e *LoadModelEventHandler) Handle(ctx context.Context, event Event) ([]Outp
 		Errors:
 			- event validation failed
 		Events
-			- Model Event Message (currently used to maintain replicated store in Agent and to update downstream)
+			- Models Event Message (currently used to maintain replicated store in Agent and to update downstream)
 				- status with failed scheduling due to replicas and server
 				- normal status created
-			- Load Model (for Agent)
+			- Load Models (for Agent)
 				- Server Scale UP
 				- server Scale Down
-				- Unload Model versions
+				- Unload Models versions
 			-
 
 	*/

@@ -71,34 +71,10 @@ func (f *Fsm) RegisterHandler(eventType EventType, handler Handler) {
 	f.handlers[eventType] = handler
 }
 
-// Start recovers uncommitted events and begins processing
-func (f *Fsm) Start(ctx context.Context) error {
-	// Replay uncommitted events on startup (crash recovery)
-	uncommitted, err := f.log.GetUncommitted(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get uncommitted events: %w", err)
-	}
-
-	for _, event := range uncommitted {
-		if _, err := f.Apply(ctx, event); err != nil {
-			return fmt.Errorf("failed to replay event: %w", err)
-		}
-	}
-
-	return nil
-}
-
 // Apply processes an event through the FSM
-// 1. Appends to log (uncommitted)
-// 2. Applies business logic and updates KVStore
-// 3. Generates output events
-// 4. Marks as committed
+// 1. Applies business logic and updates KVStore
+// 2. Generates output events
 func (f *Fsm) Apply(ctx context.Context, event Event) ([]OutputEvent, error) {
-	// 1. Write to log (for crash recovery)
-	seqNum, err := f.log.Append(ctx, event)
-	if err != nil {
-		return nil, fmt.Errorf("failed to append to log: %w", err)
-	}
 
 	// 2. Get handler for this event type
 	handler, exists := f.handlers[event.Type()]
@@ -110,11 +86,6 @@ func (f *Fsm) Apply(ctx context.Context, event Event) ([]OutputEvent, error) {
 	outputEvents, err := handler.Handle(ctx, event)
 	if err != nil {
 		return nil, fmt.Errorf("handler failed: %w", err)
-	}
-
-	// 4. Mark as committed in log
-	if err := f.log.MarkCommitted(ctx, seqNum); err != nil {
-		return nil, fmt.Errorf("failed to mark committed: %w", err)
 	}
 
 	return outputEvents, nil
