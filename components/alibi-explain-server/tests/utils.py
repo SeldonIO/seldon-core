@@ -1,17 +1,37 @@
 import logging
 import os
 import tempfile
-from typing import Dict, Iterable, List, Union
+from typing import List, Union
 
 import joblib
 import numpy as np
+import gcsfs
 
 JOBLIB_FILE = "model.joblib"
 logger = logging.getLogger(__name__)
 
 
-def download_from_gs(gs_uri: str, dirname: str) -> None:
-    os.system(f"gsutil cp -r {gs_uri} {dirname}")
+def download_from_gcs(gcs_uri: str, dirname: str) -> None:
+    # Parse model_uri to extract the prefix (folder path)
+    # e.g. gs://seldon-models/sklearn/iris-0.23.2/lr_model/*
+    bucket, prefix = gcs_uri[5:].split("/", 1)
+    prefix = prefix.rstrip("*").rstrip("/")  # strip trailing /* if present
+
+    fs = gcsfs.GCSFileSystem(token="anon") # public / anonymous access
+
+    files = fs.find(f"{bucket}/{prefix}")
+    for path in files:
+        if path.endswith("/"):
+            continue # skip directory placeholders
+
+        # Compute local destination preserving relative folder structure
+        rel_path = os.path.relpath(path, f"{bucket}/{prefix}")
+        local_path = os.path.join(dirname, rel_path)
+
+        os.makedirs(os.path.dirname(local_path), exist_ok=True)
+
+        with fs.open(path, "rb") as src, open(local_path, "wb") as dst:
+            dst.write(src.read())
 
 
 class SKLearnServer:
@@ -27,7 +47,7 @@ class SKLearnServer:
     def load(self):
         logger.info("load")
         with tempfile.TemporaryDirectory() as model_dir:
-            download_from_gs(self.model_uri, model_dir)
+            download_from_gcs(self.model_uri, model_dir)
             model_file = os.path.join(model_dir, JOBLIB_FILE)
             logger.info(f"model file: {model_file}")
             self._joblib = joblib.load(model_file)

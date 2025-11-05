@@ -4,7 +4,7 @@ SHELL := /bin/bash
 VERSION ?= $(shell cat ../../version.txt)
 DOCKER_REGISTRY ?= seldonio
 
-BASE_IMAGE ?= ${DOCKER_REGISTRY}/conda-ubi8
+BASE_IMAGE ?= ${DOCKER_REGISTRY}/conda-ubi9
 IMAGE ?= ${DOCKER_REGISTRY}/alibiexplainer
 KIND_NAME ?= kind
 

@@ -25,23 +25,18 @@ WORKDIR /microservice
 
 # Install Poetry
 ENV POETRY_HOME /microservice/.poetry
-RUN curl -sSL https://install.python-poetry.org | python3 - --version 1.1.15
+RUN curl -sSL https://install.python-poetry.org | python3 - --version 2.1.2
 
 ENV PATH "$POETRY_HOME/bin:$PATH"
 ENV POETRY_VIRTUALENVS_CREATE false
 
-# Install the server
+# Install the dependencies only
 COPY poetry.lock pyproject.toml ./
 ## Disable Poetry's new installer to avoid JSONDecodeError
 ## https://github.com/python-poetry/poetry/issues/4210
 ## NOTE: Removing explicitly requirements.txt file from subdeps test
 ## dependencies causing false positives in Snyk.
-RUN poetry config experimental.new-installer false && \
-    poetry install && \
-    rm ~/.cache/pip -rf && \
-    rm -f /opt/conda/lib/python3.8/site-packages/gslib/vendored/boto/requirements.txt \
-          /opt/conda/lib/python3.8/site-packages/gslib/vendored/oauth2client/docs/requirements.txt \
-          /opt/conda/lib/python3.8/site-packages/spacy/tests/package/requirements.txt
+RUN poetry install --no-root
 
 
 # Add licences
@@ -57,6 +52,9 @@ RUN python -m spacy download en_core_web_md
 # Copy rest of the package
 COPY alibiexplainer alibiexplainer
 COPY README.md README.md
+
+# Install the project code
+RUN poetry install
 
 FROM base as final
 WORKDIR /microservice
