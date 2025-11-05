@@ -105,9 +105,8 @@ kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
 
 ```outputs
 pipeline.mlops.seldon.io/tfsimples condition met
+```
 
-```
-```
 {% tabs %}
 {% tab title="curl" %}
 ```bash
@@ -465,11 +464,12 @@ kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
 
 ```outputs
 pipeline.mlops.seldon.io/tfsimples-input condition met
-
 ```
+
 {% tabs %}
 
 {% tab title="curl" %}
+```bash
 curl -k http://<INGRESS_IP>:80/v2/models/tfsimples-input/infer \
   -H "Host: seldon-mesh.inference.seldon" \
   -H "Content-Type: application/json" \
@@ -490,7 +490,8 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimples-input/infer \
         "data": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
       }
     ]
-  }' | jq -M . 
+  }' | jq -M .
+```   
 
 ```bash
 {
@@ -554,8 +555,10 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimples-input/infer \
 {% endtab %}
 
 {% tab title="seldon-cli" %}
+```bash
 seldon pipeline infer tfsimples-input \
     '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
+```    
 ```json
 {
   "model_name": "",
@@ -625,7 +628,6 @@ kubectl delete -f ./pipelines/tfsimples-input.yaml -n seldon-mesh
 ```
 ```outputs
 pipeline.mlops.seldon.io "tfsimples-input" deleted
-
 ```
 ```bash
 kubectl delete -f ./models/tfsimple1.yaml -n seldon-mesh
@@ -635,7 +637,6 @@ kubectl delete -f ./models/tfsimple2.yaml -n seldon-mesh
 ```outputs
 model.mlops.seldon.io "tfsimple1" deleted
 model.mlops.seldon.io "tfsimple2" deleted
-
 ```
 
 ### Model Join
@@ -731,7 +732,6 @@ spec:
   output:
     steps:
     - tfsimple3
-
 ```
 
 ```bash
@@ -740,7 +740,6 @@ kubectl create -f ./pipelines/tfsimples-join.yaml -n seldon-mesh
 
 ```outputs
 pipeline.mlops.seldon.io/join created
-
 ```
 
 The outputs are the sequence "2,4,6..." which conforms to the logic of this model (addition and subtraction) when fed the output of the first two models.
@@ -770,7 +769,6 @@ curl -k http://<INGRESS_IP>:80/v2/models/join/infer \
       }
     ]
   }' |jq
-
 ```
 ```json
 {
@@ -839,7 +837,6 @@ curl -k http://<INGRESS_IP>:80/v2/models/join/infer \
 ```bash
 seldon pipeline infer join --inference-mode grpc --inference-host <INGRESS_IP>:80 \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
-
 ```
 
 ```json
@@ -986,7 +983,6 @@ kubectl create -f ./models/mul10.yaml -n seldon-mesh
 model.mlops.seldon.io/conditional created
 model.mlops.seldon.io/add10 created
 model.mlops.seldon.io/mul10 created
-
 ```
 
 ```bash
@@ -1038,7 +1034,6 @@ kubectl create -f ./pipelines/conditional.yaml -n seldon-mesh
 
 ```outputs
 pipeline.mlops.seldon.io/tfsimple-conditional created
-
 ```
 
 ```bash
@@ -1047,12 +1042,10 @@ kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
 
 ```outputs
 pipeline.mlops.seldon.io/tfsimple-conditional condition met
-
 ```
 
 The `mul10` model runs as the CHOICE tensor is set to 0.
 
-```
 {% tabs %}
 
 {% tab title="curl" %} 
@@ -1148,7 +1141,6 @@ seldon pipeline infer tfsimple-conditional --inference-mode grpc --inference-hos
 
 The `add10` model will run as the CHOICE tensor is not set to zero.
 
-```
 {% tabs %}
 
 {% tab title="curl" %} 
@@ -1233,8 +1225,6 @@ seldon pipeline infer tfsimple-conditional --inference-mode grpc --inference-hos
     }
   ]
 }
-
-```
 
 ```
 {% endtab %}
@@ -1350,7 +1340,6 @@ kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
 pipeline.mlops.seldon.io/pipeline-inputs condition met
 ```
 
-```
 {% tabs %}
 
 {% tab title="curl" %} 
@@ -1654,8 +1643,6 @@ seldon pipeline infer trigger-joins --inference-mode grpc --inference-host <INGR
 
 {% endtabs %}
 
-```
-
 
 {% tabs %}
 
@@ -1705,7 +1692,6 @@ curl -k http://<INGRESS_IP>:80/v2/models/trigger-joins/infer \
 }
 
 ```
-
 {% endtab %}
 
 {% tab title="seldon-cli" %}
@@ -1742,7 +1728,6 @@ seldon pipeline infer trigger-joins --inference-mode grpc --inference-host <INGR
 
 {% endtabs %}
 
-```
 ```bash
 kubectl delete -f ./pipelines/trigger-joins.yaml -n seldon-mesh
 ```
