@@ -42,11 +42,11 @@ RUN mkdir microservice
 WORKDIR /microservice
 
 # Install Poetry
-ENV POETRY_HOME /microservice/.poetry
+ENV POETRY_HOME=/microservice/.poetry
 RUN curl -sSL https://install.python-poetry.org | python3 - --version 1.8.2
 
-ENV PATH "$POETRY_HOME/bin:$PATH"
-ENV POETRY_VIRTUALENVS_CREATE false
+ENV PATH="$POETRY_HOME/bin:$PATH"
+ENV POETRY_VIRTUALENVS_CREATE=false
 
 # Install the server
 ## NOTE: Removing explicitly requirements.txt file from subdeps test
@@ -70,7 +70,7 @@ COPY adserver adserver
 COPY README.md README.md
 COPY version.txt version.txt
 
-FROM base as final
+FROM base AS final
 WORKDIR /microservice
 
 USER root
@@ -89,8 +89,8 @@ COPY --from=builder /usr/bin/rclone /usr/bin/rclone
 COPY --from=builder /licenses /licenses
 
 # This is to have writable numba and keops cache directories
-ENV NUMBA_CACHE_DIR /tmp/numba-cache
-RUN mkdir -p /.cache && \
+ENV NUMBA_CACHE_DIR=/tmp/numba-cache
+RUN mkdir /.cache && \
     chown -R 8888:0 /.cache && \
     chmod -R 776 /.cache
 
