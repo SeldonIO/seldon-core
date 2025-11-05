@@ -1561,6 +1561,8 @@ kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
 pipeline.mlops.seldon.io/trigger-joins condition met
 ```
 
+Trigger the first join.
+
 {% tabs %}
 
 {% tab title="curl" %} 
@@ -1641,6 +1643,7 @@ seldon pipeline infer trigger-joins --inference-mode grpc --inference-host <INGR
 {% endtab %}
 {% endtabs %}
 
+Now, you can trigger the second join.
 
 {% tabs %}
 
@@ -1722,7 +1725,6 @@ seldon pipeline infer trigger-joins --inference-mode grpc --inference-host <INGR
 
 ```
 {% endtab %}
-
 
 {% endtabs %}
 
