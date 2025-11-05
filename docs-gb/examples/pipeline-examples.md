@@ -1639,8 +1639,6 @@ seldon pipeline infer trigger-joins --inference-mode grpc --inference-host <INGR
 }
 ```
 {% endtab %}
-
-
 {% endtabs %}
 
 
