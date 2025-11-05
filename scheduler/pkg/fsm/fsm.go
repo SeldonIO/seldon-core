@@ -12,18 +12,9 @@ package fsm
 import (
 	"context"
 	"fmt"
-)
 
-// todo: we could do our tradicional locking too but for this to probably work we would need a manager to do the updates
-// todo: the manager would then lock the entire Handle of an event and do its processing, could become a little bit of a problem when having many status updates from Agents
-// KVStore interface for state persistence with optimistic locking
-type KVStore interface {
-	// Get retrieves value and current version
-	Get(ctx context.Context, key string) (value []byte, version int64, err error)
-	// Set without version check (for initial writes)
-	Set(ctx context.Context, key string, value []byte) (int64, error)
-	Delete(ctx context.Context, key string) error
-}
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/storage"
+)
 
 // Event represents an incoming event to the FSM
 type Event interface {
@@ -46,7 +37,7 @@ type OutputEvent interface {
 // Fsm is the finite state machine that processes events
 type Fsm struct {
 	name     string
-	store    KVStore
+	store    storage.ClusterManager
 	handlers map[EventType]Handler
 }
 
@@ -54,7 +45,7 @@ type Handler interface {
 	Handle(ctx context.Context, ev Event) ([]OutputEvent, error)
 }
 
-func NewFSM(name string, store KVStore) *Fsm {
+func NewFSM(name string, store storage.ClusterManager) *Fsm {
 	fsm := &Fsm{
 		name:     name,
 		store:    store,

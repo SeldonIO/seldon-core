@@ -7,15 +7,16 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package state_generator
+package state_machine
 
-type StateGenerator struct {
+// todo: state machine will need config options for calculating some state regarding servers
+type StateMachine struct {
 }
 
-func NewStateGenerator() *StateGenerator {
-	return &StateGenerator{}
+func NewStateMachine() *StateMachine {
+	return &StateMachine{}
 }
 
 func NewModelStateGenerator() Model {
-	return &StateGenerator{}
+	return &StateMachine{}
 }

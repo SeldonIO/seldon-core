@@ -1,4 +1,4 @@
-package state_generator
+package state_machine
 
 //type Config struct {
 //	// ========================================

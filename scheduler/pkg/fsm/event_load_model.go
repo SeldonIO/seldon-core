@@ -14,7 +14,8 @@ import (
 	"fmt"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	state_generator "github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state generator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/storage"
 )
 
 // Concrete event types
@@ -32,12 +33,12 @@ func (e *LoadModelEvent) Marshal() ([]byte, error) {
 }
 
 type LoadModelEventHandler struct {
-	store               KVStore
-	modelStateGenerator state_generator.Model
+	store               storage.ClusterManager
+	modelStateGenerator state_machine.Model
 }
 
-func NewLoadModelEventHandler(store KVStore) *LoadModelEventHandler {
-	return &LoadModelEventHandler{store: store, modelStateGenerator: state_generator.NewModelStateGenerator()}
+func NewLoadModelEventHandler(store storage.ClusterManager) *LoadModelEventHandler {
+	return &LoadModelEventHandler{store: store, modelStateGenerator: state_machine.NewModelStateGenerator()}
 }
 
 // Handle implementations (business logic goes here)
@@ -48,15 +49,32 @@ func (e *LoadModelEventHandler) Handle(ctx context.Context, event Event) ([]Outp
 	}
 
 	// 1. Load current cluster state from KVStore
+	clusterState, err := e.store.GetClusterState(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	// 2. Call pure business logic from state machine statemachine.ApplyLoadModel
 
-	e.modelStateGenerator.ApplyLoadModel()
+	futureClusterState, err := e.modelStateGenerator.ApplyLoadModel(clusterState, loadEvent.Request)
+	if err != nil {
+		return nil, err
+	}
+
 	// 3. Get resulting state in cluster
 
 	// 4. convert domain events into infrastructure events
 
-	// 5. save cluster state and fan out events
+	// events := GetEvents(currentClusterState, FutureClusterState)
+
+	// 5. save cluster state
+
+	err := e.store.SaveClusterState(ctx, futureClusterState)
+	if err != nil {
+		return nil, err
+	}
+
+	// fan out events
 
 	/*
 		Errors:
