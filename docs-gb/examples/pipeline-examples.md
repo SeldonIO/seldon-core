@@ -1456,7 +1456,7 @@ seldon pipeline infer pipeline-inputs --inference-mode grpc --inference-host <IN
 
 ```bash
 kubectl delete -f ./pipelines/pipeline-inputs.yaml -n seldon-mesh
-
+```
 
 ```bash
 kubectl delete -f ./models/mul10.yaml -n seldon-mesh
@@ -1565,7 +1565,8 @@ Trigger the first join.
 
 {% tabs %}
 
-{% tab title="curl" %} 
+{% tab title="curl" %}
+
 ```bash
 curl -k http://<INGRESS_IP>:80/v2/models/trigger-joins/infer \
   -H "Host: seldon-mesh.inference.seldon" \
@@ -1641,6 +1642,7 @@ seldon pipeline infer trigger-joins --inference-mode grpc --inference-host <INGR
 }
 ```
 {% endtab %}
+
 {% endtabs %}
 
 Now, you can trigger the second join.
@@ -1648,6 +1650,7 @@ Now, you can trigger the second join.
 {% tabs %}
 
 {% tab title="curl" %} 
+
 ```bash
 curl -k http://<INGRESS_IP>:80/v2/models/trigger-joins/infer \
   -H "Host: seldon-mesh.inference.seldon" \
