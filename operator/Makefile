@@ -14,6 +14,7 @@ KUSTOMIZE_VERSION = v5.2.1
 SETUP_ENVTEST_VERSION = release-0.21
 KIND_NAME=seldon
 NAMESPACE ?= seldon-mesh
+RELEASE_TAG=""
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -94,7 +95,7 @@ test: manifests generate fmt vet envtest ## Run tests.
 
 .PHONY: build
 build: generate fmt vet ## Build manager binary.
-	go build -trimpath -ldflags="-w" -o bin/manager main.go
+	go build -trimpath -ldflags "-w -X github.com/seldonio/seldon-core/operator/v2/version.Tag=$(RELEASE_TAG)" -o bin/manager main.go
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
@@ -114,7 +115,7 @@ generate-cli-docs:
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
-	docker build -t ${IMG} -f Dockerfile ..
+	docker build --build-arg RELEASE_TAG="$(RELEASE_TAG)" -t ${IMG} -f Dockerfile ..
 
 .PHONY: docker-build-cli
 docker-build-cli: ## Build docker image with seldon cli.
@@ -122,7 +123,7 @@ docker-build-cli: ## Build docker image with seldon cli.
 
 .PHONY: docker-build-and-push-prod
 docker-build-and-push-prod: ## Build operator docker image and push, including sbom.
-	docker buildx build --provenance=true -t ${IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile ..
+	docker buildx build --build-arg RELEASE_TAG="$(RELEASE_TAG)" --provenance=true -t ${IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile ..
 
 .PHONY: docker-build-and-push-prod-cli
 docker-build-and-push-prod-cli: ## Build seldon cli docker image and push, including sbom.

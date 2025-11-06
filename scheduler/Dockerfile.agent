@@ -1,11 +1,13 @@
 FROM golang:1.24-alpine as builder
 
+ARG RELEASE_TAG
+
 WORKDIR /build
 COPY . .
 
 # Build the binary
 RUN apk add --no-cache make
-RUN make -C scheduler -o test-go build-agent
+RUN make -C scheduler RELEASE_TAG="$RELEASE_TAG" build-agent
 
 # Copy binary
 FROM registry.access.redhat.com/ubi9/ubi-micro:9.6

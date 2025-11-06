@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/knadh/koanf/v2"
+	"github.com/seldonio/seldon-core/scheduler/v2/version"
 	log "github.com/sirupsen/logrus"
 
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
@@ -49,6 +50,7 @@ const (
 )
 
 var (
+	displayVersion         bool
 	schedulerHost          string
 	schedulerPlaintxtPort  int
 	schedulerTlsPort       int
@@ -64,7 +66,7 @@ var (
 )
 
 func init() {
-
+	flag.BoolVar(&displayVersion, "version", false, "display version and exit")
 	flag.StringVar(&schedulerHost, flagSchedulerHost, "0.0.0.0", "Scheduler host")
 	flag.IntVar(&schedulerPlaintxtPort, flagSchedulerPlaintxtPort, defaultSchedulerPlaintxtPort, "Scheduler plaintxt port")
 	flag.IntVar(&schedulerTlsPort, flagSchedulerTlsPort, defaultSchedulerTLSPort, "Scheduler TLS port")
@@ -111,10 +113,16 @@ func main() {
 	logger := log.New()
 	flag.Parse()
 
+	if displayVersion {
+		logger.Infof("Version %s", version.Tag)
+		os.Exit(0)
+	}
+
 	logIntLevel, err := log.ParseLevel(logLevel)
 	if err != nil {
 		logger.WithError(err).Fatalf("Failed to set log level %s", logLevel)
 	}
+	logger.Infof("Version %s", version.Tag)
 	logger.Infof("Setting log level to %s", logLevel)
 	logger.SetLevel(logIntLevel)
 

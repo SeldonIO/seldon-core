@@ -11,6 +11,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"io/fs"
 	"net/http"
@@ -20,6 +21,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/version"
 	log "github.com/sirupsen/logrus"
 
 	agent2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
@@ -45,6 +47,14 @@ import (
 const (
 	maxBackoffRetryModelDownload = 30 * time.Second
 )
+
+var (
+	displayVersion bool
+)
+
+func init() {
+	flag.BoolVar(&displayVersion, "version", false, "display version and exit")
+}
 
 func makeDirs() (string, string, error) {
 	modelRepositoryDir := filepath.Join(cli.AgentFolder, "models")
@@ -124,6 +134,12 @@ func main() {
 	autoScalingEnabled := false
 
 	logger := log.New()
+	flag.Parse()
+
+	if displayVersion {
+		logger.Infof("Version %s", version.Tag)
+		os.Exit(0)
+	}
 
 	cli.UpdateArgs()
 
@@ -131,6 +147,7 @@ func main() {
 	if err != nil {
 		logger.WithError(err).Fatalf("Failed to set log level %s", cli.LogLevel)
 	}
+	logger.Infof("Version %s", version.Tag)
 	logger.Infof("Setting log level to %s", cli.LogLevel)
 	logger.SetLevel(logIntLevel)
 

@@ -24,6 +24,8 @@ GID ?= $(shell id -g)
 
 KIND_NAME=seldon
 
+RELEASE_TAG=""
+
 GO_LDFLAGS := -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 
 #####################################
@@ -31,24 +33,24 @@ GO_LDFLAGS := -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 #####################################
 
 .PHONY: build-scheduler
-build-scheduler: test-go
-	go build -trimpath -ldflags="-w" -buildvcs=false -o bin/scheduler ./cmd/scheduler
+build-scheduler:
+	go build -trimpath -ldflags "-w -X github.com/seldonio/seldon-core/scheduler/v2/version.Tag=$(RELEASE_TAG)"  -buildvcs=false -o bin/scheduler ./cmd/scheduler
 
 .PHONY: build-proxy
 build-proxy: test-go
 	CGO_ENABLED=0 go build -trimpath -ldflags="-w" -o bin/proxy ./cmd/proxy
 
 .PHONY: build-agent
-build-agent: test-go
-	CGO_ENABLED=0 go build -trimpath -ldflags="-w" -buildvcs=false -o bin/agent ./cmd/agent
+build-agent:
+	CGO_ENABLED=0 go build -trimpath -ldflags "-w -X github.com/seldonio/seldon-core/scheduler/v2/version.Tag=$(RELEASE_TAG)"  -buildvcs=false -o bin/agent ./cmd/agent
 
 .PHONY: build-modelgateway
-build-modelgateway: test-go
-	go build -trimpath -ldflags="-w" -o bin/modelgateway -v ./cmd/modelgateway
+build-modelgateway:
+	go build -trimpath -ldflags "-w -X github.com/seldonio/seldon-core/scheduler/v2/version.Tag=$(RELEASE_TAG)"  -o bin/modelgateway -v ./cmd/modelgateway
 
 .PHONY: build-pipelinegateway
-build-pipelinegateway: test-go
-	go build -trimpath -ldflags="-w" -o bin/pipelinegateway -v ./cmd/pipelinegateway
+build-pipelinegateway:
+	go build -trimpath -ldflags "-w -X github.com/seldonio/seldon-core/scheduler/v2/version.Tag=$(RELEASE_TAG)" -o bin/pipelinegateway -v ./cmd/pipelinegateway
 
 .PHONY: build-dataflow-producer
 build-dataflow-producer: test-jvm
@@ -128,7 +130,7 @@ mockgen-scheduler-client: mock-install
 
 .PHONY: docker-build-scheduler
 docker-build-scheduler: copy-components
-	docker build -t ${SCHEDULER_IMG} -f Dockerfile.scheduler ..
+	docker build --build-arg RELEASE_TAG="$(RELEASE_TAG)" -t ${SCHEDULER_IMG} -f Dockerfile.scheduler ..
 
 .PHONY: docker-push-scheduler
 docker-push-scheduler:
@@ -136,7 +138,7 @@ docker-push-scheduler:
 
 .PHONY: docker-build-and-push-prod-scheduler
 docker-build-and-push-prod-scheduler: copy-components
-	docker buildx build --provenance=true -t ${SCHEDULER_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.scheduler ..
+	docker buildx build --build-arg RELEASE_TAG="$(RELEASE_TAG)" --provenance=true -t ${SCHEDULER_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.scheduler ..
 
 .PHONY: copy-components
 copy-components:
@@ -145,7 +147,7 @@ copy-components:
 
 .PHONY: docker-build-agent
 docker-build-agent:
-	docker build -t ${AGENT_IMG} -f Dockerfile.agent ..
+	docker build --build-arg RELEASE_TAG="$(RELEASE_TAG)" -t ${AGENT_IMG} -f Dockerfile.agent ..
 
 .PHONY: docker-push-agent
 docker-push-agent:
@@ -153,7 +155,7 @@ docker-push-agent:
 
 .PHONY: docker-build-and-push-prod-agent
 docker-build-and-push-prod-agent:
-	docker buildx build --provenance=true -t ${AGENT_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.agent ..
+	docker buildx build --build-arg RELEASE_TAG="$(RELEASE_TAG)" --provenance=true -t ${AGENT_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.agent ..
 
 .PHONY: docker-build-rclone
 docker-build-rclone:
@@ -169,7 +171,7 @@ docker-build-and-push-prod-rclone:
 
 .PHONY: docker-build-modelgateway
 docker-build-modelgateway: copy-components
-	docker build -t ${MODELGATEWAY_IMG} -f Dockerfile.modelgateway ..
+	docker build --build-arg RELEASE_TAG="$(RELEASE_TAG)" -t ${MODELGATEWAY_IMG} -f Dockerfile.modelgateway ..
 
 .PHONY: docker-push-modelgateway
 docker-push-modelgateway:
@@ -177,11 +179,11 @@ docker-push-modelgateway:
 
 .PHONY: docker-build-and-push-prod-modelgateway
 docker-build-and-push-prod-modelgateway: copy-components
-	docker buildx build --provenance=true -t ${MODELGATEWAY_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.modelgateway ..
+	docker buildx build --build-arg RELEASE_TAG="$(RELEASE_TAG)" --provenance=true -t ${MODELGATEWAY_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.modelgateway ..
 
 .PHONY: docker-build-pipelinegateway
 docker-build-pipelinegateway:
-	docker build -t ${PIPELINEGATEWAY_IMG} -f Dockerfile.pipelinegateway ..
+	docker build --build-arg RELEASE_TAG="$(RELEASE_TAG)" -t ${PIPELINEGATEWAY_IMG} -f Dockerfile.pipelinegateway ..
 
 .PHONY: docker-push-pipelinegateway
 docker-push-pipelinegateway:
@@ -189,7 +191,7 @@ docker-push-pipelinegateway:
 
 .PHONY: docker-build-and-push-prod-pipelinegateway
 docker-build-and-push-prod-pipelinegateway:
-	docker buildx build --provenance=true -t ${PIPELINEGATEWAY_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.pipelinegateway ..
+	docker buildx build --build-arg RELEASE_TAG="$(RELEASE_TAG)" --provenance=true -t ${PIPELINEGATEWAY_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.pipelinegateway ..
 
 .PHONY: docker-build-envoy
 docker-build-envoy:
