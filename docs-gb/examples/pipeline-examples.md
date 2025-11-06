@@ -1,6 +1,6 @@
 # Pipeline examples
 
-This notebook illustrates a series of Pipelines showing of different ways of combining flows of\
+These examples illustrates a series of Pipelines showing of different ways of combining flows of\
 data and conditional logic. We assume you have Seldon Core 2 running locally.
 
 ## Before you begin
