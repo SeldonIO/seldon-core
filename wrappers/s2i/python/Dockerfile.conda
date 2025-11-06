@@ -22,7 +22,10 @@ RUN wget https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_
     /bin/bash ~/miniforge.sh -b -p /opt/conda && \
     rm ~/miniforge.sh && \
     /opt/conda/bin/conda init bash && \
+    /opt/conda/bin/conda install -c conda-forge "brotli>=1.2.0,<1.3.0" "h2>=4.3.0,<4.4.0" -y && \
+    /opt/conda/bin/pip install "pip>=25.3,<26.0" && \
     /opt/conda/bin/conda clean -afy && \
+    rm -rf /opt/conda/pkgs && \
     find /opt/conda -type f -name '*.a' -delete && \
     find /opt/conda -type f -name '*.pyc' -delete && \
     find /opt/conda -type f -name '*.js.map' -delete && \
@@ -30,6 +33,10 @@ RUN wget https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_
     echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
     echo "conda activate base" >> ~/.bashrc && \
     chgrp -R root /opt/conda && chmod -R g+rw /opt/conda
+
+RUN PIP_WHEEL_DIR=/opt/conda/lib/python3.12/ensurepip/_bundled && \
+    /opt/conda/bin/pip wheel pip==25.3.0 --wheel-dir $PIP_WHEEL_DIR && \
+    rm -f $PIP_WHEEL_DIR/pip-25.0.1-py3-none-any.whl
 
 ENV TINI_VERSION v0.16.1
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /usr/bin/tini
