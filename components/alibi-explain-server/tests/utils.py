@@ -3,9 +3,9 @@ import os
 import tempfile
 from typing import List, Union
 
+import gcsfs
 import joblib
 import numpy as np
-import gcsfs
 
 JOBLIB_FILE = "model.joblib"
 logger = logging.getLogger(__name__)
@@ -17,12 +17,12 @@ def download_from_gcs(gcs_uri: str, dirname: str) -> None:
     bucket, prefix = gcs_uri[5:].split("/", 1)
     prefix = prefix.rstrip("*").rstrip("/")  # strip trailing /* if present
 
-    fs = gcsfs.GCSFileSystem(token="anon") # public / anonymous access
+    fs = gcsfs.GCSFileSystem(token="anon")  # public / anonymous access
 
     files = fs.find(f"{bucket}/{prefix}")
     for path in files:
         if path.endswith("/"):
-            continue # skip directory placeholders
+            continue  # skip directory placeholders
 
         # Compute local destination preserving relative folder structure
         rel_path = os.path.relpath(path, f"{bucket}/{prefix}")

@@ -17,10 +17,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.svm import SVC
-
-from tensorflow.keras.models import load_model
 from tensorflow.keras.layers import Layer
+from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import custom_object_scope
+
 
 # TensorFlowOpLayer was removed from Keras 3
 class TensorFlowOpLayer(Layer):
@@ -41,6 +41,7 @@ class TensorFlowOpLayer(Layer):
             return tf.reduce_mean(inputs, axis=axes, keepdims=keepdims)
         return inputs
 
+
 def make_anchor_image(dirname: Optional[Path] = None) -> AnchorImage:
     url = "https://storage.googleapis.com/seldon-models/alibi-detect/classifier/"
     path_model = os.path.join(url, "cifar10", "resnet32", "model.h5")
@@ -51,7 +52,7 @@ def make_anchor_image(dirname: Optional[Path] = None) -> AnchorImage:
         model = load_model(save_path, compile=False)
 
     # drop the first batch dimension because AnchorImage expects a single image
-    image_shape = model.input_shape[1:] # (1,32,32,3) -> (32,32,3)
+    image_shape = model.input_shape[1:]  # (1,32,32,3) -> (32,32,3)
 
     alibi_model = AnchorImage(predictor=model.predict, image_shape=image_shape)
 
