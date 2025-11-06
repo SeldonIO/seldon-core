@@ -28,15 +28,6 @@ RUN wget https://downloads.rclone.org/v1.64.2/rclone-v1.64.2-linux-amd64.zip && 
     mv rclone-v1.64.2-linux-amd64/rclone /usr/bin/rclone && \
     rm -rf rclone-v1.64.2-linux-amd64.zip rclone-v1.64.2-linux-amd64
 
-# Note that we need to force Conda to use the system's std-c++ library, as
-# otherwise PyStan won't compile with Conda's older stdc++ library:
-# https://github.com/stan-dev/pystan/issues/294#issuecomment-870711100
-RUN python -m pip install --upgrade pip setuptools wheel && \
-    cd /opt/conda/lib && \
-    rm libstdc++.so libstdc++.so.6 && \
-    ln -s /usr/lib64/libstdc++.so.6.0.29 libstdc++.so && \
-    ln -s /usr/lib64/libstdc++.so.6.0.29 libstdc++.so.6
-
 # Make home dir
 RUN mkdir microservice
 WORKDIR /microservice
@@ -55,9 +46,9 @@ COPY poetry.lock pyproject.toml ./
 COPY _seldon_core ./_seldon_core
 RUN poetry install --no-dev && \
     rm ~/.cache/pip -rf && \
-    rm -f /opt/conda/lib/python3.*/site-packages/gslib/vendored/boto/requirements.txt \
-    /opt/conda/lib/python3.*/site-packages/gslib/vendored/oauth2client/docs/requirements.txt \
-    /opt/conda/lib/python3.*/site-packages/tests/conda_env/support/requirements.txt
+    rm -f /opt/conda/lib/python3.12/site-packages/gslib/vendored/boto/requirements.txt \
+    /opt/conda/lib/python3.12/site-packages/gslib/vendored/oauth2client/docs/requirements.txt \
+    /opt/conda/lib/python3.12/site-packages/tests/conda_env/support/requirements.txt
 
 # Add licences
 RUN mkdir /licenses
