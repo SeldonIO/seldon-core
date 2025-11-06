@@ -1,6 +1,23 @@
 # Pipeline to pipeline examples
 
-This notebook illustrates a series of Pipelines that are joined together.
+This examples illustrates a series of Pipelines that are joined together.
+
+## Before you begin
+
+1. Ensure that you have [installed Seldon Core 2](../installation/production-environment/README.md#installing-seldon-core-2) in the namespace `seldon-mesh`.
+
+2. Ensure that you are performing these steps in the directory where you have downloaded the [samples](https://github.com/SeldonIO/seldon-core/tree/v2/samples).
+
+3. Get the IP address of the Seldon Core 2 instance running with Istio:
+
+  ```bash
+  ISTIO_INGRESS=$(kubectl get svc seldon-mesh -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+  echo "Seldon Core 2: http://$ISTIO_INGRESS"
+  ```
+  {% hint style="info" %}
+  Make a note of the IP address that is displayed in the output. Replace <INGRESS_IP> with your service mesh's ingress IP address in the following commands.
+  {% endhint %}
 
 ### Models Used
 
@@ -42,26 +59,25 @@ spec:
 ```
 
 ```bash
-seldon model load -f ./models/tfsimple1.yaml
-seldon model load -f ./models/tfsimple2.yaml
+kubectl create -f ./models/tfsimple1.yaml -n seldon-mesh
+kubectl create -f ./models/tfsimple2.yaml -n seldon-mesh
 ```
 
-```json
-{}
-{}
-
+```output
+model.mlops.seldon.io/tfsimple1 created
+model.mlops.seldon.io/tfsimple2 created
 ```
+
 
 ```bash
-seldon model status tfsimple1 -w ModelAvailable | jq -M .
-seldon model status tfsimple2 -w ModelAvailable | jq -M .
+kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
 ```
 
-```json
-{}
-{}
-
+```outputs
+model.mlops.seldon.io/tfsimple1 condition met
+model.mlops.seldon.io/tfsimple2 condition met
 ```
+
 
 ```bash
 cat ./pipelines/tfsimple.yaml
@@ -82,49 +98,110 @@ spec:
 ```
 
 ```bash
-seldon pipeline load -f ./pipelines/tfsimple.yaml
+kubectl create -f ./pipelines/tfsimple.yaml -n seldon-mesh
+```
+
+```outputs
+pipeline.mlops.seldon.io/tfsimple created
+
 ```
 
 ```bash
-seldon pipeline status tfsimple -w PipelineReady | jq -M .
+kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
 ```
 
+```outputs
+pipeline.mlops.seldon.io/tfsimple condition met
+```
+{% tabs %}
+{% tab title="curl" %}
+```bash
+curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
+  -H "Host: seldon-mesh.inference.seldon" \
+  -H "Content-Type: application/json" \
+  -H "Seldon-Model: tfsimple.pipeline" \
+  -d '{
+    "inputs": [
+      {
+        "name": "INPUT0",
+        "datatype": "INT32",
+        "shape": [1,16],
+        "data": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+      },
+      {
+        "name": "INPUT1",
+        "datatype": "INT32",
+        "shape": [1,16],
+        "data": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+      }
+    ]
+  }' | jq -M .
+```
 ```json
 {
-  "pipelineName": "tfsimple",
-  "versions": [
+  "model_name": "",
+  "outputs": [
     {
-      "pipeline": {
-        "name": "tfsimple",
-        "uid": "cieq5dqi8ufs73flaj4g",
-        "version": 1,
-        "steps": [
-          {
-            "name": "tfsimple1"
-          }
-        ],
-        "output": {
-          "steps": [
-            "tfsimple1.outputs"
-          ]
-        },
-        "kubernetesMeta": {}
-      },
-      "state": {
-        "pipelineVersion": 1,
-        "status": "PipelineReady",
-        "reason": "created pipeline",
-        "lastChangeTimestamp": "2023-06-29T15:26:48.074696631Z",
-        "modelsReady": true
-      }
+      "data": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20,
+        22,
+        24,
+        26,
+        28,
+        30,
+        32
+      ],
+      "name": "OUTPUT0",
+      "shape": [
+        1,
+        16
+      ],
+      "datatype": "INT32"
+    },
+    {
+      "data": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "name": "OUTPUT1",
+      "shape": [
+        1,
+        16
+      ],
+      "datatype": "INT32"
     }
   ]
 }
-
 ```
 
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
-seldon pipeline infer tfsimple \
+seldon pipeline infer tfsimple --inference-host <INGRESS_IP>:80\
     '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
 
@@ -189,6 +266,11 @@ seldon pipeline infer tfsimple \
 
 ```
 
+{% endtab %}
+{% endtabs %}
+
+
+
 ```bash
 cat ./pipelines/tfsimple-extended.yaml
 ```
@@ -214,58 +296,113 @@ spec:
 ```
 
 ```bash
-seldon pipeline load -f ./pipelines/tfsimple-extended.yaml
+kubectl create -f ./pipelines/tfsimple-extended.yaml -n seldon-mesh
+```
+
+```outputs
+pipeline.mlops.seldon.io/tfsimple-extended created
+
 ```
 
 ```bash
-seldon pipeline status tfsimple-extended -w PipelineReady | jq -M .
+kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
 ```
 
+```outputs
+pipeline.mlops.seldon.io/tfsimple-extended condition met
+```
+
+{% tabs %}
+{% tab title="curl" %}
+```bash
+curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
+  -H "Host: seldon-mesh.inference.seldon" \
+  -H "Seldon-Model: tfsimple.pipeline" \
+  -H "x-request-id: test-id" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "inputs": [
+      {
+        "name": "INPUT0",
+        "datatype": "INT32",
+        "shape": [1,16],
+        "data": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+      },
+      {
+        "name": "INPUT1",
+        "datatype": "INT32",
+        "shape": [1,16],
+        "data": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+      }
+    ]
+  }' | jq -M .
+
+```
 ```json
 {
-  "pipelineName": "tfsimple-extended",
-  "versions": [
+  "model_name": "",
+  "outputs": [
     {
-      "pipeline": {
-        "name": "tfsimple-extended",
-        "uid": "cieq5h2i8ufs73flaj50",
-        "version": 1,
-        "steps": [
-          {
-            "name": "tfsimple2"
-          }
-        ],
-        "output": {
-          "steps": [
-            "tfsimple2.outputs"
-          ]
-        },
-        "kubernetesMeta": {},
-        "input": {
-          "externalInputs": [
-            "tfsimple.outputs"
-          ],
-          "tensorMap": {
-            "tfsimple.outputs.OUTPUT0": "INPUT0",
-            "tfsimple.outputs.OUTPUT1": "INPUT1"
-          }
-        }
-      },
-      "state": {
-        "pipelineVersion": 1,
-        "status": "PipelineReady",
-        "reason": "created pipeline",
-        "lastChangeTimestamp": "2023-06-29T15:27:01.095715504Z",
-        "modelsReady": true
-      }
+      "data": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20,
+        22,
+        24,
+        26,
+        28,
+        30,
+        32
+      ],
+      "name": "OUTPUT0",
+      "shape": [
+        1,
+        16
+      ],
+      "datatype": "INT32"
+    },
+    {
+      "data": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "name": "OUTPUT1",
+      "shape": [
+        1,
+        16
+      ],
+      "datatype": "INT32"
     }
   ]
 }
-
 ```
 
+{% endtab %}
+
+{% tab title="seldon-cli" %}
 ```bash
-seldon pipeline infer tfsimple --header x-request-id=test-id \
+seldon pipeline infer tfsimple --header x-request-id=test-id --inference-host <INGRESS_IP>:80 \
     '{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}'
 ```
 
@@ -329,6 +466,8 @@ seldon pipeline infer tfsimple --header x-request-id=test-id \
 }
 
 ```
+{% endtab %}
+{% endtabs %}
 
 ```bash
 seldon pipeline inspect tfsimple
@@ -355,18 +494,18 @@ seldon.default.pipeline.tfsimple-extended.outputs	test-id	{"outputs":[{"name":"O
 ```
 
 ```bash
-seldon pipeline unload tfsimple-extended
-seldon pipeline unload tfsimple
+kubectl delete -f ./pipelines/tfsimple.yaml -n seldon-mesh
+kubectl delete -f ./pipelines/tfsimple-extended.yaml -n seldon-mesh
 ```
 
 ```bash
-seldon model unload tfsimple1
-seldon model unload tfsimple2
+kubectl delete -f ./models/tfsimple1.yaml -n seldon-mesh
+kubectl delete -f ./models/tfsimple2.yaml -n seldon-mesh
 ```
 
 ### Pipeline pulling from two other Pipelines
 
-![pipeline-to-pipeline](img_pipeline2.jpg)
+![pipeline-to-pipeline](../images/img_pipeline2.jpg)
 
 ```bash
 cat ./models/tfsimple1.yaml
