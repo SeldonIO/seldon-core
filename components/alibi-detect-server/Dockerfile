@@ -34,7 +34,11 @@ WORKDIR /microservice
 
 # Install Poetry
 ENV POETRY_HOME=/microservice/.poetry
-RUN curl -sSL https://install.python-poetry.org | python3 - --version 1.8.2
+RUN /opt/conda/bin/pip install --no-cache-dir "poetry==2.1.2"
+
+# Replace vulnerable pip wheel embedded inside virtualenv(CVE-2025-8869)
+RUN find /opt/conda/lib/python3.12/site-packages/virtualenv/seed/wheels/embed/ -name "pip-*.whl" -delete && \
+    /opt/conda/bin/pip wheel pip==25.3.0 --wheel-dir /opt/conda/lib/python3.12/site-packages/virtualenv/seed/wheels/embed/
 
 ENV PATH="$POETRY_HOME/bin:$PATH"
 ENV POETRY_VIRTUALENVS_CREATE=false
@@ -60,6 +64,9 @@ RUN cp ./licenses/* /licenses
 COPY adserver adserver
 COPY README.md README.md
 COPY version.txt version.txt
+
+# Install the project code
+RUN poetry install
 
 FROM base AS final
 WORKDIR /microservice
