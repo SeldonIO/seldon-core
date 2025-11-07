@@ -11,7 +11,6 @@ package main
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"io/fs"
 	"net/http"
@@ -47,14 +46,6 @@ import (
 const (
 	maxBackoffRetryModelDownload = 30 * time.Second
 )
-
-var (
-	displayVersion bool
-)
-
-func init() {
-	flag.BoolVar(&displayVersion, "version", false, "display version and exit")
-}
 
 func makeDirs() (string, string, error) {
 	modelRepositoryDir := filepath.Join(cli.AgentFolder, "models")
@@ -134,13 +125,12 @@ func main() {
 	autoScalingEnabled := false
 
 	logger := log.New()
-	flag.Parse()
-
-	if displayVersion {
+	if cli.DisplayVersion {
 		logger.Infof("Version %s", version.Tag)
 		os.Exit(0)
 	}
 
+	logger.Infof("Version %s", version.Tag)
 	cli.UpdateArgs()
 
 	logIntLevel, err := log.ParseLevel(cli.LogLevel)

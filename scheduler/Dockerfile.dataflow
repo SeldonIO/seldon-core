@@ -1,5 +1,7 @@
 FROM azul/zulu-openjdk-alpine:17-latest AS builder
 
+ARG RELEASE_TAG
+
 COPY --from=gradle:8.5.0-jdk17-alpine /opt/gradle /opt/gradle
 RUN ln -s /opt/gradle/bin/gradle /usr/bin/gradle
 
@@ -9,7 +11,7 @@ COPY scheduler/data-flow src/data-flow
 
 # TODO - build with Gradle image, with Zulu added in
 WORKDIR src/data-flow
-RUN gradle build --no-daemon --info
+RUN gradle build --no-daemon -Prelease_tag="$RELEASE_TAG" --info
 
 ################################################################################
 

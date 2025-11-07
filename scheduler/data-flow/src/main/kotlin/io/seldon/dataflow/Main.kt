@@ -37,6 +37,7 @@ object Main {
         Logging.configure()
 
         val config = Cli.configWith(args)
+        Cli.printVersion(config)
         Logging.configure(
             appLevel = config[Cli.logLevelApplication],
             kafkaLevel = config[Cli.logLevelKafka],

@@ -62,7 +62,7 @@ build-dataflow-consumer:
 
 .PHONY: build-dataflow-engine
 build-dataflow-engine:
-	cd data-flow; ./gradlew clean build -x test --no-daemon
+	cd data-flow; ./gradlew clean build -Prelease_tag=$(RELEASE_TAG) -x test --no-daemon
 
 .PHONY: build-go
 build-go: build-scheduler build-agent build-proxy build-modelgateway build-pipelinegateway
@@ -207,7 +207,7 @@ docker-build-and-push-prod-envoy:
 
 .PHONY: docker-build-dataflow
 docker-build-dataflow: data-flow/opentelemetry-javaagent.jar
-	docker build -t ${DATAFLOW_IMG} -f Dockerfile.dataflow ..
+	docker build --build-arg RELEASE_TAG="$(RELEASE_TAG)" -t ${DATAFLOW_IMG} -f Dockerfile.dataflow ..
 
 .PHONY: docker-push-dataflow
 docker-push-dataflow:
@@ -215,7 +215,7 @@ docker-push-dataflow:
 
 .PHONY: docker-build-and-push-prod-dataflow
 docker-build-and-push-prod-dataflow: data-flow/opentelemetry-javaagent.jar
-	docker buildx build --provenance=true -t ${DATAFLOW_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.dataflow ..
+	docker buildx build --build-arg RELEASE_TAG="$(RELEASE_TAG)" --provenance=true -t ${DATAFLOW_IMG} --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push -f Dockerfile.dataflow ..
 
 .PHONY: docker-build-grafana
 docker-build-grafana:

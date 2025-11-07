@@ -1,3 +1,4 @@
+RELEASE_TAG=$(shell git describe --tags --always --dirty)
 
 .PHONY: licenses
 licenses:
@@ -22,4 +23,4 @@ test:
 
 .PHONY: build
 build:
-	./gradlew build --no-daemon --no-build-cache
+	./gradlew build --no-daemon --no-build-cache -Prelease_tag=$(RELEASE_TAG)

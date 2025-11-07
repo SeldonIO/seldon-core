@@ -55,6 +55,7 @@ const (
 	envUnloadGraceSeconds                              = "SELDON_UNLOAD_GRACE_PERIOD_SECONDS"
 	envuseDeploymentsForServers                        = "SELDON_USE_DEPLOYMENTS_FOR_SERVERS"
 
+	flagVersion                                         = "version"
 	flagSchedulerHost                                   = "scheduler-host"
 	flagSchedulerPlaintxtPort                           = "scheduler-port"
 	flagSchedulerTlsPort                                = "scheduler-tls-port"
@@ -117,6 +118,7 @@ const (
 )
 
 var (
+	DisplayVersion                                  bool
 	agentHost                                       string
 	ServerName                                      string
 	ReplicaIdx                                      uint

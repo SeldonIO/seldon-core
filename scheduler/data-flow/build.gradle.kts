@@ -122,3 +122,13 @@ ktlint {
         exclude { element -> element.file.path.contains("apis/mlops") }
     }
 }
+
+val projectVersion = project.findProperty("release_tag") as String? ?: "unknown"
+
+tasks.withType<JavaExec> {
+    systemProperty("releaseTag", projectVersion)
+}
+
+tasks.withType<Test> {
+    systemProperty("releaseTag", projectVersion)
+}
