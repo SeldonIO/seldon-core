@@ -20,7 +20,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/version"
 	log "github.com/sirupsen/logrus"
 
 	agent2 "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
@@ -41,6 +40,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
+	"github.com/seldonio/seldon-core/scheduler/v2/version"
 )
 
 const (

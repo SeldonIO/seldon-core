@@ -23,7 +23,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/version"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/backoff"
@@ -49,6 +48,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
+	"github.com/seldonio/seldon-core/scheduler/v2/version"
 )
 
 var (

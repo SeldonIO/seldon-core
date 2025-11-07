@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"github.com/knadh/koanf/v2"
-	"github.com/seldonio/seldon-core/scheduler/v2/version"
 	log "github.com/sirupsen/logrus"
 
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
@@ -32,6 +31,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/gateway"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/schema"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
+	"github.com/seldonio/seldon-core/scheduler/v2/version"
 )
 
 const (
