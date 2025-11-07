@@ -36,8 +36,8 @@ object Main {
     fun main(args: Array<String>) {
         Logging.configure()
 
+        println("Version: ${BuildInfo.VERSION}")
         val config = Cli.configWith(args)
-        Cli.printVersion(config)
         Logging.configure(
             appLevel = config[Cli.logLevelApplication],
             kafkaLevel = config[Cli.logLevelKafka],

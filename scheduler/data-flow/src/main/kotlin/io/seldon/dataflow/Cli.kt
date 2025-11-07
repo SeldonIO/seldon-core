@@ -220,9 +220,4 @@ object Cli {
             unknownArgs,
         )
     }
-
-    fun printVersion(config: Configuration) {
-        val releaseTag = System.getProperty("releaseTag") ?: "unknown"
-        println("Version: $releaseTag")
-    }
 }
