@@ -47,7 +47,7 @@ nodes:
 
 To start a Kind cluster see, [Learning environment](../installation/learning-environment/README.md).
 
-Create the local folder formodels and copy an example iris sklearn model to it.
+Create the local folder for models and copy an example iris sklearn model to it.
 
 ```bash
 mkdir -p /tmp/models
