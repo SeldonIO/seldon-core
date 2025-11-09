@@ -29,10 +29,10 @@ MESH_IP
 
 ### Kind cluster setup
 
-To run this example in Kind we need to start Kind with access to a local folder where are models are location. In this example we will use a folder in `/tmp` and associate that with a path in the container.
+To run this example in Kind we need to start Kind with access to a local folder where are models are location. In this example it is a folder in `/tmp` and associate that with a path in the container.
 
-```python
-!cat kind-config.yaml
+```bash
+cat kind-config.yaml
 ```
 
 ```yaml
@@ -45,27 +45,21 @@ nodes:
       containerPath: /models
 ```
 
-To start a Kind cluster with these settings using our ansible script you can run from the project root folder
+To start a Kind cluster see, [Learning environment](../installation/learning-environment/README.md).
 
-```
-ansible-playbook ansible/playbooks/kind-cluster.yaml -e kind_config_file=${PWD}/samples/examples/local-pvc/kind-config.yaml
-```
+Create the local folder formodels and copy an example iris sklearn model to it.
 
-[**Now you should finish the Seldon install following the docs.**](https://docs.seldon.io/projects/seldon-core/en/v2/contents/getting-started/index.html)
-
-Create the local folder we will use for our models and copy an example iris sklearn model to it.
-
-```python
-!mkdir -p /tmp/models
-!gsutil cp -r gs://seldon-models/mlserver/iris /tmp/models
+```bash
+mkdir -p /tmp/models
+gsutil cp -r gs://seldon-models/mlserver/iris /tmp/models
 ```
 
 ### Create Server with PVC
 
-Here we create a storage class and associated persistent colume referencing the `/models` folder where our models are stored.
+Create a storage class and associated persistent colume referencing the `/models` folder where models are stored.
 
-```python
-!cat pvc.yaml
+```bash
+cat pvc.yaml
 ```
 
 ```yaml
@@ -112,12 +106,12 @@ spec:
       type: local
 ```
 
-Now we create a new Server based on the provided MLServer configuration but extend it with our PVC by adding this to the rclone container which will allow rclone to move models from this PVC onto the server.
+Now create a new Server based on the provided MLServer configuration but extend it with our PVC by adding this to the rclone container which will allow rclone to move models from this PVC onto the server.
 
 We also add a new capability `pvc` to allow us to schedule models to this server that has the PVC.
 
-```python
-!cat server.yaml
+```bash
+cat server.yaml
 ```
 
 ```yaml
@@ -143,10 +137,10 @@ spec:
 
 ### SKLearn Model
 
-We use a simple sklearn iris classification model with the added `pvc` requirement so our MLServer with the PVC will be targeted during scheduling.
+Use a simple sklearn iris classification model with the added `pvc` requirement so that MLServer with the PVC is targeted during scheduling.
 
-```python
-!cat ./iris.yaml
+```bash
+cat ./iris.yaml
 ```
 
 ```yaml
@@ -161,24 +155,24 @@ spec:
   - pvc
 ```
 
-```python
-!kubectl create -f iris.yaml -n ${NAMESPACE}
+```bash
+kubectl create -f iris.yaml -n ${NAMESPACE}
 ```
 
 ```
 model.mlops.seldon.io/iris created
 ```
 
-```python
-!kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
+```bash
+kubectl wait --for condition=ready --timeout=300s model --all -n ${NAMESPACE}
 ```
 
 ```
 model.mlops.seldon.io/iris condition met
 ```
 
-```python
-!kubectl get model iris -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
+```bash
+kubectl get model iris -n ${NAMESPACE} -o jsonpath='{.status}' | jq -M .
 ```
 
 ```
@@ -199,10 +193,36 @@ model.mlops.seldon.io/iris condition met
 }
 ```
 
-```python
-!seldon model infer iris --inference-host ${MESH_IP}:80 \
+{% tabs %}
+
+{% tab title="curl" %}
+```bash
+curl -k http://${MESH_IP}:80/v2/models/iris/infer \
+  -H "Host: seldon-mesh.inference.seldon" \
+  -H "Seldon-Model: iris" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "inputs": [
+      {
+        "name": "predict",
+        "datatype": "FP32",
+        "shape": [1,4],
+        "data": [[1,2,3,4]]
+      }
+    ]
+  }' | jq -M .
+``` 
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+```bash
+seldon model infer iris --inference-host ${MESH_IP}:80 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
-```
+```  
+{% endtab %}
+
+
+{% endtabs %}
 
 ```
 {
@@ -232,12 +252,40 @@ model.mlops.seldon.io/iris condition met
 
 Do a gRPC inference call
 
-```python
-!seldon model infer iris --inference-mode grpc --inference-host ${MESH_IP}:80 \
-   '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' | jq -M .
-```
+{% tabs %}
 
-```
+{% tab title="curl" %}
+```bash
+curl -k http://${MESH_IP}:80/v2/models/iris/infer \
+  -H "Host: seldon-mesh.inference.seldon" \
+  -H "Seldon-Model: iris" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model_name": "iris",
+    "inputs": [
+      {
+        "name": "input",
+        "datatype": "FP32",
+        "shape": [1,4],
+        "data": [1,2,3,4]
+      }
+    ]
+  }' | jq -M .
+``` 
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+```bash
+seldon model infer iris --inference-mode grpc --inference-host ${MESH_IP}:80 \
+   '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' | jq -M .
+```  
+{% endtab %}
+
+
+{% endtabs %}
+
+
+```outputs
 {
   "modelName": "iris_1",
   "modelVersion": "1",
@@ -260,7 +308,7 @@ Do a gRPC inference call
 ```
 
 ```python
-!kubectl delete -f ./iris.yaml -n ${NAMESPACE}
+kubectl delete -f ./iris.yaml -n ${NAMESPACE}
 ```
 
 ```
