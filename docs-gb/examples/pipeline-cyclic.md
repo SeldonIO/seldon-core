@@ -2,6 +2,23 @@
 
 Learn how to deploy a cyclic pipeline using Core 2. In this example, you'll build a simple counter that begins at a user-defined starting value and increments by one until it reaches 10. If the starting value is already greater than 10, the pipeline terminates immediately without running.
 
+## Before you begin
+
+1. Ensure that you have [installed Seldon Core 2](../installation/production-environment/README.md#installing-seldon-core-2) in the namespace `seldon-mesh`.
+
+2. Ensure that you are performing these steps in the directory where you have downloaded the [samples](https://github.com/SeldonIO/seldon-core/tree/v2/samples).
+
+3. Get the IP address of the Seldon Core 2 instance running with Istio:
+
+  ```bash
+  ISTIO_INGRESS=$(kubectl get svc seldon-mesh -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+  echo "Seldon Core 2: http://$ISTIO_INGRESS"
+  ```
+  {% hint style="info" %}
+  Make a note of the IP address that is displayed in the output. Replace <INGRESS_IP> with your service mesh's ingress IP address in the following commands.
+  {% endhint %}
+
 ## Models
 
 Start by implementing the first model: a simple counter.
@@ -202,41 +219,54 @@ spec:
   - mlserver
 ```
 
-To deploy the counter model, use the following command:
+To deploy the models, use the following command:
 
 ```bash
-seldon model load -f ./models/counter.yaml
+kubectl apply -f - --namespace=seldon-mesh <<EOF
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: counter
+spec:
+  storageUri: "gs://seldon-models/scv2/examples/cyclic-pipeline/counter"
+  requirements:
+    - mlserver
+EOF
 ```
 ```bash
-{}
+kubectl apply -f - --namespace=seldon-mesh <<EOF
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: identity-loop
+spec:
+  storageUri: "gs://seldon-models/scv2/examples/cyclic-pipeline/identity-loop"
+  requirements:
+    - mlserver
+EOF
 ```
 ```bash
-seldon model status counter -w ModelAvailable | jq -M .
+kubectl apply -f - --namespace=seldon-mesh <<EOF
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Model
+metadata:
+  name: identity-output
+spec:
+  storageUri: "gs://seldon-models/scv2/examples/cyclic-pipeline/identity-output"
+  requirements:
+    - mlserver
+EOF
+```
+```bash
+kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
+
+```
+```outputs
+model.mlops.seldon.io/counter condition met
+model.mlops.seldon.io/identity-loop condition met
+model.mlops.seldon.io/identity-output condition met
 ```
 
-To deploy the identity loop model, use the following command:
-
-```bash
-seldon model load -f ./models/identity-loop.yaml
-```
-```bash
-{}
-```
-```bash
-seldon model status identity-loop -w ModelAvailable | jq -M .
-```
-
-To deploy the identity output model, use the following command:
-
-```bash
-seldon model load -f ./models/identity-output.yaml
-```
-```bash
-{}
-```
-```bash
-seldon model status identity-output -w ModelAvailable | jq -M .
-```
 
 ## Pipeline deployment
 
@@ -278,18 +308,75 @@ spec:
 To deploy the pipeline, use the following command:
 
 ```bash
-seldon pipeline load -f counter-pipeline.yaml
+kubectl create -f counter-pipeline.yaml -n seldon-mesh
 ```
-```bash
-seldon pipeline status counter-pipeline -w PipelineReady | jq -M .
+```outputs
+pipeline.mlops.seldon.io/counter-pipeline created
 ```
 
 ## Testing the pipeline
 
 To send a request to the pipeline, use the following command:
+{% tabs %}
+
+{% tab title="curl" %}
+```bash
+curl -k http://<INGRESS_IP>:80/v2/models/counter-pipeline/infer \
+  -H "Host: seldon-mesh.inference.seldon" \
+  -H "Seldon-Model: counter-pipeline.pipeline" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "inputs": [
+      {
+        "name": "counter-pipeline.inputs",
+        "datatype": "INT32",
+        "shape": [1],
+        "data": [0]
+      }
+    ]
+  }' | jq -M .
+```   
 
 ```bash
-seldon pipeline infer counter-pipeline \
+{
+  "model_name": "",
+  "outputs": [
+    {
+      "data": [
+        10
+      ],
+      "name": "output",
+      "shape": [
+        1,
+        1
+      ],
+      "datatype": "INT32",
+      "parameters": {
+        "content_type": "np"
+      }
+    },
+    {
+      "data": [
+        ""
+      ],
+      "name": "stop",
+      "shape": [
+        1,
+        1
+      ],
+      "datatype": "BYTES",
+      "parameters": {
+        "content_type": "str"
+      }
+    }
+  ]
+}
+```
+{% endtab %}
+
+{% tab title="seldon-cli" %}
+```bash
+seldon pipeline infer counter-pipeline --inference-host <INGRESS_IP>:80\
   '{"inputs":[{"name":"counter-pipeline.inputs","shape":[1],"datatype":"INT32","data":[0]}]}' | jq -M .
 ```
 
@@ -328,6 +415,9 @@ seldon pipeline infer counter-pipeline \
   ]
 }
 ```
+{% endtab %}
+{% endtabs %}
+
 
 This request initiates the pipeline with an input value of 0. The pipeline increments this value step by step until it reaches 10, at which point it stops. The response includes the final counter value, 10, along with a message indicating that the pipeline has terminated.
 
@@ -335,26 +425,21 @@ This request initiates the pipeline with an input value of 0. The pipeline incre
 To clean up the models and the pipeline, use the following commands:
 
 ```bash
-seldon pipeline unload -f counter-pipeline.yaml
+kubectl delete pipeline counter-pipeline -n seldon-mesh
+```
+```outputs
+pipeline.mlops.seldon.io "counter-pipeline" deleted
 ```
 
 ```bash
-seldon model unload -f ./models/counter.yaml
-```
-```bash
-{}
-```
-
-```bash
-seldon model unload -f ./models/identity-loop.yaml
-```
-```bash
-{}
+kubectl delete model identity-loop -n seldon-mesh
+kubectl delete model identity-output -n seldon-mesh
+kubectl delete model counter -n seldon-mesh
 ```
 
-```bash
-seldon model unload -f ./models/identity-output.yaml
+```outputs
+model.mlops.seldon.io "identity-loop" deleted
+model.mlops.seldon.io "identity-output" deleted
+model.mlops.seldon.io "counter" deleted
 ```
-```bash
-{}
-```
+
