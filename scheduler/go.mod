@@ -148,7 +148,10 @@ require (
 	sigs.k8s.io/yaml v1.5.0 // indirect
 )
 
-tool go.uber.org/mock/mockgen
+tool (
+	go.uber.org/mock/mockgen
+	golang.org/x/tools/cmd/stringer
+)
 
 replace github.com/seldonio/seldon-core/components/tls/v2 => ../components/tls
 

@@ -47,7 +47,7 @@ func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *chai
 		if message.Success {
 			statusVal = pipeline.PipelineTerminated
 		} else {
-			statusVal = pipeline.PipelineFailed
+			statusVal = pipeline.PipelineFailedTerminating
 		}
 	}
 

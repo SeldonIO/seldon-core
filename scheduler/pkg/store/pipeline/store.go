@@ -297,6 +297,7 @@ func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineE
 func (ps *PipelineStore) GetPipelineVersion(name string, versionNumber uint32, uid string) (*PipelineVersion, error) {
 	ps.mu.RLock()
 	defer ps.mu.RUnlock()
+
 	if pipeline, ok := ps.pipelines[name]; ok {
 		if pipelineVersion := pipeline.GetPipelineVersion(versionNumber); pipelineVersion != nil {
 			if pipelineVersion.UID == uid {
@@ -339,14 +340,23 @@ func (ps *PipelineStore) getAllRunningPipelineVersions(
 	var events []coordinator.PipelineEventMsg
 	for _, p := range ps.pipelines {
 		pv := p.GetLatestPipelineVersion()
-		switch statusSelector(pv) {
+		if pv == nil {
+			ps.logger.Warnf("Pipeline %s versions empty", p.Name)
+			continue
+		}
+
+		status := statusSelector(pv)
+		switch status {
 		// we consider PipelineTerminating as running as it is still active
-		case PipelineCreate, PipelineCreating, PipelineReady, PipelineRebalancing, PipelineTerminating:
+		// we want to attempt to create failed pipelines as could have failed for temporary error such as kafka unavailable
+		case PipelineCreate, PipelineCreating, PipelineReady, PipelineRebalancing, PipelineTerminating, PipelineFailed:
 			events = append(events, coordinator.PipelineEventMsg{
 				PipelineName:    pv.Name,
 				PipelineVersion: pv.Version,
 				UID:             pv.UID,
 			})
+		default:
+			ps.logger.Debugf("Pipeline %s state %s not considered running", pv.Name, status)
 		}
 	}
 	return events

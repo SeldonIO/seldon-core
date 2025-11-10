@@ -322,8 +322,11 @@ func main() {
 		logger.WithError(err).Fatal("Failed to start data engine chainer server")
 	}
 	defer cs.Stop()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	go func() {
-		err := cs.StartGrpcServer(chainerPort)
+		err := cs.StartGrpcServer(ctx, chainerPort)
 		if err != nil {
 			log.WithError(err).Fatalf("Chainer server start error")
 		}
