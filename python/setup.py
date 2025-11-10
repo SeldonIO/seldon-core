@@ -4,7 +4,7 @@ from itertools import chain
 from setuptools import find_packages, setup
 
 # Extra dependencies, with special 'all' key
-extras = {"tensorflow": ["tensorflow==2.17.1"]}
+extras = {"tensorflow": ["tensorflow==2.18.1"]}
 all_extra_deps = chain.from_iterable(extras.values())
 extras["all"] = list(set(all_extra_deps))
 
@@ -26,7 +26,7 @@ setup(
         "flask-cors>=6.0.1",
         "requests>=2.32.5",
         "numpy>=1.26.4, <2.0.0",
-        "protobuf==4.25.8",
+        "protobuf==5.29.0",
         "grpcio>=1.76.0",
         "flask-opentracing>=2.0.0",
         "opentracing>=2.4.0",  # latest release is from Nov 2020
