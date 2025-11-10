@@ -45,7 +45,7 @@ reference [this](https://github.com/prometheus-operator/prometheus-operator/issu
 
 ## Example Grafana Dashboard
 
-Check [metrics](../metrics.md) for more information.
+Check [metrics](../operational-monitoring/observability.md) for more information.
 
 ## Reference
 

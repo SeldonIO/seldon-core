@@ -1,5 +1,5 @@
 ---
-description:nInstalling kube-prometheus-stack in the same Kubernetes cluster that hosts the
+description: Installing kube-prometheus-stack in the same Kubernetes cluster that hosts the
   Seldon Core 2.
 ---
 

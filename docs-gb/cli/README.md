@@ -11,7 +11,7 @@ make build-seldon-arm # for macOS ARM
 
 Then place the `bin/seldon` executable in your path.
 
- * [cli docs](./docs/seldon.md)
+ * [cli docs](../cli/seldon.md)
 
 
 ## Environment Variables and Services

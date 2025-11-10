@@ -110,4 +110,4 @@ For some examples see [here](../examples/custom-servers.md).
 
 ## Autoscaling of Servers
 
-Within docker we don't support this but for Kubernetes see [here](../kubernetes/autoscaling/)
+Within docker we don't support this but for Kubernetes see [here](../scaling/README.md)
