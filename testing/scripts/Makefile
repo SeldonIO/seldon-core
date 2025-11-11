@@ -49,7 +49,7 @@ kind_build_misc:
 	cd ../../components/routers/epsilon-greedy && make kind_load
 
 .PHONY: kind_build_images
-kind_build_images: build_protos kind_build_operator kind_build_executor kind_build_prepackaged kind_build_alibi_explain kind_build_alibi_detect kind_build_rclone_storage_initializer
+kind_build_images: build_protos kind_build_operator kind_build_executor kind_build_prepackaged kind_build_alibi_explain kind_build_rclone_storage_initializer
 
 .PHONY: kind_build_test_images
 kind_build_test_images: kind_build_test_models kind_build_misc
