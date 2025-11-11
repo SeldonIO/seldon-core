@@ -1,0 +1,24 @@
+{%- extends 'python/index.j2' -%}
+
+{% block header -%}
+#!/usr/bin/env ipython
+# coding: utf-8
+import time
+{%- endblock header %}
+
+{% block codecell %}
+{% set rendered_cell = super() %}
+{% if "kubectl rollout status" in rendered_cell or "delete" in rendered_cell %}
+time.sleep(10)
+{{ rendered_cell }}
+time.sleep(5)
+{% elif "docker run" in rendered_cell %}
+{{ rendered_cell }}
+time.sleep(3)
+{% elif "kubectl wait" in rendered_cell %}
+{{ rendered_cell }}
+time.sleep(5)
+{% else %}
+{{ rendered_cell.replace("'inline'","'agg'") }}
+{% endif %}
+{% endblock codecell %}
