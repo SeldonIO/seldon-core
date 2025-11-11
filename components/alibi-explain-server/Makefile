@@ -27,7 +27,7 @@ build_apis: get_apis
 		--grpc_python_out=./ \
 		--mypy_out=./ \
 		./proto/prediction.proto
-	sed -i "s/from proto/from alibiexplainer.proto/g" alibiexplainer/proto/prediction_pb2_grpc.py
+	perl -0pi -e 's/from proto/from alibiexplainer.proto/g' alibiexplainer/proto/prediction_pb2_grpc.py
 
 dev_install:
 	poetry install
@@ -47,7 +47,7 @@ fmt:
 	black . --exclude "(proto|.eggs|.tox)"
 
 docker-build:
-	docker build --file=Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg VERSION=${VERSION} -t ${IMAGE}:${VERSION} .
+	docker build --platform=linux/amd64 --file=Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg VERSION=${VERSION} -t ${IMAGE}:${VERSION} .
 
 docker-build-gpu:
 	docker build --file=Dockerfile.gpu -t ${IMAGE}-gpu:${VERSION} .
