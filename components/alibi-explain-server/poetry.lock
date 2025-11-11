@@ -2018,11 +2018,24 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 
 [[package]]
 name = "xgboost"
-version = "1.5.2"
+version = "1.7.6"
 description = "XGBoost Python Package"
 category = "main"
 optional = false
+<<<<<<< HEAD
 python-versions = ">=3.6"
+=======
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "xgboost-1.7.6-py3-none-macosx_10_15_x86_64.macosx_11_0_x86_64.macosx_12_0_x86_64.whl", hash = "sha256:4c34675b4d2678c624ddde5d45361e7e16046923e362e4e609b88353e6b87124"},
+    {file = "xgboost-1.7.6-py3-none-macosx_12_0_arm64.whl", hash = "sha256:59b4b366d2cafc7f645e87d897983a5b59be02876194b1d213bd8d8b811d8ce8"},
+    {file = "xgboost-1.7.6-py3-none-manylinux2014_aarch64.whl", hash = "sha256:281c3c6f4fbed2d36bf95cd02a641afa95e72e9abde70064056da5e76233e8df"},
+    {file = "xgboost-1.7.6-py3-none-manylinux2014_x86_64.whl", hash = "sha256:b1d5db49b199152d62bd9217c98760207d3de86d2b9d243260c573ffe638f80a"},
+    {file = "xgboost-1.7.6-py3-none-win_amd64.whl", hash = "sha256:127cf1f5e2ec25cd41429394c6719b87af1456ce583e89f0bffd35d02ad18bcb"},
+    {file = "xgboost-1.7.6.tar.gz", hash = "sha256:1c527554a400445e0c38186039ba1a00425dcdb4e40b37eed0e74cb39a159c47"},
+]
+>>>>>>> f35ff5249 (Upgrade xgboost to 1.7.6 so it's easy to install on macOS as well)
 
 [package.dependencies]
 numpy = "*"
@@ -2033,6 +2046,7 @@ dask = ["dask", "distributed", "pandas"]
 datatable = ["datatable"]
 pandas = ["pandas"]
 plotting = ["graphviz", "matplotlib"]
+pyspark = ["cloudpickle", "pyspark", "scikit-learn"]
 scikit-learn = ["scikit-learn"]
 
 [[package]]
@@ -2048,6 +2062,7 @@ docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.link
 testing = ["big-o", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
 
 [metadata]
+<<<<<<< HEAD
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
 content-hash = "e26f4cdd08d0d1a76e3638499f344de1f31a045143a8d4dfb1f904e381a9ada0"
@@ -4089,3 +4104,8 @@ zipp = [
     {file = "zipp-3.16.2-py3-none-any.whl", hash = "sha256:679e51dd4403591b2d6838a48de3d283f3d188412a9782faadf845f298736ba0"},
     {file = "zipp-3.16.2.tar.gz", hash = "sha256:ebc15946aa78bd63458992fc81ec3b6f7b1e92d51c35e6de1c3804e73b799147"},
 ]
+=======
+lock-version = "2.1"
+python-versions = ">=3.12.0,<3.13"
+content-hash = "744aa14b5ef232c34431227a1317d9f4d1f9d2f1259e16b905f525521941ac12"
+>>>>>>> f35ff5249 (Upgrade xgboost to 1.7.6 so it's easy to install on macOS as well)
