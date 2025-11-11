@@ -7,7 +7,7 @@ KIND_NAME ?= kind
 
 
 build:
-	s2i build -E environment . seldonio/seldon-core-s2i-python38:${VERSION} ${IMAGE_BASE}:${VERSION}
+	s2i build -E environment . seldonio/seldon-core-s2i-python312:${VERSION} ${IMAGE_BASE}:${VERSION}
 
 push:
 	docker push ${IMAGE_BASE}:${VERSION}
