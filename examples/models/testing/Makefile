@@ -6,7 +6,7 @@ IMAGE_BASE=seldonio/${IMAGE_NAME_BASE}
 KIND_NAME ?= kind
 
 build_%:
-	s2i build -E environment_$* . seldonio/seldon-core-s2i-python38:${VERSION} ${IMAGE_BASE}$*:${VERSION}
+	s2i build -E environment_$* . seldonio/seldon-core-s2i-python312:${VERSION} ${IMAGE_BASE}$*:${VERSION}
 
 
 push_%:
