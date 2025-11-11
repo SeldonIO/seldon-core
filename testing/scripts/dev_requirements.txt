@@ -19,7 +19,7 @@ Jinja2==3.1.6
 coverage==7.11.0
 
 # Required to build mock test images
-mlserver==1.7.0
+mlserver==1.7.1
 
 # Required to build protos
-grpcio-tools==1.62.3
+grpcio-tools==1.70.0
