@@ -25,13 +25,11 @@ kind_build_test_models:
 	make -C ../../examples/models/testing run_kind_load_all
 	make -C ../docker/fixed-model kind_load_images
 	make -C ../docker/echo-model kind_load_image
-	make -C ../docker/mock-preprocessor kind_load_image
 
 .PHONY: kind_build_prepackaged
 kind_build_prepackaged:
 	cd ../../servers/sklearnserver && make kind-load
 	cd ../../servers/xgboostserver && make kind-load
-	cd ../../servers/mlflowserver && make kind-load
 	cd ../../servers/tfserving_proxy && make kind-load
 
 .PHONY: kind_build_alibi_explain
