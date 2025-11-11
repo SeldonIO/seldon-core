@@ -11,7 +11,7 @@ alibi = {version = "^0.9.6", extras = ["shap"]}
 numpy = "1.26.4"
 tensorflow = "2.17.1"
 scikit-learn = "1.7.2"
-xgboost = "1.5.2"
+xgboost = "1.7.6"
 lightgbm = "^4.6.0"
 thinc="8.2.5"
 safetensors="0.6.2"

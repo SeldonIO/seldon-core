@@ -5516,17 +5516,18 @@ dev = ["pytest", "setuptools"]
 
 [[package]]
 name = "xgboost"
-version = "1.5.2"
+version = "1.7.6"
 description = "XGBoost Python Package"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "xgboost-1.5.2-py3-none-macosx_10_15_x86_64.macosx_11_0_x86_64.macosx_12_0_x86_64.whl", hash = "sha256:51b5dfe553d78ab92f2c60ccead6abc38196c2961f6952f6ec14b1feba6ffd25"},
-    {file = "xgboost-1.5.2-py3-none-manylinux2014_aarch64.whl", hash = "sha256:a449b0d0d8a15e72946c9d07e3d4ea153ac12570d054f6020cc5146cb4979261"},
-    {file = "xgboost-1.5.2-py3-none-manylinux2014_x86_64.whl", hash = "sha256:46e43e06b1de260fe4c67e818720485559dab1bed1d97b82275220fab602a2ba"},
-    {file = "xgboost-1.5.2-py3-none-win_amd64.whl", hash = "sha256:f9d459ad42da74c60136123ead36fa562086fb886f52fca229477d327d60dad0"},
-    {file = "xgboost-1.5.2.tar.gz", hash = "sha256:404dc09dca887ef5a9bc0268f882c54b33bfc16ac365a859a11e7b24d49da387"},
+    {file = "xgboost-1.7.6-py3-none-macosx_10_15_x86_64.macosx_11_0_x86_64.macosx_12_0_x86_64.whl", hash = "sha256:4c34675b4d2678c624ddde5d45361e7e16046923e362e4e609b88353e6b87124"},
+    {file = "xgboost-1.7.6-py3-none-macosx_12_0_arm64.whl", hash = "sha256:59b4b366d2cafc7f645e87d897983a5b59be02876194b1d213bd8d8b811d8ce8"},
+    {file = "xgboost-1.7.6-py3-none-manylinux2014_aarch64.whl", hash = "sha256:281c3c6f4fbed2d36bf95cd02a641afa95e72e9abde70064056da5e76233e8df"},
+    {file = "xgboost-1.7.6-py3-none-manylinux2014_x86_64.whl", hash = "sha256:b1d5db49b199152d62bd9217c98760207d3de86d2b9d243260c573ffe638f80a"},
+    {file = "xgboost-1.7.6-py3-none-win_amd64.whl", hash = "sha256:127cf1f5e2ec25cd41429394c6719b87af1456ce583e89f0bffd35d02ad18bcb"},
+    {file = "xgboost-1.7.6.tar.gz", hash = "sha256:1c527554a400445e0c38186039ba1a00425dcdb4e40b37eed0e74cb39a159c47"},
 ]
 
 [package.dependencies]
@@ -5538,6 +5539,7 @@ dask = ["dask", "distributed", "pandas"]
 datatable = ["datatable"]
 pandas = ["pandas"]
 plotting = ["graphviz", "matplotlib"]
+pyspark = ["cloudpickle", "pyspark", "scikit-learn"]
 scikit-learn = ["scikit-learn"]
 
 [[package]]
@@ -5688,4 +5690,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12.0,<3.13"
-content-hash = "bb68186c4a6e5e7114ad813a3bb39365971404c278b25bf70b7a98bd159d34e4"
+content-hash = "744aa14b5ef232c34431227a1317d9f4d1f9d2f1259e16b905f525521941ac12"
