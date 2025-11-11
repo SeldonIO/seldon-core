@@ -1,10 +1,25 @@
 {%- extends 'python/index.j2' -%}
 
-{% block header -%}
+{% block header %}
+{% set base_header = super() %}
+{% if "#!/usr/bin/env python" in base_header %}
+{{ base_header.replace("/usr/bin/env python", "/usr/bin/env ipython") }}
+{% else %}
 #!/usr/bin/env ipython
-# coding: utf-8
+{{ base_header }}
+{% endif %}
 import time
-{%- endblock header %}
+
+try:
+    get_ipython
+except NameError:
+    from IPython.terminal.interactiveshell import TerminalInteractiveShell
+
+    _nbconvert_shell = TerminalInteractiveShell.instance()
+
+    def get_ipython():
+        return _nbconvert_shell
+{% endblock header %}
 
 {% block codecell %}
 {% set rendered_cell = super() %}
