@@ -183,7 +183,7 @@ func NewConsumerGroupConfig(namespace, consumerGroupIdPrefix string, modelGatewa
 	}
 }
 
-func (s *SchedulerServer) startServer(port uint, secure bool) error {
+func (s *SchedulerServer) startServer(ctx context.Context, port uint, secure bool, pollerTickCreate, pollerTickDelete time.Duration) error {
 	logger := s.logger.WithField("func", "startServer")
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
@@ -209,17 +209,26 @@ func (s *SchedulerServer) startServer(port uint, secure bool) error {
 		err := grpcServer.Serve(lis)
 		logger.WithError(err).Fatalf("Scheduler mTLS server failed on port %d mtls:%v", port, secure)
 	}()
+
+	s.startPollers(ctx, pollerTickCreate, pollerTickDelete)
 	return nil
 }
 
-func (s *SchedulerServer) StartGrpcServers(allowPlainTxt bool, schedulerPort uint, schedulerTlsPort uint) error {
+func (s *SchedulerServer) startPollers(ctx context.Context, pollerTickCreate, pollerTickDelete time.Duration) {
+	go s.pollerRetryFailedCreateModels(ctx, pollerTickCreate)
+	go s.pollerRetryFailedDeleteModels(ctx, pollerTickDelete)
+	go s.pollerRetryFailedCreatePipelines(ctx, pollerTickCreate)
+	go s.pollerRetryFailedDeletePipelines(ctx, pollerTickDelete)
+}
+
+func (s *SchedulerServer) StartGrpcServers(ctx context.Context, allowPlainTxt bool, schedulerPort uint, schedulerTlsPort uint, pollerTickCreate, pollerTickDelete time.Duration) error {
 	logger := s.logger.WithField("func", "StartGrpcServers")
 
 	if !allowPlainTxt && s.tlsOptions.Cert == nil {
 		return fmt.Errorf("one of plain txt or mTLS needs to be defined. But have plain text [%v] and no TLS", allowPlainTxt)
 	}
 	if allowPlainTxt {
-		err := s.startServer(schedulerPort, false)
+		err := s.startServer(ctx, schedulerPort, false, pollerTickCreate, pollerTickDelete)
 		if err != nil {
 			return err
 		}
@@ -227,7 +236,7 @@ func (s *SchedulerServer) StartGrpcServers(allowPlainTxt bool, schedulerPort uin
 		logger.Info("Not starting scheduler plain text server")
 	}
 	if s.tlsOptions.Cert != nil {
-		err := s.startServer(schedulerTlsPort, true)
+		err := s.startServer(ctx, schedulerTlsPort, true, pollerTickCreate, pollerTickDelete)
 		if err != nil {
 			return err
 		}

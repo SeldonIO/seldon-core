@@ -92,6 +92,7 @@ func updatePipelinesFromModelAvailability(references map[string]void, modelName 
 	logger := loggerIn.WithField("func", "updatePipelinesFromModelAvailability")
 	logger.Debugf("Updating pipeline state from model %s available:%v", modelName, modelAvailable)
 	var changedPipelines []*coordinator.PipelineEventMsg
+
 	for pipelineName := range references {
 		if pipeline, ok := pipelines[pipelineName]; ok {
 			latestPipeline := pipeline.GetLatestPipelineVersion()

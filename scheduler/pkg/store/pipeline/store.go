@@ -46,6 +46,7 @@ type PipelineHandler interface {
 	SetPipelineGwPipelineState(name string, version uint32, uid string, state PipelineStatus, reason string, source string) error
 	GetAllRunningPipelineVersions() []coordinator.PipelineEventMsg
 	GetAllPipelineGwRunningPipelineVersions() []coordinator.PipelineEventMsg
+	GetPipelinesPipelineGwStatus(pipelineGwStatus PipelineStatus) []coordinator.PipelineEventMsg
 }
 
 type PipelineStore struct {
@@ -82,6 +83,31 @@ func NewPipelineStore(logger logrus.FieldLogger, eventHub *coordinator.EventHub,
 
 func getPipelineDbFolder(basePath string) string {
 	return filepath.Join(basePath, pipelineDbFolder)
+}
+
+func (ps *PipelineStore) GetPipelinesPipelineGwStatus(status PipelineStatus) []coordinator.PipelineEventMsg {
+	ps.mu.RLock()
+	defer ps.mu.RUnlock()
+
+	var events []coordinator.PipelineEventMsg
+	for _, p := range ps.pipelines {
+		pv := p.GetLatestPipelineVersion()
+		if pv == nil {
+			ps.logger.Warnf("Pipeline %s versions empty", p.Name)
+			continue
+		}
+
+		if pv.State.PipelineGwStatus != status {
+			continue
+		}
+
+		events = append(events, coordinator.PipelineEventMsg{
+			PipelineName:    pv.Name,
+			PipelineVersion: pv.Version,
+			UID:             pv.UID,
+		})
+	}
+	return events
 }
 
 func (ps *PipelineStore) InitialiseOrRestoreDB(path string, deletedResourceTTL uint) error {
@@ -554,6 +580,7 @@ func (ps *PipelineStore) handleModelEvents(event coordinator.ModelEventMsg) {
 	go func() {
 		ps.modelStatusHandler.mu.RLock()
 		defer ps.modelStatusHandler.mu.RUnlock()
+
 		refs := ps.modelStatusHandler.modelReferences[event.ModelName]
 		if len(refs) > 0 {
 			model, err := ps.modelStatusHandler.store.GetModel(event.ModelName)

@@ -56,6 +56,8 @@ type ChainerServer struct {
 	done                 chan struct{}
 	grpcServer           *grpc.Server
 	muFailedCreate       sync.Mutex
+	// TODO we should update PipelineHandler to store state for dataflow-engine, as we do for model-gw. That way we
+	//  won't have to use failedCreatePipelines and failedDeletePipelines.
 	// failedCreatePipelines keyed off pipeline UID
 	failedCreatePipelines map[string]pipeline.PipelineVersion
 	muFailedDelete        sync.Mutex
@@ -132,14 +134,14 @@ func (c *ChainerServer) Stop() {
 	c.StopSendPipelineEvents()
 }
 
-func (c *ChainerServer) StartGrpcServer(ctx context.Context, agentPort uint) error {
+func (c *ChainerServer) StartGrpcServer(ctx context.Context, pollerFailedCreatePipelines, pollerFailedDeletePipelines time.Duration, agentPort uint) error {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", agentPort))
 	if err != nil {
 		log.Fatalf("failed to create listener: %v", err)
 	}
 
-	go c.pollerFailedTerminatingPipelines(ctx)
-	go c.pollerFailedCreatingPipelines(ctx)
+	go c.pollerFailedTerminatingPipelines(ctx, pollerFailedDeletePipelines)
+	go c.pollerFailedCreatingPipelines(ctx, pollerFailedCreatePipelines)
 
 	kaep := util.GetServerKeepAliveEnforcementPolicy()
 
@@ -155,6 +157,26 @@ func (c *ChainerServer) StartGrpcServer(ctx context.Context, agentPort uint) err
 	return grpcServer.Serve(lis)
 }
 
+func (c *ChainerServer) storeFailedCreate(m *chainer.PipelineUpdateMessage) {
+	c.muFailedCreate.Lock()
+	defer c.muFailedCreate.Unlock()
+	c.failedCreatePipelines[m.Uid] = pipeline.PipelineVersion{
+		Name:    m.Pipeline,
+		Version: m.Version,
+		UID:     m.Uid,
+	}
+}
+
+func (c *ChainerServer) storeFailedDelete(m *chainer.PipelineUpdateMessage) {
+	c.muFailedDelete.Lock()
+	defer c.muFailedDelete.Unlock()
+	c.failedDeletePipelines[m.Uid] = pipeline.PipelineVersion{
+		Name:    m.Pipeline,
+		Version: m.Version,
+		UID:     m.Uid,
+	}
+}
+
 func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -167,26 +189,14 @@ func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chaine
 		if message.Success {
 			statusVal = pipeline.PipelineReady
 		} else {
-			c.muFailedCreate.Lock()
-			c.failedCreatePipelines[message.Update.Uid] = pipeline.PipelineVersion{
-				Name:    message.Update.Pipeline,
-				Version: message.Update.Version,
-				UID:     message.Update.Uid,
-			}
-			c.muFailedCreate.Unlock()
+			c.storeFailedCreate(message.Update)
 			statusVal = pipeline.PipelineFailed
 		}
 	case chainer.PipelineUpdateMessage_Delete:
 		if message.Success {
 			statusVal = pipeline.PipelineTerminated
 		} else {
-			c.muFailedDelete.Lock()
-			c.failedDeletePipelines[message.Update.Uid] = pipeline.PipelineVersion{
-				Name:    message.Update.Pipeline,
-				Version: message.Update.Version,
-				UID:     message.Update.Uid,
-			}
-			c.muFailedDelete.Unlock()
+			c.storeFailedDelete(message.Update)
 			statusVal = pipeline.PipelineFailedTerminating
 		}
 	// internal rebalancing operation
@@ -495,9 +505,8 @@ func contains(slice []string, val string) bool {
 	return false
 }
 
-func (c *ChainerServer) pollerFailedTerminatingPipelines(ctx context.Context) {
-	// TODO configrable
-	ticker := time.NewTicker(time.Minute)
+func (c *ChainerServer) pollerFailedTerminatingPipelines(ctx context.Context, tick time.Duration) {
+	ticker := time.NewTicker(tick)
 	defer ticker.Stop()
 
 	logger := c.logger.WithField("func", "pollerFailedTerminatingPipelines")
@@ -508,12 +517,13 @@ func (c *ChainerServer) pollerFailedTerminatingPipelines(ctx context.Context) {
 		case <-ticker.C:
 			// check for any pipelines which failed to create and retry
 			logger.Debug("Checking for pipelines which failed to terminate")
+			c.muFailedDelete.Lock()
 			if len(c.failedDeletePipelines) == 0 {
+				c.muFailedDelete.Unlock()
 				logger.Debug("No pipelines found that failed to terminate")
 				continue
 			}
 			c.mu.Lock()
-			c.muFailedDelete.Lock()
 
 			for _, p := range c.failedDeletePipelines {
 				logger.Debugf("Attempting to terminate pipeline which failed to terminate %s", p.Name)
@@ -534,15 +544,14 @@ func (c *ChainerServer) pollerFailedTerminatingPipelines(ctx context.Context) {
 				c.terminatePipeline(pv, true)
 			}
 
-			c.muFailedDelete.Unlock()
 			c.mu.Unlock()
+			c.muFailedDelete.Unlock()
 		}
 	}
 }
 
-func (c *ChainerServer) pollerFailedCreatingPipelines(ctx context.Context) {
-	// TODO configrable
-	ticker := time.NewTicker(time.Minute)
+func (c *ChainerServer) pollerFailedCreatingPipelines(ctx context.Context, tick time.Duration) {
+	ticker := time.NewTicker(tick)
 	defer ticker.Stop()
 
 	logger := c.logger.WithField("func", "pollerFailedCreatingPipelines")
@@ -553,12 +562,13 @@ func (c *ChainerServer) pollerFailedCreatingPipelines(ctx context.Context) {
 		case <-ticker.C:
 			// check for any pipelines which failed to create and retry
 			logger.Debug("Checking for pipelines which failed to create")
+			c.muFailedCreate.Lock()
 			if len(c.failedCreatePipelines) == 0 {
+				c.muFailedCreate.Unlock()
 				logger.Debug("No pipelines found that failed to create")
 				continue
 			}
 			c.mu.Lock()
-			c.muFailedCreate.Lock()
 
 			for _, p := range c.failedCreatePipelines {
 				logger.Debugf("Attempting to create failed pipeline %s", p.Name)
@@ -579,8 +589,8 @@ func (c *ChainerServer) pollerFailedCreatingPipelines(ctx context.Context) {
 				delete(c.failedCreatePipelines, p.UID)
 			}
 
-			c.muFailedCreate.Unlock()
 			c.mu.Unlock()
+			c.muFailedCreate.Unlock()
 		}
 	}
 }

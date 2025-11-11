@@ -768,7 +768,7 @@ func TestPipelineSubscribe(t *testing.T) {
 				t.Fatal(err)
 			}
 			go func() {
-				_ = s.StartGrpcServer(uint(port))
+				_ = s.StartGrpcServer(context.Background(), time.Minute, time.Minute, uint(port))
 			}()
 
 			time.Sleep(100 * time.Millisecond)

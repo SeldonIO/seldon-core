@@ -708,6 +708,10 @@ type fakePipelineStore struct {
 	pipelineGwStatus map[string]pipeline.PipelineStatus
 }
 
+func (f fakePipelineStore) GetPipelinesPipelineGwStatus(_ pipeline.PipelineStatus) []coordinator.PipelineEventMsg {
+	panic("implement me")
+}
+
 func (f fakePipelineStore) AddPipeline(pipeline *scheduler.Pipeline) error {
 	panic("implement me")
 }

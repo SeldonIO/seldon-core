@@ -205,9 +205,9 @@ func TestGetPipelineStatus(t *testing.T) {
 			name: "delete failed",
 			op:   chainer.PipelineUpdateMessage_Delete,
 			statuses: map[string]pipeline.PipelineStatus{
-				"a": pipeline.PipelineFailed,
+				"a": pipeline.PipelineFailedTerminating,
 			},
-			expected: pipeline.PipelineFailed,
+			expected: pipeline.PipelineFailedTerminating,
 		},
 		{
 			name: "rebalance failed",

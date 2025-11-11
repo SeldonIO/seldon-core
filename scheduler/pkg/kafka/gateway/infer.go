@@ -372,6 +372,10 @@ func (kc *InferKafkaHandler) AddModel(modelName string) error {
 	inputTopic := kc.topicNamer.GetModelTopicInputs(modelName)
 	outputTopic := kc.topicNamer.GetModelTopicOutputs(modelName)
 	if err := kc.createTopics([]string{inputTopic, outputTopic}); err != nil {
+		// we must delete the model as we've failed to create the topics, scheduler will re-issue a create cmd, if model
+		// exists in loadedModels model-gw will respond with success and it'll be no-op and topics won't be retried to
+		// be created
+		delete(kc.loadedModels, modelName)
 		return err
 	}
 

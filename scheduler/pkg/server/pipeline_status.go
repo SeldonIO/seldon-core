@@ -11,11 +11,12 @@ package server
 
 import (
 	"context"
+	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	chainer "github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -28,7 +29,41 @@ const (
 	addPipelineStreamEventSource = "pipeline.store.addpipelinestream"
 )
 
-func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
+// pollerRetryFailedCreatePipelines will retry creating pipelines on pipeline-gw which failed to load.
+func (s *SchedulerServer) pollerRetryFailedCreatePipelines(ctx context.Context, tick time.Duration) {
+	s.pollerRetryFailedPipelines(ctx, tick, "pollerRetryFailedCreatePipelines", pipeline.PipelineFailed, "create")
+}
+
+// pollerRetryFailedDeletePipelines will retry deleting pipelines on pipeline-gw which failed to terminate.
+func (s *SchedulerServer) pollerRetryFailedDeletePipelines(ctx context.Context, tick time.Duration) {
+	s.pollerRetryFailedPipelines(ctx, tick, "pollerRetryFailedDeletePipelines", pipeline.PipelineFailedTerminating, "delete")
+}
+
+func (s *SchedulerServer) pollerRetryFailedPipelines(ctx context.Context, tick time.Duration, funcName string, targetStatus pipeline.PipelineStatus, operation string) {
+	logger := s.logger.WithField("func", funcName)
+	ticker := time.NewTicker(tick)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			logger.Debugf("Poller retry failed %s pipelines on pipeline-gw", operation)
+			pipelines := s.pipelineHandler.GetPipelinesPipelineGwStatus(targetStatus)
+
+			if len(pipelines) == 0 {
+				logger.Debug("No failed pipelines found")
+				continue
+			}
+
+			logger.WithField("pipelines", pipelines).Debug("Found failed pipelines")
+			s.pipelineGwRebalancePipelines(pipelines)
+		}
+	}
+}
+
+func (s *SchedulerServer) PipelineStatusEvent(_ context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
 	s.pipelineEventStream.mu.Lock()
 	defer s.pipelineEventStream.mu.Unlock()
 
@@ -195,6 +230,10 @@ func (s *SchedulerServer) createPipelineCreationMessage(pv *pipeline.PipelineVer
 }
 
 func (s *SchedulerServer) pipelineGwRebalance() {
+	s.pipelineGwRebalancePipelines(s.pipelineHandler.GetAllPipelineGwRunningPipelineVersions())
+}
+
+func (s *SchedulerServer) pipelineGwRebalancePipelines(pipelines []coordinator.PipelineEventMsg) {
 	s.pipelineEventStream.mu.Lock()
 	defer s.pipelineEventStream.mu.Unlock()
 
@@ -206,8 +245,7 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 		}
 	}
 
-	evts := s.pipelineHandler.GetAllPipelineGwRunningPipelineVersions()
-	for _, event := range evts {
+	for _, event := range pipelines {
 		pv, err := s.pipelineHandler.GetPipelineVersion(event.PipelineName, event.PipelineVersion, event.UID)
 		if err != nil {
 			s.logger.WithError(err).Errorf("Failed to get pipeline version for %s:%d (%s)", event.PipelineName, event.PipelineVersion, event.UID)
@@ -301,8 +339,8 @@ func (s *SchedulerServer) pipelineGwRebalanceStreams(
 			s.logger.Debug("pipeline-gateway replica contains pipeline, sending status update for ", server)
 
 			var msg *pb.PipelineStatusResponse
-			if pv.State.PipelineGwStatus == pipeline.PipelineTerminating {
-				s.logger.Debugf("Pipeline %s is terminating, sending deletion message", pv.Name)
+			if pv.State.PipelineGwStatus == pipeline.PipelineTerminating || pv.State.PipelineGwStatus == pipeline.PipelineFailedTerminating {
+				s.logger.Debugf("Pipeline %s in state %s, sending deletion message", pv.Name, pv.State.PipelineGwStatus)
 				msg = s.createPipelineDeletionMessage(pv)
 			} else {
 				s.logger.Debugf("Pipeline %s is available or progressing, sending creation message", pv.Name)
