@@ -651,7 +651,7 @@ def create_and_run_script(folder, notebook):
     run(f"chmod u+x {folder}/{notebook}.py", shell=True, check=True)
     try:
         run(
-            f"cd {folder} && ./{notebook}.py",
+            f"cd {folder} && ipython ./{notebook}.py",
             shell=True,
             check=True,
             encoding="utf-8",
