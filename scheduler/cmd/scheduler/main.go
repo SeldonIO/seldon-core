@@ -175,8 +175,8 @@ func init() {
 	flag.IntVar(&pprofBlockRate, "pprof-block-rate", 0, "pprof block rate")
 	flag.IntVar(&pprofMutexRate, "pprof-mutex-rate", 0, "pprof mutex rate")
 
-	flag.DurationVar(&retryFailedCreatingPipelinesTick, "retry-creating-failed-pipelines-tick", time.Minute, "ick interval for re-attempting to create failed pipelines")
-	flag.DurationVar(&retryFailedDeletePipelinesTick, "retry-deleting-failed-pipelines-tick", time.Minute, "tick interval for re-attempting to delete failed pipelines")
+	flag.DurationVar(&retryFailedCreatingPipelinesTick, "retry-creating-failed-pipelines-tick", time.Minute, "tick interval for re-attempting to create pipelines which failed to create")
+	flag.DurationVar(&retryFailedDeletePipelinesTick, "retry-deleting-failed-pipelines-tick", time.Minute, "tick interval for re-attempting to delete pipelines which failed to terminate")
 }
 
 func getNamespace() string {

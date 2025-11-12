@@ -58,10 +58,10 @@ type ChainerServer struct {
 	muFailedCreate       sync.Mutex
 	// TODO we should update PipelineHandler to store state for dataflow-engine, as we do for model-gw. That way we
 	//  won't have to use failedCreatePipelines and failedDeletePipelines.
-	// failedCreatePipelines keyed off pipeline UID
+	// failedCreatePipelines keyed off pipeline UID + version
 	failedCreatePipelines map[string]pipeline.PipelineVersion
 	muFailedDelete        sync.Mutex
-	// failedDeletePipelines keyed off pipeline UID
+	// failedDeletePipelines keyed off pipeline UID + version
 	failedDeletePipelines map[string]pipeline.PipelineVersion
 	chainer.UnimplementedChainerServer
 	health.UnimplementedHealthCheckServiceServer
@@ -157,10 +157,14 @@ func (c *ChainerServer) StartGrpcServer(ctx context.Context, pollerFailedCreateP
 	return grpcServer.Serve(lis)
 }
 
+func (c *ChainerServer) mkKey(uid string, version uint32) string {
+	return fmt.Sprintf("%s_%d", uid, version)
+}
+
 func (c *ChainerServer) storeFailedCreate(m *chainer.PipelineUpdateMessage) {
 	c.muFailedCreate.Lock()
 	defer c.muFailedCreate.Unlock()
-	c.failedCreatePipelines[m.Uid] = pipeline.PipelineVersion{
+	c.failedCreatePipelines[c.mkKey(m.Uid, m.Version)] = pipeline.PipelineVersion{
 		Name:    m.Pipeline,
 		Version: m.Version,
 		UID:     m.Uid,
@@ -170,7 +174,7 @@ func (c *ChainerServer) storeFailedCreate(m *chainer.PipelineUpdateMessage) {
 func (c *ChainerServer) storeFailedDelete(m *chainer.PipelineUpdateMessage) {
 	c.muFailedDelete.Lock()
 	defer c.muFailedDelete.Unlock()
-	c.failedDeletePipelines[m.Uid] = pipeline.PipelineVersion{
+	c.failedDeletePipelines[c.mkKey(m.Uid, m.Version)] = pipeline.PipelineVersion{
 		Name:    m.Pipeline,
 		Version: m.Version,
 		UID:     m.Uid,
@@ -523,6 +527,7 @@ func (c *ChainerServer) pollerFailedTerminatingPipelines(ctx context.Context, ti
 				logger.Debug("No pipelines found that failed to terminate")
 				continue
 			}
+
 			c.mu.Lock()
 
 			for _, p := range c.failedDeletePipelines {
@@ -534,7 +539,7 @@ func (c *ChainerServer) pollerFailedTerminatingPipelines(ctx context.Context, ti
 					verNotFound := &pipeline.PipelineVersionNotFoundErr{}
 
 					if errors.As(err, &notFound) || errors.As(err, &uidMisMatch) || errors.As(err, &verNotFound) {
-						delete(c.failedCreatePipelines, p.UID)
+						delete(c.failedDeletePipelines, c.mkKey(p.UID, p.Version))
 						logger.Debugf("Pipeline %s not found, removing from poller list", p.Name)
 					}
 					logger.WithError(err).Errorf("Failed to get pipeline %s", p.Name)
@@ -542,6 +547,8 @@ func (c *ChainerServer) pollerFailedTerminatingPipelines(ctx context.Context, ti
 				}
 				logger.Debugf("Found pipeline %s attempting to terminate", p.Name)
 				c.terminatePipeline(pv, true)
+				// remove from list as we've successfully retried termination
+				delete(c.failedDeletePipelines, c.mkKey(p.UID, p.Version))
 			}
 
 			c.mu.Unlock()
@@ -579,14 +586,16 @@ func (c *ChainerServer) pollerFailedCreatingPipelines(ctx context.Context, tick 
 					verNotFound := &pipeline.PipelineVersionNotFoundErr{}
 
 					if errors.As(err, &notFound) || errors.As(err, &uidMisMatch) || errors.As(err, &verNotFound) {
-						delete(c.failedCreatePipelines, p.UID)
+						delete(c.failedCreatePipelines, c.mkKey(p.UID, p.Version))
 						logger.Debugf("Pipeline %s not found, removing from poller list", p.Name)
 					}
+					// don't remove from map as we want to retry on next tick
 					logger.WithError(err).Errorf("Failed to create pipeline %s", p.Name)
 					continue
 				}
 
-				delete(c.failedCreatePipelines, p.UID)
+				// remove from list as we've successfully retried creating
+				delete(c.failedCreatePipelines, c.mkKey(p.UID, p.Version))
 			}
 
 			c.mu.Unlock()

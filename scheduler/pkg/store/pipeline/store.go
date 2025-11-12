@@ -36,6 +36,7 @@ const (
 	modelEventHandlerName                      = "pipeline.store.models"
 )
 
+//go:generate go tool mockgen -source=./store.go -destination=./mock/store.go -package=mock PipelineHandler
 type PipelineHandler interface {
 	AddPipeline(pipeline *scheduler.Pipeline) error
 	RemovePipeline(name string) error

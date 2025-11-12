@@ -273,7 +273,7 @@ func (s *SchedulerServer) pipelineGWRebalanceNoStreams(pv *pipeline.PipelineVers
 	)
 
 	pipelineState := pipeline.PipelineCreate
-	if pv.State.PipelineGwStatus == pipeline.PipelineTerminating {
+	if pv.State.PipelineGwStatus == pipeline.PipelineTerminating || pv.State.PipelineGwStatus == pipeline.PipelineFailedTerminating {
 		// since there are no streams, we can directly set the state to terminated
 		pipelineState = pipeline.PipelineTerminated
 	}

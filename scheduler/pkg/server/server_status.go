@@ -318,7 +318,8 @@ func (s *SchedulerServer) modelGwRebalanceForModels(models []*store.ModelSnapsho
 
 func (s *SchedulerServer) modelGwRebalanceNoStream(model *store.ModelSnapshot) {
 	modelState := store.ModelCreate
-	if model.GetLatest().ModelState().ModelGwState == store.ModelTerminating {
+	if model.GetLatest().ModelState().ModelGwState == store.ModelTerminating ||
+		model.GetLatest().ModelState().ModelGwState == store.ModelTerminateFailed {
 		modelState = store.ModelTerminated
 	}
 

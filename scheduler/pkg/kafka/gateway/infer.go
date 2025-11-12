@@ -374,7 +374,7 @@ func (kc *InferKafkaHandler) AddModel(modelName string) error {
 	if err := kc.createTopics([]string{inputTopic, outputTopic}); err != nil {
 		// we must delete the model as we've failed to create the topics, scheduler will re-issue a create cmd, if model
 		// exists in loadedModels model-gw will respond with success and it'll be no-op and topics won't be retried to
-		// be created
+		// be created and scheduler will presume model loaded successfully
 		delete(kc.loadedModels, modelName)
 		return err
 	}
@@ -383,6 +383,7 @@ func (kc *InferKafkaHandler) AddModel(modelName string) error {
 	err := kc.subscribeTopics()
 	if err != nil {
 		kc.logger.WithError(err).Errorf("failed to subscribe to topics")
+		// why do we not return an error here? does confluent pkg keep retrying in background?
 		return nil
 	}
 	return nil

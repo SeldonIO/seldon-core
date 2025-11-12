@@ -17,6 +17,7 @@ import (
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/proto"
 
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
@@ -28,10 +29,162 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/cleaner"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/experiment"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/mock"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
+
+func TestPollerRetryFailedModels(t *testing.T) {
+	tests := []struct {
+		name           string
+		funcName       string
+		targetState    store.ModelState
+		operation      string
+		modelNames     []string
+		setupMocks     func(mockModelStore *mock.MockModelStore, modelNames []string, targetState store.ModelState)
+		contextTimeout time.Duration
+		tickDuration   time.Duration
+		validateMocks  func(g *WithT, mockModelStore *mock.MockModelStore)
+	}{
+		{
+			name:        "context cancelled immediately",
+			funcName:    "testFunc",
+			targetState: store.ModelFailed,
+			operation:   "create",
+			modelNames:  []string{},
+			setupMocks: func(mockModelStore *mock.MockModelStore, modelNames []string, targetState store.ModelState) {
+				// No expectations - context cancelled before first tick
+			},
+			contextTimeout: 0, // Cancel immediately
+			tickDuration:   100 * time.Millisecond,
+		},
+		{
+			name:        "no models exist",
+			funcName:    "testFunc",
+			targetState: store.ModelFailed,
+			operation:   "create",
+			modelNames:  []string{},
+			setupMocks: func(mockModelStore *mock.MockModelStore, modelNames []string, targetState store.ModelState) {
+				mockModelStore.EXPECT().
+					GetAllModels().
+					Return([]string{}).
+					MinTimes(1)
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+		},
+		{
+			name:        "single model not in target state",
+			funcName:    "testFunc",
+			targetState: store.ModelFailed,
+			operation:   "create",
+			modelNames:  []string{"model-1"},
+			setupMocks: func(mockModelStore *mock.MockModelStore, modelNames []string, targetState store.ModelState) {
+				mockModelStore.EXPECT().
+					GetAllModels().
+					Return(modelNames).
+					MinTimes(1)
+
+				model := &store.ModelSnapshot{}
+				model.Name = "model-1"
+				modelVersion := store.NewModelVersion(&pb.Model{}, 1, "server-1", nil, false, 0)
+				modelVersion.SetModelState(store.ModelStatus{
+					ModelGwState: store.ScheduleFailed,
+				})
+				model.Versions = []*store.ModelVersion{modelVersion}
+
+				mockModelStore.EXPECT().
+					GetModel("model-1").
+					Return(model, nil).
+					MinTimes(1)
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+		},
+		{
+			name:        "single model in failed state",
+			funcName:    "pollerRetryFailedCreateModels",
+			targetState: store.ModelFailed,
+			operation:   "create",
+			modelNames:  []string{"failed-model"},
+			setupMocks: func(mockModelStore *mock.MockModelStore, modelNames []string, targetState store.ModelState) {
+				mockModelStore.EXPECT().
+					GetAllModels().
+					Return(modelNames).MinTimes(1)
+
+				model := &store.ModelSnapshot{}
+				model.Name = "failed-model"
+				modelVersion := store.NewModelVersion(&pb.Model{}, 1, "server-1", nil, false, 0)
+				modelVersion.SetModelState(store.ModelStatus{
+					ModelGwState: store.ModelFailed,
+				})
+				model.Versions = []*store.ModelVersion{modelVersion}
+
+				mockModelStore.EXPECT().
+					GetModel("failed-model").
+					Return(model, nil).
+					MinTimes(1)
+
+				mockModelStore.EXPECT().SetModelGwModelState(
+					"failed-model",
+					uint32(1),
+					store.ModelCreate, "No model gateway available to handle model", modelStatusEventSource).MinTimes(1)
+			},
+			contextTimeout: 100 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := NewGomegaWithT(t)
+			ctrl := gomock.NewController(t)
+
+			mockModelStore := mock.NewMockModelStore(ctrl)
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockModelStore, tt.modelNames, tt.targetState)
+			}
+
+			server := &SchedulerServer{
+				logger:     log.New(),
+				modelStore: mockModelStore,
+			}
+
+			var ctx context.Context
+			var cancel context.CancelFunc
+
+			if tt.contextTimeout == 0 {
+				// Cancel immediately
+				ctx, cancel = context.WithCancel(context.Background())
+				cancel()
+			} else {
+				ctx, cancel = context.WithTimeout(context.Background(), tt.contextTimeout)
+				defer cancel()
+			}
+
+			done := make(chan bool)
+			go func() {
+				server.pollerRetryFailedModels(ctx, tt.tickDuration, tt.funcName, tt.targetState, tt.operation)
+				done <- true
+			}()
+
+			select {
+			case <-done:
+				// Test passed - function returned as expected
+			case <-time.After(tt.contextTimeout + 1*time.Second):
+				t.Fatal("pollerRetryFailedModels did not return in time")
+			}
+
+			// Custom validation if provided
+			if tt.validateMocks != nil {
+				tt.validateMocks(g, mockModelStore)
+			}
+		})
+	}
+
+}
 
 func receiveMessageFromModelStream(stream *stubModelStatusServer) *pb.ModelStatusResponse {
 	time.Sleep(500 * time.Millisecond)

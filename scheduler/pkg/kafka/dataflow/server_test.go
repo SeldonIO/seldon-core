@@ -11,6 +11,7 @@ package dataflow
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"sync"
@@ -19,6 +20,7 @@ import (
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -27,12 +29,691 @@ import (
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
-	testing_utils "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
+	cr "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/conflict-resolution"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline/mock"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
+	mock2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/util/mock"
 )
+
+func TestPollerFailedTerminatingPipelines(t *testing.T) {
+	tests := []struct {
+		name                  string
+		failedPipelines       map[string]pipeline.PipelineVersion
+		needsLoadBalancer     bool
+		needsConflictResolver bool
+		setupMocks            func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion)
+		contextTimeout        time.Duration
+		tickDuration          time.Duration
+		validateResult        func(g *WithT, server *ChainerServer)
+		expectGomegaWithT     bool
+	}{
+		{
+			name:                  "should return when context is cancelled",
+			failedPipelines:       make(map[string]pipeline.PipelineVersion),
+			needsLoadBalancer:     false,
+			needsConflictResolver: false,
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				// No expectations - context cancelled before first tick
+			},
+			contextTimeout:    0, // Cancel immediately
+			tickDuration:      100 * time.Millisecond,
+			expectGomegaWithT: false,
+		},
+		{
+			name:                  "should skip processing when no failed pipelines exist",
+			failedPipelines:       make(map[string]pipeline.PipelineVersion),
+			needsLoadBalancer:     false,
+			needsConflictResolver: false,
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				// No expectations - empty map means no processing
+			},
+			contextTimeout:    150 * time.Millisecond,
+			tickDuration:      50 * time.Millisecond,
+			expectGomegaWithT: false,
+		},
+		{
+			name: "should retry terminating failed pipeline successfully",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"test-uid-123_1": {
+					Name:    "test-pipeline",
+					Version: 1,
+					UID:     "test-uid-123",
+				},
+			},
+			needsLoadBalancer:     true,
+			needsConflictResolver: true,
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockLoadBalancer.EXPECT().
+					GetServersForKey("test-uid-123").
+					Return([]string{})
+
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
+					Return(&pipeline.PipelineVersion{
+						Name:    "test-pipeline",
+						Version: 1,
+						UID:     "test-uid-123",
+						State: &pipeline.PipelineState{
+							Status: pipeline.PipelineTerminating,
+						},
+					}, nil)
+
+				mockPipelineHandler.EXPECT().
+					SetPipelineState("test-pipeline", uint32(1), "test-uid-123", pipeline.PipelineTerminating, gomock.Any(), gomock.Any()).
+					Return(nil)
+			},
+			contextTimeout:    150 * time.Millisecond,
+			tickDuration:      50 * time.Millisecond,
+			expectGomegaWithT: false,
+		},
+		{
+			name: "should remove pipeline from failed list when not found",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"test-uid-123_1": {
+					Name:    "test-pipeline",
+					Version: 1,
+					UID:     "test-uid-123",
+				},
+			},
+			needsLoadBalancer:     false,
+			needsConflictResolver: false,
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
+					Return(nil, &pipeline.PipelineNotFoundErr{})
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+			validateResult: func(g *WithT, server *ChainerServer) {
+				g.Expect(server.failedDeletePipelines).ToNot(HaveKey("test-uid-123_1"))
+			},
+			expectGomegaWithT: true,
+		},
+		{
+			name: "should remove pipeline from failed list on UID mismatch",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"test-uid-123_1": {
+					Name:    "test-pipeline",
+					Version: 1,
+					UID:     "test-uid-123",
+				},
+			},
+			needsLoadBalancer:     false,
+			needsConflictResolver: false,
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
+					Return(nil, &pipeline.PipelineVersionUidMismatchErr{})
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+			validateResult: func(g *WithT, server *ChainerServer) {
+				g.Expect(server.failedDeletePipelines).ToNot(HaveKey("test-uid-123_1"))
+			},
+			expectGomegaWithT: true,
+		},
+		{
+			name: "should remove pipeline from failed list on version not found",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"test-uid-123_1": {
+					Name:    "test-pipeline",
+					Version: 1,
+					UID:     "test-uid-123",
+				},
+			},
+			needsLoadBalancer:     false,
+			needsConflictResolver: false,
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
+					Return(nil, &pipeline.PipelineVersionNotFoundErr{})
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+			validateResult: func(g *WithT, server *ChainerServer) {
+				g.Expect(server.failedDeletePipelines).ToNot(HaveKey("test-uid-123_1"))
+			},
+			expectGomegaWithT: true,
+		},
+		{
+			name: "should continue processing on generic error",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"test-uid-123_1": {
+					Name:    "test-pipeline",
+					Version: 1,
+					UID:     "test-uid-123",
+				},
+			},
+			needsLoadBalancer:     false,
+			needsConflictResolver: false,
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
+					Return(nil, errors.New("generic error")).
+					MinTimes(1)
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+			validateResult: func(g *WithT, server *ChainerServer) {
+				// Pipeline should still be in failed list
+				g.Expect(server.failedDeletePipelines).To(HaveKey("test-uid-123_1"))
+			},
+			expectGomegaWithT: true,
+		},
+		{
+			name: "should process multiple failed pipelines",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"uid-1_1": {
+					Name:    "pipeline-1",
+					Version: 1,
+					UID:     "uid-1",
+				},
+				"uid-2_1": {
+					Name:    "pipeline-2",
+					Version: 1,
+					UID:     "uid-2",
+				},
+			},
+			needsLoadBalancer:     true,
+			needsConflictResolver: true,
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("pipeline-1", uint32(1), "uid-1").
+					Return(&pipeline.PipelineVersion{
+						Name:    "pipeline-1",
+						Version: 1,
+						UID:     "uid-1",
+						State: &pipeline.PipelineState{
+							Status: pipeline.PipelineTerminating,
+						},
+					}, nil)
+
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("pipeline-2", uint32(1), "uid-2").
+					Return(&pipeline.PipelineVersion{
+						Name:    "pipeline-2",
+						Version: 1,
+						UID:     "uid-2",
+						State: &pipeline.PipelineState{
+							Status: pipeline.PipelineTerminating,
+						},
+					}, nil)
+
+				mockPipelineHandler.EXPECT().
+					SetPipelineState(gomock.Any(), gomock.Any(), gomock.Any(), pipeline.PipelineTerminating, gomock.Any(), gomock.Any()).
+					Return(nil).
+					Times(2)
+
+				mockLoadBalancer.EXPECT().GetServersForKey("uid-1").Return([]string{})
+				mockLoadBalancer.EXPECT().GetServersForKey("uid-2").Return([]string{})
+			},
+			contextTimeout:    150 * time.Millisecond,
+			tickDuration:      50 * time.Millisecond,
+			expectGomegaWithT: false,
+		},
+		{
+			name: "should tick multiple times before context cancellation",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"test-uid-123_1": {
+					Name:    "test-pipeline",
+					Version: 1,
+					UID:     "test-uid-123",
+				},
+			},
+			needsLoadBalancer:     false,
+			needsConflictResolver: false,
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				// Expect at least 2 calls (multiple ticks)
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
+					Return(nil, errors.New("some error")).
+					MinTimes(2)
+			},
+			contextTimeout:    250 * time.Millisecond,
+			tickDuration:      50 * time.Millisecond,
+			expectGomegaWithT: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var g *WithT
+			if tt.expectGomegaWithT {
+				g = NewGomegaWithT(t)
+			}
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockPipelineHandler := mock.NewMockPipelineHandler(ctrl)
+			var mockLoadBalancer *mock2.MockLoadBalancer
+			if tt.needsLoadBalancer {
+				mockLoadBalancer = mock2.NewMockLoadBalancer(ctrl)
+			}
+
+			// Setup mocks for this test case
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockPipelineHandler, mockLoadBalancer, tt.failedPipelines)
+			}
+
+			server := &ChainerServer{
+				logger:                log.New(),
+				pipelineHandler:       mockPipelineHandler,
+				failedDeletePipelines: tt.failedPipelines,
+				streams:               make(map[string]*ChainerSubscription),
+			}
+
+			if tt.needsLoadBalancer {
+				server.loadBalancer = mockLoadBalancer
+			}
+
+			if tt.needsConflictResolver {
+				server.conflictResolutioner = cr.NewConflictResolution[pipeline.PipelineStatus](log.New())
+			}
+
+			var ctx context.Context
+			var cancel context.CancelFunc
+
+			if tt.contextTimeout == 0 {
+				// Cancel immediately
+				ctx, cancel = context.WithCancel(context.Background())
+				cancel()
+			} else {
+				ctx, cancel = context.WithTimeout(context.Background(), tt.contextTimeout)
+				defer cancel()
+			}
+
+			done := make(chan bool)
+			go func() {
+				server.pollerFailedTerminatingPipelines(ctx, tt.tickDuration)
+				done <- true
+			}()
+
+			// Calculate appropriate timeout based on context timeout
+			testTimeout := tt.contextTimeout + 1*time.Second
+			if testTimeout < 1*time.Second {
+				testTimeout = 1 * time.Second
+			}
+			if testTimeout > 2*time.Second {
+				testTimeout = 2 * time.Second
+			}
+
+			select {
+			case <-done:
+				// Test passed - function returned as expected
+				if tt.validateResult != nil {
+					tt.validateResult(g, server)
+				}
+			case <-time.After(testTimeout):
+				t.Fatal("pollerFailedTerminatingPipelines did not return in time")
+			}
+		})
+	}
+}
+
+func TestPollerFailedCreatingPipelines(t *testing.T) {
+	tests := []struct {
+		name              string
+		failedPipelines   map[string]pipeline.PipelineVersion
+		setupMocks        func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion)
+		contextTimeout    time.Duration
+		tickDuration      time.Duration
+		validateResult    func(g *WithT, server *ChainerServer)
+		expectGomegaWithT bool
+	}{
+		{
+			name:            "should return when context is cancelled",
+			failedPipelines: make(map[string]pipeline.PipelineVersion),
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				// No expectations - context cancelled before first tick
+			},
+			contextTimeout:    0, // Cancel immediately
+			tickDuration:      100 * time.Millisecond,
+			expectGomegaWithT: false,
+		},
+		{
+			name:            "should skip processing when no failed pipelines exist",
+			failedPipelines: make(map[string]pipeline.PipelineVersion),
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				// No expectations - empty map means no processing
+			},
+			contextTimeout:    150 * time.Millisecond,
+			tickDuration:      50 * time.Millisecond,
+			expectGomegaWithT: false,
+		},
+		{
+			name: "should retry creating failed pipeline and remove from list on success",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"test-uid-123_1": {
+					Name:    "test-pipeline",
+					Version: 1,
+					UID:     "test-uid-123",
+				},
+			},
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
+					Return(&pipeline.PipelineVersion{
+						Name:    "test-pipeline",
+						Version: 1,
+						UID:     "test-uid-123",
+						State: &pipeline.PipelineState{
+							Status: pipeline.PipelineCreating,
+						},
+					}, nil)
+
+				mockPipelineHandler.EXPECT().
+					SetPipelineState("test-pipeline", uint32(1), "test-uid-123", pipeline.PipelineCreate, gomock.Any(), util.SourceChainerServer).
+					Return(nil)
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+			validateResult: func(g *WithT, server *ChainerServer) {
+				g.Expect(server.failedCreatePipelines).ToNot(HaveKey("test-uid-123_1"))
+			},
+			expectGomegaWithT: true,
+		},
+		{
+			name: "should remove pipeline from failed list when not found",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"test-uid-123_1": {
+					Name:    "test-pipeline",
+					Version: 1,
+					UID:     "test-uid-123",
+				},
+			},
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
+					Return(nil, &pipeline.PipelineNotFoundErr{})
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+			validateResult: func(g *WithT, server *ChainerServer) {
+				g.Expect(server.failedCreatePipelines).ToNot(HaveKey("test-uid-123_1"))
+			},
+			expectGomegaWithT: true,
+		},
+		{
+			name: "should remove pipeline from failed list on UID mismatch",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"test-uid-123_1": {
+					Name:    "test-pipeline",
+					Version: 1,
+					UID:     "test-uid-123",
+				},
+			},
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
+					Return(nil, &pipeline.PipelineVersionUidMismatchErr{}).
+					Times(1)
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+			validateResult: func(g *WithT, server *ChainerServer) {
+				g.Expect(server.failedCreatePipelines).ToNot(HaveKey("test-uid-123_1"))
+			},
+			expectGomegaWithT: true,
+		},
+		{
+			name: "should remove pipeline from failed list on version not found",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"test-uid-123_1": {
+					Name:    "test-pipeline",
+					Version: 1,
+					UID:     "test-uid-123",
+				},
+			},
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
+					Return(nil, &pipeline.PipelineVersionNotFoundErr{}).
+					Times(1)
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+			validateResult: func(g *WithT, server *ChainerServer) {
+				g.Expect(server.failedCreatePipelines).ToNot(HaveKey("test-uid-123_1"))
+			},
+			expectGomegaWithT: true,
+		},
+		{
+			name: "should keep pipeline in failed list on generic error from rebalancePipeline",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"test-uid-123_1": {
+					Name:    "test-pipeline",
+					Version: 1,
+					UID:     "test-uid-123",
+				},
+			},
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
+					Return(&pipeline.PipelineVersion{
+						Name:    "test-pipeline",
+						Version: 1,
+						UID:     "test-uid-123",
+						State: &pipeline.PipelineState{
+							Status: pipeline.PipelineCreating,
+						},
+					}, nil).
+					MinTimes(1)
+
+				mockPipelineHandler.EXPECT().
+					SetPipelineState("test-pipeline", uint32(1), "test-uid-123", pipeline.PipelineCreate, gomock.Any(), util.SourceChainerServer).
+					Return(errors.New("failed to set state")).
+					MinTimes(1)
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+			validateResult: func(g *WithT, server *ChainerServer) {
+				g.Expect(server.failedCreatePipelines).To(HaveKey("test-uid-123_1"))
+			},
+			expectGomegaWithT: true,
+		},
+		{
+			name: "should keep pipeline in failed list on GetPipelineVersion generic error",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"test-uid-123_1": {
+					Name:    "test-pipeline",
+					Version: 1,
+					UID:     "test-uid-123",
+				},
+			},
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
+					Return(nil, errors.New("database connection failed")).
+					MinTimes(1)
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+			validateResult: func(g *WithT, server *ChainerServer) {
+				g.Expect(server.failedCreatePipelines).To(HaveKey("test-uid-123_1"))
+			},
+			expectGomegaWithT: true,
+		},
+		{
+			name: "should process multiple failed pipelines",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"uid-1_1": {
+					Name:    "pipeline-1",
+					Version: 1,
+					UID:     "uid-1",
+				},
+				"uid-2_1": {
+					Name:    "pipeline-2",
+					Version: 1,
+					UID:     "uid-2",
+				},
+			},
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("pipeline-1", uint32(1), "uid-1").
+					Return(&pipeline.PipelineVersion{
+						Name:    "pipeline-1",
+						Version: 1,
+						UID:     "uid-1",
+						State: &pipeline.PipelineState{
+							Status: pipeline.PipelineCreating,
+						},
+					}, nil)
+
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("pipeline-2", uint32(1), "uid-2").
+					Return(&pipeline.PipelineVersion{
+						Name:    "pipeline-2",
+						Version: 1,
+						UID:     "uid-2",
+						State: &pipeline.PipelineState{
+							Status: pipeline.PipelineCreating,
+						},
+					}, nil)
+
+				mockPipelineHandler.EXPECT().
+					SetPipelineState(gomock.Any(), gomock.Any(), gomock.Any(), pipeline.PipelineCreate, gomock.Any(), util.SourceChainerServer).
+					Return(nil).
+					Times(2)
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+			validateResult: func(g *WithT, server *ChainerServer) {
+				g.Expect(server.failedCreatePipelines).ToNot(HaveKey("uid-1_1"))
+				g.Expect(server.failedCreatePipelines).ToNot(HaveKey("uid-2_1"))
+			},
+			expectGomegaWithT: true,
+		},
+		{
+			name: "should process mixed success and failure scenarios",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"uid-success_1": {
+					Name:    "pipeline-success",
+					Version: 1,
+					UID:     "uid-success",
+				},
+				"uid-fail_1": {
+					Name:    "pipeline-fail",
+					Version: 1,
+					UID:     "uid-fail",
+				},
+				"uid-notfound_1": {
+					Name:    "pipeline-notfound",
+					Version: 1,
+					UID:     "uid-notfound",
+				},
+			},
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				// Success case
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("pipeline-success", uint32(1), "uid-success").
+					Return(&pipeline.PipelineVersion{
+						Name:    "pipeline-success",
+						Version: 1,
+						UID:     "uid-success",
+						State:   &pipeline.PipelineState{Status: pipeline.PipelineCreating},
+					}, nil).
+					MinTimes(1)
+
+				mockPipelineHandler.EXPECT().
+					SetPipelineState("pipeline-success", uint32(1), "uid-success", pipeline.PipelineCreate, gomock.Any(), util.SourceChainerServer).
+					Return(nil).
+					MinTimes(1)
+
+				// Failure case
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("pipeline-fail", uint32(1), "uid-fail").
+					Return(&pipeline.PipelineVersion{
+						Name:    "pipeline-fail",
+						Version: 1,
+						UID:     "uid-fail",
+						State:   &pipeline.PipelineState{Status: pipeline.PipelineCreating},
+					}, nil).
+					MinTimes(1)
+
+				mockPipelineHandler.EXPECT().
+					SetPipelineState("pipeline-fail", uint32(1), "uid-fail", pipeline.PipelineCreate, gomock.Any(), util.SourceChainerServer).
+					Return(errors.New("state update failed")).
+					MinTimes(1)
+
+				// Not found case
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("pipeline-notfound", uint32(1), "uid-notfound").
+					Return(nil, &pipeline.PipelineNotFoundErr{}).
+					MinTimes(1)
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+			validateResult: func(g *WithT, server *ChainerServer) {
+				// Success and notfound should be removed
+				g.Expect(server.failedCreatePipelines).ToNot(HaveKey("uid-success_1"))
+				g.Expect(server.failedCreatePipelines).ToNot(HaveKey("uid-notfound_1"))
+				// Failure should remain
+				g.Expect(server.failedCreatePipelines).To(HaveKey("uid-fail_1"))
+			},
+			expectGomegaWithT: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var g *WithT
+			if tt.expectGomegaWithT {
+				g = NewGomegaWithT(t)
+			}
+
+			ctrl := gomock.NewController(t)
+
+			mockPipelineHandler := mock.NewMockPipelineHandler(ctrl)
+			mockLoadBalancer := mock2.NewMockLoadBalancer(ctrl)
+
+			// Setup mocks for this test case
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockPipelineHandler, mockLoadBalancer, tt.failedPipelines)
+			}
+
+			server := &ChainerServer{
+				logger:                log.New(),
+				pipelineHandler:       mockPipelineHandler,
+				loadBalancer:          mockLoadBalancer,
+				failedCreatePipelines: tt.failedPipelines,
+				streams:               make(map[string]*ChainerSubscription),
+			}
+
+			var ctx context.Context
+			var cancel context.CancelFunc
+
+			if tt.contextTimeout == 0 {
+				// Cancel immediately
+				ctx, cancel = context.WithCancel(context.Background())
+				cancel()
+			} else {
+				ctx, cancel = context.WithTimeout(context.Background(), tt.contextTimeout)
+				defer cancel()
+			}
+
+			done := make(chan bool)
+			go func() {
+				server.pollerFailedCreatingPipelines(ctx, tt.tickDuration)
+				done <- true
+			}()
+
+			select {
+			case <-done:
+				// Test passed - function returned as expected
+				if tt.validateResult != nil {
+					tt.validateResult(g, server)
+				}
+			case <-time.After(tt.contextTimeout + 1*time.Second):
+				t.Fatal("pollerFailedCreatingPipelines did not return in time")
+			}
+		})
+	}
+}
 
 func TestCreateTopicSources(t *testing.T) {
 	g := NewGomegaWithT(t)
