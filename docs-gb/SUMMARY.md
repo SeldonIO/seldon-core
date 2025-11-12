@@ -56,7 +56,7 @@
   * [Python Language Wrapper](configuration/wrappers-and-sdks/python-language-wrapper/README.md)
     * [Install the Seldon Core Python module](wrappers/python/python_module.md)
     * [Creating your Python inference class](wrappers/python/python_component.md)
-    * [Create imgae S2I](wrappers/python/python_wrapping_s2i.md)
+    * [Create image S2I](wrappers/python/python_wrapping_s2i.md)
     * [Create image with Dockerfile](wrappers/python/python_wrapping_docker.md)
     * [Seldon Python server configuration](wrappers/python/python_server.md)
     * [Calling the Seldon API with Seldon Python client](wrappers/python/seldon_client.md)
