@@ -117,7 +117,8 @@ install_istio:
 
 .PHONY: install_keda
 install_keda:
-	kubectl apply -f https://github.com/kedacore/keda/releases/download/v2.0.0/keda-2.0.0.yaml
+	kubectl apply -f https://github.com/kedacore/keda/releases/download/v2.12.0/keda-2.12.0.yaml
+	kubectl wait --timeout=2m --for=condition=available deployment/keda-operator -n keda
 
 .PHONY: create_namespaces
 create_namespaces:
