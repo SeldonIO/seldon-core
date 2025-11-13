@@ -155,7 +155,7 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 		reqOriginalBody, err = io.ReadAll(req.Body)
 	}
 	if err != nil {
-		t.logger.WithError(err).Warnf("Failed to read request body")
+		t.logger.WithError(err).Error("Failed to read request body")
 		return nil, err
 	}
 
