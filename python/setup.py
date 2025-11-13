@@ -26,7 +26,7 @@ setup(
         "flask-cors>=6.0.1",
         "requests>=2.32.5",
         "numpy>=1.26.4, <2.0.0",
-        "protobuf==5.29.0",
+        "protobuf==5.29.1",
         "grpcio>=1.76.0",
         "flask-opentracing>=2.0.0",
         "opentracing>=2.4.0",  # latest release is from Nov 2020
