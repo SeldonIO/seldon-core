@@ -155,6 +155,7 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 		reqOriginalBody, err = io.ReadAll(req.Body)
 	}
 	if err != nil {
+		t.logger.WithError(err).Warnf("Failed to read request body")
 		return nil, err
 	}
 
@@ -162,7 +163,12 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	req.Body = io.NopCloser(bytes.NewBuffer(reqOriginalBody))
 	res, err := t.RoundTripper.RoundTrip(req)
 	if err != nil {
+		t.logger.WithError(err).Error("Failed proxying request")
 		return res, err
+	}
+
+	if res.StatusCode >= http.StatusInternalServerError {
+		t.logger.Errorf("Got %d response", res.StatusCode)
 	}
 
 	// in the case of triton, a request to a model that is not found is considered a bad request
@@ -177,7 +183,12 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 		req2.Body = io.NopCloser(bytes.NewBuffer(reqOriginalBody))
 		res, err = t.RoundTripper.RoundTrip(req2)
 		if err != nil {
+			t.logger.WithError(err).Error("Failed proxying request on second attempt")
 			return res, err
+		}
+
+		if res.StatusCode >= http.StatusInternalServerError {
+			t.logger.Errorf("Got %d response on second attempt", res.StatusCode)
 		}
 	}
 
@@ -193,7 +204,6 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	elapsedTime := time.Since(startTime).Seconds()
 	go t.metrics.AddModelInferMetrics(externalModelName, internalModelName, metrics.MethodTypeRest, elapsedTime, metrics.HttpCodeToString(res.StatusCode))
 	return res, err
-
 }
 
 func (rp *reverseHTTPProxy) addHandlers(proxy http.Handler) http.Handler {

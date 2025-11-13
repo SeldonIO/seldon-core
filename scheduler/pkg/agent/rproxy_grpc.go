@@ -260,11 +260,17 @@ func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequ
 	var trailer metadata.MD
 	opts := append(rp.callOptions, grpc.Trailer(&trailer))
 	resp, err := rp.getV2GRPCClient().ModelInfer(outgoingCtx, r, opts...)
+	if err != nil {
+		rp.logger.WithError(err).Error("Failed to run infer request")
+	}
 	if retryForLazyReload(err) {
 		if v2Err := rp.stateManager.v2Client.LoadModel(internalModelName); v2Err != nil {
 			logger.WithError(v2Err).Warnf("error loading model %s", internalModelName)
 		}
 		resp, err = rp.getV2GRPCClient().ModelInfer(outgoingCtx, r, opts...)
+		if err != nil {
+			logger.WithError(err).Error("Failed to run infer request on second attempt")
+		}
 	}
 
 	rp.setTrailer(ctx, trailer, requestId)
