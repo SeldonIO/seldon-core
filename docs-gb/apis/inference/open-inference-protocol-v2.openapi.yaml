@@ -113,59 +113,7 @@ paths:
       x-gitbook-description-html: >-
         <p>The “server ready” health API indicates if all the models are ready
         for inferencing. The “server ready” health API can be used directly to
-        implement the Kubernetes readinessProbe.</p>
-  /v2/models/{model_name}/versions/{model_version}/ready:
-    parameters:
-      - schema:
-          type: string
-        name: model_name
-        in: path
-        required: true
-      - schema:
-          type: string
-        name: model_version
-        in: path
-        required: true
-    get:
-      summary: Model Ready
-      tags:
-        - health
-        - model
-      responses:
-        '200':
-          description: OK
-          x-gitbook-description-html: <p>OK</p>
-      operationId: model-version-ready
-      description: >-
-        The “model ready” health API indicates if a specific model is ready for
-        inferencing. The model name and (optionally) version must be available
-        in the URL. If a version is not provided the server may choose a version
-        based on its own policies.
-      x-gitbook-description-document:
-        object: document
-        data:
-          schemaVersion: 8
-        nodes:
-          - object: block
-            type: paragraph
-            isVoid: false
-            data: {}
-            nodes:
-              - object: text
-                leaves:
-                  - object: leaf
-                    text: >-
-                      The “model ready” health API indicates if a specific model
-                      is ready for inferencing. The model name and (optionally)
-                      version must be available in the URL. If a version is not
-                      provided the server may choose a version based on its own
-                      policies.
-                    marks: []
-      x-gitbook-description-html: >-
-        <p>The “model ready” health API indicates if a specific model is ready
-        for inferencing. The model name and (optionally) version must be
-        available in the URL. If a version is not provided the server may choose
-        a version based on its own policies.</p>
+        implement the Kubernetes readinessProbe.</p>      
   /v2/models/{model_name}/ready:
     parameters:
       - schema:
