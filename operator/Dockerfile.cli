@@ -11,7 +11,7 @@ RUN make -C operator  build-seldon
 # We add public trust bundle so Kafka can work with e.g. Let's Encrypt certificates
 FROM registry.access.redhat.com/ubi9/ubi-minimal as certs
 
-FROM registry.access.redhat.com/ubi9/ubi-micro:9.6
+FROM registry.access.redhat.com/ubi9/ubi-micro:9.7
 
 # Kafka OIDC token retrieve certs (librdkafka using curl): https://github.com/confluentinc/librdkafka/issues/3751
 COPY --from=certs /etc/ssl/certs/ca-bundle.crt /etc/ssl/certs/ca-certificates.crt
