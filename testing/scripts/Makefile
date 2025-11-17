@@ -182,11 +182,10 @@ test_sequential: build_protos install
 		-m "sequential" 2>&1
 
 test_notebooks: build_protos install
-	pytest \
+	TEST_MODE=1 pytest \
 		--verbose \
 		-s \
 		-m "notebooks" \
-		-n 0 \
 		-W ignore test_notebooks.py::TestNotebooks 2>&1
 
 test_benchmark: build_protos install
