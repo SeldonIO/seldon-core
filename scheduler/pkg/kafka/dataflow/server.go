@@ -485,7 +485,6 @@ func (c *ChainerServer) sendPipelineMsgToSelectedServers(msg *chainer.PipelineUp
 
 	for _, serverId := range servers {
 		if subscription, ok := c.streams[serverId]; ok {
-
 			select {
 			case <-subscription.stream.Context().Done():
 				logger.WithError(subscription.stream.Context().Err()).Errorf("Failed to send msg to pipeline %s - stream ctx cancelled", pv.String())
@@ -529,7 +528,6 @@ func (c *ChainerServer) pollerFailedTerminatingPipelines(ctx context.Context, ti
 			}
 
 			c.mu.Lock()
-
 			for _, p := range c.failedDeletePipelines {
 				logger.Debugf("Attempting to terminate pipeline which failed to terminate %s", p.Name)
 				pv, err := c.pipelineHandler.GetPipelineVersion(p.Name, p.Version, p.UID)
@@ -575,10 +573,23 @@ func (c *ChainerServer) pollerFailedCreatingPipelines(ctx context.Context, tick 
 				logger.Debug("No pipelines found that failed to create")
 				continue
 			}
-			c.mu.Lock()
 
+			c.mu.Lock()
 			for _, p := range c.failedCreatePipelines {
 				logger.Debugf("Attempting to create failed pipeline %s", p.Name)
+
+				// we only want to create this pipeline if it's the latest version, it could have failed to create
+				// and customer has since updated the pipeline and has created successfully, we'd then end up
+				// overwriting the new pipeline
+				if isLatest, err := c.pipelineHandler.IsLatestVersion(p.Name, p.Version, p.UID); err != nil {
+					logger.WithError(err).Errorf("Failed checking pipeline %s is latest version before creating", p.Name)
+					delete(c.failedCreatePipelines, c.mkKey(p.UID, p.Version))
+					continue
+				} else if !isLatest {
+					logger.Debugf("Pipeline %s not the latest, ignoring", p.Name)
+					delete(c.failedCreatePipelines, c.mkKey(p.UID, p.Version))
+					continue
+				}
 
 				if err := c.rebalancePipeline(p.Name, p.Version, p.UID); err != nil {
 					notFound := &pipeline.PipelineNotFoundErr{}

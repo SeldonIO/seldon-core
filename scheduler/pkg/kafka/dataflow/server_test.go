@@ -386,6 +386,44 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 			expectGomegaWithT: false,
 		},
 		{
+			name: "failure - not latest pipeline, remove from list",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"test-uid-123_1": {
+					Name:    "test-pipeline",
+					Version: 1,
+					UID:     "test-uid-123",
+				},
+			},
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().IsLatestVersion("test-pipeline", uint32(1), "test-uid-123").Return(false, nil)
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+			validateResult: func(g *WithT, server *ChainerServer) {
+				g.Expect(server.failedCreatePipelines).ToNot(HaveKey("test-uid-123_1"))
+			},
+			expectGomegaWithT: true,
+		},
+		{
+			name: "failure - failed to check liatest pipeline, remove from list",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"test-uid-123_1": {
+					Name:    "test-pipeline",
+					Version: 1,
+					UID:     "test-uid-123",
+				},
+			},
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().IsLatestVersion("test-pipeline", uint32(1), "test-uid-123").Return(false, errors.New("some error"))
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+			validateResult: func(g *WithT, server *ChainerServer) {
+				g.Expect(server.failedCreatePipelines).ToNot(HaveKey("test-uid-123_1"))
+			},
+			expectGomegaWithT: true,
+		},
+		{
 			name: "should retry creating failed pipeline and remove from list on success",
 			failedPipelines: map[string]pipeline.PipelineVersion{
 				"test-uid-123_1": {
@@ -395,6 +433,8 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 				},
 			},
 			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().IsLatestVersion("test-pipeline", uint32(1), "test-uid-123").Return(true, nil)
+
 				mockPipelineHandler.EXPECT().
 					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
 					Return(&pipeline.PipelineVersion{
@@ -427,6 +467,8 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 				},
 			},
 			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().IsLatestVersion("test-pipeline", uint32(1), "test-uid-123").Return(true, nil)
+
 				mockPipelineHandler.EXPECT().
 					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
 					Return(nil, &pipeline.PipelineNotFoundErr{})
@@ -448,6 +490,8 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 				},
 			},
 			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().IsLatestVersion("test-pipeline", uint32(1), "test-uid-123").Return(true, nil)
+
 				mockPipelineHandler.EXPECT().
 					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
 					Return(nil, &pipeline.PipelineVersionUidMismatchErr{}).
@@ -470,6 +514,8 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 				},
 			},
 			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().IsLatestVersion("test-pipeline", uint32(1), "test-uid-123").Return(true, nil)
+
 				mockPipelineHandler.EXPECT().
 					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
 					Return(nil, &pipeline.PipelineVersionNotFoundErr{}).
@@ -492,6 +538,8 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 				},
 			},
 			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().IsLatestVersion("test-pipeline", uint32(1), "test-uid-123").Return(true, nil).MinTimes(1)
+
 				mockPipelineHandler.EXPECT().
 					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
 					Return(&pipeline.PipelineVersion{
@@ -526,6 +574,8 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 				},
 			},
 			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().IsLatestVersion("test-pipeline", uint32(1), "test-uid-123").Return(true, nil).MinTimes(1)
+
 				mockPipelineHandler.EXPECT().
 					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
 					Return(nil, errors.New("database connection failed")).
@@ -553,6 +603,9 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 				},
 			},
 			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().IsLatestVersion("pipeline-1", uint32(1), "uid-1").Return(true, nil).MinTimes(1)
+				mockPipelineHandler.EXPECT().IsLatestVersion("pipeline-2", uint32(1), "uid-2").Return(true, nil).MinTimes(1)
+
 				mockPipelineHandler.EXPECT().
 					GetPipelineVersion("pipeline-1", uint32(1), "uid-1").
 					Return(&pipeline.PipelineVersion{
@@ -608,6 +661,10 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 				},
 			},
 			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().IsLatestVersion("pipeline-success", uint32(1), "uid-success").Return(true, nil).MinTimes(1)
+				mockPipelineHandler.EXPECT().IsLatestVersion("pipeline-fail", uint32(1), "uid-fail").Return(true, nil).MinTimes(1)
+				mockPipelineHandler.EXPECT().IsLatestVersion("pipeline-notfound", uint32(1), "uid-notfound").Return(true, nil).MinTimes(1)
+
 				// Success case
 				mockPipelineHandler.EXPECT().
 					GetPipelineVersion("pipeline-success", uint32(1), "uid-success").

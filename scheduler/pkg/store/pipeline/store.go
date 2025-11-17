@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package pipeline
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
@@ -48,6 +49,7 @@ type PipelineHandler interface {
 	GetAllRunningPipelineVersions() []coordinator.PipelineEventMsg
 	GetAllPipelineGwRunningPipelineVersions() []coordinator.PipelineEventMsg
 	GetPipelinesPipelineGwStatus(pipelineGwStatus PipelineStatus) []coordinator.PipelineEventMsg
+	IsLatestVersion(pipelineName string, version uint32, uid string) (bool, error)
 }
 
 type PipelineStore struct {
@@ -84,6 +86,23 @@ func NewPipelineStore(logger logrus.FieldLogger, eventHub *coordinator.EventHub,
 
 func getPipelineDbFolder(basePath string) string {
 	return filepath.Join(basePath, pipelineDbFolder)
+}
+
+func (ps *PipelineStore) IsLatestVersion(pipelineName string, version uint32, uid string) (bool, error) {
+	ps.mu.RLock()
+	defer ps.mu.RUnlock()
+
+	pipeline, ok := ps.pipelines[pipelineName]
+	if !ok {
+		return false, fmt.Errorf("pipeline %s not found", pipelineName)
+	}
+
+	latestVersion := pipeline.GetLatestPipelineVersion()
+	if latestVersion == nil {
+		return false, fmt.Errorf("pipeline %s has no latest version", pipelineName)
+	}
+
+	return latestVersion.Version == version && latestVersion.UID == uid, nil
 }
 
 func (ps *PipelineStore) GetPipelinesPipelineGwStatus(status PipelineStatus) []coordinator.PipelineEventMsg {

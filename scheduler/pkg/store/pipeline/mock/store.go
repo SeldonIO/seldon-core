@@ -151,6 +151,21 @@ func (mr *MockPipelineHandlerMockRecorder) GetPipelinesPipelineGwStatus(pipeline
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPipelinesPipelineGwStatus", reflect.TypeOf((*MockPipelineHandler)(nil).GetPipelinesPipelineGwStatus), pipelineGwStatus)
 }
 
+// IsLatestVersion mocks base method.
+func (m *MockPipelineHandler) IsLatestVersion(pipelineName string, version uint32, uid string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsLatestVersion", pipelineName, version, uid)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsLatestVersion indicates an expected call of IsLatestVersion.
+func (mr *MockPipelineHandlerMockRecorder) IsLatestVersion(pipelineName, version, uid any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsLatestVersion", reflect.TypeOf((*MockPipelineHandler)(nil).IsLatestVersion), pipelineName, version, uid)
+}
+
 // RemovePipeline mocks base method.
 func (m *MockPipelineHandler) RemovePipeline(name string) error {
 	m.ctrl.T.Helper()
