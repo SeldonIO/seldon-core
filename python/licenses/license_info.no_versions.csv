@@ -1,66 +1,86 @@
 "Name","License"
-"Flask","BSD License"
-"Flask-Cors","MIT License"
+"Flask","BSD-3-Clause"
 "Flask-OpenTracing","BSD License"
-"Keras-Preprocessing","MIT License"
-"Markdown","BSD License"
-"MarkupSafe","BSD License"
+"Jinja2","BSD License"
+"Markdown","BSD-3-Clause"
+"MarkupSafe","BSD-3-Clause"
 "PyYAML","MIT License"
+"Pygments","BSD License"
 "Werkzeug","BSD License"
-"absl-py","Apache Software License"
+"absl-py","Apache-2.0"
 "astunparse","BSD License"
-"attrs","MIT License"
-"cachetools","MIT License"
+"attrs","MIT"
+"blinker","MIT License"
 "certifi","Mozilla Public License 2.0 (MPL 2.0)"
-"cffi","MIT License"
-"charset-normalizer","MIT License"
-"click","BSD License"
-"cryptography","Apache Software License; BSD License"
+"cffi","MIT"
+"charset-normalizer","MIT"
+"click","BSD-3-Clause"
+"cryptography","Apache-2.0 OR BSD-3-Clause"
+"flask-cors","UNKNOWN"
 "flatbuffers","Apache Software License"
 "gast","BSD License"
-"google-auth","Apache Software License"
-"google-auth-oauthlib","Apache Software License"
 "google-pasta","Apache Software License"
 "grpcio","Apache Software License"
 "grpcio-opentracing","Apache Software License"
 "grpcio-reflection","Apache Software License"
 "gunicorn","MIT License"
-"h5py","BSD License"
-"idna","BSD License"
-"importlib-metadata","Apache Software License"
+"h5py","BSD-3-Clause"
+"idna","BSD-3-Clause"
 "itsdangerous","BSD License"
 "jaeger-client","Apache Software License"
-"jinja2","BSD License"
-"jsonschema","MIT License"
-"keras","Apache Software License"
+"jsonschema","MIT"
+"jsonschema-specifications","MIT"
+"keras","Apache License 2.0"
 "libclang","Apache Software License"
+"markdown-it-py","MIT License"
+"mdurl","MIT License"
+"ml_dtypes","Apache-2.0"
+"namex","UNKNOWN"
 "numpy","BSD License"
-"oauthlib","BSD License"
 "opentracing","Apache Software License"
-"opt-einsum","MIT"
+"opt_einsum","MIT"
+"optree","Apache-2.0"
 "packaging","Apache Software License; BSD License"
-"prometheus-client","Apache Software License"
-"protobuf","BSD-3-Clause"
-"pyasn1","BSD License"
-"pyasn1-modules","BSD License"
+"prometheus_client","Apache-2.0 AND BSD-2-Clause"
+"protobuf","3-Clause BSD License"
 "pycparser","BSD License"
-"pyrsistent","MIT License"
+"referencing","MIT"
 "requests","Apache Software License"
-"requests-oauthlib","BSD License"
-"rsa","Apache Software License"
+"rich","MIT License"
+"rpds-py","MIT"
 "seldon-core","Business Source License 1.1"
 "six","MIT License"
 "tensorboard","Apache Software License"
 "tensorboard-data-server","Apache Software License"
-"tensorboard-plugin-wit","Apache 2.0"
 "tensorflow","Apache Software License"
-"tensorflow-estimator","Apache Software License"
-"tensorflow-io-gcs-filesystem","Apache Software License"
-"termcolor","MIT License"
+"termcolor","MIT"
 "threadloop","MIT License"
 "thrift","Apache License 2.0"
 "tornado","Apache Software License"
-"typing-extensions","Python Software Foundation License"
-"urllib3","MIT License"
-"wrapt","BSD License"
-"zipp","MIT License"
+"typing_extensions","PSF-2.0"
+"urllib3","MIT"
+"wrapt","Copyright (c) 2013-2025
+All rights reserved.
+
+Redistribution and use in source and binary forms
+modification
+
+* Redistributions of source code must retain the above copyright notice
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ""AS IS""
+AND ANY EXPRESS OR IMPLIED WARRANTIES, BUT NOT LIMITED TO
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INCIDENTAL
+CONSEQUENTIAL DAMAGES (INCLUDING, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY
+CONTRACT, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE
+POSSIBILITY OF SUCH DAMAGE.
+"
