@@ -1,5 +1,19 @@
 static_resources:
   clusters:
+    - name: metrics_cluster
+      type: STRICT_DNS
+      connect_timeout: 2.0s
+      lb_policy: ROUND_ROBIN
+      http2_protocol_options: {}
+      load_assignment:
+        cluster_name: metrics_cluster
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 172.17.0.1
+                      port_value: 9999
     - connect_timeout: 1s
       type: LOGICAL_DNS
       load_assignment:
@@ -95,3 +109,13 @@ admin:
     socket_address:
       address: 127.0.0.1
       port_value: 9901
+stats_sinks:
+  - name: envoy.metrics_service
+    typed_config:
+      "@type": type.googleapis.com/envoy.config.metrics.v3.MetricsServiceConfig
+      transport_api_version: V3
+      grpc_service:
+        envoy_grpc:
+          cluster_name: metrics_cluster
+          retry_policy:
+            num_retries: 100

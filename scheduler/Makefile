@@ -3,7 +3,7 @@ DOCKERHUB_USERNAME ?= seldonio
 
 AGENT_IMG ?= ${DOCKERHUB_USERNAME}/seldon-agent:${CUSTOM_IMAGE_TAG}
 DATAFLOW_IMG ?= ${DOCKERHUB_USERNAME}/seldon-dataflow-engine:${CUSTOM_IMAGE_TAG}
-ENVOY_IMG ?= ${DOCKERHUB_USERNAME}/seldon-envoy:${CUSTOM_IMAGE_TAG}
+ENVOY_IMG ?= docker.io/domblah1/seldon-envoy:pipeline-test-3104
 # Grafana image only used for Docker compose not k8s
 GRAFANA_IMG ?= ${DOCKERHUB_USERNAME}/seldon-grafana:${CUSTOM_IMAGE_TAG}
 PROMETHEUS_IMG ?= prom/prometheus:latest
