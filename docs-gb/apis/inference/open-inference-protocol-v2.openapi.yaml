@@ -136,6 +136,23 @@ paths:
         inferencing. The model name and (optionally) version must be available
         in the URL. If a version is not provided the server may choose a version
         based on its own policies.
+
+        The endpoint model readiness endpoints report that an individual model is
+        loaded and ready to serve. It is intended only to give customers visibility
+        into the model’s state and is not intended to be used as a Kubernetes
+        readiness probe for the MLServer container.
+
+        If you use a model-specific health endpoint for the container readiness probe
+        this can cause a deadlock based on the current implementation, because
+        - the Seldon agent does not begin model download until the Pod’s IP is visible in endpoints;
+        – the IP of the Pod is only published after the Pod is Ready or all internal readiness checks have passed;
+        – the MLServer container only becomes Ready once the model is loaded.
+      
+        This would result in the agent never downloading the model and the Pod never becoming Ready.
+
+        For container-level readiness checks we recommend the server-level readiness
+        endpoints. These indicate that the MLServer process is up and accepting
+        health checks and does not deadlock the agent/model loading flow.
       x-gitbook-description-document:
         object: document
         data:
