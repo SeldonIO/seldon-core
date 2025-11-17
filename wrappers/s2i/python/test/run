@@ -27,8 +27,8 @@ image_dir=$($READLINK_EXEC -zf ${test_dir}/..)
 # it from Docker hub
 s2i_args="--pull-policy=never --loglevel=2"
 
-# Port the image exposes service to be tested
-test_port=5000
+# Port the image exposes service to be tested - HTTP is 9000
+test_port=9000
 
 image_exists() {
   docker inspect $1 &>/dev/null
