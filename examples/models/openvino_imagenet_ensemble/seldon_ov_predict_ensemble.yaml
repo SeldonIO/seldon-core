@@ -18,13 +18,15 @@ spec:
   - componentSpecs:
     - spec:
         containers:
+        - name: imagenet-itransformer
           image: seldonio/openvino-demo-transformer:0.1
-          name: imagenet-itransformer
+        - name: imagenet-otransformer
           image: seldonio/openvino-demo-transformer:0.1
-          name: imagenet-otransformer
+        - name: imagenet-combiner
           image: seldonio/openvino-demo-combiner:0.1
-          name: imagenet-combiner
-        - env:
+        - name: prediction1
+          image: seldonio/openvino-demo-prediction:0.3
+          env:
           - name: LOG_LEVEL
             value: DEBUG
           - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -43,15 +45,14 @@ spec:
             value: ""
           - name: https_proxy
             value: ""
-
-          image: seldonio/openvino-demo-prediction:0.3
-          name: prediction1
           resources:
             limits:
               cpu: "32"
             requests:
               cpu: "1"
-        - env:
+        - name: prediction2
+          image: seldonio/openvino-demo-prediction:0.3
+          env:
           - name: LOG_LEVEL
             value: DEBUG
           - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -70,9 +71,6 @@ spec:
             value: ""
           - name: https_proxy
             value: ""
-
-          image: seldonio/openvino-demo-prediction:0.3
-          name: prediction2
           resources:
             limits:
               cpu: "32"
