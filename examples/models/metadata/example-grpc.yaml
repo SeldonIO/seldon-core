@@ -32,7 +32,7 @@ spec:
         - image: seldonio/metadata-generic-node:0.4
           name: node-two
           env:
-         
+
           - name: MODEL_METADATA
             value: |
               ---
