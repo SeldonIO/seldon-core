@@ -16,8 +16,3 @@ type KVStore interface {
 	Set(ctx context.Context, key string, value []byte) (int64, error)
 	Delete(ctx context.Context, key string) error
 }
-
-type ClusterManager interface {
-	GetClusterState(ctx context.Context) (state_machine.ClusterState, error)
-	SaveClusterState(ctx context.Context, state_machine state_machine.ClusterState) error
-}

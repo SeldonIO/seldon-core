@@ -1,9 +1,8 @@
-package state_machine
+package model
 
 import (
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
-	"google.golang.org/protobuf/proto"
 )
 
 // Here we will have the Model snapshot wrapper and basic methods
@@ -52,13 +51,14 @@ func calculateInitialVersion(model *pb.Model) uint32 {
 // ========================================
 
 // todo: this might have to a function instead of a method of cluster state or even part of a struct for model operations
-// generateModelSnapshot creates or updates a model snapshot based on the request
+// todo: move to handler
+// generateLoadModelEventClusterState creates or updates a model snapshot based on the request
 // Handles:
 // - New models: creates fresh snapshot
 // - Deleted models: adds new version if all replicas are inactive
 // - Existing models: updates with new definition
 // - checks if deployment spec differs on model and creates a new model version
-func (cs *ClusterState) generateModelSnapshot(requestedModel *pb.Model) *ModelSnapshot {
+func generateLoadModelEventClusterState(requestedModel *pb.Model) *ModelSnapshot {
 	modelName := requestedModel.GetMeta().GetName()
 
 	// Check if model exists

@@ -37,7 +37,7 @@ func (sm *StateMachine) ApplyLoadModel(
 	}
 
 	// retrieve the model snap to do comparison
-	futureModelState := current.generateModelSnapshot(request.GetModel())
+	futureModelState := current.generateLoadModelEventResponse(request.GetModel())
 
 	// calculate the future model state
 

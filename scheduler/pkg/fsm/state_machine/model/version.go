@@ -1,4 +1,4 @@
-package state_machine
+package model
 
 import pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
@@ -35,4 +35,22 @@ func createInitialModelVersion(model *pb.Model, version uint32) *ModelVersionSta
 		},
 		ModelDefn: model,
 	})
+}
+
+// IsInactive checks if a model version status has no active replicas
+func (mvs *ModelVersionStatus) Active() bool {
+	if mvs == nil || len(mvs.ModelReplicaState) == 0 {
+		return false
+	}
+
+	for _, state := range mvs.ModelReplicaState {
+		if NewModelReplicaStatus(state).Active() {
+			return true
+		}
+	}
+	return false
+}
+
+func (mvs *ModelVersionStatus) HasServer() bool {
+	return mvs.ServerName != ""
 }

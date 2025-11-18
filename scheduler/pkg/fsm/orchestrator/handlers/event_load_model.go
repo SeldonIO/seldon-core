@@ -7,13 +7,14 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package fsm
+package handlers
 
 import (
 	"context"
 	"fmt"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/events"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/storage"
 )
@@ -23,8 +24,8 @@ type LoadModelEvent struct {
 	Request *pb.LoadModelRequest
 }
 
-func (e *LoadModelEvent) Type() EventType {
-	return EventTypeUnloadModel
+func (e *LoadModelEvent) Type() events.EventType {
+	return events.EventTypeUnloadModel
 }
 
 func (e *LoadModelEvent) Marshal() ([]byte, error) {
@@ -42,7 +43,7 @@ func NewLoadModelEventHandler(store storage.ClusterManager) *LoadModelEventHandl
 }
 
 // Handle implementations (business logic goes here)
-func (e *LoadModelEventHandler) Handle(ctx context.Context, event Event) ([]OutputEvent, error) {
+func (e *LoadModelEventHandler) Handle(ctx context.Context, event events.Event) ([]events.OutputEvent, error) {
 	loadEvent, ok := event.(*LoadModelEvent)
 	if !ok {
 		return nil, fmt.Errorf("invalid event type, expected LoadModelEvent")
@@ -91,5 +92,5 @@ func (e *LoadModelEventHandler) Handle(ctx context.Context, event Event) ([]Outp
 
 	*/
 
-	return []OutputEvent{}, nil
+	return []events.OutputEvent{}, nil
 }

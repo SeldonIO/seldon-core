@@ -1,4 +1,4 @@
-package state_machine
+package model
 
 import pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
