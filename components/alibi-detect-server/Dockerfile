@@ -88,7 +88,7 @@ COPY --from=builder /licenses /licenses
 
 # This is to have writable numba and keops cache directories
 ENV NUMBA_CACHE_DIR=/tmp/numba-cache
-RUN mkdir /.cache && \
+RUN mkdir -p /.cache && \
     chown -R 8888:0 /.cache && \
     chmod -R 776 /.cache
 
