@@ -15,29 +15,30 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/events"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/orchestrator/handlers"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/storage"
 )
 
 // Fsm is the finite state machine that processes events
 type Fsm struct {
-	name     string
-	store    storage.ClusterManager
-	handlers map[events.EventType]Handler
+	store        storage.ClusterManager
+	stateMachine *state_machine.StateMachine
+	handlers     map[events.EventType]Handler
 }
 
 type Handler interface {
 	Handle(ctx context.Context, ev events.Event) ([]events.OutputEvent, error)
 }
 
-func NewFSM(name string, store storage.ClusterManager) *Fsm {
+func NewFSM(name string, store storage.ClusterManager, config *state_machine.Config) *Fsm {
 	fsm := &Fsm{
-		name:     name,
-		store:    store,
-		handlers: make(map[events.EventType]Handler),
+		store:        store,
+		stateMachine: state_machine.NewStateMachine(config),
+		handlers:     make(map[events.EventType]Handler),
 	}
 
 	// Register default handlers
-	fsm.RegisterHandler(events.EventTypeLoadModel, handlers.NewLoadModelEventHandler(store))
+	fsm.RegisterHandler(events.EventTypeLoadModel, handlers.NewLoadModelEventHandler(store, state_machine.NewStateMachine(config).Model))
 
 	return fsm
 }

@@ -29,7 +29,7 @@ type Model interface {
 
 // ApplyLoadModel applies business logic for loading a model
 // Pure function: same inputs → same outputs
-func (sm *StateMachine) ApplyLoadModel(
+func (msm *ModelStateMachine) ApplyLoadModel(
 	current ClusterState,
 	event events.LoadModel,
 ) (ClusterState, error) {
@@ -40,10 +40,10 @@ func (sm *StateMachine) ApplyLoadModel(
 	}
 
 	// calculate the future model state
-	futureModelState := getModelSnapLoadModel(current, event.Model)
+	futureModelState := msm.getModelSnapLoadModel(current, event.Model)
 
 	// calculate server state
-	futureServerState := getServerSnapLoadModel(current, event.Model)
+	futureServerState := msm.getServerSnapLoadModel(current, event.Model)
 
 	// calculate the future pipelines states
 	// todo: if the model existed but its definition changed we need to update the status of a pipeline
@@ -65,7 +65,7 @@ func (sm *StateMachine) ApplyLoadModel(
 	return futureCluster, nil
 }
 
-func (sm *StateMachine) ApplyUnloadModel(current ClusterState, request *pb.UnloadModelRequest) (ClusterState, error) {
+func (msm *ModelStateMachine) ApplyUnloadModel(current ClusterState, request *pb.UnloadModelRequest) (ClusterState, error) {
 	//todo:
 
 	// similarly to the load request this should mark all the models or the latest one as unloaded?
@@ -76,7 +76,7 @@ func (sm *StateMachine) ApplyUnloadModel(current ClusterState, request *pb.Unloa
 	return ClusterState{}, nil
 }
 
-func (sm *StateMachine) ApplyModelStateLoadRequested(current ClusterState) (ClusterState, error) {
+func (msm *ModelStateMachine) ApplyModelStateLoadRequested(current ClusterState) (ClusterState, error) {
 	//todo:
 
 	// this will be a state transition of the model this event can also affect the status of pipelines and experiments
@@ -89,15 +89,13 @@ func (sm *StateMachine) ApplyModelStateLoadRequested(current ClusterState) (Clus
 // Model Snapshot Generation
 // ========================================
 
-// todo: this might have to a function instead of a method of cluster state or even part of a struct for model operations
-// todo: move to handler
 // getModelSnapLoadModel creates or updates a model snapshot based on the request
 // Handles:
 // - New models: creates fresh snapshot
 // - Deleted models: adds new version if all replicas are inactive
 // - Existing models: updates with new definition
 // - checks if deployment spec differs on model and creates a new model version
-func getModelSnapLoadModel(currentState ClusterState, requestedModel *pb.Model) *model.Snapshot {
+func (msm *ModelStateMachine) getModelSnapLoadModel(currentState ClusterState, requestedModel *pb.Model) *model.Snapshot {
 	modelName := requestedModel.GetMeta().GetName()
 
 	// Check if model exists
@@ -161,8 +159,33 @@ func getModelSnapLoadModel(currentState ClusterState, requestedModel *pb.Model) 
 }
 
 // getServerSnapLoadModel calculates the server snapshot for a load model request
-func getServerSnapLoadModel(currentState ClusterState, requestedModel *pb.Model) *server.Snapshot {
+// todo: this function might need to be aware of config from the state machine and it might have to be converted to method
+func (msm *ModelStateMachine) getServerSnapLoadModel(currentState ClusterState, requestedModel *pb.Model) *server.Snapshot {
+	modelName := requestedModel.GetMeta().GetName()
+
+	// Check if model exists
+	currentModelSnap, exists := currentState.Models[modelName]
+	if !exists {
+		// Brand new model - create initial snapshot
+		return nil
+	}
+
+	// Model exists - check if it was previously deleted
+	if currentModelSnap.GetDeleted() {
+		// todo
+		return nil
+	}
+
+	// Case 3: Existing active model - check what changed
+	currentLatestModelVer := currentModelSnap.GetLatestModelVersionStatus()
+	if currentLatestModelVer == nil {
+		// Shouldn't happen, but handle gracefully
+		return nil
+	}
+
 	// things we need to do
+
+	var filteredServers []server.Snapshot
 
 	/*
 		 - filter servers

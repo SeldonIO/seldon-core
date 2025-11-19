@@ -19,12 +19,12 @@ import (
 )
 
 type LoadModelEventHandler struct {
-	store               storage.ClusterManager
-	modelStateGenerator state_machine.Model
+	store             storage.ClusterManager
+	modelStateMachine state_machine.Model
 }
 
-func NewLoadModelEventHandler(store storage.ClusterManager) *LoadModelEventHandler {
-	return &LoadModelEventHandler{store: store, modelStateGenerator: state_machine.NewModelStateGenerator()}
+func NewLoadModelEventHandler(store storage.ClusterManager, model state_machine.Model) *LoadModelEventHandler {
+	return &LoadModelEventHandler{store: store, modelStateMachine: model}
 }
 
 // Handle implementations (business logic goes here)
@@ -43,7 +43,7 @@ func (e *LoadModelEventHandler) Handle(ctx context.Context, event events.Event) 
 	// 2. Call pure business logic from state machine statemachine.ApplyLoadModel
 
 	// todo: think about the pointer being dereferenced
-	futureClusterState, err := e.modelStateGenerator.ApplyLoadModel(clusterState, *loadEvent)
+	futureClusterState, err := e.modelStateMachine.ApplyLoadModel(clusterState, *loadEvent)
 	if err != nil {
 		return nil, err
 	}

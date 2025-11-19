@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"sync"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
@@ -19,9 +18,6 @@ type Snapshot struct {
 }
 
 type Replica struct {
-	muReservedMemory  sync.RWMutex
-	muLoadedModels    sync.RWMutex
-	muDrainingState   sync.RWMutex
 	inferenceSvc      string
 	inferenceHttpPort int32
 	inferenceGrpcPort int32

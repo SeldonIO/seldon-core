@@ -9,14 +9,53 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package state_machine
 
-// todo: state machine will need config options for calculating some state regarding servers
 type StateMachine struct {
+	Model      *ModelStateMachine
+	Pipeline   *PipelineStateMachine
+	Experiment *ExperimentStateMachine
 }
 
-func NewStateMachine() *StateMachine {
-	return &StateMachine{}
+// NewStateMachine creates a composite state machine with shared config
+func NewStateMachine(config *Config) *StateMachine {
+	if config == nil {
+		config = DefaultConfig()
+	}
+	return &StateMachine{
+		Model:      NewModelStateMachine(config),
+		Pipeline:   NewPipelineStateMachine(config),
+		Experiment: NewExperimentStateMachine(config),
+	}
 }
 
-func NewModelStateGenerator() Model {
-	return &StateMachine{}
+type ModelStateMachine struct {
+	config *Config
+}
+
+type PipelineStateMachine struct {
+	config *Config
+}
+
+type ExperimentStateMachine struct {
+	config *Config
+}
+
+func NewModelStateMachine(config *Config) *ModelStateMachine {
+	if config == nil {
+		config = DefaultConfig()
+	}
+	return &ModelStateMachine{config: config}
+}
+
+func NewPipelineStateMachine(config *Config) *PipelineStateMachine {
+	if config == nil {
+		config = DefaultConfig()
+	}
+	return &PipelineStateMachine{config: config}
+}
+
+func NewExperimentStateMachine(config *Config) *ExperimentStateMachine {
+	if config == nil {
+		config = DefaultConfig()
+	}
+	return &ExperimentStateMachine{config: config}
 }
