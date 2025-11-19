@@ -75,7 +75,7 @@ def construct_predict_fn(
     predictor_host: str,
     model_name: str,
     protocol: Protocol = Protocol.seldon_grpc,
-    tf_data_type: str = None,
+    tf_data_type: Optional[str] = None,
 ) -> Callable:
     def _predict_fn(arr: Union[np.ndarray, List]) -> np.ndarray:  # type: ignore
         if type(arr) == list:

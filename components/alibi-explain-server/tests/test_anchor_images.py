@@ -21,7 +21,7 @@
 import json
 
 import numpy as np
-import tensorflow as tf
+from keras.datasets import cifar10
 
 from alibiexplainer.anchor_images import AnchorImages
 
@@ -32,7 +32,7 @@ def test_cifar10_images():  # pylint: disable-msg=too-many-locals
     alibi_model = make_anchor_image()
     anchor_images = AnchorImages(alibi_model)
 
-    _, test = tf.keras.datasets.cifar10.load_data()
+    _, test = cifar10.load_data()
     X_test, _ = test
     X_test = X_test.astype("float32") / 255
     idx = 12
