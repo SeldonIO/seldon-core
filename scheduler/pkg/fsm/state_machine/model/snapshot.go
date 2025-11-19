@@ -19,16 +19,16 @@ type Snapshot struct {
 	*pb.ModelSnapshot
 }
 
-func NewModelSnapshot(proto *pb.ModelSnapshot) *Snapshot {
+func NewSnapshot(proto *pb.ModelSnapshot) *Snapshot {
 	return &Snapshot{ModelSnapshot: proto}
 }
 
-// CreateModelSnapshot creates a new model snapshot with initial version
+// CreateSnapshotFromModel creates a new model snapshot with initial version
 // Uses K8s generation as the starting version to ensure monotonic version numbers
-func CreateModelSnapshot(model *pb.Model) *Snapshot {
+func CreateSnapshotFromModel(model *pb.Model) *Snapshot {
 	version := calculateInitialVersion(model)
 
-	return NewModelSnapshot(&pb.ModelSnapshot{
+	return NewSnapshot(&pb.ModelSnapshot{
 		Versions: []*pb.ModelVersionStatus{
 			createInitialModelVersion(model, version).ModelVersionStatus,
 		},

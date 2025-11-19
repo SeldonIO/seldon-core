@@ -12,15 +12,18 @@ package state_machine
 import (
 	"time"
 
-	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine/experiment"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine/model"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine/server"
 )
 
 // ClusterState represents the state of things in the cluster needed for an event to be applied
 type ClusterState struct {
-	Models      map[string]*ModelSnapshot
-	Servers     map[string]*pb.ServerReplicaResources // todo: create a ServerSnapshot
-	Pipelines   map[string]*pb.PipelineSnapshot       // todo: change this to embedded struct
-	Experiments map[string]*pb.ExperimentSnapshot     // todo: change this to embedded struct
+	Models      map[string]*model.Snapshot
+	Servers     map[string]*server.Snapshot
+	Pipelines   map[string]*pipeline.Snapshot
+	Experiments map[string]*experiment.Snapshot
 }
 
 // todo: this could be added to each cr to separate internal status to k8s status conditions

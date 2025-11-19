@@ -15,7 +15,9 @@ import (
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/events"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine/model"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine/server"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"google.golang.org/protobuf/proto"
 )
 
 // Model represents the state machine for Model
@@ -37,10 +39,11 @@ func (sm *StateMachine) ApplyLoadModel(
 		return current, fmt.Errorf("model name is empty")
 	}
 
-	// retrieve the model snap to do comparison
-	futureModelState := current.generateLoadModelEventResponse(request.GetModel())
-
 	// calculate the future model state
+	futureModelState := getModelSnapLoadModel(current, event.Model)
+
+	// calculate server state
+	futureServerState := getServerSnapLoadModel(current, event.Model)
 
 	// calculate the future pipelines states
 	// todo: if the model existed but its definition changed we need to update the status of a pipeline
@@ -49,7 +52,17 @@ func (sm *StateMachine) ApplyLoadModel(
 	// calculate the future experiment states
 	//todo: this might follow in line with the changes of pipelines
 
-	return ClusterState{}, nil
+	// todo: think more about this but I think this is better than cloning a very big struct
+	futureCluster := ClusterState{
+		Models: map[string]*model.Snapshot{
+			modelName: futureModelState,
+		},
+		Servers: map[string]*server.Snapshot{
+			futureServerState.Name: futureServerState,
+		},
+	}
+
+	return futureCluster, nil
 }
 
 func (sm *StateMachine) ApplyUnloadModel(current ClusterState, request *pb.UnloadModelRequest) (ClusterState, error) {
@@ -78,33 +91,35 @@ func (sm *StateMachine) ApplyModelStateLoadRequested(current ClusterState) (Clus
 
 // todo: this might have to a function instead of a method of cluster state or even part of a struct for model operations
 // todo: move to handler
-// generateLoadModelEventClusterState creates or updates a model snapshot based on the request
+// getModelSnapLoadModel creates or updates a model snapshot based on the request
 // Handles:
 // - New models: creates fresh snapshot
 // - Deleted models: adds new version if all replicas are inactive
 // - Existing models: updates with new definition
 // - checks if deployment spec differs on model and creates a new model version
-func generateLoadModelEventClusterState(requestedModel *pb.Model) *model.Snapshot {
+func getModelSnapLoadModel(currentState ClusterState, requestedModel *pb.Model) *model.Snapshot {
 	modelName := requestedModel.GetMeta().GetName()
 
 	// Check if model exists
-	currentModelSnap, exists := cs.Models[modelName]
+	currentModelSnap, exists := currentState.Models[modelName]
 	if !exists {
 		// Brand new model - create initial snapshot
-		return CreateModelSnapshot(requestedModel)
+		return model.CreateSnapshotFromModel(requestedModel)
 	}
 
 	// Model exists - check if it was previously deleted
 	if currentModelSnap.GetDeleted() {
-		return cs.handleDeletedModelRecreation(currentModelSnap, requestedModel)
+		return handleDeletedModelRecreation(currentModelSnap, requestedModel)
 	}
 
 	// Case 3: Existing active model - check what changed
 	currentLatestModelVer := currentModelSnap.GetLatestModelVersionStatus()
 	if currentLatestModelVer == nil {
 		// Shouldn't happen, but handle gracefully
-		return CreateModelSnapshot(requestedModel)
+		return model.CreateSnapshotFromModel(requestedModel)
 	}
+
+	//todo: I think I need to check model status
 
 	// Compare current latest model ver definition with requested model
 	currentModel := currentLatestModelVer.ModelDefn
@@ -116,11 +131,11 @@ func generateLoadModelEventClusterState(requestedModel *pb.Model) *model.Snapsho
 	}
 
 	// Clone for modifications
-	outputSnap := NewModelSnapshot(proto.Clone(currentModelSnap.ModelSnapshot).(*pb.ModelSnapshot))
+	outputSnap := model.NewSnapshot(proto.Clone(currentModelSnap.ModelSnapshot).(*pb.ModelSnapshot))
 	latestInOutput := outputSnap.GetLatestModelVersionStatus()
 	if latestInOutput == nil {
 		// Safety check - shouldn't happen since we checked above
-		return CreateModelSnapshot(requestedModel)
+		return model.CreateSnapshotFromModel(requestedModel)
 	}
 
 	// Case 3b: DeploymentSpec changed - requires new version (rolling update)
@@ -145,11 +160,30 @@ func generateLoadModelEventClusterState(requestedModel *pb.Model) *model.Snapsho
 	return outputSnap
 }
 
+// getServerSnapLoadModel calculates the server snapshot for a load model request
+func getServerSnapLoadModel(currentState ClusterState, requestedModel *pb.Model) *server.Snapshot {
+	// things we need to do
+
+	/*
+		 - filter servers
+		    - if no filter return emtpy server snapshot (meaning that we could not schedule the model
+			- could even mark the model as failed deployment
+		- get model desired replicas and min replicas
+		- sort servers (i guess this is by availability of who has the highest)
+		- on a rolling update this will need a few trips (probably the loadagent request when the model is confirmed
+		  as loaded triggers the next replica to be loaded
+		- reserve memory for each replica but with status memory reserved and only load request for the subsequent deploys
+
+	*/
+
+	return nil
+}
+
 // handleDeletedModelRecreation handles recreating a model that was previously deleted
 func handleDeletedModelRecreation(
-	snapshot *Snapshot,
+	snapshot *model.Snapshot,
 	requestedModel *pb.Model,
-) *Snapshot {
+) *model.Snapshot {
 	// Only allow recreation if all versions are fully inactive
 
 	latestModelVersion := snapshot.GetLatestModelVersionStatus()
