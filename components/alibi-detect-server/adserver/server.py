@@ -277,7 +277,7 @@ def create_cloud_event(
     event_type: str,
     event_source: str,
     extensions: dict,
-    event_id: str = None,
+    event_id: Optional[str] = None,
 ) -> v1.Event:
     """
     Create a CloudEvent

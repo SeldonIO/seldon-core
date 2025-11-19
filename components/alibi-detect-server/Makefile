@@ -27,7 +27,7 @@ type_check:
 	mypy --ignore-missing-imports adserver
 
 .PHONY: test
-test: 
+test: type_check
 	poetry run pytest -W ignore adserver
 
 .PHONY: lint
