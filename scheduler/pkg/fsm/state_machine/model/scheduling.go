@@ -1,8 +1,17 @@
+/*
+Copyright (c) 2024 Seldon Technologies Ltd.
+
+Use of this software is governed BY
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
+*/
+
 package model
 
 import pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
-func (mrs *ModelReplicaStatus) CanReceiveTraffic() bool {
+func (mrs *ReplicaStatus) CanReceiveTraffic() bool {
 	switch mrs.State {
 	case
 		pb.ModelReplicaStatus_Loaded,
@@ -15,7 +24,7 @@ func (mrs *ModelReplicaStatus) CanReceiveTraffic() bool {
 	}
 }
 
-func (mrs *ModelReplicaStatus) AlreadyLoadingOrLoaded() bool {
+func (mrs *ReplicaStatus) AlreadyLoadingOrLoaded() bool {
 	switch mrs.State {
 	case
 		pb.ModelReplicaStatus_Loading,
@@ -28,7 +37,7 @@ func (mrs *ModelReplicaStatus) AlreadyLoadingOrLoaded() bool {
 	}
 }
 
-func (mrs *ModelReplicaStatus) UnloadingOrUnloaded() bool {
+func (mrs *ReplicaStatus) UnloadingOrUnloaded() bool {
 	switch mrs.State {
 	case
 		pb.ModelReplicaStatus_UnloadEnvoyRequested,
@@ -42,7 +51,7 @@ func (mrs *ModelReplicaStatus) UnloadingOrUnloaded() bool {
 	}
 }
 
-func (mrs *ModelReplicaStatus) Inactive() bool {
+func (mrs *ReplicaStatus) Inactive() bool {
 	switch mrs.State {
 	case
 		pb.ModelReplicaStatus_Unloaded,
@@ -55,14 +64,14 @@ func (mrs *ModelReplicaStatus) Inactive() bool {
 	}
 }
 
-func (mrs *ModelReplicaStatus) Active() bool {
+func (mrs *ReplicaStatus) Active() bool {
 	if mrs.Inactive() {
 		return false
 	}
 	return true
 }
 
-func (mrs *ModelReplicaStatus) IsLoadingOrLoaded() bool {
+func (mrs *ReplicaStatus) IsLoadingOrLoaded() bool {
 	switch mrs.State {
 	case
 		pb.ModelReplicaStatus_Loaded,
@@ -77,7 +86,7 @@ func (mrs *ModelReplicaStatus) IsLoadingOrLoaded() bool {
 }
 
 // IsModelFullyInactive checks if ALL versions of a model are inactive
-func (ms *ModelSnapshot) IsModelFullyInactive() bool {
+func (ms *Snapshot) IsModelFullyInactive() bool {
 	if ms == nil || len(ms.Versions) == 0 {
 		return true
 	}
@@ -91,7 +100,7 @@ func (ms *ModelSnapshot) IsModelFullyInactive() bool {
 	return false
 }
 
-func (ms *ModelSnapshot) GetLatestModelVersionStatus() *ModelVersionStatus {
+func (ms *Snapshot) GetLatestModelVersionStatus() *ModelVersionStatus {
 	if ms == nil || len(ms.Versions) == 0 {
 		return nil
 	}

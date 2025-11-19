@@ -7,22 +7,20 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package model
+package events
 
 import pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
-type Replica struct {
-	*pb.ModelReplicaStatus
+const EventTypeLoadModel EventType = "LoadModel"
+
+type LoadModel struct {
+	*pb.LoadModelRequest //todo: change this once we have confidence in what is required
 }
 
-func NewModelReplica(proto *pb.ModelReplicaStatus) *Replica {
-	return &Replica{ModelReplicaStatus: proto}
+func NewLoadModel(req *pb.LoadModelRequest) *LoadModel {
+	return &LoadModel{req}
 }
 
-type ReplicaStatus struct {
-	*pb.ModelReplicaStatus
-}
-
-func NewModelReplicaStatus(proto *pb.ModelReplicaStatus) *ReplicaStatus {
-	return &ReplicaStatus{ModelReplicaStatus: proto}
+func (ms *LoadModel) Type() EventType {
+	return EventTypeLoadModel
 }

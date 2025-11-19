@@ -7,6 +7,6 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package storage
+package coordinator
 
-// todo: etcd implementation its somewhat done here: https://github.com/SeldonIO/High-Availability-Experiments/blob/main/embedded/key.go
+// todo: broker implementation

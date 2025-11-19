@@ -13,25 +13,10 @@ import (
 	"context"
 	"fmt"
 
-	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/events"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/storage"
 )
-
-// Concrete event types
-type LoadModelEvent struct {
-	Request *pb.LoadModelRequest
-}
-
-func (e *LoadModelEvent) Type() events.EventType {
-	return events.EventTypeUnloadModel
-}
-
-func (e *LoadModelEvent) Marshal() ([]byte, error) {
-	// TODO: implement proto marshaling
-	return nil, fmt.Errorf("not implemented")
-}
 
 type LoadModelEventHandler struct {
 	store               storage.ClusterManager
@@ -44,7 +29,7 @@ func NewLoadModelEventHandler(store storage.ClusterManager) *LoadModelEventHandl
 
 // Handle implementations (business logic goes here)
 func (e *LoadModelEventHandler) Handle(ctx context.Context, event events.Event) ([]events.OutputEvent, error) {
-	loadEvent, ok := event.(*LoadModelEvent)
+	loadEvent, ok := event.(*events.LoadModel)
 	if !ok {
 		return nil, fmt.Errorf("invalid event type, expected LoadModelEvent")
 	}
@@ -57,7 +42,8 @@ func (e *LoadModelEventHandler) Handle(ctx context.Context, event events.Event) 
 
 	// 2. Call pure business logic from state machine statemachine.ApplyLoadModel
 
-	futureClusterState, err := e.modelStateGenerator.ApplyLoadModel(clusterState, loadEvent.Request)
+	// todo: think about the pointer being dereferenced
+	futureClusterState, err := e.modelStateGenerator.ApplyLoadModel(clusterState, *loadEvent)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +56,7 @@ func (e *LoadModelEventHandler) Handle(ctx context.Context, event events.Event) 
 
 	// 5. save cluster state
 
-	err := e.store.SaveClusterState(ctx, futureClusterState)
+	err = e.store.SaveClusterState(ctx, futureClusterState)
 	if err != nil {
 		return nil, err
 	}
