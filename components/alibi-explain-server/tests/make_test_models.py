@@ -17,16 +17,42 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.svm import SVC
+from tensorflow.keras.layers import Layer
+from tensorflow.keras.models import load_model
+from tensorflow.keras.utils import custom_object_scope
+
+
+# TensorFlowOpLayer was removed from Keras 3
+class TensorFlowOpLayer(Layer):
+    def __init__(self, node_def=None, constants=None, **kwargs):
+        super().__init__(**kwargs)
+        self.node_def = node_def or {}
+        self.constants = constants or {}
+        self.op_type = self.node_def.get("op", None)
+
+    def call(self, inputs):
+        # in the resnet32 model, a Mean operation was used over the inputs
+        if self.op_type == "Mean":
+            axes = self.constants.get("1", [1, 2])
+            keepdims = False
+            attr = self.node_def.get("attr", {})
+            if "keep_dims" in attr and "b" in attr["keep_dims"]:
+                keepdims = attr["keep_dims"]["b"]
+            return tf.reduce_mean(inputs, axis=axes, keepdims=keepdims)
+        return inputs
 
 
 def make_anchor_image(dirname: Optional[Path] = None) -> AnchorImage:
     url = "https://storage.googleapis.com/seldon-models/alibi-detect/classifier/"
     path_model = os.path.join(url, "cifar10", "resnet32", "model.h5")
-    save_path = tf.keras.utils.get_file("resnet32", path_model)
-    model = tf.keras.models.load_model(save_path)
+    save_path = tf.keras.utils.get_file("resnet32.h5", path_model)
 
-    # we drop the first batch dimension because AnchorImage expects a single image
-    image_shape = model.get_layer(index=0).input_shape[0][1:]
+    # register TensorFlowOpLayer during loading for backwards compatibility
+    with custom_object_scope({"TensorFlowOpLayer": TensorFlowOpLayer}):
+        model = load_model(save_path, compile=False)
+
+    # drop the first batch dimension because AnchorImage expects a single image
+    image_shape = model.input_shape[1:]  # (1,32,32,3) -> (32,32,3)
 
     alibi_model = AnchorImage(predictor=model.predict, image_shape=image_shape)
 

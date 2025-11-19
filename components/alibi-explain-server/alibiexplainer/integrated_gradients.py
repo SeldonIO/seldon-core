@@ -20,7 +20,7 @@ class IntegratedGradients(ExplainerWrapper):
         internal_batch_size: int = 100,
         method: str = "gausslegendre",
         layer: Optional[int] = None,
-        **kwargs
+        **kwargs,
     ):
         if keras_model is None:
             raise Exception("Integrated Gradients requires a Keras model")

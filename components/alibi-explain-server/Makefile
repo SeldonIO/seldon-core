@@ -4,7 +4,7 @@ SHELL := /bin/bash
 VERSION ?= $(shell cat ../../version.txt)
 DOCKER_REGISTRY ?= seldonio
 
-BASE_IMAGE ?= ${DOCKER_REGISTRY}/conda-ubi8
+BASE_IMAGE ?= ${DOCKER_REGISTRY}/conda-ubi9
 IMAGE ?= ${DOCKER_REGISTRY}/alibiexplainer
 KIND_NAME ?= kind
 
@@ -36,7 +36,7 @@ test: #type_check
 	poetry run pytest -v -W ignore
 
 type_check:
-	mypy --ignore-missing-imports alibiexplainer --exclude proto
+	mypy --ignore-missing-imports --check-untyped-defs alibiexplainer --exclude proto
 
 lint: type_check
 	isort --profile black --check . --skip proto --skip .eggs --skip .tox

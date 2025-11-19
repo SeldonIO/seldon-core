@@ -18,12 +18,14 @@
 # and since modified
 #
 
-from typing import Dict, List, Optional
+from typing import Any, List, Optional
+
+from alibi.api.interfaces import Explanation
 
 
 class ExplainerWrapper(object):
-    def validate(self, training_data_url: Optional[str]):
+    def validate(self, training_data_url: Optional[str]) -> Optional[Any]:
         pass
 
-    def explain(self, inputs: List) -> Dict:
+    def explain(self, inputs: List) -> Explanation:
         pass
