@@ -1,8 +1,8 @@
 ---
 seldon_monitoring_namespace: "seldon-monitoring"
-seldon_monitoring_prometheus_operator_values: "{{ lookup('file', 'prometheus-operator-values.yaml') | from_yaml }}"
+seldon_monitoring_prometheus_operator_values: "{{ lookup('ansible.builtin.template', '../templates/prometheus-operator-values.yaml.j2') | from_yaml }}"
 seldon_monitoring_prometheus_adapter_values: "{{ lookup('file', 'prometheus-adapter-values.yaml') | from_yaml }}"
-seldon_monitoring_prometheus_operator_chart_version: "10.0.4"
+seldon_monitoring_prometheus_operator_chart_version: "66.2.1"
 seldon_monitoring_prometheus_adapter_chart_version: "4.11.0"
 
 seldon_prometheus_adapter_config_rate: "5m"

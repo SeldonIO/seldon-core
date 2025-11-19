@@ -10,8 +10,8 @@
   kubernetes.core.helm:
     name: seldon-monitoring
     release_namespace: "{{ seldon_monitoring_namespace }}"
-    chart_repo_url: "https://charts.bitnami.com/bitnami"
-    chart_ref: "kube-prometheus"
+    chart_repo_url: "https://prometheus-community.github.io/helm-charts/"
+    chart_ref: "kube-prometheus-stack"
     chart_version: "{{ seldon_monitoring_prometheus_operator_chart_version }}"
     values: "{{ seldon_monitoring_prometheus_operator_values }}"
 
