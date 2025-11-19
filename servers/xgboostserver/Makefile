@@ -7,7 +7,7 @@ IMAGE_NAME_BASE=xgboostserver
 IMAGE_NAME = ${DOCKER_REGISTRY}/${IMAGE_NAME_BASE}
 KIND_NAME ?= kind
 
-BASE_IMAGE = ${DOCKER_REGISTRY}/seldon-core-s2i-python38:${VERSION}
+BASE_IMAGE = ${DOCKER_REGISTRY}/seldon-core-s2i-python312:${VERSION}
 
 docker-build:
 	s2i build \
