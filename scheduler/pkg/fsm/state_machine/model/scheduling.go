@@ -100,7 +100,7 @@ func (ms *Snapshot) IsModelFullyInactive() bool {
 	return false
 }
 
-func (ms *Snapshot) GetLatestModelVersionStatus() *ModelVersionStatus {
+func (ms *Snapshot) GetLatestModelVersionStatus() *VersionStatus {
 	if ms == nil || len(ms.Versions) == 0 {
 		return nil
 	}

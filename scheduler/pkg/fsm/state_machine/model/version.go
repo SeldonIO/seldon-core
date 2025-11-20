@@ -11,15 +11,15 @@ package model
 
 import pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
-type ModelVersionStatus struct {
+type VersionStatus struct {
 	*pb.ModelVersionStatus
 }
 
-func NewModelVersion(proto *pb.ModelVersionStatus) *ModelVersionStatus {
-	return &ModelVersionStatus{ModelVersionStatus: proto}
+func NewModelVersion(proto *pb.ModelVersionStatus) *VersionStatus {
+	return &VersionStatus{ModelVersionStatus: proto}
 }
 
-func (mvs *ModelVersionStatus) GetReplica(id int32) *Replica {
+func (mvs *VersionStatus) GetReplica(id int32) *Replica {
 	if proto, exists := mvs.ModelReplicaState[id]; exists {
 		return NewModelReplica(proto)
 	}
@@ -27,7 +27,7 @@ func (mvs *ModelVersionStatus) GetReplica(id int32) *Replica {
 }
 
 // createInitialModelVersion creates a fresh model version in unknown state
-func createInitialModelVersion(model *pb.Model, version uint32) *ModelVersionStatus {
+func createInitialModelVersion(model *pb.Model, version uint32) *VersionStatus {
 	return NewModelVersion(&pb.ModelVersionStatus{
 		Version:           version,
 		ServerName:        "",
@@ -47,7 +47,7 @@ func createInitialModelVersion(model *pb.Model, version uint32) *ModelVersionSta
 }
 
 // IsInactive checks if a model version status has no active replicas
-func (mvs *ModelVersionStatus) Active() bool {
+func (mvs *VersionStatus) Active() bool {
 	if mvs == nil || len(mvs.ModelReplicaState) == 0 {
 		return false
 	}
@@ -60,6 +60,6 @@ func (mvs *ModelVersionStatus) Active() bool {
 	return false
 }
 
-func (mvs *ModelVersionStatus) HasServer() bool {
+func (mvs *VersionStatus) HasServer() bool {
 	return mvs.ServerName != ""
 }
