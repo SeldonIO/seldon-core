@@ -11,11 +11,13 @@ package state_machine
 
 import (
 	"fmt"
+	"sort"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/events"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine/model"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine/server"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine/server/sorters"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"google.golang.org/protobuf/proto"
 )
@@ -160,12 +162,14 @@ func (msm *ModelStateMachine) getModelSnapLoadModel(currentState ClusterState, r
 
 // getServerSnapLoadModel calculates the server snapshot for a load model request
 // todo: this function might need to be aware of config from the state machine and it might have to be converted to method
-func (msm *ModelStateMachine) getServerSnapLoadModel(currentState ClusterState, requestedModel *pb.Model) *server.Snapshot {
-	modelName := requestedModel.GetMeta().GetName()
+func (msm *ModelStateMachine) getServerSnapLoadModel(currentState ClusterState, requestedModel *model.Snapshot) *server.Snapshot {
+	modelName := requestedModel.GetLatestModelVersionStatus().ModelDefn.Meta.Name
 
 	// Check if model exists
 	currentModelSnap, exists := currentState.Models[modelName]
-	if !exists {
+	if exists {
+		//todo: path for checking redeployment
+
 		// Brand new model - create initial snapshot
 		return nil
 	}
@@ -185,7 +189,59 @@ func (msm *ModelStateMachine) getServerSnapLoadModel(currentState ClusterState, 
 
 	// things we need to do
 
-	var filteredServers []server.Snapshot
+	var filteredServers []*server.Snapshot
+
+	// todo: abstract into function once we know full scope of use
+	for _, ser := range currentState.Servers {
+		ok := true
+
+		for _, serverFilter := range msm.config.serverFilters {
+			if !serverFilter.Filter(currentLatestModelVer, ser) {
+				msm.logger.WithField("filter", serverFilter.Name()).
+					WithField("server", ser.Name).
+					WithField("reason", serverFilter.Description(currentLatestModelVer, ser)).
+					Debug("Rejecting server for model")
+
+				ok = false
+				break
+			}
+		}
+
+		if ok {
+			msm.logger.WithField("server", ser.Name).Debug("Accepting server for model")
+			filteredServers = append(filteredServers, ser)
+		}
+	}
+
+	if len(filteredServers) == 0 {
+		// todo: this is our first failure that we should report
+
+		return nil
+	}
+
+	desiredReplicas := currentLatestModelVer.GetModelDefn().GetDeploymentSpec().GetReplicas()
+	minReplicas := currentLatestModelVer.GetModelDefn().GetDeploymentSpec().GetMinReplicas()
+
+	// for the moment the default one
+	if msm.config.ServerSortingStrategy == ServerSelectionModelsLoaded {
+		for _, sorter := range msm.config.serverSorts {
+			sort.SliceStable(filteredServers, func(i, j int) bool {
+				return sorter.IsLess(&sorters.CandidateServer{Model: currentLatestModelVer, Server: filteredServers[i]}, &sorters.CandidateServer{Model: currentLatestModelVer, Server: filteredServers[i]})
+			})
+		}
+	}
+
+	// todo: this part is different than in current scheduler
+	// check desired replicas scheduling and min replicas scheduling
+
+	// check memory for this model deployment with min and desired replicas
+
+	// check config on overcomit and server autoscaling
+
+	// make a decision on weather to deploy with min or desired replicas
+
+	// reserve memory for this model
+	// todo might have to put reserved memory with information about deployment
 
 	/*
 		 - filter servers

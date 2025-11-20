@@ -9,7 +9,12 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package state_machine
 
-import "time"
+import (
+	"time"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine/server/filter"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine/server/sorters"
+)
 
 // Config todo: this is very raw and was just a rough guide a lot of this options will not exist
 type Config struct {
@@ -19,10 +24,14 @@ type Config struct {
 
 	// Server selection strategy for model placement
 	ServerSelectionStrategy ServerSelectionStrategy // "LeastLoaded", "RoundRobin", "Affinity"
+	ServerSortingStrategy   ServerSortingStrategy
 
 	// Whether to allow overcommit of server resources
 	AllowOvercommit bool
 	OvercommitRatio float64 // e.g., 1.5 = allow 150% of capacity
+
+	serverFilters []filter.ServerFilter
+	serverSorts   []sorters.ServerSorter
 
 	// ========================================
 	// Model Replica Policies
@@ -128,9 +137,14 @@ type Config struct {
 // DefaultConfig returns a config with sensible defaults
 func DefaultConfig() *Config {
 	return &Config{
-		ServerSelectionStrategy:          ServerSelectionLeastLoaded,
-		AllowOvercommit:                  false,
-		OvercommitRatio:                  1.0,
+		ServerSelectionStrategy: ServerSelectionLeastLoaded,
+		ServerSortingStrategy:   ServerSelectionModelsLoaded,
+		AllowOvercommit:         false,
+		OvercommitRatio:         1.0,
+		serverFilters: []filter.ServerFilter{
+			filter.ServerReplicaFilter{}, filter.DeletedServerFilter{},
+			filter.ServerRequirementFilter{}, filter.SharingServerFilter{},
+		},
 		DefaultMinReplicas:               1,
 		DefaultMaxReplicas:               5,
 		ReplicaFailureThreshold:          3,
@@ -159,10 +173,17 @@ func DefaultConfig() *Config {
 type ServerSelectionStrategy string
 
 const (
-	ServerSelectionLeastLoaded  ServerSelectionStrategy = "LeastLoaded"
+	ServerSelectionLeastLoaded ServerSelectionStrategy = "LeastLoaded"
+
 	ServerSelectionRoundRobin   ServerSelectionStrategy = "RoundRobin"
 	ServerSelectionAffinity     ServerSelectionStrategy = "Affinity"
 	ServerSelectionAntiAffinity ServerSelectionStrategy = "AntiAffinity"
+)
+
+type ServerSortingStrategy string
+
+const (
+	ServerSelectionModelsLoaded ServerSortingStrategy = "ModelsLoaded"
 )
 
 type AutoscalingPolicy string

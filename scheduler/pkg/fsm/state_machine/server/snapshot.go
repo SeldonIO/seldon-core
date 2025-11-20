@@ -62,3 +62,11 @@ type Server struct {
 	maxReplicas      int
 	kubernetesMeta   *pb.KubernetesMeta
 }
+
+func (ss *Snapshot) GetCapabilities() []string {
+	for _, replica := range ss.Replicas {
+		return replica.capabilities
+	}
+
+	return []string{}
+}
