@@ -1,0 +1,54 @@
+# 1. Modify this file with desired component image customisations and
+#    secret details. Replace elements in CAPS and between square brackets
+#    with actual values
+#
+# 2. Pass this file as an ansible extra_vars file when running the setup-seldon
+#    or seldon-all playbooks:
+#
+#    > ansible_playbook playbooks/setup-seldon.yaml -e @playbooks/vars/set-custom-images.yaml
+
+
+# By configuring `custom_image_config`, you can customise image properties
+# for sets of seldon components. For example, fetching images with particular
+# tags or configuring private registries. Any missing components will remain
+# with their default setup.
+#
+# This is a list, where each items specifies:
+# - components: list of components with a particular image customisation
+#                - hodometer
+#                - modelgateway
+#                - pipelinegateway
+#                - dataflow
+#                - controller
+#                - envoy
+#                - scheduler
+#                - mlserver
+#                - triton
+#                - rclone
+#                - agent
+# - image: the keys to overwrite the existing "image" helm-chart values for a
+#          component
+# - repository_img_prefix: [optional, default: `seldonio`]
+#                          The repository prefix that should be applied to the docker image
+#                          name. Typically the dockerhub user.
+custom_image_config:
+  - components:
+      - hodometer
+      - modelgateway
+      - pipelinegateway
+      - dataflow
+      - controller
+      - envoy
+      - scheduler
+    image:
+      tag: 2.10.0
+
+seldon_core_v2_servers_values:
+  mlserver:
+    replicas: 5
+    minReplicas: 2
+    maxReplicas: 5
+  triton:
+    replicas: 0                                 # leaving triton with zero replicas keeps it disabled
+    minReplicas: 0
+    maxReplicas: 0
