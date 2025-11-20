@@ -1,0 +1,61 @@
+(core-2-testing) tonya@quadro:~/seldon-core/tests/integration$ go test -count=1 -v ./godog
+=== RUN   TestFeatures
+Feature: Model scaling ensures mlserver alignment
+  We want to prove that a model asking for five replicas makes the backing mlserver scale before the model stabilises.
+=== RUN   TestFeatures/Model_requests_five_replicas
+
+  Background:
+    Given the namespace "seldon-mesh" is used                # steps.go:77 -> github.com/seldonio/seldon-core/tests/integration/v2/godog.InitializeScenario.func3
+
+  Scenario: Model requests five replicas                     # features/model_scaling.feature:7
+    Given the following server resource:                     # steps.go:85 -> github.com/seldonio/seldon-core/tests/integration/v2/godog.InitializeScenario.func4
+      """
+      apiVersion: mlops.seldon.io/v1alpha1
+      kind: Server
+      metadata:
+        name: mlserver
+      spec:
+        serverConfig: mlserver
+        replicas: 5
+        minReplicas: 2
+        maxReplicas: 5
+      """
+    And the following model resource:                        # steps.go:96 -> github.com/seldonio/seldon-core/tests/integration/v2/godog.InitializeScenario.func5
+      """
+      apiVersion: mlops.seldon.io/v1alpha1
+      kind: Model
+      metadata:
+        name: iris
+      spec:
+        storageUri: gs://seldon-models/scv2/samples/mlserver_1.3.5/iris-sklearn
+        requirements:
+        - sklearn
+        - mlserver
+        replicas: 5
+        minReplicas: 2
+        maxReplicas: 5
+      """
+    When I apply the server resource                         # steps.go:107 -> github.com/seldonio/seldon-core/tests/integration/v2/godog.InitializeScenario.func6
+    And I apply the model resource                           # steps.go:117 -> github.com/seldonio/seldon-core/tests/integration/v2/godog.InitializeScenario.func7
+:    Then the server "mlserver" eventually reports 5 replicas # steps.go:127 -> github.com/seldonio/seldon-core/tests/integration/v2/godog.InitializeScenario.func8
+    And the model "iris" eventually reports 5 replicas       # steps.go:141 -> github.com/seldonio/seldon-core/tests/integration/v2/godog.InitializeScenario.func10
+    timed out waiting for model seldon-mesh/iris replicas: context deadline exceeded (last observed: spec.replicas=5 min=2 max=5 status.replicas=2 available=2 ready=true)
+    suite.go:527: timed out waiting for model seldon-mesh/iris replicas: context deadline exceeded (last observed: spec.replicas=5 min=2 max=5 status.replicas=2 available=2 ready=true)
+
+--- Failed steps:
+
+  Scenario: Model requests five replicas # features/model_scaling.feature:7
+    And the model "iris" eventually reports 5 replicas # features/model_scaling.feature:38
+      Error: timed out waiting for model seldon-mesh/iris replicas: context deadline exceeded (last observed: spec.replicas=5 min=2 max=5 status.replicas=2 available=2 ready=true)
+
+
+1 scenarios (1 passed, 1 failed)
+7 steps (6 passed, 1 failed)
+6m40.050711803s
+=== NAME  TestFeatures
+    suite_test.go:28: godog scenarios failed
+--- FAIL: TestFeatures (400.05s)
+    --- FAIL: TestFeatures/Model_requests_five_replicas (400.05s)
+FAIL
+FAIL    github.com/seldonio/seldon-core/tests/integration/v2/godog      400.076s
+FAIL
