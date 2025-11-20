@@ -37,7 +37,7 @@ Feature: Model scaling ensures mlserver alignment
       """
     When I apply the server resource                         # steps.go:107 -> github.com/seldonio/seldon-core/tests/integration/v2/godog.InitializeScenario.func6
     And I apply the model resource                           # steps.go:117 -> github.com/seldonio/seldon-core/tests/integration/v2/godog.InitializeScenario.func7
-:    Then the server "mlserver" eventually reports 5 replicas # steps.go:127 -> github.com/seldonio/seldon-core/tests/integration/v2/godog.InitializeScenario.func8
+    Then the server "mlserver" eventually reports 5 replicas # steps.go:127 -> github.com/seldonio/seldon-core/tests/integration/v2/godog.InitializeScenario.func8
     And the model "iris" eventually reports 5 replicas       # steps.go:141 -> github.com/seldonio/seldon-core/tests/integration/v2/godog.InitializeScenario.func10
     timed out waiting for model seldon-mesh/iris replicas: context deadline exceeded (last observed: spec.replicas=5 min=2 max=5 status.replicas=2 available=2 ready=true)
     suite.go:527: timed out waiting for model seldon-mesh/iris replicas: context deadline exceeded (last observed: spec.replicas=5 min=2 max=5 status.replicas=2 available=2 ready=true)
