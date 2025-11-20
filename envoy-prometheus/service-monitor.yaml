@@ -1,0 +1,35 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: envoy
+  namespace: seldon-mesh
+spec:
+  endpoints:
+    - interval: 10s
+      metricRelabelings:
+        - action: replace
+          regex: model_(.+)_[0-9]+_(http|grpc)
+          replacement: $1
+          sourceLabels:
+            - envoy_cluster_name
+          targetLabel: model
+        - action: replace
+          regex: model_.+_([0-9]+)_(http|grpc)
+          replacement: $1
+          sourceLabels:
+            - envoy_cluster_name
+          targetLabel: model_version
+        - action: replace
+          regex: model_.+_[0-9]+_(http|grpc)
+          replacement: $1
+          sourceLabels:
+            - envoy_cluster_name
+          targetLabel: protocol
+      path: /stats/prometheus
+      port: stats
+  namespaceSelector:
+    any: false
+    matchNames: []
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: seldon-envoy

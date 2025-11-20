@@ -436,9 +436,9 @@ var (
 
 func getPipelineClusterName(clusterPrefix string, isGrpc bool) string {
 	if isGrpc {
-		return fmt.Sprintf("%s_%s_grpc", clusterPrefix, util.SeldonPipelineHeaderSuffix)
+		return fmt.Sprintf("%s_%s_grpc", util.SeldonPipelineHeaderSuffix, clusterPrefix)
 	}
-	return fmt.Sprintf("%s_%s_http", clusterPrefix, util.SeldonPipelineHeaderSuffix)
+	return fmt.Sprintf("%s_%s_http", util.SeldonPipelineHeaderSuffix, clusterPrefix)
 }
 
 func getRouteName(routeName string, isGrpc bool, isMirror bool) string {

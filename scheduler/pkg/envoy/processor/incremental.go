@@ -227,7 +227,7 @@ func (p *IncrementalProcessor) updateEnvoyForModelVersion(routeName string, mode
 }
 
 func getClusterNames(modelVersion string, modelVersionNumber uint32) (string, string) {
-	clusterNameBase := modelVersion + "_" + strconv.FormatInt(int64(modelVersionNumber), 10)
+	clusterNameBase := "model_" + modelVersion + "_" + strconv.FormatInt(int64(modelVersionNumber), 10)
 	httpClusterName := clusterNameBase + "_http"
 	grpcClusterName := clusterNameBase + "_grpc"
 	return httpClusterName, grpcClusterName

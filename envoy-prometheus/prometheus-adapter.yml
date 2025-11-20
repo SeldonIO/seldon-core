@@ -1,0 +1,43 @@
+apiVersion: v1
+data:
+  config.yaml: |-
+    rules:
+      - seriesQuery: '{__name__="seldon_model_infer_total",namespace!=""}'
+        resources:
+          overrides:
+            model: {group: "mlops.seldon.io", resource: "model"}
+            server: {group: "mlops.seldon.io", resource: "server"}
+            pod: {resource: "pod"}
+            namespace: {resource: "namespace"}
+        name:
+          matches: "seldon_model_infer_total"
+          as: "infer_rps"
+        metricsQuery: |
+          sum by (<<.GroupBy>>) (
+            rate (
+              <<.Series>>{<<.LabelMatchers>>}[2m]
+            )
+          )
+      - seriesQuery: 'envoy_cluster_external_upstream_rq{model!="",namespace!=""}'
+        resources:
+          overrides:
+            model: {group: "mlops.seldon.io", resource: "model"}
+            namespace: {resource: "namespace"}
+        name:
+          as: "envoy_model_reqs"
+        metricsQuery: 'sum(increase(envoy_cluster_external_upstream_rq{<<.LabelMatchers>>}[10m])) by (model)'
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: prometheus-adapter
+    meta.helm.sh/release-namespace: seldon-monitoring
+  labels:
+    app.kubernetes.io/component: metrics
+    app.kubernetes.io/instance: prometheus-adapter
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: prometheus-adapter
+    app.kubernetes.io/part-of: prometheus-adapter
+    app.kubernetes.io/version: v0.12.0
+    helm.sh/chart: prometheus-adapter-4.11.0
+  name: prometheus-adapter
+  namespace: seldon-monitoring

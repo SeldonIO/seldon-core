@@ -1,0 +1,7 @@
+query to get metrics for model=iris2:
+    kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/seldon-mesh/models.mlops.seldon.io/iris2/envoy_model_reqs" | jq .
+
+get available endpoints:
+    kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1" | jq .
+
+Problem, we need to specify time window...
