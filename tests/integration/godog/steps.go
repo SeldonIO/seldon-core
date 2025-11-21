@@ -3,6 +3,8 @@ package godogtests
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -27,9 +29,10 @@ const (
 type scalingContext struct {
 	namespace      string
 	kubeClient     client.Client
-	serverManifest string
+	serverManifest string /* TODO: Should we create separate contexts for server and model management? */
 	modelManifest  string
 	applied        []client.Object
+	baseDir        string
 }
 
 func newScalingContext() (*scalingContext, error) {
@@ -48,18 +51,30 @@ func newScalingContext() (*scalingContext, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create controller-runtime client: %w", err)
 	}
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil, fmt.Errorf("failed to determine working directory: %w", err)
+	}
 	return &scalingContext{
 		namespace:  defaultNamespace,
 		kubeClient: cl,
 		applied:    make([]client.Object, 0),
+		baseDir:    wd,
 	}, nil
 }
 
+/* Todo: we potentially want to configure how many times we'd like to repeat scenario,
+as sometimes it's not fully deterministic due to k8s nature
+ */
 func InitializeScenario(sc *godog.ScenarioContext) {
 	var suite *scalingContext
 
 	sc.Before(func(ctx context.Context, scenario *godog.Scenario) (context.Context, error) {
 		var err error
+		/*
+			TODO:
+			1. Do we need new runtime client for each scenario?
+		*/
 		suite, err = newScalingContext()
 		if err != nil {
 			return ctx, err
@@ -69,6 +84,12 @@ func InitializeScenario(sc *godog.ScenarioContext) {
 
 	sc.After(func(ctx context.Context, scenario *godog.Scenario, scnErr error) (context.Context, error) {
 		if suite != nil {
+			/*
+				TODO:
+				We potentially want to have a more control over clean up logic
+				for each scenario. For example, in the existing scenario we delete mlservers as well.
+				And I wonder should we fully delete it or reset to some initial specification?
+			*/
 			suite.cleanup()
 		}
 		return ctx, nil
@@ -93,6 +114,18 @@ func InitializeScenario(sc *godog.ScenarioContext) {
 		return nil
 	})
 
+	sc.Step(`^the server manifest file "([^"]+)" is used$`, func(path string) error {
+		if suite == nil {
+			return fmt.Errorf("scenario context not initialised")
+		}
+		manifest, err := suite.loadManifestFromFile(path)
+		if err != nil {
+			return err
+		}
+		suite.serverManifest = manifest
+		return nil
+	})
+
 	sc.Step(`^the following model resource:$`, func(body *godog.DocString) error {
 		if suite == nil {
 			return fmt.Errorf("scenario context not initialised")
@@ -104,6 +137,18 @@ func InitializeScenario(sc *godog.ScenarioContext) {
 		return nil
 	})
 
+	sc.Step(`^the model manifest file "([^"]+)" is used$`, func(path string) error {
+		if suite == nil {
+			return fmt.Errorf("scenario context not initialised")
+		}
+		manifest, err := suite.loadManifestFromFile(path)
+		if err != nil {
+			return err
+		}
+		suite.modelManifest = manifest
+		return nil
+	})
+
 	sc.Step(`^I apply the server resource$`, func() error {
 		if suite == nil {
 			return fmt.Errorf("scenario context not initialised")
@@ -111,6 +156,8 @@ func InitializeScenario(sc *godog.ScenarioContext) {
 		if suite.serverManifest == "" {
 			return fmt.Errorf("server manifest has not been defined")
 		}
+
+		/* TODO: I believe it's better to wait for servers to be ready before moving to the next step */
 		return suite.applyServerManifest(suite.serverManifest)
 	})
 
@@ -230,6 +277,7 @@ func (s *scalingContext) trackApplied(obj client.Object) {
 	s.applied = append(s.applied, obj.DeepCopyObject().(client.Object))
 }
 
+/* TODO: kubernetes related functions could be refactored into a separate package? */
 func (s *scalingContext) waitForServerReplicas(name, namespace string, replicas int) error {
 	var lastStatus string
 	err := s.waitForResource(fmt.Sprintf("server %s/%s replicas", namespace, name), func(ctx context.Context) (bool, error) {
@@ -314,6 +362,24 @@ func (s *scalingContext) cleanup() {
 		_ = s.kubeClient.Delete(ctx, obj)
 	}
 	s.applied = nil
+}
+
+func (s *scalingContext) loadManifestFromFile(path string) (string, error) {
+	var fullPath string
+	if filepath.IsAbs(path) {
+		fullPath = path
+	} else {
+		fullPath = filepath.Join(s.baseDir, path)
+	}
+	data, err := os.ReadFile(fullPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read manifest file %s: %w", fullPath, err)
+	}
+	manifest := strings.TrimSpace(string(data))
+	if manifest == "" {
+		return "", fmt.Errorf("manifest file %s is empty", fullPath)
+	}
+	return manifest, nil
 }
 
 func formatServerStatus(server *mlopsv1alpha1.Server) string {

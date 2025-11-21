@@ -1,0 +1,9 @@
+apiVersion: mlops.seldon.io/v1alpha1
+kind: Server
+metadata:
+  name: mlserver
+spec:
+  serverConfig: mlserver
+  replicas: 5
+  minReplicas: 2
+  maxReplicas: 5
