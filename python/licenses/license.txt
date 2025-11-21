@@ -3138,7 +3138,7 @@ IN THE SOFTWARE.
 
 
 ml_dtypes
-0.5.3
+0.5.4
 Apache-2.0
 
                                  Apache License
@@ -4992,7 +4992,7 @@ Apache-2.0 AND BSD-2-Clause
 
 
 protobuf
-5.29.1
+5.29.5
 3-Clause BSD License
 Copyright 2008 Google Inc.  All rights reserved.
 

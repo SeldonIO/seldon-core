@@ -19,8 +19,14 @@ RUN wget -O certifi-python-certifi.tar.gz https://github.com/certifi/python-cert
 
 RUN microdnf update -y && \
     microdnf install -y make automake gcc gcc-c++ && \
-    conda install -c conda-forge --yes python=$PYTHON_VERSION conda=$CONDA_VERSION && \
-    pip install --upgrade pip setuptools wheel
+    conda install -c conda-forge --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
+
+RUN PIP_WHEEL_DIR=/opt/conda/lib/python3.12/ensurepip/_bundled && \
+    /opt/conda/bin/pip wheel "pip==25.3.0" \
+                             "setuptools>=75.0.0,<76.0.0" \
+                             "wheel>=0.44.0,<0.45.0" \
+                             --wheel-dir $PIP_WHEEL_DIR && \
+    rm -f $PIP_WHEEL_DIR/pip-25.0.1-py3-none-any.whl
 
 RUN mkdir microservice
 WORKDIR /microservice
