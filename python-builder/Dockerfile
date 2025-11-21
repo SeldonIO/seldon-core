@@ -23,7 +23,8 @@ RUN INSTALL_DIR=/tmp/flatc-install && \
 # This is to install desired version of Python without updating conda version
 ENV PYTHON_VERSION="3.12.12"
 ENV CONDA_VERSION="25.3.1"
-RUN conda install --yes -c conda-forge python=$PYTHON_VERSION conda=$CONDA_VERSION
+# Pin brotli to 1.2.x to remediate GHSA-2qfp-q593-8484 (CVE-2025-6176)
+RUN conda install --yes -c conda-forge python=$PYTHON_VERSION conda=$CONDA_VERSION brotli=1.2
 
 # Install python dependencies
 RUN pip3 install --upgrade pip setuptools wheel && \
