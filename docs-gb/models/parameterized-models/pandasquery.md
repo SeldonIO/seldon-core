@@ -98,4 +98,4 @@ spec:
 Here the mul10 model will be called if the choice-is-one model succeeds and the add10 model will\
 be called if the choice-is-two model succeeds.
 
-For more details, see the Pandas query [notebook](../../examples/notebooks/infer.ipynb)
+For more details, see the Pandas query [notebook](../../examples/notebooks/infer.ipynb).
