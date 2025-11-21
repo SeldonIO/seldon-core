@@ -28,7 +28,12 @@ RUN conda install --yes -c conda-forge python=$PYTHON_VERSION conda=$CONDA_VERSI
 
 # Install python dependencies
 RUN pip3 install --upgrade pip setuptools wheel && \
-    pip3 install grpcio grpcio-tools flatbuffers twine mypy-protobuf
+    pip3 install \
+        grpcio==1.70.0 \
+        grpcio-tools==1.70.0 \
+        flatbuffers==24.3.25 \
+        twine==5.1.0 \
+        mypy-protobuf==3.5.0
 
 # Installs required
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
