@@ -16,4 +16,4 @@ jobs:
     - uses: actions/checkout@v2
     - name: test-python
       run: |
-        make -C python update_package install_dev test
+        make -C python install_dev update_package test
