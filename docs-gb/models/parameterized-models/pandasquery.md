@@ -28,7 +28,7 @@ This invocation check filters for tensor A having value 1.
 
 * The model also returns a tensor called `status` which indicates the operation run and whether it\
   was a success. If no rows satisfy the query then just a `status` tensor output will be returned.
-* Further details on Pandas query can be found [here](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.query.html)
+* Further details, see [Pandas query](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.query.html)
 
 This model can be useful for conditional Pipelines. For example, you could have two invocations of this model:
 
@@ -98,4 +98,4 @@ spec:
 Here the mul10 model will be called if the choice-is-one model succeeds and the add10 model will\
 be called if the choice-is-two model succeeds.
 
-The full notebook can be found [here](../examples/pandasquery.md)
+For more details, see the Pandas query [notebook](../../examples/notebooks/infer.ipynb)
