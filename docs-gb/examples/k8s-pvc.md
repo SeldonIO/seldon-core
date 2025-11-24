@@ -51,7 +51,7 @@ To start a Kind cluster with these settings using our ansible script you can run
 ansible-playbook ansible/playbooks/kind-cluster.yaml -e kind_config_file=${PWD}/samples/examples/local-pvc/kind-config.yaml
 ```
 
-[**Now you should finish the Seldon install following the docs.**](https://docs.seldon.io/projects/seldon-core/en/v2/contents/getting-started/index.html)
+[**Now you should finish the Seldon install following the docs.**](../getting-started/kubernetes-installation/README.md)
 
 Create the local folder we will use for our models and copy an example iris sklearn model to it.
 
