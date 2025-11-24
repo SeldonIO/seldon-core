@@ -32,12 +32,12 @@ support for a wide range of machine learning model artifacts including Tensorflo
 SKlearn models, XGBoost models, ONNX models, TensorRT models, custom python models and many more. For
 advanced use, the creation of new inference servers is manged by two resources:
 
-* [Servers](../servers.md) - for deploying sets of replicas of core inference servers (MLServer or Triton by default).
+* [Servers](../servers/servers.md) - for deploying sets of replicas of core inference servers (MLServer or Triton by default).
 * [ServerConfigs](../kubernetes/resources/serverconfig.md) - for defining server configurations including custom servers.
 
 ## API for Inference
 
-Once deployed models can be called using the [Seldon V2 inference protocol](../apis/inference/v2.md). This
+Once deployed models can be called using the [Seldon V2 inference protocol](../user-guide/v2/README.md). This
 protocol created by Seldon, NVIDIA and the KServe projects is supported by MLServer and Triton inference
 servers amingst others and allows REST and gRPC calls to your model.
 
