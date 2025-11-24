@@ -11,14 +11,13 @@ ifeq ($(DOCKER_PLATFORM),)
 endif
 DOCKER_PLATFORM_ARG := $(if $(DOCKER_PLATFORM),--platform=$(DOCKER_PLATFORM),)
 
-# TODO: change `seldonio/core-builder` image version to 0.31 after push
 .PHONY: create
 create:
 	docker run --rm -it \
 		$(DOCKER_PLATFORM_ARG) \
 		--user=$$(id -u):$$(id -g) \
 		-v "$(SELDON_CORE_DIR)":/work \
-		seldonio/core-builder:0.20 bash -c 'cd /work/operator/helm && make create_helper'
+		seldonio/core-builder:0.31 bash -c 'cd /work/operator/helm && make create_helper'
 
 .PHONY: create_helper
 create_helper:
