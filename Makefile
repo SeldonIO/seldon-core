@@ -18,7 +18,6 @@ run_jupyter_notebook:
 list_jupyter_notebooks:
 	@jupyter notebook list
 
-# TODO: change `seldonio/core-builder` image version to 0.31 after push
 run_core_builder_in_host:
 	unset DOCKER_TLS_VERIFY && \
 		unset DOCKER_HOST && \
@@ -29,17 +28,16 @@ run_core_builder_in_host:
 			-v /var/run/docker.sock:/var/run/docker.sock \
 			-v $${HOME}/.m2:/root/.m2 \
 			-v $(SELDON_CORE_LOCAL_DIR):/work \
-			seldonio/core-builder:0.20 bash
+			seldonio/core-builder:0.31 bash
 
 
-# TODO: change `seldonio/core-builder` image version to 0.31 after push
 run_core_builder_in_minikube:
 	eval $$(minikube docker-env) && \
 		docker run --rm -it \
 			-v /var/run/docker.sock:/var/run/docker.sock \
 			-v /home/docker/.m2:/root/.m2 \
 			-v $(SELDON_CORE_VM_DIR):/work \
-			seldonio/core-builder:0.20 bash
+			seldonio/core-builder:0.31 bash
 
 show_paths:
 	@echo "local: $(SELDON_CORE_LOCAL_DIR)"
