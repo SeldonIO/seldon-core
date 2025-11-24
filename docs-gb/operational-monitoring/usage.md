@@ -56,7 +56,7 @@ The following environment variables control the behaviour of Hodometer, regardle
 | Flag                 | Format                       | Example                                             | Description                                                                      |
 | -------------------- | ---------------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------- |
 | `METRICS_LEVEL`      | string                       | feature                                             | Level of detail for recorded metrics; one of `feature`, `resource`, or `cluster` |
-| `EXTRA_PUBLISH_URLS` | comma-separated list of URLs | http://my-endpoint-1:8000,http://my-endpoint-2:8000 | Additional endpoints to publish metrics to                                       |
+| `EXTRA_PUBLISH_URLS` | comma-separated list of URLs | `http://<my-endpoint-1>:8000`,`http://<my-endpoint-2>:8000` | Additional endpoints to publish metrics to                                       |
 | `SCHEDULER_HOST`     | string                       | seldon-scheduler                                    | Hostname for Seldon Core v2 scheduler                                            |
 | `SCHEDULER_PORT`     | integer                      | 9004                                                | Port for Seldon Core v2 scheduler                                                |
 | `LOG_LEVEL`          | string                       | info                                                | Level of detail for application logs                                             |
