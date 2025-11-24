@@ -7,11 +7,14 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package events
+package Input
 
-import pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+import (
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/events"
+)
 
-const EventTypeLoadModel EventType = "LoadModel"
+const EventTypeLoadModel events.EventType = "LoadModel"
 
 type LoadModel struct {
 	*pb.LoadModelRequest //todo: change this once we have confidence in what is required
@@ -21,6 +24,6 @@ func NewLoadModel(req *pb.LoadModelRequest) *LoadModel {
 	return &LoadModel{req}
 }
 
-func (ms *LoadModel) Type() EventType {
+func (ms *LoadModel) Type() events.EventType {
 	return EventTypeLoadModel
 }

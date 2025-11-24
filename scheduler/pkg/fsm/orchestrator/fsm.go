@@ -14,6 +14,7 @@ import (
 	"fmt"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/events"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/events/Input"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/orchestrator/handlers"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/storage"
@@ -27,7 +28,7 @@ type Fsm struct {
 }
 
 type Handler interface {
-	Handle(ctx context.Context, ev events.Event) ([]events.OutputEvent, error)
+	Handle(ctx context.Context, ev events.Event) ([]events.Output, error)
 }
 
 func NewFSM(name string, store storage.ClusterManager, config *state_machine.Config) *Fsm {
@@ -38,7 +39,7 @@ func NewFSM(name string, store storage.ClusterManager, config *state_machine.Con
 	}
 
 	// Register default handlers
-	fsm.RegisterHandler(events.EventTypeLoadModel, handlers.NewLoadModelEventHandler(store, state_machine.NewStateMachine(config).Model))
+	fsm.RegisterHandler(Input.EventTypeLoadModel, handlers.NewLoadModelEventHandler(store, state_machine.NewStateMachine(config).Model))
 
 	return fsm
 }
@@ -50,7 +51,7 @@ func (f *Fsm) RegisterHandler(eventType events.EventType, handler Handler) {
 // Apply processes an event through the FSM
 // 1. Applies business logic and updates KVStore
 // 2. Generates output events
-func (f *Fsm) Apply(ctx context.Context, event events.Event) ([]events.OutputEvent, error) {
+func (f *Fsm) Apply(ctx context.Context, event events.Event) ([]events.Output, error) {
 
 	// 2. Get handler for this event type
 	handler, exists := f.handlers[event.Type()]

@@ -78,8 +78,8 @@ func (pq *EventPriorityQueue) Pop() interface{} {
 // EventSubscriber receives output events from the coordinator
 type EventSubscriber struct {
 	ID      string
-	Channel chan events.OutputEvent
-	Filter  func(events.OutputEvent) bool // Optional filter to only receive certain events
+	Channel chan events.Output
+	Filter  func(events.Output) bool // Optional filter to only receive certain events
 }
 
 // SimpleCoordinator is a single-threaded event processor with priority queue
@@ -215,9 +215,9 @@ func (c *SimpleCoordinator) SubmitEvent(event events.Event, priority EventPriori
 
 // SubmitEventSync adds an event and waits for it to be processed (blocking)
 // Returns the output events generated
-func (c *SimpleCoordinator) SubmitEventSync(ctx context.Context, event events.Event, priority EventPriority) ([]events.OutputEvent, error) {
+func (c *SimpleCoordinator) SubmitEventSync(ctx context.Context, event events.Event, priority EventPriority) ([]events.Output, error) {
 	// Create a temporary subscriber to capture output
-	resultChan := make(chan events.OutputEvent, 10)
+	resultChan := make(chan events.Output, 10)
 	subID := fmt.Sprintf("sync-%d", time.Now().UnixNano())
 
 	// Subscribe before submitting
@@ -237,7 +237,7 @@ func (c *SimpleCoordinator) SubmitEventSync(ctx context.Context, event events.Ev
 	}
 
 	// Wait for results (with timeout)
-	var outputEvents []events.OutputEvent
+	var outputEvents []events.Output
 	timeout := time.After(5 * time.Second)
 
 collectLoop:
@@ -272,8 +272,8 @@ collectLoop:
 }
 
 // Subscribe registers a channel to receive output events
-func (c *SimpleCoordinator) Subscribe(id string, bufferSize int, filter func(events.OutputEvent) bool) <-chan events.OutputEvent {
-	ch := make(chan events.OutputEvent, bufferSize)
+func (c *SimpleCoordinator) Subscribe(id string, bufferSize int, filter func(events.Output) bool) <-chan events.Output {
+	ch := make(chan events.Output, bufferSize)
 
 	sub := &EventSubscriber{
 		ID:      id,
@@ -359,7 +359,7 @@ func (c *SimpleCoordinator) processEvent(event events.Event) {
 }
 
 // fanOutEvents sends output events to all subscribers
-func (c *SimpleCoordinator) fanOutEvents(events []events.OutputEvent) {
+func (c *SimpleCoordinator) fanOutEvents(events []events.Output) {
 	if len(events) == 0 {
 		return
 	}

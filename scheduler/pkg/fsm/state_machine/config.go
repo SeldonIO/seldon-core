@@ -30,12 +30,15 @@ type Config struct {
 	AllowOvercommit bool
 	OvercommitRatio float64 // e.g., 1.5 = allow 150% of capacity
 
-	serverFilters []filter.ServerFilter
-	serverSorts   []sorters.ServerSorter
+	serverFilters  []filter.ServerFilter
+	replicaFilters []filter.ReplicaFilter
+	serverSorts    []sorters.ServerSorter
 
 	// ========================================
 	// Model Replica Policies
 	// ========================================
+
+	ModelDeploymentStrategy ModelDeploymentStrategy
 
 	// Default replica counts if not specified in model
 	DefaultMinReplicas int
@@ -145,6 +148,7 @@ func DefaultConfig() *Config {
 			filter.ServerReplicaFilter{}, filter.DeletedServerFilter{},
 			filter.ServerRequirementFilter{}, filter.SharingServerFilter{},
 		},
+		ModelDeploymentStrategy:          ModelDeploymentAllAtOnce,
 		DefaultMinReplicas:               1,
 		DefaultMaxReplicas:               5,
 		ReplicaFailureThreshold:          3,
@@ -184,6 +188,13 @@ type ServerSortingStrategy string
 
 const (
 	ServerSelectionModelsLoaded ServerSortingStrategy = "ModelsLoaded"
+)
+
+type ModelDeploymentStrategy string
+
+const (
+	ModelDeploymentRollingUpdate = "RollingUpdate"
+	ModelDeploymentAllAtOnce     = "AllAtOnce"
 )
 
 type AutoscalingPolicy string

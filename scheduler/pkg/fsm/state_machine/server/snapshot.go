@@ -18,25 +18,25 @@ type Snapshot struct {
 }
 
 type Replica struct {
-	inferenceSvc      string
-	inferenceHttpPort int32
-	inferenceGrpcPort int32
-	serverName        string
-	replicaIdx        int
-	server            *Server
-	capabilities      []string
-	memory            uint64
-	availableMemory   uint64
+	InferenceSvc      string
+	InferenceHttpPort int32
+	InferenceGrpcPort int32
+	ServerName        string
+	ReplicaIdx        int
+	Server            *Server
+	Capabilities      []string
+	Memory            uint64
+	AvailableMemory   uint64
 	// precomputed values to speed up ops on scheduler
-	loadedModels map[ModelVersionID]bool
+	LoadedModels map[ModelVersionID]bool
 	// for marking models that are in process of load requested or loading on this server (to speed up ops)
-	loadingModels        map[ModelVersionID]bool
-	overCommitPercentage uint32
+	LoadingModels        map[ModelVersionID]bool
+	OverCommitPercentage uint32
 	// holding reserved memory on server replica while loading models, internal to scheduler
-	reservedMemory uint64
+	ReservedMemory uint64
 	// precomputed values to speed up ops on scheduler
-	uniqueLoadedModels map[string]bool
-	isDraining         bool
+	UniqueLoadedModels map[string]bool
+	IsDraining         bool
 }
 
 type Stats struct {
@@ -65,7 +65,7 @@ type Server struct {
 
 func (ss *Snapshot) GetCapabilities() []string {
 	for _, replica := range ss.Replicas {
-		return replica.capabilities
+		return replica.Capabilities
 	}
 
 	return []string{}

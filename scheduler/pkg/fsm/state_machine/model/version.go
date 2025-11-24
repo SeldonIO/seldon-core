@@ -63,3 +63,27 @@ func (mvs *VersionStatus) Active() bool {
 func (mvs *VersionStatus) HasServer() bool {
 	return mvs.ServerName != ""
 }
+
+func (mvs *VersionStatus) GetRequiredMemory() uint64 {
+	var multiplier uint64 = 1
+	if mvs.ModelDefn != nil &&
+		mvs.ModelDefn.ModelSpec.ModelRuntimeInfo != nil &&
+		mvs.ModelDefn.ModelSpec.ModelRuntimeInfo.ModelRuntimeInfo != nil &&
+		mvs.ModelDefn.ModelSpec.MemoryBytes != nil {
+		multiplier = getInstanceCount(mvs.ModelDefn.ModelSpec.ModelRuntimeInfo)
+		return *mvs.ModelDefn.ModelSpec.MemoryBytes * multiplier
+	}
+
+	return multiplier
+}
+
+func getInstanceCount(modelRuntimeInfo *pb.ModelRuntimeInfo) uint64 {
+	switch modelRuntimeInfo.ModelRuntimeInfo.(type) {
+	case *pb.ModelRuntimeInfo_Mlserver:
+		return uint64(modelRuntimeInfo.GetMlserver().ParallelWorkers)
+	case *pb.ModelRuntimeInfo_Triton:
+		return uint64(modelRuntimeInfo.GetTriton().Cpu[0].InstanceCount)
+	default:
+		return 1
+	}
+}

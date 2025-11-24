@@ -14,6 +14,7 @@ import (
 	"fmt"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/events"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/events/Input"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/storage"
 )
@@ -28,8 +29,8 @@ func NewLoadModelEventHandler(store storage.ClusterManager, model state_machine.
 }
 
 // Handle implementations (business logic goes here)
-func (e *LoadModelEventHandler) Handle(ctx context.Context, event events.Event) ([]events.OutputEvent, error) {
-	loadEvent, ok := event.(*events.LoadModel)
+func (e *LoadModelEventHandler) Handle(ctx context.Context, event events.Event) ([]events.Output, error) {
+	loadEvent, ok := event.(*Input.LoadModel)
 	if !ok {
 		return nil, fmt.Errorf("invalid event type, expected LoadModelEvent")
 	}
@@ -78,5 +79,5 @@ func (e *LoadModelEventHandler) Handle(ctx context.Context, event events.Event) 
 
 	*/
 
-	return []events.OutputEvent{}, nil
+	return []events.Output{}, nil
 }
