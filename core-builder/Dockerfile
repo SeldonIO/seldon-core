@@ -1,21 +1,11 @@
-FROM openjdk:13.0.1-jdk-buster
+FROM eclipse-temurin:17-jdk
 
 ENV PYTHON_VERSION="3.12.12"
-
-RUN printf '%s\n' \
-    'deb http://archive.debian.org/debian buster main contrib non-free' \
-    'deb http://archive.debian.org/debian-security buster/updates main contrib non-free' \
-    > /etc/apt/sources.list \
-    && printf 'Acquire::Check-Valid-Until "false";\n' \
-    'Acquire::Retries "3";\n' \
-    > /etc/apt/apt.conf.d/99archive \
-    && apt-get update
 
 # install docker
 RUN \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-    apt-transport-https \
     ca-certificates \
     curl \
     wget \
@@ -30,9 +20,9 @@ RUN \
     apt-get install -y --no-install-recommends docker-ce
 
 # Installing source to image (s2i)
-RUN wget https://github.com/openshift/source-to-image/releases/download/v1.1.14/source-to-image-v1.1.14-874754de-linux-386.tar.gz && \
-    tar -zxvf source-to-image-v1.1.14-874754de-linux-386.tar.gz && \
-    rm source-to-image-v1.1.14-874754de-linux-386.tar.gz && \
+RUN wget https://github.com/openshift/source-to-image/releases/download/v1.4.0/source-to-image-v1.4.0-d3544c7e-linux-amd64.tar.gz && \
+    tar -zxvf source-to-image-v1.4.0-d3544c7e-linux-amd64.tar.gz && \
+    rm source-to-image-v1.4.0-d3544c7e-linux-amd64.tar.gz && \
     mv ./s2i /bin && \
     mv ./sti /bin
 
@@ -48,22 +38,22 @@ RUN wget https://storage.googleapis.com/kubernetes-release/release/v1.16.2/bin/l
 
 RUN \
     apt-get update -y && \
-    apt-get install -y vim jq build-essential pandoc && \
+    apt-get install -y git vim jq build-essential pandoc && \
     apt-get remove -y --auto-remove && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install maven
-ENV MAVEN_VERSION=3.9.3
+ENV MAVEN_VERSION=3.9.11
 ENV USER_HOME_DIR="/root"
-ENV SHA=400fc5b6d000c158d5ee7937543faa06b6bda8408caa2444a9c947c21472fde0f0b64ac452b8cec8855d528c0335522ed5b6c8f77085811c7e29e1bedbb5daa2
 RUN set -eux; \
-    BASE_URL="https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries"; \
+    BASE_URL="https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries"; \
     mkdir -p /usr/share/maven /usr/share/maven/ref; \
     curl -fsSL -o /tmp/apache-maven.tar.gz "${BASE_URL}/apache-maven-${MAVEN_VERSION}-bin.tar.gz"; \
-    echo "${SHA}  /tmp/apache-maven.tar.gz" | sha512sum -c -; \
+    curl -fsSL -o /tmp/apache-maven.tar.gz.sha512 "${BASE_URL}/apache-maven-${MAVEN_VERSION}-bin.tar.gz.sha512"; \
+    printf "%s  %s\n" "$(cat /tmp/apache-maven.tar.gz.sha512)" "/tmp/apache-maven.tar.gz" | sha512sum -c -; \
     tar -xzf /tmp/apache-maven.tar.gz -C /usr/share/maven --strip-components=1; \
-    rm -f /tmp/apache-maven.tar.gz; \
+    rm -f /tmp/apache-maven.tar.gz /tmp/apache-maven.tar.gz.sha512; \
     ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
 ENV MAVEN_HOME=/usr/share/maven
 ENV MAVEN_CONFIG="$USER_HOME_DIR/.m2"
@@ -115,11 +105,6 @@ RUN wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomiz
     tar -xzf kustomize_v4.1.2_linux_amd64.tar.gz && \
     chmod +x kustomize && \
     mv kustomize /usr/local/bin/kustomize
-
-# iptables fix
-RUN \
-    update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy && \
-    update-alternatives --set iptables /usr/sbin/iptables-legacy
 
 # install jupyter
 RUN pip install --no-cache-dir jupyter==1.1.1
