@@ -192,10 +192,37 @@ model.mlops.seldon.io/iris condition met
 
 ```
 
+{% tabs %}
+
+{% tab title="curl" %}
+```bash
+curl -k http://${MESH_IP_NS1}:80/v2/models/iris/infer \
+  -H "Host: seldon-mesh.inference.seldon" \
+  -H "Seldon-Model: iris" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "inputs": [
+      {
+        "name": "predict",
+        "datatype": "FP32",
+        "shape": [1,4],
+        "data": [[1,2,3,4]]
+      }
+    ]
+  }' | jq -M .
+```  
+
+{% endtab %}
+
+{% tab title="seldon-cli" %} 
 ```bash
 seldon model infer iris --inference-host ${MESH_IP_NS1}:80 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
+{% endtab %}
+
+{% endtabs %}
+
 
 ```json
 {
@@ -223,10 +250,38 @@ seldon model infer iris --inference-host ${MESH_IP_NS1}:80 \
 
 ```
 
+{% tabs %}
+
+{% tab title="curl" %}
+```bash
+curl -k http://${MESH_IP_NS1}:80/v2/models/iris/infer \
+  -H "Host: seldon-mesh.inference.seldon" \
+  -H "Seldon-Model: iris" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model_name": "iris",
+    "inputs": [
+      {
+        "name": "input",
+        "datatype": "FP32",
+        "shape": [1,4],
+        "data": [1,2,3,4]
+      }
+    ]
+  }' | jq -M .
+```
+
+{% endtab %}
+
+{% tab title="seldon-cli" %} 
 ```bash
 seldon model infer iris --inference-mode grpc --inference-host ${MESH_IP_NS1}:80 \
    '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' | jq -M .
 ```
+{% endtab %}
+
+{% endtabs %}
+
 
 ```json
 {
@@ -271,13 +326,37 @@ kubectl wait --for condition=ready --timeout=300s model --all -n ns2
 
 ```
 model.mlops.seldon.io/iris condition met
+```
+{% tabs %}
 
+{% tab title="curl" %}
+```bash
+curl -k http://${MESH_IP_NS2}:80/v2/models/iris/infer \
+  -H "Host: seldon-mesh.inference.seldon" \
+  -H "Seldon-Model: iris" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "inputs": [
+      {
+        "name": "predict",
+        "datatype": "FP32",
+        "shape": [1,4],
+        "data": [[1,2,3,4]]
+      }
+    ]
+  }' | jq -M .
 ```
 
+{% endtab %}
+
+{% tab title="seldon-cli" %} 
 ```bash
 seldon model infer iris --inference-host ${MESH_IP_NS2}:80 \
   '{"inputs": [{"name": "predict", "shape": [1, 4], "datatype": "FP32", "data": [[1, 2, 3, 4]]}]}'
 ```
+{% endtab %}
+
+{% endtabs %}
 
 ```json
 {
@@ -304,11 +383,39 @@ seldon model infer iris --inference-host ${MESH_IP_NS2}:80 \
 }
 
 ```
+{% tabs %}
 
+{% tab title="curl" %}
+```bash
+curl -k http://${MESH_IP_NS2}:80/v2/models/iris/infer \
+  -H "Host: seldon-mesh.inference.seldon" \
+  -H "Seldon-Model: iris" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model_name": "iris",
+    "inputs": [
+      {
+        "name": "input",
+        "datatype": "FP32",
+        "shape": [1,4],
+        "data": [1,2,3,4]
+      }
+    ]
+  }' | jq -M .
+
+```
+
+{% endtab %}
+
+{% tab title="seldon-cli" %} 
 ```bash
 seldon model infer iris --inference-mode grpc --inference-host ${MESH_IP_NS2}:80 \
    '{"model_name":"iris","inputs":[{"name":"input","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[1,4]}]}' | jq -M .
 ```
+{% endtab %}
+
+{% endtabs %}
+
 
 ```json
 {
@@ -400,11 +507,44 @@ pipeline.mlops.seldon.io/tfsimples condition met
 pipeline.mlops.seldon.io/tfsimples condition met
 
 ```
+{% tabs %}
 
+{% tab title="curl" %}
+```bash
+curl -k http://${MESH_IP_NS1}:80/v2/models/tfsimples/infer \
+  -H "Host: seldon-mesh.inference.seldon" \
+  -H "Seldon-Model: tfsimples.pipeline" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model_name": "simple",
+    "inputs": [
+      {
+        "name": "INPUT0",
+        "datatype": "INT32",
+        "shape": [1,16],
+        "data": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+      },
+      {
+        "name": "INPUT1",
+        "datatype": "INT32",
+        "shape": [1,16],
+        "data": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+      }
+    ]
+  }' | jq -M .
+
+```
+
+{% endtab %}
+
+{% tab title="seldon-cli" %} 
 ```bash
 seldon pipeline infer tfsimples --inference-mode grpc --inference-host ${MESH_IP_NS1}:80 \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
+{% endtab %}
+
+{% endtabs %}
 
 ```json
 {
@@ -469,11 +609,43 @@ seldon pipeline infer tfsimples --inference-mode grpc --inference-host ${MESH_IP
 }
 
 ```
+{% tabs %}
 
+{% tab title="curl" %}
+```bash
+curl -k http://${MESH_IP_NS2}:80/v2/models/tfsimples/infer \
+  -H "Host: seldon-mesh.inference.seldon" \
+  -H "Seldon-Model: tfsimples.pipeline" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model_name": "simple",
+    "inputs": [
+      {
+        "name": "INPUT0",
+        "datatype": "INT32",
+        "shape": [1,16],
+        "data": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+      },
+      {
+        "name": "INPUT1",
+        "datatype": "INT32",
+        "shape": [1,16],
+        "data": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+      }
+    ]
+  }' | jq -M .
+```
+
+{% endtab %}
+
+{% tab title="seldon-cli" %} 
 ```bash
 seldon pipeline infer tfsimples --inference-mode grpc --inference-host ${MESH_IP_NS2}:80 \
     '{"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}' | jq -M .
 ```
+{% endtab %}
+
+{% endtabs %}
 
 ```json
 {

@@ -56,7 +56,8 @@ This service handles the flow of data between components in a pipeline, using Ka
 
 ### Envoy
 
-This service manages the proxying of requests to the correct servers including load balancing.
+Envoy acts as the request proxy for Seldon Core 2, routing traffic to the appropriate inference servers and handling load balancing across available replicas. Envoy configuration of Seldon Core 2 uses [weighted least-request](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/load_balancing/load_balancers#weighted-least-request) load balancing, which dynamically distributes traffic based on both replica weights and current load, helping ensure efficient and stable request routing.
+
 
 ## Dataflow Architecture and Pipelines
 

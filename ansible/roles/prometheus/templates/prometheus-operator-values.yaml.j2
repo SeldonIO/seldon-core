@@ -1,0 +1,18 @@
+fullnameOverride: seldon-monitoring
+grafana:
+  enabled: false
+kubeEtcd:
+  enabled: false
+prometheus:
+  prometheusSpec:
+    podMonitorNamespaceSelector:
+      matchNamespaces:
+        - {{ seldon_mesh_namespace }}
+    podMonitorSelector:                   # accept all PodMonitors
+    podMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorNamespaceSelector:
+      matchNames:
+        - {{ seldon_mesh_namespace }}
+    serviceMonitorSelector:                   # accept all ServiceMonitors
+    serviceMonitorSelectorNilUsesHelmValues: false
+    maximumStartupDurationSeconds: 300
