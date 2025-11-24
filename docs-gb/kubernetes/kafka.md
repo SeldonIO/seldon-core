@@ -27,8 +27,7 @@ We currently have tested and documented integration with following managed solut
 - Amazon MSK (security: SASL/SCRAM)
 - Azure Event Hub (security: SASL/PLAIN)
 
-See our [Kafka security](../getting-started/kubernetes-installation/security.md#kafka)
-section for configuration examples.
+See our [Kafka security](../getting-started/kubernetes-installation/security/README.md#kafka) section for configuration examples.
 
 ## Self Hosted Kafka
 
@@ -39,7 +38,7 @@ To install Kafka for testing purposed in your k8s cluster, we recommend to use [
 
 {% hint style="info" %}
 **Note**: This page discuss how to install Strimzi Operator and create Kafka cluster for trial, dev, or testing purposes.
-For production grade installation consult [Strimzi documentation](https://strimzi.io/documentation/) or use one of managed solutions mentioned [here](./index.md).
+For production grade installation consult [Strimzi documentation](https://strimzi.io/documentation/) or use one of [managed solutions](#managed-kafka).
 {% endhint %}
 
 You can install and configure Strimzi using either Helm charts or our Ansible playbooks, both documented below.
@@ -93,4 +92,4 @@ ansible-playbook playbooks/setup-ecosystem.yaml -e full_install=no -e install_ka
 ## Notes
 - You can check [kafka-examples](https://github.com/strimzi/strimzi-kafka-operator/tree/main/examples/kafka) for more details.
 - As we are using [KRaft](https://kafka.apache.org/documentation/#kraft), use Kafka version 3.4 or above.
-- For security settings check [here](../getting-started/kubernetes-installation/security.md#kafka).
+- For security settings check [here](../getting-started/kubernetes-installation/security/README.md#kafka).

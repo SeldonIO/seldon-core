@@ -56,7 +56,7 @@ The following environment variables control the behaviour of Hodometer, regardle
 | Flag                 | Format                       | Example                                             | Description                                                                      |
 | -------------------- | ---------------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------- |
 | `METRICS_LEVEL`      | string                       | feature                                             | Level of detail for recorded metrics; one of `feature`, `resource`, or `cluster` |
-| `EXTRA_PUBLISH_URLS` | comma-separated list of URLs | http://my-endpoint-1:8000,http://my-endpoint-2:8000 | Additional endpoints to publish metrics to                                       |
+| `EXTRA_PUBLISH_URLS` | comma-separated list of URLs | `http://<my-endpoint-1>:8000`,`http://<my-endpoint-2>:8000` | Additional endpoints to publish metrics to                                       |
 | `SCHEDULER_HOST`     | string                       | seldon-scheduler                                    | Hostname for Seldon Core v2 scheduler                                            |
 | `SCHEDULER_PORT`     | integer                      | 9004                                                | Port for Seldon Core v2 scheduler                                                |
 | `LOG_LEVEL`          | string                       | info                                                | Level of detail for application logs                                             |
@@ -91,21 +91,6 @@ helm install seldon-v2-runtime k8s/helm-charts/seldon-core-v2-runtime \
 **Note**: It is a good practice to set Helm values in values file.\
 These can be applied by using the `-f <filename>` switch when running Helm.
 {% endhint %}
-
-### Docker Compose
-
-The [Compose setup](../getting-started/docker-installation/index.md) provides a pre-configured and opinionated,\
-yet still flexible, approach to using Seldon Core v2.
-
-Hodometer is defined as a service called `hodometer` in the Docker Compose manifest. It is automatically enabled\
-when running as per the installation instructions.
-
-You can disable Hodometer in Docker Compose by removing the corresponding service from the base manifest.\
-Alternatively, you can gate it behind a [profile](https://docs.docker.com/compose/profiles/).\
-If the service is already running, you can stop it directly using `docker-compose stop ...`.
-
-Configuration can be provided by environment variables when running `make` or directly invoking `docker-compose`.\
-The available variables are defined in the Docker Compose environment file, prefixed with `HODOMETER_`.
 
 ### Extra publish URLs
 

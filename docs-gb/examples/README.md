@@ -65,7 +65,7 @@ This section will provide some examples to allow operations with Seldon to be te
 ## Misc
 
 * [Checking Pipeline readiness](pipeline-ready-and-metadata.md)
-* [Local Overcommit](local-overcommit-examples/)
+* [Local Overcommit](local-overcommit-examples.md)
 
 ## Further Kubernetes Examples
 

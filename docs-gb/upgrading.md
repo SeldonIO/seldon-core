@@ -39,7 +39,7 @@ Previously, the labelling has been inconsistent across different versions of Sel
 mixture of `app` and `app.kubernetes.io/name` used.
 
 If using the Prometheus operator ("Kube Prometheus"), please apply the v2.7.0 manifests for Seldon Core 2\
-according to the [metrics documentation](../kubernetes/metrics.md).
+according to the [metrics documentation](../docs-gb/kubernetes/metrics.md).
 
 Note that these manifests need to be adjusted to discover metrics endpoints based on the existing setup.
 
