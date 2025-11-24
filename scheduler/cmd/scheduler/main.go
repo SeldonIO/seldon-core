@@ -84,6 +84,7 @@ var (
 	pprofBlockRate                   int
 	retryFailedCreatingPipelinesTick time.Duration
 	retryFailedDeletePipelinesTick   time.Duration
+	maxRetryFailedPipelines          uint
 )
 
 const (
@@ -178,6 +179,7 @@ func init() {
 	// frequency to retry creating/deleting pipelines which failed to create/delete
 	flag.DurationVar(&retryFailedCreatingPipelinesTick, "retry-creating-failed-pipelines-tick", time.Minute, "tick interval for re-attempting to create pipelines which failed to create")
 	flag.DurationVar(&retryFailedDeletePipelinesTick, "retry-deleting-failed-pipelines-tick", time.Minute, "tick interval for re-attempting to delete pipelines which failed to terminate")
+	flag.UintVar(&maxRetryFailedPipelines, "max-retry-failed-pipelines", 10, "max number of retry attempts to create/terminate pipelines which failed to create/terminate")
 }
 
 func getNamespace() string {
@@ -332,7 +334,7 @@ func main() {
 	ctx, stopPipelinePollers := context.WithCancel(context.Background())
 	defer stopPipelinePollers()
 	go func() {
-		err := cs.StartGrpcServer(ctx, retryFailedCreatingPipelinesTick, retryFailedDeletePipelinesTick, chainerPort)
+		err := cs.StartGrpcServer(ctx, retryFailedCreatingPipelinesTick, retryFailedDeletePipelinesTick, maxRetryFailedPipelines, chainerPort)
 		if err != nil {
 			log.WithError(err).Fatalf("Chainer server start error")
 		}
@@ -391,7 +393,8 @@ func main() {
 	)
 	defer s.Stop()
 
-	err = s.StartGrpcServers(ctx, allowPlaintxt, schedulerPort, schedulerMtlsPort, retryFailedCreatingPipelinesTick, retryFailedDeletePipelinesTick)
+	err = s.StartGrpcServers(ctx, allowPlaintxt, schedulerPort, schedulerMtlsPort, retryFailedCreatingPipelinesTick,
+		retryFailedDeletePipelinesTick, maxRetryFailedPipelines)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to start server gRPC servers")
 	}

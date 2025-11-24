@@ -11,6 +11,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -29,17 +30,17 @@ const (
 
 // pollerRetryFailedCreateModels will retry creating models on model-gw which failed to load. Most likely
 // due to connectivity issues with kafka.
-func (s *SchedulerServer) pollerRetryFailedCreateModels(ctx context.Context, tick time.Duration) {
-	s.pollerRetryFailedModels(ctx, tick, "pollerRetryFailedCreateModels", store.ModelFailed, "create")
+func (s *SchedulerServer) pollerRetryFailedCreateModels(ctx context.Context, tick time.Duration, maxRetry uint) {
+	s.pollerRetryFailedModels(ctx, tick, "pollerRetryFailedCreateModels", store.ModelFailed, "create", maxRetry)
 }
 
 // pollerRetryFailedDeleteModels will retry deleting models on model-gw which failed to terminate. Most likely
 // due to connectivity issues with kafka.
-func (s *SchedulerServer) pollerRetryFailedDeleteModels(ctx context.Context, tick time.Duration) {
-	s.pollerRetryFailedModels(ctx, tick, "pollerRetryFailedDeleteModels", store.ModelTerminateFailed, "delete")
+func (s *SchedulerServer) pollerRetryFailedDeleteModels(ctx context.Context, tick time.Duration, maxRetry uint) {
+	s.pollerRetryFailedModels(ctx, tick, "pollerRetryFailedDeleteModels", store.ModelTerminateFailed, "delete", maxRetry)
 }
 
-func (s *SchedulerServer) pollerRetryFailedModels(ctx context.Context, tick time.Duration, funcName string, targetState store.ModelState, operation string) {
+func (s *SchedulerServer) pollerRetryFailedModels(ctx context.Context, tick time.Duration, funcName string, targetState store.ModelState, operation string, maxRetry uint) {
 	logger := s.logger.WithField("func", funcName)
 	ticker := time.NewTicker(tick)
 	defer ticker.Stop()
@@ -49,7 +50,7 @@ func (s *SchedulerServer) pollerRetryFailedModels(ctx context.Context, tick time
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			models := s.getModelsInGwState(logger, targetState, operation)
+			models := s.getModelsInGwState(logger, targetState, operation, maxRetry)
 			if len(models) > 0 {
 				s.modelGwRebalanceForModels(models)
 			}
@@ -57,7 +58,11 @@ func (s *SchedulerServer) pollerRetryFailedModels(ctx context.Context, tick time
 	}
 }
 
-func (s *SchedulerServer) getModelsInGwState(logger *logrus.Entry, targetState store.ModelState, operation string) []*store.ModelSnapshot {
+func (s *SchedulerServer) mkModelRetryKey(modelName string, version uint32) string {
+	return fmt.Sprintf("%s_%d", modelName, version)
+}
+
+func (s *SchedulerServer) getModelsInGwState(logger *logrus.Entry, targetState store.ModelState, operation string, maxRetry uint) []*store.ModelSnapshot {
 	modelNames := s.modelStore.GetAllModels()
 	logger.WithField("models", modelNames).Debugf("Poller retry to %s failed models on model-gw", operation)
 
@@ -75,8 +80,16 @@ func (s *SchedulerServer) getModelsInGwState(logger *logrus.Entry, targetState s
 			continue
 		}
 
-		if model.GetLatest().ModelState().ModelGwState != targetState {
-			logger.Debugf("Model-gw model %s not in %s state, skipping", modelName, targetState)
+		modelGwState := model.GetLatest().ModelState().ModelGwState
+		if modelGwState != targetState {
+			logger.Debugf("Model-gw model %s state %s != %s, skipping", modelName, modelGwState, targetState)
+			continue
+		}
+
+		key := s.mkModelRetryKey(model.Name, model.GetLatest().GetVersion())
+		s.retryFailedModels[key]++
+		if s.retryFailedModels[key] > maxRetry {
+			logger.Debugf("Model-gw model %s retry failed, max retries reached", modelName)
 			continue
 		}
 

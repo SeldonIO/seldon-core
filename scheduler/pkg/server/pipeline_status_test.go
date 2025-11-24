@@ -39,6 +39,7 @@ func TestPollerRetryFailedPipelines(t *testing.T) {
 		contextTimeout   time.Duration
 		tickDuration     time.Duration
 		validateBehavior func(g *WithT, mockPipelineHandler *mock.MockPipelineHandler)
+		maxRetries       uint
 	}{
 		{
 			name:            "context cancelled immediately",
@@ -72,6 +73,7 @@ func TestPollerRetryFailedPipelines(t *testing.T) {
 			funcName:     "pollerRetryFailedCreatePipelines",
 			targetStatus: pipeline.PipelineFailed,
 			operation:    "create",
+			maxRetries:   1,
 			failedPipelines: []coordinator.PipelineEventMsg{
 				{
 					PipelineName:    "test-pipeline",
@@ -112,6 +114,7 @@ func TestPollerRetryFailedPipelines(t *testing.T) {
 			funcName:     "pollerRetryFailedDeletePipelines",
 			targetStatus: pipeline.PipelineFailedTerminating,
 			operation:    "delete",
+			maxRetries:   1,
 			failedPipelines: []coordinator.PipelineEventMsg{
 				{
 					PipelineName:    "test-pipeline",
@@ -165,9 +168,10 @@ func TestPollerRetryFailedPipelines(t *testing.T) {
 			g.Expect(err).Should(BeNil())
 
 			server := &SchedulerServer{
-				logger:          log.New(),
-				pipelineHandler: mockPipelineHandler,
-				eventHub:        eventHub,
+				logger:                 log.New(),
+				pipelineHandler:        mockPipelineHandler,
+				eventHub:               eventHub,
+				retriedFailedPipelines: map[string]uint{},
 			}
 
 			var ctx context.Context
@@ -184,7 +188,7 @@ func TestPollerRetryFailedPipelines(t *testing.T) {
 
 			done := make(chan bool)
 			go func() {
-				server.pollerRetryFailedPipelines(ctx, tt.tickDuration, tt.funcName, tt.targetStatus, tt.operation)
+				server.pollerRetryFailedPipelines(ctx, tt.tickDuration, tt.funcName, tt.targetStatus, tt.operation, tt.maxRetries)
 				done <- true
 			}()
 

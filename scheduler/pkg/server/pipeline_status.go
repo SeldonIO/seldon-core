@@ -11,6 +11,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"google.golang.org/grpc/codes"
@@ -30,16 +31,16 @@ const (
 )
 
 // pollerRetryFailedCreatePipelines will retry creating pipelines on pipeline-gw which failed to load.
-func (s *SchedulerServer) pollerRetryFailedCreatePipelines(ctx context.Context, tick time.Duration) {
-	s.pollerRetryFailedPipelines(ctx, tick, "pollerRetryFailedCreatePipelines", pipeline.PipelineFailed, "create")
+func (s *SchedulerServer) pollerRetryFailedCreatePipelines(ctx context.Context, tick time.Duration, maxRetry uint) {
+	s.pollerRetryFailedPipelines(ctx, tick, "pollerRetryFailedCreatePipelines", pipeline.PipelineFailed, "create", maxRetry)
 }
 
 // pollerRetryFailedDeletePipelines will retry deleting pipelines on pipeline-gw which failed to terminate.
-func (s *SchedulerServer) pollerRetryFailedDeletePipelines(ctx context.Context, tick time.Duration) {
-	s.pollerRetryFailedPipelines(ctx, tick, "pollerRetryFailedDeletePipelines", pipeline.PipelineFailedTerminating, "delete")
+func (s *SchedulerServer) pollerRetryFailedDeletePipelines(ctx context.Context, tick time.Duration, maxRetry uint) {
+	s.pollerRetryFailedPipelines(ctx, tick, "pollerRetryFailedDeletePipelines", pipeline.PipelineFailedTerminating, "delete", maxRetry)
 }
 
-func (s *SchedulerServer) pollerRetryFailedPipelines(ctx context.Context, tick time.Duration, funcName string, targetStatus pipeline.PipelineStatus, operation string) {
+func (s *SchedulerServer) pollerRetryFailedPipelines(ctx context.Context, tick time.Duration, funcName string, targetStatus pipeline.PipelineStatus, operation string, maxRetry uint) {
 	logger := s.logger.WithField("func", funcName)
 	ticker := time.NewTicker(tick)
 	defer ticker.Stop()
@@ -50,17 +51,35 @@ func (s *SchedulerServer) pollerRetryFailedPipelines(ctx context.Context, tick t
 			return
 		case <-ticker.C:
 			logger.Debugf("Poller retry failed %s pipelines on pipeline-gw", operation)
+			s.pipelineEventStream.mu.Lock()
 			pipelines := s.pipelineHandler.GetPipelinesPipelineGwStatus(targetStatus)
 
 			if len(pipelines) == 0 {
 				logger.Debug("No failed pipelines found")
+				s.pipelineEventStream.mu.Unlock()
 				continue
 			}
 
-			logger.WithField("pipelines", pipelines).Debug("Found failed pipelines")
-			s.pipelineGwRebalancePipelines(pipelines)
+			filteredPipelines := pipelines[:0]
+			for _, p := range pipelines {
+				key := s.mkPipelineKey(p.UID, p.PipelineVersion)
+				s.retriedFailedPipelines[key]++
+				if s.retriedFailedPipelines[key] > maxRetry {
+					logger.Debugf("Retry failed %s pipeline %s, reached max retries", operation, p.PipelineName)
+					continue
+				}
+				filteredPipelines = append(filteredPipelines, p)
+			}
+
+			logger.WithField("pipelines", filteredPipelines).Debug("Found failed pipelines")
+			s.pipelineGwRebalancePipelines(filteredPipelines)
+			s.pipelineEventStream.mu.Unlock()
 		}
 	}
+}
+
+func (s *SchedulerServer) mkPipelineKey(uid string, version uint32) string {
+	return fmt.Sprintf("%s_%d", uid, version)
 }
 
 func (s *SchedulerServer) PipelineStatusEvent(_ context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
@@ -230,13 +249,12 @@ func (s *SchedulerServer) createPipelineCreationMessage(pv *pipeline.PipelineVer
 }
 
 func (s *SchedulerServer) pipelineGwRebalance() {
+	s.pipelineEventStream.mu.Lock()
+	defer s.pipelineEventStream.mu.Unlock()
 	s.pipelineGwRebalancePipelines(s.pipelineHandler.GetAllPipelineGwRunningPipelineVersions())
 }
 
 func (s *SchedulerServer) pipelineGwRebalancePipelines(pipelines []coordinator.PipelineEventMsg) {
-	s.pipelineEventStream.mu.Lock()
-	defer s.pipelineEventStream.mu.Unlock()
-
 	// get only the pipeline gateway streams
 	streams := []*PipelineSubscription{}
 	for _, subscription := range s.pipelineEventStream.streams {

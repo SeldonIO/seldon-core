@@ -86,6 +86,12 @@ type SchedulerServer struct {
 	consumerGroupConfig    *ConsumerGroupConfig
 	eventHub               *coordinator.EventHub
 	tlsOptions             seldontls.TLSOptions
+	// TODO this would ideally be stored within the pipeline handler, as now we have to
+	//  retrieve the pipeline from the memory store even if it has reached max retires
+	// retriedFailedPipelines keyed off pipeline UID + version, value is retried count
+	retriedFailedPipelines map[string]uint
+	// retryFailedModels keyed off model name, value is retried count
+	retryFailedModels map[string]uint
 }
 
 type SchedulerServerConfig struct {
@@ -183,7 +189,7 @@ func NewConsumerGroupConfig(namespace, consumerGroupIdPrefix string, modelGatewa
 	}
 }
 
-func (s *SchedulerServer) startServer(ctx context.Context, port uint, secure bool, pollerTickCreate, pollerTickDelete time.Duration) error {
+func (s *SchedulerServer) startServer(ctx context.Context, port uint, secure bool, pollerTickCreate, pollerTickDelete time.Duration, maxRetry uint) error {
 	logger := s.logger.WithField("func", "startServer")
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
@@ -210,25 +216,25 @@ func (s *SchedulerServer) startServer(ctx context.Context, port uint, secure boo
 		logger.WithError(err).Fatalf("Scheduler mTLS server failed on port %d mtls:%v", port, secure)
 	}()
 
-	s.startPollers(ctx, pollerTickCreate, pollerTickDelete)
+	s.startPollers(ctx, pollerTickCreate, pollerTickDelete, maxRetry)
 	return nil
 }
 
-func (s *SchedulerServer) startPollers(ctx context.Context, pollerTickCreate, pollerTickDelete time.Duration) {
-	go s.pollerRetryFailedCreateModels(ctx, pollerTickCreate)
-	go s.pollerRetryFailedDeleteModels(ctx, pollerTickDelete)
-	go s.pollerRetryFailedCreatePipelines(ctx, pollerTickCreate)
-	go s.pollerRetryFailedDeletePipelines(ctx, pollerTickDelete)
+func (s *SchedulerServer) startPollers(ctx context.Context, pollerTickCreate, pollerTickDelete time.Duration, maxRetry uint) {
+	go s.pollerRetryFailedCreateModels(ctx, pollerTickCreate, maxRetry)
+	go s.pollerRetryFailedDeleteModels(ctx, pollerTickDelete, maxRetry)
+	go s.pollerRetryFailedCreatePipelines(ctx, pollerTickCreate, maxRetry)
+	go s.pollerRetryFailedDeletePipelines(ctx, pollerTickDelete, maxRetry)
 }
 
-func (s *SchedulerServer) StartGrpcServers(ctx context.Context, allowPlainTxt bool, schedulerPort uint, schedulerTlsPort uint, pollerTickCreate, pollerTickDelete time.Duration) error {
+func (s *SchedulerServer) StartGrpcServers(ctx context.Context, allowPlainTxt bool, schedulerPort uint, schedulerTlsPort uint, pollerTickCreate, pollerTickDelete time.Duration, maxRetry uint) error {
 	logger := s.logger.WithField("func", "StartGrpcServers")
 
 	if !allowPlainTxt && s.tlsOptions.Cert == nil {
 		return fmt.Errorf("one of plain txt or mTLS needs to be defined. But have plain text [%v] and no TLS", allowPlainTxt)
 	}
 	if allowPlainTxt {
-		err := s.startServer(ctx, schedulerPort, false, pollerTickCreate, pollerTickDelete)
+		err := s.startServer(ctx, schedulerPort, false, pollerTickCreate, pollerTickDelete, maxRetry)
 		if err != nil {
 			return err
 		}
@@ -236,7 +242,7 @@ func (s *SchedulerServer) StartGrpcServers(ctx context.Context, allowPlainTxt bo
 		logger.Info("Not starting scheduler plain text server")
 	}
 	if s.tlsOptions.Cert != nil {
-		err := s.startServer(ctx, schedulerTlsPort, true, pollerTickCreate, pollerTickDelete)
+		err := s.startServer(ctx, schedulerTlsPort, true, pollerTickCreate, pollerTickDelete, maxRetry)
 		if err != nil {
 			return err
 		}
@@ -323,6 +329,8 @@ func NewSchedulerServer(
 		consumerGroupConfig:    consumerGroupConfig,
 		eventHub:               eventHub,
 		tlsOptions:             tlsOptions,
+		retryFailedModels:      make(map[string]uint),
+		retriedFailedPipelines: make(map[string]uint),
 	}
 
 	eventHub.RegisterModelEventHandler(

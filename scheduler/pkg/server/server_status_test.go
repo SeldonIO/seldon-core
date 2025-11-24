@@ -46,6 +46,7 @@ func TestPollerRetryFailedModels(t *testing.T) {
 		contextTimeout time.Duration
 		tickDuration   time.Duration
 		validateMocks  func(g *WithT, mockModelStore *mock.MockModelStore)
+		maxRetries     uint
 	}{
 		{
 			name:        "context cancelled immediately",
@@ -133,6 +134,35 @@ func TestPollerRetryFailedModels(t *testing.T) {
 			},
 			contextTimeout: 100 * time.Millisecond,
 			tickDuration:   50 * time.Millisecond,
+			maxRetries:     3,
+		},
+		{
+			name:        "max retries exceeded, do not retry",
+			funcName:    "pollerRetryFailedCreateModels",
+			targetState: store.ModelFailed,
+			operation:   "create",
+			modelNames:  []string{"failed-model"},
+			setupMocks: func(mockModelStore *mock.MockModelStore, modelNames []string, targetState store.ModelState) {
+				mockModelStore.EXPECT().
+					GetAllModels().
+					Return(modelNames).MinTimes(1)
+
+				model := &store.ModelSnapshot{}
+				model.Name = "failed-model"
+				modelVersion := store.NewModelVersion(&pb.Model{}, 1, "server-1", nil, false, 0)
+				modelVersion.SetModelState(store.ModelStatus{
+					ModelGwState: store.ModelFailed,
+				})
+				model.Versions = []*store.ModelVersion{modelVersion}
+
+				mockModelStore.EXPECT().
+					GetModel("failed-model").
+					Return(model, nil).
+					MinTimes(1)
+			},
+			contextTimeout: 100 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+			maxRetries:     0,
 		},
 	}
 
@@ -148,8 +178,9 @@ func TestPollerRetryFailedModels(t *testing.T) {
 			}
 
 			server := &SchedulerServer{
-				logger:     log.New(),
-				modelStore: mockModelStore,
+				logger:            log.New(),
+				modelStore:        mockModelStore,
+				retryFailedModels: make(map[string]uint),
 			}
 
 			var ctx context.Context
@@ -166,7 +197,7 @@ func TestPollerRetryFailedModels(t *testing.T) {
 
 			done := make(chan bool)
 			go func() {
-				server.pollerRetryFailedModels(ctx, tt.tickDuration, tt.funcName, tt.targetState, tt.operation)
+				server.pollerRetryFailedModels(ctx, tt.tickDuration, tt.funcName, tt.targetState, tt.operation, tt.maxRetries)
 				done <- true
 			}()
 

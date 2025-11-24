@@ -63,6 +63,9 @@ type ChainerServer struct {
 	muFailedDelete        sync.Mutex
 	// failedDeletePipelines keyed off pipeline UID + version
 	failedDeletePipelines map[string]pipeline.PipelineVersion
+	// retriedFailedPipelines keyed off pipeline UID + version. Tracks how many attempts have been made to create/terminate
+	// a pipeline
+	retriedFailedPipelines map[string]uint
 	chainer.UnimplementedChainerServer
 	health.UnimplementedHealthCheckServiceServer
 }
@@ -88,18 +91,19 @@ func NewChainerServer(
 		return nil, err
 	}
 	c := &ChainerServer{
-		logger:                logger.WithField("source", "dataflow"),
-		streams:               make(map[string]*ChainerSubscription),
-		eventHub:              eventHub,
-		pipelineHandler:       pipelineHandler,
-		topicNamer:            topicNamer,
-		loadBalancer:          loadBalancer,
-		conflictResolutioner:  conflictResolutioner,
-		chainerMutex:          sync.Map{},
-		scalingConfigUpdates:  make(chan scaling_config.ScalingConfig),
-		done:                  make(chan struct{}),
-		failedCreatePipelines: make(map[string]pipeline.PipelineVersion, 0),
-		failedDeletePipelines: make(map[string]pipeline.PipelineVersion, 0),
+		logger:                 logger.WithField("source", "dataflow"),
+		streams:                make(map[string]*ChainerSubscription),
+		eventHub:               eventHub,
+		pipelineHandler:        pipelineHandler,
+		topicNamer:             topicNamer,
+		loadBalancer:           loadBalancer,
+		conflictResolutioner:   conflictResolutioner,
+		chainerMutex:           sync.Map{},
+		scalingConfigUpdates:   make(chan scaling_config.ScalingConfig),
+		done:                   make(chan struct{}),
+		failedCreatePipelines:  make(map[string]pipeline.PipelineVersion, 0),
+		failedDeletePipelines:  make(map[string]pipeline.PipelineVersion, 0),
+		retriedFailedPipelines: make(map[string]uint, 0),
 	}
 
 	eventHub.RegisterPipelineEventHandler(
@@ -134,14 +138,14 @@ func (c *ChainerServer) Stop() {
 	c.StopSendPipelineEvents()
 }
 
-func (c *ChainerServer) StartGrpcServer(ctx context.Context, pollerFailedCreatePipelines, pollerFailedDeletePipelines time.Duration, agentPort uint) error {
+func (c *ChainerServer) StartGrpcServer(ctx context.Context, pollerFailedCreatePipelines, pollerFailedDeletePipelines time.Duration, maxRetry, agentPort uint) error {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", agentPort))
 	if err != nil {
 		log.Fatalf("failed to create listener: %v", err)
 	}
 
-	go c.pollerFailedTerminatingPipelines(ctx, pollerFailedDeletePipelines)
-	go c.pollerFailedCreatingPipelines(ctx, pollerFailedCreatePipelines)
+	go c.pollerFailedTerminatingPipelines(ctx, pollerFailedDeletePipelines, maxRetry)
+	go c.pollerFailedCreatingPipelines(ctx, pollerFailedCreatePipelines, maxRetry)
 
 	kaep := util.GetServerKeepAliveEnforcementPolicy()
 
@@ -508,7 +512,7 @@ func contains(slice []string, val string) bool {
 	return false
 }
 
-func (c *ChainerServer) pollerFailedTerminatingPipelines(ctx context.Context, tick time.Duration) {
+func (c *ChainerServer) pollerFailedTerminatingPipelines(ctx context.Context, tick time.Duration, maxRetry uint) {
 	ticker := time.NewTicker(tick)
 	defer ticker.Stop()
 
@@ -529,6 +533,15 @@ func (c *ChainerServer) pollerFailedTerminatingPipelines(ctx context.Context, ti
 
 			c.mu.Lock()
 			for _, p := range c.failedDeletePipelines {
+				key := c.mkKey(p.UID, p.Version)
+				c.retriedFailedPipelines[key]++
+
+				if c.retriedFailedPipelines[key] > maxRetry {
+					logger.Warnf("Failed to terminate pipeline %s reached max retries", p.Name)
+					delete(c.failedDeletePipelines, key)
+					continue
+				}
+
 				logger.Debugf("Attempting to terminate pipeline which failed to terminate %s", p.Name)
 				pv, err := c.pipelineHandler.GetPipelineVersion(p.Name, p.Version, p.UID)
 				if err != nil {
@@ -537,16 +550,23 @@ func (c *ChainerServer) pollerFailedTerminatingPipelines(ctx context.Context, ti
 					verNotFound := &pipeline.PipelineVersionNotFoundErr{}
 
 					if errors.As(err, &notFound) || errors.As(err, &uidMisMatch) || errors.As(err, &verNotFound) {
-						delete(c.failedDeletePipelines, c.mkKey(p.UID, p.Version))
+						delete(c.failedDeletePipelines, key)
 						logger.Debugf("Pipeline %s not found, removing from poller list", p.Name)
+						continue
 					}
+
 					logger.WithError(err).Errorf("Failed to get pipeline %s", p.Name)
 					continue
 				}
 				logger.Debugf("Found pipeline %s attempting to terminate", p.Name)
+
+				// note we are forcing keeping topics here, so there may be unwanted orphaned topics left in Kafka even
+				// though customer deleted pipeline and set pipeline config to delete topics. This is because we don't
+				// know if the termination request was initiated by customer i.e. deleted Pipeline CR, or from a rebalance
+				// of pipelines across dataflow-engine replicas (in which case we force keeping topics)
 				c.terminatePipeline(pv, true)
 				// remove from list as we've successfully retried termination
-				delete(c.failedDeletePipelines, c.mkKey(p.UID, p.Version))
+				delete(c.failedDeletePipelines, key)
 			}
 
 			c.mu.Unlock()
@@ -555,7 +575,7 @@ func (c *ChainerServer) pollerFailedTerminatingPipelines(ctx context.Context, ti
 	}
 }
 
-func (c *ChainerServer) pollerFailedCreatingPipelines(ctx context.Context, tick time.Duration) {
+func (c *ChainerServer) pollerFailedCreatingPipelines(ctx context.Context, tick time.Duration, maxRetry uint) {
 	ticker := time.NewTicker(tick)
 	defer ticker.Stop()
 
@@ -576,18 +596,26 @@ func (c *ChainerServer) pollerFailedCreatingPipelines(ctx context.Context, tick 
 
 			c.mu.Lock()
 			for _, p := range c.failedCreatePipelines {
+				key := c.mkKey(p.UID, p.Version)
+				c.retriedFailedPipelines[key]++
 				logger.Debugf("Attempting to create failed pipeline %s", p.Name)
+
+				if c.retriedFailedPipelines[key] > maxRetry {
+					logger.Warnf("Failed to create pipeline %s reached max retries", p.Name)
+					delete(c.failedCreatePipelines, key)
+					continue
+				}
 
 				// we only want to create this pipeline if it's the latest version, it could have failed to create
 				// and customer has since updated the pipeline and has created successfully, we'd then end up
 				// overwriting the new pipeline
 				if isLatest, err := c.pipelineHandler.IsLatestVersion(p.Name, p.Version, p.UID); err != nil {
 					logger.WithError(err).Errorf("Failed checking pipeline %s is latest version before creating", p.Name)
-					delete(c.failedCreatePipelines, c.mkKey(p.UID, p.Version))
+					delete(c.failedCreatePipelines, key)
 					continue
 				} else if !isLatest {
 					logger.Debugf("Pipeline %s not the latest, ignoring", p.Name)
-					delete(c.failedCreatePipelines, c.mkKey(p.UID, p.Version))
+					delete(c.failedCreatePipelines, key)
 					continue
 				}
 
@@ -597,16 +625,18 @@ func (c *ChainerServer) pollerFailedCreatingPipelines(ctx context.Context, tick 
 					verNotFound := &pipeline.PipelineVersionNotFoundErr{}
 
 					if errors.As(err, &notFound) || errors.As(err, &uidMisMatch) || errors.As(err, &verNotFound) {
-						delete(c.failedCreatePipelines, c.mkKey(p.UID, p.Version))
+						delete(c.failedCreatePipelines, key)
 						logger.Debugf("Pipeline %s not found, removing from poller list", p.Name)
+						continue
 					}
+
 					// don't remove from map as we want to retry on next tick
 					logger.WithError(err).Errorf("Failed to create pipeline %s", p.Name)
 					continue
 				}
 
 				// remove from list as we've successfully retried creating
-				delete(c.failedCreatePipelines, c.mkKey(p.UID, p.Version))
+				delete(c.failedCreatePipelines, key)
 			}
 
 			c.mu.Unlock()

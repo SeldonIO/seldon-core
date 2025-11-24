@@ -169,7 +169,7 @@ func TestSubscribeControlPlane(t *testing.T) {
 
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
-			err = server.startServer(ctx, uint(port), false, time.Minute, time.Minute)
+			err = server.startServer(ctx, uint(port), false, time.Minute, time.Minute, 1)
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -50,6 +50,7 @@ func TestPollerFailedTerminatingPipelines(t *testing.T) {
 		tickDuration          time.Duration
 		validateResult        func(g *WithT, server *ChainerServer)
 		expectGomegaWithT     bool
+		maxRetry              uint
 	}{
 		{
 			name:                  "should return when context is cancelled",
@@ -76,7 +77,8 @@ func TestPollerFailedTerminatingPipelines(t *testing.T) {
 			expectGomegaWithT: false,
 		},
 		{
-			name: "should retry terminating failed pipeline successfully",
+			name:     "should retry terminating failed pipeline successfully",
+			maxRetry: 1,
 			failedPipelines: map[string]pipeline.PipelineVersion{
 				"test-uid-123_1": {
 					Name:    "test-pipeline",
@@ -111,7 +113,8 @@ func TestPollerFailedTerminatingPipelines(t *testing.T) {
 			expectGomegaWithT: false,
 		},
 		{
-			name: "should remove pipeline from failed list when not found",
+			name:     "should remove pipeline from failed list when not found",
+			maxRetry: 1,
 			failedPipelines: map[string]pipeline.PipelineVersion{
 				"test-uid-123_1": {
 					Name:    "test-pipeline",
@@ -134,7 +137,8 @@ func TestPollerFailedTerminatingPipelines(t *testing.T) {
 			expectGomegaWithT: true,
 		},
 		{
-			name: "should remove pipeline from failed list on UID mismatch",
+			name:     "should remove pipeline from failed list on UID mismatch",
+			maxRetry: 1,
 			failedPipelines: map[string]pipeline.PipelineVersion{
 				"test-uid-123_1": {
 					Name:    "test-pipeline",
@@ -157,7 +161,8 @@ func TestPollerFailedTerminatingPipelines(t *testing.T) {
 			expectGomegaWithT: true,
 		},
 		{
-			name: "should remove pipeline from failed list on version not found",
+			name:     "should remove pipeline from failed list on version not found",
+			maxRetry: 1,
 			failedPipelines: map[string]pipeline.PipelineVersion{
 				"test-uid-123_1": {
 					Name:    "test-pipeline",
@@ -190,6 +195,7 @@ func TestPollerFailedTerminatingPipelines(t *testing.T) {
 			},
 			needsLoadBalancer:     false,
 			needsConflictResolver: false,
+			maxRetry:              100,
 			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
 				mockPipelineHandler.EXPECT().
 					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
@@ -205,7 +211,34 @@ func TestPollerFailedTerminatingPipelines(t *testing.T) {
 			expectGomegaWithT: true,
 		},
 		{
-			name: "should process multiple failed pipelines",
+			name: "should remove from retry list, max retry limit exceeded",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"test-uid-123_1": {
+					Name:    "test-pipeline",
+					Version: 1,
+					UID:     "test-uid-123",
+				},
+			},
+			needsLoadBalancer:     false,
+			needsConflictResolver: false,
+			maxRetry:              1,
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
+					Return(nil, errors.New("generic error")).
+					MinTimes(1)
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+			validateResult: func(g *WithT, server *ChainerServer) {
+				// Pipeline should still be in failed list
+				g.Expect(server.failedDeletePipelines).ToNot(HaveKey("test-uid-123_1"))
+			},
+			expectGomegaWithT: true,
+		},
+		{
+			name:     "should process multiple failed pipelines",
+			maxRetry: 1,
 			failedPipelines: map[string]pipeline.PipelineVersion{
 				"uid-1_1": {
 					Name:    "pipeline-1",
@@ -266,6 +299,7 @@ func TestPollerFailedTerminatingPipelines(t *testing.T) {
 			},
 			needsLoadBalancer:     false,
 			needsConflictResolver: false,
+			maxRetry:              100,
 			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
 				// Expect at least 2 calls (multiple ticks)
 				mockPipelineHandler.EXPECT().
@@ -301,10 +335,11 @@ func TestPollerFailedTerminatingPipelines(t *testing.T) {
 			}
 
 			server := &ChainerServer{
-				logger:                log.New(),
-				pipelineHandler:       mockPipelineHandler,
-				failedDeletePipelines: tt.failedPipelines,
-				streams:               make(map[string]*ChainerSubscription),
+				logger:                 log.New(),
+				pipelineHandler:        mockPipelineHandler,
+				failedDeletePipelines:  tt.failedPipelines,
+				streams:                make(map[string]*ChainerSubscription),
+				retriedFailedPipelines: make(map[string]uint),
 			}
 
 			if tt.needsLoadBalancer {
@@ -329,7 +364,7 @@ func TestPollerFailedTerminatingPipelines(t *testing.T) {
 
 			done := make(chan bool)
 			go func() {
-				server.pollerFailedTerminatingPipelines(ctx, tt.tickDuration)
+				server.pollerFailedTerminatingPipelines(ctx, tt.tickDuration, tt.maxRetry)
 				done <- true
 			}()
 
@@ -364,6 +399,7 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 		tickDuration      time.Duration
 		validateResult    func(g *WithT, server *ChainerServer)
 		expectGomegaWithT bool
+		maxRetry          uint
 	}{
 		{
 			name:            "should return when context is cancelled",
@@ -398,6 +434,7 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 				mockPipelineHandler.EXPECT().IsLatestVersion("test-pipeline", uint32(1), "test-uid-123").Return(false, nil)
 			},
 			contextTimeout: 150 * time.Millisecond,
+			maxRetry:       1,
 			tickDuration:   50 * time.Millisecond,
 			validateResult: func(g *WithT, server *ChainerServer) {
 				g.Expect(server.failedCreatePipelines).ToNot(HaveKey("test-uid-123_1"))
@@ -405,7 +442,8 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 			expectGomegaWithT: true,
 		},
 		{
-			name: "failure - failed to check liatest pipeline, remove from list",
+			name:     "failure - pipeline not latest, remove from list",
+			maxRetry: 1,
 			failedPipelines: map[string]pipeline.PipelineVersion{
 				"test-uid-123_1": {
 					Name:    "test-pipeline",
@@ -424,7 +462,8 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 			expectGomegaWithT: true,
 		},
 		{
-			name: "should retry creating failed pipeline and remove from list on success",
+			name:     "should retry creating failed pipeline and remove from list on success",
+			maxRetry: 1,
 			failedPipelines: map[string]pipeline.PipelineVersion{
 				"test-uid-123_1": {
 					Name:    "test-pipeline",
@@ -458,7 +497,8 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 			expectGomegaWithT: true,
 		},
 		{
-			name: "should remove pipeline from failed list when not found",
+			name:     "should remove pipeline from failed list when not found",
+			maxRetry: 1,
 			failedPipelines: map[string]pipeline.PipelineVersion{
 				"test-uid-123_1": {
 					Name:    "test-pipeline",
@@ -481,7 +521,8 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 			expectGomegaWithT: true,
 		},
 		{
-			name: "should remove pipeline from failed list on UID mismatch",
+			name:     "should remove pipeline from failed list on UID mismatch",
+			maxRetry: 1,
 			failedPipelines: map[string]pipeline.PipelineVersion{
 				"test-uid-123_1": {
 					Name:    "test-pipeline",
@@ -505,7 +546,8 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 			expectGomegaWithT: true,
 		},
 		{
-			name: "should remove pipeline from failed list on version not found",
+			name:     "should remove pipeline from failed list on version not found",
+			maxRetry: 1,
 			failedPipelines: map[string]pipeline.PipelineVersion{
 				"test-uid-123_1": {
 					Name:    "test-pipeline",
@@ -537,6 +579,7 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 					UID:     "test-uid-123",
 				},
 			},
+			maxRetry: 100,
 			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
 				mockPipelineHandler.EXPECT().IsLatestVersion("test-pipeline", uint32(1), "test-uid-123").Return(true, nil).MinTimes(1)
 
@@ -565,6 +608,31 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 			expectGomegaWithT: true,
 		},
 		{
+			name: "max retry reached - remove from retry list",
+			failedPipelines: map[string]pipeline.PipelineVersion{
+				"test-uid-123_1": {
+					Name:    "test-pipeline",
+					Version: 1,
+					UID:     "test-uid-123",
+				},
+			},
+			maxRetry: 1,
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
+				mockPipelineHandler.EXPECT().IsLatestVersion("test-pipeline", uint32(1), "test-uid-123").Return(true, nil).MinTimes(1)
+
+				mockPipelineHandler.EXPECT().
+					GetPipelineVersion("test-pipeline", uint32(1), "test-uid-123").
+					Return(nil, errors.New("database connection failed")).
+					MinTimes(1)
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+			validateResult: func(g *WithT, server *ChainerServer) {
+				g.Expect(server.failedCreatePipelines).ToNot(HaveKey("test-uid-123_1"))
+			},
+			expectGomegaWithT: true,
+		},
+		{
 			name: "should keep pipeline in failed list on GetPipelineVersion generic error",
 			failedPipelines: map[string]pipeline.PipelineVersion{
 				"test-uid-123_1": {
@@ -573,6 +641,7 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 					UID:     "test-uid-123",
 				},
 			},
+			maxRetry: 100,
 			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
 				mockPipelineHandler.EXPECT().IsLatestVersion("test-pipeline", uint32(1), "test-uid-123").Return(true, nil).MinTimes(1)
 
@@ -589,7 +658,8 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 			expectGomegaWithT: true,
 		},
 		{
-			name: "should process multiple failed pipelines",
+			name:     "should process multiple failed pipelines",
+			maxRetry: 1,
 			failedPipelines: map[string]pipeline.PipelineVersion{
 				"uid-1_1": {
 					Name:    "pipeline-1",
@@ -660,6 +730,7 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 					UID:     "uid-notfound",
 				},
 			},
+			maxRetry: 100,
 			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, mockLoadBalancer *mock2.MockLoadBalancer, failedPipelines map[string]pipeline.PipelineVersion) {
 				mockPipelineHandler.EXPECT().IsLatestVersion("pipeline-success", uint32(1), "uid-success").Return(true, nil).MinTimes(1)
 				mockPipelineHandler.EXPECT().IsLatestVersion("pipeline-fail", uint32(1), "uid-fail").Return(true, nil).MinTimes(1)
@@ -734,11 +805,12 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 			}
 
 			server := &ChainerServer{
-				logger:                log.New(),
-				pipelineHandler:       mockPipelineHandler,
-				loadBalancer:          mockLoadBalancer,
-				failedCreatePipelines: tt.failedPipelines,
-				streams:               make(map[string]*ChainerSubscription),
+				logger:                 log.New(),
+				pipelineHandler:        mockPipelineHandler,
+				loadBalancer:           mockLoadBalancer,
+				failedCreatePipelines:  tt.failedPipelines,
+				streams:                make(map[string]*ChainerSubscription),
+				retriedFailedPipelines: make(map[string]uint),
 			}
 
 			var ctx context.Context
@@ -755,7 +827,7 @@ func TestPollerFailedCreatingPipelines(t *testing.T) {
 
 			done := make(chan bool)
 			go func() {
-				server.pollerFailedCreatingPipelines(ctx, tt.tickDuration)
+				server.pollerFailedCreatingPipelines(ctx, tt.tickDuration, tt.maxRetry)
 				done <- true
 			}()
 
@@ -1506,7 +1578,7 @@ func TestPipelineSubscribe(t *testing.T) {
 				t.Fatal(err)
 			}
 			go func() {
-				_ = s.StartGrpcServer(context.Background(), time.Minute, time.Minute, uint(port))
+				_ = s.StartGrpcServer(context.Background(), time.Minute, time.Minute, 1, uint(port))
 			}()
 
 			time.Sleep(100 * time.Millisecond)

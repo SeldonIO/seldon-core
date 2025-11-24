@@ -239,8 +239,8 @@ func NewServerReplicaFromConfig(server *Server, replicaIdx int, loadedModels map
 
 func cleanCapabilities(capabilities []string) []string {
 	var cleaned []string
-	for _, cap := range capabilities {
-		cleaned = append(cleaned, strings.TrimSpace(cap))
+	for _, capability := range capabilities {
+		cleaned = append(cleaned, strings.TrimSpace(capability))
 	}
 	return cleaned
 }
