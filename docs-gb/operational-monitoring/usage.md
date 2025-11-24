@@ -92,21 +92,6 @@ helm install seldon-v2-runtime k8s/helm-charts/seldon-core-v2-runtime \
 These can be applied by using the `-f <filename>` switch when running Helm.
 {% endhint %}
 
-### Docker Compose
-
-The [Compose setup](../getting-started/docker-installation/index.md) provides a pre-configured and opinionated,\
-yet still flexible, approach to using Seldon Core v2.
-
-Hodometer is defined as a service called `hodometer` in the Docker Compose manifest. It is automatically enabled\
-when running as per the installation instructions.
-
-You can disable Hodometer in Docker Compose by removing the corresponding service from the base manifest.\
-Alternatively, you can gate it behind a [profile](https://docs.docker.com/compose/profiles/).\
-If the service is already running, you can stop it directly using `docker-compose stop ...`.
-
-Configuration can be provided by environment variables when running `make` or directly invoking `docker-compose`.\
-The available variables are defined in the Docker Compose environment file, prefixed with `HODOMETER_`.
-
 ### Extra publish URLs
 
 Hodometer can be instructed to publish metrics not only to Seldon, but also to any extra endpoints you specify.\
