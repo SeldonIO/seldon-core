@@ -14,8 +14,7 @@ provides an all-in-one package with the [Prometheus operator](https://github.com
 
 ### RBAC
 
-You will need to modify the default RBAC installed by kube-prometheus as described
-[here](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/user-guides/getting-started.md#deploying-prometheus).
+You will need to modify the default [RBAC installed by kube-prometheus](https://prometheus-operator.dev/docs/getting-started/introduction/).
 
 From the `prometheus` folder in the project run:
 
@@ -49,4 +48,4 @@ Check [metrics](../operational-monitoring/observability.md) for more information
 
 ## Reference
 
-[Prometheus CRDs](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md)
+[Prometheus CRDs](https://prometheus-operator.dev/docs/api-reference/api/)
