@@ -1,6 +1,6 @@
 FROM openjdk:13.0.1-jdk-buster
 
-ENV PYTHON_VERSION="3.8.10"
+ENV PYTHON_VERSION="3.12.12"
 
 RUN printf '%s\n' \
     'deb http://archive.debian.org/debian buster main contrib non-free' \
@@ -73,8 +73,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends zlib1g zlib1g-dev libssl-dev libbz2-dev liblzma-dev && \
     rm -rf /var/lib/apt/lists/*
 
-ENV MINIFORGE_VERSION=22.11.1-4
-ENV CONDA_VERSION=22.11.1
+ENV MINIFORGE_VERSION=25.3.1-0
+ENV CONDA_VERSION=25.3.1
 RUN wget -q https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Miniforge3-${MINIFORGE_VERSION}-Linux-x86_64.sh -O ~/miniforge.sh && \
     /bin/bash ~/miniforge.sh -b -p /opt/conda && \
     rm ~/miniforge.sh && \
@@ -85,7 +85,6 @@ RUN wget -q https://github.com/conda-forge/miniforge/releases/download/${MINIFOR
     chgrp -R root /opt/conda && chmod -R g+rw /opt/conda
 
 ENV PATH="/opt/conda/bin:${PATH}"
-ENV PYTHON_VERSION="3.8.10"
 
 # This is to install desired version of Python without updating conda version
 RUN conda install --yes python=$PYTHON_VERSION conda=$CONDA_VERSION
