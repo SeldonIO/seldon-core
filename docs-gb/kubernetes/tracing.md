@@ -5,32 +5,30 @@ description: >-
 
 ## Prerequisites
 
-Ensure you have the following installed:
+* Set up and connect to a Kubernetes cluster running version 1.27 or later. For instructions on connecting to your Kubernetes cluster, refer to the documentation provided by your cloud provider.
+* Install [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl), the Kubernetes command-line tool.
+* Install [Helm](https://helm.sh/docs/intro/install/), the package manager for Kubernetes.
+* Install [Seldon Core 2]
+* Install [cert-manager](https://cert-manager.io/docs/installation/kubectl/) in the namespace `cert-manager`.
 
-- **Cert-Manager**
-- **Jaeger Tracing v2 Kubernetes Operator**
-- **Seldon Core v2**
+To set up Jaeger Tracing for Seldon Core 2 on Kubernetes and visualize inference traces of the Seldon Core 2 components.
+1. [Craete a namespace](#create-a-namespace)
+2. [Install Jaeger Operator](#install-jaeger-operator)
+3. [Deploy a Jaeger instance](#deploy-a-minimal-jaeger-instance)
+4. [Configure Core 2](#configure-seldon-core-2)
+5. [Generate traffic](#generate-traffic)
+6. [Visualize the traces](#cccess-the-jaeger-ui)
 
-## Install Cert-Manager
-1. Install the cert-manager using below command
-```bash
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
-```
-2. Wait until all the Cert-Manager pods are running in the `cert-manager` namespace. You can check with:
-```bash
-kubectl get po -n cert-manager
-```
-
-## Create tracing namespace
+## Create a namespace
 Create a dedicated namespace to install the Jaeger Operator and tracing resources:
 ```bash
 kubectl create namespace tracing
 ```
 ## Install Jaeger Operator
 
-The Jaeger Operator manages Jaeger instances in your cluster. The Helm chart for Jaeger v2 is available [here](https://github.com/jaegertracing/helm-charts/tree/v2)
+The Jaeger Operator manages Jaeger instances in the Kubernetes cluster. Use the [Helm chart](https://github.com/jaegertracing/helm-charts/tree/v2) for Jaeger v2.
 
-1. Add the Jaeger Helm repository if not already added:
+1. Add the Jaeger to the Helm repository:
 ```bash
 helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
 helm repo update
@@ -50,19 +48,19 @@ helm upgrade tracing jaegertracing/jaeger-operator \
   -n tracing \
   --install
 ```
-4. Validate that the Jaeger Operator pod is running:
+4. Validate that the Jaeger Operator Pod is running:
 ```bash
 kubectl get pods -n tracing
 ```
-Example:
+Output is similar to:
 ```bash
 NAME                                       READY   STATUS    RESTARTS   AGE
 tracing-jaeger-operator-549b79b848-h4p4d   1/1     Running   0          96s
 ```
 ## Deploy a minimal Jaeger instance
-Install a simple Jaeger custom resource in the namespace where Seldon Core v2 is running (for example, seldon-mesh). This CR deploys an all-in-one Jaeger instance suitable for development and non-production use.
+Install a simple Jaeger custom resource in the namespace `seldon-mesh`, where Seldon Core 2 is running . **Note**:  This CR is suitable for local development, demos, and quick-start scenarios. It is not recommended for production because all components and trace data are ephemeral.
 
-1. Save the following manifest as `jaeger-simplest.yaml`:
+1. Create a manifest file named `jaeger-simplest.yaml` with these contents:
 ```bash
 apiVersion: jaegertracing.io/v1
 kind: Jaeger
@@ -78,24 +76,22 @@ kubectl apply -f jaeger-simplest.yaml
 ```bash
 kubectl get pods -n seldon-mesh | grep simplest
 ```
-Example:
+Output is similar to:
 ```bash
 NAME                       READY  STATUS    RESTARTS   AGE
 simplest-8686f5d96-4ptb4   1/1    Running   0          45s
 ```
-What the above `simplest` Jaeger CR does:
+This `simplest` Jaeger CR does the following:
 
 - **All-in-one pod**: Deploys a single pod running the collector, agent, query service, and UI, using in-memory storage.
 
-- **Use case**: Suitable for local development, demos, and quick-start scenarios. Not recommended for production because all components and trace data are ephemeral.
+- **Core 2 integration**: receives spans from Seldon Core 2 components and exposes a UI for viewing traces.
 
-- **Core 2 integration**: The all-in-one pod receives spans from Seldon Core 2 components and exposes a UI for viewing traces.
+## Configure Seldon Core 2 
 
-## Configure Seldon Core v2 to emit traces
+To enable tracing, configure the OpenTelemetry exporter endpoint in the [SeldonRuntime](../installation/advanced-configurations/seldonconfig) resource so that traces are sent to the Jaeger collector service created by the simplest Jaeger Custom Resource.
 
-To enable tracing, configure the OpenTelemetry exporter endpoint in the `SeldonRuntime` resource so that traces are sent to the Jaeger collector service created by the simplest Jaeger CR.
-
-1. Edit your `SeldonRuntime`Custom Resource to include `tracingConfig` under `spec.config`:
+1. Edit your `SeldonRuntime` Custom Resource to include `tracingConfig` under `spec.config`:
 ```bash
 spec:
   config:
@@ -115,7 +111,7 @@ spec:
 ```
 2. Save the updated above ```runtime``` configuration.
    
-3. Restart the below Core 2 components pods so they pick up the new tracing configuration from the `seldon-tracing` ConfigMap in the `seldon-mesh` namespace.
+3. Restart the following Core 2 component Pods so they pick up the new tracing configuration from the `seldon-tracing` ConfigMap in the `seldon-mesh` namespace.
 
 - seldon-dataflow-engine
 
@@ -127,11 +123,11 @@ spec:
 
 - Servers
 
-After restart, these components will read the updated tracing config and start emitting traces to Jaeger.
+After restart, these components reads the updated tracing config and start emitting traces to Jaeger.
 
-## Generate traffic to see traces
+## Generate traffic 
 
-To visualize traces, send requests to your models or pipelines deployed in Seldon Core 2. Each inference request should produce a trace that shows the path through the Core 2 components (e.g., gateways, dataflow engine, server agents) in the Jaeger UI.
+To visualize traces, send requests to your models or pipelines deployed in Seldon Core 2. Each inference request should produce a trace that shows the path through the Core 2 components such as gateways, dataflow engine, server agents in the Jaeger UI.
 
 ## Access the Jaeger UI
 
