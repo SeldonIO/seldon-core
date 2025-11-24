@@ -8,7 +8,7 @@ description: >-
 * Set up and connect to a Kubernetes cluster running version 1.27 or later. For instructions on connecting to your Kubernetes cluster, refer to the documentation provided by your cloud provider.
 * Install [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl), the Kubernetes command-line tool.
 * Install [Helm](https://helm.sh/docs/intro/install/), the package manager for Kubernetes.
-* Install [Seldon Core 2]()
+* Install [Seldon Core 2](../installation/README.md)
 * Install [cert-manager](https://cert-manager.io/docs/installation/kubectl/) in the namespace `cert-manager`.
 
 To set up Jaeger Tracing for Seldon Core 2 on Kubernetes and visualize inference traces of the Seldon Core 2 components. You need to do the following:
@@ -89,7 +89,7 @@ This `simplest` Jaeger CR does the following:
 
 ## Configure Seldon Core 2 
 
-To enable tracing, configure the OpenTelemetry exporter endpoint in the [SeldonRuntime](../installation/advanced-configurations/seldonconfig) resource so that traces are sent to the Jaeger collector service created by the simplest Jaeger Custom Resource.
+To enable tracing, configure the OpenTelemetry exporter endpoint in the [SeldonRuntime](../kubernetes/resources/seldonruntime.md) resource so that traces are sent to the Jaeger collector service created by the simplest Jaeger Custom Resource.
 
 1. Edit your `SeldonRuntime` Custom Resource to include `tracingConfig` under `spec.config`:
 ```bash
