@@ -80,7 +80,7 @@ def update_helm_values_yaml_file_default_images(
     args = [
         "sed",
         "-i",
-        "s/version: \(.*\)/version: {seldon_core_version}/".format(**locals()),
+        rf"s/version: \(.*\)/version: {seldon_core_version}/",
         fpath,
     ]
     err, out = run_command(args, debug)
@@ -101,7 +101,7 @@ def update_operator_values_yaml_file_core_images(
     args = [
         "sed",
         "-i",
-        "s/tag: \(.*\)/tag: {seldon_core_version}/".format(**locals()),
+        rf"s/tag: \(.*\)/tag: {seldon_core_version}/",
         fpath,
     ]
     err, out = run_command(args, debug)
@@ -122,9 +122,7 @@ def update_operator_values_yaml_file_storage_initializer(
     args = [
         "sed",
         "-i",
-        "s|seldonio/rclone-storage-initializer:\(.*\)|seldonio/rclone-storage-initializer:{seldon_core_version}|".format(
-            **locals()
-        ),
+        rf"s|seldonio/rclone-storage-initializer:\(.*\)|seldonio/rclone-storage-initializer:{seldon_core_version}|",
         fpath,
     ]
     err, out = run_command(args, debug)
@@ -180,9 +178,7 @@ def update_operator_values_yaml_file_explainer_image(
     args = [
         "sed",
         "-i",
-        "s|seldonio/alibiexplainer:\(.*\)|seldonio/alibiexplainer:{seldon_core_version}|".format(
-            **locals()
-        ),
+        rf"s|seldonio/alibiexplainer:\(.*\)|seldonio/alibiexplainer:{seldon_core_version}|",
         fpath,
     ]
     err, out = run_command(args, debug)
@@ -348,7 +344,7 @@ def update_versions_py(seldon_core_version, debug=False):
     args = [
         "sed",
         "-i",
-        's/version="\(.*\)"/version="{seldon_core_version}"/g'.format(**locals()),
+        rf's/version="\(.*\)"/version="{seldon_core_version}"/g',
         "python/setup.py",
     ]
     err, out = run_command(args, debug)
@@ -362,9 +358,7 @@ def update_kustomize_executor_version(seldon_core_version, debug=False):
     args = [
         "sed",
         "-i",
-        "s/seldonio\/seldon-core-executor:\(.*\)/seldonio\/seldon-core-executor:{seldon_core_version}/g".format(
-            **locals()
-        ),
+        rf"s/seldonio\/seldon-core-executor:\(.*\)/seldonio\/seldon-core-executor:{seldon_core_version}/g",
         "operator/config/manager/manager.yaml",
     ]
     err, out = run_command(args, debug)
