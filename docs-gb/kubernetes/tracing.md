@@ -8,11 +8,11 @@ description: >-
 * Set up and connect to a Kubernetes cluster running version 1.27 or later. For instructions on connecting to your Kubernetes cluster, refer to the documentation provided by your cloud provider.
 * Install [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl), the Kubernetes command-line tool.
 * Install [Helm](https://helm.sh/docs/intro/install/), the package manager for Kubernetes.
-* Install [Seldon Core 2](../installation/installation)
+* Install [Seldon Core 2]()
 * Install [cert-manager](https://cert-manager.io/docs/installation/kubectl/) in the namespace `cert-manager`.
 
 To set up Jaeger Tracing for Seldon Core 2 on Kubernetes and visualize inference traces of the Seldon Core 2 components. You need to do the following:
-1. [Craete a namespace](#create-a-namespace)
+1. [Create a namespace](#create-a-namespace)
 2. [Install Jaeger Operator](#install-jaeger-operator)
 3. [Deploy a Jaeger instance](#deploy-a-minimal-jaeger-instance)
 4. [Configure Core 2](#configure-seldon-core-2)
