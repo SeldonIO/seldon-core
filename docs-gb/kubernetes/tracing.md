@@ -11,7 +11,7 @@ description: >-
 * Install [Seldon Core 2]
 * Install [cert-manager](https://cert-manager.io/docs/installation/kubectl/) in the namespace `cert-manager`.
 
-To set up Jaeger Tracing for Seldon Core 2 on Kubernetes and visualize inference traces of the Seldon Core 2 components.
+To set up Jaeger Tracing for Seldon Core 2 on Kubernetes and visualize inference traces of the Seldon Core 2 components. You need to do the following:
 1. [Craete a namespace](#create-a-namespace)
 2. [Install Jaeger Operator](#install-jaeger-operator)
 3. [Deploy a Jaeger instance](#deploy-a-minimal-jaeger-instance)
