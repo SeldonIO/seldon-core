@@ -9,7 +9,7 @@ Core 2 runs with long-lived server replicas, each able to host multiple models (
 This document outlines the autoscaling policies and mechanisms that are available for autoscaling server replicas. These policies are designed to ensure that the server replicas are scaled up or down in response to changes in the number of replicas requested for each model. In other words if a given model is scaled up, the system will scale up the server replicas in order to host the new model replicas. Similarly, if a given model is scaled down, the system _may_ scale down the number of replicas of the server hosting the model, depending on other models that are loaded on the same server replica.
 
 {% hint style="info" %}
-**Note**: Autoscaling of servers is required in the case of Multi-Model Serving as the models are dynamically loaded and unloaded onto these server replicas. In this case Core 2 would autoscale server replicas according to changes to the model replicas that are required. This is in contrast to single-model autoscaling approach explained [here](hpa-rps-autoscaling.md) where Server and Model replicas are independently scaled using HPA that targets the same metric.
+**Note**: Autoscaling of servers is required in the case of Multi-Model Serving as the models are dynamically loaded and unloaded onto these server replicas. In this case Core 2 would autoscale server replicas according to changes to the model replicas that are required. This is in contrast to single-model autoscaling approach explained [here](single-model-serving-hpa.md) where Server and Model replicas are independently scaled using HPA that targets the same metric.
 {% endhint %}
 
 To enable autoscaling of server replicas, the following requirements need to be met:
