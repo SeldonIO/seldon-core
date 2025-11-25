@@ -90,8 +90,8 @@ This `simplest` Jaeger CR does the following:
 
 ## Configure Seldon Core 2 
 
-To enable tracing, configure the OpenTelemetry exporter endpoint in the [SeldonRuntime](../kubernetes/resources/seldonruntime.md) resource so that traces are sent to the Jaeger collector service created by the simplest Jaeger Custom Resource.
-
+To enable tracing, configure the OpenTelemetry exporter endpoint in the [SeldonRuntime](../kubernetes/resources/seldonruntime.md) resource so that traces are sent to the Jaeger collector service created by the simplest Jaeger Custom Resource. The Seldon Runtime  helm chart is located at: https://github.com/SeldonIO/seldon-core/blob/v2/k8s/helm-charts/seldon-core-v2-runtime/values.yaml
+ 
 1. Edit your `SeldonRuntime` Custom Resource to include `tracingConfig` under `spec.config`:
 ```bash
 spec:
