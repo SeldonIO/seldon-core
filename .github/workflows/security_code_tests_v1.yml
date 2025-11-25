@@ -16,31 +16,36 @@ jobs:
     runs-on: ubuntu-latest
     container: snyk/snyk:python-3.12-preview
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: security-python
       # NOTE: [all] installs tensorflow as well as an extra
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       run: |
         pip install -e python/.[all]
         snyk test --file=python/setup.py --fail-on=upgradable --severity-threshold=high
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   security-operator:
     runs-on: ubuntu-latest
-    container: snyk/snyk:golang-1.24
     steps:
     - uses: actions/checkout@v4
+    - uses: snyk/actions/setup@master
+    - uses: actions/setup-go@v3
+      with:
+        go-version: '1.24.7'
     - name: security-operator
+      run: |
+        snyk test \
+          --file=operator/go.mod 
+          --fail-on=upgradable 
+          --severity-threshold=high
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        GOFLAGS: "-buildvcs=false"
-      run: |
-        snyk test --file=operator/go.mod --fail-on=upgradable --severity-threshold=high
 
   security-executor:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - uses: snyk/actions/setup@master
     - uses: actions/setup-go@v3
       with:
@@ -51,9 +56,10 @@ jobs:
       # it's accessible.
       run: make -C executor/ executor
     - name: security-executor
-      run: snyk test \
-        --fail-on=upgradable
-        --severity-threshold=high
-        --file=executor/go.mod
+      run: |
+        snyk test \
+          --file=executor/go.mod
+          --fail-on=upgradable
+          --severity-threshold=high
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
