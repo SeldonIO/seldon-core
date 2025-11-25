@@ -94,7 +94,7 @@ Monitoring the model deployments in Seldon Core 2 involves:
     ```
 3.  Apply the Custom RBAC Configuration settings for kube-prometheus.
     ```bash
-    CUSTOM_RBAC=https://raw.githubusercontent.com/SeldonIO/seldon-core/v2.8.2/prometheus/rbac
+    CUSTOM_RBAC=https://raw.githubusercontent.com/SeldonIO/seldon-core/v2/prometheus/rbac
 
     kubectl apply -f ${CUSTOM_RBAC}/cr.yaml
     ```
