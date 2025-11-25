@@ -35,7 +35,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: ${{ env.SELDON_EXECUTOR_IMG }}
-          args: --app-vulns --severity-threshold=high --file=executor/Dockerfile.executor
+          args: --app-vulns --severity-threshold=high --file=executor/Dockerfile.executor --fail-on=upgradable
 
   image-operator:
     runs-on: ubuntu-latest
@@ -61,7 +61,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: ${{ env.SELDON_OPERATOR_IMG }}
-        args:  --app-vulns --severity-threshold=high --file=operator/Dockerfile
+        args:  --app-vulns --severity-threshold=high --file=operator/Dockerfile --fail-on=upgradable
 
   image-rclone-storage-initializer:
     runs-on: ubuntu-latest
@@ -79,4 +79,4 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: ${{ env.RCLONE_IMAGE_TAG }}
-        args: --app-vulns --severity-threshold=high --file=components/rclone-storage-initializer/Dockerfile
+        args: --app-vulns --severity-threshold=high --file=components/rclone-storage-initializer/Dockerfile --fail-on=upgradable

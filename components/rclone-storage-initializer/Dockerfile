@@ -2,7 +2,7 @@ FROM rclone/rclone:1.72.0 as builder
 
 RUN mkdir /licenses && wget -O /licenses/license.txt https://raw.githubusercontent.com/rclone/rclone/master/COPYING
 
-FROM registry.access.redhat.com/ubi10/ubi-minimal:10.0
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6
 
 RUN microdnf update -y
 
