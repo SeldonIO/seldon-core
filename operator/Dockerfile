@@ -45,7 +45,7 @@ RUN wget -O mitchellh-cli.tar.gz https://github.com/mitchellh/cli/archive/master
 RUN wget -O mitchellh-gox.tar.gz https://github.com/mitchellh/gox/archive/master.tar.gz
 RUN wget -O mozilla-tls-observatory.tar.gz https://github.com/mozilla/tls-observatory/archive/master.tar.gz
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6
+FROM registry.access.redhat.com/ubi10/ubi-minimal:10.1
 
 WORKDIR /
 COPY --from=builder /workspace/manager .
