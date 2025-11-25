@@ -1,1 +1,2 @@
 model_with_keda_prom.yaml
+*.py
