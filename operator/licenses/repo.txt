@@ -115,6 +115,7 @@ googleapis/gax-go
 googleapis/gnostic
 gorilla/mux
 gorilla/websocket
+gotidy/ptr
 gregjones/httpcache
 grpc-ecosystem/go-grpc-middleware
 grpc-ecosystem/go-grpc-prometheus
