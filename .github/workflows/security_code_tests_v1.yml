@@ -26,27 +26,14 @@ jobs:
 
   security-operator:
     runs-on: ubuntu-latest
+    container: snyk/snyk:golang-1.24
     steps:
-    - uses: actions/checkout@v2
-
-    - name: Debug SNYK_TOKEN presence
-      run: |
-        if [ -z "$SNYK_TOKEN" ]; then
-          echo "SNYK_TOKEN is EMPTY in this job"
-        else
-          echo "SNYK_TOKEN is set (length: ${#SNYK_TOKEN})"
-        fi
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
+    - uses: actions/checkout@v4
     - name: security-operator
-      # NOTE: We use the Snyk action (instead of the Snyk base image) so that
-      # it respects the Go version we use.
-      uses: snyk/actions/golang@master
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        args: --fail-on=upgradable --severity-threshold=high --file=operator/go.mod
+      run: |
+        snyk test --file=operator/go.mod --fail-on=upgradable --severity-threshold=high
 #
 #  security-executor:
 #    runs-on: ubuntu-latest
