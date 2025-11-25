@@ -59,7 +59,9 @@ tracing-jaeger-operator-549b79b848-h4p4d   1/1     Running   0          96s
 ```
 ## Deploy a minimal Jaeger instance
 Install a simple Jaeger custom resource in the namespace `seldon-mesh`, where Seldon Core 2 is running.\
-**Note**:  This CR is suitable for local development, demos, and quick-start scenarios. It is not recommended for production because all components and trace data are ephemeral.
+{% hint style="info" %}
+This CR is suitable for local development, demos, and quick-start scenarios. It is not recommended for production because all components and trace data are ephemeral.
+{% endhint %}
 
 1. Create a manifest file named `jaeger-simplest.yaml` with these contents:
 ```bash
