@@ -34,7 +34,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: security-operator
       run: |
-        snyk test --file=operator/go.mod --fail-on=upgradable --severity-threshold=high
+        snyk test --debug --file=operator/go.mod --fail-on=upgradable --severity-threshold=high
 #
 #  security-executor:
 #    runs-on: ubuntu-latest
