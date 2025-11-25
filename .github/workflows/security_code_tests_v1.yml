@@ -32,6 +32,7 @@ jobs:
     - name: security-operator
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        GOFLAGS: "-buildvcs=false"
       run: |
         snyk test --file=operator/go.mod --fail-on=upgradable --severity-threshold=high
 #
