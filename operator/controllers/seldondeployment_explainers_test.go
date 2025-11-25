@@ -261,10 +261,12 @@ var _ = Describe("Create a V2 Seldon Deployment with explainer", func() {
 							Name:           "classifier",
 							Type:           &modelType,
 							Implementation: &modelImplementation,
+							ModelURI:       "some-uri",
 						},
 						Explainer: &machinelearningv1.Explainer{
 							Type:           machinelearningv1.AlibiAnchorsImageExplainer,
 							InitParameters: explainerInitParameters,
+							ModelUri:       "some-uri",
 						},
 					},
 				},
