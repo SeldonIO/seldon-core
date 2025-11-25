@@ -92,7 +92,23 @@ This `simplest` Jaeger CR does the following:
 
 To enable tracing, configure the OpenTelemetry exporter endpoint in the [SeldonRuntime](../kubernetes/resources/seldonruntime.md) resource so that traces are sent to the Jaeger collector service created by the simplest Jaeger Custom Resource. The Seldon Runtime  helm chart is located at: https://github.com/SeldonIO/seldon-core/blob/v2/k8s/helm-charts/seldon-core-v2-runtime/values.yaml
  
-1. Edit your `SeldonRuntime` Custom Resource to include `tracingConfig` under `spec.config`:
+1. Find the seldonruntime custom respurce that needs to be updated using: `kubectl get seldonruntimes -n seldon-mesh`
+2. Patch your Custom Resource to include `tracingConfig` under `spec.config` using:
+    
+```bash
+kubectl patch seldonruntime seldon -n seldon-mesh \
+  --type merge \
+  -p '{"spec":{"config":{"kafkaConfig":{"bootstrap.servers":"seldon-kafka-bootstrap.seldon-mesh:9092","consumer":{"auto.offset.reset":"earliest"},"topics":{"numPartitions":4}},"scalingConfig":{"servers":{}},"tracingConfig":{"otelExporterEndpoint":"simplest-collector.seldon-mesh:4317"}}}}'
+```
+Output is similar to:
+
+```bash
+seldonruntime.mlops.seldon.io/seldon patched
+``` 
+3. Check the updated `.yaml` file, using: `kubectl get seldonruntime seldon -n seldon-mesh -o yaml `
+
+Output is similar to:
+
 ```bash
 spec:
   config:
@@ -110,9 +126,8 @@ spec:
     tracingConfig:
       otelExporterEndpoint: simplest-collector.seldon-mesh:4317
 ```
-2. Save the updated above ```runtime``` configuration.
    
-3. Restart the following Core 2 component Pods so they pick up the new tracing configuration from the `seldon-tracing` ConfigMap in the `seldon-mesh` namespace.
+4. Restart the following Core 2 component Pods so they pick up the new tracing configuration from the `seldon-tracing` ConfigMap in the `seldon-mesh` namespace.
 
 - seldon-dataflow-engine
 
