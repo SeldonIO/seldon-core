@@ -12,17 +12,17 @@ on:
   workflow_dispatch:
 
 jobs:
-#  security-python:
-#    runs-on: ubuntu-latest
-#    container: snyk/snyk:python-3.12-preview
-#    steps:
-#    - uses: actions/checkout@v2
-#    - name: security-python
-#      env:
-#        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-#      run: |
-#        pip install -e python/.
-#        snyk test --file=python/setup.py --fail-on=upgradable --severity-threshold=high
+  security-python:
+    runs-on: ubuntu-latest
+    container: snyk/snyk:python-3.12-preview
+    steps:
+    - uses: actions/checkout@v2
+    - name: security-python
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      run: |
+        pip install -e python/.
+        snyk test --file=python/setup.py --fail-on=upgradable --severity-threshold=high
 
   security-operator:
     runs-on: ubuntu-latest
