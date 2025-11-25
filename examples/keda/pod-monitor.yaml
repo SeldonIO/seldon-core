@@ -3,12 +3,15 @@ kind: PodMonitor
 metadata:
   name: seldon-podmonitor
   namespace: seldon-monitoring
+  labels:
+    release: seldon-monitoring
 spec:
+  namespaceSelector:
+    matchNames:
+      - seldon
   selector:
     matchLabels:
-      app.kubernetes.io/managed-by: seldon-core
+      seldon.io/model: "true"
   podMetricsEndpoints:
     - port: metrics
       path: /prometheus
-  namespaceSelector:
-    any: true
