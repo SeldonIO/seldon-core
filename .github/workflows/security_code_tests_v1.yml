@@ -2,9 +2,13 @@ name: V1 Security code Tests
 
 on:
   push:
-    branches: [ master, fix-ci-security-code-tests-v1-snyk ]
+    branches:
+      - master
+      - "*"
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
+      - "*"
   workflow_dispatch:
 
 jobs:
