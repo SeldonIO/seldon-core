@@ -66,7 +66,7 @@ func InitializeOperator(ctx context.Context, config *rest.Config, namespace stri
 	crd, err := crdCreator.findOrCreateCRD(bytesV1)
 	if err != nil {
 		logger.Error(err, "Failed to create CRD")
-		return fmt.Errorf("failed to create CRD: %w", err)
+		return fmt.Errorf("failed to find or create CRD: %w", err)
 	}
 
 	clientset, err := kubernetes.NewForConfig(config)
