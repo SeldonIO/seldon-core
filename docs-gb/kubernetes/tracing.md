@@ -26,11 +26,11 @@ kubectl create namespace tracing
 ```
 ## Install Jaeger Operator
 
-The Jaeger Operator manages Jaeger instances in the Kubernetes cluster. Use the [Helm chart](https://github.com/jaegertracing/helm-charts/tree/v2) for Jaeger v2.
+The Jaeger Operator manages Jaeger instances in the Kubernetes cluster. Use the [Helm chart](s://github.com/jaegertracing/helm-charts/tree/v2) for Jaeger v2.
 
 1. Add the Jaeger to the Helm repository:
 ```bash
-helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+helm repo add jaegertracing s://jaegertracing.github.io/helm-charts
 helm repo update
 ```
 2. Create a minimal `tracing-values.yaml`:
@@ -92,7 +92,7 @@ This `simplest` Jaeger CR does the following:
 
 ## Configure Seldon Core 2 
 
-To enable tracing, configure the OpenTelemetry exporter endpoint in the [SeldonRuntime](../kubernetes/resources/seldonruntime.md) resource so that traces are sent to the Jaeger collector service created by the simplest Jaeger Custom Resource. The Seldon Runtime  helm chart is located at: https://github.com/SeldonIO/seldon-core/blob/v2/k8s/helm-charts/seldon-core-v2-runtime/values.yaml
+To enable tracing, configure the OpenTelemetry exporter endpoint in the [SeldonRuntime](../kubernetes/resources/seldonruntime.md) resource so that traces are sent to the Jaeger collector service created by the simplest Jaeger Custom Resource. The Seldon Runtime  helm chart is located [here](https://github.com/SeldonIO/seldon-core/blob/v2/k8s/helm-charts/seldon-core-v2-runtime/values.yaml).
  
 1. Find the `seldonruntime` Custom Resource that needs to be updated using: `kubectl get seldonruntimes -n seldon-mesh`
 2. Patch your Custom Resource to include `tracingConfig` under `spec.config` using:
