@@ -18,10 +18,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: security-python
+      # NOTE: [all] installs tensorflow as well as an extra
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       run: |
-        pip install -e python/.
+        pip install -e python/.[all]
         snyk test --file=python/setup.py --fail-on=upgradable --severity-threshold=high
 
   security-operator:
