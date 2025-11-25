@@ -7,7 +7,6 @@ on:
     # TODO remove release-1.19.0-prep before merge to master
     branches:
       - master
-      - release-1.19.0-prep
   workflow_dispatch:
 
 jobs:
