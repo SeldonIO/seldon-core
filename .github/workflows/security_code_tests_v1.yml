@@ -43,10 +43,10 @@ jobs:
       # NOTE: We use the Snyk action (instead of the Snyk base image) so that
       # it respects the Go version we use.
       uses: snyk/actions/golang@master
-      with:
-        args: --fail-on=upgradable --severity-threshold=high --file=operator/go.mod
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --fail-on=upgradable --severity-threshold=high --file=operator/go.mod
 #
 #  security-executor:
 #    runs-on: ubuntu-latest
