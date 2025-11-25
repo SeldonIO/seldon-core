@@ -143,7 +143,7 @@ After restart, these components reads the updated tracing config and start emitt
 
 ## Generate traffic 
 
-To visualize traces, send requests to your models or pipelines deployed in Seldon Core 2. Each [inference request](../installation/test-installation) should produce a trace that shows the path through the Core 2 components such as gateways, dataflow engine, server agents in the Jaeger UI.
+To visualize traces, send requests to your models or pipelines deployed in Seldon Core 2. Each [inference request](../installation/test-installation.md) should produce a trace that shows the path through the Core 2 components such as gateways, dataflow engine, server agents in the Jaeger UI.
 
 ## Access the Jaeger UI
 
