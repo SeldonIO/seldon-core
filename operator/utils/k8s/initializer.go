@@ -3,8 +3,11 @@ package k8s
 import (
 	"context"
 	"fmt"
-	"github.com/go-logr/logr"
 	"io/ioutil"
+	"os"
+	"path/filepath"
+
+	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,8 +15,6 @@ import (
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"os"
-	"path/filepath"
 )
 
 const (
@@ -44,35 +45,34 @@ func findMyDeployment(ctx context.Context, clientset kubernetes.Interface, names
 }
 
 func InitializeOperator(ctx context.Context, config *rest.Config, namespace string, logger logr.Logger, scheme *runtime.Scheme, watchNamespace bool) error {
-
 	apiExtensionClient, err := apiextensionsclient.NewForConfig(config)
 	if err != nil {
 		logger.Error(err, "Failed to create apiextensionsClient")
-		return err
+		return fmt.Errorf("failed to create apiextensionsClient: %w", err)
 	}
 
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
 		logger.Error(err, "Failed to create discoveryClient")
-		return err
+		return fmt.Errorf("failed to create discoveryClient: %w", err)
 	}
 
 	crdCreator := NewCrdCreator(ctx, apiExtensionClient, discoveryClient, logger)
 	bytesV1, err := LoadBytesFromFile(ResourceFolder, CRDFilenameV1)
 	if err != nil {
 		logger.Error(err, "Failed to find crd v1", "resourcefolder", ResourceFolder, "filename", CRDFilenameV1)
-		return err
+		return fmt.Errorf("failed to load %s: %w", CRDFilenameV1, err)
 	}
 	crd, err := crdCreator.findOrCreateCRD(bytesV1)
 	if err != nil {
 		logger.Error(err, "Failed to create CRD")
-		return err
+		return fmt.Errorf("failed to find or create CRD: %w", err)
 	}
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		logger.Error(err, "Failed to create clientset")
-		return err
+		return fmt.Errorf("failed to create client config: %w", err)
 	}
 
 	dep, err := findMyDeployment(ctx, clientset, namespace)

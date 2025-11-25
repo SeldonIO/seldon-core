@@ -2,12 +2,13 @@ package controllers
 
 import (
 	"context"
-	"github.com/go-logr/logr/testr"
-	"k8s.io/client-go/kubernetes/fake"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/go-logr/logr/testr"
+	"k8s.io/client-go/kubernetes/fake"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -52,6 +53,7 @@ var _ = Describe("Create a prepacked sklearn server.", func() {
 							Type:           &modelType,
 							Implementation: &impl,
 							Endpoint:       &machinelearningv1.Endpoint{Type: machinelearningv1.REST},
+							ModelURI:       "some-uri",
 						},
 					},
 				},
@@ -125,6 +127,7 @@ var _ = Describe("Create a prepacked tfserving server for Seldon protocol and RE
 							Type:           &modelType,
 							Implementation: &impl,
 							Endpoint:       &machinelearningv1.Endpoint{Type: machinelearningv1.REST},
+							ModelURI:       "some-uri",
 						},
 					},
 				},
@@ -214,6 +217,7 @@ var _ = Describe("Create a prepacked tfserving server for Seldon protocol and RE
 							Type:           &modelType,
 							Implementation: &impl,
 							Endpoint:       &machinelearningv1.Endpoint{Type: machinelearningv1.REST},
+							ModelURI:       "some-uri",
 						},
 						ComponentSpecs: []*machinelearningv1.SeldonPodSpec{
 							{
@@ -325,6 +329,7 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 							Type:           &modelType,
 							Implementation: &impl,
 							Endpoint:       &machinelearningv1.Endpoint{Type: machinelearningv1.REST},
+							ModelURI:       "some-uri",
 						},
 					},
 				},
@@ -379,7 +384,6 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 
 		Expect(k8sClient.Delete(context.Background(), instance)).Should(Succeed())
 	})
-
 })
 
 var _ = Describe("Create a prepacked tfserving server for tensorflow protocol and REST with existing container", func() {
@@ -428,6 +432,7 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 							Type:           &modelType,
 							Implementation: &impl,
 							Endpoint:       &machinelearningv1.Endpoint{Type: machinelearningv1.REST},
+							ModelURI:       "some-uri",
 						},
 					},
 				},
@@ -558,6 +563,7 @@ var _ = Describe("Create a prepacked tfserving server for tensorflow protocol an
 							Type:           &modelType,
 							Implementation: &impl,
 							Endpoint:       &machinelearningv1.Endpoint{Type: machinelearningv1.GRPC},
+							ModelURI:       "some-uri",
 						},
 					},
 				},
@@ -653,6 +659,7 @@ var _ = Describe("Create a prepacked sklearn server", func() {
 							Type:           &modelType,
 							Implementation: &impl,
 							Endpoint:       &machinelearningv1.Endpoint{Type: machinelearningv1.REST},
+							ModelURI:       "some-uri",
 						},
 					},
 				},
@@ -819,6 +826,7 @@ var _ = Describe("Create a prepacked triton server", func() {
 							Type:           &modelType,
 							Implementation: &impl,
 							Endpoint:       &machinelearningv1.Endpoint{Type: machinelearningv1.REST},
+							ModelURI:       "some-uri",
 						},
 					},
 				},
@@ -920,6 +928,7 @@ var _ = Describe("Create a prepacked triton server with deprecated kfserving pro
 							Type:           &modelType,
 							Implementation: &impl,
 							Endpoint:       &machinelearningv1.Endpoint{Type: machinelearningv1.REST},
+							ModelURI:       "some-uri",
 						},
 					},
 				},
@@ -1015,6 +1024,7 @@ var _ = Describe("Create a prepacked mlflow server with existing container", fun
 							Type:           &modelType,
 							Implementation: &impl,
 							Endpoint:       &machinelearningv1.Endpoint{Type: machinelearningv1.REST},
+							ModelURI:       "some-uri",
 						},
 					},
 				},
