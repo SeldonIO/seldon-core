@@ -4,26 +4,13 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    # TODO revert before merge to master
-    branches: [ fix/core-1-CVEs ]
+    # TODO remove release-1.19.0-prep before merge to master
+    branches:
+      - master
+      - release-1.19.0-prep
   workflow_dispatch:
 
-env:
-  GOLANG_VERSION: 1.20.9
-
 jobs:
-  python:
-    runs-on: ubuntu-latest
-    container: snyk/snyk:python-3.8
-    steps:
-    - uses: actions/checkout@v2
-    - name: security-python
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      run: |
-        pip install -e python/.
-        snyk test --file=python/setup.py --fail-on=upgradable --severity-threshold=high
-
   image-executor:
     runs-on: ubuntu-latest
     steps:

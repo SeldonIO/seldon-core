@@ -4,6 +4,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
+    # TODO remove release-1.19.0-prep before merge to master
     branches:
       - master
       - release-1.19.0-prep
