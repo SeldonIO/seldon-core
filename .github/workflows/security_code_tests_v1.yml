@@ -27,12 +27,12 @@ jobs:
   security-operator:
     runs-on: ubuntu-latest
     container: snyk/snyk:golang-1.24
+    env:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      GOFLAGS: "-buildvcs=false"
     steps:
     - uses: actions/checkout@v4
     - name: security-operator
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        GOFLAGS: "-buildvcs=false"
       run: |
         snyk test --file=operator/go.mod --fail-on=upgradable --severity-threshold=high
 #
