@@ -108,6 +108,9 @@ func (t *lazyModelLoadTransport) RoundTrip(req *http.Request) (*http.Response, e
 	var reqOriginalBody []byte
 	var err error
 
+	//t.logger.Info("Sleeping for ages")
+	//time.Sleep(1 * time.Minute)
+
 	internalModelName := req.Header.Get(util.SeldonInternalModelHeader)
 	// externalModelName is the name of the model as it is known to the client, we should not use
 	// util.SeldonModelHeader though as it can contain the experiment tag (used for routing by envoy)

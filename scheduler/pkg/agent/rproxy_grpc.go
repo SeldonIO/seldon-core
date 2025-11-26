@@ -234,6 +234,10 @@ func (rp *reverseGRPCProxy) syncScalingMetrics(internalModelName string) {
 
 func (rp *reverseGRPCProxy) ModelInfer(ctx context.Context, r *v2.ModelInferRequest) (*v2.ModelInferResponse, error) {
 	logger := rp.logger.WithField("func", "ModelInfer")
+	//
+	//logger.Info("Sleeping for ages")
+	//time.Sleep(1 * time.Minute)
+
 	internalModelName, externalModelName, err := rp.extractModelNamesFromContext(ctx)
 	if err != nil {
 		return nil, err

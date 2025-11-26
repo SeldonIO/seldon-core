@@ -1,0 +1,110 @@
+apiVersion: v1
+data:
+  credentials: |-
+    {
+       "gcs" : {
+           "gcsCredentialFileName": "gcloud-application-credentials.json"
+       },
+       "s3" : {
+           "s3AccessKeyIDName": "awsAccessKeyID",
+           "s3SecretAccessKeyName": "awsSecretAccessKey"
+       }
+    }
+  explainer: |-
+    {
+        "image" : "seldonio/alibiexplainer:1.19.0-dev",
+        "image_v2" : "seldonio/mlserver:1.3.5-alibi-explain"
+    }
+  predictor_servers: |-
+    {
+        "TENSORFLOW_SERVER": {
+          "protocols" : {
+            "tensorflow": {
+              "image": "tensorflow/serving",
+              "defaultImageVersion": "2.1.0"
+              },
+            "seldon": {
+              "image": "seldonio/tfserving-proxy",
+              "defaultImageVersion": "1.19.0-dev"
+              }
+            }
+        },
+        "SKLEARN_SERVER": {
+          "protocols" : {
+            "seldon": {
+              "image": "seldonio/sklearnserver",
+              "defaultImageVersion": "1.19.0-dev"
+              },
+            "v2": {
+              "image": "seldonio/mlserver",
+              "defaultImageVersion": "1.3.5-sklearn"
+              }
+            }
+        },
+        "XGBOOST_SERVER": {
+          "protocols" : {
+            "seldon": {
+              "image": "seldonio/xgboostserver",
+              "defaultImageVersion": "1.19.0-dev"
+              },
+            "v2": {
+              "image": "seldonio/mlserver",
+              "defaultImageVersion": "1.3.5-xgboost"
+              }
+            }
+        },
+        "MLFLOW_SERVER": {
+          "protocols" : {
+            "seldon": {
+              "image": "seldonio/mlflowserver",
+              "defaultImageVersion": "1.19.0-dev"
+              },
+            "v2": {
+              "image": "seldonio/mlserver",
+              "defaultImageVersion": "1.3.5-mlflow"
+              }
+            }
+        },
+        "TRITON_SERVER": {
+          "protocols" : {
+            "v2": {
+              "image": "nvcr.io/nvidia/tritonserver",
+              "defaultImageVersion": "21.08-py3"
+              }
+            }
+        },
+        "HUGGINGFACE_SERVER": {
+          "protocols" : {
+            "v2": {
+              "image": "seldonio/mlserver",
+              "defaultImageVersion": "1.3.5-huggingface"
+              }
+            }
+        },
+        "TEMPO_SERVER": {
+          "protocols" : {
+            "v2": {
+              "image": "seldonio/mlserver",
+              "defaultImageVersion": "1.3.5-slim"
+              }
+            }
+        }
+    }
+  storageInitializer: |-
+    {
+        "image" : "seldonio/rclone-storage-initializer:1.14.1",
+        "memoryRequest": "100Mi",
+        "memoryLimit": "1Gi",
+        "cpuRequest": "100m",
+        "cpuLimit": "1"
+    }
+kind: ConfigMap
+metadata:
+  labels:
+    app: seldon
+    app.kubernetes.io/instance: seldon1
+    app.kubernetes.io/name: seldon
+    app.kubernetes.io/version: v0.5
+    control-plane: seldon-controller-manager
+  name: seldon-config
+  namespace: seldon-system

@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  labels:
+    app: seldon
+    app.kubernetes.io/instance: seldon1
+    app.kubernetes.io/name: seldon
+    app.kubernetes.io/version: v0.5
+  name: seldon-selfsigned-issuer
+  namespace: seldon-system
+spec:
+  selfSigned: {}

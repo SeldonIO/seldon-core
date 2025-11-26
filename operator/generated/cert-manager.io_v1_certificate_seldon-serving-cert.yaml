@@ -1,0 +1,19 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    app: seldon
+    app.kubernetes.io/instance: seldon1
+    app.kubernetes.io/name: seldon
+    app.kubernetes.io/version: v0.5
+  name: seldon-serving-cert
+  namespace: seldon-system
+spec:
+  commonName: seldon-webhook-service.seldon-system.svc
+  dnsNames:
+  - seldon-webhook-service.seldon-system.svc.cluster.local
+  - seldon-webhook-service.seldon-system.svc
+  issuerRef:
+    kind: Issuer
+    name: seldon-selfsigned-issuer
+  secretName: seldon-webhook-server-cert

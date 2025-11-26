@@ -5,3 +5,16 @@ get available endpoints:
     kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1" | jq .
 
 Problem, we need to specify time window...
+
+
+
+use this gauge for active requests
+envoy_cluster_upstream_rq_active{envoy_cluster_name="model_iris2_7_grpc"}
+
+    prometheus query for active requests: sum(envoy_cluster_upstream_rq_active{model="iris2"})
+
+
+can use for past requests:
+    sum(rate(envoy_cluster_external_upstream_rq{model="iris2"}[5m])) by (model) * 300
+        more accurate than
+    sum(increase(envoy_cluster_external_upstream_rq{model="iris2"}[5m])) by (model)
