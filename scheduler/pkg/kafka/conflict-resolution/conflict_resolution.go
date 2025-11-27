@@ -148,7 +148,7 @@ func GetPipelineStatus(
 
 	failedTerminatingCount := cr.GetCountResourceWithStatus(pipelineName, pipeline.PipelineFailedTerminating)
 	if failedTerminatingCount > 0 {
-		messageStr += fmt.Sprintf("%d/%d failed ", failedTerminatingCount, len(streams))
+		messageStr += fmt.Sprintf("%d/%d failed terminating", failedTerminatingCount, len(streams))
 	}
 
 	rebalancingCount := cr.GetCountResourceWithStatus(pipelineName, pipeline.PipelineRebalancing)

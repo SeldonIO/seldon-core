@@ -150,11 +150,17 @@ func TestIsMessageOutdated(t *testing.T) {
 func TestGetPipelineStatus(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
+	type expect struct {
+		status pipeline.PipelineStatus
+		msg    string
+	}
+
 	tests := []struct {
 		name     string
 		op       chainer.PipelineUpdateMessage_PipelineOperation
 		statuses map[string]pipeline.PipelineStatus
-		expected pipeline.PipelineStatus
+		expect   expect
+		msg      string
 	}{
 		{
 			name: "create creating",
@@ -163,7 +169,7 @@ func TestGetPipelineStatus(t *testing.T) {
 				"a": pipeline.PipelineReady,
 				"b": pipeline.PipelineStatusUnknown,
 			},
-			expected: pipeline.PipelineCreating,
+			expect: expect{status: pipeline.PipelineCreating, msg: "1/2 ready "},
 		},
 		{
 			name: "create ready (all ready)",
@@ -172,7 +178,7 @@ func TestGetPipelineStatus(t *testing.T) {
 				"a": pipeline.PipelineReady,
 				"b": pipeline.PipelineReady,
 			},
-			expected: pipeline.PipelineReady,
+			expect: expect{status: pipeline.PipelineReady, msg: "2/2 ready "},
 		},
 		{
 			name: "create creating (some ready)",
@@ -181,7 +187,7 @@ func TestGetPipelineStatus(t *testing.T) {
 				"a": pipeline.PipelineReady,
 				"b": pipeline.PipelineFailed,
 			},
-			expected: pipeline.PipelineReady,
+			expect: expect{status: pipeline.PipelineReady, msg: "1/2 ready 1/2 failed "},
 		},
 		{
 			name: "create failed",
@@ -190,7 +196,7 @@ func TestGetPipelineStatus(t *testing.T) {
 				"a": pipeline.PipelineFailed,
 				"b": pipeline.PipelineFailed,
 			},
-			expected: pipeline.PipelineFailed,
+			expect: expect{status: pipeline.PipelineFailed, msg: "2/2 failed "},
 		},
 		{
 			name: "delete terminating",
@@ -199,7 +205,7 @@ func TestGetPipelineStatus(t *testing.T) {
 				"a": pipeline.PipelineTerminated,
 				"b": pipeline.PipelineStatusUnknown,
 			},
-			expected: pipeline.PipelineTerminating,
+			expect: expect{status: pipeline.PipelineTerminating, msg: "1/2 terminated "},
 		},
 		{
 			name: "delete failed",
@@ -207,7 +213,7 @@ func TestGetPipelineStatus(t *testing.T) {
 			statuses: map[string]pipeline.PipelineStatus{
 				"a": pipeline.PipelineFailedTerminating,
 			},
-			expected: pipeline.PipelineFailedTerminating,
+			expect: expect{status: pipeline.PipelineFailedTerminating, msg: "1/1 failed terminating"},
 		},
 		{
 			name: "rebalance failed",
@@ -216,7 +222,7 @@ func TestGetPipelineStatus(t *testing.T) {
 				"a": pipeline.PipelineFailed,
 				"b": pipeline.PipelineFailed,
 			},
-			expected: pipeline.PipelineFailed,
+			expect: expect{status: pipeline.PipelineFailed, msg: "2/2 failed "},
 		},
 		{
 			name: "rebalanced",
@@ -225,7 +231,7 @@ func TestGetPipelineStatus(t *testing.T) {
 				"a": pipeline.PipelineReady,
 				"b": pipeline.PipelineReady,
 			},
-			expected: pipeline.PipelineReady,
+			expect: expect{status: pipeline.PipelineReady, msg: "2/2 ready "},
 		},
 		{
 			name: "rebalanced (some ready)",
@@ -234,7 +240,7 @@ func TestGetPipelineStatus(t *testing.T) {
 				"a": pipeline.PipelineReady,
 				"b": pipeline.PipelineFailed,
 			},
-			expected: pipeline.PipelineReady,
+			expect: expect{status: pipeline.PipelineReady, msg: "1/2 ready 1/2 failed "},
 		},
 		{
 			name: "rebalancing all",
@@ -243,7 +249,7 @@ func TestGetPipelineStatus(t *testing.T) {
 				"a": pipeline.PipelineRebalancing,
 				"b": pipeline.PipelineRebalancing,
 			},
-			expected: pipeline.PipelineRebalancing,
+			expect: expect{status: pipeline.PipelineRebalancing, msg: "2/2 rebalancing "},
 		},
 		{
 			name: "rebalancing some",
@@ -252,7 +258,24 @@ func TestGetPipelineStatus(t *testing.T) {
 				"a": pipeline.PipelineReady,
 				"b": pipeline.PipelineRebalancing,
 			},
-			expected: pipeline.PipelineRebalancing,
+			expect: expect{status: pipeline.PipelineRebalancing, msg: "1/2 ready 1/2 rebalancing "},
+		},
+		{
+			name: "delete failed",
+			op:   chainer.PipelineUpdateMessage_Delete,
+			statuses: map[string]pipeline.PipelineStatus{
+				"a": pipeline.PipelineFailedTerminating,
+			},
+			expect: expect{status: pipeline.PipelineFailedTerminating, msg: "1/1 failed terminating"},
+		},
+		{
+			name: "delete failed and pipeline failed to create",
+			op:   chainer.PipelineUpdateMessage_Delete,
+			statuses: map[string]pipeline.PipelineStatus{
+				"a": pipeline.PipelineFailedTerminating,
+				"b": pipeline.PipelineFailed,
+			},
+			expect: expect{status: pipeline.PipelineFailedTerminating, msg: "1/2 failed 1/2 failed terminating"},
 		},
 	}
 
@@ -275,8 +298,9 @@ func TestGetPipelineStatus(t *testing.T) {
 				},
 			}
 
-			status, _ := GetPipelineStatus(cr, "p1", msg)
-			g.Expect(status).To(gomega.Equal(test.expected))
+			status, outputMsg := GetPipelineStatus(cr, "p1", msg)
+			g.Expect(status).To(gomega.Equal(test.expect.status))
+			g.Expect(outputMsg).To(gomega.Equal(test.expect.msg))
 		})
 	}
 }

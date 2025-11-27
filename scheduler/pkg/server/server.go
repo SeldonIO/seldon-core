@@ -63,35 +63,37 @@ var ErrAddServerEmptyServerName = status.Errorf(codes.FailedPrecondition, "Empty
 type SchedulerServer struct {
 	pb.UnimplementedSchedulerServer
 	health.UnimplementedHealthCheckServiceServer
-	logger                 log.FieldLogger
-	modelStore             store.ModelStore
-	experimentServer       experiment.ExperimentServer
-	pipelineHandler        pipeline.PipelineHandler
-	scheduler              scheduler2.Scheduler
-	modelEventStream       ModelEventStream
-	serverEventStream      ServerEventStream
-	experimentEventStream  ExperimentEventStream
-	pipelineEventStream    PipelineEventStream
-	controlPlaneStream     ControlPlaneStream
-	timeout                time.Duration
-	synchroniser           synchroniser.Synchroniser
-	config                 SchedulerServerConfig
-	modelGwLoadBalancer    *util.RingLoadBalancer
-	pipelineGWLoadBalancer *util.RingLoadBalancer
-	scalingConfigUpdates   chan scaling_config.ScalingConfig
-	currentScalingConfig   *scaling_config.ScalingConfig
-	mu                     sync.Mutex
-	done                   chan struct{}
-	grpcServer             *grpc.Server
-	consumerGroupConfig    *ConsumerGroupConfig
-	eventHub               *coordinator.EventHub
-	tlsOptions             seldontls.TLSOptions
+	logger                   log.FieldLogger
+	modelStore               store.ModelStore
+	experimentServer         experiment.ExperimentServer
+	pipelineHandler          pipeline.PipelineHandler
+	scheduler                scheduler2.Scheduler
+	modelEventStream         ModelEventStream
+	serverEventStream        ServerEventStream
+	experimentEventStream    ExperimentEventStream
+	pipelineEventStream      PipelineEventStream
+	controlPlaneStream       ControlPlaneStream
+	timeout                  time.Duration
+	synchroniser             synchroniser.Synchroniser
+	config                   SchedulerServerConfig
+	modelGwLoadBalancer      *util.RingLoadBalancer
+	pipelineGWLoadBalancer   *util.RingLoadBalancer
+	scalingConfigUpdates     chan scaling_config.ScalingConfig
+	currentScalingConfig     *scaling_config.ScalingConfig
+	mu                       sync.Mutex
+	done                     chan struct{}
+	grpcServer               *grpc.Server
+	consumerGroupConfig      *ConsumerGroupConfig
+	eventHub                 *coordinator.EventHub
+	tlsOptions               seldontls.TLSOptions
+	muRetriedFailedPipelines sync.Mutex
 	// TODO this would ideally be stored within the pipeline handler, as now we have to
 	//  retrieve the pipeline from the memory store even if it has reached max retires
 	// retriedFailedPipelines keyed off pipeline UID + version, value is retried count
 	retriedFailedPipelines map[string]uint
-	// retryFailedModels keyed off model name, value is retried count
-	retryFailedModels map[string]uint
+	muRetriedFailedModels  sync.Mutex
+	// retriedFailedModels keyed off model name, value is retried count
+	retriedFailedModels map[string]uint
 }
 
 type SchedulerServerConfig struct {
@@ -329,7 +331,7 @@ func NewSchedulerServer(
 		consumerGroupConfig:    consumerGroupConfig,
 		eventHub:               eventHub,
 		tlsOptions:             tlsOptions,
-		retryFailedModels:      make(map[string]uint),
+		retriedFailedModels:    make(map[string]uint),
 		retriedFailedPipelines: make(map[string]uint),
 	}
 

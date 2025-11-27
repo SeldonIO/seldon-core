@@ -62,7 +62,8 @@ type ChainerServer struct {
 	failedCreatePipelines map[string]pipeline.PipelineVersion
 	muFailedDelete        sync.Mutex
 	// failedDeletePipelines keyed off pipeline UID + version
-	failedDeletePipelines map[string]pipeline.PipelineVersion
+	failedDeletePipelines    map[string]pipeline.PipelineVersion
+	muRetriedFailedPipelines sync.Mutex
 	// retriedFailedPipelines keyed off pipeline UID + version. Tracks how many attempts have been made to create/terminate
 	// a pipeline
 	retriedFailedPipelines map[string]uint
@@ -161,14 +162,14 @@ func (c *ChainerServer) StartGrpcServer(ctx context.Context, pollerFailedCreateP
 	return grpcServer.Serve(lis)
 }
 
-func (c *ChainerServer) mkKey(uid string, version uint32) string {
+func (c *ChainerServer) mkPipelineRetryKey(uid string, version uint32) string {
 	return fmt.Sprintf("%s_%d", uid, version)
 }
 
 func (c *ChainerServer) storeFailedCreate(m *chainer.PipelineUpdateMessage) {
 	c.muFailedCreate.Lock()
 	defer c.muFailedCreate.Unlock()
-	c.failedCreatePipelines[c.mkKey(m.Uid, m.Version)] = pipeline.PipelineVersion{
+	c.failedCreatePipelines[c.mkPipelineRetryKey(m.Uid, m.Version)] = pipeline.PipelineVersion{
 		Name:    m.Pipeline,
 		Version: m.Version,
 		UID:     m.Uid,
@@ -178,11 +179,17 @@ func (c *ChainerServer) storeFailedCreate(m *chainer.PipelineUpdateMessage) {
 func (c *ChainerServer) storeFailedDelete(m *chainer.PipelineUpdateMessage) {
 	c.muFailedDelete.Lock()
 	defer c.muFailedDelete.Unlock()
-	c.failedDeletePipelines[c.mkKey(m.Uid, m.Version)] = pipeline.PipelineVersion{
+	c.failedDeletePipelines[c.mkPipelineRetryKey(m.Uid, m.Version)] = pipeline.PipelineVersion{
 		Name:    m.Pipeline,
 		Version: m.Version,
 		UID:     m.Uid,
 	}
+}
+
+func (c *ChainerServer) resetPipelineRetryCount(msg *chainer.PipelineUpdateMessage) {
+	c.muRetriedFailedPipelines.Lock()
+	defer c.muRetriedFailedPipelines.Unlock()
+	c.retriedFailedPipelines[c.mkPipelineRetryKey(msg.Uid, msg.Version)] = 0
 }
 
 func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
@@ -191,10 +198,12 @@ func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chaine
 
 	logger := c.logger.WithField("func", "PipelineUpdateEvent")
 	var statusVal pipeline.PipelineStatus
+
 	switch message.Update.Op {
 	// create, delete, rebalance operation from the scheduler
 	case chainer.PipelineUpdateMessage_Create:
 		if message.Success {
+			c.resetPipelineRetryCount(message.Update)
 			statusVal = pipeline.PipelineReady
 		} else {
 			c.storeFailedCreate(message.Update)
@@ -202,6 +211,7 @@ func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chaine
 		}
 	case chainer.PipelineUpdateMessage_Delete:
 		if message.Success {
+			c.resetPipelineRetryCount(message.Update)
 			statusVal = pipeline.PipelineTerminated
 		} else {
 			c.storeFailedDelete(message.Update)
@@ -533,14 +543,17 @@ func (c *ChainerServer) pollerFailedTerminatingPipelines(ctx context.Context, ti
 
 			c.mu.Lock()
 			for _, p := range c.failedDeletePipelines {
-				key := c.mkKey(p.UID, p.Version)
+				key := c.mkPipelineRetryKey(p.UID, p.Version)
+				c.muRetriedFailedPipelines.Lock()
 				c.retriedFailedPipelines[key]++
 
 				if c.retriedFailedPipelines[key] > maxRetry {
+					c.muRetriedFailedPipelines.Unlock()
 					logger.Warnf("Failed to terminate pipeline %s reached max retries", p.Name)
 					delete(c.failedDeletePipelines, key)
 					continue
 				}
+				c.muRetriedFailedPipelines.Unlock()
 
 				logger.Debugf("Attempting to terminate pipeline which failed to terminate %s", p.Name)
 				pv, err := c.pipelineHandler.GetPipelineVersion(p.Name, p.Version, p.UID)
@@ -596,15 +609,18 @@ func (c *ChainerServer) pollerFailedCreatingPipelines(ctx context.Context, tick 
 
 			c.mu.Lock()
 			for _, p := range c.failedCreatePipelines {
-				key := c.mkKey(p.UID, p.Version)
+				key := c.mkPipelineRetryKey(p.UID, p.Version)
+				c.muRetriedFailedPipelines.Lock()
 				c.retriedFailedPipelines[key]++
 				logger.Debugf("Attempting to create failed pipeline %s", p.Name)
 
 				if c.retriedFailedPipelines[key] > maxRetry {
+					c.muRetriedFailedPipelines.Unlock()
 					logger.Warnf("Failed to create pipeline %s reached max retries", p.Name)
 					delete(c.failedCreatePipelines, key)
 					continue
 				}
+				c.muRetriedFailedPipelines.Unlock()
 
 				// we only want to create this pipeline if it's the latest version, it could have failed to create
 				// and customer has since updated the pipeline and has created successfully, we'd then end up

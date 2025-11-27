@@ -61,6 +61,7 @@ func (s *SchedulerServer) pollerRetryFailedPipelines(ctx context.Context, tick t
 			}
 
 			filteredPipelines := pipelines[:0]
+			s.muRetriedFailedPipelines.Lock()
 			for _, p := range pipelines {
 				key := s.mkPipelineKey(p.UID, p.PipelineVersion)
 				s.retriedFailedPipelines[key]++
@@ -70,6 +71,7 @@ func (s *SchedulerServer) pollerRetryFailedPipelines(ctx context.Context, tick t
 				}
 				filteredPipelines = append(filteredPipelines, p)
 			}
+			s.muRetriedFailedPipelines.Unlock()
 
 			logger.WithField("pipelines", filteredPipelines).Debug("Found failed pipelines")
 			s.pipelineGwRebalancePipelines(filteredPipelines)
@@ -80,6 +82,12 @@ func (s *SchedulerServer) pollerRetryFailedPipelines(ctx context.Context, tick t
 
 func (s *SchedulerServer) mkPipelineKey(uid string, version uint32) string {
 	return fmt.Sprintf("%s_%d", uid, version)
+}
+
+func (s *SchedulerServer) resetPipelineRetryCount(msg *chainer.PipelineUpdateMessage) {
+	s.muRetriedFailedPipelines.Lock()
+	defer s.muRetriedFailedPipelines.Unlock()
+	s.retriedFailedPipelines[s.mkPipelineKey(msg.Uid, msg.Version)] = 0
 }
 
 func (s *SchedulerServer) PipelineStatusEvent(_ context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
@@ -93,12 +101,14 @@ func (s *SchedulerServer) PipelineStatusEvent(_ context.Context, message *chaine
 	switch message.Update.Op {
 	case chainer.PipelineUpdateMessage_Create:
 		if message.Success {
+			s.resetPipelineRetryCount(message.Update)
 			statusVal = pipeline.PipelineReady
 		} else {
 			statusVal = pipeline.PipelineFailed
 		}
 	case chainer.PipelineUpdateMessage_Delete:
 		if message.Success {
+			s.resetPipelineRetryCount(message.Update)
 			statusVal = pipeline.PipelineTerminated
 		} else {
 			statusVal = pipeline.PipelineFailedTerminating

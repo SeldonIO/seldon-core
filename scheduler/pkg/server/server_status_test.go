@@ -178,9 +178,9 @@ func TestPollerRetryFailedModels(t *testing.T) {
 			}
 
 			server := &SchedulerServer{
-				logger:            log.New(),
-				modelStore:        mockModelStore,
-				retryFailedModels: make(map[string]uint),
+				logger:              log.New(),
+				modelStore:          mockModelStore,
+				retriedFailedModels: make(map[string]uint),
 			}
 
 			var ctx context.Context

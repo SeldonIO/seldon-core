@@ -50,7 +50,7 @@ func (s *SchedulerServer) pollerRetryFailedModels(ctx context.Context, tick time
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			models := s.getModelsInGwState(logger, targetState, operation, maxRetry)
+			models := s.getModelsInGwRetryState(logger, targetState, operation, maxRetry)
 			if len(models) > 0 {
 				s.modelGwRebalanceForModels(models)
 			}
@@ -62,7 +62,7 @@ func (s *SchedulerServer) mkModelRetryKey(modelName string, version uint32) stri
 	return fmt.Sprintf("%s_%d", modelName, version)
 }
 
-func (s *SchedulerServer) getModelsInGwState(logger *logrus.Entry, targetState store.ModelState, operation string, maxRetry uint) []*store.ModelSnapshot {
+func (s *SchedulerServer) getModelsInGwRetryState(logger *logrus.Entry, targetState store.ModelState, operation string, maxRetry uint) []*store.ModelSnapshot {
 	modelNames := s.modelStore.GetAllModels()
 	logger.WithField("models", modelNames).Debugf("Poller retry to %s failed models on model-gw", operation)
 
@@ -87,11 +87,14 @@ func (s *SchedulerServer) getModelsInGwState(logger *logrus.Entry, targetState s
 		}
 
 		key := s.mkModelRetryKey(model.Name, model.GetLatest().GetVersion())
-		s.retryFailedModels[key]++
-		if s.retryFailedModels[key] > maxRetry {
+		s.muRetriedFailedModels.Lock()
+		s.retriedFailedModels[key]++
+		if s.retriedFailedModels[key] > maxRetry {
+			s.muRetriedFailedModels.Unlock()
 			logger.Debugf("Model-gw model %s retry failed, max retries reached", modelName)
 			continue
 		}
+		s.muRetriedFailedModels.Unlock()
 
 		logger.Infof("Model-gw model %s in %s state, retrying %s on model-gw", modelName, targetState, operation)
 		models = append(models, model)
@@ -100,7 +103,13 @@ func (s *SchedulerServer) getModelsInGwState(logger *logrus.Entry, targetState s
 	return models
 }
 
-func (s *SchedulerServer) ModelStatusEvent(ctx context.Context, message *pb.ModelUpdateStatusMessage) (*pb.ModelUpdateStatusResponse, error) {
+func (s *SchedulerServer) resetModelRetryCount(msg *pb.ModelUpdateMessage) {
+	s.muRetriedFailedModels.Lock()
+	defer s.muRetriedFailedModels.Unlock()
+	s.retriedFailedModels[s.mkModelRetryKey(msg.Model, msg.Version)] = 0
+}
+
+func (s *SchedulerServer) ModelStatusEvent(_ context.Context, message *pb.ModelUpdateStatusMessage) (*pb.ModelUpdateStatusResponse, error) {
 	s.modelEventStream.mu.Lock()
 	defer s.modelEventStream.mu.Unlock()
 
@@ -110,12 +119,14 @@ func (s *SchedulerServer) ModelStatusEvent(ctx context.Context, message *pb.Mode
 	switch message.Update.Op {
 	case pb.ModelUpdateMessage_Create:
 		if message.Success {
+			s.resetModelRetryCount(message.Update)
 			statusVal = store.ModelAvailable
 		} else {
 			statusVal = store.ModelFailed
 		}
 	case pb.ModelUpdateMessage_Delete:
 		if message.Success {
+			s.resetModelRetryCount(message.Update)
 			statusVal = store.ModelTerminated
 		} else {
 			statusVal = store.ModelTerminateFailed
