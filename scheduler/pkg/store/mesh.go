@@ -67,7 +67,7 @@ type ModelStatus struct {
 	ModelGwReason       string
 	AvailableReplicas   uint32
 	UnavailableReplicas uint32
-	DrainingReplicas    uint32
+	DrainingReplicas    uint32 //this field is never used and was never added to proto
 	Timestamp           time.Time
 }
 
@@ -88,6 +88,66 @@ func NewDefaultModelVersion(model *pb.Model, version uint32) *ModelVersion {
 		},
 		mu: sync.RWMutex{},
 	}
+}
+
+func NewModelSnapshot(model *pb.Model) *pb.ModelSnapshot {
+
+	generation := model.GetMeta().GetKubernetesMeta().GetGeneration()
+	version := max(uint32(1), uint32(generation))
+
+	var versions []*pb.ModelVersionStatus
+	versions = append(versions, &pb.ModelVersionStatus{
+		Version:           version,
+		ServerName:        "",
+		KubernetesMeta:    nil,
+		ModelReplicaState: make(map[int32]*pb.ModelReplicaStatus),
+		State: &pb.ModelStatus{
+			State:               pb.ModelStatus_ModelStateUnknown,
+			Reason:              "",
+			AvailableReplicas:   0,
+			UnavailableReplicas: 0,
+			LastChangeTimestamp: nil,
+			ModelGwState:        pb.ModelStatus_ModelCreate,
+			ModelGwReason:       "",
+		},
+		ModelDefn: model,
+	})
+
+	return &pb.ModelSnapshot{
+		Versions: versions,
+		Deleted:  false,
+	}
+}
+
+func CreateNextModelVersion(snapshot *pb.ModelSnapshot, model *pb.Model) *pb.ModelSnapshot {
+	if snapshot == nil {
+		return NewModelSnapshot(model)
+	}
+
+	if len(snapshot.Versions) < 1 {
+		return NewModelSnapshot(model)
+	}
+
+	version := snapshot.Versions[len(snapshot.Versions)-1].Version
+
+	snapshot.Versions = append(snapshot.Versions, &pb.ModelVersionStatus{
+		Version:           version,
+		ServerName:        "",
+		KubernetesMeta:    nil,
+		ModelReplicaState: make(map[int32]*pb.ModelReplicaStatus),
+		State: &pb.ModelStatus{
+			State:               pb.ModelStatus_ModelStateUnknown,
+			Reason:              "",
+			AvailableReplicas:   0,
+			UnavailableReplicas: 0,
+			LastChangeTimestamp: nil,
+			ModelGwState:        pb.ModelStatus_ModelCreate,
+			ModelGwReason:       "",
+		},
+		ModelDefn: model,
+	})
+
+	return snapshot
 }
 
 // TODO: remove deleted from here and reflect in callers
@@ -376,6 +436,18 @@ func (m *Model) Previous() *ModelVersion {
 // TODO do we need to consider previous versions?
 func (m *Model) Inactive() bool {
 	return m.Latest().Inactive()
+}
+
+func ModelInactive(snap *pb.ModelSnapshot) bool {
+
+}
+
+func ModelLatest(snap *pb.ModelSnapshot) *pb.ModelVersionStatus {
+	if len(snap.Versions) > 0 {
+		return snap.Versions[len(snap.Versions)-1]
+	} else {
+		return nil
+	}
 }
 
 func (m *Model) IsDeleted() bool {

@@ -20,3 +20,9 @@ message ExperimentSnapshot {
   // on restart, which would guard against lost events in communication.
   bool deleted = 2;
 }
+
+
+message ModelSnapshot{
+  repeated ModelVersionStatus versions = 1;
+  bool deleted = 2;
+}
