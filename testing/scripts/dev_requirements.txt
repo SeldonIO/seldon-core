@@ -4,6 +4,7 @@ pytest-cov==7.0.0
 flaky==3.8.1
 tenacity==9.1.2
 sh==2.2.2
+spacy==3.7.2
 
 # notebooks test deps
 ipython==9.6.0

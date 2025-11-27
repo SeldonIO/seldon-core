@@ -1,8 +1,7 @@
-ARG IMAGE_SOURCE=openjdk:13.0.1-jdk-buster
+ARG IMAGE_SOURCE=eclipse-temurin:17-jdk
 FROM $IMAGE_SOURCE
 
-RUN apt-get upgrade && \
-        apt-get update
+RUN apt-get update
 
 RUN mkdir /build
 
