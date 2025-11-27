@@ -192,7 +192,13 @@ func (c *ChainerServer) resetPipelineRetryCount(msg *chainer.PipelineUpdateMessa
 	c.retriedFailedPipelines[c.mkPipelineRetryKey(msg.Uid, msg.Version)] = 0
 }
 
-func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
+func (c *ChainerServer) removePipelineRetryCount(msg *chainer.PipelineUpdateMessage) {
+	c.muRetriedFailedPipelines.Lock()
+	defer c.muRetriedFailedPipelines.Unlock()
+	delete(c.retriedFailedPipelines, c.mkPipelineRetryKey(msg.Uid, msg.Version))
+}
+
+func (c *ChainerServer) PipelineUpdateEvent(_ context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -211,7 +217,7 @@ func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chaine
 		}
 	case chainer.PipelineUpdateMessage_Delete:
 		if message.Success {
-			c.resetPipelineRetryCount(message.Update)
+			c.removePipelineRetryCount(message.Update)
 			statusVal = pipeline.PipelineTerminated
 		} else {
 			c.storeFailedDelete(message.Update)

@@ -109,6 +109,12 @@ func (s *SchedulerServer) resetModelRetryCount(msg *pb.ModelUpdateMessage) {
 	s.retriedFailedModels[s.mkModelRetryKey(msg.Model, msg.Version)] = 0
 }
 
+func (s *SchedulerServer) removeModelRetryCount(msg *pb.ModelUpdateMessage) {
+	s.muRetriedFailedModels.Lock()
+	defer s.muRetriedFailedModels.Unlock()
+	delete(s.retriedFailedModels, s.mkModelRetryKey(msg.Model, msg.Version))
+}
+
 func (s *SchedulerServer) ModelStatusEvent(_ context.Context, message *pb.ModelUpdateStatusMessage) (*pb.ModelUpdateStatusResponse, error) {
 	s.modelEventStream.mu.Lock()
 	defer s.modelEventStream.mu.Unlock()
@@ -126,7 +132,7 @@ func (s *SchedulerServer) ModelStatusEvent(_ context.Context, message *pb.ModelU
 		}
 	case pb.ModelUpdateMessage_Delete:
 		if message.Success {
-			s.resetModelRetryCount(message.Update)
+			s.removeModelRetryCount(message.Update)
 			statusVal = store.ModelTerminated
 		} else {
 			statusVal = store.ModelTerminateFailed

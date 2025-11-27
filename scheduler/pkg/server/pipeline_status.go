@@ -90,6 +90,12 @@ func (s *SchedulerServer) resetPipelineRetryCount(msg *chainer.PipelineUpdateMes
 	s.retriedFailedPipelines[s.mkPipelineKey(msg.Uid, msg.Version)] = 0
 }
 
+func (s *SchedulerServer) removePipelineRetryCount(msg *chainer.PipelineUpdateMessage) {
+	s.muRetriedFailedPipelines.Lock()
+	defer s.muRetriedFailedPipelines.Unlock()
+	delete(s.retriedFailedPipelines, s.mkPipelineKey(msg.Uid, msg.Version))
+}
+
 func (s *SchedulerServer) PipelineStatusEvent(_ context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
 	s.pipelineEventStream.mu.Lock()
 	defer s.pipelineEventStream.mu.Unlock()
@@ -108,7 +114,7 @@ func (s *SchedulerServer) PipelineStatusEvent(_ context.Context, message *chaine
 		}
 	case chainer.PipelineUpdateMessage_Delete:
 		if message.Success {
-			s.resetPipelineRetryCount(message.Update)
+			s.removePipelineRetryCount(message.Update)
 			statusVal = pipeline.PipelineTerminated
 		} else {
 			statusVal = pipeline.PipelineFailedTerminating
