@@ -230,12 +230,12 @@ func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.
 		}
 	} else {
 		latestPipeline := pipeline.GetLatestPipelineVersion()
-		isStatusTerminating := (latestPipeline.State.Status == PipelineTerminating ||
+		isStatusTerminating := latestPipeline.State.Status == PipelineTerminating ||
 			latestPipeline.State.Status == PipelineTerminate ||
-			latestPipeline.State.Status == PipelineTerminated)
-		isPipelineGwStatusTerminating := (latestPipeline.State.PipelineGwStatus == PipelineTerminating ||
+			latestPipeline.State.Status == PipelineTerminated
+		isPipelineGwStatusTerminating := latestPipeline.State.PipelineGwStatus == PipelineTerminating ||
 			latestPipeline.State.PipelineGwStatus == PipelineTerminate ||
-			latestPipeline.State.PipelineGwStatus == PipelineTerminated)
+			latestPipeline.State.PipelineGwStatus == PipelineTerminated
 
 		if isStatusTerminating || isPipelineGwStatusTerminating {
 			// If either status is terminating we allow a new version to be created
@@ -426,7 +426,7 @@ func (ps *PipelineStore) GetPipelines() ([]*Pipeline, error) {
 	ps.mu.RLock()
 	defer ps.mu.RUnlock()
 
-	foundPipelines := []*Pipeline{}
+	var foundPipelines []*Pipeline
 	for _, p := range ps.pipelines {
 		copied, err := copystructure.Copy(p)
 		if err != nil {
