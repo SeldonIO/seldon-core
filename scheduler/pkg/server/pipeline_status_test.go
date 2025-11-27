@@ -17,13 +17,195 @@ import (
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+	"go.uber.org/mock/gomock"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline/mock"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
+
+func TestPollerRetryFailedPipelines(t *testing.T) {
+	tests := []struct {
+		name             string
+		funcName         string
+		targetStatus     pipeline.PipelineStatus
+		operation        string
+		failedPipelines  []coordinator.PipelineEventMsg
+		setupMocks       func(mockPipelineHandler *mock.MockPipelineHandler, failedPipelines []coordinator.PipelineEventMsg)
+		tickCount        int
+		contextTimeout   time.Duration
+		tickDuration     time.Duration
+		validateBehavior func(g *WithT, mockPipelineHandler *mock.MockPipelineHandler)
+		maxRetries       uint
+	}{
+		{
+			name:            "context cancelled immediately",
+			funcName:        "testFunc",
+			targetStatus:    pipeline.PipelineFailed,
+			operation:       "create",
+			failedPipelines: []coordinator.PipelineEventMsg{},
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, failedPipelines []coordinator.PipelineEventMsg) {
+				// No expectations - context cancelled before first tick
+			},
+			contextTimeout: 0, // Cancel immediately
+			tickDuration:   100 * time.Millisecond,
+		},
+		{
+			name:            "no failed pipelines found",
+			funcName:        "testFunc",
+			targetStatus:    pipeline.PipelineFailed,
+			operation:       "create",
+			failedPipelines: []coordinator.PipelineEventMsg{},
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, failedPipelines []coordinator.PipelineEventMsg) {
+				mockPipelineHandler.EXPECT().
+					GetPipelinesPipelineGwStatus(pipeline.PipelineFailed).
+					Return([]coordinator.PipelineEventMsg{}).
+					MinTimes(1)
+			},
+			contextTimeout: 150 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+		},
+		{
+			name:         "single failed create pipeline",
+			funcName:     "pollerRetryFailedCreatePipelines",
+			targetStatus: pipeline.PipelineFailed,
+			operation:    "create",
+			maxRetries:   1,
+			failedPipelines: []coordinator.PipelineEventMsg{
+				{
+					PipelineName:    "test-pipeline",
+					PipelineVersion: 1,
+					UID:             "uid-1",
+				},
+			},
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, failedPipelines []coordinator.PipelineEventMsg) {
+				mockPipelineHandler.EXPECT().
+					GetPipelinesPipelineGwStatus(pipeline.PipelineFailed).
+					Return(failedPipelines)
+
+				mockPipelineHandler.EXPECT().
+					GetPipelinesPipelineGwStatus(pipeline.PipelineFailed).
+					Return([]coordinator.PipelineEventMsg{})
+
+				mockPipelineHandler.EXPECT().GetPipelineVersion(failedPipelines[0].PipelineName,
+					failedPipelines[0].PipelineVersion, failedPipelines[0].UID).Return(&pipeline.PipelineVersion{
+					Name:    failedPipelines[0].PipelineName,
+					Version: failedPipelines[0].PipelineVersion,
+					UID:     failedPipelines[0].UID,
+					State: &pipeline.PipelineState{
+						PipelineGwStatus: pipeline.PipelineFailed,
+					},
+				}, nil)
+
+				mockPipelineHandler.EXPECT().SetPipelineGwPipelineState(
+					failedPipelines[0].PipelineName,
+					failedPipelines[0].PipelineVersion,
+					failedPipelines[0].UID, pipeline.PipelineCreate,
+					"No pipeline gateway available to handle pipeline", util.SourcePipelineStatusEvent).Return(nil)
+			},
+			contextTimeout: 100 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+		},
+		{
+			name:         "single failed delete pipeline",
+			funcName:     "pollerRetryFailedDeletePipelines",
+			targetStatus: pipeline.PipelineFailedTerminating,
+			operation:    "delete",
+			maxRetries:   1,
+			failedPipelines: []coordinator.PipelineEventMsg{
+				{
+					PipelineName:    "test-pipeline",
+					PipelineVersion: 1,
+					UID:             "uid-1",
+				},
+			},
+			setupMocks: func(mockPipelineHandler *mock.MockPipelineHandler, failedPipelines []coordinator.PipelineEventMsg) {
+				mockPipelineHandler.EXPECT().
+					GetPipelinesPipelineGwStatus(pipeline.PipelineFailedTerminating).
+					Return(failedPipelines).
+					Times(1)
+
+				mockPipelineHandler.EXPECT().
+					GetPipelinesPipelineGwStatus(pipeline.PipelineFailedTerminating).
+					Return([]coordinator.PipelineEventMsg{})
+
+				mockPipelineHandler.EXPECT().GetPipelineVersion(failedPipelines[0].PipelineName,
+					failedPipelines[0].PipelineVersion, failedPipelines[0].UID).Return(&pipeline.PipelineVersion{
+					Name:    failedPipelines[0].PipelineName,
+					Version: failedPipelines[0].PipelineVersion,
+					UID:     failedPipelines[0].UID,
+					State: &pipeline.PipelineState{
+						PipelineGwStatus: pipeline.PipelineFailedTerminating,
+					},
+				}, nil)
+
+				mockPipelineHandler.EXPECT().SetPipelineGwPipelineState(
+					failedPipelines[0].PipelineName,
+					failedPipelines[0].PipelineVersion,
+					failedPipelines[0].UID, pipeline.PipelineTerminated,
+					"No pipeline gateway available to handle pipeline", util.SourcePipelineStatusEvent).Return(nil)
+			},
+			contextTimeout: 100 * time.Millisecond,
+			tickDuration:   50 * time.Millisecond,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := NewGomegaWithT(t)
+			ctrl := gomock.NewController(t)
+
+			mockPipelineHandler := mock.NewMockPipelineHandler(ctrl)
+
+			if tt.setupMocks != nil {
+				tt.setupMocks(mockPipelineHandler, tt.failedPipelines)
+			}
+
+			eventHub, err := coordinator.NewEventHub(log.New())
+			g.Expect(err).Should(BeNil())
+
+			server := &SchedulerServer{
+				logger:                 log.New(),
+				pipelineHandler:        mockPipelineHandler,
+				eventHub:               eventHub,
+				retriedFailedPipelines: map[string]uint{},
+			}
+
+			var ctx context.Context
+			var cancel context.CancelFunc
+
+			if tt.contextTimeout == 0 {
+				// Cancel immediately
+				ctx, cancel = context.WithCancel(context.Background())
+				cancel()
+			} else {
+				ctx, cancel = context.WithTimeout(context.Background(), tt.contextTimeout)
+				defer cancel()
+			}
+
+			done := make(chan bool)
+			go func() {
+				server.pollerRetryFailedPipelines(ctx, tt.tickDuration, tt.funcName, tt.targetStatus, tt.operation, tt.maxRetries)
+				done <- true
+			}()
+
+			select {
+			case <-done:
+				// Test passed - function returned as expected
+			case <-time.After(tt.contextTimeout + 1*time.Second):
+				t.Fatal("pollerRetryFailedPipelines did not return in time")
+			}
+
+			// Custom validation if provided
+			if tt.validateBehavior != nil {
+				tt.validateBehavior(g, mockPipelineHandler)
+			}
+		})
+	}
+}
 
 func receiveMessageFromPipelineStream(
 	t *testing.T, stream *stubPipelineStatusServer,

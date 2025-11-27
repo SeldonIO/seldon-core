@@ -526,6 +526,9 @@ spec:
         - --pprof-port=$(PPROF_PORT)
         - --pprof-block-rate=$(PPROF_BLOCK_RATE)
         - --pprof-mutex-rate=$(PPROF_MUTEX_RATE)
+        - --retry-creating-failed-pipelines-tick=$(RETRY_CREATING_FAILED_PIPELINES_TICK)
+        - --retry-deleting-failed-pipelines-tick=$(RETRY_DELETING_FAILED_PIPELINES_TICK)
+        - --max-retry-failed-pipelines=$(MAX_RETRY_FAILED_PIPELINES)
         command:
         - /bin/scheduler
         env:
@@ -611,6 +614,12 @@ spec:
           value: "0"
         - name: PPROF_MUTEX_RATE
           value: "0"
+        - name: RETRY_CREATING_FAILED_PIPELINES_TICK
+          value: 60s
+        - name: RETRY_DELETING_FAILED_PIPELINES_TICK
+          value: 60s
+        - name: MAX_RETRY_FAILED_PIPELINES
+          value: "10"
         image: '{{ .Values.scheduler.image.registry }}/{{ .Values.scheduler.image.repository
           }}:{{ .Values.scheduler.image.tag }}'
         imagePullPolicy: '{{ .Values.scheduler.image.pullPolicy }}'

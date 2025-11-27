@@ -708,6 +708,15 @@ type fakePipelineStore struct {
 	pipelineGwStatus map[string]pipeline.PipelineStatus
 }
 
+func (f fakePipelineStore) IsLatestVersion(pipelineName string, version uint32, uid string) (bool, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f fakePipelineStore) GetPipelinesPipelineGwStatus(_ pipeline.PipelineStatus) []coordinator.PipelineEventMsg {
+	panic("implement me")
+}
+
 func (f fakePipelineStore) AddPipeline(pipeline *scheduler.Pipeline) error {
 	panic("implement me")
 }

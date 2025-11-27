@@ -15,6 +15,7 @@ import (
 	"github.com/serialx/hashring"
 )
 
+//go:generate go tool mockgen -source=./loadbalancer.go -destination=./mock/loadbalancer.go -package=mock LoadBalancer
 type LoadBalancer interface {
 	AddServer(serverName string)
 	RemoveServer(serverName string)

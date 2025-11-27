@@ -51,37 +51,40 @@ import (
 )
 
 var (
-	envoyPort                    uint
-	agentPort                    uint
-	agentMtlsPort                uint
-	schedulerPort                uint
-	schedulerMtlsPort            uint
-	chainerPort                  uint
-	healthProbePort              uint
-	namespace                    string
-	pipelineGatewayHost          string
-	pipelineGatewayHttpPort      int
-	pipelineGatewayGrpcPort      int
-	logLevel                     string
-	tracingConfigPath            string
-	dbPath                       string
-	nodeID                       string
-	allowPlaintxt                bool // scheduler server
-	autoscalingModelEnabled      bool
-	autoscalingServerEnabled     bool
-	kafkaConfigPath              string
-	scalingConfigPath            string
-	schedulerReadyTimeoutSeconds uint
-	deletedResourceTTLSeconds    uint
-	serverPackingEnabled         bool
-	serverPackingPercentage      float64
-	accessLogPath                string
-	enableAccessLog              bool
-	includeSuccessfulRequests    bool
-	enablePprof                  bool
-	pprofPort                    int
-	pprofMutexRate               int
-	pprofBlockRate               int
+	envoyPort                        uint
+	agentPort                        uint
+	agentMtlsPort                    uint
+	schedulerPort                    uint
+	schedulerMtlsPort                uint
+	chainerPort                      uint
+	healthProbePort                  uint
+	namespace                        string
+	pipelineGatewayHost              string
+	pipelineGatewayHttpPort          int
+	pipelineGatewayGrpcPort          int
+	logLevel                         string
+	tracingConfigPath                string
+	dbPath                           string
+	nodeID                           string
+	allowPlaintxt                    bool // scheduler server
+	autoscalingModelEnabled          bool
+	autoscalingServerEnabled         bool
+	kafkaConfigPath                  string
+	scalingConfigPath                string
+	schedulerReadyTimeoutSeconds     uint
+	deletedResourceTTLSeconds        uint
+	serverPackingEnabled             bool
+	serverPackingPercentage          float64
+	accessLogPath                    string
+	enableAccessLog                  bool
+	includeSuccessfulRequests        bool
+	enablePprof                      bool
+	pprofPort                        int
+	pprofMutexRate                   int
+	pprofBlockRate                   int
+	retryFailedCreatingPipelinesTick time.Duration
+	retryFailedDeletePipelinesTick   time.Duration
+	maxRetryFailedPipelines          uint
 )
 
 const (
@@ -172,6 +175,11 @@ func init() {
 	flag.IntVar(&pprofPort, "pprof-port", 6060, "pprof HTTP server port")
 	flag.IntVar(&pprofBlockRate, "pprof-block-rate", 0, "pprof block rate")
 	flag.IntVar(&pprofMutexRate, "pprof-mutex-rate", 0, "pprof mutex rate")
+
+	// frequency to retry creating/deleting pipelines which failed to create/delete
+	flag.DurationVar(&retryFailedCreatingPipelinesTick, "retry-creating-failed-pipelines-tick", time.Minute, "tick interval for re-attempting to create pipelines which failed to create")
+	flag.DurationVar(&retryFailedDeletePipelinesTick, "retry-deleting-failed-pipelines-tick", time.Minute, "tick interval for re-attempting to delete pipelines which failed to terminate")
+	flag.UintVar(&maxRetryFailedPipelines, "max-retry-failed-pipelines", 10, "max number of retry attempts to create/terminate pipelines which failed to create/terminate")
 }
 
 func getNamespace() string {
@@ -322,8 +330,11 @@ func main() {
 		logger.WithError(err).Fatal("Failed to start data engine chainer server")
 	}
 	defer cs.Stop()
+
+	ctx, stopPipelinePollers := context.WithCancel(context.Background())
+	defer stopPipelinePollers()
 	go func() {
-		err := cs.StartGrpcServer(chainerPort)
+		err := cs.StartGrpcServer(ctx, retryFailedCreatingPipelinesTick, retryFailedDeletePipelinesTick, maxRetryFailedPipelines, chainerPort)
 		if err != nil {
 			log.WithError(err).Fatalf("Chainer server start error")
 		}
@@ -382,7 +393,8 @@ func main() {
 	)
 	defer s.Stop()
 
-	err = s.StartGrpcServers(allowPlaintxt, schedulerPort, schedulerMtlsPort)
+	err = s.StartGrpcServers(ctx, allowPlaintxt, schedulerPort, schedulerMtlsPort, retryFailedCreatingPipelinesTick,
+		retryFailedDeletePipelinesTick, maxRetryFailedPipelines)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to start server gRPC servers")
 	}
@@ -421,6 +433,7 @@ func main() {
 	s.StopSendServerEvents()
 	s.StopSendExperimentEvents()
 	s.StopSendPipelineEvents()
+	stopPipelinePollers()
 	s.StopSendControlPlaneEvents()
 	as.StopAgentStreams()
 

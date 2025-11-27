@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package pipeline
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
@@ -36,6 +37,7 @@ const (
 	modelEventHandlerName                      = "pipeline.store.models"
 )
 
+//go:generate go tool mockgen -source=./store.go -destination=./mock/store.go -package=mock PipelineHandler
 type PipelineHandler interface {
 	AddPipeline(pipeline *scheduler.Pipeline) error
 	RemovePipeline(name string) error
@@ -46,6 +48,8 @@ type PipelineHandler interface {
 	SetPipelineGwPipelineState(name string, version uint32, uid string, state PipelineStatus, reason string, source string) error
 	GetAllRunningPipelineVersions() []coordinator.PipelineEventMsg
 	GetAllPipelineGwRunningPipelineVersions() []coordinator.PipelineEventMsg
+	GetPipelinesPipelineGwStatus(pipelineGwStatus PipelineStatus) []coordinator.PipelineEventMsg
+	IsLatestVersion(pipelineName string, version uint32, uid string) (bool, error)
 }
 
 type PipelineStore struct {
@@ -82,6 +86,48 @@ func NewPipelineStore(logger logrus.FieldLogger, eventHub *coordinator.EventHub,
 
 func getPipelineDbFolder(basePath string) string {
 	return filepath.Join(basePath, pipelineDbFolder)
+}
+
+func (ps *PipelineStore) IsLatestVersion(pipelineName string, version uint32, uid string) (bool, error) {
+	ps.mu.RLock()
+	defer ps.mu.RUnlock()
+
+	pipeline, ok := ps.pipelines[pipelineName]
+	if !ok {
+		return false, fmt.Errorf("pipeline %s not found", pipelineName)
+	}
+
+	latestVersion := pipeline.GetLatestPipelineVersion()
+	if latestVersion == nil {
+		return false, fmt.Errorf("pipeline %s has no latest version", pipelineName)
+	}
+
+	return latestVersion.Version == version && latestVersion.UID == uid, nil
+}
+
+func (ps *PipelineStore) GetPipelinesPipelineGwStatus(status PipelineStatus) []coordinator.PipelineEventMsg {
+	ps.mu.RLock()
+	defer ps.mu.RUnlock()
+
+	var events []coordinator.PipelineEventMsg
+	for _, p := range ps.pipelines {
+		pv := p.GetLatestPipelineVersion()
+		if pv == nil {
+			ps.logger.Warnf("Pipeline %s versions empty", p.Name)
+			continue
+		}
+
+		if pv.State.PipelineGwStatus != status {
+			continue
+		}
+
+		events = append(events, coordinator.PipelineEventMsg{
+			PipelineName:    pv.Name,
+			PipelineVersion: pv.Version,
+			UID:             pv.UID,
+		})
+	}
+	return events
 }
 
 func (ps *PipelineStore) InitialiseOrRestoreDB(path string, deletedResourceTTL uint) error {
@@ -297,6 +343,7 @@ func (ps *PipelineStore) removePipelineImpl(name string) (*coordinator.PipelineE
 func (ps *PipelineStore) GetPipelineVersion(name string, versionNumber uint32, uid string) (*PipelineVersion, error) {
 	ps.mu.RLock()
 	defer ps.mu.RUnlock()
+
 	if pipeline, ok := ps.pipelines[name]; ok {
 		if pipelineVersion := pipeline.GetPipelineVersion(versionNumber); pipelineVersion != nil {
 			if pipelineVersion.UID == uid {
@@ -339,14 +386,23 @@ func (ps *PipelineStore) getAllRunningPipelineVersions(
 	var events []coordinator.PipelineEventMsg
 	for _, p := range ps.pipelines {
 		pv := p.GetLatestPipelineVersion()
-		switch statusSelector(pv) {
+		if pv == nil {
+			ps.logger.Warnf("Pipeline %s versions empty", p.Name)
+			continue
+		}
+
+		status := statusSelector(pv)
+		switch status {
 		// we consider PipelineTerminating as running as it is still active
-		case PipelineCreate, PipelineCreating, PipelineReady, PipelineRebalancing, PipelineTerminating:
+		// we want to attempt to create failed pipelines as could have failed for temporary error such as kafka unavailable
+		case PipelineCreate, PipelineCreating, PipelineReady, PipelineRebalancing, PipelineTerminating, PipelineFailed:
 			events = append(events, coordinator.PipelineEventMsg{
 				PipelineName:    pv.Name,
 				PipelineVersion: pv.Version,
 				UID:             pv.UID,
 			})
+		default:
+			ps.logger.Debugf("Pipeline %s state %s not considered running", pv.Name, status)
 		}
 	}
 	return events
@@ -544,6 +600,7 @@ func (ps *PipelineStore) handleModelEvents(event coordinator.ModelEventMsg) {
 	go func() {
 		ps.modelStatusHandler.mu.RLock()
 		defer ps.modelStatusHandler.mu.RUnlock()
+
 		refs := ps.modelStatusHandler.modelReferences[event.ModelName]
 		if len(refs) > 0 {
 			model, err := ps.modelStatusHandler.store.GetModel(event.ModelName)

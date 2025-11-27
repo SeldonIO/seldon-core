@@ -19,8 +19,323 @@ import (
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
+
+func TestGetPipelinesPipelineGwStatus(t *testing.T) {
+	tests := []struct {
+		name             string
+		pipelines        map[string]*Pipeline
+		queryStatus      PipelineStatus
+		expectedCount    int
+		expectedNames    []string
+		expectedVersions []uint32
+		expectedUIDs     []string
+		validate         func(g *WithT, events []coordinator.PipelineEventMsg)
+	}{
+		{
+			name:          "empty pipelines map",
+			pipelines:     make(map[string]*Pipeline),
+			queryStatus:   PipelineReady,
+			expectedCount: 0,
+		},
+		{
+			name: "no matching status",
+			pipelines: map[string]*Pipeline{
+				"test-pipeline": {
+					Name:        "test-pipeline",
+					LastVersion: 1,
+					Versions: []*PipelineVersion{
+						{
+							Name:    "test-pipeline",
+							Version: 1,
+							UID:     "uid-1",
+							State: &PipelineState{
+								Status:           PipelineReady,
+								PipelineGwStatus: PipelineCreating,
+							},
+						},
+					},
+				},
+			},
+			queryStatus:   PipelineReady,
+			expectedCount: 0,
+		},
+		{
+			name: "single matching pipeline",
+			pipelines: map[string]*Pipeline{
+				"test-pipeline": {
+					Name:        "test-pipeline",
+					LastVersion: 1,
+					Versions: []*PipelineVersion{
+						{
+							Name:    "test-pipeline",
+							Version: 1,
+							UID:     "uid-1",
+							State: &PipelineState{
+								Status:           PipelineReady,
+								PipelineGwStatus: PipelineReady,
+							},
+						},
+					},
+				},
+			},
+			queryStatus:      PipelineReady,
+			expectedCount:    1,
+			expectedNames:    []string{"test-pipeline"},
+			expectedVersions: []uint32{1},
+			expectedUIDs:     []string{"uid-1"},
+		},
+		{
+			name: "multiple matching pipelines",
+			pipelines: map[string]*Pipeline{
+				"pipeline-1": {
+					Name:        "pipeline-1",
+					LastVersion: 1,
+					Versions: []*PipelineVersion{
+						{
+							Name:    "pipeline-1",
+							Version: 1,
+							UID:     "uid-1",
+							State: &PipelineState{
+								Status:           PipelineReady,
+								PipelineGwStatus: PipelineCreating,
+							},
+						},
+					},
+				},
+				"pipeline-2": {
+					Name:        "pipeline-2",
+					LastVersion: 1,
+					Versions: []*PipelineVersion{
+						{
+							Name:    "pipeline-2",
+							Version: 1,
+							UID:     "uid-2",
+							State: &PipelineState{
+								Status:           PipelineReady,
+								PipelineGwStatus: PipelineCreating,
+							},
+						},
+					},
+				},
+			},
+			queryStatus:   PipelineCreating,
+			expectedCount: 2,
+			validate: func(g *WithT, events []coordinator.PipelineEventMsg) {
+				pipelineNames := []string{events[0].PipelineName, events[1].PipelineName}
+				g.Expect(pipelineNames).To(ContainElement("pipeline-1"))
+				g.Expect(pipelineNames).To(ContainElement("pipeline-2"))
+			},
+		},
+		{
+			name: "mixed statuses - only return matching",
+			pipelines: map[string]*Pipeline{
+				"ready-pipeline": {
+					Name:        "ready-pipeline",
+					LastVersion: 1,
+					Versions: []*PipelineVersion{
+						{
+							Name:    "ready-pipeline",
+							Version: 1,
+							UID:     "uid-ready",
+							State: &PipelineState{
+								Status:           PipelineReady,
+								PipelineGwStatus: PipelineReady,
+							},
+						},
+					},
+				},
+				"creating-pipeline": {
+					Name:        "creating-pipeline",
+					LastVersion: 1,
+					Versions: []*PipelineVersion{
+						{
+							Name:    "creating-pipeline",
+							Version: 1,
+							UID:     "uid-creating",
+							State: &PipelineState{
+								Status:           PipelineCreating,
+								PipelineGwStatus: PipelineCreating,
+							},
+						},
+					},
+				},
+				"terminating-pipeline": {
+					Name:        "terminating-pipeline",
+					LastVersion: 1,
+					Versions: []*PipelineVersion{
+						{
+							Name:    "terminating-pipeline",
+							Version: 1,
+							UID:     "uid-terminating",
+							State: &PipelineState{
+								Status:           PipelineTerminating,
+								PipelineGwStatus: PipelineTerminating,
+							},
+						},
+					},
+				},
+			},
+			queryStatus:      PipelineReady,
+			expectedCount:    1,
+			expectedNames:    []string{"ready-pipeline"},
+			expectedVersions: []uint32{1},
+			expectedUIDs:     []string{"uid-ready"},
+		},
+		{
+			name: "multiple versions - return latest",
+			pipelines: map[string]*Pipeline{
+				"test-pipeline": {
+					Name:        "test-pipeline",
+					LastVersion: 3,
+					Versions: []*PipelineVersion{
+						{
+							Name:    "test-pipeline",
+							Version: 1,
+							UID:     "uid-1",
+							State: &PipelineState{
+								Status:           PipelineTerminated,
+								PipelineGwStatus: PipelineTerminated,
+							},
+						},
+						{
+							Name:    "test-pipeline",
+							Version: 2,
+							UID:     "uid-2",
+							State: &PipelineState{
+								Status:           PipelineTerminated,
+								PipelineGwStatus: PipelineTerminated,
+							},
+						},
+						{
+							Name:    "test-pipeline",
+							Version: 3,
+							UID:     "uid-3",
+							State: &PipelineState{
+								Status:           PipelineReady,
+								PipelineGwStatus: PipelineReady,
+							},
+						},
+					},
+				},
+			},
+			queryStatus:      PipelineReady,
+			expectedCount:    1,
+			expectedNames:    []string{"test-pipeline"},
+			expectedVersions: []uint32{3},
+			expectedUIDs:     []string{"uid-3"},
+		},
+		{
+			name: "check PipelineGwStatus not Status",
+			pipelines: map[string]*Pipeline{
+				"test-pipeline": {
+					Name:        "test-pipeline",
+					LastVersion: 1,
+					Versions: []*PipelineVersion{
+						{
+							Name:    "test-pipeline",
+							Version: 1,
+							UID:     "uid-1",
+							State: &PipelineState{
+								Status:           PipelineReady,
+								PipelineGwStatus: PipelineCreating,
+							},
+						},
+					},
+				},
+			},
+			queryStatus:      PipelineCreating,
+			expectedCount:    1,
+			expectedNames:    []string{"test-pipeline"},
+			expectedVersions: []uint32{1},
+			expectedUIDs:     []string{"uid-1"},
+		},
+		{
+			name: "pipeline with no versions",
+			pipelines: map[string]*Pipeline{
+				"test-pipeline": {
+					Name:        "test-pipeline",
+					LastVersion: 0,
+					Versions:    []*PipelineVersion{},
+				},
+			},
+			queryStatus:   PipelineReady,
+			expectedCount: 0,
+		},
+		{
+			name: "status matches but PipelineGwStatus doesn't",
+			pipelines: map[string]*Pipeline{
+				"pipeline-match-both": {
+					Name:        "pipeline-match-both",
+					LastVersion: 1,
+					Versions: []*PipelineVersion{
+						{
+							Name:    "pipeline-match-both",
+							Version: 1,
+							UID:     "uid-match",
+							State: &PipelineState{
+								Status:           PipelineReady,
+								PipelineGwStatus: PipelineReady,
+							},
+						},
+					},
+				},
+				"pipeline-match-status-only": {
+					Name:        "pipeline-match-status-only",
+					LastVersion: 1,
+					Versions: []*PipelineVersion{
+						{
+							Name:    "pipeline-match-status-only",
+							Version: 1,
+							UID:     "uid-no-match",
+							State: &PipelineState{
+								Status:           PipelineReady,
+								PipelineGwStatus: PipelineCreating,
+							},
+						},
+					},
+				},
+			},
+			queryStatus:      PipelineReady,
+			expectedCount:    1,
+			expectedNames:    []string{"pipeline-match-both"},
+			expectedVersions: []uint32{1},
+			expectedUIDs:     []string{"uid-match"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := NewGomegaWithT(t)
+
+			s := &PipelineStore{
+				logger:    logrus.New(),
+				pipelines: tt.pipelines,
+			}
+
+			events := s.GetPipelinesPipelineGwStatus(tt.queryStatus)
+
+			g.Expect(events).To(HaveLen(tt.expectedCount))
+
+			if tt.validate != nil {
+				tt.validate(g, events)
+			} else if tt.expectedCount > 0 {
+				// Default validation for single expected result
+				for i := 0; i < tt.expectedCount && i < len(tt.expectedNames); i++ {
+					g.Expect(events[i].PipelineName).To(Equal(tt.expectedNames[i]))
+					if len(tt.expectedVersions) > i {
+						g.Expect(events[i].PipelineVersion).To(Equal(tt.expectedVersions[i]))
+					}
+					if len(tt.expectedUIDs) > i {
+						g.Expect(events[i].UID).To(Equal(tt.expectedUIDs[i]))
+					}
+				}
+			}
+		})
+	}
+}
 
 func TestAddPipeline(t *testing.T) {
 	g := NewGomegaWithT(t)

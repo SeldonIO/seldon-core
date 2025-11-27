@@ -146,6 +146,11 @@ func GetPipelineStatus(
 		messageStr += fmt.Sprintf("%d/%d failed ", failedCount, len(streams))
 	}
 
+	failedTerminatingCount := cr.GetCountResourceWithStatus(pipelineName, pipeline.PipelineFailedTerminating)
+	if failedTerminatingCount > 0 {
+		messageStr += fmt.Sprintf("%d/%d failed terminating", failedTerminatingCount, len(streams))
+	}
+
 	rebalancingCount := cr.GetCountResourceWithStatus(pipelineName, pipeline.PipelineRebalancing)
 	if rebalancingCount > 0 {
 		messageStr += fmt.Sprintf("%d/%d rebalancing ", rebalancingCount, len(streams))
@@ -170,8 +175,8 @@ func GetPipelineStatus(
 	}
 
 	if message.Update.Op == chainer.PipelineUpdateMessage_Delete {
-		if failedCount > 0 {
-			return pipeline.PipelineFailed, messageStr
+		if failedTerminatingCount > 0 {
+			return pipeline.PipelineFailedTerminating, messageStr
 		}
 		if terminatedCount == len(streams) {
 			return pipeline.PipelineTerminated, messageStr

@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -54,6 +55,18 @@ type ChainerServer struct {
 	currentScalingConfig scaling_config.ScalingConfig
 	done                 chan struct{}
 	grpcServer           *grpc.Server
+	muFailedCreate       sync.Mutex
+	// TODO we should update PipelineHandler to store state for dataflow-engine, as we do for model-gw. That way we
+	//  won't have to use failedCreatePipelines and failedDeletePipelines.
+	// failedCreatePipelines keyed off pipeline UID + version
+	failedCreatePipelines map[string]pipeline.PipelineVersion
+	muFailedDelete        sync.Mutex
+	// failedDeletePipelines keyed off pipeline UID + version
+	failedDeletePipelines    map[string]pipeline.PipelineVersion
+	muRetriedFailedPipelines sync.Mutex
+	// retriedFailedPipelines keyed off pipeline UID + version. Tracks how many attempts have been made to create/terminate
+	// a pipeline
+	retriedFailedPipelines map[string]uint
 	chainer.UnimplementedChainerServer
 	health.UnimplementedHealthCheckServiceServer
 }
@@ -79,16 +92,19 @@ func NewChainerServer(
 		return nil, err
 	}
 	c := &ChainerServer{
-		logger:               logger.WithField("source", "dataflow"),
-		streams:              make(map[string]*ChainerSubscription),
-		eventHub:             eventHub,
-		pipelineHandler:      pipelineHandler,
-		topicNamer:           topicNamer,
-		loadBalancer:         loadBalancer,
-		conflictResolutioner: conflictResolutioner,
-		chainerMutex:         sync.Map{},
-		scalingConfigUpdates: make(chan scaling_config.ScalingConfig),
-		done:                 make(chan struct{}),
+		logger:                 logger.WithField("source", "dataflow"),
+		streams:                make(map[string]*ChainerSubscription),
+		eventHub:               eventHub,
+		pipelineHandler:        pipelineHandler,
+		topicNamer:             topicNamer,
+		loadBalancer:           loadBalancer,
+		conflictResolutioner:   conflictResolutioner,
+		chainerMutex:           sync.Map{},
+		scalingConfigUpdates:   make(chan scaling_config.ScalingConfig),
+		done:                   make(chan struct{}),
+		failedCreatePipelines:  make(map[string]pipeline.PipelineVersion, 0),
+		failedDeletePipelines:  make(map[string]pipeline.PipelineVersion, 0),
+		retriedFailedPipelines: make(map[string]uint, 0),
 	}
 
 	eventHub.RegisterPipelineEventHandler(
@@ -123,11 +139,14 @@ func (c *ChainerServer) Stop() {
 	c.StopSendPipelineEvents()
 }
 
-func (c *ChainerServer) StartGrpcServer(agentPort uint) error {
+func (c *ChainerServer) StartGrpcServer(ctx context.Context, pollerFailedCreatePipelines, pollerFailedDeletePipelines time.Duration, maxRetry, agentPort uint) error {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", agentPort))
 	if err != nil {
 		log.Fatalf("failed to create listener: %v", err)
 	}
+
+	go c.pollerFailedTerminatingPipelines(ctx, pollerFailedDeletePipelines, maxRetry)
+	go c.pollerFailedCreatingPipelines(ctx, pollerFailedCreatePipelines, maxRetry)
 
 	kaep := util.GetServerKeepAliveEnforcementPolicy()
 
@@ -143,25 +162,66 @@ func (c *ChainerServer) StartGrpcServer(agentPort uint) error {
 	return grpcServer.Serve(lis)
 }
 
-func (c *ChainerServer) PipelineUpdateEvent(ctx context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
+func (c *ChainerServer) mkPipelineRetryKey(uid string, version uint32) string {
+	return fmt.Sprintf("%s_%d", uid, version)
+}
+
+func (c *ChainerServer) storeFailedCreate(m *chainer.PipelineUpdateMessage) {
+	c.muFailedCreate.Lock()
+	defer c.muFailedCreate.Unlock()
+	c.failedCreatePipelines[c.mkPipelineRetryKey(m.Uid, m.Version)] = pipeline.PipelineVersion{
+		Name:    m.Pipeline,
+		Version: m.Version,
+		UID:     m.Uid,
+	}
+}
+
+func (c *ChainerServer) storeFailedDelete(m *chainer.PipelineUpdateMessage) {
+	c.muFailedDelete.Lock()
+	defer c.muFailedDelete.Unlock()
+	c.failedDeletePipelines[c.mkPipelineRetryKey(m.Uid, m.Version)] = pipeline.PipelineVersion{
+		Name:    m.Pipeline,
+		Version: m.Version,
+		UID:     m.Uid,
+	}
+}
+
+func (c *ChainerServer) resetPipelineRetryCount(msg *chainer.PipelineUpdateMessage) {
+	c.muRetriedFailedPipelines.Lock()
+	defer c.muRetriedFailedPipelines.Unlock()
+	c.retriedFailedPipelines[c.mkPipelineRetryKey(msg.Uid, msg.Version)] = 0
+}
+
+func (c *ChainerServer) removePipelineRetryCount(msg *chainer.PipelineUpdateMessage) {
+	c.muRetriedFailedPipelines.Lock()
+	defer c.muRetriedFailedPipelines.Unlock()
+	delete(c.retriedFailedPipelines, c.mkPipelineRetryKey(msg.Uid, msg.Version))
+}
+
+func (c *ChainerServer) PipelineUpdateEvent(_ context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	logger := c.logger.WithField("func", "PipelineUpdateEvent")
 	var statusVal pipeline.PipelineStatus
+
 	switch message.Update.Op {
 	// create, delete, rebalance operation from the scheduler
 	case chainer.PipelineUpdateMessage_Create:
 		if message.Success {
+			c.resetPipelineRetryCount(message.Update)
 			statusVal = pipeline.PipelineReady
 		} else {
+			c.storeFailedCreate(message.Update)
 			statusVal = pipeline.PipelineFailed
 		}
 	case chainer.PipelineUpdateMessage_Delete:
 		if message.Success {
+			c.removePipelineRetryCount(message.Update)
 			statusVal = pipeline.PipelineTerminated
 		} else {
-			statusVal = pipeline.PipelineFailed
+			c.storeFailedDelete(message.Update)
+			statusVal = pipeline.PipelineFailedTerminating
 		}
 	// internal rebalancing operation
 	case chainer.PipelineUpdateMessage_Rebalance:
@@ -445,7 +505,6 @@ func (c *ChainerServer) sendPipelineMsgToSelectedServers(msg *chainer.PipelineUp
 
 	for _, serverId := range servers {
 		if subscription, ok := c.streams[serverId]; ok {
-
 			select {
 			case <-subscription.stream.Context().Done():
 				logger.WithError(subscription.stream.Context().Err()).Errorf("Failed to send msg to pipeline %s - stream ctx cancelled", pv.String())
@@ -469,82 +528,236 @@ func contains(slice []string, val string) bool {
 	return false
 }
 
+func (c *ChainerServer) pollerFailedTerminatingPipelines(ctx context.Context, tick time.Duration, maxRetry uint) {
+	ticker := time.NewTicker(tick)
+	defer ticker.Stop()
+
+	logger := c.logger.WithField("func", "pollerFailedTerminatingPipelines")
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			// check for any pipelines which failed to create and retry
+			logger.Debug("Checking for pipelines which failed to terminate")
+			c.muFailedDelete.Lock()
+			if len(c.failedDeletePipelines) == 0 {
+				c.muFailedDelete.Unlock()
+				logger.Debug("No pipelines found that failed to terminate")
+				continue
+			}
+
+			c.mu.Lock()
+			for _, p := range c.failedDeletePipelines {
+				key := c.mkPipelineRetryKey(p.UID, p.Version)
+				c.muRetriedFailedPipelines.Lock()
+				c.retriedFailedPipelines[key]++
+
+				if c.retriedFailedPipelines[key] > maxRetry {
+					c.muRetriedFailedPipelines.Unlock()
+					logger.Warnf("Failed to terminate pipeline %s reached max retries", p.Name)
+					delete(c.failedDeletePipelines, key)
+					continue
+				}
+				c.muRetriedFailedPipelines.Unlock()
+
+				logger.Debugf("Attempting to terminate pipeline which failed to terminate %s", p.Name)
+				pv, err := c.pipelineHandler.GetPipelineVersion(p.Name, p.Version, p.UID)
+				if err != nil {
+					notFound := &pipeline.PipelineNotFoundErr{}
+					uidMisMatch := &pipeline.PipelineVersionUidMismatchErr{}
+					verNotFound := &pipeline.PipelineVersionNotFoundErr{}
+
+					if errors.As(err, &notFound) || errors.As(err, &uidMisMatch) || errors.As(err, &verNotFound) {
+						delete(c.failedDeletePipelines, key)
+						logger.Debugf("Pipeline %s not found, removing from poller list", p.Name)
+						continue
+					}
+
+					logger.WithError(err).Errorf("Failed to get pipeline %s", p.Name)
+					continue
+				}
+				logger.Debugf("Found pipeline %s attempting to terminate", p.Name)
+
+				// note we are forcing keeping topics here, so there may be unwanted orphaned topics left in Kafka even
+				// though customer deleted pipeline and set pipeline config to delete topics. This is because we don't
+				// know if the termination request was initiated by customer i.e. deleted Pipeline CR, or from a rebalance
+				// of pipelines across dataflow-engine replicas (in which case we force keeping topics)
+				c.terminatePipeline(pv, true)
+				// remove from list as we've successfully retried termination
+				delete(c.failedDeletePipelines, key)
+			}
+
+			c.mu.Unlock()
+			c.muFailedDelete.Unlock()
+		}
+	}
+}
+
+func (c *ChainerServer) pollerFailedCreatingPipelines(ctx context.Context, tick time.Duration, maxRetry uint) {
+	ticker := time.NewTicker(tick)
+	defer ticker.Stop()
+
+	logger := c.logger.WithField("func", "pollerFailedCreatingPipelines")
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			// check for any pipelines which failed to create and retry
+			logger.Debug("Checking for pipelines which failed to create")
+			c.muFailedCreate.Lock()
+			if len(c.failedCreatePipelines) == 0 {
+				c.muFailedCreate.Unlock()
+				logger.Debug("No pipelines found that failed to create")
+				continue
+			}
+
+			c.mu.Lock()
+			for _, p := range c.failedCreatePipelines {
+				key := c.mkPipelineRetryKey(p.UID, p.Version)
+				c.muRetriedFailedPipelines.Lock()
+				c.retriedFailedPipelines[key]++
+				logger.Debugf("Attempting to create failed pipeline %s", p.Name)
+
+				if c.retriedFailedPipelines[key] > maxRetry {
+					c.muRetriedFailedPipelines.Unlock()
+					logger.Warnf("Failed to create pipeline %s reached max retries", p.Name)
+					delete(c.failedCreatePipelines, key)
+					continue
+				}
+				c.muRetriedFailedPipelines.Unlock()
+
+				// we only want to create this pipeline if it's the latest version, it could have failed to create
+				// and customer has since updated the pipeline and has created successfully, we'd then end up
+				// overwriting the new pipeline
+				if isLatest, err := c.pipelineHandler.IsLatestVersion(p.Name, p.Version, p.UID); err != nil {
+					logger.WithError(err).Errorf("Failed checking pipeline %s is latest version before creating", p.Name)
+					delete(c.failedCreatePipelines, key)
+					continue
+				} else if !isLatest {
+					logger.Debugf("Pipeline %s not the latest, ignoring", p.Name)
+					delete(c.failedCreatePipelines, key)
+					continue
+				}
+
+				if err := c.rebalancePipeline(p.Name, p.Version, p.UID); err != nil {
+					notFound := &pipeline.PipelineNotFoundErr{}
+					uidMisMatch := &pipeline.PipelineVersionUidMismatchErr{}
+					verNotFound := &pipeline.PipelineVersionNotFoundErr{}
+
+					if errors.As(err, &notFound) || errors.As(err, &uidMisMatch) || errors.As(err, &verNotFound) {
+						delete(c.failedCreatePipelines, key)
+						logger.Debugf("Pipeline %s not found, removing from poller list", p.Name)
+						continue
+					}
+
+					// don't remove from map as we want to retry on next tick
+					logger.WithError(err).Errorf("Failed to create pipeline %s", p.Name)
+					continue
+				}
+
+				// remove from list as we've successfully retried creating
+				delete(c.failedCreatePipelines, key)
+			}
+
+			c.mu.Unlock()
+			c.muFailedCreate.Unlock()
+		}
+	}
+}
+
+func (c *ChainerServer) rebalancePipeline(pipelineName string, pipelineVersion uint32, pipelineUID string) error {
+	logger := c.logger.WithField("func", "rebalance")
+	pv, err := c.pipelineHandler.GetPipelineVersion(pipelineName, pipelineVersion, pipelineUID)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to get pipeline %s UID %d version %s", pipelineName, pipelineVersion, pipelineUID)
+		return err
+	}
+
+	c.logger.Debugf("Rebalancing pipeline %s:%d with state %s", pipelineName, pipelineVersion, pv.State.Status.String())
+	if len(c.streams) == 0 {
+		pipelineState := pipeline.PipelineCreate
+		// if no dataflow engines available then we think we can terminate pipelines.
+		if pv.State.Status == pipeline.PipelineTerminating {
+			pipelineState = pipeline.PipelineTerminated
+		}
+
+		c.logger.Debugf("No dataflow engines available to handle pipeline %s, setting state to %s", pv.String(), pipelineState.String())
+		if err := c.pipelineHandler.SetPipelineState(
+			pv.Name,
+			pv.Version,
+			pv.UID,
+			pipelineState,
+			"no dataflow engines available to handle pipeline",
+			util.SourceChainerServer,
+		); err != nil {
+			logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
+			return fmt.Errorf("failed setting pipeline state: %w", err)
+		}
+
+		return nil
+	}
+
+	var msg *chainer.PipelineUpdateMessage
+	servers := c.loadBalancer.GetServersForKey(pv.UID)
+	cr.CreateNewPipelineIteration(c.conflictResolutioner, pv.Name, servers)
+
+	var errs error
+	for server, subscription := range c.streams {
+		if contains(servers, server) {
+			// we do not need to set pipeline state to creating if it is already in terminating state, and we need to delete it
+			if pv.State.Status == pipeline.PipelineTerminating {
+				msg = c.createPipelineDeletionMessage(pv, false)
+			} else {
+				msg = c.createPipelineCreationMessage(pv)
+				pipelineState := pipeline.PipelineCreating
+				if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipelineState, "Rebalance", util.SourceChainerServer); err != nil {
+					logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
+				}
+			}
+			msg.Timestamp = c.conflictResolutioner.GetTimestamp(pv.Name)
+
+			select {
+			case <-subscription.stream.Context().Done():
+				err := subscription.stream.Context().Err()
+				logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s stream ctx cancelled", pv.String())
+				errs = errors.Join(errs, err)
+			default:
+				if err := subscription.stream.Send(msg); err != nil {
+					logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.String())
+					errs = errors.Join(errs, err)
+				}
+			}
+			continue
+		}
+
+		msg = c.createPipelineDeletionMessage(pv, true)
+		msg.Timestamp = c.conflictResolutioner.GetTimestamp(pv.Name)
+
+		select {
+		case <-subscription.stream.Context().Done():
+			err := subscription.stream.Context().Err()
+			logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s stream ctx cancelled", pv.String())
+			errs = errors.Join(errs, err)
+		default:
+			if err := subscription.stream.Send(msg); err != nil {
+				logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.String())
+				errs = errors.Join(errs, err)
+			}
+		}
+	}
+
+	return errs
+}
+
 func (c *ChainerServer) rebalance() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	logger := c.logger.WithField("func", "rebalance")
-	// note that we are not retrying PipelineFailed pipelines, consider adding this
-	evts := c.pipelineHandler.GetAllRunningPipelineVersions()
-	for _, event := range evts {
-		pv, err := c.pipelineHandler.GetPipelineVersion(event.PipelineName, event.PipelineVersion, event.UID)
-		if err != nil {
-			logger.WithError(err).Errorf("Failed to get pipeline from event %s", event.String())
-			continue
-		}
-		c.logger.Debugf("Rebalancing pipeline %s:%d with state %s", event.PipelineName, event.PipelineVersion, pv.State.Status.String())
-		if len(c.streams) == 0 {
-			pipelineState := pipeline.PipelineCreate
-			// if no dataflow engines available then we think we can terminate pipelines.
-			if pv.State.Status == pipeline.PipelineTerminating {
-				pipelineState = pipeline.PipelineTerminated
-			}
-			c.logger.Debugf("No dataflow engines available to handle pipeline %s, setting state to %s", pv.String(), pipelineState.String())
-			if err := c.pipelineHandler.SetPipelineState(
-				pv.Name,
-				pv.Version,
-				pv.UID,
-				pipelineState,
-				"no dataflow engines available to handle pipeline",
-				util.SourceChainerServer,
-			); err != nil {
-				logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
-			}
-		} else {
-			var msg *chainer.PipelineUpdateMessage
-			servers := c.loadBalancer.GetServersForKey(pv.UID)
-			cr.CreateNewPipelineIteration(c.conflictResolutioner, pv.Name, servers)
-
-			for server, subscription := range c.streams {
-				if contains(servers, server) {
-					// we do not need to set pipeline state to creating if it is already in terminating state, and we need to delete it
-					if pv.State.Status == pipeline.PipelineTerminating {
-						msg = c.createPipelineDeletionMessage(pv, false)
-					} else {
-						msg = c.createPipelineCreationMessage(pv)
-						pipelineState := pipeline.PipelineCreating
-						if err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipelineState, "Rebalance", util.SourceChainerServer); err != nil {
-							logger.WithError(err).Errorf("Failed to set pipeline state to creating for %s", pv.String())
-						}
-					}
-					msg.Timestamp = c.conflictResolutioner.GetTimestamp(pv.Name)
-
-					select {
-					case <-subscription.stream.Context().Done():
-						err := subscription.stream.Context().Err()
-						logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s stream ctx cancelled", pv.String())
-					default:
-						if err := subscription.stream.Send(msg); err != nil {
-							logger.WithError(err).Errorf("Failed to send create rebalance msg to pipeline %s", pv.String())
-						}
-					}
-
-				} else {
-					msg = c.createPipelineDeletionMessage(pv, true)
-					msg.Timestamp = c.conflictResolutioner.GetTimestamp(pv.Name)
-
-					select {
-					case <-subscription.stream.Context().Done():
-						err := subscription.stream.Context().Err()
-						logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s stream ctx cancelled", pv.String())
-					default:
-						if err := subscription.stream.Send(msg); err != nil {
-							logger.WithError(err).Errorf("Failed to send delete rebalance msg to pipeline %s", pv.String())
-						}
-					}
-
-				}
-			}
+	for _, event := range c.pipelineHandler.GetAllRunningPipelineVersions() {
+		if err := c.rebalancePipeline(event.PipelineName, event.PipelineVersion, event.UID); err != nil {
+			c.logger.WithError(err).Errorf("Failed to rebalance pipeline %s", event.PipelineName)
 		}
 	}
 }
@@ -638,12 +851,16 @@ func (c *ChainerServer) handlePipelineEvent(event coordinator.PipelineEventMsg) 
 			c.sendPipelineMsgToSelectedServers(msg, pv)
 
 		case pipeline.PipelineTerminate:
-			err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineTerminating, "", util.SourceChainerServer)
-			if err != nil {
-				logger.WithError(err).Errorf("Failed to set pipeline state to terminating for %s", pv.String())
-			}
-			msg := c.createPipelineDeletionMessage(pv, event.KeepTopics) // note pv is a copy and does not include the new change to terminating state
-			c.sendPipelineMsgToSelectedServers(msg, pv)
+			c.terminatePipeline(pv, event.KeepTopics)
 		}
 	}()
+}
+
+func (c *ChainerServer) terminatePipeline(pv *pipeline.PipelineVersion, keepTopics bool) {
+	err := c.pipelineHandler.SetPipelineState(pv.Name, pv.Version, pv.UID, pipeline.PipelineTerminating, "", util.SourceChainerServer)
+	if err != nil {
+		c.logger.WithError(err).Errorf("Failed to set pipeline state to terminating for %s", pv.Name)
+	}
+	msg := c.createPipelineDeletionMessage(pv, keepTopics) // note pv is a copy and does not include the new change to terminating state
+	c.sendPipelineMsgToSelectedServers(msg, pv)
 }

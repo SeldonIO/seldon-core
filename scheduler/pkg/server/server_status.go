@@ -11,7 +11,10 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"time"
+
+	"github.com/sirupsen/logrus"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
@@ -25,7 +28,94 @@ const (
 	modelStatusEventSource = "model-status-server"
 )
 
-func (s *SchedulerServer) ModelStatusEvent(ctx context.Context, message *pb.ModelUpdateStatusMessage) (*pb.ModelUpdateStatusResponse, error) {
+// pollerRetryFailedCreateModels will retry creating models on model-gw which failed to load. Most likely
+// due to connectivity issues with kafka.
+func (s *SchedulerServer) pollerRetryFailedCreateModels(ctx context.Context, tick time.Duration, maxRetry uint) {
+	s.pollerRetryFailedModels(ctx, tick, "pollerRetryFailedCreateModels", store.ModelFailed, "create", maxRetry)
+}
+
+// pollerRetryFailedDeleteModels will retry deleting models on model-gw which failed to terminate. Most likely
+// due to connectivity issues with kafka.
+func (s *SchedulerServer) pollerRetryFailedDeleteModels(ctx context.Context, tick time.Duration, maxRetry uint) {
+	s.pollerRetryFailedModels(ctx, tick, "pollerRetryFailedDeleteModels", store.ModelTerminateFailed, "delete", maxRetry)
+}
+
+func (s *SchedulerServer) pollerRetryFailedModels(ctx context.Context, tick time.Duration, funcName string, targetState store.ModelState, operation string, maxRetry uint) {
+	logger := s.logger.WithField("func", funcName)
+	ticker := time.NewTicker(tick)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			models := s.getModelsInGwRetryState(logger, targetState, operation, maxRetry)
+			if len(models) > 0 {
+				s.modelGwRebalanceForModels(models)
+			}
+		}
+	}
+}
+
+func (s *SchedulerServer) mkModelRetryKey(modelName string, version uint32) string {
+	return fmt.Sprintf("%s_%d", modelName, version)
+}
+
+func (s *SchedulerServer) getModelsInGwRetryState(logger *logrus.Entry, targetState store.ModelState, operation string, maxRetry uint) []*store.ModelSnapshot {
+	modelNames := s.modelStore.GetAllModels()
+	logger.WithField("models", modelNames).Debugf("Poller retry to %s failed models on model-gw", operation)
+
+	models := make([]*store.ModelSnapshot, 0)
+
+	for _, modelName := range modelNames {
+		model, err := s.modelStore.GetModel(modelName)
+		if err != nil {
+			logger.WithError(err).Errorf("Failed to get model %s", modelName)
+			continue
+		}
+
+		if model.GetLatest() == nil {
+			logger.Warnf("Model %s has no versions, skipping", modelName)
+			continue
+		}
+
+		modelGwState := model.GetLatest().ModelState().ModelGwState
+		if modelGwState != targetState {
+			logger.Debugf("Model-gw model %s state %s != %s, skipping", modelName, modelGwState, targetState)
+			continue
+		}
+
+		key := s.mkModelRetryKey(model.Name, model.GetLatest().GetVersion())
+		s.muRetriedFailedModels.Lock()
+		s.retriedFailedModels[key]++
+		if s.retriedFailedModels[key] > maxRetry {
+			s.muRetriedFailedModels.Unlock()
+			logger.Debugf("Model-gw model %s retry failed, max retries reached", modelName)
+			continue
+		}
+		s.muRetriedFailedModels.Unlock()
+
+		logger.Infof("Model-gw model %s in %s state, retrying %s on model-gw", modelName, targetState, operation)
+		models = append(models, model)
+	}
+
+	return models
+}
+
+func (s *SchedulerServer) resetModelRetryCount(msg *pb.ModelUpdateMessage) {
+	s.muRetriedFailedModels.Lock()
+	defer s.muRetriedFailedModels.Unlock()
+	s.retriedFailedModels[s.mkModelRetryKey(msg.Model, msg.Version)] = 0
+}
+
+func (s *SchedulerServer) removeModelRetryCount(msg *pb.ModelUpdateMessage) {
+	s.muRetriedFailedModels.Lock()
+	defer s.muRetriedFailedModels.Unlock()
+	delete(s.retriedFailedModels, s.mkModelRetryKey(msg.Model, msg.Version))
+}
+
+func (s *SchedulerServer) ModelStatusEvent(_ context.Context, message *pb.ModelUpdateStatusMessage) (*pb.ModelUpdateStatusResponse, error) {
 	s.modelEventStream.mu.Lock()
 	defer s.modelEventStream.mu.Unlock()
 
@@ -35,12 +125,14 @@ func (s *SchedulerServer) ModelStatusEvent(ctx context.Context, message *pb.Mode
 	switch message.Update.Op {
 	case pb.ModelUpdateMessage_Create:
 		if message.Success {
+			s.resetModelRetryCount(message.Update)
 			statusVal = store.ModelAvailable
 		} else {
 			statusVal = store.ModelFailed
 		}
 	case pb.ModelUpdateMessage_Delete:
 		if message.Success {
+			s.removeModelRetryCount(message.Update)
 			statusVal = store.ModelTerminated
 		} else {
 			statusVal = store.ModelTerminateFailed
@@ -175,9 +267,18 @@ func contains(slice []string, val string) bool {
 	return false
 }
 
-func (s *SchedulerServer) GetAllRunningModels() []*store.ModelSnapshot {
-	var runningModels []*store.ModelSnapshot
+func (s *SchedulerServer) allPermittedModels() []*store.ModelSnapshot {
+	var permittedModels []*store.ModelSnapshot
 	modelNames := s.modelStore.GetAllModels()
+
+	allowedModelGwStates := map[store.ModelState]struct{}{
+		store.ModelCreate:      {},
+		store.ModelProgressing: {},
+		store.ModelAvailable:   {},
+		store.ModelTerminating: {},
+		// we want to retry models which failed to create on model-gw i.e. likely kafka connectivity issues
+		store.ModelFailed: {},
+	}
 
 	for _, modelName := range modelNames {
 		model, err := s.modelStore.GetModel(modelName)
@@ -190,19 +291,12 @@ func (s *SchedulerServer) GetAllRunningModels() []*store.ModelSnapshot {
 			continue
 		}
 
-		modelState := model.GetLatest().ModelState()
-		runningStates := map[store.ModelState]struct{}{
-			store.ModelCreate:      {},
-			store.ModelProgressing: {},
-			store.ModelAvailable:   {},
-			store.ModelTerminating: {},
-		}
-
-		if _, ok := runningStates[modelState.ModelGwState]; ok {
-			runningModels = append(runningModels, model)
+		if _, ok := allowedModelGwStates[model.GetLatest().ModelState().ModelGwState]; ok {
+			permittedModels = append(permittedModels, model)
 		}
 	}
-	return runningModels
+
+	return permittedModels
 }
 
 func (s *SchedulerServer) createModelDeletionMessage(model *store.ModelSnapshot, keepTopics bool) (*pb.ModelStatusResponse, error) {
@@ -225,11 +319,14 @@ func (s *SchedulerServer) createModelCreationMessage(model *store.ModelSnapshot)
 }
 
 func (s *SchedulerServer) modelGwRebalance() {
+	runningModels := s.allPermittedModels()
+	s.logger.Debugf("Rebalancing model gateways for running models: %v", runningModels)
+	s.modelGwRebalanceForModels(runningModels)
+}
+
+func (s *SchedulerServer) modelGwRebalanceForModels(models []*store.ModelSnapshot) {
 	s.modelEventStream.mu.Lock()
 	defer s.modelEventStream.mu.Unlock()
-
-	runningModels := s.GetAllRunningModels()
-	s.logger.Debugf("Rebalancing model gateways for running models: %v", runningModels)
 
 	// get only the model gateway streams
 	streams := []*ModelSubscription{}
@@ -239,7 +336,7 @@ func (s *SchedulerServer) modelGwRebalance() {
 		}
 	}
 
-	for _, model := range runningModels {
+	for _, model := range models {
 		switch len(streams) {
 		case 0:
 			s.modelGwRebalanceNoStream(model)
@@ -251,7 +348,8 @@ func (s *SchedulerServer) modelGwRebalance() {
 
 func (s *SchedulerServer) modelGwRebalanceNoStream(model *store.ModelSnapshot) {
 	modelState := store.ModelCreate
-	if model.GetLatest().ModelState().ModelGwState == store.ModelTerminating {
+	if model.GetLatest().ModelState().ModelGwState == store.ModelTerminating ||
+		model.GetLatest().ModelState().ModelGwState == store.ModelTerminateFailed {
 		modelState = store.ModelTerminated
 	}
 
@@ -298,8 +396,8 @@ func (s *SchedulerServer) modelGwReblanceStreams(model *store.ModelSnapshot) {
 			var msg *pb.ModelStatusResponse
 			var err error
 
-			if state == store.ModelTerminating {
-				s.logger.Debugf("Model %s is terminating, sending deletion message", model.Name)
+			if state == store.ModelTerminating || state == store.ModelTerminateFailed {
+				s.logger.Debugf("Model %s in state %s, sending deletion message", model.Name, state)
 				msg, err = s.createModelDeletionMessage(model, false)
 			} else {
 				s.logger.Debugf("Model %s is available or progressing, sending creation message", model.Name)

@@ -239,14 +239,15 @@ func NewServerReplicaFromConfig(server *Server, replicaIdx int, loadedModels map
 
 func cleanCapabilities(capabilities []string) []string {
 	var cleaned []string
-	for _, cap := range capabilities {
-		cleaned = append(cleaned, strings.TrimSpace(cap))
+	for _, capability := range capabilities {
+		cleaned = append(cleaned, strings.TrimSpace(capability))
 	}
 	return cleaned
 }
 
 type ModelState uint32
 
+//go:generate go tool stringer -type=ModelState
 const (
 	ModelStateUnknown ModelState = iota
 	ModelProgressing
@@ -261,24 +262,9 @@ const (
 	ModelTerminate
 )
 
-func (m ModelState) String() string {
-	return [...]string{
-		"ModelStateUnknown",
-		"ModelProgressing",
-		"ModelAvailable",
-		"ModelFailed",
-		"ModelTerminating",
-		"ModelTerminated",
-		"ModelTerminateFailed",
-		"ScheduleFailed",
-		"ModelScaledDown",
-		"ModelCreate",
-		"ModelTerminate",
-	}[m]
-}
-
 type ModelReplicaState uint32
 
+//go:generate go tool stringer -type=ModelReplicaState
 const (
 	ModelReplicaStateUnknown ModelReplicaState = iota
 	LoadRequested
@@ -330,10 +316,6 @@ func (m ModelReplicaState) Inactive() bool {
 
 func (m ModelReplicaState) IsLoadingOrLoaded() bool {
 	return (m == Loaded || m == LoadRequested || m == Loading || m == Available || m == LoadedUnavailable)
-}
-
-func (me ModelReplicaState) String() string {
-	return [...]string{"ModelReplicaStateUnknown", "LoadRequested", "Loading", "Loaded", "LoadFailed", "UnloadEnvoyRequested", "UnloadRequested", "Unloading", "Unloaded", "UnloadFailed", "Available", "LoadedUnavailable", "Draining"}[me]
 }
 
 func (m *Model) HasLatest() bool {

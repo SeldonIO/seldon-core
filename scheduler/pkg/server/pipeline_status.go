@@ -11,11 +11,13 @@ package server
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	chainer "github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -28,7 +30,73 @@ const (
 	addPipelineStreamEventSource = "pipeline.store.addpipelinestream"
 )
 
-func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
+// pollerRetryFailedCreatePipelines will retry creating pipelines on pipeline-gw which failed to load.
+func (s *SchedulerServer) pollerRetryFailedCreatePipelines(ctx context.Context, tick time.Duration, maxRetry uint) {
+	s.pollerRetryFailedPipelines(ctx, tick, "pollerRetryFailedCreatePipelines", pipeline.PipelineFailed, "create", maxRetry)
+}
+
+// pollerRetryFailedDeletePipelines will retry deleting pipelines on pipeline-gw which failed to terminate.
+func (s *SchedulerServer) pollerRetryFailedDeletePipelines(ctx context.Context, tick time.Duration, maxRetry uint) {
+	s.pollerRetryFailedPipelines(ctx, tick, "pollerRetryFailedDeletePipelines", pipeline.PipelineFailedTerminating, "delete", maxRetry)
+}
+
+func (s *SchedulerServer) pollerRetryFailedPipelines(ctx context.Context, tick time.Duration, funcName string, targetStatus pipeline.PipelineStatus, operation string, maxRetry uint) {
+	logger := s.logger.WithField("func", funcName)
+	ticker := time.NewTicker(tick)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			logger.Debugf("Poller retry failed %s pipelines on pipeline-gw", operation)
+			s.pipelineEventStream.mu.Lock()
+			pipelines := s.pipelineHandler.GetPipelinesPipelineGwStatus(targetStatus)
+
+			if len(pipelines) == 0 {
+				logger.Debug("No failed pipelines found")
+				s.pipelineEventStream.mu.Unlock()
+				continue
+			}
+
+			filteredPipelines := pipelines[:0]
+			s.muRetriedFailedPipelines.Lock()
+			for _, p := range pipelines {
+				key := s.mkPipelineKey(p.UID, p.PipelineVersion)
+				s.retriedFailedPipelines[key]++
+				if s.retriedFailedPipelines[key] > maxRetry {
+					logger.Debugf("Retry failed %s pipeline %s, reached max retries", operation, p.PipelineName)
+					continue
+				}
+				filteredPipelines = append(filteredPipelines, p)
+			}
+			s.muRetriedFailedPipelines.Unlock()
+
+			logger.WithField("pipelines", filteredPipelines).Debug("Found failed pipelines")
+			s.pipelineGwRebalancePipelines(filteredPipelines)
+			s.pipelineEventStream.mu.Unlock()
+		}
+	}
+}
+
+func (s *SchedulerServer) mkPipelineKey(uid string, version uint32) string {
+	return fmt.Sprintf("%s_%d", uid, version)
+}
+
+func (s *SchedulerServer) resetPipelineRetryCount(msg *chainer.PipelineUpdateMessage) {
+	s.muRetriedFailedPipelines.Lock()
+	defer s.muRetriedFailedPipelines.Unlock()
+	s.retriedFailedPipelines[s.mkPipelineKey(msg.Uid, msg.Version)] = 0
+}
+
+func (s *SchedulerServer) removePipelineRetryCount(msg *chainer.PipelineUpdateMessage) {
+	s.muRetriedFailedPipelines.Lock()
+	defer s.muRetriedFailedPipelines.Unlock()
+	delete(s.retriedFailedPipelines, s.mkPipelineKey(msg.Uid, msg.Version))
+}
+
+func (s *SchedulerServer) PipelineStatusEvent(_ context.Context, message *chainer.PipelineUpdateStatusMessage) (*chainer.PipelineUpdateStatusResponse, error) {
 	s.pipelineEventStream.mu.Lock()
 	defer s.pipelineEventStream.mu.Unlock()
 
@@ -39,15 +107,17 @@ func (s *SchedulerServer) PipelineStatusEvent(ctx context.Context, message *chai
 	switch message.Update.Op {
 	case chainer.PipelineUpdateMessage_Create:
 		if message.Success {
+			s.resetPipelineRetryCount(message.Update)
 			statusVal = pipeline.PipelineReady
 		} else {
 			statusVal = pipeline.PipelineFailed
 		}
 	case chainer.PipelineUpdateMessage_Delete:
 		if message.Success {
+			s.removePipelineRetryCount(message.Update)
 			statusVal = pipeline.PipelineTerminated
 		} else {
-			statusVal = pipeline.PipelineFailed
+			statusVal = pipeline.PipelineFailedTerminating
 		}
 	}
 
@@ -197,7 +267,10 @@ func (s *SchedulerServer) createPipelineCreationMessage(pv *pipeline.PipelineVer
 func (s *SchedulerServer) pipelineGwRebalance() {
 	s.pipelineEventStream.mu.Lock()
 	defer s.pipelineEventStream.mu.Unlock()
+	s.pipelineGwRebalancePipelines(s.pipelineHandler.GetAllPipelineGwRunningPipelineVersions())
+}
 
+func (s *SchedulerServer) pipelineGwRebalancePipelines(pipelines []coordinator.PipelineEventMsg) {
 	// get only the pipeline gateway streams
 	streams := []*PipelineSubscription{}
 	for _, subscription := range s.pipelineEventStream.streams {
@@ -206,8 +279,7 @@ func (s *SchedulerServer) pipelineGwRebalance() {
 		}
 	}
 
-	evts := s.pipelineHandler.GetAllPipelineGwRunningPipelineVersions()
-	for _, event := range evts {
+	for _, event := range pipelines {
 		pv, err := s.pipelineHandler.GetPipelineVersion(event.PipelineName, event.PipelineVersion, event.UID)
 		if err != nil {
 			s.logger.WithError(err).Errorf("Failed to get pipeline version for %s:%d (%s)", event.PipelineName, event.PipelineVersion, event.UID)
@@ -235,7 +307,7 @@ func (s *SchedulerServer) pipelineGWRebalanceNoStreams(pv *pipeline.PipelineVers
 	)
 
 	pipelineState := pipeline.PipelineCreate
-	if pv.State.PipelineGwStatus == pipeline.PipelineTerminating {
+	if pv.State.PipelineGwStatus == pipeline.PipelineTerminating || pv.State.PipelineGwStatus == pipeline.PipelineFailedTerminating {
 		// since there are no streams, we can directly set the state to terminated
 		pipelineState = pipeline.PipelineTerminated
 	}
@@ -301,8 +373,8 @@ func (s *SchedulerServer) pipelineGwRebalanceStreams(
 			s.logger.Debug("pipeline-gateway replica contains pipeline, sending status update for ", server)
 
 			var msg *pb.PipelineStatusResponse
-			if pv.State.PipelineGwStatus == pipeline.PipelineTerminating {
-				s.logger.Debugf("Pipeline %s is terminating, sending deletion message", pv.Name)
+			if pv.State.PipelineGwStatus == pipeline.PipelineTerminating || pv.State.PipelineGwStatus == pipeline.PipelineFailedTerminating {
+				s.logger.Debugf("Pipeline %s in state %s, sending deletion message", pv.Name, pv.State.PipelineGwStatus)
 				msg = s.createPipelineDeletionMessage(pv)
 			} else {
 				s.logger.Debugf("Pipeline %s is available or progressing, sending creation message", pv.Name)

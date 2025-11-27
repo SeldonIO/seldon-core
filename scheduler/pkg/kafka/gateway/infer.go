@@ -51,8 +51,8 @@ const (
 type InferKafkaHandler struct {
 	logger               log.FieldLogger
 	mu                   sync.RWMutex
-	loadedModels         map[string]bool
-	subscribedTopics     map[string]bool
+	loadedModels         map[string]struct{}
+	subscribedTopics     map[string]struct{}
 	workers              []*InferWorker
 	consumer             *kafka.Consumer
 	producer             *kafka.Producer
@@ -132,8 +132,8 @@ func NewInferKafkaHandler(
 		done:                 make(chan bool),
 		tracer:               consumerConfig.TraceProvider.GetTraceProvider().Tracer("Worker"),
 		topicNamer:           topicNamer,
-		loadedModels:         make(map[string]bool),
-		subscribedTopics:     make(map[string]bool),
+		loadedModels:         make(map[string]struct{}),
+		subscribedTopics:     make(map[string]struct{}),
 		shutdownComplete:     make(chan struct{}),
 		consumerConfig:       consumerConfig,
 		consumerName:         consumerName,
@@ -366,21 +366,22 @@ func (kc *InferKafkaHandler) ensureTopicsExist(topicNames []string) error {
 func (kc *InferKafkaHandler) AddModel(modelName string) error {
 	kc.mu.Lock()
 	defer kc.mu.Unlock()
-	kc.loadedModels[modelName] = true
 
 	// create topics
 	inputTopic := kc.topicNamer.GetModelTopicInputs(modelName)
 	outputTopic := kc.topicNamer.GetModelTopicOutputs(modelName)
 	if err := kc.createTopics([]string{inputTopic, outputTopic}); err != nil {
-		return err
+		return fmt.Errorf("failed to create topics for model %s: %w", modelName, err)
 	}
 
-	kc.subscribedTopics[inputTopic] = true
+	kc.subscribedTopics[inputTopic] = struct{}{}
 	err := kc.subscribeTopics()
 	if err != nil {
-		kc.logger.WithError(err).Errorf("failed to subscribe to topics")
-		return nil
+		kc.logger.WithError(err).Errorf("Failed to subscribe to topics")
+		return fmt.Errorf("failed to subscribe to topics: %w", err)
 	}
+
+	kc.loadedModels[modelName] = struct{}{}
 	return nil
 }
 

@@ -70,16 +70,18 @@ type KubernetesMeta struct {
 
 type PipelineStatus uint32
 
+//go:generate go tool stringer -type=PipelineStatus
 const (
-	PipelineStatusUnknown PipelineStatus = iota
-	PipelineCreate                       // Received signal to create pipeline.
-	PipelineCreating                     // In the process of creating pipeline.
-	PipelineReady                        // Pipeline is ready to be used.
-	PipelineFailed                       // Pipeline creation/deletion failed.
-	PipelineTerminate                    // Received signal that pipeline should be terminated.
-	PipelineTerminating                  // In the process of doing cleanup/housekeeping for pipeline termination.
-	PipelineTerminated                   // Pipeline has been terminated.
-	PipelineRebalancing                  // Pipeline is rebalancing
+	PipelineStatusUnknown     PipelineStatus = iota
+	PipelineCreate                           // Received signal to create pipeline.
+	PipelineCreating                         // In the process of creating pipeline.
+	PipelineReady                            // Pipeline is ready to be used.
+	PipelineFailed                           // Pipeline creation failed.
+	PipelineTerminate                        // Received signal that pipeline should be terminated.
+	PipelineTerminating                      // In the process of doing cleanup/housekeeping for pipeline termination.
+	PipelineTerminated                       // Pipeline has been terminated.
+	PipelineRebalancing                      // Pipeline is rebalancing
+	PipelineFailedTerminating                // Pipeline has failed to terminate.
 )
 
 type PipelineState struct {
@@ -89,10 +91,6 @@ type PipelineState struct {
 	Reason           string
 	PipelineGwReason string
 	Timestamp        time.Time
-}
-
-func (ps PipelineStatus) String() string {
-	return [...]string{"PipelineStatusUnknown", "PipelineCreate", "PipelineCreating", "PipelineReady", "PipelineFailed", "PipelineTerminate", "PipelineTerminating", "PipelineTerminated", "PipelineRebalancing"}[ps]
 }
 
 func (ps *PipelineState) setState(status PipelineStatus, reason string) {
