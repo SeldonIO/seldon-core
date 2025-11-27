@@ -16,6 +16,9 @@ spec:
       - name: server
         image: seldonio/alibi-detect-server:1.19.0-dev
         imagePullPolicy: IfNotPresent
+        env:
+        - name: TF_USE_LEGACY_KERAS
+          value: "1"
         args:
         - --model_name
         - cifar10od
