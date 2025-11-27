@@ -15,6 +15,38 @@ envoy_cluster_upstream_rq_active{envoy_cluster_name="model_iris2_7_grpc"}
 
 
 can use for past requests:
-    sum(rate(envoy_cluster_external_upstream_rq{model="iris2"}[5m])) by (model) * 300
+    sum(rate(envoy_cluster_external_upstream_rq{model="iris2",namespace="seldon-mesh"}[5m])) by (model) * 300
         more accurate than
     sum(increase(envoy_cluster_external_upstream_rq{model="iris2"}[5m])) by (model)
+
+
+
+
+
+
+
+
+
+
+
+    route_config:
+      name: local_route
+      virtual_hosts:
+      - name: backend
+        domains: ["*"]
+        routes:
+        - match:
+            prefix: "/api"
+          route:
+            cluster: my_cluster
+            timeout: 5s
+            retry_policy:
+              retry_on: "connect-failure,refused-stream,unavailable,cancelled,retriable-status-codes,reset"
+              num_retries: 2
+              per_try_timeout: 1s
+              retry_host_predicate:
+              - name: envoy.retry_host_predicates.previous_hosts
+              host_selection_retry_max_attempts: 3
+              retriable_status_codes:
+              - 503
+              - 502
