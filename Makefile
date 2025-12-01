@@ -57,7 +57,7 @@ run_python_builder:
 	docker run --rm -it \
 		--user=$$(id -u) \
 		-v $(SELDON_CORE_LOCAL_DIR):/work \
-		seldonio/python-builder:0.2 bash
+		seldonio/python-builder:0.9 bash
 
 .PHONY: update-3rd-party-licenses
 update-3rd-party-licenses:

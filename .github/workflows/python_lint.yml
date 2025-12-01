@@ -11,7 +11,7 @@ jobs:
   python-lint:
 
     runs-on: ubuntu-latest
-    container: seldonio/python-builder:0.8
+    container: seldonio/python-builder:0.9
 
     steps:
     - uses: actions/checkout@v2
