@@ -94,7 +94,7 @@ jobs:
 
     - name: Clean up Docker image
       if: always()
-      run: docker rmi ${{ env.SKLEARN_IMAGE_TAG}}:test
+      run: docker rmi ${{ env.TFSERVING_IMAGE_TAG}}:test
 
     - name: Build (sklearn)
       id: build-sklearn
@@ -137,7 +137,6 @@ jobs:
       with:
         image: ${{ env.MLFLOW_IMAGE_TAG}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high
-
 
     - name: Clean up Docker image
       if: always()
@@ -185,11 +184,9 @@ jobs:
         image: ${{ env.ALIBI_EXPLAIN_IMAGE_TAG}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/alibi-explain-server/Dockerfile
 
-
     - name: Clean up Docker image
       if: always()
       run: docker rmi ${{ env.ALIBI_EXPLAIN_IMAGE_TAG}}:test
-
 
     - name: Check for image scan failures
       if: always()
