@@ -11,7 +11,6 @@ In order to build and test integration with the Alibi Detect library, ensure to 
 make dev_install
 make test
 
-
 ```
 
 This will install the Alibi Detect library in the development environment and run the tests.
@@ -19,7 +18,6 @@ This will install the Alibi Detect library in the development environment and ru
 There is also a possibility to quickly run sanity checks in this way:
 
 ```bash
-
 make run-outlier-detector-tensorflow # to run the outlier detector server with tensorflow locally
 make curl-detector-tensorflow # to send a test request to the server
 make curl-tensorflow-outlier-detector-scores # to send a test request to get outlier scores
