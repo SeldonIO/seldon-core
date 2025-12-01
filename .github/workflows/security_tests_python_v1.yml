@@ -10,7 +10,6 @@ on:
       - release-1.19.0-prep
   workflow_dispatch:
 jobs:
-
   build-and-scan-python-images:
     runs-on: ubuntu-latest
     steps:
@@ -30,11 +29,6 @@ jobs:
       run: |
         make CONDA_BASE_IMAGE=${{ env.CONDA_BASE_IMAGE}} VERSION=test docker-build-conda-base
         docker save -o /tmp/conda-image.tar ${{ env.CONDA_BASE_IMAGE}}:test
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: conda-image
-        path: /tmp/conda-image.tar
     - name: Scan Conda image
       id: scan-conda
       uses: snyk/actions/docker@master
@@ -50,11 +44,6 @@ jobs:
       run: |
         make CONDA_BASE_IMAGE=${{ env.CONDA_BASE_IMAGE}} VERSION=test IMAGE_NAME=${{ env.PYTHON_BASE_IMAGE}} docker-build PYTHON_VERSION=3.12.12 CONDA_VERSION=25.3.1
         docker save -o /tmp/python-base-image.tar ${{ env.PYTHON_BASE_IMAGE}}:test
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: python-base-image
-        path: /tmp/python-base-image.tar
     - name: Scan Python base image
       id: scan-python-base
       uses: snyk/actions/docker@master
@@ -65,13 +54,16 @@ jobs:
         image: ${{ env.PYTHON_BASE_IMAGE}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
 
+    - name: Clean up Docker image # After building the Python Base Wrapper image, the conda one is not needed
+      if: always()
+      run: docker rmi ${{ env.CONDA_BASE_IMAGE}}:test
+
     - name: Install CLI tools from OpenShift Mirror
       uses: redhat-actions/openshift-tools-installer@v1
       with:
         github_pat: ${{ github.token }}
         source: "github"
         s2i: "latest"
-
 
     - name: Build (tfserving proxy)
       id: build-tfserving-proxy
