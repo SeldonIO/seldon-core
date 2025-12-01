@@ -2,7 +2,7 @@ ARG TF_SERVING_VERSION=latest
 ARG TF_SERVING_BUILD_IMAGE=tensorflow/serving:${TF_SERVING_VERSION}-devel
 
 FROM ${TF_SERVING_BUILD_IMAGE} as build_image
-FROM registry.access.redhat.com/ubi8/ubi-minimal
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.7
 LABEL name="Seldon Tensorflow Serving Server" \
       vendor="Seldon Technologies" \
       version="1.19.0-dev" \
@@ -16,8 +16,8 @@ ARG TF_SERVING_VERSION_GIT_COMMIT=head
 LABEL tensorflow_serving_github_branchtag=${TF_SERVING_VERSION_GIT_BRANCH}
 LABEL tensorflow_serving_github_commit=${TF_SERVING_VERSION_GIT_COMMIT}
 
-RUN microdnf install openssl ca-certificates wget \
-    && microdnf update; microdnf clean all
+RUN microdnf install -y openssl ca-certificates wget \
+    && microdnf update -y ; microdnf clean all
 
 # Install TF Serving pkg
 COPY --from=build_image /usr/local/bin/tensorflow_model_server /usr/bin/tensorflow_model_server

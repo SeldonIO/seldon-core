@@ -17,7 +17,7 @@ GPU_IMAGE_NAME = ${DOCKER_REGISTRY}/seldon-core-s2i-python${IMAGE_PYTHON_VERSION
 SELDON_CORE_DIR = ../../..
 
 # Base images to build the s2i builder images from
-CONDA_BASE_IMAGE = ${DOCKER_REGISTRY}/conda-ubi10
+CONDA_BASE_IMAGE = ${DOCKER_REGISTRY}/conda-ubi9
 
 .PHONY: get_local_repo
 get_local_repo:
