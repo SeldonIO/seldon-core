@@ -43,7 +43,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: ${{ env.CONDA_BASE_IMAGE}}:test
-        args:  --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile.conda
+        args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile.conda
 
     - name: Build (Base Wrapper)
       working-directory: ./wrappers/s2i/python
@@ -63,7 +63,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: ${{ env.PYTHON_BASE_IMAGE}}:test
-        args:  --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
+        args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
 
     - name: Install CLI tools from OpenShift Mirror
       uses: redhat-actions/openshift-tools-installer@v1
