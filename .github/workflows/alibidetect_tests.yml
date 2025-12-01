@@ -10,6 +10,12 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+      - name: Free up disk space (android, haskell, dotnet)
+        run: |
+          sudo rm -rf /usr/local/lib/android || true
+          sudo rm -rf /opt/ghc || true
+          sudo rm -rf /usr/share/dotnet || true
+          df -h
       - uses: actions/checkout@v4
       - name: Set up Python 3.12
         uses: actions/setup-python@v4
@@ -31,6 +37,12 @@ jobs:
   python-tests:
     runs-on: ubuntu-latest
     steps:
+      - name: Free up disk space (android, haskell, dotnet)
+        run: |
+          sudo rm -rf /usr/local/lib/android || true
+          sudo rm -rf /opt/ghc || true
+          sudo rm -rf /usr/share/dotnet || true
+          df -h
       - uses: actions/checkout@v4
       - name: Install Rclone
         run: |
