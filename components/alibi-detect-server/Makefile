@@ -39,13 +39,13 @@ lint:
 #
 
 run-outlier-detector-tensorflow:
-	python -m adserver --model_name cifar10od --http_port 8080 --protocol tensorflow.http --event_type org.kubeflow.serving.inference.outlier --storage_uri gs://seldon-models/alibi-detect/od/OutlierVAE/cifar10 --event_source http://localhost:8080 OutlierDetector
+	TF_USE_LEGACY_KERAS=1 python -m adserver --model_name cifar10od --http_port 8080 --protocol tensorflow.http --event_type org.kubeflow.serving.inference.outlier --storage_uri gs://seldon-models/alibi-detect/od/OutlierVAE/cifar10 --event_source http://localhost:8080 OutlierDetector
 
 run-outlier-detector-v2:
-	python -m adserver --model_name cifar10od --http_port 8080 --protocol kfserving.http --event_type org.kubeflow.serving.inference.outlier --storage_uri gs://seldon-models/alibi-detect/od/OutlierVAE/cifar10 --event_source http://localhost:8080 OutlierDetector
+	TF_USE_LEGACY_KERAS=1 python -m adserver --model_name cifar10od --http_port 8080 --protocol kfserving.http --event_type org.kubeflow.serving.inference.outlier --storage_uri gs://seldon-models/alibi-detect/od/OutlierVAE/cifar10 --event_source http://localhost:8080 OutlierDetector
 
 run-metrics-server:
-	SELDON_DEPLOYMENT_ID="sdepname" PREDICTIVE_UNIT_ID="modelname" PREDICTIVE_UNIT_IMAGE="adserver:0.1" PREDICTOR_ID="pred" \
+	TF_USE_LEGACY_KERAS=1 SELDON_DEPLOYMENT_ID="sdepname" PREDICTIVE_UNIT_ID="modelname" PREDICTIVE_UNIT_IMAGE="adserver:0.1" PREDICTOR_ID="pred" \
 		 python -m adserver --model_name model --http_port 8080 --protocol seldonfeedback.http --event_type io.seldon.serving.feedback --storage_uri "adserver.cm_models.binary_metrics.BinaryMetrics" --event_source http://localhost:8080 MetricsServer
 
 #
@@ -53,11 +53,10 @@ run-metrics-server:
 #
 
 docker-run-outlier-detector-tensorflow:
-	docker run --name cifar10od -it --rm -p 8080:8080 ${IMAGE}:${VERSION} --model_name cifar10od --http_port 8080 --protocol tensorflow.http --event_type org.kubeflow.serving.inference.outlier --storage_uri gs://seldon-models/alibi-detect/od/OutlierVAE/cifar10 --event_source http://localhost:8080 OutlierDetector
+	docker run --name cifar10od -e TF_USE_LEGACY_KERAS=1 -it --rm -p 8080:8080 ${IMAGE}:${VERSION} --model_name cifar10od --http_port 8080 --protocol tensorflow.http --event_type org.kubeflow.serving.inference.outlier --storage_uri gs://seldon-models/alibi-detect/od/OutlierVAE/cifar10 --event_source http://localhost:8080 OutlierDetector
 
 docker-run-drift-detector-tensorflow:
-	docker run --name cifar10cd  -it --rm -p 8080:8080 ${IMAGE}:${VERSION} --model_name cifar10cd --http_port 8080 --protocol tensorflow.http --event_type org.kubeflow.serving.inference.drift --storage_uri gs://seldon-models/alibi-detect/cd/ks/cifar10-0_4_3 --event_source http://localhost:8080 DriftDetector --drift_batch_size=2
-
+	docker run --name cifar10cd -e TF_USE_LEGACY_KERAS=1 -it --rm -p 8080:8080 ${IMAGE}:${VERSION} --model_name cifar10cd --http_port 8080 --protocol tensorflow.http --event_type org.kubeflow.serving.inference.drift --storage_uri gs://seldon-models/alibi-detect/cd/ks/cifar10-0_6_2 --event_source http://localhost:8080 DriftDetector --drift_batch_size=2
 
 #
 # Test curls
@@ -73,22 +72,20 @@ curl-detector-v2-outlier:
 	curl -v localhost:8080/ -d @./cifar10-v2-outlier.json -H "ce-namespace: default" -H "ce-modelid: cifar10" -H "ce-type: io.seldon.serving.inference.request" -H "ce-id: 1234" -H "ce-source: localhost" -H "ce-specversion: 1.0"
 
 curl-tensorflow-outlier-detector-scores:
-	curl -v localhost:8080/ -d @./cifar10.json -H "Alibi-Detect-Return-Feature-Score: true" -H "Alibi-Detect-Return-Instance-Score: true"
+	curl -v localhost:8080/ -d @./cifar10.json -H "ce-source: localhost" -H "ce-type: io.seldon.serving.inference.request" -H "ce-id: 1234" -H "ce-specversion: 1.0" -H "Alibi-Detect-Return-Feature-Score: true" -H "Alibi-Detect-Return-Instance-Score: true"
 
-curl-metrics-server:
+
+curl-metrics-server-feedback:
 	curl -v -X POST -H 'Content-Type: application/json' \
-	   -d '{"truth": {"data": {"ndarray": [0]}}, "response": {"data": {"ndarray": [1]}}}' \
+	 	-H "ce-source: localhost" \
+		-H "ce-type: io.seldon.serving.feedback" \
+		-H "ce-id: 1234" \
+		-H "ce-specversion: 1.0" \
+		-d '{"truth": {"data": {"ndarray": [0]}}, "response": {"data": {"ndarray": [1]}}}' \
 		http://localhost:8080/
 
-curl-metrics-server-elasticsearch:
-	curl -v -X POST -H 'Content-Type: application/json' \
-		-H 'Ce-Requestid: 7983e38c-29dc-45ff-8ffb-77252e7ac86d' \
-		-H 'Ce-Namespace: seldon' \
-		-H 'Ce-Inferenceservicename: seldon' \
-		-d '{"truth": {"data": {"ndarray": [0]}}}' \
-		http://localhost:8080/
 
-curl-metrics-server-metrics:
+curl-metrics-server-get:
 	curl http://localhost:8080/v1/metrics
 
 
