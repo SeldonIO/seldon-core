@@ -2,10 +2,11 @@ name: V1 Python Lint
 
 on:
   push:
-    branches: [ master ]
+    # TODO revert before merge to master
+    branches: '*'
   pull_request:
     # TODO revert before merge to master
-    branches: [ fix/core-1-CVEs ]
+    branches: '*'
 
 jobs:
   python-lint:
