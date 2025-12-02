@@ -1,0 +1,2 @@
+@AutoscalingModel
+Feature: Model Autoscaling

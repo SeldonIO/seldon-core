@@ -40,3 +40,5 @@ Feature: Model deployment
     When the model is applied
     Then the model should not be Ready
     And the model status message should be "ModelFailed"
+
+  Scenario: Fail - scheduler is down
