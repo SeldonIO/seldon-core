@@ -1,8 +1,11 @@
 name: mlflow-talk
 channels:
-  - defaults
+  - conda-forge
 dependencies:
-  - python=3.6
-  - scikit-learn=0.19.1
+  - python=3.12
+  - numpy=1.26.*
+  - pandas=2.2.*
+  - scikit-learn=1.4.*
+  - pip
   - pip:
-    - mlflow>=1.0
+      - mlflow>=2.16,<3
