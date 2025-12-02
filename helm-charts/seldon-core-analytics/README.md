@@ -33,8 +33,8 @@ helm install seldon-core-analytics seldonio/seldon-core-analytics --namespace se
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://charts.helm.sh/stable | grafana | ~5.1.4 |
-| https://charts.helm.sh/stable | prometheus | ~11.4.0 |
+| https://grafana.github.io/helm-charts | grafana | 10.3.0 |
+| https://prometheus-community.github.io/helm-charts | prometheus | 27.49.0 |
 
 ## Values
 
@@ -51,6 +51,7 @@ helm install seldon-core-analytics seldonio/seldon-core-analytics --namespace se
 | grafana.enabled | bool | `true` |  |
 | grafana.sidecar.dashboards.enabled | bool | `true` |  |
 | grafana.sidecar.dashboards.label | string | `"seldon_dashboard"` |  |
+| grafana.sidecar.dashboards.labelValue | string | `"1"` |  |
 | prometheus.enabled | bool | `true` |  |
 | prometheus.server.configPath | string | `"/etc/prometheus/conf/prometheus-config.yaml"` |  |
 | prometheus.server.extraConfigmapMounts[0].configMap | string | `"prometheus-server-conf"` |  |
@@ -67,5 +68,5 @@ helm install seldon-core-analytics seldonio/seldon-core-analytics --namespace se
 | prometheus.server.persistentVolume.enabled | bool | `false` |  |
 | prometheus.server.persistentVolume.existingClaim | string | `"seldon-claim"` |  |
 | prometheus.server.persistentVolume.mountPath | string | `"/seldon-data"` |  |
-| prometheus.service_type | string | `"ClusterIP"` |  |
+| prometheus.server.service.type | string | `"ClusterIP"` |  |
 | rbac.enabled | bool | `true` |  |
