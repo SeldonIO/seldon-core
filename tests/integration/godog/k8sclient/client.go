@@ -88,13 +88,12 @@ func (k8s *K8sClient) ApplyModel(model *mlopsv1alpha1.Model) error {
 	return k8s.kubeClient.Update(ctx, model)
 }
 
-func (k8s *K8sClient) DeleteGodogTestModels() error {
-	ctx := context.Background()
+func (k8s *K8sClient) DeleteGodogTestModels(ctx context.Context) error {
 
 	list := &mlopsv1alpha1.ModelList{}
 	err := k8s.kubeClient.List(ctx, list,
 		client.InNamespace(k8s.namespace),
-		client.MatchingLabels{"godog-test": "true"},
+		client.MatchingLabels{"test-suite": "godog"},
 	)
 	if err != nil {
 		return err
