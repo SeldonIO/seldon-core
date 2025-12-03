@@ -2,32 +2,49 @@ package suite
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/cucumber/godog"
+	"github.com/seldonio/seldon-core/godog/k8sclient"
 	"github.com/seldonio/seldon-core/godog/steps"
 )
 
-func InitializeScenario(ctx *godog.ScenarioContext) {
-	// world struct will contain all dependencies needed to run scenarios
+func InitializeScenario(k8sClient *k8sclient.K8sClient) func(*godog.ScenarioContext) {
+	return func(scenarioCtx *godog.ScenarioContext) {
+		// Create the world with long-lived deps once per scenario context
+		world := &steps.World{
+			KubeClient: k8sClient,
+			// initialise any other long-lived deps here, e.g. loggers, config, etc.
+			Models: make(map[string]*steps.Model),
+		}
 
-	var world *steps.World
-	//todo: init world
-	world = &steps.World{}
+		// Before: reset state and prep cluster before each scenario
+		scenarioCtx.Before(func(ctx context.Context, scenario *godog.Scenario) (context.Context, error) {
+			if err := world.KubeClient.DeleteGodogTestModels(); err != nil {
+				return ctx, fmt.Errorf("error when deleting models on before steps: %w", err)
+			}
 
-	// Before prep the state of world however clients need to be long live could delete all crs that match a test label before running a test
-	ctx.Before(func(ctx context.Context, scenario *godog.Scenario) (context.Context, error) {
-		return ctx, nil
-	})
+			// Reset scenario-level state
+			world.CurrentModel = steps.NewModel()
+			world.Models = make(map[string]*steps.Model)
 
-	// After needs to return the cluster state if there were any changes to the cluster state such as
-	// bringing back deployments to starting state and deleting models and servers, could also be a flag if its done on before step
-	ctx.After(func(ctx context.Context, scenario *godog.Scenario, err error) (context.Context, error) {
-		return ctx, nil
-	})
+			return ctx, nil
+		})
 
-	steps.LoadModelSteps(ctx, world)
-	//todo load other steps such as pipeline, experiment steps etc
+		// After: optional cleanup / rollback
+		scenarioCtx.After(func(ctx context.Context, scenario *godog.Scenario, err error) (context.Context, error) {
+			// e.g. clean up any resources if needed
+			// if cleanupErr := world.KubeClient.DeleteGodogTestModels(); cleanupErr != nil && err == nil {
+			//     err = cleanupErr
+			// }
+			return ctx, err
+		})
+
+		// Register step definitions with access to world + k8sClient
+		steps.LoadModelSteps(scenarioCtx, world)
+		// TODO: load other steps, e.g. pipeline, experiment, etc.
+	}
 }
 
 // todo: the execution of the test will need further bootstrap of dependencies and clients as well as retrieving config
@@ -43,9 +60,14 @@ func TestFeatures(t *testing.T) {
 		TestingT: t,
 	}
 
+	k8sClient, err := k8sclient.New("seldon-mesh")
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
 	suite := godog.TestSuite{
 		Name:                "seldon-godog",
-		ScenarioInitializer: InitializeScenario,
+		ScenarioInitializer: InitializeScenario(k8sClient),
 		Options:             opts,
 	}
 

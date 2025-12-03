@@ -13,23 +13,22 @@ type Model struct {
 }
 
 type TestModelConfig struct {
-	Name       string
-	StorageURI string
-	Runtime    string // "mlserver", etc
-	// maybe: resources, env, etc
+	Name         string
+	StorageURI   string
+	Requirements []string // requirements might have to be applied on the applied of k8s
 }
 
 // map to have all common testing model definitions for testing popular models
 var testModels = map[string]TestModelConfig{
 	"iris": {
-		Name:       "iris-model",
-		StorageURI: "s3://my-bucket/models/iris/",
-		Runtime:    "mlserver",
+		Name:         "iris",
+		StorageURI:   "gs://seldon-models/scv2/samples/mlserver_1.3.5/iris-sklearn",
+		Requirements: []string{"sklearn"},
 	},
 	"fraud-detector": {
-		Name:       "fraud-detector",
-		StorageURI: "gs://other-bucket/models/fraud/",
-		Runtime:    "mlserver",
+		Name:         "fraud-detector",
+		StorageURI:   "gs://other-bucket/models/fraud/",
+		Requirements: []string{"sklearn"},
 	},
 }
 
@@ -77,7 +76,26 @@ func (m *Model) IHaveAModel(model string) error {
 			Finalizers:                 nil,
 			ManagedFields:              nil,
 		},
-		Spec:   mlopsv1alpha1.ModelSpec{},
+		Spec: mlopsv1alpha1.ModelSpec{
+			InferenceArtifactSpec: mlopsv1alpha1.InferenceArtifactSpec{
+				ModelType:       nil,
+				StorageURI:      testModel.StorageURI,
+				ArtifactVersion: nil,
+				SchemaURI:       nil,
+				SecretName:      nil,
+			},
+			Requirements: testModel.Requirements,
+			Memory:       nil,
+			ScalingSpec:  mlopsv1alpha1.ScalingSpec{},
+			Server:       nil,
+			PreLoaded:    false,
+			Dedicated:    false,
+			Logger:       nil,
+			Explainer:    nil,
+			Parameters:   nil,
+			Llm:          nil,
+			Dataflow:     nil,
+		},
 		Status: mlopsv1alpha1.ModelStatus{},
 	}
 
@@ -100,7 +118,7 @@ func (m *Model) SetReplicas(replicas int) {}
 func (w *World) ApplyModel() error {
 
 	// retrieve current model and apply in k8s
-	err := w.kubeClient.ApplyModel(w.CurrentModel.model)
+	err := w.KubeClient.ApplyModel(w.CurrentModel.model)
 
 	if err != nil {
 		return err
