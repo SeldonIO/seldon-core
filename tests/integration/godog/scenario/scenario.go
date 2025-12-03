@@ -48,6 +48,8 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 		Models: make(map[string]*steps.Model),
 	}
 
+	world.CurrentModel = steps.NewModel()
+
 	// Before: reset state and prep cluster before each scenario
 	scenarioCtx.Before(func(ctx context.Context, scenario *godog.Scenario) (context.Context, error) {
 		if err := world.KubeClient.DeleteGodogTestModels(); err != nil {
@@ -55,7 +57,7 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 		}
 
 		// Reset scenario-level state
-		world.CurrentModel = steps.NewModel()
+
 		world.Models = make(map[string]*steps.Model)
 
 		return ctx, nil
