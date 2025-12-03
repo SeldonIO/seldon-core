@@ -2,19 +2,20 @@ name: V1 Python Tests
 
 on:
   push:
-    branches: [ master ]
+    # TODO revert before merge to master
+    branches: '*'
   pull_request:
     # TODO revert before merge to master
-    branches: [ fix/core-1-CVEs ]
+    branches: '*'
 
 jobs:
   python-tests:
 
     runs-on: ubuntu-latest
-    container: seldonio/python-builder:0.8
+    container: seldonio/python-builder:0.9
 
     steps:
     - uses: actions/checkout@v2
     - name: test-python
       run: |
-        make -C python update_package install_dev test
+        make -C python install_dev update_package test
