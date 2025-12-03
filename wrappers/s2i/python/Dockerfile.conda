@@ -20,15 +20,7 @@ RUN wget -O certifi-python-certifi.tar.gz \
 # Fix vulnerabilities for brotli and h2
 # Fix vulnerability in pip(9CVE-2025-8869)
 ARG MINIFORGE_VERSION
-ARG TARGETARCH
-RUN set -eux; \
-    case "${TARGETARCH:-amd64}" in \
-      amd64) MINIFORGE_SUBARCH=Linux-x86_64 ;; \
-      arm64) MINIFORGE_SUBARCH=Linux-aarch64 ;; \
-      *) echo "Unsupported TARGETARCH: ${TARGETARCH}" >&2; exit 1 ;; \
-    esac; \
-    MINIFORGE_FILE="Miniforge3-${MINIFORGE_VERSION}-${MINIFORGE_SUBARCH}.sh"; \
-    wget "https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/${MINIFORGE_FILE}" -O ~/miniforge.sh && \
+RUN wget https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Miniforge3-${MINIFORGE_VERSION}-Linux-x86_64.sh -O ~/miniforge.sh && \
     /bin/bash ~/miniforge.sh -b -p /opt/conda && \
     rm ~/miniforge.sh && \
     /opt/conda/bin/conda init bash && \
