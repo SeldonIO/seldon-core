@@ -36,7 +36,6 @@ jobs:
       working-directory: ./wrappers/s2i/python
       run: |
         make CONDA_BASE_IMAGE=${{ env.CONDA_BASE_IMAGE}} VERSION=test docker-build-conda-base
-        docker save -o /tmp/conda-image.tar ${{ env.CONDA_BASE_IMAGE}}:test
     - name: Scan Conda image
       id: scan-conda
       uses: snyk/actions/docker@master
@@ -51,7 +50,6 @@ jobs:
       working-directory: ./wrappers/s2i/python
       run: |
         make CONDA_BASE_IMAGE=${{ env.CONDA_BASE_IMAGE}} VERSION=test IMAGE_NAME=${{ env.PYTHON_BASE_IMAGE}} docker-build PYTHON_VERSION=3.12.12 CONDA_VERSION=25.3.1
-        docker save -o /tmp/python-base-image.tar ${{ env.PYTHON_BASE_IMAGE}}:test
     - name: Scan Python base image
       id: scan-python-base
       uses: snyk/actions/docker@master
