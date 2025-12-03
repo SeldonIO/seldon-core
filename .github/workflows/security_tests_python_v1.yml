@@ -14,6 +14,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+
+    - name: Free up disk space (android, haskell, dotnet)
+      run: |
+        sudo rm -rf /usr/local/lib/android || true
+        sudo rm -rf /opt/ghc || true
+        sudo rm -rf /usr/share/dotnet || true
+        df -h
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
@@ -54,9 +62,15 @@ jobs:
         image: ${{ env.PYTHON_BASE_IMAGE}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
 
+    - name: Disk space before removing the Conda base image
+      run: df -h
+
     - name: Clean up Docker image # After building the Python Base Wrapper image, the conda one is not needed
       if: always()
       run: docker rmi ${{ env.CONDA_BASE_IMAGE}}:test
+
+    - name: Disk space after removing the Conda base image
+      run: df -h
 
     - name: Install CLI tools from OpenShift Mirror
       uses: redhat-actions/openshift-tools-installer@v1
