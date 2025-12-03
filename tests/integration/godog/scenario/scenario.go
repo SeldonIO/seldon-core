@@ -48,11 +48,11 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 		Models: make(map[string]*steps.Model),
 	}
 
-	world.CurrentModel = steps.NewModel()
+	world.CurrentModel = steps.NewModel(world)
 
 	// Before: reset state and prep cluster before each scenario
 	scenarioCtx.Before(func(ctx context.Context, scenario *godog.Scenario) (context.Context, error) {
-		if err := world.KubeClient.DeleteGodogTestModels(); err != nil {
+		if err := world.KubeClient.DeleteGodogTestModels(ctx); err != nil {
 			return ctx, fmt.Errorf("error when deleting models on before steps: %w", err)
 		}
 
@@ -73,7 +73,7 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 	})
 
 	// Register step definitions with access to world + k8sClient
-	steps.LoadModelSteps(scenarioCtx, world)
+	steps.LoadModelSteps(scenarioCtx, world.CurrentModel)
 	// TODO: load other steps, e.g. pipeline, experiment, etc.
 
 }

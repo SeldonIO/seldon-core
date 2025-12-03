@@ -10,6 +10,7 @@ import (
 
 type Model struct {
 	model *mlopsv1alpha1.Model
+	world *World
 }
 
 type TestModelConfig struct {
@@ -32,12 +33,12 @@ var testModels = map[string]TestModelConfig{
 	},
 }
 
-func LoadModelSteps(ctx *godog.ScenarioContext, w *World) {
+func LoadModelSteps(ctx *godog.ScenarioContext, w *Model) {
 	// Model Operations
-	ctx.Step(`^I have an? "([^"]+)" model$`, w.CurrentModel.IHaveAModel)
-	ctx.Step(`^the model has "(\d+)" min replicas$`, w.CurrentModel.SetMinReplicas)
-	ctx.Step(`^the model has "(\d+)" max replicas$`, w.CurrentModel.SetMaxReplicas)
-	ctx.Step(`^the model has "(\d+)" replicas$`, w.CurrentModel.SetReplicas)
+	ctx.Step(`^I have an? "([^"]+)" model$`, w.IHaveAModel)
+	ctx.Step(`^the model has "(\d+)" min replicas$`, w.SetMinReplicas)
+	ctx.Step(`^the model has "(\d+)" max replicas$`, w.SetMaxReplicas)
+	ctx.Step(`^the model has "(\d+)" replicas$`, w.SetReplicas)
 	// Model Deployments
 	ctx.Step(`^the model is applied$`, w.ApplyModel)
 	// Model Assertions
@@ -102,8 +103,8 @@ func (m *Model) IHaveAModel(model string) error {
 	return nil
 }
 
-func NewModel() *Model {
-	return &Model{model: &mlopsv1alpha1.Model{}}
+func NewModel(world *World) *Model {
+	return &Model{model: &mlopsv1alpha1.Model{}, world: world}
 }
 
 func (m *Model) SetMinReplicas(replicas int) {
@@ -115,25 +116,25 @@ func (m *Model) SetMaxReplicas(replicas int) {}
 func (m *Model) SetReplicas(replicas int) {}
 
 // ApplyModel model is aware of namespace and testsuite config and it might add extra information to the cr that the step hasn't added like namespace
-func (w *World) ApplyModel() error {
+func (m *Model) ApplyModel() error {
 
 	// retrieve current model and apply in k8s
-	err := w.KubeClient.ApplyModel(w.CurrentModel.model)
+	err := m.world.KubeClient.ApplyModel(m.world.CurrentModel.model)
 
 	if err != nil {
 		return err
 	}
 
 	// add the model to track and undo model in scenario
-	w.Models[w.CurrentModel.model.Name] = w.CurrentModel
+	m.world.Models[m.world.CurrentModel.model.Name] = m.world.CurrentModel
 	return nil
 
 }
 
-func (w *World) ModelReady() error {
+func (m *Model) ModelReady() error {
 	return nil
 }
 
-func (w *World) AssertModelStatus(status string) error {
+func (m *Model) AssertModelStatus(status string) error {
 	return nil
 }
