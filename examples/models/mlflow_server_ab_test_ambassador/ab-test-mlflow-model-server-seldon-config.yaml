@@ -9,7 +9,7 @@ spec:
     - graph:
         children: []
         implementation: MLFLOW_SERVER
-        modelUri: gs://seldon-models/mlflow/model-a-test
+        modelUri: gs://seldon-models/mlflow/model-a
         name: wines-classifier
       name: a-mlflow-deployment-dag
       replicas: 1
@@ -17,7 +17,7 @@ spec:
     - graph:
         children: []
         implementation: MLFLOW_SERVER
-        modelUri: gs://seldon-models/mlflow/model-b-test
+        modelUri: gs://seldon-models/mlflow/model-b
         name: wines-classifier
       name: b-mlflow-deployment-dag
       replicas: 1
