@@ -62,16 +62,6 @@ jobs:
         image: ${{ env.PYTHON_BASE_IMAGE}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
 
-    - name: Disk space before removing the Conda base image
-      run: df -h
-
-    - name: Clean up Docker image # After building the Python Base Wrapper image, the conda one is not needed
-      if: always()
-      run: docker rmi ${{ env.CONDA_BASE_IMAGE}}:test
-
-    - name: Disk space after removing the Conda base image
-      run: df -h
-
     - name: Install CLI tools from OpenShift Mirror
       uses: redhat-actions/openshift-tools-installer@v1
       with:
@@ -98,9 +88,15 @@ jobs:
         image: ${{ env.TFSERVING_IMAGE_TAG}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high
 
+    - name: Disk space before removing the Conda base image
+      run: df -h
+
     - name: Clean up Docker image
       if: always()
       run: docker rmi ${{ env.TFSERVING_IMAGE_TAG}}:test
+
+    - name: Disk space after removing the Conda base image
+      run: df -h
 
     - name: Build (sklearn)
       id: build-sklearn
