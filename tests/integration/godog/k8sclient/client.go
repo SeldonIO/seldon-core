@@ -21,7 +21,7 @@ type Client interface {
 
 type K8sClient struct {
 	namespace  string
-	kubeClient client.Client
+	kubeClient client.WithWatch
 }
 
 func New(namespace string) (*K8sClient, error) {
@@ -40,7 +40,7 @@ func New(namespace string) (*K8sClient, error) {
 		return nil, fmt.Errorf("failed init k8s client: %v", err)
 	}
 
-	cl, err := client.New(cfg, client.Options{Scheme: k8sScheme})
+	cl, err := client.NewWithWatch(cfg, client.Options{Scheme: k8sScheme})
 	if err != nil {
 		return nil, fmt.Errorf("failed init k8s client: %v", err)
 	}
