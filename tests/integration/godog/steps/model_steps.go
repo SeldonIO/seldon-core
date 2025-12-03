@@ -102,9 +102,13 @@ func (m *Model) IHaveAModel(model string) error {
 
 	return nil
 }
-
 func NewModel(world *World) *Model {
 	return &Model{model: &mlopsv1alpha1.Model{}, world: world}
+}
+
+func (m *Model) Reset(world *World) {
+	m.world.CurrentModel.model = &mlopsv1alpha1.Model{}
+	m.world.CurrentModel.world = world
 }
 
 func (m *Model) SetMinReplicas(replicas int) {
@@ -125,8 +129,6 @@ func (m *Model) ApplyModel() error {
 		return err
 	}
 
-	// add the model to track and undo model in scenario
-	m.world.Models[m.world.CurrentModel.model.Name] = m.world.CurrentModel
 	return nil
 
 }

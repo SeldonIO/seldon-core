@@ -11,5 +11,4 @@ type World struct {
 	//todo:  server config,seldon config and seldon runtime to be able to reconcile to starting state should we change
 	//todo: the state such as reducing replicas to 0 of scheduler to test unavailability
 	CurrentModel *Model
-	Models       map[string]*Model
 }

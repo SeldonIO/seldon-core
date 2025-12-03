@@ -10,9 +10,25 @@ import (
 )
 
 type SuiteDeps struct {
-	K8sClient *k8sclient.K8sClient
+	K8sClient    *k8sclient.K8sClient
+	WatcherStore k8sclient.WatcherStorage
 }
 
+// might have to pass the suit struct and other config with closures to avoid having global vars
+// todo: do this once the config and overall layout is better defined
+//
+//	func () {
+//		status := godog.TestSuite{
+//			Name: "godogs",
+//			TestSuiteInitializer: func(ts *godog.TestSuiteContext) {
+//				scenario.InitializeTestSuite(ts, deps)
+//			},
+//			ScenarioInitializer: func(sc *godog.ScenarioContext) {
+//				scenario.InitializeScenario(sc, deps)
+//			},
+//			Options: &opts,
+//		}.Run()
+//	}
 var suiteDeps SuiteDeps
 
 func InitializeTestSuite(ctx *godog.TestSuiteContext) {
@@ -32,12 +48,6 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 	ctx.AfterSuite(func() {
 		// e.g. clean namespace, close clients if needed
 	})
-	ctx.ScenarioContext().StepContext().Before(func(ctx context.Context, st *godog.Step) (context.Context, error) {
-		return ctx, nil
-	})
-	ctx.ScenarioContext().StepContext().After(func(ctx context.Context, st *godog.Step, status godog.StepResultStatus, err error) (context.Context, error) {
-		return ctx, nil
-	})
 }
 
 func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
@@ -45,7 +55,6 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 	world := &steps.World{
 		KubeClient: suiteDeps.K8sClient,
 		// initialise any other long-lived deps here, e.g. loggers, config, etc.
-		Models: make(map[string]*steps.Model),
 	}
 
 	world.CurrentModel = steps.NewModel(world)
@@ -56,9 +65,10 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 			return ctx, fmt.Errorf("error when deleting models on before steps: %w", err)
 		}
 
-		// Reset scenario-level state
+		// Create a fresh model for THIS scenario
+		world.CurrentModel.Reset(world)
 
-		world.Models = make(map[string]*steps.Model)
+		// Reset scenario-level state
 
 		return ctx, nil
 	})
