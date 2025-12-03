@@ -32,7 +32,7 @@ test: type_check
 
 .PHONY: lint
 lint:
-	black .
+	poetry run black .
 
 #
 # Local Run

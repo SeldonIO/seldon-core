@@ -85,7 +85,9 @@ class TestSeldonHttpModel(AsyncHTTPTestCase):
                     event, response.headers, response.body, json.loads
                 )
             except Exception as e:
-                assert False, f"Failed to unmarshall data with error: {type(e).__name__}('{e}')"
+                assert (
+                    False
+                ), f"Failed to unmarshall data with error: {type(e).__name__}('{e}')"
 
             # assert cloud event properties have been set correctly in response
             self.assertEqual(event.Data(), expectedResponse)
@@ -94,7 +96,9 @@ class TestSeldonHttpModel(AsyncHTTPTestCase):
             self.assertEqual(event.ContentType(), "application/json")
             self.assertEqual(event.EventID(), "1234")
             self.assertEqual(event.CloudEventVersion(), "1.0")
-            self.assertEqual(response.body.decode("utf-8"), json.dumps(expectedResponse))
+            self.assertEqual(
+                response.body.decode("utf-8"), json.dumps(expectedResponse)
+            )
 
             # assert requests have been made with the correct headers and data
             self.assertEqual(m.request_history[0].json(), expectedResponse)
@@ -152,7 +156,9 @@ class TestKFservingV2HttpModel(AsyncHTTPTestCase):
             )
             self.assertEqual(response.code, 200)
             expectedResponse = DummyModel.getResponse().data
-            self.assertEqual(response.body.decode("utf-8"), json.dumps(expectedResponse))
+            self.assertEqual(
+                response.body.decode("utf-8"), json.dumps(expectedResponse)
+            )
             self.assertEqual(m.request_history[0].json(), expectedResponse)
             headers: Dict = m.request_history[0]._request.headers
             self.assertEqual(headers["ce-source"], self.eventSource)

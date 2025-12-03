@@ -32,7 +32,11 @@ def _load_class_module(module_path: str):
 
 class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
     def __init__(
-        self, name: str, storage_uri: str, elasticsearch_uri: Optional[str] = None, model=None
+        self,
+        name: str,
+        storage_uri: str,
+        elasticsearch_uri: Optional[str] = None,
+        model=None,
     ):
         """
         Custom Metrics Model
@@ -61,7 +65,9 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
                     f"Elasticsearch URI provided but DEFAULT_LABELS not provided: {DEFAULT_LABELS}"
                 )
             else:
-                self.elasticsearch_client = Elasticsearch(elasticsearch_uri,verify_certs=False)
+                self.elasticsearch_client = Elasticsearch(
+                    elasticsearch_uri, verify_certs=False
+                )
 
     def load(self):
         """
@@ -80,7 +86,9 @@ class CustomMetricsModel(CEModel):  # pylint:disable=c-extension-no-member
 
         self.ready = True
 
-    def process_event(self, inputs: Union[List, Dict], headers: Dict) -> Optional[ModelResponse]:
+    def process_event(
+        self, inputs: Union[List, Dict], headers: Dict
+    ) -> Optional[ModelResponse]:
         """
         Process the event and return Alibi Detect score
 
