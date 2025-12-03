@@ -1,5 +1,7 @@
 # seldon-core-analytics
 
+> **:exclamation: This Helm Chart is deprecated!**
+
 ![Version: 1.19.0-dev](https://img.shields.io/static/v1?label=Version&message=1.19.0--dev&color=informational&style=flat-square)
 
 Prometheus and Grafana installation with a basic Grafana dashboard showing
