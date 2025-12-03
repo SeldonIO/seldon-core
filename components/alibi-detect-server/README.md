@@ -7,13 +7,18 @@ Extends the [Seldon CloudEvents Server](https://github.com/SeldonIO/seldon-model
 In order to build and test integration with the Alibi Detect library, ensure to execute the following commands after pulling changes:
 
 ```bash
-
 make dev_install
 make test
-
 ```
 
 This will install the Alibi Detect library in the development environment and run the tests.
+
+Ensure you have `rclone` installed to download the test models from Google Cloud Storage. Your `rclone.conf` file should look like this:
+```
+[gs]
+type = google cloud storage
+anonymous = true
+```
 
 There is also a possibility to quickly run sanity checks in this way:
 
