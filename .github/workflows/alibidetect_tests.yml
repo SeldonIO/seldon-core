@@ -2,28 +2,33 @@ name: V1 Alibi Detect Tests
 
 on:
   push:
-    branches: [ master ]
+    branches: "*" # TODO: return [master]
   pull_request:
-    # TODO revert before merge to master
-    branches: [ fix/core-1-CVEs ]
+    branches: "*" # TODO: return [master]
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.8
+      - name: Free up disk space (android, haskell, dotnet)
+        run: |
+          sudo rm -rf /usr/local/lib/android || true
+          sudo rm -rf /opt/ghc || true
+          sudo rm -rf /usr/share/dotnet || true
+          df -h
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.12
         uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          python-version: '3.12'
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.1.15
+          version: 2.1.2
           virtualenvs-create: false
       - name: Install dependencies
         run: |
-          pip install --upgrade pip setuptools
+          python -m pip install --upgrade pip setuptools
           make -C components/alibi-detect-server dev_install
       - name: Lint
         run: |
@@ -32,24 +37,30 @@ jobs:
   python-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Free up disk space (android, haskell, dotnet)
+        run: |
+          sudo rm -rf /usr/local/lib/android || true
+          sudo rm -rf /opt/ghc || true
+          sudo rm -rf /usr/share/dotnet || true
+          df -h
+      - uses: actions/checkout@v4
       - name: Install Rclone
         run: |
-          wget https://downloads.rclone.org/v1.62.2/rclone-v1.62.2-linux-amd64.zip
-          unzip rclone-v1.62.2-linux-amd64.zip
-          mv rclone-v1.62.2-linux-amd64/rclone /usr/local/bin/rclone
-      - name: Set up Python 3.8
+          wget https://downloads.rclone.org/v1.71.2/rclone-v1.71.2-linux-amd64.zip
+          unzip rclone-v1.71.2-linux-amd64.zip
+          mv rclone-v1.71.2-linux-amd64/rclone /usr/local/bin/rclone
+      - name: Set up Python 3.12
         uses: actions/setup-python@v4
         with:
-          version: 1.1.15
-          python-version: 3.8
+          python-version: '3.12'
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
+          version: 2.1.2
           virtualenvs-create: false
       - name: Install dependencies
         run: |
-          pip install --upgrade pip setuptools
+          python -m pip install --upgrade pip setuptools
           make -C components/alibi-detect-server dev_install
       - name: Test
         run: |

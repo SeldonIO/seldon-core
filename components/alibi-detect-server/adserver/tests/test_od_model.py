@@ -45,7 +45,7 @@ class TestODModel(TestCase):
         req = [1, 2]
         headers = {}
         res: ModelResponse = od_model.process_event(req, headers)
-        self.assert_(res is not None)
+        self.assertIsNotNone(res)
         self.assertEqual(res.data["data"]["is_outlier"], 0)
 
     def test_no_return_instance_score(self):
@@ -58,5 +58,5 @@ class TestODModel(TestCase):
         req = [1, 2]
         headers = {HEADER_RETURN_INSTANCE_SCORE: "false"}
         res: ModelResponse = ad_model.process_event(req, headers)
-        self.assert_(res is not None)
+        self.assertIsNotNone(res)
         self.assertEqual(res.data["data"]["is_outlier"], expect_return_is_outlier)

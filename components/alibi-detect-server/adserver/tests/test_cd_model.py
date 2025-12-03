@@ -1,8 +1,9 @@
 from alibi_detect.base import BaseDetector, concept_drift_dict
 import numpy as np
-from unittest import TestCase
+from unittest import TestCase, skipUnless
 from adserver.cd_model import AlibiDetectConceptDriftModel
 from typing import Dict
+from adserver.base.storage import rclone
 
 
 class DummyCDModel(BaseDetector):
@@ -55,6 +56,7 @@ class TestDummyCDModel(TestCase):
         self.assertEqual(res, None)
 
 
+@skipUnless(rclone is not None, "rclone binary not available")
 class TestTextDriftModel(TestCase):
     def test_basic(self):
         model = DummyCDModel()
