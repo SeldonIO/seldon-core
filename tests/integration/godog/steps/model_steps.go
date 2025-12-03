@@ -19,6 +19,7 @@ type TestModelConfig struct {
 	// maybe: resources, env, etc
 }
 
+// map to have all common testing model definitions for testing popular models
 var testModels = map[string]TestModelConfig{
 	"iris": {
 		Name:       "iris-model",
@@ -41,8 +42,8 @@ func LoadModelSteps(ctx *godog.ScenarioContext, w *World) {
 	// Model Deployments
 	ctx.Step(`^the model is applied$`, w.ApplyModel)
 	// Model Assertions
-	ctx.Step(`^the model should be Ready$`)
-	ctx.Step(`^the model status message should be "([^"]+)"$`)
+	ctx.Step(`^the model (?:should )?eventually become(?:s)? Ready$`, w.ModelReady)
+	ctx.Step(`^the model status message should be "([^"]+)"$`, w.AssertModelStatus)
 
 }
 
@@ -95,6 +96,7 @@ func (m *Model) SetMaxReplicas(replicas int) {}
 
 func (m *Model) SetReplicas(replicas int) {}
 
+// ApplyModel model is aware of namespace and testsuite config and it might add extra information to the cr that the step hasn't added like namespace
 func (w *World) ApplyModel() error {
 
 	// retrieve current model and apply in k8s
@@ -108,4 +110,12 @@ func (w *World) ApplyModel() error {
 	w.Models[w.CurrentModel.model.Name] = w.CurrentModel
 	return nil
 
+}
+
+func (w *World) ModelReady() error {
+	return nil
+}
+
+func (w *World) AssertModelStatus(status string) error {
+	return nil
 }

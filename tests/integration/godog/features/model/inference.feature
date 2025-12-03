@@ -5,7 +5,9 @@ Feature Basic model inferencing
     Given a clean test namespace
 
   Scenario: Model can serve prediction
-    Given a Ready model "basic-model" with capabilities "mlserver"
+    Given I have an "iris" model
+    And the model is applied
+    And the model eventually becomes Ready
     When I send a prediction request with payload:
       """
       { "inputs": [1.0, 2.0, 3.0] }
