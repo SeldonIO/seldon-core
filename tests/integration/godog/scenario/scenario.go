@@ -35,17 +35,24 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 	// Create long-lived deps here
 	k8sClient, err := k8sclient.New("seldon-mesh")
 	if err != nil {
-		// decide how hard you want to fail here:
 		panic(fmt.Errorf("failed to create k8s client: %w", err))
 	}
 
+	watchStore, err := k8sclient.NewWatcherStore("seldon-mesh", k8sclient.CRDLabels, k8sClient.KubeClient)
+	if err != nil {
+		panic(fmt.Errorf("failed to create k8s watch store: %w", err))
+	}
+
 	suiteDeps.K8sClient = k8sClient
+	suiteDeps.WatcherStore = watchStore
 
 	ctx.BeforeSuite(func() {
+		suiteDeps.WatcherStore.Start()
 		// e.g. create namespace, apply CRDs, etc.
 	})
 
 	ctx.AfterSuite(func() {
+		suiteDeps.WatcherStore.Stop()
 		// e.g. clean namespace, close clients if needed
 	})
 }
