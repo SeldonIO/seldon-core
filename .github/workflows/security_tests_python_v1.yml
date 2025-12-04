@@ -50,7 +50,7 @@ jobs:
     - name: Build (Base Wrapper)
       working-directory: ./wrappers/s2i/python
       run: |
-        make BASE_IMAGE=${{ env.CONDA_BASE_IMAGE}} VERSION=test IMAGE_NAME=${{ env.PYTHON_BASE_IMAGE}} docker-build PYTHON_VERSION=3.12.12 CONDA_VERSION=25.3.1
+        make CONDA_BASE_IMAGE=${{ env.CONDA_BASE_IMAGE}} VERSION=test IMAGE_NAME=${{ env.PYTHON_BASE_IMAGE}} docker-build PYTHON_VERSION=3.12.12 CONDA_VERSION=25.3.1 BASE_IMAGE=$${{ env.CONDA_BASE_IMAGE }}
         docker save -o /tmp/python-base-image.tar ${{ env.PYTHON_BASE_IMAGE}}:test
     - name: Scan Python base image
       id: scan-python-base
