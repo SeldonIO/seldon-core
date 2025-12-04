@@ -1,9 +1,12 @@
 package steps
 
 import (
+	"context"
 	"fmt"
+	"time"
 
 	"github.com/cucumber/godog"
+	"github.com/seldonio/seldon-core/godog/scenario/assertions"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -134,7 +137,16 @@ func (m *Model) ApplyModel() error {
 }
 
 func (m *Model) ModelReady() error {
-	return nil
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	// m.world.CurrentModel.model is assumed to be *mlopsv1alpha1.Model
+	// which implements runtime.Object, so no cast needed.
+	return m.world.WatcherStorage.WaitFor(
+		ctx,
+		m.world.CurrentModel.model,
+		assertions.ModelReady,
+	)
 }
 
 func (m *Model) AssertModelStatus(status string) error {

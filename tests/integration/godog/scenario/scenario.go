@@ -60,7 +60,8 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 	// Create the world with long-lived deps once per scenario context
 	world := &steps.World{
-		KubeClient: suiteDeps.K8sClient,
+		KubeClient:     suiteDeps.K8sClient,
+		WatcherStorage: suiteDeps.WatcherStore,
 		// initialise any other long-lived deps here, e.g. loggers, config, etc.
 	}
 
