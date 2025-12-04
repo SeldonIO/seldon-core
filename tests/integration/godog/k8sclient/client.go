@@ -21,9 +21,14 @@ type Client interface {
 
 type K8sClient struct {
 	namespace  string
-	kubeClient client.WithWatch
+	KubeClient client.WithWatch
 }
 
+var CRDLabels = map[string]string{
+	"test-suite": "godog",
+}
+
+// New todo: separate k8s client init and pass to new
 func New(namespace string) (*K8sClient, error) {
 	k8sScheme := runtime.NewScheme()
 
@@ -47,7 +52,7 @@ func New(namespace string) (*K8sClient, error) {
 
 	return &K8sClient{
 		namespace:  namespace,
-		kubeClient: cl,
+		KubeClient: cl,
 	}, nil
 }
 
@@ -64,8 +69,8 @@ func (k8s *K8sClient) ApplyModel(model *mlopsv1alpha1.Model) error {
 		model.Labels = map[string]string{}
 	}
 
-	// Add your label
-	model.Labels["test-suite"] = "godog"
+	// Add label
+	model.Labels = CRDLabels
 
 	existing := &mlopsv1alpha1.Model{}
 	key := client.ObjectKey{
@@ -73,10 +78,10 @@ func (k8s *K8sClient) ApplyModel(model *mlopsv1alpha1.Model) error {
 		Name:      model.Name,
 	}
 
-	err := k8s.kubeClient.Get(ctx, key, existing)
+	err := k8s.KubeClient.Get(ctx, key, existing)
 	if apierrors.IsNotFound(err) {
 		// Doesn't exist → create
-		return k8s.kubeClient.Create(ctx, model)
+		return k8s.KubeClient.Create(ctx, model)
 	}
 	if err != nil {
 		// Some other error
@@ -85,13 +90,13 @@ func (k8s *K8sClient) ApplyModel(model *mlopsv1alpha1.Model) error {
 
 	// Exists → preserve ResourceVersion and update
 	model.ResourceVersion = existing.ResourceVersion
-	return k8s.kubeClient.Update(ctx, model)
+	return k8s.KubeClient.Update(ctx, model)
 }
 
 func (k8s *K8sClient) DeleteGodogTestModels(ctx context.Context) error {
 
 	list := &mlopsv1alpha1.ModelList{}
-	err := k8s.kubeClient.List(ctx, list,
+	err := k8s.KubeClient.List(ctx, list,
 		client.InNamespace(k8s.namespace),
 		client.MatchingLabels{"test-suite": "godog"},
 	)
@@ -102,7 +107,7 @@ func (k8s *K8sClient) DeleteGodogTestModels(ctx context.Context) error {
 	for _, m := range list.Items {
 		// Copy because Delete expects a pointer
 		model := m
-		if err := k8s.kubeClient.Delete(ctx, &model); err != nil {
+		if err := k8s.KubeClient.Delete(ctx, &model); err != nil {
 			return err
 		}
 	}
