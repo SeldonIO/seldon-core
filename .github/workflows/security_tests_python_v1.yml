@@ -49,7 +49,7 @@ jobs:
     - name: Build (Base Wrapper)
       working-directory: ./wrappers/s2i/python
       run: |
-        make CONDA_BASE_IMAGE=${{ env.CONDA_BASE_IMAGE}} VERSION=test IMAGE_NAME=${{ env.PYTHON_BASE_IMAGE}} docker-build PYTHON_VERSION=3.12.12 CONDA_VERSION=25.3.1
+        make BASE_IMAGE=${{ env.CONDA_BASE_IMAGE}} VERSION=test IMAGE_NAME=${{ env.PYTHON_BASE_IMAGE}} docker-build PYTHON_VERSION=3.12.12 CONDA_VERSION=25.3.1
     - name: Scan Python base image
       id: scan-python-base
       uses: snyk/actions/docker@master
@@ -60,7 +60,7 @@ jobs:
         image: ${{ env.PYTHON_BASE_IMAGE}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
 
-    - name: Install CLI tools from OpenShift Mirror
+    - name: Install s2i CLI - needed for building the server images
       uses: redhat-actions/openshift-tools-installer@v1
       with:
         github_pat: ${{ github.token }}
