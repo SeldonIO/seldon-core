@@ -21,6 +21,8 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/internal"
 )
 
+// +genclient
+
 // ModelSpec defines the desired state of Model
 type ModelSpec struct {
 	InferenceArtifactSpec `json:",inline"`

@@ -33,18 +33,13 @@ var testModels = map[string]TestModelConfig{
 	},
 }
 
-func LoadModelSteps(ctx *godog.ScenarioContext, w *World) {
+func LoadDomSteps(ctx *godog.ScenarioContext, w *World) {
 	// Model Operations
-	ctx.Step(`^I have an? "([^"]+)" model$`, w.CurrentModel.IHaveAModel)
-	ctx.Step(`^the model has "(\d+)" min replicas$`, w.CurrentModel.SetMinReplicas)
-	ctx.Step(`^the model has "(\d+)" max replicas$`, w.CurrentModel.SetMaxReplicas)
-	ctx.Step(`^the model has "(\d+)" replicas$`, w.CurrentModel.SetReplicas)
-	// Model Deployments
-	ctx.Step(`^the model is applied$`, w.ApplyModel)
-	// Model Assertions
-	ctx.Step(`^the model (?:should )?eventually become(?:s)? Ready$`, w.ModelReady)
-	ctx.Step(`^the model status message should be "([^"]+)"$`, w.AssertModelStatus)
-
+	ctx.Step(`^I deploy model spec: "([^"]+)"$`, w.deployModelSpec)
+	ctx.Step(`^the model "([^"]+)" should eventually become "([^"]+)" with timeout "([^"]+)"$`, w.deployModelSpec)
+	ctx.Step(`^send inference request with timeout "([^"]+)" to url "([^"]+)" with header "([^"]+)" with payload: "([^"]+)"$`, w.deployModelSpec)
+	ctx.Step(`^expect http response status code "(^[+-]?\d+)"$`, w.deployModelSpec)
+	ctx.Step(`^expect http response body to contain JSON: "([^"]+)"$`, w.deployModelSpec)
 }
 
 func (m *Model) IHaveAModel(model string) error {

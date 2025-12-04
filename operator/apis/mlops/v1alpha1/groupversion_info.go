@@ -17,6 +17,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
 
+// +genclient
+
 var (
 	// GroupVersion is group version used to register these objects
 	GroupVersion = schema.GroupVersion{Group: "mlops.seldon.io", Version: "v1alpha1"}

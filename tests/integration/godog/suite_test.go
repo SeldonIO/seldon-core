@@ -13,7 +13,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 
 	var world *steps.World
 	//todo: init world
-	world = &steps.World{}
+	world = steps.NewWorld("seldon-mesh")
 
 	// Before prep the state of world however clients need to be long live could delete all crs that match a test label before running a test
 	ctx.Before(func(ctx context.Context, scenario *godog.Scenario) (context.Context, error) {
@@ -26,7 +26,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		return ctx, nil
 	})
 
-	steps.LoadModelSteps(ctx, world)
+	steps.LoadDomSteps(ctx, world)
 	//todo load other steps such as pipeline, experiment steps etc
 }
 

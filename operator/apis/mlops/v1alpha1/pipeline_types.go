@@ -18,6 +18,8 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
+// +genclient
+
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:shortName=mlp

@@ -21,12 +21,18 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
 type ResourceType string
 
 const (
 	ModelResourceType    ResourceType = "model"
 	PipelineResourceType ResourceType = "pipeline"
 )
+
+//+genclient
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ExperimentSpec defines the desired state of Experiment
 type ExperimentSpec struct {
@@ -36,15 +42,24 @@ type ExperimentSpec struct {
 	ResourceType ResourceType          `json:"resourceType,omitempty"`
 }
 
+//+genclient
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
 type ExperimentCandidate struct {
 	Name   string `json:"name"`
 	Weight uint32 `json:"weight"`
 }
 
+//+genclient
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
 type ExperimentMirror struct {
 	Name    string `json:"name"`
 	Percent uint32 `json:"percent"`
 }
+
+//+genclient
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ExperimentStatus defines the observed state of Experiment
 type ExperimentStatus struct {

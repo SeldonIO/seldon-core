@@ -22,6 +22,8 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/pkg/constants"
 )
 
+// +genclient
+
 const (
 	SchedulerName       = "seldon-scheduler"
 	EnvoyName           = "seldon-envoy"

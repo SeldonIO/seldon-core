@@ -15,6 +15,8 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
+// +genclient
+
 // PodSpec is a description of a pod.
 // Modifies and in future limits a v1.PodSpec.
 // Optional containers.

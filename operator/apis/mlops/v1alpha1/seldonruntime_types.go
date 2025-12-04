@@ -16,6 +16,8 @@ import (
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
+// +genclient
+
 // SeldonRuntimeSpec defines the desired state of SeldonRuntime
 type SeldonRuntimeSpec struct {
 	SeldonConfig string              `json:"seldonConfig"`
