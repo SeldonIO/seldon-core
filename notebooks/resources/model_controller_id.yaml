@@ -11,16 +11,13 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/mock_classifier:1.0
+        - image: seldonio/mock_classifier:1.19.0-dev
           imagePullPolicy: IfNotPresent
           name: classifier
           resources:
             requests:
               memory: 1Mi
         terminationGracePeriodSeconds: 1
-        volumes:
-          - name: myempty
-            emptyDir: {}
     graph:
       children: []
       endpoint:
