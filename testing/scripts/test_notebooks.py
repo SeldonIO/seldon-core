@@ -31,9 +31,9 @@ class TestNotebooks(object):
     # def test_server_examples(self):
     #     create_and_run_script("../../notebooks", "server_examples")
 
-    # #
-    # # Ambassador
-    # #
+    #
+    # Ambassador
+    #
 
     def test_ambassador_canary(self):
         create_and_run_script("../../examples/ambassador/canary", "ambassador_canary")
@@ -59,25 +59,25 @@ class TestNotebooks(object):
             )
             raise e
 
-    # #
-    # # Misc
-    # #
+    #
+    # Misc
+    #
 
-    # # Commenting out as seems to be flaky and blocks forever sometimes
-    # # def test_tracing(self):
-    # #    create_and_run_script("../../examples/models/tracing", "tracing")
+    # Commenting out as seems to be flaky and blocks forever sometimes
+    # def test_tracing(self):
+    #    create_and_run_script("../../examples/models/tracing", "tracing")
 
-    # # Disabling prometheus tests temporarily as they seem to be flaky
-    # # def test_metrics(self):
-    # #     try:
-    # #         create_and_run_script("../../examples/models/metrics", "metrics")
-    # #     except CalledProcessError as e:
-    # #         run(
-    # #             "helm uninstall -n seldon-system prometheus",
-    # #             shell=True,
-    # #             check=False,
-    # #         )
-    # #         raise e
+    # Disabling prometheus tests temporarily as they seem to be flaky
+    # def test_metrics(self):
+    #     try:
+    #         create_and_run_script("../../examples/models/metrics", "metrics")
+    #     except CalledProcessError as e:
+    #         run(
+    #             "helm uninstall -n seldon-system prometheus",
+    #             shell=True,
+    #             check=False,
+    #         )
+    #         raise e
 
     def test_metadata(self):
         create_and_run_script("../../examples/models/metadata", "metadata")
