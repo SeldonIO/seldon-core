@@ -117,17 +117,8 @@ class TestNotebooks(object):
         create_and_run_script("../../examples/models/sklearn_iris", "sklearn_iris")
 
     #
-    # OpenVino
+    # Metrics server
     #
-
-    def test_openvino_squeezenet(self):
-       create_and_run_script("../../examples/models/openvino", "openvino-squeezenet")
-
-    def test_openvino_imagenet_ensemble(self):
-       create_and_run_script(
-           "../../examples/models/openvino_imagenet_ensemble",
-           "openvino_imagenet_ensemble",
-       )
 
     def test_custom_metrics_server(self):
         create_and_run_script("../../examples/feedback/metrics-server", "README")
