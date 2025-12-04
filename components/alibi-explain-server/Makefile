@@ -18,7 +18,6 @@ get_apis:
 	$(MAKE) -C ${SELDON_CORE_DIR}/proto/tensorflow clean
 
 build_apis: get_apis
-	pip install -r requirements-apis.txt
 	cd alibiexplainer && python \
 		-m grpc.tools.protoc \
 		-I./ \
@@ -78,7 +77,6 @@ clean:
 #
 # Test Tabular Explanations
 #
-
 test_models/sklearn/iris:
 	mkdir -p test_models/sklearn/iris
 	gsutil cp -r gs://seldon-models/v1.11.0-dev/sklearn/iris test_models/sklearn
@@ -88,7 +86,7 @@ test_models/explainers/anchor_tabular:
 	python tests/make_test_models.py --model anchor_tabular --model_dir test_models/explainers/anchor_tabular
 
 anchor_tabular_model: test_models/sklearn/iris
-	docker run -it --rm --name "sklearnserver"  -p 9000:9000 -v ${PWD}/test_models:/models -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"/models/sklearn/iris"}]' ${REPO}/sklearnserver:${VERSION}
+	docker run -it --rm --name "sklearnserver"  -p 9000:9000 -v ${PWD}/test_models:/models -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"/models/sklearn/iris"}]' ${DOCKER_REGISTRY}/sklearnserver:${VERSION}
 
 anchor_tabular_predict:
 	curl -d '{"data": {"ndarray":[[5.964, 4.006, 2.081, 1.031]]}}'    -X POST http://localhost:9000/api/v1.0/predictions    -H "Content-Type: application/json"
@@ -106,15 +104,12 @@ anchor_tabular_explain:
 #
 # Test Text Explanations
 #
-
-
 test_models/sklearn/moviesentiment:
 	mkdir -p test_models/sklearn
 	gsutil cp -r gs://seldon-models/sklearn/moviesentiment_sklearn_0.24.2 test_models/sklearn
 
 anchor_text_model: test_models/sklearn/moviesentiment
-	docker run -it --rm --name "sklearnserver"  -p 9000:9000 -v ${PWD}/test_models:/models -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"/models/sklearn/moviesentiment_sklearn_0.24.2"}]' ${REPO}/sklearnserver:${VERSION}
-
+	docker run -it --rm --name "sklearnserver"  -p 9000:9000 -v ${PWD}/test_models:/models -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"/models/sklearn/moviesentiment_sklearn_0.24.2"}]' ${DOCKER_REGISTRY}/sklearnserver:${VERSION}
 
 anchor_text_predict:
 	curl -d '{"data": {"ndarray":["a visually exquisite but narratively opaque and emotionally vapid experience of style and mystification"]}}'    -X POST http://localhost:9000/api/v1.0/predictions    -H "Content-Type: application/json"
@@ -132,7 +127,6 @@ anchor_text_explain:
 #
 # Test Image Explanation
 #
-
 test_models/tfserving/cifar10/resnet32:
 	mkdir -p test_models/tfserving/cifar10
 	gsutil cp -r gs://seldon-models/tfserving/cifar10/resnet32 test_models/tfserving/cifar10
@@ -144,10 +138,8 @@ test_models/explainers/anchor_image:
 anchor_images_model: test_models/tfserving/cifar10/resnet32
 	docker run --name tfserver -it --rm  -p 8501:8501 -p 8500:8500 -v "${PWD}/test_models/tfserving/cifar10:/models" -e MODEL_NAME=resnet32 tensorflow/serving
 
-
 anchor_images_predict:
 	curl -d @./tests/data/input.json  -X POST http://localhost:8501/v1/models/resnet32:predict    -H "Content-Type: application/json"
-
 
 anchor_images: test_models/explainers/anchor_image
 	python -m alibiexplainer --model_name resnet32 --protocol tensorflow.http --storage_uri "${PWD}/test_models/explainers/anchor_image" --predictor_host localhost:8501 AnchorImages
@@ -162,8 +154,6 @@ anchor_images_explain:
 #
 # Test Kernel Shap Explanation
 #
-
-
 test_models/sklearn/wine/model-py36-0.23.2:
 	mkdir -p test_models/sklearn/wine
 	gsutil cp -r gs://seldon-models/sklearn/wine/model-py36-0.23.2 test_models/sklearn/wine
