@@ -73,8 +73,8 @@ jobs:
       with:
         name: base-images
         path: |
-          conda-image.tar
-          python-image.tar
+          /tmp/conda-image.tar
+          /tmp/python-base-image.tar
 
   build-servers:
     needs: build-upload-scan-base-images
