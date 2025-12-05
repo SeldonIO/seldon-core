@@ -166,6 +166,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+
+    # Download Conda base image
+    - uses: actions/download-artifact@v4
+      with:
+        name: conda-base-image
+    # Download Python Wrapper image
+    - uses: actions/download-artifact@v4
+      with:
+        name: python-wrapper-image
+    - name: Load images
+      run: |
+        docker load -i conda-image.tar
+        docker load -i python-wrapper-image.tar
+
     - name: Build Alibi Explain
       id: build-alibi-explain
       working-directory: ./components/alibi-explain-server
@@ -199,6 +213,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Download Conda base image
+      - uses: actions/download-artifact@v4
+        with:
+          name: conda-base-image
+      # Download Python Wrapper image
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-wrapper-image
+      - name: Load images
+        run: |
+          docker load -i conda-image.tar
+          docker load -i python-wrapper-image.tar
+
       - name: Build Alibi Detect
         id: build-alibi-detect
         working-directory: ./components/alibi-detect-server
