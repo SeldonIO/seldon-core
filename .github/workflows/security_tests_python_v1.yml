@@ -167,6 +167,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Free up disk space (android, haskell, dotnet)
+      run: |
+        sudo rm -rf /usr/local/lib/android || true
+        sudo rm -rf /opt/ghc || true
+        sudo rm -rf /usr/share/dotnet || true
+        df -h
+
     # Download Conda base image
     - uses: actions/download-artifact@v4
       with:
@@ -213,6 +220,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Free up disk space (android, haskell, dotnet)
+        run: |
+          sudo rm -rf /usr/local/lib/android || true
+          sudo rm -rf /opt/ghc || true
+          sudo rm -rf /usr/share/dotnet || true
+          df -h
 
       # Download Conda base image
       - uses: actions/download-artifact@v4
