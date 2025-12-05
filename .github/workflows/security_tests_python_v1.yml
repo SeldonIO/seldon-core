@@ -114,8 +114,6 @@ jobs:
           - sklearnserver
           - mlflowserver
           - xgboostserver
-    outputs:
-      ${{ matrix.server }}_result: ${{ steps.server-scan-out.outputs.scan_ok }}
     steps:
     - uses: actions/checkout@v4
 
@@ -155,14 +153,15 @@ jobs:
       with:
         image: ${{ env.SERVER_IMAGE_TAG}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high
-    - name: Set scan output
-      id: server-scan-out
-      run: |
-        if [ "${{ steps.scan.outcome }}" = "success" ]; then
-          echo "scan_ok=true" >> $GITHUB_OUTPUT
-        else
-          echo "scan_ok=false" >> $GITHUB_OUTPUT
-        fi
+
+    - name: Save scan output to file
+      run: echo "${{ matrix.server }}_RESULT=${{ steps.scan.outcome }}" > "report-${{ matrix.server }}.txt"
+
+    - name: Upload file
+      uses: actions/upload-artifact@v4
+      with:
+        name: report-${{ matrix.server }}
+        path: report-${{ matrix.server }}.txt
 
   verify-scans:
     needs: [ build-upload-scan-base-images, build-servers]
@@ -170,6 +169,12 @@ jobs:
     if: always()
 
     steps:
+    - name: Download Snyk results for servers
+      uses: actions/download-artifact@v4
+      with:
+        pattern: report-*.txt
+        merge-multiple: true
+
     - name: Fail if any scan failed
       run: |
         echo "Checking scan results..."
@@ -178,23 +183,14 @@ jobs:
         base_python=${{ needs.build-upload-scan-base-images.outputs.python_snyk_result }}
         echo "Base: conda=$base_conda python=$base_python"
         
-        tfserving_proxy = ${{ needs.build-servers.outputs['tfserving_proxy_result'] }}
-        sklearnserver = ${{ needs.build-servers.outputs['sklearnserver'] }}
-        mlflowserver = ${{ needs.build-servers.outputs['mlflowserver'] }}
-        xgboostserver = ${{ needs.build-servers.outputs['xgboostserver'] }}
-        
         base_fails=0
         if [ "$base_conda" = "false" ]; then base_fails=$((base_fails+1)); fi
         if [ "$base_python" = "false" ]; then base_fails=$((base_fails+1)); fi
         echo "Base failures: $base_fails"
         
+        cat report-*
+        
         server_fails=0
-        if [ "tfserving_proxy" = "false" ]; then server_fails=$((server_fails+1)); fi
-        if [ "sklearnserver" = "false" ]; then server_fails=$((server_fails+1)); fi
-        if [ "mlflowserver" = "false" ]; then server_fails=$((server_fails+1)); fi
-        if [ "xgboostserver" = "false" ]; then server_fails=$((server_fails+1)); fi
-        echo "Server failures: $server_fails"
-          
         total_fails=$((server_fails + base_fails))
           
         if [ "$total_fails" -gt 0 ]; then
