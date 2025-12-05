@@ -107,7 +107,7 @@ jobs:
     needs: build-upload-scan-base-images
     runs-on: ubuntu-latest
     outputs:
-      matrix_output: ${{ toJson(matrix) }}
+      scan_ok: ${{ steps.server-scan-out.outputs.scan_ok }}
     strategy:
       fail-fast: false
       matrix:
