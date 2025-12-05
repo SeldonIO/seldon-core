@@ -104,8 +104,8 @@ jobs:
         source: "github"
         s2i: "latest"
 
-    - name: Build ${{ matrix.server}}
-      id: build-${{ matrix.server }}
+    - name: Build server
+      id: build-server
       continue-on-error: true
       working-directory: ./servers/${{ matrix.server }}
       run: |
