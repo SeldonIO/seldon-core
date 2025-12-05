@@ -106,8 +106,6 @@ jobs:
   build-servers:
     needs: build-upload-scan-base-images
     runs-on: ubuntu-latest
-    outputs:
-      ${{ matrix.server }}_result: ${{ steps.server-scan-out.outputs.scan_ok }}
     strategy:
       fail-fast: false
       matrix:
@@ -116,6 +114,8 @@ jobs:
           - sklearnserver
           - mlflowserver
           - xgboostserver
+    outputs:
+      ${{ matrix.server }}_result: ${{ steps.server-scan-out.outputs.scan_ok }}
     steps:
     - uses: actions/checkout@v4
 
