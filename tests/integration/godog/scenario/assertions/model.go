@@ -26,3 +26,53 @@ func ModelReady(obj runtime.Object) (bool, error) {
 
 	return false, nil
 }
+
+//func ModelReadyMessageCondition(expectedMessage string) k8sclient.ConditionFunc {
+//	return func(obj runtime.Object) (bool, error) {
+//		if obj == nil {
+//			return false, nil
+//		}
+//
+//		model, ok := obj.(*mlopsv1alpha1.Model)
+//		if !ok {
+//			return false, fmt.Errorf("unexpected type %T, expected *mlopsv1alpha1.Model", obj)
+//		}
+//
+//		for _, c := range model.Status.Conditions {
+//			if c.Type == "Ready" && c.Status == corev1.ConditionTrue {
+//				// Check message
+//				if c.Message == expectedMessage {
+//					return true, nil
+//				}
+//				return false, nil
+//			}
+//		}
+//
+//		return false, nil
+//	}
+//}
+//
+//func ConditionMessageEquals(
+//	conditionType string,
+//	expectedStatus corev1.ConditionStatus,
+//	expectedMessage string,
+//) k8sclient.ConditionFunc {
+//	return func(obj runtime.Object) (bool, error) {
+//		if obj == nil {
+//			return false, nil
+//		}
+//
+//		model, ok := obj.(*mlopsv1alpha1.Model)
+//		if !ok {
+//			return false, fmt.Errorf("unexpected type %T, expected *mlopsv1alpha1.Model", obj)
+//		}
+//
+//		for _, c := range model.Status.Conditions {
+//			if c.Type == apis.ConditionType && c.Status == expectedStatus {
+//				return c.Message == expectedMessage, nil
+//			}
+//		}
+//
+//		return false, nil
+//	}
+//}

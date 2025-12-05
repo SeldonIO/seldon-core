@@ -1,4 +1,4 @@
-package godog
+package main
 
 import (
 	"os"

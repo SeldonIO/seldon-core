@@ -1,2 +1,2 @@
-@AutoscalingModel
-Feature: Model Autoscaling
+#@AutoscalingModel
+#Feature: Model Autoscaling

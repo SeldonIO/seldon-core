@@ -23,6 +23,7 @@ type TestModelConfig struct {
 }
 
 // map to have all common testing model definitions for testing popular models
+// todo: this requirements might have to be empty and automatically selected by the applier based on config if they aren't explicitly added by the scenario
 var testModels = map[string]TestModelConfig{
 	"iris": {
 		Name:         "iris",
@@ -150,5 +151,6 @@ func (m *Model) ModelReady() error {
 }
 
 func (m *Model) AssertModelStatus(status string) error {
+
 	return nil
 }

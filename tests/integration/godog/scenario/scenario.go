@@ -31,6 +31,19 @@ type SuiteDeps struct {
 //	}
 var suiteDeps SuiteDeps
 
+// todo: think about how we can drive server config from a file
+// - have a default server for test
+// - but also have the posibility of specifying the servers deployed in the test suite
+
+// we create a server config or multiple servers
+// server 1 caps mlserver
+// default modelCapDeployment =  mlserver
+
+// we can set the default model capabilities for models
+
+// if we have an scenario and it doesn't specify the server capabilities that it is deployed to
+// it will deploy into the default server capability that might be in our server dpeloyment def
+
 func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 	// Create long-lived deps here
 	k8sClient, err := k8sclient.New("seldon-mesh")

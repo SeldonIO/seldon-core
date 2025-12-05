@@ -4,11 +4,18 @@ Feature: Model deployment
   As a model user
   I need to create a Model resource and verify it is deployed
 
+  @0
   Scenario: Success - Load a model
     Given I have an "iris" model
     When the model is applied
     Then the model should eventually become Ready
 
+
+  @0
+  Scenario: Success - Load a model again
+    Given I have an "iris" model
+    When the model is applied
+    Then the model should eventually become Ready
 
 #    this approach might be more reusable specially for complex test cases, its all how expressive we want to be
   Scenario: Load model
@@ -23,7 +30,7 @@ Feature: Model deployment
     Given I have an "iris" model
     When the model is applied
     And the model eventually becomes Ready
-    Then the model status message should be "ModelAvailable"
+    Then the model status message should eventually be "ModelAvailable"
 
   Scenario: Success - Load a model with min replicas
     Given I have an "iris" model
@@ -43,6 +50,6 @@ Feature: Model deployment
     And the model has "xgboost" capabilities
     And there is no server in the cluster with capabilities "xgboost"
     When the model is applied
-    Then the model should not be Ready
-    And the model status message should be "ModelFailed"
+    Then the model eventually becomes not Ready
+    And the model status message should eventually be "ModelFailed"
 
