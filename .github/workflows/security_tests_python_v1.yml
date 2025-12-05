@@ -14,8 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       python_base_image_tag: ${{ steps.export-docker-tag.outputs.python_base_image_tag }}
-      conda_snyk_result: ${{ steps.conda-scan-out.outputs.scan_ok }}
-      python_snyk_result: ${{ steps.python-wrapper-scan-out.outputs.scan_ok }}
     steps:
     - uses: actions/checkout@v4
 
@@ -57,14 +55,14 @@ jobs:
         image: ${{ env.CONDA_BASE_IMAGE}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile.conda
 
-    - name: Store Snyk result for Conda image
-      id: conda-scan-out
-      run: |
-        if [ "${{ steps.scan-conda.outcome }}" = "success" ]; then
-          echo "scan_ok=true" >> $GITHUB_OUTPUT
-        else
-          echo "scan_ok=false" >> $GITHUB_OUTPUT
-        fi
+    - name: Save Snyk result for Conda image to file
+      run: echo "conda_RESULT=${{ steps.scan-conda.outcome }}" > "report-conda.txt"
+
+    - name: Upload file
+      uses: actions/upload-artifact@v4
+      with:
+        name: report-conda
+        path: report-conda.txt
 
     # Build and scan the Python Wrapper base image
     - name: Build (Base Wrapper)
@@ -82,14 +80,14 @@ jobs:
         image: ${{ env.PYTHON_BASE_IMAGE}}:test
         args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
 
-    - name: Store Snyk result for Python Wrapper image
-      id: python-wrapper-scan-out
-      run: |
-        if [ "${{ steps.scan-python-base.outcome }}" = "success" ]; then
-          echo "scan_ok=true" >> $GITHUB_OUTPUT
-        else
-          echo "scan_ok=false" >> $GITHUB_OUTPUT
-        fi
+    - name: Save Snyk result for Python Wrapper image to file
+      run: echo "python_wrapper_RESULT=${{ steps.scan-python-base.outcome }}" > "report-python-wrapper.txt"
+
+    - name: Upload file
+      uses: actions/upload-artifact@v4
+      with:
+        name: report-python-wrapper
+        path: report-python-wrapper.txt
 
     - name: Upload Conda base image
       uses: actions/upload-artifact@v4
@@ -179,23 +177,10 @@ jobs:
       run: |
         echo "Checking scan results..."
         
-        base_conda=${{ needs.build-upload-scan-base-images.outputs.conda_snyk_result }}
-        base_python=${{ needs.build-upload-scan-base-images.outputs.python_snyk_result }}
-        echo "Base: conda=$base_conda python=$base_python"
+        cat report-* > combined.txt
+        cat combined.txt
         
-        base_fails=0
-        if [ "$base_conda" = "false" ]; then base_fails=$((base_fails+1)); fi
-        if [ "$base_python" = "false" ]; then base_fails=$((base_fails+1)); fi
-        echo "Base failures: $base_fails"
-        
-        cat report-*
-        
-        server_fails=0
-        total_fails=$((server_fails + base_fails))
-          
-        if [ "$total_fails" -gt 0 ]; then
-          echo "$total_fails image scans failed"
+        if grep -q "failure" combined.txt; then
+          echo "A component reported failure"
           exit 1
-        else
-          echo "All image scans succeeded"
         fi
