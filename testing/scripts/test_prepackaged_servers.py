@@ -236,7 +236,7 @@ class TestPrepack(object):
                         "parameters": {"content_type": "np"},
                     },
                     {
-                        "name": "citric acidity",
+                        "name": "citric acid",
                         "shape": [1],
                         "datatype": "FP32",
                         "data": [0],
