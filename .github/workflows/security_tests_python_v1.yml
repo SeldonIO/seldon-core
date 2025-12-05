@@ -172,7 +172,7 @@ jobs:
     - name: Download Snyk results for servers
       uses: actions/download-artifact@v4
       with:
-        pattern: report-*.txt
+        pattern: report-*
         merge-multiple: true
 
     - name: Fail if any scan failed
