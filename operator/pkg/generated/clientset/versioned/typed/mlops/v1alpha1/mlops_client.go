@@ -20,19 +20,13 @@ import (
 
 type MlopsV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	ContainerOverrideSpecsGetter
-	ExperimentCandidatesGetter
-	ExperimentMirrorsGetter
-	ExperimentSpecsGetter
-	ExperimentStatusesGetter
-	ModelSpecsGetter
-	PodSpecsGetter
-	ResourceTypesGetter
-	SeldonRuntimeSpecsGetter
+	ExperimentsGetter
+	ModelsGetter
+	PipelinesGetter
+	SeldonConfigsGetter
+	SeldonRuntimesGetter
 	ServersGetter
-	ServerDefnsGetter
-	ServerSpecsGetter
-	ServerStatusesGetter
+	ServerConfigsGetter
 }
 
 // MlopsV1alpha1Client is used to interact with features provided by the mlops.seldon.io/v1alpha1 group.
@@ -40,56 +34,32 @@ type MlopsV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *MlopsV1alpha1Client) ContainerOverrideSpecs(namespace string) ContainerOverrideSpecInterface {
-	return newContainerOverrideSpecs(c, namespace)
+func (c *MlopsV1alpha1Client) Experiments(namespace string) ExperimentInterface {
+	return newExperiments(c, namespace)
 }
 
-func (c *MlopsV1alpha1Client) ExperimentCandidates(namespace string) ExperimentCandidateInterface {
-	return newExperimentCandidates(c, namespace)
+func (c *MlopsV1alpha1Client) Models(namespace string) ModelInterface {
+	return newModels(c, namespace)
 }
 
-func (c *MlopsV1alpha1Client) ExperimentMirrors(namespace string) ExperimentMirrorInterface {
-	return newExperimentMirrors(c, namespace)
+func (c *MlopsV1alpha1Client) Pipelines(namespace string) PipelineInterface {
+	return newPipelines(c, namespace)
 }
 
-func (c *MlopsV1alpha1Client) ExperimentSpecs(namespace string) ExperimentSpecInterface {
-	return newExperimentSpecs(c, namespace)
+func (c *MlopsV1alpha1Client) SeldonConfigs(namespace string) SeldonConfigInterface {
+	return newSeldonConfigs(c, namespace)
 }
 
-func (c *MlopsV1alpha1Client) ExperimentStatuses(namespace string) ExperimentStatusInterface {
-	return newExperimentStatuses(c, namespace)
-}
-
-func (c *MlopsV1alpha1Client) ModelSpecs(namespace string) ModelSpecInterface {
-	return newModelSpecs(c, namespace)
-}
-
-func (c *MlopsV1alpha1Client) PodSpecs(namespace string) PodSpecInterface {
-	return newPodSpecs(c, namespace)
-}
-
-func (c *MlopsV1alpha1Client) ResourceTypes(namespace string) ResourceTypeInterface {
-	return newResourceTypes(c, namespace)
-}
-
-func (c *MlopsV1alpha1Client) SeldonRuntimeSpecs(namespace string) SeldonRuntimeSpecInterface {
-	return newSeldonRuntimeSpecs(c, namespace)
+func (c *MlopsV1alpha1Client) SeldonRuntimes(namespace string) SeldonRuntimeInterface {
+	return newSeldonRuntimes(c, namespace)
 }
 
 func (c *MlopsV1alpha1Client) Servers(namespace string) ServerInterface {
 	return newServers(c, namespace)
 }
 
-func (c *MlopsV1alpha1Client) ServerDefns(namespace string) ServerDefnInterface {
-	return newServerDefns(c, namespace)
-}
-
-func (c *MlopsV1alpha1Client) ServerSpecs(namespace string) ServerSpecInterface {
-	return newServerSpecs(c, namespace)
-}
-
-func (c *MlopsV1alpha1Client) ServerStatuses(namespace string) ServerStatusInterface {
-	return newServerStatuses(c, namespace)
+func (c *MlopsV1alpha1Client) ServerConfigs(namespace string) ServerConfigInterface {
+	return newServerConfigs(c, namespace)
 }
 
 // NewForConfig creates a new MlopsV1alpha1Client for the given config.

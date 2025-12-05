@@ -10,28 +10,16 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package v1alpha1
 
-type ContainerOverrideSpecExpansion interface{}
+type ExperimentExpansion interface{}
 
-type ExperimentCandidateExpansion interface{}
+type ModelExpansion interface{}
 
-type ExperimentMirrorExpansion interface{}
+type PipelineExpansion interface{}
 
-type ExperimentSpecExpansion interface{}
+type SeldonConfigExpansion interface{}
 
-type ExperimentStatusExpansion interface{}
-
-type ModelSpecExpansion interface{}
-
-type PodSpecExpansion interface{}
-
-type ResourceTypeExpansion interface{}
-
-type SeldonRuntimeSpecExpansion interface{}
+type SeldonRuntimeExpansion interface{}
 
 type ServerExpansion interface{}
 
-type ServerDefnExpansion interface{}
-
-type ServerSpecExpansion interface{}
-
-type ServerStatusExpansion interface{}
+type ServerConfigExpansion interface{}

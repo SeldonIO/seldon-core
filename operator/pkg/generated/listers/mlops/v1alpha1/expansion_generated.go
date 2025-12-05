@@ -10,77 +10,45 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package v1alpha1
 
-// ContainerOverrideSpecListerExpansion allows custom methods to be added to
-// ContainerOverrideSpecLister.
-type ContainerOverrideSpecListerExpansion interface{}
+// ExperimentListerExpansion allows custom methods to be added to
+// ExperimentLister.
+type ExperimentListerExpansion interface{}
 
-// ContainerOverrideSpecNamespaceListerExpansion allows custom methods to be added to
-// ContainerOverrideSpecNamespaceLister.
-type ContainerOverrideSpecNamespaceListerExpansion interface{}
+// ExperimentNamespaceListerExpansion allows custom methods to be added to
+// ExperimentNamespaceLister.
+type ExperimentNamespaceListerExpansion interface{}
 
-// ExperimentCandidateListerExpansion allows custom methods to be added to
-// ExperimentCandidateLister.
-type ExperimentCandidateListerExpansion interface{}
+// ModelListerExpansion allows custom methods to be added to
+// ModelLister.
+type ModelListerExpansion interface{}
 
-// ExperimentCandidateNamespaceListerExpansion allows custom methods to be added to
-// ExperimentCandidateNamespaceLister.
-type ExperimentCandidateNamespaceListerExpansion interface{}
+// ModelNamespaceListerExpansion allows custom methods to be added to
+// ModelNamespaceLister.
+type ModelNamespaceListerExpansion interface{}
 
-// ExperimentMirrorListerExpansion allows custom methods to be added to
-// ExperimentMirrorLister.
-type ExperimentMirrorListerExpansion interface{}
+// PipelineListerExpansion allows custom methods to be added to
+// PipelineLister.
+type PipelineListerExpansion interface{}
 
-// ExperimentMirrorNamespaceListerExpansion allows custom methods to be added to
-// ExperimentMirrorNamespaceLister.
-type ExperimentMirrorNamespaceListerExpansion interface{}
+// PipelineNamespaceListerExpansion allows custom methods to be added to
+// PipelineNamespaceLister.
+type PipelineNamespaceListerExpansion interface{}
 
-// ExperimentSpecListerExpansion allows custom methods to be added to
-// ExperimentSpecLister.
-type ExperimentSpecListerExpansion interface{}
+// SeldonConfigListerExpansion allows custom methods to be added to
+// SeldonConfigLister.
+type SeldonConfigListerExpansion interface{}
 
-// ExperimentSpecNamespaceListerExpansion allows custom methods to be added to
-// ExperimentSpecNamespaceLister.
-type ExperimentSpecNamespaceListerExpansion interface{}
+// SeldonConfigNamespaceListerExpansion allows custom methods to be added to
+// SeldonConfigNamespaceLister.
+type SeldonConfigNamespaceListerExpansion interface{}
 
-// ExperimentStatusListerExpansion allows custom methods to be added to
-// ExperimentStatusLister.
-type ExperimentStatusListerExpansion interface{}
+// SeldonRuntimeListerExpansion allows custom methods to be added to
+// SeldonRuntimeLister.
+type SeldonRuntimeListerExpansion interface{}
 
-// ExperimentStatusNamespaceListerExpansion allows custom methods to be added to
-// ExperimentStatusNamespaceLister.
-type ExperimentStatusNamespaceListerExpansion interface{}
-
-// ModelSpecListerExpansion allows custom methods to be added to
-// ModelSpecLister.
-type ModelSpecListerExpansion interface{}
-
-// ModelSpecNamespaceListerExpansion allows custom methods to be added to
-// ModelSpecNamespaceLister.
-type ModelSpecNamespaceListerExpansion interface{}
-
-// PodSpecListerExpansion allows custom methods to be added to
-// PodSpecLister.
-type PodSpecListerExpansion interface{}
-
-// PodSpecNamespaceListerExpansion allows custom methods to be added to
-// PodSpecNamespaceLister.
-type PodSpecNamespaceListerExpansion interface{}
-
-// ResourceTypeListerExpansion allows custom methods to be added to
-// ResourceTypeLister.
-type ResourceTypeListerExpansion interface{}
-
-// ResourceTypeNamespaceListerExpansion allows custom methods to be added to
-// ResourceTypeNamespaceLister.
-type ResourceTypeNamespaceListerExpansion interface{}
-
-// SeldonRuntimeSpecListerExpansion allows custom methods to be added to
-// SeldonRuntimeSpecLister.
-type SeldonRuntimeSpecListerExpansion interface{}
-
-// SeldonRuntimeSpecNamespaceListerExpansion allows custom methods to be added to
-// SeldonRuntimeSpecNamespaceLister.
-type SeldonRuntimeSpecNamespaceListerExpansion interface{}
+// SeldonRuntimeNamespaceListerExpansion allows custom methods to be added to
+// SeldonRuntimeNamespaceLister.
+type SeldonRuntimeNamespaceListerExpansion interface{}
 
 // ServerListerExpansion allows custom methods to be added to
 // ServerLister.
@@ -90,26 +58,10 @@ type ServerListerExpansion interface{}
 // ServerNamespaceLister.
 type ServerNamespaceListerExpansion interface{}
 
-// ServerDefnListerExpansion allows custom methods to be added to
-// ServerDefnLister.
-type ServerDefnListerExpansion interface{}
+// ServerConfigListerExpansion allows custom methods to be added to
+// ServerConfigLister.
+type ServerConfigListerExpansion interface{}
 
-// ServerDefnNamespaceListerExpansion allows custom methods to be added to
-// ServerDefnNamespaceLister.
-type ServerDefnNamespaceListerExpansion interface{}
-
-// ServerSpecListerExpansion allows custom methods to be added to
-// ServerSpecLister.
-type ServerSpecListerExpansion interface{}
-
-// ServerSpecNamespaceListerExpansion allows custom methods to be added to
-// ServerSpecNamespaceLister.
-type ServerSpecNamespaceListerExpansion interface{}
-
-// ServerStatusListerExpansion allows custom methods to be added to
-// ServerStatusLister.
-type ServerStatusListerExpansion interface{}
-
-// ServerStatusNamespaceListerExpansion allows custom methods to be added to
-// ServerStatusNamespaceLister.
-type ServerStatusNamespaceListerExpansion interface{}
+// ServerConfigNamespaceListerExpansion allows custom methods to be added to
+// ServerConfigNamespaceLister.
+type ServerConfigNamespaceListerExpansion interface{}

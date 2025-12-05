@@ -21,18 +21,12 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// +genclient
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
 type ResourceType string
 
 const (
 	ModelResourceType    ResourceType = "model"
 	PipelineResourceType ResourceType = "pipeline"
 )
-
-//+genclient
-//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ExperimentSpec defines the desired state of Experiment
 type ExperimentSpec struct {
@@ -42,24 +36,15 @@ type ExperimentSpec struct {
 	ResourceType ResourceType          `json:"resourceType,omitempty"`
 }
 
-//+genclient
-//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
 type ExperimentCandidate struct {
 	Name   string `json:"name"`
 	Weight uint32 `json:"weight"`
 }
 
-//+genclient
-//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
 type ExperimentMirror struct {
 	Name    string `json:"name"`
 	Percent uint32 `json:"percent"`
 }
-
-//+genclient
-//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ExperimentStatus defines the observed state of Experiment
 type ExperimentStatus struct {
@@ -74,6 +59,8 @@ type ExperimentStatus struct {
 //+kubebuilder:printcolumn:name="Mirror ready",type=string,JSONPath=`.status.conditions[?(@.type=='MirrorReady')].status`,description="Mirror ready status",priority=1
 //+kubebuilder:printcolumn:name="Message",type=string,JSONPath=`.status.conditions[?(@.type=='Ready')].message`,description="Status message"
 //+kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
+//+genclient
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Experiment is the Schema for the experiments API
 type Experiment struct {
@@ -85,6 +72,7 @@ type Experiment struct {
 }
 
 //+kubebuilder:object:root=true
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ExperimentList contains a list of Experiment
 type ExperimentList struct {

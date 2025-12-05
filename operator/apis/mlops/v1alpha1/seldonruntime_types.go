@@ -16,8 +16,6 @@ import (
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
-// +genclient
-
 // SeldonRuntimeSpec defines the desired state of SeldonRuntime
 type SeldonRuntimeSpec struct {
 	SeldonConfig string              `json:"seldonConfig"`
@@ -46,6 +44,8 @@ type SeldonRuntimeStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+genclient
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // SeldonRuntime is the Schema for the seldonruntimes API
 type SeldonRuntime struct {
@@ -57,6 +57,7 @@ type SeldonRuntime struct {
 }
 
 //+kubebuilder:object:root=true
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // SeldonRuntimeList contains a list of SeldonRuntime
 type SeldonRuntimeList struct {

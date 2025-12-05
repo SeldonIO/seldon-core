@@ -20,56 +20,32 @@ type FakeMlopsV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeMlopsV1alpha1) ContainerOverrideSpecs(namespace string) v1alpha1.ContainerOverrideSpecInterface {
-	return newFakeContainerOverrideSpecs(c, namespace)
+func (c *FakeMlopsV1alpha1) Experiments(namespace string) v1alpha1.ExperimentInterface {
+	return newFakeExperiments(c, namespace)
 }
 
-func (c *FakeMlopsV1alpha1) ExperimentCandidates(namespace string) v1alpha1.ExperimentCandidateInterface {
-	return newFakeExperimentCandidates(c, namespace)
+func (c *FakeMlopsV1alpha1) Models(namespace string) v1alpha1.ModelInterface {
+	return newFakeModels(c, namespace)
 }
 
-func (c *FakeMlopsV1alpha1) ExperimentMirrors(namespace string) v1alpha1.ExperimentMirrorInterface {
-	return newFakeExperimentMirrors(c, namespace)
+func (c *FakeMlopsV1alpha1) Pipelines(namespace string) v1alpha1.PipelineInterface {
+	return newFakePipelines(c, namespace)
 }
 
-func (c *FakeMlopsV1alpha1) ExperimentSpecs(namespace string) v1alpha1.ExperimentSpecInterface {
-	return newFakeExperimentSpecs(c, namespace)
+func (c *FakeMlopsV1alpha1) SeldonConfigs(namespace string) v1alpha1.SeldonConfigInterface {
+	return newFakeSeldonConfigs(c, namespace)
 }
 
-func (c *FakeMlopsV1alpha1) ExperimentStatuses(namespace string) v1alpha1.ExperimentStatusInterface {
-	return newFakeExperimentStatuses(c, namespace)
-}
-
-func (c *FakeMlopsV1alpha1) ModelSpecs(namespace string) v1alpha1.ModelSpecInterface {
-	return newFakeModelSpecs(c, namespace)
-}
-
-func (c *FakeMlopsV1alpha1) PodSpecs(namespace string) v1alpha1.PodSpecInterface {
-	return newFakePodSpecs(c, namespace)
-}
-
-func (c *FakeMlopsV1alpha1) ResourceTypes(namespace string) v1alpha1.ResourceTypeInterface {
-	return newFakeResourceTypes(c, namespace)
-}
-
-func (c *FakeMlopsV1alpha1) SeldonRuntimeSpecs(namespace string) v1alpha1.SeldonRuntimeSpecInterface {
-	return newFakeSeldonRuntimeSpecs(c, namespace)
+func (c *FakeMlopsV1alpha1) SeldonRuntimes(namespace string) v1alpha1.SeldonRuntimeInterface {
+	return newFakeSeldonRuntimes(c, namespace)
 }
 
 func (c *FakeMlopsV1alpha1) Servers(namespace string) v1alpha1.ServerInterface {
 	return newFakeServers(c, namespace)
 }
 
-func (c *FakeMlopsV1alpha1) ServerDefns(namespace string) v1alpha1.ServerDefnInterface {
-	return newFakeServerDefns(c, namespace)
-}
-
-func (c *FakeMlopsV1alpha1) ServerSpecs(namespace string) v1alpha1.ServerSpecInterface {
-	return newFakeServerSpecs(c, namespace)
-}
-
-func (c *FakeMlopsV1alpha1) ServerStatuses(namespace string) v1alpha1.ServerStatusInterface {
-	return newFakeServerStatuses(c, namespace)
+func (c *FakeMlopsV1alpha1) ServerConfigs(namespace string) v1alpha1.ServerConfigInterface {
+	return newFakeServerConfigs(c, namespace)
 }
 
 // RESTClient returns a RESTClient that is used to communicate

@@ -23,9 +23,6 @@ const (
 	ServerContainerName = "server"
 )
 
-//+genclient
-//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
 // ServerSpec defines the desired state of Server
 type ServerSpec struct {
 	// Server definition
@@ -53,9 +50,6 @@ type ServerSpec struct {
 	DisableAutoUpdate bool `json:"disableAutoUpdate,omitempty"`
 }
 
-//+genclient
-//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
 type ContainerOverrideSpec struct {
 	// The Agent overrides
 	Agent *v1.Container `json:"agent,omitempty"`
@@ -63,17 +57,11 @@ type ContainerOverrideSpec struct {
 	RClone *v1.Container `json:"rclone,omitempty"`
 }
 
-//+genclient
-//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
 type ServerDefn struct {
 	// Server config name to match
 	// Required
 	Config string `json:"config"`
 }
-
-//+genclient
-//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ServerStatus defines the observed state of Server
 type ServerStatus struct {
@@ -107,9 +95,7 @@ type Server struct {
 	Status ServerStatus `json:"status,omitempty"`
 }
 
-//+genclient
 //+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
 //+kubebuilder:object:root=true
 
 // ServerList contains a list of Server

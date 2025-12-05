@@ -133,6 +133,8 @@ type SeldonConfigStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+genclient
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // SeldonConfig is the Schema for the seldonconfigs API
 type SeldonConfig struct {
@@ -144,6 +146,7 @@ type SeldonConfig struct {
 }
 
 //+kubebuilder:object:root=true
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // SeldonConfigList contains a list of SeldonConfig
 type SeldonConfigList struct {

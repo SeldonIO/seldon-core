@@ -1,4 +1,4 @@
-@ModelDeployment @Functional @Models
+@ModelDeployment @Functional @Models @Dom
 Feature: Model deployment
   I deploy a model spec, wait for model to be deployed to the servers
   and send an inference request to that model
@@ -18,8 +18,8 @@ Feature: Model deployment
       - mlserver
       storageUri: gs://seldon-models/scv2/samples/mlserver_1.3.5/iris-sklearn
     """
-    When the model "iris" should eventually become "Ready" with timeout "20s"
-    Then send inference request with timeout "20s" to url "/v2/models/iris/infer" with header "Seldon-Model: iris" with payload:
+    When the model "iris" should eventually become Ready with timeout "20s"
+    Then send inference request with timeout "20s" to model "iris" with payload:
     """
     {
         "inputs": [
@@ -35,7 +35,7 @@ Feature: Model deployment
     And expect http response status code "200"
     And expect http response body to contain JSON:
     """
-    "outputs": [
+    { "outputs": [
     {
       "name": "predict",
       "shape": [
@@ -50,5 +50,5 @@ Feature: Model deployment
         2
       ]
     }
-  ]
+  ] }
     """

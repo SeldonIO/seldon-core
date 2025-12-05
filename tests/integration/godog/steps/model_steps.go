@@ -35,11 +35,11 @@ var testModels = map[string]TestModelConfig{
 
 func LoadDomSteps(ctx *godog.ScenarioContext, w *World) {
 	// Model Operations
-	ctx.Step(`^I deploy model spec: "([^"]+)"$`, w.deployModelSpec)
-	ctx.Step(`^the model "([^"]+)" should eventually become "([^"]+)" with timeout "([^"]+)"$`, w.deployModelSpec)
-	ctx.Step(`^send inference request with timeout "([^"]+)" to url "([^"]+)" with header "([^"]+)" with payload: "([^"]+)"$`, w.deployModelSpec)
-	ctx.Step(`^expect http response status code "(^[+-]?\d+)"$`, w.deployModelSpec)
-	ctx.Step(`^expect http response body to contain JSON: "([^"]+)"$`, w.deployModelSpec)
+	ctx.Step(`^I deploy model spec:$`, w.deployModelSpec)
+	ctx.Step(`^the model "([^"]+)" should eventually become Ready with timeout "([^"]+)"$`, w.waitForModelReady)
+	ctx.Step(`^send inference request with timeout "([^"]+)" to model "([^"]+)" with payload:$`, w.sendHTTPInferenceRequest)
+	ctx.Step(`^expect http response status code "([^"]*)"$`, w.httpRespCheckStatus)
+	ctx.Step(`^expect http response body to contain JSON:$`, w.httpRespCheckBodyContainsJSON)
 }
 
 func (m *Model) IHaveAModel(model string) error {

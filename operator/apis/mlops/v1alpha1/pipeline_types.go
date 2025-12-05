@@ -29,6 +29,8 @@ import (
 //+kubebuilder:printcolumn:name="Dataflow ready",type=string,JSONPath=`.status.conditions[?(@.type=='PipelineReady')].status`,description="Dataflow ready status",priority=1
 //+kubebuilder:printcolumn:name="Message",type=string,JSONPath=`.status.conditions[?(@.type=='Ready')].message`,description="Status message"
 //+kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
+//+genclient
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Pipeline is the Schema for the pipelines API
 type Pipeline struct {
@@ -40,6 +42,7 @@ type Pipeline struct {
 }
 
 //+kubebuilder:object:root=true
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // PipelineList contains a list of Pipeline
 type PipelineList struct {

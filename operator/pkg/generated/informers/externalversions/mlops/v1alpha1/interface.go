@@ -16,32 +16,20 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// ContainerOverrideSpecs returns a ContainerOverrideSpecInformer.
-	ContainerOverrideSpecs() ContainerOverrideSpecInformer
-	// ExperimentCandidates returns a ExperimentCandidateInformer.
-	ExperimentCandidates() ExperimentCandidateInformer
-	// ExperimentMirrors returns a ExperimentMirrorInformer.
-	ExperimentMirrors() ExperimentMirrorInformer
-	// ExperimentSpecs returns a ExperimentSpecInformer.
-	ExperimentSpecs() ExperimentSpecInformer
-	// ExperimentStatuses returns a ExperimentStatusInformer.
-	ExperimentStatuses() ExperimentStatusInformer
-	// ModelSpecs returns a ModelSpecInformer.
-	ModelSpecs() ModelSpecInformer
-	// PodSpecs returns a PodSpecInformer.
-	PodSpecs() PodSpecInformer
-	// ResourceTypes returns a ResourceTypeInformer.
-	ResourceTypes() ResourceTypeInformer
-	// SeldonRuntimeSpecs returns a SeldonRuntimeSpecInformer.
-	SeldonRuntimeSpecs() SeldonRuntimeSpecInformer
+	// Experiments returns a ExperimentInformer.
+	Experiments() ExperimentInformer
+	// Models returns a ModelInformer.
+	Models() ModelInformer
+	// Pipelines returns a PipelineInformer.
+	Pipelines() PipelineInformer
+	// SeldonConfigs returns a SeldonConfigInformer.
+	SeldonConfigs() SeldonConfigInformer
+	// SeldonRuntimes returns a SeldonRuntimeInformer.
+	SeldonRuntimes() SeldonRuntimeInformer
 	// Servers returns a ServerInformer.
 	Servers() ServerInformer
-	// ServerDefns returns a ServerDefnInformer.
-	ServerDefns() ServerDefnInformer
-	// ServerSpecs returns a ServerSpecInformer.
-	ServerSpecs() ServerSpecInformer
-	// ServerStatuses returns a ServerStatusInformer.
-	ServerStatuses() ServerStatusInformer
+	// ServerConfigs returns a ServerConfigInformer.
+	ServerConfigs() ServerConfigInformer
 }
 
 type version struct {
@@ -55,49 +43,29 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// ContainerOverrideSpecs returns a ContainerOverrideSpecInformer.
-func (v *version) ContainerOverrideSpecs() ContainerOverrideSpecInformer {
-	return &containerOverrideSpecInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// Experiments returns a ExperimentInformer.
+func (v *version) Experiments() ExperimentInformer {
+	return &experimentInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
-// ExperimentCandidates returns a ExperimentCandidateInformer.
-func (v *version) ExperimentCandidates() ExperimentCandidateInformer {
-	return &experimentCandidateInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// Models returns a ModelInformer.
+func (v *version) Models() ModelInformer {
+	return &modelInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
-// ExperimentMirrors returns a ExperimentMirrorInformer.
-func (v *version) ExperimentMirrors() ExperimentMirrorInformer {
-	return &experimentMirrorInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// Pipelines returns a PipelineInformer.
+func (v *version) Pipelines() PipelineInformer {
+	return &pipelineInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
-// ExperimentSpecs returns a ExperimentSpecInformer.
-func (v *version) ExperimentSpecs() ExperimentSpecInformer {
-	return &experimentSpecInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// SeldonConfigs returns a SeldonConfigInformer.
+func (v *version) SeldonConfigs() SeldonConfigInformer {
+	return &seldonConfigInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
-// ExperimentStatuses returns a ExperimentStatusInformer.
-func (v *version) ExperimentStatuses() ExperimentStatusInformer {
-	return &experimentStatusInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// ModelSpecs returns a ModelSpecInformer.
-func (v *version) ModelSpecs() ModelSpecInformer {
-	return &modelSpecInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// PodSpecs returns a PodSpecInformer.
-func (v *version) PodSpecs() PodSpecInformer {
-	return &podSpecInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// ResourceTypes returns a ResourceTypeInformer.
-func (v *version) ResourceTypes() ResourceTypeInformer {
-	return &resourceTypeInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// SeldonRuntimeSpecs returns a SeldonRuntimeSpecInformer.
-func (v *version) SeldonRuntimeSpecs() SeldonRuntimeSpecInformer {
-	return &seldonRuntimeSpecInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// SeldonRuntimes returns a SeldonRuntimeInformer.
+func (v *version) SeldonRuntimes() SeldonRuntimeInformer {
+	return &seldonRuntimeInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // Servers returns a ServerInformer.
@@ -105,17 +73,7 @@ func (v *version) Servers() ServerInformer {
 	return &serverInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
-// ServerDefns returns a ServerDefnInformer.
-func (v *version) ServerDefns() ServerDefnInformer {
-	return &serverDefnInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// ServerSpecs returns a ServerSpecInformer.
-func (v *version) ServerSpecs() ServerSpecInformer {
-	return &serverSpecInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// ServerStatuses returns a ServerStatusInformer.
-func (v *version) ServerStatuses() ServerStatusInformer {
-	return &serverStatusInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// ServerConfigs returns a ServerConfigInformer.
+func (v *version) ServerConfigs() ServerConfigInformer {
+	return &serverConfigInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

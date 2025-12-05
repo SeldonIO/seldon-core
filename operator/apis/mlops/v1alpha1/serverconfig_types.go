@@ -49,6 +49,8 @@ type ServerConfigStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:shortName=mlc
+//+genclient
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ServerConfig is the Schema for the serverconfigs API
 type ServerConfig struct {
@@ -60,6 +62,7 @@ type ServerConfig struct {
 }
 
 //+kubebuilder:object:root=true
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ServerConfigList contains a list of ServerConfig
 type ServerConfigList struct {

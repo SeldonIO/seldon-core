@@ -45,32 +45,20 @@ func (f *genericInformer) Lister() cache.GenericLister {
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
 	// Group=mlops.seldon.io/v1alpha1, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithResource("containeroverridespecs"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().ContainerOverrideSpecs().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("experimentcandidates"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().ExperimentCandidates().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("experimentmirrors"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().ExperimentMirrors().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("experimentspecs"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().ExperimentSpecs().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("experimentstatuses"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().ExperimentStatuses().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("modelspecs"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().ModelSpecs().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("podspecs"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().PodSpecs().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("resourcetypes"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().ResourceTypes().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("seldonruntimespecs"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().SeldonRuntimeSpecs().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("experiments"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().Experiments().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("models"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().Models().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("pipelines"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().Pipelines().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("seldonconfigs"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().SeldonConfigs().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("seldonruntimes"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().SeldonRuntimes().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("servers"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().Servers().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("serverdefns"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().ServerDefns().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("serverspecs"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().ServerSpecs().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("serverstatuses"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().ServerStatuses().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("serverconfigs"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().ServerConfigs().Informer()}, nil
 
 	}
 

@@ -21,8 +21,6 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/internal"
 )
 
-// +genclient
-
 // ModelSpec defines the desired state of Model
 type ModelSpec struct {
 	InferenceArtifactSpec `json:",inline"`
@@ -157,6 +155,8 @@ type ModelStatus struct {
 //+kubebuilder:printcolumn:name="Available Replicas",type=integer,JSONPath=`.status.availableReplicas`,description="Number of replicas available to receive inference requests"
 //+kubebuilder:printcolumn:name="ModelGw Ready",type=string,JSONPath=`.status.modelgwReady`,description="Model Gateway ready status"
 //+kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
+//+genclient
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Model is the Schema for the models API
 type Model struct {
@@ -168,6 +168,7 @@ type Model struct {
 }
 
 //+kubebuilder:object:root=true
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ModelList contains a list of Model
 type ModelList struct {

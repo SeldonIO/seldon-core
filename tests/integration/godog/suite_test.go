@@ -1,11 +1,14 @@
-package suite
+package main
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"github.com/cucumber/godog"
+	"github.com/cucumber/godog/colors"
 	"github.com/seldonio/seldon-core/godog/steps"
+	"github.com/spf13/pflag"
 )
 
 func InitializeScenario(ctx *godog.ScenarioContext) {
@@ -30,26 +33,29 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	//todo load other steps such as pipeline, experiment steps etc
 }
 
+var opts = godog.Options{
+	Output: colors.Colored(os.Stdout),
+	Format: "progress", // can define default values
+}
+
+func init() {
+	godog.BindCommandLineFlags("godog.", &opts) // godog v0.11.0 and later
+}
+
 // todo: the execution of the test will need further bootstrap of dependencies and clients as well as retrieving config
-func TestFeatures(t *testing.T) {
-	format := "progress"
-	if testing.Verbose() {
-		format = "pretty"
-	}
+func TestMain(m *testing.M) {
+	pflag.Parse()
+	opts.Paths = pflag.Args()
 
-	opts := &godog.Options{
-		Format:   format,
-		Paths:    []string{"features"},
-		TestingT: t,
-	}
-
-	suite := godog.TestSuite{
+	status := godog.TestSuite{
 		Name:                "seldon-godog",
 		ScenarioInitializer: InitializeScenario,
-		Options:             opts,
+		Options:             &opts,
+	}.Run()
+
+	if st := m.Run(); st > status {
+		status = st
 	}
 
-	if suite.Run() != 0 {
-		t.Fatal("non-zero status returned, failed to run feature tests")
-	}
+	os.Exit(status)
 }
