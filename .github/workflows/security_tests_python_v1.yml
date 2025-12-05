@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       python_base_image_tag: ${{ steps.export-docker-tag.outputs.python_base_image_tag }}
+      conda_snyk_result: ${{ steps.conda-scan-out.outputs.scan_ok }}
+      python_snyk_result: ${{ steps.python-wrapper-scan-out.outputs.scan_ok }}
     steps:
     - uses: actions/checkout@v4
 
@@ -55,6 +57,15 @@ jobs:
         image: ${{ env.CONDA_BASE_IMAGE}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile.conda
 
+    - name: Store Snyk result for Conda image
+      id: conda-scan-out
+      run: |
+        if [ "${{ steps.scan-conda.outcome }}" = "success" ]; then
+          echo "scan_ok=true" >> $GITHUB_OUTPUT
+        else
+          echo "scan_ok=false" >> $GITHUB_OUTPUT
+        fi
+
     # Build and scan the Python Wrapper base image
     - name: Build (Base Wrapper)
       working-directory: ./wrappers/s2i/python
@@ -71,6 +82,15 @@ jobs:
         image: ${{ env.PYTHON_BASE_IMAGE}}:test
         args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
 
+    - name: Store Snyk result for Python Wrapper image
+      id: python-wrapper-scan-out
+      run: |
+        if [ "${{ steps.scan-python-base.outcome }}" = "success" ]; then
+          echo "scan_ok=true" >> $GITHUB_OUTPUT
+        else
+          echo "scan_ok=false" >> $GITHUB_OUTPUT
+        fi
+
     - name: Upload Conda base image
       uses: actions/upload-artifact@v4
       with:
@@ -86,6 +106,8 @@ jobs:
   build-servers:
     needs: build-upload-scan-base-images
     runs-on: ubuntu-latest
+    outputs:
+      scan_ok: ${{ steps.server-scan-out.outputs.scan_ok }}
     strategy:
       fail-fast: false
       matrix:
@@ -119,7 +141,6 @@ jobs:
 
     - name: Build server
       id: build-server
-      continue-on-error: true
       working-directory: ./servers/${{ matrix.server }}
       run: |
         export SERVER_IMAGE_TAG="sec-tests/${{ matrix.server }}-$(date +%s)-$(openssl rand -hex 4)"
@@ -135,7 +156,7 @@ jobs:
         image: ${{ env.SERVER_IMAGE_TAG}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high
     - name: Set scan output
-      id: set-scan-output
+      id: server-scan-out
       run: |
         if [ "${{ steps.scan.outcome }}" = "success" ]; then
           echo "scan_ok=true" >> $GITHUB_OUTPUT
@@ -144,25 +165,41 @@ jobs:
         fi
 
   verify-scans:
-    needs: build-servers
+    needs: [ build-upload-scan-base-images, build-servers]
     runs-on: ubuntu-latest
     if: always()
 
     steps:
     - name: Install jq
       run: sudo apt-get update && sudo apt-get install -y jq
+
     - name: Fail if any scan failed
       run: |
         echo "Checking scan results..."
         
-        # Convert JSON to readable text
+        base_conda=${{ needs.build-upload-scan-base-images.outputs.conda_snyk_result }}
+        base_python=${{ needs.build-upload-scan-base-images.outputs.python_snyk_result }}
+        echo "Base: conda=$base_conda python=$base_python"
+        
+        # Save real needs JSON
         echo '${{ toJson(needs.build-servers) }}' > results.json
         
-        # Extract scan_ok values
-        fails=$(jq '[ .[] | select(.outputs.scan_ok == "false") ] | length' results.json)
+        echo "Matrix results JSON:"
+        cat results.json
+
+        server_fails=$(jq '[ .[] | objects | select(.outputs.scan_ok == "false") ] | length' results.json)
+        echo "Server failures: $server_fails"
         
-        if [ "$fails" -gt 0 ]; then
-          echo "$fails image scans failed"
+        base_fails=0
+        if [ "$base_conda" = "false" ]; then base_fails=$((base_fails+1)); fi
+        if [ "$base_python" = "false" ]; then base_fails=$((base_fails+1)); fi
+        
+        echo "Base failures: $base_fails"
+          
+        total_fails=$((server_fails + base_fails))
+          
+        if [ "$total_fails" -gt 0 ]; then
+          echo "$total_fails image scans failed"
           exit 1
         else
           echo "All image scans succeeded"
