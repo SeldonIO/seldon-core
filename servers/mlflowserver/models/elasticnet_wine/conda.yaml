@@ -2,9 +2,9 @@ name: mlflow-elasticnet-wines
 channels:
 - conda-forge
 dependencies:
-- python=3.8.10
-- scikit-learn=0.24.2
+- python=3.12
+- scikit-learn=1.7.2
 - pip
 - pip:
-  - mlflow
-  - cloudpickle==1.2.1
+  - mlflow==3.1.1
+  - cloudpickle==3.0.0
