@@ -117,8 +117,8 @@ jobs:
       working-directory: ./servers/${{ matrix.server }}
       run: |
         export SERVER_IMAGE_TAG="sec-tests/${{ matrix.server }}-$(date +%s)-$(openssl rand -hex 4)"
-        echo "SERVER_IMAGE_TAG=SERVER_IMAGE_TAG" >> $GITHUB_ENV
-        make IMAGE_NAME=SERVER_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
+        echo "SERVER_IMAGE_TAG=$SERVER_IMAGE_TAG" >> $GITHUB_ENV
+        make IMAGE_NAME=$SERVER_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
     - name: Scan
       id: scan
       uses: snyk/actions/docker@master
