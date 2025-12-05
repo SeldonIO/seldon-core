@@ -10,8 +10,11 @@ on:
       - release-1.19.0-prep
   workflow_dispatch:
 jobs:
-  build-and-scan-python-images:
+  build-upload-scan-base-images:
     runs-on: ubuntu-latest
+    outputs:
+      conda_tar: conda-image.tar
+      python_tar: python-image.tar
     steps:
     - uses: actions/checkout@v4
 
@@ -25,6 +28,7 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
+    # Build and scan the Conda base image
     - name: Generate and set docker Conda image tag
       run: |
         TAG_CONDA="sec-tests/conda-base-$(date +%s)-$(openssl rand -hex 4)"
@@ -47,6 +51,7 @@ jobs:
         image: ${{ env.CONDA_BASE_IMAGE}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile.conda
 
+    # Build and scan the Python Wrapper base image
     - name: Build (Base Wrapper)
       working-directory: ./wrappers/s2i/python
       run: |
@@ -60,7 +65,37 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: ${{ env.PYTHON_BASE_IMAGE}}:test
-        args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
+        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
+
+    # Upload base images
+    - name: Upload base images
+      uses: actions/upload-artifact@v4
+      with:
+        name: base-images
+        path: |
+          conda-image.tar
+          python-image.tar
+
+  build-servers:
+    needs: build-upload-scan-base-images
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        server:
+          - tfserving_proxy
+          - sklearnserver
+          - mlflowserver
+          - xgboostserver
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/download-artifact@v4
+      with:
+        name: base-images
+    - name: Load images
+      run: |
+        docker load -i conda-image.tar
+        docker load -i python-image.tar
 
     - name: Install s2i CLI - needed for building the server images
       uses: redhat-actions/openshift-tools-installer@v1
@@ -69,150 +104,53 @@ jobs:
         source: "github"
         s2i: "latest"
 
-    - name: Build (tfserving proxy)
-      id: build-tfserving-proxy
+    - name: Build ${{ matrix.server}}
+      id: build-${{ matrix.server }}
       continue-on-error: true
-      working-directory: ./servers/tfserving_proxy
+      working-directory: ./servers/${{ matrix.server }}
       run: |
-        export TFSERVING_IMAGE_TAG="sec-tests/tfserving-$(date +%s)-$(openssl rand -hex 4)"
-        echo "TFSERVING_IMAGE_TAG=$TFSERVING_IMAGE_TAG" >> $GITHUB_ENV
-        make IMAGE_NAME=$TFSERVING_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
-    - name: Scan TF-serving proxy
-      id: scan-tfserving-proxy
-      if: steps.build-tfserving-proxy.outcome == 'success'
+        export SERVER_IMAGE_TAG="sec-tests/${{ matrix.server }}-$(date +%s)-$(openssl rand -hex 4)"
+        echo "SERVER_IMAGE_TAG=SERVER_IMAGE_TAG" >> $GITHUB_ENV
+        make IMAGE_NAME=SERVER_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
+    - name: Scan
+      id: scan
       uses: snyk/actions/docker@master
       continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        image: ${{ env.TFSERVING_IMAGE_TAG}}:test
+        image: ${{ env.SERVER_IMAGE_TAG}}:test
         args:  --fail-on=upgradable --app-vulns --severity-threshold=high
-
-    - name: Clean up Docker image
-      if: always()
-      run: docker rmi ${{ env.TFSERVING_IMAGE_TAG}}:test
-
-    - name: Build (sklearn)
-      id: build-sklearn
-      continue-on-error: true
-      working-directory: ./servers/sklearnserver
+    - name: Set scan output
+      id: set-scan-output
       run: |
-        export SKLEARN_IMAGE_TAG="sec-tests/sklearn-$(date +%s)-$(openssl rand -hex 4)"
-        echo "SKLEARN_IMAGE_TAG=$SKLEARN_IMAGE_TAG" >> $GITHUB_ENV
-        make IMAGE_NAME=$SKLEARN_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
-    - name: Scan sklearn
-      id: scan-sklearn
-      if: steps.build-sklearn.outcome == 'success'
-      uses: snyk/actions/docker@master
-      continue-on-error: true
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        image: ${{ env.SKLEARN_IMAGE_TAG}}:test
-        args:  --fail-on=upgradable --app-vulns --severity-threshold=high
+        if [ "${{ steps.scan.outcome }}" = "success" ]; then
+          echo "scan_ok=true" >> $GITHUB_OUTPUT
+        else
+          echo "scan_ok=false" >> $GITHUB_OUTPUT
+        fi
 
-    - name: Clean up Docker image
-      if: always()
-      run: docker rmi ${{ env.SKLEARN_IMAGE_TAG}}:test
+  verify-scans:
+    needs: build-servers
+    runs-on: ubuntu-latest
+    if: always()
 
-    - name: Build (mlflow)
-      id: build-mlflow
-      continue-on-error: true
-      working-directory: ./servers/mlflowserver
+    steps:
+    - name: Install jq
+      run: sudo apt-get update && sudo apt-get install -y jq
+    - name: Fail if any scan failed
       run: |
-        export MLFLOW_IMAGE_TAG="sec-tests/mlflow-$(date +%s)-$(openssl rand -hex 4)"
-        echo "MLFLOW_IMAGE_TAG=$MLFLOW_IMAGE_TAG" >> $GITHUB_ENV
-        make IMAGE_NAME=$MLFLOW_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
-    - name: Scan mlflow
-      id: scan-mlflow
-      if: steps.build-mlflow.outcome == 'success'
-      uses: snyk/actions/docker@master
-      continue-on-error: true
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        image: ${{ env.MLFLOW_IMAGE_TAG}}:test
-        args:  --fail-on=upgradable --app-vulns --severity-threshold=high
-
-    - name: Clean up Docker image
-      if: always()
-      run: docker rmi ${{ env.MLFLOW_IMAGE_TAG}}:test
-
-    - name: Build (xgboost)
-      id: build-xgboost
-      continue-on-error: true
-      working-directory: ./servers/xgboostserver
-      run: |
-        export XGBOOST_IMAGE_TAG="sec-tests/xgbost-$(date +%s)-$(openssl rand -hex 4)"
-        echo "XGBOOST_IMAGE_TAG=$XGBOOST_IMAGE_TAG" >> $GITHUB_ENV
-        make IMAGE_NAME=$XGBOOST_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}}:test docker-build
-    - name: Scan xgboost
-      id: scan-xgboost
-      if: steps.build-xgboost.outcome == 'success'
-      uses: snyk/actions/docker@master
-      continue-on-error: true
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        image: ${{ env.XGBOOST_IMAGE_TAG}}:test
-        args:  --fail-on=upgradable --app-vulns --severity-threshold=high
-
-    - name: Clean up Docker image
-      if: always()
-      run: docker rmi ${{ env.XGBOOST_IMAGE_TAG}}:test
-
-    - name: Build (alibi explain)
-      id: build-alibi-explain
-      continue-on-error: true
-      working-directory: ./components/alibi-explain-server
-      run: |
-        export ALIBI_EXPLAIN_IMAGE_TAG="sec-tests/alibi-explain-$(date +%s)-$(openssl rand -hex 4)"
-        echo "ALIBI_EXPLAIN_IMAGE_TAG=$ALIBI_EXPLAIN_IMAGE_TAG" >> $GITHUB_ENV
-        make IMAGE=$ALIBI_EXPLAIN_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}} docker-build
-    - name: Scan alibi explain
-      id: scan-alibi-explain
-      if: steps.build-alibi-explain.outcome == 'success'
-      uses: snyk/actions/docker@master
-      continue-on-error: true
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        image: ${{ env.ALIBI_EXPLAIN_IMAGE_TAG}}:test
-        args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/alibi-explain-server/Dockerfile
-
-    - name: Clean up Docker image
-      if: always()
-      run: docker rmi ${{ env.ALIBI_EXPLAIN_IMAGE_TAG}}:test
-
-    - name: Build (alibi detect)
-      id: build-alibi-detect
-      continue-on-error: true
-      working-directory: ./components/alibi-detect-server
-      run: |
-        export ALIBI_DETECT_IMAGE_TAG="sec-tests/alibi-detect-$(date +%s)-$(openssl rand -hex 4)"
-        echo "ALIBI_DETECT_IMAGE_TAG=$ALIBI_DETECT_IMAGE_TAG" >> $GITHUB_ENV
-        make IMAGE=$ALIBI_DETECT_IMAGE_TAG VERSION=test BASE_IMAGE=${{ env.PYTHON_BASE_IMAGE}} docker-build
-    - name: Scan alibi detect
-      if: steps.build-alibi-detect.outcome == 'success'
-      uses: snyk/actions/docker@master
-      continue-on-error: true
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        image: ${{ env.ALIBI_DETECT_IMAGE_TAG}}:test
-        args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/alibi-detect-server/Dockerfile
-
-    - name: Check for image scan failures
-      if: always()
-      run: |
-        if [ "${{ steps.scan-alibi-explain.outcome }}" != "success" ] || \
-           [ "${{ steps.scan-alibi-detect.outcome }}" != "success" ] || \
-           [ "${{ steps.scan-xgboost.outcome }}" != "success" ] || \
-           [ "${{ steps.scan-sklearn.outcome }}" != "success" ] || \
-           [ "${{ steps.scan-tfserving-proxy.outcome }}" != "success" ] || \
-           [ "${{ steps.scan-python-base.outcome }}" != "success" ] || \
-           [ "${{ steps.scan-conda.outcome }}" != "success" ] || \
-           [ "${{ steps.scan-mlflow.outcome }}" != "success" ]; then
-          echo "One or more docker image scans did not succeed"
+        echo "Checking scan results..."
+        
+        # Convert JSON to readable text
+        echo '${{ toJson(needs.build-servers) }}' > results.json
+        
+        # Extract scan_ok values
+        fails=$(jq '[ .[] | select(.outputs.scan_ok == "false") ] | length' results.json)
+        
+        if [ "$fails" -gt 0 ]; then
+          echo "$fails image scans failed"
           exit 1
+        else
+          echo "All image scans succeeded"
         fi
