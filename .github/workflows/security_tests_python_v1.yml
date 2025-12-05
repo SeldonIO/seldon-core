@@ -107,7 +107,7 @@ jobs:
     needs: build-upload-scan-base-images
     runs-on: ubuntu-latest
     outputs:
-      scan_ok: ${{ steps.server-scan-out.outputs.scan_ok }}
+      ${{ matrix.server }}_result: ${{ steps.server-scan-out.outputs.scan_ok }}
     strategy:
       fail-fast: false
       matrix:
@@ -170,9 +170,6 @@ jobs:
     if: always()
 
     steps:
-    - name: Install jq
-      run: sudo apt-get update && sudo apt-get install -y jq
-
     - name: Fail if any scan failed
       run: |
         echo "Checking scan results..."
@@ -181,19 +178,22 @@ jobs:
         base_python=${{ needs.build-upload-scan-base-images.outputs.python_snyk_result }}
         echo "Base: conda=$base_conda python=$base_python"
         
-        echo '${{ toJson(needs.build-servers) }}' > results.json
-        
-        echo "Matrix results JSON:"
-        cat results.json
-
-        server_fails=$(jq '[ .[] | objects | select(.outputs.scan_ok == "false") ] | length' results.json)
-        echo "Server failures: $server_fails"
+        tfserving_proxy = ${{ needs.build-servers.outputs['tfserving_proxy_result'] }}
+        sklearnserver = ${{ needs.build-servers.outputs['sklearnserver'] }}
+        mlflowserver = ${{ needs.build-servers.outputs['mlflowserver'] }}
+        xgboostserver = ${{ needs.build-servers.outputs['xgboostserver'] }}
         
         base_fails=0
         if [ "$base_conda" = "false" ]; then base_fails=$((base_fails+1)); fi
         if [ "$base_python" = "false" ]; then base_fails=$((base_fails+1)); fi
-        
         echo "Base failures: $base_fails"
+        
+        server_fails=0
+        if [ "tfserving_proxy" = "false" ]; then server_fails=$((server_fails+1)); fi
+        if [ "sklearnserver" = "false" ]; then server_fails=$((server_fails+1)); fi
+        if [ "mlflowserver" = "false" ]; then server_fails=$((server_fails+1)); fi
+        if [ "xgboostserver" = "false" ]; then server_fails=$((server_fails+1)); fi
+        echo "Server failures: $server_fails"
           
         total_fails=$((server_fails + base_fails))
           
