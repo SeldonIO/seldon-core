@@ -12,9 +12,6 @@ on:
 jobs:
   build-upload-scan-base-images:
     runs-on: ubuntu-latest
-    outputs:
-      conda_tar: conda-image.tar
-      python_tar: python-image.tar
     steps:
     - uses: actions/checkout@v4
 
@@ -35,7 +32,8 @@ jobs:
         echo "CONDA_BASE_IMAGE=$TAG_CONDA" >> $GITHUB_ENV
         TAG_PYTHON="sec-tests/python-base-$(date +%s)-$(openssl rand -hex 4)"
         echo "PYTHON_BASE_IMAGE=$TAG_PYTHON" >> $GITHUB_ENV        
-        echo "Generated tag: PYTHON_BASE_IMAGE"
+        echo "Generated Conda Base Image tag: $CONDA_BASE_IMAGE"
+        echo "Generated Python Wrapper Image tag: $PYTHON_BASE_IMAGE"
     - name: Build (Conda Base Image)
       working-directory: ./wrappers/s2i/python
       run: |
@@ -67,14 +65,17 @@ jobs:
         image: ${{ env.PYTHON_BASE_IMAGE}}:test
         args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
 
-    # Upload base images
-    - name: Upload base images
+    - name: Upload Conda base image
       uses: actions/upload-artifact@v4
       with:
-        name: base-images
-        path: |
-          /tmp/conda-image.tar
-          /tmp/python-base-image.tar
+        name: conda-base-image
+        path: /tmp/conda-image.tar
+
+    - name: Upload Python Wrapper image
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-wrapper-image
+        path: /tmp/python-wrapper-image.tar
 
   build-servers:
     needs: build-upload-scan-base-images
@@ -89,13 +90,19 @@ jobs:
           - xgboostserver
     steps:
     - uses: actions/checkout@v4
+
+    # Download Conda base image
     - uses: actions/download-artifact@v4
       with:
-        name: base-images
+        name: conda-base-image
+    # Download Python Wrapper image
+    - uses: actions/download-artifact@v4
+      with:
+        name: python-wrapper-image
     - name: Load images
       run: |
         docker load -i conda-image.tar
-        docker load -i python-image.tar
+        docker load -i python-wrapper-image.tar
 
     - name: Install s2i CLI - needed for building the server images
       uses: redhat-actions/openshift-tools-installer@v1
