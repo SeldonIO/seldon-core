@@ -106,8 +106,6 @@ jobs:
   build-servers:
     needs: build-upload-scan-base-images
     runs-on: ubuntu-latest
-    outputs:
-      scan_ok: ${{ steps.server-scan-out.outputs.scan_ok }}
     strategy:
       fail-fast: false
       matrix:
@@ -181,13 +179,12 @@ jobs:
         base_python=${{ needs.build-upload-scan-base-images.outputs.python_snyk_result }}
         echo "Base: conda=$base_conda python=$base_python"
         
-        # Save real needs JSON
-        echo '${{ toJson(needs.build-servers) }}' > results.json
+        echo '${{ toJson(needs.build-servers.outputs) }}' > results.json
         
         echo "Matrix results JSON:"
         cat results.json
 
-        server_fails=$(jq '[ .[] | objects | select(.outputs.scan_ok == "false") ] | length' results.json)
+        server_fails=$(jq '[ .[] | objects | select(.scan_ok == "false") ] | length' results.json)
         echo "Server failures: $server_fails"
         
         base_fails=0
