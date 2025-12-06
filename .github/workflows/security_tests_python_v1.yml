@@ -128,6 +128,9 @@ jobs:
         docker load -i conda-image.tar
         docker load -i python-wrapper-image.tar
 
+    - name: Remove tarballs
+      run: rm -f conda-image.tar python-wrapper-image.tar
+
     - name: Install s2i CLI - needed for building the server images
       uses: redhat-actions/openshift-tools-installer@v1
       with:
@@ -187,6 +190,9 @@ jobs:
         docker load -i conda-image.tar
         docker load -i python-wrapper-image.tar
 
+    - name: Remove tarballs
+      run: rm -f conda-image.tar python-wrapper-image.tar
+
     - name: Build Alibi Explain
       id: build-alibi-explain
       working-directory: ./components/alibi-explain-server
@@ -241,6 +247,9 @@ jobs:
           docker load -i conda-image.tar
           docker load -i python-wrapper-image.tar
 
+      - name: Remove tarballs
+        run: rm -f conda-image.tar python-wrapper-image.tar
+
       - name: Build Alibi Detect
         id: build-alibi-detect
         working-directory: ./components/alibi-detect-server
@@ -249,14 +258,6 @@ jobs:
           echo "ALIBI_DETECT_IMAGE_TAG=$ALIBI_DETECT_IMAGE_TAG" >> $GITHUB_ENV
           make IMAGE=$ALIBI_DETECT_IMAGE_TAG VERSION=test BASE_IMAGE=${{ needs.build-upload-scan-base-images.outputs.python_base_image_tag }} docker-build
           
-      - name: Free docker storage - Snyk requires disk space
-        run: |
-          df -h
-          docker system prune -af
-          docker image prune -af
-          docker builder prune -af
-          df -h
-
       - name: Scan alibi detect
         id: scan-alibi-detect
         if: steps.build-alibi-detect.outcome == 'success'
