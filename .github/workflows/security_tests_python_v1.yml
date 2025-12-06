@@ -78,7 +78,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: ${{ env.PYTHON_BASE_IMAGE}}:test
-        args: --fail-on=upgradable --app-vulns --severity-threshold=high --file=wrappers/s2i/python/Dockerfile
+        args: --fail-on=upgradable --app-vulns --severity-threshold=high
 
     - name: Save Snyk result for Python Wrapper image to file
       run: echo "python_wrapper_RESULT=${{ steps.scan-python-base.outcome }}" > "report-python-wrapper.txt"
@@ -203,12 +203,15 @@ jobs:
 
     - name: Free Docker space before Snyk Scan
       run: |
-        FINAL="${$ALIBI_EXPLAIN_IMAGE_TAG}:test"
+        KEEP1="${{ env.ALIBI_EXPLAIN_IMAGE_TAG }}:test"
+        KEEP2="snyk/snyk:docker"
         
-        docker images --format '{{.Repository}}:{{.Tag}}' \
-        | grep -v "$FINAL" \
-        | xargs -r docker rmi -f || true
-            
+        docker images --format '{{.Repository}}:{{.Tag}}' | while read IMG; do
+          if [ "$IMG" != "$KEEP1" ] && [ "$IMG" != "$KEEP2" ]; then
+            docker rmi -f "$IMG" || true
+          fi
+        done
+        
         docker system prune -af || true
         df -h
 
@@ -271,12 +274,15 @@ jobs:
           
       - name: Free Docker space before Snyk Scan
         run: |
-          FINAL="${ALIBI_DETECT_IMAGE_TAG}:test"
+          KEEP1="${{ env.ALIBI_DETECT_IMAGE_TAG }}:test"
+          KEEP2="snyk/snyk:docker"
           
-          docker images --format '{{.Repository}}:{{.Tag}}' \
-          | grep -v "$FINAL" \
-          | xargs -r docker rmi -f || true
-      
+          docker images --format '{{.Repository}}:{{.Tag}}' | while read IMG; do
+            if [ "$IMG" != "$KEEP1" ] && [ "$IMG" != "$KEEP2" ]; then
+              docker rmi -f "$IMG" || true
+            fi
+          done
+          
           docker system prune -af || true
           df -h
           
