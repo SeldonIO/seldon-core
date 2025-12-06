@@ -267,8 +267,8 @@ jobs:
           
       - name: Free Docker space before Snyk Scan
         run: |
-          docker rmi $${{ needs.build-upload-scan-base-images.outputs.conda_base_image_tag }}:test
-          docker rmi $${{ needs.build-upload-scan-base-images.outputs.python_base_image_tag }}:test
+          docker rmi ${{ needs.build-upload-scan-base-images.outputs.conda_base_image_tag }}:test
+          docker rmi ${{ needs.build-upload-scan-base-images.outputs.python_base_image_tag }}:test
           
       - name: Scan alibi detect
         id: scan-alibi-detect
