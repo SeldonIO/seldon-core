@@ -273,21 +273,31 @@ jobs:
           docker rmi ${{ needs.build-upload-scan-base-images.outputs.conda_base_image_tag }}:test
           docker rmi ${{ needs.build-upload-scan-base-images.outputs.python_base_image_tag }}:test
           df -h
-          docker image prune -f || true
-          docker builder prune -f || true
-          docker system prune -af || true
-          df -h
-          
-      - name: Scan alibi detect
+
+      - uses: snyk/actions/setup@master
+      # Run Snyk container scan with the same flags you use today
+      - name: Scan alibi detect (CLI mode)
         id: scan-alibi-detect
         if: steps.build-alibi-detect.outcome == 'success'
-        uses: snyk/actions/docker@master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          image: ${{ env.ALIBI_DETECT_IMAGE_TAG}}:test
-          args:  --fail-on=upgradable --app-vulns --severity-threshold=high
+        run: |
+          snyk container test ${{ env.ALIBI_DETECT_IMAGE_TAG }}:test \
+            --severity-threshold=high \
+            --app-vulns \
+            --fail-on=upgradable
+          
+#      - name: Scan alibi detect
+#        id: scan-alibi-detect
+#        if: steps.build-alibi-detect.outcome == 'success'
+#        uses: snyk/actions/docker@master
+#        continue-on-error: true
+#        env:
+#          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+#        with:
+#          image: ${{ env.ALIBI_DETECT_IMAGE_TAG}}:test
+#          args:  --fail-on=upgradable --app-vulns --severity-threshold=high
 
       - name: Save scan output to file
         run: echo "alibi_detect_RESULT=${{ steps.scan-alibi-detect.outcome }}" > "report-alibi-detect.txt"
