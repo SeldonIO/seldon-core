@@ -201,6 +201,17 @@ jobs:
         echo "ALIBI_EXPLAIN_IMAGE_TAG=$ALIBI_EXPLAIN_IMAGE_TAG" >> $GITHUB_ENV
         make IMAGE=$ALIBI_EXPLAIN_IMAGE_TAG VERSION=test BASE_IMAGE=${{ needs.build-upload-scan-base-images.outputs.python_base_image_tag }} docker-build
 
+    - name: Free Docker space before Snyk Scan
+      run: |
+        FINAL="${$ALIBI_EXPLAIN_IMAGE_TAG}:test"
+        
+        docker images --format '{{.Repository}}:{{.Tag}}' \
+        | grep -v "$FINAL" \
+        | xargs -r docker rmi -f || true
+            
+        docker system prune -af || true
+        df -h
+
     - name: Scan alibi explain
       id: scan-alibi-explain
       if: steps.build-alibi-explain.outcome == 'success'
@@ -210,7 +221,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: ${{ env.ALIBI_EXPLAIN_IMAGE_TAG}}:test
-        args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/alibi-explain-server/Dockerfile
+        args:  --fail-on=upgradable --app-vulns --severity-threshold=high
 
     - name: Save scan output to file
       run: echo "alibi_explain_RESULT=${{ steps.scan-alibi-explain.outcome }}" > "report-alibi-explain.txt"
@@ -258,6 +269,17 @@ jobs:
           echo "ALIBI_DETECT_IMAGE_TAG=$ALIBI_DETECT_IMAGE_TAG" >> $GITHUB_ENV
           make IMAGE=$ALIBI_DETECT_IMAGE_TAG VERSION=test BASE_IMAGE=${{ needs.build-upload-scan-base-images.outputs.python_base_image_tag }} docker-build
           
+      - name: Free Docker space before Snyk Scan
+        run: |
+          FINAL="${ALIBI_DETECT_IMAGE_TAG}:test"
+          
+          docker images --format '{{.Repository}}:{{.Tag}}' \
+          | grep -v "$FINAL" \
+          | xargs -r docker rmi -f || true
+      
+          docker system prune -af || true
+          df -h
+          
       - name: Scan alibi detect
         id: scan-alibi-detect
         if: steps.build-alibi-detect.outcome == 'success'
@@ -267,7 +289,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: ${{ env.ALIBI_DETECT_IMAGE_TAG}}:test
-          args:  --fail-on=upgradable --app-vulns --severity-threshold=high --file=components/alibi-detect-server/Dockerfile
+          args:  --fail-on=upgradable --app-vulns --severity-threshold=high
 
       - name: Save scan output to file
         run: echo "alibi_detect_RESULT=${{ steps.scan-alibi-detect.outcome }}" > "report-alibi-detect.txt"
