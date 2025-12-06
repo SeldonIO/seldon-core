@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       python_base_image_tag: ${{ steps.export-docker-tag.outputs.python_base_image_tag }}
+      conda_base_image_tag: ${{ steps.export-docker-tag.outputs.conda_base_image_tag }}
     steps:
     - uses: actions/checkout@v4
 
@@ -36,6 +37,7 @@ jobs:
         TAG_PYTHON="sec-tests/python-base-$(date +%s)-$(openssl rand -hex 4)"
         echo "PYTHON_BASE_IMAGE=$TAG_PYTHON" >> $GITHUB_ENV
         
+        echo "conda_base_image_tag=$TAG_CONDA" >> $GITHUB_OUTPUT
         echo "python_base_image_tag=$TAG_PYTHON" >> $GITHUB_OUTPUT
         
         echo "Generated Conda Base Image tag: $CONDA_BASE_IMAGE"
@@ -203,17 +205,8 @@ jobs:
 
     - name: Free Docker space before Snyk Scan
       run: |
-        KEEP1="${{ env.ALIBI_EXPLAIN_IMAGE_TAG }}:test"
-        KEEP2="snyk/snyk:docker"
-        
-        docker images --format '{{.Repository}}:{{.Tag}}' | while read IMG; do
-          if [ "$IMG" != "$KEEP1" ] && [ "$IMG" != "$KEEP2" ]; then
-            docker rmi -f "$IMG" || true
-          fi
-        done
-        
-        docker system prune -af || true
-        df -h
+        docker rmi $${{ needs.build-upload-scan-base-images.outputs.conda_base_image_tag }}:test
+        docker rmi $${{ needs.build-upload-scan-base-images.outputs.python_base_image_tag }}:test
 
     - name: Scan alibi explain
       id: scan-alibi-explain
@@ -274,17 +267,8 @@ jobs:
           
       - name: Free Docker space before Snyk Scan
         run: |
-          KEEP1="${{ env.ALIBI_DETECT_IMAGE_TAG }}:test"
-          KEEP2="snyk/snyk:docker"
-          
-          docker images --format '{{.Repository}}:{{.Tag}}' | while read IMG; do
-            if [ "$IMG" != "$KEEP1" ] && [ "$IMG" != "$KEEP2" ]; then
-              docker rmi -f "$IMG" || true
-            fi
-          done
-          
-          docker system prune -af || true
-          df -h
+          docker rmi $${{ needs.build-upload-scan-base-images.outputs.conda_base_image_tag }}:test
+          docker rmi $${{ needs.build-upload-scan-base-images.outputs.python_base_image_tag }}:test
           
       - name: Scan alibi detect
         id: scan-alibi-detect
