@@ -1579,14 +1579,14 @@ spec:
       - mountPath: /mnt/tracing
         name: tracing-config-volume
     - env:
+      - name: MLSERVER_PARALLEL_WORKERS
+        value: '{{ .Values.serverConfig.mlserver.parallel_workers }}'
       - name: MLSERVER_HTTP_PORT
         value: "9000"
       - name: MLSERVER_GRPC_PORT
         value: "9500"
       - name: MLSERVER_MODELS_DIR
         value: /mnt/agent/models
-      - name: MLSERVER_MODEL_PARALLEL_WORKERS
-        value: "1"
       - name: MLSERVER_LOAD_MODELS_AT_STARTUP
         value: "false"
       - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH

@@ -305,6 +305,7 @@ serverConfig:
       tag: 1.7.1
     serverCapabilities: "mlserver,alibi-detect,alibi-explain,huggingface,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
     modelVolumeStorage: 1Gi
+    parallel_workers: 1
     resources:
       cpu: 100m
       memory: 1Gi

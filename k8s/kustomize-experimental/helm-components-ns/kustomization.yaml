@@ -3,7 +3,7 @@ kind: Kustomization
 
 namespace: "{{ .Release.Namespace }}"
 
-bases:
+resources:
 - ../helm-components-sc
 
 

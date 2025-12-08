@@ -91,6 +91,9 @@ spec:
     - image: '{{ .Values.serverConfig.mlserver.image.registry }}/{{ .Values.serverConfig.mlserver.image.repository }}:{{ .Values.serverConfig.mlserver.image.tag }}'
       imagePullPolicy: '{{ .Values.serverConfig.mlserver.image.pullPolicy }}'
       name: mlserver
+      env:
+        - name: MLSERVER_PARALLEL_WORKERS
+          value: '{{ .Values.serverConfig.mlserver.parallel_workers }}'
       resources:
         requests:
           cpu: '{{ .Values.serverConfig.mlserver.resources.cpu }}'
