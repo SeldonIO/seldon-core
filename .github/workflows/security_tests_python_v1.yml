@@ -278,6 +278,11 @@ jobs:
         run: |
           docker image list
 
+      - Name: Display whats consuming so much memory
+        run: |
+          sudo du -sh /* | sort -hr | head
+          docker system df
+
       - uses: snyk/actions/setup@master
       # Run Snyk container scan with the same flags you use today
       - name: Scan alibi detect (CLI mode)
