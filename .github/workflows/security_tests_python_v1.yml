@@ -286,7 +286,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           TMPDIR: /mnt/snyk-tmp
         run: |
-          mkdir -p /mnt/snyk-tmp
+          sudo mkdir -p /mnt/snyk-tmp
           snyk container test ${{ env.ALIBI_DETECT_IMAGE_TAG }}:test \
             --severity-threshold=high \
             --app-vulns \
