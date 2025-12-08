@@ -6,6 +6,15 @@ fixed_v1_rep2.yaml
 fixed_v1_rep4.yaml
 fixed_v2_2predictors.yaml
 fixed_v2_rep.yaml
+fixed_v1.yaml
+fixed_v2.yaml
+fixed_v1_sep.yaml
+fixed_v2_sep.yaml
+fixed_v1_2podspecs.yaml
+fixed_v2_2podspecs.yaml
+fixed_v1_2models.yaml
+fixed_v2_2models.yaml
+fixed_v2_new_name.yaml
 cifar10_explainer.yaml
 model_v2_grpc.yaml
 model_v2_rest.yaml
@@ -14,11 +23,13 @@ wine_explainer.yaml
 imagenet_explainer_grpc.yaml
 mnist_rest_explainer.yaml
 model2.yaml
+model_seldon_protocol.yaml
+model_seldon_protocol_2.yaml
 model_seldon.yaml
 model_structural_test.yaml
-model_tfserving.yaml
+model_tfserving_protocol.yaml
 model_tracing.yaml
-model_v2.yaml
+model_v2_protocol.yaml
 model_v2_mnist.yaml
 tracing_config.yaml
 model_grpc_size.yaml
@@ -33,3 +44,4 @@ iris-xgboost-v2.yaml
 income_gpu_explainer.yaml
 triton_multi.yaml
 triton_tf_cifar10.yaml
+iris-xgboost.yaml
