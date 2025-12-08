@@ -7,6 +7,7 @@ import (
 	"github.com/cucumber/godog"
 	"github.com/seldonio/seldon-core/godog/k8sclient"
 	"github.com/seldonio/seldon-core/godog/steps"
+	"github.com/sirupsen/logrus"
 )
 
 type SuiteDeps struct {
@@ -72,11 +73,15 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 
 func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 	// Create the world with long-lived deps once per scenario context
-	world := &steps.World{
+	world := steps.NewWorld(steps.Config{
+		Namespace:      "seldon-mesh", //TODO configurable
+		Logger:         logrus.New().WithField("test_type", "godog"),
 		KubeClient:     suiteDeps.K8sClient,
 		WatcherStorage: suiteDeps.WatcherStore,
-		// initialise any other long-lived deps here, e.g. loggers, config, etc.
-	}
+		IngressHost:    "localhost", //TODO configurable
+		HTTPPort:       9000,        //TODO configurable
+		GRPCPort:       9000,        //TODO configurable
+	})
 
 	world.CurrentModel = steps.NewModel(world)
 
