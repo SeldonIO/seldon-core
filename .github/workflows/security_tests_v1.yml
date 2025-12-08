@@ -5,7 +5,7 @@ on:
     branches: [ master ]
   pull_request:
     # TODO revert before merge to master
-    branches: [ fix/core-1-CVEs ]
+    branches: [ release-1.19.0-prep ]
   workflow_dispatch:
 
 env:
