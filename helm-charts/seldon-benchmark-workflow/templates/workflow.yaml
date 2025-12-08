@@ -356,7 +356,7 @@ spec:
       parameters:
       - name: iteration_name
     script:
-      image: bitnami/kubectl:1.17
+      image: bitnami/kubectl:latest
       command: [bash]
       source: |
         sleep {{ .Values.seldonDeployment.waitTime }}
@@ -469,7 +469,7 @@ spec:
       parameters:
       - name: iteration_name
     script:
-      image: bitnami/kubectl:1.17
+      image: bitnami/kubectl:latest
       command: [bash]
       source: |
         kubectl delete sdep {{`{{inputs.parameters.iteration_name}}`}} -n {{ .Values.workflow.namespace }}
