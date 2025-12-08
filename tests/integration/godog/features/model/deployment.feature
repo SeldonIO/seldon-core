@@ -53,3 +53,4 @@ Feature: Model deployment
     Then the model eventually becomes not Ready
     And the model status message should eventually be "ModelFailed"
 
+

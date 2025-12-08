@@ -73,7 +73,7 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 
 func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 	// Create the world with long-lived deps once per scenario context
-	world := steps.NewWorld(steps.Config{
+	world, err := steps.NewWorld(steps.Config{
 		Namespace:      "seldon-mesh", //TODO configurable
 		Logger:         logrus.New().WithField("test_type", "godog"),
 		KubeClient:     suiteDeps.K8sClient,
@@ -81,9 +81,13 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 		IngressHost:    "localhost", //TODO configurable
 		HTTPPort:       9000,        //TODO configurable
 		GRPCPort:       9000,        //TODO configurable
+		SSL:            false,       //TODO configurable
 	})
+	if err != nil {
+		panic(fmt.Errorf("failed to create world: %w", err))
+	}
 
-	world.CurrentModel = steps.NewModel(world)
+	world.CurrentModel = steps.NewModel()
 
 	// Before: reset state and prep cluster before each scenario
 	scenarioCtx.Before(func(ctx context.Context, scenario *godog.Scenario) (context.Context, error) {
@@ -109,7 +113,8 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 	})
 
 	// Register step definitions with access to world + k8sClient
-	steps.LoadModelSteps(scenarioCtx, world.CurrentModel)
+	steps.LoadModelSteps(scenarioCtx, world)
+	steps.LoadExplicitModelSteps(scenarioCtx, world)
 	// TODO: load other steps, e.g. pipeline, experiment, etc.
 
 }
