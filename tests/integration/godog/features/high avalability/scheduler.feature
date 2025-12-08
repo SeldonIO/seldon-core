@@ -1,4 +1,4 @@
-@SchedulerHighAvailability @functional
+@SchedulerHighAvailability @Functional @HighAvailability
 Feature: Scheduler High Availability
   In order to ensure reliable model scheduling and orchestration
   As a Core 2 platform operator
@@ -8,8 +8,7 @@ Feature: Scheduler High Availability
     Given the control plane is deployed with at least 3 scheduler replicas
 
   Scenario: Scheduler elects a new leader and exposes it via the service when the current leader fails
-    Given the scheduler cluster has N replicas
-    And exactly 1 scheduler pod is Ready
+    Given exactly 1 scheduler pod is Ready
     And the Ready scheduler pod is the leader
     When I terminate the scheduler leader pod
     Then a new leader should be elected within "5s"
@@ -18,8 +17,7 @@ Feature: Scheduler High Availability
     And the scheduler Service should route traffic to the new leader
 
   Scenario: Followers remain unroutable and do not become leaders on restart
-    Given the scheduler cluster has N replicas
-    And exactly 1 scheduler pod is Ready
+    Given exactly 1 scheduler pod is Ready
     And the Ready scheduler pod is the leader
     When I terminate a scheduler follower pod
     Then the scheduler cluster should remain Ready
@@ -36,9 +34,16 @@ Feature: Scheduler High Availability
     And the scheduler Service should route traffic to the leader pod
 
   Scenario: Followers do not accept scheduling requests directly
-    Given the scheduler cluster has N replicas
-    And exactly 1 scheduler pod is Ready
+    Given exactly 1 scheduler pod is Ready
     And the Ready scheduler pod is the leader
     When I send a scheduling request directly to a follower pod
     Then the request should be rejected or not routable
     And the follower should not make scheduling decisions
+
+
+  Scenario: restarting
+
+#    chaos tests
+
+
+#    test same state after leadership change
