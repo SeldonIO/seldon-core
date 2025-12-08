@@ -2,11 +2,11 @@ name: V1 Python Tests
 
 on:
   push:
-    # TODO revert before merge to master
-    branches: '*'
+    branches: [ master ]
   pull_request:
     # TODO revert before merge to master
-    branches: '*'
+    branches: [ release-1.19.0-prep ]
+  workflow_dispatch:
 
 jobs:
   python-tests:
