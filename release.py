@@ -600,7 +600,6 @@ def main(argv):
             "examples/feedback/feedback-metrics-server/README.ipynb",
             "examples/feedback/feedback-metrics-server/README.md",
             "examples/feedback/metrics-server/README.ipynb",
-            "examples/feedback/metrics-server/README.md",
             "examples/batch/argo-workflows-batch/helm-charts/seldon-batch-workflow/values.yaml",
             "examples/batch/hdfs-argo-workflows/deployment.yaml",
             "examples/batch/hdfs-argo-workflows/hdfs-batch.ipynb",
