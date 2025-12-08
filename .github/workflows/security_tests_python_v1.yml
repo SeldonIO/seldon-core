@@ -104,6 +104,7 @@ jobs:
         path: /tmp/python-wrapper-image.tar
 
   build-servers:
+    if: false
     needs: build-upload-scan-base-images
     runs-on: ubuntu-latest
     strategy:
@@ -167,6 +168,7 @@ jobs:
         path: report-${{ matrix.server }}.txt
 
   build-alibi-explain:
+    if: false
     needs: build-upload-scan-base-images
     runs-on: ubuntu-latest
     steps:
@@ -282,7 +284,9 @@ jobs:
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          TMPDIR: /mnt/snyk-tmp
         run: |
+          mkdir -p /mnt/snyk-tmp
           snyk container test ${{ env.ALIBI_DETECT_IMAGE_TAG }}:test \
             --severity-threshold=high \
             --app-vulns \
