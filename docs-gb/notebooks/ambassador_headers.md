@@ -5,7 +5,7 @@ This notebook shows how you can deploy Seldon Deployments which can have custom 
 
 ## Setup Seldon Core
 
-Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setup-cluster) with [Ambassador Ingress](../notebooks/seldon-core-setup.md#ambassador) and [Install Seldon Core](../notebooks/seldon-core-setup.md#Install-Seldon-Core). Instructions [also online](../notebooks/seldon-core-setup.md).
+Use the setup notebook to [Setup Cluster](https://docs.seldon.ai/seldon-core-1/tutorials/notebooks/seldon-core-setup#setup-cluster) with [Ambassador Ingress](https://docs.seldon.ai/seldon-core-1/tutorials/notebooks/seldon-core-setup#install-ingress).
 
 
 ```python
@@ -13,14 +13,6 @@ Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setu
 ```
 
     Error from server (AlreadyExists): namespaces "seldon" already exists
-
-
-
-```python
-!kubectl config set-context $(kubectl config current-context) --namespace=seldon
-```
-
-    Context "kind-ansible" modified.
 
 
 
@@ -44,13 +36,15 @@ VERSION
 
 
 
-    '1.15.0-dev'
+    '1.19.0-dev'
 
 
 
 ## Launch main model
 
-We will create a very simple Seldon Deployment with a dummy model image `seldonio/mock_classifier:1.0`. This deployment is named `example`.
+We will create a very simple Seldon Deployment with a dummy model image `seldonio/mock_classifier`. This deployment is named `example`.
+
+
 
 
 ```python
@@ -84,7 +78,7 @@ spec:
 
 
 ```python
-!kubectl create -f model.yaml
+!kubectl apply -f model.yaml -n seldon
 ```
 
     seldondeployment.machinelearning.seldon.io/example created
@@ -92,11 +86,13 @@ spec:
 
 
 ```python
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=example -o jsonpath='{.items[0].metadata.name}')
+!kubectl wait sdep/example \
+  --for=condition=ready \
+  --timeout=120s \
+  -n seldon
 ```
 
-    Waiting for deployment "example-single-0-classifier" rollout to finish: 0 of 1 updated replicas are available...
-    deployment "example-single-0-classifier" successfully rolled out
+    seldondeployment.machinelearning.seldon.io/example condition met
 
 
 ### Get predictions
@@ -108,14 +104,31 @@ from seldon_core.seldon_client import SeldonClient
 sc = SeldonClient(deployment_name="example", namespace="seldon")
 ```
 
+    2025-12-04 11:15:20.327410: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:477] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+    WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+    E0000 00:00:1764846920.344554 3730764 cuda_dnn.cc:8310] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+    E0000 00:00:1764846920.350034 3730764 cuda_blas.cc:1418] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+    2025-12-04 11:15:20.369431: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+    To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+
+
 #### REST Request
 
 
 ```python
-r = sc.predict(gateway="ambassador", transport="rest")
-assert r.success == True
-print(r)
+from tenacity import retry, stop_after_delay, wait_exponential
+
+@retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
+def make_prediction():
+    r = sc.predict(gateway="ambassador", transport="rest")
+    assert r.success == True
+    return r
+
+make_prediction()
 ```
+
+
+
 
     Success:True message:
     Request:
@@ -125,17 +138,18 @@ print(r)
       tensor {
         shape: 1
         shape: 1
-        values: 0.4691931399866406
+        values: 0.39252928301617063
       }
     }
     
     Response:
-    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.0796235017124669]}}, 'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.15.0-dev'}}}
+    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.07418328803460136]}}, 'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0-dev'}}}
+
 
 
 ## Launch Model with Custom Routing
 
-We will now create a new graph for our Canary with a new model `seldonio/mock_classifier_rest:1.1`. To make it a canary of the original `example` deployment we add two annotations
+To make it a canary of the original `example` deployment we add two annotations
 
 ```
 "annotations": {
@@ -180,7 +194,7 @@ spec:
 
 
 ```python
-!kubectl create -f model_with_header.yaml
+!kubectl create -f model_with_header.yaml -n seldon
 ```
 
     seldondeployment.machinelearning.seldon.io/example-header created
@@ -188,20 +202,30 @@ spec:
 
 
 ```python
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=example-header -o jsonpath='{.items[0].metadata.name}')
+!kubectl wait sdep/example-header \
+  --for=condition=ready \
+  --timeout=120s \
+  -n seldon
 ```
 
-    Waiting for deployment "example-header-single-0-classifier" rollout to finish: 0 of 1 updated replicas are available...
-    deployment "example-header-single-0-classifier" successfully rolled out
+    seldondeployment.machinelearning.seldon.io/example-header condition met
 
 
 Check a request without a header goes to the existing model.
 
 
 ```python
-r = sc.predict(gateway="ambassador", transport="rest")
-print(r)
+@retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
+def make_prediction():
+    r = sc.predict(gateway="ambassador", transport="rest")
+    assert r.success == True
+    return r
+
+make_prediction()
 ```
+
+
+
 
     Success:True message:
     Request:
@@ -211,35 +235,49 @@ print(r)
       tensor {
         shape: 1
         shape: 1
-        values: 0.17492496126262558
+        values: 0.00838913842242972
       }
     }
     
     Response:
-    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.06055474553922779]}}, 'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.15.0-dev'}}}
+    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.0517458889162658]}}, 'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0-dev'}}}
 
 
-
-```python
-default_count = !kubectl logs $(kubectl get pod -lseldon-app=example-single -o jsonpath='{.items[0].metadata.name}') classifier | grep "root.predict" | wc -l
-```
 
 
 ```python
-print(default_count)
-assert int(default_count[0]) == 2
+import time
+
+@retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
+def get_requests_count():
+    default_count = !kubectl logs -l seldon-app=example-single -n seldon -c classifier --tail 1000 | grep "root:predict" | wc -l
+    return int(default_count[0])
+
+time.sleep(10)  # wait for logs to be flushed
+default_count = get_requests_count()
+print(f"main logs count {default_count}")
+
+assert default_count == 2
 ```
 
-    ['2']
+    main logs count 2
 
 
 Check a REST request with the required header gets routed to the new model.
 
 
 ```python
-r = sc.predict(gateway="ambassador", transport="rest", headers={"location": "london"})
-print(r)
+@retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
+def make_prediction():
+    r = sc.predict(gateway="ambassador", transport="rest", headers={"location": "london"})
+    assert r.success == True
+    return r
+
+make_prediction()
 ```
+
+
+
 
     Success:True message:
     Request:
@@ -249,31 +287,35 @@ print(r)
       tensor {
         shape: 1
         shape: 1
-        values: 0.8493669886048304
+        values: 0.86335349963397356
       }
     }
     
     Response:
-    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.11231598191770942]}}, 'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.15.0-dev'}}}
+    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.11371803202813073]}}, 'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0-dev'}}}
+
 
 
 
 ```python
-header_count = !kubectl logs $(kubectl get pod -lseldon-app=example-header-single -o jsonpath='{.items[0].metadata.name}') classifier | grep "root.predict" | wc -l
+@retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
+def get_requests_count_for_specific_header():
+    count = !kubectl logs -l seldon-app=example-header-single -n seldon -c classifier --tail 1000 | grep "root:predict" | wc -l
+    return int(count[0])
+
+time.sleep(10)  # wait for logs to be flushed
+header_count = get_requests_count_for_specific_header()
+print(f"header logs count {header_count}")
+
+assert header_count == 1
 ```
 
-
-```python
-print(header_count)
-assert int(header_count[0]) == 1
-```
-
-    ['1']
+    header logs count 1
 
 
 
 ```python
-!kubectl delete -f model.yaml
+!kubectl delete -f model.yaml -n seldon
 ```
 
     seldondeployment.machinelearning.seldon.io "example" deleted
@@ -281,13 +323,8 @@ assert int(header_count[0]) == 1
 
 
 ```python
-!kubectl delete -f model_with_header.yaml
+!kubectl delete -f model_with_header.yaml -n seldon
 ```
 
     seldondeployment.machinelearning.seldon.io "example-header" deleted
 
-
-
-```python
-
-```

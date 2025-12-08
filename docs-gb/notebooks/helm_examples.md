@@ -1,9 +1,9 @@
 # Example Seldon Core Deployments using Helm
-<img src="../images/deploy-graph.png" alt="predictor with canary" title="ml graph"/>
+<img src="images/deploy-graph.png" alt="predictor with canary" title="ml graph"/>
 
 ## Setup Seldon Core
 
-Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setup-cluster) with [Ambassador Ingress](../notebooks/seldon-core-setup.md#ambassador) and [Install Seldon Core](../notebooks/seldon-core-setup.md#Install-Seldon-Core). Instructions [also online](../notebooks/seldon-core-setup.md).
+Use the setup notebook to [Setup Cluster](https://docs.seldon.ai/seldon-core-1/tutorials/notebooks/seldon-core-setup#setup-cluster) with [Ambassador Ingress](https://docs.seldon.ai/seldon-core-1/tutorials/notebooks/seldon-core-setup#ambassador).
 
 
 ```python
@@ -15,85 +15,96 @@ Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setu
 
 
 ```python
-!kubectl config set-context $(kubectl config current-context) --namespace=seldon
+VERSION = !cat ../version.txt
+VERSION = VERSION[0]
+VERSION
 ```
 
-    Context "kind-kind" modified.
+
+
+
+    '1.19.0-dev'
+
 
 
 ## Serve Single Model
 
 
 ```python
-!helm install mymodel ../helm-charts/seldon-single-model --set 'model.image=seldonio/mock_classifier:1.5.0-dev'
+
+!helm upgrade -i mymodel ../helm-charts/seldon-single-model --set model.image=seldonio/mock_classifier:$VERSION --namespace seldon
 ```
 
+    Release "mymodel" has been upgraded. Happy Helming!
     NAME: mymodel
-    LAST DEPLOYED: Mon Nov  2 11:18:38 2020
+    LAST DEPLOYED: Thu Dec  4 12:11:31 2025
     NAMESPACE: seldon
     STATUS: deployed
-    REVISION: 1
+    REVISION: 3
     TEST SUITE: None
 
 
 
 ```python
-!helm template mymodel ../helm-charts/seldon-single-model --set 'model.image=seldonio/mock_classifier:1.5.0-dev' | pygmentize -l json
+!helm template mymodel ../helm-charts/seldon-single-model --set model.image=seldonio/mock_classifier:$VERSION | pygmentize -l json
 ```
 
-    [04m[31;01m-[39;49;00m[04m[31;01m-[39;49;00m[04m[31;01m-[39;49;00m
-    [04m[31;01m#[39;49;00m [04m[31;01mS[39;49;00m[04m[31;01mo[39;49;00m[04m[31;01mu[39;49;00m[04m[31;01mr[39;49;00m[04m[31;01mc[39;49;00m[04m[31;01me[39;49;00m[04m[31;01m:[39;49;00m [04m[31;01ms[39;49;00m[04m[31;01me[39;49;00m[04m[31;01ml[39;49;00m[04m[31;01md[39;49;00m[04m[31;01mo[39;49;00m[04m[31;01mn[39;49;00m[04m[31;01m-[39;49;00m[04m[31;01ms[39;49;00m[04m[31;01mi[39;49;00m[04m[31;01mn[39;49;00m[04m[31;01mg[39;49;00m[04m[31;01ml[39;49;00m[04m[31;01me[39;49;00m[04m[31;01m-[39;49;00m[04m[31;01mm[39;49;00m[04m[31;01mo[39;49;00m[04m[31;01md[39;49;00m[04m[31;01me[39;49;00m[04m[31;01ml[39;49;00m[04m[31;01m/[39;49;00m[04m[31;01mt[39;49;00m[04m[31;01me[39;49;00m[04m[31;01mm[39;49;00m[04m[31;01mp[39;49;00m[04m[31;01ml[39;49;00m[04m[31;01ma[39;49;00m[04m[31;01mt[39;49;00m[04m[31;01me[39;49;00m[04m[31;01ms[39;49;00m[04m[31;01m/[39;49;00m[04m[31;01ms[39;49;00m[04m[31;01me[39;49;00m[04m[31;01ml[39;49;00m[04m[31;01md[39;49;00m[04m[31;01mo[39;49;00m[04m[31;01mn[39;49;00m[04m[31;01md[39;49;00m[04m[31;01me[39;49;00m[04m[31;01mp[39;49;00m[04m[31;01ml[39;49;00m[04m[31;01mo[39;49;00m[04m[31;01my[39;49;00m[04m[31;01mm[39;49;00m[04m[31;01me[39;49;00m[04m[31;01mn[39;49;00m[04m[31;01mt[39;49;00m[04m[31;01m.[39;49;00m[04m[31;01mj[39;49;00m[04m[31;01ms[39;49;00m[04m[31;01mo[39;49;00m[04m[31;01mn[39;49;00m
-    {
-      [34;01m"kind"[39;49;00m: [33m"SeldonDeployment"[39;49;00m,
-      [34;01m"apiVersion"[39;49;00m: [33m"machinelearning.seldon.io/v1"[39;49;00m,
-      [34;01m"metadata"[39;49;00m: {
-        [34;01m"name"[39;49;00m: [33m"mymodel"[39;49;00m,
-        [34;01m"namespace"[39;49;00m: [33m"seldon"[39;49;00m,
-        [34;01m"labels"[39;49;00m: {}
-      },
-      [34;01m"spec"[39;49;00m: {
-          [34;01m"name"[39;49;00m: [33m"mymodel"[39;49;00m,
-          [34;01m"protocol"[39;49;00m: [33m"seldon"[39;49;00m,
-        [34;01m"annotations"[39;49;00m: {},
-        [34;01m"predictors"[39;49;00m: [
-          {
-            [34;01m"name"[39;49;00m: [33m"default"[39;49;00m,
-            [34;01m"graph"[39;49;00m: {
-              [34;01m"name"[39;49;00m: [33m"model"[39;49;00m,
-              [34;01m"type"[39;49;00m: [33m"MODEL"[39;49;00m,
-            },
-            [34;01m"componentSpecs"[39;49;00m: [
-              {
-                [34;01m"spec"[39;49;00m: {
-                  [34;01m"containers"[39;49;00m: [
-                    {
-                      [34;01m"name"[39;49;00m: [33m"model"[39;49;00m,
-                      [34;01m"image"[39;49;00m: [33m"seldonio/mock_classifier:1.5.0-dev"[39;49;00m,
-                      [34;01m"env"[39;49;00m: [
-                          {
-                            [34;01m"name"[39;49;00m: [33m"LOG_LEVEL"[39;49;00m,
-                            [34;01m"value"[39;49;00m: [33m"INFO"[39;49;00m
-                          },
-                        ],
-                      [34;01m"resources"[39;49;00m: {[34;01m"requests"[39;49;00m:{[34;01m"memory"[39;49;00m:[33m"1Mi"[39;49;00m}},
-                    }
-                  ]
-                },
-              }
-            ],
-            [34;01m"replicas"[39;49;00m: [34m1[39;49;00m
-          }
-        ]
-      }
-    }
+    [34m---[39;49;00m[37m[39;49;00m
+    [04m[91m#[39;49;00m[37m [39;49;00m[04m[91mS[39;49;00m[04m[91mo[39;49;00m[04m[91mu[39;49;00m[04m[91mr[39;49;00m[04m[91mc[39;49;00m[04m[91me[39;49;00m:[37m [39;49;00m[04m[91ms[39;49;00m[04m[91me[39;49;00m[04m[91ml[39;49;00m[04m[91md[39;49;00m[04m[91mo[39;49;00m[34mn[39;49;00m[34m-[39;49;00m[04m[91ms[39;49;00m[04m[91mi[39;49;00m[34mn[39;49;00m[04m[91mg[39;49;00m[04m[91ml[39;49;00m[04m[91me[39;49;00m[34m-[39;49;00m[04m[91mm[39;49;00m[04m[91mo[39;49;00m[04m[91md[39;49;00m[04m[91me[39;49;00m[04m[91ml[39;49;00m[04m[91m/[39;49;00m[34mte[39;49;00m[04m[91mm[39;49;00m[04m[91mp[39;49;00m[04m[91ml[39;49;00m[04m[91ma[39;49;00m[34mtes[39;49;00m[04m[91m/[39;49;00m[04m[91ms[39;49;00m[04m[91me[39;49;00m[04m[91ml[39;49;00m[04m[91md[39;49;00m[04m[91mo[39;49;00m[34mn[39;49;00m[04m[91md[39;49;00m[04m[91me[39;49;00m[04m[91mp[39;49;00m[04m[91ml[39;49;00m[04m[91mo[39;49;00m[04m[91my[39;49;00m[04m[91mm[39;49;00m[04m[91me[39;49;00m[34mnt[39;49;00m[04m[91m.[39;49;00m[04m[91mj[39;49;00m[04m[91ms[39;49;00m[04m[91mo[39;49;00m[34mn[39;49;00m[37m[39;49;00m
+    {[37m[39;49;00m
+    [37m  [39;49;00m[94m"kind"[39;49;00m:[37m [39;49;00m[33m"SeldonDeployment"[39;49;00m,[37m[39;49;00m
+    [37m  [39;49;00m[94m"apiVersion"[39;49;00m:[37m [39;49;00m[33m"machinelearning.seldon.io/v1"[39;49;00m,[37m[39;49;00m
+    [37m  [39;49;00m[94m"metadata"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m    [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"mymodel"[39;49;00m,[37m[39;49;00m
+    [37m    [39;49;00m[94m"namespace"[39;49;00m:[37m [39;49;00m[33m"seldon"[39;49;00m,[37m[39;49;00m
+    [37m    [39;49;00m[94m"labels"[39;49;00m:[37m [39;49;00m{}[37m[39;49;00m
+    [37m  [39;49;00m},[37m[39;49;00m
+    [37m  [39;49;00m[94m"spec"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m      [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"mymodel"[39;49;00m,[37m[39;49;00m
+    [37m      [39;49;00m[94m"protocol"[39;49;00m:[37m [39;49;00m[33m"seldon"[39;49;00m,[37m[39;49;00m
+    [37m    [39;49;00m[94m"annotations"[39;49;00m:[37m [39;49;00m{},[37m[39;49;00m
+    [37m    [39;49;00m[94m"predictors"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
+    [37m      [39;49;00m{[37m[39;49;00m
+    [37m        [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"default"[39;49;00m,[37m[39;49;00m
+    [37m        [39;49;00m[94m"graph"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m          [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"model"[39;49;00m,[37m[39;49;00m
+    [37m          [39;49;00m[94m"type"[39;49;00m:[37m [39;49;00m[33m"MODEL"[39;49;00m,[37m[39;49;00m
+    [37m        [39;49;00m},[37m[39;49;00m
+    [37m        [39;49;00m[94m"componentSpecs"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
+    [37m          [39;49;00m{[37m[39;49;00m
+    [37m            [39;49;00m[94m"spec"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m              [39;49;00m[94m"containers"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
+    [37m                [39;49;00m{[37m[39;49;00m
+    [37m                  [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"model"[39;49;00m,[37m[39;49;00m
+    [37m                  [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mock_classifier:1.19.0-dev"[39;49;00m,[37m[39;49;00m
+    [37m                  [39;49;00m[94m"env"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
+    [37m                      [39;49;00m{[37m[39;49;00m
+    [37m                        [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"LOG_LEVEL"[39;49;00m,[37m[39;49;00m
+    [37m                        [39;49;00m[94m"value"[39;49;00m:[37m [39;49;00m[33m"INFO"[39;49;00m[37m[39;49;00m
+    [37m                      [39;49;00m},[37m[39;49;00m
+    [37m                    [39;49;00m],[37m[39;49;00m
+    [37m                  [39;49;00m[94m"resources"[39;49;00m:[37m [39;49;00m{[94m"requests"[39;49;00m:{[94m"memory"[39;49;00m:[33m"1Mi"[39;49;00m}},[37m[39;49;00m
+    [37m                [39;49;00m}[37m[39;49;00m
+    [37m              [39;49;00m][37m[39;49;00m
+    [37m            [39;49;00m},[37m[39;49;00m
+    [37m          [39;49;00m}[37m[39;49;00m
+    [37m        [39;49;00m],[37m[39;49;00m
+    [37m        [39;49;00m[94m"replicas"[39;49;00m:[37m [39;49;00m[34m1[39;49;00m[37m[39;49;00m
+    [37m      [39;49;00m}[37m[39;49;00m
+    [37m    [39;49;00m][37m[39;49;00m
+    [37m  [39;49;00m}[37m[39;49;00m
+    }[37m[39;49;00m
 
 
 
 ```python
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=mymodel -o jsonpath='{.items[0].metadata.name}')
+!kubectl wait sdep/mymodel \
+  --for=condition=ready \
+  --timeout=120s \
+  -n seldon
 ```
 
-    deployment "mymodel-default-0-model" successfully rolled out
+    seldondeployment.machinelearning.seldon.io/mymodel condition met
 
 
 ### Get predictions
@@ -114,10 +125,19 @@ sc = SeldonClient(
 
 
 ```python
-r = sc.predict(transport="rest")
-assert r.success == True
-print(r)
+from tenacity import retry, stop_after_delay, wait_exponential
+
+@retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
+def predict():
+    r = sc.predict(transport="rest")
+    assert r.success == True
+    return r
+
+predict()
 ```
+
+
+
 
     Success:True message:
     Request:
@@ -127,32 +147,42 @@ print(r)
       tensor {
         shape: 1
         shape: 1
-        values: 0.0406846384836026
+        values: 0.71543328677795837
       }
     }
     
     Response:
-    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.05335370865277927]}}, 'meta': {}}
+    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.09963978586361734]}}, 'meta': {'requestPath': {'model': 'seldonio/mock_classifier:1.19.0-dev'}}}
+
 
 
 #### GRPC Request
 
 
 ```python
-r = sc.predict(transport="grpc")
-print(r)
+@retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
+def predict():
+    r = sc.predict(transport="grpc")
+    assert r.success == True
+    return r
+
+predict()
 ```
+
+
+
 
     Success:True message:
     Request:
-    {'meta': {}, 'data': {'tensor': {'shape': [1, 1], 'values': [0.3321428950191112]}}}
+    {'meta': {}, 'data': {'tensor': {'shape': [1, 1], 'values': [0.555819139294561]}}}
     Response:
-    {'meta': {}, 'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.07014111011256721]}}}
+    {'meta': {'requestPath': {'model': 'seldonio/mock_classifier:1.19.0-dev'}}, 'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.08620740652415673]}}}
+
 
 
 
 ```python
-!helm delete mymodel
+!helm delete mymodel --namespace seldon
 ```
 
     release "mymodel" uninstalled
@@ -162,11 +192,12 @@ print(r)
 
 
 ```python
-!helm install myabtest ../helm-charts/seldon-abtest
+!helm upgrade -i myabtest ../helm-charts/seldon-abtest --namespace seldon
 ```
 
+    Release "myabtest" does not exist. Installing it now.
     NAME: myabtest
-    LAST DEPLOYED: Mon Nov  2 11:19:50 2020
+    LAST DEPLOYED: Thu Dec  4 12:12:21 2025
     NAMESPACE: seldon
     STATUS: deployed
     REVISION: 1
@@ -178,98 +209,98 @@ print(r)
 !helm template ../helm-charts/seldon-abtest | pygmentize -l json
 ```
 
-    [04m[31;01m-[39;49;00m[04m[31;01m-[39;49;00m[04m[31;01m-[39;49;00m
-    [04m[31;01m#[39;49;00m [04m[31;01mS[39;49;00m[04m[31;01mo[39;49;00m[04m[31;01mu[39;49;00m[04m[31;01mr[39;49;00m[04m[31;01mc[39;49;00m[04m[31;01me[39;49;00m[04m[31;01m:[39;49;00m [04m[31;01ms[39;49;00m[04m[31;01me[39;49;00m[04m[31;01ml[39;49;00m[04m[31;01md[39;49;00m[04m[31;01mo[39;49;00m[04m[31;01mn[39;49;00m[04m[31;01m-[39;49;00m[04m[31;01ma[39;49;00m[04m[31;01mb[39;49;00m[04m[31;01mt[39;49;00m[04m[31;01me[39;49;00m[04m[31;01ms[39;49;00m[04m[31;01mt[39;49;00m[04m[31;01m/[39;49;00m[04m[31;01mt[39;49;00m[04m[31;01me[39;49;00m[04m[31;01mm[39;49;00m[04m[31;01mp[39;49;00m[04m[31;01ml[39;49;00m[04m[31;01ma[39;49;00m[04m[31;01mt[39;49;00m[04m[31;01me[39;49;00m[04m[31;01ms[39;49;00m[04m[31;01m/[39;49;00m[04m[31;01ma[39;49;00m[04m[31;01mb[39;49;00m[04m[31;01m_[39;49;00m[04m[31;01mt[39;49;00m[04m[31;01me[39;49;00m[04m[31;01ms[39;49;00m[04m[31;01mt[39;49;00m[04m[31;01m_[39;49;00m[34m2[39;49;00m[04m[31;01mp[39;49;00m[04m[31;01mo[39;49;00m[04m[31;01md[39;49;00m[04m[31;01ms[39;49;00m[04m[31;01m.[39;49;00m[04m[31;01mj[39;49;00m[04m[31;01ms[39;49;00m[04m[31;01mo[39;49;00m[04m[31;01mn[39;49;00m
-    {
-        [34;01m"apiVersion"[39;49;00m: [33m"machinelearning.seldon.io/v1alpha2"[39;49;00m,
-        [34;01m"kind"[39;49;00m: [33m"SeldonDeployment"[39;49;00m,
-        [34;01m"metadata"[39;49;00m: {
-    	[34;01m"labels"[39;49;00m: {
-    	    [34;01m"app"[39;49;00m: [33m"seldon"[39;49;00m
-    	},
-    	[34;01m"name"[39;49;00m: [33m"RELEASE-NAME"[39;49;00m
-        },
-        [34;01m"spec"[39;49;00m: {
-    	[34;01m"name"[39;49;00m: [33m"RELEASE-NAME"[39;49;00m,
-    	[34;01m"predictors"[39;49;00m: [
-    	    {
-    		[34;01m"name"[39;49;00m: [33m"default"[39;49;00m,
-    		[34;01m"replicas"[39;49;00m: [34m1[39;49;00m,
-    		[34;01m"componentSpecs"[39;49;00m: [{
-    		    [34;01m"spec"[39;49;00m: {
-    			[34;01m"containers"[39;49;00m: [
-    			    {
-                                    [34;01m"image"[39;49;00m: [33m"seldonio/mock_classifier:1.5.0-dev"[39;49;00m,
-    				[34;01m"imagePullPolicy"[39;49;00m: [33m"IfNotPresent"[39;49;00m,
-    				[34;01m"name"[39;49;00m: [33m"classifier-1"[39;49;00m,
-    				[34;01m"resources"[39;49;00m: {
-    				    [34;01m"requests"[39;49;00m: {
-    					[34;01m"memory"[39;49;00m: [33m"1Mi"[39;49;00m
-    				    }
-    				}
-    			    }],
-    			[34;01m"terminationGracePeriodSeconds"[39;49;00m: [34m20[39;49;00m
-    		    }},
-    	        {
-    		    [34;01m"metadata"[39;49;00m:{
-    			[34;01m"labels"[39;49;00m:{
-    			    [34;01m"version"[39;49;00m:[33m"v2"[39;49;00m
-    			}
-    		    },    
-    			[34;01m"spec"[39;49;00m:{
-    			    [34;01m"containers"[39;49;00m:[
-    				{
-                                    [34;01m"image"[39;49;00m: [33m"seldonio/mock_classifier:1.5.0-dev"[39;49;00m,
-    				[34;01m"imagePullPolicy"[39;49;00m: [33m"IfNotPresent"[39;49;00m,
-    				[34;01m"name"[39;49;00m: [33m"classifier-2"[39;49;00m,
-    				[34;01m"resources"[39;49;00m: {
-    				    [34;01m"requests"[39;49;00m: {
-    					[34;01m"memory"[39;49;00m: [33m"1Mi"[39;49;00m
-    				    }
-    				}
-    			    }
-    			],
-    			[34;01m"terminationGracePeriodSeconds"[39;49;00m: [34m20[39;49;00m
-    				   }
-    				   }],
-    		[34;01m"graph"[39;49;00m: {
-    		    [34;01m"name"[39;49;00m: [33m"RELEASE-NAME"[39;49;00m,
-    		    [34;01m"implementation"[39;49;00m:[33m"RANDOM_ABTEST"[39;49;00m,
-    		    [34;01m"parameters"[39;49;00m: [
-    			{
-    			    [34;01m"name"[39;49;00m:[33m"ratioA"[39;49;00m,
-    			    [34;01m"value"[39;49;00m:[33m"0.5"[39;49;00m,
-    			    [34;01m"type"[39;49;00m:[33m"FLOAT"[39;49;00m
-    			}
-    		    ],
-    		    [34;01m"children"[39;49;00m: [
-    			{
-    			    [34;01m"name"[39;49;00m: [33m"classifier-1"[39;49;00m,
-    			    [34;01m"type"[39;49;00m:[33m"MODEL"[39;49;00m,
-    			    [34;01m"children"[39;49;00m:[]
-    			},
-    			{
-    			    [34;01m"name"[39;49;00m: [33m"classifier-2"[39;49;00m,
-    			    [34;01m"type"[39;49;00m:[33m"MODEL"[39;49;00m,
-    			    [34;01m"children"[39;49;00m:[]
-    			}   
-    		    ]
-    		}
-    	    }
-    	]
-        }
-    }
+    [34m---[39;49;00m[37m[39;49;00m
+    [04m[91m#[39;49;00m[37m [39;49;00m[04m[91mS[39;49;00m[04m[91mo[39;49;00m[04m[91mu[39;49;00m[04m[91mr[39;49;00m[04m[91mc[39;49;00m[04m[91me[39;49;00m:[37m [39;49;00m[04m[91ms[39;49;00m[04m[91me[39;49;00m[04m[91ml[39;49;00m[04m[91md[39;49;00m[04m[91mo[39;49;00m[34mn[39;49;00m[34m-[39;49;00m[04m[91ma[39;49;00m[04m[91mb[39;49;00m[34mtest[39;49;00m[04m[91m/[39;49;00m[34mte[39;49;00m[04m[91mm[39;49;00m[04m[91mp[39;49;00m[04m[91ml[39;49;00m[04m[91ma[39;49;00m[34mtes[39;49;00m[04m[91m/[39;49;00m[04m[91ma[39;49;00m[04m[91mb[39;49;00m[04m[91m_[39;49;00m[34mtest[39;49;00m[04m[91m_[39;49;00m[34m2[39;49;00m[04m[91mp[39;49;00m[04m[91mo[39;49;00m[04m[91md[39;49;00m[04m[91ms[39;49;00m[04m[91m.[39;49;00m[04m[91mj[39;49;00m[04m[91ms[39;49;00m[04m[91mo[39;49;00m[34mn[39;49;00m[37m[39;49;00m
+    {[37m[39;49;00m
+    [37m    [39;49;00m[94m"apiVersion"[39;49;00m:[37m [39;49;00m[33m"machinelearning.seldon.io/v1alpha2"[39;49;00m,[37m[39;49;00m
+    [37m    [39;49;00m[94m"kind"[39;49;00m:[37m [39;49;00m[33m"SeldonDeployment"[39;49;00m,[37m[39;49;00m
+    [37m    [39;49;00m[94m"metadata"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m	[39;49;00m[94m"labels"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m	    [39;49;00m[94m"app"[39;49;00m:[37m [39;49;00m[33m"seldon"[39;49;00m[37m[39;49;00m
+    [37m	[39;49;00m},[37m[39;49;00m
+    [37m	[39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"release-name"[39;49;00m[37m[39;49;00m
+    [37m    [39;49;00m},[37m[39;49;00m
+    [37m    [39;49;00m[94m"spec"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m	[39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"release-name"[39;49;00m,[37m[39;49;00m
+    [37m	[39;49;00m[94m"predictors"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
+    [37m	    [39;49;00m{[37m[39;49;00m
+    [37m		[39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"default"[39;49;00m,[37m[39;49;00m
+    [37m		[39;49;00m[94m"replicas"[39;49;00m:[37m [39;49;00m[34m1[39;49;00m,[37m[39;49;00m
+    [37m		[39;49;00m[94m"componentSpecs"[39;49;00m:[37m [39;49;00m[{[37m[39;49;00m
+    [37m		    [39;49;00m[94m"spec"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m			[39;49;00m[94m"containers"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
+    [37m			    [39;49;00m{[37m[39;49;00m
+    [37m                                [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mock_classifier:1.19.0-dev"[39;49;00m,[37m[39;49;00m
+    [37m				[39;49;00m[94m"imagePullPolicy"[39;49;00m:[37m [39;49;00m[33m"IfNotPresent"[39;49;00m,[37m[39;49;00m
+    [37m				[39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"classifier-1"[39;49;00m,[37m[39;49;00m
+    [37m				[39;49;00m[94m"resources"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m				    [39;49;00m[94m"requests"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m					[39;49;00m[94m"memory"[39;49;00m:[37m [39;49;00m[33m"1Mi"[39;49;00m[37m[39;49;00m
+    [37m				    [39;49;00m}[37m[39;49;00m
+    [37m				[39;49;00m}[37m[39;49;00m
+    [37m			    [39;49;00m}],[37m[39;49;00m
+    [37m			[39;49;00m[94m"terminationGracePeriodSeconds"[39;49;00m:[37m [39;49;00m[34m20[39;49;00m[37m[39;49;00m
+    [37m		    [39;49;00m}},[37m[39;49;00m
+    [37m	        [39;49;00m{[37m[39;49;00m
+    [37m		    [39;49;00m[94m"metadata"[39;49;00m:{[37m[39;49;00m
+    [37m			[39;49;00m[94m"labels"[39;49;00m:{[37m[39;49;00m
+    [37m			    [39;49;00m[94m"version"[39;49;00m:[33m"v2"[39;49;00m[37m[39;49;00m
+    [37m			[39;49;00m}[37m[39;49;00m
+    [37m		    [39;49;00m},[37m    [39;49;00m
+    [37m			[39;49;00m[94m"spec"[39;49;00m:{[37m[39;49;00m
+    [37m			    [39;49;00m[94m"containers"[39;49;00m:[[37m[39;49;00m
+    [37m				[39;49;00m{[37m[39;49;00m
+    [37m                                [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mock_classifier:1.19.0-dev"[39;49;00m,[37m[39;49;00m
+    [37m				[39;49;00m[94m"imagePullPolicy"[39;49;00m:[37m [39;49;00m[33m"IfNotPresent"[39;49;00m,[37m[39;49;00m
+    [37m				[39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"classifier-2"[39;49;00m,[37m[39;49;00m
+    [37m				[39;49;00m[94m"resources"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m				    [39;49;00m[94m"requests"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m					[39;49;00m[94m"memory"[39;49;00m:[37m [39;49;00m[33m"1Mi"[39;49;00m[37m[39;49;00m
+    [37m				    [39;49;00m}[37m[39;49;00m
+    [37m				[39;49;00m}[37m[39;49;00m
+    [37m			    [39;49;00m}[37m[39;49;00m
+    [37m			[39;49;00m],[37m[39;49;00m
+    [37m			[39;49;00m[94m"terminationGracePeriodSeconds"[39;49;00m:[37m [39;49;00m[34m20[39;49;00m[37m[39;49;00m
+    [37m				   [39;49;00m}[37m[39;49;00m
+    [37m				   [39;49;00m}],[37m[39;49;00m
+    [37m		[39;49;00m[94m"graph"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m		    [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"release-name"[39;49;00m,[37m[39;49;00m
+    [37m		    [39;49;00m[94m"implementation"[39;49;00m:[33m"RANDOM_ABTEST"[39;49;00m,[37m[39;49;00m
+    [37m		    [39;49;00m[94m"parameters"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
+    [37m			[39;49;00m{[37m[39;49;00m
+    [37m			    [39;49;00m[94m"name"[39;49;00m:[33m"ratioA"[39;49;00m,[37m[39;49;00m
+    [37m			    [39;49;00m[94m"value"[39;49;00m:[33m"0.5"[39;49;00m,[37m[39;49;00m
+    [37m			    [39;49;00m[94m"type"[39;49;00m:[33m"FLOAT"[39;49;00m[37m[39;49;00m
+    [37m			[39;49;00m}[37m[39;49;00m
+    [37m		    [39;49;00m],[37m[39;49;00m
+    [37m		    [39;49;00m[94m"children"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
+    [37m			[39;49;00m{[37m[39;49;00m
+    [37m			    [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"classifier-1"[39;49;00m,[37m[39;49;00m
+    [37m			    [39;49;00m[94m"type"[39;49;00m:[33m"MODEL"[39;49;00m,[37m[39;49;00m
+    [37m			    [39;49;00m[94m"children"[39;49;00m:[][37m[39;49;00m
+    [37m			[39;49;00m},[37m[39;49;00m
+    [37m			[39;49;00m{[37m[39;49;00m
+    [37m			    [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"classifier-2"[39;49;00m,[37m[39;49;00m
+    [37m			    [39;49;00m[94m"type"[39;49;00m:[33m"MODEL"[39;49;00m,[37m[39;49;00m
+    [37m			    [39;49;00m[94m"children"[39;49;00m:[][37m[39;49;00m
+    [37m			[39;49;00m}[37m   [39;49;00m
+    [37m		    [39;49;00m][37m[39;49;00m
+    [37m		[39;49;00m}[37m[39;49;00m
+    [37m	    [39;49;00m}[37m[39;49;00m
+    [37m	[39;49;00m][37m[39;49;00m
+    [37m    [39;49;00m}[37m[39;49;00m
+    }[37m[39;49;00m
 
 
 
 ```python
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=myabtest -o jsonpath='{.items[0].metadata.name}')
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=myabtest -o jsonpath='{.items[1].metadata.name}')
+!kubectl wait sdep/myabtest \
+  --for=condition=ready \
+  --timeout=120s \
+  -n seldon
 ```
 
-    Waiting for deployment "myabtest-default-0-classifier-1" rollout to finish: 0 of 1 updated replicas are available...
-    deployment "myabtest-default-0-classifier-1" successfully rolled out
-    deployment "myabtest-default-1-classifier-2" successfully rolled out
+    seldondeployment.machinelearning.seldon.io/myabtest condition met
 
 
 ### Get predictions
@@ -290,10 +321,17 @@ sc = SeldonClient(
 
 
 ```python
-r = sc.predict(transport="rest")
-assert r.success == True
-print(r)
+@retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
+def predict():
+    r = sc.predict(transport="rest")
+    assert r.success == True
+    return r
+
+predict()
 ```
+
+
+
 
     Success:True message:
     Request:
@@ -303,32 +341,42 @@ print(r)
       tensor {
         shape: 1
         shape: 1
-        values: 0.8562060281778412
+        values: 0.26095295840328658
       }
     }
     
     Response:
-    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.11299965170860979]}}, 'meta': {}}
+    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.0656377202541611]}}, 'meta': {'requestPath': {'classifier-2': 'seldonio/mock_classifier:1.19.0-dev'}}}
+
 
 
 #### gRPC Request
 
 
 ```python
-r = sc.predict(transport="grpc")
-print(r)
+@retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
+def predict():
+    r = sc.predict(transport="grpc")
+    assert r.success == True
+    return r
+
+predict()
 ```
+
+
+
 
     Success:True message:
     Request:
-    {'meta': {}, 'data': {'tensor': {'shape': [1, 1], 'values': [0.45187622094165814]}}}
+    {'meta': {}, 'data': {'tensor': {'shape': [1, 1], 'values': [0.163692647815478]}}}
     Response:
-    {'meta': {}, 'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.07836365822139986]}}}
+    {'meta': {'requestPath': {'classifier-2': 'seldonio/mock_classifier:1.19.0-dev'}}, 'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.05991890833984506]}}}
+
 
 
 
 ```python
-!helm delete myabtest
+!helm delete myabtest --namespace seldon
 ```
 
     release "myabtest" uninstalled
@@ -338,11 +386,12 @@ print(r)
 
 
 ```python
-!helm install mymab ../helm-charts/seldon-mab
+!helm upgrade -i mymab ../helm-charts/seldon-mab --namespace seldon
 ```
 
+    Release "mymab" does not exist. Installing it now.
     NAME: mymab
-    LAST DEPLOYED: Mon Nov  2 11:22:19 2020
+    LAST DEPLOYED: Thu Dec  4 12:13:04 2025
     NAMESPACE: seldon
     STATUS: deployed
     REVISION: 1
@@ -354,134 +403,132 @@ print(r)
 !helm template ../helm-charts/seldon-mab | pygmentize -l json
 ```
 
-    [04m[31;01m-[39;49;00m[04m[31;01m-[39;49;00m[04m[31;01m-[39;49;00m
-    [04m[31;01m#[39;49;00m [04m[31;01mS[39;49;00m[04m[31;01mo[39;49;00m[04m[31;01mu[39;49;00m[04m[31;01mr[39;49;00m[04m[31;01mc[39;49;00m[04m[31;01me[39;49;00m[04m[31;01m:[39;49;00m [04m[31;01ms[39;49;00m[04m[31;01me[39;49;00m[04m[31;01ml[39;49;00m[04m[31;01md[39;49;00m[04m[31;01mo[39;49;00m[04m[31;01mn[39;49;00m[04m[31;01m-[39;49;00m[04m[31;01mm[39;49;00m[04m[31;01ma[39;49;00m[04m[31;01mb[39;49;00m[04m[31;01m/[39;49;00m[04m[31;01mt[39;49;00m[04m[31;01me[39;49;00m[04m[31;01mm[39;49;00m[04m[31;01mp[39;49;00m[04m[31;01ml[39;49;00m[04m[31;01ma[39;49;00m[04m[31;01mt[39;49;00m[04m[31;01me[39;49;00m[04m[31;01ms[39;49;00m[04m[31;01m/[39;49;00m[04m[31;01mm[39;49;00m[04m[31;01ma[39;49;00m[04m[31;01mb[39;49;00m[04m[31;01m.[39;49;00m[04m[31;01mj[39;49;00m[04m[31;01ms[39;49;00m[04m[31;01mo[39;49;00m[04m[31;01mn[39;49;00m
-    {
-        [34;01m"apiVersion"[39;49;00m: [33m"machinelearning.seldon.io/v1alpha2"[39;49;00m,
-        [34;01m"kind"[39;49;00m: [33m"SeldonDeployment"[39;49;00m,
-        [34;01m"metadata"[39;49;00m: {
-    		[34;01m"labels"[39;49;00m: {[34;01m"app"[39;49;00m:[33m"seldon"[39;49;00m},
-    		[34;01m"name"[39;49;00m: [33m"RELEASE-NAME"[39;49;00m
-        },
-        [34;01m"spec"[39;49;00m: {
-    	[34;01m"name"[39;49;00m: [33m"RELEASE-NAME"[39;49;00m,
-    	[34;01m"predictors"[39;49;00m: [
-    	    {
-    		[34;01m"name"[39;49;00m: [33m"default"[39;49;00m,
-    		[34;01m"replicas"[39;49;00m: [34m1[39;49;00m,
-    		[34;01m"componentSpecs"[39;49;00m: [{
-    		    [34;01m"spec"[39;49;00m: {
-    			[34;01m"containers"[39;49;00m: [
-    			    {
-                                    [34;01m"image"[39;49;00m: [33m"seldonio/mock_classifier:1.5.0-dev"[39;49;00m,				
-    				[34;01m"imagePullPolicy"[39;49;00m: [33m"IfNotPresent"[39;49;00m,
-    				[34;01m"name"[39;49;00m: [33m"classifier-1"[39;49;00m,
-    				[34;01m"resources"[39;49;00m: {
-    				    [34;01m"requests"[39;49;00m: {
-    					[34;01m"memory"[39;49;00m: [33m"1Mi"[39;49;00m
-    				    }
-    				}
-    			    }],
-    			[34;01m"terminationGracePeriodSeconds"[39;49;00m: [34m20[39;49;00m
-    		    }},
-    	        {
-    			[34;01m"spec"[39;49;00m:{
-    			    [34;01m"containers"[39;49;00m:[
-    				{
-                                    [34;01m"image"[39;49;00m: [33m"seldonio/mock_classifier:1.5.0-dev"[39;49;00m,								    
-    				[34;01m"imagePullPolicy"[39;49;00m: [33m"IfNotPresent"[39;49;00m,
-    				[34;01m"name"[39;49;00m: [33m"classifier-2"[39;49;00m,
-    				[34;01m"resources"[39;49;00m: {
-    				    [34;01m"requests"[39;49;00m: {
-    					[34;01m"memory"[39;49;00m: [33m"1Mi"[39;49;00m
-    				    }
-    				}
-    			    }
-    			],
-    			[34;01m"terminationGracePeriodSeconds"[39;49;00m: [34m20[39;49;00m
-    			}
-    		},
-    	        {
-    		    [34;01m"spec"[39;49;00m:{
-    			[34;01m"containers"[39;49;00m: [{
-                                [34;01m"image"[39;49;00m: [33m"seldonio/mab_epsilon_greedy:1.5.0-dev"[39;49;00m,								    			    
-    			    [34;01m"name"[39;49;00m: [33m"eg-router"[39;49;00m
-    			}],
-    			[34;01m"terminationGracePeriodSeconds"[39;49;00m: [34m20[39;49;00m
-    		    }}
-    	        ],
-    		[34;01m"graph"[39;49;00m: {
-    		    [34;01m"name"[39;49;00m: [33m"eg-router"[39;49;00m,
-    		    [34;01m"type"[39;49;00m:[33m"ROUTER"[39;49;00m,
-    		    [34;01m"parameters"[39;49;00m: [
-    			{
-    			    [34;01m"name"[39;49;00m: [33m"n_branches"[39;49;00m,
-    			    [34;01m"value"[39;49;00m: [33m"2"[39;49;00m,
-    			    [34;01m"type"[39;49;00m: [33m"INT"[39;49;00m
-    			},
-    			{
-    			    [34;01m"name"[39;49;00m: [33m"epsilon"[39;49;00m,
-    			    [34;01m"value"[39;49;00m: [33m"0.2"[39;49;00m,
-    			    [34;01m"type"[39;49;00m: [33m"FLOAT"[39;49;00m
-    			},
-    			{
-    			    [34;01m"name"[39;49;00m: [33m"verbose"[39;49;00m,
-    			    [34;01m"value"[39;49;00m: [33m"1"[39;49;00m,
-    			    [34;01m"type"[39;49;00m: [33m"BOOL"[39;49;00m
-    			}
-    		    ],
-    		    [34;01m"children"[39;49;00m: [
-    			{
-    			    [34;01m"name"[39;49;00m: [33m"classifier-1"[39;49;00m,
-    			    [34;01m"type"[39;49;00m:[33m"MODEL"[39;49;00m,
-    			    [34;01m"children"[39;49;00m:[]
-    			},
-    			{
-    			    [34;01m"name"[39;49;00m: [33m"classifier-2"[39;49;00m,
-    			    [34;01m"type"[39;49;00m:[33m"MODEL"[39;49;00m,
-    			    [34;01m"children"[39;49;00m:[]
-    			}   
-    		    ]
-    		},
-    		[34;01m"svcOrchSpec"[39;49;00m: {
-    		[34;01m"resources"[39;49;00m: {[34;01m"requests"[39;49;00m:{[34;01m"cpu"[39;49;00m:[33m"0.1"[39;49;00m}},
-    [34;01m"env"[39;49;00m: [
-    {
-    [34;01m"name"[39;49;00m: [33m"SELDON_LOG_MESSAGES_EXTERNALLY"[39;49;00m,
-    [34;01m"value"[39;49;00m: [33m"false"[39;49;00m
-    },
-    {
-    [34;01m"name"[39;49;00m: [33m"SELDON_LOG_MESSAGE_TYPE"[39;49;00m,
-    [34;01m"value"[39;49;00m: [33m"seldon.message.pair"[39;49;00m
-    },
-    {
-    [34;01m"name"[39;49;00m: [33m"SELDON_LOG_REQUESTS"[39;49;00m,
-    [34;01m"value"[39;49;00m: [33m"false"[39;49;00m
-    },
-    {
-    [34;01m"name"[39;49;00m: [33m"SELDON_LOG_RESPONSES"[39;49;00m,
-    [34;01m"value"[39;49;00m: [33m"false"[39;49;00m
-    },
-    ]
-    },
-    		[34;01m"labels"[39;49;00m: {[34;01m"fluentd"[39;49;00m:[33m"true"[39;49;00m,[34;01m"version"[39;49;00m:[33m"1.5.0-dev"[39;49;00m}
-    	    }
-    	]
-        }
-    }
+    [34m---[39;49;00m[37m[39;49;00m
+    [04m[91m#[39;49;00m[37m [39;49;00m[04m[91mS[39;49;00m[04m[91mo[39;49;00m[04m[91mu[39;49;00m[04m[91mr[39;49;00m[04m[91mc[39;49;00m[04m[91me[39;49;00m:[37m [39;49;00m[04m[91ms[39;49;00m[04m[91me[39;49;00m[04m[91ml[39;49;00m[04m[91md[39;49;00m[04m[91mo[39;49;00m[34mn[39;49;00m[34m-[39;49;00m[04m[91mm[39;49;00m[04m[91ma[39;49;00m[04m[91mb[39;49;00m[04m[91m/[39;49;00m[34mte[39;49;00m[04m[91mm[39;49;00m[04m[91mp[39;49;00m[04m[91ml[39;49;00m[04m[91ma[39;49;00m[34mtes[39;49;00m[04m[91m/[39;49;00m[04m[91mm[39;49;00m[04m[91ma[39;49;00m[04m[91mb[39;49;00m[04m[91m.[39;49;00m[04m[91mj[39;49;00m[04m[91ms[39;49;00m[04m[91mo[39;49;00m[34mn[39;49;00m[37m[39;49;00m
+    {[37m[39;49;00m
+    [37m    [39;49;00m[94m"apiVersion"[39;49;00m:[37m [39;49;00m[33m"machinelearning.seldon.io/v1alpha2"[39;49;00m,[37m[39;49;00m
+    [37m    [39;49;00m[94m"kind"[39;49;00m:[37m [39;49;00m[33m"SeldonDeployment"[39;49;00m,[37m[39;49;00m
+    [37m    [39;49;00m[94m"metadata"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m		[39;49;00m[94m"labels"[39;49;00m:[37m [39;49;00m{[94m"app"[39;49;00m:[33m"seldon"[39;49;00m},[37m[39;49;00m
+    [37m		[39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"release-name"[39;49;00m[37m[39;49;00m
+    [37m    [39;49;00m},[37m[39;49;00m
+    [37m    [39;49;00m[94m"spec"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m	[39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"release-name"[39;49;00m,[37m[39;49;00m
+    [37m	[39;49;00m[94m"predictors"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
+    [37m	    [39;49;00m{[37m[39;49;00m
+    [37m		[39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"default"[39;49;00m,[37m[39;49;00m
+    [37m		[39;49;00m[94m"replicas"[39;49;00m:[37m [39;49;00m[34m1[39;49;00m,[37m[39;49;00m
+    [37m		[39;49;00m[94m"componentSpecs"[39;49;00m:[37m [39;49;00m[{[37m[39;49;00m
+    [37m		    [39;49;00m[94m"spec"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m			[39;49;00m[94m"containers"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
+    [37m			    [39;49;00m{[37m[39;49;00m
+    [37m                                [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mock_classifier:1.19.0-dev"[39;49;00m,[37m				[39;49;00m
+    [37m				[39;49;00m[94m"imagePullPolicy"[39;49;00m:[37m [39;49;00m[33m"IfNotPresent"[39;49;00m,[37m[39;49;00m
+    [37m				[39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"classifier-1"[39;49;00m,[37m[39;49;00m
+    [37m				[39;49;00m[94m"resources"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m				    [39;49;00m[94m"requests"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m					[39;49;00m[94m"memory"[39;49;00m:[37m [39;49;00m[33m"1Mi"[39;49;00m[37m[39;49;00m
+    [37m				    [39;49;00m}[37m[39;49;00m
+    [37m				[39;49;00m}[37m[39;49;00m
+    [37m			    [39;49;00m}],[37m[39;49;00m
+    [37m			[39;49;00m[94m"terminationGracePeriodSeconds"[39;49;00m:[37m [39;49;00m[34m20[39;49;00m[37m[39;49;00m
+    [37m		    [39;49;00m}},[37m[39;49;00m
+    [37m	        [39;49;00m{[37m[39;49;00m
+    [37m			[39;49;00m[94m"spec"[39;49;00m:{[37m[39;49;00m
+    [37m			    [39;49;00m[94m"containers"[39;49;00m:[[37m[39;49;00m
+    [37m				[39;49;00m{[37m[39;49;00m
+    [37m                                [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mock_classifier:1.19.0-dev"[39;49;00m,[37m								    [39;49;00m
+    [37m				[39;49;00m[94m"imagePullPolicy"[39;49;00m:[37m [39;49;00m[33m"IfNotPresent"[39;49;00m,[37m[39;49;00m
+    [37m				[39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"classifier-2"[39;49;00m,[37m[39;49;00m
+    [37m				[39;49;00m[94m"resources"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m				    [39;49;00m[94m"requests"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m					[39;49;00m[94m"memory"[39;49;00m:[37m [39;49;00m[33m"1Mi"[39;49;00m[37m[39;49;00m
+    [37m				    [39;49;00m}[37m[39;49;00m
+    [37m				[39;49;00m}[37m[39;49;00m
+    [37m			    [39;49;00m}[37m[39;49;00m
+    [37m			[39;49;00m],[37m[39;49;00m
+    [37m			[39;49;00m[94m"terminationGracePeriodSeconds"[39;49;00m:[37m [39;49;00m[34m20[39;49;00m[37m[39;49;00m
+    [37m			[39;49;00m}[37m[39;49;00m
+    [37m		[39;49;00m},[37m[39;49;00m
+    [37m	        [39;49;00m{[37m[39;49;00m
+    [37m		    [39;49;00m[94m"spec"[39;49;00m:{[37m[39;49;00m
+    [37m			[39;49;00m[94m"containers"[39;49;00m:[37m [39;49;00m[{[37m[39;49;00m
+    [37m                            [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mab_epsilon_greedy:1.19.0-dev"[39;49;00m,[37m								    			    [39;49;00m
+    [37m			    [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"eg-router"[39;49;00m[37m[39;49;00m
+    [37m			[39;49;00m}],[37m[39;49;00m
+    [37m			[39;49;00m[94m"terminationGracePeriodSeconds"[39;49;00m:[37m [39;49;00m[34m20[39;49;00m[37m[39;49;00m
+    [37m		    [39;49;00m}}[37m[39;49;00m
+    [37m	        [39;49;00m],[37m[39;49;00m
+    [37m		[39;49;00m[94m"graph"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m		    [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"eg-router"[39;49;00m,[37m[39;49;00m
+    [37m		    [39;49;00m[94m"type"[39;49;00m:[33m"ROUTER"[39;49;00m,[37m[39;49;00m
+    [37m		    [39;49;00m[94m"parameters"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
+    [37m			[39;49;00m{[37m[39;49;00m
+    [37m			    [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"n_branches"[39;49;00m,[37m[39;49;00m
+    [37m			    [39;49;00m[94m"value"[39;49;00m:[37m [39;49;00m[33m"2"[39;49;00m,[37m[39;49;00m
+    [37m			    [39;49;00m[94m"type"[39;49;00m:[37m [39;49;00m[33m"INT"[39;49;00m[37m[39;49;00m
+    [37m			[39;49;00m},[37m[39;49;00m
+    [37m			[39;49;00m{[37m[39;49;00m
+    [37m			    [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"epsilon"[39;49;00m,[37m[39;49;00m
+    [37m			    [39;49;00m[94m"value"[39;49;00m:[37m [39;49;00m[33m"0.2"[39;49;00m,[37m[39;49;00m
+    [37m			    [39;49;00m[94m"type"[39;49;00m:[37m [39;49;00m[33m"FLOAT"[39;49;00m[37m[39;49;00m
+    [37m			[39;49;00m},[37m[39;49;00m
+    [37m			[39;49;00m{[37m[39;49;00m
+    [37m			    [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"verbose"[39;49;00m,[37m[39;49;00m
+    [37m			    [39;49;00m[94m"value"[39;49;00m:[37m [39;49;00m[33m"1"[39;49;00m,[37m[39;49;00m
+    [37m			    [39;49;00m[94m"type"[39;49;00m:[37m [39;49;00m[33m"BOOL"[39;49;00m[37m[39;49;00m
+    [37m			[39;49;00m}[37m[39;49;00m
+    [37m		    [39;49;00m],[37m[39;49;00m
+    [37m		    [39;49;00m[94m"children"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
+    [37m			[39;49;00m{[37m[39;49;00m
+    [37m			    [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"classifier-1"[39;49;00m,[37m[39;49;00m
+    [37m			    [39;49;00m[94m"type"[39;49;00m:[33m"MODEL"[39;49;00m,[37m[39;49;00m
+    [37m			    [39;49;00m[94m"children"[39;49;00m:[][37m[39;49;00m
+    [37m			[39;49;00m},[37m[39;49;00m
+    [37m			[39;49;00m{[37m[39;49;00m
+    [37m			    [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"classifier-2"[39;49;00m,[37m[39;49;00m
+    [37m			    [39;49;00m[94m"type"[39;49;00m:[33m"MODEL"[39;49;00m,[37m[39;49;00m
+    [37m			    [39;49;00m[94m"children"[39;49;00m:[][37m[39;49;00m
+    [37m			[39;49;00m}[37m   [39;49;00m
+    [37m		    [39;49;00m][37m[39;49;00m
+    [37m		[39;49;00m},[37m[39;49;00m
+    [37m		[39;49;00m[94m"svcOrchSpec"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
+    [37m		[39;49;00m[94m"resources"[39;49;00m:[37m [39;49;00m{[94m"requests"[39;49;00m:{[94m"cpu"[39;49;00m:[33m"0.1"[39;49;00m}},[37m[39;49;00m
+    [94m"env"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
+    {[37m[39;49;00m
+    [94m"name"[39;49;00m:[37m [39;49;00m[33m"SELDON_LOG_MESSAGES_EXTERNALLY"[39;49;00m,[37m[39;49;00m
+    [94m"value"[39;49;00m:[37m [39;49;00m[33m"false"[39;49;00m[37m[39;49;00m
+    },[37m[39;49;00m
+    {[37m[39;49;00m
+    [94m"name"[39;49;00m:[37m [39;49;00m[33m"SELDON_LOG_MESSAGE_TYPE"[39;49;00m,[37m[39;49;00m
+    [94m"value"[39;49;00m:[37m [39;49;00m[33m"seldon.message.pair"[39;49;00m[37m[39;49;00m
+    },[37m[39;49;00m
+    {[37m[39;49;00m
+    [94m"name"[39;49;00m:[37m [39;49;00m[33m"SELDON_LOG_REQUESTS"[39;49;00m,[37m[39;49;00m
+    [94m"value"[39;49;00m:[37m [39;49;00m[33m"false"[39;49;00m[37m[39;49;00m
+    },[37m[39;49;00m
+    {[37m[39;49;00m
+    [94m"name"[39;49;00m:[37m [39;49;00m[33m"SELDON_LOG_RESPONSES"[39;49;00m,[37m[39;49;00m
+    [94m"value"[39;49;00m:[37m [39;49;00m[33m"false"[39;49;00m[37m[39;49;00m
+    },[37m[39;49;00m
+    ][37m[39;49;00m
+    },[37m[39;49;00m
+    [37m		[39;49;00m[94m"labels"[39;49;00m:[37m [39;49;00m{[94m"fluentd"[39;49;00m:[33m"true"[39;49;00m,[94m"version"[39;49;00m:[33m"1.19.0-dev"[39;49;00m}[37m[39;49;00m
+    [37m	    [39;49;00m}[37m[39;49;00m
+    [37m	[39;49;00m][37m[39;49;00m
+    [37m    [39;49;00m}[37m[39;49;00m
+    }[37m[39;49;00m
 
 
 
 ```python
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=mymab -o jsonpath='{.items[0].metadata.name}')
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=mymab -o jsonpath='{.items[1].metadata.name}')
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=mymab -o jsonpath='{.items[2].metadata.name}')
+!kubectl wait sdep/mymab \
+  --for=condition=ready \
+  --timeout=120s \
+  -n seldon
 ```
 
-    Waiting for deployment "mymab-default-0-classifier-1" rollout to finish: 0 of 1 updated replicas are available...
-    deployment "mymab-default-0-classifier-1" successfully rolled out
-    deployment "mymab-default-1-classifier-2" successfully rolled out
-    deployment "mymab-default-2-eg-router" successfully rolled out
+    seldondeployment.machinelearning.seldon.io/mymab condition met
 
 
 ### Get predictions
@@ -502,10 +549,17 @@ sc = SeldonClient(
 
 
 ```python
-r = sc.predict(transport="rest")
-assert r.success == True
-print(r)
+@retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
+def predict():
+    r = sc.predict(transport="rest")
+    assert r.success == True
+    return r
+
+predict()
 ```
+
+
+
 
     Success:True message:
     Request:
@@ -515,38 +569,43 @@ print(r)
       tensor {
         shape: 1
         shape: 1
-        values: 0.1000299187972008
+        values: 0.13298918130078008
       }
     }
     
     Response:
-    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.05643175042558145]}}, 'meta': {}}
+    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.058212613572549546]}}, 'meta': {'requestPath': {'classifier-1': 'seldonio/mock_classifier:1.19.0-dev'}}}
+
 
 
 #### gRPC Request
 
 
 ```python
-r = sc.predict(transport="grpc")
-print(r)
+@retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
+def predict():
+    r = sc.predict(transport="grpc")
+    assert r.success == True
+    return r
+
+predict()
 ```
+
+
+
 
     Success:True message:
     Request:
-    {'meta': {}, 'data': {'tensor': {'shape': [1, 1], 'values': [0.23579893772394123]}}}
+    {'meta': {}, 'data': {'tensor': {'shape': [1, 1], 'values': [0.1279822023238696]}}}
     Response:
-    {'meta': {}, 'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.0641117916962909]}}}
+    {'meta': {'requestPath': {'classifier-1': 'seldonio/mock_classifier:1.19.0-dev'}}, 'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.05793871786684459]}}}
+
 
 
 
 ```python
-!helm delete mymab
+!helm delete mymab --namespace seldon
 ```
 
     release "mymab" uninstalled
 
-
-
-```python
-
-```

@@ -8,7 +8,7 @@ In this example we will scale the seldon deployment with Prometheus metrics as a
 
 ## Install Seldon Core
 
-Install Seldon Core as described in [docs](../install/installation.md)
+Install Seldon Core as described in [docs](https://docs.seldon.ai/seldon-core-1/tutorials/notebooks/seldon-core-setup)
 
 Make sure add `--set keda.enabled=true`
 
@@ -18,58 +18,26 @@ Make sure add `--set keda.enabled=true`
 
 ```python
 !kubectl create namespace seldon-monitoring
-!helm upgrade --install seldon-monitoring kube-prometheus \
-    --version 8.3.2 \
+!helm upgrade --install seldon-monitoring kube-prometheus-stack \
+    --version 44.4.1 \
     --set fullnameOverride=seldon-monitoring \
     --namespace seldon-monitoring \
-    --repo https://charts.bitnami.com/bitnami \
+    --repo https://prometheus-community.github.io/helm-charts/ \
     --wait
 ```
 
-    namespace/seldon-monitoring created
-    Release "seldon-monitoring" does not exist. Installing it now.
+    Error from server (AlreadyExists): namespaces "seldon-monitoring" already exists
+    Release "seldon-monitoring" has been upgraded. Happy Helming!
     NAME: seldon-monitoring
-    LAST DEPLOYED: Sun Feb  5 08:41:12 2023
+    LAST DEPLOYED: Thu Dec  4 11:20:53 2025
     NAMESPACE: seldon-monitoring
     STATUS: deployed
-    REVISION: 1
-    TEST SUITE: None
+    REVISION: 2
     NOTES:
-    CHART NAME: kube-prometheus
-    CHART VERSION: 8.3.2
-    APP VERSION: 0.62.0
+    kube-prometheus-stack has been installed. Check its status by running:
+      kubectl --namespace seldon-monitoring get pods -l "release=seldon-monitoring"
     
-    ** Please be patient while the chart is being deployed **
-    
-    Watch the Prometheus Operator Deployment status using the command:
-    
-        kubectl get deploy -w --namespace seldon-monitoring -l app.kubernetes.io/name=kube-prometheus-operator,app.kubernetes.io/instance=seldon-monitoring
-    
-    Watch the Prometheus StatefulSet status using the command:
-    
-        kubectl get sts -w --namespace seldon-monitoring -l app.kubernetes.io/name=kube-prometheus-prometheus,app.kubernetes.io/instance=seldon-monitoring
-    
-    Prometheus can be accessed via port "9090" on the following DNS name from within your cluster:
-    
-        seldon-monitoring-prometheus.seldon-monitoring.svc.cluster.local
-    
-    To access Prometheus from outside the cluster execute the following commands:
-    
-        echo "Prometheus URL: http://127.0.0.1:9090/"
-        kubectl port-forward --namespace seldon-monitoring svc/seldon-monitoring-prometheus 9090:9090
-    
-    Watch the Alertmanager StatefulSet status using the command:
-    
-        kubectl get sts -w --namespace seldon-monitoring -l app.kubernetes.io/name=kube-prometheus-alertmanager,app.kubernetes.io/instance=seldon-monitoring
-    
-    Alertmanager can be accessed via port "9093" on the following DNS name from within your cluster:
-    
-        seldon-monitoring-alertmanager.seldon-monitoring.svc.cluster.local
-    
-    To access Alertmanager from outside the cluster execute the following commands:
-    
-        echo "Alertmanager URL: http://127.0.0.1:9093/"
-        kubectl port-forward --namespace seldon-monitoring svc/seldon-monitoring-alertmanager 9093:9093
+    Visit https://github.com/prometheus-operator/kube-prometheus for instructions on how to create & configure Alertmanager and Prometheus instances using the Operator.
 
 
 
@@ -77,7 +45,7 @@ Make sure add `--set keda.enabled=true`
 !kubectl rollout status -n seldon-monitoring statefulsets/prometheus-seldon-monitoring-prometheus
 ```
 
-    statefulset rolling update complete 1 pods at revision prometheus-seldon-monitoring-prometheus-b99bd7cb6...
+    statefulset rolling update complete 1 pods at revision prometheus-seldon-monitoring-prometheus-58fb79649...
 
 
 
@@ -90,15 +58,18 @@ Make sure add `--set keda.enabled=true`
     metadata:
       name: seldon-podmonitor
       namespace: seldon-monitoring
+      labels:
+        release: seldon-monitoring
     spec:
+      namespaceSelector:
+        matchNames:
+          - seldon
       selector:
         matchLabels:
-          app.kubernetes.io/managed-by: seldon-core
+          seldon.io/model: "true"
       podMetricsEndpoints:
         - port: metrics
           path: /prometheus
-      namespaceSelector:
-        any: true
 
 
 
@@ -106,7 +77,7 @@ Make sure add `--set keda.enabled=true`
 !kubectl apply -f pod-monitor.yaml
 ```
 
-    podmonitor.monitoring.coreos.com/seldon-podmonitor created
+    podmonitor.monitoring.coreos.com/seldon-podmonitor unchanged
 
 
 ## Install KEDA
@@ -142,7 +113,7 @@ VERSION
 
 
 
-    '1.16.0-dev'
+    '1.19.0-dev'
 
 
 
@@ -159,7 +130,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/mock_classifier:1.16.0-dev
+        - image: seldonio/mock_classifier:1.19.0-dev
           imagePullPolicy: IfNotPresent
           name: classifier
           resources:
@@ -192,7 +163,7 @@ spec:
 
 
 ```python
-!kubectl create -f model_with_keda_prom.yaml
+!kubectl apply -f model_with_keda_prom.yaml -n seldon
 ```
 
     seldondeployment.machinelearning.seldon.io/seldon-model created
@@ -200,11 +171,13 @@ spec:
 
 
 ```python
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=seldon-model -o jsonpath='{.items[0].metadata.name}')
+!kubectl wait sdep/seldon-model \
+  --for=condition=ready \
+  --timeout=120s \
+  -n seldon
 ```
 
-    Waiting for deployment "seldon-model-example-0-classifier" rollout to finish: 0 of 1 updated replicas are available...
-    deployment "seldon-model-example-0-classifier" successfully rolled out
+    seldondeployment.machinelearning.seldon.io/seldon-model condition met
 
 
 ## Create Load
@@ -217,24 +190,24 @@ We label some nodes for the loadtester. We attempt the first two as for Kind the
 !kubectl label nodes $(kubectl get nodes -o jsonpath='{.items[1].metadata.name}') role=locust
 ```
 
-    node/kind-control-plane not labeled
-    node/kind-worker not labeled
+    node/kind-control-plane labeled
+    node/kind-worker labeled
 
 
 Before add loads to the model, there is only one replica
 
 
 ```python
-!kubectl get deployment seldon-model-example-0-classifier
+!kubectl get deployment seldon-model-example-0-classifier -n seldon
 ```
 
     NAME                                READY   UP-TO-DATE   AVAILABLE   AGE
-    seldon-model-example-0-classifier   1/1     1            1           34s
+    seldon-model-example-0-classifier   1/1     1            1           41s
 
 
 
 ```python
-!helm install seldon-core-loadtesting seldon-core-loadtesting --repo https://storage.googleapis.com/seldon-charts \
+!helm install seldon-core-loadtesting seldon-core-loadtesting -n seldon --repo https://storage.googleapis.com/seldon-charts \
     --set locust.host=http://seldon-model-example:8000 \
     --set oauth.enabled=false \
     --set locust.hatchRate=1 \
@@ -246,7 +219,7 @@ Before add loads to the model, there is only one replica
 ```
 
     NAME: seldon-core-loadtesting
-    LAST DEPLOYED: Sun Feb  5 08:48:08 2023
+    LAST DEPLOYED: Thu Dec  4 11:23:04 2025
     NAMESPACE: seldon
     STATUS: deployed
     REVISION: 1
@@ -262,7 +235,7 @@ import time
 
 
 def getNumberPods():
-    dp = !kubectl get deployment seldon-model-example-0-classifier -o json
+    dp = !kubectl get deployment -n seldon seldon-model-example-0-classifier -o json
     dp = json.loads("".join(dp))
     return dp["status"]["replicas"]
 
@@ -288,26 +261,34 @@ assert scaled
     1
     1
     1
+    1
+    1
+    1
+    1
+    1
+    1
+    1
+    1
     4
 
 
 
 ```python
-!kubectl get deployment/seldon-model-example-0-classifier scaledobject/seldon-model-example-0-classifier
+!kubectl get deployment/seldon-model-example-0-classifier -n seldon scaledobject/seldon-model-example-0-classifier
 ```
 
     NAME                                                READY   UP-TO-DATE   AVAILABLE   AGE
-    deployment.apps/seldon-model-example-0-classifier   5/5     5            5           3m51s
+    deployment.apps/seldon-model-example-0-classifier   5/5     5            5           3m9s
     
-    NAME                                                     SCALETARGETKIND      SCALETARGETNAME                     TRIGGERS     AUTHENTICATION   READY   ACTIVE   AGE
-    scaledobject.keda.sh/seldon-model-example-0-classifier   apps/v1.Deployment   seldon-model-example-0-classifier   prometheus                    True    True     3m51s
+    NAME                                                     SCALETARGETKIND      SCALETARGETNAME                     MIN   MAX   TRIGGERS     AUTHENTICATION   READY   ACTIVE   FALLBACK   PAUSED    AGE
+    scaledobject.keda.sh/seldon-model-example-0-classifier   apps/v1.Deployment   seldon-model-example-0-classifier   1     5     prometheus                    True    True     False      Unknown   3m9s
 
 
 ## Remove Load
 
 
 ```python
-!helm delete seldon-core-loadtesting
+!helm delete seldon-core-loadtesting -n seldon
 ```
 
     release "seldon-core-loadtesting" uninstalled
@@ -319,7 +300,7 @@ After 5-10 mins you should see the deployment replica number decrease to 1
 
 
 ```python
-!kubectl delete -f model_with_keda_prom.yaml
+!kubectl delete -f model_with_keda_prom.yaml -n seldon
 ```
 
     seldondeployment.machinelearning.seldon.io "seldon-model" deleted
@@ -340,8 +321,3 @@ After 5-10 mins you should see the deployment replica number decrease to 1
 
     namespace "seldon-monitoring" deleted
 
-
-
-```python
-
-```

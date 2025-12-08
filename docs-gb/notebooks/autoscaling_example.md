@@ -14,7 +14,7 @@
 
 ## Setup Seldon Core
 
-Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setup-cluster) with [Ambassador Ingress](../notebooks/seldon-core-setup.md#ambassador) and [Install Seldon Core](../notebooks/seldon-core-setup.md#Install-Seldon-Core). Instructions [also online](../notebooks/seldon-core-setup.md).
+Use the setup notebook to [Setup Cluster](https://docs.seldon.ai/seldon-core-1/tutorials/notebooks/seldon-core-setup#setup-cluster) with [Ambassador Ingress](https://docs.seldon.ai/seldon-core-1/tutorials/notebooks/seldon-core-setup#install-ingress).
 
 
 ```python
@@ -22,14 +22,6 @@ Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setu
 ```
 
     Error from server (AlreadyExists): namespaces "seldon" already exists
-
-
-
-```python
-!kubectl config set-context $(kubectl config current-context) --namespace=seldon
-```
-
-    Context "kind-ansible" modified.
 
 
 ## Create model with v2beta1 autoscaler
@@ -67,41 +59,41 @@ The full SeldonDeployment spec is shown below.
 !pygmentize model_with_hpa_v2beta1.yaml
 ```
 
-    [38;2;0;128;0;01mapiVersion[39;00m:[38;2;187;187;187m [39mmachinelearning.seldon.io/v1
-    [38;2;0;128;0;01mkind[39;00m:[38;2;187;187;187m [39mSeldonDeployment
-    [38;2;0;128;0;01mmetadata[39;00m:
-    [38;2;187;187;187m  [39m[38;2;0;128;0;01mname[39;00m:[38;2;187;187;187m [39mseldon-model
-    [38;2;0;128;0;01mspec[39;00m:
-    [38;2;187;187;187m  [39m[38;2;0;128;0;01mname[39;00m:[38;2;187;187;187m [39mtest-deployment
-    [38;2;187;187;187m  [39m[38;2;0;128;0;01mpredictors[39;00m:
-    [38;2;187;187;187m  [39m-[38;2;187;187;187m [39m[38;2;0;128;0;01mcomponentSpecs[39;00m:
-    [38;2;187;187;187m    [39m-[38;2;187;187;187m [39m[38;2;0;128;0;01mhpaSpec[39;00m:
-    [38;2;187;187;187m        [39m[38;2;0;128;0;01mmaxReplicas[39;00m:[38;2;187;187;187m [39m3
-    [38;2;187;187;187m        [39m[38;2;0;128;0;01mmetrics[39;00m:
-    [38;2;187;187;187m        [39m-[38;2;187;187;187m [39m[38;2;0;128;0;01mresource[39;00m:
-    [38;2;187;187;187m            [39m[38;2;0;128;0;01mname[39;00m:[38;2;187;187;187m [39mcpu
-    [38;2;187;187;187m            [39m[38;2;0;128;0;01mtargetAverageUtilization[39;00m:[38;2;187;187;187m [39m10
-    [38;2;187;187;187m          [39m[38;2;0;128;0;01mtype[39;00m:[38;2;187;187;187m [39mResource
-    [38;2;187;187;187m        [39m[38;2;0;128;0;01mminReplicas[39;00m:[38;2;187;187;187m [39m1
-    [38;2;187;187;187m      [39m[38;2;0;128;0;01mspec[39;00m:
-    [38;2;187;187;187m        [39m[38;2;0;128;0;01mcontainers[39;00m:
-    [38;2;187;187;187m        [39m-[38;2;187;187;187m [39m[38;2;0;128;0;01mimage[39;00m:[38;2;187;187;187m [39mseldonio/mock_classifier:1.5.0-dev
-    [38;2;187;187;187m          [39m[38;2;0;128;0;01mimagePullPolicy[39;00m:[38;2;187;187;187m [39mIfNotPresent
-    [38;2;187;187;187m          [39m[38;2;0;128;0;01mname[39;00m:[38;2;187;187;187m [39mclassifier
-    [38;2;187;187;187m          [39m[38;2;0;128;0;01mresources[39;00m:
-    [38;2;187;187;187m            [39m[38;2;0;128;0;01mrequests[39;00m:
-    [38;2;187;187;187m              [39m[38;2;0;128;0;01mcpu[39;00m:[38;2;187;187;187m [39m[38;2;186;33;33m'[39m[38;2;186;33;33m0.5[39m[38;2;186;33;33m'[39m
-    [38;2;187;187;187m        [39m[38;2;0;128;0;01mterminationGracePeriodSeconds[39;00m:[38;2;187;187;187m [39m1
-    [38;2;187;187;187m    [39m[38;2;0;128;0;01mgraph[39;00m:
-    [38;2;187;187;187m      [39m[38;2;0;128;0;01mchildren[39;00m:[38;2;187;187;187m [39m[]
-    [38;2;187;187;187m      [39m[38;2;0;128;0;01mname[39;00m:[38;2;187;187;187m [39mclassifier
-    [38;2;187;187;187m      [39m[38;2;0;128;0;01mtype[39;00m:[38;2;187;187;187m [39mMODEL
-    [38;2;187;187;187m    [39m[38;2;0;128;0;01mname[39;00m:[38;2;187;187;187m [39mexample
+    [94mapiVersion[39;49;00m:[37m [39;49;00mmachinelearning.seldon.io/v1[37m[39;49;00m
+    [94mkind[39;49;00m:[37m [39;49;00mSeldonDeployment[37m[39;49;00m
+    [94mmetadata[39;49;00m:[37m[39;49;00m
+    [37m  [39;49;00m[94mname[39;49;00m:[37m [39;49;00mseldon-model[37m[39;49;00m
+    [94mspec[39;49;00m:[37m[39;49;00m
+    [37m  [39;49;00m[94mname[39;49;00m:[37m [39;49;00mtest-deployment[37m[39;49;00m
+    [37m  [39;49;00m[94mpredictors[39;49;00m:[37m[39;49;00m
+    [37m  [39;49;00m-[37m [39;49;00m[94mcomponentSpecs[39;49;00m:[37m[39;49;00m
+    [37m    [39;49;00m-[37m [39;49;00m[94mhpaSpec[39;49;00m:[37m[39;49;00m
+    [37m        [39;49;00m[94mmaxReplicas[39;49;00m:[37m [39;49;00m3[37m[39;49;00m
+    [37m        [39;49;00m[94mmetrics[39;49;00m:[37m[39;49;00m
+    [37m        [39;49;00m-[37m [39;49;00m[94mresource[39;49;00m:[37m[39;49;00m
+    [37m            [39;49;00m[94mname[39;49;00m:[37m [39;49;00mcpu[37m[39;49;00m
+    [37m            [39;49;00m[94mtargetAverageUtilization[39;49;00m:[37m [39;49;00m10[37m[39;49;00m
+    [37m          [39;49;00m[94mtype[39;49;00m:[37m [39;49;00mResource[37m[39;49;00m
+    [37m        [39;49;00m[94mminReplicas[39;49;00m:[37m [39;49;00m1[37m[39;49;00m
+    [37m      [39;49;00m[94mspec[39;49;00m:[37m[39;49;00m
+    [37m        [39;49;00m[94mcontainers[39;49;00m:[37m[39;49;00m
+    [37m        [39;49;00m-[37m [39;49;00m[94mimage[39;49;00m:[37m [39;49;00mseldonio/mock_classifier:1.19.0-dev[37m[39;49;00m
+    [37m          [39;49;00m[94mimagePullPolicy[39;49;00m:[37m [39;49;00mIfNotPresent[37m[39;49;00m
+    [37m          [39;49;00m[94mname[39;49;00m:[37m [39;49;00mclassifier[37m[39;49;00m
+    [37m          [39;49;00m[94mresources[39;49;00m:[37m[39;49;00m
+    [37m            [39;49;00m[94mrequests[39;49;00m:[37m[39;49;00m
+    [37m              [39;49;00m[94mcpu[39;49;00m:[37m [39;49;00m[33m'[39;49;00m[33m0.5[39;49;00m[33m'[39;49;00m[37m[39;49;00m
+    [37m        [39;49;00m[94mterminationGracePeriodSeconds[39;49;00m:[37m [39;49;00m1[37m[39;49;00m
+    [37m    [39;49;00m[94mgraph[39;49;00m:[37m[39;49;00m
+    [37m      [39;49;00m[94mchildren[39;49;00m:[37m [39;49;00m[][37m[39;49;00m
+    [37m      [39;49;00m[94mname[39;49;00m:[37m [39;49;00mclassifier[37m[39;49;00m
+    [37m      [39;49;00m[94mtype[39;49;00m:[37m [39;49;00mMODEL[37m[39;49;00m
+    [37m    [39;49;00m[94mname[39;49;00m:[37m [39;49;00mexample[37m[39;49;00m
 
 
 
 ```python
-!kubectl create -f model_with_hpa_v2beta1.yaml
+!kubectl create -f model_with_hpa_v2beta1.yaml -n seldon
 ```
 
     seldondeployment.machinelearning.seldon.io/seldon-model created
@@ -109,11 +101,13 @@ The full SeldonDeployment spec is shown below.
 
 
 ```python
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=seldon-model -o jsonpath='{.items[0].metadata.name}')
+!kubectl wait sdep/seldon-model \
+  --for=condition=ready \
+  --timeout=120s \
+  -n seldon
 ```
 
-    Waiting for deployment "seldon-model-example-0-classifier" rollout to finish: 0 of 1 updated replicas are available...
-    deployment "seldon-model-example-0-classifier" successfully rolled out
+    seldondeployment.machinelearning.seldon.io/seldon-model condition met
 
 
 ### Create Load
@@ -125,12 +119,12 @@ We label some nodes for the loadtester. We attempt the first two as for Kind the
 !kubectl label nodes $(kubectl get nodes -o jsonpath='{.items[0].metadata.name}') role=locust
 ```
 
-    node/ansible-control-plane not labeled
+    node/kind-control-plane not labeled
 
 
 
 ```python
-!helm install loadtester ../../../helm-charts/seldon-core-loadtesting  \
+!helm install loadtester ../../../helm-charts/seldon-core-loadtesting -n seldon  \
     --set locust.host=http://seldon-model-example:8000 \
     --set oauth.enabled=false \
     --set locust.hatchRate=1 \
@@ -142,7 +136,7 @@ We label some nodes for the loadtester. We attempt the first two as for Kind the
 ```
 
     NAME: loadtester
-    LAST DEPLOYED: Sat Mar  4 09:13:46 2023
+    LAST DEPLOYED: Thu Dec  4 11:32:40 2025
     NAMESPACE: seldon
     STATUS: deployed
     REVISION: 1
@@ -158,7 +152,7 @@ import time
 
 
 def getNumberPods():
-    dp = !kubectl get deployment seldon-model-example-0-classifier -o json
+    dp = !kubectl get deployment -n seldon seldon-model-example-0-classifier -o json
     dp = json.loads("".join(dp))
     return dp["status"]["replicas"]
 
@@ -174,26 +168,35 @@ for i in range(60):
 assert scaled
 ```
 
+    1
+    1
+    1
+    1
+    1
+    1
+    1
+    1
+    1
     3
 
 
 
 ```python
-!kubectl get pods,deployments,hpa
+!kubectl get pods,deployments,hpa -n seldon
 ```
 
     NAME                                                     READY   STATUS    RESTARTS   AGE
-    pod/locust-master-1-xjplw                                1/1     Running   0          85s
-    pod/locust-slave-1-gljjf                                 1/1     Running   0          85s
-    pod/seldon-model-example-0-classifier-795b9cc8b6-7jfgp   0/2     Running   0          15s
-    pod/seldon-model-example-0-classifier-795b9cc8b6-bqwg9   2/2     Running   0          80m
-    pod/seldon-model-example-0-classifier-795b9cc8b6-fms5f   0/2     Running   0          15s
+    pod/locust-master-1-92n86                                1/1     Running   0          75s
+    pod/locust-slave-1-v4cjz                                 1/1     Running   0          75s
+    pod/seldon-model-example-0-classifier-7b5659c8f9-pcd22   2/2     Running   0          25s
+    pod/seldon-model-example-0-classifier-7b5659c8f9-vpr2p   2/2     Running   0          115s
+    pod/seldon-model-example-0-classifier-7b5659c8f9-wpbfm   2/2     Running   0          25s
     
     NAME                                                READY   UP-TO-DATE   AVAILABLE   AGE
-    deployment.apps/seldon-model-example-0-classifier   1/3     3            1           80m
+    deployment.apps/seldon-model-example-0-classifier   3/3     3            3           116s
     
-    NAME                                                                    REFERENCE                                      TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
-    horizontalpodautoscaler.autoscaling/seldon-model-example-0-classifier   Deployment/seldon-model-example-0-classifier   60%/10%   1         3         1          80m
+    NAME                                                                    REFERENCE                                      TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+    horizontalpodautoscaler.autoscaling/seldon-model-example-0-classifier   Deployment/seldon-model-example-0-classifier   cpu: 51%/10%   1         3         3          116s
 
 
 
@@ -206,7 +209,7 @@ assert scaled
 
 
 ```python
-!kubectl delete -f model_with_hpa_v2beta1.yaml
+!kubectl delete -f model_with_hpa_v2beta1.yaml -n seldon
 ```
 
     seldondeployment.machinelearning.seldon.io "seldon-model" deleted
@@ -248,43 +251,43 @@ The full SeldonDeployment spec is shown below.
 !pygmentize model_with_hpa_v2.yaml
 ```
 
-    [38;2;0;128;0;01mapiVersion[39;00m:[38;2;187;187;187m [39mmachinelearning.seldon.io/v1
-    [38;2;0;128;0;01mkind[39;00m:[38;2;187;187;187m [39mSeldonDeployment
-    [38;2;0;128;0;01mmetadata[39;00m:
-    [38;2;187;187;187m  [39m[38;2;0;128;0;01mname[39;00m:[38;2;187;187;187m [39mseldon-model
-    [38;2;0;128;0;01mspec[39;00m:
-    [38;2;187;187;187m  [39m[38;2;0;128;0;01mname[39;00m:[38;2;187;187;187m [39mtest-deployment
-    [38;2;187;187;187m  [39m[38;2;0;128;0;01mpredictors[39;00m:
-    [38;2;187;187;187m  [39m-[38;2;187;187;187m [39m[38;2;0;128;0;01mcomponentSpecs[39;00m:
-    [38;2;187;187;187m    [39m-[38;2;187;187;187m [39m[38;2;0;128;0;01mhpaSpec[39;00m:
-    [38;2;187;187;187m        [39m[38;2;0;128;0;01mmaxReplicas[39;00m:[38;2;187;187;187m [39m3
-    [38;2;187;187;187m        [39m[38;2;0;128;0;01mmetricsv2[39;00m:
-    [38;2;187;187;187m        [39m-[38;2;187;187;187m [39m[38;2;0;128;0;01mresource[39;00m:
-    [38;2;187;187;187m            [39m[38;2;0;128;0;01mname[39;00m:[38;2;187;187;187m [39mcpu
-    [38;2;187;187;187m            [39m[38;2;0;128;0;01mtarget[39;00m:
-    [38;2;187;187;187m              [39m[38;2;0;128;0;01mtype[39;00m:[38;2;187;187;187m [39mUtilization
-    [38;2;187;187;187m              [39m[38;2;0;128;0;01maverageUtilization[39;00m:[38;2;187;187;187m [39m10
-    [38;2;187;187;187m          [39m[38;2;0;128;0;01mtype[39;00m:[38;2;187;187;187m [39mResource
-    [38;2;187;187;187m        [39m[38;2;0;128;0;01mminReplicas[39;00m:[38;2;187;187;187m [39m1
-    [38;2;187;187;187m      [39m[38;2;0;128;0;01mspec[39;00m:
-    [38;2;187;187;187m        [39m[38;2;0;128;0;01mcontainers[39;00m:
-    [38;2;187;187;187m        [39m-[38;2;187;187;187m [39m[38;2;0;128;0;01mimage[39;00m:[38;2;187;187;187m [39mseldonio/mock_classifier:1.5.0-dev
-    [38;2;187;187;187m          [39m[38;2;0;128;0;01mimagePullPolicy[39;00m:[38;2;187;187;187m [39mIfNotPresent
-    [38;2;187;187;187m          [39m[38;2;0;128;0;01mname[39;00m:[38;2;187;187;187m [39mclassifier
-    [38;2;187;187;187m          [39m[38;2;0;128;0;01mresources[39;00m:
-    [38;2;187;187;187m            [39m[38;2;0;128;0;01mrequests[39;00m:
-    [38;2;187;187;187m              [39m[38;2;0;128;0;01mcpu[39;00m:[38;2;187;187;187m [39m[38;2;186;33;33m'[39m[38;2;186;33;33m0.5[39m[38;2;186;33;33m'[39m
-    [38;2;187;187;187m        [39m[38;2;0;128;0;01mterminationGracePeriodSeconds[39;00m:[38;2;187;187;187m [39m1
-    [38;2;187;187;187m    [39m[38;2;0;128;0;01mgraph[39;00m:
-    [38;2;187;187;187m      [39m[38;2;0;128;0;01mchildren[39;00m:[38;2;187;187;187m [39m[]
-    [38;2;187;187;187m      [39m[38;2;0;128;0;01mname[39;00m:[38;2;187;187;187m [39mclassifier
-    [38;2;187;187;187m      [39m[38;2;0;128;0;01mtype[39;00m:[38;2;187;187;187m [39mMODEL
-    [38;2;187;187;187m    [39m[38;2;0;128;0;01mname[39;00m:[38;2;187;187;187m [39mexample
+    [94mapiVersion[39;49;00m:[37m [39;49;00mmachinelearning.seldon.io/v1[37m[39;49;00m
+    [94mkind[39;49;00m:[37m [39;49;00mSeldonDeployment[37m[39;49;00m
+    [94mmetadata[39;49;00m:[37m[39;49;00m
+    [37m  [39;49;00m[94mname[39;49;00m:[37m [39;49;00mseldon-model[37m[39;49;00m
+    [94mspec[39;49;00m:[37m[39;49;00m
+    [37m  [39;49;00m[94mname[39;49;00m:[37m [39;49;00mtest-deployment[37m[39;49;00m
+    [37m  [39;49;00m[94mpredictors[39;49;00m:[37m[39;49;00m
+    [37m  [39;49;00m-[37m [39;49;00m[94mcomponentSpecs[39;49;00m:[37m[39;49;00m
+    [37m    [39;49;00m-[37m [39;49;00m[94mhpaSpec[39;49;00m:[37m[39;49;00m
+    [37m        [39;49;00m[94mmaxReplicas[39;49;00m:[37m [39;49;00m3[37m[39;49;00m
+    [37m        [39;49;00m[94mmetricsv2[39;49;00m:[37m[39;49;00m
+    [37m        [39;49;00m-[37m [39;49;00m[94mresource[39;49;00m:[37m[39;49;00m
+    [37m            [39;49;00m[94mname[39;49;00m:[37m [39;49;00mcpu[37m[39;49;00m
+    [37m            [39;49;00m[94mtarget[39;49;00m:[37m[39;49;00m
+    [37m              [39;49;00m[94mtype[39;49;00m:[37m [39;49;00mUtilization[37m[39;49;00m
+    [37m              [39;49;00m[94maverageUtilization[39;49;00m:[37m [39;49;00m10[37m[39;49;00m
+    [37m          [39;49;00m[94mtype[39;49;00m:[37m [39;49;00mResource[37m[39;49;00m
+    [37m        [39;49;00m[94mminReplicas[39;49;00m:[37m [39;49;00m1[37m[39;49;00m
+    [37m      [39;49;00m[94mspec[39;49;00m:[37m[39;49;00m
+    [37m        [39;49;00m[94mcontainers[39;49;00m:[37m[39;49;00m
+    [37m        [39;49;00m-[37m [39;49;00m[94mimage[39;49;00m:[37m [39;49;00mseldonio/mock_classifier:1.19.0-dev[37m[39;49;00m
+    [37m          [39;49;00m[94mimagePullPolicy[39;49;00m:[37m [39;49;00mIfNotPresent[37m[39;49;00m
+    [37m          [39;49;00m[94mname[39;49;00m:[37m [39;49;00mclassifier[37m[39;49;00m
+    [37m          [39;49;00m[94mresources[39;49;00m:[37m[39;49;00m
+    [37m            [39;49;00m[94mrequests[39;49;00m:[37m[39;49;00m
+    [37m              [39;49;00m[94mcpu[39;49;00m:[37m [39;49;00m[33m'[39;49;00m[33m0.5[39;49;00m[33m'[39;49;00m[37m[39;49;00m
+    [37m        [39;49;00m[94mterminationGracePeriodSeconds[39;49;00m:[37m [39;49;00m1[37m[39;49;00m
+    [37m    [39;49;00m[94mgraph[39;49;00m:[37m[39;49;00m
+    [37m      [39;49;00m[94mchildren[39;49;00m:[37m [39;49;00m[][37m[39;49;00m
+    [37m      [39;49;00m[94mname[39;49;00m:[37m [39;49;00mclassifier[37m[39;49;00m
+    [37m      [39;49;00m[94mtype[39;49;00m:[37m [39;49;00mMODEL[37m[39;49;00m
+    [37m    [39;49;00m[94mname[39;49;00m:[37m [39;49;00mexample[37m[39;49;00m
 
 
 
 ```python
-!kubectl create -f model_with_hpa_v2.yaml
+!kubectl create -f model_with_hpa_v2.yaml -n seldon
 ```
 
     seldondeployment.machinelearning.seldon.io/seldon-model created
@@ -292,11 +295,13 @@ The full SeldonDeployment spec is shown below.
 
 
 ```python
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=seldon-model -o jsonpath='{.items[0].metadata.name}')
+!kubectl wait sdep/seldon-model \
+  --for=condition=ready \
+  --timeout=120s \
+  -n seldon
 ```
 
-    Waiting for deployment "seldon-model-example-0-classifier" rollout to finish: 0 of 1 updated replicas are available...
-    deployment "seldon-model-example-0-classifier" successfully rolled out
+    seldondeployment.machinelearning.seldon.io/seldon-model condition met
 
 
 ### Create Load
@@ -308,12 +313,12 @@ We label some nodes for the loadtester. We attempt the first two as for Kind the
 !kubectl label nodes $(kubectl get nodes -o jsonpath='{.items[0].metadata.name}') role=locust
 ```
 
-    node/ansible-control-plane not labeled
+    node/kind-control-plane not labeled
 
 
 
 ```python
-!helm install loadtester ../../../helm-charts/seldon-core-loadtesting  \
+!helm install loadtester ../../../helm-charts/seldon-core-loadtesting -n seldon  \
     --set locust.host=http://seldon-model-example:8000 \
     --set oauth.enabled=false \
     --set locust.hatchRate=1 \
@@ -325,7 +330,7 @@ We label some nodes for the loadtester. We attempt the first two as for Kind the
 ```
 
     NAME: loadtester
-    LAST DEPLOYED: Sat Mar  4 09:20:04 2023
+    LAST DEPLOYED: Thu Dec  4 11:35:11 2025
     NAMESPACE: seldon
     STATUS: deployed
     REVISION: 1
@@ -341,7 +346,7 @@ import time
 
 
 def getNumberPods():
-    dp = !kubectl get deployment seldon-model-example-0-classifier -o json
+    dp = !kubectl get deployment -n seldon seldon-model-example-0-classifier -o json
     dp = json.loads("".join(dp))
     return dp["status"]["replicas"]
 
@@ -363,26 +368,27 @@ assert scaled
     1
     1
     1
+    1
     3
 
 
 
 ```python
-!kubectl get pods,deployments,hpa
+!kubectl get pods,deployments,hpa -n seldon
 ```
 
     NAME                                                     READY   STATUS    RESTARTS   AGE
-    pod/locust-master-1-qhvt6                                1/1     Running   0          11m
-    pod/locust-slave-1-gnz8h                                 1/1     Running   0          11m
-    pod/seldon-model-example-0-classifier-5f6445c99c-6t42q   2/2     Running   0          10m
-    pod/seldon-model-example-0-classifier-5f6445c99c-fqfd9   2/2     Running   0          10m
-    pod/seldon-model-example-0-classifier-5f6445c99c-s4wrv   2/2     Running   0          11m
+    pod/locust-master-1-vztf6                                1/1     Running   0          59s
+    pod/locust-slave-1-98phc                                 1/1     Running   0          59s
+    pod/seldon-model-example-0-classifier-789cd4b649-47b5j   0/2     Running   0          18s
+    pod/seldon-model-example-0-classifier-789cd4b649-rkmz2   2/2     Running   0          93s
+    pod/seldon-model-example-0-classifier-789cd4b649-wrhm9   0/2     Running   0          17s
     
     NAME                                                READY   UP-TO-DATE   AVAILABLE   AGE
-    deployment.apps/seldon-model-example-0-classifier   3/3     3            3           11m
+    deployment.apps/seldon-model-example-0-classifier   1/3     3            1           93s
     
-    NAME                                                                    REFERENCE                                      TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
-    horizontalpodautoscaler.autoscaling/seldon-model-example-0-classifier   Deployment/seldon-model-example-0-classifier   21%/10%   1         3         3          11m
+    NAME                                                                    REFERENCE                                      TARGETS        MINPODS   MAXPODS   REPLICAS   AGE
+    horizontalpodautoscaler.autoscaling/seldon-model-example-0-classifier   Deployment/seldon-model-example-0-classifier   cpu: 51%/10%   1         3         3          93s
 
 
 
@@ -395,7 +401,7 @@ assert scaled
 
 
 ```python
-!kubectl delete -f model_with_hpa_v2.yaml
+!kubectl delete -f model_with_hpa_v2.yaml -n seldon
 ```
 
     seldondeployment.machinelearning.seldon.io "seldon-model" deleted

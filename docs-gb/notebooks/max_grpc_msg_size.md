@@ -22,7 +22,7 @@ def writetemplate(line, cell):
 
 ## Setup Seldon Core
 
-Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setup-cluster) with [Ambassador Ingress](../notebooks/seldon-core-setup.md#ambassador) and [Install Seldon Core](../notebooks/seldon-core-setup.md#Install-Seldon-Core). Instructions [also online](../notebooks/seldon-core-setup.md).
+Use the setup notebook to [Setup Cluster](https://docs.seldon.ai/seldon-core-1/tutorials/notebooks/seldon-core-setup#setup-cluster) with [Ambassador Ingress](https://docs.seldon.ai/seldon-core-1/tutorials/notebooks/seldon-core-setup#install-ingress).
 
 
 ```python
@@ -30,14 +30,6 @@ Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setu
 ```
 
     Error from server (AlreadyExists): namespaces "seldon" already exists
-
-
-
-```python
-!kubectl config set-context $(kubectl config current-context) --namespace=seldon
-```
-
-    Context "kind-kind" modified.
 
 
 
@@ -50,7 +42,7 @@ VERSION
 
 
 
-    '1.5.0-dev'
+    '1.19.0-dev'
 
 
 
@@ -107,10 +99,13 @@ Deploy the runtime graph to kubernetes.
 
 
 ```python
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=model-long-timeout -o jsonpath='{.items[0].metadata.name}')
+!kubectl wait sdep/model-long-timeout \
+  --for=condition=ready \
+  --timeout=120s \
+  -n seldon
 ```
 
-    deployment "model-long-timeout-test-0-classifier" successfully rolled out
+    seldondeployment.machinelearning.seldon.io/model-long-timeout condition met
 
 
 ## Get predictions
@@ -127,40 +122,43 @@ sc = SeldonClient(
 )
 ```
 
+    2025-12-04 11:06:35.990484: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:477] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+    WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+    E0000 00:00:1764846396.007483 3716075 cuda_dnn.cc:8310] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+    E0000 00:00:1764846396.013021 3716075 cuda_blas.cc:1418] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+    2025-12-04 11:06:36.032110: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+    To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+
+
 Send a small request which should succeed.
 
 
 ```python
-r = sc.predict(gateway="ambassador", transport="grpc")
-assert r.success == True
-print(r)
+from tenacity import retry, stop_after_delay, wait_exponential
+
+@retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
+def predict():
+    r = sc.predict(gateway="ambassador", transport="grpc")
+    assert r.success == True
+    
+predict()
 ```
-
-    Success:True message:
-    Request:
-    {'meta': {}, 'data': {'tensor': {'shape': [1, 1], 'values': [0.4806932754099743]}}}
-    Response:
-    {'meta': {}, 'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.08047035772935462]}}}
-
 
 Send a large request which will fail as the default for the model will be 4G.
 
 
 ```python
-r = sc.predict(gateway="ambassador", transport="grpc", shape=(1000000, 1))
-print(r.success, r.msg)
+@retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
+def predict():
+    r = sc.predict(gateway="ambassador", transport="grpc", shape=(1000000, 1))
+    assert r.success == False
+
+predict()
 ```
-
-    False <_InactiveRpcError of RPC that terminated with:
-    	status = StatusCode.RESOURCE_EXHAUSTED
-    	details = "Received message larger than max (8000023 vs. 4194304)"
-    	debug_error_string = "{"created":"@1603887710.710555595","description":"Error received from peer ipv6:[::1]:8003","file":"src/core/lib/surface/call.cc","file_line":1061,"grpc_message":"Received message larger than max (8000023 vs. 4194304)","grpc_status":8}"
-    >
-
 
 
 ```python
-!kubectl delete -f resources/model_long_timeouts.json
+!kubectl delete -f resources/model_long_timeouts.yaml -n seldon
 ```
 
     seldondeployment.machinelearning.seldon.io "model-long-timeout" deleted
@@ -178,7 +176,7 @@ kind: SeldonDeployment
 metadata:
   labels:
     app: seldon
-  name: seldon-model
+  name: seldon-model-grpc-size
 spec:
   annotations:
     seldon.io/grpc-max-message-size: '10000000'
@@ -211,19 +209,21 @@ spec:
 
 
 ```python
-!kubectl create -f resources/model_grpc_size.yaml -n seldon
+!kubectl apply -f resources/model_grpc_size.yaml -n seldon
 ```
 
-    seldondeployment.machinelearning.seldon.io/seldon-model created
+    seldondeployment.machinelearning.seldon.io/seldon-model-grpc-size created
 
 
 
 ```python
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=seldon-model -o jsonpath='{.items[0].metadata.name}')
+!kubectl wait sdep/seldon-model-grpc-size \
+  --for=condition=ready \
+  --timeout=120s \
+  -n seldon
 ```
 
-    Waiting for deployment "seldon-model-grpc-size-0-classifier" rollout to finish: 0 of 1 updated replicas are available...
-    deployment "seldon-model-grpc-size-0-classifier" successfully rolled out
+    seldondeployment.machinelearning.seldon.io/seldon-model-grpc-size condition met
 
 
 Send a request via ambassador. This should succeed.
@@ -231,28 +231,27 @@ Send a request via ambassador. This should succeed.
 
 ```python
 sc = SeldonClient(
-    deployment_name="seldon-model",
+    deployment_name="seldon-model-grpc-size",
     namespace="seldon",
     grpc_max_send_message_length=50 * 1024 * 1024,
     grpc_max_receive_message_length=50 * 1024 * 1024,
 )
-r = sc.predict(gateway="ambassador", transport="grpc", shape=(1000000, 1))
-assert r.success == True
-print(r.success)
 ```
-
-    True
-
 
 
 ```python
-!kubectl delete -f resources/model_grpc_size.json -n seldon
+@retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
+def predict():
+    r = sc.predict(gateway="ambassador", transport="grpc", shape=(1000000, 1))
+    assert r.success == True
+
+predict()
 ```
-
-    seldondeployment.machinelearning.seldon.io "seldon-model" deleted
-
 
 
 ```python
-
+!kubectl delete -f resources/model_grpc_size.yaml -n seldon
 ```
+
+    seldondeployment.machinelearning.seldon.io "seldon-model-grpc-size" deleted
+
