@@ -278,7 +278,7 @@ jobs:
         run: |
           docker image list
 
-      - Name: Display whats consuming so much memory
+      - name: Display whats consuming so much memory
         run: |
           sudo du -sh /* | sort -hr | head
           docker system df
