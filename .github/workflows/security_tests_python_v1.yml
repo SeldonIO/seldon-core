@@ -280,7 +280,8 @@ jobs:
 
       - name: Display whats consuming so much memory
         run: |
-          sudo du -sh /* | sort -hr | head
+          sudo du -sh /var/* | sort -hr | head
+          docker builder prune -af
           docker system df
 
       - uses: snyk/actions/setup@master
