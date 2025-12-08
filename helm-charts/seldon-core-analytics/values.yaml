@@ -6,6 +6,7 @@ grafana:
     dashboards:
       enabled: true
       label: seldon_dashboard
+      labelValue: "1"
   datasources:
     datasources.yaml:
       apiVersion: 1
@@ -21,9 +22,10 @@ rbac:
   enabled: true
 prometheus:
   enabled: true
-  service_type: ClusterIP
   server:
     name: seldon
+    service:
+      type: ClusterIP
     persistentVolume:
       enabled: false
       existingClaim: "seldon-claim"
