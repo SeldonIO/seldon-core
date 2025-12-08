@@ -11,7 +11,7 @@ Feature: Scheduler High Availability
     Given exactly 1 scheduler pod is Ready
     And the Ready scheduler pod is the leader
     When I terminate the scheduler leader pod
-    Then a new leader should be elected within "5s"
+    Then a new leader should be elected within "5" seconds
     And exactly 1 scheduler pod should be Ready
     And the Ready scheduler pod should be the new leader
     And the scheduler Service should route traffic to the new leader
@@ -21,7 +21,7 @@ Feature: Scheduler High Availability
     And the Ready scheduler pod is the leader
     When I terminate a scheduler follower pod
     Then the scheduler cluster should remain Ready
-    And a new follower pod should be running within "10s"
+    And a new follower pod should be running within "10" seconds
     And exactly 1 scheduler pod should still be Ready
     And the Ready scheduler pod should still be the leader
     And no follower pod should be Ready or receive traffic
@@ -41,9 +41,13 @@ Feature: Scheduler High Availability
     And the follower should not make scheduling decisions
 
 
-  Scenario: restarting
+  Scenario: There is only a leader when the scheduler cluster is restarted
+    When the scheduler cluster is restarted
+    Then a new leader should be elected withing "5" seconds
+    And exactly 1 scheduler pod should be Ready
+    And the Ready scheduler pod should be the new leader
+    And the scheduler Service should route traffic to the new leader
 
-#    chaos tests
-
-
-#    test same state after leadership change
+#  Scenario: Scheduler cluster data is the same when there is a leadership change
+#    THis test case might be difficult to do since data in the scheduler can easily change without intervention
+#    e.g server restart while we do the operation etc
