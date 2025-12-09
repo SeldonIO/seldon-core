@@ -104,7 +104,6 @@ jobs:
         path: /tmp/python-wrapper-image.tar
 
   build-servers:
-    if: false
     needs: build-upload-scan-base-images
     runs-on: ubuntu-latest
     strategy:
