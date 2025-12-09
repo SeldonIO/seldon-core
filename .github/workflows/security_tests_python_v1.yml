@@ -260,31 +260,17 @@ jobs:
 
       - name: Free up space by removing the Docker Builder caches
         run: docker builder prune -af
-
-      - uses: snyk/actions/setup@master
-      # Run Snyk container scan with the same flags you use today
-      - name: Scan alibi detect (CLI mode)
+          
+      - name: Scan alibi detect
         id: scan-alibi-detect
         if: steps.build-alibi-detect.outcome == 'success'
+        uses: snyk/actions/docker@master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: |
-          snyk container test ${{ env.ALIBI_DETECT_IMAGE_TAG }}:test \
-            --severity-threshold=high \
-            --app-vulns \
-            --fail-on=upgradable
-          
-#      - name: Scan alibi detect
-#        id: scan-alibi-detect
-#        if: steps.build-alibi-detect.outcome == 'success'
-#        uses: snyk/actions/docker@master
-#        continue-on-error: true
-#        env:
-#          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-#        with:
-#          image: ${{ env.ALIBI_DETECT_IMAGE_TAG}}:test
-#          args:  --fail-on=upgradable --app-vulns --severity-threshold=high
+        with:
+          image: ${{ env.ALIBI_DETECT_IMAGE_TAG}}:test
+          args:  --fail-on=upgradable --app-vulns --severity-threshold=high
 
       - name: Save scan output to file
         run: echo "alibi_detect_RESULT=${{ steps.scan-alibi-detect.outcome }}" > "report-alibi-detect.txt"
