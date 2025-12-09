@@ -7,7 +7,7 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package main
+package main__test
 
 import (
 	"os"
@@ -15,7 +15,7 @@ import (
 
 	"github.com/cucumber/godog"
 	"github.com/cucumber/godog/colors"
-	"github.com/seldonio/seldon-core/godog/scenario"
+	"github.com/seldonio/seldon-core/tests/integration/godog/scenario"
 	"github.com/spf13/pflag" // godog v0.11.0 and later
 )
 

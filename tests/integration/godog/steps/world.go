@@ -14,7 +14,7 @@ import (
 	"net/http"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
-	"github.com/seldonio/seldon-core/godog/k8sclient"
+	"github.com/seldonio/seldon-core/tests/integration/godog/k8sclient"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
