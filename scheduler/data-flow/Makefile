@@ -1,4 +1,4 @@
-RELEASE_TAG=$(shell git describe --tags --always --dirty)
+RELEASE_TAG ?= $(shell git describe --tags --always --dirty)
 
 .PHONY: licenses
 licenses:
