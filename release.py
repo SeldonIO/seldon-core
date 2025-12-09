@@ -604,44 +604,71 @@ def main(argv):
 
     MODEL_URI_UPDATES = {
         "sklearn/iris": [
-            "servers/sklearnserver/samples/iris.yaml",
-            "servers/sklearnserver/samples/iris_custom.yaml",
-            "servers/sklearnserver/samples/iris_predict.yaml",
-            "testing/benchmarking/automated-benchmark/README.ipynb",
+            "servers/sklearnserver/samples/iris.yaml", # Part of `test_notebooks` & `test_sequential`
+
+            "testing/benchmarking/automated-benchmark/README.ipynb", # NOT TESTED as part of 1.19 release
             "testing/scripts/test_benchmark.py",
-            "notebooks/server_examples.ipynb",
-            "notebooks/resources/istio_shadow.yaml",
-            "examples/streaming/knative-eventing/README.ipynb",
-            "examples/streaming/knative-eventing/README.md",
+            # "testing/resources/iris_anchor_tabular_explainer_v2.yaml", # OLD VERSION
+            # "testing/resources/iris_anchor_tabular_explainer.yaml", # OLD VERSION
+
+            "notebooks/server_examples.ipynb", # Part of `test_notebooks`
+
+            # "components/alibi-explain-server/Makefile", # OLD VERSION
+            # "components/alibi-explain-server/tests/test_anchor_tabular.py", # OLD VERSION
+            # "components/alibi-explain-server/tests/test_app.py", # OLD VERSION
+
+            "examples/streaming/knative-eventing/README.ipynb", # NOT TESTED as part of 1.19 release
             "examples/streaming/knative-eventing/assets/simple-iris-deployment.yaml",
-            "examples/security/ssl_requests/README.ipynb",
-            "examples/security/ssl_requests/README.md",
-            "examples/iter8/progressive_rollout/separate_sdeps/abtest.ipynb",
+            
+            "examples/security/ssl_requests/README.ipynb", # NOT TESTED as part of 1.19 release
+           
+            "examples/iter8/progressive_rollout/separate_sdeps/abtest.ipynb", # NOT TESTED as part of 1.19 release
             "examples/iter8/progressive_rollout/separate_sdeps/baseline.yaml",
-            "examples/iter8/progressive_rollout/single_sdep/abtest.ipynb",
+            
+            "examples/iter8/progressive_rollout/single_sdep/abtest.ipynb", # NOT TESTED as part of 1.19 release
             "examples/iter8/progressive_rollout/single_sdep/abtest.yaml",
             "examples/iter8/progressive_rollout/single_sdep/promote-v1.yaml",
-            "examples/init_containers/custom_init_container.ipynb",
-            "examples/feedback/feedback-metrics-server/README.ipynb",
-            "examples/feedback/feedback-metrics-server/README.md",
+
+            "examples/init_containers/custom_init_container.ipynb", # NOT TESTED as part of 1.19 release
+            
+            "examples/feedback/feedback-metrics-server/README.ipynb", # NOT TESTED as part of 1.19 release
+            
             "examples/feedback/metrics-server/README.ipynb",
-            "examples/feedback/metrics-server/README.md",
-            "examples/batch/argo-workflows-batch/helm-charts/seldon-batch-workflow/values.yaml",
+            "examples/feedback/metrics-server/config/multiclass-model.yaml",
+
+            "examples/batch/argo-workflows-batch/helm-charts/seldon-batch-workflow/values.yaml", # seldon-batch-workflow chart NOT TESTED as part of 1.19 release
+            
+            "examples/batch/hdfs-argo-workflows/hdfs-batch.ipynb", # NOT TESTED as part of 1.19 release
             "examples/batch/hdfs-argo-workflows/deployment.yaml",
-            "examples/batch/hdfs-argo-workflows/hdfs-batch.ipynb",
-            "examples/batch/kubeflow-pipelines-batch/README.ipynb",
-            "examples/batch/kubeflow-pipelines-batch/README.md",
-            "examples/batch/kubeflow-pipelines-batch/assets/seldon-batch-pipeline.py",
-            "doc/source/workflow/quickstart.md",
-            "doc/source/servers/overview.md",
-            "doc/source/servers/sklearn.md",
-            "doc/source/graph/protocols.md",
-            "doc/source/rollouts/abtests.md",
+
+            "examples/batch/kubeflow-pipelines-batch/README.ipynb", # NOT TESTED as part of 1.19 release
+            "examples/batch/kubeflow-pipelines-batch/assets/seldon-batch-pipeline.py",  # NOT TESTED as part of 1.19 release
+            
+            # "examples/explainers/iris-explainer-poetry/iris-explainer.ipynb", # OLD VERSION
+            # "examples/explainers/iris-explainer-poetry/iris-with-explainer.yaml", # OLD VERSION
+            # "examples/explainers/iris-explainer-poetry/iris.yaml", # OLD VERSION,
+            # "examples/graph_examples/combiner-prepack-sep-pods.yaml", # OLD VERSION,
+            # "examples/graph_examples/combiner-prepack.yaml", # OLD VERSION
+            
             "README.md",
+
+            "docs-gb/deployments/abtests.md",
+            "docs-gb/deployments/protocols.md",
+            "docs-gb/notebooks/argo_workflows_hdfs_batch.md",
+            "docs-gb/notebooks/feedback_reward_custom_metrics.md",
+            # "docs-gb/notebooks/iris_explainer_poetry.md", # OLD VERSION
+            "docs-gb/notebooks/iter8-separate.md",
+            "docs-gb/notebooks/iter8-single.md",
+            "docs-gb/notebooks/knative_eventing_streaming.md",
+            "docs-gb/notebooks/kubeflow_pipelines_batch.md",
+            # "docs-gb/notebooks/protocol_examples.md", # OLD VERSION
+            "docs-gb/notebooks/vegeta_bench_argo_workflows.md",
+            "docs-gb/servers/overview.md",
+            "docs-gb/servers/sklearn.md",
         ],
         "sklearn/moviesentiment": [
-            "testing/resources/movies-text-explainer.yaml",
-            "notebooks/explainer_examples.ipynb",
+            "testing/resources/movies-text-explainer.yaml", 
+            "notebooks/explainer_examples.ipynb", # NOT TESTED as part of 1.19 release
             "notebooks/resources/moviesentiment_explainer.yaml",
         ],
         "elasticnet_wine": [
@@ -653,7 +680,6 @@ def main(argv):
         "testing/resources/adserver-cifar10-od-rclone.yaml",
         "testing/resources/adserver-cifar10-od.yaml",
         "examples/feedback/metrics-server/README.ipynb",
-        "examples/feedback/feedback-metrics-server/README.md",
     ]
 
     RCLONE_FILES = [
