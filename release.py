@@ -594,7 +594,8 @@ def set_version(
 def main(argv):
     CHART_YAML_FILES = [
         "helm-charts/seldon-core-operator/Chart.yaml",
-        "helm-charts/seldon-core-analytics/Chart.yaml",
+        # TODO: `seldon-core-analytics` package is deprecated, we don't want to upgrade it anymore
+        # "helm-charts/seldon-core-analytics/Chart.yaml", 
     ]
     OPERATOR_VALUES_YAML_FILE = "helm-charts/seldon-core-operator/values.yaml"
     OPERATOR_KUSTOMIZE_CONFIGMAP = "operator/config/manager/configmap.yaml"
