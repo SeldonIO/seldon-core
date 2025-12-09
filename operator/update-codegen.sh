@@ -13,15 +13,9 @@ CODEGEN_PKG="${CODEGEN_PKG:-$(cd "${ROOT_DIR}" && go list -f '{{.Dir}}' -m k8s.i
 
 source "${CODEGEN_PKG}/kube_codegen.sh"
 
-kube::codegen::gen_helpers \
-    --boilerplate "${ROOT_DIR}/hack/boilerplate.go.txt" \
-    "${ROOT_DIR}/apis"
-
 kube::codegen::gen_client \
     --with-watch \
     --output-dir "${ROOT_DIR}/pkg/generated" \
     --output-pkg "${MODULE}/pkg/generated" \
     --boilerplate "${ROOT_DIR}/hack/boilerplate.go.txt" \
     "${ROOT_DIR}/apis"
-
-rm -rf ./config/crd/bases/mlops.seldon.io
