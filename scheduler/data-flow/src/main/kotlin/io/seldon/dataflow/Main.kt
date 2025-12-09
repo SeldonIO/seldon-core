@@ -36,7 +36,7 @@ object Main {
     fun main(args: Array<String>) {
         Logging.configure()
 
-        println("Version: ${BuildInfo.VERSION}")
+        logger.info { "Version ${BuildInfo.VERSION}" }
         val config = Cli.configWith(args)
         Logging.configure(
             appLevel = config[Cli.logLevelApplication],
