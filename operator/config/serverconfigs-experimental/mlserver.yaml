@@ -136,7 +136,7 @@ spec:
         value: "9500"
       - name: MLSERVER_MODELS_DIR
         value: "/mnt/agent/models"
-      - name: MLSERVER_MODEL_PARALLEL_WORKERS
+      - name: MLSERVER_PARALLEL_WORKERS
         value: "1"
       - name: MLSERVER_LOAD_MODELS_AT_STARTUP
         value: "false"
