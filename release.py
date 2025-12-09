@@ -435,6 +435,7 @@ def update_dockerfile_label_version(seldon_core_version, debug=False):
         "servers/tfserving/Dockerfile.redhat",
         "components/alibi-detect-server/Dockerfile",
         "components/alibi-explain-server/Dockerfile",
+        "components/rclone-storage-initializer/Dockerfile"
     ]
     replaces = [
         f's/version=".*" \\\\/version="{seldon_core_version}" \\\\/',
