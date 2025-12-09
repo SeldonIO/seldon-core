@@ -124,6 +124,7 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 	// Register step definitions with access to world + k8sClient
 	steps.LoadModelSteps(scenarioCtx, world)
 	steps.LoadExplicitModelSteps(scenarioCtx, world)
+	steps.LoadInferenceSteps(scenarioCtx, world)
 	// TODO: load other steps, e.g. pipeline, experiment, etc.
 
 }

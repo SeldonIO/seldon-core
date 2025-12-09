@@ -18,6 +18,7 @@ import (
 	"github.com/seldonio/seldon-core/godog/k8sclient"
 	"github.com/seldonio/seldon-core/godog/scenario/assertions"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"gopkg.in/yaml.v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -64,12 +65,17 @@ func LoadModelSteps(scenario *godog.ScenarioContext, w *World) {
 }
 
 func LoadExplicitModelSteps(scenario *godog.ScenarioContext, w *World) {
-	scenario.Step(`^I deploy model spec:$`, w.deployModelSpec)
+	scenario.Step(`^I deploy model spec:$`, func(spec *godog.DocString) error {
+		return w.CurrentModel.deployModelSpec(spec, w.namespace, w.KubeClient)
+	})
 	scenario.Step(`^the model "([^"]+)" should eventually become Ready with timeout "([^"]+)"$`, func(model, timeout string) error {
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
 			return w.waitForModelReady(ctx, model)
 		})
 	})
+}
+
+func LoadInferenceSteps(scenario *godog.ScenarioContext, w *World) {
 	scenario.Step(`^send HTTP inference request with timeout "([^"]+)" to model "([^"]+)" with payload:$`, func(timeout, model string, payload *godog.DocString) error {
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
 			return w.infer.sendHTTPModelInferenceRequest(ctx, model, payload)
@@ -83,6 +89,19 @@ func LoadExplicitModelSteps(scenario *godog.ScenarioContext, w *World) {
 	scenario.Step(`^expect http response status code "([^"]*)"$`, w.infer.httpRespCheckStatus)
 	scenario.Step(`^expect http response body to contain JSON:$`, w.infer.httpRespCheckBodyContainsJSON)
 	scenario.Step(`^expect gRPC response body to contain JSON:$`, w.infer.gRPCRespCheckBodyContainsJSON)
+}
+
+func (m *Model) deployModelSpec(spec *godog.DocString, namespace string, _ *k8sclient.K8sClient) error {
+	modelSpec := &mlopsv1alpha1.Model{}
+	if err := yaml.Unmarshal([]byte(spec.Content), &modelSpec); err != nil {
+		return fmt.Errorf("failed unmarshalling model spec: %w", err)
+	}
+	modelSpec.Namespace = namespace
+	// TODO: uncomment when auto-gen k8s client merged
+	//if _, err := w.k8sClient.MlopsV1alpha1().Models(w.namespace).Create(context.TODO(), modelSpec, metav1.CreateOptions{}); err != nil {
+	//	return fmt.Errorf("failed creating model: %w", err)
+	//}
+	return nil
 }
 
 func (m *Model) IHaveAModel(model string) error {

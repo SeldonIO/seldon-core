@@ -11,25 +11,7 @@ package steps
 
 import (
 	"context"
-	"fmt"
-
-	"github.com/cucumber/godog"
-	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
-	"go.yaml.in/yaml/v3"
 )
-
-func (w *World) deployModelSpec(spec *godog.DocString) error {
-	modelSpec := &v1alpha1.Model{}
-	if err := yaml.Unmarshal([]byte(spec.Content), &modelSpec); err != nil {
-		return fmt.Errorf("failed unmarshalling model spec: %w", err)
-	}
-	modelSpec.Namespace = w.namespace
-	// TODO: uncomment when auto-gen k8s client merged
-	//if _, err := w.k8sClient.MlopsV1alpha1().Models(w.namespace).Create(context.TODO(), modelSpec, metav1.CreateOptions{}); err != nil {
-	//	return fmt.Errorf("failed creating model: %w", err)
-	//}
-	return nil
-}
 
 func (w *World) waitForModelReady(ctx context.Context, model string) error {
 	// TODO: uncomment when auto-gen k8s client merged
