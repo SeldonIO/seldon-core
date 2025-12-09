@@ -59,6 +59,8 @@ type ExperimentStatus struct {
 //+kubebuilder:printcolumn:name="Mirror ready",type=string,JSONPath=`.status.conditions[?(@.type=='MirrorReady')].status`,description="Mirror ready status",priority=1
 //+kubebuilder:printcolumn:name="Message",type=string,JSONPath=`.status.conditions[?(@.type=='Ready')].message`,description="Status message"
 //+kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
+//+genclient
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Experiment is the Schema for the experiments API
 type Experiment struct {
@@ -70,6 +72,7 @@ type Experiment struct {
 }
 
 //+kubebuilder:object:root=true
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ExperimentList contains a list of Experiment
 type ExperimentList struct {
