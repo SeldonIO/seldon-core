@@ -337,11 +337,11 @@ def update_models_version(
 
     if err == None:
         print(
-            f"updated model uri gs://seldon-models/v:{seldon_core_version}{model_name} in {fpath}"
+            f"updated model uri gs://seldon-models/v{seldon_core_version}/{model_name} in {fpath}"
         )
     else:
         print(
-            f"error updating model uri gs://seldon-models/v:{seldon_core_version}{model_name} in {fpath}"
+            f"error updating model uri gs://seldon-models/v{seldon_core_version}/{model_name} in {fpath}"
         )
         print(err)
 
@@ -689,3 +689,4 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv)
+
