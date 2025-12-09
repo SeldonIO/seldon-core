@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Generates custom k8s client for our CRs including watchers
+# Generates custom k8s client in ./pkg/generated/clientset/versioned for our CRs including watchers
 
 set -o errexit
 set -o nounset
