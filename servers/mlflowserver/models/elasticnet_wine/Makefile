@@ -6,7 +6,7 @@ model: env train
 
 env:
 	python3 -m venv .env
-	./.env/bin/pip install --upgrade pip==22.1.2 setuptools==65.5.1
+	./.env/bin/pip install --upgrade pip setuptools
 	./.env/bin/pip install -r requirements.txt
 
 train:
@@ -19,7 +19,7 @@ collect:
 	find ./mlruns -name "model.pkl" -type f -exec cp {} ./output \;
 	rm -rf ./.inference-env && mkdir -p ./.inference-env
 	conda env create -p ./.inference-env -f ./output/conda.yaml
-	./.inference-env/bin/pip install mlserver[all] mlserver-mlflow
+	./.inference-env/bin/pip install mlserver==1.7.1 mlserver-mlflow uvloop==0.21.0
 	./.env/bin/conda-pack -p ./.inference-env -f -o output/environment.tar.gz
 
 upload:
