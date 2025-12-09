@@ -28,8 +28,8 @@ class TestNotebooks(object):
     def test_protocol_examples(self):
         create_and_run_script("../../notebooks", "protocol_examples")
 
-    # def test_server_examples(self):
-    #     create_and_run_script("../../notebooks", "server_examples")
+    def test_server_examples(self):
+        create_and_run_script("../../notebooks", "server_examples")
 
     #
     # Ambassador
