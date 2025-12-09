@@ -70,7 +70,7 @@ func LoadExplicitModelSteps(scenario *godog.ScenarioContext, w *World) {
 	})
 	scenario.Step(`^the model "([^"]+)" should eventually become Ready with timeout "([^"]+)"$`, func(model, timeout string) error {
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
-			return w.waitForModelReady(ctx, model)
+			return w.CurrentModel.waitForModelReady(ctx, model)
 		})
 	})
 }

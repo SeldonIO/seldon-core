@@ -9,11 +9,9 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package steps
 
-import (
-	"context"
-)
+import "context"
 
-func (w *World) waitForModelReady(ctx context.Context, model string) error {
+func (m *Model) waitForModelReady(ctx context.Context, model string) error {
 	// TODO: uncomment when auto-gen k8s client merged
 
 	//foundModel, err := w.k8sClient.MlopsV1alpha1().Models(w.namespace).Get(ctx, model, metav1.GetOptions{})
