@@ -44,6 +44,8 @@ type SeldonRuntimeStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+genclient
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // SeldonRuntime is the Schema for the seldonruntimes API
 type SeldonRuntime struct {
@@ -55,6 +57,7 @@ type SeldonRuntime struct {
 }
 
 //+kubebuilder:object:root=true
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // SeldonRuntimeList contains a list of SeldonRuntime
 type SeldonRuntimeList struct {

@@ -149,6 +149,7 @@ kind-image-load-all: kind-image-load kind-image-load-cli
 
 .PHONY: go-generate
 go-generate:
+	go mod tidy
 	go generate ./...
 
 ##@ Deployment

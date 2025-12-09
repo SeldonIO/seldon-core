@@ -82,6 +82,8 @@ type ServerStatus struct {
 //+kubebuilder:printcolumn:name="Replicas",type=integer,JSONPath=`.status.replicas`,description="Number of replicas"
 //+kubebuilder:printcolumn:name="Loaded Models",type=integer,JSONPath=`.status.loadedModels`,description="Number of loaded models"
 //+kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
+//+genclient
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Server is the Schema for the servers API
 type Server struct {
@@ -93,6 +95,7 @@ type Server struct {
 }
 
 //+kubebuilder:object:root=true
+//+k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ServerList contains a list of Server
 type ServerList struct {
