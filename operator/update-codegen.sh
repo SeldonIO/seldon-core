@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Generates custom k8s client for our CRs including watchers
+
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -21,3 +23,5 @@ kube::codegen::gen_client \
     --output-pkg "${MODULE}/pkg/generated" \
     --boilerplate "${ROOT_DIR}/hack/boilerplate.go.txt" \
     "${ROOT_DIR}/apis"
+
+rm -rf ./config/crd/bases/mlops.seldon.io
