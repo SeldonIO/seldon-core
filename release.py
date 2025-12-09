@@ -630,7 +630,7 @@ def main(argv):
             "examples/iter8/progressive_rollout/single_sdep/abtest.yaml",
             "examples/iter8/progressive_rollout/single_sdep/promote-v1.yaml",
 
-            "examples/init_containers/custom_init_container.ipynb", # NOT TESTED as part of 1.19 release
+            # "examples/init_containers/custom_init_container.ipynb", # NOT REALLY WORKING + NOT TESTED as part of 1.19 release
             
             "examples/feedback/feedback-metrics-server/README.ipynb", # NOT TESTED as part of 1.19 release
             
@@ -672,8 +672,14 @@ def main(argv):
             "notebooks/explainer_examples.ipynb", # NOT TESTED as part of 1.19 release
             "notebooks/resources/moviesentiment_explainer.yaml",
         ],
-        "elasticnet_wine": [
+        "mlflow/elasticnet_wine": [
             "notebooks/server_examples.ipynb",
+            "notebooks/resources/elasticnet_wine_v2.yaml",
+            "servers/mlflowserver/samples/elasticnet_wine.yaml",
+            "testing/scripts/test_prepackaged_servers.py",
+            # "examples/models/mlflow_server_ab_test_ambassador/mlflow_server_ab_test_ambassador.ipynb", # OLD VERSION
+            # "docs-gb/servers/mlflow.md", # OLD VERSION
+            # "docs-gb/notebooks/mlflow_server_ab_test_ambassador.md", # OLD VERSION
         ],
     }
 
