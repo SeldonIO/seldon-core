@@ -24,6 +24,7 @@
   * [Seldon Config](kubernetes/resources/seldonconfig.md)
   * [Pipeline Config](kubernetes/resources/pipeline.md)
   * [Managing Kafka Topics](managing-kafka-topics.md)
+  * [GPU](installation/gpu/README.md)
 * [Upgrading](upgrading.md)
 
 ## User Guide
