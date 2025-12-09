@@ -24,7 +24,7 @@ GID ?= $(shell id -g)
 
 KIND_NAME=seldon
 
-RELEASE_TAG=$(shell git describe --tags --always --dirty)
+RELEASE_TAG ?= $(shell git describe --tags --always --dirty)
 
 GO_LDFLAGS := -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 
