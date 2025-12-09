@@ -1,5 +1,4 @@
 tensorflow==2.18.1
-setuptools>=70.0.0 # required by tensorflow, fixes https://security.snyk.io/vuln/SNYK-PYTHON-SETUPTOOLS-7448482
 tensorflow-serving-api>=1.10.1
 grpcio>=1.32.0 # Required for https://github.com/SeldonIO/seldon-core/issues/2787
 grpcio-reflection>=1.32.0 # Required for https://github.com/SeldonIO/seldon-core/issues/2787
