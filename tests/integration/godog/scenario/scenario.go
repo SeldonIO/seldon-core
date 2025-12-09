@@ -14,8 +14,8 @@ import (
 	"fmt"
 
 	"github.com/cucumber/godog"
-	"github.com/seldonio/seldon-core/godog/k8sclient"
-	"github.com/seldonio/seldon-core/godog/steps"
+	"github.com/seldonio/seldon-core/tests/integration/godog/k8sclient"
+	"github.com/seldonio/seldon-core/tests/integration/godog/steps"
 	"github.com/sirupsen/logrus"
 )
 

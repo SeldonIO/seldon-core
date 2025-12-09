@@ -15,7 +15,7 @@ import (
 
 	"github.com/cucumber/godog"
 	"github.com/cucumber/godog/colors"
-	"github.com/seldonio/seldon-core/godog/scenario"
+	"github.com/seldonio/seldon-core/tests/integration/godog/scenario"
 	"github.com/spf13/pflag" // godog v0.11.0 and later
 )
 

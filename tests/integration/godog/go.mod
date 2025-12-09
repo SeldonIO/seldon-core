@@ -1,4 +1,4 @@
-module github.com/seldonio/seldon-core/godog
+module github.com/seldonio/seldon-core/tests/integration/godog
 
 go 1.24.4
 
