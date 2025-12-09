@@ -1,4 +1,4 @@
-@SchedulerHighAvailability @Functional @HighAvailability
+@SchedulerHighAvailability @HighAvailability @Functional
 Feature: Scheduler High Availability
   In order to ensure reliable model scheduling and orchestration
   As a Core 2 platform operator
