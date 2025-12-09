@@ -1,12 +1,14 @@
 # Build the manager binary
 FROM golang:1.24 as builder
 
+ARG RELEASE_TAG
+
 WORKDIR /workspace
 COPY . .
 
 # Build the binary
 RUN apt-get install make
-RUN make -C operator  build
+RUN make -C operator RELEASE_TAG="$RELEASE_TAG" build
 
 FROM registry.access.redhat.com/ubi9/ubi-micro:9.6
 WORKDIR /

@@ -38,6 +38,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
+	"github.com/seldonio/seldon-core/scheduler/v2/version"
 )
 
 const (
@@ -66,6 +67,7 @@ const (
 )
 
 var (
+	displayVersion         bool
 	httpPort               int
 	grpcPort               int
 	metricsPort            int
@@ -84,7 +86,7 @@ var (
 )
 
 func init() {
-
+	flag.BoolVar(&displayVersion, "version", false, "display version and exit")
 	flag.IntVar(&httpPort, flagHttpPort, defaultHttpPort, "http-port")
 	flag.IntVar(&grpcPort, flagGrpcPort, defaultGrpcPort, "grpc-port")
 	flag.IntVar(&metricsPort, flagMetricsPort, defaultMetricsPort, "metrics-port")
@@ -136,10 +138,16 @@ func main() {
 	logger := log.New()
 	flag.Parse()
 
+	if displayVersion {
+		logger.Infof("Version %s", version.Tag)
+		os.Exit(0)
+	}
+
 	logIntLevel, err := log.ParseLevel(logLevel)
 	if err != nil {
 		logger.WithError(err).Fatalf("Failed to set log level %s", logLevel)
 	}
+	logger.Infof("Version %s", version.Tag)
 	logger.Infof("Setting log level to %s", logLevel)
 	logger.SetLevel(logIntLevel)
 

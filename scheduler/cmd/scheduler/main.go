@@ -48,9 +48,11 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
+	"github.com/seldonio/seldon-core/scheduler/v2/version"
 )
 
 var (
+	displayVersion                   bool
 	envoyPort                        uint
 	agentPort                        uint
 	agentMtlsPort                    uint
@@ -100,6 +102,8 @@ const (
 
 func init() {
 	rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	flag.BoolVar(&displayVersion, "version", false, "display version and exit")
 
 	// The envoyPort that this xDS server listens on
 	flag.UintVar(&envoyPort, "envoy-port", 9002, "xDS management server port")
@@ -212,12 +216,19 @@ func parseFlags() {
 }
 
 func main() {
-	logger := log.New()
 	parseFlags()
+	logger := log.New()
+
+	if displayVersion {
+		logger.Infof("Version %s", version.Tag)
+		os.Exit(0)
+	}
+
 	logIntLevel, err := log.ParseLevel(logLevel)
 	if err != nil {
 		logger.WithError(err).Fatalf("Failed to set log level %s", logLevel)
 	}
+	logger.Infof("Version %s", version.Tag)
 	logger.Infof("Setting log level to %s", logLevel)
 	logger.SetLevel(logIntLevel)
 

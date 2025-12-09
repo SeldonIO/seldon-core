@@ -40,6 +40,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent/repository/triton"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/metrics"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/tracing"
+	"github.com/seldonio/seldon-core/scheduler/v2/version"
 )
 
 const (
@@ -124,13 +125,19 @@ func main() {
 	autoScalingEnabled := false
 
 	logger := log.New()
+	if cli.DisplayVersion {
+		logger.Infof("Version %s", version.Tag)
+		os.Exit(0)
+	}
 
+	logger.Infof("Version %s", version.Tag)
 	cli.UpdateArgs()
 
 	logIntLevel, err := log.ParseLevel(cli.LogLevel)
 	if err != nil {
 		logger.WithError(err).Fatalf("Failed to set log level %s", cli.LogLevel)
 	}
+	logger.Infof("Version %s", version.Tag)
 	logger.Infof("Setting log level to %s", cli.LogLevel)
 	logger.SetLevel(logIntLevel)
 

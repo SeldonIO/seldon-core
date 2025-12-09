@@ -73,7 +73,7 @@ jobs:
 
       - name: Push Docker Image for Operator
         working-directory: ./operator
-        run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build-and-push-prod
+        run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make RELEASE_TAG="${{ github.event.inputs.docker-tag }}" docker-build-and-push-prod
 
       - name: Push Docker Image for Seldon Cli
         working-directory: ./operator
@@ -81,11 +81,11 @@ jobs:
 
       - name: Push Docker Images for Scheduler
         working-directory: ./scheduler
-        run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make docker-build-and-push-prod-all
+        run: CUSTOM_IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make RELEASE_TAG="${{ github.event.inputs.docker-tag }}" docker-build-and-push-prod-all
 
       - name: Push Docker Images for Hodometer
         working-directory: ./hodometer
-        run: BUILD_VERSION=${{ steps.docker-tag.outputs.value }} IMAGE_TAG=${{ steps.docker-tag.outputs.value }} make build-and-push-prod-hodometer-docker
+        run: BUILD_VERSION=${{ steps.docker-tag.outputs.value }} IMAGE_TAG=${{ steps.docker-tag.outputs.value }}  make build-and-push-prod-hodometer-docker
 
       - name: Push Docker Image for k6 Load Testing
         working-directory: ./tests/k6

@@ -20,6 +20,7 @@ import (
 )
 
 func makeArgs() {
+	flag.BoolVar(&DisplayVersion, flagVersion, false, "display version and exit")
 	flag.StringVar(&agentHost, "agent-host", "0.0.0.0", "Agent hostname")
 	flag.StringVar(&ServerName, flagServerName, "mlserver", "Server name")
 	flag.UintVar(&ReplicaIdx, "server-idx", 0, "Server index")

@@ -11,6 +11,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -34,6 +35,7 @@ import (
 	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	mlopscontrollers "github.com/seldonio/seldon-core/operator/v2/controllers/mlops"
 	"github.com/seldonio/seldon-core/operator/v2/scheduler"
+	"github.com/seldonio/seldon-core/operator/v2/version"
 )
 
 var (
@@ -94,6 +96,7 @@ func getWatchNamespaceConfig(namespace, watchNamespaces string, clusterwide bool
 
 func main() {
 	var (
+		displayVersion           bool
 		metricsAddr              string
 		enableLeaderElection     bool
 		probeAddr                string
@@ -104,6 +107,7 @@ func main() {
 		useDeploymentsForServers bool
 	)
 
+	flag.BoolVar(&displayVersion, "version", false, "display version and exit")
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":4000", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":4001", "The address the probe endpoint binds to.")
 	flag.StringVar(&namespace, "namespace", "", "The namespace to restrict the operator.")
@@ -125,11 +129,15 @@ func main() {
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
 
+	setupLog.Info("Setting log level", "level", logLevel)
 	opts.Level = getLogLevel(logLevel)
-	logger := zap.New(zap.UseFlagOptions(&opts))
+	logger := zap.New(zap.UseFlagOptions(&opts)).WithValues("version", version.Tag)
 	ctrl.SetLogger(logger)
 
-	setupLog.Info("Setting log level", "level", logLevel)
+	if displayVersion {
+		logger.Info(fmt.Sprintf("Version %s", version.Tag))
+		os.Exit(0)
+	}
 
 	watchNamespaceConfig := getWatchNamespaceConfig(namespace, watchNamespaces, clusterwide)
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
@@ -231,6 +239,8 @@ func main() {
 		setupLog.Error(err, "unable to set up ready check")
 		os.Exit(1)
 	}
+
+	setupLog.Info("Started controller manager")
 
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")

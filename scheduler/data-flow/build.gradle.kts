@@ -71,11 +71,35 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.25.1")
 }
 
+val generatedSourceDir = layout.buildDirectory.dir("generated/source/buildinfo")
+
 sourceSets {
     main {
         java {
             srcDirs("src/main/kotlin")
+            srcDir(generatedSourceDir)
         }
+    }
+}
+
+val generateBuildInfo by tasks.registering {
+    val outputDir = generatedSourceDir.get().asFile
+    outputs.dir(outputDir)
+
+    doLast {
+        val buildInfoFile = File(outputDir, "io/seldon/dataflow/BuildInfo.kt")
+        buildInfoFile.parentFile.mkdirs()
+        val releaseTag = project.findProperty("release_tag")?.toString() ?: "unknown"
+
+        buildInfoFile.writeText(
+            """
+            package io.seldon.dataflow
+
+            object BuildInfo {
+                const val VERSION = "$releaseTag"
+            }
+            """.trimIndent(),
+        )
     }
 }
 
@@ -93,6 +117,7 @@ java {
 }
 
 tasks.withType<KotlinCompile> {
+    dependsOn(generateBuildInfo)
     kotlinOptions {
         jvmTarget = "17"
         freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
@@ -114,11 +139,20 @@ downloadLicenses {
     dependencyConfiguration = "compileClasspath"
 }
 
+tasks.withType<org.jlleitschuh.gradle.ktlint.tasks.KtLintCheckTask> {
+    dependsOn(generateBuildInfo)
+}
+
+tasks.withType<org.jlleitschuh.gradle.ktlint.tasks.KtLintFormatTask> {
+    dependsOn(generateBuildInfo)
+}
+
 ktlint {
     verbose = true
     debug = true
     // Ignore generated code from proto
     filter {
         exclude { element -> element.file.path.contains("apis/mlops") }
+        exclude { element -> element.file.path.contains("generated/source/buildinfo") }
     }
 }
