@@ -27,6 +27,7 @@ import (
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/heartbeat"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka"
 	cr "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/conflict-resolution"
 	scaling_config "github.com/seldonio/seldon-core/scheduler/v2/pkg/scaling/config"
@@ -271,6 +272,24 @@ func (c *ChainerServer) HealthCheck(_ context.Context, _ *health.HealthCheckRequ
 		return nil, errors.New("event hub closed")
 	}
 	return &health.HealthCheckResponse{Ok: true}, nil
+}
+
+func (s *ChainerServer) Heartbeat() heartbeat.Check {
+	logger := s.logger.WithField("func", "heartbeat")
+	return func() error {
+		logger.Debug("Starting dataflow-engine server gRPC heartbeat")
+		s.mu.Lock()
+		logger.Debug("Locked stream")
+		s.mu.Unlock()
+		logger.Debug("Unlocked stream")
+
+		s.configUpdatesMutex.Lock()
+		logger.Debug("Locked config updates")
+		s.configUpdatesMutex.Unlock()
+		logger.Debug("Unlocked config updates")
+
+		return nil
+	}
 }
 
 func (c *ChainerServer) SubscribePipelineUpdates(req *chainer.PipelineSubscriptionRequest, stream chainer.Chainer_SubscribePipelineUpdatesServer) error {

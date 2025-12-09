@@ -30,6 +30,7 @@ import (
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/heartbeat"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
@@ -411,6 +412,38 @@ func (s *Server) ModelScalingTrigger(stream pb.AgentService_ModelScalingTriggerS
 					"Could not scale model %s:%d, type: %d", message.GetModelName(), message.GetModelVersion(), message.GetTrigger())
 			}
 		}()
+	}
+}
+
+func (s *Server) Heartbeat() heartbeat.Check {
+	logger := s.logger.WithField("func", "heartbeat")
+	return func() error {
+		logger.Debug("Starting agent gRPC heartbeat")
+		s.mutex.Lock()
+		defer s.mutex.Unlock()
+
+		models, err := s.store.GetModels()
+		if err != nil {
+			logger.WithError(err).Error("Failed to get models from store")
+			return err
+		}
+
+		wg := sync.WaitGroup{}
+		wg.Add(len(models))
+		for _, model := range models {
+			go func() {
+				defer wg.Done()
+				logger.Debugf("Locking model %s", model.Name)
+				s.store.LockModel(model.Name)
+				logger.Debugf("Unlocking model %s", model.Name)
+				s.store.UnlockModel(model.Name)
+				logger.Debugf("Unlocked model %s", model.Name)
+			}()
+		}
+
+		wg.Wait()
+		logger.Debug("Finished heartbeat")
+		return nil
 	}
 }
 

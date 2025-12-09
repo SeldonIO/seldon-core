@@ -24,6 +24,7 @@ GID ?= $(shell id -g)
 
 KIND_NAME=seldon
 
+KIND_SELDON_NAMESPACE=seldon-mesh
 GO_LDFLAGS := -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 
 #####################################
@@ -31,7 +32,7 @@ GO_LDFLAGS := -w $(patsubst %,-X %, $(GO_BUILD_VARS))
 #####################################
 
 .PHONY: build-scheduler
-build-scheduler: test-go
+build-scheduler:
 	go build -trimpath -ldflags="-w" -buildvcs=false -o bin/scheduler ./cmd/scheduler
 
 .PHONY: build-proxy
@@ -239,6 +240,18 @@ docker-build-and-push-prod-all: docker-build-and-push-prod-dataflow docker-build
 #####################################
 # Kind
 #####################################
+
+.PHONY: kind-set-scheduler-tag
+kind-set-scheduler-tag:
+	$(eval SCHEDULER_IMG := $(shell kubectl get seldonconfig default -n ${KIND_SELDON_NAMESPACE} \
+    	    -o jsonpath='{.spec.components[?(@.name=="seldon-scheduler")].podSpec.containers[0].image}'))
+
+
+# This will build the scheduler and tag the image as same tag that's currently deployed in Kind, and then load into
+# Kind and reboot the scheduler to run the new image.
+.PHONY: kind-install-scheduler
+kind-install-scheduler: kind-set-scheduler-tag docker-build-scheduler kind-image-install-scheduler
+	kubectl rollout restart statefulset/seldon-scheduler -n ${KIND_SELDON_NAMESPACE}
 
 .PHONY: kind-image-install-scheduler
 kind-image-install-scheduler:
