@@ -168,7 +168,6 @@ jobs:
         path: report-${{ matrix.server }}.txt
 
   build-alibi-explain:
-    if: false
     needs: build-upload-scan-base-images
     runs-on: ubuntu-latest
     steps:
@@ -185,17 +184,11 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         name: conda-base-image
-    # Download Python Wrapper image
-    - uses: actions/download-artifact@v4
-      with:
-        name: python-wrapper-image
     - name: Load images
-      run: |
-        docker load -i conda-image.tar
-        docker load -i python-wrapper-image.tar
+      run: docker load -i conda-image.tar
 
     - name: Remove tarballs
-      run: rm -f conda-image.tar python-wrapper-image.tar
+      run: rm -f conda-image.tar
 
     - name: Build Alibi Explain
       id: build-alibi-explain
@@ -203,14 +196,13 @@ jobs:
       run: |
         export ALIBI_EXPLAIN_IMAGE_TAG="sec-tests/alibi-explain-$(date +%s)-$(openssl rand -hex 4)"
         echo "ALIBI_EXPLAIN_IMAGE_TAG=$ALIBI_EXPLAIN_IMAGE_TAG" >> $GITHUB_ENV
-        make IMAGE=$ALIBI_EXPLAIN_IMAGE_TAG VERSION=test BASE_IMAGE=${{ needs.build-upload-scan-base-images.outputs.python_base_image_tag }} docker-build
+        make IMAGE=$ALIBI_EXPLAIN_IMAGE_TAG VERSION=test BASE_IMAGE=${{ needs.build-upload-scan-base-images.outputs.conda_base_image_tag }} docker-build
 
-    - name: Free Docker space before Snyk Scan
-      run: |
-        df -h
-        docker rmi ${{ needs.build-upload-scan-base-images.outputs.conda_base_image_tag }}:test
-        docker rmi ${{ needs.build-upload-scan-base-images.outputs.python_base_image_tag }}:test
-        df -h
+    - name: Free space by removing the Conda Base Docker image
+      run: docker rmi ${{ needs.build-upload-scan-base-images.outputs.conda_base_image_tag }}:test
+
+    - name: Free up space by removing the Docker Builder caches
+      run: docker builder prune -af
 
     - name: Scan alibi explain
       id: scan-alibi-explain
@@ -250,8 +242,7 @@ jobs:
         with:
           name: conda-base-image
       - name: Load image
-        run: |
-          docker load -i conda-image.tar
+        run: docker load -i conda-image.tar
 
       - name: Remove tarballs
         run: rm -f conda-image.tar
@@ -263,26 +254,12 @@ jobs:
           export ALIBI_DETECT_IMAGE_TAG="sec-tests/alibi-detect-$(date +%s)-$(openssl rand -hex 4)"
           echo "ALIBI_DETECT_IMAGE_TAG=$ALIBI_DETECT_IMAGE_TAG" >> $GITHUB_ENV
           make IMAGE=$ALIBI_DETECT_IMAGE_TAG VERSION=test BASE_IMAGE=${{ needs.build-upload-scan-base-images.outputs.conda_base_image_tag }} docker-build
-
-      - name: Docker images
-        run: |
-          docker image list
           
-      - name: Free Docker space before Snyk Scan
-        run: |
-          df -h
-          docker rmi ${{ needs.build-upload-scan-base-images.outputs.conda_base_image_tag }}:test
-          df -h
+      - name: Free space by removing the Conda Base Docker image
+        run: docker rmi ${{ needs.build-upload-scan-base-images.outputs.conda_base_image_tag }}:test
 
-      - name: Docker images
-        run: |
-          docker image list
-
-      - name: Display whats consuming so much memory
-        run: |
-          sudo du -sh /var/* | sort -hr | head
-          docker builder prune -af
-          docker system df
+      - name: Free up space by removing the Docker Builder caches
+        run: docker builder prune -af
 
       - uses: snyk/actions/setup@master
       # Run Snyk container scan with the same flags you use today
