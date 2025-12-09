@@ -14,7 +14,7 @@ KUSTOMIZE_VERSION = v5.2.1
 SETUP_ENVTEST_VERSION = release-0.21
 KIND_NAME=seldon
 NAMESPACE ?= seldon-mesh
-RELEASE_TAG=$(shell git describe --tags --always --dirty)
+RELEASE_TAG ?= $(shell git describe --tags --always --dirty)
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
