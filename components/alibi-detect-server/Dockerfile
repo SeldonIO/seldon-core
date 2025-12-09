@@ -48,7 +48,7 @@ ENV POETRY_VIRTUALENVS_CREATE=false
 ## dependencies causing false positives in Snyk.
 COPY poetry.lock pyproject.toml ./
 COPY _seldon_core ./_seldon_core
-RUN poetry install --no-root --without dev && \
+RUN poetry install --no-root && \
     rm ~/.cache/pip -rf && \
     rm -f /opt/conda/lib/python3.12/site-packages/gslib/vendored/boto/requirements.txt \
     /opt/conda/lib/python3.12/site-packages/gslib/vendored/oauth2client/docs/requirements.txt \
