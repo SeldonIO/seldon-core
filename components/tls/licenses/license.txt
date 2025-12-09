@@ -5648,7 +5648,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
-docker/go  BSD 3-Clause "New" or "Revised" License  https://github.com/docker/go/blob/master/LICENSE
+docker/go  BSD 3-Clause "New" or "Revised" License  https://github.com/docker-archive-public/docker.go/blob/master/LICENSE
 --------------------------------------------------------------------------------
 Copyright (c) 2012 The Go Authors. All rights reserved.
 
@@ -7757,7 +7757,6 @@ SOFTWARE.
 --------------------------------------------------------------------------------
 go-openapi/jsonpointer  Apache License 2.0  https://github.com/go-openapi/jsonpointer/blob/master/LICENSE
 --------------------------------------------------------------------------------
-
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -11464,7 +11463,7 @@ SOFTWARE.
 --------------------------------------------------------------------------------
 hashicorp/errwrap  Mozilla Public License 2.0  https://github.com/hashicorp/errwrap/blob/master/LICENSE
 --------------------------------------------------------------------------------
-Copyright (c) 2014 HashiCorp, Inc.
+Copyright IBM Corp. 2014, 2025
 
 Mozilla Public License, version 2.0
 
@@ -11824,7 +11823,7 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 --------------------------------------------------------------------------------
 hashicorp/go-cleanhttp  Mozilla Public License 2.0  https://github.com/hashicorp/go-cleanhttp/blob/master/LICENSE
 --------------------------------------------------------------------------------
-Copyright (c) 2015 HashiCorp, Inc.
+Copyright IBM Corp. 2015, 2025
 
 Mozilla Public License, version 2.0
 
@@ -12193,7 +12192,7 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
 --------------------------------------------------------------------------------
 hashicorp/go-multierror  Mozilla Public License 2.0  https://github.com/hashicorp/go-multierror/blob/main/LICENSE
 --------------------------------------------------------------------------------
-Copyright (c) 2014 HashiCorp, Inc.
+Copyright IBM Corp. 2014, 2025
 
 Mozilla Public License, version 2.0
 
@@ -12921,7 +12920,7 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
 --------------------------------------------------------------------------------
 hashicorp/go-rootcerts  Mozilla Public License 2.0  https://github.com/hashicorp/go-rootcerts/blob/master/LICENSE
 --------------------------------------------------------------------------------
-Copyright (c) 2016 HashiCorp, Inc.
+Copyright IBM Corp. 2016, 2025
 
 Mozilla Public License, version 2.0
 
@@ -14038,7 +14037,7 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
 --------------------------------------------------------------------------------
 hashicorp/go-version  Mozilla Public License 2.0  https://github.com/hashicorp/go-version/blob/main/LICENSE
 --------------------------------------------------------------------------------
-Copyright (c) 2014 HashiCorp, Inc.
+Copyright IBM Corp. 2014, 2025
 
 Mozilla Public License, version 2.0
 
