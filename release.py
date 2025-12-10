@@ -684,6 +684,8 @@ def main(argv):
         "testing/resources/adserver-cifar10-od-rclone.yaml",
         "testing/resources/adserver-cifar10-od.yaml",
         "examples/feedback/metrics-server/README.ipynb",
+        "examples/feedback/metrics-server/config/multiclass-deployment.yaml",
+        "docs-gb/notebooks/feedback_reward_custom_metrics.md"
     ]
 
     RCLONE_FILES = [
