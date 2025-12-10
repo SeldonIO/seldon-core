@@ -75,8 +75,6 @@
 * [Request Payload Logging with ELK](payload_logging.md)
 * [Custom Metrics with Grafana & Prometheus](metrics.md)
 * [Distributed Tracing with Jaeger](tracing.md)
-* [CI / CD with Jenkins Classic](jenkins_classic.md)
-* [CI / CD with Jenkins X](jenkins_x.md)
 * [Replica control](scale.md)
 
 ## Production Configurations and Integrations
