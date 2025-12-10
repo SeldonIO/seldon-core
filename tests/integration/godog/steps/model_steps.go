@@ -112,7 +112,7 @@ func (m *Model) IHaveAModel(model string, label map[string]string) error {
 		return fmt.Errorf("model %s not found", model)
 	}
 
-	modelName := fmt.Sprintf("%s-%s", testModel.Name, randomSuffix(3))
+	modelName := fmt.Sprintf("%s-%s", testModel.Name, randomString(3))
 
 	m.model = &mlopsv1alpha1.Model{
 		TypeMeta: metav1.TypeMeta{
@@ -179,11 +179,8 @@ func (m *Model) SetReplicas(replicas int) {}
 
 // ApplyModel model is aware of namespace and testsuite config and it might add extra information to the cr that the step hasn't added like namespace
 func (m *Model) ApplyModel(k *k8sclient.K8sClient) error {
-
 	// retrieve current model and apply in k8s
-	err := k.ApplyModel(m.model)
-
-	if err != nil {
+	if err := k.ApplyModel(m.model); err != nil {
 		return err
 	}
 

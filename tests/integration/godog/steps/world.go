@@ -77,7 +77,7 @@ func NewWorld(c Config) (*World, error) {
 	grpcClient := v2_dataplane.NewGRPCInferenceServiceClient(conn)
 
 	label := map[string]string{
-		"scenario": randomSuffix(6),
+		"scenario": randomString(6),
 	}
 
 	w := &World{
