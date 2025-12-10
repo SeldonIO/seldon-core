@@ -695,6 +695,8 @@ def main(argv):
 
     ECHO_MODEL_FILES = [
         "examples/models/metrics/metrics.ipynb",
+        "testing/resources/graph-echo.json",
+        "examples/models/metrics/echo-sdep.yaml"
     ]
 
     opts = getOpts(argv[1:])
