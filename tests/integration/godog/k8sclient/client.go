@@ -33,9 +33,13 @@ type K8sClient struct {
 	KubeClient client.WithWatch
 }
 
-var CRDLabels = map[string]string{
+var DefaultCRDLabelMap = map[string]string{
 	"test-suite": "godog",
 }
+
+const (
+	DefaultCRDLabel = "test-suite=godog"
+)
 
 // New todo: separate k8s client init and pass to new
 func New(namespace string) (*K8sClient, error) {
@@ -78,8 +82,10 @@ func (k8s *K8sClient) ApplyModel(model *mlopsv1alpha1.Model) error {
 		model.Labels = map[string]string{}
 	}
 
-	// Add label
-	model.Labels = CRDLabels
+	// add labels
+	for k, v := range DefaultCRDLabelMap {
+		model.Labels[k] = v
+	}
 
 	existing := &mlopsv1alpha1.Model{}
 	key := client.ObjectKey{
@@ -102,12 +108,12 @@ func (k8s *K8sClient) ApplyModel(model *mlopsv1alpha1.Model) error {
 	return k8s.KubeClient.Update(ctx, model)
 }
 
-func (k8s *K8sClient) DeleteGodogTestModels(ctx context.Context) error {
+func (k8s *K8sClient) DeleteScenarioResources(ctx context.Context, labels client.MatchingLabels) error {
 
 	list := &mlopsv1alpha1.ModelList{}
 	err := k8s.KubeClient.List(ctx, list,
 		client.InNamespace(k8s.namespace),
-		client.MatchingLabels{"test-suite": "godog"},
+		labels,
 	)
 	if err != nil {
 		return err

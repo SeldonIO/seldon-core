@@ -14,14 +14,17 @@ import (
 	"fmt"
 
 	"github.com/cucumber/godog"
+	v "github.com/seldonio/seldon-core/operator/v2/pkg/generated/clientset/versioned"
 	"github.com/seldonio/seldon-core/tests/integration/godog/k8sclient"
 	"github.com/seldonio/seldon-core/tests/integration/godog/steps"
 	"github.com/sirupsen/logrus"
+	controllerruntime "sigs.k8s.io/controller-runtime"
 )
 
 type SuiteDeps struct {
-	K8sClient    *k8sclient.K8sClient
-	WatcherStore k8sclient.WatcherStorage
+	k8sClient    *k8sclient.K8sClient
+	mlopsClient  *v.Clientset
+	watcherStore k8sclient.WatcherStorage
 }
 
 // might have to pass the suit struct and other config with closures to avoid having global vars
@@ -41,41 +44,36 @@ type SuiteDeps struct {
 //	}
 var suiteDeps SuiteDeps
 
-// todo: think about how we can drive server config from a file
-// - have a default server for test
-// - but also have the posibility of specifying the servers deployed in the test suite
-
-// we create a server config or multiple servers
-// server 1 caps mlserver
-// default modelCapDeployment =  mlserver
-
-// we can set the default model capabilities for models
-
-// if we have an scenario and it doesn't specify the server capabilities that it is deployed to
-// it will deploy into the default server capability that might be in our server dpeloyment def
-
 func InitializeTestSuite(ctx *godog.TestSuiteContext) {
+	// todo: we should bootstrap config here
+
 	// Create long-lived deps here
 	k8sClient, err := k8sclient.New("seldon-mesh")
 	if err != nil {
 		panic(fmt.Errorf("failed to create k8s client: %w", err))
 	}
 
-	watchStore, err := k8sclient.NewWatcherStore("seldon-mesh", k8sclient.CRDLabels, k8sClient.KubeClient)
+	clientSet, err := v.NewForConfig(controllerruntime.GetConfigOrDie())
+	if err != nil {
+		panic(fmt.Errorf("failed to mlops client: %w", err))
+	}
+
+	watchStore, err := k8sclient.NewWatcherStore("seldon-mesh", k8sclient.DefaultCRDLabel, clientSet.MlopsV1alpha1())
 	if err != nil {
 		panic(fmt.Errorf("failed to create k8s watch store: %w", err))
 	}
 
-	suiteDeps.K8sClient = k8sClient
-	suiteDeps.WatcherStore = watchStore
+	suiteDeps.k8sClient = k8sClient
+	suiteDeps.mlopsClient = clientSet // todo: this clientSet might get use for get requests or for the mlops interface and could be passed to the world might be split up by type
+	suiteDeps.watcherStore = watchStore
 
 	ctx.BeforeSuite(func() {
-		suiteDeps.WatcherStore.Start()
+		suiteDeps.watcherStore.Start()
 		// e.g. create namespace, apply CRDs, etc.
 	})
 
 	ctx.AfterSuite(func() {
-		suiteDeps.WatcherStore.Stop()
+		suiteDeps.watcherStore.Stop()
 		// e.g. clean namespace, close clients if needed
 	})
 }
@@ -85,8 +83,8 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 	world, err := steps.NewWorld(steps.Config{
 		Namespace:      "seldon-mesh", //TODO configurable
 		Logger:         logrus.New().WithField("test_type", "godog"),
-		KubeClient:     suiteDeps.K8sClient,
-		WatcherStorage: suiteDeps.WatcherStore,
+		KubeClient:     suiteDeps.k8sClient,
+		WatcherStorage: suiteDeps.watcherStore,
 		IngressHost:    "localhost", //TODO configurable
 		HTTPPort:       9000,        //TODO configurable
 		GRPCPort:       9000,        //TODO configurable
@@ -100,11 +98,6 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 
 	// Before: reset state and prep cluster before each scenario
 	scenarioCtx.Before(func(ctx context.Context, scenario *godog.Scenario) (context.Context, error) {
-		if err := world.KubeClient.DeleteGodogTestModels(ctx); err != nil {
-			return ctx, fmt.Errorf("error when deleting models on before steps: %w", err)
-		}
-
-		// Create a fresh model for THIS scenario
 		world.CurrentModel.Reset(world)
 
 		// Reset scenario-level state
@@ -114,10 +107,10 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 
 	// After: optional cleanup / rollback
 	scenarioCtx.After(func(ctx context.Context, scenario *godog.Scenario, err error) (context.Context, error) {
-		// e.g. clean up any resources if needed
-		// if cleanupErr := world.KubeClient.DeleteGodogTestModels(); cleanupErr != nil && err == nil {
-		//     err = cleanupErr
-		// }
+		if err := world.KubeClient.DeleteScenarioResources(ctx, world.Label); err != nil {
+			return ctx, fmt.Errorf("error when deleting models on before steps: %w", err)
+		}
+
 		return ctx, err
 	})
 
