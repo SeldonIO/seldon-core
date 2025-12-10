@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package steps
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/http"
 
@@ -18,6 +19,7 @@ import (
 	"github.com/seldonio/seldon-core/tests/integration/godog/k8sclient"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
@@ -57,9 +59,15 @@ type inference struct {
 }
 
 func NewWorld(c Config) (*World, error) {
-	// TODO TLS for gRPC when c.SSL == true
+	creds := insecure.NewCredentials()
+	if c.SSL {
+		creds = credentials.NewTLS(&tls.Config{
+			InsecureSkipVerify: true,
+		})
+	}
+
 	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(creds),
 	}
 
 	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d", c.IngressHost, c.GRPCPort), opts...)

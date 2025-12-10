@@ -25,6 +25,7 @@ type SuiteDeps struct {
 	k8sClient    *k8sclient.K8sClient
 	mlopsClient  *v.Clientset
 	watcherStore k8sclient.WatcherStorage
+	Config       *GodogConfig
 }
 
 // might have to pass the suit struct and other config with closures to avoid having global vars
@@ -46,9 +47,14 @@ var suiteDeps SuiteDeps
 
 func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 	// todo: we should bootstrap config here
+	// Load configuration from JSON file
+	config, err := LoadConfig()
+	if err != nil {
+		panic(fmt.Errorf("failed to load config: %w", err))
+	}
 
 	// Create long-lived deps here
-	k8sClient, err := k8sclient.New("seldon-mesh")
+	k8sClient, err := k8sclient.New(config.Namespace)
 	if err != nil {
 		panic(fmt.Errorf("failed to create k8s client: %w", err))
 	}
@@ -58,7 +64,7 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 		panic(fmt.Errorf("failed to mlops client: %w", err))
 	}
 
-	watchStore, err := k8sclient.NewWatcherStore("seldon-mesh", k8sclient.DefaultCRDLabel, clientSet.MlopsV1alpha1())
+	watchStore, err := k8sclient.NewWatcherStore(config.Namespace, k8sclient.DefaultCRDLabel, clientSet.MlopsV1alpha1())
 	if err != nil {
 		panic(fmt.Errorf("failed to create k8s watch store: %w", err))
 	}
@@ -66,6 +72,7 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 	suiteDeps.k8sClient = k8sClient
 	suiteDeps.mlopsClient = clientSet // todo: this clientSet might get use for get requests or for the mlops interface and could be passed to the world might be split up by type
 	suiteDeps.watcherStore = watchStore
+	suiteDeps.Config = config
 
 	ctx.BeforeSuite(func() {
 		suiteDeps.watcherStore.Start()
@@ -79,16 +86,25 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 }
 
 func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
+	log := logrus.New()
+	if suiteDeps.Config.LogLevel != "" {
+		logLevel, err := logrus.ParseLevel(suiteDeps.Config.LogLevel)
+		if err != nil {
+			panic(fmt.Errorf("failed to parse log level %s: %w", logLevel, err))
+		}
+		log.SetLevel(logLevel)
+	}
+
 	// Create the world with long-lived deps once per scenario context
 	world, err := steps.NewWorld(steps.Config{
-		Namespace:      "seldon-mesh", //TODO configurable
-		Logger:         logrus.New().WithField("test_type", "godog"),
+		Namespace:      suiteDeps.Config.Namespace,
+		Logger:         log.WithField("test_type", "godog"),
 		KubeClient:     suiteDeps.k8sClient,
 		WatcherStorage: suiteDeps.watcherStore,
-		IngressHost:    "localhost", //TODO configurable
-		HTTPPort:       9000,        //TODO configurable
-		GRPCPort:       9000,        //TODO configurable
-		SSL:            false,       //TODO configurable
+		IngressHost:    suiteDeps.Config.Inference.Host,
+		HTTPPort:       suiteDeps.Config.Inference.HTTPPort,
+		GRPCPort:       suiteDeps.Config.Inference.GRPCPort,
+		SSL:            suiteDeps.Config.Inference.SSL,
 	})
 	if err != nil {
 		panic(fmt.Errorf("failed to create world: %w", err))
@@ -107,6 +123,11 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 
 	// After: optional cleanup / rollback
 	scenarioCtx.After(func(ctx context.Context, scenario *godog.Scenario, err error) (context.Context, error) {
+		if suiteDeps.Config.SkipCleanup {
+			log.WithField("scenario", scenario.Name).Debug("Skipping cleanup")
+			return ctx, nil
+		}
+
 		if err := world.KubeClient.DeleteScenarioResources(ctx, world.Label); err != nil {
 			return ctx, fmt.Errorf("error when deleting models on before steps: %w", err)
 		}
@@ -119,5 +140,4 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 	steps.LoadExplicitModelSteps(scenarioCtx, world)
 	steps.LoadInferenceSteps(scenarioCtx, world)
 	// TODO: load other steps, e.g. pipeline, experiment, etc.
-
 }
