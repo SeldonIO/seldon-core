@@ -165,10 +165,6 @@ func NewModel() *Model {
 	return &Model{model: &mlopsv1alpha1.Model{}}
 }
 
-func (m *Model) Reset(world *World) {
-	world.currentModel.model = &mlopsv1alpha1.Model{}
-}
-
 func (m *Model) SetMinReplicas(replicas int) {
 
 }
