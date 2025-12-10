@@ -7,7 +7,7 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package scenario
+package suite
 
 import (
 	"context"
@@ -114,7 +114,7 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 
 	// Before: reset state and prep cluster before each scenario
 	scenarioCtx.Before(func(ctx context.Context, scenario *godog.Scenario) (context.Context, error) {
-		world.CurrentModel.Reset(world)
+		//world.CurrentModel.Reset(world)
 
 		// Reset scenario-level state
 

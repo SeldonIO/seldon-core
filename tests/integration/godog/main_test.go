@@ -15,7 +15,7 @@ import (
 
 	"github.com/cucumber/godog"
 	"github.com/cucumber/godog/colors"
-	"github.com/seldonio/seldon-core/tests/integration/godog/scenario"
+	"github.com/seldonio/seldon-core/tests/integration/godog/suite"
 	"github.com/spf13/pflag" // godog v0.11.0 and later
 )
 
@@ -34,8 +34,8 @@ func TestMain(m *testing.M) {
 
 	status := godog.TestSuite{
 		Name:                 "godogs",
-		TestSuiteInitializer: scenario.InitializeTestSuite,
-		ScenarioInitializer:  scenario.InitializeScenario,
+		TestSuiteInitializer: suite.InitializeTestSuite,
+		ScenarioInitializer:  suite.InitializeScenario,
 		Options:              &opts,
 	}.Run()
 
