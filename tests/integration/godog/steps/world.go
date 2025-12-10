@@ -14,6 +14,7 @@ import (
 	"net/http"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
+	v "github.com/seldonio/seldon-core/operator/v2/pkg/generated/clientset/versioned"
 	"github.com/seldonio/seldon-core/tests/integration/godog/k8sclient"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -23,6 +24,7 @@ import (
 type World struct {
 	namespace            string
 	KubeClient           *k8sclient.K8sClient
+	k8sClient            v.Interface
 	WatcherStorage       k8sclient.WatcherStorage
 	StartingClusterState string //todo: this will be a combination of starting state awareness of core 2 such as the
 	//todo:  server config,seldon config and seldon runtime to be able to reconcile to starting state should we change
@@ -30,6 +32,7 @@ type World struct {
 	CurrentModel *Model
 	infer        inference
 	logger       *logrus.Entry
+	Label        map[string]string
 }
 
 type Config struct {
@@ -65,6 +68,10 @@ func NewWorld(c Config) (*World, error) {
 	}
 	grpcClient := v2_dataplane.NewGRPCInferenceServiceClient(conn)
 
+	label := map[string]string{
+		"scenario": randomSuffix(6),
+	}
+
 	w := &World{
 		namespace:      c.Namespace,
 		KubeClient:     c.KubeClient,
@@ -75,6 +82,7 @@ func NewWorld(c Config) (*World, error) {
 			httpPort: c.HTTPPort,
 			grpc:     grpcClient,
 			ssl:      c.SSL},
+		Label: label,
 	}
 
 	if c.Logger != nil {
