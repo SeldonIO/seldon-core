@@ -3523,7 +3523,6 @@ go-logr/zapr  Apache License 2.0  https://github.com/go-logr/zapr/blob/master/LI
 --------------------------------------------------------------------------------
 go-openapi/jsonpointer  Apache License 2.0  https://github.com/go-openapi/jsonpointer/blob/master/LICENSE
 --------------------------------------------------------------------------------
-
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -6942,7 +6941,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --------------------------------------------------------------------------------
 hashicorp/go-cleanhttp  Mozilla Public License 2.0  https://github.com/hashicorp/go-cleanhttp/blob/master/LICENSE
 --------------------------------------------------------------------------------
-Copyright (c) 2015 HashiCorp, Inc.
+Copyright IBM Corp. 2015, 2025
 
 Mozilla Public License, version 2.0
 
@@ -7311,7 +7310,7 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
 --------------------------------------------------------------------------------
 hashicorp/go-hclog  MIT License  https://github.com/hashicorp/go-hclog/blob/main/LICENSE
 --------------------------------------------------------------------------------
-Copyright (c) 2017 HashiCorp, Inc.
+Copyright IBM Corp. 2017, 2025
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
