@@ -14,11 +14,11 @@ import (
 	"fmt"
 	"sync"
 
-	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/generated/clientset/versioned/typed/mlops/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/meta"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type WatcherStorage interface {
@@ -31,9 +31,9 @@ type WatcherStorage interface {
 }
 
 type WatcherStore struct {
-	namespace string
-	label     map[string]string
-
+	namespace    string
+	label        string
+	mlopsClient  v1alpha1.MlopsV1alpha1Interface
 	modelWatcher watch.Interface
 
 	mu      sync.RWMutex
@@ -52,13 +52,8 @@ type waiter struct {
 type ConditionFunc func(obj runtime.Object) (done bool, err error)
 
 // NewWatcherStore receives events that match on a particular object list and creates a database store to query crd state
-func NewWatcherStore(namespace string, label map[string]string, w client.WithWatch) (*WatcherStore, error) {
-	modelWatcher, err := w.Watch(
-		context.Background(),
-		&mlopsv1alpha1.ModelList{},
-		client.InNamespace(namespace),
-		client.MatchingLabels(label),
-	)
+func NewWatcherStore(namespace string, label string, mlopsClient v1alpha1.MlopsV1alpha1Interface) (*WatcherStore, error) {
+	modelWatcher, err := mlopsClient.Models(namespace).Watch(context.Background(), v1.ListOptions{LabelSelector: "test-suite=godog"})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create model watcher: %w", err)
 	}
@@ -66,6 +61,7 @@ func NewWatcherStore(namespace string, label map[string]string, w client.WithWat
 	return &WatcherStore{
 		namespace:    namespace,
 		label:        label,
+		mlopsClient:  mlopsClient,
 		modelWatcher: modelWatcher,
 		store:        make(map[string]runtime.Object),
 		doneChan:     make(chan struct{}),

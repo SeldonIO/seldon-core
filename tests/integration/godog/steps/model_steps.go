@@ -49,7 +49,9 @@ var testModels = map[string]TestModelConfig{
 
 func LoadModelSteps(scenario *godog.ScenarioContext, w *World) {
 	// Model Operations
-	scenario.Step(`^I have an? "([^"]+)" model$`, w.CurrentModel.IHaveAModel)
+	scenario.Step(`^I have an? "([^"]+)" model$`, func(modelName string) error {
+		return w.CurrentModel.IHaveAModel(modelName, w.Label)
+	})
 	scenario.Step(`^the model has "(\d+)" min replicas$`, w.CurrentModel.SetMinReplicas)
 	scenario.Step(`^the model has "(\d+)" max replicas$`, w.CurrentModel.SetMaxReplicas)
 	scenario.Step(`^the model has "(\d+)" replicas$`, w.CurrentModel.SetReplicas)
@@ -104,7 +106,7 @@ func (m *Model) deployModelSpec(spec *godog.DocString, namespace string, _ *k8sc
 	return nil
 }
 
-func (m *Model) IHaveAModel(model string) error {
+func (m *Model) IHaveAModel(model string, label map[string]string) error {
 	testModel, ok := testModels[model]
 	if !ok {
 		return fmt.Errorf("model %s not found", model)
@@ -128,7 +130,7 @@ func (m *Model) IHaveAModel(model string) error {
 			CreationTimestamp:          metav1.Time{},
 			DeletionTimestamp:          nil,
 			DeletionGracePeriodSeconds: nil,
-			Labels:                     nil,
+			Labels:                     label,
 			Annotations:                nil,
 			OwnerReferences:            nil,
 			Finalizers:                 nil,
