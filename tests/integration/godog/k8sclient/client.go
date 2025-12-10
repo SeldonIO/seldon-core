@@ -14,6 +14,7 @@ import (
 	"fmt"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	log "github.com/sirupsen/logrus"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -22,6 +23,7 @@ import (
 )
 
 type K8sClient struct {
+	logger     log.FieldLogger
 	namespace  string
 	KubeClient client.WithWatch
 }
@@ -35,7 +37,11 @@ const (
 )
 
 // New todo: separate k8s client init and pass to new
-func New(namespace string) (*K8sClient, error) {
+func New(namespace string, logger *log.Logger) (*K8sClient, error) {
+	if logger == nil {
+		logger = log.New()
+	}
+
 	k8sScheme := runtime.NewScheme()
 
 	if err := scheme.AddToScheme(k8sScheme); err != nil {
@@ -57,6 +63,7 @@ func New(namespace string) (*K8sClient, error) {
 	}
 
 	return &K8sClient{
+		logger:     logger.WithField("client", "k8sClient"),
 		namespace:  namespace,
 		KubeClient: cl,
 	}, nil

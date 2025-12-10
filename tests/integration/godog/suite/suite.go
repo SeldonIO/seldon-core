@@ -69,7 +69,7 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 	}
 
 	// Create long-lived deps here
-	k8sClient, err := k8sclient.New(config.Namespace)
+	k8sClient, err := k8sclient.New(config.Namespace, log)
 	if err != nil {
 		panic(fmt.Errorf("failed to create k8s client: %w", err))
 	}
@@ -79,7 +79,7 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 		panic(fmt.Errorf("failed to mlops client: %w", err))
 	}
 
-	watchStore, err := k8sclient.NewWatcherStore(config.Namespace, k8sclient.DefaultCRDLabel, clientSet.MlopsV1alpha1())
+	watchStore, err := k8sclient.NewWatcherStore(config.Namespace, k8sclient.DefaultCRDLabel, clientSet.MlopsV1alpha1(), log)
 	if err != nil {
 		panic(fmt.Errorf("failed to create k8s watch store: %w", err))
 	}

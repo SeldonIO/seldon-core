@@ -15,6 +15,7 @@ import (
 	"sync"
 
 	"github.com/seldonio/seldon-core/operator/v2/pkg/generated/clientset/versioned/typed/mlops/v1alpha1"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/meta"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -35,6 +36,7 @@ type WatcherStore struct {
 	label        string
 	mlopsClient  v1alpha1.MlopsV1alpha1Interface
 	modelWatcher watch.Interface
+	logger       log.FieldLogger
 
 	mu      sync.RWMutex
 	store   map[string]runtime.Object // key: "namespace/name"
@@ -52,7 +54,11 @@ type waiter struct {
 type ConditionFunc func(obj runtime.Object) (done bool, err error)
 
 // NewWatcherStore receives events that match on a particular object list and creates a database store to query crd state
-func NewWatcherStore(namespace string, label string, mlopsClient v1alpha1.MlopsV1alpha1Interface) (*WatcherStore, error) {
+func NewWatcherStore(namespace string, label string, mlopsClient v1alpha1.MlopsV1alpha1Interface, logger *log.Logger) (*WatcherStore, error) {
+	if logger == nil {
+		logger = log.New()
+	}
+
 	modelWatcher, err := mlopsClient.Models(namespace).Watch(context.Background(), v1.ListOptions{LabelSelector: "test-suite=godog"})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create model watcher: %w", err)
@@ -63,6 +69,7 @@ func NewWatcherStore(namespace string, label string, mlopsClient v1alpha1.MlopsV
 		label:        label,
 		mlopsClient:  mlopsClient,
 		modelWatcher: modelWatcher,
+		logger:       logger.WithField("client", "watcher_store"),
 		store:        make(map[string]runtime.Object),
 		doneChan:     make(chan struct{}),
 	}, nil
@@ -79,7 +86,12 @@ func (s *WatcherStore) Start() {
 					return
 				}
 
-				fmt.Printf("model watch event: %v\n", event)
+				accessor, err := meta.Accessor(event.Object)
+				if err != nil {
+					s.logger.WithError(err).Error("failed to access model watcher")
+				} else {
+					s.logger.Debugf("new model watch event with name: %s on namespace: %s", accessor.GetName(), accessor.GetNamespace())
+				}
 
 				if event.Object == nil {
 					continue

@@ -15,7 +15,7 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	v "github.com/seldonio/seldon-core/operator/v2/pkg/generated/clientset/versioned"
 	"github.com/seldonio/seldon-core/tests/integration/godog/k8sclient"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 type World struct {
@@ -28,13 +28,13 @@ type World struct {
 	//todo: the state such as reducing replicas to 0 of scheduler to test unavailability
 	CurrentModel *Model
 	infer        inference
-	logger       *logrus.Entry
+	logger       log.FieldLogger
 	Label        map[string]string
 }
 
 type Config struct {
 	Namespace      string
-	Logger         *logrus.Entry
+	Logger         log.FieldLogger
 	KubeClient     *k8sclient.K8sClient
 	WatcherStorage k8sclient.WatcherStorage
 	GRPC           v2_dataplane.GRPCInferenceServiceClient
