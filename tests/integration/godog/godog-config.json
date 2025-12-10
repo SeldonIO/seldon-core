@@ -1,0 +1,11 @@
+{
+  "namespace": "seldon-mesh",
+  "log_level": "debug",
+  "skip_cleanup" : false,
+  "inference" : {
+    "host": "localhost",
+    "httpPort": 9000,
+    "grpcPort": 9000,
+    "ssl": false
+  }
+}
