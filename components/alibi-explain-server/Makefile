@@ -81,7 +81,7 @@ clean:
 
 test_models/sklearn/iris:
 	mkdir -p test_models/sklearn/iris
-	gsutil cp -r gs://seldon-models/v1.11.0-dev/sklearn/iris test_models/sklearn
+	gsutil cp -r gs://seldon-models/v1.19.0-dev/sklearn/iris test_models/sklearn
 
 test_models/explainers/anchor_tabular:
 	mkdir -p test_models/explainers/anchor_tabular

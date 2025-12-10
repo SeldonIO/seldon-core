@@ -609,14 +609,14 @@ def main(argv):
 
             "testing/benchmarking/automated-benchmark/README.ipynb", # NOT TESTED as part of 1.19 release
             "testing/scripts/test_benchmark.py",
-            # "testing/resources/iris_anchor_tabular_explainer_v2.yaml", # OLD VERSION
-            # "testing/resources/iris_anchor_tabular_explainer.yaml", # OLD VERSION
+            "testing/resources/iris_anchor_tabular_explainer_v2.yaml",
+            "testing/resources/iris_anchor_tabular_explainer.yaml",
 
             "notebooks/server_examples.ipynb", # Part of `test_notebooks`
 
-            # "components/alibi-explain-server/Makefile", # OLD VERSION
-            # "components/alibi-explain-server/tests/test_anchor_tabular.py", # OLD VERSION
-            # "components/alibi-explain-server/tests/test_app.py", # OLD VERSION
+            "components/alibi-explain-server/Makefile",
+            "components/alibi-explain-server/tests/test_anchor_tabular.py",
+            "components/alibi-explain-server/tests/test_app.py",
 
             "examples/streaming/knative-eventing/README.ipynb", # NOT TESTED as part of 1.19 release
             "examples/streaming/knative-eventing/assets/simple-iris-deployment.yaml",
@@ -645,11 +645,11 @@ def main(argv):
             "examples/batch/kubeflow-pipelines-batch/README.ipynb", # NOT TESTED as part of 1.19 release
             "examples/batch/kubeflow-pipelines-batch/assets/seldon-batch-pipeline.py",  # NOT TESTED as part of 1.19 release
             
-            # "examples/explainers/iris-explainer-poetry/iris-explainer.ipynb", # OLD VERSION
-            # "examples/explainers/iris-explainer-poetry/iris-with-explainer.yaml", # OLD VERSION
-            # "examples/explainers/iris-explainer-poetry/iris.yaml", # OLD VERSION,
-            # "examples/graph_examples/combiner-prepack-sep-pods.yaml", # OLD VERSION,
-            # "examples/graph_examples/combiner-prepack.yaml", # OLD VERSION
+            "examples/explainers/iris-explainer-poetry/iris-explainer.ipynb",
+            "examples/explainers/iris-explainer-poetry/iris-with-explainer.yaml",
+            "examples/explainers/iris-explainer-poetry/iris.yaml",
+            "examples/graph_examples/combiner-prepack-sep-pods.yaml",
+            "examples/graph_examples/combiner-prepack.yaml",
             
             "README.md",
 
@@ -657,12 +657,12 @@ def main(argv):
             "docs-gb/deployments/protocols.md",
             "docs-gb/notebooks/argo_workflows_hdfs_batch.md",
             "docs-gb/notebooks/feedback_reward_custom_metrics.md",
-            # "docs-gb/notebooks/iris_explainer_poetry.md", # OLD VERSION
+            "docs-gb/notebooks/iris_explainer_poetry.md",
             "docs-gb/notebooks/iter8-separate.md",
             "docs-gb/notebooks/iter8-single.md",
             "docs-gb/notebooks/knative_eventing_streaming.md",
             "docs-gb/notebooks/kubeflow_pipelines_batch.md",
-            # "docs-gb/notebooks/protocol_examples.md", # OLD VERSION
+            "docs-gb/notebooks/protocol_examples.md",
             "docs-gb/notebooks/vegeta_bench_argo_workflows.md",
             "docs-gb/servers/overview.md",
             "docs-gb/servers/sklearn.md",

@@ -171,11 +171,11 @@ spec:
     graph:
       name: classifier
       type: MODEL
-      modelUri: gs://seldon-models/v1.17.0-dev/sklearn/iris
+      modelUri: gs://seldon-models/v1.19.0-dev/sklearn/iris
       children:
       - name: classifier2
         type: MODEL
-        modelUri: gs://seldon-models/v1.17.0-dev/sklearn/iris
+        modelUri: gs://seldon-models/v1.19.0-dev/sklearn/iris
     name: model
     replicas: 1
 ```
