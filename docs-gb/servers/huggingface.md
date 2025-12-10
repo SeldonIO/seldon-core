@@ -93,7 +93,3 @@ spec:
     name: default
     replicas: 1
 ```
-
-{% hint style="note" %}
-As a next step, why not try running a larger-scale model? You can find one in gs://seldon-models/v1.18.0/huggingface/text-gen-custom-gpt2. However, you may need to request more memory!
-{% endhint %}
