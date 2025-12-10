@@ -677,9 +677,6 @@ def main(argv):
             "notebooks/resources/elasticnet_wine_v2.yaml",
             "servers/mlflowserver/samples/elasticnet_wine.yaml",
             "testing/scripts/test_prepackaged_servers.py",
-            # "examples/models/mlflow_server_ab_test_ambassador/mlflow_server_ab_test_ambassador.ipynb", # OLD VERSION
-            # "docs-gb/servers/mlflow.md", # OLD VERSION
-            # "docs-gb/notebooks/mlflow_server_ab_test_ambassador.md", # OLD VERSION
         ],
     }
 
