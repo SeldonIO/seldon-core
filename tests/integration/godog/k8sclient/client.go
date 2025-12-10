@@ -21,13 +21,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
-type Client interface {
-	ApplyModel(model *mlopsv1alpha1.Model) error
-	GetModel(model string) (*mlopsv1alpha1.Model, error)
-	ApplyPipeline(pipeline *mlopsv1alpha1.Pipeline) error
-	GetPipeline(pipeline string) (*mlopsv1alpha1.Pipeline, error)
-}
-
 type K8sClient struct {
 	namespace  string
 	KubeClient client.WithWatch
@@ -109,22 +102,14 @@ func (k8s *K8sClient) ApplyModel(model *mlopsv1alpha1.Model) error {
 }
 
 func (k8s *K8sClient) DeleteScenarioResources(ctx context.Context, labels client.MatchingLabels) error {
-
-	list := &mlopsv1alpha1.ModelList{}
-	err := k8s.KubeClient.List(ctx, list,
+	// 1) Delete Models
+	if err := k8s.KubeClient.DeleteAllOf(
+		ctx,
+		&mlopsv1alpha1.Model{},
 		client.InNamespace(k8s.namespace),
 		labels,
-	)
-	if err != nil {
+	); err != nil {
 		return err
-	}
-
-	for _, m := range list.Items {
-		// Copy because Delete expects a pointer
-		model := m
-		if err := k8s.KubeClient.Delete(ctx, &model); err != nil {
-			return err
-		}
 	}
 
 	return nil
