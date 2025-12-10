@@ -17,7 +17,7 @@ import (
 	"github.com/cucumber/godog"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/tests/integration/godog/k8sclient"
-	"github.com/seldonio/seldon-core/tests/integration/godog/scenario/assertions"
+	"github.com/seldonio/seldon-core/tests/integration/godog/steps/assertions"
 	"gopkg.in/yaml.v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
