@@ -17,7 +17,7 @@ import (
 	"github.com/cucumber/godog"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"github.com/seldonio/seldon-core/tests/integration/godog/k8sclient"
-	"github.com/seldonio/seldon-core/tests/integration/godog/scenario/assertions"
+	"github.com/seldonio/seldon-core/tests/integration/godog/steps/assertions"
 	"gopkg.in/yaml.v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -50,29 +50,29 @@ var testModels = map[string]TestModelConfig{
 func LoadModelSteps(scenario *godog.ScenarioContext, w *World) {
 	// Model Operations
 	scenario.Step(`^I have an? "([^"]+)" model$`, func(modelName string) error {
-		return w.CurrentModel.IHaveAModel(modelName, w.Label)
+		return w.currentModel.IHaveAModel(modelName, w.Label)
 	})
-	scenario.Step(`^the model has "(\d+)" min replicas$`, w.CurrentModel.SetMinReplicas)
-	scenario.Step(`^the model has "(\d+)" max replicas$`, w.CurrentModel.SetMaxReplicas)
-	scenario.Step(`^the model has "(\d+)" replicas$`, w.CurrentModel.SetReplicas)
+	scenario.Step(`^the model has "(\d+)" min replicas$`, w.currentModel.SetMinReplicas)
+	scenario.Step(`^the model has "(\d+)" max replicas$`, w.currentModel.SetMaxReplicas)
+	scenario.Step(`^the model has "(\d+)" replicas$`, w.currentModel.SetReplicas)
 	// Model Deployments
 	scenario.Step(`^the model is applied$`, func() error {
-		return w.CurrentModel.ApplyModel(w.KubeClient)
+		return w.currentModel.ApplyModel(w.kubeClient)
 	})
 	// Model Assertions
 	scenario.Step(`^the model (?:should )?eventually become(?:s)? Ready$`, func() error {
-		return w.CurrentModel.ModelReady(w.WatcherStorage)
+		return w.currentModel.ModelReady(w.watcherStorage)
 	})
-	scenario.Step(`^the model status message should be "([^"]+)"$`, w.CurrentModel.AssertModelStatus)
+	scenario.Step(`^the model status message should be "([^"]+)"$`, w.currentModel.AssertModelStatus)
 }
 
 func LoadExplicitModelSteps(scenario *godog.ScenarioContext, w *World) {
 	scenario.Step(`^I deploy model spec:$`, func(spec *godog.DocString) error {
-		return w.CurrentModel.deployModelSpec(spec, w.namespace, w.KubeClient)
+		return w.currentModel.deployModelSpec(spec, w.namespace, w.kubeClient)
 	})
 	scenario.Step(`^the model "([^"]+)" should eventually become Ready with timeout "([^"]+)"$`, func(model, timeout string) error {
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
-			return w.CurrentModel.waitForModelReady(ctx, model)
+			return w.currentModel.waitForModelReady(ctx, model)
 		})
 	})
 }
@@ -100,7 +100,7 @@ func (m *Model) deployModelSpec(spec *godog.DocString, namespace string, _ *k8sc
 	}
 	modelSpec.Namespace = namespace
 	// TODO: uncomment when auto-gen k8s client merged
-	//if _, err := w.k8sClient.MlopsV1alpha1().Models(w.namespace).Create(context.TODO(), modelSpec, metav1.CreateOptions{}); err != nil {
+	//if _, err := w.corek8sClient.MlopsV1alpha1().Models(w.namespace).Create(context.TODO(), modelSpec, metav1.CreateOptions{}); err != nil {
 	//	return fmt.Errorf("failed creating model: %w", err)
 	//}
 	return nil
@@ -112,7 +112,7 @@ func (m *Model) IHaveAModel(model string, label map[string]string) error {
 		return fmt.Errorf("model %s not found", model)
 	}
 
-	modelName := fmt.Sprintf("%s-%s", testModel.Name, randomSuffix(3))
+	modelName := fmt.Sprintf("%s-%s", testModel.Name, randomString(3))
 
 	m.model = &mlopsv1alpha1.Model{
 		TypeMeta: metav1.TypeMeta{
@@ -165,10 +165,6 @@ func NewModel() *Model {
 	return &Model{model: &mlopsv1alpha1.Model{}}
 }
 
-func (m *Model) Reset(world *World) {
-	world.CurrentModel.model = &mlopsv1alpha1.Model{}
-}
-
 func (m *Model) SetMinReplicas(replicas int) {
 
 }
@@ -179,11 +175,8 @@ func (m *Model) SetReplicas(replicas int) {}
 
 // ApplyModel model is aware of namespace and testsuite config and it might add extra information to the cr that the step hasn't added like namespace
 func (m *Model) ApplyModel(k *k8sclient.K8sClient) error {
-
 	// retrieve current model and apply in k8s
-	err := k.ApplyModel(m.model)
-
-	if err != nil {
+	if err := k.ApplyModel(m.model); err != nil {
 		return err
 	}
 
@@ -194,7 +187,7 @@ func (m *Model) ModelReady(w k8sclient.WatcherStorage) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	// m.world.CurrentModel.model is assumed to be *mlopsv1alpha1.Model
+	// m.world.currentModel.model is assumed to be *mlopsv1alpha1.Model
 	// which implements runtime.Object, so no cast needed.
 	return w.WaitFor(
 		ctx,

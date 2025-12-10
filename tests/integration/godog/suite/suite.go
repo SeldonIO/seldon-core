@@ -7,25 +7,32 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package scenario
+package suite
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 
 	"github.com/cucumber/godog"
+	v2dataplane "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	v "github.com/seldonio/seldon-core/operator/v2/pkg/generated/clientset/versioned"
 	"github.com/seldonio/seldon-core/tests/integration/godog/k8sclient"
 	"github.com/seldonio/seldon-core/tests/integration/godog/steps"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 )
 
-type SuiteDeps struct {
-	k8sClient    *k8sclient.K8sClient
-	mlopsClient  *v.Clientset
-	watcherStore k8sclient.WatcherStorage
-	Config       *GodogConfig
+type dependencies struct {
+	logger          *logrus.Logger
+	k8sClient       *k8sclient.K8sClient
+	mlopsClient     *v.Clientset
+	watcherStore    k8sclient.WatcherStorage
+	inferenceClient v2dataplane.GRPCInferenceServiceClient
+	Config          *GodogConfig
 }
 
 // might have to pass the suit struct and other config with closures to avoid having global vars
@@ -43,18 +50,26 @@ type SuiteDeps struct {
 //			Options: &opts,
 //		}.Run()
 //	}
-var suiteDeps SuiteDeps
+var suiteDeps dependencies
 
 func InitializeTestSuite(ctx *godog.TestSuiteContext) {
-	// todo: we should bootstrap config here
 	// Load configuration from JSON file
 	config, err := LoadConfig()
 	if err != nil {
 		panic(fmt.Errorf("failed to load config: %w", err))
 	}
 
+	log := logrus.New()
+	if config.LogLevel != "" {
+		logLevel, err := logrus.ParseLevel(config.LogLevel)
+		if err != nil {
+			panic(fmt.Errorf("failed to parse log level %s: %w", logLevel, err))
+		}
+		log.SetLevel(logLevel)
+	}
+
 	// Create long-lived deps here
-	k8sClient, err := k8sclient.New(config.Namespace)
+	k8sClient, err := k8sclient.New(config.Namespace, log)
 	if err != nil {
 		panic(fmt.Errorf("failed to create k8s client: %w", err))
 	}
@@ -64,15 +79,34 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 		panic(fmt.Errorf("failed to mlops client: %w", err))
 	}
 
-	watchStore, err := k8sclient.NewWatcherStore(config.Namespace, k8sclient.DefaultCRDLabel, clientSet.MlopsV1alpha1())
+	watchStore, err := k8sclient.NewWatcherStore(config.Namespace, k8sclient.DefaultCRDLabel, clientSet.MlopsV1alpha1(), log)
 	if err != nil {
 		panic(fmt.Errorf("failed to create k8s watch store: %w", err))
 	}
 
+	creds := insecure.NewCredentials()
+	if config.Inference.SSL {
+		creds = credentials.NewTLS(&tls.Config{
+			InsecureSkipVerify: true,
+		})
+	}
+
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(creds),
+	}
+
+	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d", config.Inference.Host, config.Inference.GRPCPort), opts...)
+	if err != nil {
+		panic(fmt.Errorf("could not create grpc client: %w", err))
+	}
+	grpcClient := v2dataplane.NewGRPCInferenceServiceClient(conn)
+
+	suiteDeps.logger = log
 	suiteDeps.k8sClient = k8sClient
 	suiteDeps.mlopsClient = clientSet // todo: this clientSet might get use for get requests or for the mlops interface and could be passed to the world might be split up by type
 	suiteDeps.watcherStore = watchStore
 	suiteDeps.Config = config
+	suiteDeps.inferenceClient = grpcClient
 
 	ctx.BeforeSuite(func() {
 		suiteDeps.watcherStore.Start()
@@ -86,38 +120,25 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 }
 
 func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
-	log := logrus.New()
-	if suiteDeps.Config.LogLevel != "" {
-		logLevel, err := logrus.ParseLevel(suiteDeps.Config.LogLevel)
-		if err != nil {
-			panic(fmt.Errorf("failed to parse log level %s: %w", logLevel, err))
-		}
-		log.SetLevel(logLevel)
-	}
-
 	// Create the world with long-lived deps once per scenario context
+	log := suiteDeps.logger.WithField("test_type", "godog")
 	world, err := steps.NewWorld(steps.Config{
 		Namespace:      suiteDeps.Config.Namespace,
-		Logger:         log.WithField("test_type", "godog"),
+		Logger:         log,
 		KubeClient:     suiteDeps.k8sClient,
 		WatcherStorage: suiteDeps.watcherStore,
 		IngressHost:    suiteDeps.Config.Inference.Host,
 		HTTPPort:       suiteDeps.Config.Inference.HTTPPort,
 		GRPCPort:       suiteDeps.Config.Inference.GRPCPort,
 		SSL:            suiteDeps.Config.Inference.SSL,
+		GRPC:           suiteDeps.inferenceClient,
 	})
 	if err != nil {
 		panic(fmt.Errorf("failed to create world: %w", err))
 	}
 
-	world.CurrentModel = steps.NewModel()
-
-	// Before: reset state and prep cluster before each scenario
+	// Before: Reset scenario-level state
 	scenarioCtx.Before(func(ctx context.Context, scenario *godog.Scenario) (context.Context, error) {
-		world.CurrentModel.Reset(world)
-
-		// Reset scenario-level state
-
 		return ctx, nil
 	})
 
@@ -128,7 +149,7 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 			return ctx, nil
 		}
 
-		if err := world.KubeClient.DeleteScenarioResources(ctx, world.Label); err != nil {
+		if err := suiteDeps.k8sClient.DeleteScenarioResources(ctx, world.Label); err != nil {
 			return ctx, fmt.Errorf("error when deleting models on before steps: %w", err)
 		}
 

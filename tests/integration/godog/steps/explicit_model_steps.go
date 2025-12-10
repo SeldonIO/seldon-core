@@ -14,7 +14,7 @@ import "context"
 func (m *Model) waitForModelReady(ctx context.Context, model string) error {
 	// TODO: uncomment when auto-gen k8s client merged
 
-	//foundModel, err := w.k8sClient.MlopsV1alpha1().Models(w.namespace).Get(ctx, model, metav1.GetOptions{})
+	//foundModel, err := w.corek8sClient.MlopsV1alpha1().Models(w.namespace).Get(ctx, model, metav1.GetOptions{})
 	//if err != nil {
 	//	return fmt.Errorf("failed getting model: %w", err)
 	//}
@@ -23,7 +23,7 @@ func (m *Model) waitForModelReady(ctx context.Context, model string) error {
 	//	return nil
 	//}
 	//
-	//watcher, err := w.k8sClient.MlopsV1alpha1().Models(w.namespace).Watch(ctx, metav1.ListOptions{
+	//watcher, err := w.corek8sClient.MlopsV1alpha1().Models(w.namespace).Watch(ctx, metav1.ListOptions{
 	//	FieldSelector:   fmt.Sprintf("metadata.name=%s", model),
 	//	ResourceVersion: foundModel.ResourceVersion,
 	//	Watch:           true,

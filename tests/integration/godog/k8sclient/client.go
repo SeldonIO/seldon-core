@@ -14,6 +14,7 @@ import (
 	"fmt"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	log "github.com/sirupsen/logrus"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -21,14 +22,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
-type Client interface {
-	ApplyModel(model *mlopsv1alpha1.Model) error
-	GetModel(model string) (*mlopsv1alpha1.Model, error)
-	ApplyPipeline(pipeline *mlopsv1alpha1.Pipeline) error
-	GetPipeline(pipeline string) (*mlopsv1alpha1.Pipeline, error)
-}
-
 type K8sClient struct {
+	logger     log.FieldLogger
 	namespace  string
 	KubeClient client.WithWatch
 }
@@ -42,7 +37,11 @@ const (
 )
 
 // New todo: separate k8s client init and pass to new
-func New(namespace string) (*K8sClient, error) {
+func New(namespace string, logger *log.Logger) (*K8sClient, error) {
+	if logger == nil {
+		logger = log.New()
+	}
+
 	k8sScheme := runtime.NewScheme()
 
 	if err := scheme.AddToScheme(k8sScheme); err != nil {
@@ -64,6 +63,7 @@ func New(namespace string) (*K8sClient, error) {
 	}
 
 	return &K8sClient{
+		logger:     logger.WithField("client", "k8sClient"),
 		namespace:  namespace,
 		KubeClient: cl,
 	}, nil
@@ -109,22 +109,14 @@ func (k8s *K8sClient) ApplyModel(model *mlopsv1alpha1.Model) error {
 }
 
 func (k8s *K8sClient) DeleteScenarioResources(ctx context.Context, labels client.MatchingLabels) error {
-
-	list := &mlopsv1alpha1.ModelList{}
-	err := k8s.KubeClient.List(ctx, list,
+	// 1) Delete Models
+	if err := k8s.KubeClient.DeleteAllOf(
+		ctx,
+		&mlopsv1alpha1.Model{},
 		client.InNamespace(k8s.namespace),
 		labels,
-	)
-	if err != nil {
+	); err != nil {
 		return err
-	}
-
-	for _, m := range list.Items {
-		// Copy because Delete expects a pointer
-		model := m
-		if err := k8s.KubeClient.Delete(ctx, &model); err != nil {
-			return err
-		}
 	}
 
 	return nil

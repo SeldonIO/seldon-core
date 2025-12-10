@@ -15,8 +15,8 @@ import (
 	"strings"
 )
 
-// RandomSuffix returns a lowercase, short, k8s-safe random string.
-func randomSuffix(n int) string {
+// randomString returns a lowercase, short, k8s-safe random string.
+func randomString(n int) string {
 	b := make([]byte, n)
 	_, err := rand.Read(b)
 	if err != nil {
