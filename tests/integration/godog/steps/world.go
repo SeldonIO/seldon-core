@@ -20,13 +20,13 @@ import (
 
 type World struct {
 	namespace            string
-	KubeClient           *k8sclient.K8sClient
-	k8sClient            v.Interface
-	WatcherStorage       k8sclient.WatcherStorage
+	kubeClient           *k8sclient.K8sClient
+	corek8sClient        v.Interface
+	watcherStorage       k8sclient.WatcherStorage
 	StartingClusterState string //todo: this will be a combination of starting state awareness of core 2 such as the
 	//todo:  server config,seldon config and seldon runtime to be able to reconcile to starting state should we change
 	//todo: the state such as reducing replicas to 0 of scheduler to test unavailability
-	CurrentModel *Model
+	currentModel *Model
 	infer        inference
 	logger       log.FieldLogger
 	Label        map[string]string
@@ -61,9 +61,9 @@ func NewWorld(c Config) (*World, error) {
 
 	w := &World{
 		namespace:      c.Namespace,
-		KubeClient:     c.KubeClient,
-		WatcherStorage: c.WatcherStorage,
-		CurrentModel:   NewModel(),
+		kubeClient:     c.KubeClient,
+		watcherStorage: c.WatcherStorage,
+		currentModel:   NewModel(),
 		infer: inference{
 			host:     c.IngressHost,
 			http:     &http.Client{},
