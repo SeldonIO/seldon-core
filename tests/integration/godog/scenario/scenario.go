@@ -12,6 +12,7 @@ package scenario
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/cucumber/godog"
 	v "github.com/seldonio/seldon-core/operator/v2/pkg/generated/clientset/versioned"
@@ -107,6 +108,7 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 
 	// After: optional cleanup / rollback
 	scenarioCtx.After(func(ctx context.Context, scenario *godog.Scenario, err error) (context.Context, error) {
+		time.Sleep(5 * time.Second)
 		if err := world.KubeClient.DeleteScenarioResources(ctx, world.Label); err != nil {
 			return ctx, fmt.Errorf("error when deleting models on before steps: %w", err)
 		}

@@ -20,6 +20,7 @@ import (
 	"github.com/seldonio/seldon-core/tests/integration/godog/scenario/assertions"
 	"gopkg.in/yaml.v3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 )
 
 type Model struct {
@@ -63,7 +64,7 @@ func LoadModelSteps(scenario *godog.ScenarioContext, w *World) {
 	scenario.Step(`^the model (?:should )?eventually become(?:s)? Ready$`, func() error {
 		return w.CurrentModel.ModelReady(w.WatcherStorage)
 	})
-	scenario.Step(`^the model status message should be "([^"]+)"$`, w.CurrentModel.AssertModelStatus)
+	scenario.Step(`^the model status message should eventually be "([^"]+)"$`, w.CurrentModel.AssertModelStatus)
 }
 
 func LoadExplicitModelSteps(scenario *godog.ScenarioContext, w *World) {
@@ -170,12 +171,16 @@ func (m *Model) Reset(world *World) {
 }
 
 func (m *Model) SetMinReplicas(replicas int) {
-
+	m.model.Spec.ScalingSpec.MinReplicas = ptr.To(int32(replicas))
 }
 
-func (m *Model) SetMaxReplicas(replicas int) {}
+func (m *Model) SetMaxReplicas(replicas int) {
+	m.model.Spec.ScalingSpec.MaxReplicas = ptr.To(int32(replicas))
+}
 
-func (m *Model) SetReplicas(replicas int) {}
+func (m *Model) SetReplicas(replicas int) {
+	m.model.Spec.ScalingSpec.Replicas = ptr.To(int32(replicas))
+}
 
 // ApplyModel model is aware of namespace and testsuite config and it might add extra information to the cr that the step hasn't added like namespace
 func (m *Model) ApplyModel(k *k8sclient.K8sClient) error {
