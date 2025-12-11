@@ -1,8 +1,8 @@
 name: Build & Push Docker Images
 
 on:
-  push:
-    branches: [ master ]
+#  push:
+#    branches: [ master ]
 
   workflow_dispatch:
     inputs:
