@@ -169,7 +169,6 @@ jobs:
           path: report-${{ matrix.server }}.txt
 
   build-alibi-explain:
-    if: false  # Temporarily disabled to save CI resources
     needs: build-upload-scan-base-images
     runs-on: ubuntu-latest
     steps:
@@ -285,7 +284,7 @@ jobs:
 
   verify-scans:
     #needs: [ build-upload-scan-base-images, build-servers, build-alibi-explain, build-alibi-detect]
-    needs: [ build-upload-scan-base-images, build-alibi-detect]
+    needs: [ build-upload-scan-base-images, build-alibi-explain, build-alibi-detect]
     runs-on: ubuntu-latest
     if: always()
 
