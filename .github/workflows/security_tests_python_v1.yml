@@ -111,7 +111,7 @@ jobs:
       fail-fast: false
       matrix:
         server:
-          #- tfserving_proxy
+          - tfserving_proxy
           #- sklearnserver
           - mlflowserver
           #- xgboostserver
