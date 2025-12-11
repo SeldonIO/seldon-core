@@ -69,13 +69,22 @@ func (i *inference) sendGRPCModelInferenceRequest(ctx context.Context, model str
 }
 
 func withTimeoutCtx(timeout string, callback func(ctx context.Context) error) error {
-	timeoutDuration, err := time.ParseDuration(timeout)
+	ctx, cancel, err := timeoutToContext(timeout)
 	if err != nil {
-		return fmt.Errorf("invalid timeout %s: %w", timeout, err)
+		return err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), timeoutDuration)
 	defer cancel()
 	return callback(ctx)
+}
+
+func timeoutToContext(timeout string) (context.Context, context.CancelFunc, error) {
+	d, err := time.ParseDuration(timeout)
+	if err != nil {
+		return nil, nil, fmt.Errorf("invalid timeout %s: %w", timeout, err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), d)
+	return ctx, cancel, nil
 }
 
 func isSubset(needle, hay any) bool {
