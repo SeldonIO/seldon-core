@@ -69,9 +69,13 @@ func LoadTemplateModelSteps(scenario *godog.ScenarioContext, w *World) {
 	})
 	// Model Assertions
 	scenario.Step(`^the model (?:should )?eventually become(?:s)? Ready$`, func() error {
-		return w.currentModel.ModelReady(nil)
+		// todo: maybe convert this to a flag
+		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		defer cancel()
+
+		return w.currentModel.ModelReady(ctx)
 	})
-	scenario.Step(`^the model status message should be "([^"]+)"$`, w.currentModel.AssertModelStatus)
+	scenario.Step(`^the model status message eventually should be "([^"]+)"$`, w.currentModel.AssertModelStatus)
 }
 
 func LoadCustomModelSteps(scenario *godog.ScenarioContext, w *World) {
@@ -81,13 +85,9 @@ func LoadCustomModelSteps(scenario *godog.ScenarioContext, w *World) {
 		})
 	})
 	scenario.Step(`^the model "([^"]+)" should eventually become Ready with timeout "([^"]+)"$`, func(model, timeout string) error {
-		ctx, cancel, err := timeoutToContext(timeout)
-		if err != nil {
-			return err
-		}
-		defer cancel()
-
-		return w.currentModel.ModelReady(ctx)
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			return w.currentModel.waitForModelReady(ctx, model)
+		})
 	})
 	scenario.Step(`^delete the model "([^"]+)" with timeout "([^"]+)"$`, func(model, timeout string) error {
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
@@ -218,14 +218,6 @@ func (m *Model) ApplyModel(k *k8sclient.K8sClient) error {
 }
 
 func (m *Model) ModelReady(ctx context.Context) error {
-	// If no context is provided, create one with a timeout so we don’t block forever.
-	// todo: maybe convert this to a flag
-	if ctx == nil {
-		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(context.Background(), 20*time.Second)
-		defer cancel()
-	}
-
 	return m.watcherStorage.WaitFor(
 		ctx,
 		m.model,               // the k8s object being watched
