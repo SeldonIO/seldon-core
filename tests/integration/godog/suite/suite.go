@@ -120,12 +120,22 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 }
 
 func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
+	log := logrus.New()
+	if suiteDeps.Config.LogLevel != "" {
+		logLevel, err := logrus.ParseLevel(suiteDeps.Config.LogLevel)
+		if err != nil {
+			panic(fmt.Errorf("failed to parse log level %s: %w", logLevel, err))
+		}
+		log.SetLevel(logLevel)
+	}
+	logger := log.WithField("test_type", "godog")
+
 	// Create the world with long-lived deps once per scenario context
-	log := suiteDeps.logger.WithField("test_type", "godog")
 	world, err := steps.NewWorld(steps.Config{
 		Namespace:      suiteDeps.Config.Namespace,
-		Logger:         log,
+		Logger:         logger,
 		KubeClient:     suiteDeps.k8sClient,
+		K8sClient:      suiteDeps.mlopsClient,
 		WatcherStorage: suiteDeps.watcherStore,
 		IngressHost:    suiteDeps.Config.Inference.Host,
 		HTTPPort:       suiteDeps.Config.Inference.HTTPPort,
@@ -137,7 +147,7 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 		panic(fmt.Errorf("failed to create world: %w", err))
 	}
 
-	// Before: Reset scenario-level state
+	// Before: reset state and prep cluster before each scenario
 	scenarioCtx.Before(func(ctx context.Context, scenario *godog.Scenario) (context.Context, error) {
 		return ctx, nil
 	})
@@ -157,8 +167,8 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 	})
 
 	// Register step definitions with access to world + k8sClient
-	steps.LoadModelSteps(scenarioCtx, world)
-	steps.LoadExplicitModelSteps(scenarioCtx, world)
+	steps.LoadTemplateModelSteps(scenarioCtx, world)
+	steps.LoadCustomModelSteps(scenarioCtx, world)
 	steps.LoadInferenceSteps(scenarioCtx, world)
 	// TODO: load other steps, e.g. pipeline, experiment, etc.
 }

@@ -12,18 +12,25 @@ package steps
 import (
 	"context"
 	"fmt"
+	"maps"
 	"time"
 
 	"github.com/cucumber/godog"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/operator/v2/pkg/generated/clientset/versioned"
 	"github.com/seldonio/seldon-core/tests/integration/godog/k8sclient"
 	"github.com/seldonio/seldon-core/tests/integration/godog/steps/assertions"
-	"gopkg.in/yaml.v3"
+	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/yaml"
 )
 
 type Model struct {
-	model *mlopsv1alpha1.Model
+	label     map[string]string
+	namespace string
+	model     *mlopsv1alpha1.Model
+	k8sClient versioned.Interface
+	log       *logrus.Entry
 }
 
 type TestModelConfig struct {
@@ -47,10 +54,10 @@ var testModels = map[string]TestModelConfig{
 	},
 }
 
-func LoadModelSteps(scenario *godog.ScenarioContext, w *World) {
+func LoadTemplateModelSteps(scenario *godog.ScenarioContext, w *World) {
 	// Model Operations
 	scenario.Step(`^I have an? "([^"]+)" model$`, func(modelName string) error {
-		return w.currentModel.IHaveAModel(modelName, w.Label)
+		return w.currentModel.IHaveAModel(modelName)
 	})
 	scenario.Step(`^the model has "(\d+)" min replicas$`, w.currentModel.SetMinReplicas)
 	scenario.Step(`^the model has "(\d+)" max replicas$`, w.currentModel.SetMaxReplicas)
@@ -66,13 +73,20 @@ func LoadModelSteps(scenario *godog.ScenarioContext, w *World) {
 	scenario.Step(`^the model status message should be "([^"]+)"$`, w.currentModel.AssertModelStatus)
 }
 
-func LoadExplicitModelSteps(scenario *godog.ScenarioContext, w *World) {
-	scenario.Step(`^I deploy model spec:$`, func(spec *godog.DocString) error {
-		return w.currentModel.deployModelSpec(spec, w.namespace, w.kubeClient)
+func LoadCustomModelSteps(scenario *godog.ScenarioContext, w *World) {
+	scenario.Step(`^I deploy model spec with timeout "([^"]+)":$`, func(timeout string, spec *godog.DocString) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			return w.currentModel.deployModelSpec(ctx, spec)
+		})
 	})
 	scenario.Step(`^the model "([^"]+)" should eventually become Ready with timeout "([^"]+)"$`, func(model, timeout string) error {
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
 			return w.currentModel.waitForModelReady(ctx, model)
+		})
+	})
+	scenario.Step(`^delete the model "([^"]+)" with timeout "([^"]+)"$`, func(model, timeout string) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			return w.currentModel.deleteModel(ctx, model)
 		})
 	})
 }
@@ -91,22 +105,31 @@ func LoadInferenceSteps(scenario *godog.ScenarioContext, w *World) {
 	scenario.Step(`^expect http response status code "([^"]*)"$`, w.infer.httpRespCheckStatus)
 	scenario.Step(`^expect http response body to contain JSON:$`, w.infer.httpRespCheckBodyContainsJSON)
 	scenario.Step(`^expect gRPC response body to contain JSON:$`, w.infer.gRPCRespCheckBodyContainsJSON)
+	scenario.Step(`^expect gRPC response error to contain "([^"]+)"`, w.infer.gRPCRespContainsError)
 }
 
-func (m *Model) deployModelSpec(spec *godog.DocString, namespace string, _ *k8sclient.K8sClient) error {
+func (m *Model) deployModelSpec(ctx context.Context, spec *godog.DocString) error {
 	modelSpec := &mlopsv1alpha1.Model{}
 	if err := yaml.Unmarshal([]byte(spec.Content), &modelSpec); err != nil {
 		return fmt.Errorf("failed unmarshalling model spec: %w", err)
 	}
-	modelSpec.Namespace = namespace
-	// TODO: uncomment when auto-gen k8s client merged
-	//if _, err := w.corek8sClient.MlopsV1alpha1().Models(w.namespace).Create(context.TODO(), modelSpec, metav1.CreateOptions{}); err != nil {
-	//	return fmt.Errorf("failed creating model: %w", err)
-	//}
+	modelSpec.Namespace = m.namespace
+	m.applyScenarioLabel(modelSpec)
+	m.model = modelSpec
+	if _, err := m.k8sClient.MlopsV1alpha1().Models(m.namespace).Create(ctx, modelSpec, metav1.CreateOptions{}); err != nil {
+		return fmt.Errorf("failed creating model: %w", err)
+	}
 	return nil
 }
 
-func (m *Model) IHaveAModel(model string, label map[string]string) error {
+func (m *Model) applyScenarioLabel(model *mlopsv1alpha1.Model) {
+	if model.Labels == nil {
+		model.Labels = make(map[string]string)
+	}
+	maps.Copy(model.Labels, m.label)
+}
+
+func (m *Model) IHaveAModel(model string) error {
 	testModel, ok := testModels[model]
 	if !ok {
 		return fmt.Errorf("model %s not found", model)
@@ -130,7 +153,7 @@ func (m *Model) IHaveAModel(model string, label map[string]string) error {
 			CreationTimestamp:          metav1.Time{},
 			DeletionTimestamp:          nil,
 			DeletionGracePeriodSeconds: nil,
-			Labels:                     label,
+			Labels:                     m.label,
 			Annotations:                nil,
 			OwnerReferences:            nil,
 			Finalizers:                 nil,
@@ -161,8 +184,8 @@ func (m *Model) IHaveAModel(model string, label map[string]string) error {
 
 	return nil
 }
-func NewModel() *Model {
-	return &Model{model: &mlopsv1alpha1.Model{}}
+func NewModel(label map[string]string, namespace string, k8sClient versioned.Interface, log *logrus.Entry) *Model {
+	return &Model{label: label, model: &mlopsv1alpha1.Model{}, log: log, namespace: namespace, k8sClient: k8sClient}
 }
 
 func (m *Model) SetMinReplicas(replicas int) {

@@ -61,10 +61,10 @@ func (i *inference) sendGRPCModelInferenceRequest(ctx context.Context, model str
 	ctx = metadata.NewOutgoingContext(context.Background(), md)
 	resp, err := i.grpc.ModelInfer(ctx, msg)
 	if err != nil {
-		return fmt.Errorf("could not send grpc model inference: %w", err)
+		i.lastGRPCResponse.err = err
 	}
 
-	i.lastGRPCResponse = resp
+	i.lastGRPCResponse.response = resp
 	return nil
 }
 
@@ -126,12 +126,24 @@ func jsonContainsObjectSubset(jsonStr, needleStr string) (bool, error) {
 	return containsSubset(needle, hay), nil
 }
 
+func (i *inference) gRPCRespContainsError(err string) error {
+	if i.lastGRPCResponse.err == nil {
+		return errors.New("no gRPC response error found")
+	}
+
+	if strings.Contains(i.lastGRPCResponse.err.Error(), err) {
+		return nil
+	}
+
+	return fmt.Errorf("error %s does not contain %s", i.lastGRPCResponse.err.Error(), err)
+}
+
 func (i *inference) gRPCRespCheckBodyContainsJSON(expectJSON *godog.DocString) error {
-	if i.lastGRPCResponse == nil {
+	if i.lastGRPCResponse.response == nil {
 		return errors.New("no gRPC response found")
 	}
 
-	gotJson, err := json.Marshal(i.lastGRPCResponse)
+	gotJson, err := json.Marshal(i.lastGRPCResponse.response)
 	if err != nil {
 		return fmt.Errorf("could not marshal gRPC json: %w", err)
 	}
