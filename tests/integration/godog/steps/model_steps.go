@@ -29,15 +29,19 @@ type Model struct {
 	label          map[string]string
 	namespace      string
 	model          *mlopsv1alpha1.Model
+	modelName      string
+	modelType      string
 	k8sClient      versioned.Interface
 	watcherStorage k8sclient.WatcherStorage
 	log            logrus.FieldLogger
 }
 
 type TestModelConfig struct {
-	Name         string
-	StorageURI   string
-	Requirements []string // requirements might have to be applied on the applied of k8s
+	Name                  string
+	StorageURI            string
+	Requirements          []string // requirements might have to be applied on the applied of k8s
+	ValidInferenceRequest string
+	ValidJSONResponse     string
 }
 
 // map to have all common testing model definitions for testing popular models
@@ -48,10 +52,90 @@ var testModels = map[string]TestModelConfig{
 		StorageURI:   "gs://seldon-models/scv2/samples/mlserver_1.3.5/iris-sklearn",
 		Requirements: []string{"sklearn"},
 	},
-	"fraud-detector": {
-		Name:         "fraud-detector",
-		StorageURI:   "gs://other-bucket/models/fraud/",
-		Requirements: []string{"sklearn"},
+	"income-xgb": {
+		Name:         "income-xgb",
+		StorageURI:   "gs://seldon-models/scv2/samples/mlserver_1.3.5/income-xgb",
+		Requirements: []string{"xgboost"},
+	},
+	"mnist-onnx": {
+		Name:         "mnist-onnx",
+		StorageURI:   "gs://seldon-models/scv2/samples/triton_23-03/mnist-onnx",
+		Requirements: []string{"onnx"},
+	},
+	"income-lgb": {
+		Name:         "income-lgb",
+		StorageURI:   "gs://seldon-models/scv2/samples/mlserver_1.3.5/income-lgb",
+		Requirements: []string{"lightgbm"},
+	},
+	"wine": {
+		Name:         "wine",
+		StorageURI:   "gs://seldon-models/scv2/samples/mlserver_1.3.5/wine-mlflow",
+		Requirements: []string{"mlflow"},
+	},
+	"mnist-pytorch": {
+		Name:         "mnist-pytorch",
+		StorageURI:   "gs://seldon-models/scv2/samples/triton_23-03/mnist-pytorch",
+		Requirements: []string{"pytorch"},
+	},
+	"tfsimple1": {
+		Name:                  "tfsimple1",
+		StorageURI:            "gs://seldon-models/triton/simple",
+		Requirements:          []string{"tensorflow"},
+		ValidInferenceRequest: `{"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}`,
+		ValidJSONResponse: `[
+		{
+			"name": "OUTPUT0",
+			"datatype": "INT32",
+			"shape": [
+				1,
+				16
+			],
+			"data": [
+				2,
+				4,
+				6,
+				8,
+				10,
+				12,
+				14,
+				16,
+				18,
+				20,
+				22,
+				24,
+				26,
+				28,
+				30,
+				32
+			]
+		},
+		{
+			"name": "OUTPUT1",
+			"datatype": "INT32",
+			"shape": [
+				1,
+				16
+			],
+			"data": [
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0
+			]
+		}
+	]`,
 	},
 }
 
@@ -107,10 +191,22 @@ func LoadInferenceSteps(scenario *godog.ScenarioContext, w *World) {
 			return w.infer.sendGRPCModelInferenceRequest(ctx, model, payload)
 		})
 	})
+	scenario.Step(`^(?:I )send a valid gRPC inference request with timeout "([^"]+)"`, func(timeout string) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			return w.infer.sendGRPCModelInferenceRequestFromModel(ctx, w.currentModel)
+		})
+	})
+	scenario.Step(`^(?:I )send a valid HTTP inference request with timeout "([^"]+)"`, func(timeout string) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			return w.infer.sendHTTPModelInferenceRequestFromModel(ctx, w.currentModel)
+		})
+	})
+
 	scenario.Step(`^expect http response status code "([^"]*)"$`, w.infer.httpRespCheckStatus)
 	scenario.Step(`^expect http response body to contain JSON:$`, w.infer.httpRespCheckBodyContainsJSON)
 	scenario.Step(`^expect gRPC response body to contain JSON:$`, w.infer.gRPCRespCheckBodyContainsJSON)
 	scenario.Step(`^expect gRPC response error to contain "([^"]+)"`, w.infer.gRPCRespContainsError)
+
 }
 
 func (m *Model) deployModelSpec(ctx context.Context, spec *godog.DocString) error {
@@ -147,7 +243,8 @@ func (m *Model) IHaveAModel(model string) error {
 	}
 
 	modelName := fmt.Sprintf("%s-%s", testModel.Name, randomString(3))
-
+	m.modelName = modelName
+	m.modelType = model
 	m.model = &mlopsv1alpha1.Model{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Model",
