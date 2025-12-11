@@ -4,16 +4,28 @@ Feature: Model deployment
   As a model user
   I need to create a Model resource and verify it is deployed
 
-  Scenario: Success - Load a model
-    Given I have an "iris" model
+  Scenario Outline: Success - Load a <model> model
+    Given I have an "<model>" model
     When the model is applied
     Then the model should eventually become Ready
 
+    Examples:
+      | model         |
+      | iris          |
+      | income-xgb    |
+      | mnist-onnx    |
+      | income-lgb    |
+      | wine          |
+      | mnist-pytorch |
+      | tfsimple1     |
 
-  Scenario: Success - Load a model again
+
+  Scenario: Success - Load a model and expect status model available
     Given I have an "iris" model
     When the model is applied
-    Then the model should eventually become Ready
+    And the model eventually becomes Ready
+    Then the model status message should eventually be "ModelAvailable"
+
 
   Scenario: Load a specific model
     Given I deploy model spec with timeout "10s":
@@ -29,24 +41,6 @@ Feature: Model deployment
       - mlserver
       storageUri: gs://seldon-models/scv2/samples/mlserver_1.3.5/iris-sklearn
     """
-    Then the model should eventually become Ready
-
-  Scenario: Success - Load a model and expect status model available
-    Given I have an "iris" model
-    When the model is applied
-    And the model eventually becomes Ready
-    Then the model status message should eventually be "ModelAvailable"
-
-  Scenario: Success - Load a model with min replicas
-    Given I have an "iris" model
-    And the model has "1" min replicas
-    When the model is applied
-    Then the model should eventually become Ready
-
-# todo: change model type
-  Scenario: Success - Load a big model
-    Given I have an "iris" model
-    When the model is applied
     Then the model should eventually become Ready
 
 
