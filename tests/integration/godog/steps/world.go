@@ -28,13 +28,13 @@ type World struct {
 	//todo: the state such as reducing replicas to 0 of scheduler to test unavailability
 	currentModel *Model
 	infer        inference
-	logger       *log.Logger
+	logger       log.FieldLogger
 	Label        map[string]string
 }
 
 type Config struct {
 	Namespace      string
-	Logger         *log.Logger
+	Logger         log.FieldLogger
 	KubeClient     *k8sclient.K8sClient
 	K8sClient      v.Interface
 	WatcherStorage k8sclient.WatcherStorage
