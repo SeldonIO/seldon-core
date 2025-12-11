@@ -22,7 +22,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager main.go
 
 # Get MPL licensed dependencies
 RUN wget -O armon-consul-api.tar.gz https://github.com/armon/consul-api/archive/master.tar.gz
-RUN wget -O go-sql-driver-mysql.tar.gz https://github.com/go-sql-driver/mysql/archive/master.tar.gz
+#RUN wget -O go-sql-driver-mysql.tar.gz https://github.com/go-sql-driver/mysql/archive/master.tar.gz
 RUN wget -O hashicorp-consul.tar.gz https://github.com/hashicorp/consul/archive/main.tar.gz
 RUN wget -O hashicorp-errwrap.tar.gz https://github.com/hashicorp/errwrap/archive/master.tar.gz
 RUN wget -O hashicorp-go-cleanhttp.tar.gz https://github.com/hashicorp/go-cleanhttp/archive/master.tar.gz
