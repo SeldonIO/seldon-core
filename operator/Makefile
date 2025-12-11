@@ -26,7 +26,7 @@ endif
 
 .PHONY:show_image
 show_image:
-	echo ${SELDON_OPERATOR_IMG}
+	 @echo ${SELDON_OPERATOR_IMG}
 
 all: manager
 
