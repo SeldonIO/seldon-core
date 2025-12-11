@@ -1,4 +1,4 @@
-@ModelInference @Models @Inference
+@ModelInference @Models @Inference @Functional
 Feature: Basic model inferencing
 
   Scenario Outline: Success - Inference for <model> model
@@ -9,7 +9,12 @@ Feature: Basic model inferencing
     Then expect http response status code "200"
     When I send a valid gRPC inference request with timeout "20s"
 
-
     Examples:
-      | model     |
-      | tfsimple1 |
+      | model         |
+      | iris          |
+#      | income-xgb | having errors with GRPC
+#      | mnist-onnx |
+#      | income-lgb | having errors with response
+      | tfsimple1     |
+      | wine          |
+#      | mnist-pytorch | having errors with response
