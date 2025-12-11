@@ -69,7 +69,7 @@ func NewWorld(c Config) (*World, error) {
 		namespace:      c.Namespace,
 		kubeClient:     c.KubeClient,
 		watcherStorage: c.WatcherStorage,
-		currentModel:   NewModel(label, c.Namespace, c.K8sClient, c.Logger),
+		currentModel:   NewModel(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
 		infer: inference{
 			host:     c.IngressHost,
 			http:     &http.Client{},

@@ -26,11 +26,12 @@ import (
 )
 
 type Model struct {
-	label     map[string]string
-	namespace string
-	model     *mlopsv1alpha1.Model
-	k8sClient versioned.Interface
-	log       logrus.FieldLogger
+	label          map[string]string
+	namespace      string
+	model          *mlopsv1alpha1.Model
+	k8sClient      versioned.Interface
+	watcherStorage k8sclient.WatcherStorage
+	log            logrus.FieldLogger
 }
 
 type TestModelConfig struct {
@@ -68,9 +69,13 @@ func LoadTemplateModelSteps(scenario *godog.ScenarioContext, w *World) {
 	})
 	// Model Assertions
 	scenario.Step(`^the model (?:should )?eventually become(?:s)? Ready$`, func() error {
-		return w.currentModel.ModelReady(w.watcherStorage)
+		// todo: maybe convert this to a flag
+		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		defer cancel()
+
+		return w.currentModel.ModelReady(ctx)
 	})
-	scenario.Step(`^the model status message should be "([^"]+)"$`, w.currentModel.AssertModelStatus)
+	scenario.Step(`^the model status message eventually should be "([^"]+)"$`, w.currentModel.AssertModelStatus)
 }
 
 func LoadCustomModelSteps(scenario *godog.ScenarioContext, w *World) {
@@ -114,19 +119,25 @@ func (m *Model) deployModelSpec(ctx context.Context, spec *godog.DocString) erro
 		return fmt.Errorf("failed unmarshalling model spec: %w", err)
 	}
 	modelSpec.Namespace = m.namespace
-	m.applyScenarioLabel(modelSpec)
 	m.model = modelSpec
-	if _, err := m.k8sClient.MlopsV1alpha1().Models(m.namespace).Create(ctx, modelSpec, metav1.CreateOptions{}); err != nil {
+	m.applyScenarioLabel()
+	if _, err := m.k8sClient.MlopsV1alpha1().Models(m.namespace).Create(ctx, m.model, metav1.CreateOptions{}); err != nil {
 		return fmt.Errorf("failed creating model: %w", err)
 	}
 	return nil
 }
 
-func (m *Model) applyScenarioLabel(model *mlopsv1alpha1.Model) {
-	if model.Labels == nil {
-		model.Labels = make(map[string]string)
+func (m *Model) applyScenarioLabel() {
+	if m.model.Labels == nil {
+		m.model.Labels = make(map[string]string)
 	}
-	maps.Copy(model.Labels, m.label)
+
+	maps.Copy(m.model.Labels, m.label)
+
+	// todo: change this approach
+	for k, v := range k8sclient.DefaultCRDLabelMap {
+		m.model.Labels[k] = v
+	}
 }
 
 func (m *Model) IHaveAModel(model string) error {
@@ -184,8 +195,8 @@ func (m *Model) IHaveAModel(model string) error {
 
 	return nil
 }
-func NewModel(label map[string]string, namespace string, k8sClient versioned.Interface, log logrus.FieldLogger) *Model {
-	return &Model{label: label, model: &mlopsv1alpha1.Model{}, log: log, namespace: namespace, k8sClient: k8sClient}
+func NewModel(label map[string]string, namespace string, k8sClient versioned.Interface, log logrus.FieldLogger, watcherStorage k8sclient.WatcherStorage) *Model {
+	return &Model{label: label, model: &mlopsv1alpha1.Model{}, log: log, namespace: namespace, k8sClient: k8sClient, watcherStorage: watcherStorage}
 }
 
 func (m *Model) SetMinReplicas(replicas int) {
@@ -206,16 +217,11 @@ func (m *Model) ApplyModel(k *k8sclient.K8sClient) error {
 	return nil
 }
 
-func (m *Model) ModelReady(w k8sclient.WatcherStorage) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
-
-	// m.world.currentModel.model is assumed to be *mlopsv1alpha1.Model
-	// which implements runtime.Object, so no cast needed.
-	return w.WaitFor(
+func (m *Model) ModelReady(ctx context.Context) error {
+	return m.watcherStorage.WaitFor(
 		ctx,
-		m.model,
-		assertions.ModelReady,
+		m.model,               // the k8s object being watched
+		assertions.ModelReady, // predicate from steps/assertions
 	)
 }
 
