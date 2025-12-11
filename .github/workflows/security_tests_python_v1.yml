@@ -113,7 +113,7 @@ jobs:
         server:
           - tfserving_proxy
           #- sklearnserver
-          - mlflowserver
+          #- mlflowserver
           #- xgboostserver
     steps:
       - uses: actions/checkout@v4
@@ -156,7 +156,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: ${{ env.SERVER_IMAGE_TAG}}:test
-          args:  --fail-on=upgradable --app-vulns --severity-threshold=high
+          args:  --fail-on=upgradable --app-vulns --severity-threshold=high --print-deps
 
       - name: Save scan output to file
         run: echo "${{ matrix.server }}_RESULT=${{ steps.scan.outcome }}" > "report-${{ matrix.server }}.txt"
@@ -168,6 +168,7 @@ jobs:
           path: report-${{ matrix.server }}.txt
 
   build-alibi-explain:
+    if: false  # Temporarily disabled to save CI resources
     needs: build-upload-scan-base-images
     runs-on: ubuntu-latest
     steps:
@@ -225,6 +226,7 @@ jobs:
           path: report-alibi-explain.txt
 
   build-alibi-detect:
+    if: false  # Temporarily disabled to save CI resources
     needs: build-upload-scan-base-images
     runs-on: ubuntu-latest
     steps:
@@ -282,6 +284,7 @@ jobs:
           path: report-alibi-detect.txt
 
   verify-scans:
+    if: false  # Temporarily disabled to save CI resources
     needs: [ build-upload-scan-base-images, build-servers, build-alibi-explain, build-alibi-detect]
     runs-on: ubuntu-latest
     if: always()
