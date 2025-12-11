@@ -154,7 +154,9 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 			return ctx, fmt.Errorf("error when deleting models on before steps: %w", err)
 		}
 
-		return ctx, err
+		// Don't re-return stepErr, just swallow it here.
+		// Godog already knows the step failed and will report it.
+		return ctx, nil
 	})
 
 	// Register step definitions with access to world + k8sClient
