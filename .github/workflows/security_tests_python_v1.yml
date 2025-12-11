@@ -287,7 +287,7 @@ jobs:
     if: false  # Temporarily disabled to save CI resources
     needs: [ build-upload-scan-base-images, build-servers, build-alibi-explain, build-alibi-detect]
     runs-on: ubuntu-latest
-    if: always()
+    #if: always()
 
     steps:
       - name: Download Snyk results for servers
