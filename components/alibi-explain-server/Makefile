@@ -8,6 +8,11 @@ BASE_IMAGE ?= ${DOCKER_REGISTRY}/conda-ubi9
 IMAGE ?= ${DOCKER_REGISTRY}/alibiexplainer
 KIND_NAME ?= kind
 
+
+.PHONY:show_image
+show_image:
+	 @echo ${IMAGE_NAME}:${VERSION}
+
 #
 # Building protos
 #

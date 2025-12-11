@@ -26,6 +26,15 @@ get_local_repo:
 	cp ../../../version.txt version.txt
 	cp -r $(SELDON_CORE_DIR)/python _python
 
+.PHONY:show_conda_image
+show_conda_image:
+	 @echo ${CONDA_BASE_IMAGE}:${VERSION}
+
+
+.PHONY:show_python_wrapper_image
+show_python_wrapper_image:
+	 @echo ${IMAGE_NAME}:${VERSION}
+
 
 # Building Conda Base
 docker-build-conda-base:
