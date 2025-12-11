@@ -269,7 +269,7 @@ jobs:
           make docker-build docker-push
           TAG="$(make show_image)"
           echo "IMG_TAG=$TAG" >> $GITHUB_ENV
-          echo "${{ matrix.server }} image tag: IMG_$TAG"
+          echo "${{ matrix.server }} image tag: $IMG_TAG"
 
       - name: Monitor docker image for CVEs
         # only want to monitor images which we have set a release tag for
