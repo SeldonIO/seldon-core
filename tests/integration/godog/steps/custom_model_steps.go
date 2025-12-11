@@ -35,6 +35,7 @@ func (m *Model) deleteModel(ctx context.Context, model string) error {
 	if err := m.k8sClient.MlopsV1alpha1().Models(m.namespace).Delete(ctx, model, metav1.DeleteOptions{}); err != nil {
 		return fmt.Errorf("failed deleting model: %w", err)
 	}
+
 	m.log.Debugf("Delete request for model %s sent", model)
 
 	watcher, err := m.k8sClient.MlopsV1alpha1().Models(m.namespace).Watch(ctx, metav1.ListOptions{

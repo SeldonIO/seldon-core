@@ -30,7 +30,7 @@ type Model struct {
 	namespace string
 	model     *mlopsv1alpha1.Model
 	k8sClient versioned.Interface
-	log       *logrus.Entry
+	log       *logrus.Logger
 }
 
 type TestModelConfig struct {
@@ -184,7 +184,7 @@ func (m *Model) IHaveAModel(model string) error {
 
 	return nil
 }
-func NewModel(label map[string]string, namespace string, k8sClient versioned.Interface, log *logrus.Entry) *Model {
+func NewModel(label map[string]string, namespace string, k8sClient versioned.Interface, log *logrus.Logger) *Model {
 	return &Model{label: label, model: &mlopsv1alpha1.Model{}, log: log, namespace: namespace, k8sClient: k8sClient}
 }
 

@@ -120,20 +120,10 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 }
 
 func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
-	log := logrus.New()
-	if suiteDeps.Config.LogLevel != "" {
-		logLevel, err := logrus.ParseLevel(suiteDeps.Config.LogLevel)
-		if err != nil {
-			panic(fmt.Errorf("failed to parse log level %s: %w", logLevel, err))
-		}
-		log.SetLevel(logLevel)
-	}
-	logger := log.WithField("test_type", "godog")
-
 	// Create the world with long-lived deps once per scenario context
 	world, err := steps.NewWorld(steps.Config{
 		Namespace:      suiteDeps.Config.Namespace,
-		Logger:         logger,
+		Logger:         suiteDeps.logger,
 		KubeClient:     suiteDeps.k8sClient,
 		K8sClient:      suiteDeps.mlopsClient,
 		WatcherStorage: suiteDeps.watcherStore,
@@ -155,7 +145,7 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 	// After: optional cleanup / rollback
 	scenarioCtx.After(func(ctx context.Context, scenario *godog.Scenario, err error) (context.Context, error) {
 		if suiteDeps.Config.SkipCleanup {
-			log.WithField("scenario", scenario.Name).Debug("Skipping cleanup")
+			suiteDeps.logger.WithField("scenario", scenario.Name).Debug("Skipping cleanup")
 			return ctx, nil
 		}
 
