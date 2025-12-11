@@ -241,7 +241,12 @@ func (i *inference) httpRespCheckStatus(status int) error {
 		return errors.New("no http response found")
 	}
 	if status != i.lastHTTPResponse.StatusCode {
-		return fmt.Errorf("expected http response status code %d, got %d", status, i.lastHTTPResponse.StatusCode)
+		body, err := io.ReadAll(i.lastHTTPResponse.Body)
+		if err != nil {
+			return fmt.Errorf("expected http response status code %d, got %d", status, i.lastHTTPResponse.StatusCode)
+		}
+		return fmt.Errorf("expected http response status code %d, got %d with body: %s", status, i.lastHTTPResponse.StatusCode, body)
+
 	}
 	return nil
 }
