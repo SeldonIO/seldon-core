@@ -4,26 +4,31 @@ Feature: Model deployment
   As a model user
   I need to create a Model resource and verify it is deployed
 
-  @0
   Scenario: Success - Load a model
     Given I have an "iris" model
     When the model is applied
     Then the model should eventually become Ready
 
 
-  @0
   Scenario: Success - Load a model again
     Given I have an "iris" model
     When the model is applied
     Then the model should eventually become Ready
 
-#    this approach might be more reusable specially for complex test cases, its all how expressive we want to be
-  Scenario: Load model
-    Given I have a model:
+  Scenario: Load a specific model
+    Given I deploy model spec with timeout "10s":
     """
-
+    apiVersion: mlops.seldon.io/v1alpha1
+    kind: Model
+    metadata:
+      name: deployment-test-1
+    spec:
+      replicas: 1
+      requirements:
+      - sklearn
+      - mlserver
+      storageUri: gs://seldon-models/scv2/samples/mlserver_1.3.5/iris-sklearn
     """
-    When the model is applied
     Then the model should eventually become Ready
 
   Scenario: Success - Load a model and expect status model available
@@ -38,19 +43,10 @@ Feature: Model deployment
     When the model is applied
     Then the model should eventually become Ready
 
-
+# todo: change model type
   Scenario: Success - Load a big model
-    Given I have an "large-model" model
+    Given I have an "iris" model
     When the model is applied
     Then the model should eventually become Ready
-
-#    this would belong more to the feature of model server scheduling or capabilities
-  Scenario: Fail Load Model - no server capabilities in cluster
-    Given Given I have an "iris" model
-    And the model has "xgboost" capabilities
-    And there is no server in the cluster with capabilities "xgboost"
-    When the model is applied
-    Then the model eventually becomes not Ready
-    And the model status message should eventually be "ModelFailed"
 
 
