@@ -90,7 +90,7 @@ func (s *WatcherStore) Start() {
 				if err != nil {
 					s.logger.WithError(err).Error("failed to access model watcher")
 				} else {
-					s.logger.Debugf("new model watch event with name: %s on namespace: %s", accessor.GetName(), accessor.GetNamespace())
+					s.logger.WithField("event", event).Tracef("new model watch event with name: %s on namespace: %s", accessor.GetName(), accessor.GetNamespace())
 				}
 
 				if event.Object == nil {
