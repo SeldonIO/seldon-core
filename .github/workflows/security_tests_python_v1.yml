@@ -105,17 +105,16 @@ jobs:
           path: /tmp/python-wrapper-image.tar
 
   build-servers:
-    if: false  # Temporarily disabled to save CI resources
     needs: build-upload-scan-base-images
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         server:
-          - tfserving_proxy
-          - sklearnserver
+          #- tfserving_proxy
+          #- sklearnserver
           - mlflowserver
-          - xgboostserver
+          #- xgboostserver
     steps:
       - uses: actions/checkout@v4
 
@@ -283,8 +282,7 @@ jobs:
           path: report-alibi-detect.txt
 
   verify-scans:
-    #needs: [ build-upload-scan-base-images, build-servers, build-alibi-explain, build-alibi-detect]
-    needs: [ build-upload-scan-base-images, build-alibi-explain, build-alibi-detect]
+    needs: [ build-upload-scan-base-images, build-servers, build-alibi-explain, build-alibi-detect]
     runs-on: ubuntu-latest
     if: always()
 
