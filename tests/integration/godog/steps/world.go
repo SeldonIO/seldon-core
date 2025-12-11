@@ -36,6 +36,7 @@ type Config struct {
 	Namespace      string
 	Logger         log.FieldLogger
 	KubeClient     *k8sclient.K8sClient
+	K8sClient      v.Interface
 	WatcherStorage k8sclient.WatcherStorage
 	GRPC           v2_dataplane.GRPCInferenceServiceClient
 	IngressHost    string
@@ -51,7 +52,12 @@ type inference struct {
 	grpc             v2_dataplane.GRPCInferenceServiceClient
 	httpPort         uint
 	lastHTTPResponse *http.Response
-	lastGRPCResponse *v2_dataplane.ModelInferResponse
+	lastGRPCResponse lastGRPCResponse
+}
+
+type lastGRPCResponse struct {
+	response *v2_dataplane.ModelInferResponse
+	err      error
 }
 
 func NewWorld(c Config) (*World, error) {
@@ -63,7 +69,7 @@ func NewWorld(c Config) (*World, error) {
 		namespace:      c.Namespace,
 		kubeClient:     c.KubeClient,
 		watcherStorage: c.WatcherStorage,
-		currentModel:   NewModel(),
+		currentModel:   NewModel(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
 		infer: inference{
 			host:     c.IngressHost,
 			http:     &http.Client{},

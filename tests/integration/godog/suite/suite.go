@@ -126,6 +126,7 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 		Namespace:      suiteDeps.Config.Namespace,
 		Logger:         log,
 		KubeClient:     suiteDeps.k8sClient,
+		K8sClient:      suiteDeps.mlopsClient,
 		WatcherStorage: suiteDeps.watcherStore,
 		IngressHost:    suiteDeps.Config.Inference.Host,
 		HTTPPort:       suiteDeps.Config.Inference.HTTPPort,
@@ -137,7 +138,7 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 		panic(fmt.Errorf("failed to create world: %w", err))
 	}
 
-	// Before: Reset scenario-level state
+	// Before: reset state and prep cluster before each scenario
 	scenarioCtx.Before(func(ctx context.Context, scenario *godog.Scenario) (context.Context, error) {
 		return ctx, nil
 	})
@@ -157,8 +158,8 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 	})
 
 	// Register step definitions with access to world + k8sClient
-	steps.LoadModelSteps(scenarioCtx, world)
-	steps.LoadExplicitModelSteps(scenarioCtx, world)
+	steps.LoadTemplateModelSteps(scenarioCtx, world)
+	steps.LoadCustomModelSteps(scenarioCtx, world)
 	steps.LoadInferenceSteps(scenarioCtx, world)
 	// TODO: load other steps, e.g. pipeline, experiment, etc.
 }
