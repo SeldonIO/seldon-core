@@ -25,22 +25,46 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func (i *inference) sendHTTPModelInferenceRequest(ctx context.Context, model string, payload *godog.DocString) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
-		fmt.Sprintf("%s://%s:%d/v2/models/%s/infer", httpScheme(i.ssl), i.host, i.httpPort, model), strings.NewReader(payload.Content))
+func (i *inference) doHTTPModelInferenceRequest(ctx context.Context, modelName, body string) error {
+	url := fmt.Sprintf(
+		"%s://%s:%d/v2/models/%s/infer",
+		httpScheme(i.ssl),
+		i.host,
+		i.httpPort,
+		modelName,
+	)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("could not create http request: %w", err)
 	}
+
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Host", "seldon-mesh.inference.seldon")
-	req.Header.Add("Seldon-model", model)
+	req.Header.Add("Seldon-model", modelName)
 
 	resp, err := i.http.Do(req)
 	if err != nil {
 		return fmt.Errorf("could not send http request: %w", err)
 	}
+
 	i.lastHTTPResponse = resp
 	return nil
+}
+
+// Used from steps that pass an explicit payload (DocString)
+func (i *inference) sendHTTPModelInferenceRequest(ctx context.Context, model string, payload *godog.DocString) error {
+	return i.doHTTPModelInferenceRequest(ctx, model, payload.Content)
+}
+
+// Used from steps that work from a *Model and testModels table
+func (i *inference) sendHTTPModelInferenceRequestFromModel(ctx context.Context, m *Model) error {
+	testModel, ok := testModels[m.modelType]
+	if !ok {
+		return fmt.Errorf("could not find test model %s", m.model.Name)
+	}
+
+	return i.doHTTPModelInferenceRequest(ctx, m.modelName, testModel.ValidInferenceRequest)
 }
 
 func httpScheme(useSSL bool) string {
@@ -51,20 +75,41 @@ func httpScheme(useSSL bool) string {
 }
 
 func (i *inference) sendGRPCModelInferenceRequest(ctx context.Context, model string, payload *godog.DocString) error {
-	var msg *v2_dataplane.ModelInferRequest
-	if err := json.Unmarshal([]byte(payload.Content), &msg); err != nil {
+	return i.doGRPCModelInferenceRequest(ctx, model, payload.Content)
+}
+
+func (i *inference) sendGRPCModelInferenceRequestFromModel(ctx context.Context, m *Model) error {
+	testModel, ok := testModels[m.modelType]
+	if !ok {
+		return fmt.Errorf("could not find test model %s", m.model.Name)
+	}
+	return i.doGRPCModelInferenceRequest(ctx, m.modelName, testModel.ValidInferenceRequest)
+}
+
+func (i *inference) doGRPCModelInferenceRequest(
+	ctx context.Context,
+	model string,
+	payload string,
+) error {
+	// Unmarshal into a value, then take its address when calling gRPC.
+	var req v2_dataplane.ModelInferRequest
+	if err := json.Unmarshal([]byte(payload), &req); err != nil {
 		return fmt.Errorf("could not unmarshal gRPC json payload: %w", err)
 	}
-	msg.ModelName = model
+	req.ModelName = model
 
+	// Attach metadata to the *existing* context, don’t discard it.
 	md := metadata.Pairs("seldon-model", model)
-	ctx = metadata.NewOutgoingContext(context.Background(), md)
-	resp, err := i.grpc.ModelInfer(ctx, msg)
-	if err != nil {
-		i.lastGRPCResponse.err = err
-	}
+	ctx = metadata.NewOutgoingContext(ctx, md)
 
+	resp, err := i.grpc.ModelInfer(ctx, &req)
+
+	// Record both resp and err so later steps can assert on them.
 	i.lastGRPCResponse.response = resp
+	i.lastGRPCResponse.err = err
+
+	// Important: return nil so that the step itself doesn't fail.
+	// The following "Then ..." step will assert on i.lastGRPCResponse.err.
 	return nil
 }
 
