@@ -1,8 +1,6 @@
 name: Build & Push the Python Builder Image
 
 on:
-  push:
-
   workflow_dispatch:
     inputs:
       docker-tag:
