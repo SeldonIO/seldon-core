@@ -110,7 +110,7 @@ func LoadTemplateModelSteps(scenario *godog.ScenarioContext, w *World) {
 		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 		defer cancel()
 
-		return w.currentModel.ModelReady(ctx)
+		return w.currentModel.waitForModelReady(ctx)
 	})
 	scenario.Step(`^the model status message eventually should be "([^"]+)"$`, w.currentModel.AssertModelStatus)
 }
@@ -123,7 +123,7 @@ func LoadCustomModelSteps(scenario *godog.ScenarioContext, w *World) {
 	})
 	scenario.Step(`^the model "([^"]+)" should eventually become Ready with timeout "([^"]+)"$`, func(model, timeout string) error {
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
-			return w.currentModel.waitForModelReady(ctx, model)
+			return w.currentModel.waitForModelNameReady(ctx, model)
 		})
 	})
 	scenario.Step(`^delete the model "([^"]+)" with timeout "([^"]+)"$`, func(model, timeout string) error {
@@ -155,7 +155,7 @@ func (m *Model) applyScenarioLabel() {
 	maps.Copy(m.model.Labels, m.label)
 
 	// todo: change this approach
-	for k, v := range k8sclient.DefaultCRDLabelMap {
+	for k, v := range k8sclient.DefaultCRDTestSuiteLabelMap {
 		m.model.Labels[k] = v
 	}
 }
@@ -238,7 +238,7 @@ func (m *Model) ApplyModel(k *k8sclient.K8sClient) error {
 	return nil
 }
 
-func (m *Model) ModelReady(ctx context.Context) error {
+func (m *Model) waitForModelReady(ctx context.Context) error {
 	return m.watcherStorage.WaitForObject(
 		ctx,
 		m.model,               // the k8s object being watched

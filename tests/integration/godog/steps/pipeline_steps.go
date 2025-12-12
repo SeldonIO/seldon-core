@@ -36,14 +36,14 @@ func LoadCustomPipelineSteps(scenario *godog.ScenarioContext, w *World) {
 		})
 	})
 
-	scenario.Step(`^the pipeline (?:should )?eventually become Ready with timeout "([^"]+)"$`, func(timeout string) error {
+	scenario.Step(`^the pipeline "([^"]+)" (?:should )?eventually become Ready with timeout "([^"]+)"$`, func(name, timeout string) error {
 		ctx, cancel, err := timeoutToContext(timeout)
 		if err != nil {
 			return err
 		}
 		defer cancel()
 
-		return w.currentPipeline.PipelineReady(ctx)
+		return w.currentPipeline.waitForPipelineNameReady(ctx, name)
 	})
 }
 
@@ -72,15 +72,25 @@ func (p *Pipeline) applyScenarioLabel() {
 	maps.Copy(p.pipeline.Labels, p.label)
 
 	// todo: change this approach
-	for k, v := range k8sclient.DefaultCRDLabelMap {
+	for k, v := range k8sclient.DefaultCRDTestSuiteLabelMap {
 		p.pipeline.Labels[k] = v
 	}
 }
 
-func (m *Pipeline) PipelineReady(ctx context.Context) error {
-	return m.watcherStorage.WaitForObject(
+func (p *Pipeline) waitForPipelineNameReady(ctx context.Context, name string) error {
+
+	return p.watcherStorage.WaitForKey(
 		ctx,
-		m.pipeline,               // the k8s object being watched
+		name,                     // the k8s object being watched
+		assertions.PipelineReady, // predicate from steps/assertions
+	)
+}
+
+func (p *Pipeline) PipelineReady(ctx context.Context, name string) error {
+
+	return p.watcherStorage.WaitForObject(
+		ctx,
+		p.pipeline,               // the k8s object being watched
 		assertions.PipelineReady, // predicate from steps/assertions
 	)
 }

@@ -28,12 +28,12 @@ type K8sClient struct {
 	KubeClient client.WithWatch
 }
 
-var DefaultCRDLabelMap = map[string]string{
+var DefaultCRDTestSuiteLabelMap = map[string]string{
 	"test-suite": "godog",
 }
 
 const (
-	DefaultCRDLabel = "test-suite=godog"
+	DefaultCRDTestSuiteLabel = "test-suite=godog"
 )
 
 // New todo: separate k8s client init and pass to new
@@ -83,7 +83,7 @@ func (k8s *K8sClient) ApplyModel(model *mlopsv1alpha1.Model) error {
 	}
 
 	// add labels
-	for k, v := range DefaultCRDLabelMap {
+	for k, v := range DefaultCRDTestSuiteLabelMap {
 		model.Labels[k] = v
 	}
 

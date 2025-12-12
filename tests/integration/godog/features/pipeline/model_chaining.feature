@@ -16,7 +16,6 @@ Feature: Pipeline model chaining
       memory: 100Ki
 
     """
-    Then the model "tfsimple1" should eventually become Ready with timeout "20s"
     And I deploy model spec with timeout "20s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
@@ -29,6 +28,7 @@ Feature: Pipeline model chaining
       - tensorflow
       memory: 100Ki
     """
+    Then the model "tfsimple1" should eventually become Ready with timeout "20s"
     Then the model "tfsimple2" should eventually become Ready with timeout "20s"
     When I deploy pipeline spec with timeout "20s":
     """
@@ -49,4 +49,4 @@ Feature: Pipeline model chaining
         steps:
         - tfsimple2
     """
-    Then the pipeline should eventually become Ready with timeout "20s"
+    Then the pipeline "tfsimples" should eventually become Ready with timeout "20s"

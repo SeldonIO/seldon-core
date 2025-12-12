@@ -27,6 +27,7 @@ type WatcherStorage interface {
 	Put(runtime.Object)
 	Get(runtime.Object) (runtime.Object, bool)
 	WaitForObject(ctx context.Context, obj runtime.Object, cond ConditionFunc) error
+	WaitForKey(ctx context.Context, key string, cond ConditionFunc) error
 	Clear()
 	Start()
 	Stop()
@@ -61,12 +62,12 @@ func NewWatcherStore(namespace string, label string, mlopsClient v1alpha1.MlopsV
 		logger = log.New()
 	}
 
-	modelWatcher, err := mlopsClient.Models(namespace).Watch(context.Background(), v1.ListOptions{LabelSelector: DefaultCRDLabel})
+	modelWatcher, err := mlopsClient.Models(namespace).Watch(context.Background(), v1.ListOptions{LabelSelector: DefaultCRDTestSuiteLabel})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create model watcher: %w", err)
 	}
 
-	pipelineWatcher, err := mlopsClient.Pipelines(namespace).Watch(context.Background(), v1.ListOptions{LabelSelector: DefaultCRDLabel})
+	pipelineWatcher, err := mlopsClient.Pipelines(namespace).Watch(context.Background(), v1.ListOptions{LabelSelector: DefaultCRDTestSuiteLabel})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create pipeline watcher: %w", err)
 	}
@@ -255,6 +256,46 @@ func (s *WatcherStore) WaitForObject(ctx context.Context, obj runtime.Object, co
 	if err != nil {
 		return err
 	}
+
+	// Fast path: check current state
+	s.mu.RLock()
+	existing, ok := s.store[key]
+	s.mu.RUnlock()
+
+	if ok {
+		done, err := cond(existing)
+		if err != nil {
+			return err
+		}
+		if done {
+			return nil
+		}
+	}
+
+	// Slow path: register a waiter
+	w := &waiter{
+		key:    key,
+		cond:   cond,
+		result: make(chan error, 1), // buffered so we don't block notifier
+	}
+
+	s.mu.Lock()
+	s.waiters = append(s.waiters, w)
+	s.mu.Unlock()
+
+	// Wait for either condition satisfied or context cancelled
+	select {
+	case <-ctx.Done():
+		s.removeWaiter(w)
+		return ctx.Err()
+	case err := <-w.result:
+		return err
+	}
+}
+
+func (s *WatcherStore) WaitForKey(ctx context.Context, key string, cond ConditionFunc) error {
+	// build key
+	key = fmt.Sprintf("%s/%s", s.namespace, key)
 
 	// Fast path: check current state
 	s.mu.RLock()
