@@ -12,6 +12,7 @@ package k8sclient
 import (
 	"context"
 	"fmt"
+	"time"
 
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	log "github.com/sirupsen/logrus"
@@ -116,7 +117,7 @@ func (k8s *K8sClient) DeleteScenarioResources(ctx context.Context, labels client
 		client.InNamespace(k8s.namespace),
 		labels,
 	); err != nil {
-		return err
+		return fmt.Errorf("failed to delete Models: %w", err)
 	}
 
 	if err := k8s.KubeClient.DeleteAllOf(
@@ -125,8 +126,43 @@ func (k8s *K8sClient) DeleteScenarioResources(ctx context.Context, labels client
 		client.InNamespace(k8s.namespace),
 		labels,
 	); err != nil {
-		return err
+		return fmt.Errorf("failed to delete Pipelines: %w", err)
 	}
 
-	return nil
+	ticker := time.NewTicker(500 * time.Millisecond)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("timeout waiting for Models/Pipelines to be deleted: %w", ctx.Err())
+
+		case <-ticker.C:
+			// Check Models
+			var modelList mlopsv1alpha1.ModelList
+			if err := k8s.KubeClient.List(
+				ctx,
+				&modelList,
+				client.InNamespace(k8s.namespace),
+				labels,
+			); err != nil {
+				return fmt.Errorf("failed to list Models: %w", err)
+			}
+
+			// Check Pipelines
+			var pipelineList mlopsv1alpha1.PipelineList
+			if err := k8s.KubeClient.List(
+				ctx,
+				&pipelineList,
+				client.InNamespace(k8s.namespace),
+				labels,
+			); err != nil {
+				return fmt.Errorf("failed to list Pipelines: %w", err)
+			}
+
+			if len(modelList.Items) == 0 && len(pipelineList.Items) == 0 {
+				return nil
+			}
+		}
+	}
 }
