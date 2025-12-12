@@ -81,16 +81,16 @@ func (p *Pipeline) waitForPipelineNameReady(ctx context.Context, name string) er
 
 	return p.watcherStorage.WaitForKey(
 		ctx,
-		name,                     // the k8s object being watched
-		assertions.PipelineReady, // predicate from steps/assertions
+		name,
+		assertions.PipelineReady,
 	)
 }
 
-func (p *Pipeline) PipelineReady(ctx context.Context, name string) error {
+func (p *Pipeline) waitForPipelineReady(ctx context.Context) error {
 
 	return p.watcherStorage.WaitForObject(
 		ctx,
-		p.pipeline,               // the k8s object being watched
-		assertions.PipelineReady, // predicate from steps/assertions
+		p.pipeline,
+		assertions.PipelineReady,
 	)
 }
