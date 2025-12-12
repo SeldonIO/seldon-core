@@ -27,6 +27,7 @@ type World struct {
 	//todo:  server config,seldon config and seldon runtime to be able to reconcile to starting state should we change
 	//todo: the state such as reducing replicas to 0 of scheduler to test unavailability
 	currentModel *Model
+	server       *server
 	infer        inference
 	logger       log.FieldLogger
 	Label        map[string]string
@@ -70,6 +71,7 @@ func NewWorld(c Config) (*World, error) {
 		kubeClient:     c.KubeClient,
 		watcherStorage: c.WatcherStorage,
 		currentModel:   NewModel(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
+		server:         newServer(label, c.Namespace, c.K8sClient, c.Logger, c.KubeClient),
 		infer: inference{
 			host:     c.IngressHost,
 			http:     &http.Client{},

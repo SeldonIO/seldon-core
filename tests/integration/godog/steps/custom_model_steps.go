@@ -105,6 +105,8 @@ func (m *Model) waitForModelReady(ctx context.Context, model string) error {
 				if model.Status.IsReady() {
 					return nil
 				}
+				m.log.Debugf("got watch event: model %s is not ready, still waiting", model)
+				continue
 			}
 
 			if event.Type == watch.Deleted {
