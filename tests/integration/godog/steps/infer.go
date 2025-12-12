@@ -91,25 +91,19 @@ func (i *inference) doGRPCModelInferenceRequest(
 	model string,
 	payload string,
 ) error {
-	// Unmarshal into a value, then take its address when calling gRPC.
 	var req v2_dataplane.ModelInferRequest
 	if err := json.Unmarshal([]byte(payload), &req); err != nil {
 		return fmt.Errorf("could not unmarshal gRPC json payload: %w", err)
 	}
 	req.ModelName = model
 
-	// Attach metadata to the *existing* context, don’t discard it.
 	md := metadata.Pairs("seldon-model", model)
 	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	resp, err := i.grpc.ModelInfer(ctx, &req)
 
-	// Record both resp and err so later steps can assert on them.
 	i.lastGRPCResponse.response = resp
 	i.lastGRPCResponse.err = err
-
-	// Important: return nil so that the step itself doesn't fail.
-	// The following "Then ..." step will assert on i.lastGRPCResponse.err.
 	return nil
 }
 
