@@ -5,7 +5,6 @@ on:
     inputs:
       docker-tag:
         description: 'Docker tag for push (e.g. 2.0.0)'
-        default: 'latest'
         required: true
 
 env:
