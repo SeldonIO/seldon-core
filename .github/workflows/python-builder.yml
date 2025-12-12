@@ -13,7 +13,7 @@ env:
   GOLANG_VERSION: 1.24.7
 
 jobs:
-  operator:
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,14 +31,8 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Set default docker tag for builds from master
-        id: docker-tag
-        run: |
-          USER_INPUT="${{ github.event.inputs.docker-tag }}"
-          echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
-
       - name: Build and push
         working-directory: ./python-builder/
         run: |
-          make DOCKER_IMAGE_VERSION=${{ steps.docker-tag.outputs.value }} build_docker_image
-          make DOCKER_IMAGE_VERSION=${{ steps.docker-tag.outputs.value }} push_to_registry
+          make DOCKER_IMAGE_VERSION=0.9 build_docker_image
+          make DOCKER_IMAGE_VERSION=0.9 push_to_registry
