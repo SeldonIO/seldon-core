@@ -7,6 +7,7 @@ on:
     inputs:
       docker-tag:
         description: 'Docker tag for push (e.g. 2.0.0)'
+        default: 'latest'
         required: true
 
 env:
@@ -34,5 +35,5 @@ jobs:
       - name: Build and push
         working-directory: ./python-builder/
         run: |
-          make DOCKER_IMAGE_VERSION=0.9 build_docker_image
-          make DOCKER_IMAGE_VERSION=0.9 push_to_registry
+          make DOCKER_IMAGE_VERSION="${{ github.event.inputs.docker-tag }}" build_docker_image
+          make DOCKER_IMAGE_VERSION="${{ github.event.inputs.docker-tag }}" push_to_registry
