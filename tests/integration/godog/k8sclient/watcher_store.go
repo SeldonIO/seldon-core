@@ -11,7 +11,6 @@ package k8sclient
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sync"
 
@@ -183,14 +182,6 @@ func (s *WatcherStore) keyFor(obj runtime.Object) (string, error) {
 	}
 
 	return fmt.Sprintf("%s/%s", ns, accessor.GetName()), nil
-}
-
-func (s *WatcherStore) keyForName(crdName string) (string, error) {
-	if crdName == "" {
-		return "", errors.New("no crd name provided")
-	}
-
-	return fmt.Sprintf("%s/%s", s.namespace, crdName), nil
 }
 
 func (s *WatcherStore) Put(obj runtime.Object) {
