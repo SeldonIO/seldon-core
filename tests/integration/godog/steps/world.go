@@ -62,6 +62,7 @@ func NewWorld(c Config) (*World, error) {
 		kubeClient:     c.KubeClient,
 		watcherStorage: c.WatcherStorage,
 		currentModel:   NewModel(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
+		currentPipeline: NewPipeline(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
 		server:         newServer(label, c.Namespace, c.K8sClient, c.Logger, c.KubeClient),
 		infer: inference{
 			host:     c.IngressHost,

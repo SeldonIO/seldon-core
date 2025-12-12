@@ -119,5 +119,14 @@ func (k8s *K8sClient) DeleteScenarioResources(ctx context.Context, labels client
 		return err
 	}
 
+	if err := k8s.KubeClient.DeleteAllOf(
+		ctx,
+		&mlopsv1alpha1.Pipeline{},
+		client.InNamespace(k8s.namespace),
+		labels,
+	); err != nil {
+		return err
+	}
+
 	return nil
 }
