@@ -11,6 +11,7 @@ package k8sclient
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 
@@ -25,18 +26,19 @@ import (
 type WatcherStorage interface {
 	Put(runtime.Object)
 	Get(runtime.Object) (runtime.Object, bool)
-	WaitFor(ctx context.Context, obj runtime.Object, cond ConditionFunc) error
+	WaitForObject(ctx context.Context, obj runtime.Object, cond ConditionFunc) error
 	Clear()
 	Start()
 	Stop()
 }
 
 type WatcherStore struct {
-	namespace    string
-	label        string
-	mlopsClient  v1alpha1.MlopsV1alpha1Interface
-	modelWatcher watch.Interface
-	logger       log.FieldLogger
+	namespace       string
+	label           string
+	mlopsClient     v1alpha1.MlopsV1alpha1Interface
+	modelWatcher    watch.Interface
+	pipelineWatcher watch.Interface
+	logger          log.FieldLogger
 
 	mu      sync.RWMutex
 	store   map[string]runtime.Object // key: "namespace/name"
@@ -59,19 +61,25 @@ func NewWatcherStore(namespace string, label string, mlopsClient v1alpha1.MlopsV
 		logger = log.New()
 	}
 
-	modelWatcher, err := mlopsClient.Models(namespace).Watch(context.Background(), v1.ListOptions{LabelSelector: "test-suite=godog"})
+	modelWatcher, err := mlopsClient.Models(namespace).Watch(context.Background(), v1.ListOptions{LabelSelector: DefaultCRDLabel})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create model watcher: %w", err)
 	}
 
+	pipelineWatcher, err := mlopsClient.Pipelines(namespace).Watch(context.Background(), v1.ListOptions{LabelSelector: DefaultCRDLabel})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create pipeline watcher: %w", err)
+	}
+
 	return &WatcherStore{
-		namespace:    namespace,
-		label:        label,
-		mlopsClient:  mlopsClient,
-		modelWatcher: modelWatcher,
-		logger:       logger.WithField("client", "watcher_store"),
-		store:        make(map[string]runtime.Object),
-		doneChan:     make(chan struct{}),
+		namespace:       namespace,
+		label:           label,
+		mlopsClient:     mlopsClient,
+		modelWatcher:    modelWatcher,
+		pipelineWatcher: pipelineWatcher,
+		logger:          logger.WithField("client", "watcher_store"),
+		store:           make(map[string]runtime.Object),
+		doneChan:        make(chan struct{}),
 	}, nil
 }
 
@@ -91,6 +99,42 @@ func (s *WatcherStore) Start() {
 					s.logger.WithError(err).Error("failed to access model watcher")
 				} else {
 					s.logger.WithField("event", event).Tracef("new model watch event with name: %s on namespace: %s", accessor.GetName(), accessor.GetNamespace())
+				}
+
+				if event.Object == nil {
+					continue
+				}
+
+				switch event.Type {
+				case watch.Added, watch.Modified:
+					s.Put(event.Object)
+				case watch.Deleted:
+					s.delete(event.Object)
+				case watch.Error:
+					fmt.Printf("model watch error: %v\n", event.Object)
+				}
+
+			case <-s.doneChan:
+				// Stop underlying watcher and exit
+				s.modelWatcher.Stop()
+				return
+			}
+		}
+	}()
+	go func() {
+		for {
+			select {
+			case event, ok := <-s.pipelineWatcher.ResultChan():
+				if !ok {
+					// channel closed: watcher terminated
+					return
+				}
+
+				accessor, err := meta.Accessor(event.Object)
+				if err != nil {
+					s.logger.WithError(err).Error("failed to access pipeline watcher")
+				} else {
+					s.logger.WithField("event", event).Tracef("new pipeline watch event with name: %s on namespace: %s", accessor.GetName(), accessor.GetNamespace())
 				}
 
 				if event.Object == nil {
@@ -138,6 +182,14 @@ func (s *WatcherStore) keyFor(obj runtime.Object) (string, error) {
 	}
 
 	return fmt.Sprintf("%s/%s", ns, accessor.GetName()), nil
+}
+
+func (s *WatcherStore) keyForName(crdName string) (string, error) {
+	if crdName == "" {
+		return "", errors.New("no crd name provided")
+	}
+
+	return fmt.Sprintf("%s/%s", s.namespace, crdName), nil
 }
 
 func (s *WatcherStore) Put(obj runtime.Object) {
@@ -198,7 +250,7 @@ func (s *WatcherStore) delete(obj runtime.Object) {
 	s.notifyWaiters(key, nil)
 }
 
-func (s *WatcherStore) WaitFor(ctx context.Context, obj runtime.Object, cond ConditionFunc) error {
+func (s *WatcherStore) WaitForObject(ctx context.Context, obj runtime.Object, cond ConditionFunc) error {
 	key, err := s.keyFor(obj)
 	if err != nil {
 		return err
