@@ -6,7 +6,7 @@
 "MarkupSafe","BSD-3-Clause"
 "PyYAML","MIT License"
 "Pygments","BSD License"
-"Werkzeug","BSD License"
+"Werkzeug","BSD-3-Clause"
 "absl-py","Apache-2.0"
 "astunparse","BSD License"
 "attrs","MIT"
