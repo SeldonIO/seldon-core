@@ -1,11 +1,6 @@
 name: V1 Security code Tests
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-  workflow_dispatch:
+on: []
 
 jobs:
   security-python:

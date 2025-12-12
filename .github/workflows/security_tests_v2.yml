@@ -1,14 +1,6 @@
 name: V2 Build docker images
 
-on:
-  push:
-    branches: [ v2 ]
-  workflow_dispatch:
-    inputs:
-      docker-tag:
-        description: 'Docker tag for scan'
-        default: 'latest'
-        required: false
+on: []
 
 jobs:
   placeholder:

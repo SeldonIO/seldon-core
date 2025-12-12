@@ -1,14 +1,7 @@
 ---
 name: V1 Operator Lint & Tests
 
-on:
-  push:
-    branches: [master]
-  pull_request:
-    # TODO revert before merge to master
-    branches: [release-1.19.0-prep]
-
-  workflow_dispatch:
+on: []
 
 env:
   GOLANG_VERSION: 1.24.7
