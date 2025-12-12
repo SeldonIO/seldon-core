@@ -1,4 +1,4 @@
-> ⚠️ This notebook **hasn't been tested with the latest Seldon Core release**. It may require modifications to work correctly.
+> ⚠️ This notebook has been **deprecated** and it may require modifications to work correctly.
 
 # Outlier Detector for Cifar10 model with Poetry-defined Environment
 
