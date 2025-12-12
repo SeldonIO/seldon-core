@@ -13,12 +13,10 @@ jobs:
 
     runs-on: ubuntu-latest
     container: seldonio/python-builder:0.9
+    env:
+      GIT_DISCOVERY_ACROSS_FILESYSTEM: 1
 
     steps:
     - uses: actions/checkout@v4
     - name: lint-python
-      run: |
-        pwd
-        ls -a
-        ls -a ..
-        make -C python install_dev lint
+      run: make -C python install_dev lint
