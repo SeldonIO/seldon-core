@@ -1,3 +1,5 @@
+> ⚠️ This notebook **hasn't been tested with the latest Seldon Core release**. It may require modifications to work correctly.
+
 # Outlier Detector for Cifar10 model with Poetry-defined Environment
 
 ## Prerequisites
@@ -9,7 +11,7 @@
 
 ## Setup Seldon Core
 
-Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setup-cluster) with [Ambassador Ingress](../notebooks/seldon-core-setup.md#ambassador) and [Install Seldon Core](../notebooks/seldon-core-setup.md#Install-Seldon-Core). Instructions [also online](../notebooks/seldon-core-setup.md).
+Use the setup notebook to [Setup Cluster](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Setup-Cluster) with [Ambassador Ingress](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Ambassador) and [Install Seldon Core](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html#Install-Seldon-Core). Instructions [also online](https://docs.seldon.io/projects/seldon-core/en/latest/examples/seldon_core_setup.html).
 
 We will assume that ambassador (or Istio) ingress is port-forwarded to `localhost:8003`
 
@@ -23,8 +25,8 @@ We will assume that ambassador (or Istio) ingress is port-forwarded to `localhos
 
 ## Setup MinIO
 
-Use the provided [notebook](../notebooks/minio_setup.md) to install Minio in your cluster.
-Instructions [also online](../notebooks/minio_setup.md).
+Use the provided [notebook](https://docs.seldon.io/projects/seldon-core/en/latest/examples/minio_setup.html) to install Minio in your cluster.
+Instructions [also online](https://docs.seldon.io/projects/seldon-core/en/latest/examples/minio_setup.html).
 
 We will assume that MinIO service is port-forwarded to `localhost:8090`
 
