@@ -154,7 +154,7 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 			return ctx, fmt.Errorf("error when deleting models on before steps: %w", err)
 		}
 
-		return ctx, err
+		return ctx, nil
 	})
 
 	// Register step definitions with access to world + k8sClient

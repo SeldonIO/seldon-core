@@ -1,16 +1,20 @@
-#@ModelInference @Models @Inference
-#Feature Basic model inferencing
-#
-#  Background:
-#    Given a clean test namespace
-#
-#  Scenario: Model can serve prediction
-#    Given I have an "iris" model
-#    And the model is applied
-#    And the model eventually becomes Ready
-#    When I send a prediction request with payload:
-#      """
-#      { "inputs": [1.0, 2.0, 3.0] }
-#      """
-#    Then the response status should be 200
-#    And the response body should contain "predictions"
+@ModelInference @Models @Inference @Functional
+Feature: Basic model inferencing
+
+  Scenario Outline: Success - Inference for <model> model
+    Given I have an "<model>" model
+    When the model is applied
+    Then the model should eventually become Ready
+    When I send a valid HTTP inference request with timeout "20s"
+    Then expect http response status code "200"
+    When I send a valid gRPC inference request with timeout "20s"
+
+    Examples:
+      | model         |
+      | iris          |
+#      | income-xgb | having errors with GRPC
+#      | mnist-onnx |
+#      | income-lgb | having errors with response
+      | tfsimple1     |
+      | wine          |
+#      | mnist-pytorch | having errors with response
