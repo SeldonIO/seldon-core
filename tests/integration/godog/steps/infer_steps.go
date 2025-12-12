@@ -25,6 +25,44 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+type inference struct {
+	ssl              bool
+	host             string
+	http             *http.Client
+	grpc             v2_dataplane.GRPCInferenceServiceClient
+	httpPort         uint
+	lastHTTPResponse *http.Response
+	lastGRPCResponse lastGRPCResponse
+}
+
+func LoadInferenceSteps(scenario *godog.ScenarioContext, w *World) {
+	scenario.Step(`^send HTTP inference request with timeout "([^"]+)" to model "([^"]+)" with payload:$`, func(timeout, model string, payload *godog.DocString) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			return w.infer.sendHTTPModelInferenceRequest(ctx, model, payload)
+		})
+	})
+	scenario.Step(`^send gRPC inference request with timeout "([^"]+)" to model "([^"]+)" with payload:$`, func(timeout, model string, payload *godog.DocString) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			return w.infer.sendGRPCModelInferenceRequest(ctx, model, payload)
+		})
+	})
+	scenario.Step(`^(?:I )send a valid gRPC inference request with timeout "([^"]+)"`, func(timeout string) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			return w.infer.sendGRPCModelInferenceRequestFromModel(ctx, w.currentModel)
+		})
+	})
+	scenario.Step(`^(?:I )send a valid HTTP inference request with timeout "([^"]+)"`, func(timeout string) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			return w.infer.sendHTTPModelInferenceRequestFromModel(ctx, w.currentModel)
+		})
+	})
+
+	scenario.Step(`^expect http response status code "([^"]*)"$`, w.infer.httpRespCheckStatus)
+	scenario.Step(`^expect http response body to contain JSON:$`, w.infer.httpRespCheckBodyContainsJSON)
+	scenario.Step(`^expect gRPC response body to contain JSON:$`, w.infer.gRPCRespCheckBodyContainsJSON)
+	scenario.Step(`^expect gRPC response error to contain "([^"]+)"`, w.infer.gRPCRespContainsError)
+}
+
 func (i *inference) doHTTPModelInferenceRequest(ctx context.Context, modelName, body string) error {
 	url := fmt.Sprintf(
 		"%s://%s:%d/v2/models/%s/infer",

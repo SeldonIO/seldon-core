@@ -46,16 +46,6 @@ type Config struct {
 	SSL            bool
 }
 
-type inference struct {
-	ssl              bool
-	host             string
-	http             *http.Client
-	grpc             v2_dataplane.GRPCInferenceServiceClient
-	httpPort         uint
-	lastHTTPResponse *http.Response
-	lastGRPCResponse lastGRPCResponse
-}
-
 type lastGRPCResponse struct {
 	response *v2_dataplane.ModelInferResponse
 	err      error

@@ -24,7 +24,9 @@ Feature: Server setup
     Then ensure only "1" pod(s) are deployed for server and they are Ready
     And remove any other server deployments
 
-
-  @ServerTeardown
-  Scenario: Delete mlserver Server
-    Given I delete server "godog-mlserver" with timeout "10s"
+# TODO decide if we want to keep this, if we keep testers will need to ensure they don't run this tag when running all
+#  all features in this directory, as tests will fail when server is deleted. We can not delete and it's up to the
+#  feature dir server setup to ensure ONLY the required servers exist, like above.
+#  @ServerTeardown
+#  Scenario: Delete mlserver Server
+#    Given I delete server "godog-mlserver" with timeout "10s"
