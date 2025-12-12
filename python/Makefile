@@ -119,10 +119,10 @@ lint:
 	nbqa isort \
 		../ --check-only --profile black --nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
 	# Check if licenses have changed
-	git \
+	git -C .. \
 		--no-pager diff \
 		--exit-code \
-		./licenses/license_info.no_versions.csv
+		-- python/licenses/license_info.no_versions.csv
 
 .PHONY: clean
 clean:
