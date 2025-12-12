@@ -18,5 +18,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: lint-python
       run: |
+        pwd
+        ls -a
+        ls -a ..
         make -C python install_dev lint
         git diff ./licenses/license_info.no_versions.csv
