@@ -239,7 +239,7 @@ func (m *Model) ApplyModel(k *k8sclient.K8sClient) error {
 }
 
 func (m *Model) waitForModelReady(ctx context.Context) error {
-	return m.watcherStorage.WaitForObject(
+	return m.watcherStorage.WaitForObjectCondition(
 		ctx,
 		m.model,               // the k8s object being watched
 		assertions.ModelReady, // predicate from steps/assertions

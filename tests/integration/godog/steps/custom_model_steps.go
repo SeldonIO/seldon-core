@@ -68,7 +68,7 @@ func (m *Model) deleteModel(ctx context.Context, model string) error {
 }
 
 func (m *Model) waitForModelNameReady(ctx context.Context, name string) error {
-	return m.watcherStorage.WaitForKey(
+	return m.watcherStorage.WaitForModelCondition(
 		ctx,
 		name,
 		assertions.ModelReady)

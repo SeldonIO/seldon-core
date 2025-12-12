@@ -14,8 +14,10 @@ import (
 	"fmt"
 	"sync"
 
+	mlopsscheme "github.com/seldonio/seldon-core/operator/v2/pkg/generated/clientset/versioned/scheme"
 	"github.com/seldonio/seldon-core/operator/v2/pkg/generated/clientset/versioned/typed/mlops/v1alpha1"
 	log "github.com/sirupsen/logrus"
+	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/scheme"
 	"k8s.io/apimachinery/pkg/api/meta"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -23,14 +25,20 @@ import (
 )
 
 type WatcherStorage interface {
-	Put(runtime.Object)
-	Get(runtime.Object) (runtime.Object, bool)
-	WaitForObject(ctx context.Context, obj runtime.Object, cond ConditionFunc) error
-	WaitForKey(ctx context.Context, key string, cond ConditionFunc) error
+	WaitForObjectCondition(ctx context.Context, obj runtime.Object, cond ConditionFunc) error
+	WaitForModelCondition(ctx context.Context, modelName string, cond ConditionFunc) error
+	WaitForPipelineCondition(ctx context.Context, modelName string, cond ConditionFunc) error
 	Clear()
 	Start()
 	Stop()
 }
+
+type objectKind string
+
+const (
+	model    objectKind = "Model"
+	pipeline objectKind = "Pipeline"
+)
 
 type WatcherStore struct {
 	namespace       string
@@ -39,6 +47,7 @@ type WatcherStore struct {
 	modelWatcher    watch.Interface
 	pipelineWatcher watch.Interface
 	logger          log.FieldLogger
+	scheme          *runtime.Scheme
 
 	mu      sync.RWMutex
 	store   map[string]runtime.Object // key: "namespace/name"
@@ -71,6 +80,11 @@ func NewWatcherStore(namespace string, label string, mlopsClient v1alpha1.MlopsV
 		return nil, fmt.Errorf("failed to create pipeline watcher: %w", err)
 	}
 
+	// Base scheme + register your CRDs
+	s := runtime.NewScheme()
+	_ = scheme.AddToScheme(s)      // core k8s types (optional but fine)
+	_ = mlopsscheme.AddToScheme(s) // <-- this is the key line for your CRDs
+
 	return &WatcherStore{
 		namespace:       namespace,
 		label:           label,
@@ -80,6 +94,7 @@ func NewWatcherStore(namespace string, label string, mlopsClient v1alpha1.MlopsV
 		logger:          logger.WithField("client", "watcher_store"),
 		store:           make(map[string]runtime.Object),
 		doneChan:        make(chan struct{}),
+		scheme:          s,
 	}, nil
 }
 
@@ -107,7 +122,7 @@ func (s *WatcherStore) Start() {
 
 				switch event.Type {
 				case watch.Added, watch.Modified:
-					s.Put(event.Object)
+					s.put(event.Object)
 				case watch.Deleted:
 					s.delete(event.Object)
 				case watch.Error:
@@ -143,7 +158,7 @@ func (s *WatcherStore) Start() {
 
 				switch event.Type {
 				case watch.Added, watch.Modified:
-					s.Put(event.Object)
+					s.put(event.Object)
 				case watch.Deleted:
 					s.delete(event.Object)
 				case watch.Error:
@@ -177,14 +192,24 @@ func (s *WatcherStore) keyFor(obj runtime.Object) (string, error) {
 
 	ns := accessor.GetNamespace()
 	if ns == "" {
-		// fall back to store namespace if the object is cluster-scoped or unset
-		ns = s.namespace
+		ns = s.namespace // or "_cluster" if you prefer
 	}
 
-	return fmt.Sprintf("%s/%s", ns, accessor.GetName()), nil
+	// Prefer scheme-based GVK for typed objects
+	gvks, _, err := s.scheme.ObjectKinds(obj)
+	if err != nil || len(gvks) == 0 {
+		// fallback: TypeMeta if present
+		if ta, taErr := meta.TypeAccessor(obj); taErr == nil && ta.GetKind() != "" {
+			return fmt.Sprintf("%s/%s/%s", ns, ta.GetKind(), accessor.GetName()), nil
+		}
+		return "", fmt.Errorf("failed to determine kind for %T: %w", obj, err)
+	}
+
+	kind := gvks[0].Kind
+	return fmt.Sprintf("%s/%s/%s", ns, kind, accessor.GetName()), nil
 }
 
-func (s *WatcherStore) Put(obj runtime.Object) {
+func (s *WatcherStore) put(obj runtime.Object) {
 	if obj == nil {
 		return
 	}
@@ -201,7 +226,7 @@ func (s *WatcherStore) Put(obj runtime.Object) {
 	s.notifyWaiters(key, obj)
 }
 
-func (s *WatcherStore) Get(obj runtime.Object) (runtime.Object, bool) {
+func (s *WatcherStore) get(obj runtime.Object) (runtime.Object, bool) {
 	if obj == nil {
 		return nil, false
 	}
@@ -242,7 +267,7 @@ func (s *WatcherStore) delete(obj runtime.Object) {
 	s.notifyWaiters(key, nil)
 }
 
-func (s *WatcherStore) WaitForObject(ctx context.Context, obj runtime.Object, cond ConditionFunc) error {
+func (s *WatcherStore) WaitForObjectCondition(ctx context.Context, obj runtime.Object, cond ConditionFunc) error {
 	key, err := s.keyFor(obj)
 	if err != nil {
 		return err
@@ -283,10 +308,17 @@ func (s *WatcherStore) WaitForObject(ctx context.Context, obj runtime.Object, co
 		return err
 	}
 }
+func (s *WatcherStore) WaitForModelCondition(ctx context.Context, modelName string, cond ConditionFunc) error {
+	key := fmt.Sprintf("%s/%s/%s", s.namespace, model, modelName)
+	return s.waitForKey(ctx, key, cond)
+}
 
-func (s *WatcherStore) WaitForKey(ctx context.Context, key string, cond ConditionFunc) error {
-	// build key
-	key = fmt.Sprintf("%s/%s", s.namespace, key)
+func (s *WatcherStore) WaitForPipelineCondition(ctx context.Context, pipelineName string, cond ConditionFunc) error {
+	key := fmt.Sprintf("%s/%s/%s", s.namespace, pipeline, pipelineName)
+	return s.waitForKey(ctx, key, cond)
+}
+
+func (s *WatcherStore) waitForKey(ctx context.Context, key string, cond ConditionFunc) error {
 
 	// Fast path: check current state
 	s.mu.RLock()

@@ -87,8 +87,7 @@ func (p *Pipeline) applyScenarioLabel() {
 }
 
 func (p *Pipeline) waitForPipelineNameReady(ctx context.Context, name string) error {
-
-	return p.watcherStorage.WaitForKey(
+	return p.watcherStorage.WaitForPipelineCondition(
 		ctx,
 		name,
 		assertions.PipelineReady,
@@ -96,8 +95,7 @@ func (p *Pipeline) waitForPipelineNameReady(ctx context.Context, name string) er
 }
 
 func (p *Pipeline) waitForPipelineReady(ctx context.Context) error {
-
-	return p.watcherStorage.WaitForObject(
+	return p.watcherStorage.WaitForObjectCondition(
 		ctx,
 		p.pipeline,
 		assertions.PipelineReady,
