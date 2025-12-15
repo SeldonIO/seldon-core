@@ -129,6 +129,9 @@ func (k8s *K8sClient) DeleteScenarioResources(ctx context.Context, labels client
 		return fmt.Errorf("failed to delete Pipelines: %w", err)
 	}
 
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
+	defer cancel()
+
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 
