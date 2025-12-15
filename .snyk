@@ -1,0 +1,4 @@
+ignore:
+  'SNYK-PYTHON-SETUPTOOLS-7448482':
+    - '*':
+        reason: None Given
