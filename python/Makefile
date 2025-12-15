@@ -113,9 +113,9 @@ lint:
 #	isort \
 #		--check-only ./ ../testing/scripts \
 #		--skip proto --skip seldon_core/proto --skip .eggs --skip .tox
-	flake8
-#	nbqa black \
-#		../ --check --nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)" && \
+	#flake8
+	nbqa black \
+		../ --check --nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
 #	nbqa isort ../ --check-only --profile black --nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)" && \
 	git -C .. \
 		--no-pager diff \
