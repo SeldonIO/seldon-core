@@ -1,7 +1,14 @@
----
 name: V1 Executor Lint & Tests
 
-on: []
+on:
+  push:
+    branches:
+      - master
+      - release-1.19.0-prep
+  pull_request:
+    # TODO revert before merge to master
+    branches: [ master, release-1.19.0-prep ]
+  workflow_dispatch:
 
 env:
   GOLANG_VERSION: 1.24.7

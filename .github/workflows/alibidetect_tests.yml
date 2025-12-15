@@ -1,6 +1,12 @@
 name: V1 Alibi Detect Tests
 
-on: []
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    # TODO revert before merge to master
+    branches: [ release-1.19.0-prep ]
+  workflow_dispatch:
 
 jobs:
   lint:
