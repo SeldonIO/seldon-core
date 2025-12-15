@@ -2,7 +2,10 @@ name: V1 Python Lint
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
+      - release-1.19.0-prep
+      - fix-python-linting-errors
   pull_request:
     # TODO revert before merge to master
     branches: [ release-1.19.0-prep ]
@@ -19,8 +22,17 @@ jobs:
     container: seldonio/python-builder:0.9
 
     steps:
+    - name: Resolve branch
+      run: |
+        if [ "${{ github.event_name }}" = "push" ]; then
+          echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+        else
+          echo "BRANCH=${{ github.head_ref }}" >> $GITHUB_ENV
+        fi
+
     - uses: actions/checkout@v4
       with:
+        ref: ${{ env.BRANCH }}
         fetch-depth: '0'
 
     - name: Install dev deps
