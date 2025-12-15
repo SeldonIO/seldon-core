@@ -128,7 +128,7 @@ func (s *server) applyScenarioLabel() {
 	}
 
 	// todo: change this approach
-	for k, v := range k8sclient.DefaultCRDLabelMap {
+	for k, v := range k8sclient.DefaultCRDTestSuiteLabelMap {
 		s.currentServer.Labels[k] = v
 	}
 }
