@@ -51,6 +51,7 @@ jobs:
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
     - name: Commit changes in licensing
+      if: github.event_name == 'push'
       run: |
         git add python/ && git commit -m "chore: automatically push the changed licenses files" || echo "Nothing to commit"
         git push
