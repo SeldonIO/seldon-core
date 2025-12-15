@@ -700,8 +700,8 @@ under the terms of *both* these licenses.
 
 
 flask-cors
-6.0.1
-UNKNOWN
+6.0.2
+MIT
 UNKNOWN
 
 flatbuffers

@@ -16,7 +16,7 @@
 "charset-normalizer","MIT"
 "click","BSD-3-Clause"
 "cryptography","Apache-2.0 OR BSD-3-Clause"
-"flask-cors","UNKNOWN"
+"flask-cors","MIT"
 "flatbuffers","Apache Software License"
 "gast","BSD License"
 "google-pasta","Apache Software License"
