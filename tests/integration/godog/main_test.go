@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package main__test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -19,18 +20,21 @@ import (
 	"github.com/spf13/pflag" // godog v0.11.0 and later
 )
 
+const cmdOptPrefix = "godog."
+
 var opts = godog.Options{
 	Output: colors.Colored(os.Stdout),
 	Format: "progress", // can define default values
 }
 
 func init() {
-	godog.BindCommandLineFlags("godog.", &opts) // godog v0.11.0 and later
+	godog.BindCommandLineFlags(cmdOptPrefix, &opts) // godog v0.11.0 and later
 }
 
 func TestMain(m *testing.M) {
+	flagSet := pflag.CommandLine
+	flagSet.StringSliceVar(&opts.Paths, fmt.Sprintf("%s%s", cmdOptPrefix, "paths"), []string{}, "paths to feature files")
 	pflag.Parse()
-	opts.Paths = pflag.Args()
 
 	status := godog.TestSuite{
 		Name:                 "godogs",
