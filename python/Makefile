@@ -1,5 +1,6 @@
 SELDON_CORE_DIR=..
 VERSION := $(shell cat ../version.txt)
+REPO_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null || pwd)
 
 .PHONY: get_apis
 get_apis:
@@ -106,6 +107,7 @@ fmt:
 	nbqa isort \
 		../ --profile black --nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
 
+.ONESHELL:
 lint:
 	#black \
 #		--check ./ ../testing/scripts \
@@ -121,7 +123,7 @@ lint:
 #		--no-pager diff \
 #		--exit-code \
 #		-- python/licenses/license_info.no_versions.csv
-	git -C .. --no-pager diff --exit-code -- python/licenses/license_info.no_versions.csv
+	git -C "$(REPO_ROOT)" --no-pager diff --exit-code -- python/licenses/license_info.no_versions.csv
 
 .PHONY: clean
 clean:
