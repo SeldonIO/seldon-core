@@ -112,9 +112,9 @@ jobs:
       matrix:
         server:
           - tfserving_proxy
-          #- sklearnserver
-          #- mlflowserver
-          #- xgboostserver
+          - sklearnserver
+          - mlflowserver
+          - xgboostserver
     steps:
       - uses: actions/checkout@v4
 
@@ -179,7 +179,6 @@ jobs:
           path: pip-freeze-${{ matrix.server }}.txt
 
   build-alibi-explain:
-    if: false  # Temporarily disabled to save CI resources
     needs: build-upload-scan-base-images
     runs-on: ubuntu-latest
     steps:
@@ -237,7 +236,6 @@ jobs:
           path: report-alibi-explain.txt
 
   build-alibi-detect:
-    if: false  # Temporarily disabled to save CI resources
     needs: build-upload-scan-base-images
     runs-on: ubuntu-latest
     steps:
@@ -295,10 +293,9 @@ jobs:
           path: report-alibi-detect.txt
 
   verify-scans:
-    if: false  # Temporarily disabled to save CI resources
     needs: [ build-upload-scan-base-images, build-servers, build-alibi-explain, build-alibi-detect]
     runs-on: ubuntu-latest
-    #if: always()
+    if: always()
 
     steps:
       - name: Download Snyk results for servers
