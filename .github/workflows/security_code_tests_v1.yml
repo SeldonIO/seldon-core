@@ -4,54 +4,53 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ master ]
+    # TODO remove release-1.19.0-prep before merge to master
+    branches:
+      - master
+      - release-1.19.0-prep
   workflow_dispatch:
 
 jobs:
   security-python:
     runs-on: ubuntu-latest
-    container: snyk/snyk:python-3.8
+    container: snyk/snyk:python-3.12-preview
     steps:
-    - uses: actions/checkout@v2
-    - name: security-python
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      run: |
-        pip install -e python/.
-        snyk test --file=python/setup.py --fail-on=upgradable --severity-threshold=high
+      - uses: actions/checkout@v4
+      - name: security-python
+        # NOTE: [all] installs tensorflow as well as an extra
+        run: |
+          pip install -e python/.[all]
+          snyk test --file=python/setup.py --fail-on=upgradable --severity-threshold=high
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   security-operator:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: security-operator
-      # NOTE: We use the Snyk action (instead of the Snyk base image) so that
-      # it respects the Go version we use.
-      uses: snyk/actions/golang@master
-      with:
-        args: --fail-on=upgradable
-          --severity-threshold=high
-          --file=operator/go.mod
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - uses: actions/checkout@v4
+      - uses: snyk/actions/setup@master
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.24.7'
+      - name: security-operator
+        run: snyk test --file=operator/go.mod --fail-on=upgradable --severity-threshold=high
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   security-executor:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: snyk/actions/setup@master
-    - uses: actions/setup-go@v3
-      with:
-        go-version: '^1.24.7'
-    - name: Set up executor's environment
-      # NOTE: The executor needs a couple extra steps before we can build it,
-      # like copying the operator's package into the executor's folder so that
-      # it's accessible.
-      run: make -C executor/ executor
-    - name: security-executor
-      run: snyk test \
-        --fail-on=upgradable
-        --severity-threshold=high
-        --file=executor/go.mod
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - uses: actions/checkout@v4
+      - uses: snyk/actions/setup@master
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.24.7'
+      - name: Set up executor's environment
+        # NOTE: The executor needs a couple extra steps before we can build it,
+        # like copying the operator's package into the executor's folder so that
+        # it's accessible.
+        run: make -C executor/ executor
+      - name: security-executor
+        run: snyk test --file=executor/go.mod --fail-on=upgradable --severity-threshold=high
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
