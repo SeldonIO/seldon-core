@@ -109,16 +109,14 @@ fmt:
 lint:
 	black \
 		--check ./ ../testing/scripts \
-		--exclude "(proto|seldon_core/proto/|.eggs|.tox)"
+		--exclude "(proto|seldon_core/proto/|.eggs|.tox)" && \
 	isort \
 		--check-only ./ ../testing/scripts \
-		--skip proto --skip seldon_core/proto --skip .eggs --skip .tox
-	flake8
+		--skip proto --skip seldon_core/proto --skip .eggs --skip .tox && \
+	flake8 && \
 	nbqa black \
-		../ --check --nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
-	nbqa isort \
-		../ --check-only --profile black --nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
-	# Check if licenses have changed
+		../ --check --nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)" && \
+	nbqa isort ../ --check-only --profile black --nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)" && \
 	git -C .. \
 		--no-pager diff \
 		--exit-code \
