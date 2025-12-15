@@ -79,7 +79,7 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 		panic(fmt.Errorf("failed to mlops client: %w", err))
 	}
 
-	watchStore, err := k8sclient.NewWatcherStore(config.Namespace, k8sclient.DefaultCRDLabel, clientSet.MlopsV1alpha1(), log)
+	watchStore, err := k8sclient.NewWatcherStore(config.Namespace, k8sclient.DefaultCRDTestSuiteLabel, clientSet.MlopsV1alpha1(), log)
 	if err != nil {
 		panic(fmt.Errorf("failed to create k8s watch store: %w", err))
 	}
@@ -110,12 +110,15 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 
 	ctx.BeforeSuite(func() {
 		suiteDeps.watcherStore.Start()
+		if err := suiteDeps.k8sClient.DeleteScenarioResources(context.Background(), k8sclient.DefaultCRDTestSuiteLabelMap); err != nil {
+			suiteDeps.logger.Errorf("error when deleting models on before steps: %v", err)
+		}
 		// e.g. create namespace, apply CRDs, etc.
 	})
 
 	ctx.AfterSuite(func() {
 		suiteDeps.watcherStore.Stop()
-		// e.g. clean namespace, close clients if needed
+		// e.g. clean namespace, close clients if needed delete servers
 	})
 }
 
@@ -162,5 +165,6 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 	steps.LoadCustomModelSteps(scenarioCtx, world)
 	steps.LoadInferenceSteps(scenarioCtx, world)
 	steps.LoadServerSteps(scenarioCtx, world)
+	steps.LoadCustomPipelineSteps(scenarioCtx, world)
 	// TODO: load other steps, e.g. pipeline, experiment, etc.
 }

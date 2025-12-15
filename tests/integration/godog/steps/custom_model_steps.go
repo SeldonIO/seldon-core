@@ -14,7 +14,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
+	"github.com/seldonio/seldon-core/tests/integration/godog/steps/assertions"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
@@ -67,51 +67,9 @@ func (m *Model) deleteModel(ctx context.Context, model string) error {
 	}
 }
 
-func (m *Model) waitForModelReady(ctx context.Context, model string) error {
-	foundModel, err := m.k8sClient.MlopsV1alpha1().Models(m.namespace).Get(ctx, model, metav1.GetOptions{})
-	if err != nil {
-		return fmt.Errorf("failed getting model: %w", err)
-	}
-
-	if foundModel.Status.IsReady() {
-		return nil
-	}
-
-	watcher, err := m.k8sClient.MlopsV1alpha1().Models(m.namespace).Watch(ctx, metav1.ListOptions{
-		FieldSelector:   fmt.Sprintf("metadata.name=%s", model),
-		ResourceVersion: foundModel.ResourceVersion,
-		Watch:           true,
-	})
-	if err != nil {
-		return fmt.Errorf("failed subscribed to watch model: %w", err)
-	}
-	defer watcher.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case event, ok := <-watcher.ResultChan():
-			if !ok {
-				return fmt.Errorf("watch channel closed")
-			}
-
-			if event.Type == watch.Error {
-				return fmt.Errorf("watch error: %v", event.Object)
-			}
-
-			if event.Type == watch.Added || event.Type == watch.Modified {
-				model := event.Object.(*v1alpha1.Model)
-				if model.Status.IsReady() {
-					return nil
-				}
-				m.log.Debugf("got watch event: model %s is not ready, still waiting", model)
-				continue
-			}
-
-			if event.Type == watch.Deleted {
-				return fmt.Errorf("resource was deleted")
-			}
-		}
-	}
+func (m *Model) waitForModelNameReady(ctx context.Context, name string) error {
+	return m.watcherStorage.WaitForModelCondition(
+		ctx,
+		name,
+		assertions.ModelReady)
 }
