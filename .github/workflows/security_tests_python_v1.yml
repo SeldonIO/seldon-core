@@ -81,7 +81,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: ${{ env.PYTHON_BASE_IMAGE}}:test
-          args: --fail-on=upgradable --app-vulns --severity-threshold=high --policy-path=./.snyk
+          args: --fail-on=upgradable --app-vulns --severity-threshold=high
 
       - name: Save Snyk result for Python Wrapper image to file
         run: echo "python_wrapper_RESULT=${{ steps.scan-python-base.outcome }}" > "report-python-wrapper.txt"
@@ -156,7 +156,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: ${{ env.SERVER_IMAGE_TAG}}:test
-          args:  --fail-on=upgradable --app-vulns --severity-threshold=high --print-deps
+          args:  --fail-on=upgradable --app-vulns --severity-threshold=high --print-deps --policy-path=./.snyk
 
       - name: Save scan output to file
         run: echo "${{ matrix.server }}_RESULT=${{ steps.scan.outcome }}" > "report-${{ matrix.server }}.txt"
