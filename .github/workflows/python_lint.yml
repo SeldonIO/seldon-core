@@ -8,15 +8,35 @@ on:
     branches: [ release-1.19.0-prep ]
   workflow_dispatch:
 
+env:
+  GITHUB_USER: seldondev
+
 jobs:
   python-lint:
-
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     container: seldonio/python-builder:0.9
 
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: '0'
-    - name: lint-python
-      run: make -C python install_dev lint
+
+    - name: Install dev deps
+      run: make -C python install_dev update_package install
+
+    - name: Lint
+      run: make -C python lint
+
+    - name: Make licenses
+      run: make -C python licenses
+
+    - name: Configure git user
+      run: |
+        git config --global user.name "${GITHUB_USER}"
+        git config --global user.email "${GITHUB_USER}@users.noreply.github.com"
+
+    - name: Commit changes in licensing
+      run: |
+        git add python/ && git commit -m "chore: automatically push the changed licenses files" || echo "Nothing to commit"

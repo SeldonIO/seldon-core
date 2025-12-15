@@ -107,23 +107,17 @@ fmt:
 	nbqa isort \
 		../ --profile black --nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
 
-.ONESHELL:
 lint:
-	#black \
-#		--check ./ ../testing/scripts \
-#		--exclude "(proto|seldon_core/proto/|.eggs|.tox)"
-#	isort \
-#		--check-only ./ ../testing/scripts \
-#		--skip proto --skip seldon_core/proto --skip .eggs --skip .tox
-	#flake8
-	#nbqa black \
-#		../ --check --nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
-	#nbqa isort ../ --check-only --profile black --nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
-	#git -C .. \
-#		--no-pager diff \
-#		--exit-code \
-#		-- python/licenses/license_info.no_versions.csv
-	git -C "$(REPO_ROOT)" --no-pager diff --exit-code -- python/licenses/license_info.no_versions.csv
+	black \
+		--check ./ ../testing/scripts \
+		--exclude "(proto|seldon_core/proto/|.eggs|.tox)"
+	isort \
+		--check-only ./ ../testing/scripts \
+		--skip proto --skip seldon_core/proto --skip .eggs --skip .tox
+	flake8
+	nbqa black \
+		../ --check --nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
+	nbqa isort ../ --check-only --profile black --nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
 
 .PHONY: clean
 clean:
