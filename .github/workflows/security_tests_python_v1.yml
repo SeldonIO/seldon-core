@@ -148,6 +148,11 @@ jobs:
           export SERVER_IMAGE_TAG="sec-tests/${{ matrix.server }}-$(date +%s)-$(openssl rand -hex 4)"
           echo "SERVER_IMAGE_TAG=$SERVER_IMAGE_TAG" >> $GITHUB_ENV
           make IMAGE_NAME=$SERVER_IMAGE_TAG VERSION=test BASE_IMAGE=${{ needs.build-upload-scan-base-images.outputs.python_base_image_tag }}:test docker-build
+      
+      - name: Capture pip freeze
+        run: |
+          docker run --rm $SERVER_IMAGE_TAG:test pip freeze > pip-freeze-${{ matrix.server }}.txt
+      
       - name: Scan
         id: scan
         uses: snyk/actions/docker@master
@@ -156,7 +161,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: ${{ env.SERVER_IMAGE_TAG}}:test
-          args:  --fail-on=upgradable --app-vulns --severity-threshold=high --exclude-base-image-vulns
+          args:  --fail-on=upgradable --app-vulns --severity-threshold=high --policy-path=./.snyk
 
       - name: Save scan output to file
         run: echo "${{ matrix.server }}_RESULT=${{ steps.scan.outcome }}" > "report-${{ matrix.server }}.txt"
@@ -166,6 +171,12 @@ jobs:
         with:
           name: report-${{ matrix.server }}
           path: report-${{ matrix.server }}.txt
+      
+      - name: Upload pip freeze
+        uses: actions/upload-artifact@v4
+        with:
+          name: pip-freeze-${{ matrix.server }}
+          path: pip-freeze-${{ matrix.server }}.txt
 
   build-alibi-explain:
     if: false  # Temporarily disabled to save CI resources
