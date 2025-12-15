@@ -121,6 +121,7 @@ googleapis/enterprise-certificate-proxy
 googleapis/gax-go
 gorilla/mux
 gorilla/websocket
+gotidy/ptr
 gregjones/httpcache
 grpc-ecosystem/go-grpc-middleware
 grpc-ecosystem/go-grpc-prometheus
@@ -146,6 +147,8 @@ influxdata/tdigest
 invopop/jsonschema
 jarcoal/httpmock
 jessevdk/go-flags
+jhump/gopoet
+jhump/goprotoc
 jhump/protoreflect
 jonboulle/clockwork
 josharian/intern
@@ -157,6 +160,7 @@ kelseyhightower/envconfig
 kisielk/errcheck
 kisielk/gotool
 klauspost/compress
+knadh/koanf
 konsorten/go-windows-terminal-sequences
 kr/pretty
 kr/pty
