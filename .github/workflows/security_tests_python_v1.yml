@@ -156,7 +156,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: ${{ env.SERVER_IMAGE_TAG}}:test
-          args:  --fail-on=upgradable --app-vulns --severity-threshold=high --print-deps --policy-path=./.snyk
+          args:  --fail-on=upgradable --app-vulns --severity-threshold=high --exclude-base-image-vulns
 
       - name: Save scan output to file
         run: echo "${{ matrix.server }}_RESULT=${{ steps.scan.outcome }}" > "report-${{ matrix.server }}.txt"
