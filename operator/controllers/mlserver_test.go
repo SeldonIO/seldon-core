@@ -109,7 +109,7 @@ var _ = Describe("MLServer helpers", func() {
 		})
 
 		It("creates container with image", func() {
-			Expect(cServer.Image).To(Equal("seldonio/mlserver:0.1.0"))
+			Expect(cServer.Image).To(Equal("seldonio/mlserver:latest"))
 		})
 	})
 
@@ -130,7 +130,7 @@ var _ = Describe("MLServer helpers", func() {
 			image, err := getMLServerImage(pu)
 
 			Expect(err).To(Not(HaveOccurred()))
-			Expect(image).To(Equal("seldonio/mlserver:0.1.0"))
+			Expect(image).To(Equal("seldonio/mlserver:latest"))
 		})
 	})
 

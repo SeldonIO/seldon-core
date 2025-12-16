@@ -280,6 +280,26 @@ def update_alibi_detect_image(
         print(err)
 
 
+def update_rclone_image(
+        fpath, current_seldon_core_version, seldon_core_version, debug=False
+):
+    fpath = os.path.realpath(fpath)
+    if debug:
+        print("processing [{}]".format(fpath))
+    args = [
+        "sed",
+        "-i",
+        f"s|seldonio/rclone-storage-initializer:{current_seldon_core_version}|seldonio/rclone-storage-initializer:{seldon_core_version}|",
+        fpath,
+    ]
+    err, out = run_command(args, debug)
+
+    if err is None:
+        print(f"updated rclone-storage-initializer version in {fpath}")
+    else:
+        print(f"error updating rclone-storage-initializer version in {fpath}")
+        print(err)
+
 def update_echo_model_image(
     fpath, current_seldon_core_version, seldon_core_version, debug=False
 ):
@@ -464,6 +484,7 @@ def set_version(
     abtest_yaml_file,
     mab_yaml_file,
     model_uri_updates,
+    rclone_update_files,
     debug=False,
 ):
     update_python_wrapper_fixed_versions(seldon_core_version, debug)
@@ -558,6 +579,9 @@ def set_version(
     for fpath in alibi_detect_image_files:
         update_alibi_detect_image(fpath, current_seldon_core_version, seldon_core_version)
 
+    for fpath in rclone_update_files:
+        update_rclone_image(fpath, current_seldon_core_version, seldon_core_version)
+
     # update echo image references
     for fpath in echo_model_image_files:
         update_echo_model_image(fpath, current_seldon_core_version, seldon_core_version)
@@ -631,6 +655,11 @@ def main(argv):
         "examples/feedback/feedback-metrics-server/README.md",
     ]
 
+    RCLONE_FILES = [
+        "components/rclone-storage-initializer/readme.md",
+        "operator/config/manager/configmap.yaml",
+    ]
+
     ECHO_MODEL_FILES = [
         "examples/models/metrics/metrics.ipynb",
     ]
@@ -650,6 +679,7 @@ def main(argv):
         AB_VALUES_YAML_FILE,
         MAB_VALUES_YAML_FILE,
         MODEL_URI_UPDATES,
+        RCLONE_FILES,
         opts.debug,
     )
 
