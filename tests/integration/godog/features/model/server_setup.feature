@@ -15,6 +15,14 @@ Feature: Server setup
     spec:
       replicas: 1
       serverConfig: mlserver
+      podSpec:
+        containers:
+          - name: agent
+            env:
+              - name: SELDON_OVERCOMMIT_PERCENTAGE
+                value: "10"
+              - name: MEMORY_REQUEST
+                value: "1073741824"
     """
     When the server should eventually become Ready with timeout "30s"
     Then ensure only "1" pod(s) are deployed for server and they are Ready

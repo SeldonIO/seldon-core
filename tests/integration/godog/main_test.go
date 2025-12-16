@@ -24,7 +24,7 @@ const cmdOptPrefix = "godog."
 
 var opts = godog.Options{
 	Output: colors.Colored(os.Stdout),
-	Format: "progress", // can define default values
+	Format: "pretty", // can define default values
 }
 
 func init() {

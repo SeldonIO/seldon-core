@@ -103,20 +103,23 @@ func (s *server) deployServerSpec(ctx context.Context, spec *godog.DocString) er
 	serverSpec.Namespace = s.namespace
 	s.currentServer = serverSpec
 	s.applyScenarioLabel()
+
+	s.log.Debugf("Attempts to create server %s", serverSpec.Name)
+
 	if _, err := s.seldonK8sClient.MlopsV1alpha1().Servers(s.namespace).Create(ctx, s.currentServer, metav1.CreateOptions{}); err != nil {
 		if k8serrors.IsAlreadyExists(err) {
 			s.log.Debugf("server %s already exists, checking if equal", s.currentServer.Name)
-			deployerServer, err := s.seldonK8sClient.MlopsV1alpha1().Servers(s.namespace).Get(ctx, s.currentServer.Name, metav1.GetOptions{})
+			deployedServer, err := s.seldonK8sClient.MlopsV1alpha1().Servers(s.namespace).Get(ctx, s.currentServer.Name, metav1.GetOptions{})
 			if err != nil {
 				return fmt.Errorf("failed getting server: %w", err)
 			}
-			if equality.Semantic.DeepEqual(serverSpec.Spec, deployerServer.Spec) {
+			if equality.Semantic.DeepEqual(serverSpec.Spec, deployedServer.Spec) {
 				s.log.Debugf("server %s deployed spec equals desired spec", s.currentServer.Name)
 				return nil
 			}
 			s.log.Debugf("server %s deployed spec needs updating to desired spec", s.currentServer.Name)
-			deployerServer.Spec = s.currentServer.Spec
-			if _, err := s.seldonK8sClient.MlopsV1alpha1().Servers(s.namespace).Update(ctx, deployerServer, metav1.UpdateOptions{}); err != nil {
+			deployedServer.Spec = s.currentServer.Spec
+			if _, err := s.seldonK8sClient.MlopsV1alpha1().Servers(s.namespace).Update(ctx, deployedServer, metav1.UpdateOptions{}); err != nil {
 				return fmt.Errorf("failed updating server: %w", err)
 			}
 			return nil
