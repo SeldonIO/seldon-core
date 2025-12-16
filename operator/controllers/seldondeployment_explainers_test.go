@@ -317,7 +317,7 @@ var _ = Describe("Create a V2 Seldon Deployment with explainer", func() {
 			{Name: MLServerModelExtraEnv, Value: explainerExpectedExtraEnvs},
 		}
 		Expect(explainerEnvs).Should(Equal(explainerExpectedEnvs))
-		Expect(depFetched.Spec.Template.Spec.Containers[0].Image).Should(Equal("seldonio/mlserver:0.6.0"))
+		Expect(depFetched.Spec.Template.Spec.Containers[0].Image).Should(Equal("seldonio/mlserver:1.6.1-alibi-detect"))
 	})
 
 })
@@ -421,7 +421,7 @@ var _ = Describe("Create a Seldon Deployment with explainer", func() {
 		Expect(len(depFetched.Spec.Template.Spec.Containers)).Should(Equal(1))
 		Expect(*depFetched.Spec.Replicas).To(Equal(replicasExplainer))
 		Expect(*depFetched.Spec.Template.Spec.SecurityContext.RunAsUser).To(Equal(int64(2)))
-		Expect(depFetched.Spec.Template.Spec.Containers[0].Image).To(Equal("seldonio/alibiexplainer:1.2.0"))
+		Expect(depFetched.Spec.Template.Spec.Containers[0].Image).To(Equal("seldonio/alibiexplainer:1.18.2"))
 
 		//Check svc created
 		svcKey := types.NamespacedName{
