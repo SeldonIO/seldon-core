@@ -30,7 +30,7 @@ Feature: Pipeline using direct input tensors
     Then the model "mul10-tw2x" should eventually become Ready with timeout "20s"
     And the model "add10-tw2x" should eventually become Ready with timeout "20s"
 
-    And I deploy pipeline spec with timeout "30s":
+    And I deploy a pipeline spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
@@ -54,3 +54,8 @@ Feature: Pipeline using direct input tensors
         - add10-tw2x
     """
     Then the pipeline "pipeline-inputs-tw2x" should eventually become Ready with timeout "20s"
+    When I send HTTP inference request with timeout "20s" to pipeline "tfsimple-conditional-nbsl" with payload:
+    """
+    {"model_name":"conditional-nbsl","inputs":[{"name":"CHOICE","contents":{"int_contents":[0]},"datatype":"INT32","shape":[1]},{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}
+    """
+    And expect http response status code "200"

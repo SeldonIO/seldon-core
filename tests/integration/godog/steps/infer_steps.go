@@ -51,9 +51,16 @@ func LoadInferenceSteps(scenario *godog.ScenarioContext, w *World) {
 			}
 		})
 	})
-	scenario.Step(`^(?:I )send gRPC inference request with timeout "([^"]+)" to model "([^"]+)" with payload:$`, func(timeout, model string, payload *godog.DocString) error {
+	scenario.Step(`^(?:I )send gRPC inference request with timeout "([^"]+)" to (model|pipeline) "([^"]+)" with payload:$`, func(timeout, kind, model string, payload *godog.DocString) error {
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
-			return w.infer.sendGRPCModelInferenceRequest(ctx, model, payload)
+			switch kind {
+			case "model":
+				return w.infer.doGRPCModelInferenceRequest(ctx, model, payload.Content)
+			case "pipeline":
+				return w.infer.doGRPCModelInferenceRequest(ctx, model, payload.Content)
+			default:
+				return fmt.Errorf("unknown target type: %s", kind)
+			}
 		})
 	})
 	scenario.Step(`^(?:I )send a valid gRPC inference request with timeout "([^"]+)"`, func(timeout string) error {
