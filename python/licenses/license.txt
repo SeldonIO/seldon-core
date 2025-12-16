@@ -6211,7 +6211,7 @@ Apache License 2.0
 UNKNOWN
 
 tornado
-6.5.3
+6.5.4
 Apache Software License
 
                                  Apache License
