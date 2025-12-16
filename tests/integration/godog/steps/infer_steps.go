@@ -39,12 +39,19 @@ type inference struct {
 }
 
 func LoadInferenceSteps(scenario *godog.ScenarioContext, w *World) {
-	scenario.Step(`^send HTTP inference request with timeout "([^"]+)" to model "([^"]+)" with payload:$`, func(timeout, model string, payload *godog.DocString) error {
+	scenario.Step(`^(?:I )send HTTP inference request with timeout "([^"]+)" to (model|pipeline) "([^"]+)" with payload:$`, func(timeout, kind, model string, payload *godog.DocString) error {
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
-			return w.infer.sendHTTPModelInferenceRequest(ctx, model, payload)
+			switch kind {
+			case "model":
+				return w.infer.doHTTPModelInferenceRequest(ctx, model, payload.Content)
+			case "pipeline":
+				return w.infer.doHTTPPipelineInferenceRequest(ctx, model, payload.Content)
+			default:
+				return fmt.Errorf("unknown target type: %s", kind)
+			}
 		})
 	})
-	scenario.Step(`^send gRPC inference request with timeout "([^"]+)" to model "([^"]+)" with payload:$`, func(timeout, model string, payload *godog.DocString) error {
+	scenario.Step(`^(?:I )send gRPC inference request with timeout "([^"]+)" to model "([^"]+)" with payload:$`, func(timeout, model string, payload *godog.DocString) error {
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
 			return w.infer.sendGRPCModelInferenceRequest(ctx, model, payload)
 		})
@@ -103,6 +110,10 @@ func (i *inference) doHTTPInferenceRequest(ctx context.Context, resourceName, he
 
 func (i *inference) doHTTPExperimentInferenceRequest(ctx context.Context, experimentName, body string) error {
 	return i.doHTTPInferenceRequest(ctx, experimentName, fmt.Sprintf("%s.experiment", experimentName), body)
+}
+
+func (i *inference) doHTTPPipelineInferenceRequest(ctx context.Context, pipelineName, body string) error {
+	return i.doHTTPInferenceRequest(ctx, pipelineName, fmt.Sprintf("%s.pipeline", pipelineName), body)
 }
 
 func (i *inference) doHTTPModelInferenceRequest(ctx context.Context, modelName, body string) error {

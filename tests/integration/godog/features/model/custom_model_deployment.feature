@@ -19,7 +19,7 @@ Feature: Explicit Model deployment
       storageUri: gs://seldon-models/scv2/samples/mlserver_1.3.5/iris-sklearn
     """
     When the model "alpha-1" should eventually become Ready with timeout "20s"
-    Then send HTTP inference request with timeout "20s" to model "alpha-1" with payload:
+    Then I send HTTP inference request with timeout "20s" to model "alpha-1" with payload:
     """
     {
         "inputs": [
@@ -52,7 +52,7 @@ Feature: Explicit Model deployment
     }
   ] }
     """
-    Then send gRPC inference request with timeout "20s" to model "alpha-1" with payload:
+    Then I send gRPC inference request with timeout "20s" to model "alpha-1" with payload:
     """
     {
         "inputs": [
@@ -85,7 +85,7 @@ Feature: Explicit Model deployment
   ] }
     """
     Then delete the model "alpha-1" with timeout "10s"
-    Then send HTTP inference request with timeout "20s" to model "alpha-1" with payload:
+    Then I send HTTP inference request with timeout "20s" to model "alpha-1" with payload:
     """
     {
         "inputs": [
@@ -99,7 +99,7 @@ Feature: Explicit Model deployment
     }
     """
     And expect http response status code "404"
-    Then send gRPC inference request with timeout "20s" to model "alpha-1" with payload:
+    Then I send gRPC inference request with timeout "20s" to model "alpha-1" with payload:
     """
     {
         "inputs": [
