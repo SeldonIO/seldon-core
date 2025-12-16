@@ -92,7 +92,7 @@ data:
     }
   storageInitializer: |-
     {
-        "image" : "seldonio/rclone-storage-initializer:1.14.1",
+        "image" : "seldonio/rclone-storage-initializer:1.19.0-dev",
         "memoryRequest": "100Mi",
         "memoryLimit": "1Gi",
         "cpuRequest": "100m",

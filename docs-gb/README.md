@@ -269,7 +269,6 @@ Below are some of the core components together with link to the logs that provid
 ### Production
 
 * [Supported API Protocols](deployments/protocols.md)
-* [CI/CD MLOps at Scale](integrations/cicd-mlops.md)
 * [Metrics with Prometheus](integrations/analytics.md)
 * [Payload Logging with ELK](integrations/logging.md)
 * [Distributed Tracing with Jaeger](integrations/distributed-tracing.md)

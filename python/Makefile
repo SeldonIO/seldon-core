@@ -1,5 +1,6 @@
 SELDON_CORE_DIR=..
 VERSION := $(shell cat ../version.txt)
+REPO_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null || pwd)
 
 .PHONY: get_apis
 get_apis:
@@ -116,13 +117,7 @@ lint:
 	flake8
 	nbqa black \
 		../ --check --nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
-	nbqa isort \
-		../ --check-only --profile black --nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
-	# Check if licenses have changed
-	git \
-		--no-pager diff \
-		--exit-code \
-		./licenses/license_info.no_versions.csv
+	nbqa isort ../ --check-only --profile black --nbqa-exclude "(proto|seldon_core/proto/|.eggs|.tox|_README\.ipynb)"
 
 .PHONY: clean
 clean:

@@ -201,4 +201,4 @@ kubeflow: false
 # Explainer image
 explainer:
   image: seldonio/alibiexplainer:1.19.0-dev
-  image_v2: seldonio/mlserver:1.7.1-alibi-explain
+  image_v2: seldonio/mlserver:1.6.1-alibi-explain

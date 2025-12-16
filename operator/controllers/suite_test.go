@@ -68,7 +68,7 @@ var configs = map[string]string{
               },
             "seldon": {
               "image": "seldonio/tfserving-proxy",
-              "defaultImageVersion": "1.3.0-dev"
+              "defaultImageVersion": "latest"
               }
             }
         },
@@ -76,11 +76,11 @@ var configs = map[string]string{
           "protocols" : {
             "seldon": {
               "image": "seldonio/sklearnserver",
-              "defaultImageVersion": "1.3.0-dev"
+              "defaultImageVersion": "latest"
               },
             "v2": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "0.1.0"
+              "defaultImageVersion": "latest"
               }
             }
         },
@@ -88,11 +88,11 @@ var configs = map[string]string{
           "protocols" : {
             "seldon": {
               "image": "seldonio/xgboostserver",
-              "defaultImageVersion": "1.3.0-dev"
+              "defaultImageVersion": "latest"
               },
             "v2": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "0.1.0"
+              "defaultImageVersion": "latest"
               }
             }
         },
@@ -100,11 +100,11 @@ var configs = map[string]string{
           "protocols" : {
             "seldon": {
               "image": "seldonio/mlflowserver",
-              "defaultImageVersion": "1.3.0-dev"
+              "defaultImageVersion": "latest"
               },
             "v2": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "0.1.0"
+              "defaultImageVersion": "latest"
               }
             }
         },
@@ -119,7 +119,7 @@ var configs = map[string]string{
      }`,
 	"storageInitializer": `
 	{
-	"image" : "seldonio/rclone-storage-initializer:1.16.0",
+	"image" : "seldonio/rclone-storage-initializer:latest",
 	"memoryRequest": "100Mi",
 	"memoryLimit": "1Gi",
 	"cpuRequest": "100m",
@@ -127,8 +127,8 @@ var configs = map[string]string{
 	}`,
 	"explainer": `
 	{
-	"image" : "seldonio/alibiexplainer:1.2.0",
-	"image_v2" : "seldonio/mlserver:0.6.0"
+	"image" : "seldonio/alibiexplainer:latest",
+	"image_v2" : "seldonio/mlserver:latest"
 	}`,
 }
 

@@ -1,2 +1,0 @@
--r ./src/requirements.txt
-pytest==5.1.1

@@ -2,7 +2,10 @@ FROM rclone/rclone:1.71.2 as builder
 
 RUN mkdir /licenses && wget -O /licenses/license.txt https://raw.githubusercontent.com/rclone/rclone/master/COPYING
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.7
+
+RUN microdnf update -y
+
 LABEL name="Rclone Storage Initializer" \
       vendor="Seldon Technologies" \
       version="1.15.0-dev" \
