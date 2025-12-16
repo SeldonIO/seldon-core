@@ -22,7 +22,9 @@ import (
 
 	"github.com/cucumber/godog"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type inference struct {
@@ -33,6 +35,7 @@ type inference struct {
 	httpPort         uint
 	lastHTTPResponse *http.Response
 	lastGRPCResponse lastGRPCResponse
+	log              logrus.FieldLogger
 }
 
 func LoadInferenceSteps(scenario *godog.ScenarioContext, w *World) {
@@ -61,6 +64,14 @@ func LoadInferenceSteps(scenario *godog.ScenarioContext, w *World) {
 	scenario.Step(`^expect http response body to contain JSON:$`, w.infer.httpRespCheckBodyContainsJSON)
 	scenario.Step(`^expect gRPC response body to contain JSON:$`, w.infer.gRPCRespCheckBodyContainsJSON)
 	scenario.Step(`^expect gRPC response error to contain "([^"]+)"`, w.infer.gRPCRespContainsError)
+	scenario.Step(`^expect gRPC response to not return an error$`, w.infer.gRPCRespContainsNoError)
+	scenario.Step(`^expect http response body to contain valid JSON$`, func() error {
+		testModel, ok := testModels[w.currentModel.modelType]
+		if !ok {
+			return fmt.Errorf("model %s not found", w.currentModel.modelType)
+		}
+		return w.infer.doHttpRespCheckBodyContainsJSON(testModel.ValidJSONResponse)
+	})
 }
 
 func (i *inference) doHTTPModelInferenceRequest(ctx context.Context, modelName, body string) error {
@@ -102,7 +113,7 @@ func (i *inference) sendHTTPModelInferenceRequestFromModel(ctx context.Context, 
 		return fmt.Errorf("could not find test model %s", m.model.Name)
 	}
 
-	return i.doHTTPModelInferenceRequest(ctx, m.modelName, testModel.ValidInferenceRequest)
+	return i.doHTTPModelInferenceRequest(ctx, m.modelName, testModel.ValidHTTPInferenceRequest)
 }
 
 func httpScheme(useSSL bool) string {
@@ -121,7 +132,7 @@ func (i *inference) sendGRPCModelInferenceRequestFromModel(ctx context.Context, 
 	if !ok {
 		return fmt.Errorf("could not find test model %s", m.model.Name)
 	}
-	return i.doGRPCModelInferenceRequest(ctx, m.modelName, testModel.ValidInferenceRequest)
+	return i.doGRPCModelInferenceRequest(ctx, m.modelName, testModel.ValidGRPCInferenceRequest)
 }
 
 func (i *inference) doGRPCModelInferenceRequest(
@@ -130,7 +141,7 @@ func (i *inference) doGRPCModelInferenceRequest(
 	payload string,
 ) error {
 	var req v2_dataplane.ModelInferRequest
-	if err := json.Unmarshal([]byte(payload), &req); err != nil {
+	if err := protojson.Unmarshal([]byte(payload), &req); err != nil {
 		return fmt.Errorf("could not unmarshal gRPC json payload: %w", err)
 	}
 	req.ModelName = model
@@ -138,7 +149,11 @@ func (i *inference) doGRPCModelInferenceRequest(
 	md := metadata.Pairs("seldon-model", model)
 	ctx = metadata.NewOutgoingContext(ctx, md)
 
+	i.log.Debugf("sending gRPC model inference %+v", &req)
+
 	resp, err := i.grpc.ModelInfer(ctx, &req)
+	i.log.Debugf("grpc model infer response: %+v", resp)
+	i.log.Debugf("grpc model infer error: %+v", err)
 
 	i.lastGRPCResponse.response = resp
 	i.lastGRPCResponse.err = err
@@ -212,6 +227,16 @@ func jsonContainsObjectSubset(jsonStr, needleStr string) (bool, error) {
 	return containsSubset(needle, hay), nil
 }
 
+func (i *inference) gRPCRespContainsNoError() error {
+	if i.lastGRPCResponse.err != nil {
+		return fmt.Errorf("grpc response contains error: %w", i.lastGRPCResponse.err)
+	}
+	if i.lastGRPCResponse.response == nil {
+		return errors.New("grpc contains no response")
+	}
+	return nil
+}
+
 func (i *inference) gRPCRespContainsError(err string) error {
 	if i.lastGRPCResponse.err == nil {
 		return errors.New("no gRPC response error found")
@@ -226,6 +251,9 @@ func (i *inference) gRPCRespContainsError(err string) error {
 
 func (i *inference) gRPCRespCheckBodyContainsJSON(expectJSON *godog.DocString) error {
 	if i.lastGRPCResponse.response == nil {
+		if i.lastGRPCResponse.err != nil {
+			return fmt.Errorf("no gRPC response, error found: %s", i.lastGRPCResponse.err.Error())
+		}
 		return errors.New("no gRPC response found")
 	}
 
@@ -234,6 +262,7 @@ func (i *inference) gRPCRespCheckBodyContainsJSON(expectJSON *godog.DocString) e
 		return fmt.Errorf("could not marshal gRPC json: %w", err)
 	}
 
+	i.log.Debugf("checking gRPC response: %s contains %s", string(gotJson), expectJSON.Content)
 	ok, err := jsonContainsObjectSubset(string(gotJson), expectJSON.Content)
 	if err != nil {
 		return fmt.Errorf("could not check if json contains object: %w", err)
@@ -247,6 +276,10 @@ func (i *inference) gRPCRespCheckBodyContainsJSON(expectJSON *godog.DocString) e
 }
 
 func (i *inference) httpRespCheckBodyContainsJSON(expectJSON *godog.DocString) error {
+	return i.doHttpRespCheckBodyContainsJSON(expectJSON.Content)
+}
+
+func (i *inference) doHttpRespCheckBodyContainsJSON(expectJSON string) error {
 	if i.lastHTTPResponse == nil {
 		return errors.New("no http response found")
 	}
@@ -256,7 +289,8 @@ func (i *inference) httpRespCheckBodyContainsJSON(expectJSON *godog.DocString) e
 		return fmt.Errorf("could not read response body: %w", err)
 	}
 
-	ok, err := jsonContainsObjectSubset(string(body), expectJSON.Content)
+	i.log.Debugf("checking HTTP response: %s contains %s", string(body), expectJSON)
+	ok, err := jsonContainsObjectSubset(string(body), expectJSON)
 	if err != nil {
 		return fmt.Errorf("could not check if json contains object: %w", err)
 	}

@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"strings"
 
 	"github.com/cucumber/godog"
 	mlopsv1alpha1 "github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
@@ -75,6 +76,11 @@ func LoadServerSteps(scenario *godog.ScenarioContext, w *World) {
 			})
 		})
 	})
+	scenario.Step(`^I remove any other server deployments which are not "([^"]+)"$`, func(servers string) error {
+		return withTimeoutCtx("10s", func(ctx context.Context) error {
+			return w.server.removeServers(ctx, servers)
+		})
+	})
 	scenario.Step(`^I delete server "([^"]+)" with timeout "([^"]+)"$`, func(server, timeout string) error {
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
 			return w.server.deleteServer(ctx, server)
@@ -131,6 +137,26 @@ func (s *server) applyScenarioLabel() {
 	for k, v := range k8sclient.DefaultCRDTestSuiteLabelMap {
 		s.currentServer.Labels[k] = v
 	}
+}
+
+func (s *server) removeServers(ctx context.Context, keepServers string) error {
+	gotServers, err := s.seldonK8sClient.MlopsV1alpha1().Servers(s.namespace).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("failed listing servers: %w", err)
+	}
+
+	for _, server := range gotServers.Items {
+		if strings.Contains(keepServers, server.Name) {
+			continue
+		}
+		s.log.Debugf("Removing server %s not in keep list %s", server.Name, keepServers)
+		if err := s.deleteServer(ctx, server.Name); err != nil {
+			return fmt.Errorf("failed deleting server: %w", err)
+		}
+		s.log.Infof("removed server %q", server)
+	}
+
+	return nil
 }
 
 func (s *server) removeOtherServers(ctx context.Context) error {

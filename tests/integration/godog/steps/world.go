@@ -58,17 +58,18 @@ func NewWorld(c Config) (*World, error) {
 	}
 
 	w := &World{
-		namespace:      c.Namespace,
-		kubeClient:     c.KubeClient,
-		watcherStorage: c.WatcherStorage,
-		currentModel:   NewModel(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
-		currentPipeline: NewPipeline(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
-		server:         newServer(label, c.Namespace, c.K8sClient, c.Logger, c.KubeClient),
+		namespace:       c.Namespace,
+		kubeClient:      c.KubeClient,
+		watcherStorage:  c.WatcherStorage,
+		currentModel:    newModel(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
+		currentPipeline: newPipeline(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
+		server:          newServer(label, c.Namespace, c.K8sClient, c.Logger, c.KubeClient),
 		infer: inference{
 			host:     c.IngressHost,
 			http:     &http.Client{},
 			grpc:     c.GRPC,
 			httpPort: c.HTTPPort,
+			log:      c.Logger,
 			ssl:      c.SSL},
 		Label: label,
 	}
