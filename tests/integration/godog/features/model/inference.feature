@@ -7,14 +7,16 @@ Feature: Basic model inferencing
     Then the model should eventually become Ready
     When I send a valid HTTP inference request with timeout "20s"
     Then expect http response status code "200"
+    And expect http response body to contain valid JSON
     When I send a valid gRPC inference request with timeout "20s"
+    And expect gRPC response to not return an error
 
     Examples:
-      | model         |
-      | iris          |
-#      | income-xgb | having errors with GRPC
-#      | mnist-onnx |
-#      | income-lgb | having errors with response
-      | tfsimple1     |
-      | wine          |
-#      | mnist-pytorch | having errors with response
+      | model      |
+      | mnist-pytorch |
+      | wine       |
+      | tfsimple1  |
+      | iris       |
+      | income-xgb |
+      | income-lgb |
+      | mnist-onnx |
