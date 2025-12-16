@@ -1,7 +1,0 @@
-ignore:
-  'SNYK-PYTHON-SETUPTOOLS-7448482':
-    - 'tensorflow@2.18.1 > setuptools@38.5.0':
-    - 'tensorflow@2.18.1 > tensorboard@2.18.0 > setuptools@38.5.0':
-    - 'tensorflow-serving-api@2.18.1 > tensorflow@2.18.1 > setuptools@38.5.0':
-    - 'tensorflow-serving-api@2.18.1 > tensorflow@2.18.1 > tensorboard@2.18.0 > setuptools@38.5.0':
-        reason: Image only ships setuptools > 70.x, pip freeze verifies no 38.5.0 copy is present

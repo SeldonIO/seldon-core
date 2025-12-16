@@ -4,4 +4,4 @@ grpcio>=1.32.0 # Required for https://github.com/SeldonIO/seldon-core/issues/278
 grpcio-reflection>=1.32.0 # Required for https://github.com/SeldonIO/seldon-core/issues/2787
 requests
 urllib3>=2.6.0
-setuptools>=70.0.0
+setuptools==78.1.1
