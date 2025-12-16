@@ -44,9 +44,7 @@ class TestNotebooks(object):
     def test_ambassador_shadow(self):
         create_and_run_script("../../examples/ambassador/shadow", "ambassador_shadow")
 
-    
     # KEDA Examples
-    
 
     def test_keda_prom_auto_scale(self):
         try:

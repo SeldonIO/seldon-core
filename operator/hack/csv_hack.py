@@ -37,9 +37,9 @@ def update_container_image(csv, version):
         ][0]["env"]
     ):
         if env["name"] == "EXECUTOR_CONTAINER_IMAGE_AND_VERSION":
-            csv["spec"]["install"]["spec"]["deployments"][0]["spec"]["template"]["spec"][
-                "containers"
-            ][0]["env"][n]["value"] = (
+            csv["spec"]["install"]["spec"]["deployments"][0]["spec"]["template"][
+                "spec"
+            ]["containers"][0]["env"][n]["value"] = (
                 "docker.io/seldonio/seldon-core-executor:" + version
             )
     return csv

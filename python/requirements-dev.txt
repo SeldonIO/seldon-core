@@ -23,5 +23,4 @@ pip-licenses==5.5.0        # Fetch OSS licenses
 pandas==2.3.3              # Modern release; requires numpy>=1.23
 pillow==10.4.0             # Stable, supports Python 3.10+
 grpcio-tools==1.70.0       # Prebuilt wheels for all py3.10+
-conda==3.5.0
 pip-audit==2.9.0
