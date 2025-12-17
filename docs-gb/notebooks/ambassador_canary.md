@@ -3,7 +3,7 @@
 
 ## Setup Seldon Core
 
-Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setup-cluster) with [Ambassador Ingress](../notebooks/seldon-core-setup.md#ambassador) and [Install Seldon Core](../notebooks/seldon-core-setup.md#Install-Seldon-Core). Instructions [also online](../notebooks/seldon-core-setup.md).
+Use the setup notebook to [Setup Cluster](https://docs.seldon.ai/seldon-core-1/tutorials/notebooks/seldon-core-setup#setup-cluster) with [Ambassador Ingress](https://docs.seldon.ai/seldon-core-1/tutorials/notebooks/seldon-core-setup#install-ingress).
 
 
 ```python
@@ -11,14 +11,6 @@ Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setu
 ```
 
     Error from server (AlreadyExists): namespaces "seldon" already exists
-
-
-
-```python
-!kubectl config set-context $(kubectl config current-context) --namespace=seldon
-```
-
-    Context "kind-ansible" modified.
 
 
 
@@ -42,7 +34,7 @@ VERSION
 
 
 
-    '1.15.0-dev'
+    '1.19.0-dev'
 
 
 
@@ -82,7 +74,7 @@ spec:
 
 
 ```python
-!kubectl create -f model.yaml
+!kubectl apply -f model.yaml -n seldon
 ```
 
     seldondeployment.machinelearning.seldon.io/example created
@@ -90,11 +82,13 @@ spec:
 
 
 ```python
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=example -o jsonpath='{.items[0].metadata.name}')
+!kubectl wait sdep/example \
+  --for=condition=ready \
+  --timeout=120s \
+  -n seldon
 ```
 
-    Waiting for deployment "example-main-0-classifier" rollout to finish: 0 of 1 updated replicas are available...
-    deployment "example-main-0-classifier" successfully rolled out
+    seldondeployment.machinelearning.seldon.io/example condition met
 
 
 ### Get predictions
@@ -106,18 +100,31 @@ from seldon_core.seldon_client import SeldonClient
 sc = SeldonClient(deployment_name="example", namespace="seldon")
 ```
 
-    2022-08-22 17:10:39.787195: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
-    2022-08-22 17:10:39.787229: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+    2025-12-04 11:09:46.205128: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:477] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+    WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+    E0000 00:00:1764846586.222049 3721772 cuda_dnn.cc:8310] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+    E0000 00:00:1764846586.227263 3721772 cuda_blas.cc:1418] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+    2025-12-04 11:09:46.246078: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+    To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
 
 
 #### REST Request
 
 
 ```python
-r = sc.predict(gateway="ambassador", transport="rest")
-assert r.success == True
-print(r)
+from tenacity import retry, stop_after_delay, wait_exponential
+
+@retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
+def make_prediction():
+    r = sc.predict(gateway="ambassador", transport="rest")
+    assert r.success == True
+    return r
+
+make_prediction()
 ```
+
+
+
 
     Success:True message:
     Request:
@@ -127,17 +134,18 @@ print(r)
       tensor {
         shape: 1
         shape: 1
-        values: 0.7321696737551778
+        values: 0.68551705136886776
       }
     }
     
     Response:
-    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.10115132850847434]}}, 'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.15.0-dev'}}}
+    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.09698790957732062]}}, 'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0-dev'}}}
+
 
 
 ## Launch Canary
 
-We will now extend the existing graph and add a new predictor as a canary using a new model `seldonio/mock_classifier_rest:1.1`. We will add traffic values to split traffic 75/25 to the main and canary.
+We will now extend the existing graph and add a new predictor as a canary using a new model `seldonio/mock_classifier_rest`. We will add traffic values to split traffic 75/25 to the main and canary.
 
 
 ```python
@@ -188,29 +196,34 @@ spec:
 
 
 ```python
-!kubectl apply -f canary.yaml
+!kubectl apply -f canary.yaml -n seldon
 ```
 
-    Warning: resource seldondeployments/example is missing the kubectl.kubernetes.io/last-applied-configuration annotation which is required by kubectl apply. kubectl apply should only be used on resources created declaratively by either kubectl create --save-config or kubectl apply. The missing annotation will be patched automatically.
     seldondeployment.machinelearning.seldon.io/example configured
 
 
 
 ```python
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=example -o jsonpath='{.items[0].metadata.name}')
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=example -o jsonpath='{.items[1].metadata.name}')
+!kubectl wait sdep/example \
+  --for=condition=ready \
+  --timeout=120s \
+  -n seldon
 ```
 
-    Waiting for deployment "example-canary-0-classifier" rollout to finish: 0 of 1 updated replicas are available...
-    deployment "example-canary-0-classifier" successfully rolled out
-    deployment "example-main-0-classifier" successfully rolled out
+    seldondeployment.machinelearning.seldon.io/example condition met
 
 
 Show our REST requests are now split with roughly 25% going to the canary.
 
 
 ```python
-sc.predict(gateway="ambassador", transport="rest")
+@retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
+def make_prediction():
+    r = sc.predict(gateway="ambassador", transport="rest")
+    assert r.success == True
+    return r
+
+make_prediction()
 ```
 
 
@@ -224,21 +237,23 @@ sc.predict(gateway="ambassador", transport="rest")
       tensor {
         shape: 1
         shape: 1
-        values: 0.5515112951204143
+        values: 0.83946571577703166
       }
     }
     
     Response:
-    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.08586865749102578]}}, 'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.15.0-dev'}}}
+    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.11133259692564312]}}, 'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0-dev'}}}
 
 
 
 
 ```python
 from collections import defaultdict
+import time
 
 counts = defaultdict(int)
 n = 100
+time.sleep(10)  # wait before sending requests
 for i in range(n):
     r = sc.predict(gateway="ambassador", transport="rest")
 ```
@@ -247,33 +262,51 @@ Following checks number of prediction requests processed by default/canary predi
 
 
 ```python
-default_count = !kubectl logs $(kubectl get pod -lseldon-app=example-main -o jsonpath='{.items[0].metadata.name}') classifier | grep "root:predict" | wc -l
+import time
+
+@retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
+def get_requests_cound_for_main():
+    default_count = !kubectl logs -l seldon-app=example-main -n seldon -c classifier --tail 1000 | grep "root:predict" | wc -l
+    return float(default_count[0])
+
+
+time.sleep(10) # wait for logs to be flushed
+default_count = get_requests_cound_for_main()
+print(f"main logs count {default_count}")
 ```
+
+    main logs count 75.0
+
 
 
 ```python
-canary_count = !kubectl logs $(kubectl get pod -lseldon-app=example-canary -o jsonpath='{.items[0].metadata.name}') classifier | grep "root:predict" | wc -l
+@retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
+def get_requests_cound_for_canary():
+    canary_count = !kubectl logs -l seldon-app=example-canary -n seldon -c classifier --tail 1000 | grep "root:predict" | wc -l
+    return float(canary_count[0])
+
+time.sleep(10) # wait for logs to be flushed
+canary_count = get_requests_cound_for_canary()
+print(f"canary logs count {canary_count}")
 ```
+
+    canary logs count 27.0
+
 
 
 ```python
-canary_percentage = float(canary_count[0]) / float(default_count[0])
-print(canary_percentage)
+canary_percentage = canary_count / default_count
+print(f"canary percentage {canary_percentage}")
 assert canary_percentage > 0.1 and canary_percentage < 0.5
 ```
 
-    0.3246753246753247
+    canary percentage 0.36
 
 
 
 ```python
-!kubectl delete -f canary.yaml
+!kubectl delete -f canary.yaml -n seldon
 ```
 
     seldondeployment.machinelearning.seldon.io "example" deleted
 
-
-
-```python
-
-```

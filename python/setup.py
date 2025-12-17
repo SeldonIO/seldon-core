@@ -40,7 +40,7 @@ setup(
         "cryptography>=46.0.3",
         "pyyaml>=6.0.3",
         "click>=8.3.0",
-        "urllib3>=2.5.0",
+        "urllib3>=2.6.0",
     ],
     extras_require=extras,
     entry_points={

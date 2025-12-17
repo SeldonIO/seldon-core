@@ -52,6 +52,8 @@ RUN cp ./licenses/* /licenses
 # Install python spacy model to avoid issues in airgapped envs
 RUN python -m spacy download en_core_web_md
 
+# Remove spacy tests to eliminate the CVE-2024-6345 vulnerability in setuptools dependency
+RUN rm -rf /opt/conda/lib/python3.12/site-packages/spacy/tests/
 
 # Copy rest of the package
 COPY alibiexplainer alibiexplainer

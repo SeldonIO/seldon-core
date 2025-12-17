@@ -1,5 +1,6 @@
 PyYAML >= 6.0.3, < 7.0.0 # Python 3.12 compatiblity + CVE
 requests >= 2.32.5
+urllib3 >= 2.6.0
 pandas >= 2.3.3
 
 # CVE-2023-47248, CVE-2023-6753, CVE-2023-6709
