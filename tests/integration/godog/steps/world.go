@@ -26,12 +26,13 @@ type World struct {
 	StartingClusterState string //todo: this will be a combination of starting state awareness of core 2 such as the
 	//todo:  server config,seldon config and seldon runtime to be able to reconcile to starting state should we change
 	//todo: the state such as reducing replicas to 0 of scheduler to test unavailability
-	currentModel    *Model
-	currentPipeline *Pipeline
-	server          *server
-	infer           inference
-	logger          log.FieldLogger
-	Label           map[string]string
+	currentModel      *Model
+	currentPipeline   *Pipeline
+	currentExperiment *Experiment
+	server            *server
+	infer             inference
+	logger            log.FieldLogger
+	Label             map[string]string
 }
 
 type Config struct {
@@ -58,12 +59,13 @@ func NewWorld(c Config) (*World, error) {
 	}
 
 	w := &World{
-		namespace:       c.Namespace,
-		kubeClient:      c.KubeClient,
-		watcherStorage:  c.WatcherStorage,
-		currentModel:    newModel(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
-		currentPipeline: newPipeline(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
-		server:          newServer(label, c.Namespace, c.K8sClient, c.Logger, c.KubeClient),
+		namespace:         c.Namespace,
+		kubeClient:        c.KubeClient,
+		watcherStorage:    c.WatcherStorage,
+		currentModel:      newModel(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
+		currentExperiment: newExperiment(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
+		currentPipeline:   newPipeline(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
+		server:            newServer(label, c.Namespace, c.K8sClient, c.Logger, c.KubeClient),
 		infer: inference{
 			host:     c.IngressHost,
 			http:     &http.Client{},

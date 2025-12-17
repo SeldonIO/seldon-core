@@ -166,5 +166,6 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 	steps.LoadInferenceSteps(scenarioCtx, world)
 	steps.LoadServerSteps(scenarioCtx, world)
 	steps.LoadCustomPipelineSteps(scenarioCtx, world)
+	steps.LoadExperimentSteps(scenarioCtx, world)
 	// TODO: load other steps, e.g. pipeline, experiment, etc.
 }

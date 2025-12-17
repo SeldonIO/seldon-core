@@ -14,11 +14,30 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/cucumber/godog"
 	"github.com/seldonio/seldon-core/tests/integration/godog/steps/assertions"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 )
+
+func LoadCustomModelSteps(scenario *godog.ScenarioContext, w *World) {
+	scenario.Step(`^I deploy model spec with timeout "([^"]+)":$`, func(timeout string, spec *godog.DocString) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			return w.currentModel.deployModelSpec(ctx, spec)
+		})
+	})
+	scenario.Step(`^the model "([^"]+)" should eventually become Ready with timeout "([^"]+)"$`, func(model, timeout string) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			return w.currentModel.waitForModelNameReady(ctx, model)
+		})
+	})
+	scenario.Step(`^delete the model "([^"]+)" with timeout "([^"]+)"$`, func(model, timeout string) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			return w.currentModel.deleteModel(ctx, model)
+		})
+	})
+}
 
 // deleteModel we have to wait for model to be deleted, as there is a finalizer attached so the scheduler can confirm
 // when model has been unloaded from inference pod, model-gw, dataflow-engine, pipeline-gw and controller will remove

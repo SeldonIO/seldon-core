@@ -27,6 +27,7 @@ import (
 type WatcherStorage interface {
 	WaitForObjectCondition(ctx context.Context, obj runtime.Object, cond ConditionFunc) error
 	WaitForModelCondition(ctx context.Context, modelName string, cond ConditionFunc) error
+	WaitForExperimentCondition(ctx context.Context, experimentName string, cond ConditionFunc) error
 	WaitForPipelineCondition(ctx context.Context, modelName string, cond ConditionFunc) error
 	Clear()
 	Start()
@@ -36,18 +37,20 @@ type WatcherStorage interface {
 type objectKind string
 
 const (
-	model    objectKind = "Model"
-	pipeline objectKind = "Pipeline"
+	model      objectKind = "Model"
+	pipeline   objectKind = "Pipeline"
+	experiment objectKind = "Experiment"
 )
 
 type WatcherStore struct {
-	namespace       string
-	label           string
-	mlopsClient     v1alpha1.MlopsV1alpha1Interface
-	modelWatcher    watch.Interface
-	pipelineWatcher watch.Interface
-	logger          log.FieldLogger
-	scheme          *runtime.Scheme
+	namespace         string
+	label             string
+	mlopsClient       v1alpha1.MlopsV1alpha1Interface
+	modelWatcher      watch.Interface
+	pipelineWatcher   watch.Interface
+	experimentWatcher watch.Interface
+	logger            log.FieldLogger
+	scheme            *runtime.Scheme
 
 	mu      sync.RWMutex
 	store   map[string]runtime.Object // key: "namespace/name"
@@ -80,21 +83,27 @@ func NewWatcherStore(namespace string, label string, mlopsClient v1alpha1.MlopsV
 		return nil, fmt.Errorf("failed to create pipeline watcher: %w", err)
 	}
 
+	experimentWatcher, err := mlopsClient.Experiments(namespace).Watch(context.Background(), v1.ListOptions{LabelSelector: DefaultCRDTestSuiteLabel})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create experiment watcher: %w", err)
+	}
+
 	// Base scheme + register your CRDs
 	s := runtime.NewScheme()
 	_ = scheme.AddToScheme(s)      // core k8s types (optional but fine)
 	_ = mlopsscheme.AddToScheme(s) // <-- this is the key line for your CRDs
 
 	return &WatcherStore{
-		namespace:       namespace,
-		label:           label,
-		mlopsClient:     mlopsClient,
-		modelWatcher:    modelWatcher,
-		pipelineWatcher: pipelineWatcher,
-		logger:          logger.WithField("client", "watcher_store"),
-		store:           make(map[string]runtime.Object),
-		doneChan:        make(chan struct{}),
-		scheme:          s,
+		namespace:         namespace,
+		label:             label,
+		mlopsClient:       mlopsClient,
+		modelWatcher:      modelWatcher,
+		experimentWatcher: experimentWatcher,
+		pipelineWatcher:   pipelineWatcher,
+		logger:            logger.WithField("client", "watcher_store"),
+		store:             make(map[string]runtime.Object),
+		doneChan:          make(chan struct{}),
+		scheme:            s,
 	}, nil
 }
 
@@ -168,6 +177,42 @@ func (s *WatcherStore) Start() {
 			case <-s.doneChan:
 				// Stop underlying watcher and exit
 				s.modelWatcher.Stop()
+				return
+			}
+		}
+	}()
+	go func() {
+		for {
+			select {
+			case event, ok := <-s.experimentWatcher.ResultChan():
+				if !ok {
+					// channel closed: watcher terminated
+					return
+				}
+
+				accessor, err := meta.Accessor(event.Object)
+				if err != nil {
+					s.logger.WithError(err).Error("failed to access experiment watcher")
+				} else {
+					s.logger.WithField("event", event).Tracef("new experiment watch event with name: %s on namespace: %s", accessor.GetName(), accessor.GetNamespace())
+				}
+
+				if event.Object == nil {
+					continue
+				}
+
+				switch event.Type {
+				case watch.Added, watch.Modified:
+					s.put(event.Object)
+				case watch.Deleted:
+					s.delete(event.Object)
+				case watch.Error:
+					fmt.Printf("experiment watch error: %v\n", event.Object)
+				}
+
+			case <-s.doneChan:
+				// Stop underlying watcher and exit
+				s.experimentWatcher.Stop()
 				return
 			}
 		}
@@ -308,6 +353,12 @@ func (s *WatcherStore) WaitForObjectCondition(ctx context.Context, obj runtime.O
 		return err
 	}
 }
+
+func (s *WatcherStore) WaitForExperimentCondition(ctx context.Context, experimentName string, cond ConditionFunc) error {
+	key := fmt.Sprintf("%s/%s/%s", s.namespace, experiment, experimentName)
+	return s.waitForKey(ctx, key, cond)
+}
+
 func (s *WatcherStore) WaitForModelCondition(ctx context.Context, modelName string, cond ConditionFunc) error {
 	key := fmt.Sprintf("%s/%s/%s", s.namespace, model, modelName)
 	return s.waitForKey(ctx, key, cond)
