@@ -327,23 +327,32 @@ def update_models_version(
     fpath = os.path.realpath(fpath)
     if debug:
         print("processing [{}]".format(fpath))
-    args = [
-        "sed",
-        "-i",
+    prefixes = [
         f"s|gs://seldon-models/v{current_seldon_core_version}/{model_name}|gs://seldon-models/v{seldon_core_version}/{model_name}|",
-        fpath,
+        f"s|gcs/seldon-models/v{current_seldon_core_version}/{model_name}|gcs/seldon-models/v{seldon_core_version}/{model_name}|",
     ]
-    err, out = run_command(args, debug)
+    errors = []
+    for replace in prefixes:
+        args = [
+            "sed",
+            "-i",
+            replace,
+            fpath,
+        ]
+        err, out = run_command(args, debug)
+        if err is not None:
+            errors.append(err)
 
-    if err == None:
+    if errors:
         print(
-            f"updated model uri gs://seldon-models/v{seldon_core_version}/{model_name} in {fpath}"
+            f"error updating model uri references for {model_name} in {fpath}"
         )
+        for err in errors:
+            print(err)
     else:
         print(
-            f"error updating model uri gs://seldon-models/v{seldon_core_version}/{model_name} in {fpath}"
+            f"updated model uri references for {model_name} in {fpath}"
         )
-        print(err)
 
 
 def update_pyproject_version(
@@ -659,7 +668,7 @@ def main(argv):
             "examples/iter8/progressive_rollout/single_sdep/abtest.yaml",
             "examples/iter8/progressive_rollout/single_sdep/promote-v1.yaml",
 
-            # "examples/init_containers/custom_init_container.ipynb", # NOT REALLY WORKING + NOT TESTED as part of 1.19 release
+            "examples/init_containers/custom_init_container.ipynb", # NOT TESTED as part of 1.19 release
             
             "examples/feedback/feedback-metrics-server/README.ipynb", # NOT TESTED as part of 1.19 release
             
