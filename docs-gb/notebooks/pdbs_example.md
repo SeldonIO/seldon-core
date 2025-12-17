@@ -7,17 +7,15 @@
 
 ## Setup Seldon Core
 
-Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setup-cluster) with [Ambassador Ingress](../notebooks/seldon-core-setup.md#ambassador) and [Install Seldon Core](../notebooks/seldon-core-setup.md#Install-Seldon-Core). Instructions [also online](../notebooks/seldon-core-setup.md).
+Use the setup notebook to [Setup Cluster](https://docs.seldon.ai/seldon-core-1/tutorials/notebooks/seldon-core-setup) with [Ambassador Ingress](https://docs.seldon.ai/seldon-core-1/tutorials/notebooks/seldon-core-setup#ambassador).
 
 
 ```python
 !kubectl create namespace seldon
 ```
 
+    Error from server (AlreadyExists): namespaces "seldon" already exists
 
-```python
-!kubectl config set-context $(kubectl config current-context) --namespace=seldon
-```
 
 ## Create model with Pod Disruption Budget
 
@@ -33,15 +31,53 @@ The full SeldonDeployment spec is shown below.
 !pygmentize model_with_pdb.yaml
 ```
 
+    [94mapiVersion[39;49;00m:[37m [39;49;00mmachinelearning.seldon.io/v1[37m[39;49;00m
+    [94mkind[39;49;00m:[37m [39;49;00mSeldonDeployment[37m[39;49;00m
+    [94mmetadata[39;49;00m:[37m[39;49;00m
+    [37m  [39;49;00m[94mname[39;49;00m:[37m [39;49;00mseldon-model[37m[39;49;00m
+    [94mspec[39;49;00m:[37m[39;49;00m
+    [37m  [39;49;00m[94mname[39;49;00m:[37m [39;49;00mtest-deployment[37m[39;49;00m
+    [37m  [39;49;00m[94mreplicas[39;49;00m:[37m [39;49;00m2[37m[39;49;00m
+    [37m  [39;49;00m[94mpredictors[39;49;00m:[37m[39;49;00m
+    [37m  [39;49;00m-[37m [39;49;00m[94mcomponentSpecs[39;49;00m:[37m[39;49;00m
+    [37m    [39;49;00m-[37m [39;49;00m[94mpdbSpec[39;49;00m:[37m[39;49;00m
+    [37m        [39;49;00m[94mmaxUnavailable[39;49;00m:[37m [39;49;00m2[37m[39;49;00m
+    [37m      [39;49;00m[94mspec[39;49;00m:[37m[39;49;00m
+    [37m        [39;49;00m[94mcontainers[39;49;00m:[37m[39;49;00m
+    [37m        [39;49;00m-[37m [39;49;00m[94mimage[39;49;00m:[37m [39;49;00mseldonio/mock_classifier_rest:1.3[37m[39;49;00m
+    [37m          [39;49;00m[94mimagePullPolicy[39;49;00m:[37m [39;49;00mIfNotPresent[37m[39;49;00m
+    [37m          [39;49;00m[94mname[39;49;00m:[37m [39;49;00mclassifier[37m[39;49;00m
+    [37m          [39;49;00m[94mresources[39;49;00m:[37m[39;49;00m
+    [37m            [39;49;00m[94mrequests[39;49;00m:[37m[39;49;00m
+    [37m              [39;49;00m[94mcpu[39;49;00m:[37m [39;49;00m[33m'[39;49;00m[33m0.5[39;49;00m[33m'[39;49;00m[37m[39;49;00m
+    [37m        [39;49;00m[94mterminationGracePeriodSeconds[39;49;00m:[37m [39;49;00m1[37m[39;49;00m
+    [37m    [39;49;00m[94mgraph[39;49;00m:[37m[39;49;00m
+    [37m      [39;49;00m[94mchildren[39;49;00m:[37m [39;49;00m[][37m[39;49;00m
+    [37m      [39;49;00m[94mendpoint[39;49;00m:[37m[39;49;00m
+    [37m        [39;49;00m[94mtype[39;49;00m:[37m [39;49;00mREST[37m[39;49;00m
+    [37m      [39;49;00m[94mname[39;49;00m:[37m [39;49;00mclassifier[37m[39;49;00m
+    [37m      [39;49;00m[94mtype[39;49;00m:[37m [39;49;00mMODEL[37m[39;49;00m
+    [37m    [39;49;00m[94mname[39;49;00m:[37m [39;49;00mexample[37m[39;49;00m
+
+
 
 ```python
-!kubectl apply -f model_with_pdb.yaml
+!kubectl apply -f model_with_pdb.yaml -n seldon
 ```
+
+    seldondeployment.machinelearning.seldon.io/seldon-model created
+
 
 
 ```python
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=seldon-model -o jsonpath='{.items[0].metadata.name}')
+!kubectl wait sdep/seldon-model \
+  --for=condition=ready \
+  --timeout=120s \
+  -n seldon
 ```
+
+    seldondeployment.machinelearning.seldon.io/seldon-model condition met
+
 
 ## Validate Disruption Budget Configuration
 
@@ -51,7 +87,7 @@ import json
 
 
 def getPdbConfig():
-    dp = !kubectl get pdb seldon-model-example-0-classifier -o json
+    dp = !kubectl get pdb -n seldon seldon-model-example-0-classifier -o json
     dp = json.loads("".join(dp))
     return dp["spec"]["maxUnavailable"]
 
@@ -61,8 +97,19 @@ assert getPdbConfig() == 2
 
 
 ```python
-!kubectl get pods,deployments,pdb
+!kubectl get pods,deployments,pdb -n seldon
 ```
+
+    NAME                                                     READY   STATUS    RESTARTS   AGE
+    pod/seldon-model-example-0-classifier-7964b5c9f8-89x9h   2/2     Running   0          29s
+    pod/seldon-model-example-0-classifier-7964b5c9f8-p5fg9   2/2     Running   0          29s
+    
+    NAME                                                READY   UP-TO-DATE   AVAILABLE   AGE
+    deployment.apps/seldon-model-example-0-classifier   2/2     2            2           29s
+    
+    NAME                                                           MIN AVAILABLE   MAX UNAVAILABLE   ALLOWED DISRUPTIONS   AGE
+    poddisruptionbudget.policy/seldon-model-example-0-classifier   N/A             2                 2                     29s
+
 
 ## Update Disruption Budget and Validate Change
 
@@ -73,15 +120,53 @@ Next, we'll update the maximum number of unavailable pods and check that the PDB
 !pygmentize model_with_patched_pdb.yaml
 ```
 
+    [94mapiVersion[39;49;00m:[37m [39;49;00mmachinelearning.seldon.io/v1[37m[39;49;00m
+    [94mkind[39;49;00m:[37m [39;49;00mSeldonDeployment[37m[39;49;00m
+    [94mmetadata[39;49;00m:[37m[39;49;00m
+    [37m  [39;49;00m[94mname[39;49;00m:[37m [39;49;00mseldon-model[37m[39;49;00m
+    [94mspec[39;49;00m:[37m[39;49;00m
+    [37m  [39;49;00m[94mname[39;49;00m:[37m [39;49;00mtest-deployment[37m[39;49;00m
+    [37m  [39;49;00m[94mreplicas[39;49;00m:[37m [39;49;00m2[37m[39;49;00m
+    [37m  [39;49;00m[94mpredictors[39;49;00m:[37m[39;49;00m
+    [37m  [39;49;00m-[37m [39;49;00m[94mcomponentSpecs[39;49;00m:[37m[39;49;00m
+    [37m    [39;49;00m-[37m [39;49;00m[94mpdbSpec[39;49;00m:[37m[39;49;00m
+    [37m        [39;49;00m[94mmaxUnavailable[39;49;00m:[37m [39;49;00m1[37m[39;49;00m
+    [37m      [39;49;00m[94mspec[39;49;00m:[37m[39;49;00m
+    [37m        [39;49;00m[94mcontainers[39;49;00m:[37m[39;49;00m
+    [37m        [39;49;00m-[37m [39;49;00m[94mimage[39;49;00m:[37m [39;49;00mseldonio/mock_classifier_rest:1.3[37m[39;49;00m
+    [37m          [39;49;00m[94mimagePullPolicy[39;49;00m:[37m [39;49;00mIfNotPresent[37m[39;49;00m
+    [37m          [39;49;00m[94mname[39;49;00m:[37m [39;49;00mclassifier[37m[39;49;00m
+    [37m          [39;49;00m[94mresources[39;49;00m:[37m[39;49;00m
+    [37m            [39;49;00m[94mrequests[39;49;00m:[37m[39;49;00m
+    [37m              [39;49;00m[94mcpu[39;49;00m:[37m [39;49;00m[33m'[39;49;00m[33m0.5[39;49;00m[33m'[39;49;00m[37m[39;49;00m
+    [37m        [39;49;00m[94mterminationGracePeriodSeconds[39;49;00m:[37m [39;49;00m1[37m[39;49;00m
+    [37m    [39;49;00m[94mgraph[39;49;00m:[37m[39;49;00m
+    [37m      [39;49;00m[94mchildren[39;49;00m:[37m [39;49;00m[][37m[39;49;00m
+    [37m      [39;49;00m[94mendpoint[39;49;00m:[37m[39;49;00m
+    [37m        [39;49;00m[94mtype[39;49;00m:[37m [39;49;00mREST[37m[39;49;00m
+    [37m      [39;49;00m[94mname[39;49;00m:[37m [39;49;00mclassifier[37m[39;49;00m
+    [37m      [39;49;00m[94mtype[39;49;00m:[37m [39;49;00mMODEL[37m[39;49;00m
+    [37m    [39;49;00m[94mname[39;49;00m:[37m [39;49;00mexample[37m[39;49;00m
+
+
 
 ```python
-!kubectl apply -f model_with_patched_pdb.yaml
+!kubectl apply -f model_with_patched_pdb.yaml -n seldon
 ```
+
+    seldondeployment.machinelearning.seldon.io/seldon-model configured
+
 
 
 ```python
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=seldon-model -o jsonpath='{.items[0].metadata.name}')
+!kubectl wait sdep/seldon-model \
+  --for=condition=ready \
+  --timeout=120s \
+  -n seldon
 ```
+
+    seldondeployment.machinelearning.seldon.io/seldon-model condition met
+
 
 
 ```python
@@ -92,15 +177,25 @@ assert getPdbConfig() == 1
 
 
 ```python
-!kubectl get pods,deployments,pdb
+!kubectl get pods,deployments,pdb -n seldon
 ```
+
+    NAME                                                     READY   STATUS    RESTARTS   AGE
+    pod/seldon-model-example-0-classifier-778dc959fd-dhts9   2/2     Running   0          33s
+    pod/seldon-model-example-0-classifier-778dc959fd-dpsnc   0/2     Running   0          9s
+    pod/seldon-model-example-0-classifier-7964b5c9f8-89x9h   2/2     Running   0          73s
+    
+    NAME                                                READY   UP-TO-DATE   AVAILABLE   AGE
+    deployment.apps/seldon-model-example-0-classifier   2/2     2            2           73s
+    
+    NAME                                                           MIN AVAILABLE   MAX UNAVAILABLE   ALLOWED DISRUPTIONS   AGE
+    poddisruptionbudget.policy/seldon-model-example-0-classifier   N/A             1                 1                     73s
+
 
 
 ```python
-!kubectl delete -f model_with_patched_pdb.yaml
+!kubectl delete -f model_with_patched_pdb.yaml -n seldon
 ```
 
+    seldondeployment.machinelearning.seldon.io "seldon-model" deleted
 
-```python
-
-```

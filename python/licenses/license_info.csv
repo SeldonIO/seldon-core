@@ -56,7 +56,7 @@
 "termcolor","3.2.0","MIT"
 "threadloop","1.0.2","MIT License"
 "thrift","0.22.0","Apache License 2.0"
-"tornado","6.5.3","Apache Software License"
+"tornado","6.5.4","Apache Software License"
 "typing_extensions","4.15.0","PSF-2.0"
 "urllib3","2.6.2","MIT"
 "wrapt","2.0.1","Copyright (c) 2013-2025, Graham Dumpleton

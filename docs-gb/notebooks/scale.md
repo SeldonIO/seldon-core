@@ -10,7 +10,7 @@
 
 ## Setup Seldon Core
 
-Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md) to setup Seldon Core with an ingress - either Ambassador or Istio.
+Use the setup notebook to [Setup Cluster](https://docs.seldon.ai/seldon-core-1/tutorials/notebooks/seldon-core-setup#setup-cluster) to setup Seldon Core with an ingress - either Ambassador or Istio.
 
 Then port-forward to that ingress on localhost:8003 in a separate terminal either with:
 
@@ -22,10 +22,8 @@ Then port-forward to that ingress on localhost:8003 in a separate terminal eithe
 !kubectl create namespace seldon
 ```
 
+    Error from server (AlreadyExists): namespaces "seldon" already exists
 
-```python
-!kubectl config set-context $(kubectl config current-context) --namespace=seldon
-```
 
 ## Replica Settings
 
@@ -91,37 +89,41 @@ spec:
 
 
 ```python
-!kubectl create -f resources/model_replicas.yaml
+!kubectl create -f resources/model_replicas.yaml -n seldon
 ```
+
+    seldondeployment.machinelearning.seldon.io/test-replicas created
+
 
 We can now wait until each of the models are fully deployed
 
 
 ```python
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=test-replicas -o jsonpath='{.items[0].metadata.name}')
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=test-replicas -o jsonpath='{.items[1].metadata.name}')
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=test-replicas -o jsonpath='{.items[2].metadata.name}')
+!kubectl wait sdep/test-replicas --for=condition=ready --timeout=120s -n seldon
 ```
+
+    seldondeployment.machinelearning.seldon.io/test-replicas condition met
+
 
 Check each container is running in a deployment with correct number of replicas
 
 
 ```python
-classifierReplicas = !kubectl get deploy test-replicas-example-0-classifier -o jsonpath='{.status.replicas}'
+classifierReplicas = !kubectl get deploy -n seldon test-replicas-example-0-classifier -o jsonpath='{.status.replicas}'
 classifierReplicas = int(classifierReplicas[0])
 assert classifierReplicas == 2
 ```
 
 
 ```python
-classifier2Replicas = !kubectl get deploy test-replicas-example-1-classifier2 -o jsonpath='{.status.replicas}'
+classifier2Replicas = !kubectl get deploy -n seldon test-replicas-example-1-classifier2 -o jsonpath='{.status.replicas}'
 classifier2Replicas = int(classifier2Replicas[0])
 assert classifier2Replicas == 3
 ```
 
 
 ```python
-classifier3Replicas = !kubectl get deploy test-replicas-example2-0-classifier3 -o jsonpath='{.status.replicas}'
+classifier3Replicas = !kubectl get deploy -n seldon test-replicas-example2-0-classifier3 -o jsonpath='{.status.replicas}'
 classifier3Replicas = int(classifier3Replicas[0])
 assert classifier3Replicas == 1
 ```
@@ -135,10 +137,16 @@ We can now just send a simple request
    -H "Content-Type: application/json"
 ```
 
+    {"data":{"names":["proba"],"ndarray":[[0.07735472603574542]]},"meta":{}}
+
+
 
 ```python
-!kubectl delete -f resources/model_replicas.yaml
+!kubectl delete -f resources/model_replicas.yaml -n seldon
 ```
+
+    seldondeployment.machinelearning.seldon.io "test-replicas" deleted
+
 
 ## Scale SeldonDeployment
 
@@ -175,19 +183,25 @@ spec:
 
 
 ```python
-!kubectl create -f resources/model_scale.yaml
+!kubectl create -f resources/model_scale.yaml -n seldon
 ```
+
+    seldondeployment.machinelearning.seldon.io/seldon-scale created
+
 
 
 ```python
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=seldon-scale -o jsonpath='{.items[0].metadata.name}')
+!kubectl wait sdep/seldon-scale --for=condition=ready --timeout=120s -n seldon
 ```
+
+    seldondeployment.machinelearning.seldon.io/seldon-scale condition met
+
 
 We can actually confirm that there is only 1 replica currently running
 
 
 ```python
-replicas = !kubectl get deploy seldon-scale-example-0-classifier -o jsonpath='{.status.replicas}'
+replicas = !kubectl get deploy seldon-scale-example-0-classifier -n seldon -o jsonpath='{.status.replicas}'
 replicas = int(replicas[0])
 assert replicas == 1
 ```
@@ -196,19 +210,25 @@ And then we can actually see how the model can be scaled up
 
 
 ```python
-!kubectl scale --replicas=2 sdep/seldon-scale
+!kubectl scale --replicas=2 sdep/seldon-scale -n seldon
 ```
+
+    seldondeployment.machinelearning.seldon.io/seldon-scale scaled
+
 
 
 ```python
-!kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=seldon-scale -o jsonpath='{.items[0].metadata.name}')
+!kubectl wait sdep/seldon-scale --for=condition=ready --timeout=120s -n seldon
 ```
+
+    seldondeployment.machinelearning.seldon.io/seldon-scale condition met
+
 
 And now we can verify that there are actually two replicas instead of 1
 
 
 ```python
-replicas = !kubectl get deploy seldon-scale-example-0-classifier -o jsonpath='{.status.replicas}'
+replicas = !kubectl get deploy seldon-scale-example-0-classifier -n seldon -o jsonpath='{.status.replicas}'
 replicas = int(replicas[0])
 assert replicas == 2
 ```
@@ -222,12 +242,13 @@ And now when we send requests to the model, these get directed to the respective
    -H "Content-Type: application/json"
 ```
 
+    {"data":{"names":["proba"],"ndarray":[[0.43782349911420193]]},"meta":{}}
+
+
 
 ```python
-!kubectl delete -f resources/model_scale.yaml
+!kubectl delete -f resources/model_scale.yaml -n seldon
 ```
 
+    seldondeployment.machinelearning.seldon.io "seldon-scale" deleted
 
-```python
-
-```
