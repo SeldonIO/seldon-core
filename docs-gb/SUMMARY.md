@@ -48,9 +48,9 @@
 * [Open Inference Protocol](user-guide/v2/README.md)
   * [REST](user-guide/v2/rest/README.md)
     * ```yaml
-      type: builtin:openapi
       props:
         models: true
+      type: builtin:openapi
       dependencies:
         spec:
           ref:
@@ -123,6 +123,7 @@
   * [Secure Model Endpoints](models/securing-endpoints.md)
 * [Confluent](kubernetes/confluent/README.md)
   * [Schema Registry](kubernetes/confluent/schema-registry.md)
+
 ## Resources
 
 * [Security](getting-started/kubernetes-installation/security/README.md)

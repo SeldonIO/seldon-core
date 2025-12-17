@@ -23,7 +23,7 @@ Please, always check this document before conducting a release, and verify if ev
 
 The development process follows a standard GitHub workflow.
 
-![Development Graph](../images/release-1.png)
+![Development Graph](<../.gitbook/assets/release-1 (1).png>)
 
 The main development is happening in the `v2` branch.\
 This is where new features land through Pull Requests.\
@@ -34,7 +34,7 @@ We use GitHub Actions to prepare the release, build images and run all necessary
 
 If the release draft needs to be updated before being published, the new commits should be merged into the `release-0.1` branch and relevant workflows re-triggered as required.
 
-![Draft Update Graph](../images/release-2.png)
+![Draft Update Graph](<../.gitbook/assets/release-2 (1).png>)
 
 ### Draft New Release Action
 
@@ -47,7 +47,7 @@ When triggering the workflow, you must:
 * Select the release branch (here `release-0.1`)
 * Specify the release `version` (here `v0.1.0-rc1`)
 
-![Triggering Draft Workflow](../images/release-4.png)
+![Triggering Draft Workflow](<../.gitbook/assets/release-4 (1).png>)
 
 This workflow cannot run on the `v2` branch.
 
@@ -59,11 +59,11 @@ It will create a few commits with:
 * Updated Kubernetes YAML manifests
 * An updated changelog
 
-![Created Commits](../images/release-3.png)
+![Created Commits](<../.gitbook/assets/release-3 (1).png>)
 
 Once the workflow finishes, you will find a new release draft waiting to be published.
 
-![Draft Release](../images/release-5.png)
+![Draft Release](<../.gitbook/assets/release-5 (1).png>)
 
 > :warning: **NOTE:** Before publishing the release, run the images build workflow and necessary tests (not yet automated)!
 
@@ -79,7 +79,7 @@ When triggering the workflow, you must:
 * Specify the release `version`, e.g. `0.1.0-rc1`
   * Note the lack of the `v` prefix here
 
-![Triggering Build images](../images/release-6.png)
+![Triggering Build images](<../.gitbook/assets/release-6 (1).png>)
 
 This workflow will then run unit tests and build a series of Docker images that will be automatically pushed to[DockerHub](https://hub.docker.com/).
 

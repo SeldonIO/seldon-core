@@ -19,7 +19,7 @@ A typical workflow for a production machine learning setup might be as follows:
 
 These steps are shown in the diagram below:
 
-![Workflow](<../images/workflow (2).png>)
+![Workflow](<../.gitbook/assets/workflow (2).png>)
 
 ## Examples & Tutorials
 

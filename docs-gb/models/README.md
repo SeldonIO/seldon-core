@@ -70,7 +70,7 @@ See [Multi-model serving](mms.md) for more information.
 
 ## Autoscaling of Models
 
-See [here](broken-reference) for discussion of autoscaling of models.
+See [here](/broken/pages/WncUW6j5rFYoCiFxkpRW) for discussion of autoscaling of models.
 
 ## Scheduling of Models onto Servers
 

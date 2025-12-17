@@ -4,7 +4,7 @@ Run these examples from the `samples/examples/image_classifier` folder.
 
 ## CIFAR10 Image Classification Production Deployment
 
-![cifar10](../images/demo.png)
+![cifar10](../.gitbook/assets/demo.png)
 
 We show an image classifier (CIFAR10) with associated outlier and drift detectors using a Pipeline.
 
@@ -314,45 +314,45 @@ seldon pipeline status cifar10-production -w PipelineReady | jq -M .
 infer("cifar10-production.pipeline",20, "normal")
 ```
 
-![png](<../images/infer_14_0 (1).png>)
+![png](../.gitbook/assets/infer_19_0.png)
 
-![png](../images/infer_14_1.png)
+![png](../.gitbook/assets/infer_14_1.png)
 
-![png](../images/infer_14_2.png)
+![png](../.gitbook/assets/infer_14_2.png)
 
-![png](../images/infer_14_3.png)
+![png](../.gitbook/assets/infer_14_3.png)
 
-![png](../images/infer_14_4.png)
+![png](../.gitbook/assets/infer_14_4.png)
 
-![png](../images/infer_14_5.png)
+![png](../.gitbook/assets/infer_14_5.png)
 
-![png](../images/infer_14_6.png)
+![png](../.gitbook/assets/infer_14_6.png)
 
-![png](../images/infer_14_7.png)
+![png](../.gitbook/assets/infer_14_7.png)
 
-![png](../images/infer_14_8.png)
+![png](../.gitbook/assets/infer_14_8.png)
 
-![png](../images/infer_14_9.png)
+![png](../.gitbook/assets/infer_14_9.png)
 
-![png](../images/infer_14_10.png)
+![png](../.gitbook/assets/infer_14_10.png)
 
-![png](../images/infer_14_11.png)
+![png](../.gitbook/assets/infer_14_11.png)
 
-![png](../images/infer_14_12.png)
+![png](../.gitbook/assets/infer_14_12.png)
 
-![png](../images/infer_14_13.png)
+![png](../.gitbook/assets/infer_14_13.png)
 
-![png](../images/infer_14_14.png)
+![png](../.gitbook/assets/infer_14_14.png)
 
-![png](../images/infer_14_15.png)
+![png](../.gitbook/assets/infer_14_15.png)
 
-![png](../images/infer_14_16.png)
+![png](../.gitbook/assets/infer_14_16.png)
 
-![png](../images/infer_14_17.png)
+![png](../.gitbook/assets/infer_14_17.png)
 
-![png](../images/infer_14_18.png)
+![png](../.gitbook/assets/infer_14_18.png)
 
-![png](../images/infer_14_19.png)
+![png](../.gitbook/assets/infer_14_19.png)
 
 ```
 <Response [200]>
@@ -373,45 +373,45 @@ seldon.default.model.cifar10-drift.outputs	cifeij8fh5ss738i5bp0	{"name":"is_drif
 infer("cifar10-production.pipeline",20, "drift")
 ```
 
-![png](../images/infer_16_0.png)
+![png](../.gitbook/assets/infer_16_0.png)
 
-![png](../images/infer_16_1.png)
+![png](../.gitbook/assets/infer_16_1.png)
 
-![png](../images/infer_16_2.png)
+![png](../.gitbook/assets/infer_16_2.png)
 
-![png](../images/infer_16_3.png)
+![png](../.gitbook/assets/infer_16_3.png)
 
-![png](../images/infer_16_4.png)
+![png](../.gitbook/assets/infer_16_4.png)
 
-![png](../images/infer_16_5.png)
+![png](../.gitbook/assets/infer_16_5.png)
 
-![png](../images/infer_16_6.png)
+![png](../.gitbook/assets/infer_16_6.png)
 
-![png](../images/infer_16_7.png)
+![png](../.gitbook/assets/infer_16_7.png)
 
-![png](../images/infer_16_8.png)
+![png](../.gitbook/assets/infer_16_8.png)
 
-![png](../images/infer_16_9.png)
+![png](../.gitbook/assets/infer_16_9.png)
 
-![png](../images/infer_16_10.png)
+![png](../.gitbook/assets/infer_16_10.png)
 
-![png](../images/infer_16_11.png)
+![png](../.gitbook/assets/infer_16_11.png)
 
-![png](../images/infer_16_12.png)
+![png](../.gitbook/assets/infer_16_12.png)
 
-![png](../images/infer_16_13.png)
+![png](../.gitbook/assets/infer_16_13.png)
 
-![png](../images/infer_16_14.png)
+![png](../.gitbook/assets/infer_16_14.png)
 
-![png](../images/infer_16_15.png)
+![png](../.gitbook/assets/infer_16_15.png)
 
-![png](../images/infer_16_16.png)
+![png](../.gitbook/assets/infer_16_16.png)
 
-![png](../images/infer_16_17.png)
+![png](../.gitbook/assets/infer_16_17.png)
 
-![png](../images/infer_16_18.png)
+![png](../.gitbook/assets/infer_16_18.png)
 
-![png](../images/infer_16_19.png)
+![png](../.gitbook/assets/infer_16_19.png)
 
 ```
 <Response [200]>
@@ -432,7 +432,7 @@ seldon.default.model.cifar10-drift.outputs	cifeimgfh5ss738i5bpg	{"name":"is_drif
 infer("cifar10-production.pipeline",1, "outlier")
 ```
 
-![png](../images/infer_18_0.png)
+![png](../.gitbook/assets/infer_18_0.png)
 
 ```
 <Response [200]>
@@ -444,7 +444,7 @@ infer("cifar10-production.pipeline",1, "outlier")
 infer("cifar10-production.pipeline",1, "ok")
 ```
 
-![png](../images/infer_19_0.png)
+![png](<../.gitbook/assets/infer_19_0 (1).png>)
 
 ```
 <Response [200]>

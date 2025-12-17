@@ -12,7 +12,7 @@ When provided, these metrics are used to understand the adoption of Seldon Core 
 
 ## Architecture
 
-![Hodometer architecture](<../images/hodometer-architecture (2).png>)
+![Hodometer architecture](<../.gitbook/assets/hodometer-architecture (2).png>)
 
 Hodometer is not an integral part of Seldon Core 2, but rather an independent component which connects to the public APIs of the Seldon Core 2 scheduler. If deployed in Kubernetes, it requests some basic information from the Kubernetes API.
 
@@ -53,13 +53,13 @@ To do so, simply remove any existing deployment of Hodometer or disable it in th
 
 The following environment variables control the behaviour of Hodometer, regardless of the environment it is installed in.
 
-| Flag                 | Format                       | Example                                             | Description                                                                      |
-| -------------------- | ---------------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `METRICS_LEVEL`      | string                       | feature                                             | Level of detail for recorded metrics; one of `feature`, `resource`, or `cluster` |
+| Flag                 | Format                       | Example                                                     | Description                                                                      |
+| -------------------- | ---------------------------- | ----------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `METRICS_LEVEL`      | string                       | feature                                                     | Level of detail for recorded metrics; one of `feature`, `resource`, or `cluster` |
 | `EXTRA_PUBLISH_URLS` | comma-separated list of URLs | `http://<my-endpoint-1>:8000`,`http://<my-endpoint-2>:8000` | Additional endpoints to publish metrics to                                       |
-| `SCHEDULER_HOST`     | string                       | seldon-scheduler                                    | Hostname for Seldon Core v2 scheduler                                            |
-| `SCHEDULER_PORT`     | integer                      | 9004                                                | Port for Seldon Core v2 scheduler                                                |
-| `LOG_LEVEL`          | string                       | info                                                | Level of detail for application logs                                             |
+| `SCHEDULER_HOST`     | string                       | seldon-scheduler                                            | Hostname for Seldon Core v2 scheduler                                            |
+| `SCHEDULER_PORT`     | integer                      | 9004                                                        | Port for Seldon Core v2 scheduler                                                |
+| `LOG_LEVEL`          | string                       | info                                                        | Level of detail for application logs                                             |
 
 ### Kubernetes
 

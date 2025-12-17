@@ -1,16 +1,19 @@
 ---
-description: Discover Seldon Core 2, a Kubernetes-native MLOps framework for deploying ML and LLM systems at scale. Features flexible architecture, standardized workflows, and enhanced observability.
+description: >-
+  Discover Seldon Core 2, a Kubernetes-native MLOps framework for deploying ML
+  and LLM systems at scale. Features flexible architecture, standardized
+  workflows, and enhanced observability.
 ---
 
-# Production-ready Machine Learning Serving Framework
+# Production-ready ML Serving Framework
 
-Seldon Core 2 is a Kubernetes-native framework for deploying and managing machine learning (ML) and Large Language Model (LLM) systems at scale. Its [data-centric approach](./concepts/README.md#data-centric-mlops) and modular [architecture](./architecture/README.md) enable seamless handling of simple models to complex ML applications across on-premise, hybrid, and multi-cloud environments while ensuring flexibility, standardization, observability, and cost efficiency.
+Seldon Core 2 is a Kubernetes-native framework for deploying and managing machine learning (ML) and Large Language Model (LLM) systems at scale. Its [data-centric approach](concepts/#data-centric-mlops) and modular [architecture](architecture/) enable seamless handling of simple models to complex ML applications across on-premise, hybrid, and multi-cloud environments while ensuring flexibility, standardization, observability, and cost efficiency.
 
-![Seldon Core 2 Key Differentiators](./images/seldon_core_2_intro.png)
+![Seldon Core 2 Key Differentiators](.gitbook/assets/seldon_core_2_intro.png)
 
 ## **Flexibility: Real-time, your way**
 
-Seldon Core 2 offers a platform-agnostic, flexible framework for seamless deployment of different types of ML models across on-premise, cloud, and hybrid environments. Its adaptive architecture enables customizable applications, future-proofing MLOps or LLMOps by scaling deployments as data and applications evolve. The modular design enhances resource-efficiency, allowing dynamic scaling, component reuse, and optimized resource allocation. This ensures long-term scalability, operational efficiency, and adaptability to changing demands.
+Seldon Core 2 offers a platform-agnostic, flexible framework for seamless deployment of different types of ML models across on-premise, cloud, and hybrid environments. Its adaptive architecture enables customizable applications, future-proofing MLOps or LLMOps by scaling deployments as data and applications evolve. The modular design enhances resource-efficiency, allowing dynamic scaling, component reuse, and optimized resource allocation. This ensures long-term scalability, operational efficiency, and adaptability to changing demands.
 
 ## **Standardization: Consistency across workflows**
 
@@ -20,16 +23,15 @@ With a "learn once, deploy anywhere" approach, Seldon Core 2 standardizes model 
 
 ## **Enhanced Observability**
 
-Observability in Seldon Core 2 enables real-time monitoring, analysis, and performance tracking of ML systems, covering data pipelines, models, and deployment environments. Its customizable framework combines [operational](./operational-monitoring/README.md) and [data science](./architecture/dataflow.md) monitoring, ensuring teams have the key metrics needed for maintenance and decision-making.
+Observability in Seldon Core 2 enables real-time monitoring, analysis, and performance tracking of ML systems, covering data pipelines, models, and deployment environments. Its customizable framework combines [operational](operational-monitoring/) and [data science](architecture/dataflow.md) monitoring, ensuring teams have the key metrics needed for maintenance and decision-making.
 
-Seldon simplifies operational monitoring, allowing real-time ML or LLM deployments to expand across organizations while supporting complex, mission-critical use cases. A [data-centric approach](./concepts/README.md#data-centric-mlops) ensures all prediction data is auditable, maintaining explainability, compliance, and trust in AI-driven decisions.
-
+Seldon simplifies operational monitoring, allowing real-time ML or LLM deployments to expand across organizations while supporting complex, mission-critical use cases. A [data-centric approach](concepts/#data-centric-mlops) ensures all prediction data is auditable, maintaining explainability, compliance, and trust in AI-driven decisions.
 
 ## **Optimization: Modularity to maximize resource efficiency**
 
-Seldon Core 2 is built for scalability, efficiency, and cost-effective ML operations, enabling you to deploy only the necessary components while maintaining agility and high performance. Its modular architecture ensures that resources are optimized, infrastructure is consolidated, and deployments remain adaptable to evolving business needs.
+Seldon Core 2 is built for scalability, efficiency, and cost-effective ML operations, enabling you to deploy only the necessary components while maintaining agility and high performance. Its modular architecture ensures that resources are optimized, infrastructure is consolidated, and deployments remain adaptable to evolving business needs.
 
-**Scaling for Efficiency:** [scaling](./scaling/README.md) infrastructure dynamically based on demand, auto-scaling for real-time use cases while scaling to zero for on-demand workloads, preserving deployment state for seamless reactivation. By eliminating redundancy and optimizing deployments, it balances cost efficiency and performance, ensuring reliable inference at any scale.
+**Scaling for Efficiency:** [scaling](scaling/) infrastructure dynamically based on demand, auto-scaling for real-time use cases while scaling to zero for on-demand workloads, preserving deployment state for seamless reactivation. By eliminating redundancy and optimizing deployments, it balances cost efficiency and performance, ensuring reliable inference at any scale.
 
 **Consolidated Serving Infrastructure**: maximizes resource utilization with multi-model serving (MMS) and overcommit, reducing compute overhead while ensuring efficient, reliable inference.
 
@@ -39,6 +41,6 @@ Seldon Core 2 is built for scalability, efficiency, and cost-effective ML opera
 
 ## Next Steps
 
-- Explore our other [Solutions](https://www.seldon.io/pricing/)
-- Learn about the [feature of Seldon Core 2](./core-features.md)
-- [Join our Slack Community](https://seldondev.slack.com/join/shared_invite/zt-vejg6ttd-ksZiQs3O_HOtPQsen_labg#/shared-invite/email) for updates or for answers to any questions
+* Explore our other [Solutions](https://www.seldon.io/pricing/)
+* Learn about the [feature of Seldon Core 2](core-features.md)
+* [Join our Slack Community](https://seldondev.slack.com/join/shared_invite/zt-vejg6ttd-ksZiQs3O_HOtPQsen_labg#/shared-invite/email) for updates or for answers to any questions
