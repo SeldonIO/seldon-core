@@ -346,6 +346,26 @@ def update_models_version(
         print(err)
 
 
+def update_pyproject_version(
+    fpath, current_seldon_core_version, seldon_core_version, debug=False
+):
+    fpath = os.path.realpath(fpath)
+    if debug:
+        print("processing [{}]".format(fpath))
+    args = [
+        "sed",
+        "-i",
+        rf's/version = "{current_seldon_core_version}"/version = "{seldon_core_version}"/',
+        fpath,
+    ]
+    err, out = run_command(args, debug)
+    if err is None:
+        print(f"updated version in {fpath}")
+    else:
+        print(f"error updating version in {fpath}")
+        print(err)
+
+
 def update_versions_txt(seldon_core_version, debug=False):
     with open("version.txt", "w") as f:
         f.write("{seldon_core_version}\n".format(**locals()))
@@ -486,6 +506,7 @@ def set_version(
     mab_yaml_file,
     model_uri_updates,
     rclone_update_files,
+    pyproject_version_files,
     debug=False,
 ):
     update_python_wrapper_fixed_versions(seldon_core_version, debug)
@@ -520,6 +541,14 @@ def set_version(
     #
     # Update version.py in python/seldon_core
     update_versions_py(seldon_core_version, debug)
+
+    for fpath in pyproject_version_files:
+        update_pyproject_version(
+            fpath,
+            current_seldon_core_version,
+            seldon_core_version,
+            debug,
+        )
 
     # update the helm chart files
     for chart_yaml_file_realpath in chart_yaml_file_realpaths:
@@ -701,6 +730,11 @@ def main(argv):
         "examples/models/metrics/echo-sdep.yaml"
     ]
 
+    PYPROJECT_VERSION_FILES = [
+        "components/alibi-explain-server/pyproject.toml",
+        "components/alibi-detect-server/pyproject.toml",
+    ]
+
     opts = getOpts(argv[1:])
     current_version = get_current_version()
     if opts.debug:
@@ -717,6 +751,7 @@ def main(argv):
         MAB_VALUES_YAML_FILE,
         MODEL_URI_UPDATES,
         RCLONE_FILES,
+        PYPROJECT_VERSION_FILES,
         opts.debug,
     )
 
