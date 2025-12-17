@@ -1,3 +1,7 @@
+---
+description: Pipeline Scalability Guide in Seldon Core 2.
+---
+
 # Pipeline Scalability Guide
 
 Core 2 supports full **horizontal scaling** for the **dataflow engine**, **model gateway**, and **pipeline gateway**. Each service automatically distributes pipelines or models across replicas using consistent hashing, so you don’t need to manually assign workloads.

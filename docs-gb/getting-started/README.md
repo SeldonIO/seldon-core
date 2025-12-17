@@ -1,3 +1,7 @@
+---
+description: Getting Started in Seldon Core 2.
+---
+
 # Getting Started
 
 {% hint style="info" %}

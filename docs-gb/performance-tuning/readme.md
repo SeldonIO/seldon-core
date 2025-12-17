@@ -1,3 +1,7 @@
+---
+description: Introduction in Seldon Core 2.
+---
+
 # Introduction
 
 In MLOps, system performance can be defined as how efficiently and effectively an ML model or application operates in a production environment. It is typically measured across several key dimensions, such as latency, throughput, scalability, and resource-efficiency. These factors are deeply connected: changes in configuration often result in tradeoffs, and should be carefully considered. Specifically, latency, throughput and resource usage can all impact each other, and the approach to optimizing system performance depends on the desired balance of these outcomes in order to ensure a positive end-user experience, while also minimising infrastructure costs.  

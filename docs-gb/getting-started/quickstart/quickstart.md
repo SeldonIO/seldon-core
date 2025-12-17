@@ -1,3 +1,6 @@
+---
+description: Learn how to deploy an AI application with Seldon Core 2.
+---
 # Quickstart: Deploy an AI Application with Seldon Core 2
 
 In this notebook, we will demonstrate how to deploy a production-ready AI application with Seldon Core 2. This application will have two components - an sklearn model and a preprocessor written in Python - leveraging Core 2 **Pipelines** to connect the two. Once deployed, users will have an endpoint available to call the deployed application. The inference logic can be visualized with the following diagram:

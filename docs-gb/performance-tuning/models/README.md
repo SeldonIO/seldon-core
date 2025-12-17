@@ -1,3 +1,7 @@
+---
+description: Model Performance Tuning in Seldon Core 2.
+---
+
 # Model Performance Tuning
 
 This section covers various aspects of optimizing model performance in Seldon Core 2, from initial load testing to infrastructure setup and inference optimization. Each subsection provides detailed guidance on different aspects of model performance tuning:

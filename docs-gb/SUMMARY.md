@@ -1,3 +1,7 @@
+---
+description: Table of contents in Seldon Core 2.
+---
+
 # Table of contents
 
 ## About

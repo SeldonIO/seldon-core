@@ -1,3 +1,7 @@
+---
+description: Inference in Seldon Core 2.
+---
+
 # Inference
 
 When looking at optimizing the latency or throughput of deployed models or pipelines, it is important to consider different approaches to the execution of inference workloads. Below are some tips on different approaches that may be relevant depending on the requirements of a given use-case:

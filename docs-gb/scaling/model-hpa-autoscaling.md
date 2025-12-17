@@ -1,3 +1,7 @@
+---
+description: Configuring HPA manifests in Seldon Core 2.
+---
+
 
 ## Configuring HPA manifests
 

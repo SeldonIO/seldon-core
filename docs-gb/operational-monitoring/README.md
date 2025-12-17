@@ -1,3 +1,7 @@
+---
+description: Operational Monitoring in Seldon Core 2.
+---
+
 # Operational Monitoring
 
 Seldon Core 2 provides robust tools for tracking the performance and health of machine learning models in production.

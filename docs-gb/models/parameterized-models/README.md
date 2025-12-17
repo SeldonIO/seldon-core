@@ -1,3 +1,7 @@
+---
+description: Parameterized Models in Seldon Core 2.
+---
+
 # Parameterized Models
 
 The Model specification allows parameters to be passed to the loaded model to allow customization. For example:

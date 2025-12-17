@@ -1,3 +1,7 @@
+---
+description: Infrastructure Setup in Seldon Core 2.
+---
+
 ## Infrastructure Setup
 
 ### CPUs vs. GPUs

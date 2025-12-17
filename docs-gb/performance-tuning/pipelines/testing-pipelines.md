@@ -1,3 +1,7 @@
+---
+description: Pipelines in Seldon Core 2.
+---
+
 # Pipelines
 
 In order to understand how pipelines will behave in a production setting, it is first helpful to isolate testing to the individual models within the pipeline. By obtaining the maximum throughput for each model given the infrastructure each are running on (e.g. GPU specs) and their configurations (e.g. how many workers are used), users will gain a better understanding of which models might be limiting to the performance of the pipeline around it. Given the performance profiles of models within a pipeline, it is recommended to optimize for the desired performance of those individual models first (see [here](../models/README.md)), ensuring they have the right number of replicas and are running on the right infrastructure in order to achieve the right level of performance. Similarly, once a model within a pipeline is identified as a bottleneck, refer back to the [models](../models/README.md) section to optimize the performance of that model.

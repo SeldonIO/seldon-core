@@ -1,3 +1,7 @@
+---
+description: Service Meshes in Seldon Core 2.
+---
+
 # Service Meshes
 
 The Seldon models and pipelines are exposed via a single service endpoint in the install\

@@ -1,3 +1,7 @@
+---
+description: Pipeline examples in Seldon Core 2.
+---
+
 # Pipeline examples
 
 These examples illustrates a series of Pipelines showing of different ways of combining flows of\

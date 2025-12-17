@@ -1,3 +1,7 @@
+---
+description: Open Inference Protocol in Seldon Core 2.
+---
+
 # Open Inference Protocol
 
 This page describes a predict/inference API independent of any\

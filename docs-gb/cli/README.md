@@ -1,3 +1,7 @@
+---
+description: CLI in Seldon Core 2.
+---
+
 # CLI
 
 Seldon provides a CLI to allow easy management and testing of Model, Experiment, and Pipeline resources.

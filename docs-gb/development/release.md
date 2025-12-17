@@ -1,3 +1,7 @@
+---
+description: Release process in Seldon Core 2.
+---
+
 # Release
 
 This document summarizes the release process for Seldon Core 2.\

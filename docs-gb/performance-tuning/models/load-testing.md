@@ -1,3 +1,7 @@
+---
+description: Determining the Load Saturation point in Seldon Core 2.
+---
+
 
 Before looking to make changes to improve latency or throughput of your models, it is important to undergo load testing to understand the existing performance characteristics of your model(s) when deployed onto the chosen inference server (MLServer or Triton). The goal of load testing should be to understand the performance behavior of deployed models in saturated (i.e at the maximum throughput a model replica can handle) and non-saturated regimes, then compare it with expected latency objectives.
 

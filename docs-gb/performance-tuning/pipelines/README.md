@@ -1,3 +1,7 @@
+---
+description: Pipeline Performance Tuning in Seldon Core 2.
+---
+
 # Pipeline Performance Tuning
 
 This section covers various aspects of optimizing pipeline performance in Seldon Core 2, from testing methodologies to Core 2 configuration. Each subsection provides detailed guidance on different aspects of pipeline performance tuning:

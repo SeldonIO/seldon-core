@@ -1,3 +1,7 @@
+---
+description: Pipeline to pipeline examples in Seldon Core 2.
+---
+
 # Pipeline to pipeline examples
 
 This examples illustrates a series of Pipelines that are joined together.

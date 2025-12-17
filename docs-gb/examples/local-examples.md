@@ -1,3 +1,7 @@
+---
+description: Local examples in Seldon Core 2.
+---
+
 # Local examples
 
 ### SKLearn Model
