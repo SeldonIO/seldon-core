@@ -650,7 +650,7 @@ def main(argv):
             "testing/resources/iris_anchor_tabular_explainer_v2.yaml",
             "testing/resources/iris_anchor_tabular_explainer.yaml",
 
-            "notebooks/server_examples.ipynb", # Part of `test_notebooks`
+            "notebooks/server_examples.ipynb",
 
             "components/alibi-explain-server/Makefile",
             "components/alibi-explain-server/tests/test_anchor_tabular.py",
@@ -670,7 +670,7 @@ def main(argv):
 
             "examples/init_containers/custom_init_container.ipynb", # NOT TESTED as part of 1.19 release
             
-            "examples/feedback/feedback-metrics-server/README.ipynb", # NOT TESTED as part of 1.19 release
+            "examples/feedback/feedback-metrics-server/README.ipynb",
             
             "examples/feedback/metrics-server/README.ipynb",
             "examples/feedback/metrics-server/config/multiclass-model.yaml",
@@ -683,7 +683,7 @@ def main(argv):
             "examples/batch/kubeflow-pipelines-batch/README.ipynb", # NOT TESTED as part of 1.19 release
             "examples/batch/kubeflow-pipelines-batch/assets/seldon-batch-pipeline.py",  # NOT TESTED as part of 1.19 release
             
-            "examples/explainers/iris-explainer-poetry/iris-explainer.ipynb",
+            "examples/explainers/iris-explainer-poetry/iris-explainer.ipynb", # NOT TESTED as part of 1.19 release
             "examples/explainers/iris-explainer-poetry/iris-with-explainer.yaml",
             "examples/explainers/iris-explainer-poetry/iris.yaml",
             "examples/graph_examples/combiner-prepack-sep-pods.yaml",
