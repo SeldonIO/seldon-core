@@ -183,24 +183,6 @@ func LoadTemplateModelSteps(scenario *godog.ScenarioContext, w *World) {
 	scenario.Step(`^the model status message eventually should be "([^"]+)"$`, w.currentModel.AssertModelStatus)
 }
 
-func LoadCustomModelSteps(scenario *godog.ScenarioContext, w *World) {
-	scenario.Step(`^I deploy model spec with timeout "([^"]+)":$`, func(timeout string, spec *godog.DocString) error {
-		return withTimeoutCtx(timeout, func(ctx context.Context) error {
-			return w.currentModel.deployModelSpec(ctx, spec)
-		})
-	})
-	scenario.Step(`^the model "([^"]+)" should eventually become Ready with timeout "([^"]+)"$`, func(model, timeout string) error {
-		return withTimeoutCtx(timeout, func(ctx context.Context) error {
-			return w.currentModel.waitForModelNameReady(ctx, model)
-		})
-	})
-	scenario.Step(`^delete the model "([^"]+)" with timeout "([^"]+)"$`, func(model, timeout string) error {
-		return withTimeoutCtx(timeout, func(ctx context.Context) error {
-			return w.currentModel.deleteModel(ctx, model)
-		})
-	})
-}
-
 func (m *Model) deployModelSpec(ctx context.Context, spec *godog.DocString) error {
 	modelSpec := &mlopsv1alpha1.Model{}
 	if err := yaml.Unmarshal([]byte(spec.Content), &modelSpec); err != nil {
@@ -284,6 +266,7 @@ func (m *Model) IHaveAModel(model string) error {
 
 	return nil
 }
+
 func newModel(label map[string]string, namespace string, k8sClient versioned.Interface, log logrus.FieldLogger, watcherStorage k8sclient.WatcherStorage) *Model {
 	return &Model{label: label, model: &mlopsv1alpha1.Model{}, log: log, namespace: namespace, k8sClient: k8sClient, watcherStorage: watcherStorage}
 }

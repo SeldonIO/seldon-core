@@ -74,13 +74,13 @@ func LoadInferenceSteps(scenario *godog.ScenarioContext, w *World) {
 	})
 }
 
-func (i *inference) doHTTPModelInferenceRequest(ctx context.Context, modelName, body string) error {
+func (i *inference) doHTTPInferenceRequest(ctx context.Context, resourceName, headerName, body string) error {
 	url := fmt.Sprintf(
 		"%s://%s:%d/v2/models/%s/infer",
 		httpScheme(i.ssl),
 		i.host,
 		i.httpPort,
-		modelName,
+		resourceName,
 	)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(body))
@@ -90,7 +90,7 @@ func (i *inference) doHTTPModelInferenceRequest(ctx context.Context, modelName, 
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Host", "seldon-mesh.inference.seldon")
-	req.Header.Add("Seldon-model", modelName)
+	req.Header.Add("Seldon-model", headerName)
 
 	resp, err := i.http.Do(req)
 	if err != nil {
@@ -99,6 +99,14 @@ func (i *inference) doHTTPModelInferenceRequest(ctx context.Context, modelName, 
 
 	i.lastHTTPResponse = resp
 	return nil
+}
+
+func (i *inference) doHTTPExperimentInferenceRequest(ctx context.Context, experimentName, body string) error {
+	return i.doHTTPInferenceRequest(ctx, experimentName, fmt.Sprintf("%s.experiment", experimentName), body)
+}
+
+func (i *inference) doHTTPModelInferenceRequest(ctx context.Context, modelName, body string) error {
+	return i.doHTTPInferenceRequest(ctx, modelName, fmt.Sprintf("%s.model", modelName), body)
 }
 
 // Used from steps that pass an explicit payload (DocString)
