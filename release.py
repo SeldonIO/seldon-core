@@ -327,22 +327,51 @@ def update_models_version(
     fpath = os.path.realpath(fpath)
     if debug:
         print("processing [{}]".format(fpath))
+    prefixes = [
+        f"s|gs://seldon-models/v{current_seldon_core_version}/{model_name}|gs://seldon-models/v{seldon_core_version}/{model_name}|",
+        f"s|gcs/seldon-models/v{current_seldon_core_version}/{model_name}|gcs/seldon-models/v{seldon_core_version}/{model_name}|",
+    ]
+    errors = []
+    for replace in prefixes:
+        args = [
+            "sed",
+            "-i",
+            replace,
+            fpath,
+        ]
+        err, out = run_command(args, debug)
+        if err is not None:
+            errors.append(err)
+
+    if errors:
+        print(
+            f"error updating model uri references for {model_name} in {fpath}"
+        )
+        for err in errors:
+            print(err)
+    else:
+        print(
+            f"updated model uri references for {model_name} in {fpath}"
+        )
+
+
+def update_pyproject_version(
+    fpath, current_seldon_core_version, seldon_core_version, debug=False
+):
+    fpath = os.path.realpath(fpath)
+    if debug:
+        print("processing [{}]".format(fpath))
     args = [
         "sed",
         "-i",
-        f"s|gs://seldon-models/v{current_seldon_core_version}/{model_name}|gs://seldon-models/v{seldon_core_version}/{model_name}|",
+        rf's/version = "{current_seldon_core_version}"/version = "{seldon_core_version}"/',
         fpath,
     ]
     err, out = run_command(args, debug)
-
-    if err == None:
-        print(
-            f"updated model uri gs://seldon-models/v:{seldon_core_version}{model_name} in {fpath}"
-        )
+    if err is None:
+        print(f"updated version in {fpath}")
     else:
-        print(
-            f"error updating model uri gs://seldon-models/v:{seldon_core_version}{model_name} in {fpath}"
-        )
+        print(f"error updating version in {fpath}")
         print(err)
 
 
@@ -435,6 +464,7 @@ def update_dockerfile_label_version(seldon_core_version, debug=False):
         "servers/tfserving/Dockerfile.redhat",
         "components/alibi-detect-server/Dockerfile",
         "components/alibi-explain-server/Dockerfile",
+        "components/rclone-storage-initializer/Dockerfile"
     ]
     replaces = [
         f's/version=".*" \\\\/version="{seldon_core_version}" \\\\/',
@@ -485,6 +515,7 @@ def set_version(
     mab_yaml_file,
     model_uri_updates,
     rclone_update_files,
+    pyproject_version_files,
     debug=False,
 ):
     update_python_wrapper_fixed_versions(seldon_core_version, debug)
@@ -519,6 +550,14 @@ def set_version(
     #
     # Update version.py in python/seldon_core
     update_versions_py(seldon_core_version, debug)
+
+    for fpath in pyproject_version_files:
+        update_pyproject_version(
+            fpath,
+            current_seldon_core_version,
+            seldon_core_version,
+            debug,
+        )
 
     # update the helm chart files
     for chart_yaml_file_realpath in chart_yaml_file_realpaths:
@@ -594,7 +633,8 @@ def set_version(
 def main(argv):
     CHART_YAML_FILES = [
         "helm-charts/seldon-core-operator/Chart.yaml",
-        "helm-charts/seldon-core-analytics/Chart.yaml",
+        # TODO: `seldon-core-analytics` package is deprecated, we don't want to upgrade it anymore
+        # "helm-charts/seldon-core-analytics/Chart.yaml", 
     ]
     OPERATOR_VALUES_YAML_FILE = "helm-charts/seldon-core-operator/values.yaml"
     OPERATOR_KUSTOMIZE_CONFIGMAP = "operator/config/manager/configmap.yaml"
@@ -603,47 +643,78 @@ def main(argv):
 
     MODEL_URI_UPDATES = {
         "sklearn/iris": [
-            "servers/sklearnserver/samples/iris.yaml",
-            "servers/sklearnserver/samples/iris_custom.yaml",
-            "servers/sklearnserver/samples/iris_predict.yaml",
-            "testing/benchmarking/automated-benchmark/README.ipynb",
+            "servers/sklearnserver/samples/iris.yaml", # Part of `test_notebooks` & `test_sequential`
+
+            "testing/benchmarking/automated-benchmark/README.ipynb", # NOT TESTED as part of 1.19 release
             "testing/scripts/test_benchmark.py",
+            "testing/resources/iris_anchor_tabular_explainer_v2.yaml",
+            "testing/resources/iris_anchor_tabular_explainer.yaml",
+
             "notebooks/server_examples.ipynb",
-            "notebooks/resources/istio_shadow.yaml",
-            "examples/streaming/knative-eventing/README.ipynb",
-            "examples/streaming/knative-eventing/README.md",
+
+            "components/alibi-explain-server/Makefile",
+            "components/alibi-explain-server/tests/test_anchor_tabular.py",
+            "components/alibi-explain-server/tests/test_app.py",
+
+            "examples/streaming/knative-eventing/README.ipynb", # NOT TESTED as part of 1.19 release
             "examples/streaming/knative-eventing/assets/simple-iris-deployment.yaml",
-            "examples/security/ssl_requests/README.ipynb",
-            "examples/security/ssl_requests/README.md",
-            "examples/iter8/progressive_rollout/separate_sdeps/abtest.ipynb",
+            
+            "examples/security/ssl_requests/README.ipynb", # NOT TESTED as part of 1.19 release
+           
+            "examples/iter8/progressive_rollout/separate_sdeps/abtest.ipynb", # NOT TESTED as part of 1.19 release
             "examples/iter8/progressive_rollout/separate_sdeps/baseline.yaml",
-            "examples/iter8/progressive_rollout/single_sdep/abtest.ipynb",
+            
+            "examples/iter8/progressive_rollout/single_sdep/abtest.ipynb", # NOT TESTED as part of 1.19 release
             "examples/iter8/progressive_rollout/single_sdep/abtest.yaml",
             "examples/iter8/progressive_rollout/single_sdep/promote-v1.yaml",
-            "examples/init_containers/custom_init_container.ipynb",
+
+            "examples/init_containers/custom_init_container.ipynb", # NOT TESTED as part of 1.19 release
+            
             "examples/feedback/feedback-metrics-server/README.ipynb",
-            "examples/feedback/feedback-metrics-server/README.md",
+            
             "examples/feedback/metrics-server/README.ipynb",
-            "examples/batch/argo-workflows-batch/helm-charts/seldon-batch-workflow/values.yaml",
+            "examples/feedback/metrics-server/config/multiclass-model.yaml",
+
+            "examples/batch/argo-workflows-batch/helm-charts/seldon-batch-workflow/values.yaml", # seldon-batch-workflow chart NOT TESTED as part of 1.19 release
+            
+            "examples/batch/hdfs-argo-workflows/hdfs-batch.ipynb", # NOT TESTED as part of 1.19 release
             "examples/batch/hdfs-argo-workflows/deployment.yaml",
-            "examples/batch/hdfs-argo-workflows/hdfs-batch.ipynb",
-            "examples/batch/kubeflow-pipelines-batch/README.ipynb",
-            "examples/batch/kubeflow-pipelines-batch/README.md",
-            "examples/batch/kubeflow-pipelines-batch/assets/seldon-batch-pipeline.py",
-            "doc/source/workflow/quickstart.md",
-            "doc/source/servers/overview.md",
-            "doc/source/servers/sklearn.md",
-            "doc/source/graph/protocols.md",
-            "doc/source/rollouts/abtests.md",
+
+            "examples/batch/kubeflow-pipelines-batch/README.ipynb", # NOT TESTED as part of 1.19 release
+            "examples/batch/kubeflow-pipelines-batch/assets/seldon-batch-pipeline.py",  # NOT TESTED as part of 1.19 release
+            
+            "examples/explainers/iris-explainer-poetry/iris-explainer.ipynb", # NOT TESTED as part of 1.19 release
+            "examples/explainers/iris-explainer-poetry/iris-with-explainer.yaml",
+            "examples/explainers/iris-explainer-poetry/iris.yaml",
+            "examples/graph_examples/combiner-prepack-sep-pods.yaml",
+            "examples/graph_examples/combiner-prepack.yaml",
+            
             "README.md",
+
+            "docs-gb/deployments/abtests.md",
+            "docs-gb/deployments/protocols.md",
+            "docs-gb/notebooks/argo_workflows_hdfs_batch.md",
+            "docs-gb/notebooks/feedback_reward_custom_metrics.md",
+            "docs-gb/notebooks/iris_explainer_poetry.md",
+            "docs-gb/notebooks/iter8-separate.md",
+            "docs-gb/notebooks/iter8-single.md",
+            "docs-gb/notebooks/knative_eventing_streaming.md",
+            "docs-gb/notebooks/kubeflow_pipelines_batch.md",
+            "docs-gb/notebooks/protocol_examples.md",
+            "docs-gb/notebooks/vegeta_bench_argo_workflows.md",
+            "docs-gb/servers/overview.md",
+            "docs-gb/servers/sklearn.md",
         ],
         "sklearn/moviesentiment": [
-            "testing/resources/movies-text-explainer.yaml",
-            "notebooks/explainer_examples.ipynb",
+            "testing/resources/movies-text-explainer.yaml", 
+            "notebooks/explainer_examples.ipynb", # NOT TESTED as part of 1.19 release
             "notebooks/resources/moviesentiment_explainer.yaml",
         ],
-        "elasticnet_wine": [
+        "mlflow/elasticnet_wine": [
             "notebooks/server_examples.ipynb",
+            "notebooks/resources/elasticnet_wine_v2.yaml",
+            "servers/mlflowserver/samples/elasticnet_wine.yaml",
+            "testing/scripts/test_prepackaged_servers.py",
         ],
     }
 
@@ -651,7 +722,10 @@ def main(argv):
         "testing/resources/adserver-cifar10-od-rclone.yaml",
         "testing/resources/adserver-cifar10-od.yaml",
         "examples/feedback/metrics-server/README.ipynb",
-        "examples/feedback/feedback-metrics-server/README.md",
+        "examples/feedback/metrics-server/config/multiclass-deployment.yaml",
+        "docs-gb/notebooks/feedback_reward_custom_metrics.md",
+        "components/drift-detection/cifar10/cifar10_drift.ipynb",
+        "components/outlier-detection/cifar10/cifar10_outlier.ipynb"
     ]
 
     RCLONE_FILES = [
@@ -661,6 +735,13 @@ def main(argv):
 
     ECHO_MODEL_FILES = [
         "examples/models/metrics/metrics.ipynb",
+        "testing/resources/graph-echo.json",
+        "examples/models/metrics/echo-sdep.yaml"
+    ]
+
+    PYPROJECT_VERSION_FILES = [
+        "components/alibi-explain-server/pyproject.toml",
+        "components/alibi-detect-server/pyproject.toml",
     ]
 
     opts = getOpts(argv[1:])
@@ -679,6 +760,7 @@ def main(argv):
         MAB_VALUES_YAML_FILE,
         MODEL_URI_UPDATES,
         RCLONE_FILES,
+        PYPROJECT_VERSION_FILES,
         opts.debug,
     )
 
@@ -687,3 +769,4 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv)
+

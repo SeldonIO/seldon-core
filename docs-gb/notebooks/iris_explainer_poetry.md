@@ -86,7 +86,7 @@ spec:
     graph:
       name: classifier
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.15.0-dev/sklearn/iris
+      modelUri: gs://seldon-models/v1.19.0-dev/sklearn/iris
 ```
 
     Overwriting iris.yaml
@@ -440,7 +440,7 @@ spec:
     graph:
       name: classifier
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.11.0-dev/sklearn/iris
+      modelUri: gs://seldon-models/v1.19.0-dev/sklearn/iris
     explainer:
       type: AnchorTabular
       modelUri: s3:explainers/iris/
