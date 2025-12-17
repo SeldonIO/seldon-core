@@ -38,8 +38,11 @@ type inference struct {
 	log              logrus.FieldLogger
 }
 
+const inferenceRequestDelay = 200 * time.Millisecond // todo: this is to avoid 503s since the route at times isn't ready when the model is ready
+
 func LoadInferenceSteps(scenario *godog.ScenarioContext, w *World) {
 	scenario.Step(`^(?:I )send HTTP inference request with timeout "([^"]+)" to (model|pipeline) "([^"]+)" with payload:$`, func(timeout, kind, model string, payload *godog.DocString) error {
+		time.Sleep(inferenceRequestDelay)
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
 			switch kind {
 			case "model":
@@ -52,7 +55,7 @@ func LoadInferenceSteps(scenario *godog.ScenarioContext, w *World) {
 		})
 	})
 	scenario.Step(`^(?:I )send gRPC inference request with timeout "([^"]+)" to (model|pipeline) "([^"]+)" with payload:$`, func(timeout, kind, model string, payload *godog.DocString) error {
-		time.Sleep(200 * time.Millisecond) // todo: this is to avoid 503s since the route at times isn't ready when the model is ready
+		time.Sleep(inferenceRequestDelay)
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
 			switch kind {
 			case "model":
@@ -65,11 +68,13 @@ func LoadInferenceSteps(scenario *godog.ScenarioContext, w *World) {
 		})
 	})
 	scenario.Step(`^(?:I )send a valid gRPC inference request with timeout "([^"]+)"`, func(timeout string) error {
+		time.Sleep(inferenceRequestDelay)
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
 			return w.infer.sendGRPCModelInferenceRequestFromModel(ctx, w.currentModel)
 		})
 	})
 	scenario.Step(`^(?:I )send a valid HTTP inference request with timeout "([^"]+)"`, func(timeout string) error {
+		time.Sleep(inferenceRequestDelay)
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
 			return w.infer.sendHTTPModelInferenceRequestFromModel(ctx, w.currentModel)
 		})
