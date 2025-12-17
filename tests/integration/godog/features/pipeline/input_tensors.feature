@@ -1,8 +1,10 @@
-@PipelineDeployment @Functional @Pipelines @PipelineInputTensors
+@PipelineInputTensors @Functional @Pipelines @PipelineInputTensors
 Feature: Pipeline using direct input tensors
-  This pipeline directly routes pipeline input tensors INPUT0 and INPUT1 into separate models.
+  In order to build pipelines that dispatch inputs to multiple models
+  As a model user
+  I need a pipeline that routes individual input tensors directly to different model stages
 
-  Scenario: Deploy pipeline-inputs pipeline and wait for readiness
+  Scenario: Deploy a pipeline that routes individual input tensors directly to different model stages, run inference, and verify the output
     Given I deploy model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
@@ -56,6 +58,65 @@ Feature: Pipeline using direct input tensors
     Then the pipeline "pipeline-inputs-tw2x" should eventually become Ready with timeout "20s"
     When I send gRPC inference request with timeout "20s" to pipeline "pipeline-inputs-tw2x" with payload:
     """
-    {"model_name":"pipeline","inputs":[{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}
+    {
+      "model_name": "pipeline",
+      "inputs": [
+        {
+          "name": "INPUT0",
+          "contents": {
+            "fp32_contents": [
+              1,
+              2,
+              3,
+              4
+            ]
+          },
+          "datatype": "FP32",
+          "shape": [
+            4
+          ]
+        },
+        {
+          "name": "INPUT1",
+          "contents": {
+            "fp32_contents": [
+              1,
+              2,
+              3,
+              4
+            ]
+          },
+          "datatype": "FP32",
+          "shape": [
+            4
+          ]
+        }
+      ]
+    }
+
     """
-    And expect gRPC response error to contain "Unimplemented"
+    And expect gRPC response body to contain JSON:
+    """
+    {
+      "outputs": [
+        {
+          "name": "OUTPUT",
+          "datatype": "FP32",
+          "shape": [
+            4
+          ]
+        },
+        {
+          "name": "OUTPUT",
+          "datatype": "FP32",
+          "shape": [
+            4
+          ]
+        }
+      ],
+      "raw_output_contents": [
+        "AAAgQQAAoEEAAPBBAAAgQg==",
+        "AAAwQQAAQEEAAFBBAABgQQ=="
+      ]
+    }
+    """

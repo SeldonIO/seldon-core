@@ -1,8 +1,10 @@
-@ModelChaining @Functional @Pipelines @0
+@ModelModelChaining @Functional @Pipelines
 Feature: Pipeline model chaining
-  This pipeline chains tfsimple1 into tfsimple2 using tensorMap.
+  In order to compose models that rely on each other's outputs
+  As a model user
+  I need a pipeline that maps specific output tensors from an upstream model into the inputs of a downstream model
 
-  Scenario: Deploy tfsimples pipeline and wait for readiness
+  Scenario: Deploy a chaining pipeline, run inference, and verify the output
     Given I deploy model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
@@ -57,6 +59,93 @@ Feature: Pipeline model chaining
     And expect http response status code "200"
     Then I send gRPC inference request with timeout "20s" to pipeline "model-chain-tfsimples-iuw3" with payload:
     """
-    {"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}
+    {
+      "model_name": "simple",
+      "inputs": [
+        {
+          "name": "INPUT0",
+          "contents": {
+            "int_contents": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16
+            ]
+          },
+          "datatype": "INT32",
+          "shape": [
+            1,
+            16
+          ]
+        },
+        {
+          "name": "INPUT1",
+          "contents": {
+            "int_contents": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16
+            ]
+          },
+          "datatype": "INT32",
+          "shape": [
+            1,
+            16
+          ]
+        }
+      ]
+    }
+
     """
-    And expect gRPC response error to contain "Unimplemented"
+    And expect gRPC response body to contain JSON:
+    """
+    {
+      "outputs": [
+        {
+          "name": "OUTPUT0",
+          "datatype": "INT32",
+          "shape": [
+            1,
+            16
+          ]
+        },
+        {
+          "name": "OUTPUT1",
+          "datatype": "INT32",
+          "shape": [
+            1,
+            16
+          ]
+        }
+      ],
+      "raw_output_contents": [
+        "AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==",
+        "AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="
+      ]
+    }
+    """

@@ -1,8 +1,10 @@
-@PipelineDeployment @Functional @Pipelines @TriggerJoins
+@PipelineTriggerJoins @Functional @Pipelines @TriggerJoins
 Feature: Pipeline using trigger joins
-  This pipeline uses trigger joins to decide whether mul10 or add10 should run.
+  In order to control which model stages execute during inference
+  As a model user
+  I need a pipeline that evaluates trigger conditions and runs model stages when their associated triggers are satisfied
 
-  Scenario: Deploy trigger-joins pipeline and wait for readiness
+  Scenario: Deploy a trigger pipeline, run inference, and verify the output
     Given I deploy model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
@@ -56,8 +58,55 @@ Feature: Pipeline using trigger joins
         stepsJoin: any
     """
     Then the pipeline "trigger-joins-99lo" should eventually become Ready with timeout "20s"
-    When I send gRPC inference request with timeout "20s" to pipeline "tfsimple-conditional-nbsl" with payload:
+    When I send gRPC inference request with timeout "20s" to pipeline "trigger-joins-99lo" with payload:
     """
-    {"model_name":"pipeline","inputs":[{"name":"ok1","contents":{"fp32_contents":[1]},"datatype":"FP32","shape":[1]},{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}
+    {
+      "model_name": "pipeline",
+      "inputs": [
+        {
+          "name": "ok1",
+          "contents": {
+            "fp32_contents": [
+              1
+            ]
+          },
+          "datatype": "FP32",
+          "shape": [
+            1
+          ]
+        },
+        {
+          "name": "INPUT",
+          "contents": {
+            "fp32_contents": [
+              1,
+              2,
+              3,
+              4
+            ]
+          },
+          "datatype": "FP32",
+          "shape": [
+            4
+          ]
+        }
+      ]
+    }
     """
-    And expect gRPC response error to contain "Unimplemented"
+    And expect gRPC response body to contain JSON:
+    """
+    {
+      "outputs": [
+        {
+          "name": "OUTPUT",
+          "datatype": "FP32",
+          "shape": [
+            4
+          ]
+        }
+      ],
+      "raw_output_contents": [
+        "AAAgQQAAoEEAAPBBAAAgQg=="
+      ]
+    }
+    """

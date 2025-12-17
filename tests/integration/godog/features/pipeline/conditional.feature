@@ -1,8 +1,10 @@
-@PipelineDeployment @Functional @Pipelines @Conditional
+@PipelineConditional @Functional @Pipelines @Conditional
 Feature: Conditional pipeline with branching models
-  This pipeline uses a conditional model to route data to either add10 or mul10.
+  In order to support decision-based inference
+  As a model user
+  I need a conditional pipeline that directs inputs to one of multiple models based on a condition
 
-  Scenario: Deploy tfsimple-conditional pipeline and wait for readiness
+  Scenario: Deploy a conditional pipeline, run inference, and verify the output
     Given I deploy model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
@@ -73,4 +75,7 @@ Feature: Conditional pipeline with branching models
     """
     {"model_name":"conditional-nbsl","inputs":[{"name":"CHOICE","contents":{"int_contents":[0]},"datatype":"INT32","shape":[1]},{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}
     """
-    And expect gRPC response error to contain "Unimplemented"
+    And expect gRPC response body to contain JSON:
+    """
+    {"outputs":[{"name":"OUTPUT","datatype":"FP32","shape":[4]}],"raw_output_contents":["AAAgQQAAoEEAAPBBAAAgQg=="]}
+    """
