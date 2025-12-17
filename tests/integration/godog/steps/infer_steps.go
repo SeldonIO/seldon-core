@@ -52,12 +52,13 @@ func LoadInferenceSteps(scenario *godog.ScenarioContext, w *World) {
 		})
 	})
 	scenario.Step(`^(?:I )send gRPC inference request with timeout "([^"]+)" to (model|pipeline) "([^"]+)" with payload:$`, func(timeout, kind, model string, payload *godog.DocString) error {
+		time.Sleep(200 * time.Millisecond) // todo: this is to avoid 503s since the route at times isn't ready when the model is ready
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
 			switch kind {
 			case "model":
-				return w.infer.doGRPCModelInferenceRequest(ctx, model, payload.Content)
+				return w.infer.doGRPCInferenceRequest(ctx, model, payload.Content)
 			case "pipeline":
-				return w.infer.doGRPCModelInferenceRequest(ctx, model, payload.Content)
+				return w.infer.doGRPCInferenceRequest(ctx, fmt.Sprintf("%s.pipeline", model), payload.Content)
 			default:
 				return fmt.Errorf("unknown target type: %s", kind)
 			}
@@ -150,7 +151,7 @@ func httpScheme(useSSL bool) string {
 }
 
 func (i *inference) sendGRPCModelInferenceRequest(ctx context.Context, model string, payload *godog.DocString) error {
-	return i.doGRPCModelInferenceRequest(ctx, model, payload.Content)
+	return i.doGRPCInferenceRequest(ctx, model, payload.Content)
 }
 
 func (i *inference) sendGRPCModelInferenceRequestFromModel(ctx context.Context, m *Model) error {
@@ -158,21 +159,21 @@ func (i *inference) sendGRPCModelInferenceRequestFromModel(ctx context.Context, 
 	if !ok {
 		return fmt.Errorf("could not find test model %s", m.model.Name)
 	}
-	return i.doGRPCModelInferenceRequest(ctx, m.modelName, testModel.ValidGRPCInferenceRequest)
+	return i.doGRPCInferenceRequest(ctx, m.modelName, testModel.ValidGRPCInferenceRequest)
 }
 
-func (i *inference) doGRPCModelInferenceRequest(
+func (i *inference) doGRPCInferenceRequest(
 	ctx context.Context,
-	model string,
+	resourceName string,
 	payload string,
 ) error {
 	var req v2_dataplane.ModelInferRequest
 	if err := protojson.Unmarshal([]byte(payload), &req); err != nil {
 		return fmt.Errorf("could not unmarshal gRPC json payload: %w", err)
 	}
-	req.ModelName = model
+	req.ModelName = resourceName
 
-	md := metadata.Pairs("seldon-model", model)
+	md := metadata.Pairs("seldon-model", resourceName)
 	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	i.log.Debugf("sending gRPC model inference %+v", &req)
