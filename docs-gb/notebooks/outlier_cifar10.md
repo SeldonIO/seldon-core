@@ -1,18 +1,18 @@
-# Cifar10 Outlier Detection
-![demo](../images/demo.png)
+# Outlier Detection on CIFAR10
+
+![demo](../.gitbook/assets/demo.png)
 
 In this example we will deploy an image classification model along with an outlier detector trained on the same dataset. For in depth details on creating an outlier detection model for your own dataset see the [alibi-detect project](https://github.com/SeldonIO/alibi-detect) and associated [documentation](https://docs.seldon.io/projects/alibi-detect/en/latest/). You can find details for this [CIFAR10 example in their documentation](https://docs.seldon.io/projects/alibi-detect/en/latest/examples/od_vae_cifar10.html) as well.
 
-
 Prequisites:
 
-  * [Knative eventing installed](https://knative.dev/docs/install/)
-    * Ensure the istio-ingressgateway is exposed as a loadbalancer (no auth in this demo)
-  * [Seldon Core installed](../install/installation.md) 
-    * Ensure you install for istio, e.g. for the helm chart `--set istio.enabled=true`
-    
-    Tested on GKE and Kind with Knative 0.18 and Istio 1.7.3
+* [Knative eventing installed](https://knative.dev/docs/install/)
+  * Ensure the istio-ingressgateway is exposed as a loadbalancer (no auth in this demo)
+*   [Seldon Core installed](../install/installation.md)
 
+    * Ensure you install for istio, e.g. for the helm chart `--set istio.enabled=true`
+
+    Tested on GKE and Kind with Knative 0.18 and Istio 1.7.3
 
 ```python
 !pip install -r requirements_notebook.txt
@@ -20,11 +20,9 @@ Prequisites:
 
 Ensure istio gateway installed
 
-
 ```python
 !kubectl apply -f ../../../notebooks/resources/seldon-gateway.yaml
 ```
-
 
 ```python
 !cat ../../../notebooks/resources/seldon-gateway.yaml
@@ -32,11 +30,9 @@ Ensure istio gateway installed
 
 ## Setup Resources
 
-
 ```python
 !kubectl create namespace cifar10
 ```
-
 
 ```python
 %%writefile broker.yaml
@@ -47,11 +43,9 @@ metadata:
  namespace: cifar10
 ```
 
-
 ```python
 !kubectl create -f broker.yaml
 ```
-
 
 ```python
 %%writefile event-display.yaml
@@ -89,13 +83,11 @@ spec:
     targetPort: 8080
 ```
 
-
 ```python
 !kubectl apply -f event-display.yaml
 ```
 
 Create the SeldonDeployment image classification model for Cifar10. We add in a `logger` for requests - the default destination is the namespace Knative Broker.
-
 
 ```python
 %%writefile cifar10.yaml
@@ -135,17 +127,13 @@ spec:
 
 ```
 
-
 ```python
 !kubectl apply -f cifar10.yaml
 ```
 
 Create the pretrained VAE Cifar10 Outlier Detector. We forward replies to the message-dumper we started.
 
-Here we configure `seldonio/alibi-detect-server` to use rclone for downloading the artifact. 
-If `RCLONE_ENABLED=true` environmental variable is set or any of the environmental variables contain `RCLONE_CONFIG` in their name then rclone
-will be used to download the artifacts. If `RCLONE_ENABLED=false` or no `RCLONE_CONFIG` variables are present then kfserving storage.py logic will be used to download the artifacts.
-
+Here we configure `seldonio/alibi-detect-server` to use rclone for downloading the artifact. If `RCLONE_ENABLED=true` environmental variable is set or any of the environmental variables contain `RCLONE_CONFIG` in their name then rclone will be used to download the artifacts. If `RCLONE_ENABLED=false` or no `RCLONE_CONFIG` variables are present then kfserving storage.py logic will be used to download the artifacts.
 
 ```python
 %%writefile cifar10od.yaml
@@ -197,13 +185,11 @@ spec:
             name: seldon-rclone-secret
 ```
 
-
 ```python
 !kubectl apply -f cifar10od.yaml
 ```
 
 Create a Knative trigger to forward logging events to our Outlier Detector.
-
 
 ```python
 %%writefile trigger.yaml
@@ -226,13 +212,11 @@ spec:
 
 ```
 
-
 ```python
 !kubectl apply -f trigger.yaml
 ```
 
 Get the IP address of the Istio Ingress Gateway. This assumes you have installed istio with a LoadBalancer.
-
 
 ```python
 CLUSTER_IPS = !(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
@@ -242,25 +226,21 @@ print(CLUSTER_IP)
 
 Optionally add an authorization token here if you need one.Acquiring this token will be dependent on your auth setup.
 
-
 ```python
 TOKEN = "Bearer <my token>"
 ```
 
 If you are using Kind or Minikube you will need to port-forward to the istio ingressgateway and uncomment the following
 
-
 ```python
 # CLUSTER_IP="localhost:8004"
 ```
-
 
 ```python
 SERVICE_HOSTNAMES = !(kubectl get ksvc -n cifar10 vae-outlier -o jsonpath='{.status.url}' | cut -d "/" -f 3)
 SERVICE_HOSTNAME_VAEOD = SERVICE_HOSTNAMES[0]
 print(SERVICE_HOSTNAME_VAEOD)
 ```
-
 
 ```python
 import json
@@ -347,7 +327,6 @@ def outlier(X):
 
 ## Normal Prediction
 
-
 ```python
 idx = 1
 X = X_train[idx : idx + 1]
@@ -357,13 +336,11 @@ predict(X)
 
 Lets check the message dumper for an outlier detection prediction. This should be false.
 
-
 ```python
 !kubectl logs -n cifar10 $(kubectl get pod -n cifar10 -l app=hello-display -o jsonpath='{.items[0].metadata.name}')
 ```
 
 ## Outlier Prediction
-
 
 ```python
 np.random.seed(0)
@@ -378,7 +355,6 @@ X_mask, mask = apply_mask(
 )
 ```
 
-
 ```python
 show(X_mask)
 predict(X_mask)
@@ -386,13 +362,11 @@ predict(X_mask)
 
 Now lets check the message dumper for a new message. This should show we have found an outlier.
 
-
 ```python
 !kubectl logs -n cifar10 $(kubectl get pod -n cifar10 -l app=hello-display -o jsonpath='{.items[0].metadata.name}')
 ```
 
 We will now call our outlier detector directly and ask for the feature scores to gain more information about why it predicted this instance was an outlier.
-
 
 ```python
 od_preds = outlier(X_mask)
@@ -400,19 +374,15 @@ od_preds = outlier(X_mask)
 
 We now plot those feature scores returned by the outlier detector along with our original image.
 
-
 ```python
 plot_feature_outlier_image(od_preds, X_mask, X_recon=None)
 ```
 
 ## Tear Down
 
-
 ```python
 !kubectl delete ns cifar10
 ```
 
-
 ```python
-
 ```

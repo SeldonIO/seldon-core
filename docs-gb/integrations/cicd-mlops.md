@@ -1,4 +1,4 @@
-# Scaling Seldon Core Deployments with CI / CD
+# CI/CD MLOps at Scale
 
 When integrating Seldon Core into your enterprise stack, it is common practice to introduce Continuous Integration and Continuous Delivery methodology into the deployment workflows.
 
@@ -8,7 +8,7 @@ Seldon Core has been built with this in mind, and is currently used in enterpris
 
 This page contains a high level overview on the concepts that Seldon Core uses to enable continuous deployment of machine learning through the concept of "MLOps".
 
-![](../images/cicd-seldon.jpg)
+![](../.gitbook/assets/cicd-seldon.jpg)
 
 ## Hands on Examples
 

@@ -1,22 +1,21 @@
-# Model and Deployment Metadata
+# Model Metadata
 
-![metadata](../images//metadata.svg)
-
+![metadata](../.gitbook/assets/metadata.svg)
 
 ## Examples
 
 ### Basic Examples
-- [Simple Metadata Example](../../examples/metadata.html)
-- [Complex Graphs Metadata Example](../../examples/graph-metadata.html)
-- [Metadata GRPC API example](../../examples/metadata_grpc.html)
-- [Metadata Schema and Validation](../../examples/metadata_schema.html)
+
+* [Simple Metadata Example](../../examples/metadata.html)
+* [Complex Graphs Metadata Example](../../examples/graph-metadata.html)
+* [Metadata GRPC API example](../../examples/metadata_grpc.html)
+* [Metadata Schema and Validation](../../examples/metadata_schema.html)
 
 ### Metadata integrations with Frameworks
 
-- [SKLearn Server example with MinIO](../../examples/minio-sklearn.html)
-- [Deploying models trained with Pachyderm](../../examples/pachyderm-simple.html)
-- [Deploying models trained with DVC](../../examples/dvc.html)
-
+* [SKLearn Server example with MinIO](../../examples/minio-sklearn.html)
+* [Deploying models trained with Pachyderm](../../examples/pachyderm-simple.html)
+* [Deploying models trained with DVC](../../examples/dvc.html)
 
 ## Model Metadata
 
@@ -24,9 +23,9 @@ With Seldon you can easily add metadata to your models.
 
 ### Prepackaged model servers
 
-To add metadata to your prepackaged model servers simply add a file named `metadata.yaml`
-to the S3 bucket with your model:
-```YAML
+To add metadata to your prepackaged model servers simply add a file named `metadata.yaml` to the S3 bucket with your model:
+
+```yaml
 name: my-model
 versions: [my-model/v1]
 platform: platform-name
@@ -70,14 +69,13 @@ class Model:
         return meta
 ```
 
-See [Python wrapper](../../python/python_component.html#incubating-features) documentation for more details and
-notebook [Basic Examples for Model with Metadata](../../examples/metadata.html).
+See [Python wrapper](../../python/python_component.html#incubating-features) documentation for more details and notebook [Basic Examples for Model with Metadata](../../examples/metadata.html).
 
 ### Overwrite via environmental variable
 
 You can also always specify `MODEL_METADATA` environmental variable which takes ultimate priority.
 
-```YAML
+```yaml
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
@@ -116,15 +114,14 @@ spec:
     replicas: 1
 ```
 
-
 ## Deployment Metadata
-Model metadata allow you to specify metadata for each of the components (nodes) in your graph.
-New orchestrator engine will probe all nodes for their metadata and derive global `inputs` and `outputs` of your graph.
-It will then expose them together with all nodes' metadata at a single endpoint `/api/v1.0/metadata/` of your deployment.
+
+Model metadata allow you to specify metadata for each of the components (nodes) in your graph. New orchestrator engine will probe all nodes for their metadata and derive global `inputs` and `outputs` of your graph. It will then expose them together with all nodes' metadata at a single endpoint `/api/v1.0/metadata/` of your deployment.
 
 ![graph-metadata](../images/graph-metadata.svg)
 
 Example response:
+
 ```json
 {
     "name": "example",
@@ -165,12 +162,12 @@ Example response:
 
 See example [notebook](../../examples/graph-metadata.html) for more details.
 
-
 ## Metadata endpoint
 
 Model metadata can be obtained through GET request at `/api/v1.0/metadata/{MODEL_NAME}` endpoint of your deployment.
 
 Example response:
+
 ```json
 {
   "name": "my-model",
@@ -182,12 +179,12 @@ Example response:
 }
 ```
 
-
 ## Deep dive: SeldonMessage and kfserving V2 metadata reference
 
 You can define inputs/outputs of your model metadata using one of two formats:
-- `v1` format that closely correlates to the current structure of `SeldonMessage`
-- `v2` format that is future-proof and fully compatible with [kfserving dataplane proposal](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata).
+
+* `v1` format that closely correlates to the current structure of `SeldonMessage`
+* `v2` format that is future-proof and fully compatible with [kfserving dataplane proposal](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata).
 
 Though most fields that you can specify on model metadata follows [kfserving dataplane proposal](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata) you can also specify extra one called `custom` that allows you define any custom metadata you may find useful. The `custom` field is meant to hold dict-like structure with both keys and values being `string`.
 
@@ -196,7 +193,8 @@ See also: [Metadata Schema and Validation](../../examples/metadata_schema.html) 
 ### SeldonMessage metadata
 
 #### ndarray input/output
-```YAML
+
+```yaml
 name: my-model-name
 versions: [ my-model-version-01 ]
 platform: seldon
@@ -215,14 +213,16 @@ custom:
 ```
 
 This metadata would mean that following two input is valid for this model:
-```JSON
+
+```json
 {"data": {"names": ["a", "b"], "ndarray": [[1, 2], [3, 4]]}}
 ```
 
 Note: similar format is valid for messagetype of `tensor` and `tftensor`.
 
 #### jsonData input/output
-```YAML
+
+```yaml
 name: my-model-name
 versions: [ my-model-version-01 ]
 platform: seldon
@@ -250,7 +250,8 @@ custom:
 ```
 
 Example model input:
-```JSON
+
+```json
 {"jsonData": {"my-names": ["a", "b", "c"], "my-data": [1.0, 4.2, 3.14]}}
 ```
 
@@ -259,7 +260,8 @@ The `schema` field is optional and can leaves user total freedom over its struct
 Note: as you can see you can mix inputs and outputs of different types!
 
 #### strData input/output
-```YAML
+
+```yaml
 name: my-model-name
 versions: [ my-model-version-01 ]
 platform: seldon
@@ -273,16 +275,16 @@ custom:
 ```
 
 Example model input:
-```JSON
+
+```json
 {"strData": "some test input"}
 ```
 
 #### custom input/output format
 
-You can also specify your custom `messagetype`. In this case there are no restrictions
-on keys that you define under the `schema` field. This may be useful for `raw` methods.
+You can also specify your custom `messagetype`. In this case there are no restrictions on keys that you define under the `schema` field. This may be useful for `raw` methods.
 
-```YAML
+```yaml
 name: my-model-name
 versions: [ my-model-version-01 ]
 platform: seldon
@@ -299,10 +301,10 @@ custom:
   extra: information
 ```
 
-
 ### V2 TensorMetadata
 
 You can easily define metadata for your models that is compatible with [kfserving V2 dataplane proposal](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md#model-metadata) specification.
+
 ```javascript
 $metadata_model_response =
 {
@@ -313,7 +315,9 @@ $metadata_model_response =
   "outputs" : [ $metadata_tensor, ... ]
 }
 ```
+
 with
+
 ```javascript
 $metadata_tensor =
 {
@@ -324,7 +328,8 @@ $metadata_tensor =
 ```
 
 Example definition
-```YAML
+
+```yaml
 name: my-model-name
 versions: [ my-model-version-01 ]
 platform: seldon

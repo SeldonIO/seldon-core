@@ -1,18 +1,18 @@
-# Batch Processing with Seldon Core
+# Batch Processing
 
 Seldon Core provides a command line component that allows for highly parallelizable batch processing with the horizontally scalable seldon core kubernetes model deployments.
 
 For stream processing with Seldon Core please see [Stream Processing with Knative Eventing](../streaming/knative_eventing.md).
 
-![](../images/batch-processor.jpg)
+![](../.gitbook/assets/batch-processor.jpg)
 
 ## Horizontally Scalable Workers and Replicas
 
-The parallelizable batch processor worker allows for high throughput as it is able to leverage the Seldon Core horizontal scaling replicas as well as autoscaling, and hence providing flexibility to the user to optimize their configuration as required. 
+The parallelizable batch processor worker allows for high throughput as it is able to leverage the Seldon Core horizontal scaling replicas as well as autoscaling, and hence providing flexibility to the user to optimize their configuration as required.
 
 The diagram below shows a standard workflow where data can be downloaded and then uploaded through an object store, and the Seldon model can be created and deleted when the job finishes successfully.
 
-![](../images/batch-workflow-manager-integration.jpg)
+![](../.gitbook/assets/batch-workflow-manager-integration.jpg)
 
 ## Integration with ETL & Workflow Managers
 
@@ -20,7 +20,7 @@ The Seldon Batch component has been built to be modular and flexible such that i
 
 This allows you to leverage Seldon on a large number of batch applications, including triggers that have to take place on a scheduled basis (e.g. once a day, once a month, etc), or jobs that can be triggered programmatically.
 
-![](../images/batch-workflow-managers.jpg)
+![](../.gitbook/assets/batch-workflow-managers.jpg)
 
 ## Hands on Examples
 
@@ -116,6 +116,7 @@ Options:
 ### Identifiers
 
 Each data point that is sent to the Seldon Core model contains the following identifiers in the request metadata:
+
 * Batch ID - A unique identifier which can be provided through CLI or is automatically generated
 * Batch Instance ID - A generated unique identifier for each datapoint processed
 * Batch Index - The local ordered descending index for the datapoint relative to the input file location
@@ -139,7 +140,7 @@ This allows the requests to be identified and matched against the initial reques
 
 ### Performance
 
-The implementation of the module is done leveraging Python's Threading system. 
+The implementation of the module is done leveraging Python's Threading system.
 
 Benchmarking was carried out using vanilla Python requests module to assess performance of Threading vs Twisted vs AsyncIO. The results showed better performance with Asyncio, however given that the logic in the worker is quite minimal (ie sending a request) and most of the time is waiting for the response, the implementation with Python's native threading was able to perform at speeds that were efficient enough to very easily scale to thousands of workers.
 
@@ -149,22 +150,23 @@ However currently the implementation uses the Seldon Client which does not lever
 
 When using the batch processor CLI you can specify a `--batch-size` parameter which can group multiple predictions into a single request. This allows you to take advantage of the higher performance this provides for some models, and reduce networking overhead. The response will be split back into multiple single prediction responses so that the output file looks identical to running the processor with a batch size of 1.
 
-Currently we only support micro batching for `ndarray` and `tensor` payload types, as well as for `raw` data type of inputs.
-For `raw` inputs each row must contain a single inference request instance when using micro batching.
-
+Currently we only support micro batching for `ndarray` and `tensor` payload types, as well as for `raw` data type of inputs. For `raw` inputs each row must contain a single inference request instance when using micro batching.
 
 ### Input file formats
 
 #### Data type: data
 
 Default data type is `data` with `ndarray` payload type. The `input.data` file can look for exampleas following
+
 ```yaml
 [[1, 2, 3]]
 [[4, 5, 6]]
 [[7, 8, 9]]
 [[1, 3, 6]]
 ```
+
 Each row in input file represents a single inference request instance. These would be sent to model as
+
 ```yaml
 {"data": {"ndarray": [[1, 2, 3]]}, "meta": {"tags": {"batch_index": 0, "batch_id": ..., "batch_instance_id": ...}}}
 {"data": {"ndarray": [[4, 5, 6]]}, "meta": {"tags": {"batch_index": 1, "batch_id": ..., "batch_instance_id": ...}}}
@@ -173,6 +175,7 @@ Each row in input file represents a single inference request instance. These wou
 ```
 
 Choosing `tensor` payload type would effectively result in data being sent to model as
+
 ```yaml
 {"data": {"tensor": {"shape": [1, 3], "values": [1, 2, 3]}}, "meta": ...}
 {"data": {"tensor": {"shape": [1, 3], "values": [4, 5, 6]}}, "meta": ...}
@@ -180,17 +183,16 @@ Choosing `tensor` payload type would effectively result in data being sent to mo
 {"data": {"tensor": {"shape": [1, 3], "values": [1, 3, 6]}}, "meta": ...}
 ```
 
-
 #### Data type: raw
 
-If data type is specified as `raw` then each row in the input file will be sent to model as it is.
-In this situation the payload type setting is ignored.
+If data type is specified as `raw` then each row in the input file will be sent to model as it is. In this situation the payload type setting is ignored.
 
 When not using micro batching each row will be understood as independent SeldonMessage and send to model as it is, including the `meta.tags` information.
 
 If micro batching is used then each "raw" input must represent `ndarray` or `tensor` payload type and contain only a single inference request. In this situation user-provided tags are not sent to the model. They will be however merged into responses and written into the output file.
 
 Example raw `input.data` may look like this for example
+
 ```yaml
 {"data": {"names": ["a", "b", "c"], "ndarray": [[1, 2, 3]]}, "meta": {"tags": {"customer-id": 0}}}
 {"data": {"names": ["a", "b", "c"], "ndarray": [[4, 5, 6]]}, "meta": {"tags": {"customer-id": 1}}}

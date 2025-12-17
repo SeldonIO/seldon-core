@@ -1,16 +1,17 @@
-# Batch processing with Kubeflow Pipelines
+# Batch Processing with Kubeflow Pipelines
+
 In this notebook we will dive into how you can run batch processing with Kubeflow Pipelines and Seldon Core.
 
 Dependencies:
+
 * Seldon core installed as per the docs with [Istio Ingress](../install/installation.md#install-seldon-core-with-helm)
 * Kubeflow Pipelines installed (installation instructions in this notebook)
 
-![kubeflow-pipeline](../images/kubeflow-pipeline.jpg)
+![kubeflow-pipeline](../.gitbook/assets/kubeflow-pipeline.jpg)
 
 ### Kubeflow Pipelines Setup
 
 Setup the pipeline in your current cluster:
-
 
 ```bash
 %%bash
@@ -21,7 +22,6 @@ kubectl apply -k github.com/kubeflow/pipelines/manifests/kustomize/env/dev?ref=$
 ```
 
 We also install the Python Library so we can create our pipeline:
-
 
 ```python
 pip install kfp==0.5.1
@@ -35,7 +35,6 @@ This batch dataset will be pushed to a minio instance so it can be downloaded fr
 
 #### Install Minio
 
-
 ```bash
 %%bash 
 helm install minio stable/minio \
@@ -47,7 +46,8 @@ helm install minio stable/minio \
 #### Forward the Minio port so you can access it
 
 You can do this by runnning the following command in your terminal:
-```
+
+````
 kubectl port-forward svc/minio 9000:9000
     ```
     
@@ -56,12 +56,11 @@ kubectl port-forward svc/minio 9000:9000
 
 ```python
 !mc config host add minio-local http://localhost:9000 minioadmin minioadmin
-```
+````
 
 #### Create some input for our model
 
 We will create a file that will contain the inputs that will be sent to our model
-
 
 ```python
 with open("assets/input-data.txt", "w") as f:
@@ -71,27 +70,26 @@ with open("assets/input-data.txt", "w") as f:
 
 Check the contents of the file
 
-
 ```python
 !wc -l assets/input-data.txt
 !head assets/input-data.txt
 ```
 
-    10000 assets/input-data.txt
-    [[1, 2, 3, 4]]
-    [[1, 2, 3, 4]]
-    [[1, 2, 3, 4]]
-    [[1, 2, 3, 4]]
-    [[1, 2, 3, 4]]
-    [[1, 2, 3, 4]]
-    [[1, 2, 3, 4]]
-    [[1, 2, 3, 4]]
-    [[1, 2, 3, 4]]
-    [[1, 2, 3, 4]]
-
+```
+10000 assets/input-data.txt
+[[1, 2, 3, 4]]
+[[1, 2, 3, 4]]
+[[1, 2, 3, 4]]
+[[1, 2, 3, 4]]
+[[1, 2, 3, 4]]
+[[1, 2, 3, 4]]
+[[1, 2, 3, 4]]
+[[1, 2, 3, 4]]
+[[1, 2, 3, 4]]
+[[1, 2, 3, 4]]
+```
 
 #### Upload the file to our minio
-
 
 ```python
 !mc mb minio-local/data
@@ -104,13 +102,11 @@ We are now able to create a kubeflow pipeline that will allow us to enter the ba
 
 We will also be able to add extra steps that will download the data from a Minio client.
 
-
 ```python
 mkdir -p assets/
 ```
 
 We use the pipeline syntax to create the kubeflow pipeline, as outlined below:
-
 
 ```python
 %%writefile assets/seldon-batch-pipeline.py
@@ -228,41 +224,43 @@ if __name__ == '__main__':
 
 ```
 
-    Overwriting assets/seldon-batch-pipeline.py
+```
+Overwriting assets/seldon-batch-pipeline.py
+```
 
+### Trigger the creation
 
-### Trigger the creation 
 We will run the python file which triggers the creation of the pipeline that we can the upload on the UI:
-
 
 ```python
 !python assets/seldon-batch-pipeline.py
 ```
 
-    /home/alejandro/miniconda3/lib/python3.7/site-packages/kfp/components/_data_passing.py:168: UserWarning: Missing type name was inferred as "Integer" based on the value "3".
-      warnings.warn('Missing type name was inferred as "{}" based on the value "{}".'.format(type_name, str(value)))
-    /home/alejandro/miniconda3/lib/python3.7/site-packages/kfp/components/_data_passing.py:168: UserWarning: Missing type name was inferred as "Integer" based on the value "10".
-      warnings.warn('Missing type name was inferred as "{}" based on the value "{}".'.format(type_name, str(value)))
-    /home/alejandro/miniconda3/lib/python3.7/site-packages/kfp/components/_data_passing.py:168: UserWarning: Missing type name was inferred as "Integer" based on the value "100".
-      warnings.warn('Missing type name was inferred as "{}" based on the value "{}".'.format(type_name, str(value)))
-
+```
+/home/alejandro/miniconda3/lib/python3.7/site-packages/kfp/components/_data_passing.py:168: UserWarning: Missing type name was inferred as "Integer" based on the value "3".
+  warnings.warn('Missing type name was inferred as "{}" based on the value "{}".'.format(type_name, str(value)))
+/home/alejandro/miniconda3/lib/python3.7/site-packages/kfp/components/_data_passing.py:168: UserWarning: Missing type name was inferred as "Integer" based on the value "10".
+  warnings.warn('Missing type name was inferred as "{}" based on the value "{}".'.format(type_name, str(value)))
+/home/alejandro/miniconda3/lib/python3.7/site-packages/kfp/components/_data_passing.py:168: UserWarning: Missing type name was inferred as "Integer" based on the value "100".
+  warnings.warn('Missing type name was inferred as "{}" based on the value "{}".'.format(type_name, str(value)))
+```
 
 Check the pipeline has been created:
-
 
 ```python
 !ls assets/
 ```
 
-    input-data.txt		  seldon-batch-pipeline.py.tar.gz
-    kubeflow-pipeline.jpg	  seldon-kubeflow-batch.gif
-    seldon-batch-pipeline.py
-
+```
+input-data.txt		  seldon-batch-pipeline.py.tar.gz
+kubeflow-pipeline.jpg	  seldon-kubeflow-batch.gif
+seldon-batch-pipeline.py
+```
 
 ### Open the Kubeflow Pipelines UI
 
 We can now open the UI by port forwarding the UI with the following command:
-    
+
 ```
 kubectl port-forward svc/ml-pipeline-ui -n kubeflow 8000:80
 ```
@@ -271,9 +269,7 @@ And we can open it locally in our browser via [http://localhost:8000](http://loc
 
 Now we can follow the standard steps to create and deploy the kubeflow pipline
 
-![seldon-kubeflow-batch](../images/seldon-kubeflow-batch.gif)
-
+![seldon-kubeflow-batch](../.gitbook/assets/seldon-kubeflow-batch.gif)
 
 ```python
-
 ```

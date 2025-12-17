@@ -1,31 +1,28 @@
-# OpenVINO example with Squeezenet Model
+# OpenVINO ImageNet
 
 This notebook illustrates how you can serve [OpenVINO](https://software.intel.com/en-us/openvino-toolkit) optimized models for Imagenet with Seldon Core.
 
-![car](../images/car.png)
+![car](../.gitbook/assets/car.png)
 
-   
 To run all of the notebook successfully you will need to start it with
+
 ```
 jupyter notebook --NotebookApp.iopub_data_rate_limit=100000000
 ```
 
 ## Setup Seldon Core
 
-Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setup-cluster) with [Ambassador Ingress](../notebooks/seldon-core-setup.md#ambassador) and [Install Seldon Core](../notebooks/seldon-core-setup.md#Install-Seldon-Core). Instructions [also online](../notebooks/seldon-core-setup.md).
-
+Use the setup notebook to [Setup Cluster](seldon-core-setup.md#setup-cluster) with [Ambassador Ingress](seldon-core-setup.md#ambassador) and [Install Seldon Core](seldon-core-setup.md#Install-Seldon-Core). Instructions [also online](seldon-core-setup.md).
 
 ```python
 !kubectl create namespace seldon
 ```
-
 
 ```python
 !kubectl config set-context $(kubectl config current-context) --namespace=seldon
 ```
 
 ## Deploy Seldon Intel OpenVINO Graph
-
 
 ```python
 !helm install openvino-squeezenet ../../../helm-charts/seldon-openvino \
@@ -36,7 +33,6 @@ Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setu
     --set openvino.model.output=prob 
 ```
 
-
 ```python
 !helm template openvino-squeezenet ../../../helm-charts/seldon-openvino \
     --set openvino.model.src=gs://seldon-models/openvino/squeezenet \
@@ -46,14 +42,11 @@ Use the setup notebook to [Setup Cluster](../notebooks/seldon-core-setup.md#setu
     --set openvino.model.output=prob | pygmentize -l json
 ```
 
-
 ```python
 !kubectl rollout status deploy/$(kubectl get deploy -l seldon-deployment-id=openvino-model -o jsonpath='{.items[0].metadata.name}')
 ```
 
 ## Test
-
-
 
 ```python
 %matplotlib inline
@@ -102,12 +95,9 @@ with open("imagenet_classes.json") as f:
         assert cnames[ma] == "sports car, sport car"
 ```
 
-
 ```python
 !helm delete openvino-squeezenet
 ```
 
-
 ```python
-
 ```
