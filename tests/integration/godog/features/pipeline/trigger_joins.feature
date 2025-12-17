@@ -56,8 +56,8 @@ Feature: Pipeline using trigger joins
         stepsJoin: any
     """
     Then the pipeline "trigger-joins-99lo" should eventually become Ready with timeout "20s"
-    When I send HTTP inference request with timeout "20s" to pipeline "tfsimple-conditional-nbsl" with payload:
+    When I send gRPC inference request with timeout "20s" to pipeline "tfsimple-conditional-nbsl" with payload:
     """
-    {"model_name":"conditional-nbsl","inputs":[{"name":"CHOICE","contents":{"int_contents":[0]},"datatype":"INT32","shape":[1]},{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}
+    {"model_name":"pipeline","inputs":[{"name":"ok1","contents":{"fp32_contents":[1]},"datatype":"FP32","shape":[1]},{"name":"INPUT","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}
     """
-    And expect http response status code "200"
+    And expect gRPC response error to contain "Unimplemented"

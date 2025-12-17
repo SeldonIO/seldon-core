@@ -1,4 +1,4 @@
-@ModelChaining @Functional @Pipelines
+@ModelChaining @Functional @Pipelines @0
 Feature: Pipeline model chaining
   This pipeline chains tfsimple1 into tfsimple2 using tensorMap.
 
@@ -50,8 +50,13 @@ Feature: Pipeline model chaining
         - model-chain-tfsimple2-iuw3
     """
     Then the pipeline "model-chain-tfsimples-iuw3" should eventually become Ready with timeout "40s"
-    When I send HTTP inference request with timeout "20s" to pipeline "tfsimple-conditional-nbsl" with payload:
+    When I send HTTP inference request with timeout "20s" to pipeline "model-chain-tfsimples-iuw3" with payload:
     """
-    {"model_name":"conditional-nbsl","inputs":[{"name":"CHOICE","contents":{"int_contents":[0]},"datatype":"INT32","shape":[1]},{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}
+    {"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}
     """
     And expect http response status code "200"
+    Then I send gRPC inference request with timeout "20s" to pipeline "model-chain-tfsimples-iuw3" with payload:
+    """
+    {"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}
+    """
+    And expect gRPC response error to contain "Unimplemented"

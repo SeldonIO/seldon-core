@@ -1,4 +1,4 @@
-@PipelineDeployment @Functional @Pipelines @Conditional @0
+@PipelineDeployment @Functional @Pipelines @Conditional
 Feature: Conditional pipeline with branching models
   This pipeline uses a conditional model to route data to either add10 or mul10.
 

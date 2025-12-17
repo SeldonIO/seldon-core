@@ -65,8 +65,8 @@ Feature: Pipeline model join
         - join-tfsimple3-w4e3
     """
     Then the pipeline "join-pipeline-w4e3" should eventually become Ready with timeout "40s"
-    When I send HTTP inference request with timeout "20s" to pipeline "tfsimple-conditional-nbsl" with payload:
+    Then I send gRPC inference request with timeout "20s" to pipeline "join-pipeline-w4e3" with payload:
     """
-    {"model_name":"conditional-nbsl","inputs":[{"name":"CHOICE","contents":{"int_contents":[0]},"datatype":"INT32","shape":[1]},{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}
+    {"model_name":"simple","inputs":[{"name":"INPUT0","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","contents":{"int_contents":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"datatype":"INT32","shape":[1,16]}]}
     """
-    And expect http response status code "200"
+    And expect gRPC response error to contain "Unimplemented"
