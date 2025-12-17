@@ -1,5 +1,4 @@
 import json
-import os
 
 import numpy as np
 from alibi.datasets import fetch_adult

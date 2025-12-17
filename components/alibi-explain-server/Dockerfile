@@ -1,6 +1,6 @@
 ARG VERSION
 ARG BASE_IMAGE
-FROM ${BASE_IMAGE}:${VERSION} as base
+FROM ${BASE_IMAGE}:${VERSION} AS base
 
 ARG VERSION
 LABEL name="Seldon Alibi Wrapper" \
@@ -10,7 +10,7 @@ LABEL name="Seldon Alibi Wrapper" \
       summary="Alibi Explainer Wrapper for Seldon Core" \
       description="Allows Seldon Core inference models to run with a black box model explanation model from the Alibi:Explain project"
 
-FROM base as builder
+FROM base AS builder
 
 USER root
 
@@ -24,24 +24,20 @@ RUN mkdir microservice
 WORKDIR /microservice
 
 # Install Poetry
-ENV POETRY_HOME /microservice/.poetry
+ENV POETRY_HOME=/microservice/.poetry
 RUN /opt/conda/bin/pip install --no-cache-dir "poetry==2.1.2"
 
 # Replace vulnerable pip wheel embedded inside virtualenv(CVE-2025-8869)
-RUN find /opt/conda/lib/python3.12/site-packages/virtualenv/seed/wheels/embed/ -name "pip-*.whl" -delete && \
-    /opt/conda/bin/pip wheel pip==25.3.0 --wheel-dir /opt/conda/lib/python3.12/site-packages/virtualenv/seed/wheels/embed/
+RUN PIP_WHEEL_DIR=/opt/conda/lib/python3.12/ensurepip/_bundled && \
+    /opt/conda/bin/pip wheel "pip==25.3.0" "setuptools>=75.0.0,<76.0.0" "wheel>=0.44.0,<0.45.0" --wheel-dir $PIP_WHEEL_DIR && \
+    rm -f $PIP_WHEEL_DIR/pip-25.0.1-py3-none-any.whl
 
-ENV PATH "$POETRY_HOME/bin:$PATH"
-ENV POETRY_VIRTUALENVS_CREATE false
+ENV PATH="$POETRY_HOME/bin:$PATH"
+ENV POETRY_VIRTUALENVS_CREATE=false
 
 # Install the dependencies only
 COPY poetry.lock pyproject.toml ./
-## Disable Poetry's new installer to avoid JSONDecodeError
-## https://github.com/python-poetry/poetry/issues/4210
-## NOTE: Removing explicitly requirements.txt file from subdeps test
-## dependencies causing false positives in Snyk.
 RUN poetry install --no-root
-
 
 # Add licences
 RUN mkdir /licenses
@@ -62,7 +58,7 @@ COPY README.md README.md
 # Install the project code
 RUN poetry install
 
-FROM base as final
+FROM base AS final
 WORKDIR /microservice
 
 RUN microdnf -y update
