@@ -106,7 +106,7 @@ func (i *inference) doHTTPExperimentInferenceRequest(ctx context.Context, experi
 }
 
 func (i *inference) doHTTPModelInferenceRequest(ctx context.Context, modelName, body string) error {
-	return i.doHTTPInferenceRequest(ctx, modelName, fmt.Sprintf("%s.model", modelName), body)
+	return i.doHTTPInferenceRequest(ctx, modelName, modelName, body)
 }
 
 // Used from steps that pass an explicit payload (DocString)
