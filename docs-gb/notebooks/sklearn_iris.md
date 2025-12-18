@@ -56,28 +56,6 @@ Wrap model using s2i
 !cd .. && make build_rest
 ```
 
-    s2i build -E environment_rest ./sklearnserver seldonio/seldon-core-s2i-python37:1.19.0-dev seldonio/sklearnserver_rest:0.1
-    ---> Installing application source...
-    ---> Installing dependencies ...
-    Looking in links: /whl
-    Collecting scikit-learn==0.20.3 (from -r requirements.txt (line 1))
-      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/aa/cc/a84e1748a2a70d0f3e081f56cefc634f3b57013b16faa6926d3a6f0598df/scikit_learn-0.20.3-cp37-cp37m-manylinux1_x86_64.whl (5.4MB)
-    Requirement already satisfied: numpy>=1.8.2 in /usr/local/lib/python3.7/site-packages (from -r requirements.txt (line 2)) (1.16.4)
-    Collecting joblib>=0.13.0 (from -r requirements.txt (line 3))
-      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/cd/c1/50a758e8247561e58cb87305b1e90b171b8c767b15b12a1734001f41d356/joblib-0.13.2-py2.py3-none-any.whl (278kB)
-    Collecting scipy>=0.13.3 (from scikit-learn==0.20.3->-r requirements.txt (line 1))
-      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/5d/bd/c0feba81fb60e231cf40fc8a322ed5873c90ef7711795508692b1481a4ae/scipy-1.3.0-cp37-cp37m-manylinux1_x86_64.whl (25.2MB)
-    Installing collected packages: scipy, scikit-learn, joblib
-    Successfully installed joblib-0.13.2 scikit-learn-0.20.3 scipy-1.3.0
-    WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    WARNING: You are using pip version 19.1.1, however version 19.2.1 is available.
-    You should consider upgrading via the 'pip install --upgrade pip' command.
-    Build completed successfully
-
-
 
 ```python
 !docker run --rm -d --name "sklearnserver"  -p 5000:5000 -e PREDICTIVE_UNIT_PARAMETERS='[{"type":"STRING","name":"model_uri","value":"file:///model"}]' -v ${PWD}:/model seldonio/sklearnserver_rest:0.1
@@ -177,28 +155,6 @@ Send some random features that conform to the contract
 ```python
 !cd .. && make build_grpc
 ```
-
-    s2i build -E environment_grpc ./sklearnserver seldonio/seldon-core-s2i-python37:1.19.0-dev seldonio/sklearnserver_grpc:0.1
-    ---> Installing application source...
-    ---> Installing dependencies ...
-    Looking in links: /whl
-    Collecting scikit-learn==0.20.3 (from -r requirements.txt (line 1))
-      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/aa/cc/a84e1748a2a70d0f3e081f56cefc634f3b57013b16faa6926d3a6f0598df/scikit_learn-0.20.3-cp37-cp37m-manylinux1_x86_64.whl (5.4MB)
-    Requirement already satisfied: numpy>=1.8.2 in /usr/local/lib/python3.7/site-packages (from -r requirements.txt (line 2)) (1.16.4)
-    Collecting joblib>=0.13.0 (from -r requirements.txt (line 3))
-      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/cd/c1/50a758e8247561e58cb87305b1e90b171b8c767b15b12a1734001f41d356/joblib-0.13.2-py2.py3-none-any.whl (278kB)
-    Collecting scipy>=0.13.3 (from scikit-learn==0.20.3->-r requirements.txt (line 1))
-      WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    Downloading https://files.pythonhosted.org/packages/5d/bd/c0feba81fb60e231cf40fc8a322ed5873c90ef7711795508692b1481a4ae/scipy-1.3.0-cp37-cp37m-manylinux1_x86_64.whl (25.2MB)
-    Installing collected packages: scipy, scikit-learn, joblib
-    Successfully installed joblib-0.13.2 scikit-learn-0.20.3 scipy-1.3.0
-    WARNING: Url '/whl' is ignored. It is either a non-existing path or lacks a specific scheme.
-    WARNING: You are using pip version 19.1.1, however version 19.2.1 is available.
-    You should consider upgrading via the 'pip install --upgrade pip' command.
-    Build completed successfully
-
 
 
 ```python

@@ -114,7 +114,7 @@
   * [AWS EKS Tensorflow Deep MNIST](notebooks/aws_eks_deep_mnist.md)
   * [Azure AKS Tensorflow Deep MNIST](notebooks/azure_aks_deep_mnist.md)
   * [GKE with GPU Tensorflow Deep MNIST](notebooks/gpu_tensorflow_deep_mnist.md)
-  * [Alibaba Cloud Tensorflow Deep MNIST](notebooks/alibaba_ack_deep_mnist.md)
+  * [Alibaba Cloud Tensorflow Deep MNIST](notebooks/alibaba_cloud_ack_deep_mnist.md)
   * [Triton GPT2 Example Azure](notebooks/triton_gpt2_example_azure.md)
   * [Setup for Triton GPT2 Example Azure](notebooks/triton_gpt2_example_azure_setup.md)
   * [Real Time Monitoring of Statistical Metrics](notebooks/feedback_reward_custom_metrics.md)

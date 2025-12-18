@@ -1,3 +1,5 @@
+> ⚠️ This notebook has been **deprecated** and it may require modifications to work correctly.
+
 # Alibaba Cloud Container Service for Kubernetes (ACK) Deep MNIST Example
 In this example we will deploy a tensorflow MNIST model in the Alibaba Cloud Container Service for Kubernetes.
 
@@ -168,7 +170,7 @@ Now we can build a docker image named "deep-mnist" with the tag 0.1
 
 
 ```python
-!s2i build . seldonio/seldon-core-s2i-python37:1.19.0-dev deep-mnist:0.1
+!s2i build . seldonio/seldon-core-s2i-python<PYTHON VERSION>:<TAG> deep-mnist:0.1
 ```
 
     ---> Installing application source...
