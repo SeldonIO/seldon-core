@@ -4,7 +4,7 @@ The objective of this tutorial is to build a "loan approval" classifier equipped
 
 The diagram of this tutorial is as follows:
 
-![outliers-combiner-1](../images/outliers-combiner-1.jpg)
+![outliers-combiner-1](../.gitbook/assets/outliers-combiner-1.jpg)
 
 In this tutorial we will follow these steps:
 
@@ -226,7 +226,7 @@ First, we will create two separate deployments: `loanclassifier` and `outliersde
 
 ### Deploy separate loanclassifier
 
-![outliers-combiner-1](../images/outliers-combiner-1.jpg)
+![outliers-combiner-1](../.gitbook/assets/outliers-combiner-1.jpg)
 
 ```yaml
 # pipeline/loanclassifier.yaml
@@ -265,7 +265,7 @@ kubectl apply -f pipeline/loanclassifier.yaml
 
 ### Deploy separate outliers detector
 
-![outliers-combiner-2](../images/outliers-combiner-2.jpg)
+![outliers-combiner-2](../.gitbook/assets/outliers-combiner-2.jpg)
 
 ```yaml
 # pipeline/outliersdetector.yaml
@@ -346,7 +346,7 @@ Please note that `loanclassifier` and `outliersdetector` are part of the `loancl
 
 In this approach there is a single API endpoint that serves both functionalities.
 
-![outliers-combiner-3](../images/outliers-combiner-3.jpg)
+![outliers-combiner-3](../.gitbook/assets/outliers-combiner-3.jpg)
 
 ```yaml
 # pipeline/combiner.yaml

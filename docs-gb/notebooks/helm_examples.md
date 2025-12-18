@@ -1,18 +1,18 @@
-# Example Seldon Core Deployments using Helm
-<img src="images/deploy-graph.png" alt="predictor with canary" title="ml graph"/>
+# Example Helm Deployments
+
+![predictor with canary](../.gitbook/assets/deploy-graph.png)
 
 ## Setup Seldon Core
 
-Use the setup notebook to [Setup Cluster](https://docs.seldon.ai/seldon-core-1/tutorials/notebooks/seldon-core-setup#setup-cluster) with [Ambassador Ingress](https://docs.seldon.ai/seldon-core-1/tutorials/notebooks/seldon-core-setup#ambassador).
-
+Use the setup notebook to [Setup Cluster](seldon-core-setup.md#setup-cluster) with [Ambassador Ingress](seldon-core-setup.md#ambassador) and [Install Seldon Core](seldon-core-setup.md#Install-Seldon-Core). 
 
 ```python
 !kubectl create namespace seldon
 ```
 
-    Error from server (AlreadyExists): namespaces "seldon" already exists
-
-
+```
+Error from server (AlreadyExists): namespaces "seldon" already exists
+```
 
 ```python
 VERSION = !cat ../version.txt
@@ -28,7 +28,6 @@ VERSION
 
 
 ## Serve Single Model
-
 
 ```python
 
@@ -109,7 +108,6 @@ VERSION
 
 ### Get predictions
 
-
 ```python
 from seldon_core.seldon_client import SeldonClient
 
@@ -122,7 +120,6 @@ sc = SeldonClient(
 ```
 
 #### REST Request
-
 
 ```python
 from tenacity import retry, stop_after_delay, wait_exponential
@@ -155,9 +152,11 @@ predict()
     {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.09963978586361734]}}, 'meta': {'requestPath': {'model': 'seldonio/mock_classifier:1.19.0-dev'}}}
 
 
+Response:
+{'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.05335370865277927]}}, 'meta': {}}
+```
 
 #### GRPC Request
-
 
 ```python
 @retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
@@ -185,11 +184,11 @@ predict()
 !helm delete mymodel --namespace seldon
 ```
 
-    release "mymodel" uninstalled
-
+```
+release "mymodel" uninstalled
+```
 
 ## Serve REST AB Test
-
 
 ```python
 !helm upgrade -i myabtest ../helm-charts/seldon-abtest --namespace seldon
@@ -305,7 +304,6 @@ predict()
 
 ### Get predictions
 
-
 ```python
 from seldon_core.seldon_client import SeldonClient
 
@@ -318,7 +316,6 @@ sc = SeldonClient(
 ```
 
 #### REST Request
-
 
 ```python
 @retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
@@ -349,9 +346,11 @@ predict()
     {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.0656377202541611]}}, 'meta': {'requestPath': {'classifier-2': 'seldonio/mock_classifier:1.19.0-dev'}}}
 
 
+Response:
+{'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.11299965170860979]}}, 'meta': {}}
+```
 
 #### gRPC Request
-
 
 ```python
 @retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
@@ -379,11 +378,11 @@ predict()
 !helm delete myabtest --namespace seldon
 ```
 
-    release "myabtest" uninstalled
-
+```
+release "myabtest" uninstalled
+```
 
 ## Serve REST Multi-Armed Bandit
-
 
 ```python
 !helm upgrade -i mymab ../helm-charts/seldon-mab --namespace seldon
@@ -533,7 +532,6 @@ predict()
 
 ### Get predictions
 
-
 ```python
 from seldon_core.seldon_client import SeldonClient
 
@@ -546,7 +544,6 @@ sc = SeldonClient(
 ```
 
 #### REST Request
-
 
 ```python
 @retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))
@@ -577,9 +574,11 @@ predict()
     {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.058212613572549546]}}, 'meta': {'requestPath': {'classifier-1': 'seldonio/mock_classifier:1.19.0-dev'}}}
 
 
+Response:
+{'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.05643175042558145]}}, 'meta': {}}
+```
 
 #### gRPC Request
-
 
 ```python
 @retry(stop=stop_after_delay(300), wait=wait_exponential(multiplier=1, min=0.5, max=5))

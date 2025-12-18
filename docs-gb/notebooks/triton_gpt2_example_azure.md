@@ -52,7 +52,7 @@ python -m tf2onnx.convert --saved-model ./tfgpt2model/saved\_model/1 --opset 13 
 
 We have provided an [Azure Setup Notebook](triton_gpt2_example_azure_setup.md) that deploys an AKS cluster, an Azure storage account, and installs the Azure Blob CSI driver. If an AKS cluster already exists, skip to the creation of Blob Storage and CSI driver installation steps.
 
-Upon completion of the Azure setup, the following infrastructure will be created: ![Azure](../images/azure.jpg)
+Upon completion of the Azure setup, the following infrastructure will be created: ![Azure](../.gitbook/assets/azure.jpg)
 
 ```python
 resource_group = "seldon"  # feel free to replace or use this default
@@ -361,7 +361,7 @@ InsightsMetrics
 
 Here is an example dashboard created using the queries above:
 
-![dashboard](../images/azuredashboard.jpg)
+![dashboard](../.gitbook/assets/azuredashboard.jpg)
 
 ### Run Load Test / Performance Test using vegeta
 

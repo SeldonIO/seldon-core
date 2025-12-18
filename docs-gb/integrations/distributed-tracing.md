@@ -1,4 +1,4 @@
-# Distributed Tracing
+# Distributed Tracing with Jaeger
 
 You can use Open Tracing to trace your API calls to Seldon Core. By default we support Jaeger for Distributed Tracing, which will allow you to obtain insights on latency and performance across each microservice-hop in your Seldon deployment.
 
@@ -10,17 +10,16 @@ You will need to install Jaeger on your Kubernetes cluster. Follow their [docume
 
 You will need to annotate your Seldon Deployment resource with environment variables to make tracing active and set the appropriate Jaeger configuration variables.
 
-  * For the Seldon Service Orchestrator you will need to set the environment variables in the `spec.predictors[].svcOrchSpec.env` section. See the [Jaeger Java docs](https://github.com/jaegertracing/jaeger-client-java/tree/master/jaeger-core#configuration-via-environment) for available configuration variables.
-  * For each Seldon component you run (e.g., model transformer etc.) you will need to add environment variables to the container section.
-
+* For the Seldon Service Orchestrator you will need to set the environment variables in the `spec.predictors[].svcOrchSpec.env` section. See the [Jaeger Java docs](https://github.com/jaegertracing/jaeger-client-java/tree/master/jaeger-core#configuration-via-environment) for available configuration variables.
+* For each Seldon component you run (e.g., model transformer etc.) you will need to add environment variables to the container section.
 
 ### Python Wrapper Configuration
 
 Add an environment variable: TRACING with value 1 to activate tracing.
 
-You can utilize the default configuration by simply providing the name of the Jaeger agent service by providing JAEGER_AGENT_HOST environment variable. Override default Jaeger agent port `5775` by setting JAEGER_AGENT_PORT environment variable.
+You can utilize the default configuration by simply providing the name of the Jaeger agent service by providing JAEGER\_AGENT\_HOST environment variable. Override default Jaeger agent port `5775` by setting JAEGER\_AGENT\_PORT environment variable.
 
-To provide a custom configuration following the Jaeger Python configuration yaml defined [here](https://github.com/jaegertracing/jaeger-client-python) you can provide a configmap and the path to the YAML file in JAEGER_CONFIG_PATH environment variable.
+To provide a custom configuration following the Jaeger Python configuration yaml defined [here](https://github.com/jaegertracing/jaeger-client-python) you can provide a configmap and the path to the YAML file in JAEGER\_CONFIG\_PATH environment variable.
 
 An example is show below:
 
@@ -75,17 +74,14 @@ spec:
       - name: JAEGER_SAMPLER_PARAM
         value: '1'
 ```
-        
-
 
 ## REST Example
 
-![jaeger-ui-rest](../images/jaeger-ui-rest-example.png)
+![jaeger-ui-rest](../.gitbook/assets/jaeger-ui-rest-example.png)
 
 ## gRPC Example
 
-![jaeger-ui-rest](../images/jaeger-ui-grpc-example.png)
-
+![jaeger-ui-rest](../.gitbook/assets/jaeger-ui-grpc-example.png)
 
 ## Worked Example
 

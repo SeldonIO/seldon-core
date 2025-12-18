@@ -90,35 +90,25 @@ After saving the code, we now create an environment\_rest file and add the follo
 MODEL\_NAME=holt\_winter\
 API\_TYPE=REST\
 SERVICE\_TYPE=MODEL\
-PERSISTENCE =0\
-
+PERSISTENCE =0<br>
 
 MODEL\_NAME:\
-The name of the class containing the model. Also the name of the python file which will be imported.\
-
+The name of the class containing the model. Also the name of the python file which will be imported.<br>
 
 API\_TYPE:\
-API type to create. Can be REST or GRPC\
-
+API type to create. Can be REST or GRPC<br>
 
 SERVICE\_TYPE:\
-The service type being created. Available options are:\
+The service type being created. Available options are:<br>
 
-
-1. MODEL\
-
-2. ROUTER\
-
-3. TRANSFORMER\
-
-4. COMBINER\
-
-5. OUTLIER\_DETECTOR\
-
+1. MODEL<br>
+2. ROUTER<br>
+3. TRANSFORMER<br>
+4. COMBINER<br>
+5. OUTLIER\_DETECTOR<br>
 
 PERSISTENCE:\
-Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved periodically to redis and loaded from redis (if exists) or created fresh if not.\
-
+Set either to 0 or 1. Default is 0. If set to 1 then your model will be saved periodically to redis and loaded from redis (if exists) or created fresh if not.<br>
 
 ```python
 %%writefile requirements.txt
@@ -215,14 +205,13 @@ Model Monitoring
 
 Once the model is deployed, you can now monitor various metrics, the 2 main ones being:
 
-1. Requests per second\
-
+1. Requests per second<br>
 2. Latency in serving the request
 
 The model deployed on Seldon can be monitored using build in metrics dashboard on Grafana. Here is the link to deploy metrics dashboard: https://docs.seldon.io/projects/seldon-core/en/v1.1.0/analytics/analytics.html.\
 \
 The screenshot of a sample dashboard is given below:\
-![dashboard\_image1](../images/dashboard_image.png)
+![dashboard\_image1](../.gitbook/assets/dashboard_image.png)
 
 Summary
 

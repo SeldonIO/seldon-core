@@ -173,9 +173,9 @@
   * [Open Inference Protocol](reference/prediction-apis/v2-protocol/README.md)
     * [REST](reference/prediction-apis/v2-protocol/rest/README.md)
       * ```yaml
-        type: builtin:openapi
         props:
           models: true
+        type: builtin:openapi
         dependencies:
           spec:
             ref:
@@ -190,9 +190,9 @@
   * [Prediction Open API Spec](reference/prediction-apis/prediction-open-api-spec/README.md)
     * [Seldon Core External via Ambassador](reference/prediction-apis/prediction-open-api-spec/seldon-core-external-via-ambassador/README.md)
       * ```yaml
-        type: builtin:openapi
         props:
           models: true
+        type: builtin:openapi
         dependencies:
           spec:
             ref:
@@ -201,9 +201,9 @@
         ```
     * [Seldon Core Internal microservice API](reference/prediction-apis/prediction-open-api-spec/seldon-core-internal-microservice-api/README.md)
       * ```yaml
-        type: builtin:openapi
         props:
           models: true
+        type: builtin:openapi
         dependencies:
           spec:
             ref:

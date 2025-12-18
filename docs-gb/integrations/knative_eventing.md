@@ -1,10 +1,10 @@
-# Knative Eventing Integration
+# Stream Processing with KNative
 
 Seldon has an integration with Knative eventing that allows for real time processing.
 
 This allow Seldon Core users to connect SeldonDeployments through triggers that will receive any relevant Cloudevents.
 
-![](../images/stream-processing-knative.jpg)
+![](../.gitbook/assets/stream-processing-knative.jpg)
 
 ## Triggers
 
@@ -34,7 +34,7 @@ spec:
 
 This means that any Cloudevents of type "`seldon.iris-deployment.default.request`" will be sent to the SeldonDeployment with the name `iris-deployment`.
 
-The URL path is inferred through our implementation of the Duck Typing from Knative, which automatically extracts the URL from the Kubernetes resource status, specifically from the attribute `status.addressable.url`. 
+The URL path is inferred through our implementation of the Duck Typing from Knative, which automatically extracts the URL from the Kubernetes resource status, specifically from the attribute `status.addressable.url`.
 
 In the case of every Seldon Deployment, the `status.addressable.url` is always the serviceName, port and path for the first predictor. You can see the Addressable type in [our CRD definition](../reference/seldon-deployment.rst).
 
@@ -84,7 +84,7 @@ What this means is that you can create further triggers that could perform other
 
 The triggers will have to match the cloudevent headers, which are standardised by the SeldonDeployment, and are of the following format:
 
-```text
+```
 Ce-Id: SeldonDeployment unique request ID
 Ce-Specversion: Version of the specversion used (default: 0.3)
 Ce-Type: seldon.<sdep_name>.<namespace>.response
@@ -153,5 +153,3 @@ This will show all the cloudevents that are sent with that are processed by the 
 We have a fully worked notebook where we showcase these capabilities end to end.
 
 You can try it yourself through the [Seldon Core Real Time Stream Processing with Knative Eventing](../examples/knative_eventing_streaming.nblink) page
-
-
