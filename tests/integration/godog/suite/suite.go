@@ -18,6 +18,7 @@ import (
 	"github.com/cucumber/godog"
 	v2dataplane "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	v "github.com/seldonio/seldon-core/operator/v2/pkg/generated/clientset/versioned"
+	"github.com/seldonio/seldon-core/tests/integration/godog/components"
 	"github.com/seldonio/seldon-core/tests/integration/godog/k8sclient"
 	"github.com/seldonio/seldon-core/tests/integration/godog/steps"
 	"github.com/sirupsen/logrus"
@@ -33,7 +34,7 @@ type dependencies struct {
 	mlopsClient     *v.Clientset
 	watcherStore    k8sclient.WatcherStorage
 	inferenceClient v2dataplane.GRPCInferenceServiceClient
-	env             *k8sclient.EnvManager
+	env             *components.EnvManager
 	Config          *GodogConfig
 }
 
@@ -106,9 +107,11 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 	grpcClient := v2dataplane.NewGRPCInferenceServiceClient(conn)
 
 	// Example: kafka in namespace "mlops" with statefulset name "kafka"
-	kafka := k8sclient.NewKafkaComponent(k8sClient, config.Namespace, "kafka")
+	//kafka := components.NewKafkaComponent(k8sClient, config.Namespace, "kafka")
 
-	env := k8sclient.NewEnvManager(kafka)
+	kafkaNodePool := components.NewKafkaNodePoolComponent(k8sClient, config.Namespace)
+
+	env := components.NewEnvManager(kafkaNodePool)
 
 	// Snapshot baseline state once per suite
 	if err := env.SnapshotAll(realContext); err != nil {
@@ -151,6 +154,7 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 		KubeClient:     suiteDeps.k8sClient,
 		K8sClient:      suiteDeps.mlopsClient,
 		WatcherStorage: suiteDeps.watcherStore,
+		Env:            suiteDeps.env,
 		IngressHost:    suiteDeps.Config.Inference.Host,
 		HTTPPort:       suiteDeps.Config.Inference.HTTPPort,
 		GRPCPort:       suiteDeps.Config.Inference.GRPCPort,
@@ -193,5 +197,5 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 	steps.LoadCustomPipelineSteps(scenarioCtx, world)
 	steps.LoadExperimentSteps(scenarioCtx, world)
 	steps.LoadUtilSteps(scenarioCtx, world)
-	steps.LoadEnvSteps(scenarioCtx, world)
+	steps.LoadInfrastructureSteps(scenarioCtx, world)
 }

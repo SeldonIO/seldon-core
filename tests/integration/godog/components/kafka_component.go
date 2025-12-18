@@ -1,9 +1,10 @@
-package k8sclient
+package components
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/seldonio/seldon-core/tests/integration/godog/k8sclient"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -13,14 +14,14 @@ type KafkaComponent struct {
 	namespace string
 	resource  types.NamespacedName
 
-	k8s   *K8sClient
+	k8s   *k8sclient.K8sClient
 	base  *int32 // baseline replicas
 	dirty bool
 }
 
 const kafkaComponentName ComponentName = "kafka"
 
-func NewKafkaComponent(k8s *K8sClient, namespace, statefulSetName string) *KafkaComponent {
+func NewKafkaComponent(k8s *k8sclient.K8sClient, namespace, statefulSetName string) *KafkaComponent {
 	return &KafkaComponent{
 		name:      kafkaComponentName,
 		namespace: namespace,
