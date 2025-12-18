@@ -306,6 +306,7 @@ serverConfig:
     serverCapabilities: "mlserver,alibi-detect,alibi-explain,huggingface,lightgbm,mlflow,python,sklearn,spark-mlib,xgboost"
     modelVolumeStorage: 1Gi
     parallel_workers: 1
+    debug: "false"
     resources:
       cpu: 100m
       memory: 1Gi
