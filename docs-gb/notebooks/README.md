@@ -28,8 +28,6 @@
 ## Specialized Framework Examples
 
 * [NVIDIA TensorRT MNIST](tensorrt.md)
-* [OpenVINO ImageNet](openvino.md)
-* [OpenVINO ImageNet Ensemble](openvino_ensemble.md)
 * [Triton Examples](triton_examples.md)
 
 ## Incubating Projects Examples

@@ -98,8 +98,6 @@
   * [Runtime Metrics & Tags](notebooks/runtime_metrics_tags.md)
   * [Triton GPT2 Example](notebooks/triton_gpt2_example.md)
   * [NVIDIA TensorRT MNIST](notebooks/tensorrt.md)
-  * [OpenVINO ImageNet](notebooks/openvino.md)
-  * [OpenVINO ImageNet Ensemble](notebooks/openvino_ensemble.md)
   * [Triton Examples](notebooks/triton_examples.md)
   * [Kubeflow Seldon E2E Pipeline](notebooks/kubeflow_seldon_e2e_pipeline.md)
   * [H2O Java MoJo](notebooks/cifar10_kafka.mdh2o_mojo.md)
