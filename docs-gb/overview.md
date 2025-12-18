@@ -1,4 +1,4 @@
-# Overview of Components
+# Overview of Seldon Core Components
 
 Seldon core converts your ML models into production ready REST/gRPC microservices.
 
