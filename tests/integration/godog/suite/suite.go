@@ -13,6 +13,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"time"
 
 	"github.com/cucumber/godog"
 	v2dataplane "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
@@ -32,6 +33,7 @@ type dependencies struct {
 	mlopsClient     *v.Clientset
 	watcherStore    k8sclient.WatcherStorage
 	inferenceClient v2dataplane.GRPCInferenceServiceClient
+	env             *k8sclient.EnvManager
 	Config          *GodogConfig
 }
 
@@ -53,6 +55,8 @@ type dependencies struct {
 var suiteDeps dependencies
 
 func InitializeTestSuite(ctx *godog.TestSuiteContext) {
+	realContext, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
 	// Load configuration from JSON file
 	config, err := LoadConfig()
 	if err != nil {
@@ -101,12 +105,23 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 	}
 	grpcClient := v2dataplane.NewGRPCInferenceServiceClient(conn)
 
+	// Example: kafka in namespace "mlops" with statefulset name "kafka"
+	kafka := k8sclient.NewKafkaComponent(k8sClient, config.Namespace, "kafka")
+
+	env := k8sclient.NewEnvManager(kafka)
+
+	// Snapshot baseline state once per suite
+	if err := env.SnapshotAll(realContext); err != nil {
+		panic(fmt.Errorf("failed to snapshot environment: %w", err))
+	}
+
 	suiteDeps.logger = log
 	suiteDeps.k8sClient = k8sClient
 	suiteDeps.mlopsClient = clientSet // todo: this clientSet might get use for get requests or for the mlops interface and could be passed to the world might be split up by type
 	suiteDeps.watcherStore = watchStore
 	suiteDeps.Config = config
 	suiteDeps.inferenceClient = grpcClient
+	suiteDeps.env = env
 
 	ctx.BeforeSuite(func() {
 		suiteDeps.watcherStore.Start()
@@ -118,6 +133,11 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 
 	ctx.AfterSuite(func() {
 		suiteDeps.watcherStore.Stop()
+
+		err := suiteDeps.env.RestoreAll(context.Background())
+		if err != nil {
+			return
+		}
 		// e.g. clean namespace, close clients if needed delete servers
 	})
 }
@@ -173,4 +193,5 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 	steps.LoadCustomPipelineSteps(scenarioCtx, world)
 	steps.LoadExperimentSteps(scenarioCtx, world)
 	steps.LoadUtilSteps(scenarioCtx, world)
+	steps.LoadEnvSteps(scenarioCtx, world)
 }
