@@ -16,6 +16,7 @@ coverage==7.11.0            # Works with pytest-cov 5.x
 # === Utilities ===
 tenacity==9.1.2            # Smart retries
 tox==4.31.0                # Modern tox (new core + config)
+filelock==3.20.1           # Second-level dependency of tox
 nbqa==1.9.1                # Run linters/formatters on notebooks
 pip-licenses==5.5.0        # Fetch OSS licenses
 
