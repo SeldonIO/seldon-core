@@ -37,6 +37,7 @@ func NewLocalSchedulerStore() *LocalSchedulerStore {
 }
 
 type Model struct {
+	name     string
 	versions []*ModelVersion
 	deleted  atomic.Bool
 }
@@ -316,6 +317,10 @@ func (m ModelReplicaState) Inactive() bool {
 
 func (m ModelReplicaState) IsLoadingOrLoaded() bool {
 	return (m == Loaded || m == LoadRequested || m == Loading || m == Available || m == LoadedUnavailable)
+}
+
+func (m *Model) Name() string {
+	return m.name
 }
 
 func (m *Model) HasLatest() bool {

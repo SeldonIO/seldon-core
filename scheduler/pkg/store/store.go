@@ -156,4 +156,5 @@ type ModelStore interface {
 	FailedScheduling(modelID string, version uint32, reason string, reset bool) error
 	GetAllModels() []string
 	SetModelGwModelState(name string, versionNumber uint32, status ModelState, reason string, source string) error
+	EmitEvents() error
 }
