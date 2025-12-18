@@ -1,3 +1,5 @@
+> ⚠️ This notebook has been **deprecated** and it may require modifications to work correctly.
+
 # Batch processing with Argo Worfklows and HDFS
 
 In this notebook we will dive into how you can run batch processing with Argo Workflows and Seldon Core.
@@ -355,7 +357,7 @@ spec:
 
   - name: process-batch-inputs
     container:
-      image: seldonio/seldon-core-s2i-python37:1.19.0-dev
+      image: seldonio/seldon-core-s2i-python<PYTHON VERSION>:<TAG>
 
       volumeMounts:
       - mountPath: /assets
