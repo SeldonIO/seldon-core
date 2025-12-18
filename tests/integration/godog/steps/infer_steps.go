@@ -38,30 +38,33 @@ type inference struct {
 	log              logrus.FieldLogger
 }
 
-const inferenceRequestDelay = 200 * time.Millisecond // todo: this is to avoid 503s since the route at times isn't ready when the model is ready
+// todo: this is to avoid 503s since the route at times isn't ready when the model is ready
+// todo: this might be related to issue: https://seldonio.atlassian.net/browse/INFRA-1576?search_id=4def05ca-ec64-436e-b824-49e39f1c94c4
+// todo: this issue relates to how we should route inference request via IP instead of DNS
+const inferenceRequestDelay = 200 * time.Millisecond
 
 func LoadInferenceSteps(scenario *godog.ScenarioContext, w *World) {
-	scenario.Step(`^(?:I )send HTTP inference request with timeout "([^"]+)" to (model|pipeline) "([^"]+)" with payload:$`, func(timeout, kind, model string, payload *godog.DocString) error {
+	scenario.Step(`^(?:I )send HTTP inference request with timeout "([^"]+)" to (model|pipeline) "([^"]+)" with payload:$`, func(timeout, kind, resourceName string, payload *godog.DocString) error {
 		time.Sleep(inferenceRequestDelay)
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
 			switch kind {
 			case "model":
-				return w.infer.doHTTPModelInferenceRequest(ctx, model, payload.Content)
+				return w.infer.doHTTPModelInferenceRequest(ctx, resourceName, payload.Content)
 			case "pipeline":
-				return w.infer.doHTTPPipelineInferenceRequest(ctx, model, payload.Content)
+				return w.infer.doHTTPPipelineInferenceRequest(ctx, resourceName, payload.Content)
 			default:
 				return fmt.Errorf("unknown target type: %s", kind)
 			}
 		})
 	})
-	scenario.Step(`^(?:I )send gRPC inference request with timeout "([^"]+)" to (model|pipeline) "([^"]+)" with payload:$`, func(timeout, kind, model string, payload *godog.DocString) error {
+	scenario.Step(`^(?:I )send gRPC inference request with timeout "([^"]+)" to (model|pipeline) "([^"]+)" with payload:$`, func(timeout, kind, resourceName string, payload *godog.DocString) error {
 		time.Sleep(inferenceRequestDelay)
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
 			switch kind {
 			case "model":
-				return w.infer.doGRPCInferenceRequest(ctx, model, payload.Content)
+				return w.infer.doGRPCInferenceRequest(ctx, resourceName, payload.Content)
 			case "pipeline":
-				return w.infer.doGRPCInferenceRequest(ctx, fmt.Sprintf("%s.pipeline", model), payload.Content)
+				return w.infer.doGRPCInferenceRequest(ctx, fmt.Sprintf("%s.pipeline", resourceName), payload.Content)
 			default:
 				return fmt.Errorf("unknown target type: %s", kind)
 			}
