@@ -179,6 +179,8 @@ spec:
         value: "false"
       - name: MLSERVER_GRPC_MAX_MESSAGE_LENGTH
         value: "1048576000" # 100MB (100 * 1024 * 1024)
+      - name: MLSERVER_DEBUG
+        value: "false"
       resources:
         requests:
           cpu: 1

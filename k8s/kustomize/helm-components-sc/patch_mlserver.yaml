@@ -94,6 +94,8 @@ spec:
       env:
         - name: MLSERVER_PARALLEL_WORKERS
           value: '{{ .Values.serverConfig.mlserver.parallel_workers }}'
+        - name: MLSERVER_DEBUG
+          value: '{{ .Values.serverConfig.mlserver.debug }}'
       resources:
         requests:
           cpu: '{{ .Values.serverConfig.mlserver.resources.cpu }}'
