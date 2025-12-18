@@ -161,7 +161,6 @@ examples/models/sagemaker/scikit_learn_iris_deployment.json
 examples/wrappers/go/.idea
 
 util/custom-resource-definitions/hpa-spec.json
-wrappers/s2i/python_openvino/s2i
 
 components/outlier-detection/seq2seq-lstm/data/ECG5000.txt
 components/outlier-detection/seq2seq-lstm/data/ECG5000_TEST.arff
