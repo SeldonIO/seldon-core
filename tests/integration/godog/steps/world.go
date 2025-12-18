@@ -19,13 +19,11 @@ import (
 )
 
 type World struct {
-	namespace            string
-	kubeClient           *k8sclient.K8sClient
-	corek8sClient        v.Interface
-	watcherStorage       k8sclient.WatcherStorage
-	StartingClusterState string //todo: this will be a combination of starting state awareness of core 2 such as the
-	//todo:  server config,seldon config and seldon runtime to be able to reconcile to starting state should we change
-	//todo: the state such as reducing replicas to 0 of scheduler to test unavailability
+	namespace         string
+	kubeClient        *k8sclient.K8sClient
+	corek8sClient     v.Interface
+	watcherStorage    k8sclient.WatcherStorage
+	env               *k8sclient.EnvManager //this is a combination of components for the cluster
 	currentModel      *Model
 	currentPipeline   *Pipeline
 	currentExperiment *Experiment
@@ -41,6 +39,7 @@ type Config struct {
 	KubeClient     *k8sclient.K8sClient
 	K8sClient      v.Interface
 	WatcherStorage k8sclient.WatcherStorage
+	Env            *k8sclient.EnvManager
 	GRPC           v2_dataplane.GRPCInferenceServiceClient
 	IngressHost    string
 	HTTPPort       uint
@@ -62,6 +61,7 @@ func NewWorld(c Config) (*World, error) {
 		namespace:         c.Namespace,
 		kubeClient:        c.KubeClient,
 		watcherStorage:    c.WatcherStorage,
+		env:               c.Env,
 		currentModel:      newModel(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
 		currentExperiment: newExperiment(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
 		currentPipeline:   newPipeline(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
