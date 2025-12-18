@@ -386,6 +386,18 @@ func (s *WatcherStore) waitForKey(ctx context.Context, key string, cond Conditio
 		}
 	}
 
+	//// Call cond even if !ok; when !ok, existing will be nil.
+	//if !ok {
+	//	existing = nil
+	//}
+	//done, err := cond(existing)
+	//if err != nil {
+	//	return err
+	//}
+	//if done {
+	//	return nil
+	//}
+
 	// Slow path: register a waiter
 	w := &waiter{
 		key:    key,
