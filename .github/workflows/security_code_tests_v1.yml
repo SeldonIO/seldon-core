@@ -1,0 +1,53 @@
+name: V1 Security code Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  security-python:
+    runs-on: ubuntu-latest
+    container: snyk/snyk:python-3.12-preview
+    steps:
+      - uses: actions/checkout@v4
+      - name: security-python
+        # NOTE: [all] installs tensorflow as well as an extra
+        run: |
+          pip install -e python/.[all]
+          snyk test --file=python/setup.py --fail-on=upgradable --severity-threshold=high
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  security-operator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: snyk/actions/setup@master
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.24.7'
+      - name: security-operator
+        run: snyk test --file=operator/go.mod --fail-on=upgradable --severity-threshold=high
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  security-executor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: snyk/actions/setup@master
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.24.7'
+      - name: Set up executor's environment
+        # NOTE: The executor needs a couple extra steps before we can build it,
+        # like copying the operator's package into the executor's folder so that
+        # it's accessible.
+        run: make -C executor/ executor
+      - name: security-executor
+        run: snyk test --file=executor/go.mod --fail-on=upgradable --severity-threshold=high
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}

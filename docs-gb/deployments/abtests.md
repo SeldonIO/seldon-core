@@ -1,4 +1,4 @@
-# AB Tests and Progerssive Rollouts
+# AB Tests and Progressive Rollouts
 
 ## Simple AB Tests
 

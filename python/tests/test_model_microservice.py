@@ -691,7 +691,7 @@ def test_model_no_json():
     app = get_rest_microservice(user_object, seldon_metrics)
     client = app.test_client()
     uo = UserObject()
-    rv = client.get("/predict?")
+    rv = client.get("/predict?", headers={"Content-Type": "application/json"})
     j = json.loads(rv.data)
     logging.info(j)
     assert rv.status_code == 400

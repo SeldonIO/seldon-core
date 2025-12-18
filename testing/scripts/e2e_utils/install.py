@@ -9,7 +9,7 @@ SC_NAMESPACE = "seldon-system"
 
 
 def install_seldon(name=SC_NAME, namespace=SC_NAMESPACE, version=None):
-    chart_path = "seldonio/seldon-core-operator"
+    chart_path = "seldon-charts/seldon-core-operator"
     if version is None:
         # Use local
         chart_path = os.path.join(HELM_CHARTS_PATH, "seldon-core-operator")

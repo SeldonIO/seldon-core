@@ -5,25 +5,30 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.8
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
         uses: actions/setup-python@v4
         with:
-          version: 1.1.15
-          python-version: 3.8
+          python-version: '3.12'
+
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
+          version: 2.1.2
           virtualenvs-create: false
+
       - name: Install dependencies
         run: |
-          pip install --upgrade pip setuptools
+          python -m pip install --upgrade pip setuptools
           make -C components/alibi-explain-server dev_install
+
       - name: Lint
         run: |
           make -C components/alibi-explain-server lint
@@ -31,20 +36,24 @@ jobs:
   python-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.8
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
         uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          python-version: '3.12'
+
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.1.15
+          version: 2.1.2
           virtualenvs-create: false
+
       - name: Install dependencies
         run: |
-          pip install --upgrade pip setuptools
+          python -m pip install --upgrade pip setuptools
           make -C components/alibi-explain-server dev_install
+
       - name: test-python
         run: |
           make -C components/alibi-explain-server build_apis test

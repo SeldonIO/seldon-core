@@ -43,7 +43,7 @@ class AnchorText(ExplainerWrapper):
         predict_fn: Callable,
         explainer: Optional[alibi.explainers.AnchorText],
         spacy_language_model: str = "en_core_web_md",
-        **kwargs
+        **kwargs,
     ):
         self.predict_fn = predict_fn
         if EXPLAIN_RANDOM_SEED == "True" and str(EXPLAIN_RANDOM_SEED_VALUE).isdigit():

@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM golang:1.20.9 as builder
+FROM golang:1.24.7 as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -45,7 +45,7 @@ RUN wget -O mitchellh-cli.tar.gz https://github.com/mitchellh/cli/archive/master
 RUN wget -O mitchellh-gox.tar.gz https://github.com/mitchellh/gox/archive/master.tar.gz
 RUN wget -O mozilla-tls-observatory.tar.gz https://github.com/mozilla/tls-observatory/archive/master.tar.gz
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.7
 
 WORKDIR /
 COPY --from=builder /workspace/manager .

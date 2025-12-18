@@ -11,40 +11,40 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
-
-	autoscaling "k8s.io/api/autoscaling/v2"
 
 	v2 "github.com/emissary-ingress/emissary/v3/pkg/api/getambassador.io/v2"
 	kedav1alpha1 "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	machinelearningv1 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1"
+	machinelearningv1alpha2 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha2"
+	machinelearningv1alpha3 "github.com/seldonio/seldon-core/operator/apis/machinelearning.seldon.io/v1alpha3"
 	"github.com/seldonio/seldon-core/operator/constants"
 	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
+	autoscaling "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	// +kubebuilder:scaffold:imports
 )
 
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to
 // http://onsi.github.io/ginkgo/ to learn more about Ginkgo.
 
-var cfg *rest.Config
 var k8sClient client.Client
 var k8sManager ctrl.Manager
 var testEnv *envtest.Environment
@@ -68,7 +68,7 @@ var configs = map[string]string{
               },
             "seldon": {
               "image": "seldonio/tfserving-proxy",
-              "defaultImageVersion": "1.3.0-dev"
+              "defaultImageVersion": "latest"
               }
             }
         },
@@ -76,11 +76,11 @@ var configs = map[string]string{
           "protocols" : {
             "seldon": {
               "image": "seldonio/sklearnserver",
-              "defaultImageVersion": "1.3.0-dev"
+              "defaultImageVersion": "latest"
               },
             "v2": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "0.1.0"
+              "defaultImageVersion": "latest"
               }
             }
         },
@@ -88,11 +88,11 @@ var configs = map[string]string{
           "protocols" : {
             "seldon": {
               "image": "seldonio/xgboostserver",
-              "defaultImageVersion": "1.3.0-dev"
+              "defaultImageVersion": "latest"
               },
             "v2": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "0.1.0"
+              "defaultImageVersion": "latest"
               }
             }
         },
@@ -100,11 +100,11 @@ var configs = map[string]string{
           "protocols" : {
             "seldon": {
               "image": "seldonio/mlflowserver",
-              "defaultImageVersion": "1.3.0-dev"
+              "defaultImageVersion": "latest"
               },
             "v2": {
               "image": "seldonio/mlserver",
-              "defaultImageVersion": "0.1.0"
+              "defaultImageVersion": "latest"
               }
             }
         },
@@ -119,7 +119,7 @@ var configs = map[string]string{
      }`,
 	"storageInitializer": `
 	{
-	"image" : "seldonio/rclone-storage-initializer:1.16.0",
+	"image" : "seldonio/rclone-storage-initializer:latest",
 	"memoryRequest": "100Mi",
 	"memoryLimit": "1Gi",
 	"cpuRequest": "100m",
@@ -127,8 +127,8 @@ var configs = map[string]string{
 	}`,
 	"explainer": `
 	{
-	"image" : "seldonio/alibiexplainer:1.2.0",
-	"image_v2" : "seldonio/mlserver:0.6.0"
+	"image" : "seldonio/alibiexplainer:latest",
+	"image_v2" : "seldonio/mlserver:latest"
 	}`,
 }
 
@@ -152,21 +152,23 @@ var _ = JustBeforeEach(func() {
 })
 
 var _ = BeforeSuite(func(done Done) {
-	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
+	logger := zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true))
+	logf.SetLogger(logger)
 
 	By("bootstrapping test environment")
 
-	//apiServerFlags := envtest.DefaultKubeAPIServerFlags[0 : len(envtest.DefaultKubeAPIServerFlags)-1]
-	//apiServerFlags = append(apiServerFlags, "--admission-control=MutatingAdmissionWebhook")
-
 	testEnv = &envtest.Environment{
+		AttachControlPlaneOutput: true,
 		CRDDirectoryPaths: []string{
-			//filepath.Join("..", "config", "crd", "bases"),
 			filepath.Join("..", "testing")},
+		WebhookInstallOptions: envtest.WebhookInstallOptions{
+			Paths:                        []string{"../generated/admissionregistration.k8s.io_v1_validatingwebhookconfiguration_seldon-validating-webhook-configuration.yaml"},
+			LocalServingHostExternalName: "localhost",
+			LocalServingHost:             "localhost",
+		},
 	}
 
-	var err error
-	cfg, err = testEnv.Start()
+	cfg, err := testEnv.Start()
 	Expect(err).ToNot(HaveOccurred())
 	Expect(cfg).ToNot(BeNil())
 	cfg.Timeout = time.Second * 10
@@ -183,8 +185,8 @@ var _ = BeforeSuite(func(done Done) {
 	err = clientgoscheme.AddToScheme(scheme)
 	Expect(err).NotTo(HaveOccurred())
 
-	//err = scheme.AddToScheme(scheme.Scheme)
-	//Expect(err).NotTo(HaveOccurred())
+	err = apiextensionsv1.AddToScheme(scheme)
+	Expect(err).NotTo(HaveOccurred())
 
 	err = appsv1.AddToScheme(scheme)
 	Expect(err).NotTo(HaveOccurred())
@@ -212,8 +214,22 @@ var _ = BeforeSuite(func(done Done) {
 	k8sManager, err = ctrl.NewManager(cfg, ctrl.Options{
 		Scheme:         scheme,
 		LeaderElection: false,
+		WebhookServer: webhook.NewServer(webhook.Options{
+			Host:    testEnv.WebhookInstallOptions.LocalServingHost,
+			Port:    testEnv.WebhookInstallOptions.LocalServingPort,
+			CertDir: testEnv.WebhookInstallOptions.LocalServingCertDir,
+		}),
 	})
 	Expect(err).ToNot(HaveOccurred())
+
+	k8sClient = k8sManager.GetClient()
+	Expect(k8sClient).ToNot(BeNil())
+
+	Expect(k8sClient.Create(context.TODO(), &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: DefaultManagerNamespace,
+		},
+	})).NotTo(HaveOccurred())
 
 	err = (&SeldonDeploymentReconciler{
 		Client:    k8sManager.GetClient(),
@@ -224,30 +240,24 @@ var _ = BeforeSuite(func(done Done) {
 	}).SetupWithManager(context.Background(), k8sManager, constants.ControllerName)
 	Expect(err).ToNot(HaveOccurred())
 
-	//k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
-	k8sClient = k8sManager.GetClient()
-	Expect(k8sClient).ToNot(BeNil())
-
-	Expect(k8sClient.Create(context.TODO(), &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: DefaultManagerNamespace,
-		},
-	})).NotTo(HaveOccurred())
-
 	Expect(k8sClient.Create(context.TODO(), configMap)).NotTo(HaveOccurred())
-	//	defer k8sClient.Delete(context.TODO(), configMap)
 
 	machinelearningv1.C = k8sClient
+	machinelearningv1alpha3.C = k8sClient
+	machinelearningv1alpha2.C = k8sClient
 
-	fmt.Println("test k8s client")
-	fmt.Printf("%+v\n", k8sClient)
+	err = (&machinelearningv1alpha2.SeldonDeployment{}).SetupWebhookWithManager(k8sManager)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = (&machinelearningv1alpha3.SeldonDeployment{}).SetupWebhookWithManager(k8sManager)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = (&machinelearningv1.SeldonDeployment{}).SetupWebhookWithManager(k8sManager)
+	Expect(err).ToNot(HaveOccurred())
 
 	go func() {
 		defer GinkgoRecover()
 
-		//can't call webhook as leads to https://github.com/kubernetes-sigs/controller-runtime/issues/491
-		//err = (&machinelearningv1.SeldonDeployment{}).SetupWebhookWithManager(k8sManager)
-		//Expect(err).ToNot(HaveOccurred())
 		err = k8sManager.Start(ctrl.SetupSignalHandler())
 		Expect(err).ToNot(HaveOccurred())
 	}()

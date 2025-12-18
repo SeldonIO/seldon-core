@@ -644,14 +644,14 @@ def post_comment_in_pr(body, check=False):
 
 def create_and_run_script(folder, notebook):
     run(
-        f"jupyter nbconvert --template ../../notebooks/convert.tpl --to script {folder}/{notebook}.ipynb",
+        f"jupyter nbconvert --TemplateExporter.extra_template_basedirs=../../notebooks/templates --template convert --to script {folder}/{notebook}.ipynb",
         shell=True,
         check=True,
     )
     run(f"chmod u+x {folder}/{notebook}.py", shell=True, check=True)
     try:
         run(
-            f"cd {folder} && ./{notebook}.py",
+            f"cd {folder} && ipython ./{notebook}.py",
             shell=True,
             check=True,
             encoding="utf-8",

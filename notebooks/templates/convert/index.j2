@@ -1,0 +1,39 @@
+{%- extends 'python/index.j2' -%}
+
+{% block header %}
+{% set base_header = super() %}
+{% if "#!/usr/bin/env python" in base_header %}
+{{ base_header.replace("/usr/bin/env python", "/usr/bin/env ipython") }}
+{% else %}
+#!/usr/bin/env ipython
+{{ base_header }}
+{% endif %}
+import time
+
+try:
+    get_ipython
+except NameError:
+    from IPython.terminal.interactiveshell import TerminalInteractiveShell
+
+    _nbconvert_shell = TerminalInteractiveShell.instance()
+
+    def get_ipython():
+        return _nbconvert_shell
+{% endblock header %}
+
+{% block codecell %}
+{% set rendered_cell = super() %}
+{% if "kubectl rollout status" in rendered_cell or "delete" in rendered_cell %}
+time.sleep(10)
+{{ rendered_cell }}
+time.sleep(5)
+{% elif "docker run" in rendered_cell %}
+{{ rendered_cell }}
+time.sleep(3)
+{% elif "kubectl wait" in rendered_cell %}
+{{ rendered_cell }}
+time.sleep(5)
+{% else %}
+{{ rendered_cell.replace("'inline'","'agg'") }}
+{% endif %}
+{% endblock codecell %}

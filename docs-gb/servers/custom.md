@@ -1,4 +1,4 @@
-# Custom inference servers
+# Custom Inference Servers
 
 Out of the box, Seldon offers support for several [pre-packaged inference
 servers](./overview.md).

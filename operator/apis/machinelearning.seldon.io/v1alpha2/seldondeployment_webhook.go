@@ -36,22 +36,21 @@ func (r *SeldonDeployment) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 var _ webhook.Validator = &SeldonDeployment{}
 
-// ValidateCreate implements webhook.Validator so a webhook will be registered for the type
+// ValidateCreate implements webhook.CustomValidator so a webhook will be registered for the type
 func (r *SeldonDeployment) ValidateCreate() (warnings admission.Warnings, err error) {
-	seldondeploymentLog.Info("Validating v1alpha2 Webhook called for CREATE", "name", r.Name)
+	seldondeploymentLog.Info("Validating v2 Webhook called for CREATE")
 	return []string{}, r.Spec.ValidateSeldonDeployment()
 }
 
-// ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
+// ValidateUpdate implements webhook.CustomValidator so a webhook will be registered for the type
 func (r *SeldonDeployment) ValidateUpdate(_ runtime.Object) (warnings admission.Warnings, err error) {
-	seldondeploymentLog.Info("Validating v1alpha2 webhook called for UPDATE", "name", r.Name)
+	seldondeploymentLog.Info("Validating v2 webhook called for UPDATE")
 	return []string{}, r.Spec.ValidateSeldonDeployment()
 }
 
-// ValidateDelete implements webhook.Validator so a webhook will be registered for the type
+// ValidateDelete implements webhook.CustomValidator so a webhook will be registered for the type
 func (r *SeldonDeployment) ValidateDelete() (warnings admission.Warnings, err error) {
-	seldondeploymentLog.Info("Validating v1alpha2 webhook called for DELETE", "name", r.Name)
-
+	seldondeploymentLog.Info("Validating v2 webhook called for DELETE", "name", r.Name)
 	// TODO(user): fill in your validation logic upon object deletion.
 	return []string{}, nil
 }

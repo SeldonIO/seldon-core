@@ -1,16 +1,14 @@
----
 name: V1 Operator Lint & Tests
 
 on:
   push:
-    branches: [master]
+    branches: [ master ]
   pull_request:
-    branches: [master]
-
+    branches: [ master ]
   workflow_dispatch:
 
 env:
-  GOLANG_VERSION: 1.20.9
+  GOLANG_VERSION: 1.24.7
 
 jobs:
   operator-lint:

@@ -1,11 +1,14 @@
-FROM rclone/rclone:1.64.2 as builder
+FROM rclone/rclone:1.71.2 as builder
 
 RUN mkdir /licenses && wget -O /licenses/license.txt https://raw.githubusercontent.com/rclone/rclone/master/COPYING
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.7
+
+RUN microdnf update -y
+
 LABEL name="Rclone Storage Initializer" \
       vendor="Seldon Technologies" \
-      version="1.15.0-dev" \
+      version="1.19.0-dev" \
       release="1" \
       summary="Storage Initializer for Seldon Core" \
       description="Allows Seldon Core to download artifacts from cloud and local storage to a local volume"

@@ -1,4 +1,4 @@
-# Infrence Graphs
+# Inference Graphs
 
 Seldon Core extends Kubernetes with its own custom resource SeldonDeployment where you can define your runtime inference graph made up of models and other components that Seldon will manage.
 

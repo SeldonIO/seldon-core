@@ -29,7 +29,7 @@ from alibiexplainer.anchor_tabular import AnchorTabular
 from .make_test_models import make_anchor_tabular
 from .utils import SKLearnServer
 
-IRIS_MODEL_URI = "gs://seldon-models/v1.11.0-dev/sklearn/iris/*"
+IRIS_MODEL_URI = "gs://seldon-models/v1.19.0-dev/sklearn/iris/*"
 
 
 def test_anchor_tabular():

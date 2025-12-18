@@ -12,7 +12,7 @@ class RequestHandler(object):
         """
         raise NotImplementedError
 
-    def extract_request(self) -> Union[List,Dict]:
+    def extract_request(self) -> Union[List, Dict]:
         """
         Extract the request
 

@@ -1,4 +1,4 @@
-# Seldon Python Component
+# Create your Python inference class
 
 In order to run a custom python model on Seldon Core, you first need to wrap the model in it's own Python Class.
 

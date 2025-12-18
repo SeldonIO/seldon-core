@@ -40,7 +40,7 @@ class TestAEModel(TestCase):
         req = [1, 2]
         headers = {}
         res = ad_model.process_event(req, headers)
-        self.assert_(res is not None)
+        self.assertIsNotNone(res)
         self.assertEqual(res.data["data"]["is_adversarial"], 1)
 
     def test_no_return_instance_score(self):
@@ -55,5 +55,5 @@ class TestAEModel(TestCase):
         req = [1, 2]
         headers = {HEADER_RETURN_INSTANCE_SCORE: "false"}
         res = ad_model.process_event(req, headers)
-        self.assert_(res is not None)
+        self.assertIsNotNone(res)
         self.assertEqual(res.data["data"]["is_adversarial"], expected_is_adversarial)

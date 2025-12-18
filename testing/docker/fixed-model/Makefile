@@ -3,8 +3,8 @@ VERSION := $(shell cat ../../../version.txt)
 KIND_NAME ?= kind
 
 build_images:
-	s2i build -E environment_v1 . seldonio/seldon-core-s2i-python38:${VERSION} seldonio/fixed-model:0.1
-	s2i build -E environment_v2 . seldonio/seldon-core-s2i-python38:${VERSION}  seldonio/fixed-model:0.2
+	s2i build -E environment_v1 . seldonio/seldon-core-s2i-python312:${VERSION} seldonio/fixed-model:0.1
+	s2i build -E environment_v2 . seldonio/seldon-core-s2i-python312:${VERSION}  seldonio/fixed-model:0.2
 
 push_images:
 	docker push seldonio/fixed-model:0.1

@@ -229,7 +229,7 @@ class EventHandler(tornado.web.RequestHandler):
         # Extract any desired request headers
         headers = {}
 
-        for (key, val) in self.request.headers.get_all():
+        for key, val in self.request.headers.get_all():
             headers[key] = val
 
         response: Optional[ModelResponse] = self.model.process_event(request, headers)
@@ -277,7 +277,7 @@ def create_cloud_event(
     event_type: str,
     event_source: str,
     extensions: dict,
-    event_id: str = None,
+    event_id: Optional[str] = None,
 ) -> v1.Event:
     """
     Create a CloudEvent
@@ -311,6 +311,7 @@ def create_cloud_event(
         .SetExtensions(extensions)
     )
     return event
+
 
 class LivenessHandler(tornado.web.RequestHandler):
     def get(self):

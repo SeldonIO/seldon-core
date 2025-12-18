@@ -99,32 +99,36 @@ def test_create_grpc_response_nparray():
 
 def test_create_rest_response_text_ndarray():
     user_model = UserObject()
-    request_data = np.array([["hello", "world"], ["hello", "another", "world"]])
+    request_data = np.array([["hello", "world"], ["hello", "another world"]])
     request = {"data": {"ndarray": request_data, "names": []}}
     (features, meta, datadef, data_type) = scu.extract_request_parts_json(request)
-    raw_response = np.array([["hello", "world"], ["here", "another"]])
+    assert np.array_equal(features, request_data)
+    assert meta is None
+    assert datadef == request["data"]
+    assert data_type == "data"
+
+    raw_response = np.array([["hi", "world"], ["hi", "another world"]])
     result = scu.construct_response_json(user_model, True, request, raw_response)
     assert "ndarray" in result.get("data", {})
     assert np.array_equal(result["data"]["ndarray"], raw_response)
-    assert datadef == request["data"]
-    assert np.array_equal(features, request_data)
-    assert data_type == "data"
 
 
 def test_create_grpc_response_text_ndarray():
     user_model = UserObject()
-    request_data = np.array([["hello", "world"], ["hello", "another", "world"]])
+    request_data = np.array([["hello", "world"], ["hello", "another world"]])
     datadef = scu.array_to_grpc_datadef("ndarray", request_data)
     request = prediction_pb2.SeldonMessage(data=datadef)
     (features, meta, datadef, data_type) = scu.extract_request_parts(request)
+    assert type(features[0]) == np.ndarray  # numpy >= 2.0.0
+    assert meta == {}
+    assert datadef == request.data
+    assert data_type == "data"
+
     raw_response = np.array([["hello", "world"], ["here", "another"]])
     sm = scu.construct_response(user_model, True, request, raw_response)
     assert sm.data.WhichOneof("data_oneof") == "ndarray"
-    assert type(features[0]) == list
     assert np.array_equal(sm.data.ndarray, raw_response)
-    assert datadef == request.data
     assert np.array_equal(features, request_data)
-    assert data_type == "data"
 
 
 def test_create_rest_response_ndarray():

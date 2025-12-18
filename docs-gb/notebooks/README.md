@@ -50,7 +50,7 @@
 * [AWS EKS Tensorflow Deep MNIST](aws_eks_deep_mnist.md)
 * [Azure AKS Tensorflow Deep MNIST](azure_aks_deep_mnist.md)
 * [GKE with GPU Tensorflow Deep MNIST](gpu_tensorflow_deep_mnist.md)
-* [Alibaba Cloud Tensorflow Deep MNIST](alibaba_ack_deep_mnist.md)
+* [Alibaba Cloud Tensorflow Deep MNIST](alibaba_cloud_ack_deep_mnist.md)
 * [Triton GPT2 Example Azure](triton_gpt2_example_azure.md)
 * [Setup for Triton GPT2 Example Azure](triton_gpt2_example_azure_setup.md)
 
@@ -75,8 +75,6 @@
 * [Request Payload Logging with ELK](payload_logging.md)
 * [Custom Metrics with Grafana & Prometheus](metrics.md)
 * [Distributed Tracing with Jaeger](tracing.md)
-* [CI / CD with Jenkins Classic](jenkins_classic.md)
-* [CI / CD with Jenkins X](jenkins_x.md)
 * [Replica control](scale.md)
 
 ## Production Configurations and Integrations

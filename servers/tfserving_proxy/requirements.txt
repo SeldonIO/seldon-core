@@ -1,5 +1,7 @@
-tensorflow>=2.11.1, < 3.0
+tensorflow==2.18.1
 tensorflow-serving-api>=1.10.1
-grpcio==1.32.0 # Required for https://github.com/SeldonIO/seldon-core/issues/2787
-grpcio-reflection==1.32.0 # Required for https://github.com/SeldonIO/seldon-core/issues/2787
+grpcio>=1.32.0 # Required for https://github.com/SeldonIO/seldon-core/issues/2787
+grpcio-reflection>=1.32.0 # Required for https://github.com/SeldonIO/seldon-core/issues/2787
 requests
+urllib3>=2.6.0
+setuptools==78.1.1

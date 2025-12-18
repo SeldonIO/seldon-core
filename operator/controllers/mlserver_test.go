@@ -46,7 +46,9 @@ var _ = Describe("MLServer helpers", func() {
 				},
 			}
 
-			mlServer, _ = getMLServerContainer(pu, "default")
+			var err error
+			mlServer, err = getMLServerContainer(pu, "default")
+			Expect(err).To(BeNil())
 		})
 
 		It("should merge containers adding extra env", func() {
@@ -107,7 +109,7 @@ var _ = Describe("MLServer helpers", func() {
 		})
 
 		It("creates container with image", func() {
-			Expect(cServer.Image).To(Equal("seldonio/mlserver:0.1.0"))
+			Expect(cServer.Image).To(Equal("seldonio/mlserver:latest"))
 		})
 	})
 
@@ -128,7 +130,7 @@ var _ = Describe("MLServer helpers", func() {
 			image, err := getMLServerImage(pu)
 
 			Expect(err).To(Not(HaveOccurred()))
-			Expect(image).To(Equal("seldonio/mlserver:0.1.0"))
+			Expect(image).To(Equal("seldonio/mlserver:latest"))
 		})
 	})
 

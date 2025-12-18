@@ -1,3 +1,5 @@
+> ⚠️ This notebook has been **deprecated** and it may require modifications to work correctly.
+
 # Training Outlier Detector for CIFAR10 with Poetry
 
 ## Outlier Detector for Cifar10 model with Poetry-defined Environment
@@ -11,7 +13,7 @@
 
 ### Setup Seldon Core
 
-Use the setup notebook to [Setup Cluster](seldon-core-setup.md#setup-cluster) with [Ambassador Ingress](seldon-core-setup.md#ambassador) and [Install Seldon Core](seldon-core-setup.md#Install-Seldon-Core). Instructions [also online](seldon-core-setup.md).
+Use the setup notebook to [Setup Cluster](seldon-core-setup.md#setup-cluster) with [Ambassador Ingress](seldon-core-setup.md#ambassador) and [Install Seldon Core](seldon-core-setup.md#Install-Seldon-Core).
 
 We will assume that ambassador (or Istio) ingress is port-forwarded to `localhost:8003`
 
@@ -25,7 +27,7 @@ namespace/cifar10 created
 
 ### Setup MinIO
 
-Use the provided [notebook](minio_setup.md) to install Minio in your cluster. Instructions [also online](minio_setup.md).
+Use the provided [notebook](minio_setup.md) to install Minio in your cluster.
 
 We will assume that MinIO service is port-forwarded to `localhost:8090`
 

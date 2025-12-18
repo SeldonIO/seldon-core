@@ -5,9 +5,7 @@ VERSION ?= $(shell cat ../version.txt)
 DOCKER_REGISTRY ?= seldonio
 
 IMAGE_NAME_BASE=seldon-core-executor
-IMG ?= ${DOCKER_REGISTRY}/${IMAGE_NAME_BASE}:${VERSION}
-
-EXECUTOR_FOLDERS ?= ./api/... ./predictor/... ./k8s/... ./logger/...
+SELDON_EXECUTOR_IMG ?= ${DOCKER_REGISTRY}/${IMAGE_NAME_BASE}:${VERSION}
 
 KIND_NAME ?= kind
 
@@ -20,11 +18,11 @@ KIND_NAME ?= kind
 
 # Run go fmt against code
 fmt:
-	go fmt ${EXECUTOR_FOLDERS}
+	go fmt ./...
 
 # Run go vet against code
 vet:
-	go vet ${EXECUTOR_FOLDERS}
+	go vet ./...
 
 
 # Build manager binary
@@ -82,7 +80,7 @@ add_protos:
 
 # Run tests
 test: copy_operator fmt vet
-	go test ${EXECUTOR_FOLDERS} -coverprofile cover.out
+	go test ./... -coverprofile cover.out
 
 copy_openapi_resources:
 	mkdir -p api/rest/openapi
@@ -94,10 +92,10 @@ copy_openapi_resources:
 
 # Build the docker image
 docker-build: copy_operator copy_openapi_resources
-	docker build -f Dockerfile.executor -t ${IMG} .
+	docker build -f Dockerfile.executor -t ${SELDON_EXECUTOR_IMG} .
 
 docker-push:
-	docker push ${IMG}
+	docker push ${SELDON_EXECUTOR_IMG}
 
 
 # Red Hat Related
@@ -105,16 +103,16 @@ docker-push:
 # password can be found at: https://connect.redhat.com/projects/5e9b34726c2dde3913c2bb65/overview
 project=5e9b34726c2dde3913c2bb65
 redhat-image-scan:
-	docker pull ${IMG}
+	docker pull ${SELDON_EXECUTOR_IMG}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		echo $${rh_password_executor} | docker login -u redhat-isv-containers+${project}-robot quay.io --password-stdin
-	docker tag ${IMG} quay.io/redhat-isv-containers/${project}:${VERSION}
+	docker tag ${SELDON_EXECUTOR_IMG} quay.io/redhat-isv-containers/${project}:${VERSION}
 	docker push quay.io/redhat-isv-containers/${project}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		preflight check container quay.io/redhat-isv-containers/${project}:${VERSION} --docker-config=${HOME}/.docker/config.json --certification-project-id=${project} --pyxis-api-token=$${pyxis_api_token} --submit
 
 kind-image-install: docker-build
-	kind load -v 3 docker-image ${IMG} --name ${KIND_NAME}
+	kind load -v 3 docker-image ${SELDON_EXECUTOR_IMG} --name ${KIND_NAME}
 
 
 .PHONY: clean

@@ -5,15 +5,49 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
+
+env:
+  GITHUB_USER: seldondev
 
 jobs:
   python-lint:
-
     runs-on: ubuntu-latest
-    container: seldonio/python-builder:0.8
+    permissions:
+      contents: write
+    container: seldonio/python-builder:0.9
 
     steps:
-    - uses: actions/checkout@v2
-    - name: lint-python
+    - name: Resolve branch
       run: |
-        make -C python install_dev lint
+        if [ "${{ github.event_name }}" = "push" ]; then
+          echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+        else
+          echo "BRANCH=${{ github.head_ref }}" >> $GITHUB_ENV
+        fi
+
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ env.BRANCH }}
+        fetch-depth: '0'
+
+    - name: Install dev deps
+      run: make -C python install_dev update_package install
+
+    - name: Lint
+      run: make -C python lint
+
+    - name: Make licenses
+      run: make -C python licenses
+
+    - name: Configure git user
+      run: |
+        git config --global user.name "${GITHUB_USER}"
+        git config --global user.email "${GITHUB_USER}@users.noreply.github.com"
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+    - name: Commit changes in licensing
+      if: github.event_name == 'push'
+      run: |
+        git add python/ && git commit -m "chore: automatically push the changed licenses files" || echo "Nothing to commit"
+        git push

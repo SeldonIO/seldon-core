@@ -3,7 +3,7 @@ VERSION := $(shell cat ../../version.txt)
 TF_SERVING_VERSION=2.1.0
 
 IMAGE_NAME_BASE=tfserving
-IMAGE_NAME ?= seldonio/${IMAGE_NAME_BASE}-ubi8
+IMAGE_NAME ?= seldonio/${IMAGE_NAME_BASE}-ubi9
 
 
 docker-build-redhat:

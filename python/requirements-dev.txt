@@ -1,17 +1,27 @@
-# Test and linters
-black==21.7b0
-coverage==5.4              # 2nd lvl dep on cov required to avoid sqllite dep
-flake8==5.0.4
-grpcio-tools==1.37.1
-isort==5.9.0
-mypy-protobuf==2.4
-mypy<0.791
-pandas==1.1.0                # used in serving_test_gen
-pillow==8.1.1
-pip-licenses==3.4.0          # fetch licenses
-pytest-cov==2.10.1
-pytest==6.2.2
-pytest-mock==3.6.1
-tenacity==6.3.1              # tenacity - used for smart retrying
-nbqa==1.1.0
-tox<4.0.0
+# === Formatting & Style ===
+black==25.9.0              # Latest stable; supports Python 3.10+
+isort==7.0.0               # Compatible with modern Black configs
+flake8==7.3.0              # Updated linter engine
+
+# === Type Checking ===
+mypy==1.18.2               # Actively maintained type checker
+mypy-protobuf==3.5.0       # Works with newer mypy versions
+
+# === Testing ===
+pytest==8.4.2              # Modern pytest with py3.10+ support
+pytest-cov==7.0.0          # Compatible with coverage>=7
+pytest-mock==3.15.1        # For pytest>=8
+coverage==7.11.0            # Works with pytest-cov 5.x
+
+# === Utilities ===
+tenacity==9.1.2            # Smart retries
+tox==4.31.0                # Modern tox (new core + config)
+filelock==3.20.1           # Second-level dependency of tox
+nbqa==1.9.1                # Run linters/formatters on notebooks
+pip-licenses==5.5.0        # Fetch OSS licenses
+
+# === Data & ML Related (for test_gen etc.) ===
+pandas==2.3.3              # Modern release; requires numpy>=1.23
+pillow==10.4.0             # Stable, supports Python 3.10+
+grpcio-tools==1.70.0       # Prebuilt wheels for all py3.10+
+pip-audit==2.9.0

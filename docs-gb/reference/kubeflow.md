@@ -1,4 +1,4 @@
-# Seldon Core Native Integration with Kubeflow
+# Native Integration with Kubeflow
 
 The Seldon Core team is part of the core Kubeflow team, which means that we are continuously ensuring Seldon Core is fully integrated with the Kubeflow Stack.
 
