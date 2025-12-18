@@ -2,12 +2,9 @@ name: V1 Operator Lint & Tests
 
 on:
   push:
-    branches:
-      - master
-      - release-1.19.0-prep
+    branches: [ master ]
   pull_request:
-    # TODO revert before merge to master
-    branches: [ master, release-1.19.0-prep ]
+    branches: [ master ]
   workflow_dispatch:
 
 env:
