@@ -51,7 +51,7 @@ Feature: Explicit Model deployment
       storageUri: gs://seldon-models/scv2/samples/mlserver_1.3.5/iris-sklearn
     """
     When the model "overcommit-3" should eventually become Ready with timeout "20s"
-    Then send HTTP inference request with timeout "20s" to model "overcommit-1" with payload:
+    Then I send HTTP inference request with timeout "20s" to model "overcommit-1" with payload:
     """
     {
         "inputs": [
@@ -65,7 +65,7 @@ Feature: Explicit Model deployment
     }
     """
     And expect http response status code "200"
-    Then send HTTP inference request with timeout "20s" to model "overcommit-2" with payload:
+    Then I send HTTP inference request with timeout "20s" to model "overcommit-2" with payload:
     """
     {
         "inputs": [
@@ -79,7 +79,7 @@ Feature: Explicit Model deployment
     }
     """
     And expect http response status code "200"
-    Then send HTTP inference request with timeout "20s" to model "overcommit-3" with payload:
+    Then I send HTTP inference request with timeout "20s" to model "overcommit-3" with payload:
     """
     {
         "inputs": [

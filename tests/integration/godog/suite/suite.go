@@ -148,6 +148,11 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 
 	// After: optional cleanup / rollback
 	scenarioCtx.After(func(ctx context.Context, scenario *godog.Scenario, err error) (context.Context, error) {
+		if err != nil && suiteDeps.Config.SkipCleanUpOnError {
+			log.WithField("scenario", scenario.Name).Debugf("Skipping cleanup of resources for scenario with err %v", err)
+			// don't clean up resources for scenarios that fail
+			return ctx, nil
+		}
 		if suiteDeps.Config.SkipCleanup {
 			log.WithField("scenario", scenario.Name).Debug("Skipping cleanup")
 			return ctx, nil

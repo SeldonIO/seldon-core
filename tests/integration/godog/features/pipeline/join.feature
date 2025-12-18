@@ -1,8 +1,10 @@
-@PipelineDeployment @Functional @Pipelines @ModelJoin
+@PipelineModelJoin @Functional @Pipelines @ModelJoin
 Feature: Pipeline model join
-  This pipeline joins outputs from tfsimple1 and tfsimple2 and feeds them into tfsimple3.
+  In order to perform inference that depends on multiple upstream computations
+  As a model user
+  I need a pipeline that merges the outputs of multiple models into a single input for a subsequent model
 
-  Scenario: Deploy tfsimples-join pipeline and wait for readiness
+  Scenario: Deploy a a pipeline that merges the outputs of multiple models into a single input for a subsequent model, run inference, and verify the output
     Given I deploy model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
@@ -43,7 +45,7 @@ Feature: Pipeline model join
     And the model "join-tfsimple2-w4e3" should eventually become Ready with timeout "20s"
     And the model "join-tfsimple3-w4e3" should eventually become Ready with timeout "20s"
 
-    And I deploy pipeline spec with timeout "30s":
+    And I deploy a pipeline spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Pipeline
@@ -65,3 +67,94 @@ Feature: Pipeline model join
         - join-tfsimple3-w4e3
     """
     Then the pipeline "join-pipeline-w4e3" should eventually become Ready with timeout "40s"
+    Then I send gRPC inference request with timeout "20s" to pipeline "join-pipeline-w4e3" with payload:
+    """
+    {
+      "model_name": "simple",
+      "inputs": [
+        {
+          "name": "INPUT0",
+          "contents": {
+            "int_contents": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16
+            ]
+          },
+          "datatype": "INT32",
+          "shape": [
+            1,
+            16
+          ]
+        },
+        {
+          "name": "INPUT1",
+          "contents": {
+            "int_contents": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16
+            ]
+          },
+          "datatype": "INT32",
+          "shape": [
+            1,
+            16
+          ]
+        }
+      ]
+    }
+    """
+    And expect gRPC response body to contain JSON:
+    """
+    {
+      "outputs": [
+        {
+          "name": "OUTPUT0",
+          "datatype": "INT32",
+          "shape": [
+            1,
+            16
+          ]
+        },
+        {
+          "name": "OUTPUT1",
+          "datatype": "INT32",
+          "shape": [
+            1,
+            16
+          ]
+        }
+      ],
+      "raw_output_contents": [
+        "AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA==",
+        "AgAAAAQAAAAGAAAACAAAAAoAAAAMAAAADgAAABAAAAASAAAAFAAAABYAAAAYAAAAGgAAABwAAAAeAAAAIAAAAA=="
+      ]
+    }
+    """
