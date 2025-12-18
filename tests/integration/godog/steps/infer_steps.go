@@ -284,6 +284,8 @@ func (i *inference) gRPCRespContainsError(err string) error {
 	return fmt.Errorf("error %s does not contain %s", i.lastGRPCResponse.err.Error(), err)
 }
 
+// todo: in the future we should also check for raw output contents the function needed is in the command line cli of seldon on the infer method
+// todo: https://github.com/SeldonIO/seldon-core/blob/ce6deb2433927e7632f56b471dfe3c0a0fb1210c/operator/pkg/cli/infer.go#L586
 func (i *inference) gRPCRespCheckBodyContainsJSON(expectJSON *godog.DocString) error {
 	if i.lastGRPCResponse.response == nil {
 		if i.lastGRPCResponse.err != nil {
