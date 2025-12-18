@@ -4,8 +4,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    # TODO revert before merge to master
-    branches: [ release-1.19.0-prep ]
+    branches: [ master ]
   workflow_dispatch:
 
 jobs:
