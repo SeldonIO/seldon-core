@@ -1,4 +1,4 @@
-# Install Seldon-Core
+# Install On Kubernetes
 
 ## Pre-requisites
 

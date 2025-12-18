@@ -1,4 +1,4 @@
-# Developer
+# For Developers
 
 We welcome new contributors.
 Please read the [code of

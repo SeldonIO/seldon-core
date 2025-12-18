@@ -31,7 +31,7 @@
   * [Model Metadata](deployments/metadata.md)
   * [Budgeting Disruptions](deployments/disruption-budgets.md)
   * [Graph Deployment Options](deployments/graph-modes.md)
-  * [AB Tests and Progerssive Rollouts](deployments/abtests.md)
+  * [AB Tests and Progressive Rollouts](deployments/abtests.md)
   * [Troubleshooting Deployments](deployments/troubleshooting.md)
 * [Servers](configuration/servers/README.md)
   * [Custom Inference Servers](servers/custom.md)
