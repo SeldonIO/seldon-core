@@ -1,14 +1,13 @@
-# AB Testing and Progressive Rollouts
+# AB Tests and Progressive Rollouts
 
 ## Simple AB Tests
 
 Seldon Core provides the ability to easily create AB Tests and Shadows using Istio and Ambassador to split traffic as required.
 
- * [Istio AB Test/Canary Example](../examples/istio_canary.html)
- * [Ambassador AB Tests/Canary Example](../examples/ambassador_canary.html)
+* [Istio AB Test/Canary Example](../examples/istio_canary.html)
+* [Ambassador AB Tests/Canary Example](../examples/ambassador_canary.html)
 
 Metrics can be evaluated in prometheus for the different predictors in the AB Test using the [Seldon Analytics dashboard](../analytics/analytics.html).
-
 
 ## Advanced AB Test Experiments and Progressive Rollouts
 
@@ -16,16 +15,14 @@ For more advanced use cases we recommend our integration with [Iter8](https://it
 
 In Seldon we provide two current examples on how to run Iter8 experiments.
 
- 1. Seldon/Iter8 Experiment over single Seldon Deployment.
- 1. Seldon/Iter8 experiment over separate Seldon Deployments.
-
+1. Seldon/Iter8 Experiment over single Seldon Deployment.
+2. Seldon/Iter8 experiment over separate Seldon Deployments.
 
 ## Seldon - Iter8 Experiment over single Seldon Deployment
 
 The first option is to create an AB Test for the candidate model with an updated Seldon Deployment and run an Iter8 experiment to progressively rollout the candidate based on a set of metrics. The architecture is show below:
 
-![seldonIter8Single](../images/seldon-iter8-single.png)
-
+![seldonIter8Single](../.gitbook/assets/seldon-iter8-single.png)
 
 We begin by updating our default model to start an AB test as shown below:
 
@@ -259,10 +256,10 @@ spec:
 
 This has several key sections:
 
- * Strategy: The type of experiment to run and actions to take on completion.
- * Criteria: Key metrics for rewards and service objectives.
- * Duration: How long to run the experiment.
- * VersionInfo: Details of the various candidate models to compare.
+* Strategy: The type of experiment to run and actions to take on completion.
+* Criteria: Key metrics for rewards and service objectives.
+* Duration: How long to run the experiment.
+* VersionInfo: Details of the various candidate models to compare.
 
 Once the experiment is launched traffic will be moved to the various candidates based on the defined rewards and objectives.
 
@@ -340,7 +337,7 @@ We can also run experiments over separate Seldon Deployments. This though would 
 
 The architecture for this type of experiment is shown below:
 
-![seldonIter8Separate](../images/seldon-iter8-separate.png)
+![seldonIter8Separate](../.gitbook/assets/seldon-iter8-separate.png)
 
 The difference here is we have two Seldon Deployments. A baseline:
 
@@ -387,7 +384,6 @@ spec:
 ```
 
 Then, for Istio we need a new routing-rule to split traffic between the two:
-
 
 ```yaml
 apiVersion: networking.istio.io/v1alpha3

@@ -1,4 +1,4 @@
-# Testing Your Model Endpoints
+# Testing Model Endpoints
 
 In order to test your components you are able to send the requests directly using CURL/grpCURL or a similar utility, as well as by using our Python SeldonClient SDK.
 

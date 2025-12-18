@@ -1,4 +1,4 @@
-# Deployment
+# Deployment Techniques
 
 Once you have created your inference graph as a JSON or YAML Seldon Deployment resource you can deploy to Kubernetes with `kubectl`. For example, if your deployment is packaged in `my_ml_deployment.yaml`:
 

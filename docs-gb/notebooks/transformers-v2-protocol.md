@@ -1,26 +1,18 @@
-# Custom pre-processors with the V2 protocol
+# Custom pre-processors with the Open Inference Protocol
 
-Most of the time, the requests that we send to our model need some kind of processing.
-For example, extra information may need to be fetched (e.g. from a feature store), or processed, in order to obtain the actual tensors required by the model. One example for this use case are NLP models, where natural language needs first to be tokenised according to a vocabulary, or embedded by a 2nd model. 
+Most of the time, the requests that we send to our model need some kind of processing. For example, extra information may need to be fetched (e.g. from a feature store), or processed, in order to obtain the actual tensors required by the model. One example for this use case are NLP models, where natural language needs first to be tokenised according to a vocabulary, or embedded by a 2nd model.
 
-In this tutorial, we will focus on this latter scenario.
-In particular, we will explore how to deploy a _tokeniser_ pre-transformer that converts our natural language text to tokens. 
-This tokeniser will then be part of an inference graph, so that its output gets routed to a [GPT-2 model deployed using Triton](../notebooks/triton_gpt2_example.md).
+In this tutorial, we will focus on this latter scenario. In particular, we will explore how to deploy a _tokeniser_ pre-transformer that converts our natural language text to tokens. This tokeniser will then be part of an inference graph, so that its output gets routed to a [GPT-2 model deployed using Triton](triton_gpt2_example.md).
 
-> **NOTE**: The tokeniser logic and the Triton artifacts are taken from the [GPT-2 Model example](../notebooks/triton_gpt2_example.md). To learn more about these, feel free to check that tutorial.
+> **NOTE**: The tokeniser logic and the Triton artifacts are taken from the [GPT-2 Model example](triton_gpt2_example.md). To learn more about these, feel free to check that tutorial.
 
-![Inference graph with tokeniser and GPT-2 model](../images/gpt2-graph.svg)
+![Inference graph with tokeniser and GPT-2 model](../.gitbook/assets/gpt2-graph.svg)
 
 ## Creating a Tokeniser
 
-In order to create a custom pre-processing step, the first step will be to [write a **custom runtime**](https://mlserver.readthedocs.io/en/latest/runtimes/custom.html) using [MLServer](https://mlserver.readthedocs.io/en/latest/).
-MLServer is a production-grade inference server, whose main goal is to ease up the serving of models through a REST and gRPC interface compatible with the [V2 Inference Protocol](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/v2-protocol.html).
+In order to create a custom pre-processing step, the first step will be to [write a **custom runtime**](https://mlserver.readthedocs.io/en/latest/runtimes/custom.html) using [MLServer](https://mlserver.readthedocs.io/en/latest/). MLServer is a production-grade inference server, whose main goal is to ease up the serving of models through a REST and gRPC interface compatible with the [V2 Inference Protocol](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/v2-protocol.html).
 
-As well as an inference server, MLServer also exposes a *framework* which can be leveraged to easily **write your custom inference runtimes**.
-These custom runtimes can be used to write any custom logic, including (you guessed it!) our tokeniser pre-processor.
-Therefore, we will start by extending the base `mlserver.MLModel` class, adding our custom logic.
-Note that this logic is taken (almost) verbatim from the [GPT-2 Model example](../notebooks/triton_gpt2_example.md).
-
+As well as an inference server, MLServer also exposes a _framework_ which can be leveraged to easily **write your custom inference runtimes**. These custom runtimes can be used to write any custom logic, including (you guessed it!) our tokeniser pre-processor. Therefore, we will start by extending the base `mlserver.MLModel` class, adding our custom logic. Note that this logic is taken (almost) verbatim from the [GPT-2 Model example](triton_gpt2_example.md).
 
 ```python
 %%writefile tokeniser/runtime.py
@@ -70,20 +62,15 @@ class Tokeniser(MLModel):
 
 ```
 
-    Overwriting tokeniser/runtime.py
+```
+Overwriting tokeniser/runtime.py
+```
 
-
-Note that the pre-processing logic is implemented in the `predict()` method.
-At the moment, the MLServer framework doesn't expose the concept of pre- and post-processing.
-However, it's possible to implement this is a _"pseudo-model"_, thus relying on the service orchestrator of Seldon Core, who will be responsible of chaining the output of our tokeniser to the next model.
-
+Note that the pre-processing logic is implemented in the `predict()` method. At the moment, the MLServer framework doesn't expose the concept of pre- and post-processing. However, it's possible to implement this is a _"pseudo-model"_, thus relying on the service orchestrator of Seldon Core, who will be responsible of chaining the output of our tokeniser to the next model.
 
 ### Requirements and default model settings
 
-Besides writing the logic of our custom runtime, we will also need to provide the extra requirements that will be used by our environment.
-This can be done through a plain `requirements.txt` file.
-Alternatively, for a finer control, it'd also be possible to leverage [Conda's environment files](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-file-manually) to specify our environment.
-
+Besides writing the logic of our custom runtime, we will also need to provide the extra requirements that will be used by our environment. This can be done through a plain `requirements.txt` file. Alternatively, for a finer control, it'd also be possible to leverage [Conda's environment files](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-file-manually) to specify our environment.
 
 ```python
 %%writefile tokeniser/requirements.txt
@@ -92,13 +79,11 @@ transformers==4.12.3
 
 ```
 
-    Overwriting tokeniser/requirements.txt
+```
+Overwriting tokeniser/requirements.txt
+```
 
-
-On top of this, we will also add a `model-settings.json` file with the default settings for our model.
-MLServer uses these files to provide extra configuration (e.g. number of parallel workers, adaptive batching configuration, etc.) for each model.
-In our case, we will use this file to tell MLServer that it should always use our custom runtime by default and name our models as `tokeniser` (unless other name is specified).
-
+On top of this, we will also add a `model-settings.json` file with the default settings for our model. MLServer uses these files to provide extra configuration (e.g. number of parallel workers, adaptive batching configuration, etc.) for each model. In our case, we will use this file to tell MLServer that it should always use our custom runtime by default and name our models as `tokeniser` (unless other name is specified).
 
 ```python
 %%writefile tokeniser/model-settings.json
@@ -107,30 +92,25 @@ In our case, we will use this file to tell MLServer that it should always use ou
 }
 ```
 
-    Overwriting tokeniser/model-settings.json
-
+```
+Overwriting tokeniser/model-settings.json
+```
 
 ### Testing our tokeniser
 
-> **NOTE**: To test our custom runtime locally, we will need to install the same set of dependencies that will be bundled and deployed remotely.
-  To achieve this, we can re-use the environment that was described on the previous section:
-  
-   ```bash
-   pip install -r ./tokeniser/requirements.txt
-   ```
+> **NOTE**: To test our custom runtime locally, we will need to install the same set of dependencies that will be bundled and deployed remotely. To achieve this, we can re-use the environment that was described on the previous section:
 
+```bash
+pip install -r ./tokeniser/requirements.txt
+```
 
-Since we're leveraging MLServer to write our custom pre-processor, it should be **easy to test it locally**.
-For this, we will start MLServer using the [mlserver start subcommand](https://mlserver.readthedocs.io/en/latest/reference/cli.html#mlserver-start).
-This command has to be carried out on a separate terminal.
+Since we're leveraging MLServer to write our custom pre-processor, it should be **easy to test it locally**. For this, we will start MLServer using the [mlserver start subcommand](https://mlserver.readthedocs.io/en/latest/reference/cli.html#mlserver-start). This command has to be carried out on a separate terminal.
 
 ```bash
 mlserver start ./tokeniser
 ```
 
-
 We can then send a test request using `curl` as follows:
-
 
 ```bash
 %%bash
@@ -144,9 +124,7 @@ As we can see above, the input `hello world` gets tokenised into `[31373, 995]`,
 
 ### Building the image
 
-Once we have our custom code tested and ready, we should be able to build our custom image by using the [mlserver build subcommand](https://mlserver.readthedocs.io/en/latest/reference/cli.html#mlserver-build).
-This image will be created under the `gpt2-tokeniser:0.1.0` tag.
-
+Once we have our custom code tested and ready, we should be able to build our custom image by using the [mlserver build subcommand](https://mlserver.readthedocs.io/en/latest/reference/cli.html#mlserver-build). This image will be created under the `gpt2-tokeniser:0.1.0` tag.
 
 ```bash
 %%bash
@@ -155,17 +133,15 @@ mlserver build ./tokeniser --tag seldonio/gpt2-tokeniser:0.1.0
 
 ## Deploying our inference graph
 
-Now that we have our custom tokeniser built and ready, we are able to deploy it alongside our GPT-2 model.
-This can be achieved through a `SeldonDeployment` manifest which **links both models**.
-That is, our tokeniser, plus the actual GPT-2 model.
+Now that we have our custom tokeniser built and ready, we are able to deploy it alongside our GPT-2 model. This can be achieved through a `SeldonDeployment` manifest which **links both models**. That is, our tokeniser, plus the actual GPT-2 model.
 
-As outlined above, this manifest will re-use the image and resources built in the [GPT-2 Model example](../notebooks/triton_gpt2_example.md), which is accessible from GCS.
+As outlined above, this manifest will re-use the image and resources built in the [GPT-2 Model example](triton_gpt2_example.md), which is accessible from GCS.
 
 > **NOTE:** This manifest expects that the `gpt2-tokeniser:0.1.0` image built in the previous section **is accessible** from within the cluster where Seldon Core has been installed. If you are [using kind](../install/kind.md), you should be able to load the image into your local cluster with the following command:
+
 ```bash
 kind load docker-image gpt2-tokeniser:0.1.0
 ```
-
 
 ```python
 %%writefile seldondeployment.yaml
@@ -209,25 +185,23 @@ spec:
 
 ```
 
-    Overwriting seldondeployment.yaml
+```
+Overwriting seldondeployment.yaml
+```
 
-
-The final step will be to apply this manifest into the cluster, where Seldon Core is running.
-For example, to deploy the manifest into the `models` namespace, we could run the following command:
-
+The final step will be to apply this manifest into the cluster, where Seldon Core is running. For example, to deploy the manifest into the `models` namespace, we could run the following command:
 
 ```python
 !kubectl apply -f seldondeployment.yaml
 ```
 
-    seldondeployment.machinelearning.seldon.io/gpt2 configured
-
+```
+seldondeployment.machinelearning.seldon.io/gpt2 configured
+```
 
 ### Testing our deployed inference graph
 
-Finally, we can test that our deployed inference graph is working as expected by sending a request.
-If we assume that our cluster can be reached in `localhost:8003`, we can send a request using `cURL` as:
-
+Finally, we can test that our deployed inference graph is working as expected by sending a request. If we assume that our cluster can be reached in `localhost:8003`, we can send a request using `cURL` as:
 
 ```bash
 %%bash
@@ -236,21 +210,22 @@ curl localhost:80/seldon/default/gpt2/v2/models/infer \
     -d '{"inputs": [{"name": "sentences", "datatype": "BYTES", "shape": [1, 11], "data": ["Seldon Technologies is very"]}]}'
 ```
 
-    {"model_name":"tokeniser-decoder","model_version":null,"id":"6f952cc2-3648-4180-bd70-163a731bdb86","parameters":null,"outputs":[{"name":"next_token","shape":[1],"datatype":"BYTES","parameters":null,"data":["pleased"]}]}
+```
+{"model_name":"tokeniser-decoder","model_version":null,"id":"6f952cc2-3648-4180-bd70-163a731bdb86","parameters":null,"outputs":[{"name":"next_token","shape":[1],"datatype":"BYTES","parameters":null,"data":["pleased"]}]}
 
-      % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                     Dload  Upload   Total   Spent    Left  Speed
-    
-      0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-    100   115    0     0  100   115      0     95  0:00:01  0:00:01 --:--:--    95
-    100   115    0     0  100   115      0     52  0:00:02  0:00:02 --:--:--    52
-    100   115    0     0  100   115      0     35  0:00:03  0:00:03 --:--:--    35
-    100   115    0     0  100   115      0     27  0:00:04  0:00:04 --:--:--    27
-    100   115    0     0  100   115      0     22  0:00:05  0:00:05 --:--:--    22
-    100   115    0     0  100   115      0     18  0:00:06  0:00:06 --:--:--     0
-    100   115    0     0  100   115      0     15  0:00:07  0:00:07 --:--:--     0
-    100   334  100   219  100   115     27     14  0:00:08  0:00:08 --:--:--    45
-    100   334  100   219  100   115     27     14  0:00:08  0:00:08 --:--:--    57
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
 
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100   115    0     0  100   115      0     95  0:00:01  0:00:01 --:--:--    95
+100   115    0     0  100   115      0     52  0:00:02  0:00:02 --:--:--    52
+100   115    0     0  100   115      0     35  0:00:03  0:00:03 --:--:--    35
+100   115    0     0  100   115      0     27  0:00:04  0:00:04 --:--:--    27
+100   115    0     0  100   115      0     22  0:00:05  0:00:05 --:--:--    22
+100   115    0     0  100   115      0     18  0:00:06  0:00:06 --:--:--     0
+100   115    0     0  100   115      0     15  0:00:07  0:00:07 --:--:--     0
+100   334  100   219  100   115     27     14  0:00:08  0:00:08 --:--:--    45
+100   334  100   219  100   115     27     14  0:00:08  0:00:08 --:--:--    57
+```
 
-As we can see above, our plain-text request is now going successfully through the `tokeniser`, acting as a pre-processor, whose output then gets routed to the actual GPT-2 model. 
+As we can see above, our plain-text request is now going successfully through the `tokeniser`, acting as a pre-processor, whose output then gets routed to the actual GPT-2 model.

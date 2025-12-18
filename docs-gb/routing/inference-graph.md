@@ -1,12 +1,13 @@
-# Inference Graph
+# Inference Graphs
 
 Seldon Core extends Kubernetes with its own custom resource SeldonDeployment where you can define your runtime inference graph made up of models and other components that Seldon will manage.
 
 A SeldonDeployment is a JSON or YAML file that allows you to define your graph of component images and the resources each of those images will need to run (using a Kubernetes PodTemplateSpec). The parts of a SeldonDeployment are shown below:
 
-![inference-graph](../images/inf-graph.png)
+![inference-graph](../.gitbook/assets/inf-graph.png)
 
 A minimal example for a single model, this time in YAML, is shown below:
+
 ```yaml
 apiVersion: machinelearning.seldon.io/v1alpha2
 kind: SeldonDeployment
@@ -32,10 +33,10 @@ spec:
 
 The key components are:
 
-  * A list of Predictors, each with a specification for the number of replicas.
-     * Each defines a graph and its set of deployments. Multiple predictors is useful when you want to split traffic between a main graph and a canary or for other production rollout scenarios.
-  * For each predictor a list of componentSpecs. Each componentSpec is a Kubernetes PodTemplateSpec which Seldon will build into a Kubernetes Deployment. Place here the images from your graph and their requirements, e.g. Volumes, ImagePullSecrets, Resources Requests etc.
-  * A graph specification that describes how your components are joined together.
+* A list of Predictors, each with a specification for the number of replicas.
+  * Each defines a graph and its set of deployments. Multiple predictors is useful when you want to split traffic between a main graph and a canary or for other production rollout scenarios.
+* For each predictor a list of componentSpecs. Each componentSpec is a Kubernetes PodTemplateSpec which Seldon will build into a Kubernetes Deployment. Place here the images from your graph and their requirements, e.g. Volumes, ImagePullSecrets, Resources Requests etc.
+* A graph specification that describes how your components are joined together.
 
 ## Example of graph with pre-processor and post-processor
 
@@ -86,10 +87,9 @@ It's possible to define complex graphs with ROUTERS, COMBINERS, and other compon
 
 You can learn more about the SeldonDeployment YAML definition by reading the content on our [Kubernetes Seldon Deployment Go Types file](../reference/seldon-deployment.rst).
 
-
 ## Image UserIds
 
-We provide an environment variable DEFAULT_USER_ID (set in the helm chart install with `.Values.defaultUserID`) which allows you to set the default user id the images will run under. This defaults to 8888. If you wish to override this for your specific Pod/Container rather than globally you can change it as shown in the example below:
+We provide an environment variable DEFAULT\_USER\_ID (set in the helm chart install with `.Values.defaultUserID`) which allows you to set the default user id the images will run under. This defaults to 8888. If you wish to override this for your specific Pod/Container rather than globally you can change it as shown in the example below:
 
 ```yaml
 apiVersion: machinelearning.seldon.io/v1

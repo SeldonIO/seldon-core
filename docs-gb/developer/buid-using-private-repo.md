@@ -1,4 +1,4 @@
-# Build using private local repository
+# Build using Private Repository
 
 ## Prerequisites
 
