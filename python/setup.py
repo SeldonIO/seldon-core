@@ -36,7 +36,7 @@ setup(
         "gunicorn>=23.0.0",
         "setuptools>=80.9.0",
         "prometheus_client>=0.23.1",
-        "werkzeug>=3.1.3",
+        "werkzeug>=3.1.4",
         "cryptography>=46.0.3",
         "pyyaml>=6.0.3",
         "click>=8.3.0",
