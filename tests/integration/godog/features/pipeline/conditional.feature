@@ -73,9 +73,68 @@ Feature: Conditional pipeline with branching models
     Then the pipeline "tfsimple-conditional-nbsl" should eventually become Ready with timeout "40s"
     Then I send gRPC inference request with timeout "20s" to pipeline "tfsimple-conditional-nbsl" with payload:
     """
-    {"model_name":"conditional-nbsl","inputs":[{"name":"CHOICE","contents":{"int_contents":[0]},"datatype":"INT32","shape":[1]},{"name":"INPUT0","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]},{"name":"INPUT1","contents":{"fp32_contents":[1,2,3,4]},"datatype":"FP32","shape":[4]}]}
+    {
+      "model_name": "conditional-nbsl",
+      "inputs": [
+        {
+          "name": "CHOICE",
+          "contents": {
+            "int_contents": [
+              0
+            ]
+          },
+          "datatype": "INT32",
+          "shape": [
+            1
+          ]
+        },
+        {
+          "name": "INPUT0",
+          "contents": {
+            "fp32_contents": [
+              1,
+              2,
+              3,
+              4
+            ]
+          },
+          "datatype": "FP32",
+          "shape": [
+            4
+          ]
+        },
+        {
+          "name": "INPUT1",
+          "contents": {
+            "fp32_contents": [
+              1,
+              2,
+              3,
+              4
+            ]
+          },
+          "datatype": "FP32",
+          "shape": [
+            4
+          ]
+        }
+      ]
+    }
     """
     And expect gRPC response body to contain JSON:
     """
-    {"outputs":[{"name":"OUTPUT","datatype":"FP32","shape":[4]}],"raw_output_contents":["AAAgQQAAoEEAAPBBAAAgQg=="]}
+    {
+      "outputs": [
+        {
+          "name": "OUTPUT",
+          "datatype": "FP32",
+          "shape": [
+            4
+          ]
+        }
+      ],
+      "raw_output_contents": [
+        "AAAgQQAAoEEAAPBBAAAgQg=="
+      ]
+    }
     """

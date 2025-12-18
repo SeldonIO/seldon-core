@@ -54,7 +54,62 @@ Feature: Pipeline model chaining
     Then the pipeline "model-chain-tfsimples-iuw3" should eventually become Ready with timeout "40s"
     When I send HTTP inference request with timeout "20s" to pipeline "model-chain-tfsimples-iuw3" with payload:
     """
-    {"inputs":[{"name":"INPUT0","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]},{"name":"INPUT1","data":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"datatype":"INT32","shape":[1,16]}]}
+    {
+      "inputs": [
+        {
+          "name": "INPUT0",
+          "data": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "datatype": "INT32",
+          "shape": [
+            1,
+            16
+          ]
+        },
+        {
+          "name": "INPUT1",
+          "data": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "datatype": "INT32",
+          "shape": [
+            1,
+            16
+          ]
+        }
+      ]
+    }
     """
     And expect http response status code "200"
     Then I send gRPC inference request with timeout "20s" to pipeline "model-chain-tfsimples-iuw3" with payload:
