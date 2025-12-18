@@ -14,6 +14,7 @@ import (
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	v "github.com/seldonio/seldon-core/operator/v2/pkg/generated/clientset/versioned"
+	"github.com/seldonio/seldon-core/tests/integration/godog/components"
 	"github.com/seldonio/seldon-core/tests/integration/godog/k8sclient"
 	log "github.com/sirupsen/logrus"
 )
@@ -23,7 +24,7 @@ type World struct {
 	kubeClient        *k8sclient.K8sClient
 	corek8sClient     v.Interface
 	watcherStorage    k8sclient.WatcherStorage
-	env               *k8sclient.EnvManager //this is a combination of components for the cluster
+	env               *components.EnvManager //this is a combination of components for the cluster
 	currentModel      *Model
 	currentPipeline   *Pipeline
 	currentExperiment *Experiment
@@ -39,7 +40,7 @@ type Config struct {
 	KubeClient     *k8sclient.K8sClient
 	K8sClient      v.Interface
 	WatcherStorage k8sclient.WatcherStorage
-	Env            *k8sclient.EnvManager
+	Env            *components.EnvManager
 	GRPC           v2_dataplane.GRPCInferenceServiceClient
 	IngressHost    string
 	HTTPPort       uint

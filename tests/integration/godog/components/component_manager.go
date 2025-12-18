@@ -1,4 +1,4 @@
-package k8sclient
+package components
 
 import (
 	"context"
@@ -53,6 +53,15 @@ func (e *EnvManager) RestoreAll(ctx context.Context) error {
 func (e *EnvManager) Kafka() *KafkaComponent {
 	for _, component := range e.components {
 		if k, ok := component.(*KafkaComponent); ok {
+			return k
+		}
+	}
+	return nil
+}
+
+func (e *EnvManager) KafkaNodePool() *KafkaNodePoolComponent {
+	for _, component := range e.components {
+		if k, ok := component.(*KafkaNodePoolComponent); ok {
 			return k
 		}
 	}
