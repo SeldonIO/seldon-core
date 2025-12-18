@@ -28,3 +28,4 @@ sources:
 - https://github.com/SeldonIO/seldon-core
 - https://github.com/SeldonIO/seldon-core/tree/master/helm-charts/seldon-core-analytics
 version: 1.19.0-dev
+deprecated: true
