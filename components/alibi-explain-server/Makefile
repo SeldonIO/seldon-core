@@ -68,6 +68,11 @@ redhat-image-scan:
 clean:
 	rm -rf test_models
 
+.PHONY:show_image
+show_image:
+	 @echo ${IMAGE_NAME}:${VERSION}
+
+
 #
 # Test Tabular Explanations
 #

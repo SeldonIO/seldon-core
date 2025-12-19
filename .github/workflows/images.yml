@@ -38,13 +38,27 @@ jobs:
           USER_INPUT="${{ github.event.inputs.docker-tag }}"
           echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
 
-
       - name: Build and push
         working-directory: ./operator/
         env:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
           make docker-build docker-push
+          TAG="$(make show_image)"
+          echo "SELDON_OPERATOR_IMG=$TAG" >> $GITHUB_ENV
+          echo "Operator tag: SELDON_OPERATOR_IMG"
+
+      - name: Monitor docker image for CVEs
+        # only want to monitor images which we have set a release tag for
+        if: ${{ github.event.inputs.docker-tag != '' }}
+        uses: snyk/actions/docker@master
+        continue-on-error: false
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: ${{ env.SELDON_OPERATOR_IMG }}
+          command: monitor
+          args:  --app-vulns --severity-threshold=high --file=operator/Dockerfile
 
   executor:
     runs-on: ubuntu-latest
@@ -71,6 +85,21 @@ jobs:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
           make docker-build docker-push
+          TAG="$(make show_image)"
+          echo "SELDON_EXECUTOR_IMG=$TAG" >> $GITHUB_ENV
+          echo "Executor tag: $SELDON_EXECUTOR_IMG"
+
+      - name: Monitor docker image for CVEs
+        # only want to monitor images which we have set a release tag for
+        if: ${{ github.event.inputs.docker-tag != '' }}
+        uses: snyk/actions/docker@master
+        continue-on-error: false
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: ${{ env.SELDON_EXECUTOR_IMG }}
+          command: monitor
+          args:  --app-vulns --severity-threshold=high --file=executor/Dockerfile
 
   rclone-storage-initializer:
     runs-on: ubuntu-latest
@@ -96,6 +125,21 @@ jobs:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
           make docker-build docker-push
+          TAG="$(make show_image)"
+          echo "SELDON_RCLONE_IMG=$TAG" >> $GITHUB_ENV
+          echo "Rclone tag: $SELDON_RCLONE_IMG"
+
+      - name: Monitor docker image for CVEs
+        # only want to monitor images which we have set a release tag for
+        if: ${{ github.event.inputs.docker-tag != '' }}
+        uses: snyk/actions/docker@master
+        continue-on-error: false
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: ${{ env.SELDON_RCLONE_IMG }}
+          command: monitor
+          args:  --app-vulns --severity-threshold=high --file=./components/rclone-storage-initializer/Dockerfile
 
   s2i-wrapper:
     runs-on: ubuntu-latest
@@ -124,6 +168,22 @@ jobs:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
           make docker-build-conda-base docker-push-conda-base
+          TAG="$(make show_conda_image)"
+          echo "SELDON_CONDA_IMG=$TAG" >> $GITHUB_ENV
+          echo "Conda tag: $SELDON_CONDA_IMG"
+
+      - name: Monitor (Conda base) docker image for CVEs
+        # only want to monitor images which we have set a release tag for
+        if: ${{ github.event.inputs.docker-tag != '' }}
+        uses: snyk/actions/docker@master
+        continue-on-error: false
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: ${{ env.SELDON_CONDA_IMG }}
+          command: monitor
+          args:  --app-vulns --severity-threshold=high --file=./wrappers/s2i/python/Dockerfile.conda
+
 
       - name: Build and push (Base Wrapper)
         working-directory: ./wrappers/s2i/python
@@ -133,6 +193,22 @@ jobs:
           make docker-build docker-push PYTHON_VERSION=3.12.12
           make docker-tag-base-python docker-push-base-python PYTHON_VERSION=3.12.12
           docker save -o /tmp/base-wrapper.tar seldonio/seldon-core-s2i-python312:${VERSION}
+          TAG="$(make show_python_wrapper_image)"
+          echo "PYTHON_BASE_WRAPPER_IMG=$TAG" >> $GITHUB_ENV
+          echo "Python base wrapper tag: $PYTHON_BASE_WRAPPER_IMG"
+
+      - name: Monitor (base wrapper) docker image for CVEs
+        # only want to monitor images which we have set a release tag for
+        if: ${{ github.event.inputs.docker-tag != '' }}
+        uses: snyk/actions/docker@master
+        continue-on-error: false
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: ${{ env.PYTHON_BASE_WRAPPER_IMG }}
+          command: monitor
+          args:  --app-vulns --severity-threshold=high --file=./wrappers/s2i/python/Dockerfile
+
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -204,3 +280,18 @@ jobs:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
           make docker-build docker-push
+          TAG="$(make show_image)"
+          echo "IMG_TAG=$TAG" >> $GITHUB_ENV
+          echo "${{ matrix.server }} image tag: $IMG_TAG"
+
+      - name: Monitor docker image for CVEs
+        # only want to monitor images which we have set a release tag for
+        if: ${{ github.event.inputs.docker-tag != '' }}
+        uses: snyk/actions/docker@master
+        continue-on-error: false
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: ${{ env.IMG_TAG }}
+          command: monitor
+          args: --app-vulns --severity-threshold=high

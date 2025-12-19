@@ -26,3 +26,7 @@ redhat-image-scan:
 	docker push quay.io/redhat-isv-containers/${project}:${VERSION}
 	source ~/.config/seldon/seldon-core/redhat-image-passwords.sh && \
 		preflight check container quay.io/redhat-isv-containers/${project}:${VERSION} --docker-config=${HOME}/.docker/config.json --certification-project-id=${project} --pyxis-api-token=$${pyxis_api_token} --submit
+
+.PHONY:show_image
+show_image:
+	 @echo ${IMAGE_NAME}:${VERSION}

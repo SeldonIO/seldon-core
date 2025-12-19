@@ -14,6 +14,11 @@ get_local_repo: clean
 	cp $(SELDON_CORE_DIR)/version.txt version.txt
 	cp -R "$(SELDON_CORE_DIR)/python/." _seldon_core/
 
+.PHONY:show_image
+show_image:
+	 @echo ${IMAGE_NAME}:${VERSION}
+
+
 clean:
 	rm version.txt || true
 	rm -rf _seldon_core || true
