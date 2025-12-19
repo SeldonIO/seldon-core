@@ -91,12 +91,12 @@ function build_push_executor {
 function build_push_mock {
     make \
 	-C examples/models/mean_classifier \
-	build \
-	push && \
+	docker-build \
+	docker-push && \
     make \
     -C testing/docker/echo-model \
-    build_image \
-    push_image && \
+    docker-build \
+    docker-push && \
     make \
     -C testing/docker/fixed-model \
     build_images \
@@ -163,8 +163,8 @@ function build_push_rclone_storage_initializer {
 function build_push_mab {
     make \
 	-C components/routers/epsilon-greedy \
-        build \
-	push 
+        docker-build \
+	docker-push 
     MAB_EXIT_VALUE=$?
 }
 

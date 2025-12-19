@@ -152,10 +152,20 @@ jobs:
         - servers/tfserving_proxy
         - components/alibi-explain-server
         - components/alibi-detect-server
+        - components/routers/epsilon-greedy
+        - examples/models/mean_classifier
+        - testing/docker/echo-model
     steps:
       - name: Checkout Git Commit
         uses: actions/checkout@v4
 
+      - name: Free up disk space (android, haskell, dotnet)
+        run: |
+          sudo rm -rf /usr/local/lib/android || true
+          sudo rm -rf /opt/ghc || true
+          sudo rm -rf /usr/share/dotnet || true
+          df -h
+      
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
@@ -185,9 +195,13 @@ jobs:
         run: |
           docker load --input /tmp/base-wrapper.tar
 
+      - name: Remove tarball
+        run: rm -f /tmp/base-wrapper.tar
+
       - name: Build and push (Prepackaged Server Image)
         working-directory: ./${{ matrix.server }}/
         env:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
           make docker-build docker-push
+

@@ -1,4 +1,4 @@
-VERSION := $(shell cat ../../../../version.txt)
+VERSION ?= $(shell cat ../../../../version.txt)
 
 all: env train upload
 
