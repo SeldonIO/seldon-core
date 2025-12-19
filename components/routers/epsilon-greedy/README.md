@@ -34,7 +34,7 @@ For routers like multi-armed bandits it can be important to save the state after
 
 ### Wrap
 ```bash
-make build
+make docker-build
 ```
 
 ## Test the wrapped image
