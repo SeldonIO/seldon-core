@@ -24,7 +24,8 @@ RUN INSTALL_DIR=/tmp/flatc-install && \
 ENV PYTHON_VERSION="3.12.12"
 ENV CONDA_VERSION="25.3.1"
 # Pin brotli to 1.2.x to remediate GHSA-2qfp-q593-8484 (CVE-2025-6176)
-RUN conda install --yes -c conda-forge python=$PYTHON_VERSION conda=$CONDA_VERSION brotli=1.2
+# Pin urllib3 to 2.6.x to remediate CVE-2025-66418, CVE-2025-66471 
+RUN conda install --yes -c conda-forge python=$PYTHON_VERSION conda=$CONDA_VERSION brotli=1.2 urllib3=2.6
 
 # Install python dependencies
 RUN pip3 install --upgrade pip setuptools wheel && \
