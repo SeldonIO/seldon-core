@@ -17,14 +17,14 @@ RUN wget -O certifi-python-certifi.tar.gz \
     https://github.com/certifi/python-certifi/archive/master.tar.gz
 
 # Install Miniforge (BSD-3-Clause)
-# Fix vulnerabilities for brotli and h2
+# Fix vulnerabilities for brotli, h2, and urllib3
 # Fix vulnerability in pip(9CVE-2025-8869)
 ARG MINIFORGE_VERSION
 RUN wget https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Miniforge3-${MINIFORGE_VERSION}-Linux-x86_64.sh -O ~/miniforge.sh && \
     /bin/bash ~/miniforge.sh -b -p /opt/conda && \
     rm ~/miniforge.sh && \
     /opt/conda/bin/conda init bash && \
-    /opt/conda/bin/conda install -c conda-forge "brotli>=1.2.0,<1.3.0" "h2>=4.3.0,<4.4.0" -y && \
+    /opt/conda/bin/conda install -c conda-forge "brotli>=1.2.0,<1.3.0" "h2>=4.3.0,<4.4.0" "urllib3>=2.6.0,<2.7.0" -y && \
     /opt/conda/bin/pip install "pip>=25.3,<26.0" && \
     /opt/conda/bin/conda clean -afy && \
     rm -rf /opt/conda/pkgs && \
