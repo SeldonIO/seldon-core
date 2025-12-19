@@ -34,7 +34,7 @@ type dependencies struct {
 	mlopsClient     *v.Clientset
 	watcherStore    k8sclient.WatcherStorage
 	inferenceClient v2dataplane.GRPCInferenceServiceClient
-	env             *components.EnvManager
+	infraManager    *components.EnvManager
 	Config          *GodogConfig
 }
 
@@ -106,15 +106,13 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 	}
 	grpcClient := v2dataplane.NewGRPCInferenceServiceClient(conn)
 
-	// Example: kafka in namespace "mlops" with statefulset name "kafka"
-	//kafka := components.NewKafkaComponent(k8sClient, config.Namespace, "kafka")
-
-	kafkaNodePool := components.NewKafkaNodePoolComponent(k8sClient, config.Namespace)
-
-	env := components.NewEnvManager(kafkaNodePool)
+	infraManger, err := components.StartComponents(k8sClient, config.Namespace)
+	if err != nil {
+		panic(err)
+	}
 
 	// Snapshot baseline state once per suite
-	if err := env.SnapshotAll(realContext); err != nil {
+	if err := infraManger.SnapshotAll(realContext); err != nil {
 		panic(fmt.Errorf("failed to snapshot environment: %w", err))
 	}
 
@@ -124,7 +122,7 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 	suiteDeps.watcherStore = watchStore
 	suiteDeps.Config = config
 	suiteDeps.inferenceClient = grpcClient
-	suiteDeps.env = env
+	suiteDeps.infraManager = infraManger
 
 	ctx.BeforeSuite(func() {
 		suiteDeps.watcherStore.Start()
@@ -137,10 +135,6 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 	ctx.AfterSuite(func() {
 		suiteDeps.watcherStore.Stop()
 
-		err := suiteDeps.env.RestoreAll(context.Background())
-		if err != nil {
-			return
-		}
 		// e.g. clean namespace, close clients if needed delete servers
 	})
 }
@@ -154,7 +148,7 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 		KubeClient:     suiteDeps.k8sClient,
 		K8sClient:      suiteDeps.mlopsClient,
 		WatcherStorage: suiteDeps.watcherStore,
-		Env:            suiteDeps.env,
+		Env:            suiteDeps.infraManager,
 		IngressHost:    suiteDeps.Config.Inference.Host,
 		HTTPPort:       suiteDeps.Config.Inference.HTTPPort,
 		GRPCPort:       suiteDeps.Config.Inference.GRPCPort,
@@ -172,6 +166,10 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 
 	// After: optional cleanup / rollback
 	scenarioCtx.After(func(ctx context.Context, scenario *godog.Scenario, err error) (context.Context, error) {
+		err = suiteDeps.infraManager.RestoreAll(context.Background())
+		if err != nil {
+			return ctx, err
+		}
 		if err != nil && suiteDeps.Config.SkipCleanUpOnError {
 			log.WithField("scenario", scenario.Name).Debugf("Skipping cleanup of resources for scenario with err %v", err)
 			// don't clean up resources for scenarios that fail
