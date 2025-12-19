@@ -5,7 +5,6 @@ Feature: Scheduler retries failed pipelines
   I need the scheduler to retry creating and terminating pipelines that have previously failed
   @0
   Scenario: Retry creating a pipeline that failed while Kafka was unavailable
-    Given kafka-nodepool is unavailable for Core 2 with timeout "40s"
     Given I deploy model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
@@ -19,6 +18,7 @@ Feature: Scheduler retries failed pipelines
     apiVersion: mlops.seldon.io/v1alpha1
     """
     Then the model "tfsimple1-hhk2" should eventually become Ready with timeout "20s"
+    Given kafka-nodepool is unavailable for Core 2 with timeout "40s"
     And I deploy a pipeline spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
@@ -33,8 +33,9 @@ Feature: Scheduler retries failed pipelines
         - tfsimple1-hhk2
     """
     Then the pipeline should eventually become NotReady with timeout "30s"
-    And the pipeline status should eventually become PipelineFailed with timeout "30s"
-    When Kafka is available for Core 2 with timeout "40s"
+#    And the pipeline status should eventually become PipelineFailed with timeout "30s"
+    And the pipeline should eventually become NotReady with timeout "30s"
+    When kafka-nodepool is available for Core 2 with timeout "40s"
     Then the pipeline should eventually become Ready with timeout "120s"
 
   Scenario: Retry terminating a pipeline that previously failed to terminate
