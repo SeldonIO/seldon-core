@@ -3,6 +3,7 @@
   "log_level": "debug",
   "skip_cleanup" : false,
   "skip_cleanup_on_error": false,
+  "scenario_step_delay": "0s",
   "inference" : {
     "host": "localhost",
     "httpPort": 9000,

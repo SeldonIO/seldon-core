@@ -13,6 +13,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
+	"time"
 )
 
 type GodogConfig struct {
@@ -20,6 +22,7 @@ type GodogConfig struct {
 	LogLevel           string    `json:"log_level"`
 	SkipCleanup        bool      `json:"skip_cleanup"`
 	SkipCleanUpOnError bool      `json:"skip_clean_up_on_error"`
+	ScenarioStepDelay  Duration  `json:"scenario_step_delay"`
 	Inference          Inference `json:"inference"`
 }
 
@@ -54,4 +57,23 @@ func LoadConfig() (*GodogConfig, error) {
 	}
 
 	return &config, nil
+}
+
+type Duration time.Duration
+
+func (d *Duration) UnmarshalJSON(b []byte) error {
+	// Trim quotes
+	s := strings.Trim(string(b), `"`)
+	if s == "null" || s == "" {
+		*d = 0
+		return nil
+	}
+
+	dur, err := time.ParseDuration(s)
+	if err != nil {
+		return err
+	}
+
+	*d = Duration(dur)
+	return nil
 }

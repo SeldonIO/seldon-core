@@ -34,6 +34,13 @@ type Pipeline struct {
 	log            logrus.FieldLogger
 }
 
+type PipelineStatus string
+
+const (
+	pipelineFailedStatus    PipelineStatus = "PipelineFailed"
+	pipelineFailedTerminate PipelineStatus = "PipelineFailedTerminate"
+)
+
 func newPipeline(label map[string]string, namespace string, k8sClient versioned.Interface, log logrus.FieldLogger, watcherStorage k8sclient.WatcherStorage) *Pipeline {
 	return &Pipeline{label: label, pipeline: &mlopsv1alpha1.Pipeline{}, log: log, namespace: namespace, k8sClient: k8sClient, watcherStorage: watcherStorage}
 }
@@ -68,16 +75,9 @@ func LoadCustomPipelineSteps(scenario *godog.ScenarioContext, w *World) {
 			}
 		})
 	})
-	scenario.Step(`^the pipeline status (?:should )?eventually become (PipelineFailed) with timeout "([^"]+)"$`, func(status, timeout string) error {
+	scenario.Step(`^the pipeline status (?:should )?eventually become (PipelineFailed | PipelineFailedTerminate) with timeout "([^"]+)"$`, func(status PipelineStatus, timeout string) error {
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
-			switch status {
-			case "PipelineFailed":
-				return w.currentPipeline.waitForPipelineReady(ctx)
-			case "NotReady":
-				return w.currentPipeline.waitForPipelineNotReady(ctx)
-			default:
-				return fmt.Errorf("unknown pipeline status type: %s", status)
-			}
+			return w.currentPipeline.waitForPipelineStatus(ctx, status)
 		})
 	})
 	scenario.Step(`^I delete pipeline "([^"]+)" with timeout "([^"]+)"$`, func(pipeline, timeout string) error {
@@ -133,11 +133,11 @@ func (p *Pipeline) applyScenarioLabel() {
 }
 
 func (p *Pipeline) deletePipeline(ctx context.Context) error {
-	return p.k8sClient.MlopsV1alpha1().Servers(p.namespace).Delete(ctx, p.pipelineName, metav1.DeleteOptions{})
+	return p.k8sClient.MlopsV1alpha1().Pipelines(p.namespace).Delete(ctx, p.pipelineName, metav1.DeleteOptions{})
 }
 
 func (p *Pipeline) deletePipelineName(ctx context.Context, pipeline string) error {
-	return p.k8sClient.MlopsV1alpha1().Servers(p.namespace).Delete(ctx, pipeline, metav1.DeleteOptions{})
+	return p.k8sClient.MlopsV1alpha1().Pipelines(p.namespace).Delete(ctx, pipeline, metav1.DeleteOptions{})
 }
 
 func (p *Pipeline) waitForPipelineNameReady(ctx context.Context, name string) error {
@@ -172,12 +172,23 @@ func (p *Pipeline) waitForPipelineNotReady(ctx context.Context) error {
 	)
 }
 
-func (p *Pipeline) waitForPipelineStatus(ctx context.Context, status string) error {
-	return p.watcherStorage.WaitForObjectCondition(
-		ctx,
-		p.pipeline,
-		assertions.PipelineNotReady,
-	)
+func (p *Pipeline) waitForPipelineStatus(ctx context.Context, status PipelineStatus) error {
+	switch status {
+	case pipelineFailedStatus:
+		return p.watcherStorage.WaitForObjectCondition(
+			ctx,
+			p.pipeline,
+			assertions.PipelineNotReady,
+		)
+	case pipelineFailedTerminate:
+		return p.watcherStorage.WaitForObjectCondition(
+			ctx,
+			p.pipeline,
+			assertions.PipelineNotReady,
+		)
+	default:
+		return fmt.Errorf("unknown status type: %s", status)
+	}
 }
 
 func (p *Pipeline) waitForPipelineNameIsDeleted(ctx context.Context, pipeline string) error {

@@ -12,6 +12,7 @@ package assertions
 import (
 	"fmt"
 
+	schedulerAPI "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/seldonio/seldon-core/operator/v2/apis/mlops/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -49,6 +50,51 @@ func PipelineNotReady(obj runtime.Object) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func PipelineFailed(obj runtime.Object) (bool, error) {
+	if obj == nil {
+		return false, nil
+	}
+
+	pipeline, ok := obj.(*v1alpha1.Pipeline)
+	if !ok {
+		return false, fmt.Errorf("unexpected type %T, expected *v1alpha1.Pipeline", obj)
+	}
+
+	condition := pipeline.Status.GetCondition(v1alpha1.PipelineReady)
+	if condition == nil {
+		return false, nil
+	}
+
+	if condition.Message == schedulerAPI.PipelineVersionState_PipelineFailed.String() {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func PipelineFailedTerminate(obj runtime.Object) (bool, error) {
+	if obj == nil {
+		return false, nil
+	}
+
+	pipeline, ok := obj.(*v1alpha1.Pipeline)
+	if !ok {
+		return false, fmt.Errorf("unexpected type %T, expected *v1alpha1.Pipeline", obj)
+	}
+
+	condition := pipeline.Status.GetCondition(v1alpha1.PipelineReady)
+
+	if condition == nil {
+		return false, nil
+	}
+
+	if condition.Message == schedulerAPI.PipelineVersionState_PipelineFailed.String() {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 // PipelineDeleted returns done=true when the pipeline no longer exists in the store.

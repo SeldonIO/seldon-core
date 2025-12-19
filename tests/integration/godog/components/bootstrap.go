@@ -27,9 +27,13 @@ func StartComponents(k8sClient *k8sclient.K8sClient, namespace string) (*EnvMana
 		UnavailableByDeleting,
 	)
 
-	kafka := NewKafkaComponent(k8sClient, namespace)
+	runtime := NewSeldonRuntimeComponent(
+		k8sClient,
+		namespace,
+		"seldon",
+	)
 
-	env, err := NewEnvManager(kafkaNodePool, kafka)
+	env, err := NewEnvManager(kafkaNodePool, runtime)
 	if err != nil {
 		return nil, fmt.Errorf("failed to bootstrap components: %v", err)
 	}

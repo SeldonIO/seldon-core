@@ -159,8 +159,18 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 		panic(fmt.Errorf("failed to create world: %w", err))
 	}
 
+	var slowForThis bool
 	// Before: reset state and prep cluster before each scenario
 	scenarioCtx.Before(func(ctx context.Context, scenario *godog.Scenario) (context.Context, error) {
+		// Enable slow mode only for @slow scenarios recommended only for local testing
+		slowForThis = false
+		for _, t := range scenario.Tags {
+			if t.Name == "@slow" {
+				slowForThis = true
+				log.WithField("scenario", scenario.Name).Debugf("set to run slow scenario at %s per step", time.Duration(suiteDeps.Config.ScenarioStepDelay))
+				break
+			}
+		}
 		return ctx, nil
 	})
 
@@ -184,6 +194,15 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 			return ctx, fmt.Errorf("error when deleting models on before steps: %w", err)
 		}
 
+		return ctx, nil
+	})
+
+	// --- Step hook: delay after every step ---
+	scenarioCtx.StepContext().After(func(ctx context.Context, st *godog.Step, status godog.StepResultStatus, err error) (context.Context, error) {
+		// set delay for scenario steps when @slow tag is present
+		if slowForThis {
+			time.Sleep(time.Duration(suiteDeps.Config.ScenarioStepDelay))
+		}
 		return ctx, nil
 	})
 
