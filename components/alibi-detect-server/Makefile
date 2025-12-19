@@ -16,7 +16,7 @@ get_local_repo: clean
 
 .PHONY:show_image
 show_image:
-	 @echo ${IMAGE_NAME}:${VERSION}
+	 @echo ${IMAGE}:${VERSION}
 
 
 clean:
