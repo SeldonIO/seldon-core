@@ -13,6 +13,7 @@ Azure/go-ansiterm
 Azure/go-autorest
 BurntSushi/toml
 DataDog/datadog-api-client-go
+GoogleCloudPlatform/opentelemetry-operations-go
 Huawei/gophercloud
 MakeNowJust/heredoc
 Masterminds/goutils
@@ -33,18 +34,21 @@ armon/go-socks5
 asaskevich/govalidator
 aws/aws-sdk-go
 banzaicloud/k8s-objectmatcher
-benbjohnson/clock
 beorn7/perks
 blang/semver
 blendle/zapdriver
 cenkalti/backoff
 census-instrumentation/opencensus-proto
 cespare/xxhash
+chzyer/logex
+chzyer/readline
+chzyer/test
 client9/misspell
 cncf/udpa
 cncf/xds
 coreos/go-semver
 coreos/go-systemd
+cpuguy83/go-md2man
 creack/pty
 datawire/dlib
 datawire/dtest
@@ -57,8 +61,6 @@ dgryski/go-gk
 dgryski/go-rendezvous
 dimchansky/utfbom
 docker/distribution
-docker/spdystream
-docopt/docopt-go
 dustin/go-humanize
 dysnix/predictkube-libs
 dysnix/predictkube-proto
@@ -66,7 +68,6 @@ eapache/go-resiliency
 eapache/go-xerial-snappy
 eapache/queue
 elastic/go-elasticsearch
-elazarl/goproxy
 emicklei/go-restful
 emicklei/go-restful-swagger12
 emissary-ingress/emissary
@@ -120,8 +121,10 @@ google/go-querystring
 google/gofuzz
 google/mako
 google/pprof
+google/s2a-go
 google/shlex
 google/uuid
+googleapis/enterprise-certificate-proxy
 googleapis/gax-go
 googleapis/gnostic
 googleapis/go-type-adapters
@@ -151,6 +154,7 @@ hashicorp/vault
 hashicorp/yamux
 hpcloud/tail
 huandu/xstrings
+ianlancetaylor/demangle
 imdario/mergo
 inconshreveable/mousetrap
 influxdata/influxdb-client-go
@@ -175,6 +179,7 @@ kelseyhightower/envconfig
 kisielk/errcheck
 kisielk/gotool
 klauspost/compress
+kr/fs
 kr/pretty
 kr/pty
 kr/text
@@ -213,7 +218,10 @@ openzipkin/zipkin-go
 peterbourgon/diskv
 phayes/freeport
 pierrec/lz4
+pkg/diff
 pkg/errors
+pkg/sftp
+planetscale/vtprotobuf
 pmezard/go-difflib
 prometheus/client_golang
 prometheus/client_model
@@ -225,8 +233,10 @@ robfig/cron
 rogpeppe/go-internal
 russross/blackfriday
 ryanuber/go-glob
+sergi/go-diff
 sirupsen/logrus
 soheilhy/cmux
+spf13/afero
 spf13/cobra
 spf13/pflag
 stoewer/go-strcase
