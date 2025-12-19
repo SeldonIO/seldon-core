@@ -133,11 +133,11 @@ func (p *Pipeline) applyScenarioLabel() {
 }
 
 func (p *Pipeline) deletePipeline(ctx context.Context) error {
-	return p.k8sClient.MlopsV1alpha1().Servers(p.namespace).Delete(ctx, p.pipelineName, metav1.DeleteOptions{})
+	return p.k8sClient.MlopsV1alpha1().Pipelines(p.namespace).Delete(ctx, p.pipelineName, metav1.DeleteOptions{})
 }
 
 func (p *Pipeline) deletePipelineName(ctx context.Context, pipeline string) error {
-	return p.k8sClient.MlopsV1alpha1().Servers(p.namespace).Delete(ctx, pipeline, metav1.DeleteOptions{})
+	return p.k8sClient.MlopsV1alpha1().Pipelines(p.namespace).Delete(ctx, pipeline, metav1.DeleteOptions{})
 }
 
 func (p *Pipeline) waitForPipelineNameReady(ctx context.Context, name string) error {
