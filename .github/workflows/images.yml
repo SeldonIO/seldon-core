@@ -204,4 +204,3 @@ jobs:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
           make docker-build docker-push
-
