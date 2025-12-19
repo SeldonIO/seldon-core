@@ -300,12 +300,11 @@ jobs:
           echo "IMG_TAG=$TAG" >> $GITHUB_ENV
           echo "${{ matrix.server }} image tag: $IMG_TAG"
 
-      - name: Remove docker image and cache to make disk space
+      - name: Remove docker image to make disk space
         run: |
           docker rmi ${{ env.IMG_TAG }} 
-          rm -rf /home/runner/actions-runner/cached/* || true
-          df -h
-          
+          docker builder prune -af
+          du -sh /home/runner/actions-runner/cached/*/
 
       - name: Monitor docker image for CVEs
         # only want to monitor images which we have set a release tag for
@@ -318,6 +317,3 @@ jobs:
           image: ${{ env.IMG_TAG }}
           command: monitor
           args: --debug --log-level=trace --app-vulns --severity-threshold=high
-
-      - name: Free up space by removing the Docker Builder caches
-        run: docker builder prune -af
