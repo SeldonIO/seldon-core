@@ -102,7 +102,7 @@ jobs:
         with:
           image: ${{ env.SELDON_EXECUTOR_IMG }}
           command: monitor
-          args:  --debug --log-level=trace --app-vulns --severity-threshold=high --file=executor/Dockerfile
+          args:  --app-vulns --severity-threshold=high --file=executor/Dockerfile.executor
 
       - name: Free up space by removing the Docker Builder caches
         run: docker builder prune -af
