@@ -300,6 +300,9 @@ jobs:
           echo "IMG_TAG=$TAG" >> $GITHUB_ENV
           echo "${{ matrix.server }} image tag: $IMG_TAG"
 
+      - name: Remove docker image to make disk space
+        run: docker rmi ${{ env.IMG_TAG }}
+
       - name: Monitor docker image for CVEs
         # only want to monitor images which we have set a release tag for
         if: ${{ github.event.inputs.docker-tag != '' && github.event.inputs.docker-tag != 'latest'}}
