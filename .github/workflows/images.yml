@@ -313,7 +313,7 @@ jobs:
         with:
           image: ${{ env.IMG_TAG }}
           command: monitor
-          args: --app-vulns --severity-threshold=high
+          args: --debug --log-level=trace --app-vulns --severity-threshold=high
 
       - name: Free up space by removing the Docker Builder caches
         run: docker builder prune -af
