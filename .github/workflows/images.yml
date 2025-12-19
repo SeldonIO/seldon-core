@@ -50,7 +50,7 @@ jobs:
 
       - name: Monitor docker image for CVEs
         # only want to monitor images which we have set a release tag for
-        if: ${{ github.event.inputs.docker-tag != '' }}
+        if: ${{ github.event.inputs.docker-tag != '' && github.event.inputs.docker-tag != 'latest' }}
         uses: snyk/actions/docker@master
         continue-on-error: false
         env:
@@ -94,7 +94,7 @@ jobs:
 
       - name: Monitor docker image for CVEs
         # only want to monitor images which we have set a release tag for
-        if: ${{ github.event.inputs.docker-tag != '' }}
+        if: ${{ github.event.inputs.docker-tag != '' && github.event.inputs.docker-tag != 'latest'}}
         uses: snyk/actions/docker@master
         continue-on-error: false
         env:
@@ -137,7 +137,7 @@ jobs:
 
       - name: Monitor docker image for CVEs
         # only want to monitor images which we have set a release tag for
-        if: ${{ github.event.inputs.docker-tag != '' }}
+        if: ${{ github.event.inputs.docker-tag != '' && github.event.inputs.docker-tag != 'latest'}}
         uses: snyk/actions/docker@master
         continue-on-error: false
         env:
@@ -183,7 +183,7 @@ jobs:
 
       - name: Monitor (Conda base) docker image for CVEs
         # only want to monitor images which we have set a release tag for
-        if: ${{ github.event.inputs.docker-tag != '' }}
+        if: ${{ github.event.inputs.docker-tag != '' && github.event.inputs.docker-tag != 'latest'}}
         uses: snyk/actions/docker@master
         continue-on-error: false
         env:
@@ -208,7 +208,7 @@ jobs:
 
       - name: Monitor (base wrapper) docker image for CVEs
         # only want to monitor images which we have set a release tag for
-        if: ${{ github.event.inputs.docker-tag != '' }}
+        if: ${{ github.event.inputs.docker-tag != '' && github.event.inputs.docker-tag != 'latest'}}
         uses: snyk/actions/docker@master
         continue-on-error: false
         env:
@@ -241,6 +241,13 @@ jobs:
         - examples/models/mean_classifier
         - testing/docker/echo-model
     steps:
+      - name: Free up disk space (android, haskell, dotnet)
+        run: |
+            sudo rm -rf /usr/local/lib/android || true
+            sudo rm -rf /opt/ghc || true
+            sudo rm -rf /usr/share/dotnet || true
+            df -h
+
       - name: Checkout Git Commit
         uses: actions/checkout@v4
 
@@ -295,7 +302,7 @@ jobs:
 
       - name: Monitor docker image for CVEs
         # only want to monitor images which we have set a release tag for
-        if: ${{ github.event.inputs.docker-tag != '' }}
+        if: ${{ github.event.inputs.docker-tag != '' && github.event.inputs.docker-tag != 'latest'}}
         uses: snyk/actions/docker@master
         continue-on-error: false
         env:
