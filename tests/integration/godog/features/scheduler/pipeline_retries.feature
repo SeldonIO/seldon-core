@@ -3,7 +3,7 @@ Feature: Scheduler retries failed pipelines
   In order to ensure pipelines recover from transient failures
   As a platform operator
   I need the scheduler to retry creating and terminating pipelines that have previously failed
-  @0
+  @0 @slow
   Scenario: Retry creating a pipeline that failed while Kafka was unavailable
     Given I deploy model spec with timeout "30s":
     """
@@ -32,8 +32,11 @@ Feature: Scheduler retries failed pipelines
         steps:
         - tfsimple1-hhk2
     """
-    Then the pipeline should eventually become NotReady with timeout "30s"
-#    And the pipeline status should eventually become PipelineFailed with timeout "30s"
+    Then I restart scheduler with timeout "30s"
+    Then I restart dataflow-engine with timeout "30s"
+    Then I restart model-gw with timeout "30s"
+    Then I restart pipeline-gw with timeout "30s"
+    And the pipeline status should eventually become PipelineFailed with timeout "30s"
     And the pipeline should eventually become NotReady with timeout "30s"
     When kafka-nodepool is available for Core 2 with timeout "40s"
     Then the pipeline should eventually become Ready with timeout "120s"

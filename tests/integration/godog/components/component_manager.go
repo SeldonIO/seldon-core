@@ -56,31 +56,6 @@ func (e *EnvManager) Component(name ComponentName) (Component, error) {
 	return c, nil
 }
 
-//// Capability getters (no assertions in steps)
-//func (e *EnvManager) Scalable(name ComponentName) (Scalable, error) {
-//	c, err := e.Component(name)
-//	if err != nil {
-//		return nil, err
-//	}
-//	s, ok := c.(Scalable)
-//	if !ok {
-//		return nil, fmt.Errorf("component %q does not support scaling", name)
-//	}
-//	return s, nil
-//}
-//
-//func (e *EnvManager) Restartable(name ComponentName) (Restartable, error) {
-//	c, err := e.Component(name)
-//	if err != nil {
-//		return nil, err
-//	}
-//	r, ok := c.(Restartable)
-//	if !ok {
-//		return nil, fmt.Errorf("component %q does not support restart", name)
-//	}
-//	return r, nil
-//}
-
 func (e *EnvManager) SnapshotAll(ctx context.Context) error {
 	e.mu.Lock()
 	defer e.mu.Unlock()
@@ -103,15 +78,11 @@ func (e *EnvManager) RestoreAll(ctx context.Context) error {
 	return nil
 }
 
-// Typed retrieval without scattering type assertions in steps:
-func (e *EnvManager) Kafka() (*KafkaComponent, error) {
-	c, err := e.Component(Kafka)
-	if err != nil {
-		return nil, err
+func (e *EnvManager) Runtime() *SeldonRuntimeComponent {
+	for _, comp := range e.components {
+		if c, ok := comp.(*SeldonRuntimeComponent); ok {
+			return c
+		}
 	}
-	k, ok := c.(*KafkaComponent)
-	if !ok {
-		return nil, fmt.Errorf("component %q is not *KafkaComponent", Kafka)
-	}
-	return k, nil
+	return nil
 }

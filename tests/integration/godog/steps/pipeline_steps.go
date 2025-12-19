@@ -72,7 +72,7 @@ func LoadCustomPipelineSteps(scenario *godog.ScenarioContext, w *World) {
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
 			switch status {
 			case "PipelineFailed":
-				return w.currentPipeline.waitForPipelineReady(ctx)
+				return w.currentPipeline.waitForPipelineNotReady(ctx)
 			case "NotReady":
 				return w.currentPipeline.waitForPipelineNotReady(ctx)
 			default:
