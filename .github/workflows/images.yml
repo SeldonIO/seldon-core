@@ -60,6 +60,9 @@ jobs:
           command: monitor
           args:  --app-vulns --severity-threshold=high --file=operator/Dockerfile
 
+      - name: Free up space by removing the Docker Builder caches
+        run: docker builder prune -af
+
   executor:
     runs-on: ubuntu-latest
     steps:
@@ -101,6 +104,9 @@ jobs:
           command: monitor
           args:  --app-vulns --severity-threshold=high --file=executor/Dockerfile
 
+      - name: Free up space by removing the Docker Builder caches
+        run: docker builder prune -af
+
   rclone-storage-initializer:
     runs-on: ubuntu-latest
     steps:
@@ -140,6 +146,9 @@ jobs:
           image: ${{ env.SELDON_RCLONE_IMG }}
           command: monitor
           args:  --app-vulns --severity-threshold=high --file=./components/rclone-storage-initializer/Dockerfile
+
+      - name: Free up space by removing the Docker Builder caches
+        run: docker builder prune -af
 
   s2i-wrapper:
     runs-on: ubuntu-latest
@@ -295,3 +304,6 @@ jobs:
           image: ${{ env.IMG_TAG }}
           command: monitor
           args: --app-vulns --severity-threshold=high
+
+      - name: Free up space by removing the Docker Builder caches
+        run: docker builder prune -af

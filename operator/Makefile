@@ -24,10 +24,6 @@ endif
 #SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
 
-.PHONY:show_image
-show_image:
-	echo ${SELDON_OPERATOR_IMG}
-
 all: manager
 
 .PHONY: lint
@@ -279,7 +275,6 @@ opm_index:
 
 .PHONY:show_image
 show_image:
-	echo ${SELDON_OPERATOR_IMG}
 	 @echo ${SELDON_OPERATOR_IMG}
 
 opm_push:
