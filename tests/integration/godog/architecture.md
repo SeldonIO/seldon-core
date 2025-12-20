@@ -38,3 +38,9 @@ At a high level:
 ```shell
   go test --godog.tags='@0' --godog.concurrency=1 -race
 ```
+
+## List all steps
+script to list out all the steps in the godog test suite, useful for creating tests with llms
+```shell
+  go run extract-steps/extract_steps.go  -root steps
+```
