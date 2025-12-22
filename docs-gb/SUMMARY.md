@@ -1,5 +1,5 @@
 ---
-description: Table of contents in Seldon Core 2.
+description: Table of Contents for Seldon Core 2 documentation.
 ---
 
 # Table of contents
