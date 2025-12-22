@@ -1,5 +1,5 @@
 ---
-description: Seldon Core Autoscaling in Seldon Core 2.
+description: Autoscaling with Seldon Core 2.
 ---
 
 # Seldon Core Autoscaling
