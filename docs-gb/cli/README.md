@@ -1,5 +1,5 @@
 ---
-description: CLI in Seldon Core 2.
+description: Seldon Core 2 CLI documentation.
 ---
 
 # CLI
