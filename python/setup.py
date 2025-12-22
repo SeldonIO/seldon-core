@@ -41,6 +41,7 @@ setup(
         "pyyaml>=6.0.3",
         "click>=8.3.0",
         "urllib3>=2.6.0",
+        "flatbuffers==25.9.23",
     ],
     extras_require=extras,
     entry_points={

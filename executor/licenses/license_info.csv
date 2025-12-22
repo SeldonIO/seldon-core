@@ -1,4 +1,5 @@
 seldonio/seldon-core,https://github.com/SeldonIO/seldon-core/blob/master/LICENSE,Business Source License 1.1,https://raw.githubusercontent.com/SeldonIO/seldon-core/master/LICENSE
+dmitri.shuralyov.com/gpu/mtl,https://dmitri.shuralyov.com/gpu/mtl$file/LICENSE,BSD-3-Clause,https://dmitri.shuralyov.com/gpu/mtl$file/LICENSE
 Azure/azure-amqp-common-go,https://github.com/Azure/azure-amqp-common-go/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/Azure/azure-amqp-common-go/master/LICENSE
 Azure/azure-event-hubs-go,https://github.com/Azure/azure-event-hubs-go/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/Azure/azure-event-hubs-go/master/LICENSE
 Azure/azure-kusto-go,https://github.com/Azure/azure-kusto-go/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/Azure/azure-kusto-go/master/LICENSE
@@ -259,6 +260,7 @@ xiang90/probing,https://github.com/xiang90/probing/blob/master/LICENSE,MIT Licen
 xlab/treeprint,https://github.com/xlab/treeprint/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/xlab/treeprint/master/LICENSE
 youmark/pkcs8,https://github.com/youmark/pkcs8/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/youmark/pkcs8/master/LICENSE
 yuin/goldmark,https://github.com/yuin/goldmark/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/yuin/goldmark/master/LICENSE
+golang/go,https://github.com/golang/go/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/golang/go/master/LICENSE
 go-check/check,https://github.com/go-check/check/blob/v1/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/go-check/check/v1/LICENSE
 go-inf/inf,https://github.com/go-inf/inf/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/go-inf/inf/master/LICENSE
 natefinch/lumberjack,https://github.com/natefinch/lumberjack/blob/v2.0/LICENSE,MIT License,https://raw.githubusercontent.com/natefinch/lumberjack/v2.0/LICENSE

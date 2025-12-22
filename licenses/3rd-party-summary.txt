@@ -7,7 +7,7 @@
       1 Apache Software License; BSD License
      15 BSD 2-Clause Simplified License
       7 BSD-3-Clause
-     75 BSD 3-Clause New or Revised License
+     77 BSD 3-Clause New or Revised License
       8 BSD License
       3 Business Source License 1.1
       1 Creative Commons Attribution 4.0 International Public License
