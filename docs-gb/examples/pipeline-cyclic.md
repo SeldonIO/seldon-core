@@ -1,5 +1,5 @@
 ---
-description: Cyclic Pipeline in Seldon Core 2.
+description: Cyclic Inference Pipeline in Seldon Core 2.
 ---
 
 # Cyclic Pipeline
