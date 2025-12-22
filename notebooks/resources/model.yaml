@@ -8,7 +8,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/mock_classifier:1.19.0-dev
+        - image: seldonio/mock_classifier:1.19.0-rc.1
           name: classifier
     graph:
       name: classifier
