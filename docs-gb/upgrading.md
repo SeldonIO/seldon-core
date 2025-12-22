@@ -1,3 +1,6 @@
+---
+description: Learn about upgrading to the latest versions of Seldon Core 2.
+---
 # Upgrading
 
 ## Upgrading from 2.9 - 2.10

@@ -1,3 +1,7 @@
+---
+description: Huggingface speech to sentiment with explanations pipeline in Seldon Core 2.
+---
+
 # Huggingface speech to sentiment with explanations pipeline
 
 In this example we create a Pipeline to chain two huggingface models to allow speech to\

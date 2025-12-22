@@ -1,3 +1,7 @@
+---
+description: 3rd party license generation in Seldon Core 2.
+---
+
 # 3rd part license generation
 
 We use the following tools and processes for generationg 3rd party licenses.

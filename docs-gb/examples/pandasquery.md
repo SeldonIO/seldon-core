@@ -1,3 +1,7 @@
+---
+description: Conditional pipeline with pandas query model in Seldon Core 2.
+---
+
 # Conditional pipeline with pandas query model
 
 The model is defined as an MLServer custom runtime and allows the user to pass in a custom\

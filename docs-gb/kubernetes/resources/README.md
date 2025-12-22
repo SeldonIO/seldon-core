@@ -1,3 +1,6 @@
+---
+description: Learn about the Kubernetes Resources offered by Seldon Core 2.
+---
 # Resources
 
 For Kubernetes usage we provide a set of custom resources for interacting with Seldon.

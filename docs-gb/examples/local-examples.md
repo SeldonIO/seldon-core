@@ -1,3 +1,7 @@
+---
+description: Examples of Seldon Core 2 used in a local environment.
+---
+
 # Local examples
 
 ### SKLearn Model

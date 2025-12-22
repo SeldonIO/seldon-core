@@ -1,4 +1,8 @@
-# Infrastructure Setup
+---
+description: Infrastructure Setup for Seldon Core 2 usage.
+---
+
+## Infrastructure Setup
 
 ## CPUs vs. GPUs
 

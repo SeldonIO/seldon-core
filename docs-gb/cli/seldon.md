@@ -1,3 +1,7 @@
+---
+description: seldon commands in Seldon Core 2.
+---
+
 ## seldon
 
 

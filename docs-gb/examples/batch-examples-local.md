@@ -1,3 +1,7 @@
+---
+description: Batch Inference examples (local) in Seldon Core 2.
+---
+
 # Batch Inference examples (local)
 
 This example runs you through a series of batch inference requests made to both models and pipelines running on Seldon Core locally.

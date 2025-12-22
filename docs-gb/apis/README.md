@@ -1,3 +1,7 @@
+---
+description: APIs in Seldon Core 2.
+---
+
 # APIs
 
 Seldon provides APIs for management and inference.

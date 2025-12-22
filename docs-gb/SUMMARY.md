@@ -1,3 +1,7 @@
+---
+description: Table of Contents for Seldon Core 2 documentation.
+---
+
 # Table of contents
 
 ## About

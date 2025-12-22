@@ -1,3 +1,7 @@
+---
+description: Development in Seldon Core 2.
+---
+
 # Development
 
 ## Development Requirements

@@ -1,3 +1,7 @@
+---
+description: Cyclic Inference Pipeline in Seldon Core 2.
+---
+
 # Cyclic Pipeline
 
 Learn how to deploy a cyclic pipeline using Core 2. In this example, you'll build a simple counter that begins at a user-defined starting value and increments by one until it reaches 10. If the starting value is already greater than 10, the pipeline terminates immediately without running.

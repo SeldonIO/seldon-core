@@ -1,3 +1,7 @@
+---
+description: Seldon Core 2 CLI documentation.
+---
+
 # CLI
 
 Seldon provides a CLI to allow easy management and testing of Model, Experiment, and Pipeline resources.

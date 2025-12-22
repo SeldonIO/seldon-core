@@ -1,3 +1,7 @@
+---
+description: Kubernetes in Seldon Core 2.
+---
+
 # Kubernetes
 
 Kubernetes provides the core platform for production use. However, the architecture in

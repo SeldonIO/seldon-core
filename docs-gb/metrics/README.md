@@ -1,3 +1,7 @@
+---
+description: Metrics in Seldon Core 2.
+---
+
 # Metrics
 
 There are two kinds of metrics present in Seldon Core 2:

@@ -1,3 +1,7 @@
+---
+description: Security in Seldon Core 2.
+---
+
 # Security
 
 Seldon can be run with secure control plane and data plane operations. There are three areas of concern:

@@ -1,3 +1,7 @@
+---
+description: Server Config in Seldon Core 2.
+---
+
 # Server Config
 
 {% hint style="info" %}

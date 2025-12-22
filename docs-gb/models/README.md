@@ -1,3 +1,7 @@
+---
+description: Models in Seldon Core 2.
+---
+
 # Models
 
 Models provide the atomic building blocks of Seldon. They represents machine learning models,\

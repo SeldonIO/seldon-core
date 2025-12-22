@@ -1,3 +1,7 @@
+---
+description: Kubernetes Installation in Seldon Core 2.
+---
+
 # Kubernetes Installation
 
 ## Prerequisites

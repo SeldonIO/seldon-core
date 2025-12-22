@@ -1,3 +1,7 @@
+---
+description: Examples in Seldon Core 2.
+---
+
 # Examples
 
 ## Workflows

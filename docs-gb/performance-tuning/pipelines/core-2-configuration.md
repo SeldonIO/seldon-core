@@ -1,3 +1,7 @@
+---
+description: Reducing Data Processing Overheads when using Seldon Core 2.
+---
+
 ## Reducing Data Processing Overheads
 
 When tuning performance for pipelines, reducing the overhead of Core 2 components responsible for data-processing within a pipeline is another aspect to consider. In Core 2, four components influence this overhead:

@@ -1,3 +1,7 @@
+---
+description: Optimizing the model artefact in Seldon Core 2.
+---
+
 ## Optimizing the model artefact
 
 The speed at which an ML model can return results given input is based on the model’s architecture, model size, the precision of the model’s weights, and input size. In order to reduce the inherent complexity in the data processing required to execute an inference due to the attributes of a model, it is worth considering: 
