@@ -1,5 +1,5 @@
 ---
-description: Local examples in Seldon Core 2.
+description: Examples of Seldon Core 2 used in a local environment.
 ---
 
 # Local examples
