@@ -1,5 +1,5 @@
 ---
-description: Confluent in Seldon Core 2.
+description: Leveraging Confluent Kafka with Seldon Core 2.
 ---
 
 # Confluent
