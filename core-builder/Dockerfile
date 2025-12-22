@@ -44,7 +44,7 @@ RUN \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install maven
-ENV MAVEN_VERSION=3.9.11
+ENV MAVEN_VERSION=3.9.12
 ENV USER_HOME_DIR="/root"
 RUN set -eux; \
     BASE_URL="https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries"; \
