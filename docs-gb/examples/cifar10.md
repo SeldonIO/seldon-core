@@ -1,5 +1,5 @@
 ---
-description: Production image classifier with drift and outlier monitoring in Seldon Core 2.
+description: Tutorial of deploying an image classifier with drift and outlier monitoring in Seldon Core 2.
 ---
 
 # Production image classifier with drift and outlier monitoring
