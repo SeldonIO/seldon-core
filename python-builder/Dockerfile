@@ -33,7 +33,7 @@ RUN pip3 install --upgrade pip setuptools wheel && \
         grpcio==1.70.0 \
         grpcio-tools==1.70.0 \
         flatbuffers==24.3.25 \
-        twine==5.1.0 \
+        twine==6.2.0 \
         mypy-protobuf==3.5.0
 
 # Installs required
