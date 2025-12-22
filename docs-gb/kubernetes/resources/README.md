@@ -1,5 +1,5 @@
 ---
-description: Learn about the resouces that are required for interacting with Seldon Core 2.
+description: Learn about the Kubernetes Resources offered by Seldon Core 2.
 ---
 # Resources
 
