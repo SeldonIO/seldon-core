@@ -1,5 +1,5 @@
 ---
-description: Learn how about upgrading to the latest versions of Seldon Core 2.
+description: Learn about upgrading to the latest versions of Seldon Core 2.
 ---
 # Upgrading
 
