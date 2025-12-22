@@ -8,7 +8,7 @@ RUN microdnf update -y
 
 LABEL name="Rclone Storage Initializer" \
       vendor="Seldon Technologies" \
-      version="1.19.0-dev" \
+      version="1.19.0-rc.1" \
       release="1" \
       summary="Storage Initializer for Seldon Core" \
       description="Allows Seldon Core to download artifacts from cloud and local storage to a local volume"

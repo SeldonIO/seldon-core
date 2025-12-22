@@ -9,7 +9,7 @@ spec:
     graph:
       name: classifier
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.19.0-dev/sklearn/iris
+      modelUri: gs://seldon-models/v1.19.0-rc.1/sklearn/iris
     explainer:
       type: AnchorTabular
       modelUri: s3:explainers/iris/

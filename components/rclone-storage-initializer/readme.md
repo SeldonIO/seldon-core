@@ -27,7 +27,7 @@ the `seldon-rclone-secret` using one of the configurations bellow and use follow
 
 ```yaml
 storageInitializer:
-  image: seldonio/rclone-storage-initializer:1.19.0-dev
+  image: seldonio/rclone-storage-initializer:1.19.0-rc.1
 
 predictiveUnit:
   defaultEnvSecretRefName: seldon-rclone-secret

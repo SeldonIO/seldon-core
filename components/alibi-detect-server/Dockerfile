@@ -5,7 +5,7 @@ FROM ${BASE_IMAGE}:${VERSION} AS base
 ARG VERSION
 LABEL name="Seldon Alibi Detect Server" \
     vendor="Seldon Technologies" \
-    version="1.19.0-dev" \
+    version="1.19.0-rc.1" \
     release="1" \
     summary="Alibi Detect Server for Seldon Core" \
     description="The Alibi Detect Server provides outlier, drift and adversarial detection services for Seldon Core"

@@ -9,7 +9,7 @@ from alibiexplainer.utils import ExplainerMethod
 from .make_test_models import make_anchor_tabular
 from .utils import SKLearnServer
 
-IRIS_MODEL_URI = "gs://seldon-models/v1.19.0-dev/sklearn/iris/*"
+IRIS_MODEL_URI = "gs://seldon-models/v1.19.0-rc.1/sklearn/iris/*"
 
 
 class TestExplainerApp(AsyncHTTPTestCase):
