@@ -1,5 +1,5 @@
 ---
-description: 3rd part license generation in Seldon Core 2.
+description: 3rd party license generation in Seldon Core 2.
 ---
 
 # 3rd part license generation
