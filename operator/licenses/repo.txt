@@ -1,5 +1,4 @@
 seldonio/seldon-core
-None
 Azure/azure-amqp-common-go
 Azure/azure-event-hubs-go
 Azure/azure-kusto-go
@@ -263,7 +262,7 @@ xiang90/probing
 xlab/treeprint
 youmark/pkcs8
 yuin/goldmark
-https://github.com/golang/go
+golang/go
 go-check/check
 go-inf/inf
 natefinch/lumberjack
