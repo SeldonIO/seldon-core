@@ -1,5 +1,5 @@
 ---
-description: Service Meshes in Seldon Core 2.
+description: Using Service Meshes with Seldon Core 2.
 ---
 
 # Service Meshes
