@@ -1,10 +1,12 @@
 ---
-description: Learn how to implement HPA-based autoscaling for both Models and Servers in single-model serving deployments
+description: >-
+  Learn how to implement HPA-based autoscaling for both Models and Servers in
+  single-model serving deployments
 ---
 
-# Single-Model Serving HPA Autoscaling
+# Model and Server Autoscaling with HPA
 
-This page describes how to implement autoscaling for both Models and Servers using Kubernetes HPA (Horizontal Pod Autoscaler) in a single-model serving setup. This approach is specifically designed for deployments where each Server hosts exactly one Model replica (1:1 mapping between Models and Servers). 
+This page describes how to implement autoscaling for both Models and Servers using Kubernetes HPA (Horizontal Pod Autoscaler) in a single-model serving setup. This approach is specifically designed for deployments where each Server hosts exactly one Model replica (1:1 mapping between Models and Servers).
 
 ## Overview
 
@@ -14,20 +16,20 @@ In single-model serving deployments, you can use HPA to scale both Models and th
 2. Setting up matching HPA configurations for Servers
 3. Ensuring both HPAs target the same metrics and scaling policies
 
-![HPA Autoscaling for Single-Model Serving](model-server-hpa-scaling.png)
+![HPA Autoscaling for Single-Model Serving](../.gitbook/assets/model-server-hpa-scaling.png)
 
 ## Key Considerations
 
-- **Only custom metrics** from Prometheus are supported. Native Kubernetes resource metrics such as CPU or memory are not. This limitation exists because of HPA's design: In order to prevent multiple HPA CRs from issuing conflicting scaling instructions, each HPA CR must exclusively control a set of pods which is disjoint from the pods controlled by other HPA CRs. In Seldon Core 2, CPU/memory metrics can be used to scale the number of Server replicas via HPA. However, this also means that the CPU/memory metrics from the same set of pods can no longer be used to scale the number of model replicas.
-- **No Multi-Model Serving** - this approach requires a 1-1 mapping of Models and Servers, meaning that consolidation of multiple Models onto shared Servers (Multi-Model Serving) is not possible.
+* **Only custom metrics** from Prometheus are supported. Native Kubernetes resource metrics such as CPU or memory are not. This limitation exists because of HPA's design: In order to prevent multiple HPA CRs from issuing conflicting scaling instructions, each HPA CR must exclusively control a set of pods which is disjoint from the pods controlled by other HPA CRs. In Seldon Core 2, CPU/memory metrics can be used to scale the number of Server replicas via HPA. However, this also means that the CPU/memory metrics from the same set of pods can no longer be used to scale the number of model replicas.
+* **No Multi-Model Serving** - this approach requires a 1-1 mapping of Models and Servers, meaning that consolidation of multiple Models onto shared Servers (Multi-Model Serving) is not possible.
 
 ## Implementation
 
-In order to set up HPA Autoscaling for Models and Servers together, metrics need to be exposed in the same way as is explained in the [Exposing Metrics](./hpa-setup.md) tutorial. If metrics have not yet been exposed, follow that workflow until you are at the point where you will configure and apply the HPA manifests. 
+In order to set up HPA Autoscaling for Models and Servers together, metrics need to be exposed in the same way as is explained in the [Exposing Metrics](hpa-setup.md) tutorial. If metrics have not yet been exposed, follow that workflow until you are at the point where you will configure and apply the HPA manifests.
 
 In this implementation, Models _and_ Servers will be configured to autoscale with a separate HPA manifest targetting the same metric as Models. In order for the scaling metrics to be in sync, it's important to apply the HPA manifests simultaneously. It is important to keep both the scaling metric and any scaling policies the same across the two HPA manifests. This is to ensure that both the Models and the Servers are scaled up/down at approximately the same time. Small variations in the scale-up time are expected because each HPA samples the metrics independently, at regular intervals.
 
-Here's an example configuration, utilizing the same `infer_rps` metric as was set up in the [previous example](./hpa-setup.md).
+Here's an example configuration, utilizing the same `infer_rps` metric as was set up in the [previous example](hpa-setup.md).
 
 {% code title="hpa-custom-policy.yaml" lineNumbers="true" %}
 ```yaml
@@ -114,9 +116,9 @@ In this implementation, the scheduler itself does not create new Server replicas
 
 The following elements are important to take into account when setting the HPA policies.
 
-- The speed with which new Server replicas can become available versus how many new replicas may HPA request in a given time:
-    - The HPA scale-up policy should not be configured to request more replicas than can become available in the specified time. The following example reflects a confidence that 5 Server pods will become available within 90 seconds, with some safety margin. The default scale-up config, that also adds a percentage based policy (double the existing replicas within the set `periodSeconds`) is not recommended because of this.
-    - Perhaps more importantly, there is no reason to scale faster than the time it takes for replicas to become available - this is the true maximum rate with which scaling up can happen anyway.
+* The speed with which new Server replicas can become available versus how many new replicas may HPA request in a given time:
+  * The HPA scale-up policy should not be configured to request more replicas than can become available in the specified time. The following example reflects a confidence that 5 Server pods will become available within 90 seconds, with some safety margin. The default scale-up config, that also adds a percentage based policy (double the existing replicas within the set `periodSeconds`) is not recommended because of this.
+  * Perhaps more importantly, there is no reason to scale faster than the time it takes for replicas to become available - this is the true maximum rate with which scaling up can happen anyway.
 
 {% code title="hpa-custom-policy.yaml" lineNumbers="true" %}
 ```yaml
@@ -142,11 +144,9 @@ spec:
 ```
 {% endcode %}
 
-
-- The duration of transient load spikes which you might want to absorb within the existing per-replica RPS margins.
-    - The previous example, at line 13, configures a scale-up stabilization window of one minute. It means that for all of the HPA recommended replicas in the last 60 second window (4 samples of the custom metric considering the default sampling rate), only the *smallest* will be applied.
-    - Such stabilization windows should be set depending on typical load patterns in your cluster: not being too aggressive in reacting to increased load will allow you to achieve cost savings, but has the disadvantage of a delayed reaction if the load spike turns out to be sustained.
-
-- The duration of any typical/expected sustained ramp-up period, and the RPS increase rate during this period.
-    - It is useful to consider whether the replica scale-up rate configured via the policy (line 15 in the example) is able to keep-up with this RPS increase rate.
-    - Such a scenario may appear, for example, if you are planning for a smooth traffic ramp-up in a blue-green deployment as you are draining the "blue" deployment and transitioning to the "green" one 
+* The duration of transient load spikes which you might want to absorb within the existing per-replica RPS margins.
+  * The previous example, at line 13, configures a scale-up stabilization window of one minute. It means that for all of the HPA recommended replicas in the last 60 second window (4 samples of the custom metric considering the default sampling rate), only the _smallest_ will be applied.
+  * Such stabilization windows should be set depending on typical load patterns in your cluster: not being too aggressive in reacting to increased load will allow you to achieve cost savings, but has the disadvantage of a delayed reaction if the load spike turns out to be sustained.
+* The duration of any typical/expected sustained ramp-up period, and the RPS increase rate during this period.
+  * It is useful to consider whether the replica scale-up rate configured via the policy (line 15 in the example) is able to keep-up with this RPS increase rate.
+  * Such a scenario may appear, for example, if you are planning for a smooth traffic ramp-up in a blue-green deployment as you are draining the "blue" deployment and transitioning to the "green" one

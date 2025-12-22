@@ -16,10 +16,11 @@ import (
 )
 
 type GodogConfig struct {
-	Namespace   string    `json:"namespace"`
-	LogLevel    string    `json:"log_level"`
-	SkipCleanup bool      `json:"skip_cleanup"`
-	Inference   Inference `json:"inference"`
+	Namespace          string    `json:"namespace"`
+	LogLevel           string    `json:"log_level"`
+	SkipCleanup        bool      `json:"skip_cleanup"`
+	SkipCleanUpOnError bool      `json:"skip_clean_up_on_error"`
+	Inference          Inference `json:"inference"`
 }
 
 type Inference struct {

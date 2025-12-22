@@ -19,7 +19,7 @@ inference server is deployed on a one GPU node, the underlying loaded models on 
 server instance are able to effectively share this GPU. This is contrast to a single model per\
 server deployment pattern where only one model can use the allocated GPU.
 
-![Multi-model vs Single-model serving](<../images/mms (2).png>)
+![Multi-model vs Single-model serving](<../.gitbook/assets/mms (1).png>)
 
 Multi-model serving is enabled by design in Seldon Core 2. Based on requirements that are specified\
 by the user on a given `Model`, the Scheduler will find an appropriate model inference server instance\
@@ -72,7 +72,7 @@ inference request is acceptable in many cases (with a lower bound of \~100ms).
 
 Overcommit can be disabled by setting `SELDON_OVERCOMMIT_PERCENTAGE` to 0 for a given shared server.
 
-![Overcommit](<../images/overcommit (2).png>)
+![Overcommit](<../.gitbook/assets/overcommit (1).png>)
 
 {% hint style="info" %}
 **Note**: Currently we are using memory requirement values that are specified by the user on the\

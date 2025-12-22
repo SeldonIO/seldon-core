@@ -38,23 +38,46 @@ type inference struct {
 	log              logrus.FieldLogger
 }
 
+// todo: this is to avoid 503s since the route at times isn't ready when the model is ready
+// todo: this might be related to issue: https://seldonio.atlassian.net/browse/INFRA-1576?search_id=4def05ca-ec64-436e-b824-49e39f1c94c4
+// todo: this issue relates to how we should route inference request via IP instead of DNS
+const inferenceRequestDelay = 200 * time.Millisecond
+
 func LoadInferenceSteps(scenario *godog.ScenarioContext, w *World) {
-	scenario.Step(`^send HTTP inference request with timeout "([^"]+)" to model "([^"]+)" with payload:$`, func(timeout, model string, payload *godog.DocString) error {
+	scenario.Step(`^(?:I )send HTTP inference request with timeout "([^"]+)" to (model|pipeline) "([^"]+)" with payload:$`, func(timeout, kind, resourceName string, payload *godog.DocString) error {
+		time.Sleep(inferenceRequestDelay)
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
-			return w.infer.sendHTTPModelInferenceRequest(ctx, model, payload)
+			switch kind {
+			case "model":
+				return w.infer.doHTTPModelInferenceRequest(ctx, resourceName, payload.Content)
+			case "pipeline":
+				return w.infer.doHTTPPipelineInferenceRequest(ctx, resourceName, payload.Content)
+			default:
+				return fmt.Errorf("unknown target type: %s", kind)
+			}
 		})
 	})
-	scenario.Step(`^send gRPC inference request with timeout "([^"]+)" to model "([^"]+)" with payload:$`, func(timeout, model string, payload *godog.DocString) error {
+	scenario.Step(`^(?:I )send gRPC inference request with timeout "([^"]+)" to (model|pipeline) "([^"]+)" with payload:$`, func(timeout, kind, resourceName string, payload *godog.DocString) error {
+		time.Sleep(inferenceRequestDelay)
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
-			return w.infer.sendGRPCModelInferenceRequest(ctx, model, payload)
+			switch kind {
+			case "model":
+				return w.infer.doGRPCInferenceRequest(ctx, resourceName, payload.Content)
+			case "pipeline":
+				return w.infer.doGRPCInferenceRequest(ctx, fmt.Sprintf("%s.pipeline", resourceName), payload.Content)
+			default:
+				return fmt.Errorf("unknown target type: %s", kind)
+			}
 		})
 	})
 	scenario.Step(`^(?:I )send a valid gRPC inference request with timeout "([^"]+)"`, func(timeout string) error {
+		time.Sleep(inferenceRequestDelay)
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
 			return w.infer.sendGRPCModelInferenceRequestFromModel(ctx, w.currentModel)
 		})
 	})
 	scenario.Step(`^(?:I )send a valid HTTP inference request with timeout "([^"]+)"`, func(timeout string) error {
+		time.Sleep(inferenceRequestDelay)
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
 			return w.infer.sendHTTPModelInferenceRequestFromModel(ctx, w.currentModel)
 		})
@@ -74,13 +97,13 @@ func LoadInferenceSteps(scenario *godog.ScenarioContext, w *World) {
 	})
 }
 
-func (i *inference) doHTTPModelInferenceRequest(ctx context.Context, modelName, body string) error {
+func (i *inference) doHTTPInferenceRequest(ctx context.Context, resourceName, headerName, body string) error {
 	url := fmt.Sprintf(
 		"%s://%s:%d/v2/models/%s/infer",
 		httpScheme(i.ssl),
 		i.host,
 		i.httpPort,
-		modelName,
+		resourceName,
 	)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(body))
@@ -90,7 +113,7 @@ func (i *inference) doHTTPModelInferenceRequest(ctx context.Context, modelName, 
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Host", "seldon-mesh.inference.seldon")
-	req.Header.Add("Seldon-model", modelName)
+	req.Header.Add("Seldon-model", headerName)
 
 	resp, err := i.http.Do(req)
 	if err != nil {
@@ -99,6 +122,18 @@ func (i *inference) doHTTPModelInferenceRequest(ctx context.Context, modelName, 
 
 	i.lastHTTPResponse = resp
 	return nil
+}
+
+func (i *inference) doHTTPExperimentInferenceRequest(ctx context.Context, experimentName, body string) error {
+	return i.doHTTPInferenceRequest(ctx, experimentName, fmt.Sprintf("%s.experiment", experimentName), body)
+}
+
+func (i *inference) doHTTPPipelineInferenceRequest(ctx context.Context, pipelineName, body string) error {
+	return i.doHTTPInferenceRequest(ctx, pipelineName, fmt.Sprintf("%s.pipeline", pipelineName), body)
+}
+
+func (i *inference) doHTTPModelInferenceRequest(ctx context.Context, modelName, body string) error {
+	return i.doHTTPInferenceRequest(ctx, modelName, modelName, body)
 }
 
 // Used from steps that pass an explicit payload (DocString)
@@ -124,7 +159,7 @@ func httpScheme(useSSL bool) string {
 }
 
 func (i *inference) sendGRPCModelInferenceRequest(ctx context.Context, model string, payload *godog.DocString) error {
-	return i.doGRPCModelInferenceRequest(ctx, model, payload.Content)
+	return i.doGRPCInferenceRequest(ctx, model, payload.Content)
 }
 
 func (i *inference) sendGRPCModelInferenceRequestFromModel(ctx context.Context, m *Model) error {
@@ -132,21 +167,21 @@ func (i *inference) sendGRPCModelInferenceRequestFromModel(ctx context.Context, 
 	if !ok {
 		return fmt.Errorf("could not find test model %s", m.model.Name)
 	}
-	return i.doGRPCModelInferenceRequest(ctx, m.modelName, testModel.ValidGRPCInferenceRequest)
+	return i.doGRPCInferenceRequest(ctx, m.modelName, testModel.ValidGRPCInferenceRequest)
 }
 
-func (i *inference) doGRPCModelInferenceRequest(
+func (i *inference) doGRPCInferenceRequest(
 	ctx context.Context,
-	model string,
+	resourceName string,
 	payload string,
 ) error {
 	var req v2_dataplane.ModelInferRequest
 	if err := protojson.Unmarshal([]byte(payload), &req); err != nil {
 		return fmt.Errorf("could not unmarshal gRPC json payload: %w", err)
 	}
-	req.ModelName = model
+	req.ModelName = resourceName
 
-	md := metadata.Pairs("seldon-model", model)
+	md := metadata.Pairs("seldon-model", resourceName)
 	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	i.log.Debugf("sending gRPC model inference %+v", &req)
@@ -249,6 +284,8 @@ func (i *inference) gRPCRespContainsError(err string) error {
 	return fmt.Errorf("error %s does not contain %s", i.lastGRPCResponse.err.Error(), err)
 }
 
+// todo: in the future we should also check for raw output contents the function needed is in the command line cli of seldon on the infer method
+// todo: https://github.com/SeldonIO/seldon-core/blob/ce6deb2433927e7632f56b471dfe3c0a0fb1210c/operator/pkg/cli/infer.go#L586
 func (i *inference) gRPCRespCheckBodyContainsJSON(expectJSON *godog.DocString) error {
 	if i.lastGRPCResponse.response == nil {
 		if i.lastGRPCResponse.err != nil {

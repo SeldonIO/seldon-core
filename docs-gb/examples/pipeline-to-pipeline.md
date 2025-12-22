@@ -8,20 +8,19 @@ This examples illustrates a series of Pipelines that are joined together.
 
 ## Before you begin
 
-1. Ensure that you have [installed Seldon Core 2](../installation/production-environment/README.md#installing-seldon-core-2) in the namespace `seldon-mesh`.
-
+1. Ensure that you have [installed Seldon Core 2](../installation/production-environment/#installing-seldon-core-2) in the namespace `seldon-mesh`.
 2. Ensure that you are performing these steps in the directory where you have downloaded the [samples](https://github.com/SeldonIO/seldon-core/tree/v2/samples).
-
 3. Get the IP address of the Seldon Core 2 instance running with Istio:
 
-  ```bash
-  ISTIO_INGRESS=$(kubectl get svc seldon-mesh -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+```bash
+ISTIO_INGRESS=$(kubectl get svc seldon-mesh -n seldon-mesh -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
-  echo "Seldon Core 2: http://$ISTIO_INGRESS"
-  ```
-  {% hint style="info" %}
-  Make a note of the IP address that is displayed in the output. Replace <INGRESS_IP> with your service mesh's ingress IP address in the following commands.
-  {% endhint %}
+echo "Seldon Core 2: http://$ISTIO_INGRESS"
+```
+
+{% hint style="info" %}
+Make a note of the IP address that is displayed in the output. Replace \<INGRESS\_IP> with your service mesh's ingress IP address in the following commands.
+{% endhint %}
 
 ### Models Used
 
@@ -33,7 +32,7 @@ This examples illustrates a series of Pipelines that are joined together.
 
 ### Pipeline pulling from one other Pipeline
 
-![pipeline-to-pipeline](../images/img_pipeline1.jpg)
+![pipeline-to-pipeline](../.gitbook/assets/img_pipeline1.jpg)
 
 ```bash
 cat ./models/tfsimple1.yaml
@@ -72,7 +71,6 @@ model.mlops.seldon.io/tfsimple1 created
 model.mlops.seldon.io/tfsimple2 created
 ```
 
-
 ```bash
 kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
 ```
@@ -81,7 +79,6 @@ kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
 model.mlops.seldon.io/tfsimple1 condition met
 model.mlops.seldon.io/tfsimple2 condition met
 ```
-
 
 ```bash
 cat ./pipelines/tfsimple.yaml
@@ -117,6 +114,7 @@ kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
 ```outputs
 pipeline.mlops.seldon.io/tfsimple condition met
 ```
+
 {% tabs %}
 {% tab title="curl" %}
 ```bash
@@ -141,6 +139,7 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
     ]
   }' | jq -M .
 ```
+
 ```json
 {
   "model_name": "",
@@ -200,7 +199,6 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
   ]
 }
 ```
-
 {% endtab %}
 
 {% tab title="seldon-cli" %}
@@ -269,11 +267,8 @@ seldon pipeline infer tfsimple --inference-host <INGRESS_IP>:80\
 }
 
 ```
-
 {% endtab %}
 {% endtabs %}
-
-
 
 ```bash
 cat ./pipelines/tfsimple-extended.yaml
@@ -342,6 +337,7 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
   }' | jq -M .
 
 ```
+
 ```json
 {
   "model_name": "",
@@ -401,7 +397,6 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
   ]
 }
 ```
-
 {% endtab %}
 
 {% tab title="seldon-cli" %}
@@ -509,7 +504,7 @@ kubectl delete -f ./models/tfsimple2.yaml -n seldon-mesh
 
 ### Pipeline pulling from two other Pipelines
 
-![pipeline-to-pipeline](../images/img_pipeline2.jpg)
+![pipeline-to-pipeline](../.gitbook/assets/img_pipeline2.jpg)
 
 ```bash
 cat ./models/tfsimple1.yaml
@@ -547,7 +542,6 @@ kubectl create -f ./models/tfsimple2.yaml -n seldon-mesh
 model.mlops.seldon.io/tfsimple1 created
 model.mlops.seldon.io/tfsimple2 created
 ```
-
 
 ```bash
 kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
@@ -617,6 +611,7 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
     ]
   }' | jq -M .
 ```
+
 ```json
 {
   "model_name": "",
@@ -676,7 +671,6 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
   ]
 }
 ```
-
 {% endtab %}
 
 {% tab title="seldon-cli" %}
@@ -745,10 +739,8 @@ seldon pipeline infer tfsimple --inference-host <INGRESS_IP>:80\
 }
 
 ```
-
 {% endtab %}
 {% endtabs %}
-
 
 ```bash
 cat ./pipelines/tfsimple-extended.yaml
@@ -835,6 +827,7 @@ pipeline.mlops.seldon.io/tfsimple-extended condition met
 pipeline.mlops.seldon.io/tfsimple-extended2 condition met
 pipeline.mlops.seldon.io/tfsimple-combined condition met
 ```
+
 {% tabs %}
 {% tab title="curl" %}
 ```bash
@@ -860,6 +853,7 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
     ]
   }' | jq -M .
 ```
+
 ```json
 {
   "model_name": "",
@@ -919,7 +913,6 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
   ]
 }
 ```
-
 {% endtab %}
 
 {% tab title="seldon-cli" %}
@@ -988,7 +981,6 @@ seldon pipeline infer tfsimple --header x-request-id=test-id2 --inference-host <
 }
 
 ```
-
 {% endtab %}
 {% endtabs %}
 
@@ -1056,7 +1048,7 @@ kubectl delete -f ./models/tfsimple2.yaml -n seldon-mesh
 
 ### Pipeline pullin from one pipeline with a trigger to another
 
-![pipeline-to-pipeline](../images/img_pipeline3.jpg)
+![pipeline-to-pipeline](../.gitbook/assets/img_pipeline3.jpg)
 
 ```bash
 cat ./models/tfsimple1.yaml
@@ -1094,7 +1086,6 @@ kubectl create -f ./models/tfsimple2.yaml -n seldon-mesh
 model.mlops.seldon.io/tfsimple1 created
 model.mlops.seldon.io/tfsimple2 created
 ```
-
 
 ```bash
 kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
@@ -1139,6 +1130,7 @@ kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
 ```outputs
 pipeline.mlops.seldon.io/tfsimple condition met
 ```
+
 {% tabs %}
 {% tab title="curl" %}
 ```bash
@@ -1163,6 +1155,7 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
     ]
   }' | jq -M .
 ```
+
 ```json
 {
   "model_name": "",
@@ -1222,7 +1215,6 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
   ]
 }
 ```
-
 {% endtab %}
 
 {% tab title="seldon-cli" %}
@@ -1291,10 +1283,8 @@ seldon pipeline infer tfsimple --inference-host <INGRESS_IP>:80\
 }
 
 ```
-
 {% endtab %}
 {% endtabs %}
-
 
 ```bash
 cat ./pipelines/tfsimple-extended.yaml
@@ -1365,6 +1355,7 @@ kubectl create -f ./pipelines/tfsimple-extended.yaml -n seldon-mesh
 kubectl create -f ./pipelines/tfsimple-extended2.yaml -n seldon-mesh
 kubectl create -f ./pipelines/tfsimple-combined-trigger.yaml -n seldon-mesh
 ```
+
 ```outputs
 pipeline.mlops.seldon.io/tfsimple-extended created
 pipeline.mlops.seldon.io/tfsimple-extended2 created
@@ -1407,6 +1398,7 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
     ]
   }' | jq -M .
 ```
+
 ```json
 {
   "model_name": "",
@@ -1466,7 +1458,6 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
   ]
 }
 ```
-
 {% endtab %}
 
 {% tab title="seldon-cli" %}
@@ -1535,10 +1526,8 @@ seldon pipeline infer tfsimple --header x-request-id=test-id3 --inference-host <
 }
 
 ```
-
 {% endtab %}
 {% endtabs %}
-
 
 ```bash
 seldon pipeline inspect tfsimple
@@ -1590,7 +1579,6 @@ seldon.default.pipeline.tfsimple-combined-trigger.outputs	test-id3	{"outputs":[{
 
 ```
 
-
 ```bash
 kubectl delete -f ./pipelines/tfsimple-combined-trigger.yaml -n seldon-mesh
 kubectl delete -f ./pipelines/tfsimple.yaml -n seldon-mesh
@@ -1603,10 +1591,9 @@ kubectl delete -f ./models/tfsimple1.yaml -n seldon-mesh
 kubectl delete -f ./models/tfsimple2.yaml -n seldon-mesh
 ```
 
-
 ### Pipeline pulling from one other Pipeline Step
 
-![pipeline-to-pipeline](../images/img_pipeline4.jpg)
+![pipeline-to-pipeline](../.gitbook/assets/img_pipeline4.jpg)
 
 ```bash
 cat ./models/tfsimple1.yaml
@@ -1644,7 +1631,6 @@ kubectl create -f ./models/tfsimple2.yaml -n seldon-mesh
 model.mlops.seldon.io/tfsimple1 created
 model.mlops.seldon.io/tfsimple2 created
 ```
-
 
 ```bash
 kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
@@ -1689,6 +1675,7 @@ kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
 ```outputs
 pipeline.mlops.seldon.io/tfsimple condition met
 ```
+
 {% tabs %}
 {% tab title="curl" %}
 ```bash
@@ -1713,6 +1700,7 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
     ]
   }' | jq -M .
 ```
+
 ```json
 {
   "model_name": "",
@@ -1772,7 +1760,6 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
   ]
 }
 ```
-
 {% endtab %}
 
 {% tab title="seldon-cli" %}
@@ -1841,11 +1828,8 @@ seldon pipeline infer tfsimple --inference-host <INGRESS_IP>:80\
 }
 
 ```
-
 {% endtab %}
 {% endtabs %}
-
-
 
 ```bash
 cat ./pipelines/tfsimple-extended-step.yaml
@@ -1874,6 +1858,7 @@ spec:
 ```bash
 kubectl create -f ./pipelines/tfsimple-extended-step.yaml -n seldon-mesh
 ```
+
 ```outputs
 pipeline.mlops.seldon.io/tfsimple-extended-step created
 ```
@@ -1885,6 +1870,7 @@ kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
 ```outputs
 pipeline.mlops.seldon.io/tfsimple-extended-step condition met
 ```
+
 {% tabs %}
 {% tab title="curl" %}
 ```bash
@@ -1909,6 +1895,7 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
     ]
   }' | jq -M .
 ```
+
 ```json
 {
   "model_name": "",
@@ -1968,7 +1955,6 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
   ]
 }
 ```
-
 {% endtab %}
 
 {% tab title="seldon-cli" %}
@@ -2037,7 +2023,6 @@ seldon pipeline infer tfsimple \
 }
 
 ```
-
 {% endtab %}
 {% endtabs %}
 
@@ -2075,10 +2060,9 @@ kubectl delete -f ./models/tfsimple1.yaml -n seldon-mesh
 kubectl delete -f ./models/tfsimple2.yaml -n seldon-mesh
 ```
 
-
 ### Pipeline pulling from two other Pipeline steps from same model
 
-![pipeline-to-pipeline](../images/img_pipeline5.jpg)
+![pipeline-to-pipeline](../.gitbook/assets/img_pipeline5.jpg)
 
 ```bash
 cat ./models/tfsimple1.yaml
@@ -2116,7 +2100,6 @@ kubectl create -f ./models/tfsimple2.yaml -n seldon-mesh
 model.mlops.seldon.io/tfsimple1 created
 model.mlops.seldon.io/tfsimple2 created
 ```
-
 
 ```bash
 kubectl wait --for condition=ready --timeout=300s model --all -n seldon-mesh
@@ -2161,6 +2144,7 @@ kubectl wait --for condition=ready --timeout=300s pipeline --all -n seldon-mesh
 ```outputs
 pipeline.mlops.seldon.io/tfsimple condition met
 ```
+
 {% tabs %}
 {% tab title="curl" %}
 ```bash
@@ -2185,6 +2169,7 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
     ]
   }' | jq -M .
 ```
+
 ```json
 {
   "model_name": "",
@@ -2244,7 +2229,6 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
   ]
 }
 ```
-
 {% endtab %}
 
 {% tab title="seldon-cli" %}
@@ -2313,11 +2297,8 @@ seldon pipeline infer tfsimple --inference-host <INGRESS_IP>:80\
 }
 
 ```
-
 {% endtab %}
 {% endtabs %}
-
-
 
 ```bash
 cat ./pipelines/tfsimple-extended.yaml
@@ -2387,6 +2368,7 @@ kubectl create -f ./pipelines/tfsimple-extended.yaml -n seldon-mesh
 kubectl create -f ./pipelines/tfsimple-extended2.yaml -n seldon-mesh 
 kubectl create -f ./pipelines/tfsimple-combined-step.yaml -n seldon-mesh
 ```
+
 ```outputs
 pipeline.mlops.seldon.io/tfsimple-extended created
 pipeline.mlops.seldon.io/tfsimple-extended2 created
@@ -2428,6 +2410,7 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
     ]
   }' | jq -M .
 ```
+
 ```json
 {
   "model_name": "",
@@ -2487,7 +2470,6 @@ curl -k http://<INGRESS_IP>:80/v2/models/tfsimple/infer \
   ]
 }
 ```
-
 {% endtab %}
 
 {% tab title="seldon-cli" %}
@@ -2556,7 +2538,6 @@ seldon pipeline infer tfsimple --inference-host <INGRESS_IP>:80\
 }
 
 ```
-
 {% endtab %}
 {% endtabs %}
 
@@ -2607,6 +2588,7 @@ seldon.default.pipeline.tfsimple-combined-step.inputs	cg5g710fh5ss73a4500g	{"inp
 seldon.default.pipeline.tfsimple-combined-step.outputs	cg5g710fh5ss73a4500g	{"outputs":[{"name":"OUTPUT0","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64]}},{"name":"OUTPUT1","datatype":"INT32","shape":["1","16"],"contents":{"intContents":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}]}
 
 ```
+
 ```bash
 kubectl delete -f ./pipelines/tfsimple-extended.yaml -n seldon-mesh
 kubectl delete -f ./pipelines/tfsimple-extended2.yaml -n seldon-mesh

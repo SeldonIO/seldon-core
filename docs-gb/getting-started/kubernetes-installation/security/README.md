@@ -12,7 +12,7 @@ Seldon can be run with secure control plane and data plane operations. There are
 
 The various communication points between services are shown in the diagram below:
 
-![networking](<../../../images/networking (2).jpg>)
+![networking](<../../../.gitbook/assets/networking (1).jpg>)
 
 ## Control Plane
 

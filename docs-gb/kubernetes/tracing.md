@@ -1,46 +1,59 @@
 ---
 description: >-
- This guide walks you through setting up Jaeger Tracing for Seldon Core v2 on Kubernetes. By the end of this guide, you will be able to visualize inference traces through your Core 2 components.
+  This guide walks you through setting up Jaeger Tracing for Seldon Core v2 on
+  Kubernetes. By the end of this guide, you will be able to visualize inference
+  traces through your Core 2 components.
 ---
 
-## Prerequisites
+# Tracing
+
+### Prerequisites
 
 * Set up and connect to a Kubernetes cluster running version 1.27 or later. For instructions on connecting to your Kubernetes cluster, refer to the documentation provided by your cloud provider.
 * Install [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl), the Kubernetes command-line tool.
 * Install [Helm](https://helm.sh/docs/intro/install/), the package manager for Kubernetes.
-* Install [Seldon Core 2](../installation/README.md)
+* Install [Seldon Core 2](../installation/)
 * Install [cert-manager](https://cert-manager.io/docs/installation/kubectl/) in the namespace `cert-manager`.
 
 To set up Jaeger Tracing for Seldon Core 2 on Kubernetes and visualize inference traces of the Seldon Core 2 components. You need to do the following:
-1. [Create a namespace](#create-a-namespace)
-2. [Install Jaeger Operator](#install-jaeger-operator)
-3. [Deploy a Jaeger instance](#deploy-a-minimal-jaeger-instance)
-4. [Configure Core 2](#configure-seldon-core-2)
-5. [Generate traffic](#generate-traffic)
-6. [Visualize the traces](#cccess-the-jaeger-ui)
 
-## Create a namespace
+1. [Create a namespace](tracing.md#create-a-namespace)
+2. [Install Jaeger Operator](tracing.md#install-jaeger-operator)
+3. [Deploy a Jaeger instance](tracing.md#deploy-a-minimal-jaeger-instance)
+4. [Configure Core 2](tracing.md#configure-seldon-core-2)
+5. [Generate traffic](tracing.md#generate-traffic)
+6. [Visualize the traces](tracing.md#cccess-the-jaeger-ui)
+
+### Create a namespace
+
 Create a dedicated namespace to install the Jaeger Operator and tracing resources:
+
 ```bash
 kubectl create namespace tracing
 ```
-## Install Jaeger Operator
+
+### Install Jaeger Operator
 
 The Jaeger Operator manages Jaeger instances in the Kubernetes cluster. Use the [Helm chart](s://github.com/jaegertracing/helm-charts/tree/v2) for Jaeger v2.
 
 1. Add the Jaeger to the Helm repository:
+
 ```bash
 helm repo add jaegertracing s://jaegertracing.github.io/helm-charts
 helm repo update
 ```
+
 2. Create a minimal `tracing-values.yaml`:
+
 ```bash
 rbac:
   clusterRole: true
   create: true
   pspEnabled: false
 ```
+
 3. Install or upgrade the Jaeger Operator in the tracing namespace:
+
 ```bash
 helm upgrade tracing jaegertracing/jaeger-operator \
   --version 2.57.0 \
@@ -48,22 +61,30 @@ helm upgrade tracing jaegertracing/jaeger-operator \
   -n tracing \
   --install
 ```
+
 4. Validate that the Jaeger Operator Pod is running:
+
 ```bash
 kubectl get pods -n tracing
 ```
+
 Output is similar to:
+
 ```bash
 NAME                                       READY   STATUS    RESTARTS   AGE
 tracing-jaeger-operator-549b79b848-h4p4d   1/1     Running   0          96s
 ```
-## Deploy a minimal Jaeger instance
+
+### Deploy a minimal Jaeger instance
+
 Install a simple Jaeger custom resource in the namespace `seldon-mesh`, where Seldon Core 2 is running.
+
 {% hint style="info" %}
 This CR is suitable for local development, demos, and quick-start scenarios. It is not recommended for production because all components and trace data are ephemeral.
 {% endhint %}
 
 1. Create a manifest file named `jaeger-simplest.yaml` with these contents:
+
 ```bash
 apiVersion: jaegertracing.io/v1
 kind: Jaeger
@@ -71,43 +92,51 @@ metadata:
   name: simplest
   namespace: seldon-mesh
 ```
+
 2. Apply the manifest:
+
 ```bash
 kubectl apply -f jaeger-simplest.yaml
 ```
+
 3. Verify that the Jaeger all-in-one pod is running:
+
 ```bash
 kubectl get pods -n seldon-mesh | grep simplest
 ```
+
 Output is similar to:
+
 ```bash
 NAME                       READY  STATUS    RESTARTS   AGE
 simplest-8686f5d96-4ptb4   1/1    Running   0          45s
 ```
+
 This `simplest` Jaeger CR does the following:
 
-- **All-in-one pod**: Deploys a single pod running the collector, agent, query service, and UI, using in-memory storage.
+* **All-in-one pod**: Deploys a single pod running the collector, agent, query service, and UI, using in-memory storage.
+* **Core 2 integration**: receives spans from Seldon Core 2 components and exposes a UI for viewing traces.
 
-- **Core 2 integration**: receives spans from Seldon Core 2 components and exposes a UI for viewing traces.
+### Configure Seldon Core 2
 
-## Configure Seldon Core 2 
+To enable tracing, configure the OpenTelemetry exporter endpoint in the [SeldonRuntime](resources/seldonruntime.md) resource so that traces are sent to the Jaeger collector service created by the simplest Jaeger Custom Resource. The Seldon Runtime helm chart is located [here](../../k8s/helm-charts/seldon-core-v2-runtime/values.yaml).
 
-To enable tracing, configure the OpenTelemetry exporter endpoint in the [SeldonRuntime](../kubernetes/resources/seldonruntime.md) resource so that traces are sent to the Jaeger collector service created by the simplest Jaeger Custom Resource. The Seldon Runtime  helm chart is located [here](https://github.com/SeldonIO/seldon-core/blob/v2/k8s/helm-charts/seldon-core-v2-runtime/values.yaml).
- 
 1. Find the `seldonruntime` Custom Resource that needs to be updated using: `kubectl get seldonruntimes -n seldon-mesh`
 2. Patch your Custom Resource to include `tracingConfig` under `spec.config` using:
-    
+
 ```bash
 kubectl patch seldonruntime seldon -n seldon-mesh \
   --type merge \
   -p '{"spec":{"config":{"kafkaConfig":{"bootstrap.servers":"seldon-kafka-bootstrap.seldon-mesh:9092","consumer":{"auto.offset.reset":"earliest"},"topics":{"numPartitions":4}},"scalingConfig":{"servers":{}},"tracingConfig":{"otelExporterEndpoint":"simplest-collector.seldon-mesh:4317"}}}}'
 ```
+
 Output is similar to:
 
 ```bash
 seldonruntime.mlops.seldon.io/seldon patched
-``` 
-3. Check the updated `.yaml` file, using: `kubectl get seldonruntime seldon -n seldon-mesh -o yaml `
+```
+
+3. Check the updated `.yaml` file, using: `kubectl get seldonruntime seldon -n seldon-mesh -o yaml`
 
 Output is similar to:
 
@@ -128,37 +157,37 @@ spec:
     tracingConfig:
       otelExporterEndpoint: simplest-collector.seldon-mesh:4317
 ```
-   
+
 4. Restart the following Core 2 component Pods so they pick up the new tracing configuration from the `seldon-tracing` ConfigMap in the `seldon-mesh` namespace.
 
-- seldon-dataflow-engine
-
-- seldon-pipeline-gateway
-
-- seldon-model-gateway
-
-- seldon-scheduler
-
-- Servers
+* seldon-dataflow-engine
+* seldon-pipeline-gateway
+* seldon-model-gateway
+* seldon-scheduler
+* Servers
 
 After restart, these components reads the updated tracing config and start emitting traces to Jaeger.
 
-## Generate traffic 
+### Generate traffic
 
 To visualize traces, send requests to your models or pipelines deployed in Seldon Core 2. Each [inference request](../installation/test-installation.md) should produce a trace that shows the path through the Core 2 components such as gateways, dataflow engine, server agents in the Jaeger UI.
 
-## Access the Jaeger UI
+### Access the Jaeger UI
 
 1. Port-forward the Jaeger query service to your local machine:
+
 ```bash
 kubectl port-forward svc/simplest-query -n seldon-mesh 16686:16686
 ```
+
 2. Open the Jaeger UI in your browser:
+
 ```bash
 http://localhost:16686
 ```
+
 You can now explore traces emitted by Seldon Core 2 components.
 
 An example Jaeger trace is shown below:
 
-![trace](<../images/jaeger-trace (5).png>)
+![trace](<../.gitbook/assets/jaeger-trace (5).png>)

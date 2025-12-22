@@ -2,6 +2,7 @@
   "namespace": "seldon-mesh",
   "log_level": "debug",
   "skip_cleanup" : false,
+  "skip_cleanup_on_error": false,
   "inference" : {
     "host": "localhost",
     "httpPort": 9000,

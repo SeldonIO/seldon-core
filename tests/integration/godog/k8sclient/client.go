@@ -129,6 +129,15 @@ func (k8s *K8sClient) DeleteScenarioResources(ctx context.Context, labels client
 		return fmt.Errorf("failed to delete Pipelines: %w", err)
 	}
 
+	if err := k8s.KubeClient.DeleteAllOf(
+		ctx,
+		&mlopsv1alpha1.Experiment{},
+		client.InNamespace(k8s.namespace),
+		labels,
+	); err != nil {
+		return fmt.Errorf("failed to delete Experiments: %w", err)
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
@@ -163,7 +172,18 @@ func (k8s *K8sClient) DeleteScenarioResources(ctx context.Context, labels client
 				return fmt.Errorf("failed to list Pipelines: %w", err)
 			}
 
-			if len(modelList.Items) == 0 && len(pipelineList.Items) == 0 {
+			// Check Experiments
+			var experimentList mlopsv1alpha1.ExperimentList
+			if err := k8s.KubeClient.List(
+				ctx,
+				&experimentList,
+				client.InNamespace(k8s.namespace),
+				labels,
+			); err != nil {
+				return fmt.Errorf("failed to list Experiments: %w", err)
+			}
+
+			if len(modelList.Items) == 0 && len(pipelineList.Items) == 0 && len(experimentList.Items) == 0 {
 				return nil
 			}
 		}

@@ -26,11 +26,20 @@ func ModelReady(obj runtime.Object) (bool, error) {
 		return false, fmt.Errorf("unexpected type %T, expected *v1alpha1.Model", obj)
 	}
 
-	if model.Status.IsReady() {
-		return true, nil
+	return model.Status.IsReady(), nil
+}
+
+func ExperimentReady(obj runtime.Object) (bool, error) {
+	if obj == nil {
+		return false, nil
 	}
 
-	return false, nil
+	experiment, ok := obj.(*v1alpha1.Experiment)
+	if !ok {
+		return false, fmt.Errorf("unexpected type %T, expected *v1alpha1.Experiment", obj)
+	}
+
+	return experiment.Status.IsReady(), nil
 }
 
 //func ModelReadyMessageCondition(expectedMessage string) k8sclient.ConditionFunc {

@@ -18,7 +18,7 @@ Seldon Core 2 uses a microservice architecture where each service has limited an
 
 The current set of services used in Seldon Core 2 is shown below. Following the diagram, we will describe each control plane and data plan service.
 
-![architecture](<../images/architecture (2).png>)
+![architecture](<../.gitbook/assets/architecture (2).png>)
 
 ## Control Plane
 
@@ -58,22 +58,21 @@ This service handles the flow of data between components in a pipeline, using Ka
 
 Envoy acts as the request proxy for Seldon Core 2, routing traffic to the appropriate inference servers and handling load balancing across available replicas. Envoy configuration of Seldon Core 2 uses [weighted least-request](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/load_balancing/load_balancers#weighted-least-request) load balancing, which dynamically distributes traffic based on both replica weights and current load, helping ensure efficient and stable request routing.
 
-
 ## Dataflow Architecture and Pipelines
 
 To support the movement towards data centric machine learning Seldon Core 2 follows a dataflow paradigm. By taking a decentralized route that focuses on the flow of data, users can have more flexibility and insight as they build and manage complex AI applications in production. This contrasts with more centralized orchestration approaches where data is secondary.
 
-![dataflow](<../images/dataflow (2).png>)
+![dataflow](<../.gitbook/assets/dataflow (2).png>)
 
 ### Kafka
 
 Kafka is used as the backbone for Pipelines allowing decentralized, synchronous and asynchronous usage. This enables Models to be connected together into arbitrary directed acyclic graphs. Models can be reused in different Pipelines. The flow of data between models is handled by the dataflow engine using [Kafka Streams](https://docs.confluent.io/platform/current/streams/concepts.html).
 
-![kafka](<../images/kafka (2).png>)
+![kafka](<../.gitbook/assets/kafka (2).png>)
 
 By focusing on the data we allow users to join various flows together using stream joining concepts as shown below.
 
-![joins](<../images/joins (2).png>)
+![joins](<../.gitbook/assets/joins (2).png>)
 
 We support several types of joins:
 

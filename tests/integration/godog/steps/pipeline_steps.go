@@ -39,7 +39,7 @@ func newPipeline(label map[string]string, namespace string, k8sClient versioned.
 }
 
 func LoadCustomPipelineSteps(scenario *godog.ScenarioContext, w *World) {
-	scenario.Step(`^I deploy pipeline spec with timeout "([^"]+)":$`, func(timeout string, spec *godog.DocString) error {
+	scenario.Step(`^I deploy a pipeline spec with timeout "([^"]+)":$`, func(timeout string, spec *godog.DocString) error {
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
 			return w.currentPipeline.deployPipelineSpec(ctx, spec)
 		})

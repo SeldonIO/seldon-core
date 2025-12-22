@@ -9,7 +9,7 @@ sentiment functionalityand add an explainer to understand the result.
 
 This example also illustrates how explainers can target pipelines to allow complex explanations flows.
 
-![architecture](../images/speech-to-sentiment.jpg)
+![architecture](../.gitbook/assets/speech-to-sentiment.jpg)
 
 This example requires **ffmpeg** package to be installed locally. run `make install-requirements`\
 for the Python dependencies.

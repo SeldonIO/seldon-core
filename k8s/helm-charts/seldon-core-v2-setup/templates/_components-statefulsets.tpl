@@ -1581,6 +1581,8 @@ spec:
     - env:
       - name: MLSERVER_PARALLEL_WORKERS
         value: '{{ .Values.serverConfig.mlserver.parallel_workers }}'
+      - name: MLSERVER_DEBUG
+        value: '{{ .Values.serverConfig.mlserver.debug }}'
       - name: MLSERVER_HTTP_PORT
         value: "9000"
       - name: MLSERVER_GRPC_PORT
