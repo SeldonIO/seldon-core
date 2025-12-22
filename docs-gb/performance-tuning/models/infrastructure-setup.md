@@ -1,5 +1,5 @@
 ---
-description: Infrastructure Setup in Seldon Core 2.
+description: Infrastructure Setup for Seldon Core 2 usage.
 ---
 
 ## Infrastructure Setup
