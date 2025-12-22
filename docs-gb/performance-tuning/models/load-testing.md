@@ -1,5 +1,5 @@
 ---
-description: Determining the Load Saturation point in Seldon Core 2.
+description: Load testing Seldon Core 2.
 ---
 
 
