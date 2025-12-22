@@ -1,5 +1,5 @@
 ---
-description: Reducing Data Processing Overheads in Seldon Core 2.
+description: Reducing Data Processing Overheads when using Seldon Core 2.
 ---
 
 ## Reducing Data Processing Overheads
