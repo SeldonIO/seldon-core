@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  GOLANG_VERSION: 1.24.7
+  GOLANG_VERSION: 1.24.11
 
 jobs:
   operator-lint:

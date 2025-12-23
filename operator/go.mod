@@ -1,6 +1,6 @@
 module github.com/seldonio/seldon-core/operator
 
-go 1.24.7
+go 1.24.11
 
 require (
 	emperror.dev/errors v0.8.0
