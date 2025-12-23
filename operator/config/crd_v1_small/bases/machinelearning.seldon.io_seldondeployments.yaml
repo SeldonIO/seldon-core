@@ -4,7 +4,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.13.0
-  creationTimestamp: null
   name: seldondeployments.machinelearning.seldon.io
 spec:
   group: machinelearning.seldon.io

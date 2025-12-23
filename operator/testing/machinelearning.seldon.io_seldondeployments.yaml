@@ -4,7 +4,6 @@ metadata:
   annotations:
     cert-manager.io/inject-ca-from: seldon-system/seldon-serving-cert
     controller-gen.kubebuilder.io/version: v0.13.0
-  creationTimestamp: null
   labels:
     app: seldon
     app.kubernetes.io/instance: seldon1
