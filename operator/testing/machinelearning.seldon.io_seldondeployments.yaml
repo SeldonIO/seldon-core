@@ -3,7 +3,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: seldon-system/seldon-serving-cert
-    controller-gen.kubebuilder.io/version: v0.6.2
+    controller-gen.kubebuilder.io/version: v0.13.0
   creationTimestamp: null
   labels:
     app: seldon
@@ -1069,11 +1069,12 @@ spec:
                                                   - value
                                                   type: object
                                                 type: array
+                                                x-kubernetes-list-type: atomic
                                               selectPolicy:
                                                 description: selectPolicy is used
                                                   to specify which policy should be
                                                   used. If not set, the default value
-                                                  MaxPolicySelect is used.
+                                                  Max is used.
                                                 type: string
                                               stabilizationWindowSeconds:
                                                 description: 'stabilizationWindowSeconds
@@ -1137,11 +1138,12 @@ spec:
                                                   - value
                                                   type: object
                                                 type: array
+                                                x-kubernetes-list-type: atomic
                                               selectPolicy:
                                                 description: selectPolicy is used
                                                   to specify which policy should be
                                                   used. If not set, the default value
-                                                  MaxPolicySelect is used.
+                                                  Max is used.
                                                 type: string
                                               stabilizationWindowSeconds:
                                                 description: 'stabilizationWindowSeconds
@@ -1160,9 +1162,27 @@ spec:
                                                 type: integer
                                             type: object
                                         type: object
+                                      name:
+                                        type: string
                                     type: object
                                   restoreToOriginalReplicaCount:
                                     type: boolean
+                                  scalingModifiers:
+                                    description: ScalingModifiers describes advanced
+                                      scaling logic options like formula
+                                    properties:
+                                      activationTarget:
+                                        type: string
+                                      formula:
+                                        type: string
+                                      metricType:
+                                        description: MetricTargetType specifies the
+                                          type of metric being targeted, and should
+                                          be either "Value", "AverageValue", or "Utilization"
+                                        type: string
+                                      target:
+                                        type: string
+                                    type: object
                                 type: object
                               cooldownPeriod:
                                 format: int32
@@ -1198,7 +1218,7 @@ spec:
                                     that will be used
                                   properties:
                                     authenticationRef:
-                                      description: ScaledObjectAuthRef points to the
+                                      description: AuthenticationRef points to the
                                         TriggerAuthentication or ClusterTriggerAuthentication
                                         object that is used to authenticate the scaler
                                         with the environment
@@ -1225,6 +1245,8 @@ spec:
                                       type: string
                                     type:
                                       type: string
+                                    useCachedMetrics:
+                                      type: boolean
                                   required:
                                   - metadata
                                   - type
@@ -13495,11 +13517,12 @@ spec:
                                                   - value
                                                   type: object
                                                 type: array
+                                                x-kubernetes-list-type: atomic
                                               selectPolicy:
                                                 description: selectPolicy is used
                                                   to specify which policy should be
                                                   used. If not set, the default value
-                                                  MaxPolicySelect is used.
+                                                  Max is used.
                                                 type: string
                                               stabilizationWindowSeconds:
                                                 description: 'stabilizationWindowSeconds
@@ -13563,11 +13586,12 @@ spec:
                                                   - value
                                                   type: object
                                                 type: array
+                                                x-kubernetes-list-type: atomic
                                               selectPolicy:
                                                 description: selectPolicy is used
                                                   to specify which policy should be
                                                   used. If not set, the default value
-                                                  MaxPolicySelect is used.
+                                                  Max is used.
                                                 type: string
                                               stabilizationWindowSeconds:
                                                 description: 'stabilizationWindowSeconds
@@ -13586,9 +13610,27 @@ spec:
                                                 type: integer
                                             type: object
                                         type: object
+                                      name:
+                                        type: string
                                     type: object
                                   restoreToOriginalReplicaCount:
                                     type: boolean
+                                  scalingModifiers:
+                                    description: ScalingModifiers describes advanced
+                                      scaling logic options like formula
+                                    properties:
+                                      activationTarget:
+                                        type: string
+                                      formula:
+                                        type: string
+                                      metricType:
+                                        description: MetricTargetType specifies the
+                                          type of metric being targeted, and should
+                                          be either "Value", "AverageValue", or "Utilization"
+                                        type: string
+                                      target:
+                                        type: string
+                                    type: object
                                 type: object
                               cooldownPeriod:
                                 format: int32
@@ -13624,7 +13666,7 @@ spec:
                                     that will be used
                                   properties:
                                     authenticationRef:
-                                      description: ScaledObjectAuthRef points to the
+                                      description: AuthenticationRef points to the
                                         TriggerAuthentication or ClusterTriggerAuthentication
                                         object that is used to authenticate the scaler
                                         with the environment
@@ -13651,6 +13693,8 @@ spec:
                                       type: string
                                     type:
                                       type: string
+                                    useCachedMetrics:
+                                      type: boolean
                                   required:
                                   - metadata
                                   - type
@@ -25921,11 +25965,12 @@ spec:
                                                   - value
                                                   type: object
                                                 type: array
+                                                x-kubernetes-list-type: atomic
                                               selectPolicy:
                                                 description: selectPolicy is used
                                                   to specify which policy should be
                                                   used. If not set, the default value
-                                                  MaxPolicySelect is used.
+                                                  Max is used.
                                                 type: string
                                               stabilizationWindowSeconds:
                                                 description: 'stabilizationWindowSeconds
@@ -25989,11 +26034,12 @@ spec:
                                                   - value
                                                   type: object
                                                 type: array
+                                                x-kubernetes-list-type: atomic
                                               selectPolicy:
                                                 description: selectPolicy is used
                                                   to specify which policy should be
                                                   used. If not set, the default value
-                                                  MaxPolicySelect is used.
+                                                  Max is used.
                                                 type: string
                                               stabilizationWindowSeconds:
                                                 description: 'stabilizationWindowSeconds
@@ -26012,9 +26058,27 @@ spec:
                                                 type: integer
                                             type: object
                                         type: object
+                                      name:
+                                        type: string
                                     type: object
                                   restoreToOriginalReplicaCount:
                                     type: boolean
+                                  scalingModifiers:
+                                    description: ScalingModifiers describes advanced
+                                      scaling logic options like formula
+                                    properties:
+                                      activationTarget:
+                                        type: string
+                                      formula:
+                                        type: string
+                                      metricType:
+                                        description: MetricTargetType specifies the
+                                          type of metric being targeted, and should
+                                          be either "Value", "AverageValue", or "Utilization"
+                                        type: string
+                                      target:
+                                        type: string
+                                    type: object
                                 type: object
                               cooldownPeriod:
                                 format: int32
@@ -26050,7 +26114,7 @@ spec:
                                     that will be used
                                   properties:
                                     authenticationRef:
-                                      description: ScaledObjectAuthRef points to the
+                                      description: AuthenticationRef points to the
                                         TriggerAuthentication or ClusterTriggerAuthentication
                                         object that is used to authenticate the scaler
                                         with the environment
@@ -26077,6 +26141,8 @@ spec:
                                       type: string
                                     type:
                                       type: string
+                                    useCachedMetrics:
+                                      type: boolean
                                   required:
                                   - metadata
                                   - type
