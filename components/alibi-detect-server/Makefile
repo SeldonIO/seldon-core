@@ -24,7 +24,7 @@ dev_install: get_local_repo
 
 .PHONY: type_check
 type_check:
-	mypy --ignore-missing-imports adserver
+	poetry run mypy --ignore-missing-imports adserver
 
 .PHONY: test
 test: type_check
