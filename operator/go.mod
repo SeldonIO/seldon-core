@@ -111,6 +111,8 @@ require (
 exclude github.com/go-logr/logr v1.0.0
 
 replace (
+
+	github.com/expr-lang/expr v1.17.2 => github.com/expr-lang/expr v1.17.7
 	github.com/google/cel-go => github.com/google/cel-go v0.20.1
 	github.com/google/gnostic-models => github.com/google/gnostic-models v0.6.8
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.19.1
