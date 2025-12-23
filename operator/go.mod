@@ -11,7 +11,7 @@ require (
 	github.com/golang/protobuf v1.5.4
 	github.com/google/go-cmp v0.7.0
 	github.com/json-iterator/go v1.1.12
-	github.com/kedacore/keda/v2 v2.13.0
+	github.com/kedacore/keda/v2 v2.14.0
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.36.2
 	go.uber.org/automaxprocs v1.5.3
@@ -20,23 +20,23 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 	istio.io/api v0.0.0-20230125212921-f04847bedb29
 	istio.io/client-go v1.16.2
-	k8s.io/api v0.29.0
-	k8s.io/apiextensions-apiserver v0.29.0
+	k8s.io/api v0.29.2
+	k8s.io/apiextensions-apiserver v0.29.2
 	k8s.io/apimachinery v0.34.1
-	k8s.io/client-go v0.29.0
-	knative.dev/pkg v0.0.0-20240116073220-b488e7be5902
-	sigs.k8s.io/controller-runtime v0.16.3
+	k8s.io/client-go v1.5.2
+	knative.dev/pkg v0.0.0-20240423132823-3c6badc82748
+	sigs.k8s.io/controller-runtime v0.17.3
 )
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/emicklei/go-restful/v3 v3.11.2 // indirect
 	github.com/evanphx/json-patch v5.8.1+incompatible // indirect
-	github.com/evanphx/json-patch/v5 v5.8.1 // indirect
-	github.com/expr-lang/expr v1.15.8 // indirect
+	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
+	github.com/expr-lang/expr v1.16.5 // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-errors/errors v1.5.1 // indirect
@@ -63,9 +63,9 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/prometheus/client_golang v1.18.0 // indirect
-	github.com/prometheus/client_model v0.5.0 // indirect
-	github.com/prometheus/common v0.46.0 // indirect
+	github.com/prometheus/client_golang v1.19.0 // indirect
+	github.com/prometheus/client_model v0.6.1 // indirect
+	github.com/prometheus/common v0.53.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/spf13/afero v1.12.0 // indirect
@@ -93,12 +93,12 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/component-base v0.29.0 // indirect
+	k8s.io/component-base v0.29.2 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20241212222426-2c72e554b1e7 // indirect
 	k8s.io/utils v0.0.0-20250604170112-4c0f3b243397 // indirect
 	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20251007053059-f48fe1c564dc // indirect
-	sigs.k8s.io/controller-tools v0.13.0 // indirect
+	sigs.k8s.io/controller-tools v0.14.0 // indirect
 	sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 // indirect
 	sigs.k8s.io/kustomize/api v0.20.1 // indirect
 	sigs.k8s.io/kustomize/cmd/config v0.20.1 // indirect
@@ -113,14 +113,14 @@ exclude github.com/go-logr/logr v1.0.0
 replace (
 	github.com/google/gnostic-models => github.com/google/gnostic-models v0.6.8
 	golang.org/x/oauth2 => golang.org/x/oauth2 v0.32.0
-	k8s.io/api => k8s.io/api v0.28.5
+	k8s.io/api => k8s.io/api v0.28.9
 	k8s.io/apimachinery => k8s.io/apimachinery v0.29.0-alpha.3
-	k8s.io/apiserver => k8s.io/apiserver v0.28.5
-	k8s.io/client-go => k8s.io/client-go v0.28.5
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20230901164831-6c774f458599
-	k8s.io/metrics => k8s.io/metrics v0.28.5
-	sigs.k8s.io/controller-tools => sigs.k8s.io/controller-tools v0.13.0
-	sigs.k8s.io/kustomize/kyaml => sigs.k8s.io/kustomize/kyaml v0.16.0
+	k8s.io/apiserver => k8s.io/apiserver v0.28.9
+	k8s.io/client-go => k8s.io/client-go v0.28.9
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9
+	k8s.io/metrics => k8s.io/metrics v0.28.9
+	sigs.k8s.io/controller-tools => sigs.k8s.io/controller-tools v0.14.0
+	sigs.k8s.io/kustomize/kyaml => sigs.k8s.io/kustomize/kyaml v0.17.0
 )
 
 tool (
