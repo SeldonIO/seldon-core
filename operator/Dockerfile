@@ -27,18 +27,15 @@ RUN wget -O hashicorp-errwrap.tar.gz https://github.com/hashicorp/errwrap/archiv
 RUN wget -O hashicorp-go-cleanhttp.tar.gz https://github.com/hashicorp/go-cleanhttp/archive/master.tar.gz
 RUN wget -O hashicorp-go-immutable-radix.tar.gz https://github.com/hashicorp/go-immutable-radix/archive/master.tar.gz
 RUN wget -O hashicorp-go-multierror.tar.gz https://github.com/hashicorp/go-multierror/archive/master.tar.gz
-RUN wget -O hashicorp-go-plugin.tar.gz https://github.com/hashicorp/go-plugin/archive/master.tar.gz
 RUN wget -O hashicorp-go-retryablehttp.tar.gz https://github.com/hashicorp/go-retryablehttp/archive/master.tar.gz
 RUN wget -O hashicorp-go-rootcerts.tar.gz https://github.com/hashicorp/go-rootcerts/archive/master.tar.gz
 RUN wget -O hashicorp-go-secure-stdlib.tar.gz https://github.com/hashicorp/go-secure-stdlib/archive/master.tar.gz
 RUN wget -O hashicorp-go-sockaddr.tar.gz https://github.com/hashicorp/go-sockaddr/archive/master.tar.gz
 RUN wget -O hashicorp-go-uuid.tar.gz https://github.com/hashicorp/go-uuid/archive/master.tar.gz
-RUN wget -O hashicorp-go-version.tar.gz https://github.com/hashicorp/go-version/archive/master.tar.gz
 RUN wget -O hashicorp-golang-lru.tar.gz https://github.com/hashicorp/golang-lru/archive/master.tar.gz
 RUN wget -O hashicorp-hcl.tar.gz https://github.com/hashicorp/hcl/archive/master.tar.gz
 RUN wget -O hashicorp-serf.tar.gz https://github.com/hashicorp/serf/archive/master.tar.gz
 RUN wget -O hashicorp-vault.tar.gz https://github.com/hashicorp/vault/archive/master.tar.gz
-RUN wget -O hashicorp-yamux.tar.gz https://github.com/hashicorp/yamux/archive/master.tar.gz
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.7
 
