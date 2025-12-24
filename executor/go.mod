@@ -94,6 +94,8 @@ require (
 
 replace (
 	github.com/codahale/hdrhistogram => github.com/HdrHistogram/hdrhistogram-go v1.1.2
+	// Resolves https://access.redhat.com/security/cve/CVE-2025-68156
+	github.com/expr-lang/expr v1.17.2 => github.com/expr-lang/expr v1.17.7
 
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.19.1
 	github.com/prometheus/client_model => github.com/prometheus/client_model v0.6.1
