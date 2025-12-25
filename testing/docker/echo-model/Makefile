@@ -15,3 +15,8 @@ docker-push:
 
 kind_load_image: docker-build
 	kind load -v 3 docker-image ${IMAGE_BASE}:${VERSION} --name ${KIND_NAME}
+
+
+.PHONY:show_image
+show_image:
+	 @echo ${IMAGE_BASE}:${VERSION}

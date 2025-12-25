@@ -24,6 +24,10 @@ fmt:
 vet:
 	go vet ./...
 
+.PHONY:show_image
+show_image:
+	 @echo ${SELDON_EXECUTOR_IMG}
+
 
 # Build manager binary
 executor: copy_operator fmt vet

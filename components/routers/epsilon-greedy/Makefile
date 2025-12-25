@@ -10,3 +10,8 @@ docker-push:
 
 kind_load: docker-build
 	kind load -v 3 docker-image ${IMAGE_NAME}:${VERSION} --name ${KIND_NAME}
+
+.PHONY:show_image
+show_image:
+	 @echo ${IMAGE_NAME}:${VERSION}
+
