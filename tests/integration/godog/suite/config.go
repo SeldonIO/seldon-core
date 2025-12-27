@@ -13,14 +13,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 )
 
 type GodogConfig struct {
-	Namespace          string    `json:"namespace"`
-	LogLevel           string    `json:"log_level"`
-	SkipCleanup        bool      `json:"skip_cleanup"`
-	SkipCleanUpOnError bool      `json:"skip_clean_up_on_error"`
-	Inference          Inference `json:"inference"`
+	Namespace          string        `json:"namespace"`
+	LogLevel           string        `json:"log_level"`
+	SkipCleanup        bool          `json:"skip_cleanup"`
+	SkipCleanUpOnError bool          `json:"skip_clean_up_on_error"`
+	SlowScenarioDelay  time.Duration `json:"slow_scenario_delay"`
+	Inference          Inference     `json:"inference"`
 }
 
 type Inference struct {
