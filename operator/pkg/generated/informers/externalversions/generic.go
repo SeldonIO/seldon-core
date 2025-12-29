@@ -44,7 +44,7 @@ func (f *genericInformer) Lister() cache.GenericLister {
 // TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=mlops.seldon.io/v1alpha1, Version=v1alpha1
+	// Group=mlops, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithResource("experiments"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Mlops().V1alpha1().Experiments().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("models"):
