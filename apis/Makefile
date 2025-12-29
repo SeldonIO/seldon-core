@@ -162,7 +162,6 @@ build-go: \
 		./mlops/agent_debug/agent_debug.proto \
 		./mlops/proxy/proxy.proto \
 		./mlops/scheduler/scheduler.proto \
-		./mlops/scheduler/storage.proto \
 		./mlops/scheduler/db/db.proto \
 		./mlops/chainer/chainer.proto \
 		./mlops/v2_dataplane/v2_dataplane.proto \
