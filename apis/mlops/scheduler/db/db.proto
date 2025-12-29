@@ -1,0 +1,125 @@
+syntax = "proto3";
+
+package seldon.mlops.scheduler.db;
+
+option go_package = "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db";
+
+import "google/protobuf/timestamp.proto";
+import "mlops/scheduler/scheduler.proto";
+
+// ModelState represents the state of a model
+enum ModelState {
+  MODEL_STATE_UNKNOWN = 0;
+  MODEL_STATE_PROGRESSING = 1;
+  MODEL_STATE_AVAILABLE = 2;
+  MODEL_STATE_FAILED = 3;
+  MODEL_STATE_TERMINATING = 4;
+  MODEL_STATE_TERMINATED = 5;
+  MODEL_STATE_TERMINATE_FAILED = 6;
+  MODEL_STATE_SCHEDULE_FAILED = 7;
+  MODEL_STATE_SCALED_DOWN = 8;
+  MODEL_STATE_CREATE = 9;
+  MODEL_STATE_TERMINATE = 10;
+}
+
+// ModelReplicaState represents the state of a model replica
+enum ModelReplicaState {
+  MODEL_REPLICA_STATE_UNKNOWN = 0;
+  MODEL_REPLICA_STATE_LOAD_REQUESTED = 1;
+  MODEL_REPLICA_STATE_LOADING = 2;
+  MODEL_REPLICA_STATE_LOADED = 3;
+  MODEL_REPLICA_STATE_LOAD_FAILED = 4;
+  MODEL_REPLICA_STATE_UNLOAD_ENVOY_REQUESTED = 5;
+  MODEL_REPLICA_STATE_UNLOAD_REQUESTED = 6;
+  MODEL_REPLICA_STATE_UNLOADING = 7;
+  MODEL_REPLICA_STATE_UNLOADED = 8;
+  MODEL_REPLICA_STATE_UNLOAD_FAILED = 9;
+  MODEL_REPLICA_STATE_AVAILABLE = 10;
+  MODEL_REPLICA_STATE_LOADED_UNAVAILABLE = 11;
+  MODEL_REPLICA_STATE_DRAINING = 12;
+}
+
+// ReplicaStatus represents the status of a replica
+message ReplicaStatus {
+  ModelReplicaState state = 1;
+  string reason = 2;
+  google.protobuf.Timestamp timestamp = 3;
+}
+
+// ModelStatus represents the overall status of a model
+message ModelStatus {
+  ModelState state = 1;
+  ModelState model_gw_state = 2;
+  string reason = 3;
+  string model_gw_reason = 4;
+  uint32 available_replicas = 5;
+  uint32 unavailable_replicas = 6;
+  uint32 draining_replicas = 7;
+  google.protobuf.Timestamp timestamp = 8;
+}
+
+// ReplicaStatusEntry for map representation
+message ReplicaStatusEntry {
+  int32 replica_index = 1;
+  ReplicaStatus status = 2;
+}
+
+// ModelVersion represents a version of a model
+message ModelVersion {
+  seldon.mlops.scheduler.Model model_defn = 1;  // Assuming pb.Model is defined elsewhere
+  uint32 version = 2;
+  string server = 3;
+  // Using repeated messages since proto doesn't support map<int, ReplicaStatus> directly
+  repeated ReplicaStatusEntry replicas = 4;
+  ModelStatus state = 5;
+}
+
+
+// ModelVersionID uniquely identifies a model version
+message ModelVersionID {
+  string name = 1;
+  uint32 version = 2;
+}
+
+// Model represents a model with its versions
+message Model {
+  string name = 1;
+  repeated ModelVersion versions = 2;
+  bool deleted = 3;
+}
+
+// Server represents a server with its configuration and replicas
+message Server {
+  string name = 1;
+  map<int32, ServerReplica> replicas = 2;
+  bool shared = 3;
+  int32 expected_replicas = 4;
+  int32 min_replicas = 5;
+  int32 max_replicas = 6;
+  seldon.mlops.scheduler.KubernetesMeta kubernetes_meta = 7;
+}
+
+// ModelLoadStatus represents a model's load status (for maps that use ModelVersionID as key)
+message ModelLoadStatus {
+  ModelVersionID model_version_id = 1;
+  bool loaded = 2;
+}
+
+// ServerReplica represents a single replica of a server
+message ServerReplica {
+  string inference_svc = 1;
+  int32 inference_http_port = 2;
+  int32 inference_grpc_port = 3;
+  string server_name = 4;
+  int32 replica_idx = 5;
+  repeated string capabilities = 6;
+  uint64 memory = 7;
+  uint64 available_memory = 8;
+  // Using repeated messages since proto doesn't support complex map keys
+  repeated ModelLoadStatus loaded_models = 9;
+  repeated ModelLoadStatus loading_models = 10;
+  uint32 over_commit_percentage = 11;
+  uint64 reserved_memory = 12;
+  map<string, bool> unique_loaded_models = 13;
+  bool is_draining = 14;
+}

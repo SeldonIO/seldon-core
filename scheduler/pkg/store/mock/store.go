@@ -79,6 +79,20 @@ func (mr *MockModelStoreMockRecorder) DrainServerReplica(serverName, replicaIdx 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DrainServerReplica", reflect.TypeOf((*MockModelStore)(nil).DrainServerReplica), serverName, replicaIdx)
 }
 
+// EmitEvents mocks base method.
+func (m *MockModelStore) EmitEvents() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmitEvents")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EmitEvents indicates an expected call of EmitEvents.
+func (mr *MockModelStoreMockRecorder) EmitEvents() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmitEvents", reflect.TypeOf((*MockModelStore)(nil).EmitEvents))
+}
+
 // FailedScheduling mocks base method.
 func (m *MockModelStore) FailedScheduling(modelID string, version uint32, reason string, reset bool) error {
 	m.ctrl.T.Helper()
@@ -94,11 +108,12 @@ func (mr *MockModelStoreMockRecorder) FailedScheduling(modelID, version, reason,
 }
 
 // GetAllModels mocks base method.
-func (m *MockModelStore) GetAllModels() []string {
+func (m *MockModelStore) GetAllModels() ([]string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllModels")
 	ret0, _ := ret[0].([]string)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetAllModels indicates an expected call of GetAllModels.

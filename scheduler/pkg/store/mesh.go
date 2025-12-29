@@ -172,7 +172,6 @@ type ServerReplica struct {
 	inferenceGrpcPort int32
 	serverName        string
 	replicaIdx        int
-	server            *Server
 	capabilities      []string
 	memory            uint64
 	availableMemory   uint64
@@ -206,7 +205,6 @@ func NewServerReplica(inferenceSvc string,
 		inferenceGrpcPort:    inferenceGrpcPort,
 		serverName:           server.name,
 		replicaIdx:           replicaIdx,
-		server:               server,
 		capabilities:         cleanCapabilities(capabilities),
 		memory:               memory,
 		availableMemory:      availableMemory,
@@ -226,7 +224,6 @@ func NewServerReplicaFromConfig(server *Server, replicaIdx int, loadedModels map
 		inferenceGrpcPort:    config.GetInferenceGrpcPort(),
 		serverName:           server.name,
 		replicaIdx:           replicaIdx,
-		server:               server,
 		capabilities:         cleanCapabilities(config.GetCapabilities()),
 		memory:               config.GetMemoryBytes(),
 		availableMemory:      availableMemoryBytes,
@@ -687,7 +684,6 @@ func (s *ServerReplica) createSnapshot(modelDetails bool) *ServerReplica {
 		inferenceGrpcPort:    s.inferenceGrpcPort,
 		serverName:           s.serverName,
 		replicaIdx:           s.replicaIdx,
-		server:               nil,
 		capabilities:         capabilities,
 		memory:               s.memory,
 		availableMemory:      s.availableMemory,

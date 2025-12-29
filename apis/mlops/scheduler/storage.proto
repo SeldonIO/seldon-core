@@ -20,3 +20,4 @@ message ExperimentSnapshot {
   // on restart, which would guard against lost events in communication.
   bool deleted = 2;
 }
+

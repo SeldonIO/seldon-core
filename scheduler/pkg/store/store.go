@@ -154,7 +154,7 @@ type ModelStore interface {
 	RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) // return previously loaded models
 	DrainServerReplica(serverName string, replicaIdx int) ([]string, error)  // return previously loaded models
 	FailedScheduling(modelID string, version uint32, reason string, reset bool) error
-	GetAllModels() []string
+	GetAllModels() ([]string, error)
 	SetModelGwModelState(name string, versionNumber uint32, status ModelState, reason string, source string) error
 	EmitEvents() error
 }

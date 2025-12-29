@@ -15,7 +15,6 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/bridge"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
@@ -31,8 +30,9 @@ type MemoryStore struct {
 	store    Storage
 	logger   log.FieldLogger
 	eventHub *coordinator.EventHub
-	bridge   bridge.EventDataStoreBridge
 }
+
+var _ ModelStore = &MemoryStore{}
 
 func NewMemoryStore(
 	logger log.FieldLogger,
