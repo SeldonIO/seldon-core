@@ -29,7 +29,7 @@ type MlopsV1alpha1Interface interface {
 	ServerConfigsGetter
 }
 
-// MlopsV1alpha1Client is used to interact with features provided by the mlops.seldon.io/v1alpha1 group.
+// MlopsV1alpha1Client is used to interact with features provided by the mlops group.
 type MlopsV1alpha1Client struct {
 	restClient rest.Interface
 }

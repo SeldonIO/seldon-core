@@ -8,6 +8,5 @@ the Change License after the Change Date as each is defined in accordance with t
 */
 
 // +k8s:deepcopy-gen=package
-// +groupName=mlops.seldon.io/v1alpha1
 
 package v1alpha1
