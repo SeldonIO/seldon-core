@@ -66,14 +66,12 @@ message ReplicaStatusEntry {
 
 // ModelVersion represents a version of a model
 message ModelVersion {
-  seldon.mlops.scheduler.Model model_defn = 1;  // Assuming pb.Model is defined elsewhere
+  seldon.mlops.scheduler.Model model_defn = 1;
   uint32 version = 2;
   string server = 3;
-  // Using repeated messages since proto doesn't support map<int, ReplicaStatus> directly
-  repeated ReplicaStatusEntry replicas = 4;
+  map<int32, ReplicaStatusEntry> replicas = 4;
   ModelStatus state = 5;
 }
-
 
 // ModelVersionID uniquely identifies a model version
 message ModelVersionID {

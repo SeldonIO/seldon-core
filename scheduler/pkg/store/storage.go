@@ -9,21 +9,24 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package store
 
-import "errors"
+import (
+	"errors"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
+)
 
 var (
 	ErrNotFound = errors.New("not found")
 )
 
 type Storage interface {
-	GetModel(name string) (*Model, error)
-	AddModel(model *Model) error
-	ListModels() ([]*Model, error)
-	UpdateModel(model *Model) error
+	GetModel(name string) (*db.Model, error)
+	AddModel(model *db.Model) error
+	ListModels() ([]*db.Model, error)
+	UpdateModel(model *db.Model) error
 	DeleteModel(name string) error
-	GetServer(name string) (*Server, error)
-	AddServer(server *Server) error
-	ListServers() ([]*Server, error)
-	UpdateServer(server *Server) error
+	GetServer(name string) (*db.Server, error)
+	AddServer(server *db.Server) error
+	ListServers() ([]*db.Server, error)
+	UpdateServer(server *db.Server) error
 	DeleteServer(serverName string) error
 }

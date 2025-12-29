@@ -12,6 +12,7 @@ package store
 import (
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 )
 
 type ServerSnapshot struct {
@@ -138,23 +139,23 @@ func (m *ModelSnapshot) GetVersionsBeforeLastModelGwAvailable() []*ModelVersion 
 //go:generate go tool mockgen -source=./store.go -destination=./mock/store.go -package=mock ModelStore
 type ModelStore interface {
 	UpdateModel(config *pb.LoadModelRequest) error
-	GetModel(key string) (*ModelSnapshot, error)
-	GetModels() ([]*ModelSnapshot, error)
+	GetModel(key string) (*db.Model, error)
+	GetModels() ([]*db.Model, error)
 	LockModel(modelId string)
 	UnlockModel(modelId string)
 	RemoveModel(req *pb.UnloadModelRequest) error
-	GetServers(shallow bool, modelDetails bool) ([]*ServerSnapshot, error)
-	GetServer(serverKey string, shallow bool, modelDetails bool) (*ServerSnapshot, error)
-	UpdateLoadedModels(modelKey string, version uint32, serverKey string, replicas []*ServerReplica) error
+	GetServers(shallow bool, modelDetails bool) ([]*db.Server, error)
+	GetServer(serverKey string, shallow bool, modelDetails bool) (*db.Server, error)
+	UpdateLoadedModels(modelKey string, version uint32, serverKey string, replicas []*db.ServerReplica) error
 	UnloadVersionModels(modelKey string, version uint32) (bool, error)
 	UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error)
-	UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState ModelReplicaState, reason string, runtimeInfo *pb.ModelRuntimeInfo) error
+	UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState db.ModelReplicaState, reason string, runtimeInfo *pb.ModelRuntimeInfo) error
 	AddServerReplica(request *pba.AgentSubscribeRequest) error
 	ServerNotify(request *pb.ServerNotify) error
 	RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) // return previously loaded models
 	DrainServerReplica(serverName string, replicaIdx int) ([]string, error)  // return previously loaded models
 	FailedScheduling(modelID string, version uint32, reason string, reset bool) error
 	GetAllModels() ([]string, error)
-	SetModelGwModelState(name string, versionNumber uint32, status ModelState, reason string, source string) error
+	SetModelGwModelState(name string, versionNumber uint32, status db.ModelState, reason string, source string) error
 	EmitEvents() error
 }

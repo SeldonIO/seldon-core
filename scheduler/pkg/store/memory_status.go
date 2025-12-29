@@ -13,7 +13,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
@@ -115,36 +117,40 @@ func (m *MemoryStore) FailedScheduling(modelID string, version uint32, reason st
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	model, ok := m.store.models[modelID]
-	if !ok {
-		return fmt.Errorf("model %s not found", modelID)
+	model, err := m.store.GetModel(modelID)
+	if err != nil {
+		return fmt.Errorf("model %s not found: %w", modelID, err)
 	}
 
 	// likely the failed model version is the latest, so we loop through in reverse order
-	for i := len(model.versions) - 1; i >= 0; i-- {
-		modelVersion := model.versions[i]
+	for i := len(model.Versions) - 1; i >= 0; i-- {
+		modelVersion := model.Versions[i]
 
-		if modelVersion.version == version {
+		if modelVersion.Version == version {
 			// we use len of GetAssignment instead of .state.AvailableReplicas as it is more accurate in this context
 			availableReplicas := uint32(len(modelVersion.GetAssignment()))
-			modelVersion.state = ModelStatus{
-				State:               ScheduleFailed,
-				ModelGwState:        modelVersion.state.ModelGwState,
+			modelVersion.State = &db.ModelStatus{
+				State:               db.ModelState_MODEL_STATE_SCHEDULE_FAILED,
+				ModelGwState:        modelVersion.State.ModelGwState,
 				Reason:              reason,
-				ModelGwReason:       modelVersion.state.ModelGwReason,
-				Timestamp:           time.Now(),
+				ModelGwReason:       modelVersion.State.ModelGwReason,
+				Timestamp:           timestamppb.Now(),
 				AvailableReplicas:   availableReplicas,
-				UnavailableReplicas: modelVersion.GetModel().GetDeploymentSpec().GetReplicas() - availableReplicas,
+				UnavailableReplicas: modelVersion.ModelDefn.GetDeploymentSpec().GetReplicas() - availableReplicas,
 			}
 			// make sure we reset server but only if there are no available replicas
 			if reset {
-				modelVersion.SetServer("")
+				modelVersion.Server = ""
+			}
+
+			if err := m.store.UpdateModel(model); err != nil {
+				return fmt.Errorf("failed to update model %s: %w", modelID, err)
 			}
 
 			m.eventHub.PublishModelEvent(
 				modelFailureEventSource,
 				coordinator.ModelEventMsg{
-					ModelName:    modelVersion.GetMeta().GetName(),
+					ModelName:    modelVersion.ModelDefn.Meta.Name,
 					ModelVersion: modelVersion.GetVersion(),
 				},
 			)
@@ -164,24 +170,23 @@ func (m *MemoryStore) updateModelStatus(isLatest bool, deleted bool, modelVersio
 	updateModelState(isLatest, modelVersion, prevModelVersion, stats, deleted)
 }
 
-func (m *MemoryStore) setModelGwStatusToTerminate(isLatest bool, modelVersion *ModelVersion) {
+func (m *MemoryStore) setModelGwStatusToTerminate(isLatest bool, modelVersion *db.ModelVersion) {
 	if !isLatest {
-		modelVersion.state.ModelGwState = ModelTerminated
-		modelVersion.state.ModelGwReason = "Not latest version"
-	} else {
-		modelVersion.state.ModelGwState = ModelTerminate
-		modelVersion.state.ModelGwReason = "Model deleted"
+		modelVersion.State.ModelGwState = db.ModelState_MODEL_STATE_TERMINATED
+		modelVersion.State.ModelGwReason = "Not latest version"
+		return
 	}
+	modelVersion.State.ModelGwState = db.ModelState_MODEL_STATE_TERMINATE
+	modelVersion.State.ModelGwReason = "Model deleted"
 }
 
 func (m *MemoryStore) UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	fmt.Println("UnloadModelGwVersionModels called for ", modelKey, " version ", version)
 
-	model, ok := m.store.models[modelKey]
-	if !ok {
-		return false, fmt.Errorf("failed to find model %s", modelKey)
+	model, err := m.store.GetModel(modelKey)
+	if err != nil {
+		return false, fmt.Errorf("failed to find model %s: %w", modelKey, err)
 	}
 
 	modelVersion := model.GetVersion(version)
@@ -190,5 +195,10 @@ func (m *MemoryStore) UnloadModelGwVersionModels(modelKey string, version uint32
 	}
 
 	m.setModelGwStatusToTerminate(false, modelVersion)
+
+	if err := m.store.UpdateModel(model); err != nil {
+		return false, fmt.Errorf("failed to update model %s: %w", modelKey, err)
+	}
+
 	return true, nil
 }

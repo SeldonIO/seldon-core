@@ -16,6 +16,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"google.golang.org/protobuf/proto"
 
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
@@ -78,16 +79,15 @@ type ReplicaStatus struct {
 	Timestamp time.Time
 }
 
-func NewDefaultModelVersion(model *pb.Model, version uint32) *ModelVersion {
-	return &ModelVersion{
-		version:   version,
-		modelDefn: model,
-		replicas:  make(map[int]ReplicaStatus),
-		state: ModelStatus{
-			State:        ModelStateUnknown,
-			ModelGwState: ModelCreate,
+func NewDefaultModelVersion(model *pb.Model, version uint32) *db.ModelVersion {
+	return &db.ModelVersion{
+		Version:   version,
+		ModelDefn: model,
+		Replicas:  make([]*db.ReplicaStatusEntry, 0),
+		State: &db.ModelStatus{
+			State:        db.ModelState_MODEL_STATE_UNKNOWN,
+			ModelGwState: db.ModelState_MODEL_STATE_CREATE,
 		},
-		mu: sync.RWMutex{},
 	}
 }
 

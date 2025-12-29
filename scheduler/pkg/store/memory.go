@@ -15,6 +15,7 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
@@ -57,30 +58,15 @@ func (m *MemoryStore) GetAllModels() ([]string, error) {
 	}
 
 	for _, model := range models {
-		modelNames = append(modelNames, model.Name())
+		modelNames = append(modelNames, model.GetName())
 	}
 	return modelNames, nil
 }
 
-func (m *MemoryStore) GetModels() ([]*ModelSnapshot, error) {
+func (m *MemoryStore) GetModels() ([]*db.Model, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-
-	models, err := m.store.ListModels()
-	if err != nil {
-		return nil, err
-	}
-
-	foundModels := []*ModelSnapshot{}
-	for _, model := range models {
-		snapshot := &ModelSnapshot{
-			Name:     model.Name(),
-			Deleted:  model.IsDeleted(),
-			Versions: model.versions,
-		}
-		foundModels = append(foundModels, snapshot)
-	}
-	return foundModels, nil
+	return m.store.ListModels()
 }
 
 func (m *MemoryStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*Model, *ModelVersion, error) {
@@ -108,27 +94,28 @@ func (m *MemoryStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*Mode
 	}
 }
 
-func (m *MemoryStore) addNextModelVersion(model *Model, pbmodel *pb.Model) {
+func (m *MemoryStore) addNextModelVersion(model *db.Model, pbmodel *pb.Model) {
 	// if we start from a clean state, lets use the generation id as the starting version
 	// this is to ensure that we have monotonic increasing version numbers
 	// and we never reset back to 1
 	generation := pbmodel.GetMeta().GetKubernetesMeta().GetGeneration()
 	version := max(uint32(1), uint32(generation))
 	if model.Latest() != nil {
-		version = model.Latest().GetVersion() + 1
+		version = model.Versions[len(model.Versions)-1].Version + 1
 	}
 	modelVersion := NewDefaultModelVersion(pbmodel, version)
 
-	model.versions = append(model.versions, modelVersion)
-	sort.SliceStable(model.versions, func(i, j int) bool { // resort model versions based on version number
-		return model.versions[i].GetVersion() < model.versions[j].GetVersion()
+	model.Versions = append(model.Versions, modelVersion)
+	sort.SliceStable(model.Versions, func(i, j int) bool { // resort model versions based on version number
+		return model.Versions[i].GetVersion() < model.Versions[j].GetVersion()
 	})
 }
 
 func (m *MemoryStore) UpdateModel(req *pb.LoadModelRequest) error {
-	logger := m.logger.WithField("func", "UpdateModel")
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
+	logger := m.logger.WithField("func", "UpdateModel")
 	modelName := req.GetModel().GetMeta().GetName()
 	validName := utils.CheckName(modelName)
 	if !validName {
@@ -140,53 +127,65 @@ func (m *MemoryStore) UpdateModel(req *pb.LoadModelRequest) error {
 	model, err := m.store.GetModel(modelName)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
-			return err
+			return fmt.Errorf("failed to get model %s: %w", modelName, err)
 		}
-		// TODO pointer
-		model = &Model{
-			name: modelName,
-		}
-		if err := m.store.AddModel(model); err != nil {
-			return err
-		}
+		model = &db.Model{Name: modelName}
 		m.addNextModelVersion(model, req.GetModel())
-	} else if model.IsDeleted() {
+		if err := m.store.AddModel(model); err != nil {
+			return fmt.Errorf("failed to update model %s: %w", modelName, err)
+		}
+		return nil
+	}
+
+	if model.Deleted {
 		if model.Inactive() {
-			// TODO pointer
-			model = &Model{
-				name: modelName,
-			}
-			if err := m.store.AddModel(model); err != nil {
-				return err
-			}
 			m.addNextModelVersion(model, req.GetModel())
-		} else {
-			return fmt.Errorf(
-				"Model %s is in process of deletion - new model can not be created",
-				modelName,
-			)
-		}
-	} else {
-		meq := ModelEqualityCheck(model.Latest().modelDefn, req.GetModel())
-		if meq.Equal {
-			logger.Debugf("Model %s semantically equal - doing nothing", modelName)
+			if err := m.store.UpdateModel(model); err != nil {
+				return fmt.Errorf("failed to update model %s: %w", modelName, err)
+			}
 			return nil
-		} else if meq.ModelSpecDiffers {
-			logger.Debugf("Model %s model spec differs - adding new version of model", modelName)
-			m.addNextModelVersion(model, req.GetModel())
-			return nil
-		} else if meq.DeploymentSpecDiffers {
-			logger.Debugf(
-				"Model %s deployment spec differs - updating latest model version with new spec",
-				modelName,
-			)
-			model.Latest().SetDeploymentSpec(req.GetModel().GetDeploymentSpec())
 		}
-		if meq.MetaDiffers {
-			// Update just kubernetes meta
-			model.Latest().UpdateKubernetesMeta(req.GetModel().GetMeta().GetKubernetesMeta())
+		return fmt.Errorf(
+			"model %s is in process of deletion - new model can not be created",
+			modelName,
+		)
+
+	}
+
+	latestModel := model.Latest()
+	if latestModel == nil {
+		return fmt.Errorf("model %s has no latest version", modelName)
+	}
+
+	meq := ModelEqualityCheck(latestModel.ModelDefn, req.GetModel())
+	changed := false
+
+	switch {
+	case meq.Equal:
+		logger.Debugf("Model %s semantically equal - doing nothing", modelName)
+	case meq.ModelSpecDiffers:
+		logger.Debugf("Model %s model spec differs - adding new version of model", modelName)
+		m.addNextModelVersion(model, req.GetModel())
+		changed = true
+	case meq.DeploymentSpecDiffers:
+		logger.Debugf(
+			"Model %s deployment spec differs - updating latest model version with new spec",
+			modelName,
+		)
+		latestModel.ModelDefn.DeploymentSpec = req.GetModel().GetDeploymentSpec()
+		changed = true
+	case meq.MetaDiffers:
+		// Update just kubernetes meta
+		latestModel.ModelDefn.Meta.KubernetesMeta = req.GetModel().GetMeta().GetKubernetesMeta()
+		changed = true
+	}
+
+	if changed {
+		if err := m.store.UpdateModel(model); err != nil {
+			return fmt.Errorf("failed to update model %s: %w", modelName, err)
 		}
 	}
+
 	return nil
 }
 
@@ -231,7 +230,7 @@ func (m *MemoryStore) UnlockModel(modelId string) {
 	}
 }
 
-func (m *MemoryStore) GetModel(key string) (*ModelSnapshot, error) {
+func (m *MemoryStore) GetModel(key string) (*db.Model, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	return m.getModelImpl(key), nil
@@ -248,51 +247,48 @@ func (m *MemoryStore) RemoveModel(req *pb.UnloadModelRequest) error {
 func (m *MemoryStore) removeModelImpl(req *pb.UnloadModelRequest) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
 	modelName := req.GetModel().GetName()
 	model, err := m.store.GetModel(modelName)
 	if err == nil {
 		// Updating the k8s meta is required to be updated so status updates back (to manager)
 		// will match latest generation value. Previous generation values might be ignored by manager.
 		if req.GetKubernetesMeta() != nil { // k8s meta can be nil if unload is called directly using scheduler grpc api
-			model.Latest().UpdateKubernetesMeta(req.GetKubernetesMeta())
+			model.Latest().ModelDefn.Meta.KubernetesMeta = req.GetKubernetesMeta()
 		}
 
-		model.SetDeleted()
+		model.Deleted = true
 		m.setModelGwStatusToTerminate(true, model.Latest())
 		m.updateModelStatus(true, true, model.Latest(), model.GetLastAvailableModelVersion())
 		return nil
 	}
 
 	if errors.Is(err, ErrNotFound) {
-		return fmt.Errorf("Model %s not found", req.GetModel().GetName())
+		return fmt.Errorf("model %s not found", req.GetModel().GetName())
 	}
 	return err
 }
 
-func (m *MemoryStore) GetServers(shallow bool, modelDetails bool) ([]*ServerSnapshot, error) {
+func (m *MemoryStore) GetServers(shallow bool, modelDetails bool) ([]*db.Server, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
 	servers, err := m.store.ListServers()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to list servers: %w", err)
 	}
 
-	snapshots := make([]*ServerSnapshot, 0, len(servers))
-	for _, server := range servers {
-		snapshots = append(snapshots, server.CreateSnapshot(shallow, modelDetails))
-	}
-	return snapshots, nil
+	return servers, nil
 }
 
-func (m *MemoryStore) GetServer(serverKey string, shallow bool, modelDetails bool) (*ServerSnapshot, error) {
+func (m *MemoryStore) GetServer(serverKey string, shallow bool, modelDetails bool) (*db.Server, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
 	server, err := m.store.GetServer(serverKey)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return nil, fmt.Errorf("Server [%s] not found", serverKey)
+			return nil, fmt.Errorf("server [%s] not found", serverKey)
 		}
 		return nil, err
 	}
@@ -306,6 +302,7 @@ func (m *MemoryStore) GetServer(serverKey string, shallow bool, modelDetails boo
 			return nil, err
 		}
 	}
+
 	return snapshot, nil
 }
 
@@ -351,7 +348,7 @@ func (m *MemoryStore) UpdateLoadedModels(
 	modelKey string,
 	version uint32,
 	serverKey string,
-	replicas []*ServerReplica,
+	replicas []*db.ServerReplica,
 ) error {
 	m.mu.Lock()
 	modelEvt, err := m.updateLoadedModelsImpl(modelKey, version, serverKey, replicas)
@@ -556,8 +553,8 @@ func (m *MemoryStore) UpdateModelState(
 	serverKey string,
 	replicaIdx int,
 	availableMemory *uint64,
-	expectedState ModelReplicaState,
-	desiredState ModelReplicaState,
+	expectedState db.ModelReplicaState,
+	desiredState db.ModelReplicaState,
 	reason string,
 	runtimeInfo *pb.ModelRuntimeInfo,
 ) error {
@@ -825,7 +822,7 @@ func (m *MemoryStore) removeModelfromServerReplica(lModels map[ModelVersionID]bo
 			modelVersion := model.GetVersion(modelVersionID.Version)
 			if modelVersion != nil {
 				modelVersion.DeleteReplica(replicaIdx)
-				if model.IsDeleted() || model.Latest().GetVersion() != modelVersion.GetVersion() {
+				if model.Deleted || model.Latest().GetVersion() != modelVersion.GetVersion() {
 					// In some cases we found that the user can ask for a model to be deleted and the model replica
 					// is still in the process of being loaded. In this case we should not reschedule the model.
 					logger.Debugf(
@@ -871,19 +868,19 @@ func (m *MemoryStore) drainServerReplicaImpl(serverName string, replicaIdx int) 
 	if err != nil {
 		return nil, fmt.Errorf("Failed to find server %s", serverName)
 	}
-	serverReplica, ok := server.replicas[replicaIdx]
+	serverReplica, ok := server.Replicas[int32(replicaIdx)]
 	if !ok {
-		return nil, fmt.Errorf("Failed to find replica %d for server %s", replicaIdx, serverName)
+		return nil, fmt.Errorf("failed to find replica %d for server %s", replicaIdx, serverName)
 	}
 
 	// we mark this server replica as draining so should not be used in future scheduling decisions
-	serverReplica.SetIsDraining()
+	serverReplica.IsDraining = true
 
-	loadedModels := m.findModelsToReSchedule(serverReplica.loadedModels, replicaIdx)
+	loadedModels := m.findModelsToReSchedule(serverReplica.LoadingModels, replicaIdx)
 	if len(loadedModels) > 0 {
 		logger.WithField("models", loadedModels).Debug("Found loaded models to re-schedule")
 	}
-	loadingModels := m.findModelsToReSchedule(serverReplica.loadingModels, replicaIdx)
+	loadingModels := m.findModelsToReSchedule(serverReplica.LoadingModels, replicaIdx)
 	if len(loadingModels) > 0 {
 		logger.WithField("models", loadingModels).Debug("Found loading models to re-schedule")
 	}
@@ -946,7 +943,7 @@ func (m *MemoryStore) numEmptyServerReplicas(serverName string) (uint32, error) 
 		}
 		return emptyReplicas, nil
 	}
-	for _, replica := range server.replicas {
+	for _, replica := range server.Replicas {
 		if len(replica.GetLoadedOrLoadingModelVersions()) == 0 {
 			emptyReplicas++
 		}
@@ -982,7 +979,7 @@ func toSchedulerLoadedModels(agentLoadedModels []*agent.ModelVersion) map[ModelV
 	return loadedModels
 }
 
-func (m *MemoryStore) SetModelGwModelState(name string, versionNumber uint32, status ModelState, reason string, source string) error {
+func (m *MemoryStore) SetModelGwModelState(name string, versionNumber uint32, status db.ModelState, reason string, source string) error {
 	logger := m.logger.WithField("func", "SetModelGwModelState")
 	logger.Debugf("Attempt to set model-gw state on model %s:%d status:%s", name, versionNumber, status.String())
 
