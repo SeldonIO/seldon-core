@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/mitchellh/copystructure"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -194,7 +195,7 @@ func (es *ExperimentStore) handleModelEvents(event coordinator.ModelEventMsg) {
 					if err != nil {
 						logger.WithError(err).Warnf("Failed to get model %s for candidate check for experiment %s", event.ModelName, experiment.Name)
 					} else {
-						if model.GetLatest() != nil && model.GetLatest().ModelState().State == store.ModelAvailable {
+						if model.Latest() != nil && model.Latest().State.State == db.ModelState_MODEL_STATE_AVAILABLE {
 							candidate.Ready = true
 						} else {
 							candidate.Ready = false
@@ -208,7 +209,7 @@ func (es *ExperimentStore) handleModelEvents(event coordinator.ModelEventMsg) {
 					if err != nil {
 						logger.WithError(err).Warnf("Failed to get model %s for mirror check for experiment %s", event.ModelName, experiment.Name)
 					} else {
-						if model.GetLatest() != nil && model.GetLatest().ModelState().State == store.ModelAvailable {
+						if model.Latest() != nil && model.Latest().State.State == db.ModelState_MODEL_STATE_AVAILABLE {
 							experiment.Mirror.Ready = true
 						} else {
 							experiment.Mirror.Ready = false

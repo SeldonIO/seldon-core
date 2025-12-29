@@ -15,6 +15,8 @@ type Storage struct {
 	models  map[string]*db.Model
 }
 
+var _ store.Storage = &Storage{}
+
 func NewStorage() *Storage {
 	return &Storage{
 		servers: make(map[string]*db.Server),

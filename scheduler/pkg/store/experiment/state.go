@@ -10,7 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package experiment
 
 import (
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	pipeline2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
@@ -161,7 +161,7 @@ func (es *ExperimentStore) setCandidateAndMirrorReadiness(experiment *Experiment
 				if err != nil {
 					logger.WithError(err).Infof("Failed to get model %s for candidate check for experiment %s", candidate.Name, experiment.Name)
 				} else {
-					if model.GetLatest() != nil && model.GetLatest().ModelState().State == store.ModelAvailable {
+					if model.Latest() != nil && model.Latest().State.State == db.ModelState_MODEL_STATE_AVAILABLE {
 						candidate.Ready = true
 					} else {
 						candidate.Ready = false
@@ -173,7 +173,7 @@ func (es *ExperimentStore) setCandidateAndMirrorReadiness(experiment *Experiment
 				if err != nil {
 					logger.WithError(err).Warnf("Failed to get model %s for mirror check for experiment %s", experiment.Mirror.Name, experiment.Name)
 				} else {
-					if model.GetLatest() != nil && model.GetLatest().ModelState().State == store.ModelAvailable {
+					if model.Latest() != nil && model.Latest().State.State == db.ModelState_MODEL_STATE_AVAILABLE {
 						experiment.Mirror.Ready = true
 					} else {
 						experiment.Mirror.Ready = false

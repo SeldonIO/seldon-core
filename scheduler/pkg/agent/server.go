@@ -18,6 +18,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
@@ -267,12 +268,12 @@ func (s *Server) Sync(modelName string) {
 		return
 	}
 
-	latestModel := model.GetLatest()
+	latestModel := model.Latest()
 
 	// we signal a model when other replica is available in case we have servers draining
 	// TODO: extract as helper func
 	if latestModel != nil {
-		available := latestModel.GetReplicaForState(store.Available)
+		available := latestModel.GetReplicaForState(db.ModelReplicaState_MODEL_REPLICA_STATE_AVAILABLE)
 		if len(available) > 0 {
 			s.waiter.signalModel(modelName)
 		}

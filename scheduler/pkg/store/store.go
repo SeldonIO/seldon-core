@@ -145,7 +145,7 @@ type ModelStore interface {
 	UnlockModel(modelId string)
 	RemoveModel(req *pb.UnloadModelRequest) error
 	GetServers(shallow bool, modelDetails bool) ([]*db.Server, error)
-	GetServer(serverKey string, shallow bool, modelDetails bool) (*db.Server, error)
+	GetServer(serverKey string, shallow bool, modelDetails bool) (*db.Server, *ServerStats, error)
 	UpdateLoadedModels(modelKey string, version uint32, serverKey string, replicas []*db.ServerReplica) error
 	UnloadVersionModels(modelKey string, version uint32) (bool, error)
 	UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error)

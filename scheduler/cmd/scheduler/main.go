@@ -23,6 +23,7 @@ import (
 	"syscall"
 	"time"
 
+	in_memory "github.com/seldonio/seldon-core/scheduler/v2/pkg/store/in-memory"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/backoff"
@@ -298,7 +299,7 @@ func main() {
 	}
 
 	// Create stores
-	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+	ss := store.NewMemoryStore(logger, in_memory.NewStorage(), eventHub)
 	ps := pipeline.NewPipelineStore(logger, eventHub, ss)
 	es := experiment.NewExperimentServer(logger, eventHub, ss, ps)
 	cleaner := cleaner.NewVersionCleaner(ss, logger)

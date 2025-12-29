@@ -37,76 +37,84 @@ type modelVersionStateStatistics struct {
 	lastFailedReason     string
 }
 
-func calcModelVersionStatistics(modelVersion *ModelVersion, deleted bool) *modelVersionStateStatistics {
+func calcModelVersionStatistics(modelVersion *db.ModelVersion, deleted bool) *modelVersionStateStatistics {
 	s := modelVersionStateStatistics{}
-	for _, replicaState := range modelVersion.ReplicaState() {
+
+	for _, replicaState := range modelVersion.Replicas {
 		switch replicaState.State {
-		case Available:
+		case db.ModelReplicaState_MODEL_REPLICA_STATE_AVAILABLE:
 			s.replicasAvailable++
-		case LoadRequested, Loading, Loaded: // unavailable but OK
+		case db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_REQUESTED,
+			db.ModelReplicaState_MODEL_REPLICA_STATE_LOADING, db.ModelReplicaState_MODEL_REPLICA_STATE_LOADED: // unavailable but OK
 			s.replicasLoading++
-		case LoadFailed, LoadedUnavailable: // unavailable but not OK
+		case db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_FAILED, db.ModelReplicaState_MODEL_REPLICA_STATE_LOADED_UNAVAILABLE: // unavailable but not OK
 			s.replicasLoadFailed++
-			if !deleted && replicaState.Timestamp.After(s.lastFailedStateTime) {
-				s.lastFailedStateTime = replicaState.Timestamp
+			if !deleted && replicaState.Timestamp.AsTime().After(s.lastFailedStateTime) {
+				s.lastFailedStateTime = replicaState.Timestamp.AsTime()
 				s.lastFailedReason = replicaState.Reason
 			}
-		case UnloadEnvoyRequested, UnloadRequested, Unloading:
+		case db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOAD_ENVOY_REQUESTED,
+			db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOAD_REQUESTED, db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOADING:
 			s.replicasUnloading++
-		case Unloaded:
+		case db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOADED:
 			s.replicasUnloaded++
-		case UnloadFailed:
+		case db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOAD_FAILED:
 			s.replicasUnloadFailed++
-			if deleted && replicaState.Timestamp.After(s.lastFailedStateTime) {
-				s.lastFailedStateTime = replicaState.Timestamp
+			if deleted && replicaState.Timestamp.AsTime().After(s.lastFailedStateTime) {
+				s.lastFailedStateTime = replicaState.Timestamp.AsTime()
 				s.lastFailedReason = replicaState.Reason
 			}
-		case Draining:
+		case db.ModelReplicaState_MODEL_REPLICA_STATE_DRAINING:
 			s.replicasDraining++
 		}
-		if replicaState.Timestamp.After(s.latestTime) {
-			s.latestTime = replicaState.Timestamp
+		if replicaState.Timestamp.AsTime().After(s.latestTime) {
+			s.latestTime = replicaState.Timestamp.AsTime()
 		}
 	}
 	return &s
 }
 
-func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersion *ModelVersion, stats *modelVersionStateStatistics, deleted bool) {
-	var modelState ModelState
+func updateModelState(isLatest bool, modelVersion *db.ModelVersion, prevModelVersion *db.ModelVersion, stats *modelVersionStateStatistics, deleted bool) {
+	var modelState db.ModelState
 	var modelReason string
+
 	modelTimestamp := stats.latestTime
 	if deleted || !isLatest {
 		if stats.replicasUnloadFailed > 0 {
-			modelState = ModelTerminateFailed
+			modelState = db.ModelState_MODEL_STATE_TERMINATED
 			modelReason = stats.lastFailedReason
 			modelTimestamp = stats.lastFailedStateTime
 		} else if stats.replicasUnloading > 0 || stats.replicasAvailable > 0 || stats.replicasLoading > 0 {
-			modelState = ModelTerminating
+			modelState = db.ModelState_MODEL_STATE_TERMINATING
 		} else {
-			modelState = ModelTerminated
+			modelState = db.ModelState_MODEL_STATE_TERMINATED
 		}
 	} else {
 		if stats.replicasLoadFailed > 0 {
-			modelState = ModelFailed
+			modelState = db.ModelState_MODEL_STATE_FAILED
 			modelReason = stats.lastFailedReason
 			modelTimestamp = stats.lastFailedStateTime
-		} else if modelVersion.GetDeploymentSpec() != nil && stats.replicasAvailable == 0 && modelVersion.GetDeploymentSpec().Replicas == 0 && modelVersion.GetDeploymentSpec().MinReplicas == 0 {
-			modelState = ModelScaledDown
-		} else if (modelVersion.GetDeploymentSpec() != nil && stats.replicasAvailable == modelVersion.GetDeploymentSpec().Replicas) || // equal to desired replicas
-			(modelVersion.GetDeploymentSpec() != nil && stats.replicasAvailable >= modelVersion.GetDeploymentSpec().MinReplicas && modelVersion.GetDeploymentSpec().MinReplicas > 0) || // min replicas is set and available replicas are greater than or equal to min replicas
-			(stats.replicasAvailable > 0 && prevModelVersion != nil && modelVersion != prevModelVersion && prevModelVersion.state.State == ModelAvailable) {
-			modelState = ModelAvailable
+		} else if modelVersion.ModelDefn.DeploymentSpec != nil && stats.replicasAvailable == 0 &&
+			modelVersion.ModelDefn.DeploymentSpec.Replicas == 0 && modelVersion.ModelDefn.DeploymentSpec.MinReplicas == 0 {
+			modelState = db.ModelState_MODEL_STATE_SCALED_DOWN
+		} else if (modelVersion.ModelDefn.DeploymentSpec != nil &&
+			stats.replicasAvailable == modelVersion.ModelDefn.DeploymentSpec.Replicas) || // equal to desired replicas
+			(modelVersion.ModelDefn.DeploymentSpec != nil && stats.replicasAvailable >= modelVersion.ModelDefn.DeploymentSpec.MinReplicas &&
+				modelVersion.ModelDefn.DeploymentSpec.MinReplicas > 0) || // min replicas is set and available replicas are greater than or equal to min replicas
+			(stats.replicasAvailable > 0 && prevModelVersion != nil && modelVersion != prevModelVersion &&
+				prevModelVersion.State.State == db.ModelState_MODEL_STATE_AVAILABLE) {
+			modelState = db.ModelState_MODEL_STATE_AVAILABLE
 		} else {
-			modelState = ModelProgressing
+			modelState = db.ModelState_MODEL_STATE_PROGRESSING
 		}
 	}
 
-	modelVersion.state = ModelStatus{
+	modelVersion.State = &db.ModelStatus{
 		State:               modelState,
-		ModelGwState:        modelVersion.state.ModelGwState,
+		ModelGwState:        modelVersion.State.ModelGwState,
 		Reason:              modelReason,
-		ModelGwReason:       modelVersion.state.ModelGwReason,
-		Timestamp:           modelTimestamp,
+		ModelGwReason:       modelVersion.State.ModelGwReason,
+		Timestamp:           timestamppb.New(modelTimestamp),
 		AvailableReplicas:   stats.replicasAvailable,
 		UnavailableReplicas: stats.replicasLoading + stats.replicasLoadFailed,
 		DrainingReplicas:    stats.replicasDraining,
@@ -162,7 +170,7 @@ func (m *MemoryStore) FailedScheduling(modelID string, version uint32, reason st
 	return fmt.Errorf("model %s found, version %d not found", modelID, version)
 }
 
-func (m *MemoryStore) updateModelStatus(isLatest bool, deleted bool, modelVersion *ModelVersion, prevModelVersion *ModelVersion) {
+func (m *MemoryStore) updateModelStatus(isLatest bool, deleted bool, modelVersion *db.ModelVersion, prevModelVersion *db.ModelVersion) {
 	logger := m.logger.WithField("func", "updateModelStatus")
 	stats := calcModelVersionStatistics(modelVersion, deleted)
 	logger.Debugf("Stats %+v modelVersion %+v prev model %+v", stats, modelVersion, prevModelVersion)
