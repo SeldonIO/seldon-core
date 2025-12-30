@@ -11,22 +11,17 @@ package store
 
 import (
 	"errors"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
+	"google.golang.org/protobuf/proto"
 )
 
 var (
-	ErrNotFound = errors.New("not found")
+	ErrNotFound = errors.New("record not found")
 )
 
-type Storage interface {
-	GetModel(name string) (*db.Model, error)
-	AddModel(model *db.Model) error
-	ListModels() ([]*db.Model, error)
-	UpdateModel(model *db.Model) error
-	DeleteModel(name string) error
-	GetServer(name string) (*db.Server, error)
-	AddServer(server *db.Server) error
-	ListServers() ([]*db.Server, error)
-	UpdateServer(server *db.Server) error
-	DeleteServer(serverName string) error
+type Storage[T proto.Message] interface {
+	Get(name string) (T, error)
+	Insert(record T) error
+	List() ([]T, error)
+	Update(record T) error
+	Delete(name string) error
 }
