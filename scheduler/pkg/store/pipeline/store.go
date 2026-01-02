@@ -62,7 +62,7 @@ type PipelineStore struct {
 	modelStatusHandler ModelStatusHandler
 }
 
-func NewPipelineStore(logger logrus.FieldLogger, eventHub *coordinator.EventHub, store store.ModelStore) *PipelineStore {
+func NewPipelineStore(logger logrus.FieldLogger, eventHub *coordinator.EventHub, store store.ModelServerAPI) *PipelineStore {
 	ps := &PipelineStore{
 		logger:    logger.WithField("source", "pipelineStore"),
 		eventHub:  eventHub,

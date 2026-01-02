@@ -12,12 +12,12 @@ package conflict_resolution
 import (
 	"fmt"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
@@ -212,43 +212,43 @@ func IsPipelineMessageOutdated(
 // --------------------
 
 func CreateNewModelIteration(
-	cr *ConflictResolutioner[store.ModelState],
+	cr *ConflictResolutioner[db.ModelState],
 	modelName string,
 	servers []string,
 ) {
-	cr.CreateNewIteration(modelName, servers, store.ModelStateUnknown)
+	cr.CreateNewIteration(modelName, servers, db.ModelState_MODEL_STATE_UNKNOWN)
 }
 
 func GetModelStatus(
-	cr *ConflictResolutioner[store.ModelState],
+	cr *ConflictResolutioner[db.ModelState],
 	modelName string,
 	message *pb.ModelUpdateStatusMessage,
-) (store.ModelState, string) {
+) (db.ModelState, string) {
 	logger := cr.logger.WithField("func", "GetModelStatus")
 	streams := cr.VectorResponseStatus[modelName]
 
 	var messageStr = ""
-	readyCount := cr.GetCountWithStatus(modelName, store.ModelAvailable)
+	readyCount := cr.GetCountWithStatus(modelName, db.ModelState_MODEL_STATE_AVAILABLE)
 	if readyCount > 0 {
 		messageStr += fmt.Sprintf("%d/%d ready ", readyCount, len(streams))
 	}
 
-	terminatedCount := cr.GetCountWithStatus(modelName, store.ModelTerminated)
+	terminatedCount := cr.GetCountWithStatus(modelName, db.ModelState_MODEL_STATE_TERMINATED)
 	if terminatedCount > 0 {
 		messageStr += fmt.Sprintf("%d/%d terminated ", terminatedCount, len(streams))
 	}
 
-	failedCount := cr.GetCountWithStatus(modelName, store.ModelFailed)
+	failedCount := cr.GetCountWithStatus(modelName, db.ModelState_MODEL_STATE_FAILED)
 	if failedCount > 0 {
 		messageStr += fmt.Sprintf("%d/%d failed ", failedCount, len(streams))
 	}
 
-	terminatedFailedCount := cr.GetCountWithStatus(modelName, store.ModelTerminateFailed)
+	terminatedFailedCount := cr.GetCountWithStatus(modelName, db.ModelState_MODEL_STATE_TERMINATE_FAILED)
 	if terminatedFailedCount > 0 {
 		messageStr += fmt.Sprintf("%d/%d terminate failed ", terminatedFailedCount, len(streams))
 	}
 
-	unknownCount := cr.GetCountWithStatus(modelName, store.ModelStateUnknown)
+	unknownCount := cr.GetCountWithStatus(modelName, db.ModelState_MODEL_STATE_UNKNOWN)
 	logger.Infof("Model %s status counts: %s", modelName, messageStr)
 
 	if message.Update.Op == pb.ModelUpdateMessage_Create {
@@ -258,29 +258,29 @@ func GetModelStatus(
 		// TODO: Implement something similar to models to display the numbers
 		// of available replicas
 		if failedCount == len(streams) {
-			return store.ModelFailed, messageStr
+			return db.ModelState_MODEL_STATE_FAILED, messageStr
 		}
 		if readyCount > 0 && unknownCount == 0 {
-			return store.ModelAvailable, messageStr
+			return db.ModelState_MODEL_STATE_AVAILABLE, messageStr
 		}
-		return store.ModelProgressing, messageStr
+		return db.ModelState_MODEL_STATE_PROGRESSING, messageStr
 	}
 
 	if message.Update.Op == pb.ModelUpdateMessage_Delete {
 		if failedCount > 0 {
-			return store.ModelTerminateFailed, messageStr
+			return db.ModelState_MODEL_STATE_TERMINATE_FAILED, messageStr
 		}
 		if terminatedCount == len(streams) {
-			return store.ModelTerminated, messageStr
+			return db.ModelState_MODEL_STATE_TERMINATED, messageStr
 		}
-		return store.ModelTerminating, messageStr
+		return db.ModelState_MODEL_STATE_TERMINATING, messageStr
 	}
 
-	return store.ModelStateUnknown, "Unknown operation or status"
+	return db.ModelState_MODEL_STATE_UNKNOWN, "Unknown operation or status"
 }
 
 func IsModelMessageOutdated(
-	cr *ConflictResolutioner[store.ModelState],
+	cr *ConflictResolutioner[db.ModelState],
 	message *pb.ModelUpdateStatusMessage,
 ) bool {
 	timestamp := message.Update.Timestamp

@@ -55,12 +55,12 @@ type ExperimentStore struct {
 	pipelineBaselines  map[string]*Experiment            // pipeline name to the single baseline experiment it appears in
 	pipelineReferences map[string]map[string]*Experiment // pipeline name to experiments it appears in
 	eventHub           *coordinator.EventHub
-	store              store.ModelStore
+	store              store.ModelServerAPI
 	pipelineStore      pipeline.PipelineHandler
 	db                 *ExperimentDBManager
 }
 
-func NewExperimentServer(logger logrus.FieldLogger, eventHub *coordinator.EventHub, store store.ModelStore, pipelineStore pipeline.PipelineHandler) *ExperimentStore {
+func NewExperimentServer(logger logrus.FieldLogger, eventHub *coordinator.EventHub, store store.ModelServerAPI, pipelineStore pipeline.PipelineHandler) *ExperimentStore {
 	es := &ExperimentStore{
 		logger:             logger.WithField("source", "experimentServer"),
 		experiments:        make(map[string]*Experiment),

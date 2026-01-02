@@ -27,7 +27,7 @@ var member void
 type ModelStatusHandler struct {
 	mu              sync.RWMutex
 	logger          logrus.FieldLogger
-	store           store.ModelStore
+	store           store.ModelServerAPI
 	modelReferences map[string]map[string]void
 }
 

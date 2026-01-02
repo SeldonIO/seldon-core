@@ -19,7 +19,7 @@ type TestVersionCleaner struct {
 	*VersionCleaner
 }
 
-func NewTestVersionCleaner(schedStore store.ModelStore, logger log.FieldLogger) *TestVersionCleaner {
+func NewTestVersionCleaner(schedStore store.ModelServerAPI, logger log.FieldLogger) *TestVersionCleaner {
 	return &TestVersionCleaner{
 		VersionCleaner: NewVersionCleaner(schedStore, logger),
 	}

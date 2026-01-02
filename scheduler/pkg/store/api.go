@@ -136,8 +136,8 @@ func (m *ModelSnapshot) GetVersionsBeforeLastModelGwAvailable() []*ModelVersion 
 	return nil
 }
 
-//go:generate go tool mockgen -source=./store.go -destination=./mock/store.go -package=mock ModelStore
-type ModelStore interface {
+//go:generate go tool mockgen -source=./api.go -destination=./mock/store.go -package=mock ModelServerAPI
+type ModelServerAPI interface {
 	UpdateModel(config *pb.LoadModelRequest) error
 	GetModel(key string) (*db.Model, error)
 	GetModels() ([]*db.Model, error)
@@ -157,5 +157,6 @@ type ModelStore interface {
 	FailedScheduling(modelID string, version uint32, reason string, reset bool) error
 	GetAllModels() ([]string, error)
 	SetModelGwModelState(name string, versionNumber uint32, status db.ModelState, reason string, source string) error
+	// TODO better name... should it even be on tihs interface?
 	EmitEvents() error
 }

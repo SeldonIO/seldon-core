@@ -11,8 +11,10 @@ package store
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -34,22 +36,23 @@ type ModelID struct {
 func NewTestMemory(
 	t *testing.T,
 	logger log.FieldLogger,
-	store *LocalSchedulerStore,
+	modelStore Storage[*db.Model],
+	serverStore Storage[*db.Server],
 	eventHub *coordinator.EventHub) *TestMemoryStore {
 	if t == nil {
 		panic("testing.T is required, must only be run via tests")
 	}
-	m := NewMemoryStore(logger, store, eventHub)
+	m := NewMemoryStore(logger, modelStore, serverStore, eventHub)
 	return &TestMemoryStore{m}
 }
 
-func (t *TestMemoryStore) DirectlyUpdateModelStatus(model ModelID, state ModelStatus) error {
+func (t *TestMemoryStore) DirectlyUpdateModelStatus(model ModelID, state *db.ModelStatus) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	found, ok := t.store.models[model.Name]
-	if !ok {
-		return errors.New("model not found")
+	found, err := t.store.models.Get(model.Name)
+	if err != nil {
+		return fmt.Errorf("model not found: %w", err)
 	}
 
 	version := found.GetVersion(model.Version)
@@ -57,6 +60,6 @@ func (t *TestMemoryStore) DirectlyUpdateModelStatus(model ModelID, state ModelSt
 		return errors.New("version not found")
 	}
 
-	version.state = state
-	return nil
+	version.State = state
+	return t.store.models.Update(found)
 }

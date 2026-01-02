@@ -9,16 +9,18 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package filters
 
-import "github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+import (
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
+)
 
 type ReplicaFilter interface {
 	Name() string
-	Filter(model *store.ModelVersion, replica *store.ServerReplica) bool
-	Description(model *store.ModelVersion, replica *store.ServerReplica) string
+	Filter(model *db.ModelVersion, replica *db.ServerReplica) bool
+	Description(model *db.ModelVersion, replica *db.ServerReplica) string
 }
 
 type ServerFilter interface {
 	Name() string
-	Filter(model *store.ModelVersion, server *store.ServerSnapshot) bool
-	Description(model *store.ModelVersion, server *store.ServerSnapshot) string
+	Filter(model *db.ModelVersion, server *db.Server) bool
+	Description(model *db.ModelVersion, server *db.Server) string
 }

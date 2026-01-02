@@ -23,6 +23,10 @@ func (s *ServerReplica) UpdateReservedMemory(memBytes uint64, isAdd bool) {
 	s.ReservedMemory -= memBytes
 }
 
+func (s *ServerReplica) GetNumLoadedModels() int {
+	return len(s.UniqueLoadedModels)
+}
+
 func (s *ServerReplica) AddModelVersion(modelName string, modelVersion uint32, replicaState ModelReplicaState) {
 	mvID := &ModelVersionID{
 		Name:    modelName,

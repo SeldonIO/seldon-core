@@ -125,7 +125,7 @@ func (m *MemoryStore) FailedScheduling(modelID string, version uint32, reason st
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	model, err := m.store.GetModel(modelID)
+	model, err := m.store.models.Get(modelID)
 	if err != nil {
 		return fmt.Errorf("model %s not found: %w", modelID, err)
 	}
@@ -151,7 +151,7 @@ func (m *MemoryStore) FailedScheduling(modelID string, version uint32, reason st
 				modelVersion.Server = ""
 			}
 
-			if err := m.store.UpdateModel(model); err != nil {
+			if err := m.store.models.Update(model); err != nil {
 				return fmt.Errorf("failed to update model %s: %w", modelID, err)
 			}
 
@@ -192,7 +192,7 @@ func (m *MemoryStore) UnloadModelGwVersionModels(modelKey string, version uint32
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	model, err := m.store.GetModel(modelKey)
+	model, err := m.store.models.Get(modelKey)
 	if err != nil {
 		return false, fmt.Errorf("failed to find model %s: %w", modelKey, err)
 	}
@@ -204,7 +204,7 @@ func (m *MemoryStore) UnloadModelGwVersionModels(modelKey string, version uint32
 
 	m.setModelGwStatusToTerminate(false, modelVersion)
 
-	if err := m.store.UpdateModel(model); err != nil {
+	if err := m.store.models.Update(model); err != nil {
 		return false, fmt.Errorf("failed to update model %s: %w", modelKey, err)
 	}
 

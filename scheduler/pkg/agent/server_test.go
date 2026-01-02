@@ -48,7 +48,7 @@ type mockStore struct {
 	models map[string]*store.ModelSnapshot
 }
 
-var _ store.ModelStore = (*mockStore)(nil)
+var _ store.ModelServerAPI = (*mockStore)(nil)
 
 func (m *mockStore) FailedScheduling(modelID string, version uint32, reason string, reset bool) error {
 	return nil

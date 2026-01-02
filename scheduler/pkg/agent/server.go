@@ -112,7 +112,7 @@ type Server struct {
 	health.UnimplementedHealthCheckServiceServer
 	logger                  log.FieldLogger
 	agents                  map[ServerKey]*AgentSubscriber
-	store                   store.ModelStore
+	store                   store.ModelServerAPI
 	scheduler               scheduler.Scheduler
 	waiter                  *modelRelocatedWaiter // waiter for when we want to drain a particular server replica
 	autoscalingModelEnabled bool
@@ -152,7 +152,7 @@ func (a *AgentSubscriber) Send(message *pb.ModelOperationMessage) error {
 
 func NewAgentServer(
 	logger log.FieldLogger,
-	store store.ModelStore,
+	store store.ModelServerAPI,
 	scheduler scheduler.Scheduler,
 	hub *coordinator.EventHub,
 	autoscalingModelEnabled bool,
@@ -281,17 +281,17 @@ func (s *Server) Sync(modelName string) {
 
 	// Handle any load requests for latest version - we don't want to load models from older versions
 	if latestModel != nil {
-		for _, replicaIdx := range latestModel.GetReplicaForState(store.LoadRequested) {
+		for _, replicaIdx := range latestModel.GetReplicaForState(db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_REQUESTED) {
 			logger.Infof("Sending load model request for %s", modelName)
 
-			as, ok := s.agents[ServerKey{serverName: latestModel.Server(), replicaIdx: uint32(replicaIdx)}]
+			as, ok := s.agents[ServerKey{serverName: latestModel.Server, replicaIdx: uint32(replicaIdx)}]
 
 			if !ok {
-				logger.Errorf("Failed to find server replica for %s:%d", latestModel.Server(), replicaIdx)
+				logger.Errorf("Failed to find server replica for %s:%d", latestModel.Server, replicaIdx)
 				continue
 			}
 
-			model := latestModel.GetModel()
+			model := latestModel.ModelDefn
 			err = as.Send(&pb.ModelOperationMessage{
 				Operation:          pb.ModelOperationMessage_LOAD_MODEL,
 				ModelVersion:       &pb.ModelVersion{Model: model, Version: latestModel.GetVersion()},
@@ -301,13 +301,15 @@ func (s *Server) Sync(modelName string) {
 			if err != nil {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				if errState := s.store.UpdateModelState(
-					latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil,
-					store.LoadRequested, store.LoadFailed, err.Error(), nil); errState != nil {
+					latestModel.ModelName(), latestModel.GetVersion(), latestModel.Server, replicaIdx, nil,
+					db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_REQUESTED, db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_FAILED, err.Error(), nil); errState != nil {
 					logger.WithError(errState).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				}
 				continue
 			}
-			err = s.store.UpdateModelState(latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil, store.LoadRequested, store.Loading, "", nil)
+			err = s.store.UpdateModelState(latestModel.ModelName(), latestModel.GetVersion(),
+				latestModel.Server, replicaIdx, nil, db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_REQUESTED,
+				db.ModelReplicaState_MODEL_REPLICA_STATE_LOADING, "", nil)
 			if err != nil {
 				logger.WithError(err).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				continue
@@ -317,29 +319,30 @@ func (s *Server) Sync(modelName string) {
 
 	// Loop through all versions and unload any requested - any version of a model might have an unload request
 	for _, modelVersion := range model.Versions {
-		for _, replicaIdx := range modelVersion.GetReplicaForState(store.UnloadRequested) {
+		for _, replicaIdx := range modelVersion.GetReplicaForState(db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOAD_REQUESTED) {
 			s.logger.Infof("Sending unload model request for %s:%d", modelName, modelVersion.GetVersion())
-			as, ok := s.agents[ServerKey{serverName: modelVersion.Server(), replicaIdx: uint32(replicaIdx)}]
+			as, ok := s.agents[ServerKey{serverName: modelVersion.Server, replicaIdx: uint32(replicaIdx)}]
 			if !ok {
-				logger.Errorf("Failed to find server replica for %s:%d", modelVersion.Server(), replicaIdx)
+				logger.Errorf("Failed to find server replica for %s:%d", modelVersion.Server, replicaIdx)
 				continue
 			}
 
 			err = as.Send(&pb.ModelOperationMessage{
 				Operation:    pb.ModelOperationMessage_UNLOAD_MODEL,
-				ModelVersion: &pb.ModelVersion{Model: modelVersion.GetModel(), Version: modelVersion.GetVersion()},
+				ModelVersion: &pb.ModelVersion{Model: modelVersion.ModelDefn, Version: modelVersion.GetVersion()},
 			})
 
 			if err != nil {
 				logger.WithError(err).Errorf("stream message send failed for model %s and replicaidx %d", modelName, replicaIdx)
 				if errState := s.store.UpdateModelState(
-					latestModel.Key(), latestModel.GetVersion(), latestModel.Server(), replicaIdx, nil,
-					store.UnloadRequested, store.UnloadFailed, err.Error(), nil); errState != nil {
+					latestModel.ModelName(), latestModel.GetVersion(), latestModel.Server, replicaIdx, nil,
+					db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOAD_REQUESTED, db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOAD_FAILED, err.Error(), nil); errState != nil {
 					logger.WithError(errState).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				}
 				continue
 			}
-			err = s.store.UpdateModelState(modelVersion.Key(), modelVersion.GetVersion(), modelVersion.Server(), replicaIdx, nil, store.UnloadRequested, store.Unloading, "", nil)
+			err = s.store.UpdateModelState(modelVersion.ModelName(), modelVersion.GetVersion(), modelVersion.Server,
+				replicaIdx, nil, db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOAD_REQUESTED, db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOADING, "", nil)
 			if err != nil {
 				logger.WithError(err).Errorf("Sync set model state failed for model %s replicaidx %d", modelName, replicaIdx)
 				continue
@@ -357,24 +360,24 @@ func (s *Server) AgentDrain(ctx context.Context, message *pb.AgentDrainRequest) 
 
 func (s *Server) AgentEvent(ctx context.Context, message *pb.ModelEventMessage) (*pb.ModelEventResponse, error) {
 	logger := s.logger.WithField("func", "AgentEvent")
-	var desiredState store.ModelReplicaState
-	var expectedState store.ModelReplicaState
+	var desiredState db.ModelReplicaState
+	var expectedState db.ModelReplicaState
 	switch message.Event {
 	case pb.ModelEventMessage_LOADED:
-		expectedState = store.Loading
-		desiredState = store.Loaded
+		expectedState = db.ModelReplicaState_MODEL_REPLICA_STATE_LOADING
+		desiredState = db.ModelReplicaState_MODEL_REPLICA_STATE_LOADED
 	case pb.ModelEventMessage_UNLOADED:
-		expectedState = store.Unloading
-		desiredState = store.Unloaded
+		expectedState = db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOADING
+		desiredState = db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOADED
 	case pb.ModelEventMessage_LOAD_FAILED,
 		pb.ModelEventMessage_LOAD_FAIL_MEMORY:
-		expectedState = store.Loading
-		desiredState = store.LoadFailed
+		expectedState = db.ModelReplicaState_MODEL_REPLICA_STATE_LOADING
+		desiredState = db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_FAILED
 	case pb.ModelEventMessage_UNLOAD_FAILED:
-		expectedState = store.Unloading
-		desiredState = store.UnloadFailed
+		expectedState = db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOADING
+		desiredState = db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOAD_FAILED
 	default:
-		desiredState = store.ModelReplicaStateUnknown
+		desiredState = db.ModelReplicaState_MODEL_REPLICA_STATE_UNKNOWN
 	}
 	logger.Infof("Updating state for model %s to %s", message.ModelName, desiredState.String())
 	s.store.LockModel(message.ModelName)
@@ -581,10 +584,10 @@ func (s *Server) updateAndSchedule(modelProtos *pbs.Model) error {
 	return s.scheduler.Schedule(modelName)
 }
 
-func createScalingPseudoRequest(message *pb.ModelScalingTriggerMessage, model *store.ModelSnapshot) (*pbs.Model, error) {
+func createScalingPseudoRequest(message *pb.ModelScalingTriggerMessage, model *db.Model) (*pbs.Model, error) {
 	modelName := message.ModelName
 
-	lastModelVersion := model.GetLatest()
+	lastModelVersion := model.Latest()
 	if lastModelVersion == nil {
 		return nil, fmt.Errorf("Model %s does not exist yet, possibly due to scheduler restarting", modelName)
 	}
@@ -602,14 +605,14 @@ func createScalingPseudoRequest(message *pb.ModelScalingTriggerMessage, model *s
 			modelName, lastModelVersion.GetVersion(), message.GetModelVersion())
 	}
 
-	modelProtos := lastModelVersion.GetModel() // this is a clone of the protos
+	modelProtos := lastModelVersion.ModelDefn // this is a clone of the protos
 
 	// if we are scaling up:
 	// the model should be available
 	// if we are scaling down:
 	// we reduce the replicas by one and try our best
 	// if we have a draining replica while scaling down, this should be still fine I think?
-	numReplicas := int(lastModelVersion.GetDeploymentSpec().Replicas)
+	numReplicas := int(lastModelVersion.ModelDefn.DeploymentSpec.Replicas)
 
 	if tryScaleDown {
 		if !isModelStable(lastModelVersion) {
@@ -625,8 +628,8 @@ func createScalingPseudoRequest(message *pb.ModelScalingTriggerMessage, model *s
 	return modelProtos, nil
 }
 
-func isModelStable(modelVersion *store.ModelVersion) bool {
-	return modelVersion.ModelState().Timestamp.Before(time.Now().Add(-modelScalingCoolingDownSeconds * time.Second))
+func isModelStable(modelVersion *db.ModelVersion) bool {
+	return modelVersion.State.Timestamp.AsTime().Before(time.Now().Add(-modelScalingCoolingDownSeconds * time.Second))
 }
 
 func calculateDesiredNumReplicas(model *pbs.Model, trigger pb.ModelScalingTriggerMessage_Trigger, numReplicas int) (int, error) {

@@ -26,22 +26,29 @@ import (
 )
 
 type MemoryStore struct {
-	mu       sync.RWMutex
-	opLocks  sync.Map
-	store    Storage
+	mu      sync.RWMutex
+	opLocks sync.Map
+	store   struct {
+		models  Storage[*db.Model]
+		servers Storage[*db.Server]
+	}
 	logger   log.FieldLogger
 	eventHub *coordinator.EventHub
 }
 
-var _ ModelStore = &MemoryStore{}
+var _ ModelServerAPI = &MemoryStore{}
 
 func NewMemoryStore(
 	logger log.FieldLogger,
-	store Storage,
+	modelStore Storage[*db.Model],
+	serverStore Storage[*db.Server],
 	eventHub *coordinator.EventHub,
 ) *MemoryStore {
 	return &MemoryStore{
-		store:    store,
+		store: struct {
+			models  Storage[*db.Model]
+			servers Storage[*db.Server]
+		}{models: modelStore, servers: serverStore},
 		logger:   logger.WithField("source", "MemoryStore"),
 		eventHub: eventHub,
 	}
@@ -52,7 +59,7 @@ func (m *MemoryStore) GetAllModels() ([]string, error) {
 	defer m.mu.RUnlock()
 	var modelNames []string
 
-	models, err := m.store.ListModels()
+	models, err := m.store.models.List()
 	if err != nil {
 		return nil, err
 	}
@@ -66,18 +73,18 @@ func (m *MemoryStore) GetAllModels() ([]string, error) {
 func (m *MemoryStore) GetModels() ([]*db.Model, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	return m.store.ListModels()
+	return m.store.models.List()
 }
 
 func (m *MemoryStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*db.Model, *db.ModelVersion, error) {
 	modelName := req.GetModel().GetMeta().GetName()
-	model, err := m.store.GetModel(modelName)
+	model, err := m.store.models.Get(modelName)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return nil, nil, err
 		}
 		model = &db.Model{Name: modelName}
-		if err := m.store.AddModel(model); err != nil {
+		if err := m.store.models.Insert(model); err != nil {
 			return nil, nil, err
 		}
 	}
@@ -125,14 +132,14 @@ func (m *MemoryStore) UpdateModel(req *pb.LoadModelRequest) error {
 			modelName,
 		)
 	}
-	model, err := m.store.GetModel(modelName)
+	model, err := m.store.models.Get(modelName)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return fmt.Errorf("failed to get model %s: %w", modelName, err)
 		}
 		model = &db.Model{Name: modelName}
 		m.addNextModelVersion(model, req.GetModel())
-		if err := m.store.AddModel(model); err != nil {
+		if err := m.store.models.Insert(model); err != nil {
 			return fmt.Errorf("failed to update model %s: %w", modelName, err)
 		}
 		return nil
@@ -141,7 +148,7 @@ func (m *MemoryStore) UpdateModel(req *pb.LoadModelRequest) error {
 	if model.Deleted {
 		if model.Inactive() {
 			m.addNextModelVersion(model, req.GetModel())
-			if err := m.store.UpdateModel(model); err != nil {
+			if err := m.store.models.Update(model); err != nil {
 				return fmt.Errorf("failed to update model %s: %w", modelName, err)
 			}
 			return nil
@@ -182,7 +189,7 @@ func (m *MemoryStore) UpdateModel(req *pb.LoadModelRequest) error {
 	}
 
 	if changed {
-		if err := m.store.UpdateModel(model); err != nil {
+		if err := m.store.models.Update(model); err != nil {
 			return fmt.Errorf("failed to update model %s: %w", modelName, err)
 		}
 	}
@@ -222,7 +229,7 @@ func (m *MemoryStore) UnlockModel(modelId string) {
 func (m *MemoryStore) GetModel(key string) (*db.Model, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	model, err := m.store.GetModel(key)
+	model, err := m.store.models.Get(key)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get model %s: %w", key, err)
 	}
@@ -242,7 +249,7 @@ func (m *MemoryStore) removeModelImpl(req *pb.UnloadModelRequest) error {
 	defer m.mu.Unlock()
 
 	modelName := req.GetModel().GetName()
-	model, err := m.store.GetModel(modelName)
+	model, err := m.store.models.Get(modelName)
 	if err == nil {
 		// Updating the k8s meta is required to be updated so status updates back (to manager)
 		// will match latest generation value. Previous generation values might be ignored by manager.
@@ -266,7 +273,7 @@ func (m *MemoryStore) GetServers(shallow bool, modelDetails bool) ([]*db.Server,
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
-	servers, err := m.store.ListServers()
+	servers, err := m.store.servers.List()
 	if err != nil {
 		return nil, fmt.Errorf("failed to list servers: %w", err)
 	}
@@ -278,7 +285,7 @@ func (m *MemoryStore) GetServer(serverKey string, shallow bool, modelDetails boo
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
-	server, err := m.store.GetServer(serverKey)
+	server, err := m.store.servers.Get(serverKey)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, nil, fmt.Errorf("server [%s] not found", serverKey)
@@ -321,7 +328,7 @@ func (m *MemoryStore) getModelServer(
 	serverKey string,
 ) (*db.Model, *db.ModelVersion, *db.Server, error) {
 	// Validate
-	model, err := m.store.GetModel(modelKey)
+	model, err := m.store.models.Get(modelKey)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("failed to find model %s", modelKey)
 	}
@@ -329,7 +336,7 @@ func (m *MemoryStore) getModelServer(
 	if modelVersion == nil {
 		return nil, nil, nil, fmt.Errorf("Version not found for model %s, version %d", modelKey, version)
 	}
-	server, err := m.store.GetServer(serverKey)
+	server, err := m.store.servers.Get(serverKey)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("failed to find server %s", serverKey)
 	}
@@ -367,7 +374,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 
 	// Validate
 	// TODO pointer issue
-	model, err := m.store.GetModel(modelKey)
+	model, err := m.store.models.Get(modelKey)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, fmt.Errorf("model [%s] not found", modelKey)
@@ -394,7 +401,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 		}, nil
 	}
 
-	server, err := m.store.GetServer(serverKey)
+	server, err := m.store.servers.Get(serverKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find server %s", serverKey)
 	}
@@ -503,7 +510,7 @@ func (m *MemoryStore) unloadVersionModelsImpl(modelKey string, version uint32) (
 
 	// Validate
 	// TODO pointer issue
-	model, err := m.store.GetModel(modelKey)
+	model, err := m.store.models.Get(modelKey)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to find model %s", modelKey)
 	}
@@ -625,7 +632,7 @@ func (m *MemoryStore) updateModelStateImpl(
 			desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOADED ||
 			desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_FAILED {
 			// TODO pointer
-			server, err := m.store.GetServer(serverKey)
+			server, err := m.store.servers.Get(serverKey)
 			// TODO handle error
 			if err == nil {
 				replica, ok := server.Replicas[int32(replicaIdx)]
@@ -679,7 +686,7 @@ func (m *MemoryStore) updateReservedMemory(
 ) {
 	// update reserved memory that is being used for sorting replicas
 	// do we need to lock replica update?
-	server, err := m.store.GetServer(serverKey)
+	server, err := m.store.servers.Get(serverKey)
 	// TODO handle error??
 	if err == nil {
 		replica, okReplica := server.Replicas[int32(replicaIdx)]
@@ -720,13 +727,13 @@ func (m *MemoryStore) addServerReplicaImpl(request *agent.AgentSubscribeRequest)
 	defer m.mu.Unlock()
 
 	// TODO pointer issue
-	server, err := m.store.GetServer(request.ServerName)
+	server, err := m.store.servers.Get(request.ServerName)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return nil, coordinator.ServerEventMsg{}, err
 		}
 		server = NewServer(request.ServerName, request.Shared)
-		if err := m.store.AddServer(server); err != nil {
+		if err := m.store.servers.Insert(server); err != nil {
 			return nil, coordinator.ServerEventMsg{}, fmt.Errorf("failed to add server %s: %w", request.ServerName, err)
 		}
 	}
@@ -787,7 +794,7 @@ func (m *MemoryStore) removeServerReplicaImpl(serverName string, replicaIdx int)
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	server, err := m.store.GetServer(serverName)
+	server, err := m.store.servers.Get(serverName)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to find server %s: %w", serverName, err)
 	}
@@ -798,7 +805,7 @@ func (m *MemoryStore) removeServerReplicaImpl(serverName string, replicaIdx int)
 	delete(server.Replicas, int32(replicaIdx))
 	// TODO we should not reschedule models on servers with dedicated models, e.g. non shareable servers
 	if len(server.Replicas) == 0 {
-		if err := m.store.DeleteServer(serverName); err != nil {
+		if err := m.store.servers.Delete(serverName); err != nil {
 			return nil, nil, fmt.Errorf("failed to delete server %s: %w", serverName, err)
 		}
 	}
@@ -818,7 +825,7 @@ func (m *MemoryStore) removeModelfromServerReplica(models []*db.ModelVersionID, 
 	// Find models to reschedule due to this server replica being removed
 	for _, v := range models {
 		// TODO pointer issue
-		model, err := m.store.GetModel(v.Name)
+		model, err := m.store.models.Get(v.Name)
 		if err == nil {
 			modelVersion := model.GetVersion(v.Version)
 			if modelVersion != nil {
@@ -866,7 +873,7 @@ func (m *MemoryStore) DrainServerReplica(serverName string, replicaIdx int) ([]s
 func (m *MemoryStore) drainServerReplicaImpl(serverName string, replicaIdx int) ([]string, error) {
 	logger := m.logger.WithField("func", "DrainServerReplica")
 	// TODO pointer issue
-	server, err := m.store.GetServer(serverName)
+	server, err := m.store.servers.Get(serverName)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to find server %s", serverName)
 	}
@@ -897,7 +904,7 @@ func (m *MemoryStore) findModelsToReSchedule(models []*db.ModelVersionID, replic
 	for _, v := range models {
 		// TODO pointer issue
 		// TODO handle error?
-		model, err := m.store.GetModel(v.Name)
+		model, err := m.store.models.Get(v.Name)
 		if err == nil {
 			modelVersion := model.GetVersion(v.Version)
 			if modelVersion != nil {
@@ -919,7 +926,7 @@ func (m *MemoryStore) ServerNotify(request *pb.ServerNotify) error {
 
 	logger.Debugf("ServerNotify %v", request)
 
-	server, err := m.store.GetServer(request.Name)
+	server, err := m.store.servers.Get(request.Name)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return fmt.Errorf("failed to find server %s: %w", request.Name, err)
@@ -929,7 +936,7 @@ func (m *MemoryStore) ServerNotify(request *pb.ServerNotify) error {
 		server.MinReplicas = int32(request.MinReplicas)
 		server.MaxReplicas = int32(request.MaxReplicas)
 		server.KubernetesMeta = request.KubernetesMeta
-		if err := m.store.AddServer(server); err != nil {
+		if err := m.store.servers.Insert(server); err != nil {
 			return err
 		}
 		return nil
@@ -940,7 +947,7 @@ func (m *MemoryStore) ServerNotify(request *pb.ServerNotify) error {
 	server.MaxReplicas = int32(request.MaxReplicas)
 	server.KubernetesMeta = request.KubernetesMeta
 
-	if err := m.store.UpdateServer(server); err != nil {
+	if err := m.store.servers.Update(server); err != nil {
 		return fmt.Errorf("failed to update server %s: %w", request.Name, err)
 	}
 
@@ -949,7 +956,7 @@ func (m *MemoryStore) ServerNotify(request *pb.ServerNotify) error {
 
 func (m *MemoryStore) numEmptyServerReplicas(serverName string) (uint32, error) {
 	emptyReplicas := uint32(0)
-	server, err := m.store.GetServer(serverName)
+	server, err := m.store.servers.Get(serverName)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return 0, err
@@ -965,7 +972,7 @@ func (m *MemoryStore) numEmptyServerReplicas(serverName string) (uint32, error) 
 }
 
 func (m *MemoryStore) maxNumModelReplicasForServer(serverName string) (uint32, error) {
-	models, err := m.store.ListModels()
+	models, err := m.store.models.List()
 	if err != nil {
 		return 0, err
 	}
@@ -1016,7 +1023,7 @@ func (m *MemoryStore) setModelGwModelStateImpl(name string, versionNumber uint32
 	defer m.mu.Unlock()
 
 	// TODO pointer issue
-	model, err := m.store.GetModel(name)
+	model, err := m.store.models.Get(name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find model %s", name)
 	}
@@ -1039,7 +1046,7 @@ func (m *MemoryStore) setModelGwModelStateImpl(name string, versionNumber uint32
 }
 
 func (m *MemoryStore) EmitEvents() error {
-	servers, err := m.store.ListServers()
+	servers, err := m.store.servers.List()
 	if err != nil {
 		return err
 	}
@@ -1055,7 +1062,7 @@ func (m *MemoryStore) EmitEvents() error {
 		}
 	}
 
-	models, err := m.store.ListModels()
+	models, err := m.store.models.List()
 	if err != nil {
 		return err
 	}

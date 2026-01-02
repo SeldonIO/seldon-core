@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 )
 
 type AvailableMemoryReplicaFilter struct{}
@@ -22,18 +22,18 @@ func (r AvailableMemoryReplicaFilter) Name() string {
 	return "AvailableMemoryReplicaFilter"
 }
 
-func isModelReplicaLoadedOnServerReplica(model *store.ModelVersion, replica *store.ServerReplica) bool {
+func isModelReplicaLoadedOnServerReplica(model *db.ModelVersion, replica *db.ServerReplica) bool {
 	if model.HasServer() {
-		return model.Server() == replica.GetServerName() && model.GetModelReplicaState(replica.GetReplicaIdx()).AlreadyLoadingOrLoaded()
+		return model.Server == replica.GetServerName() && model.GetModelReplicaState(int(replica.GetReplicaIdx())).AlreadyLoadingOrLoaded()
 	}
 	return false
 }
 
-func (r AvailableMemoryReplicaFilter) Filter(model *store.ModelVersion, replica *store.ServerReplica) bool {
+func (r AvailableMemoryReplicaFilter) Filter(model *db.ModelVersion, replica *db.ServerReplica) bool {
 	mem := math.Max(0, float64(replica.GetAvailableMemory())-float64(replica.GetReservedMemory()))
 	return model.GetRequiredMemory() <= uint64(mem) || isModelReplicaLoadedOnServerReplica(model, replica)
 }
 
-func (r AvailableMemoryReplicaFilter) Description(model *store.ModelVersion, replica *store.ServerReplica) string {
+func (r AvailableMemoryReplicaFilter) Description(model *db.ModelVersion, replica *db.ServerReplica) string {
 	return fmt.Sprintf("model memory %d replica memory %d", model.GetRequiredMemory(), replica.GetAvailableMemory())
 }

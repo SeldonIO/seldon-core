@@ -452,7 +452,7 @@ type fakeModelStore struct {
 	status map[string]store.ModelState
 }
 
-var _ store.ModelStore = (*fakeModelStore)(nil)
+var _ store.ModelServerAPI = (*fakeModelStore)(nil)
 
 func (f fakeModelStore) UpdateModel(config *scheduler.LoadModelRequest) error {
 	panic("implement me")

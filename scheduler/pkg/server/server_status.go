@@ -14,13 +14,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"github.com/sirupsen/logrus"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	cr "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/conflict-resolution"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
@@ -31,16 +31,16 @@ const (
 // pollerRetryFailedCreateModels will retry creating models on model-gw which failed to load. Most likely
 // due to connectivity issues with kafka.
 func (s *SchedulerServer) pollerRetryFailedCreateModels(ctx context.Context, tick time.Duration, maxRetry uint) {
-	s.pollerRetryFailedModels(ctx, tick, "pollerRetryFailedCreateModels", store.ModelFailed, "create", maxRetry)
+	s.pollerRetryFailedModels(ctx, tick, "pollerRetryFailedCreateModels", db.ModelState_MODEL_STATE_FAILED, "create", maxRetry)
 }
 
 // pollerRetryFailedDeleteModels will retry deleting models on model-gw which failed to terminate. Most likely
 // due to connectivity issues with kafka.
 func (s *SchedulerServer) pollerRetryFailedDeleteModels(ctx context.Context, tick time.Duration, maxRetry uint) {
-	s.pollerRetryFailedModels(ctx, tick, "pollerRetryFailedDeleteModels", store.ModelTerminateFailed, "delete", maxRetry)
+	s.pollerRetryFailedModels(ctx, tick, "pollerRetryFailedDeleteModels", db.ModelState_MODEL_STATE_TERMINATE_FAILED, "delete", maxRetry)
 }
 
-func (s *SchedulerServer) pollerRetryFailedModels(ctx context.Context, tick time.Duration, funcName string, targetState store.ModelState, operation string, maxRetry uint) {
+func (s *SchedulerServer) pollerRetryFailedModels(ctx context.Context, tick time.Duration, funcName string, targetState db.ModelState, operation string, maxRetry uint) {
 	logger := s.logger.WithField("func", funcName)
 	ticker := time.NewTicker(tick)
 	defer ticker.Stop()
@@ -50,7 +50,11 @@ func (s *SchedulerServer) pollerRetryFailedModels(ctx context.Context, tick time
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			models := s.getModelsInGwRetryState(logger, targetState, operation, maxRetry)
+			models, err := s.getModelsInGwRetryState(logger, targetState, operation, maxRetry)
+			if err != nil {
+				logger.WithError(err).Errorf("Failed getting models")
+				continue
+			}
 			if len(models) > 0 {
 				s.modelGwRebalanceForModels(models)
 			}
@@ -62,11 +66,14 @@ func (s *SchedulerServer) mkModelRetryKey(modelName string, version uint32) stri
 	return fmt.Sprintf("%s_%d", modelName, version)
 }
 
-func (s *SchedulerServer) getModelsInGwRetryState(logger *logrus.Entry, targetState store.ModelState, operation string, maxRetry uint) []*store.ModelSnapshot {
-	modelNames := s.modelStore.GetAllModels()
+func (s *SchedulerServer) getModelsInGwRetryState(logger *logrus.Entry, targetState db.ModelState, operation string, maxRetry uint) ([]*db.Model, error) {
+	modelNames, err := s.modelStore.GetAllModels()
+	if err != nil {
+		return nil, err
+	}
 	logger.WithField("models", modelNames).Debugf("Poller retry to %s failed models on model-gw", operation)
 
-	models := make([]*store.ModelSnapshot, 0)
+	models := make([]*db.Model, 0)
 
 	for _, modelName := range modelNames {
 		model, err := s.modelStore.GetModel(modelName)
@@ -75,18 +82,18 @@ func (s *SchedulerServer) getModelsInGwRetryState(logger *logrus.Entry, targetSt
 			continue
 		}
 
-		if model.GetLatest() == nil {
+		if model.Latest() == nil {
 			logger.Warnf("Model %s has no versions, skipping", modelName)
 			continue
 		}
 
-		modelGwState := model.GetLatest().ModelState().ModelGwState
+		modelGwState := model.Latest().State.ModelGwState
 		if modelGwState != targetState {
 			logger.Debugf("Model-gw model %s state %s != %s, skipping", modelName, modelGwState, targetState)
 			continue
 		}
 
-		key := s.mkModelRetryKey(model.Name, model.GetLatest().GetVersion())
+		key := s.mkModelRetryKey(model.Name, model.Latest().GetVersion())
 		s.muRetriedFailedModels.Lock()
 		s.retriedFailedModels[key]++
 		if s.retriedFailedModels[key] > maxRetry {
@@ -100,7 +107,7 @@ func (s *SchedulerServer) getModelsInGwRetryState(logger *logrus.Entry, targetSt
 		models = append(models, model)
 	}
 
-	return models
+	return models, nil
 }
 
 func (s *SchedulerServer) resetModelRetryCount(msg *pb.ModelUpdateMessage) {
@@ -121,21 +128,21 @@ func (s *SchedulerServer) ModelStatusEvent(_ context.Context, message *pb.ModelU
 
 	logger := s.logger.WithField("func", "ModelStatusEvent")
 
-	var statusVal store.ModelState
+	var statusVal db.ModelState
 	switch message.Update.Op {
 	case pb.ModelUpdateMessage_Create:
 		if message.Success {
 			s.resetModelRetryCount(message.Update)
-			statusVal = store.ModelAvailable
+			statusVal = db.ModelState_MODEL_STATE_AVAILABLE
 		} else {
-			statusVal = store.ModelFailed
+			statusVal = db.ModelState_MODEL_STATE_FAILED
 		}
 	case pb.ModelUpdateMessage_Delete:
 		if message.Success {
 			s.removeModelRetryCount(message.Update)
-			statusVal = store.ModelTerminated
+			statusVal = db.ModelState_MODEL_STATE_TERMINATED
 		} else {
-			statusVal = store.ModelTerminateFailed
+			statusVal = db.ModelState_MODEL_STATE_TERMINATE_FAILED
 		}
 	}
 
@@ -155,7 +162,7 @@ func (s *SchedulerServer) ModelStatusEvent(_ context.Context, message *pb.ModelU
 
 	confRes.UpdateStatus(modelName, stream, statusVal)
 	modelStatusVal, reason := cr.GetModelStatus(confRes, modelName, message)
-	if modelStatusVal == store.ModelTerminated {
+	if modelStatusVal == db.ModelState_MODEL_STATE_TERMINATED {
 		confRes.Delete(modelName)
 	}
 
@@ -233,7 +240,10 @@ func (s *SchedulerServer) sendCurrentModelStatuses(stream pb.Scheduler_Subscribe
 	s.modelEventStream.mu.Lock()
 	defer s.modelEventStream.mu.Unlock()
 
-	modelNames := s.modelStore.GetAllModels()
+	modelNames, err := s.modelStore.GetAllModels()
+	if err != nil {
+		return err
+	}
 	for _, modelName := range modelNames {
 		model, err := s.modelStore.GetModel(modelName)
 		if err != nil {
@@ -267,17 +277,20 @@ func contains(slice []string, val string) bool {
 	return false
 }
 
-func (s *SchedulerServer) allPermittedModels() []*store.ModelSnapshot {
-	var permittedModels []*store.ModelSnapshot
-	modelNames := s.modelStore.GetAllModels()
+func (s *SchedulerServer) allPermittedModels() ([]*db.Model, error) {
+	var permittedModels []*db.Model
+	modelNames, err := s.modelStore.GetAllModels()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all models: %w", err)
+	}
 
-	allowedModelGwStates := map[store.ModelState]struct{}{
-		store.ModelCreate:      {},
-		store.ModelProgressing: {},
-		store.ModelAvailable:   {},
-		store.ModelTerminating: {},
+	allowedModelGwStates := map[db.ModelState]struct{}{
+		db.ModelState_MODEL_STATE_CREATE:      {},
+		db.ModelState_MODEL_STATE_PROGRESSING: {},
+		db.ModelState_MODEL_STATE_AVAILABLE:   {},
+		db.ModelState_MODEL_STATE_TERMINATING: {},
 		// we want to retry models which failed to create on model-gw i.e. likely kafka connectivity issues
-		store.ModelFailed: {},
+		db.ModelState_MODEL_STATE_FAILED: {},
 	}
 
 	for _, modelName := range modelNames {
@@ -286,20 +299,20 @@ func (s *SchedulerServer) allPermittedModels() []*store.ModelSnapshot {
 			s.logger.WithError(err).Errorf("Failed to get model %s for running models", modelName)
 			continue
 		}
-		if model.GetLatest() == nil {
+		if model.Latest() == nil {
 			s.logger.Warnf("Model %s has no versions, skipping running models", modelName)
 			continue
 		}
 
-		if _, ok := allowedModelGwStates[model.GetLatest().ModelState().ModelGwState]; ok {
+		if _, ok := allowedModelGwStates[model.Latest().State.ModelGwState]; ok {
 			permittedModels = append(permittedModels, model)
 		}
 	}
 
-	return permittedModels
+	return permittedModels, nil
 }
 
-func (s *SchedulerServer) createModelDeletionMessage(model *store.ModelSnapshot, keepTopics bool) (*pb.ModelStatusResponse, error) {
+func (s *SchedulerServer) createModelDeletionMessage(model *db.Model, keepTopics bool) (*pb.ModelStatusResponse, error) {
 	ms, err := s.modelStatusImpl(model, false)
 	if err != nil {
 		return nil, err
@@ -309,7 +322,7 @@ func (s *SchedulerServer) createModelDeletionMessage(model *store.ModelSnapshot,
 	return ms, nil
 }
 
-func (s *SchedulerServer) createModelCreationMessage(model *store.ModelSnapshot) (*pb.ModelStatusResponse, error) {
+func (s *SchedulerServer) createModelCreationMessage(model *db.Model) (*pb.ModelStatusResponse, error) {
 	ms, err := s.modelStatusImpl(model, false)
 	if err != nil {
 		return nil, err
@@ -319,12 +332,15 @@ func (s *SchedulerServer) createModelCreationMessage(model *store.ModelSnapshot)
 }
 
 func (s *SchedulerServer) modelGwRebalance() {
-	runningModels := s.allPermittedModels()
+	runningModels, err := s.allPermittedModels()
+	if err != nil {
+		s.logger.WithError(err).Error("Failed to run gw rebalance")
+	}
 	s.logger.Debugf("Rebalancing model gateways for running models: %v", runningModels)
 	s.modelGwRebalanceForModels(runningModels)
 }
 
-func (s *SchedulerServer) modelGwRebalanceForModels(models []*store.ModelSnapshot) {
+func (s *SchedulerServer) modelGwRebalanceForModels(models []*db.Model) {
 	s.modelEventStream.mu.Lock()
 	defer s.modelEventStream.mu.Unlock()
 
@@ -346,11 +362,11 @@ func (s *SchedulerServer) modelGwRebalanceForModels(models []*store.ModelSnapsho
 	}
 }
 
-func (s *SchedulerServer) modelGwRebalanceNoStream(model *store.ModelSnapshot) {
-	modelState := store.ModelCreate
-	if model.GetLatest().ModelState().ModelGwState == store.ModelTerminating ||
-		model.GetLatest().ModelState().ModelGwState == store.ModelTerminateFailed {
-		modelState = store.ModelTerminated
+func (s *SchedulerServer) modelGwRebalanceNoStream(model *db.Model) {
+	modelState := db.ModelState_MODEL_STATE_CREATE
+	if model.Latest().State.ModelGwState == db.ModelState_MODEL_STATE_TERMINATING ||
+		model.Latest().State.ModelGwState == db.ModelState_MODEL_STATE_TERMINATE_FAILED {
+		modelState = db.ModelState_MODEL_STATE_TERMINATED
 	}
 
 	s.logger.Debugf(
@@ -360,7 +376,7 @@ func (s *SchedulerServer) modelGwRebalanceNoStream(model *store.ModelSnapshot) {
 
 	if err := s.modelStore.SetModelGwModelState(
 		model.Name,
-		model.GetLatest().GetVersion(),
+		model.Latest().GetVersion(),
 		modelState,
 		"No model gateway available to handle model",
 		modelStatusEventSource,
@@ -369,7 +385,7 @@ func (s *SchedulerServer) modelGwRebalanceNoStream(model *store.ModelSnapshot) {
 	}
 }
 
-func (s *SchedulerServer) modelGwReblanceStreams(model *store.ModelSnapshot) {
+func (s *SchedulerServer) modelGwReblanceStreams(model *db.Model) {
 	consumerBucketId := s.getModelGatewayBucketId(model.Name)
 	s.logger.Debugf("Rebalancing model %s with consumber bucket id %s", model.Name, consumerBucketId)
 
@@ -392,11 +408,11 @@ func (s *SchedulerServer) modelGwReblanceStreams(model *store.ModelSnapshot) {
 		if contains(servers, server) {
 			s.logger.Debug("Server contains model, sending status update for: ", server)
 
-			state := model.GetLatest().ModelState().ModelGwState
+			state := model.Latest().State.ModelGwState
 			var msg *pb.ModelStatusResponse
 			var err error
 
-			if state == store.ModelTerminating || state == store.ModelTerminateFailed {
+			if state == db.ModelState_MODEL_STATE_TERMINATING || state == db.ModelState_MODEL_STATE_TERMINATE_FAILED {
 				s.logger.Debugf("Model %s in state %s, sending deletion message", model.Name, state)
 				msg, err = s.createModelDeletionMessage(model, false)
 			} else {
@@ -406,8 +422,8 @@ func (s *SchedulerServer) modelGwReblanceStreams(model *store.ModelSnapshot) {
 				// set modelgw state to progressing and display rebalance reason
 				if err := s.modelStore.SetModelGwModelState(
 					model.Name,
-					model.GetLatest().GetVersion(),
-					store.ModelProgressing,
+					model.Latest().GetVersion(),
+					db.ModelState_MODEL_STATE_PROGRESSING,
 					"Rebalance",
 					modelStatusEventSource,
 				); err != nil {
@@ -507,13 +523,13 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 		return err
 	}
 
-	if model.GetLatest() == nil {
+	if model.Latest() == nil {
 		logger.Warnf("Failed to find latest model version for %s so ignoring event", evt.String())
 		return nil
 	}
 
-	if model.GetLatest().GetVersion() != evt.ModelVersion {
-		logger.Warnf("Latest model version %d does not match event version %d for %s so ignoring event", model.GetLatest().GetVersion(), evt.ModelVersion, evt.String())
+	if model.Latest().GetVersion() != evt.ModelVersion {
+		logger.Warnf("Latest model version %d does not match event version %d for %s so ignoring event", model.Latest().GetVersion(), evt.ModelVersion, evt.String())
 		return nil
 	}
 
@@ -547,20 +563,20 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 		return nil
 	}
 
-	modelState := model.GetLatest().ModelState()
-	if len(modelGwStreams) == 0 && modelState.ModelGwState != store.ModelTerminated {
+	modelState := model.Latest().State
+	if len(modelGwStreams) == 0 && modelState.ModelGwState != db.ModelState_MODEL_STATE_TERMINATED {
 		// handle case where we don't have any model-gateway streams
 		errMsg := "No model gateway available to handle model"
 		logger.WithField("model", model.Name).Warn(errMsg)
 
 		modelGwState := modelState.ModelGwState
-		if modelState.ModelGwState == store.ModelTerminate || modelState.ModelGwState == store.ModelTerminating {
-			modelGwState = store.ModelTerminated
+		if modelState.ModelGwState == db.ModelState_MODEL_STATE_TERMINATE || modelState.ModelGwState == db.ModelState_MODEL_STATE_TERMINATING {
+			modelGwState = db.ModelState_MODEL_STATE_TERMINATED
 		}
 
 		if err := s.modelStore.SetModelGwModelState(
 			model.Name,
-			model.GetLatest().GetVersion(),
+			model.Latest().GetVersion(),
 			modelGwState,
 			errMsg,
 			modelStatusEventSource,
@@ -575,12 +591,12 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 	}
 
 	switch modelState.ModelGwState {
-	case store.ModelCreate:
+	case db.ModelState_MODEL_STATE_CREATE:
 		logger.Debugf("Model %s is in create state, sending creation message", model.Name)
 		if err := s.modelStore.SetModelGwModelState(
 			model.Name,
-			model.GetLatest().GetVersion(),
-			store.ModelProgressing,
+			model.Latest().GetVersion(),
+			db.ModelState_MODEL_STATE_PROGRESSING,
 			"Model is being loaded onto model gateway",
 			modelStatusEventSource,
 		); err != nil {
@@ -598,12 +614,12 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 
 		// send message to model gateway streams
 		s.sendModelStatusEventToStreamsWithTimestamp(evt, ms, modelGwStreams)
-	case store.ModelTerminate:
+	case db.ModelState_MODEL_STATE_TERMINATE:
 		logger.Debugf("Model %s is in terminate state, sending deletion message", model.Name)
 		if err := s.modelStore.SetModelGwModelState(
 			model.Name,
-			model.GetLatest().GetVersion(),
-			store.ModelTerminating,
+			model.Latest().GetVersion(),
+			db.ModelState_MODEL_STATE_TERMINATING,
 			"Model is being unloaded from model gateway",
 			modelStatusEventSource,
 		); err != nil {
@@ -694,7 +710,7 @@ func (s *SchedulerServer) handleServerEvents(event coordinator.ServerEventMsg) {
 	logger := s.logger.WithField("func", "handleServerEvents")
 	logger.Debugf("Got server state %s change for %s", event.ServerName, event.String())
 
-	server, err := s.modelStore.GetServer(event.ServerName, true, true)
+	server, stats, err := s.modelStore.GetServer(event.ServerName, true, true)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to get server %s", event.ServerName)
 		return
@@ -702,12 +718,12 @@ func (s *SchedulerServer) handleServerEvents(event coordinator.ServerEventMsg) {
 
 	if s.config.AutoScalingServerEnabled {
 		if event.UpdateContext == coordinator.SERVER_SCALE_DOWN {
-			if ok, replicas := shouldScaleDown(server, float32(s.config.PackThreshold)); ok {
+			if ok, replicas := shouldScaleDown(server, stats, float32(s.config.PackThreshold)); ok {
 				logger.Infof("Server %s is scaling down to %d", event.ServerName, replicas)
 				s.sendServerScale(server, replicas)
 			}
 		} else if event.UpdateContext == coordinator.SERVER_SCALE_UP {
-			if ok, replicas := shouldScaleUp(server); ok {
+			if ok, replicas := shouldScaleUp(server, stats); ok {
 				logger.Infof("Server %s is scaling up to %d", event.ServerName, replicas)
 				s.sendServerScale(server, replicas)
 			}
@@ -735,14 +751,14 @@ func (s *SchedulerServer) updateServerModelsStatus(evt coordinator.ModelEventMsg
 		logger.Warnf("Failed to find model version %s so ignoring event", evt.String())
 		return nil
 	}
-	if modelVersion.Server() == "" {
+	if modelVersion.Server == "" {
 		logger.Warnf("Empty server for %s so ignoring event", evt.String())
 		return nil
 	}
 
 	s.serverEventStream.pendingLock.Lock()
 	// we are coalescing events so we only send one event (the latest status) per server
-	s.serverEventStream.pendingEvents[modelVersion.Server()] = struct{}{}
+	s.serverEventStream.pendingEvents[modelVersion.Server] = struct{}{}
 	if s.serverEventStream.trigger == nil {
 		s.serverEventStream.trigger = time.AfterFunc(defaultBatchWait, s.sendServerStatus)
 	}
@@ -765,7 +781,7 @@ func (s *SchedulerServer) sendServerStatus() {
 	s.serverEventStream.mu.Lock()
 	defer s.serverEventStream.mu.Unlock()
 	for serverName := range pendingServers {
-		server, err := s.modelStore.GetServer(serverName, true, true)
+		server, _, err := s.modelStore.GetServer(serverName, true, true)
 		if err != nil {
 			logger.Errorf("Failed to get server %s", serverName)
 			continue
@@ -775,7 +791,7 @@ func (s *SchedulerServer) sendServerStatus() {
 	}
 }
 
-func (s *SchedulerServer) sendServerScale(server *store.ServerSnapshot, expectedReplicas uint32) {
+func (s *SchedulerServer) sendServerScale(server *db.Server, expectedReplicas uint32) {
 	// TODO: should there be some sort of velocity check ?
 	logger := s.logger.WithField("func", "sendServerScale")
 	logger.Debugf("will attempt to scale servers to %d for %v", expectedReplicas, server.Name)
