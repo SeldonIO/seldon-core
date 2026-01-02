@@ -121,7 +121,7 @@ func updateModelState(isLatest bool, modelVersion *db.ModelVersion, prevModelVer
 	}
 }
 
-func (m *MemoryStore) FailedScheduling(modelID string, version uint32, reason string, reset bool) error {
+func (m *ModelServerStore) FailedScheduling(modelID string, version uint32, reason string, reset bool) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -170,15 +170,19 @@ func (m *MemoryStore) FailedScheduling(modelID string, version uint32, reason st
 	return fmt.Errorf("model %s found, version %d not found", modelID, version)
 }
 
-func (m *MemoryStore) updateModelStatus(isLatest bool, deleted bool, modelVersion *db.ModelVersion, prevModelVersion *db.ModelVersion) {
+func (m *ModelServerStore) updateModelStatus(isLatest bool, deleted bool, modelVersion *db.ModelVersion, prevModelVersion *db.ModelVersion, model *db.Model) error {
 	logger := m.logger.WithField("func", "updateModelStatus")
 	stats := calcModelVersionStatistics(modelVersion, deleted)
 	logger.Debugf("Stats %+v modelVersion %+v prev model %+v", stats, modelVersion, prevModelVersion)
 
 	updateModelState(isLatest, modelVersion, prevModelVersion, stats, deleted)
+	if err := m.store.models.Update(model); err != nil {
+		return fmt.Errorf("failed to update model: %w", err)
+	}
+	return nil
 }
 
-func (m *MemoryStore) setModelGwStatusToTerminate(isLatest bool, modelVersion *db.ModelVersion) {
+func (m *ModelServerStore) setModelGwStatusToTerminate(isLatest bool, modelVersion *db.ModelVersion) {
 	if !isLatest {
 		modelVersion.State.ModelGwState = db.ModelState_MODEL_STATE_TERMINATED
 		modelVersion.State.ModelGwReason = "Not latest version"
@@ -188,7 +192,7 @@ func (m *MemoryStore) setModelGwStatusToTerminate(isLatest bool, modelVersion *d
 	modelVersion.State.ModelGwReason = "Model deleted"
 }
 
-func (m *MemoryStore) UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error) {
+func (m *ModelServerStore) UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 

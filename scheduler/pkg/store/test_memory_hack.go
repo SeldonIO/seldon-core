@@ -21,7 +21,7 @@ import (
 )
 
 type TestMemoryStore struct {
-	*MemoryStore
+	*ModelServerStore
 }
 
 type ModelID struct {
@@ -31,7 +31,7 @@ type ModelID struct {
 
 // NewTestMemory DO NOT USE for non-test code. This is purely meant for using in tests where an integration test is
 // wanted where the real memory store is needed, but the test needs the ability to directly manipulate the model
-// statuses, which can't be achieved with MemoryStore. TestMemoryStore embeds MemoryStore and adds DirectlyUpdateModelStatus
+// statuses, which can't be achieved with ModelServerStore. TestMemoryStore embeds ModelServerStore and adds DirectlyUpdateModelStatus
 // to modify the statuses.
 func NewTestMemory(
 	t *testing.T,

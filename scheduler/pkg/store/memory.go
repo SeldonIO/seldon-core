@@ -25,7 +25,7 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
 )
 
-type MemoryStore struct {
+type ModelServerStore struct {
 	mu      sync.RWMutex
 	opLocks sync.Map
 	store   struct {
@@ -36,25 +36,25 @@ type MemoryStore struct {
 	eventHub *coordinator.EventHub
 }
 
-var _ ModelServerAPI = &MemoryStore{}
+var _ ModelServerAPI = &ModelServerStore{}
 
 func NewMemoryStore(
 	logger log.FieldLogger,
 	modelStore Storage[*db.Model],
 	serverStore Storage[*db.Server],
 	eventHub *coordinator.EventHub,
-) *MemoryStore {
-	return &MemoryStore{
+) *ModelServerStore {
+	return &ModelServerStore{
 		store: struct {
 			models  Storage[*db.Model]
 			servers Storage[*db.Server]
 		}{models: modelStore, servers: serverStore},
-		logger:   logger.WithField("source", "MemoryStore"),
+		logger:   logger.WithField("source", "ModelServerStore"),
 		eventHub: eventHub,
 	}
 }
 
-func (m *MemoryStore) GetAllModels() ([]string, error) {
+func (m *ModelServerStore) GetAllModels() ([]string, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	var modelNames []string
@@ -70,13 +70,13 @@ func (m *MemoryStore) GetAllModels() ([]string, error) {
 	return modelNames, nil
 }
 
-func (m *MemoryStore) GetModels() ([]*db.Model, error) {
+func (m *ModelServerStore) GetModels() ([]*db.Model, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	return m.store.models.List()
 }
 
-func (m *MemoryStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*db.Model, *db.ModelVersion, error) {
+func (m *ModelServerStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*db.Model, *db.ModelVersion, error) {
 	modelName := req.GetModel().GetMeta().GetName()
 	model, err := m.store.models.Get(modelName)
 	if err != nil {
@@ -102,7 +102,7 @@ func (m *MemoryStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*db.M
 	// TODO pointer save issue
 }
 
-func (m *MemoryStore) addNextModelVersion(model *db.Model, pbmodel *pb.Model) {
+func (m *ModelServerStore) addNextModelVersion(model *db.Model, pbmodel *pb.Model) {
 	// if we start from a clean state, lets use the generation id as the starting version
 	// this is to ensure that we have monotonic increasing version numbers
 	// and we never reset back to 1
@@ -119,7 +119,7 @@ func (m *MemoryStore) addNextModelVersion(model *db.Model, pbmodel *pb.Model) {
 	})
 }
 
-func (m *MemoryStore) UpdateModel(req *pb.LoadModelRequest) error {
+func (m *ModelServerStore) UpdateModel(req *pb.LoadModelRequest) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -166,38 +166,32 @@ func (m *MemoryStore) UpdateModel(req *pb.LoadModelRequest) error {
 	}
 
 	meq := ModelEqualityCheck(latestModel.ModelDefn, req.GetModel())
-	changed := false
 
 	switch {
 	case meq.Equal:
 		logger.Debugf("Model %s semantically equal - doing nothing", modelName)
+		return nil
 	case meq.ModelSpecDiffers:
 		logger.Debugf("Model %s model spec differs - adding new version of model", modelName)
 		m.addNextModelVersion(model, req.GetModel())
-		changed = true
 	case meq.DeploymentSpecDiffers:
 		logger.Debugf(
 			"Model %s deployment spec differs - updating latest model version with new spec",
 			modelName,
 		)
 		latestModel.ModelDefn.DeploymentSpec = req.GetModel().GetDeploymentSpec()
-		changed = true
 	case meq.MetaDiffers:
 		// Update just kubernetes meta
 		latestModel.ModelDefn.Meta.KubernetesMeta = req.GetModel().GetMeta().GetKubernetesMeta()
-		changed = true
 	}
 
-	if changed {
-		if err := m.store.models.Update(model); err != nil {
-			return fmt.Errorf("failed to update model %s: %w", modelName, err)
-		}
+	if err := m.store.models.Update(model); err != nil {
+		return fmt.Errorf("failed to update model %s: %w", modelName, err)
 	}
-
 	return nil
 }
 
-func (m *MemoryStore) deepCopy(model *Model, key string) *ModelSnapshot {
+func (m *ModelServerStore) deepCopy(model *Model, key string) *ModelSnapshot {
 	snapshot := &ModelSnapshot{
 		Name:    key,
 		Deleted: model.IsDeleted(),
@@ -210,13 +204,13 @@ func (m *MemoryStore) deepCopy(model *Model, key string) *ModelSnapshot {
 	return snapshot
 }
 
-func (m *MemoryStore) LockModel(modelId string) {
+func (m *ModelServerStore) LockModel(modelId string) {
 	var lock sync.RWMutex
 	existingLock, _ := m.opLocks.LoadOrStore(modelId, &lock)
 	existingLock.(*sync.RWMutex).Lock()
 }
 
-func (m *MemoryStore) UnlockModel(modelId string) {
+func (m *ModelServerStore) UnlockModel(modelId string) {
 	logger := m.logger.WithField("func", "UnlockModel")
 	lock, loaded := m.opLocks.Load(modelId)
 	if loaded {
@@ -226,7 +220,7 @@ func (m *MemoryStore) UnlockModel(modelId string) {
 	}
 }
 
-func (m *MemoryStore) GetModel(key string) (*db.Model, error) {
+func (m *ModelServerStore) GetModel(key string) (*db.Model, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	model, err := m.store.models.Get(key)
@@ -236,7 +230,7 @@ func (m *MemoryStore) GetModel(key string) (*db.Model, error) {
 	return model, nil
 }
 
-func (m *MemoryStore) RemoveModel(req *pb.UnloadModelRequest) error {
+func (m *ModelServerStore) RemoveModel(req *pb.UnloadModelRequest) error {
 	err := m.removeModelImpl(req)
 	if err != nil {
 		return err
@@ -244,7 +238,7 @@ func (m *MemoryStore) RemoveModel(req *pb.UnloadModelRequest) error {
 	return nil
 }
 
-func (m *MemoryStore) removeModelImpl(req *pb.UnloadModelRequest) error {
+func (m *ModelServerStore) removeModelImpl(req *pb.UnloadModelRequest) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -259,8 +253,7 @@ func (m *MemoryStore) removeModelImpl(req *pb.UnloadModelRequest) error {
 
 		model.Deleted = true
 		m.setModelGwStatusToTerminate(true, model.Latest())
-		m.updateModelStatus(true, true, model.Latest(), model.GetLastAvailableModelVersion())
-		return nil
+		return m.updateModelStatus(true, true, model.Latest(), model.GetLastAvailableModelVersion(), model)
 	}
 
 	if errors.Is(err, ErrNotFound) {
@@ -269,7 +262,7 @@ func (m *MemoryStore) removeModelImpl(req *pb.UnloadModelRequest) error {
 	return err
 }
 
-func (m *MemoryStore) GetServers(shallow bool, modelDetails bool) ([]*db.Server, error) {
+func (m *ModelServerStore) GetServers(shallow bool, modelDetails bool) ([]*db.Server, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
@@ -281,7 +274,7 @@ func (m *MemoryStore) GetServers(shallow bool, modelDetails bool) ([]*db.Server,
 	return servers, nil
 }
 
-func (m *MemoryStore) GetServer(serverKey string, shallow bool, modelDetails bool) (*db.Server, *ServerStats, error) {
+func (m *ModelServerStore) GetServer(serverKey string, _ bool, modelDetails bool) (*db.Server, *ServerStats, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
@@ -305,7 +298,7 @@ func (m *MemoryStore) GetServer(serverKey string, shallow bool, modelDetails boo
 	return server, nil, nil
 }
 
-func (m *MemoryStore) getServerStats(serverKey string) (*ServerStats, error) {
+func (m *ModelServerStore) getServerStats(serverKey string) (*ServerStats, error) {
 	emptyReplicas, err := m.numEmptyServerReplicas(serverKey)
 	if err != nil {
 		return nil, err
@@ -322,7 +315,7 @@ func (m *MemoryStore) getServerStats(serverKey string) (*ServerStats, error) {
 	}, nil
 }
 
-func (m *MemoryStore) getModelServer(
+func (m *ModelServerStore) getModelServer(
 	modelKey string,
 	version uint32,
 	serverKey string,
@@ -343,7 +336,7 @@ func (m *MemoryStore) getModelServer(
 	return model, modelVersion, server, nil
 }
 
-func (m *MemoryStore) UpdateLoadedModels(
+func (m *ModelServerStore) UpdateLoadedModels(
 	modelKey string,
 	version uint32,
 	serverKey string,
@@ -364,7 +357,7 @@ func (m *MemoryStore) UpdateLoadedModels(
 	return nil
 }
 
-func (m *MemoryStore) updateLoadedModelsImpl(
+func (m *ModelServerStore) updateLoadedModelsImpl(
 	modelKey string,
 	version uint32,
 	serverKey string,
@@ -373,7 +366,6 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 	logger := m.logger.WithField("func", "updateLoadedModelsImpl")
 
 	// Validate
-	// TODO pointer issue
 	model, err := m.store.models.Get(modelKey)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -403,7 +395,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 
 	server, err := m.store.servers.Get(serverKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to find server %s", serverKey)
+		return nil, fmt.Errorf("failed to find server %s: %w", serverKey, err)
 	}
 
 	assignedReplicaIds := make(map[int32]struct{})
@@ -417,6 +409,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 		assignedReplicaIds[replica.ReplicaIdx] = struct{}{}
 	}
 
+	// TODO shouldn't we be updating the store here???
 	for modelVersion.HasServer() && modelVersion.Server != serverKey {
 		logger.Debugf("Adding new version as server changed to %s from %s", modelVersion.Server, serverKey)
 		m.addNextModelVersion(model, model.Latest().ModelDefn)
@@ -476,7 +469,9 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 		(modelVersion.State.State == db.ModelState_MODEL_STATE_AVAILABLE && len(modelVersion.GetAssignment()) < modelVersion.DesiredReplicas()) {
 		logger.Debugf("Updating model status for model %s server %s", modelKey, serverKey)
 		modelVersion.Server = serverKey
-		m.updateModelStatus(true, model.Deleted, modelVersion, model.GetLastAvailableModelVersion())
+		if err := m.updateModelStatus(true, model.Deleted, modelVersion, model.GetLastAvailableModelVersion(), model); err != nil {
+			return nil, fmt.Errorf("failed to update model %s: %w", modelKey, err)
+		}
 
 		return &coordinator.ModelEventMsg{
 				ModelName:    modelVersion.ModelDefn.Meta.Name,
@@ -489,7 +484,7 @@ func (m *MemoryStore) updateLoadedModelsImpl(
 	return nil, nil
 }
 
-func (m *MemoryStore) UnloadVersionModels(modelKey string, version uint32) (bool, error) {
+func (m *ModelServerStore) UnloadVersionModels(modelKey string, version uint32) (bool, error) {
 	evt, updated, err := m.unloadVersionModelsImpl(modelKey, version)
 	if err != nil {
 		return updated, err
@@ -503,7 +498,7 @@ func (m *MemoryStore) UnloadVersionModels(modelKey string, version uint32) (bool
 	return updated, nil
 }
 
-func (m *MemoryStore) unloadVersionModelsImpl(modelKey string, version uint32) (*coordinator.ModelEventMsg, bool, error) {
+func (m *ModelServerStore) unloadVersionModelsImpl(modelKey string, version uint32) (*coordinator.ModelEventMsg, bool, error) {
 	logger := m.logger.WithField("func", "UnloadVersionModels")
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -551,7 +546,7 @@ func (m *MemoryStore) unloadVersionModelsImpl(modelKey string, version uint32) (
 	return nil, false, nil
 }
 
-func (m *MemoryStore) UpdateModelState(
+func (m *ModelServerStore) UpdateModelState(
 	modelKey string,
 	version uint32,
 	serverKey string,
@@ -581,7 +576,7 @@ func (m *MemoryStore) UpdateModelState(
 	return nil
 }
 
-func (m *MemoryStore) updateModelStateImpl(
+func (m *ModelServerStore) updateModelStateImpl(
 	modelKey string,
 	version uint32,
 	serverKey string,
@@ -681,7 +676,7 @@ func (m *MemoryStore) updateModelStateImpl(
 	return nil, nil, nil
 }
 
-func (m *MemoryStore) updateReservedMemory(
+func (m *ModelServerStore) updateReservedMemory(
 	modelReplicaState db.ModelReplicaState, serverKey string, replicaIdx int, memBytes uint64,
 ) {
 	// update reserved memory that is being used for sorting replicas
@@ -701,7 +696,7 @@ func (m *MemoryStore) updateReservedMemory(
 	}
 }
 
-func (m *MemoryStore) AddServerReplica(request *agent.AgentSubscribeRequest) error {
+func (m *ModelServerStore) AddServerReplica(request *agent.AgentSubscribeRequest) error {
 	evts, serverEvt, err := m.addServerReplicaImpl(request)
 	if err != nil {
 		return err
@@ -722,7 +717,7 @@ func (m *MemoryStore) AddServerReplica(request *agent.AgentSubscribeRequest) err
 	return nil
 }
 
-func (m *MemoryStore) addServerReplicaImpl(request *agent.AgentSubscribeRequest) ([]coordinator.ModelEventMsg, coordinator.ServerEventMsg, error) {
+func (m *ModelServerStore) addServerReplicaImpl(request *agent.AgentSubscribeRequest) ([]coordinator.ModelEventMsg, coordinator.ServerEventMsg, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -774,7 +769,7 @@ func (m *MemoryStore) addServerReplicaImpl(request *agent.AgentSubscribeRequest)
 	return evts, serverEvt, nil
 }
 
-func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) {
+func (m *ModelServerStore) RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) {
 	models, evts, err := m.removeServerReplicaImpl(serverName, replicaIdx)
 	if err != nil {
 		return nil, err
@@ -790,7 +785,7 @@ func (m *MemoryStore) RemoveServerReplica(serverName string, replicaIdx int) ([]
 	return models, nil
 }
 
-func (m *MemoryStore) removeServerReplicaImpl(serverName string, replicaIdx int) ([]string, []coordinator.ModelEventMsg, error) {
+func (m *ModelServerStore) removeServerReplicaImpl(serverName string, replicaIdx int) ([]string, []coordinator.ModelEventMsg, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -818,7 +813,7 @@ func (m *MemoryStore) removeServerReplicaImpl(serverName string, replicaIdx int)
 	return modelsRemoved, evts, nil
 }
 
-func (m *MemoryStore) removeModelfromServerReplica(models []*db.ModelVersionID, replicaIdx int) ([]string, []coordinator.ModelEventMsg) {
+func (m *ModelServerStore) removeModelfromServerReplica(models []*db.ModelVersionID, replicaIdx int) ([]string, []coordinator.ModelEventMsg) {
 	logger := m.logger.WithField("func", "RemoveServerReplica")
 	var modelNames []string
 	var evts []coordinator.ModelEventMsg
@@ -863,14 +858,14 @@ func (m *MemoryStore) removeModelfromServerReplica(models []*db.ModelVersionID, 
 	return modelNames, evts
 }
 
-func (m *MemoryStore) DrainServerReplica(serverName string, replicaIdx int) ([]string, error) {
+func (m *ModelServerStore) DrainServerReplica(serverName string, replicaIdx int) ([]string, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	return m.drainServerReplicaImpl(serverName, replicaIdx)
 }
 
-func (m *MemoryStore) drainServerReplicaImpl(serverName string, replicaIdx int) ([]string, error) {
+func (m *ModelServerStore) drainServerReplicaImpl(serverName string, replicaIdx int) ([]string, error) {
 	logger := m.logger.WithField("func", "DrainServerReplica")
 	// TODO pointer issue
 	server, err := m.store.servers.Get(serverName)
@@ -897,7 +892,7 @@ func (m *MemoryStore) drainServerReplicaImpl(serverName string, replicaIdx int) 
 	return append(loadedModels, loadingModels...), nil
 }
 
-func (m *MemoryStore) findModelsToReSchedule(models []*db.ModelVersionID, replicaIdx int) []string {
+func (m *ModelServerStore) findModelsToReSchedule(models []*db.ModelVersionID, replicaIdx int) []string {
 	logger := m.logger.WithField("func", "DrainServerReplica")
 	modelsReSchedule := make([]string, 0)
 
@@ -919,7 +914,7 @@ func (m *MemoryStore) findModelsToReSchedule(models []*db.ModelVersionID, replic
 	return modelsReSchedule
 }
 
-func (m *MemoryStore) ServerNotify(request *pb.ServerNotify) error {
+func (m *ModelServerStore) ServerNotify(request *pb.ServerNotify) error {
 	logger := m.logger.WithField("func", "MemoryServerNotify")
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -954,7 +949,7 @@ func (m *MemoryStore) ServerNotify(request *pb.ServerNotify) error {
 	return nil
 }
 
-func (m *MemoryStore) numEmptyServerReplicas(serverName string) (uint32, error) {
+func (m *ModelServerStore) numEmptyServerReplicas(serverName string) (uint32, error) {
 	emptyReplicas := uint32(0)
 	server, err := m.store.servers.Get(serverName)
 	if err != nil {
@@ -971,7 +966,7 @@ func (m *MemoryStore) numEmptyServerReplicas(serverName string) (uint32, error) 
 	return emptyReplicas, nil
 }
 
-func (m *MemoryStore) maxNumModelReplicasForServer(serverName string) (uint32, error) {
+func (m *ModelServerStore) maxNumModelReplicasForServer(serverName string) (uint32, error) {
 	models, err := m.store.models.List()
 	if err != nil {
 		return 0, err
@@ -998,7 +993,7 @@ func toSchedulerLoadedModels(agentLoadedModels []*agent.ModelVersion) []*db.Mode
 	return loadedModels
 }
 
-func (m *MemoryStore) SetModelGwModelState(name string, versionNumber uint32, status db.ModelState, reason string, source string) error {
+func (m *ModelServerStore) SetModelGwModelState(name string, versionNumber uint32, status db.ModelState, reason string, source string) error {
 	logger := m.logger.WithField("func", "SetModelGwModelState")
 	logger.Debugf("Attempt to set model-gw state on model %s:%d status:%s", name, versionNumber, status.String())
 
@@ -1016,7 +1011,7 @@ func (m *MemoryStore) SetModelGwModelState(name string, versionNumber uint32, st
 	return nil
 }
 
-func (m *MemoryStore) setModelGwModelStateImpl(name string, versionNumber uint32, status db.ModelState, reason, source string) ([]*coordinator.ModelEventMsg, error) {
+func (m *ModelServerStore) setModelGwModelStateImpl(name string, versionNumber uint32, status db.ModelState, reason, source string) ([]*coordinator.ModelEventMsg, error) {
 	var evts []*coordinator.ModelEventMsg
 
 	m.mu.Lock()
@@ -1045,7 +1040,7 @@ func (m *MemoryStore) setModelGwModelStateImpl(name string, versionNumber uint32
 	return evts, nil
 }
 
-func (m *MemoryStore) EmitEvents() error {
+func (m *ModelServerStore) EmitEvents() error {
 	servers, err := m.store.servers.List()
 	if err != nil {
 		return err
