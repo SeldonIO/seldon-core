@@ -88,18 +88,18 @@ func (m *ModelServerStore) addModelVersionIfNotExists(req *agent.ModelVersion) (
 			return nil, nil, err
 		}
 	}
-	if existingModelVersion := model.GetVersion(req.GetVersion()); existingModelVersion == nil {
+
+	var existingModelVersion *db.ModelVersion
+	if existingModelVersion = model.GetVersion(req.GetVersion()); existingModelVersion == nil {
 		modelVersion := NewDefaultModelVersion(req.GetModel(), req.GetVersion())
 		model.Versions = append(model.Versions, modelVersion)
 		sort.SliceStable(model.Versions, func(i, j int) bool { // resort model versions based on version number
 			return model.Versions[i].GetVersion() < model.Versions[j].GetVersion()
 		})
 		return model, modelVersion, nil
-	} else {
-		return model, existingModelVersion, nil
 	}
 
-	// TODO pointer save issue
+	return model, existingModelVersion, nil
 }
 
 func (m *ModelServerStore) addNextModelVersion(model *db.Model, pbmodel *pb.Model) {
@@ -265,13 +265,7 @@ func (m *ModelServerStore) removeModelImpl(req *pb.UnloadModelRequest) error {
 func (m *ModelServerStore) GetServers(shallow bool, modelDetails bool) ([]*db.Server, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-
-	servers, err := m.store.servers.List()
-	if err != nil {
-		return nil, fmt.Errorf("failed to list servers: %w", err)
-	}
-
-	return servers, nil
+	return m.store.servers.List()
 }
 
 func (m *ModelServerStore) GetServer(serverKey string, _ bool, modelDetails bool) (*db.Server, *ServerStats, error) {
@@ -409,10 +403,12 @@ func (m *ModelServerStore) updateLoadedModelsImpl(
 		assignedReplicaIds[replica.ReplicaIdx] = struct{}{}
 	}
 
-	// TODO shouldn't we be updating the store here???
 	for modelVersion.HasServer() && modelVersion.Server != serverKey {
 		logger.Debugf("Adding new version as server changed to %s from %s", modelVersion.Server, serverKey)
 		m.addNextModelVersion(model, model.Latest().ModelDefn)
+		if err := m.store.models.Update(model); err != nil {
+			return nil, fmt.Errorf("failed to update model %s: %w", modelKey, err)
+		}
 		modelVersion = model.Latest()
 	}
 
@@ -425,7 +421,10 @@ func (m *ModelServerStore) updateLoadedModelsImpl(
 				modelKey, modelVersion.Version, existingState.State.String(), serverKey, replicaIdx,
 			)
 			modelVersion.SetReplicaState(int(replicaIdx), db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOAD_REQUESTED, "")
-			m.updateReservedMemory(db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_REQUESTED, serverKey, int(replicaIdx), modelVersion.GetRequiredMemory())
+			if err := m.updateReservedMemory(db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_REQUESTED, serverKey,
+				int(replicaIdx), modelVersion.GetRequiredMemory()); err != nil {
+				return nil, fmt.Errorf("failed to update server %s replica %d: %w", serverKey, replicaIdx, err)
+			}
 			replicaStateUpdated = true
 		} else {
 			logger.Debugf(
@@ -434,7 +433,10 @@ func (m *ModelServerStore) updateLoadedModelsImpl(
 			)
 			if !existingState.State.AlreadyLoadingOrLoaded() {
 				modelVersion.SetReplicaState(int(replicaIdx), db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_REQUESTED, "")
-				m.updateReservedMemory(db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_REQUESTED, serverKey, int(replicaIdx), modelVersion.GetRequiredMemory())
+				if err := m.updateReservedMemory(db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_REQUESTED, serverKey,
+					int(replicaIdx), modelVersion.GetRequiredMemory()); err != nil {
+					return nil, fmt.Errorf("failed to update server %s replica %d: %w", serverKey, replicaIdx, err)
+				}
 				replicaStateUpdated = true
 			}
 		}
@@ -474,10 +476,9 @@ func (m *ModelServerStore) updateLoadedModelsImpl(
 		}
 
 		return &coordinator.ModelEventMsg{
-				ModelName:    modelVersion.ModelDefn.Meta.Name,
-				ModelVersion: modelVersion.GetVersion(),
-			},
-			nil
+			ModelName:    modelVersion.ModelDefn.Meta.Name,
+			ModelVersion: modelVersion.GetVersion(),
+		}, nil
 	}
 
 	logger.Debugf("Model status update not required for model %s server %s as no replicas were updated", modelKey, serverKey)
@@ -504,7 +505,6 @@ func (m *ModelServerStore) unloadVersionModelsImpl(modelKey string, version uint
 	defer m.mu.Unlock()
 
 	// Validate
-	// TODO pointer issue
 	model, err := m.store.models.Get(modelKey)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to find model %s", modelKey)
@@ -534,9 +534,12 @@ func (m *ModelServerStore) unloadVersionModelsImpl(modelKey string, version uint
 			modelKey, modelVersion.Server, replicaIdx,
 		)
 	}
+
 	if updated {
 		logger.Debugf("Calling update model status for model %s version %d", modelKey, version)
-		m.updateModelStatus(false, model.Deleted, modelVersion, model.GetLastAvailableModelVersion())
+		if err := m.updateModelStatus(false, model.Deleted, modelVersion, model.GetLastAvailableModelVersion(), model); err != nil {
+			return nil, false, fmt.Errorf("failed to update model %s: %w", modelKey, err)
+		}
 		return &coordinator.ModelEventMsg{
 			ModelName:    modelVersion.ModelDefn.Meta.Name,
 			ModelVersion: modelVersion.GetVersion(),
@@ -557,7 +560,7 @@ func (m *ModelServerStore) UpdateModelState(
 	reason string,
 	runtimeInfo *pb.ModelRuntimeInfo,
 ) error {
-	modelEvt, serverEvt, err := m.updateModelStateImpl(modelKey, version, serverKey, replicaIdx, availableMemory, expectedState, desiredState, reason, runtimeInfo)
+	modelEvt, serverEvt, err := m.updateModelState(modelKey, version, serverKey, replicaIdx, availableMemory, expectedState, desiredState, reason, runtimeInfo)
 	if err != nil {
 		return err
 	}
@@ -576,7 +579,14 @@ func (m *ModelServerStore) UpdateModelState(
 	return nil
 }
 
-func (m *ModelServerStore) updateModelStateImpl(
+type updateModelResult struct {
+	eventModel  *coordinator.ModelEventMsg
+	eventServer *coordinator.ServerEventMsg
+	model       *db.Model
+	server      *db.Server
+}
+
+func (m *ModelServerStore) updateModelState(
 	modelKey string,
 	version uint32,
 	serverKey string,
@@ -587,113 +597,158 @@ func (m *ModelServerStore) updateModelStateImpl(
 	reason string,
 	runtimeInfo *pb.ModelRuntimeInfo,
 ) (*coordinator.ModelEventMsg, *coordinator.ServerEventMsg, error) {
-	logger := m.logger.WithField("func", "updateModelStateImpl")
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
+	res, err := m.updateModelStateImpl(modelKey, version, serverKey, replicaIdx, availableMemory, expectedState, desiredState, reason, runtimeInfo)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// TODO should be in a transaction to rollback if updating servers fail
+	if err := m.store.models.Update(res.model); err != nil {
+		return nil, nil, fmt.Errorf("failed to update model %s: %w", modelKey, err)
+	}
+	if err := m.store.servers.Update(res.server); err != nil {
+		return nil, nil, fmt.Errorf("failed to update server %s: %w", serverKey, err)
+	}
+
+	return res.eventModel, res.eventServer, nil
+}
+
+func (m *ModelServerStore) updateModelStateImpl(
+	modelKey string,
+	version uint32,
+	serverKey string,
+	replicaIdx int,
+	availableMemory *uint64,
+	expectedState db.ModelReplicaState,
+	desiredState db.ModelReplicaState,
+	reason string,
+	runtimeInfo *pb.ModelRuntimeInfo,
+) (*updateModelResult, error) {
+	logger := m.logger.WithField("func", "updateModelStateImpl")
 
 	// Validate
 	model, modelVersion, server, err := m.getModelServer(modelKey, version, serverKey)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	modelVersion.UpdateRuntimeInfo(runtimeInfo)
 
 	existingState := modelVersion.GetModelReplicaState(replicaIdx)
-
 	if existingState != expectedState {
-		return nil, nil, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"state mismatch for %s:%d expected state %s but was %s when trying to move to state %s",
 			modelKey, version, expectedState.String(), existingState.String(), desiredState.String(),
 		)
 	}
 
-	m.updateReservedMemory(desiredState, serverKey, replicaIdx, modelVersion.GetRequiredMemory())
-
-	deletedModelReplica := false
-	if existingState != desiredState {
-		latestModel := model.Latest()
-		isLatest := latestModel.GetVersion() == modelVersion.GetVersion()
-
-		modelVersion.SetReplicaState(replicaIdx, desiredState, reason)
-		logger.Debugf(
-			"Setting model %s version %d on server %s replica %d to %s",
-			modelKey, version, serverKey, replicaIdx, desiredState.String(),
-		)
-
-		// Update models loaded onto replica for relevant state
-		if desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOADED ||
-			desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOADING ||
-			desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOADED ||
-			desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_FAILED {
-			// TODO pointer
-			server, err := m.store.servers.Get(serverKey)
-			// TODO handle error
-			if err == nil {
-				replica, ok := server.Replicas[int32(replicaIdx)]
-				if ok {
-					if desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOADED || desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOADING {
-						logger.Infof(
-							"Adding model %s(%d) to server %s replica %d list of loaded / loading models",
-							modelKey, version, serverKey, replicaIdx,
-						)
-						replica.AddModelVersion(modelKey, version, desiredState) // we need to distinguish between loaded and loading
-					} else {
-						logger.Infof(
-							"Removing model %s(%d) from server %s replica %d list of loaded / loading models",
-							modelKey, version, serverKey, replicaIdx,
-						)
-						// we could go from loaded -> unloaded or loading -> failed. in the case we have a failure then we just remove from loading
-						deletedModelReplica = true
-						replica.DeleteModelVersion(modelKey, version)
-					}
-				}
-			}
-		}
-		if availableMemory != nil {
-			server.Replicas[int32(replicaIdx)].AvailableMemory = *availableMemory
-		}
-
-		m.updateModelStatus(isLatest, model.Deleted, modelVersion, model.GetLastAvailableModelVersion())
-		modelEvt := &coordinator.ModelEventMsg{
-			ModelName:    modelVersion.ModelDefn.Meta.Name,
-			ModelVersion: modelVersion.GetVersion(),
-		}
-		if deletedModelReplica {
-			return modelEvt,
-				&coordinator.ServerEventMsg{
-					ServerName:    serverKey,
-					UpdateContext: coordinator.SERVER_SCALE_DOWN,
-				},
-				nil
-		} else {
-			return modelEvt,
-				nil,
-				nil
-		}
+	if err := m.updateReservedMemory(desiredState, serverKey, replicaIdx, modelVersion.GetRequiredMemory()); err != nil {
+		return nil, fmt.Errorf("failed to server %s replica %d: %w", serverKey, replicaIdx, err)
 	}
 
-	return nil, nil, nil
+	deletedModelReplica := false
+	if existingState == desiredState {
+		return &updateModelResult{
+			model:  model,
+			server: server,
+		}, nil
+	}
+
+	latestModel := model.Latest()
+	isLatest := latestModel.GetVersion() == modelVersion.GetVersion()
+
+	modelVersion.SetReplicaState(replicaIdx, desiredState, reason)
+	logger.Debugf(
+		"Setting model %s version %d on server %s replica %d to %s",
+		modelKey, version, serverKey, replicaIdx, desiredState.String(),
+	)
+
+	// Update models loaded onto replica for relevant state
+	if desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOADED ||
+		desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOADING ||
+		desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOADED ||
+		desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_FAILED {
+
+		replica, ok := server.Replicas[int32(replicaIdx)]
+		if ok {
+			if desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOADED || desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOADING {
+				logger.Infof(
+					"Adding model %s(%d) to server %s replica %d list of loaded / loading models",
+					modelKey, version, serverKey, replicaIdx,
+				)
+				replica.AddModelVersion(modelKey, version, desiredState) // we need to distinguish between loaded and loading
+			} else {
+				logger.Infof(
+					"Removing model %s(%d) from server %s replica %d list of loaded / loading models",
+					modelKey, version, serverKey, replicaIdx,
+				)
+				// we could go from loaded -> unloaded or loading -> failed. in the case we have a failure then we just remove from loading
+				deletedModelReplica = true
+				replica.DeleteModelVersion(modelKey, version)
+			}
+		}
+	}
+	if availableMemory != nil {
+		server.Replicas[int32(replicaIdx)].AvailableMemory = *availableMemory
+	}
+
+	if err := m.updateModelStatus(isLatest, model.Deleted, modelVersion, model.GetLastAvailableModelVersion(), model); err != nil {
+		return nil, fmt.Errorf("update model status failed: %w", err)
+	}
+
+	modelEvt := &coordinator.ModelEventMsg{
+		ModelName:    modelVersion.ModelDefn.Meta.Name,
+		ModelVersion: modelVersion.GetVersion(),
+	}
+	if deletedModelReplica {
+		return &updateModelResult{
+			eventModel: modelEvt,
+			eventServer: &coordinator.ServerEventMsg{
+				ServerName:    serverKey,
+				UpdateContext: coordinator.SERVER_SCALE_DOWN,
+			},
+			model:  model,
+			server: server,
+		}, nil
+	}
+
+	return &updateModelResult{
+		eventModel: modelEvt,
+		model:      model,
+		server:     server,
+	}, nil
 }
 
 func (m *ModelServerStore) updateReservedMemory(
 	modelReplicaState db.ModelReplicaState, serverKey string, replicaIdx int, memBytes uint64,
-) {
+) error {
 	// update reserved memory that is being used for sorting replicas
 	// do we need to lock replica update?
 	server, err := m.store.servers.Get(serverKey)
-	// TODO handle error??
-	if err == nil {
-		replica, okReplica := server.Replicas[int32(replicaIdx)]
-		if okReplica {
-			if modelReplicaState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_REQUESTED {
-				replica.UpdateReservedMemory(memBytes, true)
-			} else if modelReplicaState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_FAILED ||
-				modelReplicaState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOADED {
-				replica.UpdateReservedMemory(memBytes, false)
-			}
+	if err != nil {
+		return fmt.Errorf("get server %s failed: %w", serverKey, err)
+	}
+
+	replica, okReplica := server.Replicas[int32(replicaIdx)]
+	update := false
+	if okReplica {
+		if modelReplicaState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_REQUESTED {
+			replica.UpdateReservedMemory(memBytes, true)
+			update = true
+		} else if modelReplicaState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_FAILED ||
+			modelReplicaState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOADED {
+			replica.UpdateReservedMemory(memBytes, false)
+			update = true
 		}
 	}
+
+	if update {
+		return m.store.servers.Update(server)
+	}
+	return nil
 }
 
 func (m *ModelServerStore) AddServerReplica(request *agent.AgentSubscribeRequest) error {
@@ -721,7 +776,6 @@ func (m *ModelServerStore) addServerReplicaImpl(request *agent.AgentSubscribeReq
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	// TODO pointer issue
 	server, err := m.store.servers.Get(request.ServerName)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
@@ -745,6 +799,10 @@ func (m *ModelServerStore) addServerReplicaImpl(request *agent.AgentSubscribeReq
 	)
 	server.Replicas[int32(request.ReplicaIdx)] = serverReplica
 
+	if err := m.store.servers.Update(server); err != nil {
+		return nil, coordinator.ServerEventMsg{}, fmt.Errorf("failed to update server %s: %w", request.ServerName, err)
+	}
+
 	var evts []coordinator.ModelEventMsg
 	for _, modelVersionReq := range request.LoadedModels {
 		model, modelVersion, err := m.addModelVersionIfNotExists(modelVersionReq)
@@ -753,7 +811,9 @@ func (m *ModelServerStore) addServerReplicaImpl(request *agent.AgentSubscribeReq
 		}
 		modelVersion.Replicas[int32(request.ReplicaIdx)] = &db.ReplicaStatus{State: db.ModelReplicaState_MODEL_REPLICA_STATE_LOADED}
 		modelVersion.Server = request.ServerName
-		m.updateModelStatus(true, false, modelVersion, model.GetLastAvailableModelVersion())
+		if err := m.updateModelStatus(true, false, modelVersion, model.GetLastAvailableModelVersion(), model); err != nil {
+			return nil, coordinator.ServerEventMsg{}, fmt.Errorf("failed to update model status: %w", err)
+		}
 		evts = append(evts, coordinator.ModelEventMsg{
 			ModelName:    modelVersion.ModelDefn.Meta.Name,
 			ModelVersion: modelVersion.GetVersion(),
@@ -798,14 +858,25 @@ func (m *ModelServerStore) removeServerReplicaImpl(serverName string, replicaIdx
 		return nil, nil, fmt.Errorf("Failed to find replica %d for server %s", replicaIdx, serverName)
 	}
 	delete(server.Replicas, int32(replicaIdx))
+
+	if err := m.store.servers.Update(server); err != nil {
+		return nil, nil, fmt.Errorf("failed to update server %s: %w", serverName, err)
+	}
+
 	// TODO we should not reschedule models on servers with dedicated models, e.g. non shareable servers
 	if len(server.Replicas) == 0 {
 		if err := m.store.servers.Delete(serverName); err != nil {
 			return nil, nil, fmt.Errorf("failed to delete server %s: %w", serverName, err)
 		}
 	}
-	loadedModelsRemoved, loadedEvts := m.removeModelfromServerReplica(serverReplica.LoadedModels, replicaIdx)
-	loadingModelsRemoved, loadingEtvs := m.removeModelfromServerReplica(serverReplica.LoadingModels, replicaIdx)
+	loadedModelsRemoved, loadedEvts, err := m.removeModelfromServerReplica(serverReplica.LoadedModels, replicaIdx)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to remove loaded models from replica %d: %w", replicaIdx, err)
+	}
+	loadingModelsRemoved, loadingEtvs, err := m.removeModelfromServerReplica(serverReplica.LoadingModels, replicaIdx)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to remove loading models from replica %d: %w", replicaIdx, err)
+	}
 
 	modelsRemoved := append(loadedModelsRemoved, loadingModelsRemoved...)
 	evts := append(loadedEvts, loadingEtvs...)
@@ -813,7 +884,7 @@ func (m *ModelServerStore) removeServerReplicaImpl(serverName string, replicaIdx
 	return modelsRemoved, evts, nil
 }
 
-func (m *ModelServerStore) removeModelfromServerReplica(models []*db.ModelVersionID, replicaIdx int) ([]string, []coordinator.ModelEventMsg) {
+func (m *ModelServerStore) removeModelfromServerReplica(models []*db.ModelVersionID, replicaIdx int) ([]string, []coordinator.ModelEventMsg, error) {
 	logger := m.logger.WithField("func", "RemoveServerReplica")
 	var modelNames []string
 	var evts []coordinator.ModelEventMsg
@@ -835,9 +906,11 @@ func (m *ModelServerStore) removeModelfromServerReplica(models []*db.ModelVersio
 					modelVersion.SetReplicaState(replicaIdx, db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOADED,
 						"model is removed when server replica was removed")
 					m.LockModel(v.Name)
-					m.updateModelStatus(
+					if err := m.updateModelStatus(
 						model.Latest().GetVersion() == modelVersion.GetVersion(),
-						model.Deleted, modelVersion, model.GetLastAvailableModelVersion())
+						model.Deleted, modelVersion, model.GetLastAvailableModelVersion(), model); err != nil {
+						return nil, nil, fmt.Errorf("failed to update model %s status: %w", model.Name, err)
+					}
 					m.UnlockModel(v.Name)
 					// send an event to progress the deletion
 					evts = append(
@@ -849,28 +922,29 @@ func (m *ModelServerStore) removeModelfromServerReplica(models []*db.ModelVersio
 					)
 				} else {
 					modelNames = append(modelNames, v.Name)
+					if err := m.store.models.Update(model); err != nil {
+						return nil, nil, fmt.Errorf("failed to update model %s status: %w", model.Name, err)
+					}
 				}
 			} else {
 				logger.Warnf("Can't find model version %s", v.String())
 			}
 		}
 	}
-	return modelNames, evts
+	return modelNames, evts, nil
 }
 
 func (m *ModelServerStore) DrainServerReplica(serverName string, replicaIdx int) ([]string, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-
 	return m.drainServerReplicaImpl(serverName, replicaIdx)
 }
 
 func (m *ModelServerStore) drainServerReplicaImpl(serverName string, replicaIdx int) ([]string, error) {
 	logger := m.logger.WithField("func", "DrainServerReplica")
-	// TODO pointer issue
 	server, err := m.store.servers.Get(serverName)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to find server %s", serverName)
+		return nil, fmt.Errorf("failed to find server %s", serverName)
 	}
 	serverReplica, ok := server.Replicas[int32(replicaIdx)]
 	if !ok {
@@ -880,11 +954,21 @@ func (m *ModelServerStore) drainServerReplicaImpl(serverName string, replicaIdx 
 	// we mark this server replica as draining so should not be used in future scheduling decisions
 	serverReplica.IsDraining = true
 
-	loadedModels := m.findModelsToReSchedule(serverReplica.LoadingModels, replicaIdx)
+	if err := m.store.servers.Update(server); err != nil {
+		return nil, fmt.Errorf("failed to update server %s: %w", serverName, err)
+	}
+
+	loadedModels, err := m.findModelsToReSchedule(serverReplica.LoadingModels, replicaIdx)
+	if err != nil {
+		return nil, err
+	}
 	if len(loadedModels) > 0 {
 		logger.WithField("models", loadedModels).Debug("Found loaded models to re-schedule")
 	}
-	loadingModels := m.findModelsToReSchedule(serverReplica.LoadingModels, replicaIdx)
+	loadingModels, err := m.findModelsToReSchedule(serverReplica.LoadingModels, replicaIdx)
+	if err != nil {
+		return nil, err
+	}
 	if len(loadingModels) > 0 {
 		logger.WithField("models", loadingModels).Debug("Found loading models to re-schedule")
 	}
@@ -892,18 +976,19 @@ func (m *ModelServerStore) drainServerReplicaImpl(serverName string, replicaIdx 
 	return append(loadedModels, loadingModels...), nil
 }
 
-func (m *ModelServerStore) findModelsToReSchedule(models []*db.ModelVersionID, replicaIdx int) []string {
+func (m *ModelServerStore) findModelsToReSchedule(models []*db.ModelVersionID, replicaIdx int) ([]string, error) {
 	logger := m.logger.WithField("func", "DrainServerReplica")
 	modelsReSchedule := make([]string, 0)
 
 	for _, v := range models {
-		// TODO pointer issue
-		// TODO handle error?
 		model, err := m.store.models.Get(v.Name)
 		if err == nil {
 			modelVersion := model.GetVersion(v.Version)
 			if modelVersion != nil {
 				modelVersion.SetReplicaState(replicaIdx, db.ModelReplicaState_MODEL_REPLICA_STATE_DRAINING, "trigger to drain")
+				if err := m.store.models.Update(model); err != nil {
+					return nil, fmt.Errorf("failed update model %s: %w", model.Name, err)
+				}
 				modelsReSchedule = append(modelsReSchedule, model.Name)
 				continue
 			}
@@ -911,7 +996,7 @@ func (m *ModelServerStore) findModelsToReSchedule(models []*db.ModelVersionID, r
 		}
 	}
 
-	return modelsReSchedule
+	return modelsReSchedule, nil
 }
 
 func (m *ModelServerStore) ServerNotify(request *pb.ServerNotify) error {
@@ -945,7 +1030,6 @@ func (m *ModelServerStore) ServerNotify(request *pb.ServerNotify) error {
 	if err := m.store.servers.Update(server); err != nil {
 		return fmt.Errorf("failed to update server %s: %w", request.Name, err)
 	}
-
 	return nil
 }
 
@@ -1012,12 +1096,10 @@ func (m *ModelServerStore) SetModelGwModelState(name string, versionNumber uint3
 }
 
 func (m *ModelServerStore) setModelGwModelStateImpl(name string, versionNumber uint32, status db.ModelState, reason, source string) ([]*coordinator.ModelEventMsg, error) {
-	var evts []*coordinator.ModelEventMsg
-
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	// TODO pointer issue
+	var evts []*coordinator.ModelEventMsg
 	model, err := m.store.models.Get(name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find model %s", name)
@@ -1030,6 +1112,9 @@ func (m *ModelServerStore) setModelGwModelStateImpl(name string, versionNumber u
 	if modelVersion.State.ModelGwState != status || modelVersion.State.ModelGwReason != reason {
 		modelVersion.State.ModelGwState = status
 		modelVersion.State.ModelGwReason = reason
+		if err := m.store.models.Update(model); err != nil {
+			return nil, fmt.Errorf("failed to update model %s: %w", name, err)
+		}
 		evt := &coordinator.ModelEventMsg{
 			ModelName:    modelVersion.ModelDefn.Meta.Name,
 			ModelVersion: modelVersion.GetVersion(),
@@ -1045,6 +1130,10 @@ func (m *ModelServerStore) EmitEvents() error {
 	if err != nil {
 		return err
 	}
+	models, err := m.store.models.List()
+	if err != nil {
+		return err
+	}
 
 	for _, server := range servers {
 		for id := range server.Replicas {
@@ -1055,11 +1144,6 @@ func (m *ModelServerStore) EmitEvents() error {
 				UpdateContext: coordinator.SERVER_REPLICA_CONNECTED, // TODO can we be confident of that?
 			})
 		}
-	}
-
-	models, err := m.store.models.List()
-	if err != nil {
-		return err
 	}
 
 	for _, model := range models {
