@@ -102,7 +102,6 @@ https://github.com/samuel/go-zookeeper/blob/master/LICENSE,BSD 3-Clause "New" or
 https://github.com/tsenart/go-tsz/blob/master/LICENSE,Apache License 2.0
 https://github.com/ajstarks/svgo/blob/master/LICENSE,Creative Commons Attribution 4.0 International Public License
 https://github.com/golang/freetype/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
-https://github.com/square/go-jose/blob/v2.5.1/LICENSE,Apache License 2.0
 https://github.com/antlr/antlr4/blob/master/LICENSE.txt,BSD 3-Clause "New" or "Revised" License
 https://github.com/munnerz/goautoneg/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
 https://github.com/ulikunitz/unixtime/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License
@@ -118,3 +117,9 @@ https://github.com/invopop/yaml/blob/main/LICENSE,MIT License
 https://github.com/hashicorp/consul/blob/main/LICENSE,Mozilla Public License 2.0
 https://github.com/hashicorp/vault/blob/main/LICENSE,Mozilla Public License 2.0
 https://github.com/SeldonIO/seldon-core/blob/master/LICENSE,Business Source License 1.1
+https://github.com/cloudflare/circl/blob/main/LICENSE,BSD 3-Clause
+https://github.com/go-kivik/kivik/blob/main/LICENSE.md,Apache License 2.0
+https://github.com/gophercloud/gophercloud/blob/main/LICENSE,Apache License 2.0
+https://github.com/shopspring/decimal/blob/master/LICENSE,MIT License
+https://github.com/ajstarks/deck/blob/master/LICENSE,Creative Commons Attribution 4.0 International Public License
+https://github.com/JohnCGriffin/overflow,MIT License

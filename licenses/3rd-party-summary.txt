@@ -2,19 +2,21 @@
       3 Apache-2.0
       1 Apache-2.0 AND BSD-2-Clause
       1 Apache-2.0 OR BSD-3-Clause
-    172 Apache License 2.0
+    192 Apache License 2.0
      13 Apache Software License
       1 Apache Software License; BSD License
-     15 BSD 2-Clause Simplified License
+     21 BSD 2-Clause Simplified License
+      2 BSD 3-Clause
       7 BSD-3-Clause
-     77 BSD 3-Clause New or Revised License
+     95 BSD 3-Clause New or Revised License
       8 BSD License
       3 Business Source License 1.1
-      1 Creative Commons Attribution 4.0 International Public License
+      2 Creative Commons Attribution 4.0 International Public License
+      1 Creative Commons Zero v1.0 Universal
       4 ISC License
      11 MIT
-    244 MIT License
-     34 Mozilla Public License 2.0
+    291 MIT License
+     27 Mozilla Public License 2.0
       1 Mozilla Public License 2.0 (MPL 2.0)
       1 PSF-2.0
       1 UNKNOWN
