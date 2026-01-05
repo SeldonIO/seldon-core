@@ -297,7 +297,7 @@ func (m ModelReplicaState) AlreadyLoadingOrLoaded() bool {
 func (m ModelReplicaState) UnloadingOrUnloaded() bool {
 	return m == ModelReplicaState_UnloadEnvoyRequested ||
 		m == ModelReplicaState_UnloadRequested ||
-		m == ModelReplicaState_Loading ||
+		m == ModelReplicaState_Unloading ||
 		m == ModelReplicaState_Unloaded ||
 		m == ModelReplicaState_ModelReplicaStateUnknown
 }

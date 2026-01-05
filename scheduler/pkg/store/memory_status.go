@@ -82,7 +82,7 @@ func updateModelState(isLatest bool, modelVersion *db.ModelVersion, prevModelVer
 	modelTimestamp := stats.latestTime
 	if deleted || !isLatest {
 		if stats.replicasUnloadFailed > 0 {
-			modelState = db.ModelState_ModelTerminated
+			modelState = db.ModelState_ModelTerminateFailed
 			modelReason = stats.lastFailedReason
 			modelTimestamp = stats.lastFailedStateTime
 		} else if stats.replicasUnloading > 0 || stats.replicasAvailable > 0 || stats.replicasLoading > 0 {

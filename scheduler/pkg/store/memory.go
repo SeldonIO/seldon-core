@@ -423,7 +423,7 @@ func (m *ModelServerStore) updateLoadedModelsImpl(
 				"Model %s version %d on server %s replica %d does not exist yet and should be loaded",
 				modelKey, modelVersion.Version, serverKey, replicaIdx,
 			)
-			modelVersion.SetReplicaState(int(replicaIdx), db.ModelReplicaState_UnloadRequested, "")
+			modelVersion.SetReplicaState(int(replicaIdx), db.ModelReplicaState_LoadRequested, "")
 			if err := m.updateReservedMemory(db.ModelReplicaState_LoadRequested, serverKey,
 				int(replicaIdx), modelVersion.GetRequiredMemory()); err != nil {
 				return nil, fmt.Errorf("failed to update server %s replica %d: %w", serverKey, replicaIdx, err)
@@ -457,6 +457,10 @@ func (m *ModelServerStore) updateLoadedModelsImpl(
 				replicaStateUpdated = true
 			}
 		}
+	}
+
+	if err := m.store.models.Update(context.TODO(), model); err != nil {
+		return nil, fmt.Errorf("failed to update model %s: %w", modelKey, err)
 	}
 
 	// in cases where we did have a previous ScheduleFailed, we need to reflect the change here
@@ -804,7 +808,6 @@ func (m *ModelServerStore) addServerReplicaImpl(request *agent.AgentSubscribeReq
 		request.ReplicaConfig,
 		request.AvailableMemoryBytes,
 	)
-
 	server.AddReplica(int32(request.ReplicaIdx), serverReplica)
 
 	if err := m.store.servers.Update(context.TODO(), server); err != nil {
