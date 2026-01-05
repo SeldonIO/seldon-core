@@ -24,10 +24,6 @@ endif
 #SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
 
-.PHONY:show_image
-show_image:
-	echo ${SELDON_OPERATOR_IMG}
-
 all: manager
 
 .PHONY: lint
@@ -278,6 +274,10 @@ validate_bundle_image:
 opm_index:
 	opm index add -c docker --bundles quay.io/seldon/seldon-operator:v${VERSION} --mode replaces --tag quay.io/seldon/test-catalog:latest
 
+
+.PHONY:show_image
+show_image:
+	 @echo ${SELDON_OPERATOR_IMG}
 
 opm_push:
 	docker push quay.io/seldon/test-catalog:latest
