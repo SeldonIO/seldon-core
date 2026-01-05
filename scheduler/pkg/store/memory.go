@@ -180,7 +180,9 @@ func (m *ModelServerStore) UpdateModel(req *pb.LoadModelRequest) error {
 			modelName,
 		)
 		latestModel.ModelDefn.DeploymentSpec = req.GetModel().GetDeploymentSpec()
-	case meq.MetaDiffers:
+	}
+
+	if meq.MetaDiffers {
 		// Update just kubernetes meta
 		latestModel.ModelDefn.Meta.KubernetesMeta = req.GetModel().GetMeta().GetKubernetesMeta()
 	}
@@ -697,6 +699,10 @@ func (m *ModelServerStore) updateModelStateImpl(
 
 	if err := m.updateModelStatus(isLatest, model.Deleted, modelVersion, model.GetLastAvailableModelVersion(), model); err != nil {
 		return nil, fmt.Errorf("update model status failed: %w", err)
+	}
+
+	if err := m.store.servers.Update(server); err != nil {
+		return nil, fmt.Errorf("failed to update server %s: %w", serverKey, err)
 	}
 
 	modelEvt := &coordinator.ModelEventMsg{
