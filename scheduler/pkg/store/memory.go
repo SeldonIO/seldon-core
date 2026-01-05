@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package store
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sort"
@@ -59,7 +60,7 @@ func (m *ModelServerStore) GetAllModels() ([]string, error) {
 	defer m.mu.RUnlock()
 	var modelNames []string
 
-	models, err := m.store.models.List()
+	models, err := m.store.models.List(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -73,18 +74,18 @@ func (m *ModelServerStore) GetAllModels() ([]string, error) {
 func (m *ModelServerStore) GetModels() ([]*db.Model, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	return m.store.models.List()
+	return m.store.models.List(context.TODO())
 }
 
 func (m *ModelServerStore) addModelVersionIfNotExists(req *agent.ModelVersion) (*db.Model, *db.ModelVersion, error) {
 	modelName := req.GetModel().GetMeta().GetName()
-	model, err := m.store.models.Get(modelName)
+	model, err := m.store.models.Get(context.TODO(), modelName)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return nil, nil, err
 		}
 		model = &db.Model{Name: modelName}
-		if err := m.store.models.Insert(model); err != nil {
+		if err := m.store.models.Insert(context.TODO(), model); err != nil {
 			return nil, nil, err
 		}
 	}
@@ -132,14 +133,14 @@ func (m *ModelServerStore) UpdateModel(req *pb.LoadModelRequest) error {
 			modelName,
 		)
 	}
-	model, err := m.store.models.Get(modelName)
+	model, err := m.store.models.Get(context.TODO(), modelName)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return fmt.Errorf("failed to get model %s: %w", modelName, err)
 		}
 		model = &db.Model{Name: modelName}
 		m.addNextModelVersion(model, req.GetModel())
-		if err := m.store.models.Insert(model); err != nil {
+		if err := m.store.models.Insert(context.TODO(), model); err != nil {
 			return fmt.Errorf("failed to update model %s: %w", modelName, err)
 		}
 		return nil
@@ -148,7 +149,7 @@ func (m *ModelServerStore) UpdateModel(req *pb.LoadModelRequest) error {
 	if model.Deleted {
 		if model.Inactive() {
 			m.addNextModelVersion(model, req.GetModel())
-			if err := m.store.models.Update(model); err != nil {
+			if err := m.store.models.Update(context.TODO(), model); err != nil {
 				return fmt.Errorf("failed to update model %s: %w", modelName, err)
 			}
 			return nil
@@ -187,7 +188,7 @@ func (m *ModelServerStore) UpdateModel(req *pb.LoadModelRequest) error {
 		latestModel.ModelDefn.Meta.KubernetesMeta = req.GetModel().GetMeta().GetKubernetesMeta()
 	}
 
-	if err := m.store.models.Update(model); err != nil {
+	if err := m.store.models.Update(context.TODO(), model); err != nil {
 		return fmt.Errorf("failed to update model %s: %w", modelName, err)
 	}
 	return nil
@@ -225,7 +226,7 @@ func (m *ModelServerStore) UnlockModel(modelId string) {
 func (m *ModelServerStore) GetModel(key string) (*db.Model, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	model, err := m.store.models.Get(key)
+	model, err := m.store.models.Get(context.TODO(), key)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get model %s: %w", key, err)
 	}
@@ -245,7 +246,7 @@ func (m *ModelServerStore) removeModelImpl(req *pb.UnloadModelRequest) error {
 	defer m.mu.Unlock()
 
 	modelName := req.GetModel().GetName()
-	model, err := m.store.models.Get(modelName)
+	model, err := m.store.models.Get(context.TODO(), modelName)
 	if err == nil {
 		// Updating the k8s meta is required to be updated so status updates back (to manager)
 		// will match latest generation value. Previous generation values might be ignored by manager.
@@ -267,14 +268,14 @@ func (m *ModelServerStore) removeModelImpl(req *pb.UnloadModelRequest) error {
 func (m *ModelServerStore) GetServers(shallow bool, modelDetails bool) ([]*db.Server, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	return m.store.servers.List()
+	return m.store.servers.List(context.TODO())
 }
 
 func (m *ModelServerStore) GetServer(serverKey string, _ bool, modelDetails bool) (*db.Server, *ServerStats, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
-	server, err := m.store.servers.Get(serverKey)
+	server, err := m.store.servers.Get(context.TODO(), serverKey)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, nil, fmt.Errorf("server [%s] not found", serverKey)
@@ -317,7 +318,7 @@ func (m *ModelServerStore) getModelServer(
 	serverKey string,
 ) (*db.Model, *db.ModelVersion, *db.Server, error) {
 	// Validate
-	model, err := m.store.models.Get(modelKey)
+	model, err := m.store.models.Get(context.TODO(), modelKey)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("failed to find model %s", modelKey)
 	}
@@ -325,7 +326,7 @@ func (m *ModelServerStore) getModelServer(
 	if modelVersion == nil {
 		return nil, nil, nil, fmt.Errorf("Version not found for model %s, version %d", modelKey, version)
 	}
-	server, err := m.store.servers.Get(serverKey)
+	server, err := m.store.servers.Get(context.TODO(), serverKey)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("failed to find server %s", serverKey)
 	}
@@ -362,7 +363,7 @@ func (m *ModelServerStore) updateLoadedModelsImpl(
 	logger := m.logger.WithField("func", "updateLoadedModelsImpl")
 
 	// Validate
-	model, err := m.store.models.Get(modelKey)
+	model, err := m.store.models.Get(context.TODO(), modelKey)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			return nil, fmt.Errorf("model [%s] not found", modelKey)
@@ -389,7 +390,7 @@ func (m *ModelServerStore) updateLoadedModelsImpl(
 		}, nil
 	}
 
-	server, err := m.store.servers.Get(serverKey)
+	server, err := m.store.servers.Get(context.TODO(), serverKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find server %s: %w", serverKey, err)
 	}
@@ -408,7 +409,7 @@ func (m *ModelServerStore) updateLoadedModelsImpl(
 	for modelVersion.HasServer() && modelVersion.Server != serverKey {
 		logger.Debugf("Adding new version as server changed to %s from %s", modelVersion.Server, serverKey)
 		m.addNextModelVersion(model, model.Latest().ModelDefn)
-		if err := m.store.models.Update(model); err != nil {
+		if err := m.store.models.Update(context.TODO(), model); err != nil {
 			return nil, fmt.Errorf("failed to update model %s: %w", modelKey, err)
 		}
 		modelVersion = model.Latest()
@@ -507,7 +508,7 @@ func (m *ModelServerStore) unloadVersionModelsImpl(modelKey string, version uint
 	defer m.mu.Unlock()
 
 	// Validate
-	model, err := m.store.models.Get(modelKey)
+	model, err := m.store.models.Get(context.TODO(), modelKey)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to find model %s", modelKey)
 	}
@@ -608,10 +609,10 @@ func (m *ModelServerStore) updateModelState(
 	}
 
 	// TODO should be in a transaction to rollback if updating servers fail
-	if err := m.store.models.Update(res.model); err != nil {
+	if err := m.store.models.Update(context.TODO(), res.model); err != nil {
 		return nil, nil, fmt.Errorf("failed to update model %s: %w", modelKey, err)
 	}
-	if err := m.store.servers.Update(res.server); err != nil {
+	if err := m.store.servers.Update(context.TODO(), res.server); err != nil {
 		return nil, nil, fmt.Errorf("failed to update server %s: %w", serverKey, err)
 	}
 
@@ -701,7 +702,7 @@ func (m *ModelServerStore) updateModelStateImpl(
 		return nil, fmt.Errorf("update model status failed: %w", err)
 	}
 
-	if err := m.store.servers.Update(server); err != nil {
+	if err := m.store.servers.Update(context.TODO(), server); err != nil {
 		return nil, fmt.Errorf("failed to update server %s: %w", serverKey, err)
 	}
 
@@ -733,7 +734,7 @@ func (m *ModelServerStore) updateReservedMemory(
 ) error {
 	// update reserved memory that is being used for sorting replicas
 	// do we need to lock replica update?
-	server, err := m.store.servers.Get(serverKey)
+	server, err := m.store.servers.Get(context.TODO(), serverKey)
 	if err != nil {
 		return fmt.Errorf("get server %s failed: %w", serverKey, err)
 	}
@@ -752,7 +753,7 @@ func (m *ModelServerStore) updateReservedMemory(
 	}
 
 	if update {
-		return m.store.servers.Update(server)
+		return m.store.servers.Update(context.TODO(), server)
 	}
 	return nil
 }
@@ -782,13 +783,13 @@ func (m *ModelServerStore) addServerReplicaImpl(request *agent.AgentSubscribeReq
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	server, err := m.store.servers.Get(request.ServerName)
+	server, err := m.store.servers.Get(context.TODO(), request.ServerName)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return nil, coordinator.ServerEventMsg{}, err
 		}
 		server = NewServer(request.ServerName, request.Shared)
-		if err := m.store.servers.Insert(server); err != nil {
+		if err := m.store.servers.Insert(context.TODO(), server); err != nil {
 			return nil, coordinator.ServerEventMsg{}, fmt.Errorf("failed to add server %s: %w", request.ServerName, err)
 		}
 	}
@@ -806,7 +807,7 @@ func (m *ModelServerStore) addServerReplicaImpl(request *agent.AgentSubscribeReq
 
 	server.AddReplica(int32(request.ReplicaIdx), serverReplica)
 
-	if err := m.store.servers.Update(server); err != nil {
+	if err := m.store.servers.Update(context.TODO(), server); err != nil {
 		return nil, coordinator.ServerEventMsg{}, fmt.Errorf("failed to update server %s: %w", request.ServerName, err)
 	}
 
@@ -856,7 +857,7 @@ func (m *ModelServerStore) removeServerReplicaImpl(serverName string, replicaIdx
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	server, err := m.store.servers.Get(serverName)
+	server, err := m.store.servers.Get(context.TODO(), serverName)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to find server %s: %w", serverName, err)
 	}
@@ -866,13 +867,13 @@ func (m *ModelServerStore) removeServerReplicaImpl(serverName string, replicaIdx
 	}
 	delete(server.Replicas, int32(replicaIdx))
 
-	if err := m.store.servers.Update(server); err != nil {
+	if err := m.store.servers.Update(context.TODO(), server); err != nil {
 		return nil, nil, fmt.Errorf("failed to update server %s: %w", serverName, err)
 	}
 
 	// TODO we should not reschedule models on servers with dedicated models, e.g. non shareable servers
 	if len(server.Replicas) == 0 {
-		if err := m.store.servers.Delete(serverName); err != nil {
+		if err := m.store.servers.Delete(context.TODO(), serverName); err != nil {
 			return nil, nil, fmt.Errorf("failed to delete server %s: %w", serverName, err)
 		}
 	}
@@ -898,7 +899,7 @@ func (m *ModelServerStore) removeModelfromServerReplica(models []*db.ModelVersio
 	// Find models to reschedule due to this server replica being removed
 	for _, v := range models {
 		// TODO pointer issue
-		model, err := m.store.models.Get(v.Name)
+		model, err := m.store.models.Get(context.TODO(), v.Name)
 		if err == nil {
 			modelVersion := model.GetVersion(v.Version)
 			if modelVersion != nil {
@@ -929,7 +930,7 @@ func (m *ModelServerStore) removeModelfromServerReplica(models []*db.ModelVersio
 					)
 				} else {
 					modelNames = append(modelNames, v.Name)
-					if err := m.store.models.Update(model); err != nil {
+					if err := m.store.models.Update(context.TODO(), model); err != nil {
 						return nil, nil, fmt.Errorf("failed to update model %s status: %w", model.Name, err)
 					}
 				}
@@ -949,7 +950,7 @@ func (m *ModelServerStore) DrainServerReplica(serverName string, replicaIdx int)
 
 func (m *ModelServerStore) drainServerReplicaImpl(serverName string, replicaIdx int) ([]string, error) {
 	logger := m.logger.WithField("func", "DrainServerReplica")
-	server, err := m.store.servers.Get(serverName)
+	server, err := m.store.servers.Get(context.TODO(), serverName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find server %s", serverName)
 	}
@@ -961,7 +962,7 @@ func (m *ModelServerStore) drainServerReplicaImpl(serverName string, replicaIdx 
 	// we mark this server replica as draining so should not be used in future scheduling decisions
 	serverReplica.IsDraining = true
 
-	if err := m.store.servers.Update(server); err != nil {
+	if err := m.store.servers.Update(context.TODO(), server); err != nil {
 		return nil, fmt.Errorf("failed to update server %s: %w", serverName, err)
 	}
 
@@ -988,12 +989,12 @@ func (m *ModelServerStore) findModelsToReSchedule(models []*db.ModelVersionID, r
 	modelsReSchedule := make([]string, 0)
 
 	for _, v := range models {
-		model, err := m.store.models.Get(v.Name)
+		model, err := m.store.models.Get(context.TODO(), v.Name)
 		if err == nil {
 			modelVersion := model.GetVersion(v.Version)
 			if modelVersion != nil {
 				modelVersion.SetReplicaState(replicaIdx, db.ModelReplicaState_Draining, "trigger to drain")
-				if err := m.store.models.Update(model); err != nil {
+				if err := m.store.models.Update(context.TODO(), model); err != nil {
 					return nil, fmt.Errorf("failed update model %s: %w", model.Name, err)
 				}
 				modelsReSchedule = append(modelsReSchedule, model.Name)
@@ -1013,7 +1014,7 @@ func (m *ModelServerStore) ServerNotify(request *pb.ServerNotify) error {
 
 	logger.Debugf("ServerNotify %v", request)
 
-	server, err := m.store.servers.Get(request.Name)
+	server, err := m.store.servers.Get(context.TODO(), request.Name)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return fmt.Errorf("failed to find server %s: %w", request.Name, err)
@@ -1023,7 +1024,7 @@ func (m *ModelServerStore) ServerNotify(request *pb.ServerNotify) error {
 		server.MinReplicas = int32(request.MinReplicas)
 		server.MaxReplicas = int32(request.MaxReplicas)
 		server.KubernetesMeta = request.KubernetesMeta
-		if err := m.store.servers.Insert(server); err != nil {
+		if err := m.store.servers.Insert(context.TODO(), server); err != nil {
 			return err
 		}
 		return nil
@@ -1034,7 +1035,7 @@ func (m *ModelServerStore) ServerNotify(request *pb.ServerNotify) error {
 	server.MaxReplicas = int32(request.MaxReplicas)
 	server.KubernetesMeta = request.KubernetesMeta
 
-	if err := m.store.servers.Update(server); err != nil {
+	if err := m.store.servers.Update(context.TODO(), server); err != nil {
 		return fmt.Errorf("failed to update server %s: %w", request.Name, err)
 	}
 	return nil
@@ -1042,7 +1043,7 @@ func (m *ModelServerStore) ServerNotify(request *pb.ServerNotify) error {
 
 func (m *ModelServerStore) numEmptyServerReplicas(serverName string) (uint32, error) {
 	emptyReplicas := uint32(0)
-	server, err := m.store.servers.Get(serverName)
+	server, err := m.store.servers.Get(context.TODO(), serverName)
 	if err != nil {
 		if !errors.Is(err, ErrNotFound) {
 			return 0, err
@@ -1058,7 +1059,7 @@ func (m *ModelServerStore) numEmptyServerReplicas(serverName string) (uint32, er
 }
 
 func (m *ModelServerStore) maxNumModelReplicasForServer(serverName string) (uint32, error) {
-	models, err := m.store.models.List()
+	models, err := m.store.models.List(context.TODO())
 	if err != nil {
 		return 0, err
 	}
@@ -1107,7 +1108,7 @@ func (m *ModelServerStore) setModelGwModelStateImpl(name string, versionNumber u
 	defer m.mu.Unlock()
 
 	var evts []*coordinator.ModelEventMsg
-	model, err := m.store.models.Get(name)
+	model, err := m.store.models.Get(context.TODO(), name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find model %s", name)
 	}
@@ -1119,7 +1120,7 @@ func (m *ModelServerStore) setModelGwModelStateImpl(name string, versionNumber u
 	if modelVersion.State.ModelGwState != status || modelVersion.State.ModelGwReason != reason {
 		modelVersion.State.ModelGwState = status
 		modelVersion.State.ModelGwReason = reason
-		if err := m.store.models.Update(model); err != nil {
+		if err := m.store.models.Update(context.TODO(), model); err != nil {
 			return nil, fmt.Errorf("failed to update model %s: %w", name, err)
 		}
 		evt := &coordinator.ModelEventMsg{
@@ -1133,11 +1134,11 @@ func (m *ModelServerStore) setModelGwModelStateImpl(name string, versionNumber u
 }
 
 func (m *ModelServerStore) EmitEvents() error {
-	servers, err := m.store.servers.List()
+	servers, err := m.store.servers.List(context.TODO())
 	if err != nil {
 		return err
 	}
-	models, err := m.store.models.List()
+	models, err := m.store.models.List(context.TODO())
 	if err != nil {
 		return err
 	}

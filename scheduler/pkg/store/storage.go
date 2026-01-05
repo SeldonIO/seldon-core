@@ -10,7 +10,9 @@ the Change License after the Change Date as each is defined in accordance with t
 package store
 
 import (
+	"context"
 	"errors"
+
 	"google.golang.org/protobuf/proto"
 )
 
@@ -19,9 +21,9 @@ var (
 )
 
 type Storage[T proto.Message] interface {
-	Get(name string) (T, error)
-	Insert(record T) error
-	List() ([]T, error)
-	Update(record T) error
-	Delete(name string) error
+	Get(ctx context.Context, name string) (T, error)
+	Insert(ctx context.Context, record T) error
+	List(ctx context.Context) ([]T, error)
+	Update(ctx context.Context, record T) error
+	Delete(ctx context.Context, name string) error
 }

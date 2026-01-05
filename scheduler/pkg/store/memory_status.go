@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package store
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -125,7 +126,7 @@ func (m *ModelServerStore) FailedScheduling(modelID string, version uint32, reas
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	model, err := m.store.models.Get(modelID)
+	model, err := m.store.models.Get(context.TODO(), modelID)
 	if err != nil {
 		return fmt.Errorf("model %s not found: %w", modelID, err)
 	}
@@ -151,7 +152,7 @@ func (m *ModelServerStore) FailedScheduling(modelID string, version uint32, reas
 				modelVersion.Server = ""
 			}
 
-			if err := m.store.models.Update(model); err != nil {
+			if err := m.store.models.Update(context.TODO(), model); err != nil {
 				return fmt.Errorf("failed to update model %s: %w", modelID, err)
 			}
 
@@ -176,7 +177,7 @@ func (m *ModelServerStore) updateModelStatus(isLatest bool, deleted bool, modelV
 	logger.Debugf("Stats %+v modelVersion %+v prev model %+v", stats, modelVersion, prevModelVersion)
 
 	updateModelState(isLatest, modelVersion, prevModelVersion, stats, deleted)
-	if err := m.store.models.Update(model); err != nil {
+	if err := m.store.models.Update(context.TODO(), model); err != nil {
 		return fmt.Errorf("failed to update model: %w", err)
 	}
 	return nil
@@ -196,7 +197,7 @@ func (m *ModelServerStore) UnloadModelGwVersionModels(modelKey string, version u
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	model, err := m.store.models.Get(modelKey)
+	model, err := m.store.models.Get(context.TODO(), modelKey)
 	if err != nil {
 		return false, fmt.Errorf("failed to find model %s: %w", modelKey, err)
 	}
@@ -208,7 +209,7 @@ func (m *ModelServerStore) UnloadModelGwVersionModels(modelKey string, version u
 
 	m.setModelGwStatusToTerminate(false, modelVersion)
 
-	if err := m.store.models.Update(model); err != nil {
+	if err := m.store.models.Update(context.TODO(), model); err != nil {
 		return false, fmt.Errorf("failed to update model %s: %w", modelKey, err)
 	}
 

@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package store
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -50,7 +51,7 @@ func (t *TestMemoryStore) DirectlyUpdateModelStatus(model ModelID, state *db.Mod
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	found, err := t.store.models.Get(model.Name)
+	found, err := t.store.models.Get(context.TODO(), model.Name)
 	if err != nil {
 		return fmt.Errorf("model not found: %w", err)
 	}
@@ -61,5 +62,5 @@ func (t *TestMemoryStore) DirectlyUpdateModelStatus(model ModelID, state *db.Mod
 	}
 
 	version.State = state
-	return t.store.models.Update(found)
+	return t.store.models.Update(context.TODO(), found)
 }

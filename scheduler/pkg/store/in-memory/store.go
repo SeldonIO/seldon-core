@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package in_memory
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -38,7 +39,7 @@ func NewStorage[T interface {
 	}
 }
 
-func (s *Storage[T]) Get(id string) (T, error) {
+func (s *Storage[T]) Get(_ context.Context, id string) (T, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -50,7 +51,7 @@ func (s *Storage[T]) Get(id string) (T, error) {
 	return proto.Clone(record).(T), nil
 }
 
-func (s *Storage[T]) Insert(record T) error {
+func (s *Storage[T]) Insert(_ context.Context, record T) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -62,7 +63,7 @@ func (s *Storage[T]) Insert(record T) error {
 	return nil
 }
 
-func (s *Storage[T]) List() ([]T, error) {
+func (s *Storage[T]) List(_ context.Context) ([]T, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -74,7 +75,7 @@ func (s *Storage[T]) List() ([]T, error) {
 	return records, nil
 }
 
-func (s *Storage[T]) Update(record T) error {
+func (s *Storage[T]) Update(_ context.Context, record T) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -86,7 +87,7 @@ func (s *Storage[T]) Update(record T) error {
 	return nil
 }
 
-func (s *Storage[T]) Delete(id string) error {
+func (s *Storage[T]) Delete(_ context.Context, id string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
