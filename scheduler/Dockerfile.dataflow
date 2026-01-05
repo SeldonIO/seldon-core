@@ -16,7 +16,7 @@ RUN gradle build --no-daemon -Prelease_tag="$RELEASE_TAG" --info
 ################################################################################
 
 # Some dependencies require glibc, which Alpine does not provide
-FROM registry.access.redhat.com/ubi9/openjdk-17-runtime:1.22
+FROM registry.access.redhat.com/ubi9/openjdk-17-runtime:1.23
 
 # Run update to pickup any necessary security updates
 USER root
