@@ -1,4 +1,4 @@
-FROM azul/zulu-openjdk-alpine:17-latest AS builder
+FROM azul/zulu-openjdk-alpine:25-latest AS builder
 
 ARG RELEASE_TAG
 
