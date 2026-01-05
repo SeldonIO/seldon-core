@@ -31,13 +31,13 @@ const (
 // pollerRetryFailedCreateModels will retry creating models on model-gw which failed to load. Most likely
 // due to connectivity issues with kafka.
 func (s *SchedulerServer) pollerRetryFailedCreateModels(ctx context.Context, tick time.Duration, maxRetry uint) {
-	s.pollerRetryFailedModels(ctx, tick, "pollerRetryFailedCreateModels", db.ModelState_MODEL_STATE_FAILED, "create", maxRetry)
+	s.pollerRetryFailedModels(ctx, tick, "pollerRetryFailedCreateModels", db.ModelState_ModelFailed, "create", maxRetry)
 }
 
 // pollerRetryFailedDeleteModels will retry deleting models on model-gw which failed to terminate. Most likely
 // due to connectivity issues with kafka.
 func (s *SchedulerServer) pollerRetryFailedDeleteModels(ctx context.Context, tick time.Duration, maxRetry uint) {
-	s.pollerRetryFailedModels(ctx, tick, "pollerRetryFailedDeleteModels", db.ModelState_MODEL_STATE_TERMINATE_FAILED, "delete", maxRetry)
+	s.pollerRetryFailedModels(ctx, tick, "pollerRetryFailedDeleteModels", db.ModelState_ModelTerminateFailed, "delete", maxRetry)
 }
 
 func (s *SchedulerServer) pollerRetryFailedModels(ctx context.Context, tick time.Duration, funcName string, targetState db.ModelState, operation string, maxRetry uint) {
@@ -133,16 +133,16 @@ func (s *SchedulerServer) ModelStatusEvent(_ context.Context, message *pb.ModelU
 	case pb.ModelUpdateMessage_Create:
 		if message.Success {
 			s.resetModelRetryCount(message.Update)
-			statusVal = db.ModelState_MODEL_STATE_AVAILABLE
+			statusVal = db.ModelState_ModelAvailable
 		} else {
-			statusVal = db.ModelState_MODEL_STATE_FAILED
+			statusVal = db.ModelState_ModelFailed
 		}
 	case pb.ModelUpdateMessage_Delete:
 		if message.Success {
 			s.removeModelRetryCount(message.Update)
-			statusVal = db.ModelState_MODEL_STATE_TERMINATED
+			statusVal = db.ModelState_ModelTerminated
 		} else {
-			statusVal = db.ModelState_MODEL_STATE_TERMINATE_FAILED
+			statusVal = db.ModelState_ModelTerminateFailed
 		}
 	}
 
@@ -162,7 +162,7 @@ func (s *SchedulerServer) ModelStatusEvent(_ context.Context, message *pb.ModelU
 
 	confRes.UpdateStatus(modelName, stream, statusVal)
 	modelStatusVal, reason := cr.GetModelStatus(confRes, modelName, message)
-	if modelStatusVal == db.ModelState_MODEL_STATE_TERMINATED {
+	if modelStatusVal == db.ModelState_ModelTerminated {
 		confRes.Delete(modelName)
 	}
 
@@ -285,12 +285,12 @@ func (s *SchedulerServer) allPermittedModels() ([]*db.Model, error) {
 	}
 
 	allowedModelGwStates := map[db.ModelState]struct{}{
-		db.ModelState_MODEL_STATE_CREATE:      {},
-		db.ModelState_MODEL_STATE_PROGRESSING: {},
-		db.ModelState_MODEL_STATE_AVAILABLE:   {},
-		db.ModelState_MODEL_STATE_TERMINATING: {},
+		db.ModelState_ModelCreate:      {},
+		db.ModelState_ModelProgressing: {},
+		db.ModelState_ModelAvailable:   {},
+		db.ModelState_ModelTerminating: {},
 		// we want to retry models which failed to create on model-gw i.e. likely kafka connectivity issues
-		db.ModelState_MODEL_STATE_FAILED: {},
+		db.ModelState_ModelFailed: {},
 	}
 
 	for _, modelName := range modelNames {
@@ -363,10 +363,10 @@ func (s *SchedulerServer) modelGwRebalanceForModels(models []*db.Model) {
 }
 
 func (s *SchedulerServer) modelGwRebalanceNoStream(model *db.Model) {
-	modelState := db.ModelState_MODEL_STATE_CREATE
-	if model.Latest().State.ModelGwState == db.ModelState_MODEL_STATE_TERMINATING ||
-		model.Latest().State.ModelGwState == db.ModelState_MODEL_STATE_TERMINATE_FAILED {
-		modelState = db.ModelState_MODEL_STATE_TERMINATED
+	modelState := db.ModelState_ModelCreate
+	if model.Latest().State.ModelGwState == db.ModelState_ModelTerminating ||
+		model.Latest().State.ModelGwState == db.ModelState_ModelTerminateFailed {
+		modelState = db.ModelState_ModelTerminated
 	}
 
 	s.logger.Debugf(
@@ -412,7 +412,7 @@ func (s *SchedulerServer) modelGwReblanceStreams(model *db.Model) {
 			var msg *pb.ModelStatusResponse
 			var err error
 
-			if state == db.ModelState_MODEL_STATE_TERMINATING || state == db.ModelState_MODEL_STATE_TERMINATE_FAILED {
+			if state == db.ModelState_ModelTerminating || state == db.ModelState_ModelTerminateFailed {
 				s.logger.Debugf("Model %s in state %s, sending deletion message", model.Name, state)
 				msg, err = s.createModelDeletionMessage(model, false)
 			} else {
@@ -423,7 +423,7 @@ func (s *SchedulerServer) modelGwReblanceStreams(model *db.Model) {
 				if err := s.modelStore.SetModelGwModelState(
 					model.Name,
 					model.Latest().GetVersion(),
-					db.ModelState_MODEL_STATE_PROGRESSING,
+					db.ModelState_ModelProgressing,
 					"Rebalance",
 					modelStatusEventSource,
 				); err != nil {
@@ -564,14 +564,14 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 	}
 
 	modelState := model.Latest().State
-	if len(modelGwStreams) == 0 && modelState.ModelGwState != db.ModelState_MODEL_STATE_TERMINATED {
+	if len(modelGwStreams) == 0 && modelState.ModelGwState != db.ModelState_ModelTerminated {
 		// handle case where we don't have any model-gateway streams
 		errMsg := "No model gateway available to handle model"
 		logger.WithField("model", model.Name).Warn(errMsg)
 
 		modelGwState := modelState.ModelGwState
-		if modelState.ModelGwState == db.ModelState_MODEL_STATE_TERMINATE || modelState.ModelGwState == db.ModelState_MODEL_STATE_TERMINATING {
-			modelGwState = db.ModelState_MODEL_STATE_TERMINATED
+		if modelState.ModelGwState == db.ModelState_ModelTerminate || modelState.ModelGwState == db.ModelState_ModelTerminating {
+			modelGwState = db.ModelState_ModelTerminated
 		}
 
 		if err := s.modelStore.SetModelGwModelState(
@@ -591,12 +591,12 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 	}
 
 	switch modelState.ModelGwState {
-	case db.ModelState_MODEL_STATE_CREATE:
+	case db.ModelState_ModelCreate:
 		logger.Debugf("Model %s is in create state, sending creation message", model.Name)
 		if err := s.modelStore.SetModelGwModelState(
 			model.Name,
 			model.Latest().GetVersion(),
-			db.ModelState_MODEL_STATE_PROGRESSING,
+			db.ModelState_ModelProgressing,
 			"Model is being loaded onto model gateway",
 			modelStatusEventSource,
 		); err != nil {
@@ -614,12 +614,12 @@ func (s *SchedulerServer) sendModelStatusEvent(evt coordinator.ModelEventMsg) er
 
 		// send message to model gateway streams
 		s.sendModelStatusEventToStreamsWithTimestamp(evt, ms, modelGwStreams)
-	case db.ModelState_MODEL_STATE_TERMINATE:
+	case db.ModelState_ModelTerminate:
 		logger.Debugf("Model %s is in terminate state, sending deletion message", model.Name)
 		if err := s.modelStore.SetModelGwModelState(
 			model.Name,
 			model.Latest().GetVersion(),
-			db.ModelState_MODEL_STATE_TERMINATING,
+			db.ModelState_ModelTerminating,
 			"Model is being unloaded from model gateway",
 			modelStatusEventSource,
 		); err != nil {

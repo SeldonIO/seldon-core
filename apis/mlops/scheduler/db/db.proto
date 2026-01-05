@@ -32,34 +32,34 @@ message ExperimentSnapshot {
 
 // ModelState represents the state of a model
 enum ModelState {
-  MODEL_STATE_UNKNOWN = 0;
-  MODEL_STATE_PROGRESSING = 1;
-  MODEL_STATE_AVAILABLE = 2;
-  MODEL_STATE_FAILED = 3;
-  MODEL_STATE_TERMINATING = 4;
-  MODEL_STATE_TERMINATED = 5;
-  MODEL_STATE_TERMINATE_FAILED = 6;
-  MODEL_STATE_SCHEDULE_FAILED = 7;
-  MODEL_STATE_SCALED_DOWN = 8;
-  MODEL_STATE_CREATE = 9;
-  MODEL_STATE_TERMINATE = 10;
+  ModelStateUnknown = 0;
+  ModelProgressing = 1;
+  ModelAvailable = 2;
+  ModelFailed = 3;
+  ModelTerminating = 4;
+  ModelTerminated = 5;
+  ModelTerminateFailed = 6;
+  ScheduleFailed = 7;
+  ModelScaledDown = 8;
+  ModelCreate = 9;
+  ModelTerminate = 10;
 }
 
 // ModelReplicaState represents the state of a model replica
 enum ModelReplicaState {
-  MODEL_REPLICA_STATE_UNKNOWN = 0;
-  MODEL_REPLICA_STATE_LOAD_REQUESTED = 1;
-  MODEL_REPLICA_STATE_LOADING = 2;
-  MODEL_REPLICA_STATE_LOADED = 3;
-  MODEL_REPLICA_STATE_LOAD_FAILED = 4;
-  MODEL_REPLICA_STATE_UNLOAD_ENVOY_REQUESTED = 5;
-  MODEL_REPLICA_STATE_UNLOAD_REQUESTED = 6;
-  MODEL_REPLICA_STATE_UNLOADING = 7;
-  MODEL_REPLICA_STATE_UNLOADED = 8;
-  MODEL_REPLICA_STATE_UNLOAD_FAILED = 9;
-  MODEL_REPLICA_STATE_AVAILABLE = 10;
-  MODEL_REPLICA_STATE_LOADED_UNAVAILABLE = 11;
-  MODEL_REPLICA_STATE_DRAINING = 12;
+  ModelReplicaStateUnknown = 0;
+  LoadRequested = 1;
+  Loading = 2;
+  Loaded = 3;
+  LoadFailed = 4;
+  UnloadRequested = 5;
+  Unloading = 6;
+  Unloaded = 7;
+  UnloadFailed = 8;
+  Available = 9;
+  LoadedUnavailable = 10;
+  UnloadEnvoyRequested = 11;
+  Draining = 12;
 }
 
 // ReplicaStatus represents the status of a replica

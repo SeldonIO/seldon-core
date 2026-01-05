@@ -195,7 +195,7 @@ func (es *ExperimentStore) handleModelEvents(event coordinator.ModelEventMsg) {
 					if err != nil {
 						logger.WithError(err).Warnf("Failed to get model %s for candidate check for experiment %s", event.ModelName, experiment.Name)
 					} else {
-						if model.Latest() != nil && model.Latest().State.State == db.ModelState_MODEL_STATE_AVAILABLE {
+						if model.Latest() != nil && model.Latest().State.State == db.ModelState_ModelAvailable {
 							candidate.Ready = true
 						} else {
 							candidate.Ready = false
@@ -209,7 +209,7 @@ func (es *ExperimentStore) handleModelEvents(event coordinator.ModelEventMsg) {
 					if err != nil {
 						logger.WithError(err).Warnf("Failed to get model %s for mirror check for experiment %s", event.ModelName, experiment.Name)
 					} else {
-						if model.Latest() != nil && model.Latest().State.State == db.ModelState_MODEL_STATE_AVAILABLE {
+						if model.Latest() != nil && model.Latest().State.State == db.ModelState_ModelAvailable {
 							experiment.Mirror.Ready = true
 						} else {
 							experiment.Mirror.Ready = false

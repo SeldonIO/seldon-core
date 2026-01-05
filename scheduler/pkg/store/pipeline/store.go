@@ -612,7 +612,7 @@ func (ps *PipelineStore) handleModelEvents(event coordinator.ModelEventMsg) {
 
 			ps.mu.Lock()
 			modelVersion := model.GetLastAvailableModelVersion()
-			modelAvailable := model != nil && modelVersion != nil && modelVersion.State.ModelGwState == db.ModelState_MODEL_STATE_AVAILABLE
+			modelAvailable := model != nil && modelVersion != nil && modelVersion.State.ModelGwState == db.ModelState_ModelAvailable
 			evts := updatePipelinesFromModelAvailability(refs, event.ModelName, modelAvailable, ps.pipelines, ps.logger)
 			ps.mu.Unlock()
 

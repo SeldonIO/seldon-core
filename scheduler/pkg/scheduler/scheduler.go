@@ -128,8 +128,8 @@ func (s *SimpleScheduler) getFailedModels() ([]string, error) {
 		version := model.Latest()
 		if version != nil {
 			versionState := version.State
-			if versionState.State == db.ModelState_MODEL_STATE_FAILED || versionState.State == db.ModelState_MODEL_STATE_SCHEDULE_FAILED ||
-				((versionState.State == db.ModelState_MODEL_STATE_AVAILABLE || versionState.State == db.ModelState_MODEL_STATE_PROGRESSING) &&
+			if versionState.State == db.ModelState_ModelFailed || versionState.State == db.ModelState_ScheduleFailed ||
+				((versionState.State == db.ModelState_ModelAvailable || versionState.State == db.ModelState_ModelProgressing) &&
 					versionState.AvailableReplicas < version.ModelDefn.DeploymentSpec.GetReplicas()) {
 				failedModels = append(failedModels, model.Name)
 			}
@@ -149,7 +149,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) (*coordinator.Serve
 
 	// Get Model
 	model, err := s.store.GetModel(modelName)
-	if err != nil {
+	if err != nil && !errors.Is(err, store.ErrNotFound) {
 		return nil, err
 	}
 	if model == nil {

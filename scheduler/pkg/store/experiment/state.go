@@ -161,7 +161,7 @@ func (es *ExperimentStore) setCandidateAndMirrorReadiness(experiment *Experiment
 				if err != nil {
 					logger.WithError(err).Infof("Failed to get model %s for candidate check for experiment %s", candidate.Name, experiment.Name)
 				} else {
-					if model.Latest() != nil && model.Latest().State.State == db.ModelState_MODEL_STATE_AVAILABLE {
+					if model.Latest() != nil && model.Latest().State.State == db.ModelState_ModelAvailable {
 						candidate.Ready = true
 					} else {
 						candidate.Ready = false
@@ -173,7 +173,7 @@ func (es *ExperimentStore) setCandidateAndMirrorReadiness(experiment *Experiment
 				if err != nil {
 					logger.WithError(err).Warnf("Failed to get model %s for mirror check for experiment %s", experiment.Mirror.Name, experiment.Name)
 				} else {
-					if model.Latest() != nil && model.Latest().State.State == db.ModelState_MODEL_STATE_AVAILABLE {
+					if model.Latest() != nil && model.Latest().State.State == db.ModelState_ModelAvailable {
 						experiment.Mirror.Ready = true
 					} else {
 						experiment.Mirror.Ready = false

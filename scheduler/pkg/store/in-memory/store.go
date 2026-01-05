@@ -1,3 +1,12 @@
+/*
+Copyright (c) 2024 Seldon Technologies Ltd.
+
+Use of this software is governed BY
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
+*/
+
 package in_memory
 
 import (
@@ -24,7 +33,9 @@ func NewStorage[T interface {
 	proto.Message
 	GetName() string
 }]() *Storage[T] {
-	return &Storage[T]{}
+	return &Storage[T]{
+		records: make(map[string]T),
+	}
 }
 
 func (s *Storage[T]) Get(id string) (T, error) {

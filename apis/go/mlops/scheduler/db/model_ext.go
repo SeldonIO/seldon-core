@@ -1,3 +1,12 @@
+/*
+Copyright (c) 2024 Seldon Technologies Ltd.
+
+Use of this software is governed BY
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
+*/
+
 package db
 
 import (
@@ -10,12 +19,12 @@ func (m *ModelVersion) GetAssignment() []int {
 	var draining []int
 
 	for k, v := range m.Replicas {
-		if v.State == ModelReplicaState_MODEL_REPLICA_STATE_LOADED ||
-			v.State == ModelReplicaState_MODEL_REPLICA_STATE_AVAILABLE ||
-			v.State == ModelReplicaState_MODEL_REPLICA_STATE_LOADED_UNAVAILABLE {
+		if v.State == ModelReplicaState_Loaded ||
+			v.State == ModelReplicaState_Available ||
+			v.State == ModelReplicaState_LoadedUnavailable {
 			assignment = append(assignment, int(k))
 		}
-		if v.State == ModelReplicaState_MODEL_REPLICA_STATE_DRAINING {
+		if v.State == ModelReplicaState_Draining {
 			draining = append(draining, int(k))
 		}
 	}
@@ -113,7 +122,7 @@ func (m *Model) getLastModelGwAvailableModelIdx() int {
 	}
 	lastAvailableIdx := -1
 	for idx, mv := range m.Versions {
-		if mv.State.ModelGwState == ModelState_MODEL_STATE_AVAILABLE {
+		if mv.State.ModelGwState == ModelState_ModelAvailable {
 			lastAvailableIdx = idx
 		}
 	}
@@ -137,7 +146,7 @@ func (m *Model) getLastAvailableModelIdx() int {
 	}
 	lastAvailableIdx := -1
 	for idx, mv := range m.Versions {
-		if mv.State.State == ModelState_MODEL_STATE_AVAILABLE {
+		if mv.State.State == ModelState_ModelAvailable {
 			lastAvailableIdx = idx
 		}
 	}
@@ -190,6 +199,7 @@ func getInstanceCount(modelRuntimeInfo *pb.ModelRuntimeInfo) uint64 {
 }
 
 func (m *ModelVersion) SetReplicaState(replicaIdx int, state ModelReplicaState, reason string) {
+	m.initReplicasIfEmpty()
 	m.Replicas[int32(replicaIdx)] = &ReplicaStatus{State: state, Timestamp: timestamppb.Now(), Reason: reason}
 }
 
@@ -199,10 +209,17 @@ func (m *ModelVersion) UpdateRuntimeInfo(runtimeInfo *pb.ModelRuntimeInfo) {
 	}
 }
 
+func (m *ModelVersion) initReplicasIfEmpty() {
+	if m.Replicas == nil {
+		m.Replicas = make(map[int32]*ReplicaStatus)
+	}
+}
+
 func (m *ModelVersion) GetModelReplicaState(replicaIdx int) ModelReplicaState {
+	m.initReplicasIfEmpty()
 	state, ok := m.Replicas[int32(replicaIdx)]
 	if !ok {
-		return ModelReplicaState_MODEL_REPLICA_STATE_UNKNOWN
+		return ModelReplicaState_ModelReplicaStateUnknown
 	}
 	return state.State
 }
@@ -235,7 +252,7 @@ func (m *Model) Inactive() bool {
 func (m *Model) getLastAvailableModelVersionIdx() int {
 	lastAvailableIdx := -1
 	for idx, mv := range m.Versions {
-		if mv.State.State == ModelState_MODEL_STATE_AVAILABLE {
+		if mv.State.State == ModelState_ModelAvailable {
 			lastAvailableIdx = idx
 		}
 	}
@@ -264,38 +281,38 @@ func (m *ModelVersion) DeleteReplica(replicaIdx int) {
 }
 
 func (m ModelReplicaState) CanReceiveTraffic() bool {
-	return m == ModelReplicaState_MODEL_REPLICA_STATE_LOADED ||
-		m == ModelReplicaState_MODEL_REPLICA_STATE_AVAILABLE ||
-		m == ModelReplicaState_MODEL_REPLICA_STATE_LOADED_UNAVAILABLE ||
-		m == ModelReplicaState_MODEL_REPLICA_STATE_DRAINING
+	return m == ModelReplicaState_Loaded ||
+		m == ModelReplicaState_Available ||
+		m == ModelReplicaState_LoadedUnavailable ||
+		m == ModelReplicaState_Draining
 }
 
 func (m ModelReplicaState) AlreadyLoadingOrLoaded() bool {
-	return m == ModelReplicaState_MODEL_REPLICA_STATE_LOADING ||
-		m == ModelReplicaState_MODEL_REPLICA_STATE_LOADED ||
-		m == ModelReplicaState_MODEL_REPLICA_STATE_AVAILABLE ||
-		m == ModelReplicaState_MODEL_REPLICA_STATE_LOADED_UNAVAILABLE
+	return m == ModelReplicaState_Loading ||
+		m == ModelReplicaState_Loaded ||
+		m == ModelReplicaState_Available ||
+		m == ModelReplicaState_LoadedUnavailable
 }
 
 func (m ModelReplicaState) UnloadingOrUnloaded() bool {
-	return m == ModelReplicaState_MODEL_REPLICA_STATE_UNLOAD_ENVOY_REQUESTED ||
-		m == ModelReplicaState_MODEL_REPLICA_STATE_UNLOAD_REQUESTED ||
-		m == ModelReplicaState_MODEL_REPLICA_STATE_LOADING ||
-		m == ModelReplicaState_MODEL_REPLICA_STATE_UNLOADED ||
-		m == ModelReplicaState_MODEL_REPLICA_STATE_UNKNOWN
+	return m == ModelReplicaState_UnloadEnvoyRequested ||
+		m == ModelReplicaState_UnloadRequested ||
+		m == ModelReplicaState_Loading ||
+		m == ModelReplicaState_Unloaded ||
+		m == ModelReplicaState_ModelReplicaStateUnknown
 }
 
 func (m ModelReplicaState) Inactive() bool {
-	return m == ModelReplicaState_MODEL_REPLICA_STATE_UNLOADED ||
-		m == ModelReplicaState_MODEL_REPLICA_STATE_UNLOAD_FAILED ||
-		m == ModelReplicaState_MODEL_REPLICA_STATE_UNKNOWN ||
-		m == ModelReplicaState_MODEL_REPLICA_STATE_LOAD_FAILED
+	return m == ModelReplicaState_Unloaded ||
+		m == ModelReplicaState_UnloadFailed ||
+		m == ModelReplicaState_ModelReplicaStateUnknown ||
+		m == ModelReplicaState_LoadFailed
 }
 
 func (m ModelReplicaState) IsLoadingOrLoaded() bool {
-	return m == ModelReplicaState_MODEL_REPLICA_STATE_LOADED ||
-		m == ModelReplicaState_MODEL_REPLICA_STATE_LOAD_REQUESTED ||
-		m == ModelReplicaState_MODEL_REPLICA_STATE_LOADING ||
-		m == ModelReplicaState_MODEL_REPLICA_STATE_AVAILABLE ||
-		m == ModelReplicaState_MODEL_REPLICA_STATE_LOADED_UNAVAILABLE
+	return m == ModelReplicaState_Loaded ||
+		m == ModelReplicaState_LoadRequested ||
+		m == ModelReplicaState_Loading ||
+		m == ModelReplicaState_Available ||
+		m == ModelReplicaState_LoadedUnavailable
 }

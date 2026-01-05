@@ -417,11 +417,11 @@ func (m *ModelServerStore) updateLoadedModelsImpl(
 	for replicaIdx := range assignedReplicaIds {
 		if existingState, ok := modelVersion.Replicas[replicaIdx]; !ok {
 			logger.Debugf(
-				"Model %s version %d state %s on server %s replica %d does not exist yet and should be loaded",
-				modelKey, modelVersion.Version, existingState.State.String(), serverKey, replicaIdx,
+				"Model %s version %d on server %s replica %d does not exist yet and should be loaded",
+				modelKey, modelVersion.Version, serverKey, replicaIdx,
 			)
-			modelVersion.SetReplicaState(int(replicaIdx), db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOAD_REQUESTED, "")
-			if err := m.updateReservedMemory(db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_REQUESTED, serverKey,
+			modelVersion.SetReplicaState(int(replicaIdx), db.ModelReplicaState_UnloadRequested, "")
+			if err := m.updateReservedMemory(db.ModelReplicaState_LoadRequested, serverKey,
 				int(replicaIdx), modelVersion.GetRequiredMemory()); err != nil {
 				return nil, fmt.Errorf("failed to update server %s replica %d: %w", serverKey, replicaIdx, err)
 			}
@@ -432,8 +432,8 @@ func (m *ModelServerStore) updateLoadedModelsImpl(
 				modelKey, modelVersion.Version, existingState.State.String(), serverKey, replicaIdx,
 			)
 			if !existingState.State.AlreadyLoadingOrLoaded() {
-				modelVersion.SetReplicaState(int(replicaIdx), db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_REQUESTED, "")
-				if err := m.updateReservedMemory(db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_REQUESTED, serverKey,
+				modelVersion.SetReplicaState(int(replicaIdx), db.ModelReplicaState_LoadRequested, "")
+				if err := m.updateReservedMemory(db.ModelReplicaState_LoadRequested, serverKey,
 					int(replicaIdx), modelVersion.GetRequiredMemory()); err != nil {
 					return nil, fmt.Errorf("failed to update server %s replica %d: %w", serverKey, replicaIdx, err)
 				}
@@ -449,8 +449,8 @@ func (m *ModelServerStore) updateLoadedModelsImpl(
 				"Checking if replicaidx %d with state %s should be unloaded",
 				replicaIdx, existingState.State.String(),
 			)
-			if !existingState.State.UnloadingOrUnloaded() && existingState.State != db.ModelReplicaState_MODEL_REPLICA_STATE_DRAINING {
-				modelVersion.SetReplicaState(int(replicaIdx), db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOAD_ENVOY_REQUESTED, "")
+			if !existingState.State.UnloadingOrUnloaded() && existingState.State != db.ModelReplicaState_Draining {
+				modelVersion.SetReplicaState(int(replicaIdx), db.ModelReplicaState_UnloadEnvoyRequested, "")
 				replicaStateUpdated = true
 			}
 		}
@@ -466,9 +466,9 @@ func (m *ModelServerStore) updateLoadedModelsImpl(
 	// in modelVersion.state.AvailableReplicas (we call updateModelStatus later)
 
 	// TODO: the conditions here keep growing, refactor or consider a simpler check.
-	if replicaStateUpdated || modelVersion.State.State == db.ModelState_MODEL_STATE_SCHEDULE_FAILED || model.Deleted ||
-		modelVersion.State.State == db.ModelState_MODEL_STATE_PROGRESSING ||
-		(modelVersion.State.State == db.ModelState_MODEL_STATE_AVAILABLE && len(modelVersion.GetAssignment()) < modelVersion.DesiredReplicas()) {
+	if replicaStateUpdated || modelVersion.State.State == db.ModelState_ScheduleFailed || model.Deleted ||
+		modelVersion.State.State == db.ModelState_ModelProgressing ||
+		(modelVersion.State.State == db.ModelState_ModelAvailable && len(modelVersion.GetAssignment()) < modelVersion.DesiredReplicas()) {
 		logger.Debugf("Updating model status for model %s server %s", modelKey, serverKey)
 		modelVersion.Server = serverKey
 		if err := m.updateModelStatus(true, model.Deleted, modelVersion, model.GetLastAvailableModelVersion(), model); err != nil {
@@ -525,7 +525,7 @@ func (m *ModelServerStore) unloadVersionModelsImpl(modelKey string, version uint
 				replicaIdx,
 				existingState.State.String(),
 			)
-			modelVersion.SetReplicaState(int(replicaIdx), db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOAD_REQUESTED, "")
+			modelVersion.SetReplicaState(int(replicaIdx), db.ModelReplicaState_UnloadRequested, "")
 			updated = true
 			continue
 		}
@@ -667,14 +667,14 @@ func (m *ModelServerStore) updateModelStateImpl(
 	)
 
 	// Update models loaded onto replica for relevant state
-	if desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOADED ||
-		desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOADING ||
-		desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOADED ||
-		desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_FAILED {
+	if desiredState == db.ModelReplicaState_Loaded ||
+		desiredState == db.ModelReplicaState_Loading ||
+		desiredState == db.ModelReplicaState_Unloaded ||
+		desiredState == db.ModelReplicaState_LoadFailed {
 
 		replica, ok := server.Replicas[int32(replicaIdx)]
 		if ok {
-			if desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOADED || desiredState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOADING {
+			if desiredState == db.ModelReplicaState_Loaded || desiredState == db.ModelReplicaState_Loading {
 				logger.Infof(
 					"Adding model %s(%d) to server %s replica %d list of loaded / loading models",
 					modelKey, version, serverKey, replicaIdx,
@@ -735,11 +735,11 @@ func (m *ModelServerStore) updateReservedMemory(
 	replica, okReplica := server.Replicas[int32(replicaIdx)]
 	update := false
 	if okReplica {
-		if modelReplicaState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_REQUESTED {
+		if modelReplicaState == db.ModelReplicaState_LoadRequested {
 			replica.UpdateReservedMemory(memBytes, true)
 			update = true
-		} else if modelReplicaState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOAD_FAILED ||
-			modelReplicaState == db.ModelReplicaState_MODEL_REPLICA_STATE_LOADED {
+		} else if modelReplicaState == db.ModelReplicaState_LoadFailed ||
+			modelReplicaState == db.ModelReplicaState_Loaded {
 			replica.UpdateReservedMemory(memBytes, false)
 			update = true
 		}
@@ -797,7 +797,8 @@ func (m *ModelServerStore) addServerReplicaImpl(request *agent.AgentSubscribeReq
 		request.ReplicaConfig,
 		request.AvailableMemoryBytes,
 	)
-	server.Replicas[int32(request.ReplicaIdx)] = serverReplica
+
+	server.AddReplica(int32(request.ReplicaIdx), serverReplica)
 
 	if err := m.store.servers.Update(server); err != nil {
 		return nil, coordinator.ServerEventMsg{}, fmt.Errorf("failed to update server %s: %w", request.ServerName, err)
@@ -809,7 +810,7 @@ func (m *ModelServerStore) addServerReplicaImpl(request *agent.AgentSubscribeReq
 		if err != nil {
 			return nil, coordinator.ServerEventMsg{}, err
 		}
-		modelVersion.Replicas[int32(request.ReplicaIdx)] = &db.ReplicaStatus{State: db.ModelReplicaState_MODEL_REPLICA_STATE_LOADED}
+		modelVersion.Replicas[int32(request.ReplicaIdx)] = &db.ReplicaStatus{State: db.ModelReplicaState_Loaded}
 		modelVersion.Server = request.ServerName
 		if err := m.updateModelStatus(true, false, modelVersion, model.GetLastAvailableModelVersion(), model); err != nil {
 			return nil, coordinator.ServerEventMsg{}, fmt.Errorf("failed to update model status: %w", err)
@@ -903,7 +904,7 @@ func (m *ModelServerStore) removeModelfromServerReplica(models []*db.ModelVersio
 						"Model %s is being deleted and server replica %d is disconnected, skipping",
 						v.Name, replicaIdx,
 					)
-					modelVersion.SetReplicaState(replicaIdx, db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOADED,
+					modelVersion.SetReplicaState(replicaIdx, db.ModelReplicaState_Unloaded,
 						"model is removed when server replica was removed")
 					m.LockModel(v.Name)
 					if err := m.updateModelStatus(
@@ -985,7 +986,7 @@ func (m *ModelServerStore) findModelsToReSchedule(models []*db.ModelVersionID, r
 		if err == nil {
 			modelVersion := model.GetVersion(v.Version)
 			if modelVersion != nil {
-				modelVersion.SetReplicaState(replicaIdx, db.ModelReplicaState_MODEL_REPLICA_STATE_DRAINING, "trigger to drain")
+				modelVersion.SetReplicaState(replicaIdx, db.ModelReplicaState_Draining, "trigger to drain")
 				if err := m.store.models.Update(model); err != nil {
 					return nil, fmt.Errorf("failed update model %s: %w", model.Name, err)
 				}

@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package processor
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"sync"
@@ -510,7 +511,7 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 	logger.Debugf("Calling model update for %s", modelName)
 
 	model, err := p.modelStore.GetModel(modelName)
-	if err != nil {
+	if err != nil && !errors.Is(err, store.ErrNotFound) {
 		logger.WithError(err).Warnf("sync: Failed to sync model %s", modelName)
 		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
 			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
@@ -646,10 +647,10 @@ func (p *IncrementalProcessor) modelSync() {
 	logger.Debugf("Calling model sync")
 
 	envoyErr := p.updateEnvoy()
-	serverReplicaState := db.ModelReplicaState_MODEL_REPLICA_STATE_AVAILABLE
+	serverReplicaState := db.ModelReplicaState_Available
 	reason := ""
 	if envoyErr != nil {
-		serverReplicaState = db.ModelReplicaState_MODEL_REPLICA_STATE_LOADED_UNAVAILABLE
+		serverReplicaState = db.ModelReplicaState_LoadedUnavailable
 		reason = envoyErr.Error()
 	}
 
@@ -682,7 +683,7 @@ func (p *IncrementalProcessor) modelSync() {
 		for _, replicaIdx := range v.GetAssignment() {
 			serverReplicaExpectedState := vs[replicaIdx].State
 			// Ignore draining nodes to be changed to Available/Failed state
-			if serverReplicaExpectedState != db.ModelReplicaState_MODEL_REPLICA_STATE_DRAINING {
+			if serverReplicaExpectedState != db.ModelReplicaState_Draining {
 				err2 := p.modelStore.UpdateModelState(
 					mv.name,
 					v.GetVersion(),
@@ -706,7 +707,7 @@ func (p *IncrementalProcessor) modelSync() {
 		}
 		// Go through all replicas that we have set to UnloadEnvoyRequested and mark them as UnloadRequested
 		// to resume the unload process from servers
-		for _, replicaIdx := range v.GetReplicaForState(db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOAD_ENVOY_REQUESTED) {
+		for _, replicaIdx := range v.GetReplicaForState(db.ModelReplicaState_UnloadEnvoyRequested) {
 			serverReplicaExpectedState := vs[replicaIdx].State
 			if err := p.modelStore.UpdateModelState(
 				mv.name,
@@ -715,7 +716,7 @@ func (p *IncrementalProcessor) modelSync() {
 				replicaIdx,
 				nil,
 				serverReplicaExpectedState,
-				db.ModelReplicaState_MODEL_REPLICA_STATE_UNLOAD_ENVOY_REQUESTED,
+				db.ModelReplicaState_UnloadEnvoyRequested,
 				"",
 				nil,
 			); err != nil {

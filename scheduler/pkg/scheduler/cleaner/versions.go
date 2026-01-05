@@ -59,14 +59,11 @@ func (v *VersionCleaner) cleanupOldVersions(modelName string) error {
 	if err != nil {
 		return err
 	}
-	if model == nil {
-		return fmt.Errorf("can't find model with key %s", modelName)
-	}
 	latest := model.Latest()
 	if latest == nil {
 		return fmt.Errorf("failed to find latest model for %s", modelName)
 	}
-	if latest.State.State == db.ModelState_MODEL_STATE_AVAILABLE {
+	if latest.State.State == db.ModelState_ModelAvailable {
 		for _, mv := range model.GetVersionsBeforeLastAvailable() {
 			_, err := v.store.UnloadVersionModels(modelName, mv.GetVersion())
 			if err != nil {
@@ -74,7 +71,7 @@ func (v *VersionCleaner) cleanupOldVersions(modelName string) error {
 			}
 		}
 	}
-	if latest.State.ModelGwState == db.ModelState_MODEL_STATE_AVAILABLE {
+	if latest.State.ModelGwState == db.ModelState_ModelAvailable {
 		for _, mv := range model.GetVersionsBeforeLastModelGwAvailable() {
 			_, err := v.store.UnloadModelGwVersionModels(modelName, mv.GetVersion())
 			if err != nil {

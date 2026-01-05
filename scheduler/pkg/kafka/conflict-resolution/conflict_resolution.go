@@ -216,7 +216,7 @@ func CreateNewModelIteration(
 	modelName string,
 	servers []string,
 ) {
-	cr.CreateNewIteration(modelName, servers, db.ModelState_MODEL_STATE_UNKNOWN)
+	cr.CreateNewIteration(modelName, servers, db.ModelState_ModelStateUnknown)
 }
 
 func GetModelStatus(
@@ -228,27 +228,27 @@ func GetModelStatus(
 	streams := cr.VectorResponseStatus[modelName]
 
 	var messageStr = ""
-	readyCount := cr.GetCountWithStatus(modelName, db.ModelState_MODEL_STATE_AVAILABLE)
+	readyCount := cr.GetCountWithStatus(modelName, db.ModelState_ModelAvailable)
 	if readyCount > 0 {
 		messageStr += fmt.Sprintf("%d/%d ready ", readyCount, len(streams))
 	}
 
-	terminatedCount := cr.GetCountWithStatus(modelName, db.ModelState_MODEL_STATE_TERMINATED)
+	terminatedCount := cr.GetCountWithStatus(modelName, db.ModelState_ModelTerminated)
 	if terminatedCount > 0 {
 		messageStr += fmt.Sprintf("%d/%d terminated ", terminatedCount, len(streams))
 	}
 
-	failedCount := cr.GetCountWithStatus(modelName, db.ModelState_MODEL_STATE_FAILED)
+	failedCount := cr.GetCountWithStatus(modelName, db.ModelState_ModelFailed)
 	if failedCount > 0 {
 		messageStr += fmt.Sprintf("%d/%d failed ", failedCount, len(streams))
 	}
 
-	terminatedFailedCount := cr.GetCountWithStatus(modelName, db.ModelState_MODEL_STATE_TERMINATE_FAILED)
+	terminatedFailedCount := cr.GetCountWithStatus(modelName, db.ModelState_ModelTerminateFailed)
 	if terminatedFailedCount > 0 {
 		messageStr += fmt.Sprintf("%d/%d terminate failed ", terminatedFailedCount, len(streams))
 	}
 
-	unknownCount := cr.GetCountWithStatus(modelName, db.ModelState_MODEL_STATE_UNKNOWN)
+	unknownCount := cr.GetCountWithStatus(modelName, db.ModelState_ModelStateUnknown)
 	logger.Infof("Model %s status counts: %s", modelName, messageStr)
 
 	if message.Update.Op == pb.ModelUpdateMessage_Create {
@@ -258,25 +258,25 @@ func GetModelStatus(
 		// TODO: Implement something similar to models to display the numbers
 		// of available replicas
 		if failedCount == len(streams) {
-			return db.ModelState_MODEL_STATE_FAILED, messageStr
+			return db.ModelState_ModelFailed, messageStr
 		}
 		if readyCount > 0 && unknownCount == 0 {
-			return db.ModelState_MODEL_STATE_AVAILABLE, messageStr
+			return db.ModelState_ModelAvailable, messageStr
 		}
-		return db.ModelState_MODEL_STATE_PROGRESSING, messageStr
+		return db.ModelState_ModelProgressing, messageStr
 	}
 
 	if message.Update.Op == pb.ModelUpdateMessage_Delete {
 		if failedCount > 0 {
-			return db.ModelState_MODEL_STATE_TERMINATE_FAILED, messageStr
+			return db.ModelState_ModelTerminateFailed, messageStr
 		}
 		if terminatedCount == len(streams) {
-			return db.ModelState_MODEL_STATE_TERMINATED, messageStr
+			return db.ModelState_ModelTerminated, messageStr
 		}
-		return db.ModelState_MODEL_STATE_TERMINATING, messageStr
+		return db.ModelState_ModelTerminating, messageStr
 	}
 
-	return db.ModelState_MODEL_STATE_UNKNOWN, "Unknown operation or status"
+	return db.ModelState_ModelStateUnknown, "Unknown operation or status"
 }
 
 func IsModelMessageOutdated(

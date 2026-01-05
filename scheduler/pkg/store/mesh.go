@@ -85,8 +85,8 @@ func NewDefaultModelVersion(model *pb.Model, version uint32) *db.ModelVersion {
 		ModelDefn: model,
 		Replicas:  make(map[int32]*db.ReplicaStatus, 0),
 		State: &db.ModelStatus{
-			State:        db.ModelState_MODEL_STATE_UNKNOWN,
-			ModelGwState: db.ModelState_MODEL_STATE_CREATE,
+			State:        db.ModelState_ModelStateUnknown,
+			ModelGwState: db.ModelState_ModelCreate,
 		},
 	}
 }

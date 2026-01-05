@@ -1,8 +1,28 @@
+/*
+Copyright (c) 2024 Seldon Technologies Ltd.
+
+Use of this software is governed BY
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
+*/
+
 package db
 
 import (
 	"slices"
 )
+
+func (s *Server) initReplicas() {
+	if s.Replicas == nil {
+		s.Replicas = map[int32]*ServerReplica{}
+	}
+}
+
+func (s *Server) AddReplica(replicaID int32, replica *ServerReplica) {
+	s.initReplicas()
+	s.Replicas[replicaID] = replica
+}
 
 func (s *ServerReplica) GetLoadedOrLoadingModelVersions() []*ModelVersionID {
 	var models []*ModelVersionID
@@ -27,20 +47,27 @@ func (s *ServerReplica) GetNumLoadedModels() int {
 	return len(s.UniqueLoadedModels)
 }
 
+func (s *ServerReplica) initUniqueLoadedModels() {
+	if s.UniqueLoadedModels == nil {
+		s.UniqueLoadedModels = map[string]bool{}
+	}
+}
+
 func (s *ServerReplica) AddModelVersion(modelName string, modelVersion uint32, replicaState ModelReplicaState) {
 	mvID := &ModelVersionID{
 		Name:    modelName,
 		Version: modelVersion,
 	}
 
-	if replicaState == ModelReplicaState_MODEL_REPLICA_STATE_LOADING {
+	if replicaState == ModelReplicaState_Loading {
 		s.addToList(&s.LoadingModels, mvID)
 		return
 	}
 
-	if replicaState == ModelReplicaState_MODEL_REPLICA_STATE_LOADED {
+	if replicaState == ModelReplicaState_Loaded {
 		s.removeFromList(&s.LoadingModels, mvID)
 		s.addToList(&s.LoadedModels, mvID)
+		s.initUniqueLoadedModels()
 		s.UniqueLoadedModels[modelName] = true
 	}
 }
@@ -55,6 +82,9 @@ func (s *ServerReplica) DeleteModelVersion(modelName string, modelVersion uint32
 	s.removeFromList(&s.LoadedModels, mvID)
 
 	if !s.modelExistsInList(s.LoadedModels, modelName) {
+		if s.UniqueLoadedModels == nil {
+			return
+		}
 		delete(s.UniqueLoadedModels, modelName)
 	}
 }
