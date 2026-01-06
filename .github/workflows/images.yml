@@ -38,13 +38,16 @@ jobs:
           USER_INPUT="${{ github.event.inputs.docker-tag }}"
           echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
 
+      - name: Force docker to use the docker-container driver
+        run: |
+          docker buildx create --name container --driver docker-container --use
 
       - name: Build and push
         working-directory: ./operator/
         env:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
-          make docker-build docker-push
+          make docker-build-and-push-prod
 
   executor:
     runs-on: ubuntu-latest
@@ -65,12 +68,16 @@ jobs:
           USER_INPUT="${{ github.event.inputs.docker-tag }}"
           echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
 
+      - name: Force docker to use the docker-container driver
+        run: |
+          docker buildx create --name container --driver docker-container --use
+
       - name: Build and push
         working-directory: ./executor/
         env:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
-          make docker-build docker-push
+          make docker-build-and-push-prod
 
   rclone-storage-initializer:
     runs-on: ubuntu-latest
@@ -90,12 +97,16 @@ jobs:
           USER_INPUT="${{ github.event.inputs.docker-tag }}"
           echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
 
+      - name: Force docker to use the docker-container driver
+        run: |
+          docker buildx create --name container --driver docker-container --use
+
       - name: Build and push (Rclone Storage Initializer)
         working-directory: ./components/rclone-storage-initializer
         env:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
-          make docker-build docker-push
+          make docker-build-and-push-prod
 
   s2i-wrapper:
     runs-on: ubuntu-latest
@@ -118,27 +129,34 @@ jobs:
           USER_INPUT="${{ github.event.inputs.docker-tag }}"
           echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
 
+      - name: Force docker to use the docker-container driver
+        run: |
+          docker buildx create --name container --driver docker-container --use
+
       - name: Build and push (Conda Base Image)
         working-directory: ./wrappers/s2i/python
         env:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
-          make docker-build-conda-base docker-push-conda-base
+          make docker-build-and-push-prod-conda-base
 
       - name: Build and push (Base Wrapper)
         working-directory: ./wrappers/s2i/python
         env:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
-          make docker-build docker-push PYTHON_VERSION=3.12.12
-          make docker-tag-base-python docker-push-base-python PYTHON_VERSION=3.12.12
-          docker save -o /tmp/base-wrapper.tar seldonio/seldon-core-s2i-python312:${VERSION}
+          make docker-build-and-push-prod PYTHON_VERSION=3.12.12
+          make docker-tag-and-push-prod-default
+          
+          docker buildx imagetools inspect \
+            seldonio/seldon-core-s2i-python312:${VERSION} \
+            --format '{{json .}}' > /tmp/base-wrapper.json
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: base-wrapper
-          path: /tmp/base-wrapper.tar
+          path: /tmp/base-wrapper.json
 
   prepackaged-components:
     runs-on: ubuntu-latest
@@ -191,16 +209,20 @@ jobs:
           name: base-wrapper
           path: /tmp
 
-      - name: Load image
+      - name: Extract image digest and pull
         run: |
-          docker load --input /tmp/base-wrapper.tar
+          IMAGE=$(jq -r '.Name' /tmp/base-wrapper.json)
+          DIGEST=$(jq -r '.Digest' /tmp/base-wrapper.json)
+          IMAGE_REF="${IMAGE}@${DIGEST}"
+          
+          docker pull "${IMAGE_REF}"
 
       - name: Remove tarball
-        run: rm -f /tmp/base-wrapper.tar
+        run: rm -f /tmp/base-wrapper.json
 
       - name: Build and push (Prepackaged Server Image)
         working-directory: ./${{ matrix.server }}/
         env:
           VERSION: ${{ steps.docker-tag.outputs.value }}
         run: |
-          make docker-build docker-push
+          make docker-build-and-push-prod

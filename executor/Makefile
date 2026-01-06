@@ -97,6 +97,9 @@ docker-build: copy_operator copy_openapi_resources
 docker-push:
 	docker push ${SELDON_EXECUTOR_IMG}
 
+docker-build-and-push-prod: copy_operator copy_openapi_resources
+	docker build -f Dockerfile.executor -t ${SELDON_EXECUTOR_IMG} . --provenance=true --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push
+
 
 # Red Hat Related
 
