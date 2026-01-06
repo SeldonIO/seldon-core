@@ -211,7 +211,7 @@ jobs:
 
       - name: Extract image digest and pull
         run: |
-          DIGEST=$(jq -r '.Digest' /tmp/base-wrapper.json)
+          DIGEST=$(jq -r '.manifest.digest' /tmp/base-wrapper.json)
           IMAGE_REF="seldonio/seldon-core-s2i-python312@${DIGEST}"
   
           docker pull "${IMAGE_REF}"
