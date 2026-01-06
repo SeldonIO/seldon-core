@@ -219,6 +219,10 @@ jobs:
       - name: Remove tarball
         run: rm -f /tmp/base-wrapper.json
 
+      - name: Force docker to use the docker-container driver
+        run: |
+          docker buildx create --name container --driver docker-container --use
+
       - name: Build and push (Prepackaged Server Image)
         working-directory: ./${{ matrix.server }}/
         env:
