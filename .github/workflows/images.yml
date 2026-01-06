@@ -2,7 +2,7 @@ name: Build & Push Docker Images
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, ci-add-sbom-to-images-part-1 ]
 
   workflow_dispatch:
     inputs:
@@ -164,15 +164,15 @@ jobs:
     strategy:
       matrix:
         server:
-        - servers/sklearnserver
+        # - servers/sklearnserver
         - servers/xgboostserver
-        - servers/mlflowserver
-        - servers/tfserving_proxy
+        # - servers/mlflowserver
+        # - servers/tfserving_proxy
         - components/alibi-explain-server
         - components/alibi-detect-server
-        - components/routers/epsilon-greedy
-        - examples/models/mean_classifier
-        - testing/docker/echo-model
+        # - components/routers/epsilon-greedy
+        # - examples/models/mean_classifier
+        # - testing/docker/echo-model
     steps:
       - name: Checkout Git Commit
         uses: actions/checkout@v4
