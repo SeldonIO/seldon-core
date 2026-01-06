@@ -256,12 +256,12 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *db.Model
 		return fmt.Errorf("no live replica for model %s for model route %s", model.Name, routeName)
 	}
 
+	p.modelStore.LockServer(latestModel.Server)
+	defer p.modelStore.UnlockServer(latestModel.Server)
 	server, _, err := p.modelStore.GetServer(latestModel.Server, false, false)
 	if err != nil {
 		return err
 	}
-	p.modelStore.LockServer(server.Name)
-	defer p.modelStore.UnlockServer(server.Name)
 
 	lastAvailableModelVersion := model.GetLastAvailableModel()
 	if lastAvailableModelVersion != nil && latestModel.GetVersion() != lastAvailableModelVersion.GetVersion() {
@@ -673,13 +673,14 @@ func (p *IncrementalProcessor) modelSync() {
 			continue
 		}
 
+		p.modelStore.LockServer(v.Server)
 		s, _, err := p.modelStore.GetServer(v.Server, false, false)
 		if err != nil {
 			logger.Debugf("Failed to get server for model %s server %s", mv.name, v.Server)
+			p.modelStore.UnlockServer(v.Server)
 			p.modelStore.UnlockModel(mv.name)
 			continue
 		}
-		p.modelStore.LockServer(s.Name)
 
 		vs := v.ReplicaState()
 		// Go through all replicas that can receive traffic

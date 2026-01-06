@@ -469,14 +469,15 @@ func (s *SchedulerServer) HealthCheck(_ context.Context, _ *health.HealthCheckRe
 
 func (s *SchedulerServer) rescheduleModels(serverKey string) {
 	logger := s.logger.WithField("func", "rescheduleModels")
+
+	s.modelStore.LockServer(serverKey)
+	defer s.modelStore.UnlockServer(serverKey)
+
 	server, _, err := s.modelStore.GetServer(serverKey, false, true)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to get server %s", serverKey)
 		return
 	}
-	s.modelStore.LockServer(server.Name)
-	defer s.modelStore.UnlockServer(server.Name)
-
 	models := make(map[string]bool)
 	for _, replica := range server.Replicas {
 		for _, model := range replica.GetLoadedOrLoadingModelVersions() {
