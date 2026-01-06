@@ -176,11 +176,14 @@ jobs:
       - name: Checkout Git Commit
         uses: actions/checkout@v4
 
-      - name: Free up disk space (android, haskell, dotnet)
+      - name: Free up disk space (android, haskell, dotnet, toolchains, caches)
         run: |
           sudo rm -rf /usr/local/lib/android || true
           sudo rm -rf /opt/ghc || true
           sudo rm -rf /usr/share/dotnet || true
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY" || true
+          sudo rm -rf /opt/hostedtoolcache || true
+          sudo rm -rf /home/runner/.cache/pip || true
           df -h
       
       - name: Login to DockerHub
@@ -217,6 +220,9 @@ jobs:
 
       - name: Remove tarball
         run: rm -f /tmp/base-wrapper.json
+
+      - name: Remove base-wrapper artifact directory
+        run: rm -rf /tmp/base-wrapper || true
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
