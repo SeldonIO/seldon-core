@@ -25,6 +25,9 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+          cleanup: true
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
@@ -37,10 +40,6 @@ jobs:
         run: |
           USER_INPUT="${{ github.event.inputs.docker-tag }}"
           echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
-
-      - name: Force docker to use the docker-container driver
-        run: |
-          docker buildx create --name container --driver docker-container --use
 
       - name: Build and push
         working-directory: ./operator/
@@ -55,6 +54,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+          cleanup: true
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
@@ -67,10 +69,6 @@ jobs:
         run: |
           USER_INPUT="${{ github.event.inputs.docker-tag }}"
           echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
-
-      - name: Force docker to use the docker-container driver
-        run: |
-          docker buildx create --name container --driver docker-container --use
 
       - name: Build and push
         working-directory: ./executor/
@@ -97,9 +95,11 @@ jobs:
           USER_INPUT="${{ github.event.inputs.docker-tag }}"
           echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
 
-      - name: Force docker to use the docker-container driver
-        run: |
-          docker buildx create --name container --driver docker-container --use
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+          cleanup: true
 
       - name: Build and push (Rclone Storage Initializer)
         working-directory: ./components/rclone-storage-initializer
@@ -116,6 +116,9 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+          cleanup: true
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
@@ -128,10 +131,6 @@ jobs:
         run: |
           USER_INPUT="${{ github.event.inputs.docker-tag }}"
           echo "value=${USER_INPUT:-latest}" >> $GITHUB_OUTPUT
-
-      - name: Force docker to use the docker-container driver
-        run: |
-          docker buildx create --name container --driver docker-container --use
 
       - name: Build and push (Conda Base Image)
         working-directory: ./wrappers/s2i/python
@@ -219,9 +218,11 @@ jobs:
       - name: Remove tarball
         run: rm -f /tmp/base-wrapper.json
 
-      - name: Force docker to use the docker-container driver
-        run: |
-          docker buildx create --name container --driver docker-container --use
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+          cleanup: true
 
       - name: Build and push (Prepackaged Server Image)
         working-directory: ./${{ matrix.server }}/
