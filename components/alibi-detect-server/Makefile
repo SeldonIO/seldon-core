@@ -95,6 +95,9 @@ curl-metrics-server-get:
 docker-build: get_local_repo
 	docker build --platform linux/amd64 -f Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg VERSION=${VERSION} -t ${IMAGE}:${VERSION} .
 
+docker-build-and-push-prod:
+	docker buildx build --provenance=true --attest type=sbom,generator=docker/scout-sbom-indexer:latest --platform linux/amd64 -f Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg VERSION=${VERSION} -t ${IMAGE}:${VERSION} . --push
+
 docker-push:
 	docker push ${IMAGE}:${VERSION}
 
