@@ -211,10 +211,9 @@ jobs:
 
       - name: Extract image digest and pull
         run: |
-          IMAGE=$(jq -r '.Name' /tmp/base-wrapper.json)
           DIGEST=$(jq -r '.Digest' /tmp/base-wrapper.json)
-          IMAGE_REF="${IMAGE}@${DIGEST}"
-          
+          IMAGE_REF="seldonio/seldon-core-s2i-python312@${DIGEST}"
+  
           docker pull "${IMAGE_REF}"
 
       - name: Remove tarball
