@@ -163,10 +163,10 @@ jobs:
     strategy:
       matrix:
         server:
-        # - servers/sklearnserver
+        - servers/sklearnserver
         - servers/xgboostserver
-        # - servers/mlflowserver
-        # - servers/tfserving_proxy
+        - servers/mlflowserver
+        - servers/tfserving_proxy
         - components/alibi-explain-server
         - components/alibi-detect-server
         # - components/routers/epsilon-greedy
