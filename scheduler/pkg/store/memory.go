@@ -1023,9 +1023,9 @@ func (m *ModelServerStore) ServerNotify(request *pb.ServerNotify) error {
 			return fmt.Errorf("failed to find server %s: %w", request.Name, err)
 		}
 		server = NewServer(request.Name, request.Shared)
-		server.ExpectedReplicas = int32(request.ExpectedReplicas)
-		server.MinReplicas = int32(request.MinReplicas)
-		server.MaxReplicas = int32(request.MaxReplicas)
+		server.ExpectedReplicas = request.ExpectedReplicas
+		server.MinReplicas = request.MinReplicas
+		server.MaxReplicas = request.MaxReplicas
 		server.KubernetesMeta = request.KubernetesMeta
 		if err := m.store.servers.Insert(context.TODO(), server); err != nil {
 			return err
@@ -1033,9 +1033,9 @@ func (m *ModelServerStore) ServerNotify(request *pb.ServerNotify) error {
 		return nil
 	}
 
-	server.ExpectedReplicas = int32(request.ExpectedReplicas)
-	server.MinReplicas = int32(request.MinReplicas)
-	server.MaxReplicas = int32(request.MaxReplicas)
+	server.ExpectedReplicas = request.ExpectedReplicas
+	server.MinReplicas = request.MinReplicas
+	server.MaxReplicas = request.MaxReplicas
 	server.KubernetesMeta = request.KubernetesMeta
 
 	if err := m.store.servers.Update(context.TODO(), server); err != nil {

@@ -707,8 +707,12 @@ func (s *SchedulerServer) handleModelEventForServerStatus(event coordinator.Mode
 }
 
 func (s *SchedulerServer) handleServerEvents(event coordinator.ServerEventMsg) {
-	logger := s.logger.WithField("func", "handleServerEvents")
-	logger.Debugf("Got server state %s change for %s", event.ServerName, event.String())
+	logger := s.logger.WithFields(logrus.Fields{
+		"server": event.ServerName,
+		"event":  event,
+		"func":   "handleServerEvents",
+	})
+	logger.Info("Got server event")
 
 	server, stats, err := s.modelStore.GetServer(event.ServerName, true, true)
 	if err != nil {
@@ -716,18 +720,32 @@ func (s *SchedulerServer) handleServerEvents(event coordinator.ServerEventMsg) {
 		return
 	}
 
+	logger.Debugf("Retrieved from store: server %s stats %+v server %+v", event.ServerName, stats, server)
+
 	if s.config.AutoScalingServerEnabled {
-		if event.UpdateContext == coordinator.SERVER_SCALE_DOWN {
+		switch event.UpdateContext {
+		case coordinator.SERVER_SCALE_DOWN:
 			if ok, replicas := shouldScaleDown(server, stats, float32(s.config.PackThreshold)); ok {
 				logger.Infof("Server %s is scaling down to %d", event.ServerName, replicas)
 				s.sendServerScale(server, replicas)
+				return
 			}
-		} else if event.UpdateContext == coordinator.SERVER_SCALE_UP {
+			logger.Info("Scale-down requested but not allowed")
+		case coordinator.SERVER_SCALE_UP:
 			if ok, replicas := shouldScaleUp(server, stats); ok {
 				logger.Infof("Server %s is scaling up to %d", event.ServerName, replicas)
 				s.sendServerScale(server, replicas)
+				return
 			}
+			logger.Info("Scale-up requested but not allowed")
+		default:
+			logger.Warnf("Server event context %d not recognised", event.UpdateContext)
 		}
+		return
+	}
+
+	if event.UpdateContext == coordinator.SERVER_SCALE_UP || event.UpdateContext == coordinator.SERVER_SCALE_DOWN {
+		logger.Info("Ignoring scale up/down request for server as auto-scaling disabled")
 	}
 }
 

@@ -255,7 +255,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) (*coordinator.Serve
 			if err := s.store.FailedScheduling(latestModel.ModelName(),
 				latestModel.GetVersion(), msg,
 				!latestModel.HasLiveReplicas() && !latestModel.IsLoadingOrLoadedOnServer()); err != nil {
-				return nil, fmt.Errorf("%s: got error making model as failed in memory store:  %w", msg, err)
+				return nil, fmt.Errorf("%s: error marking model as failed in memory store: %w", msg, err)
 			}
 			return serverEvent, errors.New(msg)
 		}
