@@ -207,15 +207,39 @@ func (m *ModelServerStore) deepCopy(model *Model, key string) *ModelSnapshot {
 	return snapshot
 }
 
+func (m *ModelServerStore) LockServer(serverId string) {
+	var lock sync.RWMutex
+	existingLock, _ := m.opLocks.LoadOrStore(serverLockID(serverId), &lock)
+	existingLock.(*sync.RWMutex).Lock()
+}
+
+func modelLockID(modelId string) string {
+	return fmt.Sprintf("model_%s", modelId)
+}
+
+func serverLockID(serverID string) string {
+	return fmt.Sprintf("server_%s", serverID)
+}
+
 func (m *ModelServerStore) LockModel(modelId string) {
 	var lock sync.RWMutex
-	existingLock, _ := m.opLocks.LoadOrStore(modelId, &lock)
+	existingLock, _ := m.opLocks.LoadOrStore(modelLockID(modelId), &lock)
 	existingLock.(*sync.RWMutex).Lock()
+}
+
+func (m *ModelServerStore) UnlockServer(serverId string) {
+	logger := m.logger.WithField("func", "UnlockServer")
+	lock, loaded := m.opLocks.Load(serverLockID(serverId))
+	if loaded {
+		lock.(*sync.RWMutex).Unlock()
+	} else {
+		logger.Warnf("Trying to unlock server %s that was not locked.", serverId)
+	}
 }
 
 func (m *ModelServerStore) UnlockModel(modelId string) {
 	logger := m.logger.WithField("func", "UnlockModel")
-	lock, loaded := m.opLocks.Load(modelId)
+	lock, loaded := m.opLocks.Load(modelLockID(modelId))
 	if loaded {
 		lock.(*sync.RWMutex).Unlock()
 	} else {
@@ -1137,6 +1161,9 @@ func (m *ModelServerStore) setModelGwModelStateImpl(name string, versionNumber u
 }
 
 func (m *ModelServerStore) EmitEvents() error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	servers, err := m.store.servers.List(context.TODO())
 	if err != nil {
 		return err

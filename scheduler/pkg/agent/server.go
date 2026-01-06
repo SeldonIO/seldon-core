@@ -283,7 +283,7 @@ func (s *Server) Sync(modelName string) {
 	// Handle any load requests for latest version - we don't want to load models from older versions
 	if latestModel != nil {
 		for _, replicaIdx := range latestModel.GetReplicaForState(db.ModelReplicaState_LoadRequested) {
-			logger.Infof("Sending load model request for %s", modelName)
+			logger.Infof("Sending agent load model request for %s", modelName)
 
 			as, ok := s.agents[ServerKey{serverName: latestModel.Server, replicaIdx: uint32(replicaIdx)}]
 
@@ -321,7 +321,7 @@ func (s *Server) Sync(modelName string) {
 	// Loop through all versions and unload any requested - any version of a model might have an unload request
 	for _, modelVersion := range model.Versions {
 		for _, replicaIdx := range modelVersion.GetReplicaForState(db.ModelReplicaState_UnloadRequested) {
-			s.logger.Infof("Sending unload model request for %s:%d", modelName, modelVersion.GetVersion())
+			s.logger.Infof("Sending agent unload model request for %s:%d", modelName, modelVersion.GetVersion())
 			as, ok := s.agents[ServerKey{serverName: modelVersion.Server, replicaIdx: uint32(replicaIdx)}]
 			if !ok {
 				logger.Errorf("Failed to find server replica for %s:%d", modelVersion.Server, replicaIdx)
@@ -360,6 +360,9 @@ func (s *Server) AgentDrain(ctx context.Context, message *pb.AgentDrainRequest) 
 }
 
 func (s *Server) AgentEvent(ctx context.Context, message *pb.ModelEventMessage) (*pb.ModelEventResponse, error) {
+	s.store.LockModel(message.ModelName)
+	defer s.store.UnlockModel(message.ModelName)
+
 	logger := s.logger.WithField("func", "AgentEvent")
 	var desiredState db.ModelReplicaState
 	var expectedState db.ModelReplicaState
@@ -380,9 +383,8 @@ func (s *Server) AgentEvent(ctx context.Context, message *pb.ModelEventMessage) 
 	default:
 		desiredState = db.ModelReplicaState_ModelReplicaStateUnknown
 	}
+
 	logger.Infof("Updating state for model %s to %s", message.ModelName, desiredState.String())
-	s.store.LockModel(message.ModelName)
-	defer s.store.UnlockModel(message.ModelName)
 	err := s.store.UpdateModelState(message.ModelName, message.GetModelVersion(), message.ServerName, int(message.ReplicaIdx), &message.AvailableMemoryBytes, expectedState, desiredState, message.GetMessage(), message.GetRuntimeInfo())
 	if err != nil {
 		logger.WithError(err).Infof("Failed Updating state for model %s", message.ModelName)

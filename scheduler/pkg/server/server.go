@@ -474,6 +474,9 @@ func (s *SchedulerServer) rescheduleModels(serverKey string) {
 		logger.WithError(err).Errorf("Failed to get server %s", serverKey)
 		return
 	}
+	s.modelStore.LockServer(server.Name)
+	defer s.modelStore.UnlockServer(server.Name)
+
 	models := make(map[string]bool)
 	for _, replica := range server.Replicas {
 		for _, model := range replica.GetLoadedOrLoadingModelVersions() {

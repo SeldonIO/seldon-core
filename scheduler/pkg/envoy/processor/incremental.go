@@ -260,6 +260,8 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *db.Model
 	if err != nil {
 		return err
 	}
+	p.modelStore.LockServer(server.Name)
+	defer p.modelStore.UnlockServer(server.Name)
 
 	lastAvailableModelVersion := model.GetLastAvailableModel()
 	if lastAvailableModelVersion != nil && latestModel.GetVersion() != lastAvailableModelVersion.GetVersion() {
@@ -677,6 +679,7 @@ func (p *IncrementalProcessor) modelSync() {
 			p.modelStore.UnlockModel(mv.name)
 			continue
 		}
+		p.modelStore.LockServer(s.Name)
 
 		vs := v.ReplicaState()
 		// Go through all replicas that can receive traffic
@@ -716,7 +719,7 @@ func (p *IncrementalProcessor) modelSync() {
 				replicaIdx,
 				nil,
 				serverReplicaExpectedState,
-				db.ModelReplicaState_UnloadEnvoyRequested,
+				db.ModelReplicaState_UnloadRequested,
 				"",
 				nil,
 			); err != nil {
@@ -724,6 +727,8 @@ func (p *IncrementalProcessor) modelSync() {
 					mv.name, store.UnloadRequested.String(), serverReplicaExpectedState.String())
 			}
 		}
+
+		p.modelStore.UnlockServer(s.Name)
 		p.modelStore.UnlockModel(mv.name)
 		p.callVersionCleanupIfNeeded(m.Name)
 	}

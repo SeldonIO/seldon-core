@@ -143,6 +143,8 @@ type ModelServerAPI interface {
 	GetModels() ([]*db.Model, error)
 	LockModel(modelId string)
 	UnlockModel(modelId string)
+	LockServer(serverID string)
+	UnlockServer(serverID string)
 	RemoveModel(req *pb.UnloadModelRequest) error
 	GetServers(shallow bool, modelDetails bool) ([]*db.Server, error)
 	GetServer(serverKey string, shallow bool, modelDetails bool) (*db.Server, *ServerStats, error)
