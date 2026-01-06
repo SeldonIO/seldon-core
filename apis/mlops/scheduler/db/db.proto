@@ -108,9 +108,9 @@ message Server {
   string name = 1;
   map<int32, ServerReplica> replicas = 2;
   bool shared = 3;
-  uint32 expected_replicas = 4;
-  uint32 min_replicas = 5;
-  uint32 max_replicas = 6;
+  int64 expected_replicas = 4;
+  int64 min_replicas = 5;
+  int64 max_replicas = 6;
   seldon.mlops.scheduler.KubernetesMeta kubernetes_meta = 7;
 }
 
