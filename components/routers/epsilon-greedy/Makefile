@@ -8,5 +8,7 @@ docker-build:
 docker-push:
 	docker push $(IMAGE_NAME):$(VERSION)
 
+docker-build-and-push-prod: docker-build docker-push
+
 kind_load: docker-build
 	kind load -v 3 docker-image ${IMAGE_NAME}:${VERSION} --name ${KIND_NAME}

@@ -169,9 +169,9 @@ jobs:
         - servers/tfserving_proxy
         - components/alibi-explain-server
         - components/alibi-detect-server
-        # - components/routers/epsilon-greedy
-        # - examples/models/mean_classifier
-        # - testing/docker/echo-model
+        - components/routers/epsilon-greedy
+        - examples/models/mean_classifier
+        - testing/docker/echo-model
     steps:
       - name: Checkout Git Commit
         uses: actions/checkout@v4
