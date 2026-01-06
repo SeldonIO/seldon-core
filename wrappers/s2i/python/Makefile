@@ -35,7 +35,7 @@ docker-push-conda-base:
 	docker push ${CONDA_BASE_IMAGE}:${VERSION}
 
 docker-build-and-push-prod-conda-base:
-	docker build --platform=linux/amd64 -f Dockerfile.conda --build-arg MINIFORGE_VERSION=${MINIFORGE_VERSION} -t ${CONDA_BASE_IMAGE}:${VERSION} . --provenance=true --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push
+	docker buildx build --platform=linux/amd64 -f Dockerfile.conda --build-arg MINIFORGE_VERSION=${MINIFORGE_VERSION} -t ${CONDA_BASE_IMAGE}:${VERSION} . --provenance=true --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push
 
 # Standard Python Wrapper
 docker-build: get_local_repo
@@ -45,7 +45,7 @@ docker-push:
 	docker push ${IMAGE_NAME}:${VERSION}
 
 docker-build-and-push-prod:
-	docker build --platform=linux/amd64 -f Dockerfile --build-arg VERSION=${VERSION} --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${CONDA_BASE_IMAGE} -t ${IMAGE_NAME}:${VERSION} . --provenance=true --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push
+	docker buildx build --platform=linux/amd64 -f Dockerfile --build-arg VERSION=${VERSION} --build-arg PYTHON_VERSION=${PYTHON_VERSION} --build-arg CONDA_VERSION=${CONDA_VERSION} --build-arg BASE_IMAGE=${CONDA_BASE_IMAGE} -t ${IMAGE_NAME}:${VERSION} . --provenance=true --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push
 
 # Base Python Wrapper (there may wrappers for many Python version but only one base - main)
 docker-tag-base-python:
