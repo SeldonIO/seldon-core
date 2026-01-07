@@ -5,7 +5,7 @@ Feature: Pipeline using trigger joins
   I need a pipeline that evaluates trigger conditions and runs model stages when their associated triggers are satisfied
 
   Scenario: Deploy a trigger pipeline, run inference, and verify the output
-    Given I deploy model spec with timeout "30s":
+    Given I create model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -17,7 +17,7 @@ Feature: Pipeline using trigger joins
       - triton
       - python
     """
-    And I deploy model spec with timeout "30s":
+    And I create model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model

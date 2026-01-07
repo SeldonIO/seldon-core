@@ -5,7 +5,7 @@ Feature: Pipeline model join
   I need a pipeline that merges the outputs of multiple models into a single input for a subsequent model
 
   Scenario: Deploy a a pipeline that merges the outputs of multiple models into a single input for a subsequent model, run inference, and verify the output
-    Given I deploy model spec with timeout "30s":
+    Given I create model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -17,7 +17,7 @@ Feature: Pipeline model join
       - tensorflow
       memory: 100Ki
     """
-    And I deploy model spec with timeout "30s":
+    And I create model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -29,7 +29,7 @@ Feature: Pipeline model join
       - tensorflow
       memory: 100Ki
     """
-    And I deploy model spec with timeout "30s":
+    And I create model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model

@@ -62,6 +62,11 @@ func LoadServerSteps(scenario *godog.ScenarioContext, w *World) {
 			})
 		})
 	})
+	scenario.Step(`^ensure only "([^"]+)" pod\(s\) are deployed for server name "([^"]+)" and they are Ready$`, func(replicaCount int32, serverName string) error {
+		return withTimeoutCtx("10s", func(ctx context.Context) error {
+			return w.server.checkPodsAreReadyForServer(ctx, replicaCount, serverName)
+		})
+	})
 	scenario.Step(`^ensure only "([^"]+)" pod\(s\) are deployed for server and they are Ready$`, func(replicaCount int32) error {
 		return withTimeoutCtx("10s", func(ctx context.Context) error {
 			return w.server.requiresCurrentServer(func() error {
@@ -185,10 +190,14 @@ func (s *server) deleteServer(ctx context.Context, server string) error {
 }
 
 func (s *server) checkPodsAreReady(ctx context.Context, replicaCount int32) error {
+	return s.checkPodsAreReadyForServer(ctx, replicaCount, s.currentServer.Name)
+}
+
+func (s *server) checkPodsAreReadyForServer(ctx context.Context, replicaCount int32, serverName string) error {
 	statefulSet := &v1.StatefulSet{}
 	if err := s.k8sClient.KubeClient.Get(ctx, types.NamespacedName{
 		Namespace: s.namespace,
-		Name:      s.currentServer.Name,
+		Name:      serverName,
 	}, statefulSet); err != nil {
 		return fmt.Errorf("failed getting statefulSet: %w", err)
 	}

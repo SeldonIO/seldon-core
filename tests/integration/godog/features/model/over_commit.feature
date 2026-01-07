@@ -6,7 +6,7 @@ Feature: Explicit Model deployment
   automatically load the evicted model on-the-fly when req received
 
   Scenario: Deploy 3 identical models and send inference
-    Given I deploy model spec with timeout "10s":
+    Given I create model spec with timeout "10s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -21,7 +21,7 @@ Feature: Explicit Model deployment
       storageUri: gs://seldon-models/scv2/samples/mlserver_1.3.5/iris-sklearn
     """
     When the model "overcommit-1" should eventually become Ready with timeout "20s"
-    Given I deploy model spec with timeout "10s":
+    Given I create model spec with timeout "10s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -36,7 +36,7 @@ Feature: Explicit Model deployment
       storageUri: gs://seldon-models/scv2/samples/mlserver_1.3.5/iris-sklearn
     """
     When the model "overcommit-2" should eventually become Ready with timeout "20s"
-    Given I deploy model spec with timeout "10s":
+    Given I create model spec with timeout "10s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model

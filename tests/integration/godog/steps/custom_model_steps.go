@@ -22,9 +22,14 @@ import (
 )
 
 func LoadCustomModelSteps(scenario *godog.ScenarioContext, w *World) {
-	scenario.Step(`^I deploy model spec with timeout "([^"]+)":$`, func(timeout string, spec *godog.DocString) error {
+	scenario.Step(`^I create model spec with timeout "([^"]+)":$`, func(timeout string, spec *godog.DocString) error {
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
-			return w.currentModel.deployModelSpec(ctx, spec)
+			return w.currentModel.createModelSpec(ctx, spec)
+		})
+	})
+	scenario.Step(`^I update model spec with timeout "([^"]+)":$`, func(timeout string, spec *godog.DocString) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			return w.currentModel.updateModelSpec(ctx, spec)
 		})
 	})
 	scenario.Step(`^the model "([^"]+)" should eventually become Ready with timeout "([^"]+)"$`, func(model, timeout string) error {

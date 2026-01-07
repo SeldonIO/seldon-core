@@ -183,16 +183,42 @@ func LoadTemplateModelSteps(scenario *godog.ScenarioContext, w *World) {
 	scenario.Step(`^the model status message eventually should be "([^"]+)"$`, w.currentModel.AssertModelStatus)
 }
 
-func (m *Model) deployModelSpec(ctx context.Context, spec *godog.DocString) error {
+func (m *Model) prepareModelSpec(spec *godog.DocString) (*mlopsv1alpha1.Model, error) {
 	modelSpec := &mlopsv1alpha1.Model{}
-	if err := yaml.Unmarshal([]byte(spec.Content), &modelSpec); err != nil {
-		return fmt.Errorf("failed unmarshalling model spec: %w", err)
+	if err := yaml.Unmarshal([]byte(spec.Content), modelSpec); err != nil {
+		return nil, fmt.Errorf("failed unmarshalling model spec: %w", err)
 	}
 	modelSpec.Namespace = m.namespace
 	m.model = modelSpec
 	m.applyScenarioLabel()
-	if _, err := m.k8sClient.MlopsV1alpha1().Models(m.namespace).Create(ctx, m.model, metav1.CreateOptions{}); err != nil {
+	return modelSpec, nil
+}
+
+func (m *Model) createModelSpec(ctx context.Context, spec *godog.DocString) error {
+	modelSpec, err := m.prepareModelSpec(spec)
+	if err != nil {
+		return err
+	}
+	if _, err := m.k8sClient.MlopsV1alpha1().Models(m.namespace).Create(ctx, modelSpec, metav1.CreateOptions{}); err != nil {
 		return fmt.Errorf("failed creating model: %w", err)
+	}
+	return nil
+}
+
+func (m *Model) updateModelSpec(ctx context.Context, spec *godog.DocString) error {
+	modelSpec, err := m.prepareModelSpec(spec)
+	if err != nil {
+		return err
+	}
+
+	currentModel, err := m.k8sClient.MlopsV1alpha1().Models(m.namespace).Get(ctx, modelSpec.Name, metav1.GetOptions{})
+	if err != nil {
+		return fmt.Errorf("failed fetching model: %w", err)
+	}
+	modelSpec.ResourceVersion = currentModel.ResourceVersion
+
+	if _, err := m.k8sClient.MlopsV1alpha1().Models(m.namespace).Update(ctx, modelSpec, metav1.UpdateOptions{}); err != nil {
+		return fmt.Errorf("failed updating model: %w", err)
 	}
 	return nil
 }

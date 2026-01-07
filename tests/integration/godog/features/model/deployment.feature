@@ -28,7 +28,7 @@ Feature: Model deployment
 
 
   Scenario: Load a specific model
-    Given I deploy model spec with timeout "10s":
+    Given I create model spec with timeout "10s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model

@@ -5,7 +5,7 @@ Feature: Conditional pipeline with branching models
   I need a conditional pipeline that directs inputs to one of multiple models based on a condition
 
   Scenario: Deploy a conditional pipeline, run inference, and verify the output
-    Given I deploy model spec with timeout "30s":
+    Given I create model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -17,7 +17,7 @@ Feature: Conditional pipeline with branching models
       - triton
       - python
     """
-    And I deploy model spec with timeout "30s":
+    And I create model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -29,7 +29,7 @@ Feature: Conditional pipeline with branching models
       - triton
       - python
     """
-    And I deploy model spec with timeout "30s":
+    And I create model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model

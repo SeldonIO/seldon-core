@@ -5,7 +5,7 @@ Feature: Pipeline model chaining using inputs and outputs
   I need a pipeline that chains models together by passing outputs from one stage into the next
 
   Scenario: Scenario: Deploy a model-chaining pipeline, run inference, and verify the output
-    Given I deploy model spec with timeout "30s":
+    Given I create model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -18,7 +18,7 @@ Feature: Pipeline model chaining using inputs and outputs
       memory: 100Ki
 
     """
-    And I deploy model spec with timeout "20s":
+    And I create model spec with timeout "20s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
