@@ -844,7 +844,7 @@ func (m *ModelServerStore) addServerReplicaImpl(request *agent.AgentSubscribeReq
 		if err != nil {
 			return nil, coordinator.ServerEventMsg{}, err
 		}
-		modelVersion.Replicas[int32(request.ReplicaIdx)] = &db.ReplicaStatus{State: db.ModelReplicaState_Loaded}
+		modelVersion.SetReplicaState(int(request.ReplicaIdx), db.ModelReplicaState_Loaded, "")
 		modelVersion.Server = request.ServerName
 		if err := m.updateModelStatus(true, false, modelVersion, model.GetLastAvailableModelVersion(), model); err != nil {
 			return nil, coordinator.ServerEventMsg{}, fmt.Errorf("failed to update model status: %w", err)
