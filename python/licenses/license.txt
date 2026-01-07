@@ -580,7 +580,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 certifi
-2025.11.12
+2026.1.4
 Mozilla Public License 2.0 (MPL 2.0)
 This package contains a modified version of ca-bundle.crt:
 
@@ -6177,7 +6177,7 @@ Apache Software License
 
 
 termcolor
-3.2.0
+3.3.0
 MIT
 Copyright (c) 2008-2011 Volvox Development Team
 
