@@ -29,7 +29,7 @@ Seldon handles scaling to thousands of production machine learning models and pr
 With over 2M installs, Seldon Core is used across organisations to manage large scale deployment of machine learning models, and key benefits include:
 
 * Easy way to containerise ML models using our [pre-packaged inference servers](servers/overview.md), [custom servers](servers/custom.md), or [language wrappers](configuration/wrappers-and-sdks/README.md).
-* Out of the box endpoints which can be tested through [Swagger UI](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/openapi.html?highlight=swagger), [Seldon Python Client or Curl / GRPCurl](wrappers/python/python_module.md#seldon-core-python-package).
+* Out of the box endpoints which can be tested through [Swagger UI](reference/prediction-apis/prediction-open-api-spec/seldon-core-external-via-ambassador/README.md), [Seldon Python Client or Curl / GRPCurl](wrappers/python/python_module.md#seldon-core-python-package).
 * Cloud agnostic and tested on [AWS EKS, Azure AKS, Google GKE, Alicloud, Digital Ocean and Openshift](notebooks/README.md#cloud-specific-examples).
 * Powerful and rich inference graphs made out of [predictors, transformers, routers, combiners, and more](routing/inference-graph.md).
 * Metadata provenance to ensure each model can be traced back to its respective [training system, data and metrics](deployments/metadata.md)
@@ -145,7 +145,7 @@ class Model:
         return output
 ```
 
-We can now containerize our class file using the [Seldon Core s2i utils](https://docs.seldon.io/projects/seldon-core/en/1.18/wrappers/s2i.html) to produce the `sklearn_iris` image:
+We can now containerize our class file using the s2i utils to produce the `sklearn_iris` image:
 
 ```console
 s2i build . seldonio/seldon-core-s2i-python3:0.18 sklearn_iris:0.1
@@ -223,7 +223,6 @@ Below are some of the core components together with link to the logs that provid
 
 ### Getting Started
 
-* [Quickstart Guide](./#getting-started)
 * [Overview of Components](overview.md)
 * [Install Seldon Core on Kubernetes](install/installation.md)
 
