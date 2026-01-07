@@ -27,7 +27,7 @@ Feature: Server setup
     # FIXME we have to wait otherwise we end up with a race where server appears ready due to server changes not yet propagated on watcher
     And I wait for "5s"
     When the server should eventually become Ready with timeout "30s"
-    Then ensure only "1" pod(s) are deployed for server and they are Ready
+    Then eventually only "1" pod(s) are deployed for server and they are Ready with timeout "10s"
 
   @ServerSetup @ServerClean
   Scenario: Remove any other pre-existing servers

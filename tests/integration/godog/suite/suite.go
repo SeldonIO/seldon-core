@@ -110,10 +110,8 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 
 	ctx.BeforeSuite(func() {
 		suiteDeps.watcherStore.Start()
-		if !suiteDeps.Config.SkipCleanup {
-			if err := suiteDeps.k8sClient.DeleteScenarioResources(context.Background(), k8sclient.DefaultCRDTestSuiteLabelMap); err != nil {
-				suiteDeps.logger.Errorf("error when deleting models on before steps: %v", err)
-			}
+		if err := suiteDeps.k8sClient.DeleteScenarioResources(context.Background(), k8sclient.DefaultCRDTestSuiteLabelMap); err != nil {
+			suiteDeps.logger.Errorf("error when deleting models on before steps: %v", err)
 		}
 		// e.g. create namespace, apply CRDs, etc.
 	})

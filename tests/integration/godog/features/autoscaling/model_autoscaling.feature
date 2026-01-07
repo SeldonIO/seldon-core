@@ -64,7 +64,7 @@ Feature: Deploy model and change the desired replica count
     }
     """
     And expect http response status code "200"
-    And ensure only "3" pod(s) are deployed for server name "godog-mlserver" and they are Ready
+    And ensure only "3" pod(s) are deployed for server name "godog-mlserver" and they are Ready with timeout "10s"
     Then I update model spec with timeout "10s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
@@ -95,5 +95,4 @@ Feature: Deploy model and change the desired replica count
     }
     """
     And expect http response status code "200"
-    And I wait for "5s"
-    And ensure only "1" pod(s) are deployed for server name "godog-mlserver" and they are Ready
+    And eventually only "1" pod(s) are deployed for server name "godog-mlserver" and they are Ready with timeout "10s"
