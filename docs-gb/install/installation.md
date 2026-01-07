@@ -49,6 +49,7 @@ To install a specific version of the chart, you can list the available versions:
 ```bash
 helm search repo seldon/seldon-core-operator --versions
 ```
+
 And then either install it from scratch:
 ```bash
 helm install seldon-core-operator seldonio/seldon-core-operator \
@@ -58,7 +59,23 @@ helm install seldon-core-operator seldonio/seldon-core-operator \
 Or, upgrade your existing installation:
 ```bash
 helm upgrade --install seldon-core-operator seldon/seldon-core-operator \
-  --version 1.19.0-rc.1 \
+  --version 1.17.1 \
+  --namespace seldon-system
+```
+
+To install it from a locally downloaded chart(GitHub Release):
+1. Download the chart - https://github.com/SeldonIO/helm-charts/releases/tag/seldon-core-operator-1.18.2
+2. Install it the archive from the folder you downloaded it in:
+```bash
+ helm install seldon-core-operator \
+  ./seldon-core-operator-1.18.2.tgz \
+  --namespace seldon-system
+```
+
+To install it from our GCS bucket:
+```bash
+helm install seldon-core-operator \
+  https://storage.googleapis.com/seldon-charts/seldon-core-operator-1.17.1.tgz \
   --namespace seldon-system
 ```
 
