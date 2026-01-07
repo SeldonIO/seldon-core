@@ -2,7 +2,7 @@
 
 Seldon core converts your ML models into production ready REST/gRPC microservices.
 
-These are Seldon Core main components:
+Seldon Core comprises of several main components:
 
 * Reusable and non-reusable [model servers](overview.md#e2e-serving-with-model-servers)
 * [Language Wrappers](overview.md#language-wrappers) to containerise models
@@ -14,7 +14,7 @@ as well as integration with third-party systems:
 * Kubernetes Ingress integration with [Ambassador](https://www.getambassador.io/) and [Istio](https://istio.io/)
 * [Metrics](overview.md#metrics-with-prometheus) with [Prometheus](https://prometheus.io/)
 * [Tracing](overview.md#distributed-tracing-with-jaeger) with [Jaeger](https://www.jaegertracing.io/)
-* [Endpoint Documentation](overview.md#e2e-serving-with-model-servers) with [OpenApi](https://swagger.io/docs/specification/about/)
+* [Endpoint Documentation](reference/prediction-apis/prediction-open-api-spec/) with [OpenApi](https://swagger.io/docs/specification/about/)
 
 Keep reading to learn more!
 
