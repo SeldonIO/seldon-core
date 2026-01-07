@@ -2,7 +2,7 @@ name: Build & Push Docker Images
 
 on:
   push:
-    branches: [ master, ci-add-sbom-to-images-part-1 ]
+    branches: [ master ]
 
   workflow_dispatch:
     inputs:
