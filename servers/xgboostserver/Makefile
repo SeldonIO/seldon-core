@@ -5,6 +5,7 @@ DOCKER_REGISTRY ?= seldonio
 
 IMAGE_NAME_BASE=xgboostserver
 IMAGE_NAME = ${DOCKER_REGISTRY}/${IMAGE_NAME_BASE}
+IMAGE_NAME_PROD_BASE=${IMAGE_NAME}-prod-base
 KIND_NAME ?= kind
 
 BASE_IMAGE = ${DOCKER_REGISTRY}/seldon-core-s2i-python312:${VERSION}
@@ -15,6 +16,15 @@ docker-build:
 		./xgboostserver \
 		${BASE_IMAGE} \
 		${IMAGE_NAME}:${VERSION}
+
+# Build and push s2i base image to the private repository in dockerhub
+# After it's used as a base image for building the final image with SBOM attached
+docker-push-prod-base: docker-build
+	docker tag ${IMAGE_NAME}:${VERSION} ${IMAGE_NAME_PROD_BASE}:${VERSION}
+	docker push ${IMAGE_NAME_PROD_BASE}:${VERSION}
+
+docker-build-and-push-prod: docker-push-prod-base
+	docker buildx build --provenance=true --attest type=sbom,generator=docker/scout-sbom-indexer:latest -f Dockerfile.s2i --build-arg BASE_IMAGE=${IMAGE_NAME_PROD_BASE} --build-arg BASE_TAG=${VERSION} -t ${IMAGE_NAME}:${VERSION} . --push
 
 docker-push:
 	docker push ${IMAGE_NAME}:${VERSION}
