@@ -13,5 +13,7 @@ docker-build:
 docker-push:
 	docker push ${IMAGE_BASE}:${VERSION}
 
+docker-build-and-push-prod: docker-build docker-push
+
 kind_load_image: docker-build
 	kind load -v 3 docker-image ${IMAGE_BASE}:${VERSION} --name ${KIND_NAME}

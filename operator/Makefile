@@ -177,6 +177,9 @@ docker-build: generate-resources
 docker-push:
 	docker push ${SELDON_OPERATOR_IMG}
 
+docker-build-and-push-prod: generate-resources
+	docker buildx build . -t ${SELDON_OPERATOR_IMG} --provenance=true --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push
+
 # Installing Images in Kind CLusters
 kind-image-install: docker-build
 	kind load -v 3 docker-image ${SELDON_OPERATOR_IMG} --name ${KIND_NAME}

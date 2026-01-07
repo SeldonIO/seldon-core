@@ -10,6 +10,9 @@ IMAGE_TAG = ${DOCKER_REGISTRY}/${IMAGE}:${VERSION}
 docker-build:
 	docker build --file=Dockerfile --force-rm=true -t ${IMAGE_TAG} .
 
+docker-build-and-push-prod:
+	docker buildx build --file=Dockerfile --force-rm=true -t ${IMAGE_TAG} . --provenance=true --attest type=sbom,generator=docker/scout-sbom-indexer:latest --push
+
 docker-push:
 	docker push ${DOCKER_REGISTRY}/${IMAGE}:${VERSION}
 

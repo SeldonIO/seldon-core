@@ -51,6 +51,9 @@ docker-build:
 docker-push:
 	docker push ${IMAGE}:${VERSION}
 
+docker-build-and-push-prod:
+	docker buildx build --provenance=true --attest type=sbom,generator=docker/scout-sbom-indexer:latest --platform linux/amd64 -f Dockerfile --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg VERSION=${VERSION} -t ${IMAGE}:${VERSION} . --push
+
 kind_load: docker-build
 	kind load docker-image ${IMAGE}:${VERSION} --name ${KIND_NAME}
 
