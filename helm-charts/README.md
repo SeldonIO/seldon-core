@@ -6,7 +6,7 @@ Helm charts are published to our official repo.
 
 The core chart for installing Seldon Core is shown below.
 
- * [seldon-core-operator](https://docs.seldon.io/projects/seldon-core/en/latest/charts/seldon-core-operator.html)
+ * [seldon-core-operator](https://docs.seldon.ai/seldon-core-1/configuration/installation-parameters/advanced-helm-chart-configuration)
    * Main helm chart for installing Seldon Core CRD and Controller
 
 

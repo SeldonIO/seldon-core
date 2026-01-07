@@ -6,9 +6,7 @@ Helm charts are published to our official repo.
 
 The core chart for installing Seldon Core is shown below.
 
- * [seldon-core-operator](https://docs.seldon.io/projects/seldon-core/en/latest/charts/seldon-core-operator.html)
-
-For further details see [here](../install/advanced-helm-chart-configuration.md).
+ * [seldon-core-operator](../install/advanced-helm-chart-configuration.md)
 
 ## Inference Graph Templates
 
