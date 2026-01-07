@@ -3,12 +3,11 @@
 ## Pre-requisites
 
 - Kubernetes cluster >= 1.23
-  - For Openshift it requires version >= 4.10
 - Installer method
   - Helm version >= 3.0
   - Kustomize version >= 0.1.0
 - Ingress
-  - Istio : we recommend >= 1.16
+  - Istio: we recommend >= 1.16
   - Ambassador v1 and v2
 
 ### Kubernetes Compatibility Matrix
@@ -17,48 +16,60 @@ Seldon Core 1.16 bumps minimum Kubernetes version to 1.23. This is because as pa
 
 Following table provides a summary of Seldon Core / Kubernetes version compatibility for recent version of Seldon Core.
 
-| Core Version \ K8s Version | 1.21 | 1.22 | 1.23 | 1.24 | 1.25 | 1.26 | 1.27 |
-|---------------------------|------|------|------|------|------|------|------|
-| 1.11                      | ✓    |      |      |      |      |      |      |
-| 1.12                      | ✓    | ✓    | ✓    | ✓    |      |      |      |
-| 1.13                      | ✓    | ✓    | ✓    | ✓    |      |      |      |
-| 1.14                      | ✓    | ✓    | ✓    | ✓    |      |      |      |
-| 1.15                      | ✓    | ✓    | ✓    | ✓    |      |      |      |
-| 1.16                      |      |      | ✓    | ✓    | ✓    | ✓    | ✓    |
-| 1.17                      |      |      | ✓    | ✓    | ✓    | ✓    | ✓    |
-| 1.18                      |      |      | ✓    | ✓    | ✓    | ✓    | ✓    |
+| Core Version \ K8s Version | 1.23 | 1.24 | 1.25 | 1.26 | 1.27 | 1.28 | 1.29 | 1.30 | 1.31 | 1.32 | 1.33 | 1.34 | 1.35 |
+|----------------------------|------|------|------|------|------|------|------|------|------|------|------|------|------|
+| 1.16                       | ✓    | ✓    | ✓    | ✓    | ✓    |      |      |      |      |      |      |      |      |
+| 1.17                       | ✓    | ✓    | ✓    | ✓    | ✓    |      |      |      |      |      |      |      |      |
+| 1.18                       | ✓    | ✓    | ✓    | ✓    | ✓    |      |      |      |      |      |      |      |      |
+| 1.19                       | ✓    | ✓    | ✓    | ✓    | ✓    | ✓    | ✓    | ✓    | ✓    | ✓    | ✓    | ✓    | ✓    |
 
 It is always recommended to first upgrade Seldon Core to the latest supported version on your Kubernetes cluster and then upgrade the Kubernetes cluster.
 
 ### Running older versions of Seldon Core?
 
-Make sure you read the [Upgrading Seldon Core Guide](../reference/upgrading.md)
+Make sure you read the [Upgrading Seldon Core Guide](../upgrading.md) to understand breaking changes and best practices for upgrading.
 
 - **Seldon Core will stop supporting versions prior to 1.0 so make sure you upgrade.**
-- If you are running an older version of Seldon Core, and will be upgrading it please make sure you read the [Upgrading Seldon Core docs](../reference/upgrading.md) to understand breaking changes and best practices for upgrading.
-- Please see [Migrating from Helm v2 to Helm v3](https://helm.sh/docs/topics/v2_v3_migration/) if you are already running Seldon Core using Helm v2 and wish to upgrade.
 
 # Install Seldon Core with Helm
 
-First [install Helm 3.x](https://docs.helm.sh/docs/intro/install/). When helm is installed you can deploy the seldon controller to manage your Seldon Deployment graphs.
-
-If you want to provide advanced parameters with your installation you can check the full [Seldon Core Helm Chart Reference](../reference/helm.html).
-
-The namespace `seldon-system` is preferred, so we can create it:
-
+You will first need to add the seldonio Helm repo:
 ```bash
-kubectl create namespace seldon-system
+helm repo add seldonio https://storage.googleapis.com/seldon-charts
+helm repo update
 ```
 
-Now we can install Seldon Core in the `seldon-system` namespace.
+And then install the `seldon-core-operator` chart:
+```bash
+kubectl create namespace seldon-system
+helm install seldon-core-operator seldonio/seldon-core-operator --namespace seldon-system
+```
 
+To install a specific version of the chart, you can list the available versions:
+```bash
+helm search repo seldon/seldon-core-operator --versions
+```
+And then either install it from scratch:
+```bash
+helm install seldon-core-operator seldonio/seldon-core-operator \
+  --namespace seldon-system \
+  --version 1.17.1
+```
+Or, upgrade your existing installation:
+```bash
+helm upgrade --install seldon-core-operator seldon/seldon-core-operator \
+  --version 1.19.0-rc.1 \
+  --namespace seldon-system
+```
+
+If you want to provide advanced parameters with your installation you can check the full [Seldon Core Helm Chart Reference](./advanced-helm-chart-configuration.md).
+For example, if you want to install the operator with Istio or Ambassador enabled, and usage metrics enabled you can 
 {% tabs %}
 
 {% tab title="Istio" %}
 
 ```bash
-helm install seldon-core seldon-core-operator \
-    --repo https://storage.googleapis.com/seldon-charts \
+helm install seldon-core-operator seldonio/seldon-core-operator \
     --set usageMetrics.enabled=true \
     --set istio.enabled=true \
     --namespace seldon-system
@@ -69,8 +80,7 @@ helm install seldon-core seldon-core-operator \
 {% tab title="Ambassador" %}
 
 ```bash
-helm install seldon-core seldon-core-operator \
-    --repo https://storage.googleapis.com/seldon-charts \
+helm install seldon-core-operator seldonio/seldon-core-operator \
     --set usageMetrics.enabled=true \
     --set ambassador.enabled=true \
     --namespace seldon-system
@@ -80,14 +90,18 @@ helm install seldon-core seldon-core-operator \
 
 {% endtabs %}
 
+You can check that the operator is running:
+```bash
+kubectl get pods -n seldon-system
+```
+
+You should see a `seldon-controller-manager` pod with `STATUS=Running`.
+
+
 For full instructions on installation with Istio and Ambassador read the following pages:
 
-- [Ingress with Istio](../ingress/istio.md)
-- [Ingress with Ambassador](../ingress/ambassador.md)
-
-### Install a specific version
-
-In order to install a specific version you can do so by running the same command above with the `--version` flag, followed by the version you want to run.
+- [Ingress with Istio](../routing/istio.md)
+- [Ingress with Ambassador](../routing/ambassador.md)
 
 ### Install a SNAPSHOT version
 
@@ -97,13 +111,7 @@ This means that you can try out a dev version of master if you want to try a spe
 
 For this you would be able to clone the repository, and then checkout the relevant SNAPSHOT branch.
 
-Once you have done that you can install seldon-core using the following command:
-
-```bash
-helm install helm-charts/seldon-core-operator seldon-core-operator
-```
-
-In this case `helm-charts/seldon-core-operator` is the folder within the repository that contains the charts.
+Once you have done that you can install the `seldon-core-operator`, as described above in the page.
 
 ### Install with cert-manager
 
@@ -169,7 +177,7 @@ You can install Seldon Core from [Operator Hub](https://operatorhub.io/operator/
 
 # Upgrading from Previous Versions
 
-See our [upgrading notes](../reference/upgrading.md)
+See our [upgrading notes](../upgrading.md)
 
 # Advanced Usage
 
@@ -191,7 +199,8 @@ We label the namespace with `seldon.io/controller-id=<namespace>` to ensure if t
 Install the Operator into the namespace:
 
 ```bash
-helm install seldon-namespaced seldon-core-operator  --repo https://storage.googleapis.com/seldon-charts  \
+helm install seldon-namespaced seldon-core-operator \
+    --repo https://storage.googleapis.com/seldon-charts \
     --set singleNamespace=true \
     --set image.pullPolicy=IfNotPresent \
     --set usageMetrics.enabled=false \
@@ -247,7 +256,7 @@ An example install is provided in the Makefile in the Operator folder:
 make deploy-controllerid
 ```
 
-See the [multiple server example notebook](../examples/multiple_operators.html).
+See the [multiple server example notebook](../notebooks/multiple_operators.md).
 
 ## Install behind a proxy
 
