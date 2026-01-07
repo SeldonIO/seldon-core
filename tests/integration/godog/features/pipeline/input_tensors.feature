@@ -5,7 +5,7 @@ Feature: Pipeline using direct input tensors
   I need a pipeline that routes individual input tensors directly to different model stages
 
   Scenario: Deploy a pipeline that routes individual input tensors directly to different model stages, run inference, and verify the output
-    Given I deploy model spec with timeout "30s":
+    Given I create model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -17,7 +17,7 @@ Feature: Pipeline using direct input tensors
       - triton
       - python
     """
-    And I deploy model spec with timeout "30s":
+    And I create model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model

@@ -5,7 +5,7 @@ Feature: Pipeline model chaining
   I need a pipeline that maps specific output tensors from an upstream model into the inputs of a downstream model
 
   Scenario: Deploy a chaining pipeline, run inference, and verify the output
-    Given I deploy model spec with timeout "30s":
+    Given I create model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -18,7 +18,7 @@ Feature: Pipeline model chaining
       memory: 100Ki
 
     """
-    And I deploy model spec with timeout "20s":
+    And I create model spec with timeout "20s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model

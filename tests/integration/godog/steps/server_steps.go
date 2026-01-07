@@ -62,8 +62,13 @@ func LoadServerSteps(scenario *godog.ScenarioContext, w *World) {
 			})
 		})
 	})
-	scenario.Step(`^ensure only "([^"]+)" pod\(s\) are deployed for server and they are Ready$`, func(replicaCount int32) error {
-		return withTimeoutCtx("10s", func(ctx context.Context) error {
+	scenario.Step(`^eventually only "([^"]+)" pod\(s\) are deployed for server name "([^"]+)" and they are Ready with timeout "([^"]+)"$`, func(replicaCount int32, serverName, timeout string) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			return w.server.checkPodsAreReadyForServer(ctx, replicaCount, serverName)
+		})
+	})
+	scenario.Step(`^eventually only "([^"]+)" pod\(s\) are deployed for server and they are Ready with timeout "([^"]+)"$`, func(replicaCount int32, timeout string) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
 			return w.server.requiresCurrentServer(func() error {
 				return w.server.checkPodsAreReady(ctx, replicaCount)
 			})
@@ -185,23 +190,72 @@ func (s *server) deleteServer(ctx context.Context, server string) error {
 }
 
 func (s *server) checkPodsAreReady(ctx context.Context, replicaCount int32) error {
+	return s.checkPodsAreReadyForServer(ctx, replicaCount, s.currentServer.Name)
+}
+
+func (s *server) checkPodsAreReadyForServer(ctx context.Context, replicaCount int32, serverName string) error {
 	statefulSet := &v1.StatefulSet{}
 	if err := s.k8sClient.KubeClient.Get(ctx, types.NamespacedName{
 		Namespace: s.namespace,
-		Name:      s.currentServer.Name,
+		Name:      serverName,
 	}, statefulSet); err != nil {
-		return fmt.Errorf("failed getting statefulSet: %w", err)
+		return fmt.Errorf("failed getting StatefulSet: %w", err)
 	}
 
-	if *statefulSet.Spec.Replicas != replicaCount {
-		return fmt.Errorf("expected %d replicas but got %d on statefulset spec", replicaCount, *statefulSet.Spec.Replicas)
-	}
-
-	if statefulSet.Status.ReadyReplicas == replicaCount {
+	if statefulSet.Status.ReadyReplicas == replicaCount && *statefulSet.Spec.Replicas == replicaCount {
 		return nil
 	}
 
-	return fmt.Errorf("ready replicas %d does not match %d", statefulSet.Status.ReadyReplicas, replicaCount)
+	s.log.Debugf("Expected %d replicas and %d ready replicas but got %d replicas and %d ready replicas on "+
+		"StatefulSet spec - will wait on watch for change",
+		replicaCount, replicaCount, *statefulSet.Spec.Replicas, statefulSet.Status.ReadyReplicas)
+
+	watcher, err := s.k8sClient.KubeClient.Watch(ctx, &v1.StatefulSetList{
+		ListMeta: metav1.ListMeta{
+			ResourceVersion: statefulSet.ResourceVersion,
+		},
+		Items: []v1.StatefulSet{{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: s.namespace,
+				Name:      serverName,
+			},
+		}},
+	})
+	if err != nil {
+		return fmt.Errorf("failed watching StatefulSet: %w", err)
+	}
+
+	defer watcher.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case event, ok := <-watcher.ResultChan():
+			if !ok {
+				return fmt.Errorf("watch channel closed")
+			}
+
+			if event.Type == watch.Error {
+				return fmt.Errorf("watch error: %v", event.Object)
+			}
+
+			if event.Type == watch.Added || event.Type == watch.Modified {
+				srv := event.Object.(*v1.StatefulSet)
+				if srv.Status.ReadyReplicas == replicaCount && *srv.Spec.Replicas == replicaCount {
+					return nil
+				}
+				s.log.Debugf("Expected %d replicas and %d ready replicas but received on watch %d replicas and "+
+					"%d ready replicas on StatefulSet spec - continuing to watch for change",
+					replicaCount, replicaCount, *srv.Spec.Replicas, srv.Status.ReadyReplicas)
+				continue
+			}
+
+			if event.Type == watch.Deleted {
+				return fmt.Errorf("statefulSet was deleted")
+			}
+		}
+	}
 }
 
 func (s *server) waitForServerReady(ctx context.Context) error {

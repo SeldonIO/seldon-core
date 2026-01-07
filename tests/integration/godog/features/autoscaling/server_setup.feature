@@ -15,16 +15,23 @@ Feature: Server setup
     spec:
       replicas: 1
       serverConfig: mlserver
+      podSpec:
+        containers:
+          - name: agent
+            env:
+              - name: SELDON_OVERCOMMIT_PERCENTAGE
+                value: "0"
+              - name: MEMORY_REQUEST
+                value: "1073741824"
     """
-    # we have to wait otherwise we end up with a race where server appears ready due to server changes not yet propagated
+    # FIXME we have to wait otherwise we end up with a race where server appears ready due to server changes not yet propagated on watcher
     And I wait for "5s"
     When the server should eventually become Ready with timeout "30s"
     Then eventually only "1" pod(s) are deployed for server and they are Ready with timeout "10s"
 
-
   @ServerSetup @ServerClean
   Scenario: Remove any other pre-existing servers
-    Given I remove any other server deployments which are not "godog-mlserver,godog-triton"
+    Given I remove any other server deployments which are not "godog-mlserver"
 
 # TODO decide if we want to keep this, if we keep testers will need to ensure they don't run this tag when running all
 #  all features in this directory, as tests will fail when server is deleted. We can not delete and it's up to the

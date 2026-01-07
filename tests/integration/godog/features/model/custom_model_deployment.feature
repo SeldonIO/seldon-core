@@ -5,7 +5,7 @@ Feature: Explicit Model deployment
   I then delete the model and send inference requests and expect them to fail.
 
   Scenario: Load model and send inference request to envoy
-    Given I deploy model spec with timeout "10s":
+    Given I create model spec with timeout "10s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model

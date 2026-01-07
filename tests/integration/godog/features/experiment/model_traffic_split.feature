@@ -5,7 +5,7 @@ Feature: Experiment traffic splitting
   I need to create an Experiment resource that splits traffic 50/50 between models
 
   Scenario: Success - Create experiment with 50/50 traffic split between two iris models
-    Given I deploy model spec with timeout "10s":
+    Given I create model spec with timeout "10s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -19,7 +19,7 @@ Feature: Experiment traffic splitting
       storageUri: gs://seldon-models/scv2/samples/mlserver_1.3.5/iris-sklearn
     """
     When the model "experiment-1" should eventually become Ready with timeout "20s"
-    Given I deploy model spec with timeout "10s":
+    Given I create model spec with timeout "10s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
