@@ -6,7 +6,7 @@ These are Seldon Core main components:
 
 * Reusable and non-reusable [model servers](overview.md#e2e-serving-with-model-servers)
 * [Language Wrappers](overview.md#language-wrappers) to containerise models
-* [SeldonDeployment](overview.md#seldondeployment-crd) CRD and [Seldon Core Operator](overview.md#seldon-core-operator)
+* [SeldonDeployment](overview.md#seldon-deployment-crd) CRD and [Seldon Core Operator](overview.md#seldon-core-operator)
 * [Service Orchestrator](overview.md#service-orchestrator) for advanced inference graphs
 
 as well as integration with third-party systems:
@@ -14,7 +14,7 @@ as well as integration with third-party systems:
 * Kubernetes Ingress integration with [Ambassador](https://www.getambassador.io/) and [Istio](https://istio.io/)
 * [Metrics](overview.md#metrics-with-prometheus) with [Prometheus](https://prometheus.io/)
 * [Tracing](overview.md#distributed-tracing-with-jaeger) with [Jaeger](https://www.jaegertracing.io/)
-* [Endpoint Documentation](overview.md#endpoint-documentation) with [OpenApi](https://swagger.io/docs/specification/about/)
+* [Endpoint Documentation](overview.md#e2e-serving-with-model-servers) with [OpenApi](https://swagger.io/docs/specification/about/)
 
 Keep reading to learn more!
 
@@ -47,12 +47,12 @@ With Seldon Core you can build two type of servers: reusable and non-reusable on
 
 Read more about our pre-packaged `Model Servers` on their dedicated documentation pages:
 
-* [MLflow Server](../servers/mlflow.html)
-* [SKLearn Server](../servers/sklearn.html)
-* [Tensorflow Server](../servers/tensorflow.html)
-* [XGBoost Server](../servers/xgboost.html)
+* [MLflow Server](servers/mlflow.md)
+* [SKLearn Server](servers/sklearn.md)
+* [Tensorflow Server](servers/tensorflow.md)
+* [XGBoost Server](servers/xgboost.md)
 
-Read how to build your own pre-packaged model server [here](../servers/custom.html).
+Read how to build your own pre-packaged model server [here](servers/custom.md).
 
 ## Language Wrappers
 
@@ -113,7 +113,7 @@ s2i build . seldonio/seldon-core-s2i-python<PYTHON VERSION>:<TAG> model:0.1
 
 to create ready to use Docker image.
 
-Read more about Python [Language Wrapper on its dedicated documentation page](../python/index.html).
+Read more about Python [Language Wrapper on its dedicated documentation page](wrappers/python/).
 
 ## Seldon Deployment CRD
 
@@ -127,7 +127,7 @@ The manifest file that you write is very powerful yet simple. You can easily def
 
 You can think about the CRD as an abstraction around the actual deployment and services that are created in the cluster. Once the manifest is applied to the cluster, Seldon Core `Operator` creates all Kubernetes objects required to serve the inference requests.
 
-Read more about [Seldon Deployment CRD on its dedicated documentation page](../reference/seldon-deployment.html).
+Read more about [Seldon Deployment CRD on its dedicated documentation page](reference/seldon-deployment-crd.md).
 
 ## Seldon Core Operator
 
@@ -157,7 +157,7 @@ It is because of the presence of `Service Orchestrator` that complex graph compo
 
 to just name a few.
 
-Read more about [Service Orchestrator on its dedicated documentation page](../graph/svcorch.html).
+Read more about [Service Orchestrator on its dedicated documentation page](reference/svcorch.md).
 
 ## Metadata Provenance
 
@@ -167,7 +167,7 @@ These allow you to make connection to the platform you trained your model with (
 
 ![](.gitbook/assets/metadata.svg)
 
-Read more about [metadata provenance on its dedicated documentation page](../reference/apis/metadata.html).
+Read more about [metadata provenance on its dedicated documentation page](deployments/metadata.md).
 
 ## Metrics with Prometheus
 
@@ -175,7 +175,7 @@ Metrics is important aspect of serving ML inference models in production. Out of
 
 ![](.gitbook/assets/metrics.png)
 
-Read more about [metrics on its dedicated documentation page](../analytics/analytics.html).
+Read more about [metrics on its dedicated documentation page](integrations/analytics.md).
 
 ## Distributed Tracing with Jaeger
 
@@ -183,7 +183,7 @@ By default, we support [Jaeger](https://www.jaegertracing.io/) for Distributed T
 
 ![](.gitbook/assets/tracing.svg)
 
-Read more about [tracing on its dedicated documentation page](../graph/distributed-tracing.html).
+Read more about [tracing on its dedicated documentation page](integrations/distributed-tracing.md).
 
 ## So.... Why just not wrap my model with Flask?
 
