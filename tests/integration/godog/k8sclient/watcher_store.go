@@ -141,6 +141,8 @@ func (s *WatcherStore) Start() {
 			case <-s.doneChan:
 				// Stop underlying watcher and exit
 				s.modelWatcher.Stop()
+				s.pipelineWatcher.Stop()
+				s.experimentWatcher.Stop()
 				return
 			}
 		}
