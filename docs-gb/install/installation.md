@@ -65,7 +65,7 @@ helm upgrade --install seldon-core-operator seldon/seldon-core-operator \
 
 To install it from a locally downloaded chart(GitHub Release):
 1. Download the chart - https://github.com/SeldonIO/helm-charts/releases/tag/seldon-core-operator-1.18.2
-2. Install it the archive from the folder you downloaded it in:
+2. Install the archive from the folder you downloaded it in:
 ```bash
  helm install seldon-core-operator \
   ./seldon-core-operator-1.18.2.tgz \
