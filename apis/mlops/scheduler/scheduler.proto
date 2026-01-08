@@ -77,9 +77,9 @@ message LlmSpec {
 
 message ModelRuntimeInfo {
   oneof modelRuntimeInfo {
-    MLServerModelSettings mlserver = 1; 
+    MLServerModelSettings mlserver = 1;
     TritonModelConfig triton = 2;
-    }
+  }
 }
 
 message MLServerModelSettings {
@@ -150,24 +150,24 @@ message ModelVersionStatus {
   uint32 version = 2;
   string serverName = 3;
   optional KubernetesMeta kubernetesMeta = 4;
-  map<int32,ModelReplicaStatus> modelReplicaState = 5;
+  map<int32, ModelReplicaStatus> modelReplicaState = 5;
   ModelStatus state = 6;
   optional Model modelDefn = 7;
 }
 
 message ModelStatus {
   enum ModelState {
-      ModelStateUnknown = 0;
-      ModelProgressing = 1;
-      ModelAvailable = 2;
-      ModelFailed = 3;
-      ModelTerminating = 4;
-      ModelTerminated = 5;
-      ModelTerminateFailed = 6;
-      ScheduleFailed = 7;
-      ModelScaledDown = 8;
-      ModelCreate = 9;
-      ModelTerminate = 10;
+    ModelStateUnknown = 0;
+    ModelProgressing = 1;
+    ModelAvailable = 2;
+    ModelFailed = 3;
+    ModelTerminating = 4;
+    ModelTerminated = 5;
+    ModelTerminateFailed = 6;
+    ScheduleFailed = 7;
+    ModelScaledDown = 8;
+    ModelCreate = 9;
+    ModelTerminate = 10;
   }
   ModelState state = 1;
   string reason = 2;
@@ -180,19 +180,19 @@ message ModelStatus {
 
 message ModelReplicaStatus {
   enum ModelReplicaState {
-      ModelReplicaStateUnknown = 0;
-      LoadRequested = 1;
-      Loading = 2;
-      Loaded = 3;
-      LoadFailed = 4;
-      UnloadRequested = 5;
-      Unloading = 6;
-      Unloaded = 7;
-      UnloadFailed = 8;
-      Available = 9;
-      LoadedUnavailable = 10;
-      UnloadEnvoyRequested = 11;
-      Draining = 12;
+    ModelReplicaStateUnknown = 0;
+    LoadRequested = 1;
+    Loading = 2;
+    Loaded = 3;
+    LoadFailed = 4;
+    UnloadRequested = 5;
+    Unloading = 6;
+    Unloaded = 7;
+    UnloadFailed = 8;
+    Available = 9;
+    LoadedUnavailable = 10;
+    UnloadEnvoyRequested = 11;
+    Draining = 12;
   }
   ModelReplicaState state = 1;
   string reason = 2;
@@ -356,7 +356,7 @@ message PipelineStep {
   string name = 1;
   repeated string inputs = 2;
   optional uint32 joinWindowMs = 3; // Join window millisecs, some nonzero default (TBD)
-  map<string,string> tensorMap = 4; // optional map of tensor name mappings
+  map<string, string> tensorMap = 4; // optional map of tensor name mappings
   JoinOp inputsJoin = 5;
   repeated string triggers = 6;
   JoinOp triggersJoin = 7;
@@ -379,7 +379,7 @@ message PipelineInput {
   optional uint32 joinWindowMs = 3; // Join window millisecs for output, default 0
   JoinOp joinType = 4;
   JoinOp triggersJoin = 5;
-  map<string,string> tensorMap = 6; // optional map of tensor name mappings
+  map<string, string> tensorMap = 6; // optional map of tensor name mappings
 }
 
 message PipelineOutput {
@@ -391,7 +391,7 @@ message PipelineOutput {
   repeated string steps = 1;
   uint32 joinWindowMs = 2; // Join window millisecs for output, default 0
   JoinOp stepsJoin = 3;
-  map<string,string> tensorMap = 4; // optional map of tensor name mappings
+  map<string, string> tensorMap = 4; // optional map of tensor name mappings
 }
 
 message LoadPipelineResponse {
@@ -446,6 +446,7 @@ message PipelineVersionState {
     PipelineTerminating = 6;
     PipelineTerminated = 7;
     PipelineRebalancing = 8;
+    PipelineFailedTerminating = 9;
   }
   uint32 pipelineVersion = 1;
   PipelineStatus status = 2;
@@ -481,17 +482,17 @@ message ControlPlaneResponse {
 
 
 message ModelUpdateMessage {
-    enum ModelOperation {
-      Unknown = 0;
-      Create = 1;
-      Delete = 2;
-    }
-    ModelOperation op = 1;
-    string model = 2;
-    uint32 version = 3;
-    string uid = 4;
-    uint64 timestamp = 5;
-    string stream = 6;
+  enum ModelOperation {
+    Unknown = 0;
+    Create = 1;
+    Delete = 2;
+  }
+  ModelOperation op = 1;
+  string model = 2;
+  uint32 version = 3;
+  string uid = 4;
+  uint64 timestamp = 5;
+  string stream = 6;
 }
 
 message ModelUpdateStatusMessage {
