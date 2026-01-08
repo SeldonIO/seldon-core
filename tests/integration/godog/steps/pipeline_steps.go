@@ -75,11 +75,6 @@ func LoadCustomPipelineSteps(scenario *godog.ScenarioContext, w *World) {
 			}
 		})
 	})
-	scenario.Step(`^the pipeline status (?:should )?eventually become (PipelineFailed | PipelineFailedTerminate) with timeout "([^"]+)"$`, func(status PipelineStatus, timeout string) error {
-		return withTimeoutCtx(timeout, func(ctx context.Context) error {
-			return w.currentPipeline.waitForPipelineStatus(ctx, status)
-		})
-	})
 	scenario.Step(`^I delete pipeline "([^"]+)" with timeout "([^"]+)"$`, func(pipeline, timeout string) error {
 		return withTimeoutCtx(timeout, func(ctx context.Context) error {
 			return w.currentPipeline.deletePipelineName(ctx, pipeline)
@@ -170,25 +165,6 @@ func (p *Pipeline) waitForPipelineNotReady(ctx context.Context) error {
 		p.pipeline,
 		assertions.PipelineNotReady,
 	)
-}
-
-func (p *Pipeline) waitForPipelineStatus(ctx context.Context, status PipelineStatus) error {
-	switch status {
-	case pipelineFailedStatus:
-		return p.watcherStorage.WaitForObjectCondition(
-			ctx,
-			p.pipeline,
-			assertions.PipelineNotReady,
-		)
-	case pipelineFailedTerminate:
-		return p.watcherStorage.WaitForObjectCondition(
-			ctx,
-			p.pipeline,
-			assertions.PipelineNotReady,
-		)
-	default:
-		return fmt.Errorf("unknown status type: %s", status)
-	}
 }
 
 func (p *Pipeline) waitForPipelineNameIsDeleted(ctx context.Context, pipeline string) error {
