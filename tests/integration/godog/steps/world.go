@@ -30,6 +30,7 @@ type World struct {
 	currentExperiment *Experiment
 	server            *server
 	infer             inference
+	infra             *Infrastructure
 	logger            log.FieldLogger
 	Label             map[string]string
 }
@@ -74,6 +75,7 @@ func NewWorld(c Config) (*World, error) {
 			httpPort: c.HTTPPort,
 			log:      c.Logger,
 			ssl:      c.SSL},
+		infra: newInfrastructure(c.Env, c.Logger),
 		Label: label,
 	}
 

@@ -15,7 +15,18 @@ import (
 
 	"github.com/cucumber/godog"
 	"github.com/seldonio/seldon-core/tests/integration/godog/components"
+	"github.com/sirupsen/logrus"
 )
+
+// Infrastructure todo: add attributes as we need
+type Infrastructure struct {
+	env *components.EnvManager
+	log logrus.FieldLogger
+}
+
+func newInfrastructure(env *components.EnvManager, log logrus.FieldLogger) *Infrastructure {
+	return &Infrastructure{env: env, log: log}
+}
 
 func LoadInfrastructureSteps(scenario *godog.ScenarioContext, w *World) {
 	scenario.Step(`^(kafka-nodepool) is unavailable for Core 2 with timeout "([^"]+)"`, func(kind, timeout string) error {
@@ -57,7 +68,7 @@ func LoadInfrastructureSteps(scenario *godog.ScenarioContext, w *World) {
 					return fmt.Errorf("runtime not defined")
 				}
 
-				svc, err := runtimeServiceFromStepKind(kind)
+				svc, err := w.infra.runtimeServiceFromStepKind(kind)
 				if err != nil {
 					return err
 				}
@@ -66,9 +77,77 @@ func LoadInfrastructureSteps(scenario *godog.ScenarioContext, w *World) {
 			})
 		},
 	)
+	scenario.Step(`^I set replicas of (scheduler|dataflow-engine|model-gw|pipeline-gw) to "([^"]+)" with timeout "([^"]+)"$`,
+		func(kind string, replicaCount int32, timeout string) error {
+			return withTimeoutCtx(timeout, func(ctx context.Context) error {
+				runtime := w.env.Runtime()
+				if runtime == nil {
+					return fmt.Errorf("runtime not defined")
+				}
+
+				svc, err := w.infra.runtimeServiceFromStepKind(kind)
+				if err != nil {
+					return err
+				}
+
+				return runtime.SetReplicas(ctx, svc, replicaCount)
+			})
+		},
+	)
+	scenario.Step(`^I wait for (scheduler|dataflow-engine|model-gw|pipeline-gw) to be ready with timeout "([^"]+)"$`,
+		func(kind, timeout string) error {
+			return withTimeoutCtx(timeout, func(ctx context.Context) error {
+				runtime := w.env.Runtime()
+				if runtime == nil {
+					return fmt.Errorf("runtime not defined")
+				}
+
+				svc, err := w.infra.runtimeServiceFromStepKind(kind)
+				if err != nil {
+					return err
+				}
+
+				return runtime.WaitServiceReady(ctx, svc)
+			})
+		},
+	)
+	scenario.Step(`^I scale down (scheduler|dataflow-engine|model-gw|pipeline-gw) with timeout "([^"]+)"$`,
+		func(kind, timeout string) error {
+			return withTimeoutCtx(timeout, func(ctx context.Context) error {
+				runtime := w.env.Runtime()
+				if runtime == nil {
+					return fmt.Errorf("runtime not defined")
+				}
+
+				svc, err := w.infra.runtimeServiceFromStepKind(kind)
+				if err != nil {
+					return err
+				}
+
+				return runtime.ScaleDown(ctx, svc)
+			})
+		},
+	)
+	scenario.Step(`^I scale up to baseline (scheduler|dataflow-engine|model-gw|pipeline-gw) with timeout "([^"]+)"$`,
+		func(kind, timeout string) error {
+			return withTimeoutCtx(timeout, func(ctx context.Context) error {
+				runtime := w.env.Runtime()
+				if runtime == nil {
+					return fmt.Errorf("runtime not defined")
+				}
+
+				svc, err := w.infra.runtimeServiceFromStepKind(kind)
+				if err != nil {
+					return err
+				}
+
+				return runtime.ScaleUpToBaseline(ctx, svc)
+			})
+		},
+	)
 }
 
-func runtimeServiceFromStepKind(kind string) (components.SeldonRuntimeService, error) {
+func (i *Infrastructure) runtimeServiceFromStepKind(kind string) (components.SeldonRuntimeService, error) {
 	switch kind {
 	case "scheduler":
 		return components.ServiceScheduler, nil

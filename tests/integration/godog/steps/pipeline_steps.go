@@ -34,13 +34,6 @@ type Pipeline struct {
 	log            logrus.FieldLogger
 }
 
-type PipelineStatus string
-
-const (
-	pipelineFailedStatus    PipelineStatus = "PipelineFailed"
-	pipelineFailedTerminate PipelineStatus = "PipelineFailedTerminate"
-)
-
 func newPipeline(label map[string]string, namespace string, k8sClient versioned.Interface, log logrus.FieldLogger, watcherStorage k8sclient.WatcherStorage) *Pipeline {
 	return &Pipeline{label: label, pipeline: &mlopsv1alpha1.Pipeline{}, log: log, namespace: namespace, k8sClient: k8sClient, watcherStorage: watcherStorage}
 }
