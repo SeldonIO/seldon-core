@@ -4,13 +4,14 @@ Feature: Scheduler retries failed pipelines
   As a platform operator
   I need the scheduler to retry creating and terminating pipelines that have previously failed
 
+#  todo: this scenario seems to work but we currently don't assert on status pipeline terminate
   Scenario: Retry creating a pipeline that failed while Kafka was unavailable
     Given kafka-nodepool is unavailable for Core 2 with timeout "40s"
     Then I restart scheduler with timeout "30s"
     Then I restart dataflow-engine with timeout "30s"
     Then I restart model-gw with timeout "30s"
     Then I restart pipeline-gw with timeout "30s"
-    Given I deploy model spec with timeout "30s":
+    Given I create model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -40,9 +41,9 @@ Feature: Scheduler retries failed pipelines
     When kafka-nodepool is available for Core 2 with timeout "40s"
     Then the pipeline should eventually become Ready with timeout "180s"
 
-#    todo: this second scenario needs to work fully
+# todo: this second scenario needs to work fully as it seems that the pipeline doesn't fail to terminate when kafka is down
   Scenario: Retry terminating a pipeline that previously failed to terminate
-    Given I deploy model spec with timeout "30s":
+    Given I create model spec with timeout "30s":
     """
     apiVersion: mlops.seldon.io/v1alpha1
     kind: Model
@@ -74,6 +75,8 @@ Feature: Scheduler retries failed pipelines
     """
     Then the pipeline should eventually become Ready with timeout "120s"
     When kafka-nodepool is unavailable for Core 2 with timeout "40s"
+    And I wait for "5s"
+    Then I restart scheduler with timeout "30s"
     And I delete pipeline the with timeout "30s"
     When kafka-nodepool is available for Core 2 with timeout "40s"
     Then the pipeline should eventually not exist with timeout "120s"
