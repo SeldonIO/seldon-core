@@ -497,6 +497,7 @@ func (s *SchedulerServer) LoadModel(ctx context.Context, req *pb.LoadModelReques
 	logger.Debugf("Load model %+v k8s meta %+v", req.GetModel().GetMeta(), req.GetModel().GetMeta().GetKubernetesMeta())
 	err := s.modelStore.UpdateModel(req)
 	if err != nil {
+		logger.WithError(err).WithField("req", req).Error("Failed to update model")
 		return nil, status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 	}
 	go func() {

@@ -11,7 +11,6 @@ package in_memory
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
@@ -56,7 +55,7 @@ func (s *Storage[T]) Insert(_ context.Context, record T) error {
 	defer s.mu.Unlock()
 
 	if _, ok := s.records[record.GetName()]; ok {
-		return fmt.Errorf("record with name %s already exists", record.GetName())
+		return store.ErrAlreadyExists
 	}
 
 	s.records[record.GetName()] = proto.Clone(record).(T)

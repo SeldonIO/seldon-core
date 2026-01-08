@@ -17,7 +17,8 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("record not found")
+	ErrNotFound      = errors.New("record not found")
+	ErrAlreadyExists = errors.New("record already exists")
 )
 
 type Storage[T proto.Message] interface {

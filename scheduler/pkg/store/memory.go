@@ -129,7 +129,7 @@ func (m *ModelServerStore) UpdateModel(req *pb.LoadModelRequest) error {
 	validName := utils.CheckName(modelName)
 	if !validName {
 		return fmt.Errorf(
-			"Model %s does not have a valid name - it must be alphanumeric and not contains dots (.)",
+			"model %s does not have a valid name - it must be alphanumeric and not contains dots (.)",
 			modelName,
 		)
 	}
@@ -148,6 +148,7 @@ func (m *ModelServerStore) UpdateModel(req *pb.LoadModelRequest) error {
 
 	if model.Deleted {
 		if model.Inactive() {
+			model := &db.Model{Name: modelName}
 			m.addNextModelVersion(model, req.GetModel())
 			if err := m.store.models.Update(context.TODO(), model); err != nil {
 				return fmt.Errorf("failed to update model %s: %w", modelName, err)
@@ -158,7 +159,6 @@ func (m *ModelServerStore) UpdateModel(req *pb.LoadModelRequest) error {
 			"model %s is in process of deletion - new model can not be created",
 			modelName,
 		)
-
 	}
 
 	latestModel := model.Latest()
