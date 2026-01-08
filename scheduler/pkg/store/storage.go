@@ -21,10 +21,18 @@ var (
 	ErrAlreadyExists = errors.New("record already exists")
 )
 
-type Storage[T proto.Message] interface {
+type StorageReader[T proto.Message] interface {
 	Get(ctx context.Context, name string) (T, error)
-	Insert(ctx context.Context, record T) error
 	List(ctx context.Context) ([]T, error)
+}
+
+type StorageWriter[T proto.Message] interface {
+	Insert(ctx context.Context, record T) error
 	Update(ctx context.Context, record T) error
 	Delete(ctx context.Context, name string) error
+}
+
+type Storage[T proto.Message] interface {
+	StorageReader[T]
+	StorageWriter[T]
 }

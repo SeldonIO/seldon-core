@@ -35,6 +35,7 @@ import (
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/agent"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	db_svc "github.com/seldonio/seldon-core/scheduler/v2/pkg/db-service"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/processor"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
 	health_probe "github.com/seldonio/seldon-core/scheduler/v2/pkg/health-probe"
@@ -88,6 +89,9 @@ var (
 	retryFailedCreatingPipelinesTick time.Duration
 	retryFailedDeletePipelinesTick   time.Duration
 	maxRetryFailedPipelines          uint
+	enableDBGRPCService              bool
+	dbGRPCPort                       uint
+	dbGRPCAllowPlainText             bool
 )
 
 const (
@@ -185,6 +189,11 @@ func init() {
 	flag.DurationVar(&retryFailedCreatingPipelinesTick, "retry-creating-failed-pipelines-tick", time.Minute, "tick interval for re-attempting to create pipelines which failed to create")
 	flag.DurationVar(&retryFailedDeletePipelinesTick, "retry-deleting-failed-pipelines-tick", time.Minute, "tick interval for re-attempting to delete pipelines which failed to terminate")
 	flag.UintVar(&maxRetryFailedPipelines, "max-retry-failed-pipelines", 10, "max number of retry attempts to create/terminate pipelines which failed to create/terminate")
+
+	// Database gRPC service
+	flag.BoolVar(&enableDBGRPCService, "enable-db-grpc-service", true, "Enable database gRPC service")
+	flag.UintVar(&dbGRPCPort, "db-grpc-port", 9060, "Database gRPC service port")
+	flag.BoolVar(&dbGRPCAllowPlainText, "db-grpc-allow-plaintext", true, "Allow plain text for database gRPC service")
 }
 
 func getNamespace() string {
@@ -418,6 +427,16 @@ func main() {
 	err = as.StartGrpcServer(allowPlaintxt, agentPort, agentMtlsPort)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to start agent gRPC server")
+	}
+
+	if enableDBGRPCService {
+		logger.Info("Starting gRPC server for DB service")
+		dbSvc := db_svc.NewService(logger.WithField("source", "DatabaseService"),
+			in_memory.NewStorage[*db.Model](), in_memory.NewStorage[*db.Server](), *tlsOptions)
+		if err := dbSvc.StartGrpcServer(dbGRPCAllowPlainText, dbGRPCPort); err != nil {
+			logger.WithError(err).Fatal("Failed to start gRPC server for DB service")
+		}
+		defer dbSvc.Stop()
 	}
 
 	// wait for model servers to be ready
