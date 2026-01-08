@@ -94,32 +94,38 @@ func updatePipelinesFromModelAvailability(references map[string]void, modelName 
 	var changedPipelines []*coordinator.PipelineEventMsg
 
 	for pipelineName := range references {
-		if pipeline, ok := pipelines[pipelineName]; ok {
-			latestPipeline := pipeline.GetLatestPipelineVersion()
-			if latestPipeline != nil {
-				if step, ok := latestPipeline.Steps[modelName]; ok {
-					if step.Available != modelAvailable {
-						changedPipelines = append(changedPipelines, &coordinator.PipelineEventMsg{
-							PipelineName:      latestPipeline.Name,
-							PipelineVersion:   latestPipeline.Version,
-							UID:               latestPipeline.UID,
-							ModelStatusChange: true,
-						})
-						step.Available = modelAvailable
-						logger.Debugf("Updating pipeline overall state from model %s available:%v", modelName, modelAvailable)
-						updatePipelineModelsReady(latestPipeline, modelAvailable, logger)
-					} else {
-						logger.Debugf("Ignore update to step %s for pipeline %s as already %v", modelName, pipelineName, modelAvailable)
-					}
-				} else {
-					logger.Debugf("Failed to find step %s in pipeline %s", modelName, pipelineName)
-				}
-			} else {
-				logger.Debugf("Failed to find latest pipeline %s", pipelineName)
-			}
-		} else {
+		pipeline, ok := pipelines[pipelineName]
+		if !ok {
 			logger.Debugf("Failed to find latest pipeline %s", pipelineName)
+			continue
 		}
+
+		latestPipeline := pipeline.GetLatestPipelineVersion()
+		if latestPipeline == nil {
+			logger.Debugf("Failed to find latest pipeline %s", pipelineName)
+			continue
+		}
+
+		step, ok := latestPipeline.Steps[modelName]
+		if !ok {
+			logger.Debugf("Failed to find step %s in pipeline %s", modelName, pipelineName)
+			continue
+		}
+
+		if step.Available == modelAvailable {
+			logger.Debugf("Ignore update to step %s for pipeline %s as already %v", modelName, pipelineName, modelAvailable)
+			continue
+		}
+
+		changedPipelines = append(changedPipelines, &coordinator.PipelineEventMsg{
+			PipelineName:      latestPipeline.Name,
+			PipelineVersion:   latestPipeline.Version,
+			UID:               latestPipeline.UID,
+			ModelStatusChange: true,
+		})
+		step.Available = modelAvailable
+		logger.Debugf("Updating pipeline overall state from model %s available:%v", modelName, modelAvailable)
+		updatePipelineModelsReady(latestPipeline, modelAvailable, logger)
 	}
 	return changedPipelines
 }

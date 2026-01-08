@@ -26,13 +26,12 @@ import (
 )
 
 const (
-	deletedExperimentTTL       time.Duration = time.Duration(time.Hour * 24)
-	pendingSyncsQueueSize      int           = 1000
-	experimentStartEventSource               = "experiment.store.start"
-	experimentStopEventSource                = "experiment.store.stop"
-	modelEventHandlerName                    = "experiment.store.models"
-	pipelineEventHandlerName                 = "experiment.store.pipelines"
-	experimentDbFolder                       = "experimentdb"
+	pendingSyncsQueueSize      int = 1000
+	experimentStartEventSource     = "experiment.store.start"
+	experimentStopEventSource      = "experiment.store.stop"
+	modelEventHandlerName          = "experiment.store.models"
+	pipelineEventHandlerName       = "experiment.store.pipelines"
+	experimentDbFolder             = "experimentdb"
 )
 
 type ExperimentServer interface {
