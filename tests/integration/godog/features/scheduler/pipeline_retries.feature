@@ -40,6 +40,7 @@ Feature: Scheduler retries failed pipelines
     When kafka-nodepool is available for Core 2 with timeout "40s"
     Then the pipeline should eventually become Ready with timeout "180s"
 
+#    todo: this second scenario needs to work fully
   Scenario: Retry terminating a pipeline that previously failed to terminate
     Given I deploy model spec with timeout "30s":
     """
