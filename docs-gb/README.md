@@ -318,4 +318,4 @@ To learn more about our commercial offerings visit [https://www.seldon.io/](http
 
 ## License
 
-[License](LICENSE/)
+[License](./LICENSE.md)
