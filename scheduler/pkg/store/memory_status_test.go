@@ -10,83 +10,86 @@ the Change License after the Change Date as each is defined in accordance with t
 package store
 
 import (
+	"context"
 	"testing"
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 )
 
 func TestUpdateStatus(t *testing.T) {
 	g := NewGomegaWithT(t)
+	ctx := context.Background()
 
 	type test struct {
 		name                string
-		store               *LocalSchedulerStore
+		models              []*db.Model
+		servers             []*db.Server
 		modelName           string
 		serverName          string
 		version             uint32
 		prevVersion         *uint32
-		expectedModelStatus ModelState
+		expectedModelStatus db.ModelState
 	}
 	prevVersion := uint32(1)
 	tests := []test{
 		{
 			name: "Available",
-			store: &LocalSchedulerStore{
-				models: map[string]*Model{
-					"model": {
-						versions: []*ModelVersion{
-							{
-								version: 1,
-								modelDefn: &pb.Model{
-									Meta: &pb.MetaData{
-										Name: "model",
-									},
-									ModelSpec: &pb.ModelSpec{},
-									DeploymentSpec: &pb.DeploymentSpec{
-										Replicas: 1,
-									},
+			models: []*db.Model{
+				{
+					Name: "model",
+					Versions: []*db.ModelVersion{
+						{
+							Version: 1,
+							ModelDefn: &pb.Model{
+								Meta: &pb.MetaData{
+									Name: "model",
 								},
-								server: "server2",
-								replicas: map[int]ReplicaStatus{
-									0: {State: Loaded},
+								ModelSpec: &pb.ModelSpec{},
+								DeploymentSpec: &pb.DeploymentSpec{
+									Replicas: 1,
 								},
 							},
-							{
-								version: 2,
-								modelDefn: &pb.Model{
-									Meta: &pb.MetaData{
-										Name: "model",
-									},
-									ModelSpec: &pb.ModelSpec{},
-									DeploymentSpec: &pb.DeploymentSpec{
-										Replicas: 1,
-									},
+							Server: "server2",
+							Replicas: map[int32]*db.ReplicaStatus{
+								0: {State: db.ModelReplicaState_Loaded},
+							},
+						},
+						{
+							Version: 2,
+							ModelDefn: &pb.Model{
+								Meta: &pb.MetaData{
+									Name: "model",
 								},
-								server: "server1",
-								replicas: map[int]ReplicaStatus{
-									0: {State: Available},
+								ModelSpec: &pb.ModelSpec{},
+								DeploymentSpec: &pb.DeploymentSpec{
+									Replicas: 1,
 								},
+							},
+							Server: "server1",
+							Replicas: map[int32]*db.ReplicaStatus{
+								0: {State: db.ModelReplicaState_Available},
 							},
 						},
 					},
 				},
-				servers: map[string]*Server{
-					"server1": {
-						name: "server1",
-						replicas: map[int]*ServerReplica{
-							0: {},
-						},
+			},
+			servers: []*db.Server{
+				{
+					Name: "server1",
+					Replicas: map[int32]*db.ServerReplica{
+						0: {},
 					},
-					"server2": {
-						name: "server2",
-						replicas: map[int]*ServerReplica{
-							0: {},
-						},
+				},
+				{
+					Name: "server2",
+					Replicas: map[int32]*db.ServerReplica{
+						0: {},
 					},
 				},
 			},
@@ -94,62 +97,61 @@ func TestUpdateStatus(t *testing.T) {
 			serverName:          "server2",
 			version:             2,
 			prevVersion:         nil,
-			expectedModelStatus: ModelAvailable,
+			expectedModelStatus: db.ModelState_ModelAvailable,
 		},
 		{
 			name: "Available - Min replicas",
-			store: &LocalSchedulerStore{
-				models: map[string]*Model{
-					"model": {
-						versions: []*ModelVersion{
-							{
-								version: 1,
-								modelDefn: &pb.Model{
-									Meta: &pb.MetaData{
-										Name: "model",
-									},
-									ModelSpec: &pb.ModelSpec{},
-									DeploymentSpec: &pb.DeploymentSpec{
-										Replicas: 1,
-									},
+			models: []*db.Model{
+				{
+					Name: "model",
+					Versions: []*db.ModelVersion{
+						{
+							Version: 1,
+							ModelDefn: &pb.Model{
+								Meta: &pb.MetaData{
+									Name: "model",
 								},
-								server: "server2",
-								replicas: map[int]ReplicaStatus{
-									0: {State: Loaded},
+								ModelSpec: &pb.ModelSpec{},
+								DeploymentSpec: &pb.DeploymentSpec{
+									Replicas: 1,
 								},
 							},
-							{
-								version: 2,
-								modelDefn: &pb.Model{
-									Meta: &pb.MetaData{
-										Name: "model",
-									},
-									ModelSpec: &pb.ModelSpec{},
-									DeploymentSpec: &pb.DeploymentSpec{
-										Replicas:    2,
-										MinReplicas: 1,
-									},
+							Server: "server2",
+							Replicas: map[int32]*db.ReplicaStatus{
+								0: {State: db.ModelReplicaState_Loaded},
+							},
+						},
+						{
+							Version: 2,
+							ModelDefn: &pb.Model{
+								Meta: &pb.MetaData{
+									Name: "model",
 								},
-								server: "server1",
-								replicas: map[int]ReplicaStatus{
-									0: {State: Available},
+								ModelSpec: &pb.ModelSpec{},
+								DeploymentSpec: &pb.DeploymentSpec{
+									Replicas:    2,
+									MinReplicas: 1,
 								},
+							},
+							Server: "server1",
+							Replicas: map[int32]*db.ReplicaStatus{
+								0: {State: db.ModelReplicaState_Available},
 							},
 						},
 					},
 				},
-				servers: map[string]*Server{
-					"server1": {
-						name: "server1",
-						replicas: map[int]*ServerReplica{
-							0: {},
-						},
+			},
+			servers: []*db.Server{
+				{
+					Name: "server1",
+					Replicas: map[int32]*db.ServerReplica{
+						0: {},
 					},
-					"server2": {
-						name: "server2",
-						replicas: map[int]*ServerReplica{
-							0: {},
-						},
+				},
+				{
+					Name: "server2",
+					Replicas: map[int32]*db.ServerReplica{
+						0: {},
 					},
 				},
 			},
@@ -157,62 +159,61 @@ func TestUpdateStatus(t *testing.T) {
 			serverName:          "server2",
 			version:             2,
 			prevVersion:         nil,
-			expectedModelStatus: ModelAvailable,
+			expectedModelStatus: db.ModelState_ModelAvailable,
 		},
 		{
 			name: "NotEnoughReplicasButPreviousAvailable",
-			store: &LocalSchedulerStore{
-				models: map[string]*Model{
-					"model": {
-						versions: []*ModelVersion{
-							{
-								version: 1,
-								modelDefn: &pb.Model{
-									Meta: &pb.MetaData{
-										Name: "model",
-									},
-									ModelSpec: &pb.ModelSpec{},
-									DeploymentSpec: &pb.DeploymentSpec{
-										Replicas: 1,
-									},
+			models: []*db.Model{
+				{
+					Name: "model",
+					Versions: []*db.ModelVersion{
+						{
+							Version: 1,
+							ModelDefn: &pb.Model{
+								Meta: &pb.MetaData{
+									Name: "model",
 								},
-								server: "server2",
-								replicas: map[int]ReplicaStatus{
-									0: {State: Available},
+								ModelSpec: &pb.ModelSpec{},
+								DeploymentSpec: &pb.DeploymentSpec{
+									Replicas: 1,
 								},
-								state: ModelStatus{State: ModelAvailable},
 							},
-							{
-								version: 2,
-								modelDefn: &pb.Model{
-									Meta: &pb.MetaData{
-										Name: "model",
-									},
-									ModelSpec: &pb.ModelSpec{},
-									DeploymentSpec: &pb.DeploymentSpec{
-										Replicas: 2,
-									},
+							Server: "server2",
+							Replicas: map[int32]*db.ReplicaStatus{
+								0: {State: db.ModelReplicaState_Available},
+							},
+							State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+						},
+						{
+							Version: 2,
+							ModelDefn: &pb.Model{
+								Meta: &pb.MetaData{
+									Name: "model",
 								},
-								server: "server1",
-								replicas: map[int]ReplicaStatus{
-									0: {State: Available},
+								ModelSpec: &pb.ModelSpec{},
+								DeploymentSpec: &pb.DeploymentSpec{
+									Replicas: 2,
 								},
+							},
+							Server: "server1",
+							Replicas: map[int32]*db.ReplicaStatus{
+								0: {State: db.ModelReplicaState_Available},
 							},
 						},
 					},
 				},
-				servers: map[string]*Server{
-					"server1": {
-						name: "server1",
-						replicas: map[int]*ServerReplica{
-							0: {},
-						},
+			},
+			servers: []*db.Server{
+				{
+					Name: "server1",
+					Replicas: map[int32]*db.ServerReplica{
+						0: {},
 					},
-					"server2": {
-						name: "server2",
-						replicas: map[int]*ServerReplica{
-							0: {},
-						},
+				},
+				{
+					Name: "server2",
+					Replicas: map[int32]*db.ServerReplica{
+						0: {},
 					},
 				},
 			},
@@ -220,7 +221,7 @@ func TestUpdateStatus(t *testing.T) {
 			serverName:          "server2",
 			version:             2,
 			prevVersion:         &prevVersion,
-			expectedModelStatus: ModelAvailable,
+			expectedModelStatus: db.ModelState_ModelAvailable,
 		},
 	}
 	for _, test := range tests {
@@ -228,17 +229,39 @@ func TestUpdateStatus(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			ms := NewMemoryStore(logger, test.store, eventHub)
+
+			// Create storage instances
+			modelStorage := NewInMemoryStorage[*db.Model]()
+			serverStorage := NewInMemoryStorage[*db.Server]()
+
+			// Populate storage with test data
+			for _, model := range test.models {
+				err := modelStorage.Insert(ctx, model)
+				g.Expect(err).To(BeNil())
+			}
+			for _, server := range test.servers {
+				err := serverStorage.Insert(ctx, server)
+				g.Expect(err).To(BeNil())
+			}
+
+			// Create MemoryStore with populated storage
+			ms := NewMemoryStore(logger, modelStorage, serverStorage, eventHub)
+
+			// Get model and version for testing
 			model, modelVersion, _, err := ms.getModelServer(test.modelName, test.version, test.serverName)
-			var prevModelVersion *ModelVersion
+			g.Expect(err).To(BeNil())
+
+			var prevModelVersion *db.ModelVersion
 			if test.prevVersion != nil {
 				_, prevModelVersion, _, err = ms.getModelServer(test.modelName, *test.prevVersion, test.serverName)
 				g.Expect(err).To(BeNil())
 			}
-			g.Expect(err).To(BeNil())
+
+			// Update model status
 			isLatest := model.Latest().GetVersion() == modelVersion.GetVersion()
-			ms.updateModelStatus(isLatest, model.IsDeleted(), modelVersion, prevModelVersion)
-			g.Expect(modelVersion.state.State).To(Equal(test.expectedModelStatus))
+			err = ms.updateModelStatus(isLatest, model.Deleted, modelVersion, prevModelVersion, model)
+			g.Expect(err).To(BeNil())
+			g.Expect(modelVersion.State.State).To(Equal(test.expectedModelStatus))
 		})
 	}
 }

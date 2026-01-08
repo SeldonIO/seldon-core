@@ -7,18 +7,17 @@ Use of this software is governed BY
 the Change License after the Change Date as each is defined in accordance with the LICENSE file.
 */
 
-package in_memory
+package store
 
 import (
 	"context"
 	"sync"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"google.golang.org/protobuf/proto"
 )
 
-type Storage[T interface {
+type StorageInMemory[T interface {
 	proto.Message
 	GetName() string
 }] struct {
@@ -26,43 +25,43 @@ type Storage[T interface {
 	records map[string]T
 }
 
-var _ store.Storage[*db.Model] = &Storage[*db.Model]{}
-var _ store.Storage[*db.Server] = &Storage[*db.Server]{}
+var _ Storage[*db.Model] = &StorageInMemory[*db.Model]{}
+var _ Storage[*db.Server] = &StorageInMemory[*db.Server]{}
 
-func NewStorage[T interface {
+func NewInMemoryStorage[T interface {
 	proto.Message
 	GetName() string
-}]() *Storage[T] {
-	return &Storage[T]{
+}]() *StorageInMemory[T] {
+	return &StorageInMemory[T]{
 		records: make(map[string]T),
 	}
 }
 
-func (s *Storage[T]) Get(_ context.Context, id string) (T, error) {
+func (s *StorageInMemory[T]) Get(_ context.Context, id string) (T, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	record, ok := s.records[id]
 	if !ok {
-		return *new(T), store.ErrNotFound
+		return *new(T), ErrNotFound
 	}
 
 	return proto.Clone(record).(T), nil
 }
 
-func (s *Storage[T]) Insert(_ context.Context, record T) error {
+func (s *StorageInMemory[T]) Insert(_ context.Context, record T) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if _, ok := s.records[record.GetName()]; ok {
-		return store.ErrAlreadyExists
+		return ErrAlreadyExists
 	}
 
 	s.records[record.GetName()] = proto.Clone(record).(T)
 	return nil
 }
 
-func (s *Storage[T]) List(_ context.Context) ([]T, error) {
+func (s *StorageInMemory[T]) List(_ context.Context) ([]T, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -74,24 +73,24 @@ func (s *Storage[T]) List(_ context.Context) ([]T, error) {
 	return records, nil
 }
 
-func (s *Storage[T]) Update(_ context.Context, record T) error {
+func (s *StorageInMemory[T]) Update(_ context.Context, record T) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if _, ok := s.records[record.GetName()]; !ok {
-		return store.ErrNotFound
+		return ErrNotFound
 	}
 
 	s.records[record.GetName()] = proto.Clone(record).(T)
 	return nil
 }
 
-func (s *Storage[T]) Delete(_ context.Context, id string) error {
+func (s *StorageInMemory[T]) Delete(_ context.Context, id string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if _, ok := s.records[id]; !ok {
-		return store.ErrNotFound
+		return ErrNotFound
 	}
 
 	delete(s.records, id)
