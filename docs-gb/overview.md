@@ -113,7 +113,7 @@ s2i build . seldonio/seldon-core-s2i-python<PYTHON VERSION>:<TAG> model:0.1
 
 to create ready to use Docker image.
 
-Read more about Python [Language Wrapper on its dedicated documentation page](wrappers/python/).
+Read more about Python [Language Wrapper on its dedicated documentation page](wrappers/python/python_module.md).
 
 ## Seldon Deployment CRD
 
