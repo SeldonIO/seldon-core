@@ -33,7 +33,7 @@ With over 2M installs, Seldon Core is used across organisations to manage large 
 * Cloud agnostic and tested on [AWS EKS, Azure AKS, Google GKE, Alicloud, Digital Ocean and Openshift](notebooks/README.md#cloud-specific-examples).
 * Powerful and rich inference graphs made out of [predictors, transformers, routers, combiners, and more](routing/inference-graph.md).
 * Metadata provenance to ensure each model can be traced back to its respective [training system, data and metrics](deployments/metadata.md)
-* Advanced and customisable metrics with integration [to Prometheus](integrations/analytics.md).
+* Advanced and customisable metrics with integration to [Prometheus](integrations/analytics.md).
 * Full auditability through model input-output request [logging integration with Elasticsearch](reference/log_level.md).
 * Microservice distributed tracing through [integration to Jaeger](integrations/distributed-tracing.md) for insights on latency across microservice hops.
 * Secure, reliable and robust system maintained through a consistent [security & updates policy](../SECURITY.md).
