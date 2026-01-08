@@ -1,6 +1,6 @@
 # Seldon Core Helm Charts
 
-Helm charts are published to our official repo.
+Helm charts are published to our official charts repo and [Github repository](https://github.com/SeldonIO/helm-charts/releases?q=seldon-core-operator).
 
 ## Core Chart
 
