@@ -191,7 +191,7 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 		}
 
 		if err := suiteDeps.k8sClient.DeleteScenarioResources(ctx, world.Label); err != nil {
-			return ctx, fmt.Errorf("error when deleting models on before steps: %w", err)
+			return ctx, fmt.Errorf("error when deleting models on after scenario steps: %w", err)
 		}
 
 		return ctx, nil
