@@ -1,37 +1,25 @@
 # Seldon Core Helm Charts
 
-Helm charts are published to our official repo.
+Helm charts are published to our official charts repo and [Github repository](https://github.com/SeldonIO/helm-charts/releases?q=seldon-core-operator).
 
-## Core Charts
+## Core Chart
 
-The core charts for installing Seldon Core are shown below.
+The core chart for installing Seldon Core is shown below.
 
-.. toctree::
-   :maxdepth: 1
+ * [seldon-core-operator](../../helm-charts/seldon-core-operator/README.md)
 
-   seldon-core-operator <../charts/seldon-core-operator>
-
-For further details see [here](../workflow/install.md).
+For advanced configuration of the core chart, please see [Advanced Helm Chart Configuration](../install/advanced-helm-chart-configuration.md).
 
 ## Inference Graph Templates
 
 A set of charts to provide example templates for creating particular inference graphs using Seldon Core
-
-.. toctree::
-   :maxdepth: 1
-
-   seldon-single-model <../charts/seldon-single-model>
-   seldon-abtest <../charts/seldon-abtest>
-   seldon-mab <../charts/seldon-mab>
-   seldon-od-model <../charts/seldon-od-model>
-   seldon-od-transformer <../charts/seldon-od-transformer>
+ * [seldon-single-model](../../helm-charts/seldon-single-model/README.md)
+   * Serve a single model with attached Persistent Volume.
+ * [seldon-abtest](../../helm-charts/seldon-abtest/README.md)
+   * Serve an AB test between two models.
+ * [seldon-mab](../../helm-charts/seldon-mab/README.md)
+   * Serve a multi-armed bandit between two models.
+ * [seldon-od-model](../../helm-charts/seldon-od-model/README.md) and [seldon-od-transformer](../../helm-charts/seldon-od-transformer/README.md)
 
 [A notebook with examples of using the above charts](../notebooks/helm_examples.md) is provided.
 
-## Misc
-
-.. toctree::
-   :maxdepth: 1
-
-   seldon-core-loadtesting <../charts/seldon-core-loadtesting>
-   seldon-core-analytics <../charts/seldon-core-analytics>

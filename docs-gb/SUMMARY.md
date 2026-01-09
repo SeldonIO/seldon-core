@@ -209,6 +209,7 @@
               spec: wrapper
         ```
 * [Release Highlights](reference/release-highlights/README.md)
+  * [Releases 1.8.0 and later](reference/release-highlights/later-releases.md)
   * [Release 1.7.0 Hightlights](reference/release-highlights/release-1.7.0.md)
   * [Release 1.6.0 Hightlights](reference/release-highlights/release-1.6.0.md)
   * [Release 1.5.0 Hightlights](reference/release-highlights/release-1.5.0.md)
@@ -224,13 +225,12 @@
 * [Seldon Deployment CRD](reference/seldon-deployment-crd.md)
 * [Service Orchestrator](reference/svcorch.md)
 * [Kubeflow](reference/kubeflow.md)
-* [Archived Docs](https://docs.seldon.io/projects/seldon-core/en/1.18/nav/archive.html)
+* [Archived Docs](https://github.com/SeldonIO/seldon-core/tree/v1.18.2/doc)
 
 ## Contributing
 
 * [Overview](developer/readme.md)
 * [Seldon Core Licensing](developer/contributing.md)
 * [End to End Tests](developer/e2e.md)
-* [Roadmap](developer/roadmap.md)
 * [Build using Private Repo](developer/buid-using-private-repo.md)
 * [Seldon Docs Home](https://docs.seldon.ai/home)

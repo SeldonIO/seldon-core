@@ -1,0 +1,1 @@
+For releases 1.8.0 and later, please refer to the [release notes in GitHub](https://github.com/SeldonIO/seldon-core/releases).

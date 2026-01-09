@@ -19,7 +19,6 @@ Seldon core converts your ML models (Tensorflow, Pytorch, H2o, etc.) or language
 Seldon handles scaling to thousands of production machine learning models and provides advanced machine learning capabilities out of the box including Advanced Metrics, Request Logging, Explainers, Outlier Detectors, A/B Tests, Canaries and more.
 
 * Read the [Seldon Core Documentation](https://docs.seldon.ai/seldon-core-1)
-* Join our [community Slack](https://join.slack.com/t/seldondev/shared_invite/zt-vejg6ttd-ksZiQs3O_HOtPQsen_labg) to ask any questions
 * Get started with [Seldon Core Notebook Examples](notebooks/)
 * Learn how you can [start contributing](developer/contributing.md)
 
@@ -29,12 +28,12 @@ Seldon handles scaling to thousands of production machine learning models and pr
 
 With over 2M installs, Seldon Core is used across organisations to manage large scale deployment of machine learning models, and key benefits include:
 
-* Easy way to containerise ML models using our [pre-packaged inference servers](servers/overview.md), [custom servers](servers/custom.md), or [language wrappers](https://docs.seldon.io/projects/seldon-core/en/1.18/wrappers/language_wrappers.html).
-* Out of the box endpoints which can be tested through [Swagger UI](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/openapi.html?highlight=swagger), [Seldon Python Client or Curl / GRPCurl](wrappers/python/python_module.md#seldon-core-python-package).
-* Cloud agnostic and tested on [AWS EKS, Azure AKS, Google GKE, Alicloud, Digital Ocean and Openshift](notebooks/#cloud-specific-examples).
-* Powerful and rich inference graphs made out of [predictors, transformers, routers, combiners, and more](https://docs.seldon.io/projects/seldon-core/en/1.18/examples/graph-metadata.html).
+* Easy way to containerise ML models using our [pre-packaged inference servers](servers/overview.md), [custom servers](servers/custom.md), or [language wrappers](configuration/wrappers-and-sdks/README.md).
+* Out of the box endpoints which can be tested through [Swagger UI](reference/prediction-apis/prediction-open-api-spec/seldon-core-external-via-ambassador/README.md), [Seldon Python Client or Curl / GRPCurl](wrappers/python/python_module.md#seldon-core-python-package).
+* Cloud agnostic and tested on [AWS EKS, Azure AKS, Google GKE, Alicloud, Digital Ocean and Openshift](notebooks/README.md#cloud-specific-examples).
+* Powerful and rich inference graphs made out of [predictors, transformers, routers, combiners, and more](routing/inference-graph.md).
 * Metadata provenance to ensure each model can be traced back to its respective [training system, data and metrics](deployments/metadata.md)
-* Advanced and customisable metrics with integration [to Prometheus and Grafana](integrations/analytics.md).
+* Advanced and customisable metrics with integration to [Prometheus](integrations/analytics.md).
 * Full auditability through model input-output request [logging integration with Elasticsearch](reference/log_level.md).
 * Microservice distributed tracing through [integration to Jaeger](integrations/distributed-tracing.md) for insights on latency across microservice hops.
 * Secure, reliable and robust system maintained through a consistent [security & updates policy](../SECURITY.md).
@@ -146,7 +145,7 @@ class Model:
         return output
 ```
 
-We can now containerize our class file using the [Seldon Core s2i utils](https://docs.seldon.io/projects/seldon-core/en/1.18/wrappers/s2i.html) to produce the `sklearn_iris` image:
+We can now containerize our class file using the s2i utils to produce the `sklearn_iris` image:
 
 ```console
 s2i build . seldonio/seldon-core-s2i-python3:0.18 sklearn_iris:0.1
@@ -219,22 +218,19 @@ Below are some of the core components together with link to the logs that provid
 | <p><a href="https://docs.seldon.ai/seldon-core-1/configuration/integrations/analytics"><br>Standard and custom metrics with prometheus<br><br><img src="https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/analytics/dashboard.png" alt=""></a></p>  | <p><a href="https://docs.seldon.ai/seldon-core-1/configuration/integrations/logging"><br>Full audit trails with ELK request logging<br><br><img src="https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/kibana-custom-search.png" alt=""></a></p>                  |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <p><a href="https://docs.seldon.ai/seldon-core-1/configuration/integrations/explainers"><br>Explainers for Machine Learning Interpretability<br><br><img src="https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/anchors.jpg" alt=""></a></p> | <p><a href="https://docs.seldon.ai/seldon-core-1/configuration/integrations/outlier_detection"><br>Outlier and Adversarial Detectors for Monitoring<br><br><img src="https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/adversarial-attack.png" alt=""></a></p>    |
-| <p><a href="https://docs.seldon.ai/seldon-core-1/configuration/integrations/cicd-mlops"><br>CI/CD for MLOps at Massive Scale<br><br><img src="https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/images/cicd-seldon.jpg" alt=""></a></p>             | <p><a href="https://docs.seldon.ai/seldon-core-1/configuration/integrations/distributed-tracing"><br>Distributed tracing for performance monitoring<br><br><img src="https://raw.githubusercontent.com/SeldonIO/seldon-core/master/doc/source/graph/jaeger-ui-rest-example.png" alt=""></a></p> |
 
 ## Where to go from here
 
 ### Getting Started
 
-* [Quickstart Guide](./#getting-started)
 * [Overview of Components](overview.md)
-* [Install Seldon Core on Kubernetes](../install/installation.md)
-* [Join the Community](developer/community.md)
+* [Install Seldon Core on Kubernetes](install/installation.md)
 
 ### Seldon Core Deep Dive
 
-* [Detailed Installation Parameters](https://docs.seldon.io/projects/seldon-core/en/latest/reference/helm.html)
+* [Detailed Installation Parameters](install/advanced-helm-chart-configuration.md)
 * [Pre-packaged Inference Servers](servers/overview.md)
-* [Language Wrappers for Custom Models](https://docs.seldon.io/projects/seldon-core/en/1.18/wrappers/language_wrappers.html)
+* [Language Wrappers for Custom Models](configuration/wrappers-and-sdks/README.md)
 * [Create your Inference Graph](routing/inference-graph.md)
 * [Deploy your Model](deployments/deploying.md)
 * [Testing your Model Endpoints](deployments/serving.md)
@@ -250,16 +246,21 @@ Below are some of the core components together with link to the logs that provid
 * [Tensorflow Serving](servers/tensorflow.md)
 * [XGBoost server](servers/xgboost.md)
 
-### Language Wrappers (Production)
+### Language Wrappers
 
-* [Python Language Wrapper \[Production\]](https://docs.seldon.io/projects/seldon-core/en/latest/python/index.html)
+#### Ready to use Wrappers
 
-### Language Wrappers (Incubating)
+* [Python Language Wrapper](configuration/wrappers-and-sdks/python-language-wrapper/README.md)
 
-* [Java Language Wrapper \[Incubating\]](wrappers/java.md)
-* [R Language Wrapper \[ALPHA\]](wrappers/r.md)
-* [NodeJS Language Wrapper \[ALPHA\]](wrappers/nodejs.md)
-* [Go Language Wrapper \[ALPHA\]](https://docs.seldon.io/projects/seldon-core/en/latest/go/go_wrapper_link.html)
+#### Other Examples 
+
+{% hint style="warning" %}
+Not suitable for production use - provided as examples only.
+{% endhint %}
+
+* [Java Language Wrapper](wrappers/java.md)
+* [R Language Wrapper](wrappers/r.md)
+* [NodeJS Language Wrapper](wrappers/nodejs.md)
 
 ### Ingress
 
@@ -292,22 +293,19 @@ Below are some of the core components together with link to the logs that provid
 * [Benchmarking](reference/benchmarking.md)
 * [General Availability](reference/ga.md)
 * [Helm Charts](reference/helm_charts.md)
-* [Images](https://docs.seldon.io/projects/seldon-core/en/latest/reference/images.html)
+* [Images](reference/images.md)
 * [Logging & Log Level](reference/log_level.md)
 * [Private Docker Registry](reference/private_registries.md)
-* [Prediction APIs](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/index.html)
-* [Python API reference](https://docs.seldon.io/projects/seldon-core/en/latest/python/api/modules.html)
-* [Release Highlights](https://docs.seldon.io/projects/seldon-core/en/latest/reference/release-highlights.html)
-* [Seldon Deployment CRD ](reference/)(https://docs.seldon.io/projects/seldon-core/en/latest/reference/seldon-deployment.html)
+* [Prediction APIs](reference/prediction-apis/README.md)
+* [Release Highlights](reference/release-highlights/README.md)
+* [Seldon Deployment CRD ](reference/seldon-deployment-crd.md)
 * [Service Orchestrator](reference/svcorch.md)
 * [Kubeflow](reference/kubeflow.md)
 
 ### Developer
 
-* [Overview](developer/)
 * [Contributing to Seldon Core](developer/contributing.md)
 * [End to End Tests](developer/e2e.md)
-* [Roadmap](developer/roadmap.md)
 * [Build using private repo](developer/buid-using-private-repo.md)
 
 ## About the name "Seldon Core"
@@ -320,4 +318,4 @@ To learn more about our commercial offerings visit [https://www.seldon.io/](http
 
 ## License
 
-[License](LICENSE/)
+[License](./LICENSE.md)
