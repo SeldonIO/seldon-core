@@ -136,49 +136,7 @@ For custom configuration and more details on installing Seldon Core with Istio p
 
 ## Install Seldon Core
 
-Before we install Seldon Core, we'll create a new namespace `seldon-system` for the operator to run in:
-
-```bash
-kubectl create namespace seldon-system
-```
-
-We're now ready to install Seldon Core in our cluster. Run the following command for your choice of Ingress:
-
-{% tabs %}
-
-{% tab title="Istio" %}
-
-```bash
-helm install seldon-core seldon-core-operator \
-    --repo https://storage.googleapis.com/seldon-charts \
-    --set usageMetrics.enabled=true \
-    --set istio.enabled=true \
-    --namespace seldon-system
-```
-
-{% endtab %}
-
-{% tab title="Ambassador" %}
-
-```bash
-helm install seldon-core seldon-core-operator \
-    --repo https://storage.googleapis.com/seldon-charts \
-    --set usageMetrics.enabled=true \
-    --set ambassador.enabled=true \
-    --namespace seldon-system
-```
-
-{% endtab %}
-
-{% endtabs %}
-
-You can check that your Seldon Controller is running by doing:
-
-```bash
-kubectl get pods -n seldon-system
-```
-
-You should see a `seldon-controller-manager` pod with `STATUS=Running`.
+To install Seldon Core, you can refer to [this](./installation.md#install-seldon-core-with-helm) page.
 
 ## Accessing your models
 
