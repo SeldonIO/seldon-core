@@ -15,7 +15,7 @@ import (
 
 func (s *Server) initReplicas() {
 	if s.Replicas == nil {
-		s.Replicas = map[int32]*ServerReplica{}
+		s.Replicas = make(map[int32]*ServerReplica)
 	}
 }
 
@@ -49,7 +49,7 @@ func (s *ServerReplica) GetNumLoadedModels() int {
 
 func (s *ServerReplica) initUniqueLoadedModels() {
 	if s.UniqueLoadedModels == nil {
-		s.UniqueLoadedModels = map[string]bool{}
+		s.UniqueLoadedModels = make(map[string]bool)
 	}
 }
 

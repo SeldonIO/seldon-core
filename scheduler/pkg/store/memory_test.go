@@ -1170,242 +1170,17 @@ func TestUpdateModelState(t *testing.T) {
 	}
 
 	tests := []test{
-		//{
-		//	name: "LoadedModel",
-		//	store: &LocalSchedulerStore{
-		//		models: map[string]*Model{"model": {
-		//			versions: []*ModelVersion{
-		//				{
-		//					modelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
-		//					version:   1,
-		//					replicas:  map[int]ReplicaStatus{},
-		//				},
-		//			},
-		//		}},
-		//		servers: map[string]*Server{
-		//			"server": {
-		//				name: "server",
-		//				replicas: map[int]*ServerReplica{
-		//					0: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
-		//					1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
-		//				},
-		//			},
-		//		},
-		//	},
-		//	modelName:              "model",
-		//	version:                1,
-		//	serverKey:              "server",
-		//	replicaIdx:             0,
-		//	expectedState:          ModelReplicaStateUnknown,
-		//	desiredState:           Loaded,
-		//	numModelVersionsLoaded: 1,
-		//	modelVersionLoaded:     true,
-		//	availableMemory:        20,
-		//	modelRuntimeInfo:       &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &pb.MLServerModelSettings{ParallelWorkers: uint32(1)}}},
-		//},
-		//{
-		//	name: "UnloadedModel",
-		//	store: &LocalSchedulerStore{
-		//		models: map[string]*Model{"model": {
-		//			versions: []*ModelVersion{
-		//				{
-		//					modelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
-		//					version:   1,
-		//					replicas:  map[int]ReplicaStatus{},
-		//				},
-		//			},
-		//		}},
-		//		servers: map[string]*Server{
-		//			"server": {
-		//				name: "server",
-		//				replicas: map[int]*ServerReplica{
-		//					0: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
-		//					1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
-		//				},
-		//			},
-		//		},
-		//	},
-		//	modelName:              "model",
-		//	version:                1,
-		//	serverKey:              "server",
-		//	replicaIdx:             0,
-		//	expectedState:          ModelReplicaStateUnknown,
-		//	desiredState:           Unloaded,
-		//	numModelVersionsLoaded: 0,
-		//	modelVersionLoaded:     false,
-		//	availableMemory:        20,
-		//	modelRuntimeInfo:       &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &pb.MLServerModelSettings{ParallelWorkers: uint32(1)}}},
-		//},
-		//{
-		//	name: "Unloaded model but not matching expected state",
-		//	store: &LocalSchedulerStore{
-		//		models: map[string]*Model{"model": {
-		//			versions: []*ModelVersion{
-		//				{
-		//					modelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
-		//					version:   1,
-		//					replicas: map[int]ReplicaStatus{
-		//						0: {State: LoadRequested},
-		//					},
-		//				},
-		//			},
-		//		}},
-		//		servers: map[string]*Server{
-		//			"server": {
-		//				name: "server",
-		//				replicas: map[int]*ServerReplica{
-		//					0: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
-		//					1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
-		//				},
-		//			},
-		//		},
-		//	},
-		//	modelName:              "model",
-		//	version:                1,
-		//	serverKey:              "server",
-		//	replicaIdx:             0,
-		//	expectedState:          Unloading,
-		//	desiredState:           Unloaded,
-		//	numModelVersionsLoaded: 0,
-		//	modelVersionLoaded:     false,
-		//	availableMemory:        20,
-		//	err:                    true,
-		//},
-		//{
-		//	name: "DeletedModel",
-		//	store: &LocalSchedulerStore{
-		//		models: map[string]*Model{"model": {
-		//			versions: []*ModelVersion{
-		//				{
-		//					modelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
-		//					version:   1,
-		//					replicas:  map[int]ReplicaStatus{},
-		//				},
-		//			},
-		//		}},
-		//		servers: map[string]*Server{
-		//			"server": {
-		//				name: "server",
-		//				replicas: map[int]*ServerReplica{
-		//					0: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
-		//					1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
-		//				},
-		//			},
-		//		},
-		//	},
-		//	modelName:              "model",
-		//	version:                1,
-		//	serverKey:              "server",
-		//	replicaIdx:             0,
-		//	expectedState:          ModelReplicaStateUnknown,
-		//	desiredState:           Unloaded,
-		//	numModelVersionsLoaded: 0,
-		//	modelVersionLoaded:     false,
-		//	availableMemory:        20,
-		//	deleted:                true,
-		//	modelRuntimeInfo:       &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &pb.MLServerModelSettings{ParallelWorkers: uint32(1)}}},
-		//},
-		//{
-		//	name: "Model updated but not latest on replica which is loaded",
-		//	store: &LocalSchedulerStore{
-		//		models: map[string]*Model{"foo": {
-		//			versions: []*ModelVersion{
-		//				{
-		//					modelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
-		//					version:   1,
-		//					replicas: map[int]ReplicaStatus{
-		//						0: {State: Unloading},
-		//					},
-		//				},
-		//				{
-		//					modelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
-		//					version:   2,
-		//					replicas: map[int]ReplicaStatus{
-		//						0: {State: Loaded},
-		//					},
-		//				},
-		//			},
-		//		}},
-		//		servers: map[string]*Server{
-		//			"server": {
-		//				name: "server",
-		//				replicas: map[int]*ServerReplica{
-		//					0: {loadedModels: map[ModelVersionID]bool{{Name: "foo", Version: 2}: true, {Name: "foo", Version: 1}: true}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{"foo": true}},
-		//					1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
-		//				},
-		//			},
-		//		},
-		//	},
-		//	modelName:              "foo",
-		//	version:                1,
-		//	serverKey:              "server",
-		//	replicaIdx:             0,
-		//	expectedState:          Unloading,
-		//	desiredState:           Unloaded,
-		//	numModelVersionsLoaded: 1,
-		//	modelVersionLoaded:     false,
-		//	availableMemory:        20,
-		//	modelRuntimeInfo:       &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &pb.MLServerModelSettings{ParallelWorkers: uint32(1)}}},
-		//	err:                    false,
-		//},
-		//{
-		//	name: "Model updated but not latest on replica which is Available",
-		//	store: &LocalSchedulerStore{
-		//		models: map[string]*Model{"foo": {
-		//			versions: []*ModelVersion{
-		//				{
-		//					modelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
-		//					version:   1,
-		//					replicas: map[int]ReplicaStatus{
-		//						0: {State: Unloading},
-		//					},
-		//				},
-		//				{
-		//					modelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
-		//					version:   2,
-		//					replicas: map[int]ReplicaStatus{
-		//						0: {State: Available},
-		//					},
-		//				},
-		//			},
-		//		}},
-		//		servers: map[string]*Server{
-		//			"server": {
-		//				name: "server",
-		//				replicas: map[int]*ServerReplica{
-		//					0: {loadedModels: map[ModelVersionID]bool{{Name: "foo", Version: 2}: true, {Name: "foo", Version: 1}: true}, reservedMemory: memBytes * 2, uniqueLoadedModels: map[string]bool{"foo": true}},
-		//					1: {loadedModels: map[ModelVersionID]bool{}, reservedMemory: memBytes, uniqueLoadedModels: map[string]bool{}},
-		//				},
-		//			},
-		//		},
-		//	},
-		//	modelName:              "foo",
-		//	version:                1,
-		//	serverKey:              "server",
-		//	replicaIdx:             0,
-		//	expectedState:          Unloading,
-		//	desiredState:           Unloaded,
-		//	numModelVersionsLoaded: 1,
-		//	modelVersionLoaded:     false,
-		//	availableMemory:        20,
-		//	modelRuntimeInfo:       &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &pb.MLServerModelSettings{ParallelWorkers: uint32(2)}}},
-		//	err:                    false,
-		//},
 		{
-			name: "Existing ModelRuntimeInfo is not overwritten",
+			name: "LoadedModel",
 			models: []*db.Model{{
-				Name: "my-model",
+				Name: "model",
 				Versions: []*db.ModelVersion{
 					{
 						ModelDefn: &pb.Model{
 							Meta: &pb.MetaData{
-								Name: "my-model",
+								Name: "model",
 							},
-							ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes,
-								ModelRuntimeInfo: &pb.ModelRuntimeInfo{
-									ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{
-										Mlserver: &pb.MLServerModelSettings{
-											ParallelWorkers: uint32(2)}}}}},
+							ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
 						Version:  1,
 						Replicas: map[int32]*db.ReplicaStatus{},
 						State:    &db.ModelStatus{},
@@ -1421,7 +1196,272 @@ func TestUpdateModelState(t *testing.T) {
 					},
 				},
 			},
-			modelName:              "my.model",
+			modelName:              "model",
+			version:                1,
+			serverKey:              "server",
+			replicaIdx:             0,
+			expectedState:          db.ModelReplicaState_ModelReplicaStateUnknown,
+			desiredState:           db.ModelReplicaState_Loaded,
+			numModelVersionsLoaded: 1,
+			modelVersionLoaded:     true,
+			availableMemory:        20,
+			modelRuntimeInfo:       &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &pb.MLServerModelSettings{ParallelWorkers: uint32(1)}}},
+		},
+		{
+			name: "UnloadedModel",
+			models: []*db.Model{{
+				Name: "model",
+				Versions: []*db.ModelVersion{
+					{
+						ModelDefn: &pb.Model{
+							Meta: &pb.MetaData{
+								Name: "model",
+							},
+							ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
+						Version:  1,
+						Replicas: map[int32]*db.ReplicaStatus{},
+						State:    &db.ModelStatus{},
+					},
+				},
+			}},
+			servers: []*db.Server{
+				{
+					Name: "server",
+					Replicas: map[int32]*db.ServerReplica{
+						0: {LoadedModels: []*db.ModelVersionID{}, ReservedMemory: memBytes, UniqueLoadedModels: map[string]bool{}},
+						1: {LoadedModels: []*db.ModelVersionID{}, ReservedMemory: memBytes, UniqueLoadedModels: map[string]bool{}},
+					},
+				},
+			},
+			modelName:              "model",
+			version:                1,
+			serverKey:              "server",
+			replicaIdx:             0,
+			expectedState:          db.ModelReplicaState_ModelReplicaStateUnknown,
+			desiredState:           db.ModelReplicaState_Unloaded,
+			numModelVersionsLoaded: 0,
+			modelVersionLoaded:     false,
+			availableMemory:        20,
+			modelRuntimeInfo:       &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &pb.MLServerModelSettings{ParallelWorkers: uint32(1)}}},
+		},
+		{
+			name: "Unloaded model but not matching expected state",
+			models: []*db.Model{{
+				Name: "model",
+				Versions: []*db.ModelVersion{
+					{
+						ModelDefn: &pb.Model{
+							Meta: &pb.MetaData{
+								Name: "model",
+							},
+							ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
+						Version: 1,
+						Replicas: map[int32]*db.ReplicaStatus{
+							0: {State: db.ModelReplicaState_LoadRequested},
+						},
+						State: &db.ModelStatus{},
+					},
+				},
+			}},
+			servers: []*db.Server{
+				{
+					Name: "server",
+					Replicas: map[int32]*db.ServerReplica{
+						0: {LoadedModels: []*db.ModelVersionID{}, ReservedMemory: memBytes, UniqueLoadedModels: map[string]bool{}},
+						1: {LoadedModels: []*db.ModelVersionID{}, ReservedMemory: memBytes, UniqueLoadedModels: map[string]bool{}},
+					},
+				},
+			},
+			modelName:              "model",
+			version:                1,
+			serverKey:              "server",
+			replicaIdx:             0,
+			expectedState:          db.ModelReplicaState_Unloading,
+			desiredState:           db.ModelReplicaState_Unloaded,
+			numModelVersionsLoaded: 0,
+			modelVersionLoaded:     false,
+			availableMemory:        20,
+			err:                    true,
+		},
+		{
+			name: "DeletedModel",
+			models: []*db.Model{{
+				Name: "my-model",
+				Versions: []*db.ModelVersion{
+					{
+						ModelDefn: &pb.Model{
+							Meta: &pb.MetaData{
+								Name: "my-model",
+							},
+							ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
+						Version:  1,
+						Replicas: map[int32]*db.ReplicaStatus{},
+						State:    &db.ModelStatus{},
+					},
+				},
+			}},
+			servers: []*db.Server{
+				{
+					Name: "server",
+					Replicas: map[int32]*db.ServerReplica{
+						0: {LoadedModels: []*db.ModelVersionID{}, ReservedMemory: memBytes, UniqueLoadedModels: make(map[string]bool)},
+						1: {LoadedModels: []*db.ModelVersionID{}, ReservedMemory: memBytes, UniqueLoadedModels: make(map[string]bool)},
+					},
+				},
+			},
+			modelName:              "my-model",
+			version:                1,
+			serverKey:              "server",
+			replicaIdx:             0,
+			expectedState:          db.ModelReplicaState_ModelReplicaStateUnknown,
+			desiredState:           db.ModelReplicaState_Unloaded,
+			numModelVersionsLoaded: 0,
+			modelVersionLoaded:     false,
+			availableMemory:        20,
+			deleted:                true,
+			modelRuntimeInfo:       &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &pb.MLServerModelSettings{ParallelWorkers: uint32(1)}}},
+		},
+		{
+			name: "Model updated but not latest on replica which is loaded",
+			models: []*db.Model{{
+				Name: "foo",
+				Versions: []*db.ModelVersion{
+					{
+						ModelDefn: &pb.Model{
+							Meta: &pb.MetaData{
+								Name: "foo",
+							},
+							ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
+						Version: 1,
+						Replicas: map[int32]*db.ReplicaStatus{
+							0: {State: db.ModelReplicaState_Unloading},
+						},
+						State: &db.ModelStatus{},
+					},
+					{
+						ModelDefn: &pb.Model{
+							Meta: &pb.MetaData{
+								Name: "foo",
+							},
+							ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
+						Version: 2,
+						Replicas: map[int32]*db.ReplicaStatus{
+							0: {State: db.ModelReplicaState_Loaded},
+						},
+						State: &db.ModelStatus{},
+					},
+				},
+			}},
+			servers: []*db.Server{
+				{
+					Name: "server",
+					Replicas: map[int32]*db.ServerReplica{
+						0: {LoadedModels: []*db.ModelVersionID{{Name: "foo", Version: 2}, {Name: "foo", Version: 1}}, ReservedMemory: memBytes, UniqueLoadedModels: map[string]bool{"foo": true}},
+						1: {LoadedModels: []*db.ModelVersionID{}, ReservedMemory: memBytes, UniqueLoadedModels: map[string]bool{}},
+					},
+				},
+			},
+			modelName:              "foo",
+			version:                1,
+			serverKey:              "server",
+			replicaIdx:             0,
+			expectedState:          db.ModelReplicaState_Unloading,
+			desiredState:           db.ModelReplicaState_Unloaded,
+			numModelVersionsLoaded: 1,
+			modelVersionLoaded:     false,
+			availableMemory:        20,
+			modelRuntimeInfo:       &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &pb.MLServerModelSettings{ParallelWorkers: uint32(1)}}},
+			err:                    false,
+		},
+		{
+			name: "Model updated but not latest on replica which is Available",
+			models: []*db.Model{{
+				Name: "foo",
+				Versions: []*db.ModelVersion{
+					{
+						ModelDefn: &pb.Model{
+							Meta: &pb.MetaData{
+								Name: "foo",
+							},
+							ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
+						Version: 1,
+						Replicas: map[int32]*db.ReplicaStatus{
+							0: {State: db.ModelReplicaState_Unloading},
+						},
+						State: &db.ModelStatus{},
+					},
+					{
+						ModelDefn: &pb.Model{
+							Meta: &pb.MetaData{
+								Name: "foo",
+							},
+							ModelSpec: &pb.ModelSpec{MemoryBytes: &memBytes}},
+						Version: 2,
+						Replicas: map[int32]*db.ReplicaStatus{
+							0: {State: db.ModelReplicaState_Available},
+						},
+						State: &db.ModelStatus{},
+					},
+				},
+			}},
+			servers: []*db.Server{
+				{
+					Name: "server",
+					Replicas: map[int32]*db.ServerReplica{
+						0: {LoadedModels: []*db.ModelVersionID{{Name: "foo", Version: 2}, {Name: "foo", Version: 1}}, ReservedMemory: memBytes * 2, UniqueLoadedModels: map[string]bool{"foo": true}},
+						1: {LoadedModels: []*db.ModelVersionID{{Name: "foo", Version: 2}, {Name: "foo", Version: 1}}, ReservedMemory: memBytes, UniqueLoadedModels: map[string]bool{}},
+					},
+				},
+			},
+			modelName:              "foo",
+			version:                1,
+			serverKey:              "server",
+			replicaIdx:             0,
+			expectedState:          db.ModelReplicaState_Unloading,
+			desiredState:           db.ModelReplicaState_Unloaded,
+			numModelVersionsLoaded: 1,
+			modelVersionLoaded:     false,
+			availableMemory:        20,
+			modelRuntimeInfo:       &pb.ModelRuntimeInfo{ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{Mlserver: &pb.MLServerModelSettings{ParallelWorkers: uint32(2)}}},
+			err:                    false,
+		},
+		{
+			name: "Existing ModelRuntimeInfo is not overwritten",
+			models: []*db.Model{{
+				Name: "my-model",
+				Versions: []*db.ModelVersion{
+					{
+						ModelDefn: &pb.Model{
+							Meta: &pb.MetaData{
+								Name: "my-model",
+							},
+							ModelSpec: &pb.ModelSpec{
+								MemoryBytes: &memBytes,
+								ModelRuntimeInfo: &pb.ModelRuntimeInfo{
+									ModelRuntimeInfo: &pb.ModelRuntimeInfo_Mlserver{
+										Mlserver: &pb.MLServerModelSettings{
+											ParallelWorkers: uint32(2),
+										},
+									},
+								},
+							},
+						},
+						Version:  1,
+						Replicas: map[int32]*db.ReplicaStatus{},
+						State:    &db.ModelStatus{},
+					},
+				},
+			}},
+			servers: []*db.Server{
+				{
+					Name: "server",
+					Replicas: map[int32]*db.ServerReplica{
+						0: {LoadedModels: []*db.ModelVersionID{}, ReservedMemory: memBytes, UniqueLoadedModels: map[string]bool{}},
+						1: {LoadedModels: []*db.ModelVersionID{}, ReservedMemory: memBytes, UniqueLoadedModels: map[string]bool{}},
+					},
+				},
+			},
+			modelName:              "my-model",
 			version:                1,
 			serverKey:              "server",
 			replicaIdx:             0,
@@ -1515,7 +1555,15 @@ func TestUpdateModelState(t *testing.T) {
 				g.Expect(err).To(BeNil())
 				if !test.deleted {
 					g.Expect(getModel(test.modelName).GetVersion(test.version).GetModelReplicaState(test.replicaIdx)).To(Equal(test.desiredState))
-					g.Expect(getServer(test.serverKey).Replicas[int32(test.replicaIdx)].LoadedModels[ModelVersionID{Name: test.modelName, Version: test.version}]).To(Equal(test.modelVersionLoaded))
+
+					found := false
+					for _, v := range getServer(test.serverKey).Replicas[int32(test.replicaIdx)].LoadedModels {
+						if v.Name == test.modelName && v.Version == test.version && test.modelVersionLoaded {
+							found = true
+						}
+					}
+					g.Expect(found).To(Equal(test.modelVersionLoaded))
+
 					g.Expect(getServer(test.serverKey).Replicas[int32(test.replicaIdx)].GetNumLoadedModels()).To(Equal(test.numModelVersionsLoaded))
 				} else {
 					g.Expect(getModel(test.modelName).Latest().State.State).To(Equal(db.ModelState_ModelTerminated))
@@ -1527,10 +1575,22 @@ func TestUpdateModelState(t *testing.T) {
 			} else {
 				g.Expect(err).ToNot(BeNil())
 			}
-			if test.desiredState == db.ModelReplicaState_Loaded || test.desiredState == db.ModelReplicaState_LoadFailed {
+
+			if test.desiredState == db.ModelReplicaState_LoadFailed {
 				g.Expect(getServer(test.serverKey).Replicas[int32(test.replicaIdx)].GetReservedMemory()).To(Equal(uint64(0)))
 			} else {
 				g.Expect(getServer(test.serverKey).Replicas[int32(test.replicaIdx)].GetReservedMemory()).To(Equal(getModel(test.modelName).GetVersion(test.version).GetRequiredMemory()))
+			}
+
+			toUniqueModels := func(loadedModels []*db.ModelVersionID) map[string]bool {
+				if loadedModels == nil {
+					return nil
+				}
+				uniqueModels := make(map[string]bool)
+				for _, key := range loadedModels {
+					uniqueModels[key.Name] = true
+				}
+				return uniqueModels
 			}
 
 			uniqueLoadedModels := toUniqueModels(getServer(test.serverKey).Replicas[int32(test.replicaIdx)].LoadedModels)
