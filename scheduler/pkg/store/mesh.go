@@ -16,6 +16,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"google.golang.org/protobuf/proto"
 
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
@@ -37,6 +38,7 @@ func NewLocalSchedulerStore() *LocalSchedulerStore {
 }
 
 type Model struct {
+	name     string
 	versions []*ModelVersion
 	deleted  atomic.Bool
 }
@@ -77,16 +79,15 @@ type ReplicaStatus struct {
 	Timestamp time.Time
 }
 
-func NewDefaultModelVersion(model *pb.Model, version uint32) *ModelVersion {
-	return &ModelVersion{
-		version:   version,
-		modelDefn: model,
-		replicas:  make(map[int]ReplicaStatus),
-		state: ModelStatus{
-			State:        ModelStateUnknown,
-			ModelGwState: ModelCreate,
+func NewDefaultModelVersion(model *pb.Model, version uint32) *db.ModelVersion {
+	return &db.ModelVersion{
+		Version:   version,
+		ModelDefn: model,
+		Replicas:  make(map[int32]*db.ReplicaStatus, 0),
+		State: &db.ModelStatus{
+			State:        db.ModelState_ModelStateUnknown,
+			ModelGwState: db.ModelState_ModelCreate,
 		},
-		mu: sync.RWMutex{},
 	}
 }
 
@@ -153,12 +154,12 @@ func (s *Server) SetKubernetesMeta(meta *pb.KubernetesMeta) {
 	s.kubernetesMeta = meta
 }
 
-func NewServer(name string, shared bool) *Server {
-	return &Server{
-		name:             name,
-		replicas:         make(map[int]*ServerReplica),
-		shared:           shared,
-		expectedReplicas: -1,
+func NewServer(name string, shared bool) *db.Server {
+	return &db.Server{
+		Name:             name,
+		Replicas:         make(map[int32]*db.ServerReplica),
+		Shared:           shared,
+		ExpectedReplicas: -1,
 	}
 }
 
@@ -171,7 +172,6 @@ type ServerReplica struct {
 	inferenceGrpcPort int32
 	serverName        string
 	replicaIdx        int
-	server            *Server
 	capabilities      []string
 	memory            uint64
 	availableMemory   uint64
@@ -205,7 +205,6 @@ func NewServerReplica(inferenceSvc string,
 		inferenceGrpcPort:    inferenceGrpcPort,
 		serverName:           server.name,
 		replicaIdx:           replicaIdx,
-		server:               server,
 		capabilities:         cleanCapabilities(capabilities),
 		memory:               memory,
 		availableMemory:      availableMemory,
@@ -213,27 +212,26 @@ func NewServerReplica(inferenceSvc string,
 		loadedModels:         loadedModels,
 		loadingModels:        map[ModelVersionID]bool{},
 		overCommitPercentage: overCommitPercentage,
-		uniqueLoadedModels:   toUniqueModels(loadedModels),
-		isDraining:           false,
+		//uniqueLoadedModels:   toUniqueModels(loadedModels),
+		isDraining: false,
 	}
 }
 
-func NewServerReplicaFromConfig(server *Server, replicaIdx int, loadedModels map[ModelVersionID]bool, config *pba.ReplicaConfig, availableMemoryBytes uint64) *ServerReplica {
-	return &ServerReplica{
-		inferenceSvc:         config.GetInferenceSvc(),
-		inferenceHttpPort:    config.GetInferenceHttpPort(),
-		inferenceGrpcPort:    config.GetInferenceGrpcPort(),
-		serverName:           server.name,
-		replicaIdx:           replicaIdx,
-		server:               server,
-		capabilities:         cleanCapabilities(config.GetCapabilities()),
-		memory:               config.GetMemoryBytes(),
-		availableMemory:      availableMemoryBytes,
-		loadedModels:         loadedModels,
-		loadingModels:        map[ModelVersionID]bool{},
-		overCommitPercentage: config.GetOverCommitPercentage(),
-		uniqueLoadedModels:   toUniqueModels(loadedModels),
-		isDraining:           false,
+func NewServerReplicaFromConfig(server *db.Server, replicaIdx int, loadedModels []*db.ModelVersionID, config *pba.ReplicaConfig, availableMemoryBytes uint64) *db.ServerReplica {
+	return &db.ServerReplica{
+		InferenceSvc:         config.GetInferenceSvc(),
+		InferenceHttpPort:    config.GetInferenceHttpPort(),
+		InferenceGrpcPort:    config.GetInferenceGrpcPort(),
+		ServerName:           server.Name,
+		ReplicaIdx:           int32(replicaIdx),
+		Capabilities:         cleanCapabilities(config.GetCapabilities()),
+		Memory:               config.GetMemoryBytes(),
+		AvailableMemory:      availableMemoryBytes,
+		LoadedModels:         loadedModels,
+		LoadingModels:        make([]*db.ModelVersionID, 0),
+		OverCommitPercentage: config.GetOverCommitPercentage(),
+		UniqueLoadedModels:   toUniqueModels(loadedModels),
+		IsDraining:           false,
 	}
 }
 
@@ -316,6 +314,10 @@ func (m ModelReplicaState) Inactive() bool {
 
 func (m ModelReplicaState) IsLoadingOrLoaded() bool {
 	return (m == Loaded || m == LoadRequested || m == Loading || m == Available || m == LoadedUnavailable)
+}
+
+func (m *Model) Name() string {
+	return m.name
 }
 
 func (m *Model) HasLatest() bool {
@@ -682,7 +684,6 @@ func (s *ServerReplica) createSnapshot(modelDetails bool) *ServerReplica {
 		inferenceGrpcPort:    s.inferenceGrpcPort,
 		serverName:           s.serverName,
 		replicaIdx:           s.replicaIdx,
-		server:               nil,
 		capabilities:         capabilities,
 		memory:               s.memory,
 		availableMemory:      s.availableMemory,
@@ -815,9 +816,9 @@ func (s *ServerReplica) deleteModelVersion(modelName string, modelVersion uint32
 	}
 }
 
-func toUniqueModels(loadedModels map[ModelVersionID]bool) map[string]bool {
+func toUniqueModels(loadedModels []*db.ModelVersionID) map[string]bool {
 	uniqueModels := make(map[string]bool)
-	for key := range loadedModels {
+	for _, key := range loadedModels {
 		uniqueModels[key.Name] = true
 	}
 	return uniqueModels

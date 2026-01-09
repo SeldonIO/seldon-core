@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/mitchellh/copystructure"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
@@ -61,7 +62,7 @@ type PipelineStore struct {
 	modelStatusHandler ModelStatusHandler
 }
 
-func NewPipelineStore(logger logrus.FieldLogger, eventHub *coordinator.EventHub, store store.ModelStore) *PipelineStore {
+func NewPipelineStore(logger logrus.FieldLogger, eventHub *coordinator.EventHub, store store.ModelServerAPI) *PipelineStore {
 	ps := &PipelineStore{
 		logger:    logger.WithField("source", "pipelineStore"),
 		eventHub:  eventHub,
@@ -610,8 +611,8 @@ func (ps *PipelineStore) handleModelEvents(event coordinator.ModelEventMsg) {
 			}
 
 			ps.mu.Lock()
-			modelVersion := model.GetLastAvailableModel()
-			modelAvailable := model != nil && modelVersion != nil && modelVersion.ModelState().ModelGwState == store.ModelAvailable
+			modelVersion := model.GetLastAvailableModelVersion()
+			modelAvailable := model != nil && modelVersion != nil && modelVersion.State.ModelGwState == db.ModelState_ModelAvailable
 			evts := updatePipelinesFromModelAvailability(refs, event.ModelName, modelAvailable, ps.pipelines, ps.logger)
 			ps.mu.Unlock()
 

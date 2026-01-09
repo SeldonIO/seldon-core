@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/mitchellh/copystructure"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -54,12 +55,12 @@ type ExperimentStore struct {
 	pipelineBaselines  map[string]*Experiment            // pipeline name to the single baseline experiment it appears in
 	pipelineReferences map[string]map[string]*Experiment // pipeline name to experiments it appears in
 	eventHub           *coordinator.EventHub
-	store              store.ModelStore
+	store              store.ModelServerAPI
 	pipelineStore      pipeline.PipelineHandler
 	db                 *ExperimentDBManager
 }
 
-func NewExperimentServer(logger logrus.FieldLogger, eventHub *coordinator.EventHub, store store.ModelStore, pipelineStore pipeline.PipelineHandler) *ExperimentStore {
+func NewExperimentServer(logger logrus.FieldLogger, eventHub *coordinator.EventHub, store store.ModelServerAPI, pipelineStore pipeline.PipelineHandler) *ExperimentStore {
 	es := &ExperimentStore{
 		logger:             logger.WithField("source", "experimentServer"),
 		experiments:        make(map[string]*Experiment),
@@ -194,7 +195,7 @@ func (es *ExperimentStore) handleModelEvents(event coordinator.ModelEventMsg) {
 					if err != nil {
 						logger.WithError(err).Warnf("Failed to get model %s for candidate check for experiment %s", event.ModelName, experiment.Name)
 					} else {
-						if model.GetLatest() != nil && model.GetLatest().ModelState().State == store.ModelAvailable {
+						if model.Latest() != nil && model.Latest().State.State == db.ModelState_ModelAvailable {
 							candidate.Ready = true
 						} else {
 							candidate.Ready = false
@@ -208,7 +209,7 @@ func (es *ExperimentStore) handleModelEvents(event coordinator.ModelEventMsg) {
 					if err != nil {
 						logger.WithError(err).Warnf("Failed to get model %s for mirror check for experiment %s", event.ModelName, experiment.Name)
 					} else {
-						if model.GetLatest() != nil && model.GetLatest().ModelState().State == store.ModelAvailable {
+						if model.Latest() != nil && model.Latest().State.State == db.ModelState_ModelAvailable {
 							experiment.Mirror.Ready = true
 						} else {
 							experiment.Mirror.Ready = false

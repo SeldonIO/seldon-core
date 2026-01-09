@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/rs/xid"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
@@ -311,12 +312,12 @@ func CreatePipelineVersionWithStateFromProto(pvs *scheduler.PipelineWithState) (
 	return pv, nil
 }
 
-func CreatePipelineSnapshotFromPipeline(pipeline *Pipeline) *scheduler.PipelineSnapshot {
+func CreatePipelineSnapshotFromPipeline(pipeline *Pipeline) *db.PipelineSnapshot {
 	var versions []*scheduler.PipelineWithState
 	for _, pv := range pipeline.Versions {
 		versions = append(versions, CreatePipelineWithState(pv))
 	}
-	return &scheduler.PipelineSnapshot{
+	return &db.PipelineSnapshot{
 		Name:        pipeline.Name,
 		LastVersion: pipeline.LastVersion,
 		Versions:    versions,
@@ -324,7 +325,7 @@ func CreatePipelineSnapshotFromPipeline(pipeline *Pipeline) *scheduler.PipelineS
 	}
 }
 
-func CreatePipelineFromSnapshot(snapshot *scheduler.PipelineSnapshot) (*Pipeline, error) {
+func CreatePipelineFromSnapshot(snapshot *db.PipelineSnapshot) (*Pipeline, error) {
 	var versions []*PipelineVersion
 	for _, ver := range snapshot.Versions {
 		pv, err := CreatePipelineVersionWithStateFromProto(ver)

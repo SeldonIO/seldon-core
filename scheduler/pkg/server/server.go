@@ -19,16 +19,15 @@ import (
 	"sync"
 	"time"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/health"
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
+	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/health"
-	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	cr "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/conflict-resolution"
@@ -64,7 +63,7 @@ type SchedulerServer struct {
 	pb.UnimplementedSchedulerServer
 	health.UnimplementedHealthCheckServiceServer
 	logger                   log.FieldLogger
-	modelStore               store.ModelStore
+	modelStore               store.ModelServerAPI
 	experimentServer         experiment.ExperimentServer
 	pipelineHandler          pipeline.PipelineHandler
 	scheduler                scheduler2.Scheduler
@@ -104,7 +103,7 @@ type SchedulerServerConfig struct {
 type ModelEventStream struct {
 	mu                   sync.Mutex
 	streams              map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription
-	conflictResolutioner *cr.ConflictResolutioner[store.ModelState]
+	conflictResolutioner *cr.ConflictResolutioner[db.ModelState]
 }
 
 type ServerEventStream struct {
@@ -270,7 +269,7 @@ func getEnVar(logger *log.Entry, key string, defaultValue int) int {
 
 func NewSchedulerServer(
 	logger log.FieldLogger,
-	modelStore store.ModelStore,
+	modelStore store.ModelServerAPI,
 	experiementServer experiment.ExperimentServer,
 	pipelineHandler pipeline.PipelineHandler,
 	scheduler scheduler2.Scheduler,
@@ -302,7 +301,7 @@ func NewSchedulerServer(
 		scheduler:        scheduler,
 		modelEventStream: ModelEventStream{
 			streams:              make(map[pb.Scheduler_SubscribeModelStatusServer]*ModelSubscription),
-			conflictResolutioner: cr.NewConflictResolution[store.ModelState](logger),
+			conflictResolutioner: cr.NewConflictResolution[db.ModelState](logger),
 		},
 		serverEventStream: ServerEventStream{
 			streams:       make(map[pb.Scheduler_SubscribeServerStatusServer]*ServerSubscription),
@@ -470,7 +469,11 @@ func (s *SchedulerServer) HealthCheck(_ context.Context, _ *health.HealthCheckRe
 
 func (s *SchedulerServer) rescheduleModels(serverKey string) {
 	logger := s.logger.WithField("func", "rescheduleModels")
-	server, err := s.modelStore.GetServer(serverKey, false, true)
+
+	s.modelStore.LockServer(serverKey)
+	defer s.modelStore.UnlockServer(serverKey)
+
+	server, _, err := s.modelStore.GetServer(serverKey, true)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to get server %s", serverKey)
 		return
@@ -494,6 +497,7 @@ func (s *SchedulerServer) LoadModel(ctx context.Context, req *pb.LoadModelReques
 	logger.Debugf("Load model %+v k8s meta %+v", req.GetModel().GetMeta(), req.GetModel().GetMeta().GetKubernetesMeta())
 	err := s.modelStore.UpdateModel(req)
 	if err != nil {
+		logger.WithError(err).WithField("req", req).Error("Failed to update model")
 		return nil, status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 	}
 	go func() {
@@ -521,41 +525,41 @@ func (s *SchedulerServer) UnloadModel(ctx context.Context, req *pb.UnloadModelRe
 	return &pb.UnloadModelResponse{}, nil
 }
 
-func createModelVersionStatus(mv *store.ModelVersion) *pb.ModelVersionStatus {
+func createModelVersionStatus(mv *db.ModelVersion) *pb.ModelVersionStatus {
 	stateMap := make(map[int32]*pb.ModelReplicaStatus)
 	for k, v := range mv.ReplicaState() {
 		stateMap[int32(k)] = &pb.ModelReplicaStatus{
 			State:               pb.ModelReplicaStatus_ModelReplicaState(pb.ModelReplicaStatus_ModelReplicaState_value[v.State.String()]),
 			Reason:              v.Reason,
-			LastChangeTimestamp: timestamppb.New(v.Timestamp),
+			LastChangeTimestamp: v.Timestamp,
 		}
 	}
-	modelState := mv.ModelState()
+	modelState := mv.State
 	mvs := &pb.ModelVersionStatus{
 		Version:           mv.GetVersion(),
-		ServerName:        mv.Server(),
+		ServerName:        mv.Server,
 		ModelReplicaState: stateMap,
 		State: &pb.ModelStatus{
 			State:               pb.ModelStatus_ModelState(pb.ModelStatus_ModelState_value[modelState.State.String()]),
 			ModelGwState:        pb.ModelStatus_ModelState(pb.ModelStatus_ModelState_value[modelState.ModelGwState.String()]),
 			Reason:              modelState.Reason,
 			ModelGwReason:       modelState.ModelGwReason,
-			LastChangeTimestamp: timestamppb.New(modelState.Timestamp),
+			LastChangeTimestamp: modelState.Timestamp,
 			AvailableReplicas:   modelState.AvailableReplicas,
 			UnavailableReplicas: modelState.UnavailableReplicas,
 		},
-		ModelDefn: mv.GetModel(),
+		ModelDefn: mv.ModelDefn,
 	}
-	if mv.GetMeta().KubernetesMeta != nil {
-		mvs.KubernetesMeta = mv.GetModel().GetMeta().GetKubernetesMeta()
+	if mv.ModelDefn.Meta.KubernetesMeta != nil {
+		mvs.KubernetesMeta = mv.ModelDefn.Meta.KubernetesMeta
 	}
 	return mvs
 }
 
-func (s *SchedulerServer) modelStatusImpl(model *store.ModelSnapshot, allVersions bool) (*pb.ModelStatusResponse, error) {
+func (s *SchedulerServer) modelStatusImpl(model *db.Model, allVersions bool) (*pb.ModelStatusResponse, error) {
 	var modelVersionStatuses []*pb.ModelVersionStatus
 	if !allVersions {
-		latestModel := model.GetLatest()
+		latestModel := model.Latest()
 		if latestModel == nil {
 			return nil, status.Errorf(codes.FailedPrecondition, "Failed to find model %s", model.Name)
 		}
@@ -649,7 +653,7 @@ func (s *SchedulerServer) ServerStatus(
 
 	if req.Name == nil {
 		// All servers requested
-		servers, err := s.modelStore.GetServers(true, true)
+		servers, err := s.modelStore.GetServers()
 		if err != nil {
 			return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 		}
@@ -669,7 +673,7 @@ func (s *SchedulerServer) ServerStatus(
 		return nil
 	} else {
 		// Single server requested
-		server, err := s.modelStore.GetServer(req.GetName(), true, true)
+		server, _, err := s.modelStore.GetServer(req.GetName(), true)
 		if err != nil {
 			return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 		}
@@ -689,7 +693,7 @@ func (s *SchedulerServer) ServerStatus(
 	}
 }
 
-func createServerStatusUpdateResponse(s *store.ServerSnapshot) *pb.ServerStatusResponse {
+func createServerStatusUpdateResponse(s *db.Server) *pb.ServerStatusResponse {
 	// note we dont count draining replicas in available replicas
 
 	resp := &pb.ServerStatusResponse{
@@ -724,7 +728,7 @@ func createServerStatusUpdateResponse(s *store.ServerSnapshot) *pb.ServerStatusR
 	return resp
 }
 
-func createServerScaleResponse(s *store.ServerSnapshot, expectedReplicas uint32) *pb.ServerStatusResponse {
+func createServerScaleResponse(s *db.Server, expectedReplicas uint32) *pb.ServerStatusResponse {
 	// we dont care about populating the other fields as they should not be used by the controller, reconsider if this changes
 
 	resp := &pb.ServerStatusResponse{

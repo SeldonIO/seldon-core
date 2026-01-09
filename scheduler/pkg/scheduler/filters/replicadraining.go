@@ -12,7 +12,7 @@ package filters
 import (
 	"fmt"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 )
 
 type ReplicaDrainingFilter struct{}
@@ -21,11 +21,11 @@ func (r ReplicaDrainingFilter) Name() string {
 	return "ReplicaDrainingFilter"
 }
 
-func (r ReplicaDrainingFilter) Filter(model *store.ModelVersion, replica *store.ServerReplica) bool {
+func (r ReplicaDrainingFilter) Filter(model *db.ModelVersion, replica *db.ServerReplica) bool {
 	return !replica.GetIsDraining()
 }
 
-func (r ReplicaDrainingFilter) Description(model *store.ModelVersion, replica *store.ServerReplica) string {
+func (r ReplicaDrainingFilter) Description(model *db.ModelVersion, replica *db.ServerReplica) string {
 	return fmt.Sprintf(
 		"Replica server %d is draining check %t",
 		replica.GetReplicaIdx(), replica.GetIsDraining())

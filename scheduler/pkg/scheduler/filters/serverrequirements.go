@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 )
 
 type ServerRequirementFilter struct{}
@@ -22,7 +22,7 @@ func (s ServerRequirementFilter) Name() string {
 	return "ServerRequirementsFilter"
 }
 
-func (s ServerRequirementFilter) Filter(model *store.ModelVersion, server *store.ServerSnapshot) bool {
+func (s ServerRequirementFilter) Filter(model *db.ModelVersion, server *db.Server) bool {
 	if len(server.Replicas) == 0 {
 		// Capabilities are currently stored on replicas, so no replicas means no capabilities can be determined.
 		return false
@@ -52,14 +52,14 @@ func contains(capabilities []string, requirement string) bool {
 	return false
 }
 
-func getFirstAvailableReplicaCapabilities(replicas map[int]*store.ServerReplica) []string {
+func getFirstAvailableReplicaCapabilities(replicas map[int32]*db.ServerReplica) []string {
 	for _, replica := range replicas {
 		return replica.GetCapabilities()
 	}
 	return []string{}
 }
 
-func (s ServerRequirementFilter) Description(model *store.ModelVersion, server *store.ServerSnapshot) string {
+func (s ServerRequirementFilter) Description(model *db.ModelVersion, server *db.Server) string {
 	requirements := model.GetRequirements()
 
 	replicas := server.Replicas

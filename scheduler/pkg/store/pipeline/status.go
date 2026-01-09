@@ -12,6 +12,7 @@ package pipeline
 import (
 	"sync"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -26,7 +27,7 @@ var member void
 type ModelStatusHandler struct {
 	mu              sync.RWMutex
 	logger          logrus.FieldLogger
-	store           store.ModelStore
+	store           store.ModelServerAPI
 	modelReferences map[string]map[string]void
 }
 
@@ -73,8 +74,8 @@ func (ms *ModelStatusHandler) setPipelineModelsReady(pipelineVersion *PipelineVe
 			}
 			step.Available = false
 			if model != nil {
-				lastAvailableModelVersion := model.GetLastAvailableModel()
-				if lastAvailableModelVersion != nil && lastAvailableModelVersion.ModelState().ModelGwState == store.ModelAvailable {
+				lastAvailableModelVersion := model.GetLastAvailableModelVersion()
+				if lastAvailableModelVersion != nil && lastAvailableModelVersion.State.ModelGwState == db.ModelState_ModelAvailable {
 					step.Available = true
 				}
 			}

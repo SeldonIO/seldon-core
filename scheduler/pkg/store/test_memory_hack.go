@@ -10,16 +10,19 @@ the Change License after the Change Date as each is defined in accordance with t
 package store
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"testing"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 )
 
 type TestMemoryStore struct {
-	*MemoryStore
+	*ModelServerStore
 }
 
 type ModelID struct {
@@ -29,27 +32,28 @@ type ModelID struct {
 
 // NewTestMemory DO NOT USE for non-test code. This is purely meant for using in tests where an integration test is
 // wanted where the real memory store is needed, but the test needs the ability to directly manipulate the model
-// statuses, which can't be achieved with MemoryStore. TestMemoryStore embeds MemoryStore and adds DirectlyUpdateModelStatus
+// statuses, which can't be achieved with ModelServerStore. TestMemoryStore embeds ModelServerStore and adds DirectlyUpdateModelStatus
 // to modify the statuses.
 func NewTestMemory(
 	t *testing.T,
 	logger log.FieldLogger,
-	store *LocalSchedulerStore,
+	modelStore Storage[*db.Model],
+	serverStore Storage[*db.Server],
 	eventHub *coordinator.EventHub) *TestMemoryStore {
 	if t == nil {
 		panic("testing.T is required, must only be run via tests")
 	}
-	m := NewMemoryStore(logger, store, eventHub)
+	m := NewModelServerStore(logger, modelStore, serverStore, eventHub)
 	return &TestMemoryStore{m}
 }
 
-func (t *TestMemoryStore) DirectlyUpdateModelStatus(model ModelID, state ModelStatus) error {
+func (t *TestMemoryStore) DirectlyUpdateModelStatus(model ModelID, state *db.ModelStatus) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	found, ok := t.store.models[model.Name]
-	if !ok {
-		return errors.New("model not found")
+	found, err := t.store.models.Get(context.TODO(), model.Name)
+	if err != nil {
+		return fmt.Errorf("model not found: %w", err)
 	}
 
 	version := found.GetVersion(model.Version)
@@ -57,6 +61,6 @@ func (t *TestMemoryStore) DirectlyUpdateModelStatus(model ModelID, state ModelSt
 		return errors.New("version not found")
 	}
 
-	version.state = state
-	return nil
+	version.State = state
+	return t.store.models.Update(context.TODO(), found)
 }

@@ -12,7 +12,7 @@ package filters
 import (
 	"fmt"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 )
 
 const (
@@ -25,8 +25,8 @@ func (s ExplainerFilter) Name() string {
 	return "ExplainerFilter"
 }
 
-func (s ExplainerFilter) Filter(model *store.ModelVersion, replica *store.ServerReplica) bool {
-	if model.GetModel().GetModelSpec().GetExplainer() != nil {
+func (s ExplainerFilter) Filter(model *db.ModelVersion, replica *db.ServerReplica) bool {
+	if model.ModelDefn.ModelSpec.GetExplainer() != nil {
 		for _, capability := range replica.GetCapabilities() {
 			if alibiExplainerRequiredCapability == capability {
 				return true
@@ -37,6 +37,6 @@ func (s ExplainerFilter) Filter(model *store.ModelVersion, replica *store.Server
 	return true
 }
 
-func (s ExplainerFilter) Description(model *store.ModelVersion, replica *store.ServerReplica) string {
-	return fmt.Sprintf("model is explainer %v replica capabilities %v", model.GetModel().GetModelSpec().GetExplainer() == nil, replica.GetCapabilities())
+func (s ExplainerFilter) Description(model *db.ModelVersion, replica *db.ServerReplica) string {
+	return fmt.Sprintf("model is explainer %v replica capabilities %v", model.ModelDefn.GetModelSpec().GetExplainer() == nil, replica.GetCapabilities())
 }

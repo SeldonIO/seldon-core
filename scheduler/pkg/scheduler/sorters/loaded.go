@@ -16,8 +16,8 @@ func (m ModelAlreadyLoadedSorter) Name() string {
 }
 
 func (m ModelAlreadyLoadedSorter) IsLess(i *CandidateReplica, j *CandidateReplica) bool {
-	iIsLoading := i.Model.IsLoadingOrLoaded(i.Server.Name, i.Replica.GetReplicaIdx())
-	jIsLoading := j.Model.IsLoadingOrLoaded(j.Server.Name, j.Replica.GetReplicaIdx())
+	iIsLoading := i.Model.IsLoadingOrLoaded(i.Server.Name, int(i.Replica.GetReplicaIdx()))
+	jIsLoading := j.Model.IsLoadingOrLoaded(j.Server.Name, int(j.Replica.GetReplicaIdx()))
 	return iIsLoading && !jIsLoading
 }
 
@@ -30,5 +30,5 @@ func (m ModelAlreadyLoadedOnServerSorter) Name() string {
 }
 
 func (m ModelAlreadyLoadedOnServerSorter) IsLess(i *CandidateServer, j *CandidateServer) bool {
-	return i.Model.Server() == i.Server.Name
+	return i.Model.Server == i.Server.Name
 }

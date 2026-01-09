@@ -342,7 +342,7 @@ func TestRollingUpdate(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			modelStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil)
+			modelStore := store.NewModelServerStore(log.New(), store.NewLocalSchedulerStore(), nil)
 			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}, nil)
 			g.Expect(err).To(BeNil())
 			inc := &IncrementalProcessor{
@@ -420,7 +420,7 @@ func TestDraining(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			modelStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil)
+			modelStore := store.NewModelServerStore(log.New(), store.NewLocalSchedulerStore(), nil)
 			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}, nil)
 			g.Expect(err).To(BeNil())
 			inc := &IncrementalProcessor{
@@ -564,7 +564,7 @@ func TestModelSync(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			modelStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil)
+			modelStore := store.NewModelServerStore(log.New(), store.NewLocalSchedulerStore(), nil)
 			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}, nil)
 			g.Expect(err).To(BeNil())
 			inc := &IncrementalProcessor{
@@ -808,7 +808,7 @@ func TestEnvoySettings(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			logger := log.New()
 			eventHub, _ := coordinator.NewEventHub(logger)
-			memoryStore := store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), eventHub)
+			memoryStore := store.NewModelServerStore(log.New(), store.NewLocalSchedulerStore(), eventHub)
 			xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{Host: "pipeline", GrpcPort: 1, HttpPort: 2}, nil)
 			g.Expect(err).To(BeNil())
 			inc := &IncrementalProcessor{
@@ -1082,7 +1082,7 @@ func createTestModel(modelName string,
 		var serverReplicas []*store.ServerReplica
 		for _, replicaIdx := range replicas {
 			var serverReplica *store.ServerReplica
-			server, err := inc.modelStore.GetServer(serverName, false, true)
+			server, _, err := inc.modelStore.GetServer(serverName, true)
 			g.Expect(err).To(BeNil())
 			if server != nil {
 				if sr, ok := server.Replicas[replicaIdx]; ok {

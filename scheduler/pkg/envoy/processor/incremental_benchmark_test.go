@@ -69,7 +69,7 @@ func addModel(
 	require.NoError(b, err)
 
 	// Schedule model
-	server, err := ip.modelStore.GetServer(serverName, true, false)
+	server, _, err := ip.modelStore.GetServer(serverName, false)
 	require.NoError(b, err)
 
 	replicas := []*store.ServerReplica{}
@@ -122,7 +122,7 @@ func benchmarkModelUpdate(
 		eventHub, err := coordinator.NewEventHub(logger)
 		require.NoError(b, err)
 
-		memoryStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+		memoryStore := store.NewModelServerStore(logger, store.NewLocalSchedulerStore(), eventHub)
 		pipelineStore := pipeline.NewPipelineStore(logger, eventHub, memoryStore)
 		ip, err := NewIncrementalProcessor(
 			"some node",

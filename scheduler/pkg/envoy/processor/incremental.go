@@ -10,11 +10,13 @@ the Change License after the Change Date as each is defined in accordance with t
 package processor
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"sync"
 	"time"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -38,7 +40,7 @@ type IncrementalProcessor struct {
 	logger               logrus.FieldLogger
 	xdsCache             *xdscache.SeldonXDSCache
 	mu                   sync.RWMutex
-	modelStore           store.ModelStore
+	modelStore           store.ModelServerAPI
 	experimentServer     experiment.ExperimentServer
 	pipelineHandler      pipeline.PipelineHandler
 	runEnvoyBatchUpdates bool
@@ -57,7 +59,7 @@ type pendingModelVersion struct {
 func NewIncrementalProcessor(
 	nodeID string,
 	logger logrus.FieldLogger,
-	modelStore store.ModelStore,
+	modelStore store.ModelServerAPI,
 	experimentServer experiment.ExperimentServer,
 	pipelineHandler pipeline.PipelineHandler,
 	hub *coordinator.EventHub,
@@ -205,21 +207,21 @@ func (p *IncrementalProcessor) removeRouteForServerInEnvoyCache(routeName string
 	return nil
 }
 
-func (p *IncrementalProcessor) updateEnvoyForModelVersion(routeName string, modelVersion *store.ModelVersion, server *store.ServerSnapshot, trafficPercent uint32, isMirror bool) {
+func (p *IncrementalProcessor) updateEnvoyForModelVersion(routeName string, modelVersion *db.ModelVersion, server *db.Server, trafficPercent uint32, isMirror bool) {
 	logger := p.logger.WithField("func", "updateEnvoyForModelVersion")
 	assignment := modelVersion.GetAssignment()
 	if len(assignment) == 0 {
 		logger.Debugf("Not updating route: %s - no assigned replicas for %v", routeName, modelVersion)
 		return
 	}
-	modelName := modelVersion.GetMeta().GetName()
+	modelName := modelVersion.ModelDefn.Meta.Name
 	modelVersionNumber := modelVersion.GetVersion()
 	httpClusterName, grpcClusterName := getClusterNames(modelName, modelVersionNumber)
 	p.xdsCache.AddClustersForRoute(routeName, modelName, httpClusterName, grpcClusterName, modelVersionNumber, assignment, server)
 
 	logPayloads := false
-	if modelVersion.GetDeploymentSpec() != nil {
-		logPayloads = modelVersion.GetDeploymentSpec().LogPayloads
+	if modelVersion.ModelDefn.DeploymentSpec != nil {
+		logPayloads = modelVersion.ModelDefn.DeploymentSpec.LogPayloads
 	} else {
 		logger.Warnf("model %s has not deployment spec", modelName)
 	}
@@ -233,7 +235,7 @@ func getClusterNames(modelVersion string, modelVersionNumber uint32) (string, st
 	return httpClusterName, grpcClusterName
 }
 
-func getTrafficShare(latestModel *store.ModelVersion, lastAvailableModelVersion *store.ModelVersion, weight uint32) (uint32, uint32) {
+func getTrafficShare(latestModel *db.ModelVersion, lastAvailableModelVersion *db.ModelVersion, weight uint32) (uint32, uint32) {
 	lastAvailableReplicas := len(lastAvailableModelVersion.GetAssignment())
 	latestReplicas := len(latestModel.GetAssignment())
 	totalReplicas := lastAvailableReplicas + latestReplicas
@@ -242,11 +244,11 @@ func getTrafficShare(latestModel *store.ModelVersion, lastAvailableModelVersion 
 	return trafficLatestModel, trafficLastAvailableModel
 }
 
-func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.ModelSnapshot, weight uint32, isMirror bool) error {
+func (p *IncrementalProcessor) addModelTraffic(routeName string, model *db.Model, weight uint32, isMirror bool) error {
 	logger := p.logger.WithField("func", "addModelTraffic")
 
 	modelName := model.Name
-	latestModel := model.GetLatest()
+	latestModel := model.Latest()
 	if latestModel == nil || !model.CanReceiveTraffic() {
 		if latestModel == nil {
 			logger.Infof("latest model is nil for model %s route %s", model.Name, routeName)
@@ -254,7 +256,9 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 		return fmt.Errorf("no live replica for model %s for model route %s", model.Name, routeName)
 	}
 
-	server, err := p.modelStore.GetServer(latestModel.Server(), false, false)
+	p.modelStore.LockServer(latestModel.Server)
+	defer p.modelStore.UnlockServer(latestModel.Server)
+	server, _, err := p.modelStore.GetServer(latestModel.Server, false)
 	if err != nil {
 		return err
 	}
@@ -262,9 +266,9 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 	lastAvailableModelVersion := model.GetLastAvailableModel()
 	if lastAvailableModelVersion != nil && latestModel.GetVersion() != lastAvailableModelVersion.GetVersion() {
 		trafficLatestModel, trafficLastAvailableModel := getTrafficShare(latestModel, lastAvailableModelVersion, weight)
-		lastAvailableServer, err := p.modelStore.GetServer(lastAvailableModelVersion.Server(), false, false)
+		lastAvailableServer, _, err := p.modelStore.GetServer(lastAvailableModelVersion.Server, false)
 		if err != nil {
-			logger.WithError(err).Errorf("Failed to find server %s for last available model %s", lastAvailableModelVersion.Server(), modelName)
+			logger.WithError(err).Errorf("Failed to find server %s for last available model %s", lastAvailableModelVersion.Server, modelName)
 			return err
 		}
 
@@ -284,7 +288,7 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *store.Mo
 	return nil
 }
 
-func (p *IncrementalProcessor) addExperimentModelBaselineTraffic(model *store.ModelSnapshot, exp *experiment.Experiment) error {
+func (p *IncrementalProcessor) addExperimentModelBaselineTraffic(model *db.Model, exp *experiment.Experiment) error {
 	logger := p.logger.WithField("func", "addExperimentModelBaselineTraffic")
 	logger.Infof("Trying to setup experiment for %s", model.Name)
 	if exp.Default == nil {
@@ -320,7 +324,7 @@ func (p *IncrementalProcessor) addExperimentModelBaselineTraffic(model *store.Mo
 	return nil
 }
 
-func (p *IncrementalProcessor) addModel(model *store.ModelSnapshot) error {
+func (p *IncrementalProcessor) addModel(model *db.Model) error {
 	logger := p.logger.WithField("func", "addTraffic")
 	exp := p.experimentServer.GetExperimentForBaselineModel(model.Name)
 	if exp != nil {
@@ -509,7 +513,7 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 	logger.Debugf("Calling model update for %s", modelName)
 
 	model, err := p.modelStore.GetModel(modelName)
-	if err != nil {
+	if err != nil && !errors.Is(err, store.ErrNotFound) {
 		logger.WithError(err).Warnf("sync: Failed to sync model %s", modelName)
 		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
 			logger.WithError(err).Errorf("Failed to remove model route from envoy %s", modelName)
@@ -526,7 +530,7 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 		return p.updateEnvoy() // in practice we should not be here
 	}
 
-	latestModel := model.GetLatest()
+	latestModel := model.Latest()
 	if latestModel == nil {
 		logger.Debugf("sync: No latest model - removing for %s", modelName)
 		if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
@@ -551,7 +555,7 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 	}
 
 	if !modelRemoved {
-		_, err = p.modelStore.GetServer(latestModel.Server(), false, false)
+		_, _, err = p.modelStore.GetServer(latestModel.Server, false)
 		if err != nil {
 			logger.Debugf("sync: No server - removing for %s", modelName)
 			if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
@@ -645,10 +649,10 @@ func (p *IncrementalProcessor) modelSync() {
 	logger.Debugf("Calling model sync")
 
 	envoyErr := p.updateEnvoy()
-	serverReplicaState := store.Available
+	serverReplicaState := db.ModelReplicaState_Available
 	reason := ""
 	if envoyErr != nil {
-		serverReplicaState = store.LoadedUnavailable
+		serverReplicaState = db.ModelReplicaState_LoadedUnavailable
 		reason = envoyErr.Error()
 	}
 
@@ -669,9 +673,11 @@ func (p *IncrementalProcessor) modelSync() {
 			continue
 		}
 
-		s, err := p.modelStore.GetServer(v.Server(), false, false)
+		p.modelStore.LockServer(v.Server)
+		s, _, err := p.modelStore.GetServer(v.Server, false)
 		if err != nil {
-			logger.Debugf("Failed to get server for model %s server %s", mv.name, v.Server())
+			logger.Debugf("Failed to get server for model %s server %s", mv.name, v.Server)
+			p.modelStore.UnlockServer(v.Server)
 			p.modelStore.UnlockModel(mv.name)
 			continue
 		}
@@ -681,7 +687,7 @@ func (p *IncrementalProcessor) modelSync() {
 		for _, replicaIdx := range v.GetAssignment() {
 			serverReplicaExpectedState := vs[replicaIdx].State
 			// Ignore draining nodes to be changed to Available/Failed state
-			if serverReplicaExpectedState != store.Draining {
+			if serverReplicaExpectedState != db.ModelReplicaState_Draining {
 				err2 := p.modelStore.UpdateModelState(
 					mv.name,
 					v.GetVersion(),
@@ -700,12 +706,12 @@ func (p *IncrementalProcessor) modelSync() {
 			} else {
 				logger.Debugf(
 					"Skipping replica for model %s in state %s server replica %s%d as no longer in Loaded state",
-					mv.name, serverReplicaExpectedState.String(), v.Server(), replicaIdx)
+					mv.name, serverReplicaExpectedState.String(), v.Server, replicaIdx)
 			}
 		}
 		// Go through all replicas that we have set to UnloadEnvoyRequested and mark them as UnloadRequested
 		// to resume the unload process from servers
-		for _, replicaIdx := range v.GetReplicaForState(store.UnloadEnvoyRequested) {
+		for _, replicaIdx := range v.GetReplicaForState(db.ModelReplicaState_UnloadEnvoyRequested) {
 			serverReplicaExpectedState := vs[replicaIdx].State
 			if err := p.modelStore.UpdateModelState(
 				mv.name,
@@ -714,7 +720,7 @@ func (p *IncrementalProcessor) modelSync() {
 				replicaIdx,
 				nil,
 				serverReplicaExpectedState,
-				store.UnloadRequested,
+				db.ModelReplicaState_UnloadRequested,
 				"",
 				nil,
 			); err != nil {
@@ -722,6 +728,8 @@ func (p *IncrementalProcessor) modelSync() {
 					mv.name, store.UnloadRequested.String(), serverReplicaExpectedState.String())
 			}
 		}
+
+		p.modelStore.UnlockServer(s.Name)
 		p.modelStore.UnlockModel(mv.name)
 		p.callVersionCleanupIfNeeded(m.Name)
 	}

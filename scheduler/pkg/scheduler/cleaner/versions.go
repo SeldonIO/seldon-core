@@ -12,6 +12,7 @@ package cleaner
 import (
 	"fmt"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
@@ -22,12 +23,12 @@ type ModelVersionCleaner interface {
 }
 
 type VersionCleaner struct {
-	store  store.ModelStore
+	store  store.ModelServerAPI
 	logger log.FieldLogger
 }
 
 func NewVersionCleaner(
-	schedStore store.ModelStore,
+	schedStore store.ModelServerAPI,
 	logger log.FieldLogger,
 ) *VersionCleaner {
 	return &VersionCleaner{
@@ -58,14 +59,11 @@ func (v *VersionCleaner) cleanupOldVersions(modelName string) error {
 	if err != nil {
 		return err
 	}
-	if model == nil {
-		return fmt.Errorf("Can't find model with key %s", modelName)
-	}
-	latest := model.GetLatest()
+	latest := model.Latest()
 	if latest == nil {
-		return fmt.Errorf("Failed to find latest model for %s", modelName)
+		return fmt.Errorf("failed to find latest model for %s", modelName)
 	}
-	if latest.ModelState().State == store.ModelAvailable {
+	if latest.State.State == db.ModelState_ModelAvailable {
 		for _, mv := range model.GetVersionsBeforeLastAvailable() {
 			_, err := v.store.UnloadVersionModels(modelName, mv.GetVersion())
 			if err != nil {
@@ -73,7 +71,7 @@ func (v *VersionCleaner) cleanupOldVersions(modelName string) error {
 			}
 		}
 	}
-	if latest.ModelState().ModelGwState == store.ModelAvailable {
+	if latest.State.ModelGwState == db.ModelState_ModelAvailable {
 		for _, mv := range model.GetVersionsBeforeLastModelGwAvailable() {
 			_, err := v.store.UnloadModelGwVersionModels(modelName, mv.GetVersion())
 			if err != nil {

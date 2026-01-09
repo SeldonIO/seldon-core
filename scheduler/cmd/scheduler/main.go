@@ -23,6 +23,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/backoff"
@@ -298,7 +299,7 @@ func main() {
 	}
 
 	// Create stores
-	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+	ss := store.NewModelServerStore(logger, store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), eventHub)
 	ps := pipeline.NewPipelineStore(logger, eventHub, ss)
 	es := experiment.NewExperimentServer(logger, eventHub, ss, ps)
 	cleaner := cleaner.NewVersionCleaner(ss, logger)

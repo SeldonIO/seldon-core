@@ -571,7 +571,7 @@ func (am *AgentServiceManager) handleSchedulerSubscription() error {
 		if err != nil {
 			return fmt.Errorf("failed waiting to check if pod's IP is published to endpoints: %v", err)
 		}
-		logger.Debug("Found IP in endpoints")
+		logger.Info("Found IP in endpoints - waiting for scheduler instructions")
 	}
 
 	// Start the main control loop for the agent<-scheduler stream

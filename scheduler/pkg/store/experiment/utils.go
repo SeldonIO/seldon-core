@@ -11,6 +11,7 @@ package experiment
 
 import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 )
 
 func CreateExperimentFromRequest(request *scheduler.Experiment) *Experiment {
@@ -61,13 +62,13 @@ func CreateExperimentFromRequest(request *scheduler.Experiment) *Experiment {
 	}
 }
 
-func CreateExperimentFromSnapshot(request *scheduler.ExperimentSnapshot) *Experiment {
+func CreateExperimentFromSnapshot(request *db.ExperimentSnapshot) *Experiment {
 	experiment := CreateExperimentFromRequest(request.Experiment)
 	experiment.Deleted = request.Deleted
 	return experiment
 }
 
-func CreateExperimentSnapshotProto(experiment *Experiment) *scheduler.ExperimentSnapshot {
+func CreateExperimentSnapshotProto(experiment *Experiment) *db.ExperimentSnapshot {
 	var candidates []*scheduler.ExperimentCandidate
 	for _, candidate := range experiment.Candidates {
 		candidates = append(candidates, &scheduler.ExperimentCandidate{
@@ -102,7 +103,7 @@ func CreateExperimentSnapshotProto(experiment *Experiment) *scheduler.Experiment
 	case ModelResourceType:
 		resourceType = scheduler.ResourceType_MODEL
 	}
-	return &scheduler.ExperimentSnapshot{
+	return &db.ExperimentSnapshot{
 		Experiment: &scheduler.Experiment{
 			Name:           experiment.Name,
 			Default:        experiment.Default,
