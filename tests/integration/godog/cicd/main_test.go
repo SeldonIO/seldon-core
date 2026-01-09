@@ -44,15 +44,8 @@ func runOne(name string, o godog.Options) int {
 // todo: we need to add custom stats for the end summarizing all suits run and have possible retries in the test suite
 // At the moment if it receives any flags such as paths or tags it runs only one test suite
 func TestMain(m *testing.M) {
-	// Ensure --godog.paths works even if your godog version doesn't bind it automatically
-	pflag.CommandLine.StringSliceVar(
-		&opts.Paths,
-		fmt.Sprintf("%s%s", cmdOptPrefix, "paths"),
-		[]string{},
-		"paths to feature files",
-	)
-
-	// Parse flags once (godog binds into pflag)
+	flagSet := pflag.CommandLine
+	flagSet.StringSliceVar(&opts.Paths, fmt.Sprintf("%s%s", cmdOptPrefix, "paths"), []string{}, "paths to feature files")
 	pflag.Parse()
 
 	// Decide mode:
