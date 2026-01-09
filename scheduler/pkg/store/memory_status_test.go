@@ -56,6 +56,7 @@ func TestUpdateStatus(t *testing.T) {
 								},
 							},
 							Server: "server2",
+							State:  &db.ModelStatus{},
 							Replicas: map[int32]*db.ReplicaStatus{
 								0: {State: db.ModelReplicaState_Loaded},
 							},
@@ -72,6 +73,7 @@ func TestUpdateStatus(t *testing.T) {
 								},
 							},
 							Server: "server1",
+							State:  &db.ModelStatus{},
 							Replicas: map[int32]*db.ReplicaStatus{
 								0: {State: db.ModelReplicaState_Available},
 							},
@@ -116,6 +118,7 @@ func TestUpdateStatus(t *testing.T) {
 									Replicas: 1,
 								},
 							},
+							State:  &db.ModelStatus{},
 							Server: "server2",
 							Replicas: map[int32]*db.ReplicaStatus{
 								0: {State: db.ModelReplicaState_Loaded},
@@ -133,6 +136,7 @@ func TestUpdateStatus(t *testing.T) {
 									MinReplicas: 1,
 								},
 							},
+							State:  &db.ModelStatus{},
 							Server: "server1",
 							Replicas: map[int32]*db.ReplicaStatus{
 								0: {State: db.ModelReplicaState_Available},
@@ -196,6 +200,7 @@ func TestUpdateStatus(t *testing.T) {
 								},
 							},
 							Server: "server1",
+							State:  &db.ModelStatus{},
 							Replicas: map[int32]*db.ReplicaStatus{
 								0: {State: db.ModelReplicaState_Available},
 							},

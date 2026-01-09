@@ -399,7 +399,7 @@ func TestGetServer(t *testing.T) {
 						0: {
 							LoadedModels: []*db.ModelVersionID{{
 								Version: 1,
-								Name:    "model:1",
+								Name:    "model",
 							},
 							},
 						},
@@ -515,7 +515,10 @@ func TestGetServer(t *testing.T) {
 				g.Expect(server.Name).To(Equal(test.expected.Name))
 				g.Expect(server.ExpectedReplicas).To(Equal(test.expected.ExpectedReplicas))
 				for k, v := range server.Replicas {
-					g.Expect(v.LoadedModels).To(Equal(test.expected.Replicas[k].LoadedModels))
+					g.Expect(len(v.LoadedModels)).To(Equal(len(test.expected.Replicas[k].LoadedModels)))
+					for i, m := range v.LoadedModels {
+						g.Expect(proto.Equal(m, test.expected.Replicas[k].LoadedModels[i])).To(BeTrue())
+					}
 				}
 			} else {
 				g.Expect(err).ToNot(BeNil())
