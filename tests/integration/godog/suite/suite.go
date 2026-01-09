@@ -13,10 +13,12 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"time"
 
 	"github.com/cucumber/godog"
 	v2dataplane "github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	v "github.com/seldonio/seldon-core/operator/v2/pkg/generated/clientset/versioned"
+	"github.com/seldonio/seldon-core/tests/integration/godog/components"
 	"github.com/seldonio/seldon-core/tests/integration/godog/k8sclient"
 	"github.com/seldonio/seldon-core/tests/integration/godog/steps"
 	"github.com/sirupsen/logrus"
@@ -32,6 +34,7 @@ type dependencies struct {
 	mlopsClient     *v.Clientset
 	watcherStore    k8sclient.WatcherStorage
 	inferenceClient v2dataplane.GRPCInferenceServiceClient
+	infraManager    *components.EnvManager
 	Config          *GodogConfig
 }
 
@@ -53,6 +56,8 @@ type dependencies struct {
 var suiteDeps dependencies
 
 func InitializeTestSuite(ctx *godog.TestSuiteContext) {
+	realContext, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
 	// Load configuration from JSON file
 	config, err := LoadConfig()
 	if err != nil {
@@ -101,12 +106,23 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 	}
 	grpcClient := v2dataplane.NewGRPCInferenceServiceClient(conn)
 
+	infraManger, err := components.StartComponents(k8sClient, config.Namespace)
+	if err != nil {
+		panic(err)
+	}
+
+	// Snapshot baseline state once per suite
+	if err := infraManger.SnapshotAll(realContext); err != nil {
+		panic(fmt.Errorf("failed to snapshot environment: %w", err))
+	}
+
 	suiteDeps.logger = log
 	suiteDeps.k8sClient = k8sClient
 	suiteDeps.mlopsClient = clientSet // todo: this clientSet might get use for get requests or for the mlops interface and could be passed to the world might be split up by type
 	suiteDeps.watcherStore = watchStore
 	suiteDeps.Config = config
 	suiteDeps.inferenceClient = grpcClient
+	suiteDeps.infraManager = infraManger
 
 	ctx.BeforeSuite(func() {
 		suiteDeps.watcherStore.Start()
@@ -118,6 +134,7 @@ func InitializeTestSuite(ctx *godog.TestSuiteContext) {
 
 	ctx.AfterSuite(func() {
 		suiteDeps.watcherStore.Stop()
+
 		// e.g. clean namespace, close clients if needed delete servers
 	})
 }
@@ -131,6 +148,7 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 		KubeClient:     suiteDeps.k8sClient,
 		K8sClient:      suiteDeps.mlopsClient,
 		WatcherStorage: suiteDeps.watcherStore,
+		Env:            suiteDeps.infraManager,
 		IngressHost:    suiteDeps.Config.Inference.Host,
 		HTTPPort:       suiteDeps.Config.Inference.HTTPPort,
 		GRPCPort:       suiteDeps.Config.Inference.GRPCPort,
@@ -141,13 +159,27 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 		panic(fmt.Errorf("failed to create world: %w", err))
 	}
 
+	var slowForThis bool
 	// Before: reset state and prep cluster before each scenario
 	scenarioCtx.Before(func(ctx context.Context, scenario *godog.Scenario) (context.Context, error) {
+		// Enable slow mode only for @slow scenarios recommended only for local testing
+		slowForThis = false
+		for _, t := range scenario.Tags {
+			if t.Name == "@slow" {
+				slowForThis = true
+				log.WithField("scenario", scenario.Name).Debugf("set to run slow scenario at %s per step", time.Duration(suiteDeps.Config.ScenarioStepDelay))
+				break
+			}
+		}
 		return ctx, nil
 	})
 
 	// After: optional cleanup / rollback
 	scenarioCtx.After(func(ctx context.Context, scenario *godog.Scenario, err error) (context.Context, error) {
+		err = suiteDeps.infraManager.RestoreAll(context.Background())
+		if err != nil {
+			return ctx, err
+		}
 		if err != nil && suiteDeps.Config.SkipCleanUpOnError {
 			log.WithField("scenario", scenario.Name).Debugf("Skipping cleanup of resources for scenario with err %v", err)
 			// don't clean up resources for scenarios that fail
@@ -159,9 +191,18 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 		}
 
 		if err := suiteDeps.k8sClient.DeleteScenarioResources(ctx, world.Label); err != nil {
-			return ctx, fmt.Errorf("error when deleting models on before steps: %w", err)
+			return ctx, fmt.Errorf("error when deleting models on after scenario steps: %w", err)
 		}
 
+		return ctx, nil
+	})
+
+	// --- Step hook: delay after every step ---
+	scenarioCtx.StepContext().After(func(ctx context.Context, st *godog.Step, status godog.StepResultStatus, err error) (context.Context, error) {
+		// set delay for scenario steps when @slow tag is present
+		if slowForThis {
+			time.Sleep(time.Duration(suiteDeps.Config.ScenarioStepDelay))
+		}
 		return ctx, nil
 	})
 
@@ -173,4 +214,5 @@ func InitializeScenario(scenarioCtx *godog.ScenarioContext) {
 	steps.LoadCustomPipelineSteps(scenarioCtx, world)
 	steps.LoadExperimentSteps(scenarioCtx, world)
 	steps.LoadUtilSteps(scenarioCtx, world)
+	steps.LoadInfrastructureSteps(scenarioCtx, world)
 }

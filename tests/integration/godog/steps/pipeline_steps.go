@@ -44,15 +44,49 @@ func LoadCustomPipelineSteps(scenario *godog.ScenarioContext, w *World) {
 			return w.currentPipeline.deployPipelineSpec(ctx, spec)
 		})
 	})
-
-	scenario.Step(`^the pipeline "([^"]+)" (?:should )?eventually become Ready with timeout "([^"]+)"$`, func(name, timeout string) error {
-		ctx, cancel, err := timeoutToContext(timeout)
-		if err != nil {
-			return err
-		}
-		defer cancel()
-
-		return w.currentPipeline.waitForPipelineNameReady(ctx, name)
+	scenario.Step(`^the pipeline "([^"]+)" (?:should )?eventually become (Ready|NotReady) with timeout "([^"]+)"$`, func(name, readiness, timeout string) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			switch readiness {
+			case "Ready":
+				return w.currentPipeline.waitForPipelineNameReady(ctx, name)
+			case "NotReady":
+				return w.currentPipeline.waitForPipelineNameNotReady(ctx, name)
+			default:
+				return fmt.Errorf("unknown readiness type: %s", readiness)
+			}
+		})
+	})
+	scenario.Step(`^the pipeline (?:should )?eventually become (Ready|NotReady) with timeout "([^"]+)"$`, func(readiness, timeout string) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			switch readiness {
+			case "Ready":
+				return w.currentPipeline.waitForPipelineReady(ctx)
+			case "NotReady":
+				return w.currentPipeline.waitForPipelineNotReady(ctx)
+			default:
+				return fmt.Errorf("unknown readiness type: %s", readiness)
+			}
+		})
+	})
+	scenario.Step(`^I delete pipeline "([^"]+)" with timeout "([^"]+)"$`, func(pipeline, timeout string) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			return w.currentPipeline.deletePipelineName(ctx, pipeline)
+		})
+	})
+	scenario.Step(`^I delete pipeline (?:the )?with timeout "([^"]+)"$`, func(timeout string) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			return w.currentPipeline.deletePipeline(ctx)
+		})
+	})
+	scenario.Step(`^the pipeline "([^"]+)" should eventually not exist with timeout "([^"]+)"$`, func(pipeline, timeout string) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			return w.currentPipeline.waitForPipelineNameIsDeleted(ctx, pipeline)
+		})
+	})
+	scenario.Step(`^the pipeline should eventually not exist with timeout "([^"]+)"$`, func(timeout string) error {
+		return withTimeoutCtx(timeout, func(ctx context.Context) error {
+			return w.currentPipeline.waitForPipelineIsDeleted(ctx)
+		})
 	})
 }
 
@@ -86,6 +120,14 @@ func (p *Pipeline) applyScenarioLabel() {
 	}
 }
 
+func (p *Pipeline) deletePipeline(ctx context.Context) error {
+	return p.k8sClient.MlopsV1alpha1().Pipelines(p.namespace).Delete(ctx, p.pipelineName, metav1.DeleteOptions{})
+}
+
+func (p *Pipeline) deletePipelineName(ctx context.Context, pipeline string) error {
+	return p.k8sClient.MlopsV1alpha1().Pipelines(p.namespace).Delete(ctx, pipeline, metav1.DeleteOptions{})
+}
+
 func (p *Pipeline) waitForPipelineNameReady(ctx context.Context, name string) error {
 	return p.watcherStorage.WaitForPipelineCondition(
 		ctx,
@@ -94,10 +136,42 @@ func (p *Pipeline) waitForPipelineNameReady(ctx context.Context, name string) er
 	)
 }
 
+func (p *Pipeline) waitForPipelineNameNotReady(ctx context.Context, name string) error {
+	return p.watcherStorage.WaitForPipelineCondition(
+		ctx,
+		name,
+		assertions.PipelineNotReady,
+	)
+}
+
 func (p *Pipeline) waitForPipelineReady(ctx context.Context) error {
 	return p.watcherStorage.WaitForObjectCondition(
 		ctx,
 		p.pipeline,
 		assertions.PipelineReady,
+	)
+}
+
+func (p *Pipeline) waitForPipelineNotReady(ctx context.Context) error {
+	return p.watcherStorage.WaitForObjectCondition(
+		ctx,
+		p.pipeline,
+		assertions.PipelineNotReady,
+	)
+}
+
+func (p *Pipeline) waitForPipelineNameIsDeleted(ctx context.Context, pipeline string) error {
+	return p.watcherStorage.WaitForPipelineCondition(
+		ctx,
+		pipeline,
+		assertions.PipelineDeleted,
+	)
+}
+
+func (p *Pipeline) waitForPipelineIsDeleted(ctx context.Context) error {
+	return p.watcherStorage.WaitForPipelineCondition(
+		ctx,
+		p.pipelineName,
+		assertions.PipelineDeleted,
 	)
 }
