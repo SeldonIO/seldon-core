@@ -39,7 +39,7 @@ type ModelServerStore struct {
 
 var _ ModelServerAPI = &ModelServerStore{}
 
-func NewMemoryStore(
+func NewModelServerStore(
 	logger log.FieldLogger,
 	modelStore Storage[*db.Model],
 	serverStore Storage[*db.Server],
@@ -289,13 +289,13 @@ func (m *ModelServerStore) removeModelImpl(req *pb.UnloadModelRequest) error {
 	return err
 }
 
-func (m *ModelServerStore) GetServers(shallow bool, modelDetails bool) ([]*db.Server, error) {
+func (m *ModelServerStore) GetServers() ([]*db.Server, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	return m.store.servers.List(context.TODO())
 }
 
-func (m *ModelServerStore) GetServer(serverKey string, _ bool, modelDetails bool) (*db.Server, *ServerStats, error) {
+func (m *ModelServerStore) GetServer(serverKey string, modelDetails bool) (*db.Server, *ServerStats, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 

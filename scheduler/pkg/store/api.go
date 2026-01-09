@@ -141,24 +141,24 @@ type ModelServerAPI interface {
 	UpdateModel(config *pb.LoadModelRequest) error
 	GetModel(key string) (*db.Model, error)
 	GetModels() ([]*db.Model, error)
-	LockModel(modelId string)
-	UnlockModel(modelId string)
-	LockServer(serverID string)
-	UnlockServer(serverID string)
+	LockModel(modelName string)
+	UnlockModel(modelName string)
+	LockServer(serverName string)
+	UnlockServer(serverName string)
 	RemoveModel(req *pb.UnloadModelRequest) error
-	GetServers(shallow bool, modelDetails bool) ([]*db.Server, error)
-	GetServer(serverKey string, shallow bool, modelDetails bool) (*db.Server, *ServerStats, error)
-	UpdateLoadedModels(modelKey string, version uint32, serverKey string, replicas []*db.ServerReplica) error
-	UnloadVersionModels(modelKey string, version uint32) (bool, error)
-	UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error)
-	UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState db.ModelReplicaState, reason string, runtimeInfo *pb.ModelRuntimeInfo) error
+	GetServers() ([]*db.Server, error)
+	GetServer(serverName string, modelDetails bool) (*db.Server, *ServerStats, error)
+	UpdateLoadedModels(modelName string, version uint32, serverKey string, replicas []*db.ServerReplica) error
+	UnloadVersionModels(modelName string, version uint32) (bool, error)
+	UnloadModelGwVersionModels(modelName string, version uint32) (bool, error)
+	UpdateModelState(modelName string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState db.ModelReplicaState, reason string, runtimeInfo *pb.ModelRuntimeInfo) error
 	AddServerReplica(request *pba.AgentSubscribeRequest) error
 	ServerNotify(request *pb.ServerNotify) error
 	RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) // return previously loaded models
 	DrainServerReplica(serverName string, replicaIdx int) ([]string, error)  // return previously loaded models
-	FailedScheduling(modelID string, version uint32, reason string, reset bool) error
+	FailedScheduling(modelName string, version uint32, reason string, reset bool) error
 	GetAllModels() ([]string, error)
-	SetModelGwModelState(name string, versionNumber uint32, status db.ModelState, reason string, source string) error
+	SetModelGwModelState(modelName string, versionNumber uint32, status db.ModelState, reason string, source string) error
 	// TODO better name... should it even be on tihs interface?
 	EmitEvents() error
 }

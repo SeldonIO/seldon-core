@@ -714,7 +714,7 @@ func (s *SchedulerServer) handleServerEvents(event coordinator.ServerEventMsg) {
 	})
 	logger.Info("Got server event")
 
-	server, stats, err := s.modelStore.GetServer(event.ServerName, true, true)
+	server, stats, err := s.modelStore.GetServer(event.ServerName, true)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to get server %s", event.ServerName)
 		return
@@ -799,7 +799,7 @@ func (s *SchedulerServer) sendServerStatus() {
 	s.serverEventStream.mu.Lock()
 	defer s.serverEventStream.mu.Unlock()
 	for serverName := range pendingServers {
-		server, _, err := s.modelStore.GetServer(serverName, true, true)
+		server, _, err := s.modelStore.GetServer(serverName, true)
 		if err != nil {
 			logger.Errorf("Failed to get server %s", serverName)
 			continue
@@ -842,7 +842,7 @@ func (s *SchedulerServer) sendServerResponse(ssr *pb.ServerStatusResponse) {
 
 // initial send of server statuses to a new controller
 func (s *SchedulerServer) sendCurrentServerStatuses(stream pb.Scheduler_ServerStatusServer) error {
-	servers, err := s.modelStore.GetServers(true, true) // shallow, with model details
+	servers, err := s.modelStore.GetServers() // shallow, with model details
 	if err != nil {
 		return err
 	}

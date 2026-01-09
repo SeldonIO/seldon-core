@@ -299,7 +299,7 @@ func main() {
 	}
 
 	// Create stores
-	ss := store.NewMemoryStore(logger, store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), eventHub)
+	ss := store.NewModelServerStore(logger, store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), eventHub)
 	ps := pipeline.NewPipelineStore(logger, eventHub, ss)
 	es := experiment.NewExperimentServer(logger, eventHub, ss, ps)
 	cleaner := cleaner.NewVersionCleaner(ss, logger)

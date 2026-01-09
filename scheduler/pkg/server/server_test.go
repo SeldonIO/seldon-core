@@ -58,7 +58,7 @@ func TestLoadModel(t *testing.T) {
 		eventHub, err := coordinator.NewEventHub(logger)
 		g.Expect(err).To(BeNil())
 
-		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+		schedulerStore := store.NewModelServerStore(logger, store.NewLocalSchedulerStore(), eventHub)
 		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
 		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
 		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10 * time.Millisecond))
@@ -364,7 +364,7 @@ func TestUnloadModel(t *testing.T) {
 		log.SetLevel(log.DebugLevel)
 		eventHub, err := coordinator.NewEventHub(logger)
 		g.Expect(err).To(BeNil())
-		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+		schedulerStore := store.NewModelServerStore(logger, store.NewLocalSchedulerStore(), eventHub)
 		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
 		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
 		mockAgent := &mockAgentHandler{}
@@ -710,7 +710,7 @@ func TestServerNotify(t *testing.T) {
 		log.SetLevel(log.DebugLevel)
 		eventHub, err := coordinator.NewEventHub(logger)
 		g.Expect(err).To(BeNil())
-		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+		schedulerStore := store.NewModelServerStore(logger, store.NewLocalSchedulerStore(), eventHub)
 		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10 * time.Millisecond))
 		scheduler := scheduler2.NewSimpleScheduler(logger,
 			schedulerStore,
@@ -811,7 +811,7 @@ func TestServerNotify(t *testing.T) {
 
 			time.Sleep(50 * time.Millisecond) // allow events to be processed
 
-			actualServers, err := s.modelStore.GetServers(true, false)
+			actualServers, err := s.modelStore.GetServers()
 			g.Expect(err).To(BeNil())
 			sort.Slice(actualServers, func(i, j int) bool {
 				return actualServers[i].Name < actualServers[j].Name

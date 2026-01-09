@@ -258,7 +258,7 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *db.Model
 
 	p.modelStore.LockServer(latestModel.Server)
 	defer p.modelStore.UnlockServer(latestModel.Server)
-	server, _, err := p.modelStore.GetServer(latestModel.Server, false, false)
+	server, _, err := p.modelStore.GetServer(latestModel.Server, false)
 	if err != nil {
 		return err
 	}
@@ -266,7 +266,7 @@ func (p *IncrementalProcessor) addModelTraffic(routeName string, model *db.Model
 	lastAvailableModelVersion := model.GetLastAvailableModel()
 	if lastAvailableModelVersion != nil && latestModel.GetVersion() != lastAvailableModelVersion.GetVersion() {
 		trafficLatestModel, trafficLastAvailableModel := getTrafficShare(latestModel, lastAvailableModelVersion, weight)
-		lastAvailableServer, _, err := p.modelStore.GetServer(lastAvailableModelVersion.Server, false, false)
+		lastAvailableServer, _, err := p.modelStore.GetServer(lastAvailableModelVersion.Server, false)
 		if err != nil {
 			logger.WithError(err).Errorf("Failed to find server %s for last available model %s", lastAvailableModelVersion.Server, modelName)
 			return err
@@ -555,7 +555,7 @@ func (p *IncrementalProcessor) modelUpdate(modelName string) error {
 	}
 
 	if !modelRemoved {
-		_, _, err = p.modelStore.GetServer(latestModel.Server, false, false)
+		_, _, err = p.modelStore.GetServer(latestModel.Server, false)
 		if err != nil {
 			logger.Debugf("sync: No server - removing for %s", modelName)
 			if err := p.removeRouteForServerInEnvoyCache(modelName); err != nil {
@@ -674,7 +674,7 @@ func (p *IncrementalProcessor) modelSync() {
 		}
 
 		p.modelStore.LockServer(v.Server)
-		s, _, err := p.modelStore.GetServer(v.Server, false, false)
+		s, _, err := p.modelStore.GetServer(v.Server, false)
 		if err != nil {
 			logger.Debugf("Failed to get server for model %s server %s", mv.name, v.Server)
 			p.modelStore.UnlockServer(v.Server)

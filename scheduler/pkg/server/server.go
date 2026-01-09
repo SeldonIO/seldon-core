@@ -473,7 +473,7 @@ func (s *SchedulerServer) rescheduleModels(serverKey string) {
 	s.modelStore.LockServer(serverKey)
 	defer s.modelStore.UnlockServer(serverKey)
 
-	server, _, err := s.modelStore.GetServer(serverKey, false, true)
+	server, _, err := s.modelStore.GetServer(serverKey, true)
 	if err != nil {
 		logger.WithError(err).Errorf("Failed to get server %s", serverKey)
 		return
@@ -653,7 +653,7 @@ func (s *SchedulerServer) ServerStatus(
 
 	if req.Name == nil {
 		// All servers requested
-		servers, err := s.modelStore.GetServers(true, true)
+		servers, err := s.modelStore.GetServers()
 		if err != nil {
 			return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 		}
@@ -673,7 +673,7 @@ func (s *SchedulerServer) ServerStatus(
 		return nil
 	} else {
 		// Single server requested
-		server, _, err := s.modelStore.GetServer(req.GetName(), true, true)
+		server, _, err := s.modelStore.GetServer(req.GetName(), true)
 		if err != nil {
 			return status.Errorf(codes.FailedPrecondition, "%s", err.Error())
 		}

@@ -43,7 +43,7 @@ func NewTestMemory(
 	if t == nil {
 		panic("testing.T is required, must only be run via tests")
 	}
-	m := NewMemoryStore(logger, modelStore, serverStore, eventHub)
+	m := NewModelServerStore(logger, modelStore, serverStore, eventHub)
 	return &TestMemoryStore{m}
 }
 

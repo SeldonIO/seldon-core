@@ -43,7 +43,7 @@ func TestFetch(t *testing.T) {
 
 	logger := log.New()
 
-	memoryStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), nil)
+	memoryStore := store.NewModelServerStore(logger, store.NewLocalSchedulerStore(), nil)
 	pipelineHandler := pipeline.NewPipelineStore(logger, nil, memoryStore)
 
 	xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{}, nil)

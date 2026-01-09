@@ -332,7 +332,7 @@ func TestModelsStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerStore(log.New(), store.NewLocalSchedulerStore(), nil),
 				logger:     log.New(),
 				timeout:    10 * time.Millisecond,
 			},
@@ -346,7 +346,7 @@ func TestModelsStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerStore(log.New(), store.NewLocalSchedulerStore(), nil),
 				logger:     log.New(),
 				timeout:    10 * time.Millisecond,
 			},
@@ -361,7 +361,7 @@ func TestModelsStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerStore(log.New(), store.NewLocalSchedulerStore(), nil),
 				logger:     log.New(),
 				timeout:    1 * time.Millisecond,
 			},
@@ -975,7 +975,7 @@ func TestServersStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerStore(log.New(), store.NewLocalSchedulerStore(), nil),
 				logger:     log.New(),
 				timeout:    10 * time.Millisecond,
 			},
@@ -1011,7 +1011,7 @@ func TestServersStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerStore(log.New(), store.NewLocalSchedulerStore(), nil),
 				logger:     log.New(),
 				timeout:    10 * time.Millisecond,
 			},
@@ -1048,7 +1048,7 @@ func TestServersStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerStore(log.New(), store.NewLocalSchedulerStore(), nil),
 				logger:     log.New(),
 				timeout:    10 * time.Millisecond,
 			},
@@ -1063,7 +1063,7 @@ func TestServersStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerStore(log.New(), store.NewLocalSchedulerStore(), nil),
 				logger:     log.New(),
 				timeout:    1 * time.Millisecond,
 			},
@@ -1083,7 +1083,7 @@ func TestServersStatusStream(t *testing.T) {
 						expectedReplicas++
 						expectedNumLoadedModelReplicas += int32(len(r.request.LoadedModels))
 					} else {
-						server, _ := test.server.modelStore.GetServer("foo", true, false)
+						server, _, err := test.server.modelStore.GetServer("foo", false)
 						server.Replicas[int(r.request.ReplicaIdx)].SetIsDraining()
 					}
 				}

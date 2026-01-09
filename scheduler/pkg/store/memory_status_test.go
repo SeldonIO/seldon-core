@@ -250,7 +250,7 @@ func TestUpdateStatus(t *testing.T) {
 			}
 
 			// Create MemoryStore with populated storage
-			ms := NewMemoryStore(logger, modelStorage, serverStorage, eventHub)
+			ms := NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
 
 			// Get model and version for testing
 			model, modelVersion, _, err := ms.getModelServer(test.modelName, test.version, test.serverName)

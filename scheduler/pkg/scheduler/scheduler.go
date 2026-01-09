@@ -196,7 +196,7 @@ func (s *SimpleScheduler) scheduleToServer(modelName string) (*coordinator.Serve
 	var filteredServers []*db.Server
 
 	// Get all servers
-	servers, err := s.store.GetServers(false, true)
+	servers, err := s.store.GetServers()
 	if err != nil {
 		return nil, err
 	}
