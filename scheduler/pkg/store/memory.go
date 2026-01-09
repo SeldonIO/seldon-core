@@ -348,7 +348,7 @@ func (m *ModelServerStore) getModelServer(
 	}
 	modelVersion := model.GetVersion(version)
 	if modelVersion == nil {
-		return nil, nil, nil, fmt.Errorf("Version not found for model %s, version %d", modelKey, version)
+		return nil, nil, nil, fmt.Errorf("version not found for model %s, version %d", modelKey, version)
 	}
 	server, err := m.store.servers.Get(context.TODO(), serverKey)
 	if err != nil {
