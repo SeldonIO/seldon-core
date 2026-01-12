@@ -17,8 +17,10 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
@@ -1633,21 +1635,22 @@ func TestUpdateModelStatus(t *testing.T) {
 	r1 := "reason1"
 	d2 := time.Date(2021, 1, 2, 12, 0, 0, 0, time.UTC)
 	r2 := "reason2"
+
 	tests := []test{
 		{
 			name:    "Available",
 			deleted: false,
-			modelVersion: NewModelVersion(
-				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
-				1,
-				"server",
-				map[int]ReplicaStatus{
-					0: {State: Available, Reason: "", Timestamp: d1},
+			modelVersion: &db.ModelVersion{
+				Server:    "server",
+				ModelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
+				Version:   1,
+				Replicas: map[int32]*db.ReplicaStatus{
+					0: {State: db.ModelReplicaState_Available, Timestamp: timestamppb.New(d1)},
 				},
-				false,
-				ModelProgressing),
+				State: &db.ModelStatus{State: db.ModelState_ModelProgressing},
+			},
 			prevAvailableModelVersion: nil,
-			expectedState:             ModelAvailable,
+			expectedState:             db.ModelState_ModelAvailable,
 			expectedAvailableReplicas: 1,
 			expectedReason:            "",
 			expectedTimestamp:         d1,
@@ -1655,17 +1658,17 @@ func TestUpdateModelStatus(t *testing.T) {
 		{
 			name:    "Scaled Down",
 			deleted: false,
-			modelVersion: NewModelVersion(
-				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 0}},
-				1,
-				"server",
-				map[int]ReplicaStatus{
-					0: {State: Unloaded, Reason: "", Timestamp: d1},
+			modelVersion: &db.ModelVersion{
+				Server:    "server",
+				ModelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 0}},
+				Version:   1,
+				Replicas: map[int32]*db.ReplicaStatus{
+					0: {State: db.ModelReplicaState_Unloaded, Timestamp: timestamppb.New(d1)},
 				},
-				false,
-				ModelProgressing),
+				State: &db.ModelStatus{State: db.ModelState_ModelProgressing},
+			},
 			prevAvailableModelVersion: nil,
-			expectedState:             ModelScaledDown,
+			expectedState:             db.ModelState_ModelScaledDown,
 			expectedAvailableReplicas: 0,
 			expectedReason:            "",
 			expectedTimestamp:         d1,
@@ -1673,18 +1676,18 @@ func TestUpdateModelStatus(t *testing.T) {
 		{
 			name:    "Progressing",
 			deleted: false,
-			modelVersion: NewModelVersion(
-				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
-				1,
-				"server",
-				map[int]ReplicaStatus{
-					0: {State: Available, Reason: "", Timestamp: d1},
-					1: {State: Loading, Reason: "", Timestamp: d1},
+			modelVersion: &db.ModelVersion{
+				Server:    "server",
+				ModelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+				Version:   1,
+				Replicas: map[int32]*db.ReplicaStatus{
+					0: {State: db.ModelReplicaState_Available, Timestamp: timestamppb.New(d1)},
+					1: {State: db.ModelReplicaState_Loading, Timestamp: timestamppb.New(d1)},
 				},
-				false,
-				ModelProgressing),
+				State: &db.ModelStatus{State: db.ModelState_ModelProgressing},
+			},
 			prevAvailableModelVersion: nil,
-			expectedState:             ModelProgressing,
+			expectedState:             db.ModelState_ModelProgressing,
 			expectedAvailableReplicas: 1,
 			expectedReason:            "",
 			expectedTimestamp:         d1,
@@ -1692,17 +1695,17 @@ func TestUpdateModelStatus(t *testing.T) {
 		{
 			name:    "Failed",
 			deleted: false,
-			modelVersion: NewModelVersion(
-				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
-				1,
-				"server",
-				map[int]ReplicaStatus{
-					0: {State: LoadFailed, Reason: r1, Timestamp: d1},
+			modelVersion: &db.ModelVersion{
+				Server:    "server",
+				ModelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
+				Version:   1,
+				Replicas: map[int32]*db.ReplicaStatus{
+					0: {State: db.ModelReplicaState_LoadFailed, Reason: r1, Timestamp: timestamppb.New(d1)},
 				},
-				false,
-				ModelProgressing),
+				State: &db.ModelStatus{State: db.ModelState_ModelProgressing},
+			},
 			prevAvailableModelVersion: nil,
-			expectedState:             ModelFailed,
+			expectedState:             db.ModelState_ModelFailed,
 			expectedAvailableReplicas: 0,
 			expectedReason:            r1,
 			expectedTimestamp:         d1,
@@ -1710,18 +1713,18 @@ func TestUpdateModelStatus(t *testing.T) {
 		{
 			name:    "AvailableAndFailed",
 			deleted: false,
-			modelVersion: NewModelVersion(
-				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
-				1,
-				"server",
-				map[int]ReplicaStatus{
-					0: {State: Loaded, Reason: "", Timestamp: d1},
-					1: {State: LoadFailed, Reason: r1, Timestamp: d2},
+			modelVersion: &db.ModelVersion{
+				Server:    "server",
+				ModelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+				Version:   1,
+				Replicas: map[int32]*db.ReplicaStatus{
+					0: {State: db.ModelReplicaState_Loaded, Timestamp: timestamppb.New(d1)},
+					1: {State: db.ModelReplicaState_LoadFailed, Reason: r1, Timestamp: timestamppb.New(d2)},
 				},
-				false,
-				ModelProgressing),
+				State: &db.ModelStatus{State: db.ModelState_ModelProgressing},
+			},
 			prevAvailableModelVersion: nil,
-			expectedState:             ModelFailed,
+			expectedState:             db.ModelState_ModelFailed,
 			expectedAvailableReplicas: 0,
 			expectedReason:            r1,
 			expectedTimestamp:         d2,
@@ -1729,18 +1732,18 @@ func TestUpdateModelStatus(t *testing.T) {
 		{
 			name:    "TwoFailed",
 			deleted: false,
-			modelVersion: NewModelVersion(
-				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
-				1,
-				"server",
-				map[int]ReplicaStatus{
-					0: {State: LoadFailed, Reason: r1, Timestamp: d1},
-					1: {State: LoadFailed, Reason: r2, Timestamp: d2},
+			modelVersion: &db.ModelVersion{
+				Server:    "server",
+				ModelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+				Version:   1,
+				Replicas: map[int32]*db.ReplicaStatus{
+					0: {State: db.ModelReplicaState_LoadFailed, Reason: r1, Timestamp: timestamppb.New(d1)},
+					1: {State: db.ModelReplicaState_LoadFailed, Reason: r2, Timestamp: timestamppb.New(d2)},
 				},
-				false,
-				ModelProgressing),
+				State: &db.ModelStatus{State: db.ModelState_ModelProgressing},
+			},
 			prevAvailableModelVersion: nil,
-			expectedState:             ModelFailed,
+			expectedState:             db.ModelState_ModelFailed,
 			expectedAvailableReplicas: 0,
 			expectedReason:            r2,
 			expectedTimestamp:         d2,
@@ -1748,26 +1751,26 @@ func TestUpdateModelStatus(t *testing.T) {
 		{
 			name:    "AvailableV2",
 			deleted: false,
-			modelVersion: NewModelVersion(
-				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
-				1,
-				"server",
-				map[int]ReplicaStatus{
-					0: {State: Loading, Reason: "", Timestamp: d1},
-					1: {State: Available, Reason: "", Timestamp: d2},
+			modelVersion: &db.ModelVersion{
+				Server:    "server",
+				ModelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
+				Version:   1,
+				Replicas: map[int32]*db.ReplicaStatus{
+					0: {State: db.ModelReplicaState_Loading, Timestamp: timestamppb.New(d1)},
+					1: {State: db.ModelReplicaState_Available, Timestamp: timestamppb.New(d2)},
 				},
-				false,
-				ModelProgressing),
-			prevAvailableModelVersion: NewModelVersion(
-				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
-				1,
-				"server",
-				map[int]ReplicaStatus{
-					0: {State: Available, Reason: "", Timestamp: d1},
+				State: &db.ModelStatus{State: db.ModelState_ModelProgressing},
+			},
+			prevAvailableModelVersion: &db.ModelVersion{
+				Server:    "server",
+				ModelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
+				Version:   1,
+				Replicas: map[int32]*db.ReplicaStatus{
+					0: {State: db.ModelReplicaState_Available, Timestamp: timestamppb.New(d1)},
 				},
-				false,
-				ModelAvailable),
-			expectedState:             ModelAvailable,
+				State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+			},
+			expectedState:             db.ModelState_ModelAvailable,
 			expectedAvailableReplicas: 1,
 			expectedReason:            "",
 			expectedTimestamp:         d2,
@@ -1775,17 +1778,17 @@ func TestUpdateModelStatus(t *testing.T) {
 		{
 			name:    "Terminating",
 			deleted: true,
-			modelVersion: NewModelVersion(
-				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
-				1,
-				"server",
-				map[int]ReplicaStatus{
-					0: {State: Unloading, Reason: "", Timestamp: d1},
-					1: {State: Unloading, Reason: "", Timestamp: d2},
+			modelVersion: &db.ModelVersion{
+				Server:    "server",
+				ModelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+				Version:   1,
+				Replicas: map[int32]*db.ReplicaStatus{
+					0: {State: db.ModelReplicaState_Unloading, Timestamp: timestamppb.New(d1)},
+					1: {State: db.ModelReplicaState_Unloading, Timestamp: timestamppb.New(d2)},
 				},
-				true,
-				ModelProgressing),
-			expectedState:             ModelTerminating,
+				State: &db.ModelStatus{State: db.ModelState_ModelProgressing},
+			},
+			expectedState:             db.ModelState_ModelTerminating,
 			expectedAvailableReplicas: 0,
 			expectedReason:            "",
 			expectedTimestamp:         d2,
@@ -1793,17 +1796,17 @@ func TestUpdateModelStatus(t *testing.T) {
 		{
 			name:    "TerminatingLoadingReplicas",
 			deleted: true,
-			modelVersion: NewModelVersion(
-				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
-				2,
-				"server",
-				map[int]ReplicaStatus{
-					0: {State: Loading, Reason: "", Timestamp: d1},
-					1: {State: Loading, Reason: "", Timestamp: d2},
+			modelVersion: &db.ModelVersion{
+				Server:    "server",
+				ModelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+				Version:   2,
+				Replicas: map[int32]*db.ReplicaStatus{
+					0: {State: db.ModelReplicaState_Loading, Timestamp: timestamppb.New(d1)},
+					1: {State: db.ModelReplicaState_Loading, Timestamp: timestamppb.New(d2)},
 				},
-				true,
-				ModelProgressing),
-			expectedState:             ModelTerminating,
+				State: &db.ModelStatus{State: db.ModelState_ModelProgressing},
+			},
+			expectedState:             db.ModelState_ModelTerminating,
 			expectedAvailableReplicas: 0,
 			expectedReason:            "",
 			expectedTimestamp:         d2,
@@ -1811,17 +1814,17 @@ func TestUpdateModelStatus(t *testing.T) {
 		{
 			name:    "Terminated",
 			deleted: true,
-			modelVersion: NewModelVersion(
-				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
-				1,
-				"server",
-				map[int]ReplicaStatus{
-					0: {State: Unloaded, Reason: "", Timestamp: d1},
-					1: {State: Unloaded, Reason: "", Timestamp: d2},
+			modelVersion: &db.ModelVersion{
+				Server:    "server",
+				ModelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+				Version:   1,
+				Replicas: map[int32]*db.ReplicaStatus{
+					0: {State: db.ModelReplicaState_Unloaded, Timestamp: timestamppb.New(d1)},
+					1: {State: db.ModelReplicaState_Unloaded, Timestamp: timestamppb.New(d2)},
 				},
-				true,
-				ModelProgressing),
-			expectedState:             ModelTerminated,
+				State: &db.ModelStatus{State: db.ModelState_ModelProgressing},
+			},
+			expectedState:             db.ModelState_ModelTerminated,
 			expectedAvailableReplicas: 0,
 			expectedReason:            "",
 			expectedTimestamp:         d2,
@@ -1829,17 +1832,17 @@ func TestUpdateModelStatus(t *testing.T) {
 		{
 			name:    "TerminateFailed",
 			deleted: true,
-			modelVersion: NewModelVersion(
-				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
-				1,
-				"server",
-				map[int]ReplicaStatus{
-					0: {State: UnloadFailed, Reason: r1, Timestamp: d1},
-					1: {State: Unloaded, Reason: "", Timestamp: d2},
+			modelVersion: &db.ModelVersion{
+				Server:    "server",
+				ModelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+				Version:   1,
+				Replicas: map[int32]*db.ReplicaStatus{
+					0: {State: db.ModelReplicaState_UnloadFailed, Reason: r1, Timestamp: timestamppb.New(d1)},
+					1: {State: db.ModelReplicaState_Unloaded, Timestamp: timestamppb.New(d2)},
 				},
-				true,
-				ModelProgressing),
-			expectedState:             ModelTerminateFailed,
+				State: &db.ModelStatus{State: db.ModelState_ModelProgressing},
+			},
+			expectedState:             db.ModelState_ModelTerminateFailed,
 			expectedAvailableReplicas: 0,
 			expectedReason:            r1,
 			expectedTimestamp:         d1,
@@ -1847,27 +1850,27 @@ func TestUpdateModelStatus(t *testing.T) {
 		{
 			name:    "AvailableV2PrevTerminated",
 			deleted: false,
-			modelVersion: NewModelVersion(
-				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
-				2,
-				"server",
-				map[int]ReplicaStatus{
-					0: {State: Available, Reason: "", Timestamp: d1},
-					1: {State: Available, Reason: "", Timestamp: d2},
+			modelVersion: &db.ModelVersion{
+				Server:    "server",
+				ModelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+				Version:   2,
+				Replicas: map[int32]*db.ReplicaStatus{
+					0: {State: db.ModelReplicaState_Available, Timestamp: timestamppb.New(d1)},
+					1: {State: db.ModelReplicaState_Available, Timestamp: timestamppb.New(d2)},
 				},
-				false,
-				ModelProgressing),
-			prevAvailableModelVersion: NewModelVersion(
-				&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
-				1,
-				"server",
-				map[int]ReplicaStatus{
-					0: {State: Available, Reason: "", Timestamp: d1},
-					1: {State: Available, Reason: "", Timestamp: d2},
+				State: &db.ModelStatus{State: db.ModelState_ModelProgressing},
+			},
+			prevAvailableModelVersion: &db.ModelVersion{
+				Server:    "server",
+				ModelDefn: &pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
+				Version:   2,
+				Replicas: map[int32]*db.ReplicaStatus{
+					0: {State: db.ModelReplicaState_Available, Timestamp: timestamppb.New(d1)},
+					1: {State: db.ModelReplicaState_Available, Timestamp: timestamppb.New(d2)},
 				},
-				false,
-				ModelTerminating),
-			expectedState:             ModelAvailable,
+				State: &db.ModelStatus{State: db.ModelState_ModelTerminating},
+			},
+			expectedState:             db.ModelState_ModelAvailable,
 			expectedAvailableReplicas: 2,
 			expectedReason:            "",
 			expectedTimestamp:         d2,
@@ -1878,30 +1881,32 @@ func TestUpdateModelStatus(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			modelStorage := NewInMemoryStorage[*db.Model]()
-			serverStorage := NewInMemoryStorage[*db.Server]()
 
-			ms := NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
-			ms.updateModelStatus(true, test.deleted, test.modelVersion, test.prevAvailableModelVersion)
-			g.Expect(test.modelVersion.state.State).To(Equal(test.expectedState))
-			g.Expect(test.modelVersion.state.Reason).To(Equal(test.expectedReason))
-			g.Expect(test.modelVersion.state.AvailableReplicas).To(Equal(test.expectedAvailableReplicas))
-			g.Expect(test.modelVersion.state.Timestamp).To(Equal(test.expectedTimestamp))
+			const modelName = "some-model"
+
+			modelStore := NewInMemoryStorage[*db.Model]()
+			err = modelStore.Insert(context.TODO(), &db.Model{Name: modelName})
+			g.Expect(err).To(BeNil())
+
+			ms := NewModelServerStore(logger, modelStore, NewInMemoryStorage[*db.Server](), eventHub)
+			err = ms.updateModelStatus(true, test.deleted, test.modelVersion, test.prevAvailableModelVersion, &db.Model{
+				Name: modelName,
+			})
+			g.Expect(err).To(BeNil())
+			g.Expect(test.modelVersion.State.State).To(Equal(test.expectedState))
+			g.Expect(test.modelVersion.State.Reason).To(Equal(test.expectedReason))
+			g.Expect(test.modelVersion.State.AvailableReplicas).To(Equal(test.expectedAvailableReplicas))
+			g.Expect(test.modelVersion.State.Timestamp.AsTime()).To(Equal(test.expectedTimestamp))
 		})
 	}
 }
 
-// TODO: This test requires refactoring for the new storage architecture.
-// It tests internal implementation details (addModelVersionIfNotExists) that work directly
-// with LocalSchedulerStore. The new architecture uses Storage interfaces and may need
-// a different approach to testing these internal methods.
-/*
 func TestAddModelVersionIfNotExists(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
 		name         string
-		store        *LocalSchedulerStore
+		models       []*db.Model
 		modelVersion *agent.ModelVersion
 		expected     []uint32
 		latest       uint32
@@ -1909,10 +1914,8 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "Add new version when none exist",
-			store: &LocalSchedulerStore{
-				models: map[string]*Model{},
-			},
+			name:   "Add new version when none exist",
+			models: []*db.Model{},
 			modelVersion: &agent.ModelVersion{
 				Version: 1,
 				Model: &pb.Model{
@@ -1922,120 +1925,120 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 			expected: []uint32{1},
 			latest:   1,
 		},
-		{
-			name: "AddNewVersion",
-			store: &LocalSchedulerStore{
-				models: map[string]*Model{"foo": {
-					versions: []*ModelVersion{},
-				}},
-			},
-			modelVersion: &agent.ModelVersion{
-				Version: 1,
-				Model: &pb.Model{
-					Meta: &pb.MetaData{Name: "foo"},
-				},
-			},
-			expected: []uint32{1},
-			latest:   1,
-		},
-		{
-			name: "AddSecondVersion",
-			store: &LocalSchedulerStore{
-				models: map[string]*Model{"foo": {
-					versions: []*ModelVersion{
-						{
-							version:   1,
-							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
-							replicas:  map[int]ReplicaStatus{},
-						},
-					},
-				}},
-			},
-			modelVersion: &agent.ModelVersion{
-				Version: 2,
-				Model: &pb.Model{
-					Meta: &pb.MetaData{Name: "foo"},
-				},
-			},
-			expected: []uint32{1, 2},
-			latest:   2,
-		},
-		{
-			name: "Existing",
-			store: &LocalSchedulerStore{
-				models: map[string]*Model{"foo": {
-					versions: []*ModelVersion{
-						{
-							version:   1,
-							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
-							replicas:  map[int]ReplicaStatus{},
-						},
-					},
-				}},
-			},
-			modelVersion: &agent.ModelVersion{
-				Version: 1,
-				Model: &pb.Model{
-					Meta: &pb.MetaData{Name: "foo"},
-				},
-			},
-			expected: []uint32{1},
-			latest:   1,
-		},
-		{
-			name: "AddThirdVersion",
-			store: &LocalSchedulerStore{
-				models: map[string]*Model{"foo": {
-					versions: []*ModelVersion{
-						{
-							version:   1,
-							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
-							replicas:  map[int]ReplicaStatus{},
-						},
-						{
-							version:   2,
-							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
-							replicas:  map[int]ReplicaStatus{},
-						},
-					},
-				}},
-			},
-			modelVersion: &agent.ModelVersion{
-				Version: 3,
-				Model: &pb.Model{
-					Meta: &pb.MetaData{Name: "foo"},
-				},
-			},
-			expected: []uint32{1, 2, 3},
-			latest:   3,
-		},
-		{
-			name: "AddThirdVersionInMiddle",
-			store: &LocalSchedulerStore{
-				models: map[string]*Model{"foo": {
-					versions: []*ModelVersion{
-						{
-							version:   1,
-							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
-							replicas:  map[int]ReplicaStatus{},
-						},
-						{
-							version:   3,
-							modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
-							replicas:  map[int]ReplicaStatus{},
-						},
-					},
-				}},
-			},
-			modelVersion: &agent.ModelVersion{
-				Version: 2,
-				Model: &pb.Model{
-					Meta: &pb.MetaData{Name: "foo"},
-				},
-			},
-			expected: []uint32{1, 2, 3},
-			latest:   3,
-		},
+		//{
+		//	name: "AddNewVersion",
+		//	store: &LocalSchedulerStore{
+		//		models: map[string]*Model{"foo": {
+		//			versions: []*ModelVersion{},
+		//		}},
+		//	},
+		//	modelVersion: &agent.ModelVersion{
+		//		Version: 1,
+		//		Model: &pb.Model{
+		//			Meta: &pb.MetaData{Name: "foo"},
+		//		},
+		//	},
+		//	expected: []uint32{1},
+		//	latest:   1,
+		//},
+		//{
+		//	name: "AddSecondVersion",
+		//	store: &LocalSchedulerStore{
+		//		models: map[string]*Model{"foo": {
+		//			versions: []*ModelVersion{
+		//				{
+		//					version:   1,
+		//					modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
+		//					replicas:  map[int]ReplicaStatus{},
+		//				},
+		//			},
+		//		}},
+		//	},
+		//	modelVersion: &agent.ModelVersion{
+		//		Version: 2,
+		//		Model: &pb.Model{
+		//			Meta: &pb.MetaData{Name: "foo"},
+		//		},
+		//	},
+		//	expected: []uint32{1, 2},
+		//	latest:   2,
+		//},
+		//{
+		//	name: "Existing",
+		//	store: &LocalSchedulerStore{
+		//		models: map[string]*Model{"foo": {
+		//			versions: []*ModelVersion{
+		//				{
+		//					version:   1,
+		//					modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
+		//					replicas:  map[int]ReplicaStatus{},
+		//				},
+		//			},
+		//		}},
+		//	},
+		//	modelVersion: &agent.ModelVersion{
+		//		Version: 1,
+		//		Model: &pb.Model{
+		//			Meta: &pb.MetaData{Name: "foo"},
+		//		},
+		//	},
+		//	expected: []uint32{1},
+		//	latest:   1,
+		//},
+		//{
+		//	name: "AddThirdVersion",
+		//	store: &LocalSchedulerStore{
+		//		models: map[string]*Model{"foo": {
+		//			versions: []*ModelVersion{
+		//				{
+		//					version:   1,
+		//					modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
+		//					replicas:  map[int]ReplicaStatus{},
+		//				},
+		//				{
+		//					version:   2,
+		//					modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
+		//					replicas:  map[int]ReplicaStatus{},
+		//				},
+		//			},
+		//		}},
+		//	},
+		//	modelVersion: &agent.ModelVersion{
+		//		Version: 3,
+		//		Model: &pb.Model{
+		//			Meta: &pb.MetaData{Name: "foo"},
+		//		},
+		//	},
+		//	expected: []uint32{1, 2, 3},
+		//	latest:   3,
+		//},
+		//{
+		//	name: "AddThirdVersionInMiddle",
+		//	store: &LocalSchedulerStore{
+		//		models: map[string]*Model{"foo": {
+		//			versions: []*ModelVersion{
+		//				{
+		//					version:   1,
+		//					modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
+		//					replicas:  map[int]ReplicaStatus{},
+		//				},
+		//				{
+		//					version:   3,
+		//					modelDefn: &pb.Model{Meta: &pb.MetaData{Name: "foo"}},
+		//					replicas:  map[int]ReplicaStatus{},
+		//				},
+		//			},
+		//		}},
+		//	},
+		//	modelVersion: &agent.ModelVersion{
+		//		Version: 2,
+		//		Model: &pb.Model{
+		//			Meta: &pb.MetaData{Name: "foo"},
+		//		},
+		//	},
+		//	expected: []uint32{1, 2, 3},
+		//	latest:   3,
+		//},
 	}
 
 	for _, test := range tests {
@@ -2043,569 +2046,584 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			ms := NewModelServerStore(logger, test.store, eventHub)
+
+			modelStorage := NewInMemoryStorage[*db.Model]()
+			serverStorage := NewInMemoryStorage[*db.Server]()
+
+			// Populate storage with test data
+			for _, model := range test.models {
+				err := modelStorage.Insert(context.TODO(), model)
+				g.Expect(err).To(BeNil())
+			}
+			getModel := func(name string) *db.Model {
+				model, err := modelStorage.Get(context.TODO(), name)
+				g.Expect(err).To(BeNil())
+				return model
+			}
+
+			ms := NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
 			ms.addModelVersionIfNotExists(test.modelVersion)
 			modelName := test.modelVersion.GetModel().GetMeta().GetName()
-			g.Expect(test.store.models[modelName].GetVersions()).To(Equal(test.expected))
-			g.Expect(test.store.models[modelName].Latest().version).To(Equal(test.latest))
+			g.Expect(getModel(modelName).GetVersions()).To(Equal(test.expected))
+			g.Expect(getModel(modelName).Latest().Version).To(Equal(test.latest))
 		})
 	}
 }
 
-func TestAddServerReplica(t *testing.T) {
-	g := NewGomegaWithT(t)
-	ctx := context.Background()
-
-	type test struct {
-		name                 string
-		models               []*db.Model
-		servers              []*db.Server
-		req                  *agent.AgentSubscribeRequest
-		expectedSnapshot     []*ServerSnapshot
-		expectedModelEvents  int64
-		expectedServerEvents int64
-	}
-
-	tests := []test{
-		{
-			name:    "AddServerReplica - existing server",
-			models:  []*db.Model{},
-			servers: []*db.Server{
-				{
-					Name: "server1",
-					Replicas: map[int32]*db.ServerReplica{
-						0: {},
-						1: {},
-					},
-					ExpectedReplicas: 3,
-					Shared:           true,
-				},
-			},
-			req: &agent.AgentSubscribeRequest{
-				ServerName: "server1",
-				ReplicaIdx: 2,
-				Shared:     true,
-			},
-			expectedSnapshot: []*ServerSnapshot{
-				{
-					Name: "server1",
-					Replicas: map[int]*ServerReplica{
-						0: {},
-						1: {},
-						2: {},
-					},
-					ExpectedReplicas: 3,
-					Shared:           true,
-				},
-			},
-			expectedModelEvents:  0,
-			expectedServerEvents: 1,
-		},
-		{
-			name:    "AddServerReplica - new server",
-			models:  []*db.Model{},
-			servers: []*db.Server{},
-			req: &agent.AgentSubscribeRequest{
-				ServerName: "server1",
-				ReplicaIdx: 0,
-				Shared:     true,
-			},
-			expectedSnapshot: []*ServerSnapshot{
-				{
-					Name: "server1",
-					Replicas: map[int]*ServerReplica{
-						0: {},
-					},
-					ExpectedReplicas: -1, // expected replicas is not set
-					Shared:           true,
-				},
-			},
-			expectedModelEvents:  0,
-			expectedServerEvents: 1,
-		},
-		{
-			name:    "AddServerReplica - with loaded models",
-			models:  []*db.Model{},
-			servers: []*db.Server{},
-			req: &agent.AgentSubscribeRequest{
-				ServerName: "server1",
-				ReplicaIdx: 0,
-				Shared:     true,
-				LoadedModels: []*agent.ModelVersion{
-					{
-						Model: &pb.Model{
-							Meta:      &pb.MetaData{Name: "model1"},
-							ModelSpec: &pb.ModelSpec{},
-						},
-						Version: 1,
-					},
-					{
-						Model: &pb.Model{
-							Meta:      &pb.MetaData{Name: "model2"},
-							ModelSpec: &pb.ModelSpec{},
-						},
-						Version: 1,
-					},
-				},
-			},
-			expectedSnapshot: []*ServerSnapshot{
-				{
-					Name: "server1",
-					Replicas: map[int]*ServerReplica{
-						0: {},
-					},
-					ExpectedReplicas: -1, // expected replicas is not set
-					Shared:           true,
-				},
-			},
-			expectedModelEvents:  2,
-			expectedServerEvents: 1,
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			logger := log.New()
-			eventHub, err := coordinator.NewEventHub(logger)
-			g.Expect(err).To(BeNil())
-
-			// Create storage instances
-			modelStorage := NewInMemoryStorage[*db.Model]()
-			serverStorage := NewInMemoryStorage[*db.Server]()
-
-			// Populate storage with test data
-			for _, model := range test.models {
-				err := modelStorage.Insert(ctx, model)
-				g.Expect(err).To(BeNil())
-			}
-			for _, server := range test.servers {
-				err := serverStorage.Insert(ctx, server)
-				g.Expect(err).To(BeNil())
-			}
-
-			// Create MemoryStore with populated storage
-			ms := NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
-
-			// register a callback to check if the event is triggered
-			serverEvents := int64(0)
-			eventHub.RegisterServerEventHandler(
-				"handler-server",
-				10,
-				logger,
-				func(event coordinator.ServerEventMsg) { atomic.AddInt64(&serverEvents, 1) },
-			)
-
-			modelEvents := int64(0)
-			eventHub.RegisterModelEventHandler(
-				"handler-model",
-				10,
-				logger,
-				func(event coordinator.ModelEventMsg) { atomic.AddInt64(&modelEvents, 1) },
-			)
-
-			err = ms.AddServerReplica(test.req)
-			g.Expect(err).To(BeNil())
-			actualSnapshot, err := ms.GetServers(true, false)
-			g.Expect(err).To(BeNil())
-			for idx, server := range actualSnapshot {
-				g.Expect(server.Name).To(Equal(test.expectedSnapshot[idx].Name))
-				g.Expect(server.Shared).To(Equal(test.expectedSnapshot[idx].Shared))
-				g.Expect(server.ExpectedReplicas).To(Equal(test.expectedSnapshot[idx].ExpectedReplicas))
-				g.Expect(len(server.Replicas)).To(Equal(len(test.expectedSnapshot[idx].Replicas)))
-			}
-
-			time.Sleep(10 * time.Millisecond)
-			g.Expect(atomic.LoadInt64(&serverEvents)).To(Equal(test.expectedServerEvents))
-			g.Expect(atomic.LoadInt64(&modelEvents)).To(Equal(test.expectedModelEvents))
-		})
-	}
-}
-
-func TestRemoveServerReplica(t *testing.T) {
-	g := NewGomegaWithT(t)
-	ctx := context.Background()
-
-	type test struct {
-		name           string
-		models         []*db.Model
-		servers        []*db.Server
-		serverName     string
-		replicaIdx     int
-		serverExists   bool
-		modelsReturned int
-	}
-
-	tests := []test{
-		{
-			name:    "ReplicaRemovedButNotDeleted",
-			models:  []*db.Model{},
-			servers: []*db.Server{
-				{
-					Name: "server1",
-					Replicas: map[int32]*db.ServerReplica{
-						0: {
-							LoadedModels: []*db.ModelVersionID{{Name: "model1", Version: 1}},
-						},
-						1: {},
-					},
-					ExpectedReplicas: 2,
-					Shared:           true,
-				},
-			},
-			serverName:     "server1",
-			replicaIdx:     0,
-			serverExists:   true,
-			modelsReturned: 0, // no models really defined in store
-		},
-		{
-			name: "ReplicaRemovedAndDeleted",
-			models: []*db.Model{
-				{
-					Name: "model1",
-					Versions: []*db.ModelVersion{
-						{
-							Version:  1,
-							Replicas: make(map[int32]*db.ReplicaStatus),
-						},
-					},
-				},
-			},
-			servers: []*db.Server{
-				{
-					Name: "server1",
-					Replicas: map[int32]*db.ServerReplica{
-						0: {
-							LoadedModels: []*db.ModelVersionID{{Name: "model1", Version: 1}},
-						},
-						1: {},
-					},
-					ExpectedReplicas: -1,
-					Shared:           true,
-				},
-			},
-			serverName:     "server1",
-			replicaIdx:     0,
-			serverExists:   true,
-			modelsReturned: 1,
-		},
-		{
-			name: "ReplicaRemovedAndServerDeleted",
-			models: []*db.Model{
-				{
-					Name: "model1",
-					Versions: []*db.ModelVersion{
-						{
-							Version:  1,
-							Replicas: make(map[int32]*db.ReplicaStatus),
-						},
-					},
-				},
-			},
-			servers: []*db.Server{
-				{
-					Name: "server1",
-					Replicas: map[int32]*db.ServerReplica{
-						0: {
-							LoadedModels: []*db.ModelVersionID{{Name: "model1", Version: 1}},
-						},
-					},
-					ExpectedReplicas: 0,
-					Shared:           true,
-				},
-			},
-			serverName:     "server1",
-			replicaIdx:     0,
-			serverExists:   false,
-			modelsReturned: 1,
-		},
-		{
-			name:   "ReplicaRemovedAndServerDeleted but no model version in store",
-			models: []*db.Model{},
-			servers: []*db.Server{
-				{
-					Name: "server1",
-					Replicas: map[int32]*db.ServerReplica{
-						0: {
-							LoadedModels: []*db.ModelVersionID{{Name: "model1", Version: 1}},
-						},
-					},
-					ExpectedReplicas: 0,
-					Shared:           true,
-				},
-			},
-			serverName:     "server1",
-			replicaIdx:     0,
-			serverExists:   false,
-			modelsReturned: 0,
-		},
-		{
-			name: "ReplicaRemovedAndDeleted - loading models",
-			models: []*db.Model{
-				{
-					Name: "model1",
-					Versions: []*db.ModelVersion{
-						{
-							Version:  1,
-							Replicas: make(map[int32]*db.ReplicaStatus),
-						},
-					},
-				},
-				{
-					Name: "model2",
-					Versions: []*db.ModelVersion{
-						{
-							Version:  1,
-							Replicas: make(map[int32]*db.ReplicaStatus),
-						},
-					},
-				},
-			},
-			servers: []*db.Server{
-				{
-					Name: "server1",
-					Replicas: map[int32]*db.ServerReplica{
-						0: {
-							LoadedModels: []*db.ModelVersionID{
-								{Name: "model1", Version: 1},
-								{Name: "model2", Version: 1},
-							},
-						},
-						1: {},
-					},
-					ExpectedReplicas: -1,
-					Shared:           true,
-				},
-			},
-			serverName:     "server1",
-			replicaIdx:     0,
-			serverExists:   true,
-			modelsReturned: 2,
-		},
-		{
-			name: "ReplicaRemovedAndDeleted - non latest models",
-			models: []*db.Model{
-				{
-					Name: "model1",
-					Versions: []*db.ModelVersion{
-						{
-							Version: 1,
-							Replicas: map[int32]*db.ReplicaStatus{
-								0: {State: db.ModelReplicaState_Loaded},
-							},
-						},
-						{
-							Version: 2,
-							Replicas: map[int32]*db.ReplicaStatus{
-								0: {State: db.ModelReplicaState_LoadFailed},
-							},
-						},
-					},
-				},
-			},
-			servers: []*db.Server{
-				{
-					Name: "server1",
-					Replicas: map[int32]*db.ServerReplica{
-						0: {
-							LoadedModels: []*db.ModelVersionID{{Name: "model1", Version: 1}},
-						},
-					},
-					ExpectedReplicas: -1,
-					Shared:           true,
-				},
-			},
-			serverName:     "server1",
-			replicaIdx:     0,
-			serverExists:   false,
-			modelsReturned: 0,
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			logger := log.New()
-			eventHub, err := coordinator.NewEventHub(logger)
-			g.Expect(err).To(BeNil())
-
-			// Create storage instances
-			modelStorage := NewInMemoryStorage[*db.Model]()
-			serverStorage := NewInMemoryStorage[*db.Server]()
-
-			// Populate storage with test data
-			for _, model := range test.models {
-				err := modelStorage.Insert(ctx, model)
-				g.Expect(err).To(BeNil())
-			}
-			for _, server := range test.servers {
-				err := serverStorage.Insert(ctx, server)
-				g.Expect(err).To(BeNil())
-			}
-
-			// Create MemoryStore with populated storage
-			ms := NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
-
-			models, err := ms.RemoveServerReplica(test.serverName, test.replicaIdx)
-			g.Expect(err).To(BeNil())
-			g.Expect(test.modelsReturned).To(Equal(len(models)))
-			server, _, err := ms.GetServer(test.serverName, false, true)
-			if test.serverExists {
-				g.Expect(err).To(BeNil())
-				g.Expect(server).ToNot(BeNil())
-			} else {
-				g.Expect(err).ToNot(BeNil())
-				g.Expect(server).To(BeNil())
-			}
-		})
-	}
-}
-
-func TestDrainServerReplica(t *testing.T) {
-	g := NewGomegaWithT(t)
-	ctx := context.Background()
-
-	type test struct {
-		name           string
-		models         []*db.Model
-		servers        []*db.Server
-		serverName     string
-		replicaIdx     int
-		modelsReturned []string
-	}
-
-	// if we have models returned check status is Draining
-	tests := []test{
-		{
-			name: "ReplicaSetDrainingNoModels",
-			servers: []*db.Server{
-				{
-					Name: "server1",
-					Replicas: map[int32]*db.ServerReplica{
-						0: {},
-						1: {},
-					},
-					ExpectedReplicas: 2,
-					Shared:           true,
-				},
-			},
-			serverName:     "server1",
-			replicaIdx:     0,
-			modelsReturned: []string{},
-		},
-		{
-			name: "ReplicaSetDrainingWithLoadedModels",
-			models: []*db.Model{
-				{
-					Name: "model1",
-					Versions: []*db.ModelVersion{
-						{
-							Version:  1,
-							Replicas: map[int32]*db.ReplicaStatus{0: {State: db.ModelReplicaState_Loaded}},
-						},
-					},
-				},
-			},
-			servers: []*db.Server{
-				{
-					Name: "server1",
-					Replicas: map[int32]*db.ServerReplica{
-						0: {LoadedModels: []*db.ModelVersionID{{Name: "model1", Version: 1}}},
-						1: {},
-					},
-					ExpectedReplicas: -1,
-					Shared:           true,
-				},
-			},
-			serverName:     "server1",
-			replicaIdx:     0,
-			modelsReturned: []string{"model1"},
-		},
-		{
-			name: "ReplicaSetDrainingWithLoadedAndLoadingModels",
-			models: []*db.Model{
-				{
-					Name: "model1",
-					Versions: []*db.ModelVersion{
-						{
-							Version: 1,
-							Replicas: map[int32]*db.ReplicaStatus{
-								0: {State: db.ModelReplicaState_Loaded}},
-						},
-					},
-				},
-				{
-					Name: "model2",
-					Versions: []*db.ModelVersion{
-						{
-							Version: 1,
-							Replicas: map[int32]*db.ReplicaStatus{
-								0: {State: db.ModelReplicaState_Loading}},
-						},
-					},
-				},
-			},
-			servers: []*db.Server{
-				{
-					Name: "server1",
-					Replicas: map[int32]*db.ServerReplica{
-						0: {
-							LoadedModels: []*db.ModelVersionID{
-								{Name: "model1", Version: 1},
-							},
-							LoadingModels: []*db.ModelVersionID{
-								{Name: "model2", Version: 1},
-							},
-						},
-						1: {},
-					},
-					ExpectedReplicas: -1,
-					Shared:           true,
-				},
-			},
-			serverName:     "server1",
-			replicaIdx:     0,
-			modelsReturned: []string{"model1", "model2"},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			logger := log.New()
-			eventHub, err := coordinator.NewEventHub(logger)
-			g.Expect(err).To(BeNil())
-
-			// Create storage instances
-			modelStorage := NewInMemoryStorage[*db.Model]()
-			serverStorage := NewInMemoryStorage[*db.Server]()
-
-			// Populate storage with test data
-			for _, model := range test.models {
-				err := modelStorage.Insert(ctx, model)
-				g.Expect(err).To(BeNil())
-			}
-			for _, server := range test.servers {
-				err := serverStorage.Insert(ctx, server)
-				g.Expect(err).To(BeNil())
-			}
-
-			// Create MemoryStore with populated storage
-			ms := NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
-
-			models, err := ms.DrainServerReplica(test.serverName, test.replicaIdx)
-			g.Expect(err).To(BeNil())
-			g.Expect(test.modelsReturned).To(Equal(models))
-			server, _, err := ms.GetServer(test.serverName, false, true)
-			g.Expect(err).To(BeNil())
-			g.Expect(server).ToNot(BeNil())
-			g.Expect(server.Replicas[int32(test.replicaIdx)].GetIsDraining()).To(BeTrue())
-
-			if test.modelsReturned != nil {
-				for _, model := range test.modelsReturned {
-					dbModel, _ := ms.GetModel(model)
-					state := dbModel.Latest().GetModelReplicaState(test.replicaIdx)
-					g.Expect(state).To(Equal(db.ModelReplicaState_Draining))
-				}
-			}
-		})
-	}
-}
-*/
+//
+//func TestAddServerReplica(t *testing.T) {
+//	g := NewGomegaWithT(t)
+//	ctx := context.Background()
+//
+//	type test struct {
+//		name                 string
+//		models               []*db.Model
+//		servers              []*db.Server
+//		req                  *agent.AgentSubscribeRequest
+//		expectedSnapshot     []*ServerSnapshot
+//		expectedModelEvents  int64
+//		expectedServerEvents int64
+//	}
+//
+//	tests := []test{
+//		{
+//			name:    "AddServerReplica - existing server",
+//			models:  []*db.Model{},
+//			servers: []*db.Server{
+//				{
+//					Name: "server1",
+//					Replicas: map[int32]*db.ServerReplica{
+//						0: {},
+//						1: {},
+//					},
+//					ExpectedReplicas: 3,
+//					Shared:           true,
+//				},
+//			},
+//			req: &agent.AgentSubscribeRequest{
+//				ServerName: "server1",
+//				ReplicaIdx: 2,
+//				Shared:     true,
+//			},
+//			expectedSnapshot: []*ServerSnapshot{
+//				{
+//					Name: "server1",
+//					Replicas: map[int]*ServerReplica{
+//						0: {},
+//						1: {},
+//						2: {},
+//					},
+//					ExpectedReplicas: 3,
+//					Shared:           true,
+//				},
+//			},
+//			expectedModelEvents:  0,
+//			expectedServerEvents: 1,
+//		},
+//		{
+//			name:    "AddServerReplica - new server",
+//			models:  []*db.Model{},
+//			servers: []*db.Server{},
+//			req: &agent.AgentSubscribeRequest{
+//				ServerName: "server1",
+//				ReplicaIdx: 0,
+//				Shared:     true,
+//			},
+//			expectedSnapshot: []*ServerSnapshot{
+//				{
+//					Name: "server1",
+//					Replicas: map[int]*ServerReplica{
+//						0: {},
+//					},
+//					ExpectedReplicas: -1, // expected replicas is not set
+//					Shared:           true,
+//				},
+//			},
+//			expectedModelEvents:  0,
+//			expectedServerEvents: 1,
+//		},
+//		{
+//			name:    "AddServerReplica - with loaded models",
+//			models:  []*db.Model{},
+//			servers: []*db.Server{},
+//			req: &agent.AgentSubscribeRequest{
+//				ServerName: "server1",
+//				ReplicaIdx: 0,
+//				Shared:     true,
+//				LoadedModels: []*agent.ModelVersion{
+//					{
+//						Model: &pb.Model{
+//							Meta:      &pb.MetaData{Name: "model1"},
+//							ModelSpec: &pb.ModelSpec{},
+//						},
+//						Version: 1,
+//					},
+//					{
+//						Model: &pb.Model{
+//							Meta:      &pb.MetaData{Name: "model2"},
+//							ModelSpec: &pb.ModelSpec{},
+//						},
+//						Version: 1,
+//					},
+//				},
+//			},
+//			expectedSnapshot: []*ServerSnapshot{
+//				{
+//					Name: "server1",
+//					Replicas: map[int]*ServerReplica{
+//						0: {},
+//					},
+//					ExpectedReplicas: -1, // expected replicas is not set
+//					Shared:           true,
+//				},
+//			},
+//			expectedModelEvents:  2,
+//			expectedServerEvents: 1,
+//		},
+//	}
+//
+//	for _, test := range tests {
+//		t.Run(test.name, func(t *testing.T) {
+//			logger := log.New()
+//			eventHub, err := coordinator.NewEventHub(logger)
+//			g.Expect(err).To(BeNil())
+//
+//			// Create storage instances
+//			modelStorage := NewInMemoryStorage[*db.Model]()
+//			serverStorage := NewInMemoryStorage[*db.Server]()
+//
+//			// Populate storage with test data
+//			for _, model := range test.models {
+//				err := modelStorage.Insert(ctx, model)
+//				g.Expect(err).To(BeNil())
+//			}
+//			for _, server := range test.servers {
+//				err := serverStorage.Insert(ctx, server)
+//				g.Expect(err).To(BeNil())
+//			}
+//
+//			// Create MemoryStore with populated storage
+//			ms := NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
+//
+//			// register a callback to check if the event is triggered
+//			serverEvents := int64(0)
+//			eventHub.RegisterServerEventHandler(
+//				"handler-server",
+//				10,
+//				logger,
+//				func(event coordinator.ServerEventMsg) { atomic.AddInt64(&serverEvents, 1) },
+//			)
+//
+//			modelEvents := int64(0)
+//			eventHub.RegisterModelEventHandler(
+//				"handler-model",
+//				10,
+//				logger,
+//				func(event coordinator.ModelEventMsg) { atomic.AddInt64(&modelEvents, 1) },
+//			)
+//
+//			err = ms.AddServerReplica(test.req)
+//			g.Expect(err).To(BeNil())
+//			actualSnapshot, err := ms.GetServers(true, false)
+//			g.Expect(err).To(BeNil())
+//			for idx, server := range actualSnapshot {
+//				g.Expect(server.Name).To(Equal(test.expectedSnapshot[idx].Name))
+//				g.Expect(server.Shared).To(Equal(test.expectedSnapshot[idx].Shared))
+//				g.Expect(server.ExpectedReplicas).To(Equal(test.expectedSnapshot[idx].ExpectedReplicas))
+//				g.Expect(len(server.Replicas)).To(Equal(len(test.expectedSnapshot[idx].Replicas)))
+//			}
+//
+//			time.Sleep(10 * time.Millisecond)
+//			g.Expect(atomic.LoadInt64(&serverEvents)).To(Equal(test.expectedServerEvents))
+//			g.Expect(atomic.LoadInt64(&modelEvents)).To(Equal(test.expectedModelEvents))
+//		})
+//	}
+//}
+//
+//func TestRemoveServerReplica(t *testing.T) {
+//	g := NewGomegaWithT(t)
+//	ctx := context.Background()
+//
+//	type test struct {
+//		name           string
+//		models         []*db.Model
+//		servers        []*db.Server
+//		serverName     string
+//		replicaIdx     int
+//		serverExists   bool
+//		modelsReturned int
+//	}
+//
+//	tests := []test{
+//		{
+//			name:    "ReplicaRemovedButNotDeleted",
+//			models:  []*db.Model{},
+//			servers: []*db.Server{
+//				{
+//					Name: "server1",
+//					Replicas: map[int32]*db.ServerReplica{
+//						0: {
+//							LoadedModels: []*db.ModelVersionID{{Name: "model1", Version: 1}},
+//						},
+//						1: {},
+//					},
+//					ExpectedReplicas: 2,
+//					Shared:           true,
+//				},
+//			},
+//			serverName:     "server1",
+//			replicaIdx:     0,
+//			serverExists:   true,
+//			modelsReturned: 0, // no models really defined in store
+//		},
+//		{
+//			name: "ReplicaRemovedAndDeleted",
+//			models: []*db.Model{
+//				{
+//					Name: "model1",
+//					Versions: []*db.ModelVersion{
+//						{
+//							Version:  1,
+//							Replicas: make(map[int32]*db.ReplicaStatus),
+//						},
+//					},
+//				},
+//			},
+//			servers: []*db.Server{
+//				{
+//					Name: "server1",
+//					Replicas: map[int32]*db.ServerReplica{
+//						0: {
+//							LoadedModels: []*db.ModelVersionID{{Name: "model1", Version: 1}},
+//						},
+//						1: {},
+//					},
+//					ExpectedReplicas: -1,
+//					Shared:           true,
+//				},
+//			},
+//			serverName:     "server1",
+//			replicaIdx:     0,
+//			serverExists:   true,
+//			modelsReturned: 1,
+//		},
+//		{
+//			name: "ReplicaRemovedAndServerDeleted",
+//			models: []*db.Model{
+//				{
+//					Name: "model1",
+//					Versions: []*db.ModelVersion{
+//						{
+//							Version:  1,
+//							Replicas: make(map[int32]*db.ReplicaStatus),
+//						},
+//					},
+//				},
+//			},
+//			servers: []*db.Server{
+//				{
+//					Name: "server1",
+//					Replicas: map[int32]*db.ServerReplica{
+//						0: {
+//							LoadedModels: []*db.ModelVersionID{{Name: "model1", Version: 1}},
+//						},
+//					},
+//					ExpectedReplicas: 0,
+//					Shared:           true,
+//				},
+//			},
+//			serverName:     "server1",
+//			replicaIdx:     0,
+//			serverExists:   false,
+//			modelsReturned: 1,
+//		},
+//		{
+//			name:   "ReplicaRemovedAndServerDeleted but no model version in store",
+//			models: []*db.Model{},
+//			servers: []*db.Server{
+//				{
+//					Name: "server1",
+//					Replicas: map[int32]*db.ServerReplica{
+//						0: {
+//							LoadedModels: []*db.ModelVersionID{{Name: "model1", Version: 1}},
+//						},
+//					},
+//					ExpectedReplicas: 0,
+//					Shared:           true,
+//				},
+//			},
+//			serverName:     "server1",
+//			replicaIdx:     0,
+//			serverExists:   false,
+//			modelsReturned: 0,
+//		},
+//		{
+//			name: "ReplicaRemovedAndDeleted - loading models",
+//			models: []*db.Model{
+//				{
+//					Name: "model1",
+//					Versions: []*db.ModelVersion{
+//						{
+//							Version:  1,
+//							Replicas: make(map[int32]*db.ReplicaStatus),
+//						},
+//					},
+//				},
+//				{
+//					Name: "model2",
+//					Versions: []*db.ModelVersion{
+//						{
+//							Version:  1,
+//							Replicas: make(map[int32]*db.ReplicaStatus),
+//						},
+//					},
+//				},
+//			},
+//			servers: []*db.Server{
+//				{
+//					Name: "server1",
+//					Replicas: map[int32]*db.ServerReplica{
+//						0: {
+//							LoadedModels: []*db.ModelVersionID{
+//								{Name: "model1", Version: 1},
+//								{Name: "model2", Version: 1},
+//							},
+//						},
+//						1: {},
+//					},
+//					ExpectedReplicas: -1,
+//					Shared:           true,
+//				},
+//			},
+//			serverName:     "server1",
+//			replicaIdx:     0,
+//			serverExists:   true,
+//			modelsReturned: 2,
+//		},
+//		{
+//			name: "ReplicaRemovedAndDeleted - non latest models",
+//			models: []*db.Model{
+//				{
+//					Name: "model1",
+//					Versions: []*db.ModelVersion{
+//						{
+//							Version: 1,
+//							Replicas: map[int32]*db.ReplicaStatus{
+//								0: {State: db.ModelReplicaState_Loaded},
+//							},
+//						},
+//						{
+//							Version: 2,
+//							Replicas: map[int32]*db.ReplicaStatus{
+//								0: {State: db.ModelReplicaState_LoadFailed},
+//							},
+//						},
+//					},
+//				},
+//			},
+//			servers: []*db.Server{
+//				{
+//					Name: "server1",
+//					Replicas: map[int32]*db.ServerReplica{
+//						0: {
+//							LoadedModels: []*db.ModelVersionID{{Name: "model1", Version: 1}},
+//						},
+//					},
+//					ExpectedReplicas: -1,
+//					Shared:           true,
+//				},
+//			},
+//			serverName:     "server1",
+//			replicaIdx:     0,
+//			serverExists:   false,
+//			modelsReturned: 0,
+//		},
+//	}
+//
+//	for _, test := range tests {
+//		t.Run(test.name, func(t *testing.T) {
+//			logger := log.New()
+//			eventHub, err := coordinator.NewEventHub(logger)
+//			g.Expect(err).To(BeNil())
+//
+//			// Create storage instances
+//			modelStorage := NewInMemoryStorage[*db.Model]()
+//			serverStorage := NewInMemoryStorage[*db.Server]()
+//
+//			// Populate storage with test data
+//			for _, model := range test.models {
+//				err := modelStorage.Insert(ctx, model)
+//				g.Expect(err).To(BeNil())
+//			}
+//			for _, server := range test.servers {
+//				err := serverStorage.Insert(ctx, server)
+//				g.Expect(err).To(BeNil())
+//			}
+//
+//			// Create MemoryStore with populated storage
+//			ms := NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
+//
+//			models, err := ms.RemoveServerReplica(test.serverName, test.replicaIdx)
+//			g.Expect(err).To(BeNil())
+//			g.Expect(test.modelsReturned).To(Equal(len(models)))
+//			server, _, err := ms.GetServer(test.serverName, false, true)
+//			if test.serverExists {
+//				g.Expect(err).To(BeNil())
+//				g.Expect(server).ToNot(BeNil())
+//			} else {
+//				g.Expect(err).ToNot(BeNil())
+//				g.Expect(server).To(BeNil())
+//			}
+//		})
+//	}
+//}
+//
+//func TestDrainServerReplica(t *testing.T) {
+//	g := NewGomegaWithT(t)
+//	ctx := context.Background()
+//
+//	type test struct {
+//		name           string
+//		models         []*db.Model
+//		servers        []*db.Server
+//		serverName     string
+//		replicaIdx     int
+//		modelsReturned []string
+//	}
+//
+//	// if we have models returned check status is Draining
+//	tests := []test{
+//		{
+//			name: "ReplicaSetDrainingNoModels",
+//			servers: []*db.Server{
+//				{
+//					Name: "server1",
+//					Replicas: map[int32]*db.ServerReplica{
+//						0: {},
+//						1: {},
+//					},
+//					ExpectedReplicas: 2,
+//					Shared:           true,
+//				},
+//			},
+//			serverName:     "server1",
+//			replicaIdx:     0,
+//			modelsReturned: []string{},
+//		},
+//		{
+//			name: "ReplicaSetDrainingWithLoadedModels",
+//			models: []*db.Model{
+//				{
+//					Name: "model1",
+//					Versions: []*db.ModelVersion{
+//						{
+//							Version:  1,
+//							Replicas: map[int32]*db.ReplicaStatus{0: {State: db.ModelReplicaState_Loaded}},
+//						},
+//					},
+//				},
+//			},
+//			servers: []*db.Server{
+//				{
+//					Name: "server1",
+//					Replicas: map[int32]*db.ServerReplica{
+//						0: {LoadedModels: []*db.ModelVersionID{{Name: "model1", Version: 1}}},
+//						1: {},
+//					},
+//					ExpectedReplicas: -1,
+//					Shared:           true,
+//				},
+//			},
+//			serverName:     "server1",
+//			replicaIdx:     0,
+//			modelsReturned: []string{"model1"},
+//		},
+//		{
+//			name: "ReplicaSetDrainingWithLoadedAndLoadingModels",
+//			models: []*db.Model{
+//				{
+//					Name: "model1",
+//					Versions: []*db.ModelVersion{
+//						{
+//							Version: 1,
+//							Replicas: map[int32]*db.ReplicaStatus{
+//								0: {State: db.ModelReplicaState_Loaded}},
+//						},
+//					},
+//				},
+//				{
+//					Name: "model2",
+//					Versions: []*db.ModelVersion{
+//						{
+//							Version: 1,
+//							Replicas: map[int32]*db.ReplicaStatus{
+//								0: {State: db.ModelReplicaState_Loading}},
+//						},
+//					},
+//				},
+//			},
+//			servers: []*db.Server{
+//				{
+//					Name: "server1",
+//					Replicas: map[int32]*db.ServerReplica{
+//						0: {
+//							LoadedModels: []*db.ModelVersionID{
+//								{Name: "model1", Version: 1},
+//							},
+//							LoadingModels: []*db.ModelVersionID{
+//								{Name: "model2", Version: 1},
+//							},
+//						},
+//						1: {},
+//					},
+//					ExpectedReplicas: -1,
+//					Shared:           true,
+//				},
+//			},
+//			serverName:     "server1",
+//			replicaIdx:     0,
+//			modelsReturned: []string{"model1", "model2"},
+//		},
+//	}
+//
+//	for _, test := range tests {
+//		t.Run(test.name, func(t *testing.T) {
+//			logger := log.New()
+//			eventHub, err := coordinator.NewEventHub(logger)
+//			g.Expect(err).To(BeNil())
+//
+//			// Create storage instances
+//			modelStorage := NewInMemoryStorage[*db.Model]()
+//			serverStorage := NewInMemoryStorage[*db.Server]()
+//
+//			// Populate storage with test data
+//			for _, model := range test.models {
+//				err := modelStorage.Insert(ctx, model)
+//				g.Expect(err).To(BeNil())
+//			}
+//			for _, server := range test.servers {
+//				err := serverStorage.Insert(ctx, server)
+//				g.Expect(err).To(BeNil())
+//			}
+//
+//			// Create MemoryStore with populated storage
+//			ms := NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
+//
+//			models, err := ms.DrainServerReplica(test.serverName, test.replicaIdx)
+//			g.Expect(err).To(BeNil())
+//			g.Expect(test.modelsReturned).To(Equal(models))
+//			server, _, err := ms.GetServer(test.serverName, false, true)
+//			g.Expect(err).To(BeNil())
+//			g.Expect(server).ToNot(BeNil())
+//			g.Expect(server.Replicas[int32(test.replicaIdx)].GetIsDraining()).To(BeTrue())
+//
+//			if test.modelsReturned != nil {
+//				for _, model := range test.modelsReturned {
+//					dbModel, _ := ms.GetModel(model)
+//					state := dbModel.Latest().GetModelReplicaState(test.replicaIdx)
+//					g.Expect(state).To(Equal(db.ModelReplicaState_Draining))
+//				}
+//			}
+//		})
+//	}
+//}
