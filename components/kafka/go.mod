@@ -1,11 +1,11 @@
 module github.com/seldonio/seldon-core/components/kafka/v2
 
-go 1.23.0
+go 1.24.3
 
 toolchain go1.24.4
 
 require (
-	github.com/confluentinc/confluent-kafka-go/v2 v2.10.1
+	github.com/confluentinc/confluent-kafka-go/v2 v2.13.0
 	github.com/onsi/gomega v1.36.2
 )
 
