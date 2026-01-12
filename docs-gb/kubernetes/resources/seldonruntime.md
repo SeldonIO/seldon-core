@@ -4,7 +4,7 @@ description: >-
   Seldon Core instances in specific namespaces with configurable settings.
 ---
 
-# Server Runtime
+# Seldon Runtime
 
 The SeldonRuntime resource is used to create an instance of Seldon installed in a particular namespace.
 
