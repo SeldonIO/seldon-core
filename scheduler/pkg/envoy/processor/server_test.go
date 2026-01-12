@@ -21,6 +21,7 @@ import (
 	client "github.com/envoyproxy/go-control-plane/pkg/client/sotw/v3"
 	resource "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -43,7 +44,10 @@ func TestFetch(t *testing.T) {
 
 	logger := log.New()
 
-	memoryStore := store.NewModelServerStore(logger, store.NewLocalSchedulerStore(), nil)
+	modelStorage := store.NewInMemoryStorage[*db.Model]()
+	serverStorage := store.NewInMemoryStorage[*db.Server]()
+	memoryStore := store.NewModelServerStore(logger, modelStorage, serverStorage, nil)
+
 	pipelineHandler := pipeline.NewPipelineStore(logger, nil, memoryStore)
 
 	xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{}, nil)
@@ -88,7 +92,7 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 
 		ops := []func(inc *IncrementalProcessor, g *WithT){
 			createTestServer("server", 1),
-			createTestModel("model", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+			createTestModel("model", "server", 1, []int{0}, 1, []db.ModelReplicaState{db.ModelReplicaState_Available}),
 		}
 		go func() {
 			for _, op := range ops {
@@ -119,7 +123,7 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 
 	return func(t *testing.T) {
 		ops := []func(inc *IncrementalProcessor, g *WithT){
-			createTestModel("model", "server", 1, []int{0}, 2, []store.ModelReplicaState{store.Available}),
+			createTestModel("model", "server", 1, []int{0}, 2, []db.ModelReplicaState{db.ModelReplicaState_Available}),
 		}
 		go func() {
 			for _, op := range ops {

@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 
@@ -72,11 +73,11 @@ func addModel(
 	server, _, err := ip.modelStore.GetServer(serverName, false)
 	require.NoError(b, err)
 
-	replicas := []*store.ServerReplica{}
-	replicaStatuses := make(map[int]store.ReplicaStatus)
+	replicas := []*db.ServerReplica{}
+	replicaStatuses := make(map[int]db.ReplicaStatus)
 	for i, r := range server.Replicas {
 		replicas = append(replicas, r)
-		replicaStatuses[i] = store.ReplicaStatus{State: store.Available}
+		replicaStatuses[int(i)] = db.ReplicaStatus{State: db.ModelReplicaState_Available}
 	}
 
 	err = ip.modelStore.UpdateLoadedModels(
@@ -95,8 +96,8 @@ func addModel(
 			server.Name,
 			replicaIdx,
 			nil,
-			store.LoadRequested,
-			store.Loaded,
+			db.ModelReplicaState_LoadRequested,
+			db.ModelReplicaState_Loaded,
 			"",
 			nil,
 		)
@@ -122,7 +123,9 @@ func benchmarkModelUpdate(
 		eventHub, err := coordinator.NewEventHub(logger)
 		require.NoError(b, err)
 
-		memoryStore := store.NewModelServerStore(logger, store.NewLocalSchedulerStore(), eventHub)
+		modelStorage := store.NewInMemoryStorage[*db.Model]()
+		serverStorage := store.NewInMemoryStorage[*db.Server]()
+		memoryStore := store.NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
 		pipelineStore := pipeline.NewPipelineStore(logger, eventHub, memoryStore)
 		ip, err := NewIncrementalProcessor(
 			"some node",
