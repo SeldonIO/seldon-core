@@ -15,12 +15,14 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/mock"
 	"github.com/sirupsen/logrus"
+	"go.uber.org/mock/gomock"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
 func TestGetPipelinesPipelineGwStatus(t *testing.T) {
@@ -343,9 +345,12 @@ func TestAddPipeline(t *testing.T) {
 		name            string
 		proto           *scheduler.Pipeline
 		store           *PipelineStore
+		setupMock       func(m *mock.MockModelServerAPI)
 		expectedVersion uint32
 		err             error
 	}
+
+	ctrl := gomock.NewController(t)
 
 	tests := []test{
 		{
@@ -367,8 +372,15 @@ func TestAddPipeline(t *testing.T) {
 				pipelines: map[string]*Pipeline{},
 				modelStatusHandler: ModelStatusHandler{
 					modelReferences: map[string]map[string]void{},
-					store:           fakeModelStore{status: map[string]store.ModelState{}},
+					store:           mock.NewMockModelServerAPI(ctrl),
 				},
+			},
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().GetModel("step1").Return(&db.Model{Name: "step1", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
 			},
 			expectedVersion: 1,
 		},
@@ -395,8 +407,15 @@ func TestAddPipeline(t *testing.T) {
 				pipelines: map[string]*Pipeline{},
 				modelStatusHandler: ModelStatusHandler{
 					modelReferences: map[string]map[string]void{},
-					store:           fakeModelStore{status: map[string]store.ModelState{}},
+					store:           mock.NewMockModelServerAPI(ctrl),
 				},
+			},
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().GetModel("step1").Return(&db.Model{Name: "step1", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
 			},
 			expectedVersion: 1,
 		},
@@ -433,8 +452,15 @@ func TestAddPipeline(t *testing.T) {
 				},
 				modelStatusHandler: ModelStatusHandler{
 					modelReferences: map[string]map[string]void{},
-					store:           fakeModelStore{status: map[string]store.ModelState{}},
+					store:           mock.NewMockModelServerAPI(ctrl),
 				},
+			},
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().GetModel("step1").Return(&db.Model{Name: "step1", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
 			},
 			expectedVersion: 2,
 		},
@@ -469,8 +495,15 @@ func TestAddPipeline(t *testing.T) {
 				},
 				modelStatusHandler: ModelStatusHandler{
 					modelReferences: map[string]map[string]void{},
-					store:           fakeModelStore{status: map[string]store.ModelState{}},
+					store:           mock.NewMockModelServerAPI(ctrl),
 				},
+			},
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().GetModel("step1").Return(&db.Model{Name: "step1", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
 			},
 			expectedVersion: 1,
 		},
@@ -504,8 +537,15 @@ func TestAddPipeline(t *testing.T) {
 				},
 				modelStatusHandler: ModelStatusHandler{
 					modelReferences: map[string]map[string]void{},
-					store:           fakeModelStore{status: map[string]store.ModelState{}},
+					store:           mock.NewMockModelServerAPI(ctrl),
 				},
+			},
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().GetModel("step1").Return(&db.Model{Name: "step1", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
 			},
 			expectedVersion: 1,
 		},
@@ -539,8 +579,15 @@ func TestAddPipeline(t *testing.T) {
 				},
 				modelStatusHandler: ModelStatusHandler{
 					modelReferences: map[string]map[string]void{},
-					store:           fakeModelStore{status: map[string]store.ModelState{}},
+					store:           mock.NewMockModelServerAPI(ctrl),
 				},
+			},
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().GetModel("step1").Return(&db.Model{Name: "step1", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
 			},
 			expectedVersion: 1,
 		},
@@ -548,6 +595,7 @@ func TestAddPipeline(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			test.setupMock(test.store.modelStatusHandler.store.(*mock.MockModelServerAPI))
 			logger := logrus.New()
 			path := fmt.Sprintf("%s/db", t.TempDir())
 			db, _ := newPipelineDbManager(getPipelineDbFolder(path), logger, 10)
