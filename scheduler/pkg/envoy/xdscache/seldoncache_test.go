@@ -22,6 +22,7 @@ import (
 	matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 	. "github.com/onsi/gomega"
 	"github.com/otiai10/copy"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
@@ -570,24 +571,23 @@ func TestAccessLogSettings(t *testing.T) {
 }
 
 func addVersionedRoute(c *SeldonXDSCache, modelRouteName string, modelName string, httpCluster string, grpcCluster string, traffic uint32, version uint32) {
-	modelVersion := store.NewModelVersion(
+	modelVersion := util.NewTestModelVersion(
 		&scheduler.Model{
 			Meta:           &scheduler.MetaData{Name: modelName},
 			DeploymentSpec: &scheduler.DeploymentSpec{LogPayloads: false},
 		},
 		version,
 		"server",
-		map[int]store.ReplicaStatus{
-			1: {State: store.Loaded},
+		map[int32]*db.ReplicaStatus{
+			1: {State: db.ModelReplicaState_Loaded},
 		},
-		false,
-		store.ModelAvailable,
+		db.ModelState_ModelAvailable,
 	)
 
-	server := &store.ServerSnapshot{
+	server := &db.Server{
 		Name: "server",
-		Replicas: map[int]*store.ServerReplica{
-			1: store.NewServerReplica("0.0.0.0", 9000, 9001, 1, store.NewServer("server", false), nil, 100, 100, 0, nil, 100),
+		Replicas: map[int32]*db.ServerReplica{
+			1: util.NewTestServerReplica("0.0.0.0", 9000, 9001, 1, store.NewServer("server", false), nil, 100, 100, 0, nil, 100),
 		},
 	}
 	c.AddClustersForRoute(modelRouteName, modelName, httpCluster, grpcCluster, modelVersion.GetVersion(), []int{1}, server)
