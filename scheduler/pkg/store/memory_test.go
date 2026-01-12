@@ -1576,7 +1576,7 @@ func TestUpdateModelState(t *testing.T) {
 				g.Expect(err).ToNot(BeNil())
 			}
 
-			if test.desiredState == db.ModelReplicaState_LoadFailed {
+			if test.desiredState == db.ModelReplicaState_LoadFailed || test.desiredState == db.ModelReplicaState_Loaded {
 				g.Expect(getServer(test.serverKey).Replicas[int32(test.replicaIdx)].GetReservedMemory()).To(Equal(uint64(0)))
 			} else {
 				g.Expect(getServer(test.serverKey).Replicas[int32(test.replicaIdx)].GetReservedMemory()).To(Equal(getModel(test.modelName).GetVersion(test.version).GetRequiredMemory()))
@@ -1616,20 +1616,15 @@ func TestUpdateModelState(t *testing.T) {
 	}
 }
 
-// TODO: This test requires refactoring for the new storage architecture.
-// It tests internal implementation details (updateModelStatus) that work directly
-// with LocalSchedulerStore internal types. The new architecture uses Storage interfaces
-// and may need a different approach to testing these internal methods.
-/*
 func TestUpdateModelStatus(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
 		name                      string
 		deleted                   bool
-		modelVersion              *ModelVersion
-		prevAvailableModelVersion *ModelVersion
-		expectedState             ModelState
+		modelVersion              *db.ModelVersion
+		prevAvailableModelVersion *db.ModelVersion
+		expectedState             db.ModelState
 		expectedReason            string
 		expectedAvailableReplicas uint32
 		expectedTimestamp         time.Time
@@ -1883,7 +1878,10 @@ func TestUpdateModelStatus(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			ms := NewModelServerStore(logger, &LocalSchedulerStore{}, eventHub)
+			modelStorage := NewInMemoryStorage[*db.Model]()
+			serverStorage := NewInMemoryStorage[*db.Server]()
+
+			ms := NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
 			ms.updateModelStatus(true, test.deleted, test.modelVersion, test.prevAvailableModelVersion)
 			g.Expect(test.modelVersion.state.State).To(Equal(test.expectedState))
 			g.Expect(test.modelVersion.state.Reason).To(Equal(test.expectedReason))
@@ -1892,7 +1890,6 @@ func TestUpdateModelStatus(t *testing.T) {
 		})
 	}
 }
-*/
 
 // TODO: This test requires refactoring for the new storage architecture.
 // It tests internal implementation details (addModelVersionIfNotExists) that work directly

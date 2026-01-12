@@ -448,7 +448,7 @@ func (m *ModelServerStore) updateLoadedModelsImpl(
 				modelKey, modelVersion.Version, serverKey, replicaIdx,
 			)
 			modelVersion.SetReplicaState(int(replicaIdx), db.ModelReplicaState_LoadRequested, "")
-			if err := m.updateReservedMemory(db.ModelReplicaState_LoadRequested, serverKey,
+			if err := m.updateReservedMemory(db.ModelReplicaState_LoadRequested, server,
 				int(replicaIdx), modelVersion.GetRequiredMemory()); err != nil {
 				return nil, fmt.Errorf("failed to update server %s replica %d: %w", serverKey, replicaIdx, err)
 			}
@@ -460,7 +460,7 @@ func (m *ModelServerStore) updateLoadedModelsImpl(
 			)
 			if !existingState.State.AlreadyLoadingOrLoaded() {
 				modelVersion.SetReplicaState(int(replicaIdx), db.ModelReplicaState_LoadRequested, "")
-				if err := m.updateReservedMemory(db.ModelReplicaState_LoadRequested, serverKey,
+				if err := m.updateReservedMemory(db.ModelReplicaState_LoadRequested, server,
 					int(replicaIdx), modelVersion.GetRequiredMemory()); err != nil {
 					return nil, fmt.Errorf("failed to update server %s replica %d: %w", serverKey, replicaIdx, err)
 				}
@@ -676,8 +676,8 @@ func (m *ModelServerStore) updateModelStateImpl(
 		)
 	}
 
-	if err := m.updateReservedMemory(desiredState, serverKey, replicaIdx, modelVersion.GetRequiredMemory()); err != nil {
-		return nil, fmt.Errorf("failed to server %s replica %d: %w", serverKey, replicaIdx, err)
+	if err := m.updateReservedMemory(desiredState, server, replicaIdx, modelVersion.GetRequiredMemory()); err != nil {
+		return nil, fmt.Errorf("failed to update server %s replica %d reserved memory: %w", serverKey, replicaIdx, err)
 	}
 
 	deletedModelReplica := false
@@ -758,14 +758,10 @@ func (m *ModelServerStore) updateModelStateImpl(
 }
 
 func (m *ModelServerStore) updateReservedMemory(
-	modelReplicaState db.ModelReplicaState, serverKey string, replicaIdx int, memBytes uint64,
+	modelReplicaState db.ModelReplicaState, server *db.Server, replicaIdx int, memBytes uint64,
 ) error {
 	// update reserved memory that is being used for sorting replicas
 	// do we need to lock replica update?
-	server, err := m.store.servers.Get(context.TODO(), serverKey)
-	if err != nil {
-		return fmt.Errorf("get server %s failed: %w", serverKey, err)
-	}
 
 	replica, okReplica := server.Replicas[int32(replicaIdx)]
 	update := false
