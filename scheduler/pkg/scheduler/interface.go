@@ -9,6 +9,7 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package scheduler
 
+//go:generate go tool mockgen -source=./interface.go -destination=./mock/interface.go -package=mock Scheduler
 type Scheduler interface {
 	Schedule(modelKey string) error
 	ScheduleFailedModels() ([]string, error)
