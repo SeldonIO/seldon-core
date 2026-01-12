@@ -989,7 +989,7 @@ func (m *ModelServerStore) drainServerReplicaImpl(serverName string, replicaIdx 
 		return nil, fmt.Errorf("failed to update server %s: %w", serverName, err)
 	}
 
-	loadedModels, err := m.findModelsToReSchedule(serverReplica.LoadingModels, replicaIdx)
+	loadedModels, err := m.findModelsToReSchedule(serverReplica.LoadedModels, replicaIdx)
 	if err != nil {
 		return nil, err
 	}
