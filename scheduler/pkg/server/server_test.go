@@ -18,6 +18,7 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -58,7 +59,9 @@ func TestLoadModel(t *testing.T) {
 		eventHub, err := coordinator.NewEventHub(logger)
 		g.Expect(err).To(BeNil())
 
-		schedulerStore := store.NewModelServerStore(logger, store.NewLocalSchedulerStore(), eventHub)
+		modelStorage := store.NewInMemoryStorage[*db.Model]()
+		serverStorage := store.NewInMemoryStorage[*db.Server]()
+		schedulerStore := store.NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
 		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
 		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
 		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10 * time.Millisecond))
@@ -327,8 +330,8 @@ func TestLoadModel(t *testing.T) {
 						return
 					}
 					model, _ := s.modelStore.GetModel(event.ModelName)
-					latest := model.GetLatest()
-					if latest.ModelState().State == store.ScheduleFailed {
+					latest := model.Latest()
+					if latest.State.State == db.ModelState_ScheduleFailed {
 						scheduledFailed.Store(true)
 					} else {
 						scheduledFailed.Store(false)
@@ -364,7 +367,10 @@ func TestUnloadModel(t *testing.T) {
 		log.SetLevel(log.DebugLevel)
 		eventHub, err := coordinator.NewEventHub(logger)
 		g.Expect(err).To(BeNil())
-		schedulerStore := store.NewModelServerStore(logger, store.NewLocalSchedulerStore(), eventHub)
+
+		modelStorage := store.NewInMemoryStorage[*db.Model]()
+		serverStorage := store.NewInMemoryStorage[*db.Server]()
+		schedulerStore := store.NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
 		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
 		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
 		mockAgent := &mockAgentHandler{}
@@ -466,7 +472,7 @@ func TestUnloadModel(t *testing.T) {
 				g.Expect(r).ToNot(BeNil())
 				ms, err := s.modelStore.GetModel(modelName)
 				g.Expect(err).To(BeNil())
-				g.Expect(ms.GetLatest().ModelState().State).To(Equal(test.modelState))
+				g.Expect(ms.Latest().State.State).To(Equal(test.modelState))
 
 			}
 		})
@@ -710,7 +716,9 @@ func TestServerNotify(t *testing.T) {
 		log.SetLevel(log.DebugLevel)
 		eventHub, err := coordinator.NewEventHub(logger)
 		g.Expect(err).To(BeNil())
-		schedulerStore := store.NewModelServerStore(logger, store.NewLocalSchedulerStore(), eventHub)
+		modelStorage := store.NewInMemoryStorage[*db.Model]()
+		serverStorage := store.NewInMemoryStorage[*db.Server]()
+		schedulerStore := store.NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
 		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10 * time.Millisecond))
 		scheduler := scheduler2.NewSimpleScheduler(logger,
 			schedulerStore,

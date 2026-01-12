@@ -264,7 +264,7 @@ func TestTerminateModelGwVersionModels(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, _ := createTestScheduler()
+			s, modelDirectStore, _ := createTestScheduler()
 			for _, lr := range test.loadReq {
 				err := s.modelStore.UpdateModel(lr)
 				g.Expect(err).To(BeNil())
@@ -277,16 +277,17 @@ func TestTerminateModelGwVersionModels(t *testing.T) {
 			// check number of versions
 			g.Expect(model.Versions).To(HaveLen(2))
 
-			// set model-gw status to available
-			mem, ok := s.modelStore.(*db.TestMemoryStore)
-			g.Expect(ok).To(BeTrue())
-
-			err = mem.DirectlyUpdateModelStatus(db.ModelID{
-				Name:    modelName,
-				Version: model.GetLatest().GetVersion(),
-			}, db.ModelStatus{
-				ModelGwState: db.ModelAvailable,
-			})
+			mv := model.Latest()
+			mv.State.ModelGwState = db.ModelState_ModelAvailable
+			err = modelDirectStore.Update(context.TODO(), model)
+			g.Expect(err).To(BeNil())
+			//
+			//err = mem.DirectlyUpdateModelStatus(db.ModelID{
+			//	Name:    modelName,
+			//	Version: model.GetLatest().GetVersion(),
+			//}, db.ModelStatus{
+			//	ModelGwState: db.ModelAvailable,
+			//})
 			g.Expect(err).To(BeNil())
 
 			// check if latest version is available
@@ -303,9 +304,9 @@ func TestTerminateModelGwVersionModels(t *testing.T) {
 			model, err = s.modelStore.GetModel(modelName)
 			g.Expect(err).To(BeNil())
 
-			mv := model.GetPrevious()
+			mv = model.Versions[len(model.Versions)-2]
 			g.Expect(mv).ToNot(BeNil())
-			g.Expect(mv.ModelState().ModelGwState).To(Equal(db.ModelTerminated))
+			g.Expect(mv.State.ModelGwState).To(Equal(db.ModelState_ModelTerminated))
 		})
 	}
 
@@ -333,7 +334,7 @@ func TestModelsStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: db.NewModelServerStore(log.New(), db.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerStore(log.New(), store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), nil),
 				logger:     log.New(),
 				timeout:    10 * time.Millisecond,
 			},
@@ -347,7 +348,7 @@ func TestModelsStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: db.NewModelServerStore(log.New(), db.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerStore(log.New(), store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), nil),
 				logger:     log.New(),
 				timeout:    10 * time.Millisecond,
 			},
@@ -362,7 +363,7 @@ func TestModelsStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: db.NewModelServerStore(log.New(), db.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerStore(log.New(), store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), nil),
 				logger:     log.New(),
 				timeout:    1 * time.Millisecond,
 			},
@@ -432,7 +433,7 @@ func TestPublishModelsStatusWithTimeout(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, hub := createTestScheduler()
+			s, _, hub := createTestScheduler()
 			s.timeout = test.timeout
 			if test.loadReq != nil {
 				err := s.modelStore.UpdateModel(test.loadReq)
@@ -504,7 +505,7 @@ func TestAddAndRemoveModelNoModelGw(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, hub := createTestScheduler(t)
+			s, _, hub := createTestScheduler()
 
 			stream := newStubModelStatusServer(2, 5*time.Millisecond, context.Background())
 			s.modelEventStream.streams[stream] = &ModelSubscription{
@@ -587,7 +588,7 @@ func TestModelGwRebalanceNoPipelineGw(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, hub := createTestScheduler(t)
+			s, _, hub := createTestScheduler()
 
 			stream := newStubModelStatusServer(2, 5*time.Millisecond, context.Background())
 			s.modelEventStream.streams[stream] = &ModelSubscription{
@@ -691,7 +692,7 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, hub := createTestScheduler()
+			s, _, hub := createTestScheduler()
 
 			// create operator stream
 			operatorStream := newStubModelStatusServer(1, 5*time.Millisecond, test.ctx)
@@ -758,14 +759,14 @@ func TestModelGwRebalanceCorrectMessages(t *testing.T) {
 			ms, err := s.modelStore.GetModel(modelName)
 			g.Expect(err).To(BeNil())
 
-			mv := ms.GetLatest()
-			g.Expect(mv.ModelState().ModelGwState).To(Equal(test.modelGwStatus))
+			mv := ms.Latest()
+			g.Expect(mv.State.ModelGwState).To(Equal(test.modelGwStatus))
 
 			// trigger rebalance
 			s.modelGwRebalance()
 
 			// check message is received by the operator
-			if test.modelGwStatus != db.ModelTerminating {
+			if test.modelGwStatus != db.ModelState_ModelTerminating {
 				msr = receiveMessageFromModelStream(operatorStream)
 				g.Expect(msr).ToNot(BeNil())
 				g.Expect(msr.ModelName).To(Equal("foo"))
@@ -872,7 +873,7 @@ func TestModelGwRebalance(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, _ := createTestScheduler(t)
+			s, modelDirectStore, _ := createTestScheduler()
 
 			var streams []*stubModelStatusServer
 			for i := 0; i < test.replicas; i++ {
@@ -898,16 +899,21 @@ func TestModelGwRebalance(t *testing.T) {
 				modelName := req.Model.Meta.Name
 				model, _ := s.modelStore.GetModel(modelName)
 
-				mem, ok := s.modelStore.(*db.TestMemoryStore)
-				g.Expect(ok).To(BeTrue())
-
-				err = mem.DirectlyUpdateModelStatus(db.ModelID{
-					Name:    modelName,
-					Version: model.GetLatest().GetVersion(),
-				}, db.ModelStatus{
-					ModelGwState:      db.ModelAvailable,
-					AvailableReplicas: 1,
-				})
+				mv := model.Latest()
+				mv.State.ModelGwState = db.ModelState_ModelAvailable
+				err = modelDirectStore.Update(context.TODO(), model)
+				g.Expect(err).To(BeNil())
+				//
+				//mem, ok := s.modelStore.(*db.TestMemoryStore)
+				//g.Expect(ok).To(BeTrue())
+				//
+				//err = mem.DirectlyUpdateModelStatus(db.ModelID{
+				//	Name:    modelName,
+				//	Version: model.GetLatest().GetVersion(),
+				//}, db.ModelStatus{
+				//	ModelGwState:      db.ModelAvailable,
+				//	AvailableReplicas: 1,
+				//})
 				g.Expect(err).To(BeNil())
 			}
 
@@ -976,7 +982,7 @@ func TestServersStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: db.NewModelServerStore(log.New(), db.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerStore(log.New(), store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), nil),
 				logger:     log.New(),
 				timeout:    10 * time.Millisecond,
 			},
@@ -1012,7 +1018,7 @@ func TestServersStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: db.NewModelServerStore(log.New(), db.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerStore(log.New(), store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), nil),
 				logger:     log.New(),
 				timeout:    10 * time.Millisecond,
 			},
@@ -1049,7 +1055,7 @@ func TestServersStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: db.NewModelServerStore(log.New(), db.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerStore(log.New(), store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), nil),
 				logger:     log.New(),
 				timeout:    10 * time.Millisecond,
 			},
@@ -1064,7 +1070,7 @@ func TestServersStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: db.NewModelServerStore(log.New(), db.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerStore(log.New(), store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), nil),
 				logger:     log.New(),
 				timeout:    1 * time.Millisecond,
 			},
@@ -1150,7 +1156,7 @@ func TestModelEventsForServerStatus(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, _ := createTestScheduler(t)
+			s, _, _ := createTestScheduler()
 			s.timeout = test.timeout
 			if test.loadReq != nil {
 				err := s.modelStore.AddServerReplica(test.loadReq)
@@ -1163,7 +1169,9 @@ func TestModelEventsForServerStatus(t *testing.T) {
 				g.Expect(err).To(BeNil())
 				err = s.modelStore.UpdateLoadedModels(
 					"foo", 1, "foo", []*db.ServerReplica{
-						db.NewServerReplica("", 8080, 5001, 0, db.NewServer("foo", true), []string{}, 100, 100, 0, map[db.ModelVersionID]bool{}, 100),
+						util.NewTestServerReplica("", 8080, 5001, 0,
+							store.NewServer("foo", true), []string{}, 100, 100,
+							0, []*db.ModelVersionID{}, 100),
 					},
 				)
 				g.Expect(err).To(BeNil())
@@ -1292,8 +1300,7 @@ func TestServerScaleUpEvents(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, hub := createTestSchedulerWithConfig(
-				t,
+			s, _, hub := createTestSchedulerWithConfig(
 				SchedulerServerConfig{
 					AutoScalingServerEnabled: true,
 				},
@@ -1317,7 +1324,8 @@ func TestServerScaleUpEvents(t *testing.T) {
 				g.Expect(err).To(BeNil())
 				err = s.modelStore.UpdateLoadedModels(
 					"foo-model", 1, "foo-server", []*db.ServerReplica{
-						db.NewServerReplica("", 8080, 5001, 0, db.NewServer("foo-server", true), []string{}, 100, 100, 0, map[db.ModelVersionID]bool{}, 100),
+						util.NewTestServerReplica("", 8080, 5001, 0, store.NewServer("foo-server", true),
+							[]string{}, 100, 100, 0, []*db.ModelVersionID{}, 100),
 					},
 				)
 				g.Expect(err).To(BeNil())
@@ -1451,8 +1459,7 @@ func TestServerScaleDownEvents(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, event := createTestSchedulerWithConfig(
-				t,
+			s, _, event := createTestSchedulerWithConfig(
 				SchedulerServerConfig{
 					AutoScalingServerEnabled: test.enabled,
 				},
@@ -1514,15 +1521,15 @@ func TestServerScaleDownEvents(t *testing.T) {
 	}
 }
 
-func createTestScheduler() (*SchedulerServer, *coordinator.EventHub) {
+func createTestScheduler() (*SchedulerServer, store.Storage[*db.Model], *coordinator.EventHub) {
 	return createTestSchedulerWithConfig(SchedulerServerConfig{})
 }
 
-func createTestSchedulerWithConfig(config SchedulerServerConfig) (*SchedulerServer, *coordinator.EventHub) {
+func createTestSchedulerWithConfig(config SchedulerServerConfig) (*SchedulerServer, store.Storage[*db.Model], *coordinator.EventHub) {
 	return createTestSchedulerImpl(config)
 }
 
-func createTestSchedulerImpl(config SchedulerServerConfig) (*SchedulerServer, *coordinator.EventHub) {
+func createTestSchedulerImpl(config SchedulerServerConfig) (*SchedulerServer, store.Storage[*db.Model], *coordinator.EventHub) {
 	logger := log.New()
 	logger.SetLevel(log.WarnLevel)
 
@@ -1551,5 +1558,5 @@ func createTestSchedulerImpl(config SchedulerServerConfig) (*SchedulerServer, *c
 		"", "", modelGwLoadBalancer, pipelineGwLoadBalancer, nil, tls.TLSOptions{},
 	)
 
-	return s, eventHub
+	return s, modelStorage, eventHub
 }

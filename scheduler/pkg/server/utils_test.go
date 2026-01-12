@@ -15,6 +15,7 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
@@ -81,7 +82,8 @@ func TestSouldScaleUp(t *testing.T) {
 		name                string
 		shouldScaleUp       bool
 		newExpectedReplicas uint32
-		server              *store.ServerSnapshot
+		server              *db.Server
+		stats               *store.ServerStats
 	}
 
 	tests := []test{
@@ -89,62 +91,62 @@ func TestSouldScaleUp(t *testing.T) {
 			name:                "scales up to MaxReplicas",
 			shouldScaleUp:       true,
 			newExpectedReplicas: 2,
-			server: &store.ServerSnapshot{
+			server: &db.Server{
 				MaxReplicas:      2,
 				ExpectedReplicas: 1,
-				Stats:            &store.ServerStats{MaxNumReplicaHostedModels: 3},
 			},
+			stats: &store.ServerStats{MaxNumReplicaHostedModels: 3},
 		},
 		{
 			name:                "scales up to MaxNumReplicaHostedModels",
 			shouldScaleUp:       true,
 			newExpectedReplicas: 3,
-			server: &store.ServerSnapshot{
+			server: &db.Server{
 				MaxReplicas:      4,
 				ExpectedReplicas: 1,
-				Stats:            &store.ServerStats{MaxNumReplicaHostedModels: 3},
 			},
+			stats: &store.ServerStats{MaxNumReplicaHostedModels: 3},
 		},
 		{
 			name:          "should not scale if expectedReplicas is greater than MaxNumReplicaHostedModels",
 			shouldScaleUp: false,
-			server: &store.ServerSnapshot{
+			server: &db.Server{
 				MaxReplicas:      3,
 				ExpectedReplicas: 3,
-				Stats:            &store.ServerStats{MaxNumReplicaHostedModels: 2},
 			},
+			stats: &store.ServerStats{MaxNumReplicaHostedModels: 2},
 		},
 		{
 			name:          "does not scale up for ExpectedReplicas below 0",
 			shouldScaleUp: false,
-			server: &store.ServerSnapshot{
+			server: &db.Server{
 				MaxReplicas:      2,
 				ExpectedReplicas: -1,
-				Stats:            &store.ServerStats{MaxNumReplicaHostedModels: 3},
 			},
+			stats: &store.ServerStats{MaxNumReplicaHostedModels: 3},
 		},
 		{
 			name:          "does not scale up for missing max replicas",
 			shouldScaleUp: false,
-			server: &store.ServerSnapshot{
+			server: &db.Server{
 				ExpectedReplicas: 1,
-				Stats:            &store.ServerStats{MaxNumReplicaHostedModels: 3},
 			},
+			stats: &store.ServerStats{MaxNumReplicaHostedModels: 3},
 		},
 		{
 			name:          "does not scale to zero",
 			shouldScaleUp: false,
-			server: &store.ServerSnapshot{
+			server: &db.Server{
 				MaxReplicas:      0,
 				ExpectedReplicas: 0,
-				Stats:            &store.ServerStats{MaxNumReplicaHostedModels: 0},
 			},
+			stats: &store.ServerStats{MaxNumReplicaHostedModels: 0},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			ok, expectedReplicas := shouldScaleUp(test.server)
+			ok, expectedReplicas := shouldScaleUp(test.server, test.stats)
 			g.Expect(ok).To(Equal(test.shouldScaleUp))
 			if test.shouldScaleUp {
 				g.Expect(expectedReplicas).To(Equal(test.newExpectedReplicas))
@@ -158,7 +160,8 @@ func TestShouldScaleDown(t *testing.T) {
 
 	type test struct {
 		name             string
-		server           *store.ServerSnapshot
+		server           *db.Server
+		stats            *store.ServerStats
 		shouldScaleDown  bool
 		expectedReplicas uint32
 		packThreshold    float32
@@ -167,13 +170,13 @@ func TestShouldScaleDown(t *testing.T) {
 	tests := []test{
 		{
 			name: "should scale down - empty replicas",
-			server: &store.ServerSnapshot{
-				Stats: &store.ServerStats{
-					NumEmptyReplicas:          1,
-					MaxNumReplicaHostedModels: 0,
-				},
+			server: &db.Server{
 				ExpectedReplicas: 2,
 				MinReplicas:      1,
+			},
+			stats: &store.ServerStats{
+				NumEmptyReplicas:          1,
+				MaxNumReplicaHostedModels: 0,
 			},
 			shouldScaleDown:  true,
 			expectedReplicas: 1,
@@ -181,13 +184,13 @@ func TestShouldScaleDown(t *testing.T) {
 		},
 		{
 			name: "should scale down - empty replicas > 1 - 1",
-			server: &store.ServerSnapshot{
-				Stats: &store.ServerStats{
-					NumEmptyReplicas:          2,
-					MaxNumReplicaHostedModels: 0,
-				},
+			server: &db.Server{
 				ExpectedReplicas: 3,
 				MinReplicas:      1,
+			},
+			stats: &store.ServerStats{
+				NumEmptyReplicas:          2,
+				MaxNumReplicaHostedModels: 0,
 			},
 			shouldScaleDown:  true,
 			expectedReplicas: 1,
@@ -195,13 +198,13 @@ func TestShouldScaleDown(t *testing.T) {
 		},
 		{
 			name: "should scale down - violate min replicas",
-			server: &store.ServerSnapshot{
-				Stats: &store.ServerStats{
-					NumEmptyReplicas:          2,
-					MaxNumReplicaHostedModels: 0,
-				},
+			server: &db.Server{
 				ExpectedReplicas: 3,
 				MinReplicas:      2,
+			},
+			stats: &store.ServerStats{
+				NumEmptyReplicas:          2,
+				MaxNumReplicaHostedModels: 0,
 			},
 			shouldScaleDown:  true,
 			expectedReplicas: 2,
@@ -209,13 +212,13 @@ func TestShouldScaleDown(t *testing.T) {
 		},
 		{
 			name: "should scale down - empty replicas > 1 - 2",
-			server: &store.ServerSnapshot{
-				Stats: &store.ServerStats{
-					NumEmptyReplicas:          1,
-					MaxNumReplicaHostedModels: 0,
-				},
+			server: &db.Server{
 				ExpectedReplicas: 3,
 				MinReplicas:      1,
+			},
+			stats: &store.ServerStats{
+				NumEmptyReplicas:          1,
+				MaxNumReplicaHostedModels: 0,
 			},
 			shouldScaleDown:  true,
 			expectedReplicas: 2,
@@ -223,13 +226,13 @@ func TestShouldScaleDown(t *testing.T) {
 		},
 		{
 			name: "should scale down - pack",
-			server: &store.ServerSnapshot{
-				Stats: &store.ServerStats{
-					NumEmptyReplicas:          0,
-					MaxNumReplicaHostedModels: 1,
-				},
+			server: &db.Server{
 				ExpectedReplicas: 2,
 				MinReplicas:      1,
+			},
+			stats: &store.ServerStats{
+				NumEmptyReplicas:          0,
+				MaxNumReplicaHostedModels: 1,
 			},
 			shouldScaleDown:  true,
 			expectedReplicas: 1,
@@ -237,13 +240,13 @@ func TestShouldScaleDown(t *testing.T) {
 		},
 		{
 			name: "should scale down - pack > 1",
-			server: &store.ServerSnapshot{
-				Stats: &store.ServerStats{
-					NumEmptyReplicas:          0,
-					MaxNumReplicaHostedModels: 1,
-				},
+			server: &db.Server{
 				ExpectedReplicas: 3,
 				MinReplicas:      1,
+			},
+			stats: &store.ServerStats{
+				NumEmptyReplicas:          0,
+				MaxNumReplicaHostedModels: 1,
 			},
 			shouldScaleDown:  true,
 			expectedReplicas: 1,
@@ -251,13 +254,13 @@ func TestShouldScaleDown(t *testing.T) {
 		},
 		{
 			name: "should not scale down - pack threshold",
-			server: &store.ServerSnapshot{
-				Stats: &store.ServerStats{
-					NumEmptyReplicas:          0,
-					MaxNumReplicaHostedModels: 1,
-				},
+			server: &db.Server{
 				ExpectedReplicas: 3,
 				MinReplicas:      1,
+			},
+			stats: &store.ServerStats{
+				NumEmptyReplicas:          0,
+				MaxNumReplicaHostedModels: 1,
 			},
 			shouldScaleDown:  false,
 			expectedReplicas: 0,
@@ -265,13 +268,13 @@ func TestShouldScaleDown(t *testing.T) {
 		},
 		{
 			name: "should not scale down - empty replicas - last replica",
-			server: &store.ServerSnapshot{
-				Stats: &store.ServerStats{
-					NumEmptyReplicas:          1,
-					MaxNumReplicaHostedModels: 0,
-				},
+			server: &db.Server{
 				ExpectedReplicas: 1,
 				MinReplicas:      1,
+			},
+			stats: &store.ServerStats{
+				NumEmptyReplicas:          1,
+				MaxNumReplicaHostedModels: 0,
 			},
 			shouldScaleDown:  false,
 			expectedReplicas: 0,
@@ -279,13 +282,13 @@ func TestShouldScaleDown(t *testing.T) {
 		},
 		{
 			name: "should not scale down - pack - last replica",
-			server: &store.ServerSnapshot{
-				Stats: &store.ServerStats{
-					NumEmptyReplicas:          1,
-					MaxNumReplicaHostedModels: 0,
-				},
+			server: &db.Server{
 				ExpectedReplicas: 1,
 				MinReplicas:      1,
+			},
+			stats: &store.ServerStats{
+				NumEmptyReplicas:          1,
+				MaxNumReplicaHostedModels: 0,
 			},
 			shouldScaleDown:  false,
 			expectedReplicas: 0,
@@ -295,7 +298,7 @@ func TestShouldScaleDown(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			scaleDown, replicas := shouldScaleDown(test.server, test.packThreshold)
+			scaleDown, replicas := shouldScaleDown(test.server, test.stats, test.packThreshold)
 			g.Expect(scaleDown).To(Equal(test.shouldScaleDown))
 			if scaleDown {
 				g.Expect(replicas).To(Equal(test.expectedReplicas))
