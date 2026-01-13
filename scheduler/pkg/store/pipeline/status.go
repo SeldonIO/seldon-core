@@ -10,6 +10,7 @@ the Change License after the Change Date as each is defined in accordance with t
 package pipeline
 
 import (
+	"errors"
 	"sync"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
@@ -33,13 +34,9 @@ type ModelStatusHandler struct {
 
 // Set pipeline model readiness
 // Setup references so we can update when model status' change
-func (ms *ModelStatusHandler) addPipelineModelStatus(pipeline *Pipeline) error {
-	err := ms.setPipelineModelsReady(pipeline.GetLatestPipelineVersion())
-	if err != nil {
-		return err
-	}
+func (ms *ModelStatusHandler) addPipelineModelStatus(pipeline *Pipeline) {
+	ms.setPipelineModelsReady(pipeline.GetLatestPipelineVersion())
 	ms.addModelReferences(pipeline)
-	return nil
 }
 
 // Change a pipeline model readiness based on a new model status
@@ -64,13 +61,19 @@ func updatePipelineModelsReady(latestPipeline *PipelineVersion, modelAvailable b
 }
 
 // Set pipeline models ready by finding out if all models are ready
-func (ms *ModelStatusHandler) setPipelineModelsReady(pipelineVersion *PipelineVersion) error {
+func (ms *ModelStatusHandler) setPipelineModelsReady(pipelineVersion *PipelineVersion) {
 	modelsReady := true
 	if pipelineVersion != nil && ms.store != nil {
 		for stepName, step := range pipelineVersion.Steps {
 			model, err := ms.store.GetModel(stepName)
 			if err != nil {
-				return err
+				if errors.Is(err, store.ErrNotFound) {
+					ms.logger.WithField("model", stepName).Warn("Model for step not found, setting model step available=false")
+				}
+				ms.logger.WithError(err).WithField("model", stepName).Error("Failed to get model for step")
+				modelsReady = false
+				step.Available = false
+				continue
 			}
 			step.Available = false
 			if model != nil {
@@ -85,7 +88,6 @@ func (ms *ModelStatusHandler) setPipelineModelsReady(pipelineVersion *PipelineVe
 		}
 		pipelineVersion.State.ModelsReady = modelsReady
 	}
-	return nil
 }
 
 // Find and set Pipeline Model Ready due to a Model whose status has changed

@@ -27,7 +27,7 @@ func (es *ExperimentStore) validateNoExistingDefault(experiment *Experiment) err
 				}
 			}
 		default:
-			return fmt.Errorf("Unknown resource type %v", experiment.ResourceType)
+			return fmt.Errorf("unknown resource type %v", experiment.ResourceType)
 		}
 	}
 	return nil

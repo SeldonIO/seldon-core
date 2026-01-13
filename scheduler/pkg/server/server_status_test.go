@@ -70,7 +70,7 @@ func TestPollerRetryFailedModels(t *testing.T) {
 			setupMocks: func(mockModelStore *mock.MockModelServerAPI, modelNames []string, targetState db.ModelState) {
 				mockModelStore.EXPECT().
 					GetAllModels().
-					Return([]string{}).
+					Return([]string{}, nil).
 					MinTimes(1)
 			},
 			contextTimeout: 150 * time.Millisecond,
@@ -85,7 +85,7 @@ func TestPollerRetryFailedModels(t *testing.T) {
 			setupMocks: func(mockModelStore *mock.MockModelServerAPI, modelNames []string, targetState db.ModelState) {
 				mockModelStore.EXPECT().
 					GetAllModels().
-					Return(modelNames).
+					Return(modelNames, nil).
 					MinTimes(1)
 
 				model := &db.Model{}
@@ -113,7 +113,7 @@ func TestPollerRetryFailedModels(t *testing.T) {
 			setupMocks: func(mockModelStore *mock.MockModelServerAPI, modelNames []string, targetState db.ModelState) {
 				mockModelStore.EXPECT().
 					GetAllModels().
-					Return(modelNames).MinTimes(1)
+					Return(modelNames, nil).MinTimes(1)
 
 				model := &db.Model{}
 				model.Name = "failed-model"
@@ -146,7 +146,7 @@ func TestPollerRetryFailedModels(t *testing.T) {
 			setupMocks: func(mockModelStore *mock.MockModelServerAPI, modelNames []string, targetState db.ModelState) {
 				mockModelStore.EXPECT().
 					GetAllModels().
-					Return(modelNames).MinTimes(1)
+					Return(modelNames, nil).MinTimes(1)
 
 				model := &db.Model{}
 				model.Name = "failed-model"
