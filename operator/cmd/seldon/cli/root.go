@@ -66,6 +66,16 @@ func GetCmd() *cobra.Command {
 		},
 	}
 
+	cmdDB := &cobra.Command{
+		Use:   "db <subcomand>",
+		Short: "manage scheduler database",
+		Long:  `Manage the HA scheduler database`,
+		Args:  cobra.MinimumNArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return fmt.Errorf("DB subcommand required")
+		},
+	}
+
 	// Model commands
 	cmdModelLoad := createModelLoad()
 	cmdModelUnload := createModelUnload()
@@ -108,12 +118,16 @@ func GetCmd() *cobra.Command {
 
 	rootCmd.DisableAutoGenTag = true
 
-	rootCmd.AddCommand(cmdModel, cmdServer, cmdExperiment, cmdPipeline, cmdConfig, cmdLoad, cmdUnload, cmdStatus)
+	// DB commands
+	cmdDBDump := dbDump()
+
+	rootCmd.AddCommand(cmdModel, cmdServer, cmdExperiment, cmdPipeline, cmdConfig, cmdLoad, cmdUnload, cmdStatus, cmdDB)
 	cmdModel.AddCommand(cmdModelLoad, cmdModelUnload, cmdModelStatus, cmdModelInfer, cmdModelMeta, cmdModelList)
 	cmdServer.AddCommand(cmdServerStatus, cmdServerList)
 	cmdExperiment.AddCommand(cmdExperimentStart, cmdExperimentStop, cmdExperimentStatus, cmdExperimentList)
 	cmdPipeline.AddCommand(cmdPipelineLoad, cmdPipelineUnload, cmdPipelineStatus, cmdPipelineInfer, cmdPipelineList, cmdPipelineInspect)
 	cmdConfig.AddCommand(cmdConfigActivate, cmdConfigAdd, cmdConfigDeactivate, cmdConfigList, cmdConfigRemove)
+	cmdDB.AddCommand(cmdDBDump)
 
 	return rootCmd
 }

@@ -529,6 +529,9 @@ spec:
         - --retry-creating-failed-pipelines-tick=$(RETRY_CREATING_FAILED_PIPELINES_TICK)
         - --retry-deleting-failed-pipelines-tick=$(RETRY_DELETING_FAILED_PIPELINES_TICK)
         - --max-retry-failed-pipelines=$(MAX_RETRY_FAILED_PIPELINES)
+        - --enable-db-grpc-service=$(ENABLE_DB_GRPC_SERVICE)
+        - --db-grpc-port=$(DB_GRPC_PORT)
+        - --db-grpc-allow-plaintext=$(DB_GRPC_ALLOW_PLAINTEXT)
         command:
         - /bin/scheduler
         env:
@@ -598,7 +601,13 @@ spec:
           value: '{{ .Values.modelgateway.maxNumConsumers }}'
         - name: PIPELINEGATEWAY_MAX_NUM_CONSUMERS
           value: '{{ .Values.pipelinegateway.maxNumConsumers }}'
+        - name: ENABLE_DB_GRPC_SERVICE
+          value: "true"
+        - name: DB_GRPC_PORT
+          value: "9060"
         - name: ALLOW_PLAINTXT
+          value: "true"
+        - name: DB_GRPC_ALLOW_PLAINTEXT
           value: "true"
         - name: POD_NAMESPACE
           valueFrom:

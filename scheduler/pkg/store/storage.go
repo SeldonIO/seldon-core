@@ -21,6 +21,7 @@ var (
 	ErrAlreadyExists = errors.New("record already exists")
 )
 
+//go:generate go tool mockgen -source=./storage.go -destination=./mock/storage_reader.go -package=mock StorageReader
 type StorageReader[T proto.Message] interface {
 	Get(ctx context.Context, name string) (T, error)
 	List(ctx context.Context) ([]T, error)

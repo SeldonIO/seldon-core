@@ -222,7 +222,7 @@ func (s *Server) startServer(port uint, secure bool) error {
 }
 
 func (s *Server) StartGrpcServer(allowPlainTxt bool, agentPort uint, agentTlsPort uint) error {
-	logger := s.logger.WithField("func", "StartGrpcServer")
+	logger := s.logger.WithField("func", "Start")
 
 	if !allowPlainTxt && s.tlsOptions.Cert == nil {
 		return fmt.Errorf("one of plain txt or mTLS needs to be defined. But have plain text [%v] and no TLS", allowPlainTxt)

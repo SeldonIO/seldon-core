@@ -31,6 +31,10 @@ const (
 	flagVerbose             = "verbose"
 	flagKafkaConfigPath     = "kafka-config-path"
 	flagForceControlPlane   = "force"
+	flagDBHost              = "db-host"
+	flagDBOutputFile        = "output-file"
+	flagDBOutputFormat      = "output-format"
+	flagDBRecordType        = "record-type"
 )
 
 // Env vars
@@ -43,6 +47,7 @@ const (
 	// the environment variable used by other components
 	envNamespace         = "POD_NAMESPACE"
 	envForceControlPlane = "SELDON_FORCE_CONTROL_PLANE"
+	envDBHost            = "SELDON_DB_HOST"
 )
 
 // Defaults
@@ -50,6 +55,7 @@ const (
 	defaultInferHost         = "0.0.0.0:9000"
 	defaultKafkaHost         = "0.0.0.0:9092"
 	defaultSchedulerHost     = "0.0.0.0:9004"
+	defaultDBHost            = "0.0.0.0:9060"
 	defaultForceControlPlane = false
 )
 
@@ -63,6 +69,10 @@ const (
 	helpInferenceSecs            = "number of secs to run inference"
 	helpInferenceMode            = "inference mode (rest or grpc)"
 	helpSchedulerHost            = "seldon scheduler host"
+	helpDBHost                   = "seldon DB host"
+	helpDBOutputFile             = "output file path for database dump"
+	helpDBOutputFormat           = "output format: json or proto"
+	helpDBRecordType             = "record type to dump: all, models, or servers"
 	helpShowHeaders              = "show request and response headers"
 	helpStickySession            = "use sticky session from last inference (only works with experiments)"
 	helpForceControlPlane        = "force control plane mode (load model, etc.), default is false"

@@ -308,7 +308,9 @@ func main() {
 	}
 
 	// Create stores
-	ss := store.NewModelServerStore(logger, store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), eventHub)
+	modelStorage := store.NewInMemoryStorage[*db.Model]()
+	serverStorage := store.NewInMemoryStorage[*db.Server]()
+	ss := store.NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
 	ps := pipeline.NewPipelineStore(logger, eventHub, ss)
 	es := experiment.NewExperimentServer(logger, eventHub, ss, ps)
 	cleaner := cleaner.NewVersionCleaner(ss, logger)
@@ -431,9 +433,10 @@ func main() {
 
 	if enableDBGRPCService {
 		logger.Info("Starting gRPC server for DB service")
-		dbSvc := db_svc.NewService(logger.WithField("source", "DatabaseService"),
-			in_memory.NewStorage[*db.Model](), in_memory.NewStorage[*db.Server](), *tlsOptions)
-		if err := dbSvc.StartGrpcServer(dbGRPCAllowPlainText, dbGRPCPort); err != nil {
+		dbSvc := db_svc.NewDatabaseService(
+			logger.WithField("source", "DatabaseService"),
+			modelStorage, serverStorage, *tlsOptions)
+		if err := dbSvc.Start(dbGRPCAllowPlainText, dbGRPCPort); err != nil {
 			logger.WithError(err).Fatal("Failed to start gRPC server for DB service")
 		}
 		defer dbSvc.Stop()
