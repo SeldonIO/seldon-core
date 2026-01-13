@@ -19,6 +19,7 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	log "github.com/sirupsen/logrus"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc"
@@ -1674,7 +1675,9 @@ func createTestScheduler(t *testing.T, serverName string) (*ChainerServer, *coor
 
 	eventHub, _ := coordinator.NewEventHub(logger)
 
-	schedulerStore := store.NewModelServerStore(logger, store.NewLocalSchedulerStore(), eventHub)
+	modelStorage := store.NewInMemoryStorage[*db.Model]()
+	serverStorage := store.NewInMemoryStorage[*db.Server]()
+	schedulerStore := store.NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
 	pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
 
 	data :=

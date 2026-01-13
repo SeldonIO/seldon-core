@@ -11,6 +11,7 @@ package pipeline
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
@@ -34,9 +35,12 @@ type ModelStatusHandler struct {
 
 // Set pipeline model readiness
 // Setup references so we can update when model status' change
-func (ms *ModelStatusHandler) addPipelineModelStatus(pipeline *Pipeline) {
-	ms.setPipelineModelsReady(pipeline.GetLatestPipelineVersion())
+func (ms *ModelStatusHandler) addPipelineModelStatus(pipeline *Pipeline) error {
+	if err := ms.setPipelineModelsReady(pipeline.GetLatestPipelineVersion()); err != nil {
+		return err
+	}
 	ms.addModelReferences(pipeline)
+	return nil
 }
 
 // Change a pipeline model readiness based on a new model status
@@ -61,7 +65,7 @@ func updatePipelineModelsReady(latestPipeline *PipelineVersion, modelAvailable b
 }
 
 // Set pipeline models ready by finding out if all models are ready
-func (ms *ModelStatusHandler) setPipelineModelsReady(pipelineVersion *PipelineVersion) {
+func (ms *ModelStatusHandler) setPipelineModelsReady(pipelineVersion *PipelineVersion) error {
 	modelsReady := true
 	if pipelineVersion != nil && ms.store != nil {
 		for stepName, step := range pipelineVersion.Steps {
@@ -69,11 +73,11 @@ func (ms *ModelStatusHandler) setPipelineModelsReady(pipelineVersion *PipelineVe
 			if err != nil {
 				if errors.Is(err, store.ErrNotFound) {
 					ms.logger.WithField("model", stepName).Warn("Model for step not found, setting model step available=false")
+					modelsReady = false
+					step.Available = false
+					continue
 				}
-				ms.logger.WithError(err).WithField("model", stepName).Error("Failed to get model for step")
-				modelsReady = false
-				step.Available = false
-				continue
+				return fmt.Errorf("failed to get model %s: %w", stepName, err)
 			}
 			step.Available = false
 			if model != nil {
@@ -88,6 +92,7 @@ func (ms *ModelStatusHandler) setPipelineModelsReady(pipelineVersion *PipelineVe
 		}
 		pipelineVersion.State.ModelsReady = modelsReady
 	}
+	return nil
 }
 
 // Find and set Pipeline Model Ready due to a Model whose status has changed

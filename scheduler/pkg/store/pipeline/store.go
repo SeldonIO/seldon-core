@@ -162,8 +162,12 @@ func (ps *PipelineStore) InitialiseOrRestoreDB(path string, deletedResourceTTL u
 
 // note: we do not validate the pipeline when we restore it from the db as we assume it was validated when it was added
 func (ps *PipelineStore) restorePipeline(pipeline *Pipeline) {
+	logger := ps.logger.WithField("func", "restorePipeline")
 	ps.mu.Lock()
-	ps.modelStatusHandler.addPipelineModelStatus(pipeline)
+	err := ps.modelStatusHandler.addPipelineModelStatus(pipeline)
+	if err != nil {
+		logger.WithError(err).Errorf("Failed to set pipeline state for pipeline %s", pipeline.Name)
+	}
 	ps.updatePipelineState(pipeline)
 
 	ps.pipelines[pipeline.Name] = pipeline
@@ -251,7 +255,10 @@ func (ps *PipelineStore) addPipelineImpl(req *scheduler.Pipeline) (*coordinator.
 	if err != nil {
 		return nil, err
 	}
-	ps.modelStatusHandler.addPipelineModelStatus(pipeline)
+	err = ps.modelStatusHandler.addPipelineModelStatus(pipeline)
+	if err != nil {
+		return nil, err
+	}
 	ps.pipelines[req.Name] = pipeline
 	if ps.db != nil {
 		err = ps.db.save(pipeline)
