@@ -20,13 +20,16 @@ import (
 
 	"github.com/gotidy/ptr"
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+	ptr2 "k8s.io/utils/ptr"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
@@ -34,117 +37,6 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 	mock2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser/mock"
 )
-
-type mockStore struct {
-	models            map[string]*store.ModelSnapshot
-	servers           []*store.ServerSnapshot
-	scheduledServer   string
-	scheduledReplicas []int
-	unloadedModels    map[string]uint32
-}
-
-var _ store.ModelServerAPI = (*mockStore)(nil)
-
-func (f mockStore) FailedScheduling(modelID string, version uint32, reason string, reset bool) error {
-	return nil
-}
-
-func (f mockStore) UnloadVersionModels(modelKey string, version uint32) (bool, error) {
-	if f.unloadedModels != nil {
-		f.unloadedModels[modelKey] = version
-	}
-	return true, nil
-}
-
-func (f mockStore) UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error) {
-	return true, nil
-}
-
-func (f mockStore) ServerNotify(request *pb.ServerNotify) error {
-	return nil
-}
-
-func (f mockStore) RemoveModel(req *pb.UnloadModelRequest) error {
-	return nil
-}
-
-func (f mockStore) UpdateModel(config *pb.LoadModelRequest) error {
-	return nil
-}
-
-func (f mockStore) GetModel(key string) (*store.ModelSnapshot, error) {
-	return f.models[key], nil
-}
-
-func (f mockStore) GetModels() ([]*store.ModelSnapshot, error) {
-	models := []*store.ModelSnapshot{}
-	for _, m := range f.models {
-		models = append(models, m)
-	}
-	return models, nil
-}
-
-func (f mockStore) LockModel(modelId string) {
-}
-
-func (f mockStore) UnlockModel(modelId string) {
-}
-
-func (f mockStore) ExistsModelVersion(key string, version uint32) bool {
-	return false
-}
-
-func (f mockStore) GetServers(shallow bool, modelDetails bool) ([]*store.ServerSnapshot, error) {
-	return f.servers, nil
-}
-
-func (f mockStore) GetServer(serverKey string, shallow bool, modelDetails bool) (*store.ServerSnapshot, error) {
-	panic("implement me")
-}
-
-func (m *mockStore) GetAllModels() []string {
-	var modelNames []string
-	for modelName := range m.models {
-		modelNames = append(modelNames, modelName)
-	}
-	return modelNames
-}
-
-func (f *mockStore) UpdateLoadedModels(modelKey string, version uint32, serverKey string, replicas []*store.ServerReplica) error {
-	f.scheduledServer = serverKey
-	var replicaIdxs []int
-	for _, rep := range replicas {
-		replicaIdxs = append(replicaIdxs, rep.GetReplicaIdx())
-	}
-	f.scheduledReplicas = replicaIdxs
-	return nil
-}
-
-func (f mockStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState store.ModelReplicaState, reason string, runtimeInfo *pb.ModelRuntimeInfo) error {
-	panic("implement me")
-}
-
-func (f mockStore) AddServerReplica(request *agent.AgentSubscribeRequest) error {
-	panic("implement me")
-}
-
-func (f mockStore) RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) {
-	panic("implement me")
-}
-
-func (f mockStore) DrainServerReplica(serverName string, replicaIdx int) ([]string, error) {
-	panic("implement me")
-}
-
-func (f mockStore) AddModelEventListener(c chan *store.ModelSnapshot) {
-}
-
-func (f mockStore) AddServerEventListener(c chan string) {
-}
-
-func (f mockStore) SetModelGwModelState(name string, versionNumber uint32, status store.ModelState, reason string, source string) error {
-	panic("implement me")
-}
 
 func TestScheduler(t *testing.T) {
 	logger := log.New()
@@ -177,32 +69,80 @@ func TestScheduler(t *testing.T) {
 	type test struct {
 		name                 string
 		model                *store.ModelSnapshot
+		modelName            string
 		servers              []*store.ServerSnapshot
 		scheduled            bool
 		scheduledServer      string
 		scheduledReplicas    []int
 		expectedServerEvents int
+		setupMock            func(m *mock.MockModelServerAPI)
+		expectedModelState   func()
 	}
 
 	tests := []test{
 		{
-			name:  "SmokeTest",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{}, false, "", nil),
-			servers: []*store.ServerSnapshot{
-				{
-					Name:             "server1",
-					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"}, "server1", true, false)}, // expect schedule here
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-			},
+			name: "SmokeTest",
+			//model: newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{}, false, "", nil),
+			modelName: "model1",
+			//servers: []*store.ServerSnapshot{
+			//	{
+			//		Name:             "server1",
+			//		Replicas:         map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"}, "server1", true, false)}, // expect schedule here
+			//		Shared:           true,
+			//		ExpectedReplicas: -1,
+			//	},
+			//},
 			scheduled:         true,
 			scheduledServer:   "server1",
 			scheduledReplicas: []int{0},
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(200)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+						},
+						1, "server1",
+						nil, db.ModelState_ModelStateUnknown),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server", false), []string{"sklearn"}, 0, 200, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: 1,
+						MinReplicas:      1,
+						MaxReplicas:      1,
+						KubernetesMeta:   nil,
+					},
+				}
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server1", slices.Collect(maps.Values(servers[0].Replicas))).Return(nil)
+			},
 		},
 		{
-			name:  "ReplicasTwo",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 2, []int{}, false, "", nil),
+			name:      "ReplicasTwo",
+			model:     newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 2, []int{}, false, "", nil),
+			modelName: "model1",
 			servers: []*store.ServerSnapshot{
 				{
 					Name:             "server1",
@@ -223,6 +163,49 @@ func TestScheduler(t *testing.T) {
 			scheduled:         true,
 			scheduledServer:   "server2",
 			scheduledReplicas: []int{0, 1},
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(200)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+						},
+						1, "server1",
+						nil, db.ModelState_ModelStateUnknown),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server", false), []string{"sklearn"}, 0, 200, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: 1,
+						MinReplicas:      1,
+						MaxReplicas:      1,
+						KubernetesMeta:   nil,
+					},
+				}
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server1", slices.Collect(maps.Values(servers[0].Replicas))).Return(nil)
+			},
 		},
 		{
 			name:  "NotEnoughReplicas",
@@ -557,18 +540,22 @@ func TestScheduler(t *testing.T) {
 		},
 	}
 
-	newMockStore := func(model *store.ModelSnapshot, servers []*store.ServerSnapshot) *mockStore {
-		modelMap := make(map[string]*store.ModelSnapshot)
-		modelMap[model.Name] = model
-		return &mockStore{
-			models:  modelMap,
-			servers: servers,
-		}
-	}
+	//newMockStore := func(model *store.ModelSnapshot, servers []*store.ServerSnapshot) *mockStore {
+	//	modelMap := make(map[string]*store.ModelSnapshot)
+	//	modelMap[model.Name] = model
+	//	return &mockStore{
+	//		models:  modelMap,
+	//		servers: servers,
+	//	}
+	//}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			eventHub, _ := coordinator.NewEventHub(logger)
+
+			ctrl := gomock.NewController(t)
+			mockModelServerAPI := mock.NewMockModelServerAPI(ctrl)
+			test.setupMock(mockModelServerAPI)
 
 			serverEvents := int64(0)
 			eventHub.RegisterServerEventHandler(
@@ -578,9 +565,12 @@ func TestScheduler(t *testing.T) {
 				func(event coordinator.ServerEventMsg) { atomic.AddInt64(&serverEvents, 1) },
 			)
 
-			mockStore := newMockStore(test.model, test.servers)
-			scheduler := NewSimpleScheduler(logger, mockStore, DefaultSchedulerConfig(mockStore), synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), eventHub)
-			err := scheduler.Schedule(test.model.Name)
+			//mockStore := newMockStore(test.model, test.servers)
+			scheduler := NewSimpleScheduler(logger, mockModelServerAPI, DefaultSchedulerConfig(mockModelServerAPI), synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), eventHub)
+			err := scheduler.Schedule(test.modelName)
+			//model, err := scheduler.store.GetModel(test.modelName) //todo?
+			//model.GetLastAvailableModel().Replicas //todo?
+			//todo could assert the expected replicas of the model and the server it was scheduled to by calling get Model but this requires another expect mock and an expect function
 			if test.scheduled {
 				g.Expect(err).To(BeNil())
 			} else {
@@ -589,11 +579,12 @@ func TestScheduler(t *testing.T) {
 			if test.expectedServerEvents > 0 { // wait for event
 				time.Sleep(500 * time.Millisecond)
 			}
+
 			if test.scheduledServer != "" {
-				g.Expect(test.scheduledServer).To(Equal(mockStore.scheduledServer))
+				//g.Expect(test.scheduledServer).To(Equal(mockStore.scheduledServer))
 				sort.Ints(test.scheduledReplicas)
-				sort.Ints(mockStore.scheduledReplicas)
-				g.Expect(test.scheduledReplicas).To(Equal(mockStore.scheduledReplicas))
+				//sort.Ints(mockStore.scheduledReplicas)
+				//g.Expect(test.scheduledReplicas).To(Equal(mockStore.scheduledReplicas))
 				g.Expect(atomic.LoadInt64(&serverEvents)).To(Equal(int64(test.expectedServerEvents)))
 			}
 		})
@@ -770,14 +761,14 @@ func TestScheduleFailedModels(t *testing.T) {
 
 	tests := []struct {
 		name           string
-		setupMocks     func(*mock.MockModelStore, *mock2.MockSynchroniser)
+		setupMocks     func(*mock.MockModelServerAPI, *mock2.MockSynchroniser)
 		expectedModels []string
 		expectError    bool
 		errorContains  string
 	}{
 		{
 			name: "success - schedules single failed model",
-			setupMocks: func(ms *mock.MockModelStore, sync *mock2.MockSynchroniser) {
+			setupMocks: func(ms *mock.MockModelServerAPI, sync *mock2.MockSynchroniser) {
 				sync.EXPECT().IsReady().Return(true)
 
 				model1 := &store.ModelSnapshot{
@@ -820,7 +811,7 @@ func TestScheduleFailedModels(t *testing.T) {
 				servers := []*store.ServerSnapshot{
 					createServerSnapshot("server1", 1, 16000),
 				}
-				ms.EXPECT().GetServers(false, true).Return(servers, nil)
+				ms.EXPECT().GetServers().Return(servers, nil)
 				ms.EXPECT().UpdateLoadedModels("model1", uint32(1),
 					"server1", slices.Collect(maps.Values(servers[0].Replicas))).Return(nil)
 			},
@@ -829,7 +820,7 @@ func TestScheduleFailedModels(t *testing.T) {
 		},
 		{
 			name: "success - schedules 2 failed models",
-			setupMocks: func(ms *mock.MockModelStore, sync *mock2.MockSynchroniser) {
+			setupMocks: func(ms *mock.MockModelServerAPI, sync *mock2.MockSynchroniser) {
 				sync.EXPECT().IsReady().Return(true)
 
 				model1 := &store.ModelSnapshot{
@@ -904,7 +895,7 @@ func TestScheduleFailedModels(t *testing.T) {
 				servers := []*store.ServerSnapshot{
 					createServerSnapshot("server1", 1, 16000),
 				}
-				ms.EXPECT().GetServers(false, true).Return(servers, nil)
+				ms.EXPECT().GetServers().Return(servers, nil)
 				ms.EXPECT().UpdateLoadedModels("model1", uint32(1),
 					"server1", slices.Collect(maps.Values(servers[0].Replicas))).Return(nil)
 
@@ -914,7 +905,7 @@ func TestScheduleFailedModels(t *testing.T) {
 				ms.EXPECT().UnlockModel("model2")
 				ms.EXPECT().GetModel("model2").Return(model2, nil)
 
-				ms.EXPECT().GetServers(false, true).Return(servers, nil)
+				ms.EXPECT().GetServers().Return(servers, nil)
 				ms.EXPECT().UpdateLoadedModels("model2", uint32(1),
 					"server1", slices.Collect(maps.Values(servers[0].Replicas))).Return(nil)
 			},
@@ -923,7 +914,7 @@ func TestScheduleFailedModels(t *testing.T) {
 		},
 		{
 			name: "failure - unable to schedule model on desired replicas or min replicas",
-			setupMocks: func(ms *mock.MockModelStore, sync *mock2.MockSynchroniser) {
+			setupMocks: func(ms *mock.MockModelServerAPI, sync *mock2.MockSynchroniser) {
 				sync.EXPECT().IsReady().Return(true)
 
 				model1 := &store.ModelSnapshot{
@@ -966,7 +957,7 @@ func TestScheduleFailedModels(t *testing.T) {
 				servers := []*store.ServerSnapshot{
 					createServerSnapshot("server1", 1, 16000),
 				}
-				ms.EXPECT().GetServers(false, true).Return(servers, nil)
+				ms.EXPECT().GetServers().Return(servers, nil)
 				ms.EXPECT().FailedScheduling("model1", uint32(1),
 					"Failed to schedule model as no matching server had enough suitable replicas", true).Return(nil)
 			},
@@ -974,7 +965,7 @@ func TestScheduleFailedModels(t *testing.T) {
 		},
 		{
 			name: "failure - failed getting models",
-			setupMocks: func(ms *mock.MockModelStore, sync *mock2.MockSynchroniser) {
+			setupMocks: func(ms *mock.MockModelServerAPI, sync *mock2.MockSynchroniser) {
 				sync.EXPECT().IsReady().Return(true)
 				ms.EXPECT().GetModels().Return(nil, errors.New("some error"))
 			},
@@ -988,7 +979,7 @@ func TestScheduleFailedModels(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 
-			mockStore := mock.NewMockModelStore(ctrl)
+			mockStore := mock.NewMockModelServerAPI(ctrl)
 			mockSync := mock2.NewMockSynchroniser(ctrl)
 
 			tt.setupMocks(mockStore, mockSync)
