@@ -967,8 +967,8 @@ func TestServersStatusStream(t *testing.T) {
 	type test struct {
 		name    string
 		loadReq []serverReplicaRequest
-		server  *SchedulerServer
 		err     bool
+		timeout time.Duration
 	}
 
 	tests := []test{
@@ -981,11 +981,7 @@ func TestServersStatusStream(t *testing.T) {
 					},
 				},
 			},
-			server: &SchedulerServer{
-				modelStore: store.NewModelServerStore(log.New(), store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), nil),
-				logger:     log.New(),
-				timeout:    10 * time.Millisecond,
-			},
+			timeout: 10 * time.Millisecond,
 		},
 		{
 			name: "server ok - multiple replicas",
@@ -1017,11 +1013,7 @@ func TestServersStatusStream(t *testing.T) {
 					},
 				},
 			},
-			server: &SchedulerServer{
-				modelStore: store.NewModelServerStore(log.New(), store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), nil),
-				logger:     log.New(),
-				timeout:    10 * time.Millisecond,
-			},
+			timeout: 10 * time.Millisecond,
 		},
 		{
 			name: "server ok - multiple replicas with draining",
@@ -1054,11 +1046,7 @@ func TestServersStatusStream(t *testing.T) {
 					draining: true,
 				},
 			},
-			server: &SchedulerServer{
-				modelStore: store.NewModelServerStore(log.New(), store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), nil),
-				logger:     log.New(),
-				timeout:    10 * time.Millisecond,
-			},
+			timeout: 10 * time.Millisecond,
 		},
 		{
 			name: "timeout",
@@ -1069,55 +1057,64 @@ func TestServersStatusStream(t *testing.T) {
 					},
 				},
 			},
-			server: &SchedulerServer{
-				modelStore: store.NewModelServerStore(log.New(), store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), nil),
-				logger:     log.New(),
-				timeout:    1 * time.Millisecond,
-			},
-			err: true,
+			timeout: time.Millisecond,
+			err:     true,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+
+			modelStorage := store.NewInMemoryStorage[*db.Model]()
+			serverStorage := store.NewInMemoryStorage[*db.Server]()
+
+			schedulerServer := &SchedulerServer{
+				modelStore: store.NewModelServerStore(log.New(), modelStorage, serverStorage, nil),
+				logger:     log.New(),
+				timeout:    test.timeout,
+			}
+
 			expectedReplicas := int32(0)
 			expectedNumLoadedModelReplicas := int32(0)
 			if test.loadReq != nil {
 				for _, r := range test.loadReq {
-					err := test.server.modelStore.AddServerReplica(r.request)
+					err := schedulerServer.modelStore.AddServerReplica(r.request)
 					g.Expect(err).To(BeNil())
 					if !r.draining {
 						expectedReplicas++
 						expectedNumLoadedModelReplicas += int32(len(r.request.LoadedModels))
 					} else {
-						server, _, err := test.server.modelStore.GetServer("foo", false)
+						server, _, err := schedulerServer.modelStore.GetServer("foo", false)
 						g.Expect(err).To(BeNil())
 						server.Replicas[int32(r.request.ReplicaIdx)].IsDraining = true
+						err = serverStorage.Update(context.Background(), server)
+						g.Expect(err).To(BeNil())
 					}
 				}
 			}
 
 			stream := newStubServerStatusServer(1, 5*time.Millisecond, context.Background())
-			err := test.server.sendCurrentServerStatuses(stream)
+			err := schedulerServer.sendCurrentServerStatuses(stream)
 			if test.err {
 				g.Expect(err).ToNot(BeNil())
-			} else {
-				g.Expect(err).To(BeNil())
-
-				var ssr *pb.ServerStatusResponse
-				select {
-				case next := <-stream.msgs:
-					ssr = next
-				default:
-					t.Fail()
-				}
-
-				g.Expect(ssr).ToNot(BeNil())
-				g.Expect(ssr.ServerName).To(Equal("foo"))
-				g.Expect(ssr.GetAvailableReplicas()).To(Equal(expectedReplicas))
-				g.Expect(ssr.NumLoadedModelReplicas).To(Equal(expectedNumLoadedModelReplicas))
-				g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_StatusUpdate))
+				return
 			}
+
+			g.Expect(err).To(BeNil())
+
+			var ssr *pb.ServerStatusResponse
+			select {
+			case next := <-stream.msgs:
+				ssr = next
+			default:
+				t.Fail()
+			}
+
+			g.Expect(ssr).ToNot(BeNil())
+			g.Expect(ssr.ServerName).To(Equal("foo"))
+			g.Expect(ssr.GetAvailableReplicas()).To(Equal(expectedReplicas))
+			g.Expect(ssr.NumLoadedModelReplicas).To(Equal(expectedNumLoadedModelReplicas))
+			g.Expect(ssr.Type).To(Equal(pb.ServerStatusResponse_StatusUpdate))
 		})
 	}
 }

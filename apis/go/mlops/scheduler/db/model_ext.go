@@ -68,7 +68,7 @@ func (m *ModelVersion) IsLoadingOrLoaded(server string, replicaIdx int) bool {
 }
 
 func (m *ModelVersion) DesiredReplicas() int {
-	return int(m.ModelDefn.DeploymentSpec.Replicas)
+	return int(m.ModelDefn.GetDeploymentSpec().GetReplicas())
 }
 
 func (m *ModelVersion) ModelName() string {
