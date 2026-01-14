@@ -14,8 +14,9 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func TestReplicaIndexSorter(t *testing.T) {
@@ -24,25 +25,25 @@ func TestReplicaIndexSorter(t *testing.T) {
 	type test struct {
 		name     string
 		replicas []*CandidateReplica
-		ordering []int
+		ordering []int32
 	}
 
-	model := store.NewModelVersion(
+	model := util.NewTestModelVersion(
 		nil,
 		1,
 		"server1",
-		map[int]store.ReplicaStatus{3: {State: store.Loading}},
-		false,
-		store.ModelProgressing)
+		map[int32]*db.ReplicaStatus{3: {State: db.ModelReplicaState_Loading}},
+		db.ModelState_ModelProgressing)
+
 	tests := []test{
 		{
 			name: "OrderByIndex",
 			replicas: []*CandidateReplica{
-				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 20, store.NewServer("dummy", true), []string{}, 100, 200, 0, map[store.ModelVersionID]bool{}, 100)},
-				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 10, store.NewServer("dummy", true), []string{}, 100, 100, 0, map[store.ModelVersionID]bool{}, 100)},
-				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 30, store.NewServer("dummy", true), []string{}, 100, 150, 0, map[store.ModelVersionID]bool{}, 100)},
+				{Model: model, Replica: util.NewTestServerReplica("", 8080, 5001, 20, store.NewServer("dummy", true), []string{}, 100, 200, 0, []*db.ModelVersionID{}, 100)},
+				{Model: model, Replica: util.NewTestServerReplica("", 8080, 5001, 10, store.NewServer("dummy", true), []string{}, 100, 100, 0, []*db.ModelVersionID{}, 100)},
+				{Model: model, Replica: util.NewTestServerReplica("", 8080, 5001, 30, store.NewServer("dummy", true), []string{}, 100, 150, 0, []*db.ModelVersionID{}, 100)},
 			},
-			ordering: []int{10, 20, 30},
+			ordering: []int32{10, 20, 30},
 		},
 	}
 

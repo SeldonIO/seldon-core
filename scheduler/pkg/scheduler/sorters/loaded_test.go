@@ -14,8 +14,9 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func TestModelAlreadyLoadedSort(t *testing.T) {
@@ -24,43 +25,42 @@ func TestModelAlreadyLoadedSort(t *testing.T) {
 	type test struct {
 		name     string
 		replicas []*CandidateReplica
-		ordering []int
+		ordering []int32
 	}
 
-	model := store.NewModelVersion(
+	model := util.NewTestModelVersion(
 		nil,
 		1,
 		"server1",
-		map[int]store.ReplicaStatus{3: {State: store.Loading}},
-		false,
-		store.ModelProgressing)
-	modelServer2 := store.NewModelVersion(
+		map[int32]*db.ReplicaStatus{3: {State: db.ModelReplicaState_Loading}},
+		db.ModelState_ModelProgressing)
+
+	modelServer2 := util.NewTestModelVersion(
 		nil,
 		1,
 		"server2",
-		map[int]store.ReplicaStatus{3: {State: store.Loading}},
-		false,
-		store.ModelProgressing)
+		map[int32]*db.ReplicaStatus{3: {State: db.ModelReplicaState_Loading}},
+		db.ModelState_ModelProgressing)
 	server := store.NewServer("server1", true)
 
 	tests := []test{
 		{
 			name: "OneLoadedModel",
 			replicas: []*CandidateReplica{
-				{Model: model, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 2, server, []string{}, 100, 100, 0, map[store.ModelVersionID]bool{}, 100)},
-				{Model: model, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 1, server, []string{}, 100, 100, 0, map[store.ModelVersionID]bool{}, 100)},
-				{Model: model, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 3, server, []string{}, 100, 100, 0, map[store.ModelVersionID]bool{}, 100)},
+				{Model: model, Server: &db.Server{Name: "server1"}, Replica: util.NewTestServerReplica("", 8080, 5001, 2, server, []string{}, 100, 100, 0, []*db.ModelVersionID{}, 100)},
+				{Model: model, Server: &db.Server{Name: "server1"}, Replica: util.NewTestServerReplica("", 8080, 5001, 1, server, []string{}, 100, 100, 0, []*db.ModelVersionID{}, 100)},
+				{Model: model, Server: &db.Server{Name: "server1"}, Replica: util.NewTestServerReplica("", 8080, 5001, 3, server, []string{}, 100, 100, 0, []*db.ModelVersionID{}, 100)},
 			},
-			ordering: []int{3, 2, 1},
+			ordering: []int32{3, 2, 1},
 		},
 		{
 			name: "LoadedDifferentServer",
 			replicas: []*CandidateReplica{
-				{Model: modelServer2, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 2, server, []string{}, 100, 100, 0, map[store.ModelVersionID]bool{}, 100)},
-				{Model: modelServer2, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 1, server, []string{}, 100, 100, 0, map[store.ModelVersionID]bool{}, 100)},
-				{Model: modelServer2, Server: &store.ServerSnapshot{Name: "server1"}, Replica: store.NewServerReplica("", 8080, 5001, 3, server, []string{}, 100, 100, 0, map[store.ModelVersionID]bool{}, 100)},
+				{Model: modelServer2, Server: &db.Server{Name: "server1"}, Replica: util.NewTestServerReplica("", 8080, 5001, 2, server, []string{}, 100, 100, 0, []*db.ModelVersionID{}, 100)},
+				{Model: modelServer2, Server: &db.Server{Name: "server1"}, Replica: util.NewTestServerReplica("", 8080, 5001, 1, server, []string{}, 100, 100, 0, []*db.ModelVersionID{}, 100)},
+				{Model: modelServer2, Server: &db.Server{Name: "server1"}, Replica: util.NewTestServerReplica("", 8080, 5001, 3, server, []string{}, 100, 100, 0, []*db.ModelVersionID{}, 100)},
 			},
-			ordering: []int{2, 1, 3},
+			ordering: []int32{2, 1, 3},
 		},
 	}
 
@@ -84,38 +84,36 @@ func TestModelAlreadyLoadedOnServerSort(t *testing.T) {
 		ordering []string
 	}
 
-	modelServer1 := store.NewModelVersion(
+	modelServer1 := util.NewTestModelVersion(
 		nil,
 		1,
 		"server1",
-		map[int]store.ReplicaStatus{},
-		false,
-		store.ModelAvailable)
+		map[int32]*db.ReplicaStatus{},
+		db.ModelState_ModelAvailable)
 
-	modelNoServer := store.NewModelVersion(
+	modelNoServer := util.NewTestModelVersion(
 		nil,
 		1,
 		"",
-		map[int]store.ReplicaStatus{},
-		false,
-		store.ModelStateUnknown)
+		map[int32]*db.ReplicaStatus{},
+		db.ModelState_ModelStateUnknown)
 
 	tests := []test{
 		{
 			name: "LoadedOnOneServer",
 			servers: []*CandidateServer{
-				{Model: modelServer1, Server: &store.ServerSnapshot{Name: "server3"}},
-				{Model: modelServer1, Server: &store.ServerSnapshot{Name: "server2"}},
-				{Model: modelServer1, Server: &store.ServerSnapshot{Name: "server1"}},
+				{Model: modelServer1, Server: &db.Server{Name: "server3"}},
+				{Model: modelServer1, Server: &db.Server{Name: "server2"}},
+				{Model: modelServer1, Server: &db.Server{Name: "server1"}},
 			},
 			ordering: []string{"server1", "server3", "server2"},
 		},
 		{
 			name: "Not",
 			servers: []*CandidateServer{
-				{Model: modelNoServer, Server: &store.ServerSnapshot{Name: "server3"}},
-				{Model: modelNoServer, Server: &store.ServerSnapshot{Name: "server2"}},
-				{Model: modelNoServer, Server: &store.ServerSnapshot{Name: "server1"}},
+				{Model: modelNoServer, Server: &db.Server{Name: "server3"}},
+				{Model: modelNoServer, Server: &db.Server{Name: "server2"}},
+				{Model: modelNoServer, Server: &db.Server{Name: "server1"}},
 			},
 			ordering: []string{"server3", "server2", "server1"},
 		},
