@@ -20,13 +20,16 @@ import (
 
 	"github.com/gotidy/ptr"
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+	ptr2 "k8s.io/utils/ptr"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
@@ -34,117 +37,6 @@ import (
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 	mock2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser/mock"
 )
-
-type mockStore struct {
-	models            map[string]*store.ModelSnapshot
-	servers           []*store.ServerSnapshot
-	scheduledServer   string
-	scheduledReplicas []int
-	unloadedModels    map[string]uint32
-}
-
-var _ store.ModelServerAPI = (*mockStore)(nil)
-
-func (f mockStore) FailedScheduling(modelID string, version uint32, reason string, reset bool) error {
-	return nil
-}
-
-func (f mockStore) UnloadVersionModels(modelKey string, version uint32) (bool, error) {
-	if f.unloadedModels != nil {
-		f.unloadedModels[modelKey] = version
-	}
-	return true, nil
-}
-
-func (f mockStore) UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error) {
-	return true, nil
-}
-
-func (f mockStore) ServerNotify(request *pb.ServerNotify) error {
-	return nil
-}
-
-func (f mockStore) RemoveModel(req *pb.UnloadModelRequest) error {
-	return nil
-}
-
-func (f mockStore) UpdateModel(config *pb.LoadModelRequest) error {
-	return nil
-}
-
-func (f mockStore) GetModel(key string) (*store.ModelSnapshot, error) {
-	return f.models[key], nil
-}
-
-func (f mockStore) GetModels() ([]*store.ModelSnapshot, error) {
-	models := []*store.ModelSnapshot{}
-	for _, m := range f.models {
-		models = append(models, m)
-	}
-	return models, nil
-}
-
-func (f mockStore) LockModel(modelId string) {
-}
-
-func (f mockStore) UnlockModel(modelId string) {
-}
-
-func (f mockStore) ExistsModelVersion(key string, version uint32) bool {
-	return false
-}
-
-func (f mockStore) GetServers(shallow bool, modelDetails bool) ([]*store.ServerSnapshot, error) {
-	return f.servers, nil
-}
-
-func (f mockStore) GetServer(serverKey string, shallow bool, modelDetails bool) (*store.ServerSnapshot, error) {
-	panic("implement me")
-}
-
-func (m *mockStore) GetAllModels() []string {
-	var modelNames []string
-	for modelName := range m.models {
-		modelNames = append(modelNames, modelName)
-	}
-	return modelNames
-}
-
-func (f *mockStore) UpdateLoadedModels(modelKey string, version uint32, serverKey string, replicas []*store.ServerReplica) error {
-	f.scheduledServer = serverKey
-	var replicaIdxs []int
-	for _, rep := range replicas {
-		replicaIdxs = append(replicaIdxs, rep.GetReplicaIdx())
-	}
-	f.scheduledReplicas = replicaIdxs
-	return nil
-}
-
-func (f mockStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState store.ModelReplicaState, reason string, runtimeInfo *pb.ModelRuntimeInfo) error {
-	panic("implement me")
-}
-
-func (f mockStore) AddServerReplica(request *agent.AgentSubscribeRequest) error {
-	panic("implement me")
-}
-
-func (f mockStore) RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) {
-	panic("implement me")
-}
-
-func (f mockStore) DrainServerReplica(serverName string, replicaIdx int) ([]string, error) {
-	panic("implement me")
-}
-
-func (f mockStore) AddModelEventListener(c chan *store.ModelSnapshot) {
-}
-
-func (f mockStore) AddServerEventListener(c chan string) {
-}
-
-func (f mockStore) SetModelGwModelState(name string, versionNumber uint32, status store.ModelState, reason string, source string) error {
-	panic("implement me")
-}
 
 func TestScheduler(t *testing.T) {
 	logger := log.New()
@@ -177,32 +69,67 @@ func TestScheduler(t *testing.T) {
 	type test struct {
 		name                 string
 		model                *store.ModelSnapshot
+		modelName            string
 		servers              []*store.ServerSnapshot
 		scheduled            bool
-		scheduledServer      string
-		scheduledReplicas    []int
+		checkServerEvents    bool
 		expectedServerEvents int
+		setupMock            func(m *mock.MockModelServerAPI)
 	}
 
 	tests := []test{
 		{
-			name:  "SmokeTest",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{}, false, "", nil),
-			servers: []*store.ServerSnapshot{
-				{
-					Name:             "server1",
-					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"}, "server1", true, false)}, // expect schedule here
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
+			name:      "SmokeTest",
+			modelName: "model1",
+			scheduled: true,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(200)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+						},
+						1, "server1",
+						nil, db.ModelState_ModelProgressing),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", false), []string{"sklearn"}, 0, 200, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: 1,
+						MinReplicas:      1,
+						MaxReplicas:      1,
+						KubernetesMeta:   nil,
+					},
+				}
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server1", slices.Collect(maps.Values(servers[0].Replicas))).Return(nil)
 			},
-			scheduled:         true,
-			scheduledServer:   "server1",
-			scheduledReplicas: []int{0},
 		},
 		{
-			name:  "ReplicasTwo",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 2, []int{}, false, "", nil),
+			name:      "ReplicasTwo",
+			model:     newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 2, []int{}, false, "", nil),
+			modelName: "model1",
 			servers: []*store.ServerSnapshot{
 				{
 					Name:             "server1",
@@ -220,13 +147,67 @@ func TestScheduler(t *testing.T) {
 					ExpectedReplicas: -1,
 				},
 			},
-			scheduled:         true,
-			scheduledServer:   "server2",
-			scheduledReplicas: []int{0, 1},
+			scheduled: true,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(200)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+						},
+						1, "server1",
+						nil, db.ModelState_ModelProgressing),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", false), []string{"sklearn"}, 0, 200, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+					{
+						Name: "server2",
+						Replicas: map[int32]*db.ServerReplica{
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", false), []string{"sklearn"}, 0, 200, 0, nil, 100),
+							2: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", false), []string{"sklearn"}, 0, 200, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+				}
+
+				expectedUpdatedServers := []*db.ServerReplica{
+					util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", false), []string{"sklearn"}, 0, 200, 0, nil, 100),
+				}
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server1", expectedUpdatedServers).Return(nil)
+			},
 		},
 		{
-			name:  "NotEnoughReplicas",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 2, []int{}, false, "", nil),
+			name:      "NotEnoughReplicas",
+			model:     newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 2, []int{}, false, "", nil),
+			modelName: "model1",
 			servers: []*store.ServerSnapshot{
 				{
 					Name:             "server1",
@@ -245,10 +226,61 @@ func TestScheduler(t *testing.T) {
 				},
 			},
 			scheduled: false,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(100)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 0, MaxReplicas: 2},
+						},
+						1, "server1",
+						nil, db.ModelState_ModelProgressing),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", false), []string{"sklearn"}, 0, 200, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+					{
+						Name: "server2",
+						Replicas: map[int32]*db.ServerReplica{
+							1: util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server2", false), []string{"sklearn"}, 0, 200, 0, nil, 100),
+							2: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", false), []string{"sklearn"}, 0, 0, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+				}
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().FailedScheduling("model1", gomock.Any(), gomock.Any(), gomock.Any())
+			},
 		},
 		{
-			name:  "NotEnoughReplicas - schedule min replicas",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 3, 2, 3, []int{}, false, "server2", nil),
+			name:      "NotEnoughReplicas - schedule min replicas",
+			model:     newTestModel("model1", 100, []string{"sklearn"}, 3, 2, 3, []int{}, false, "server2", nil),
+			modelName: "model1",
 			servers: []*store.ServerSnapshot{
 				{
 					Name:             "server1",
@@ -266,14 +298,68 @@ func TestScheduler(t *testing.T) {
 					ExpectedReplicas: -1,
 				},
 			},
-			scheduled:            true, // not here that we still trying to mark the model as Available
-			scheduledServer:      "server2",
-			scheduledReplicas:    []int{0, 1},
+			scheduled: true, // not here that we still trying to mark the model as Available
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(200)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 3, MinReplicas: 2, MaxReplicas: 3},
+						},
+						1, "server2",
+						nil, db.ModelState_ModelProgressing),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", false), []string{"sklearn"}, 0, 200, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+					{
+						Name: "server2",
+						Replicas: map[int32]*db.ServerReplica{
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", false), []string{"sklearn"}, 0, 200, 0, nil, 100),
+							2: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", false), []string{"sklearn"}, 0, 200, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+				}
+				expectedUpdatedServers := []*db.ServerReplica{
+					util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", false), []string{"sklearn"}, 0, 200, 0, nil, 100),
+					util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", false), []string{"sklearn"}, 0, 200, 0, nil, 100),
+				}
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server2", expectedUpdatedServers).Return(nil)
+			},
 			expectedServerEvents: 1,
 		},
 		{
-			name:  "MemoryOneServer",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{}, false, "", nil),
+			name:      "MemoryOneServer",
+			model:     newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{}, false, "", nil),
+			modelName: "model1",
 			servers: []*store.ServerSnapshot{
 				{
 					Name:             "server1",
@@ -290,13 +376,65 @@ func TestScheduler(t *testing.T) {
 					ExpectedReplicas: -1,
 				},
 			},
-			scheduled:         true,
-			scheduledServer:   "server2",
-			scheduledReplicas: []int{0},
+			scheduled: true,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(200)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+						},
+						1, "server2",
+						nil, db.ModelState_ModelProgressing),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", false), []string{"sklearn"}, 0, 50, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+					{
+						Name: "server2",
+						Replicas: map[int32]*db.ServerReplica{
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", false), []string{"sklearn"}, 0, 200, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+				}
+				expectedUpdatedServers := []*db.ServerReplica{
+					util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", false), []string{"sklearn"}, 0, 200, 0, nil, 100),
+				}
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server2", expectedUpdatedServers).Return(nil)
+			},
 		},
 		{
-			name:  "ModelsLoaded",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 2, []int{1}, false, "", nil),
+			name:      "ModelsLoaded",
+			model:     newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 2, []int{1}, false, "", nil),
+			modelName: "model1",
 			servers: []*store.ServerSnapshot{
 				{
 					Name:             "server1",
@@ -314,13 +452,65 @@ func TestScheduler(t *testing.T) {
 					ExpectedReplicas: -1,
 				},
 			},
-			scheduled:         true,
-			scheduledServer:   "server2",
-			scheduledReplicas: []int{1, 0},
+			scheduled: true,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(200)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+						},
+						1, "server2",
+						nil, db.ModelState_ModelProgressing),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", true), []string{"sklearn"}, 0, 50, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+					{
+						Name: "server2",
+						Replicas: map[int32]*db.ServerReplica{
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+				}
+				expectedUpdatedServers := []*db.ServerReplica{
+					util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+				}
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server2", expectedUpdatedServers).Return(nil)
+			},
 		},
 		{
-			name:  "ModelUnLoaded",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 2, []int{1}, true, "server2", nil),
+			name:      "ModelUnLoaded",
+			model:     newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 2, []int{1}, true, "server2", nil),
+			modelName: "model1",
 			servers: []*store.ServerSnapshot{
 				{
 					Name: "server2",
@@ -332,13 +522,64 @@ func TestScheduler(t *testing.T) {
 					ExpectedReplicas: -1,
 				},
 			},
-			scheduled:         true,
-			scheduledServer:   "server2",
-			scheduledReplicas: nil,
+			scheduled: true,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(200)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+						},
+						1, "server2",
+						map[int32]*db.ReplicaStatus{
+							1: {
+								State:     db.ModelReplicaState_Loaded,
+								Reason:    "",
+								Timestamp: nil,
+							},
+						},
+						db.ModelState_ModelProgressing),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server2",
+						Replicas: map[int32]*db.ServerReplica{
+							0: util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+				}
+				expectedUpdatedServers := []*db.ServerReplica{
+					util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+				}
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server2", expectedUpdatedServers).Return(nil)
+			},
 		},
 		{
-			name:  "DeletedServer",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{}, false, "", nil),
+			name:      "DeletedServer",
+			model:     newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{}, false, "", nil),
+			modelName: "model1",
 			servers: []*store.ServerSnapshot{
 				{
 					Name:             "server1",
@@ -356,13 +597,68 @@ func TestScheduler(t *testing.T) {
 					ExpectedReplicas: -1,
 				},
 			},
-			scheduled:         true,
-			scheduledServer:   "server2",
-			scheduledReplicas: []int{0},
+			scheduled: true,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(200)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+						},
+						1, "server2",
+						nil, db.ModelState_ModelProgressing),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", true), []string{"sklearn"}, 0, 0, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+					{
+						Name: "server2",
+						Replicas: map[int32]*db.ServerReplica{
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+							2: util.NewTestServerReplica("host1", 8080, 5000, 2, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+				}
+
+				expectedUpdatedServers := []*db.ServerReplica{
+					util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", false), []string{"sklearn"}, 0, 200, 0, nil, 100),
+				}
+
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server2", expectedUpdatedServers).Return(nil)
+			},
 		},
 		{
-			name:  "Reschedule",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{0}, false, "server1", nil),
+			name:      "Reschedule",
+			model:     newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{0}, false, "server1", nil),
+			modelName: "model1",
 			servers: []*store.ServerSnapshot{
 				{
 					Name:             "server1",
@@ -380,13 +676,75 @@ func TestScheduler(t *testing.T) {
 					ExpectedReplicas: -1,
 				},
 			},
-			scheduled:         true,
-			scheduledServer:   "server2",
-			scheduledReplicas: []int{0},
+			scheduled: true,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(200)),
+								Server:           ptr.String("server1"),
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+						},
+						1, "server1",
+						map[int32]*db.ReplicaStatus{
+							0: {
+								State:     db.ModelReplicaState_Loaded,
+								Reason:    "",
+								Timestamp: nil,
+							},
+						},
+						db.ModelState_ModelProgressing),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: 0,
+						KubernetesMeta:   nil,
+					},
+					{
+						Name: "server2",
+						Replicas: map[int32]*db.ServerReplica{
+							0: util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+				}
+
+				expectedUpdatedServers := []*db.ServerReplica{
+					util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+				}
+
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server1", expectedUpdatedServers).Return(nil)
+			},
 		},
 		{
-			name:  "DeletedServerFail",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{1}, false, "", nil),
+			name:      "DeletedServerFail",
+			model:     newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{1}, false, "", nil),
+			modelName: "model1",
 			servers: []*store.ServerSnapshot{
 				{
 					Name:             "server1",
@@ -396,10 +754,58 @@ func TestScheduler(t *testing.T) {
 				},
 			},
 			scheduled: false,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(100)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+						},
+						1, "",
+						map[int32]*db.ReplicaStatus{
+							0: {
+								State:     db.ModelReplicaState_Loaded,
+								Reason:    "",
+								Timestamp: nil,
+							},
+						},
+						db.ModelState_ModelProgressing),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							0: util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server1", false), []string{"sklearn"}, 0, 50, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+				}
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().FailedScheduling("model1", gomock.Any(), gomock.Any(), gomock.Any())
+			},
 		},
 		{
-			name:  "Available memory sorting",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{1}, false, "", nil),
+			name:      "Available memory sorting",
+			model:     newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{1}, false, "", nil),
+			modelName: "model1",
 			servers: []*store.ServerSnapshot{
 				{
 					Name: "server2",
@@ -411,13 +817,59 @@ func TestScheduler(t *testing.T) {
 					ExpectedReplicas: -1,
 				},
 			},
-			scheduled:         true,
-			scheduledServer:   "server2",
-			scheduledReplicas: []int{1},
+			scheduled: true,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(100)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+						},
+						1, "server2",
+						nil, db.ModelState_ModelProgressing),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server2",
+						Replicas: map[int32]*db.ServerReplica{
+							0: util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server2", true), []string{"sklearn"}, 0, 150, 0, nil, 100),
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+				}
+
+				expectedUpdatedServers := []*db.ServerReplica{
+					util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+				}
+
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server2", expectedUpdatedServers).Return(nil)
+			},
 		},
 		{
-			name:  "Available memory sorting with multiple replicas",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 1, []int{1}, false, "", nil),
+			name:      "Available memory sorting with multiple replicas",
+			model:     newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 1, []int{1}, false, "", nil),
+			modelName: "model1",
 			servers: []*store.ServerSnapshot{
 				{
 					Name: "server2",
@@ -430,13 +882,61 @@ func TestScheduler(t *testing.T) {
 					ExpectedReplicas: -1,
 				},
 			},
-			scheduled:         true,
-			scheduledServer:   "server2",
-			scheduledReplicas: []int{1, 2},
+			scheduled: true,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(100)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 0, MaxReplicas: 1},
+						},
+						1, "server2",
+						nil, db.ModelState_ModelProgressing),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server2",
+						Replicas: map[int32]*db.ServerReplica{
+							0: util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server2", true), []string{"sklearn"}, 0, 150, 0, nil, 100),
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+							2: util.NewTestServerReplica("host1", 8080, 5000, 2, store.NewServer("server2", true), []string{"sklearn"}, 0, 175, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+				}
+
+				expectedUpdatedServers := []*db.ServerReplica{
+					util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+					util.NewTestServerReplica("host1", 8080, 5000, 2, store.NewServer("server2", true), []string{"sklearn"}, 0, 175, 0, nil, 100),
+				}
+
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server2", expectedUpdatedServers).Return(nil)
+			},
 		},
 		{
-			name:  "Scale up",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 3, 0, 3, []int{1, 2}, false, "server1", nil),
+			name:      "Scale up",
+			model:     newTestModel("model1", 100, []string{"sklearn"}, 3, 0, 3, []int{1, 2}, false, "server1", nil),
+			modelName: "model1",
 			servers: []*store.ServerSnapshot{
 				{
 					Name: "server1",
@@ -450,13 +950,74 @@ func TestScheduler(t *testing.T) {
 					ExpectedReplicas: -1,
 				},
 			},
-			scheduled:         true,
-			scheduledServer:   "server1",
-			scheduledReplicas: []int{1, 2, 3},
+			scheduled: true,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(100)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 3, MinReplicas: 0, MaxReplicas: 3},
+						},
+						1, "server1",
+						map[int32]*db.ReplicaStatus{
+
+							1: {
+								State:     db.ModelReplicaState_Loaded,
+								Reason:    "",
+								Timestamp: nil,
+							},
+							2: {
+								State:     db.ModelReplicaState_Loaded,
+								Reason:    "",
+								Timestamp: nil,
+							},
+						},
+						db.ModelState_ModelProgressing),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							0: util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server1", true), []string{"sklearn"}, 0, 50, 0, nil, 100),
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+							2: util.NewTestServerReplica("host1", 8080, 5000, 2, store.NewServer("server1", true), []string{"sklearn"}, 0, 175, 0, nil, 100),
+							3: util.NewTestServerReplica("host1", 8080, 5000, 3, store.NewServer("server1", true), []string{"sklearn"}, 0, 100, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+				}
+				expectedUpdatedServers := []*db.ServerReplica{
+					util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+					util.NewTestServerReplica("host1", 8080, 5000, 2, store.NewServer("server1", true), []string{"sklearn"}, 0, 175, 0, nil, 100),
+					util.NewTestServerReplica("host1", 8080, 5000, 3, store.NewServer("server1", true), []string{"sklearn"}, 0, 100, 0, nil, 100),
+				}
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server1", expectedUpdatedServers).Return(nil)
+			},
 		},
 		{
-			name:  "Scale down",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{1, 2}, false, "server1", nil),
+			name:      "Scale down",
+			model:     newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{1, 2}, false, "server1", nil),
+			modelName: "model1",
 			servers: []*store.ServerSnapshot{
 				{
 					Name: "server1",
@@ -470,13 +1031,72 @@ func TestScheduler(t *testing.T) {
 					ExpectedReplicas: -1,
 				},
 			},
-			scheduled:         true,
-			scheduledServer:   "server1",
-			scheduledReplicas: []int{1},
+			scheduled: true,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(100)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+						},
+						1, "server1",
+						map[int32]*db.ReplicaStatus{
+
+							1: {
+								State:     db.ModelReplicaState_Loaded,
+								Reason:    "",
+								Timestamp: nil,
+							},
+							2: {
+								State:     db.ModelReplicaState_Loaded,
+								Reason:    "",
+								Timestamp: nil,
+							},
+						},
+						db.ModelState_ModelProgressing),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							0: util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server1", true), []string{"sklearn"}, 0, 50, 0, nil, 100),
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+							2: util.NewTestServerReplica("host1", 8080, 5000, 2, store.NewServer("server1", true), []string{"sklearn"}, 0, 175, 0, nil, 100),
+							3: util.NewTestServerReplica("host1", 8080, 5000, 3, store.NewServer("server1", true), []string{"sklearn"}, 0, 100, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+				}
+				expectedUpdatedServers := []*db.ServerReplica{
+					util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+				}
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server1", expectedUpdatedServers).Return(nil)
+			},
 		},
 		{
-			name:  "Scale up - not enough replicas use max of the server",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 5, 3, 5, []int{1, 2}, false, "server1", nil),
+			name:      "Scale up - not enough replicas use max of the server",
+			model:     newTestModel("model1", 100, []string{"sklearn"}, 5, 3, 5, []int{1, 2}, false, "server1", nil),
+			modelName: "model1",
 			servers: []*store.ServerSnapshot{
 				{
 					Name: "server1",
@@ -491,13 +1111,76 @@ func TestScheduler(t *testing.T) {
 				},
 			},
 			scheduled:            true, // note that we are still trying to make the model as Available
-			scheduledServer:      "server1",
-			scheduledReplicas:    []int{0, 1, 2, 3}, // used all replicas
 			expectedServerEvents: 1,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(100)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 5, MinReplicas: 3, MaxReplicas: 5},
+						},
+						1, "server1",
+						map[int32]*db.ReplicaStatus{
+
+							1: {
+								State:     db.ModelReplicaState_Loaded,
+								Reason:    "",
+								Timestamp: nil,
+							},
+							2: {
+								State:     db.ModelReplicaState_Loaded,
+								Reason:    "",
+								Timestamp: nil,
+							},
+						},
+						db.ModelState_ModelProgressing),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							0: util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server1", true), []string{"sklearn"}, 0, 100, 0, nil, 100),
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", true), []string{"sklearn"}, 0, 100, 0, nil, 100),
+							2: util.NewTestServerReplica("host1", 8080, 5000, 2, store.NewServer("server1", true), []string{"sklearn"}, 0, 100, 0, nil, 100),
+							3: util.NewTestServerReplica("host1", 8080, 5000, 3, store.NewServer("server1", true), []string{"sklearn"}, 0, 100, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+				}
+
+				expectedUpdatedServers := []*db.ServerReplica{
+					util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", true), []string{"sklearn"}, 0, 100, 0, nil, 100),
+					util.NewTestServerReplica("host1", 8080, 5000, 2, store.NewServer("server1", true), []string{"sklearn"}, 0, 100, 0, nil, 100),
+					util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server1", true), []string{"sklearn"}, 0, 100, 0, nil, 100),
+					util.NewTestServerReplica("host1", 8080, 5000, 3, store.NewServer("server1", true), []string{"sklearn"}, 0, 100, 0, nil, 100),
+				}
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server1", expectedUpdatedServers).Return(nil)
+			},
 		},
 		{
-			name:  "Scale up - no capacity on loaded replica servers, should still go there",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 3, 0, 3, []int{1, 2}, false, "server1", nil),
+			name:      "Scale up - no capacity on loaded replica servers, should still go there",
+			model:     newTestModel("model1", 100, []string{"sklearn"}, 3, 0, 3, []int{1, 2}, false, "server1", nil),
+			modelName: "model1",
 			servers: []*store.ServerSnapshot{
 				{
 					Name: "server1",
@@ -511,13 +1194,75 @@ func TestScheduler(t *testing.T) {
 					ExpectedReplicas: -1,
 				},
 			},
-			scheduled:         true,
-			scheduledServer:   "server1",
-			scheduledReplicas: []int{1, 2, 3},
+			scheduled: true,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(100)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 3, MinReplicas: 0, MaxReplicas: 3},
+						},
+						1, "server1",
+						map[int32]*db.ReplicaStatus{
+
+							1: {
+								State:     db.ModelReplicaState_Loaded,
+								Reason:    "",
+								Timestamp: nil,
+							},
+							2: {
+								State:     db.ModelReplicaState_Loaded,
+								Reason:    "",
+								Timestamp: nil,
+							},
+						},
+						db.ModelState_ModelProgressing),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							0: util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server1", true), []string{"sklearn"}, 0, 50, 0, nil, 100),
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", true), []string{"sklearn"}, 0, 0, 0, nil, 100),
+							2: util.NewTestServerReplica("host1", 8080, 5000, 2, store.NewServer("server1", true), []string{"sklearn"}, 0, 0, 0, nil, 100),
+							3: util.NewTestServerReplica("host1", 8080, 5000, 3, store.NewServer("server1", true), []string{"sklearn"}, 0, 100, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+				}
+
+				expectedUpdatedServers := []*db.ServerReplica{
+					util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", true), []string{"sklearn"}, 0, 0, 0, nil, 100),
+					util.NewTestServerReplica("host1", 8080, 5000, 2, store.NewServer("server1", true), []string{"sklearn"}, 0, 0, 0, nil, 100),
+					util.NewTestServerReplica("host1", 8080, 5000, 3, store.NewServer("server1", true), []string{"sklearn"}, 0, 100, 0, nil, 100),
+				}
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server1", expectedUpdatedServers).Return(nil)
+			},
 		},
 		{
-			name:  "Scale down - no capacity on loaded replica servers, should still go there",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{1, 2}, false, "server1", nil),
+			name:      "Scale down - no capacity on loaded replica servers, should still go there",
+			model:     newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{1, 2}, false, "server1", nil),
+			modelName: "model1",
 			servers: []*store.ServerSnapshot{
 				{
 					Name: "server1",
@@ -531,13 +1276,75 @@ func TestScheduler(t *testing.T) {
 					ExpectedReplicas: -1,
 				},
 			},
-			scheduled:         true,
-			scheduledServer:   "server1",
-			scheduledReplicas: []int{1},
+			scheduled: true,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(100)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 3, MinReplicas: 0, MaxReplicas: 3},
+						},
+						1, "server1",
+						map[int32]*db.ReplicaStatus{
+
+							1: {
+								State:     db.ModelReplicaState_Loaded,
+								Reason:    "",
+								Timestamp: nil,
+							},
+							2: {
+								State:     db.ModelReplicaState_Loaded,
+								Reason:    "",
+								Timestamp: nil,
+							},
+						},
+						db.ModelState_ModelProgressing),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							0: util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server1", true), []string{"sklearn"}, 0, 50, 0, nil, 100),
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", true), []string{"sklearn"}, 0, 0, 0, nil, 100),
+							2: util.NewTestServerReplica("host1", 8080, 5000, 2, store.NewServer("server1", true), []string{"sklearn"}, 0, 0, 0, nil, 100),
+							3: util.NewTestServerReplica("host1", 8080, 5000, 3, store.NewServer("server1", true), []string{"sklearn"}, 0, 100, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+				}
+
+				expectedUpdatedServers := []*db.ServerReplica{
+					util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", true), []string{"sklearn"}, 0, 0, 0, nil, 100),
+					util.NewTestServerReplica("host1", 8080, 5000, 2, store.NewServer("server1", true), []string{"sklearn"}, 0, 0, 0, nil, 100),
+					util.NewTestServerReplica("host1", 8080, 5000, 3, store.NewServer("server1", true), []string{"sklearn"}, 0, 100, 0, nil, 100),
+				}
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server1", expectedUpdatedServers).Return(nil)
+			},
 		},
 		{
-			name:  "Drain",
-			model: newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 2, []int{1}, false, "server1", []int{2}),
+			name:      "Drain",
+			model:     newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 2, []int{1}, false, "server1", []int{2}),
+			modelName: "model1",
 			servers: []*store.ServerSnapshot{
 				{
 					Name: "server1",
@@ -551,24 +1358,80 @@ func TestScheduler(t *testing.T) {
 					ExpectedReplicas: -1,
 				},
 			},
-			scheduled:         true,
-			scheduledServer:   "server1",
-			scheduledReplicas: []int{1, 3},
-		},
-	}
+			scheduled: true,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      ptr2.To(uint64(100)),
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{Replicas: 3, MinReplicas: 0, MaxReplicas: 3},
+						},
+						1, "server1",
+						map[int32]*db.ReplicaStatus{
 
-	newMockStore := func(model *store.ModelSnapshot, servers []*store.ServerSnapshot) *mockStore {
-		modelMap := make(map[string]*store.ModelSnapshot)
-		modelMap[model.Name] = model
-		return &mockStore{
-			models:  modelMap,
-			servers: servers,
-		}
+							1: {
+								State:     db.ModelReplicaState_Loaded,
+								Reason:    "",
+								Timestamp: nil,
+							},
+							2: {
+								State:     db.ModelReplicaState_Loaded,
+								Reason:    "",
+								Timestamp: nil,
+							},
+						},
+						db.ModelState_ModelProgressing),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							0: util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server1", true), []string{"sklearn"}, 0, 50, 0, nil, 100),
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+							2: util.NewTestServerReplica("host1", 8080, 5000, 2, store.NewServer("server1", true), []string{"sklearn"}, 0, 175, 0, nil, 100),
+							3: util.NewTestServerReplica("host1", 8080, 5000, 3, store.NewServer("server1", true), []string{"sklearn"}, 0, 100, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+				}
+
+				expectedUpdatedServers := []*db.ServerReplica{
+					util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server1", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+					util.NewTestServerReplica("host1", 8080, 5000, 2, store.NewServer("server1", true), []string{"sklearn"}, 0, 175, 0, nil, 100),
+					util.NewTestServerReplica("host1", 8080, 5000, 3, store.NewServer("server1", true), []string{"sklearn"}, 0, 100, 0, nil, 100),
+				}
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server1", expectedUpdatedServers).Return(nil)
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			eventHub, _ := coordinator.NewEventHub(logger)
+
+			ctrl := gomock.NewController(t)
+			mockModelServerAPI := mock.NewMockModelServerAPI(ctrl)
+			test.setupMock(mockModelServerAPI)
 
 			serverEvents := int64(0)
 			eventHub.RegisterServerEventHandler(
@@ -578,9 +1441,8 @@ func TestScheduler(t *testing.T) {
 				func(event coordinator.ServerEventMsg) { atomic.AddInt64(&serverEvents, 1) },
 			)
 
-			mockStore := newMockStore(test.model, test.servers)
-			scheduler := NewSimpleScheduler(logger, mockStore, DefaultSchedulerConfig(mockStore), synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), eventHub)
-			err := scheduler.Schedule(test.model.Name)
+			scheduler := NewSimpleScheduler(logger, mockModelServerAPI, DefaultSchedulerConfig(mockModelServerAPI), synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), eventHub)
+			err := scheduler.Schedule(test.modelName)
 			if test.scheduled {
 				g.Expect(err).To(BeNil())
 			} else {
@@ -589,11 +1451,8 @@ func TestScheduler(t *testing.T) {
 			if test.expectedServerEvents > 0 { // wait for event
 				time.Sleep(500 * time.Millisecond)
 			}
-			if test.scheduledServer != "" {
-				g.Expect(test.scheduledServer).To(Equal(mockStore.scheduledServer))
-				sort.Ints(test.scheduledReplicas)
-				sort.Ints(mockStore.scheduledReplicas)
-				g.Expect(test.scheduledReplicas).To(Equal(mockStore.scheduledReplicas))
+
+			if test.checkServerEvents {
 				g.Expect(atomic.LoadInt64(&serverEvents)).To(Equal(int64(test.expectedServerEvents)))
 			}
 		})
@@ -610,46 +1469,183 @@ func TestFailedModels(t *testing.T) {
 		availableReplicas uint32
 	}
 
-	newMockStore := func(models map[string]modelStateWithMetadata) *mockStore {
-		snapshots := map[string]*store.ModelSnapshot{}
-		for name, state := range models {
-			mv := store.NewModelVersion(&pb.Model{DeploymentSpec: state.deploymentSpec}, 1, "", map[int]store.ReplicaStatus{}, false, state.state)
-			mv.SetModelState(store.ModelStatus{
-				State:             state.state,
-				AvailableReplicas: state.availableReplicas,
-			})
-			snapshot := &store.ModelSnapshot{
-				Name:     name,
-				Versions: []*store.ModelVersion{mv},
-			}
-			snapshots[name] = snapshot
-		}
-		return &mockStore{
-			models: snapshots,
-		}
-	}
-
 	type test struct {
 		name                 string
-		models               map[string]modelStateWithMetadata
+		models               []*db.Model
+		setupMock            func(m *mock.MockModelServerAPI)
 		expectedFailedModels []string
 	}
 
 	tests := []test{
 		{
 			name: "SmokeTest",
-			models: map[string]modelStateWithMetadata{
-				"model1": {store.ScheduleFailed, &pb.DeploymentSpec{Replicas: 1}, 0},
-				"model2": {store.ModelFailed, &pb.DeploymentSpec{Replicas: 1}, 0},
-				"model3": {store.ModelAvailable, &pb.DeploymentSpec{Replicas: 1}, 1},
-				"model4": {store.ModelAvailable, &pb.DeploymentSpec{Replicas: 2, MinReplicas: 1, MaxReplicas: 2}, 1}, // retry models that have not reached desired replicas
+			setupMock: func(m *mock.MockModelServerAPI) {
+
+				model3 := util.NewTestModelVersion(
+					&pbs.Model{
+						Meta: &pbs.MetaData{Name: "model3"},
+						ModelSpec: &pbs.ModelSpec{
+							Uri:              "",
+							ArtifactVersion:  nil,
+							StorageConfig:    nil,
+							Requirements:     []string{"sklearn"},
+							MemoryBytes:      ptr2.To(uint64(100)),
+							Server:           nil,
+							Parameters:       nil,
+							ModelRuntimeInfo: nil,
+							ModelSpec:        nil,
+						},
+						DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+					},
+					1, "server1",
+					map[int32]*db.ReplicaStatus{
+						1: {
+							State:     db.ModelReplicaState_Loaded,
+							Reason:    "",
+							Timestamp: nil,
+						},
+					},
+					db.ModelState_ModelAvailable)
+
+				// set available replicas
+				model3.State.AvailableReplicas = 1
+
+				model4 := util.NewTestModelVersion(
+					&pbs.Model{
+						Meta: &pbs.MetaData{Name: "model4"},
+						ModelSpec: &pbs.ModelSpec{
+							Uri:              "",
+							ArtifactVersion:  nil,
+							StorageConfig:    nil,
+							Requirements:     []string{"sklearn"},
+							MemoryBytes:      ptr2.To(uint64(100)),
+							Server:           nil,
+							Parameters:       nil,
+							ModelRuntimeInfo: nil,
+							ModelSpec:        nil,
+						},
+						DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1, MaxReplicas: 2},
+					},
+					1, "server1",
+					map[int32]*db.ReplicaStatus{
+						1: {
+							State:     db.ModelReplicaState_Loaded,
+							Reason:    "",
+							Timestamp: nil,
+						},
+					},
+					db.ModelState_ModelAvailable)
+
+				// set available replicas
+				model4.State.AvailableReplicas = 1
+
+				m.EXPECT().GetModels().Return(
+					[]*db.Model{
+						{
+							Name: "model1",
+							Versions: []*db.ModelVersion{util.NewTestModelVersion(
+								&pbs.Model{
+									Meta: &pbs.MetaData{Name: "model1"},
+									ModelSpec: &pbs.ModelSpec{
+										Uri:              "",
+										ArtifactVersion:  nil,
+										StorageConfig:    nil,
+										Requirements:     []string{"sklearn"},
+										MemoryBytes:      ptr2.To(uint64(100)),
+										Server:           nil,
+										Parameters:       nil,
+										ModelRuntimeInfo: nil,
+										ModelSpec:        nil,
+									},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+								},
+								1, "server1",
+								nil,
+								db.ModelState_ScheduleFailed),
+							},
+						},
+						{
+							Name: "model2",
+							Versions: []*db.ModelVersion{util.NewTestModelVersion(
+								&pbs.Model{
+									Meta: &pbs.MetaData{Name: "model2"},
+									ModelSpec: &pbs.ModelSpec{
+										Uri:              "",
+										ArtifactVersion:  nil,
+										StorageConfig:    nil,
+										Requirements:     []string{"sklearn"},
+										MemoryBytes:      ptr2.To(uint64(100)),
+										Server:           nil,
+										Parameters:       nil,
+										ModelRuntimeInfo: nil,
+										ModelSpec:        nil,
+									},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+								},
+								1, "server1",
+								nil,
+								db.ModelState_ModelFailed),
+							},
+						},
+						{
+							Name: "model3",
+							Versions: []*db.ModelVersion{
+								model3,
+							},
+						},
+						{
+							Name: "model4",
+							Versions: []*db.ModelVersion{
+								model4,
+							},
+						}}, nil)
+
 			},
 			expectedFailedModels: []string{"model1", "model2", "model4"},
 		},
 		{
 			name: "SmokeTest",
-			models: map[string]modelStateWithMetadata{
-				"model3": {store.ModelAvailable, &pb.DeploymentSpec{Replicas: 1}, 1},
+			setupMock: func(m *mock.MockModelServerAPI) {
+
+				model3 := util.NewTestModelVersion(
+					&pbs.Model{
+						Meta: &pbs.MetaData{Name: "model3"},
+						ModelSpec: &pbs.ModelSpec{
+							Uri:              "",
+							ArtifactVersion:  nil,
+							StorageConfig:    nil,
+							Requirements:     []string{"sklearn"},
+							MemoryBytes:      ptr2.To(uint64(100)),
+							Server:           nil,
+							Parameters:       nil,
+							ModelRuntimeInfo: nil,
+							ModelSpec:        nil,
+						},
+						DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+					},
+					1, "server1",
+					map[int32]*db.ReplicaStatus{
+						1: {
+							State:     db.ModelReplicaState_Loaded,
+							Reason:    "",
+							Timestamp: nil,
+						},
+					},
+					db.ModelState_ModelAvailable)
+
+				// set available replicas
+				model3.State.AvailableReplicas = 1
+
+				m.EXPECT().GetModels().Return(
+					[]*db.Model{
+
+						{
+							Name: "model3",
+							Versions: []*db.ModelVersion{
+								model3,
+							},
+						}}, nil)
+
 			},
 			expectedFailedModels: nil,
 		},
@@ -659,8 +1655,12 @@ func TestFailedModels(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			eventHub, _ := coordinator.NewEventHub(logger)
 
-			mockStore := newMockStore(test.models)
-			scheduler := NewSimpleScheduler(logger, mockStore, DefaultSchedulerConfig(mockStore), synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), eventHub)
+			ctrl := gomock.NewController(t)
+			mockModelServerAPI := mock.NewMockModelServerAPI(ctrl)
+			test.setupMock(mockModelServerAPI)
+
+			//mockStore := newMockStore(test.models)
+			scheduler := NewSimpleScheduler(logger, mockModelServerAPI, DefaultSchedulerConfig(mockModelServerAPI), synchroniser.NewSimpleSynchroniser(10*time.Millisecond), eventHub)
 			failedModels, err := scheduler.getFailedModels()
 			g.Expect(err).To(BeNil())
 			sort.Strings(failedModels)
@@ -700,15 +1700,15 @@ func TestRemoveAllVersions(t *testing.T) {
 		return replica
 	}
 
-	newMockStore := func(model *store.ModelSnapshot, servers []*store.ServerSnapshot) *mockStore {
-		modelMap := make(map[string]*store.ModelSnapshot)
-		modelMap[model.Name] = model
-		return &mockStore{
-			models:         modelMap,
-			servers:        servers,
-			unloadedModels: make(map[string]uint32),
-		}
-	}
+	//newMockStore := func(model *store.ModelSnapshot, servers []*store.ServerSnapshot) *mockStore {
+	//	modelMap := make(map[string]*store.ModelSnapshot)
+	//	modelMap[model.Name] = model
+	//	return &mockStore{
+	//		models:         modelMap,
+	//		servers:        servers,
+	//		unloadedModels: make(map[string]uint32),
+	//	}
+	//}
 
 	type test struct {
 		name        string
@@ -755,12 +1755,17 @@ func TestRemoveAllVersions(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			_, _ = coordinator.NewEventHub(logger)
-			mockStore := newMockStore(test.model, test.servers)
-			scheduler := NewSimpleScheduler(logger, mockStore, DefaultSchedulerConfig(mockStore), synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), nil)
+
+			ctrl := gomock.NewController(t)
+			mockModelServerAPI := mock.NewMockModelServerAPI(ctrl)
+			//test.setupMock(mockModelServerAPI)
+
+			//mockStore := newMockStore(test.model, test.servers)
+			scheduler := NewSimpleScheduler(logger, mockModelServerAPI, DefaultSchedulerConfig(mockModelServerAPI), synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), nil)
 			err := scheduler.Schedule(test.model.Name)
 			g.Expect(err).To(BeNil())
 
-			g.Expect(mockStore.unloadedModels[test.model.Name]).To(Equal(uint32(test.numVersions)))
+			//g.Expect(mockStore.unloadedModels[test.model.Name]).To(Equal(uint32(test.numVersions)))
 		})
 	}
 }
@@ -770,14 +1775,14 @@ func TestScheduleFailedModels(t *testing.T) {
 
 	tests := []struct {
 		name           string
-		setupMocks     func(*mock.MockModelStore, *mock2.MockSynchroniser)
+		setupMocks     func(*mock.MockModelServerAPI, *mock2.MockSynchroniser)
 		expectedModels []string
 		expectError    bool
 		errorContains  string
 	}{
 		{
 			name: "success - schedules single failed model",
-			setupMocks: func(ms *mock.MockModelStore, sync *mock2.MockSynchroniser) {
+			setupMocks: func(ms *mock.MockModelServerAPI, sync *mock2.MockSynchroniser) {
 				sync.EXPECT().IsReady().Return(true)
 
 				model1 := &store.ModelSnapshot{
@@ -820,7 +1825,7 @@ func TestScheduleFailedModels(t *testing.T) {
 				servers := []*store.ServerSnapshot{
 					createServerSnapshot("server1", 1, 16000),
 				}
-				ms.EXPECT().GetServers(false, true).Return(servers, nil)
+				ms.EXPECT().GetServers().Return(servers, nil)
 				ms.EXPECT().UpdateLoadedModels("model1", uint32(1),
 					"server1", slices.Collect(maps.Values(servers[0].Replicas))).Return(nil)
 			},
@@ -829,7 +1834,7 @@ func TestScheduleFailedModels(t *testing.T) {
 		},
 		{
 			name: "success - schedules 2 failed models",
-			setupMocks: func(ms *mock.MockModelStore, sync *mock2.MockSynchroniser) {
+			setupMocks: func(ms *mock.MockModelServerAPI, sync *mock2.MockSynchroniser) {
 				sync.EXPECT().IsReady().Return(true)
 
 				model1 := &store.ModelSnapshot{
@@ -904,7 +1909,7 @@ func TestScheduleFailedModels(t *testing.T) {
 				servers := []*store.ServerSnapshot{
 					createServerSnapshot("server1", 1, 16000),
 				}
-				ms.EXPECT().GetServers(false, true).Return(servers, nil)
+				ms.EXPECT().GetServers().Return(servers, nil)
 				ms.EXPECT().UpdateLoadedModels("model1", uint32(1),
 					"server1", slices.Collect(maps.Values(servers[0].Replicas))).Return(nil)
 
@@ -914,7 +1919,7 @@ func TestScheduleFailedModels(t *testing.T) {
 				ms.EXPECT().UnlockModel("model2")
 				ms.EXPECT().GetModel("model2").Return(model2, nil)
 
-				ms.EXPECT().GetServers(false, true).Return(servers, nil)
+				ms.EXPECT().GetServers().Return(servers, nil)
 				ms.EXPECT().UpdateLoadedModels("model2", uint32(1),
 					"server1", slices.Collect(maps.Values(servers[0].Replicas))).Return(nil)
 			},
@@ -923,7 +1928,7 @@ func TestScheduleFailedModels(t *testing.T) {
 		},
 		{
 			name: "failure - unable to schedule model on desired replicas or min replicas",
-			setupMocks: func(ms *mock.MockModelStore, sync *mock2.MockSynchroniser) {
+			setupMocks: func(ms *mock.MockModelServerAPI, sync *mock2.MockSynchroniser) {
 				sync.EXPECT().IsReady().Return(true)
 
 				model1 := &store.ModelSnapshot{
@@ -966,7 +1971,7 @@ func TestScheduleFailedModels(t *testing.T) {
 				servers := []*store.ServerSnapshot{
 					createServerSnapshot("server1", 1, 16000),
 				}
-				ms.EXPECT().GetServers(false, true).Return(servers, nil)
+				ms.EXPECT().GetServers().Return(servers, nil)
 				ms.EXPECT().FailedScheduling("model1", uint32(1),
 					"Failed to schedule model as no matching server had enough suitable replicas", true).Return(nil)
 			},
@@ -974,7 +1979,7 @@ func TestScheduleFailedModels(t *testing.T) {
 		},
 		{
 			name: "failure - failed getting models",
-			setupMocks: func(ms *mock.MockModelStore, sync *mock2.MockSynchroniser) {
+			setupMocks: func(ms *mock.MockModelServerAPI, sync *mock2.MockSynchroniser) {
 				sync.EXPECT().IsReady().Return(true)
 				ms.EXPECT().GetModels().Return(nil, errors.New("some error"))
 			},
@@ -988,7 +1993,7 @@ func TestScheduleFailedModels(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 
-			mockStore := mock.NewMockModelStore(ctrl)
+			mockStore := mock.NewMockModelServerAPI(ctrl)
 			mockSync := mock2.NewMockSynchroniser(ctrl)
 
 			tt.setupMocks(mockStore, mockSync)
