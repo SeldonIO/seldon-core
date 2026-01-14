@@ -28,7 +28,6 @@ import (
 	"go.uber.org/mock/gomock"
 	ptr2 "k8s.io/utils/ptr"
 
-	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -42,35 +41,9 @@ func TestScheduler(t *testing.T) {
 	logger := log.New()
 	g := NewGomegaWithT(t)
 
-	newTestModel := func(name string, requiredMemory uint64, requirements []string, replicas, minReplicas uint32, maxReplicas uint32, loadedModels []int, deleted bool, scheduledServer string, drainedModels []int) *store.ModelSnapshot {
-		config := &pb.Model{Meta: &pb.MetaData{Name: t.Name()}, ModelSpec: &pb.ModelSpec{MemoryBytes: &requiredMemory, Requirements: requirements}, DeploymentSpec: &pb.DeploymentSpec{Replicas: replicas, MinReplicas: minReplicas, MaxReplicas: maxReplicas}}
-		rmap := make(map[int]store.ReplicaStatus)
-		for _, ridx := range loadedModels {
-			rmap[ridx] = store.ReplicaStatus{State: store.Loaded}
-		}
-		for _, ridx := range drainedModels {
-			rmap[ridx] = store.ReplicaStatus{State: store.Draining}
-		}
-		return &store.ModelSnapshot{
-			Name:     name,
-			Versions: []*store.ModelVersion{store.NewModelVersion(config, 1, scheduledServer, rmap, false, store.ModelProgressing)},
-			Deleted:  deleted,
-		}
-	}
-
-	gsr := func(replicaIdx int, availableMemory uint64, capabilities []string, serverName string, shared, isDraining bool) *store.ServerReplica {
-		replica := store.NewServerReplica("svc", 8080, 5001, replicaIdx, store.NewServer(serverName, shared), capabilities, availableMemory, availableMemory, 0, nil, 100)
-		if isDraining {
-			replica.SetIsDraining()
-		}
-		return replica
-	}
-
 	type test struct {
 		name                 string
-		model                *store.ModelSnapshot
 		modelName            string
-		servers              []*store.ServerSnapshot
 		scheduled            bool
 		checkServerEvents    bool
 		expectedServerEvents int
@@ -128,25 +101,7 @@ func TestScheduler(t *testing.T) {
 		},
 		{
 			name:      "ReplicasTwo",
-			model:     newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 2, []int{}, false, "", nil),
 			modelName: "model1",
-			servers: []*store.ServerSnapshot{
-				{
-					Name:             "server1",
-					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"}, "server1", true, false)},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-				{
-					Name: "server2",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 200, []string{"sklearn"}, "server2", true, false), // expect schedule here
-						1: gsr(1, 200, []string{"sklearn"}, "server2", true, false), // expect schedule here
-					},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-			},
 			scheduled: true,
 			setupMock: func(m *mock.MockModelServerAPI) {
 				m.EXPECT().LockModel("model1")
@@ -206,25 +161,7 @@ func TestScheduler(t *testing.T) {
 		},
 		{
 			name:      "NotEnoughReplicas",
-			model:     newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 2, []int{}, false, "", nil),
 			modelName: "model1",
-			servers: []*store.ServerSnapshot{
-				{
-					Name:             "server1",
-					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"}, "server1", true, false)},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-				{
-					Name: "server2",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 200, []string{"sklearn"}, "server2", true, false),
-						1: gsr(1, 0, []string{"sklearn"}, "server2", true, false),
-					},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-			},
 			scheduled: false,
 			setupMock: func(m *mock.MockModelServerAPI) {
 				m.EXPECT().LockModel("model1")
@@ -279,25 +216,7 @@ func TestScheduler(t *testing.T) {
 		},
 		{
 			name:      "NotEnoughReplicas - schedule min replicas",
-			model:     newTestModel("model1", 100, []string{"sklearn"}, 3, 2, 3, []int{}, false, "server2", nil),
 			modelName: "model1",
-			servers: []*store.ServerSnapshot{
-				{
-					Name:             "server1",
-					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"}, "server1", true, false)},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-				{
-					Name: "server2",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 200, []string{"sklearn"}, "server2", true, false), // expect schedule here
-						1: gsr(1, 200, []string{"sklearn"}, "server2", true, false), // expect schedule here
-					},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-			},
 			scheduled: true, // not here that we still trying to mark the model as Available
 			setupMock: func(m *mock.MockModelServerAPI) {
 				m.EXPECT().LockModel("model1")
@@ -358,24 +277,7 @@ func TestScheduler(t *testing.T) {
 		},
 		{
 			name:      "MemoryOneServer",
-			model:     newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{}, false, "", nil),
 			modelName: "model1",
-			servers: []*store.ServerSnapshot{
-				{
-					Name:             "server1",
-					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 50, []string{"sklearn"}, "server1", true, false)},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-				{
-					Name: "server2",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 200, []string{"sklearn"}, "server2", true, false), // expect schedule here
-					},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-			},
 			scheduled: true,
 			setupMock: func(m *mock.MockModelServerAPI) {
 				m.EXPECT().LockModel("model1")
@@ -433,25 +335,7 @@ func TestScheduler(t *testing.T) {
 		},
 		{
 			name:      "ModelsLoaded",
-			model:     newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 2, []int{1}, false, "", nil),
 			modelName: "model1",
-			servers: []*store.ServerSnapshot{
-				{
-					Name:             "server1",
-					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 50, []string{"sklearn"}, "server1", true, false)},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-				{
-					Name: "server2",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 200, []string{"sklearn"}, "server2", true, false), // expect schedule here
-						1: gsr(1, 200, []string{"sklearn"}, "server2", true, false), // expect schedule here
-					},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-			},
 			scheduled: true,
 			setupMock: func(m *mock.MockModelServerAPI) {
 				m.EXPECT().LockModel("model1")
@@ -509,19 +393,7 @@ func TestScheduler(t *testing.T) {
 		},
 		{
 			name:      "ModelUnLoaded",
-			model:     newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 2, []int{1}, true, "server2", nil),
 			modelName: "model1",
-			servers: []*store.ServerSnapshot{
-				{
-					Name: "server2",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 200, []string{"sklearn"}, "server2", true, false),
-						1: gsr(1, 200, []string{"sklearn"}, "server2", true, false),
-					},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-			},
 			scheduled: true,
 			setupMock: func(m *mock.MockModelServerAPI) {
 				m.EXPECT().LockModel("model1")
@@ -578,25 +450,7 @@ func TestScheduler(t *testing.T) {
 		},
 		{
 			name:      "DeletedServer",
-			model:     newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{}, false, "", nil),
 			modelName: "model1",
-			servers: []*store.ServerSnapshot{
-				{
-					Name:             "server1",
-					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"}, "server1", true, false)},
-					Shared:           true,
-					ExpectedReplicas: 0,
-				},
-				{
-					Name: "server2",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 200, []string{"sklearn"}, "server2", true, false), // expect schedule here
-						1: gsr(1, 200, []string{"sklearn"}, "server2", true, false),
-					},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-			},
 			scheduled: true,
 			setupMock: func(m *mock.MockModelServerAPI) {
 				m.EXPECT().LockModel("model1")
@@ -657,25 +511,7 @@ func TestScheduler(t *testing.T) {
 		},
 		{
 			name:      "Reschedule",
-			model:     newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{0}, false, "server1", nil),
 			modelName: "model1",
-			servers: []*store.ServerSnapshot{
-				{
-					Name:             "server1",
-					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"}, "server1", true, false)},
-					Shared:           true,
-					ExpectedReplicas: 0,
-				},
-				{
-					Name: "server2",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 200, []string{"sklearn"}, "server2", true, false), // expect schedule here
-						1: gsr(1, 200, []string{"sklearn"}, "server2", true, false),
-					},
-					Shared:           true,
-					ExpectedReplicas: 1,
-				},
-			},
 			scheduled: true,
 			setupMock: func(m *mock.MockModelServerAPI) {
 				m.EXPECT().LockModel("model1")
@@ -742,16 +578,7 @@ func TestScheduler(t *testing.T) {
 		},
 		{
 			name:      "DeletedServerFail",
-			model:     newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{1}, false, "", nil),
 			modelName: "model1",
-			servers: []*store.ServerSnapshot{
-				{
-					Name:             "server1",
-					Replicas:         map[int]*store.ServerReplica{0: gsr(0, 200, []string{"sklearn"}, "server1", true, false)},
-					Shared:           true,
-					ExpectedReplicas: 0,
-				},
-			},
 			scheduled: false,
 			setupMock: func(m *mock.MockModelServerAPI) {
 				m.EXPECT().LockModel("model1")
@@ -803,19 +630,7 @@ func TestScheduler(t *testing.T) {
 		},
 		{
 			name:      "Available memory sorting",
-			model:     newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{1}, false, "", nil),
 			modelName: "model1",
-			servers: []*store.ServerSnapshot{
-				{
-					Name: "server2",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 150, []string{"sklearn"}, "server2", true, false),
-						1: gsr(1, 200, []string{"sklearn"}, "server2", true, false), // expect schedule here
-					},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-			},
 			scheduled: true,
 			setupMock: func(m *mock.MockModelServerAPI) {
 				m.EXPECT().LockModel("model1")
@@ -867,20 +682,7 @@ func TestScheduler(t *testing.T) {
 		},
 		{
 			name:      "Available memory sorting with multiple replicas",
-			model:     newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 1, []int{1}, false, "", nil),
 			modelName: "model1",
-			servers: []*store.ServerSnapshot{
-				{
-					Name: "server2",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 150, []string{"sklearn"}, "server2", true, false),
-						1: gsr(1, 200, []string{"sklearn"}, "server2", true, false), // expect schedule here
-						2: gsr(2, 175, []string{"sklearn"}, "server2", true, false), // expect schedule here
-					},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-			},
 			scheduled: true,
 			setupMock: func(m *mock.MockModelServerAPI) {
 				m.EXPECT().LockModel("model1")
@@ -934,21 +736,7 @@ func TestScheduler(t *testing.T) {
 		},
 		{
 			name:      "Scale up",
-			model:     newTestModel("model1", 100, []string{"sklearn"}, 3, 0, 3, []int{1, 2}, false, "server1", nil),
 			modelName: "model1",
-			servers: []*store.ServerSnapshot{
-				{
-					Name: "server1",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 50, []string{"sklearn"}, "server1", true, false),
-						1: gsr(1, 200, []string{"sklearn"}, "server1", true, false), // expect schedule here - nop
-						2: gsr(2, 175, []string{"sklearn"}, "server1", true, false), // expect schedule here - nop
-						3: gsr(3, 100, []string{"sklearn"}, "server1", true, false), // expect schedule here
-					},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-			},
 			scheduled: true,
 			setupMock: func(m *mock.MockModelServerAPI) {
 				m.EXPECT().LockModel("model1")
@@ -1015,21 +803,7 @@ func TestScheduler(t *testing.T) {
 		},
 		{
 			name:      "Scale down",
-			model:     newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{1, 2}, false, "server1", nil),
 			modelName: "model1",
-			servers: []*store.ServerSnapshot{
-				{
-					Name: "server1",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 50, []string{"sklearn"}, "server1", true, false),
-						1: gsr(1, 200, []string{"sklearn"}, "server1", true, false), // expect schedule here - nop
-						2: gsr(2, 175, []string{"sklearn"}, "server1", true, false), // expect schedule here - nop
-						3: gsr(3, 100, []string{"sklearn"}, "server1", true, false),
-					},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-			},
 			scheduled: true,
 			setupMock: func(m *mock.MockModelServerAPI) {
 				m.EXPECT().LockModel("model1")
@@ -1093,22 +867,8 @@ func TestScheduler(t *testing.T) {
 			},
 		},
 		{
-			name:      "Scale up - not enough replicas use max of the server",
-			model:     newTestModel("model1", 100, []string{"sklearn"}, 5, 3, 5, []int{1, 2}, false, "server1", nil),
-			modelName: "model1",
-			servers: []*store.ServerSnapshot{
-				{
-					Name: "server1",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 100, []string{"sklearn"}, "server1", true, false), // expect schedule here
-						1: gsr(1, 100, []string{"sklearn"}, "server1", true, false), // expect schedule here - nop
-						2: gsr(2, 100, []string{"sklearn"}, "server1", true, false), // expect schedule here - nop
-						3: gsr(3, 100, []string{"sklearn"}, "server1", true, false), // expect schedule here
-					},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-			},
+			name:                 "Scale up - not enough replicas use max of the server",
+			modelName:            "model1",
 			scheduled:            true, // note that we are still trying to make the model as Available
 			expectedServerEvents: 1,
 			setupMock: func(m *mock.MockModelServerAPI) {
@@ -1178,21 +938,7 @@ func TestScheduler(t *testing.T) {
 		},
 		{
 			name:      "Scale up - no capacity on loaded replica servers, should still go there",
-			model:     newTestModel("model1", 100, []string{"sklearn"}, 3, 0, 3, []int{1, 2}, false, "server1", nil),
 			modelName: "model1",
-			servers: []*store.ServerSnapshot{
-				{
-					Name: "server1",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 50, []string{"sklearn"}, "server1", true, false),
-						1: gsr(1, 0, []string{"sklearn"}, "server1", true, false),   // expect schedule here - nop
-						2: gsr(2, 0, []string{"sklearn"}, "server1", true, false),   // expect schedule here - nop
-						3: gsr(3, 100, []string{"sklearn"}, "server1", true, false), // expect schedule here
-					},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-			},
 			scheduled: true,
 			setupMock: func(m *mock.MockModelServerAPI) {
 				m.EXPECT().LockModel("model1")
@@ -1260,21 +1006,8 @@ func TestScheduler(t *testing.T) {
 		},
 		{
 			name:      "Scale down - no capacity on loaded replica servers, should still go there",
-			model:     newTestModel("model1", 100, []string{"sklearn"}, 1, 0, 1, []int{1, 2}, false, "server1", nil),
 			modelName: "model1",
-			servers: []*store.ServerSnapshot{
-				{
-					Name: "server1",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 50, []string{"sklearn"}, "server1", true, false),
-						1: gsr(1, 0, []string{"sklearn"}, "server1", true, false), // expect schedule here - nop
-						2: gsr(2, 0, []string{"sklearn"}, "server1", true, false), // expect schedule here - nop
-						3: gsr(3, 100, []string{"sklearn"}, "server1", true, false),
-					},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-			},
+
 			scheduled: true,
 			setupMock: func(m *mock.MockModelServerAPI) {
 				m.EXPECT().LockModel("model1")
@@ -1342,21 +1075,7 @@ func TestScheduler(t *testing.T) {
 		},
 		{
 			name:      "Drain",
-			model:     newTestModel("model1", 100, []string{"sklearn"}, 2, 0, 2, []int{1}, false, "server1", []int{2}),
 			modelName: "model1",
-			servers: []*store.ServerSnapshot{
-				{
-					Name: "server1",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 50, []string{"sklearn"}, "server1", true, false),
-						1: gsr(1, 200, []string{"sklearn"}, "server1", true, false), // expect schedule here - nop
-						2: gsr(2, 175, []string{"sklearn"}, "server1", true, true),  // drain - should not be returned
-						3: gsr(3, 100, []string{"sklearn"}, "server1", true, false), // expect schedule here new replica
-					},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
-			},
 			scheduled: true,
 			setupMock: func(m *mock.MockModelServerAPI) {
 				m.EXPECT().LockModel("model1")
