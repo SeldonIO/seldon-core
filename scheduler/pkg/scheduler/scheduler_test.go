@@ -1462,12 +1462,6 @@ func TestFailedModels(t *testing.T) {
 	logger := log.New()
 	g := NewGomegaWithT(t)
 
-	type modelStateWithMetadata struct {
-		state             store.ModelState
-		deploymentSpec    *pb.DeploymentSpec
-		availableReplicas uint32
-	}
-
 	type test struct {
 		name                 string
 		models               []*db.Model
@@ -1658,7 +1652,6 @@ func TestFailedModels(t *testing.T) {
 			mockModelServerAPI := mock.NewMockModelServerAPI(ctrl)
 			test.setupMock(mockModelServerAPI)
 
-			//mockStore := newMockStore(test.models)
 			scheduler := NewSimpleScheduler(logger, mockModelServerAPI, DefaultSchedulerConfig(mockModelServerAPI), synchroniser.NewSimpleSynchroniser(10*time.Millisecond), eventHub)
 			failedModels, err := scheduler.getFailedModels()
 			g.Expect(err).To(BeNil())
@@ -1784,49 +1777,55 @@ func TestScheduleFailedModels(t *testing.T) {
 			setupMocks: func(ms *mock.MockModelServerAPI, sync *mock2.MockSynchroniser) {
 				sync.EXPECT().IsReady().Return(true)
 
-				model1 := &store.ModelSnapshot{
+				model1 := &db.Model{
 					Name: "model1",
-					Versions: []*store.ModelVersion{store.NewModelVersion(&pb.Model{
-						Meta: &pb.MetaData{
-							Name:           "model1",
-							Kind:           nil,
-							Version:        nil,
-							KubernetesMeta: nil,
-						},
-						ModelSpec: &pb.ModelSpec{
-							Uri:              "",
-							ArtifactVersion:  nil,
-							StorageConfig:    nil,
-							Requirements:     nil,
-							MemoryBytes:      nil,
-							Server:           ptr.String("server1"),
-							Parameters:       nil,
-							ModelRuntimeInfo: nil,
-							ModelSpec:        nil,
-						},
-						DeploymentSpec: &pb.DeploymentSpec{
-							Replicas:    1,
-							MinReplicas: 0,
-							MaxReplicas: 0,
-							LogPayloads: false,
-						},
-						StreamSpec:   nil,
-						DataflowSpec: nil,
-					}, 1, "server1", map[int]store.ReplicaStatus{}, false, store.ScheduleFailed)},
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta: &pbs.MetaData{Name: "model1"},
+								ModelSpec: &pbs.ModelSpec{
+									Uri:              "",
+									ArtifactVersion:  nil,
+									StorageConfig:    nil,
+									Requirements:     nil,
+									MemoryBytes:      nil,
+									Server:           ptr.String("server1"),
+									Parameters:       nil,
+									ModelRuntimeInfo: nil,
+									ModelSpec:        nil,
+								},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 0},
+							},
+							1, "server1",
+							nil,
+							db.ModelState_ScheduleFailed)},
 				}
 
-				ms.EXPECT().GetModels().Return([]*store.ModelSnapshot{model1}, nil)
+				ms.EXPECT().GetModels().Return([]*db.Model{model1}, nil)
 
 				ms.EXPECT().LockModel("model1")
 				ms.EXPECT().UnlockModel("model1")
 				ms.EXPECT().GetModel("model1").Return(model1, nil)
 
-				servers := []*store.ServerSnapshot{
-					createServerSnapshot("server1", 1, 16000),
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							0: util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server1", true), []string{"sklearn"}, 0, 16000, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
 				}
+
+				expectedServerUpdate := []*db.ServerReplica{
+					util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server1", true), []string{"sklearn"}, 0, 16000, 0, nil, 100),
+				}
+
 				ms.EXPECT().GetServers().Return(servers, nil)
 				ms.EXPECT().UpdateLoadedModels("model1", uint32(1),
-					"server1", slices.Collect(maps.Values(servers[0].Replicas))).Return(nil)
+					"server1", expectedServerUpdate).Return(nil)
 			},
 			expectedModels: []string{"model1"},
 			expectError:    false,
@@ -1836,81 +1835,79 @@ func TestScheduleFailedModels(t *testing.T) {
 			setupMocks: func(ms *mock.MockModelServerAPI, sync *mock2.MockSynchroniser) {
 				sync.EXPECT().IsReady().Return(true)
 
-				model1 := &store.ModelSnapshot{
+				model1 := &db.Model{
 					Name: "model1",
-					Versions: []*store.ModelVersion{store.NewModelVersion(&pb.Model{
-						Meta: &pb.MetaData{
-							Name:           "model1",
-							Kind:           nil,
-							Version:        nil,
-							KubernetesMeta: nil,
-						},
-						ModelSpec: &pb.ModelSpec{
-							Uri:              "",
-							ArtifactVersion:  nil,
-							StorageConfig:    nil,
-							Requirements:     nil,
-							MemoryBytes:      nil,
-							Server:           ptr.String("server1"),
-							Parameters:       nil,
-							ModelRuntimeInfo: nil,
-							ModelSpec:        nil,
-						},
-						DeploymentSpec: &pb.DeploymentSpec{
-							Replicas:    1,
-							MinReplicas: 0,
-							MaxReplicas: 0,
-							LogPayloads: false,
-						},
-						StreamSpec:   nil,
-						DataflowSpec: nil,
-					}, 1, "server1", map[int]store.ReplicaStatus{}, false, store.ScheduleFailed)},
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta: &pbs.MetaData{Name: "model1"},
+								ModelSpec: &pbs.ModelSpec{
+									Uri:              "",
+									ArtifactVersion:  nil,
+									StorageConfig:    nil,
+									Requirements:     nil,
+									MemoryBytes:      nil,
+									Server:           ptr.String("server1"),
+									Parameters:       nil,
+									ModelRuntimeInfo: nil,
+									ModelSpec:        nil,
+								},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 0},
+							},
+							1, "server1",
+							nil,
+							db.ModelState_ScheduleFailed)},
 				}
 
-				model2 := &store.ModelSnapshot{
+				model2 := &db.Model{
 					Name: "model2",
-					Versions: []*store.ModelVersion{store.NewModelVersion(&pb.Model{
-						Meta: &pb.MetaData{
-							Name:           "model2",
-							Kind:           nil,
-							Version:        nil,
-							KubernetesMeta: nil,
-						},
-						ModelSpec: &pb.ModelSpec{
-							Uri:              "",
-							ArtifactVersion:  nil,
-							StorageConfig:    nil,
-							Requirements:     nil,
-							MemoryBytes:      nil,
-							Server:           ptr.String("server1"),
-							Parameters:       nil,
-							ModelRuntimeInfo: nil,
-							ModelSpec:        nil,
-						},
-						DeploymentSpec: &pb.DeploymentSpec{
-							Replicas:    1,
-							MinReplicas: 0,
-							MaxReplicas: 0,
-							LogPayloads: false,
-						},
-						StreamSpec:   nil,
-						DataflowSpec: nil,
-					}, 1, "server1", map[int]store.ReplicaStatus{}, false, store.ScheduleFailed)},
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta: &pbs.MetaData{Name: "model2"},
+								ModelSpec: &pbs.ModelSpec{
+									Uri:              "",
+									ArtifactVersion:  nil,
+									StorageConfig:    nil,
+									Requirements:     nil,
+									MemoryBytes:      nil,
+									Server:           ptr.String("server1"),
+									Parameters:       nil,
+									ModelRuntimeInfo: nil,
+									ModelSpec:        nil,
+								},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 0},
+							},
+							1, "server1",
+							nil,
+							db.ModelState_ScheduleFailed)},
 				}
 
-				ms.EXPECT().GetModels().Return([]*store.ModelSnapshot{model1, model2}, nil)
+				ms.EXPECT().GetModels().Return([]*db.Model{model1, model2}, nil)
 
 				// model1
 				ms.EXPECT().LockModel("model1")
 				ms.EXPECT().UnlockModel("model1")
 				ms.EXPECT().GetModel("model1").Return(model1, nil)
 
-				servers := []*store.ServerSnapshot{
-					createServerSnapshot("server1", 1, 16000),
+				servers := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							0: util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server1", true), []string{"sklearn"}, 0, 16000, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
+				}
+
+				expectedUpdatedServers := []*db.ServerReplica{
+					util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server1", true), []string{"sklearn"}, 0, 16000, 0, nil, 100),
 				}
 				ms.EXPECT().GetServers().Return(servers, nil)
 				ms.EXPECT().UpdateLoadedModels("model1", uint32(1),
-					"server1", slices.Collect(maps.Values(servers[0].Replicas))).Return(nil)
+					"server1", expectedUpdatedServers).Return(nil)
 
 				// model2
 
@@ -1920,7 +1917,7 @@ func TestScheduleFailedModels(t *testing.T) {
 
 				ms.EXPECT().GetServers().Return(servers, nil)
 				ms.EXPECT().UpdateLoadedModels("model2", uint32(1),
-					"server1", slices.Collect(maps.Values(servers[0].Replicas))).Return(nil)
+					"server1", expectedUpdatedServers).Return(nil)
 			},
 			expectedModels: []string{"model1", "model2"},
 			expectError:    false,
@@ -1930,47 +1927,48 @@ func TestScheduleFailedModels(t *testing.T) {
 			setupMocks: func(ms *mock.MockModelServerAPI, sync *mock2.MockSynchroniser) {
 				sync.EXPECT().IsReady().Return(true)
 
-				model1 := &store.ModelSnapshot{
+				model11 := &db.Model{
 					Name: "model1",
-					Versions: []*store.ModelVersion{store.NewModelVersion(&pb.Model{
-						Meta: &pb.MetaData{
-							Name:           "model1",
-							Kind:           nil,
-							Version:        nil,
-							KubernetesMeta: nil,
-						},
-						ModelSpec: &pb.ModelSpec{
-							Uri:              "",
-							ArtifactVersion:  nil,
-							StorageConfig:    nil,
-							Requirements:     nil,
-							MemoryBytes:      nil,
-							Server:           ptr.String("server1"),
-							Parameters:       nil,
-							ModelRuntimeInfo: nil,
-							ModelSpec:        nil,
-						},
-						DeploymentSpec: &pb.DeploymentSpec{
-							Replicas:    3,
-							MinReplicas: 2,
-							MaxReplicas: 0,
-							LogPayloads: false,
-						},
-						StreamSpec:   nil,
-						DataflowSpec: nil,
-					}, 1, "server1", map[int]store.ReplicaStatus{}, false, store.ScheduleFailed)},
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta: &pbs.MetaData{Name: "model1"},
+								ModelSpec: &pbs.ModelSpec{
+									Uri:              "",
+									ArtifactVersion:  nil,
+									StorageConfig:    nil,
+									Requirements:     nil,
+									MemoryBytes:      nil,
+									Server:           ptr.String("server1"),
+									Parameters:       nil,
+									ModelRuntimeInfo: nil,
+									ModelSpec:        nil,
+								},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 3, MinReplicas: 2, MaxReplicas: 0},
+							},
+							1, "server1",
+							nil,
+							db.ModelState_ScheduleFailed)},
 				}
 
-				ms.EXPECT().GetModels().Return([]*store.ModelSnapshot{model1}, nil)
+				ms.EXPECT().GetModels().Return([]*db.Model{model11}, nil)
 
 				ms.EXPECT().LockModel("model1")
 				ms.EXPECT().UnlockModel("model1")
-				ms.EXPECT().GetModel("model1").Return(model1, nil)
+				ms.EXPECT().GetModel("model1").Return(model11, nil)
 
-				servers := []*store.ServerSnapshot{
-					createServerSnapshot("server1", 1, 16000),
+				serverss := []*db.Server{
+					{
+						Name: "server1",
+						Replicas: map[int32]*db.ServerReplica{
+							0: util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server1", true), []string{"sklearn"}, 0, 16000, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
+					},
 				}
-				ms.EXPECT().GetServers().Return(servers, nil)
+				ms.EXPECT().GetServers().Return(serverss, nil)
 				ms.EXPECT().FailedScheduling("model1", uint32(1),
 					"Failed to schedule model as no matching server had enough suitable replicas", true).Return(nil)
 			},
@@ -1992,18 +1990,18 @@ func TestScheduleFailedModels(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 
-			mockStore := mock.NewMockModelServerAPI(ctrl)
+			mockModelServerAPI := mock.NewMockModelServerAPI(ctrl)
 			mockSync := mock2.NewMockSynchroniser(ctrl)
 
-			tt.setupMocks(mockStore, mockSync)
+			tt.setupMocks(mockModelServerAPI, mockSync)
 
 			eventHub, err := coordinator.NewEventHub(log.New())
 			require.NoError(t, err)
 
 			scheduler := NewSimpleScheduler(
 				log.New(),
-				mockStore,
-				DefaultSchedulerConfig(mockStore),
+				mockModelServerAPI,
+				DefaultSchedulerConfig(mockModelServerAPI),
 				mockSync,
 				eventHub)
 
@@ -2020,22 +2018,5 @@ func TestScheduleFailedModels(t *testing.T) {
 			require.NoError(t, err)
 			assert.ElementsMatch(t, tt.expectedModels, updatedModels)
 		})
-	}
-}
-
-func createServerSnapshot(name string, numReplicas int, availableMemory uint64) *store.ServerSnapshot {
-	replicas := make(map[int]*store.ServerReplica, numReplicas)
-	server := store.NewServer(name, false)
-
-	for i := 0; i < numReplicas; i++ {
-		replicas[i] = store.NewServerReplica(name+"-svc",
-			4000, 5000, i, server, nil,
-			availableMemory, availableMemory, availableMemory, nil, 0)
-	}
-
-	return &store.ServerSnapshot{
-		Name:             name,
-		Replicas:         replicas,
-		ExpectedReplicas: numReplicas,
 	}
 }
