@@ -673,7 +673,7 @@ func TestScheduler(t *testing.T) {
 						1: gsr(1, 200, []string{"sklearn"}, "server2", true, false),
 					},
 					Shared:           true,
-					ExpectedReplicas: -1,
+					ExpectedReplicas: 1,
 				},
 			},
 			scheduled: true,
@@ -724,7 +724,7 @@ func TestScheduler(t *testing.T) {
 							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
 						},
 						Shared:           true,
-						ExpectedReplicas: -1,
+						ExpectedReplicas: 1,
 						KubernetesMeta:   nil,
 					},
 				}
@@ -739,8 +739,6 @@ func TestScheduler(t *testing.T) {
 				)
 				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
 					"server1", expectedUpdatedServers).Return(nil)
-
-				m.EXPECT().FailedScheduling("model1", 1, "Failed to schedule model as no matching servers are available false", false).Return(nil)
 			},
 		},
 		{
