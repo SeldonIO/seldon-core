@@ -13,10 +13,10 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
 func TestSharingFilter(t *testing.T) {
@@ -24,31 +24,29 @@ func TestSharingFilter(t *testing.T) {
 
 	type test struct {
 		name     string
-		model    *store.ModelVersion
-		server   *store.ServerSnapshot
+		model    *db.ModelVersion
+		server   *db.Server
 		expected bool
 	}
 	serverName := "server1"
-	modelExplicitServer := store.NewModelVersion(
+	modelExplicitServer := util.NewTestModelVersion(
 		&pb.Model{ModelSpec: &pb.ModelSpec{Server: &serverName}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
 		1,
 		serverName,
-		map[int]store.ReplicaStatus{3: {State: store.Loading}},
-		false,
-		store.ModelProgressing)
-	modelSharedServer := store.NewModelVersion(
+		map[int32]*db.ReplicaStatus{3: {State: db.ModelReplicaState_Loading}},
+		db.ModelState_ModelProgressing)
+	modelSharedServer := util.NewTestModelVersion(
 		&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
 		1,
 		serverName,
-		map[int]store.ReplicaStatus{3: {State: store.Loading}},
-		false,
-		store.ModelProgressing)
+		map[int32]*db.ReplicaStatus{3: {State: db.ModelReplicaState_Loading}},
+		db.ModelState_ModelProgressing)
 	tests := []test{
-		{name: "ModelAndServerMatchNotShared", model: modelExplicitServer, server: &store.ServerSnapshot{Name: serverName, Shared: false}, expected: true},
-		{name: "ModelAndServerMatchShared", model: modelExplicitServer, server: &store.ServerSnapshot{Name: serverName, Shared: true}, expected: true},
-		{name: "ModelAndServerDontMatch", model: modelExplicitServer, server: &store.ServerSnapshot{Name: "foo", Shared: true}, expected: false},
-		{name: "SharedModelAnyServer", model: modelSharedServer, server: &store.ServerSnapshot{Name: "foo", Shared: true}, expected: true},
-		{name: "SharedModelNotSharedServer", model: modelSharedServer, server: &store.ServerSnapshot{Name: "foo", Shared: false}, expected: false},
+		{name: "ModelAndServerMatchNotShared", model: modelExplicitServer, server: &db.Server{Name: serverName, Shared: false}, expected: true},
+		{name: "ModelAndServerMatchShared", model: modelExplicitServer, server: &db.Server{Name: serverName, Shared: true}, expected: true},
+		{name: "ModelAndServerDontMatch", model: modelExplicitServer, server: &db.Server{Name: "foo", Shared: true}, expected: false},
+		{name: "SharedModelAnyServer", model: modelSharedServer, server: &db.Server{Name: "foo", Shared: true}, expected: true},
+		{name: "SharedModelNotSharedServer", model: modelSharedServer, server: &db.Server{Name: "foo", Shared: false}, expected: false},
 	}
 
 	for _, test := range tests {

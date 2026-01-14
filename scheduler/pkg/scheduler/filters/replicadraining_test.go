@@ -13,8 +13,7 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 )
 
 func TestReplicaDrainingFilter(t *testing.T) {
@@ -34,9 +33,9 @@ func TestReplicaDrainingFilter(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			filter := ReplicaDrainingFilter{}
-			replica := store.ServerReplica{}
+			replica := db.ServerReplica{}
 			if test.isDraining {
-				replica.SetIsDraining()
+				replica.IsDraining = true
 			}
 			ok := filter.Filter(nil, &replica)
 			g.Expect(ok).To(Equal(test.expected))

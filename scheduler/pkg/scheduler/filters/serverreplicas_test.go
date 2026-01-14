@@ -13,10 +13,10 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
-
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
 func TestServerReplicasFilter(t *testing.T) {
@@ -24,23 +24,22 @@ func TestServerReplicasFilter(t *testing.T) {
 
 	type test struct {
 		name     string
-		model    *store.ModelVersion
-		server   *store.ServerSnapshot
+		model    *db.ModelVersion
+		server   *db.Server
 		expected bool
 	}
 	serverName := "server1"
-	model := store.NewModelVersion(
+	model := util.NewTestModelVersion(
 		&pb.Model{ModelSpec: &pb.ModelSpec{}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
 		1,
 		serverName,
-		map[int]store.ReplicaStatus{3: {State: store.Loading}},
-		false,
-		store.ModelProgressing)
+		map[int32]*db.ReplicaStatus{3: {State: db.ModelReplicaState_Loading}},
+		db.ModelState_ModelProgressing)
 	tests := []test{
 		{
 			name:  "No Replicas",
 			model: model,
-			server: &store.ServerSnapshot{Name: serverName,
+			server: &db.Server{Name: serverName,
 				Shared:           true,
 				ExpectedReplicas: 0,
 			},
@@ -49,11 +48,11 @@ func TestServerReplicasFilter(t *testing.T) {
 		{
 			name:  "Replicas",
 			model: model,
-			server: &store.ServerSnapshot{Name: serverName,
+			server: &db.Server{Name: serverName,
 				Shared:           true,
 				ExpectedReplicas: 0,
-				Replicas: map[int]*store.ServerReplica{
-					0: &store.ServerReplica{},
+				Replicas: map[int32]*db.ServerReplica{
+					0: {},
 				},
 			},
 			expected: true,
