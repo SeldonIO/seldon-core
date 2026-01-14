@@ -723,7 +723,7 @@ func TestScheduler(t *testing.T) {
 							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
 						},
 						Shared:           true,
-						ExpectedReplicas: 1,
+						ExpectedReplicas: -1,
 						KubernetesMeta:   nil,
 					},
 				}
