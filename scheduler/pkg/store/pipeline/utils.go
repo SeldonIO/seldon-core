@@ -15,10 +15,10 @@ import (
 	"strings"
 
 	"github.com/rs/xid"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 )
 
 func CreateProtoFromPipelineVersion(pv *PipelineVersion) *scheduler.Pipeline {

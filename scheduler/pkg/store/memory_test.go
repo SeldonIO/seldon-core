@@ -18,11 +18,11 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 

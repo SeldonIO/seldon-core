@@ -21,12 +21,13 @@ import (
 	client "github.com/envoyproxy/go-control-plane/pkg/client/sotw/v3"
 	resource "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"

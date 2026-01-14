@@ -15,9 +15,10 @@ import (
 	"math/rand/v2"
 	"time"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )

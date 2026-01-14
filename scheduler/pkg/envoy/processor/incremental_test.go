@@ -24,12 +24,12 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/format"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/encoding/protojson"
 
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"

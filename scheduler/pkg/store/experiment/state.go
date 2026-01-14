@@ -13,6 +13,7 @@ import (
 	"errors"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	pipeline2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )

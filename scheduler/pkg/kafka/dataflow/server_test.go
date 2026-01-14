@@ -19,7 +19,6 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	log "github.com/sirupsen/logrus"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc"
@@ -27,6 +26,7 @@ import (
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"

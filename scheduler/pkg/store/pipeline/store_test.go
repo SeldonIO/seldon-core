@@ -15,14 +15,14 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/mock"
 	"github.com/sirupsen/logrus"
 	"go.uber.org/mock/gomock"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/mock"
 )
 
 func TestGetPipelinesPipelineGwStatus(t *testing.T) {

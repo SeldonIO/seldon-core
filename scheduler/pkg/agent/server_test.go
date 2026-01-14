@@ -17,9 +17,6 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/mock"
 	log "github.com/sirupsen/logrus"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc"
@@ -28,9 +25,12 @@ import (
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/mock"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -57,7 +57,7 @@ func TestSync(t *testing.T) {
 
 	type ExpectedVersionState struct {
 		version        uint32
-		expectedStates map[int]db.ReplicaStatus
+		expectedStates map[int]*db.ReplicaStatus
 	}
 	type test struct {
 		name                  string
@@ -96,7 +96,7 @@ func TestSync(t *testing.T) {
 			expectedVersionStates: []ExpectedVersionState{
 				{
 					version: 1,
-					expectedStates: map[int]db.ReplicaStatus{
+					expectedStates: map[int]*db.ReplicaStatus{
 						1: {State: db.ModelReplicaState_Loading},
 					},
 				},
@@ -130,7 +130,7 @@ func TestSync(t *testing.T) {
 			expectedVersionStates: []ExpectedVersionState{
 				{
 					version: 1,
-					expectedStates: map[int]db.ReplicaStatus{
+					expectedStates: map[int]*db.ReplicaStatus{
 						1: {State: db.ModelReplicaState_LoadFailed},
 					},
 				},
@@ -164,7 +164,7 @@ func TestSync(t *testing.T) {
 			expectedVersionStates: []ExpectedVersionState{
 				{
 					version: 1,
-					expectedStates: map[int]db.ReplicaStatus{
+					expectedStates: map[int]*db.ReplicaStatus{
 						1: {State: db.ModelReplicaState_LoadFailed},
 					},
 				},
@@ -198,7 +198,7 @@ func TestSync(t *testing.T) {
 			expectedVersionStates: []ExpectedVersionState{
 				{
 					version: 1,
-					expectedStates: map[int]db.ReplicaStatus{
+					expectedStates: map[int]*db.ReplicaStatus{
 						1: {State: db.ModelReplicaState_Unloading},
 					},
 				},
@@ -232,7 +232,7 @@ func TestSync(t *testing.T) {
 			expectedVersionStates: []ExpectedVersionState{
 				{
 					version: 1,
-					expectedStates: map[int]db.ReplicaStatus{
+					expectedStates: map[int]*db.ReplicaStatus{
 						1: {State: db.ModelReplicaState_UnloadFailed},
 					},
 				},
@@ -270,13 +270,13 @@ func TestSync(t *testing.T) {
 			expectedVersionStates: []ExpectedVersionState{
 				{
 					version: 1,
-					expectedStates: map[int]db.ReplicaStatus{
+					expectedStates: map[int]*db.ReplicaStatus{
 						1: {State: db.ModelReplicaState_Unloading},
 					},
 				},
 				{
 					version: 2,
-					expectedStates: map[int]db.ReplicaStatus{
+					expectedStates: map[int]*db.ReplicaStatus{
 						1: {State: db.ModelReplicaState_Loading},
 					},
 				},

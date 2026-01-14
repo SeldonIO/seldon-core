@@ -13,8 +13,9 @@ import (
 	"context"
 	"sync"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 )
 
 type StorageInMemory[T interface {

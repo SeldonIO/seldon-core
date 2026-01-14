@@ -17,11 +17,13 @@ import (
 	"github.com/dgraph-io/badger/v3"
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/mock"
 	log "github.com/sirupsen/logrus"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/mock"
 )
 
 func TestSaveWithTTL(t *testing.T) {

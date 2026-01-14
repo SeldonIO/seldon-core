@@ -15,125 +15,9 @@ import (
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 )
 
-type ServerSnapshot struct {
-	Name             string
-	Replicas         map[int]*ServerReplica
-	Shared           bool
-	ExpectedReplicas int
-	MinReplicas      int
-	MaxReplicas      int
-	KubernetesMeta   *pb.KubernetesMeta
-	Stats            *ServerStats
-}
-
 type ServerStats struct {
 	NumEmptyReplicas          uint32
 	MaxNumReplicaHostedModels uint32
-}
-
-func (s *ServerSnapshot) String() string {
-	return s.Name
-}
-
-type ModelSnapshot struct {
-	Name     string
-	Versions []*ModelVersion
-	Deleted  bool
-}
-
-func (m *ModelSnapshot) GetLatest() *ModelVersion {
-	if len(m.Versions) > 0 {
-		return m.Versions[len(m.Versions)-1]
-	} else {
-		return nil
-	}
-}
-
-func (m *ModelSnapshot) GetVersion(version uint32) *ModelVersion {
-	for _, mv := range m.Versions {
-		if mv.GetVersion() == version {
-			return mv
-		}
-	}
-	return nil
-}
-
-func (m *ModelSnapshot) GetPrevious() *ModelVersion {
-	if len(m.Versions) > 1 {
-		return m.Versions[len(m.Versions)-2]
-	} else {
-		return nil
-	}
-}
-
-func (m *ModelSnapshot) getLastAvailableModelIdx() int {
-	if m == nil { // TODO Make safe by not working on actual object
-		return -1
-	}
-	lastAvailableIdx := -1
-	for idx, mv := range m.Versions {
-		if mv.state.State == ModelAvailable {
-			lastAvailableIdx = idx
-		}
-	}
-	return lastAvailableIdx
-}
-
-func (m *ModelSnapshot) getLastModelGwAvailableModelIdx() int {
-	if m == nil { // TODO Make safe by not working on actual object
-		return -1
-	}
-	lastAvailableIdx := -1
-	for idx, mv := range m.Versions {
-		if mv.state.ModelGwState == ModelAvailable {
-			lastAvailableIdx = idx
-		}
-	}
-	return lastAvailableIdx
-}
-
-func (m *ModelSnapshot) CanReceiveTraffic() bool {
-	if m.GetLastAvailableModel() != nil {
-		return true
-	}
-	latestVersion := m.GetLatest()
-	if latestVersion != nil && latestVersion.HasLiveReplicas() {
-		return true
-	}
-	return false
-}
-
-func (m *ModelSnapshot) GetLastAvailableModel() *ModelVersion {
-	if m == nil { // TODO Make safe by not working on actual object
-		return nil
-	}
-	lastAvailableIdx := m.getLastAvailableModelIdx()
-	if lastAvailableIdx != -1 {
-		return m.Versions[lastAvailableIdx]
-	}
-	return nil
-}
-
-func (m *ModelSnapshot) GetVersionsBeforeLastAvailable() []*ModelVersion {
-	if m == nil { // TODO Make safe by not working on actual object
-		return nil
-	}
-	lastAvailableIdx := m.getLastAvailableModelIdx()
-	if lastAvailableIdx != -1 {
-		return m.Versions[0:lastAvailableIdx]
-	}
-	return nil
-}
-
-func (m *ModelSnapshot) GetVersionsBeforeLastModelGwAvailable() []*ModelVersion {
-	if m == nil { // TODO Make safe by not working on actual object
-		return nil
-	}
-	lastAvailableIdx := m.getLastModelGwAvailableModelIdx()
-	if lastAvailableIdx != -1 {
-		return m.Versions[0:lastAvailableIdx]
-	}
-	return nil
 }
 
 //go:generate go tool mockgen -source=./api.go -destination=./mock/store.go -package=mock ModelServerAPI
@@ -159,6 +43,6 @@ type ModelServerAPI interface {
 	FailedScheduling(modelName string, version uint32, reason string, reset bool) error
 	GetAllModels() ([]string, error)
 	SetModelGwModelState(modelName string, versionNumber uint32, status db.ModelState, reason string, source string) error
-	// TODO better name... should it even be on tihs interface?
+	// TODO better name... should it even be on this interface?
 	EmitEvents() error
 }

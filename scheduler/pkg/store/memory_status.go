@@ -14,9 +14,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 )
 
 const (

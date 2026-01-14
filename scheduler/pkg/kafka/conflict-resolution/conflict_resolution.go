@@ -12,11 +12,11 @@ package conflict_resolution
 import (
 	"fmt"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )

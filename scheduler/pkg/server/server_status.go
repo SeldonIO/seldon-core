@@ -14,10 +14,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"github.com/sirupsen/logrus"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	cr "github.com/seldonio/seldon-core/scheduler/v2/pkg/kafka/conflict-resolution"

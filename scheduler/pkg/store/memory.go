@@ -16,11 +16,11 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
@@ -192,19 +192,6 @@ func (m *ModelServerStore) UpdateModel(req *pb.LoadModelRequest) error {
 		return fmt.Errorf("failed to update model %s: %w", modelName, err)
 	}
 	return nil
-}
-
-func (m *ModelServerStore) deepCopy(model *Model, key string) *ModelSnapshot {
-	snapshot := &ModelSnapshot{
-		Name:    key,
-		Deleted: model.IsDeleted(),
-	}
-
-	snapshot.Versions = make([]*ModelVersion, len(model.versions))
-	for i, version := range model.versions {
-		snapshot.Versions[i] = version.DeepCopy()
-	}
-	return snapshot
 }
 
 func (m *ModelServerStore) LockServer(serverId string) {

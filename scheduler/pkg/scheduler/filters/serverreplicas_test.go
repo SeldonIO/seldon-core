@@ -13,10 +13,11 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func TestServerReplicasFilter(t *testing.T) {

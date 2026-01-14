@@ -23,13 +23,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/backoff"
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/health"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 

@@ -21,9 +21,9 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/server/stream/v3"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"github.com/sirupsen/logrus"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"

@@ -20,8 +20,6 @@ import (
 
 	"github.com/gotidy/ptr"
 	. "github.com/onsi/gomega"
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -29,12 +27,14 @@ import (
 	ptr2 "k8s.io/utils/ptr"
 
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/mock"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser"
 	mock2 "github.com/seldonio/seldon-core/scheduler/v2/pkg/synchroniser/mock"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func TestScheduler(t *testing.T) {
@@ -1183,7 +1183,6 @@ func TestFailedModels(t *testing.T) {
 
 	type test struct {
 		name                 string
-		models               []*db.Model
 		setupMock            func(m *mock.MockModelServerAPI)
 		expectedFailedModels []string
 	}

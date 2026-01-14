@@ -16,8 +16,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
@@ -725,7 +726,7 @@ func (p *IncrementalProcessor) modelSync() {
 				nil,
 			); err != nil {
 				logger.WithError(err).Warnf("Failed to update replica state for model %s to %s from %s",
-					mv.name, store.UnloadRequested.String(), serverReplicaExpectedState.String())
+					mv.name, db.ModelReplicaState_UnloadRequested.String(), serverReplicaExpectedState.String())
 			}
 		}
 
