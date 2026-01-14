@@ -689,7 +689,6 @@ func TestScheduler(t *testing.T) {
 								StorageConfig:    nil,
 								Requirements:     []string{"sklearn"},
 								MemoryBytes:      ptr2.To(uint64(200)),
-								Server:           ptr.String("server1"),
 								Parameters:       nil,
 								ModelRuntimeInfo: nil,
 								ModelSpec:        nil,
@@ -738,7 +737,7 @@ func TestScheduler(t *testing.T) {
 					nil,
 				)
 				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
-					"server1", expectedUpdatedServers).Return(nil)
+					"server2", expectedUpdatedServers).Return(nil)
 			},
 		},
 		{
