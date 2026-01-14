@@ -75,7 +75,6 @@ func TestScheduler(t *testing.T) {
 		checkServerEvents    bool
 		expectedServerEvents int
 		setupMock            func(m *mock.MockModelServerAPI)
-		expectedModelState   func()
 	}
 
 	tests := []test{
@@ -1470,46 +1469,183 @@ func TestFailedModels(t *testing.T) {
 		availableReplicas uint32
 	}
 
-	//newMockStore := func(models map[string]modelStateWithMetadata) *mockStore {
-	//	snapshots := map[string]*store.ModelSnapshot{}
-	//	for name, state := range models {
-	//		mv := store.NewModelVersion(&pb.Model{DeploymentSpec: state.deploymentSpec}, 1, "", map[int]store.ReplicaStatus{}, false, state.state)
-	//		mv.SetModelState(store.ModelStatus{
-	//			State:             state.state,
-	//			AvailableReplicas: state.availableReplicas,
-	//		})
-	//		snapshot := &store.ModelSnapshot{
-	//			Name:     name,
-	//			Versions: []*store.ModelVersion{mv},
-	//		}
-	//		snapshots[name] = snapshot
-	//	}
-	//	return &mockStore{
-	//		models: snapshots,
-	//	}
-	//}
-
 	type test struct {
 		name                 string
-		models               map[string]modelStateWithMetadata
+		models               []*db.Model
+		setupMock            func(m *mock.MockModelServerAPI)
 		expectedFailedModels []string
 	}
 
 	tests := []test{
 		{
 			name: "SmokeTest",
-			models: map[string]modelStateWithMetadata{
-				"model1": {store.ScheduleFailed, &pb.DeploymentSpec{Replicas: 1}, 0},
-				"model2": {store.ModelFailed, &pb.DeploymentSpec{Replicas: 1}, 0},
-				"model3": {store.ModelAvailable, &pb.DeploymentSpec{Replicas: 1}, 1},
-				"model4": {store.ModelAvailable, &pb.DeploymentSpec{Replicas: 2, MinReplicas: 1, MaxReplicas: 2}, 1}, // retry models that have not reached desired replicas
+			setupMock: func(m *mock.MockModelServerAPI) {
+
+				model3 := util.NewTestModelVersion(
+					&pbs.Model{
+						Meta: &pbs.MetaData{Name: "model3"},
+						ModelSpec: &pbs.ModelSpec{
+							Uri:              "",
+							ArtifactVersion:  nil,
+							StorageConfig:    nil,
+							Requirements:     []string{"sklearn"},
+							MemoryBytes:      ptr2.To(uint64(100)),
+							Server:           nil,
+							Parameters:       nil,
+							ModelRuntimeInfo: nil,
+							ModelSpec:        nil,
+						},
+						DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+					},
+					1, "server1",
+					map[int32]*db.ReplicaStatus{
+						1: {
+							State:     db.ModelReplicaState_Loaded,
+							Reason:    "",
+							Timestamp: nil,
+						},
+					},
+					db.ModelState_ModelAvailable)
+
+				// set available replicas
+				model3.State.AvailableReplicas = 1
+
+				model4 := util.NewTestModelVersion(
+					&pbs.Model{
+						Meta: &pbs.MetaData{Name: "model4"},
+						ModelSpec: &pbs.ModelSpec{
+							Uri:              "",
+							ArtifactVersion:  nil,
+							StorageConfig:    nil,
+							Requirements:     []string{"sklearn"},
+							MemoryBytes:      ptr2.To(uint64(100)),
+							Server:           nil,
+							Parameters:       nil,
+							ModelRuntimeInfo: nil,
+							ModelSpec:        nil,
+						},
+						DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1, MaxReplicas: 2},
+					},
+					1, "server1",
+					map[int32]*db.ReplicaStatus{
+						1: {
+							State:     db.ModelReplicaState_Loaded,
+							Reason:    "",
+							Timestamp: nil,
+						},
+					},
+					db.ModelState_ModelAvailable)
+
+				// set available replicas
+				model4.State.AvailableReplicas = 1
+
+				m.EXPECT().GetModels().Return(
+					[]*db.Model{
+						{
+							Name: "model1",
+							Versions: []*db.ModelVersion{util.NewTestModelVersion(
+								&pbs.Model{
+									Meta: &pbs.MetaData{Name: "model1"},
+									ModelSpec: &pbs.ModelSpec{
+										Uri:              "",
+										ArtifactVersion:  nil,
+										StorageConfig:    nil,
+										Requirements:     []string{"sklearn"},
+										MemoryBytes:      ptr2.To(uint64(100)),
+										Server:           nil,
+										Parameters:       nil,
+										ModelRuntimeInfo: nil,
+										ModelSpec:        nil,
+									},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+								},
+								1, "server1",
+								nil,
+								db.ModelState_ScheduleFailed),
+							},
+						},
+						{
+							Name: "model2",
+							Versions: []*db.ModelVersion{util.NewTestModelVersion(
+								&pbs.Model{
+									Meta: &pbs.MetaData{Name: "model2"},
+									ModelSpec: &pbs.ModelSpec{
+										Uri:              "",
+										ArtifactVersion:  nil,
+										StorageConfig:    nil,
+										Requirements:     []string{"sklearn"},
+										MemoryBytes:      ptr2.To(uint64(100)),
+										Server:           nil,
+										Parameters:       nil,
+										ModelRuntimeInfo: nil,
+										ModelSpec:        nil,
+									},
+									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+								},
+								1, "server1",
+								nil,
+								db.ModelState_ModelFailed),
+							},
+						},
+						{
+							Name: "model3",
+							Versions: []*db.ModelVersion{
+								model3,
+							},
+						},
+						{
+							Name: "model4",
+							Versions: []*db.ModelVersion{
+								model4,
+							},
+						}}, nil)
+
 			},
 			expectedFailedModels: []string{"model1", "model2", "model4"},
 		},
 		{
 			name: "SmokeTest",
-			models: map[string]modelStateWithMetadata{
-				"model3": {store.ModelAvailable, &pb.DeploymentSpec{Replicas: 1}, 1},
+			setupMock: func(m *mock.MockModelServerAPI) {
+
+				model3 := util.NewTestModelVersion(
+					&pbs.Model{
+						Meta: &pbs.MetaData{Name: "model3"},
+						ModelSpec: &pbs.ModelSpec{
+							Uri:              "",
+							ArtifactVersion:  nil,
+							StorageConfig:    nil,
+							Requirements:     []string{"sklearn"},
+							MemoryBytes:      ptr2.To(uint64(100)),
+							Server:           nil,
+							Parameters:       nil,
+							ModelRuntimeInfo: nil,
+							ModelSpec:        nil,
+						},
+						DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 0, MaxReplicas: 1},
+					},
+					1, "server1",
+					map[int32]*db.ReplicaStatus{
+						1: {
+							State:     db.ModelReplicaState_Loaded,
+							Reason:    "",
+							Timestamp: nil,
+						},
+					},
+					db.ModelState_ModelAvailable)
+
+				// set available replicas
+				model3.State.AvailableReplicas = 1
+
+				m.EXPECT().GetModels().Return(
+					[]*db.Model{
+
+						{
+							Name: "model3",
+							Versions: []*db.ModelVersion{
+								model3,
+							},
+						}}, nil)
+
 			},
 			expectedFailedModels: nil,
 		},
@@ -1521,7 +1657,7 @@ func TestFailedModels(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 			mockModelServerAPI := mock.NewMockModelServerAPI(ctrl)
-			//test.setupMock(mockModelServerAPI)
+			test.setupMock(mockModelServerAPI)
 
 			//mockStore := newMockStore(test.models)
 			scheduler := NewSimpleScheduler(logger, mockModelServerAPI, DefaultSchedulerConfig(mockModelServerAPI), synchroniser.NewSimpleSynchroniser(10*time.Millisecond), eventHub)
