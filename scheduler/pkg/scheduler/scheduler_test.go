@@ -1662,85 +1662,135 @@ func TestFailedModels(t *testing.T) {
 	}
 }
 
+// todo: assert on how many version were removed
 func TestRemoveAllVersions(t *testing.T) {
 	logger := log.New()
 	g := NewGomegaWithT(t)
 
-	newTestModel := func(name string, requirements []string, loadedModels []int, scheduledServer string, numVersions int) *store.ModelSnapshot {
-		config := &pb.Model{Meta: &pb.MetaData{Name: t.Name()}, ModelSpec: &pb.ModelSpec{Requirements: requirements}}
-		rmap := make(map[int]store.ReplicaStatus)
-		for _, ridx := range loadedModels {
-			rmap[ridx] = store.ReplicaStatus{State: store.Loaded}
-		}
-
-		versions := []*store.ModelVersion{}
-		for i := 1; i <= numVersions; i++ {
-			versions = append(versions, store.NewModelVersion(config, uint32(i), scheduledServer, rmap, false, store.ModelAvailable))
-		}
-		// load a bad version - this should not get unloaded by the test
-		versions = append(versions, store.NewModelVersion(config, uint32(numVersions+1), scheduledServer, map[int]store.ReplicaStatus{}, false, store.ScheduleFailed))
-
-		return &store.ModelSnapshot{
-			Name:     name,
-			Versions: versions,
-			Deleted:  true,
-		}
-	}
-
-	gsr := func(replicaIdx int, availableMemory uint64, capabilities []string, serverName string) *store.ServerReplica {
-		replica := store.NewServerReplica("svc", 8080, 5001, replicaIdx, store.NewServer(serverName, true), capabilities, availableMemory, availableMemory, 0, nil, 100)
-		return replica
-	}
-
-	//newMockStore := func(model *store.ModelSnapshot, servers []*store.ServerSnapshot) *mockStore {
-	//	modelMap := make(map[string]*store.ModelSnapshot)
-	//	modelMap[model.Name] = model
-	//	return &mockStore{
-	//		models:         modelMap,
-	//		servers:        servers,
-	//		unloadedModels: make(map[string]uint32),
-	//	}
-	//}
-
 	type test struct {
-		name        string
-		model       *store.ModelSnapshot
-		servers     []*store.ServerSnapshot
-		numVersions int
+		name      string
+		modelName string
+		setupMock func(m *mock.MockModelServerAPI)
 	}
 
 	tests := []test{
 		{
-			name:  "Allversions - 1",
-			model: newTestModel("model1", []string{"sklearn"}, []int{0, 1}, "server", 1),
-			servers: []*store.ServerSnapshot{
-				{
-					Name: "server2",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 200, []string{"sklearn"}, "server"),
-						1: gsr(1, 200, []string{"sklearn"}, "server"),
+			name:      "Allversions - 1",
+			modelName: "model1",
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					util.NewTestModelVersion(
+						&pbs.Model{
+							Meta: &pbs.MetaData{Name: "model1"},
+							ModelSpec: &pbs.ModelSpec{
+								Uri:              "",
+								ArtifactVersion:  nil,
+								StorageConfig:    nil,
+								Requirements:     []string{"sklearn"},
+								MemoryBytes:      nil,
+								Server:           nil,
+								Parameters:       nil,
+								ModelRuntimeInfo: nil,
+								ModelSpec:        nil,
+							},
+							DeploymentSpec: &pbs.DeploymentSpec{},
+						},
+						1, "server2",
+						map[int32]*db.ReplicaStatus{
+
+							0: {
+								State:     db.ModelReplicaState_Loaded,
+								Reason:    "",
+								Timestamp: nil,
+							},
+							1: {
+								State:     db.ModelReplicaState_Loaded,
+								Reason:    "",
+								Timestamp: nil,
+							},
+						},
+						db.ModelState_ModelAvailable),
+				}}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server2",
+						Replicas: map[int32]*db.ServerReplica{
+							0: util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
 					},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
+				}
+
+				expectedUpdatedServers := make([]*db.ServerReplica, 0)
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server2", expectedUpdatedServers).Return(nil)
 			},
-			numVersions: 1,
 		},
 		{
-			name:  "Allversions - > 1",
-			model: newTestModel("model1", []string{"sklearn"}, []int{0, 1}, "server", 10),
-			servers: []*store.ServerSnapshot{
-				{
-					Name: "server",
-					Replicas: map[int]*store.ServerReplica{
-						0: gsr(0, 200, []string{"sklearn"}, "server"),
-						1: gsr(1, 200, []string{"sklearn"}, "server"),
+			name:      "Allversions - > 1",
+			modelName: "model1",
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().LockModel("model1")
+
+				versions := make([]*db.ModelVersion, 0, 10)
+
+				for i := 0; i < 10; i++ {
+					versions = append(versions,
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta: &pbs.MetaData{Name: "model1"},
+								ModelSpec: &pbs.ModelSpec{
+									Uri:          "",
+									Requirements: []string{"sklearn"},
+								},
+								DeploymentSpec: &pbs.DeploymentSpec{},
+							},
+							1, "server2",
+							map[int32]*db.ReplicaStatus{
+								0: {
+									State: db.ModelReplicaState_Loaded,
+								},
+								1: {
+									State: db.ModelReplicaState_Loaded,
+								},
+							},
+							db.ModelState_ModelAvailable,
+						),
+					)
+				}
+
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: versions}, nil).MinTimes(1)
+				m.EXPECT().UnlockModel("model1")
+				servers := []*db.Server{
+					{
+						Name: "server2",
+						Replicas: map[int32]*db.ServerReplica{
+							0: util.NewTestServerReplica("host1", 8080, 5000, 0, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+							1: util.NewTestServerReplica("host1", 8080, 5000, 1, store.NewServer("server2", true), []string{"sklearn"}, 0, 200, 0, nil, 100),
+						},
+						Shared:           true,
+						ExpectedReplicas: -1,
+						KubernetesMeta:   nil,
 					},
-					Shared:           true,
-					ExpectedReplicas: -1,
-				},
+				}
+
+				expectedUpdatedServers := make([]*db.ServerReplica, 0)
+				m.EXPECT().GetServers().Return(
+					servers,
+					nil,
+				)
+				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
+					"server2", expectedUpdatedServers).Return(nil)
 			},
-			numVersions: 10,
 		},
 	}
 
@@ -1750,14 +1800,12 @@ func TestRemoveAllVersions(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 			mockModelServerAPI := mock.NewMockModelServerAPI(ctrl)
-			//test.setupMock(mockModelServerAPI)
+			test.setupMock(mockModelServerAPI)
 
-			//mockStore := newMockStore(test.model, test.servers)
 			scheduler := NewSimpleScheduler(logger, mockModelServerAPI, DefaultSchedulerConfig(mockModelServerAPI), synchroniser.NewSimpleSynchroniser(time.Duration(10*time.Millisecond)), nil)
-			err := scheduler.Schedule(test.model.Name)
+			err := scheduler.Schedule(test.modelName)
 			g.Expect(err).To(BeNil())
 
-			//g.Expect(mockStore.unloadedModels[test.model.Name]).To(Equal(uint32(test.numVersions)))
 		})
 	}
 }
