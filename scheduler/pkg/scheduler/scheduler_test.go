@@ -739,6 +739,8 @@ func TestScheduler(t *testing.T) {
 				)
 				m.EXPECT().UpdateLoadedModels("model1", uint32(1),
 					"server1", expectedUpdatedServers).Return(nil)
+
+				m.EXPECT().FailedScheduling("model1", 1, "Failed to schedule model as no matching servers are available false", false).Return(nil)
 			},
 		},
 		{
