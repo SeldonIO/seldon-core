@@ -41,7 +41,9 @@
 
 ## Other images 
 
-:warning :note: The following images play examplary roles only and are not production ready.
+{% hint style="warning" %}
+The following images play examplary roles only and are not production ready.
+{% endhint %}
 
 ### Language wrappers (examples only)
 
