@@ -209,7 +209,8 @@
               spec: wrapper
         ```
 * [Release Highlights](reference/release-highlights/README.md)
-  * [Releases 1.8.0 and later](reference/release-highlights/later-releases.md)
+  * [Release 1.19.0 Highlights](reference/release-highlights/release-1.19.0.md)
+  * [Releases 1.8 - 1.18](reference/release-highlights/later-releases.md)
   * [Release 1.7.0 Hightlights](reference/release-highlights/release-1.7.0.md)
   * [Release 1.6.0 Hightlights](reference/release-highlights/release-1.6.0.md)
   * [Release 1.5.0 Hightlights](reference/release-highlights/release-1.5.0.md)
