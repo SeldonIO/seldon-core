@@ -4,7 +4,40 @@ This page provides with instructions on how to upgrade from previous versions. E
 
 If you were running our Openshift 0.4.2 certified operator and are looking to upgrade to our 1.1 certified operator, you will also need to follow the "upgrading process" steps in the "Upgrading to 0.5.2 from previous versions" section.
 
-Make sure you also [read the CHANGELOG](./changelog.html) to see the detailed features and bug-fixes in each version.
+Make sure you also [read the CHANGELOG](../CHANGELOG.md) to see the detailed features and bug-fixes in each version.
+
+## Upgrading to 1.19
+
+**Python 3.12 Adoption**
+All core Python components—including prepackaged servers, Alibi Detect/Explain servers, wrappers, notebooks, and E2E tests—now target Python 3.12.
+
+What this means:
+- Wheels or dependencies not yet compatible with Python 3.12 may fail at runtime.
+- Custom inference images built against older Python versions must be rebuilt and tested.
+
+**Deprecated and Removed Components**
+- Analytics Helm chart is no longer built.
+- GPU-related files deprecated.
+- OpenVINO references removed (except for deprecated charts).
+
+Impact:
+- Users relying on deprecated components should plan migration.
+- No supported upgrade path for removed experimental artifacts.
+
+**Kubernetes Compatibility**
+- Operator tests validated against Kubernetes 1.23 to 1.35.
+- No removal of older supported Kubernetes versions announced, but forward compatibility is improved.
+
+**Operator**
+It is primarily a hardening and modernization release, not a feature-driven one.
+
+**Autoscaling (KEDA)**
+- KEDA was upgraded to align with Go dependencies.
+- While tests pass, clusters running older KEDA installations may behave differently.
+
+**Helm Value Drift**
+Operator config maps were aligned with Helm values.
+
 
 ## Upgrading to 1.18
 
