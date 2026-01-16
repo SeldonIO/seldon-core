@@ -3,6 +3,9 @@ package cicd__test
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"sort"
+	"strings"
 	"testing"
 
 	"github.com/cucumber/godog"
@@ -39,44 +42,69 @@ func runOne(name string, o godog.Options) int {
 	return s.Run()
 }
 
-// TestMain todo: this is the future version of running all test cases for the test suite with defined suites and config
-// todo: in the future we could read the file from config instead of having it defined
-// todo: we need to add custom stats for the end summarizing all suits run and have possible retries in the test suite
-// At the moment if it receives any flags such as paths or tags it runs only one test suite
+func discoverFeatureSuites(featuresRoot string, concurrency int) ([]suiteCfg, error) {
+	entries, err := os.ReadDir(featuresRoot)
+	if err != nil {
+		return nil, fmt.Errorf("read features root %q: %w", featuresRoot, err)
+	}
+
+	// Collect subdirectories (each becomes a "suite group")
+	var dirs []string
+	for _, e := range entries {
+		if !e.IsDir() {
+			continue
+		}
+		name := e.Name()
+
+		// Skipping server dir
+		if strings.HasPrefix(name, ".") || name == "server" {
+			continue
+		}
+		dirs = append(dirs, name)
+	}
+
+	sort.Strings(dirs) // stable ordering across machines
+
+	var suites []suiteCfg
+	for _, d := range dirs {
+		path := filepath.Join(featuresRoot, d)
+
+		// Setup then run
+		suites = append(suites,
+			suiteCfg{Name: d + "-setup", Path: path, Tags: "@ServerSetup", Concurrency: concurrency},
+			suiteCfg{Name: d + "-run", Path: path, Tags: "~@ServerSetup", Concurrency: concurrency},
+		)
+	}
+
+	return suites, nil
+}
+
 func TestMain(m *testing.M) {
 	flagSet := pflag.CommandLine
 	flagSet.StringSliceVar(&opts.Paths, fmt.Sprintf("%s%s", cmdOptPrefix, "paths"), []string{}, "paths to feature files")
 	pflag.Parse()
 
-	// Decide mode:
-	// - If user explicitly provided --godog.paths OR --godog.tags, treat it as a custom run.
-	//   (You can expand this condition if you want other flags to trigger “custom mode”.)
 	custom := pflag.CommandLine.Changed(cmdOptPrefix+"paths") || pflag.CommandLine.Changed(cmdOptPrefix+"tags")
 
 	godogStatus := 0
 
 	if custom {
-		// Custom: run exactly what the user requested (one suite)
+		// Custom: run exactly what the user requested
 		godogStatus = runOne("godog-normal-run", opts)
 	} else {
-		// Aggregated default: run all suites (Option A)
-		suites := []suiteCfg{
-			{Name: "model-setup", Path: "../features/model", Tags: "@ServerSetup", Concurrency: 3},
-			{Name: "model-run", Path: "../features/model", Tags: "~@ServerSetup", Concurrency: 3},
+		// Aggregated: auto-discover feature suites
+		featuresRoot := "../features"
+		concurrency := 3 // or make this a flag/env if you want
 
-			{Name: "autoscaling-setup", Path: "../features/autoscaling", Tags: "@ServerSetup", Concurrency: 3},
-			{Name: "autoscaling-run", Path: "../features/autoscaling", Tags: "~@ServerSetup", Concurrency: 3},
-
-			{Name: "experiment-setup", Path: "../features/experiment", Tags: "@ServerSetup", Concurrency: 3},
-			{Name: "experiment-run", Path: "../features/experiment", Tags: "~@ServerSetup", Concurrency: 3},
-
-			{Name: "pipeline-setup", Path: "../features/pipeline", Tags: "@ServerSetup", Concurrency: 3},
-			{Name: "pipeline-run", Path: "../features/pipeline", Tags: "~@ServerSetup", Concurrency: 3},
+		suites, err := discoverFeatureSuites(featuresRoot, concurrency)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to discover suites: %v\n", err)
+			os.Exit(1)
 		}
 
 		failed := 0
 		for _, s := range suites {
-			o := opts // copy base opts (format/output/etc)
+			o := opts
 			o.Paths = []string{s.Path}
 			o.Tags = s.Tags
 			o.Concurrency = s.Concurrency
