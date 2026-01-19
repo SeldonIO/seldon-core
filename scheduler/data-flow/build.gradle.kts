@@ -29,8 +29,8 @@ dependencies {
     implementation("io.klogging:slf4j-klogging:0.11.1")
 
     // Kafka
-    implementation("org.apache.kafka:kafka-streams:8.0.0-ccs")
-    testImplementation("org.apache.kafka:kafka-streams-test-utils:8.0.0-ccs")
+    implementation("org.apache.kafka:kafka-streams:8.1.0-ce")
+    testImplementation("org.apache.kafka:kafka-streams-test-utils:8.1.0-ce")
     // https://mvnrepository.com/artifact/io.confluent/kafka-streams-protobuf-serde
     implementation("io.confluent:kafka-streams-protobuf-serde:8.0.0")
 
