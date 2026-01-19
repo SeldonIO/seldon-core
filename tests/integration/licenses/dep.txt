@@ -140,6 +140,7 @@ github.com/googleapis/enterprise-certificate-proxy
 github.com/googleapis/gax-go/v2
 github.com/gorilla/mux
 github.com/gorilla/websocket
+github.com/gotidy/ptr
 github.com/gregjones/httpcache
 github.com/grpc-ecosystem/go-grpc-middleware
 github.com/grpc-ecosystem/go-grpc-prometheus
