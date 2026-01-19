@@ -14,23 +14,23 @@ import (
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/v2_dataplane"
 	v "github.com/seldonio/seldon-core/operator/v2/pkg/generated/clientset/versioned"
+	"github.com/seldonio/seldon-core/tests/integration/godog/components"
 	"github.com/seldonio/seldon-core/tests/integration/godog/k8sclient"
 	log "github.com/sirupsen/logrus"
 )
 
 type World struct {
-	namespace            string
-	kubeClient           *k8sclient.K8sClient
-	corek8sClient        v.Interface
-	watcherStorage       k8sclient.WatcherStorage
-	StartingClusterState string //todo: this will be a combination of starting state awareness of core 2 such as the
-	//todo:  server config,seldon config and seldon runtime to be able to reconcile to starting state should we change
-	//todo: the state such as reducing replicas to 0 of scheduler to test unavailability
+	namespace         string
+	kubeClient        *k8sclient.K8sClient
+	corek8sClient     v.Interface
+	watcherStorage    k8sclient.WatcherStorage
+	env               *components.EnvManager //this is a combination of components for the cluster
 	currentModel      *Model
 	currentPipeline   *Pipeline
 	currentExperiment *Experiment
 	server            *server
 	infer             inference
+	infra             *Infrastructure
 	logger            log.FieldLogger
 	Label             map[string]string
 }
@@ -41,6 +41,7 @@ type Config struct {
 	KubeClient     *k8sclient.K8sClient
 	K8sClient      v.Interface
 	WatcherStorage k8sclient.WatcherStorage
+	Env            *components.EnvManager
 	GRPC           v2_dataplane.GRPCInferenceServiceClient
 	IngressHost    string
 	HTTPPort       uint
@@ -62,6 +63,7 @@ func NewWorld(c Config) (*World, error) {
 		namespace:         c.Namespace,
 		kubeClient:        c.KubeClient,
 		watcherStorage:    c.WatcherStorage,
+		env:               c.Env,
 		currentModel:      newModel(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
 		currentExperiment: newExperiment(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
 		currentPipeline:   newPipeline(label, c.Namespace, c.K8sClient, c.Logger, c.WatcherStorage),
@@ -73,6 +75,7 @@ func NewWorld(c Config) (*World, error) {
 			httpPort: c.HTTPPort,
 			log:      c.Logger,
 			ssl:      c.SSL},
+		infra: newInfrastructure(c.Env, c.Logger),
 		Label: label,
 	}
 
