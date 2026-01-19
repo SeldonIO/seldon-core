@@ -55,7 +55,7 @@ dependencies {
     implementation("com.michael-bull.kotlin-retry:kotlin-retry:2.0.1")
 
     // k8s
-    implementation("io.kubernetes:client-java:24.0.0")
+    implementation("io.kubernetes:client-java:24.0.0-legacy")
 
     // HTTP server for health probes
     implementation("io.ktor:ktor-server-core:3.3.0")
