@@ -378,7 +378,7 @@ func TestPublishPipelineEventWithTimeout(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, hub := createTestScheduler(t)
+			s, _, hub := createTestScheduler()
 			s.timeout = test.timeout
 			if test.loadReq != nil {
 				err := s.pipelineHandler.AddPipeline(test.loadReq.Pipeline)
@@ -459,7 +459,7 @@ func TestAddAndRemovePipelineNoPipelineGw(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, _ := createTestScheduler(t)
+			s, _, _ := createTestScheduler()
 
 			// add operator stream
 			stream := newStubPipelineStatusServer(100, 5*time.Millisecond, test.ctx)
@@ -581,7 +581,7 @@ func TestPipelineGwRebalanceNoPipelineGw(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, _ := createTestScheduler(t)
+			s, _, _ := createTestScheduler()
 
 			// add operator stream
 			stream := newStubPipelineStatusServer(1, 5*time.Millisecond, test.ctx)
@@ -714,7 +714,7 @@ func TestPipelineGwRebalanceCorrectMessages(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			// create a test scheduler - note it uses a load balancer with 1 partition
-			s, _ := createTestScheduler(t)
+			s, _, _ := createTestScheduler()
 
 			// create operator stream
 			operatorStream := newStubPipelineStatusServer(1, 5*time.Millisecond, test.ctx)
@@ -959,7 +959,7 @@ func TestPipelineGwRebalance(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s, _ := createTestScheduler(t)
+			s, _, _ := createTestScheduler()
 
 			var streams []*stubPipelineStatusServer
 			for i := 0; i < test.replicas; i++ {

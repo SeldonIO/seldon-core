@@ -15,27 +15,28 @@ import (
 	. "github.com/onsi/gomega"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
-func getTestModelWithMemory(requiredmemory *uint64, serverName string, replicaId int) *store.ModelVersion {
+func getTestModelWithMemory(requiredmemory *uint64, serverName string, replicaId int) *db.ModelVersion {
 
-	replicas := map[int]store.ReplicaStatus{}
+	replicas := map[int32]*db.ReplicaStatus{}
 	if replicaId >= 0 {
-		replicas[replicaId] = store.ReplicaStatus{State: store.Loading}
+		replicas[int32(replicaId)] = &db.ReplicaStatus{State: db.ModelReplicaState_Loading}
 	}
-	return store.NewModelVersion(
+	return util.NewTestModelVersion(
 		&pb.Model{ModelSpec: &pb.ModelSpec{MemoryBytes: requiredmemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
 		1,
 		serverName,
 		replicas,
-		false,
-		store.ModelProgressing)
+		db.ModelState_ModelProgressing)
 }
 
-func getTestServerReplicaWithMemory(availableMemory, reservedMemory uint64, serverName string, replicaId int) *store.ServerReplica {
-	return store.NewServerReplica("svc", 8080, 5001, replicaId, store.NewServer(serverName, true), []string{}, availableMemory, availableMemory, reservedMemory, nil, 100)
+func getTestServerReplicaWithMemory(availableMemory, reservedMemory uint64, serverName string, replicaId int) *db.ServerReplica {
+	return util.NewTestServerReplica("svc", 8080, 5001, int32(replicaId), store.NewServer(serverName, true), []string{}, availableMemory, availableMemory, reservedMemory, nil, 100)
 }
 
 func TestReplicaMemoryFilter(t *testing.T) {
@@ -43,8 +44,8 @@ func TestReplicaMemoryFilter(t *testing.T) {
 
 	type test struct {
 		name     string
-		model    *store.ModelVersion
-		server   *store.ServerReplica
+		model    *db.ModelVersion
+		server   *db.ServerReplica
 		expected bool
 	}
 

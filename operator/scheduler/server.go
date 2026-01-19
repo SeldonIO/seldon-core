@@ -140,7 +140,7 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 			return err
 		}
 
-		logger.Info("Received event", "server", event.ServerName)
+		logger.Info("Received event", "server", event.ServerName, "event", event)
 
 		if event.GetKubernetesMeta() == nil {
 			logger.Info("Received server event with no k8s metadata so ignoring", "server", event.ServerName)
@@ -173,6 +173,7 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 				server,
 			); err != nil {
 				if errors.IsNotFound(err) {
+					logger.Info("Server does not exist", "server", event.ServerName, "event", event)
 					return nil
 				}
 				return err
@@ -190,11 +191,14 @@ func (s *SchedulerClient) SubscribeServerEvents(ctx context.Context, grpcClient 
 			// At the moment, the scheduler doesn't send multiple types of updates in a single event;
 			switch event.GetType() {
 			case scheduler.ServerStatusResponse_StatusUpdate:
+				logger.Info("Received status update event", "server", event.ServerName, "event", event)
 				server.Status.LoadedModelReplicas = event.NumLoadedModelReplicas
 				return s.updateServerStatus(contextWithTimeout, server)
 			case scheduler.ServerStatusResponse_ScalingRequest:
+				logger.Info("Received scaling request", "server", event.ServerName, "event", event)
 				return s.scaleServerReplicas(contextWithTimeout, server, event)
 			default: // we ignore unknown event types
+				logger.Info("Received unknown event, ignoring", "server", event.ServerName, "event", event)
 				return nil
 			}
 		})
@@ -229,6 +233,7 @@ func (s *SchedulerClient) scaleServerReplicas(ctx context.Context, server *v1alp
 
 		if err := s.Patch(ctx, newServer, client.MergeFrom(server)); err != nil {
 			if errors.IsNotFound(err) {
+				s.logger.Error(err, "Scaling server failed, server not found", "server", server.Name, "event", event)
 				return nil
 			}
 			s.recorder.Eventf(server, v1.EventTypeWarning, "PatchFailed",

@@ -15,7 +15,10 @@ import (
 
 	. "github.com/onsi/gomega"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func TestReplicaMemorySort(t *testing.T) {
@@ -24,34 +27,33 @@ func TestReplicaMemorySort(t *testing.T) {
 	type test struct {
 		name     string
 		replicas []*CandidateReplica
-		ordering []int
+		ordering []int32
 	}
 
-	model := store.NewModelVersion(
+	model := util.NewTestModelVersion(
 		nil,
 		1,
 		"server1",
-		map[int]store.ReplicaStatus{3: {State: store.Loading}},
-		false,
-		store.ModelProgressing)
+		map[int32]*db.ReplicaStatus{3: {State: db.ModelReplicaState_Loading}},
+		db.ModelState_ModelProgressing)
 	tests := []test{
 		{
 			name: "ThreeReplicasDifferentMemory",
 			replicas: []*CandidateReplica{
-				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 1, store.NewServer("dummy", true), []string{}, 100, 100, 0, map[store.ModelVersionID]bool{}, 100)},
-				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 2, store.NewServer("dummy", true), []string{}, 100, 200, 0, map[store.ModelVersionID]bool{}, 100)},
-				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 3, store.NewServer("dummy", true), []string{}, 100, 150, 0, map[store.ModelVersionID]bool{}, 100)},
+				{Model: model, Replica: util.NewTestServerReplica("", 8080, 5001, 1, store.NewServer("dummy", true), []string{}, 100, 100, 0, []*db.ModelVersionID{}, 100)},
+				{Model: model, Replica: util.NewTestServerReplica("", 8080, 5001, 2, store.NewServer("dummy", true), []string{}, 100, 200, 0, []*db.ModelVersionID{}, 100)},
+				{Model: model, Replica: util.NewTestServerReplica("", 8080, 5001, 3, store.NewServer("dummy", true), []string{}, 100, 150, 0, []*db.ModelVersionID{}, 100)},
 			},
-			ordering: []int{2, 3, 1},
+			ordering: []int32{2, 3, 1},
 		},
 		{
 			name: "ThreeReplicasDifferentMemoryWithReserved",
 			replicas: []*CandidateReplica{
-				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 1, store.NewServer("dummy", true), []string{}, 100, 100, 0, map[store.ModelVersionID]bool{}, 100)},
-				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 2, store.NewServer("dummy", true), []string{}, 100, 200, 150, map[store.ModelVersionID]bool{}, 100)},
-				{Model: model, Replica: store.NewServerReplica("", 8080, 5001, 3, store.NewServer("dummy", true), []string{}, 100, 150, 0, map[store.ModelVersionID]bool{}, 100)},
+				{Model: model, Replica: util.NewTestServerReplica("", 8080, 5001, 1, store.NewServer("dummy", true), []string{}, 100, 100, 0, []*db.ModelVersionID{}, 100)},
+				{Model: model, Replica: util.NewTestServerReplica("", 8080, 5001, 2, store.NewServer("dummy", true), []string{}, 100, 200, 150, []*db.ModelVersionID{}, 100)},
+				{Model: model, Replica: util.NewTestServerReplica("", 8080, 5001, 3, store.NewServer("dummy", true), []string{}, 100, 150, 0, []*db.ModelVersionID{}, 100)},
 			},
-			ordering: []int{3, 1, 2},
+			ordering: []int32{3, 1, 2},
 		},
 	}
 

@@ -18,9 +18,12 @@ import (
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
+
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/mock"
 )
 
 func TestSaveWithTTL(t *testing.T) {
@@ -88,6 +91,7 @@ func TestSaveAndRestore(t *testing.T) {
 	type test struct {
 		name      string
 		pipelines []*Pipeline
+		setupMock func(m *mock.MockModelServerAPI)
 	}
 
 	tests := []test{
@@ -120,10 +124,18 @@ func TestSaveAndRestore(t *testing.T) {
 					Deleted: false,
 				},
 			},
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().GetModel("a").Return(&db.Model{Name: "a", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
+			},
 		},
 		{
 			name:      "no pipelines",
 			pipelines: []*Pipeline{},
+			setupMock: func(m *mock.MockModelServerAPI) {},
 		},
 		{
 			name: "test multiple pipelines",
@@ -179,10 +191,26 @@ func TestSaveAndRestore(t *testing.T) {
 					Deleted: false,
 				},
 			},
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().GetModel("a").Return(&db.Model{Name: "a", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
+				m.EXPECT().GetModel("b").Return(&db.Model{Name: "b", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelTerminating},
+					},
+				}}, nil).MinTimes(1)
+			},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockModelServerAPI := mock.NewMockModelServerAPI(ctrl)
+			test.setupMock(mockModelServerAPI)
+
 			path := fmt.Sprintf("%s/db", t.TempDir())
 			logger := log.New()
 			db, err := newPipelineDbManager(getPipelineDbFolder(path), logger, 10)
@@ -194,7 +222,7 @@ func TestSaveAndRestore(t *testing.T) {
 			err = db.Stop()
 			g.Expect(err).To(BeNil())
 
-			ps := NewPipelineStore(log.New(), nil, fakeModelStore{status: map[string]store.ModelState{}})
+			ps := NewPipelineStore(log.New(), nil, mockModelServerAPI)
 			err = ps.InitialiseOrRestoreDB(path, 10)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
@@ -207,9 +235,10 @@ func TestSaveAndRestore(t *testing.T) {
 func TestSaveAndRestoreDeletedPipelines(t *testing.T) {
 	g := NewGomegaWithT(t)
 	type test struct {
-		name     string
-		pipeline Pipeline
-		withTTL  bool
+		name      string
+		pipeline  Pipeline
+		withTTL   bool
+		setupMock func(m *mock.MockModelServerAPI)
 	}
 
 	createdDeletedPipeline := func(name string) Pipeline {
@@ -244,15 +273,33 @@ func TestSaveAndRestoreDeletedPipelines(t *testing.T) {
 			name:     "test deleted pipeline with TTL should have deletedAt set",
 			pipeline: createdDeletedPipeline("with-ttl"),
 			withTTL:  true,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().GetModel("a").Return(&db.Model{Name: "a", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
+			},
 		},
 		{
 			name:     "test deleted pipeline without TTL should have deletedAt set after cleanup",
 			pipeline: createdDeletedPipeline("without-ttl"),
 			withTTL:  false,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().GetModel("a").Return(&db.Model{Name: "a", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
+			},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockModelServerAPI := mock.NewMockModelServerAPI(ctrl)
+			test.setupMock(mockModelServerAPI)
+
 			g.Expect(test.pipeline.Deleted).To(BeTrue(), "this is a test for deleted pipelines")
 			path := fmt.Sprintf("%s/db", t.TempDir())
 			logger := log.New()
@@ -268,7 +315,7 @@ func TestSaveAndRestoreDeletedPipelines(t *testing.T) {
 			err = pdb.Stop()
 			g.Expect(err).To(BeNil())
 
-			ps := NewPipelineStore(log.New(), nil, fakeModelStore{status: map[string]store.ModelState{}})
+			ps := NewPipelineStore(log.New(), nil, mockModelServerAPI)
 			err = ps.InitialiseOrRestoreDB(path, 10)
 			g.Expect(err).To(BeNil())
 
@@ -448,6 +495,7 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 	type test struct {
 		name      string
 		pipelines []*Pipeline
+		setupMock func(m *mock.MockModelServerAPI)
 	}
 
 	tests := []test{
@@ -480,10 +528,18 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 					Deleted: false,
 				},
 			},
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().GetModel("a").Return(&db.Model{Name: "a", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
+			},
 		},
 		{
 			name:      "no pipelines",
 			pipelines: []*Pipeline{},
+			setupMock: func(m *mock.MockModelServerAPI) {},
 		},
 		{
 			name: "test multiple pipelines",
@@ -539,12 +595,28 @@ func TestMigrateFromV1ToV2(t *testing.T) {
 					Deleted: false,
 				},
 			},
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().GetModel("a").Return(&db.Model{Name: "a", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
+				m.EXPECT().GetModel("b").Return(&db.Model{Name: "b", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
+			},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockModelServerAPI := mock.NewMockModelServerAPI(ctrl)
+			test.setupMock(mockModelServerAPI)
+
 			path := fmt.Sprintf("%s/db", t.TempDir())
-			ps := NewPipelineStore(log.New(), nil, fakeModelStore{status: map[string]store.ModelState{}})
+			ps := NewPipelineStore(log.New(), nil, mockModelServerAPI)
 			err := ps.InitialiseOrRestoreDB(path, 10)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {
@@ -576,6 +648,7 @@ func TestMigrateToCore210(t *testing.T) {
 		name      string
 		pipelines []*Pipeline
 		expected  []*Pipeline
+		setupMock func(m *mock.MockModelServerAPI)
 	}
 	timestamp := time.Now().UTC()
 
@@ -635,13 +708,24 @@ func TestMigrateToCore210(t *testing.T) {
 					Deleted: false,
 				},
 			},
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().GetModel("a").Return(&db.Model{Name: "a", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
+			},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockModelServerAPI := mock.NewMockModelServerAPI(ctrl)
+			test.setupMock(mockModelServerAPI)
+
 			path := fmt.Sprintf("%s/db", t.TempDir())
-			ps := NewPipelineStore(log.New(), nil, fakeModelStore{status: map[string]store.ModelState{}})
+			ps := NewPipelineStore(log.New(), nil, mockModelServerAPI)
 			err := ps.InitialiseOrRestoreDB(path, 10)
 			g.Expect(err).To(BeNil())
 			for _, p := range test.pipelines {

@@ -26,6 +26,7 @@ import (
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/chainer"
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -1674,7 +1675,9 @@ func createTestScheduler(t *testing.T, serverName string) (*ChainerServer, *coor
 
 	eventHub, _ := coordinator.NewEventHub(logger)
 
-	schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+	modelStorage := store.NewInMemoryStorage[*db.Model]()
+	serverStorage := store.NewInMemoryStorage[*db.Server]()
+	schedulerStore := store.NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
 	pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
 
 	data :=

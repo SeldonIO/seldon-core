@@ -10,9 +10,13 @@ the Change License after the Change Date as each is defined in accordance with t
 package pipeline
 
 import (
+	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/sirupsen/logrus"
+
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
@@ -26,15 +30,14 @@ var member void
 type ModelStatusHandler struct {
 	mu              sync.RWMutex
 	logger          logrus.FieldLogger
-	store           store.ModelStore
+	store           store.ModelServerAPI
 	modelReferences map[string]map[string]void
 }
 
 // Set pipeline model readiness
 // Setup references so we can update when model status' change
 func (ms *ModelStatusHandler) addPipelineModelStatus(pipeline *Pipeline) error {
-	err := ms.setPipelineModelsReady(pipeline.GetLatestPipelineVersion())
-	if err != nil {
+	if err := ms.setPipelineModelsReady(pipeline.GetLatestPipelineVersion()); err != nil {
 		return err
 	}
 	ms.addModelReferences(pipeline)
@@ -69,12 +72,18 @@ func (ms *ModelStatusHandler) setPipelineModelsReady(pipelineVersion *PipelineVe
 		for stepName, step := range pipelineVersion.Steps {
 			model, err := ms.store.GetModel(stepName)
 			if err != nil {
-				return err
+				if errors.Is(err, store.ErrNotFound) {
+					ms.logger.WithField("model", stepName).Warn("Model for step not found, setting model step available=false")
+					modelsReady = false
+					step.Available = false
+					continue
+				}
+				return fmt.Errorf("failed to get model %s: %w", stepName, err)
 			}
 			step.Available = false
 			if model != nil {
-				lastAvailableModelVersion := model.GetLastAvailableModel()
-				if lastAvailableModelVersion != nil && lastAvailableModelVersion.ModelState().ModelGwState == store.ModelAvailable {
+				lastAvailableModelVersion := model.GetLastAvailableModelVersion()
+				if lastAvailableModelVersion != nil && lastAvailableModelVersion.State.ModelGwState == db.ModelState_ModelAvailable {
 					step.Available = true
 				}
 			}

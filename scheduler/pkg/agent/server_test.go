@@ -18,129 +18,22 @@ import (
 
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pbs "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
-	testing_utils "github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/scheduler/mock"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
-
-type mockScheduler struct{}
-
-var _ scheduler.Scheduler = (*mockScheduler)(nil)
-
-func (s mockScheduler) Schedule(_ string) error {
-	return nil
-}
-
-func (s mockScheduler) ScheduleFailedModels() ([]string, error) {
-	return nil, nil
-}
-
-type mockStore struct {
-	models map[string]*store.ModelSnapshot
-}
-
-var _ store.ModelStore = (*mockStore)(nil)
-
-func (m *mockStore) FailedScheduling(modelID string, version uint32, reason string, reset bool) error {
-	return nil
-}
-
-func (m *mockStore) UpdateModel(config *pbs.LoadModelRequest) error {
-	panic("implement me")
-}
-
-func (m *mockStore) GetModel(key string) (*store.ModelSnapshot, error) {
-	return m.models[key], nil
-}
-
-func (f mockStore) GetModels() ([]*store.ModelSnapshot, error) {
-	models := []*store.ModelSnapshot{}
-	for _, m := range f.models {
-		models = append(models, m)
-	}
-	return models, nil
-}
-
-func (m mockStore) LockModel(modelId string) {
-}
-
-func (m mockStore) UnlockModel(modelId string) {
-}
-
-func (m *mockStore) RemoveModel(req *pbs.UnloadModelRequest) error {
-	panic("implement me")
-}
-
-func (m *mockStore) GetServers(shallow bool, modelDetails bool) ([]*store.ServerSnapshot, error) {
-	panic("implement me")
-}
-
-func (m *mockStore) GetServer(serverKey string, shallow bool, modelDetails bool) (*store.ServerSnapshot, error) {
-	panic("implement me")
-}
-
-func (m *mockStore) AddNewModelVersion(modelName string) error {
-	panic("implement me")
-}
-
-func (m *mockStore) UpdateLoadedModels(modelKey string, version uint32, serverKey string, replicas []*store.ServerReplica) error {
-	panic("implement me")
-}
-
-func (m *mockStore) UnloadVersionModels(modelKey string, version uint32) (bool, error) {
-	panic("implement me")
-}
-
-func (m *mockStore) UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error) {
-	panic("implement me")
-}
-
-func (m *mockStore) UpdateModelState(modelKey string, version uint32, serverKey string, replicaIdx int, availableMemory *uint64, expectedState, desiredState store.ModelReplicaState, reason string, runtimeInfo *pbs.ModelRuntimeInfo) error {
-	model := m.models[modelKey]
-	for _, mv := range model.Versions {
-		if mv.GetVersion() == version {
-			mv.SetReplicaState(replicaIdx, desiredState, reason)
-		}
-	}
-	return nil
-}
-
-func (m *mockStore) AddServerReplica(request *pb.AgentSubscribeRequest) error {
-	return nil
-}
-
-func (m *mockStore) ServerNotify(request *pbs.ServerNotify) error {
-	panic("implement me")
-}
-
-func (m *mockStore) RemoveServerReplica(serverName string, replicaIdx int) ([]string, error) {
-	return nil, nil
-}
-
-func (m *mockStore) DrainServerReplica(serverName string, replicaIdx int) ([]string, error) {
-	panic("implement me")
-}
-
-func (m *mockStore) GetAllModels() []string {
-	var modelNames []string
-	for modelName := range m.models {
-		modelNames = append(modelNames, modelName)
-	}
-	return modelNames
-}
-
-func (m *mockStore) SetModelGwModelState(name string, versionNumber uint32, status store.ModelState, reason string, source string) error {
-	panic("implement me")
-}
 
 type mockGrpcStream struct {
 	err error
@@ -164,12 +57,13 @@ func TestSync(t *testing.T) {
 
 	type ExpectedVersionState struct {
 		version        uint32
-		expectedStates map[int]store.ReplicaStatus
+		expectedStates map[int]*db.ReplicaStatus
 	}
 	type test struct {
 		name                  string
 		agents                map[ServerKey]*AgentSubscriber
-		store                 *mockStore
+		models                []*db.Model
+		servers               []*db.Server
 		modelName             string
 		expectedVersionStates []ExpectedVersionState
 	}
@@ -180,24 +74,30 @@ func TestSync(t *testing.T) {
 			agents: map[ServerKey]*AgentSubscriber{
 				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{ctx: context.Background()}},
 			},
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(&pbs.Model{Meta: &pbs.MetaData{Name: "iris"}}, 1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.LoadRequested},
-								}, false, store.ModelProgressing),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(&pbs.Model{Meta: &pbs.MetaData{Name: "iris"}}, 1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_LoadRequested},
+							}, db.ModelState_ModelProgressing),
+					},
+				},
+			},
+			servers: []*db.Server{
+				{
+					Name: "server1",
+					Replicas: map[int32]*db.ServerReplica{
+						1: {},
 					},
 				},
 			},
 			expectedVersionStates: []ExpectedVersionState{
 				{
 					version: 1,
-					expectedStates: map[int]store.ReplicaStatus{
-						1: {State: store.Loading},
+					expectedStates: map[int]*db.ReplicaStatus{
+						1: {State: db.ModelReplicaState_Loading},
 					},
 				},
 			},
@@ -208,24 +108,30 @@ func TestSync(t *testing.T) {
 			agents: map[ServerKey]*AgentSubscriber{
 				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{ctx: cancelledCtx}},
 			},
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(&pbs.Model{Meta: &pbs.MetaData{Name: "iris"}}, 1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.LoadRequested},
-								}, false, store.ModelProgressing),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(&pbs.Model{Meta: &pbs.MetaData{Name: "iris"}}, 1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_LoadRequested},
+							}, db.ModelState_ModelProgressing),
+					},
+				},
+			},
+			servers: []*db.Server{
+				{
+					Name: "server1",
+					Replicas: map[int32]*db.ServerReplica{
+						1: {},
 					},
 				},
 			},
 			expectedVersionStates: []ExpectedVersionState{
 				{
 					version: 1,
-					expectedStates: map[int]store.ReplicaStatus{
-						1: {State: store.LoadFailed},
+					expectedStates: map[int]*db.ReplicaStatus{
+						1: {State: db.ModelReplicaState_LoadFailed},
 					},
 				},
 			},
@@ -236,24 +142,30 @@ func TestSync(t *testing.T) {
 			agents: map[ServerKey]*AgentSubscriber{
 				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{ctx: context.Background(), err: fmt.Errorf("error send")}},
 			},
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(&pbs.Model{Meta: &pbs.MetaData{Name: "iris"}}, 1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.LoadRequested},
-								}, false, store.ModelProgressing),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(&pbs.Model{Meta: &pbs.MetaData{Name: "iris"}}, 1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_LoadRequested},
+							}, db.ModelState_ModelProgressing),
+					},
+				},
+			},
+			servers: []*db.Server{
+				{
+					Name: "server1",
+					Replicas: map[int32]*db.ServerReplica{
+						1: {},
 					},
 				},
 			},
 			expectedVersionStates: []ExpectedVersionState{
 				{
 					version: 1,
-					expectedStates: map[int]store.ReplicaStatus{
-						1: {State: store.LoadFailed},
+					expectedStates: map[int]*db.ReplicaStatus{
+						1: {State: db.ModelReplicaState_LoadFailed},
 					},
 				},
 			},
@@ -264,24 +176,30 @@ func TestSync(t *testing.T) {
 			agents: map[ServerKey]*AgentSubscriber{
 				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{ctx: context.Background()}},
 			},
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(&pbs.Model{Meta: &pbs.MetaData{Name: "iris"}}, 1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.UnloadRequested},
-								}, false, store.ModelTerminating),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(&pbs.Model{Meta: &pbs.MetaData{Name: "iris"}}, 1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_UnloadRequested},
+							}, db.ModelState_ModelTerminating),
+					},
+				},
+			},
+			servers: []*db.Server{
+				{
+					Name: "server1",
+					Replicas: map[int32]*db.ServerReplica{
+						1: {},
 					},
 				},
 			},
 			expectedVersionStates: []ExpectedVersionState{
 				{
 					version: 1,
-					expectedStates: map[int]store.ReplicaStatus{
-						1: {State: store.Unloading},
+					expectedStates: map[int]*db.ReplicaStatus{
+						1: {State: db.ModelReplicaState_Unloading},
 					},
 				},
 			},
@@ -292,24 +210,30 @@ func TestSync(t *testing.T) {
 			agents: map[ServerKey]*AgentSubscriber{
 				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{ctx: context.Background(), err: fmt.Errorf("error send")}},
 			},
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(&pbs.Model{Meta: &pbs.MetaData{Name: "iris"}}, 1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.UnloadRequested},
-								}, false, store.ModelTerminating),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(&pbs.Model{Meta: &pbs.MetaData{Name: "iris"}}, 1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_UnloadRequested},
+							}, db.ModelState_ModelTerminating),
+					},
+				},
+			},
+			servers: []*db.Server{
+				{
+					Name: "server1",
+					Replicas: map[int32]*db.ServerReplica{
+						1: {},
 					},
 				},
 			},
 			expectedVersionStates: []ExpectedVersionState{
 				{
 					version: 1,
-					expectedStates: map[int]store.ReplicaStatus{
-						1: {State: store.UnloadFailed},
+					expectedStates: map[int]*db.ReplicaStatus{
+						1: {State: db.ModelReplicaState_UnloadFailed},
 					},
 				},
 			},
@@ -320,34 +244,40 @@ func TestSync(t *testing.T) {
 			agents: map[ServerKey]*AgentSubscriber{
 				{serverName: "server1", replicaIdx: 1}: {stream: &mockGrpcStream{ctx: context.Background()}},
 			},
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(&pbs.Model{Meta: &pbs.MetaData{Name: "iris"}}, 1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.UnloadRequested},
-								}, false, store.ModelProgressing),
-							store.NewModelVersion(&pbs.Model{Meta: &pbs.MetaData{Name: "iris"}}, 2, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.LoadRequested},
-								}, false, store.ModelProgressing),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(&pbs.Model{Meta: &pbs.MetaData{Name: "iris"}}, 1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_UnloadRequested},
+							}, db.ModelState_ModelProgressing),
+						util.NewTestModelVersion(&pbs.Model{Meta: &pbs.MetaData{Name: "iris"}}, 2, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_LoadRequested},
+							}, db.ModelState_ModelProgressing),
+					},
+				},
+			},
+			servers: []*db.Server{
+				{
+					Name: "server1",
+					Replicas: map[int32]*db.ServerReplica{
+						1: {},
 					},
 				},
 			},
 			expectedVersionStates: []ExpectedVersionState{
 				{
 					version: 1,
-					expectedStates: map[int]store.ReplicaStatus{
-						1: {State: store.Unloading},
+					expectedStates: map[int]*db.ReplicaStatus{
+						1: {State: db.ModelReplicaState_Unloading},
 					},
 				},
 				{
 					version: 2,
-					expectedStates: map[int]store.ReplicaStatus{
-						1: {State: store.Loading},
+					expectedStates: map[int]*db.ReplicaStatus{
+						1: {State: db.ModelReplicaState_Loading},
 					},
 				},
 			},
@@ -359,10 +289,28 @@ func TestSync(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			server := NewAgentServer(logger, test.store, nil, eventHub, false, tls.TLSOptions{})
+
+			// Create storage instances
+			modelStorage := store.NewInMemoryStorage[*db.Model]()
+			serverStorage := store.NewInMemoryStorage[*db.Server]()
+
+			// Populate storage with test data
+			for _, model := range test.models {
+				err := modelStorage.Insert(context.TODO(), model)
+				g.Expect(err).To(BeNil())
+			}
+			for _, server := range test.servers {
+				err := serverStorage.Insert(context.TODO(), server)
+				g.Expect(err).To(BeNil())
+			}
+
+			// Create MemoryStore with populated storage
+			ms := store.NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
+
+			server := NewAgentServer(logger, ms, nil, eventHub, false, tls.TLSOptions{})
 			server.agents = test.agents
 			server.Sync(test.modelName)
-			model, err := test.store.GetModel(test.modelName)
+			model, err := modelStorage.Get(context.TODO(), test.modelName)
 			g.Expect(err).To(BeNil())
 			for _, expectedVersionState := range test.expectedVersionStates {
 				mv := model.GetVersion(expectedVersionState.version)
@@ -456,7 +404,7 @@ func TestModelScalingProtos(t *testing.T) {
 
 	type test struct {
 		name                string
-		store               *mockStore
+		models              []*db.Model
 		trigger             pb.ModelScalingTriggerMessage_Trigger
 		triggerModelName    string
 		triggerModelVersion int
@@ -467,21 +415,19 @@ func TestModelScalingProtos(t *testing.T) {
 	tests := []test{
 		{
 			name: "scale up not enabled",
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(
-								&pbs.Model{
-									Meta:           &pbs.MetaData{Name: "iris"},
-									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1},
-								},
-								1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.Available},
-								}, false, store.ModelAvailable),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta:           &pbs.MetaData{Name: "iris"},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1},
+							},
+							1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_Available},
+							}, db.ModelState_ModelAvailable),
 					},
 				},
 			},
@@ -493,21 +439,19 @@ func TestModelScalingProtos(t *testing.T) {
 		},
 		{
 			name: "scale up within range no max",
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(
-								&pbs.Model{
-									Meta:           &pbs.MetaData{Name: "iris"},
-									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 1},
-								},
-								1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.Available},
-								}, false, store.ModelAvailable),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta:           &pbs.MetaData{Name: "iris"},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 1},
+							},
+							1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_Available},
+							}, db.ModelState_ModelAvailable),
 					},
 				},
 			},
@@ -519,21 +463,19 @@ func TestModelScalingProtos(t *testing.T) {
 		},
 		{
 			name: "scale up within range",
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(
-								&pbs.Model{
-									Meta:           &pbs.MetaData{Name: "iris"},
-									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 1, MaxReplicas: 2},
-								},
-								1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.Available},
-								}, false, store.ModelAvailable),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta:           &pbs.MetaData{Name: "iris"},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 1, MaxReplicas: 2},
+							},
+							1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_Available},
+							}, db.ModelState_ModelAvailable),
 					},
 				},
 			},
@@ -545,21 +487,19 @@ func TestModelScalingProtos(t *testing.T) {
 		},
 		{
 			name: "scale up not within range",
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(
-								&pbs.Model{
-									Meta:           &pbs.MetaData{Name: "iris"},
-									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 1, MaxReplicas: 1},
-								},
-								1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.Available},
-								}, false, store.ModelAvailable),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta:           &pbs.MetaData{Name: "iris"},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 1, MinReplicas: 1, MaxReplicas: 1},
+							},
+							1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_Available},
+							}, db.ModelState_ModelAvailable),
 					},
 				},
 			},
@@ -571,21 +511,19 @@ func TestModelScalingProtos(t *testing.T) {
 		},
 		{
 			name: "scale down within range",
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(
-								&pbs.Model{
-									Meta:           &pbs.MetaData{Name: "iris"},
-									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1, MaxReplicas: 2},
-								},
-								1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.Available}, 2: {State: store.Available},
-								}, false, store.ModelAvailable),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta:           &pbs.MetaData{Name: "iris"},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1, MaxReplicas: 2},
+							},
+							1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_Available}, 2: {State: db.ModelReplicaState_Available},
+							}, db.ModelState_ModelAvailable),
 					},
 				},
 			},
@@ -597,21 +535,19 @@ func TestModelScalingProtos(t *testing.T) {
 		},
 		{
 			name: "scale down not within range",
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(
-								&pbs.Model{
-									Meta:           &pbs.MetaData{Name: "iris"},
-									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 2, MaxReplicas: 3},
-								},
-								1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.Available}, 2: {State: store.Available},
-								}, false, store.ModelAvailable),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta:           &pbs.MetaData{Name: "iris"},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 2, MaxReplicas: 3},
+							},
+							1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_Available}, 2: {State: db.ModelReplicaState_Available},
+							}, db.ModelState_ModelAvailable),
 					},
 				},
 			},
@@ -623,21 +559,19 @@ func TestModelScalingProtos(t *testing.T) {
 		},
 		{
 			name: "scale down not enabled",
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(
-								&pbs.Model{
-									Meta:           &pbs.MetaData{Name: "iris"},
-									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2},
-								},
-								1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.Available}, 2: {State: store.Available},
-								}, false, store.ModelAvailable),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta:           &pbs.MetaData{Name: "iris"},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2},
+							},
+							1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_Available}, 2: {State: db.ModelReplicaState_Available},
+							}, db.ModelState_ModelAvailable),
 					},
 				},
 			},
@@ -649,21 +583,19 @@ func TestModelScalingProtos(t *testing.T) {
 		},
 		{
 			name: "model not stable, scale down - should not proceed",
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(
-								&pbs.Model{
-									Meta:           &pbs.MetaData{Name: "iris"},
-									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
-								},
-								1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.Available}, 2: {State: store.Available},
-								}, false, store.ModelAvailable),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta:           &pbs.MetaData{Name: "iris"},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
+							},
+							1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_Available}, 2: {State: db.ModelReplicaState_Available},
+							}, db.ModelState_ModelAvailable),
 					},
 				},
 			},
@@ -676,21 +608,19 @@ func TestModelScalingProtos(t *testing.T) {
 		},
 		{
 			name: "model not stable, scale up - should proceed",
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(
-								&pbs.Model{
-									Meta:           &pbs.MetaData{Name: "iris"},
-									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
-								},
-								1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.Available}, 2: {State: store.Available},
-								}, false, store.ModelAvailable),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta:           &pbs.MetaData{Name: "iris"},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
+							},
+							1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_Available}, 2: {State: db.ModelReplicaState_Available},
+							}, db.ModelState_ModelAvailable),
 					},
 				},
 			},
@@ -703,21 +633,19 @@ func TestModelScalingProtos(t *testing.T) {
 		},
 		{
 			name: "model not available, scale up - should not proceed",
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(
-								&pbs.Model{
-									Meta:           &pbs.MetaData{Name: "iris"},
-									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
-								},
-								1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.Available}, 2: {State: store.LoadFailed},
-								}, false, store.ScheduleFailed),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta:           &pbs.MetaData{Name: "iris"},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
+							},
+							1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_Available}, 2: {State: db.ModelReplicaState_LoadFailed},
+							}, db.ModelState_ScheduleFailed),
 					},
 				},
 			},
@@ -729,21 +657,19 @@ func TestModelScalingProtos(t *testing.T) {
 		},
 		{
 			name: "model not available, scale down - should proceed",
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(
-								&pbs.Model{
-									Meta:           &pbs.MetaData{Name: "iris"},
-									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
-								},
-								1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.Available}, 2: {State: store.LoadFailed},
-								}, false, store.ScheduleFailed),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta:           &pbs.MetaData{Name: "iris"},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
+							},
+							1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_Available}, 2: {State: db.ModelReplicaState_LoadFailed},
+							}, db.ModelState_ScheduleFailed),
 					},
 				},
 			},
@@ -755,30 +681,28 @@ func TestModelScalingProtos(t *testing.T) {
 		},
 		{
 			name: "model available is not latest, scale up - should not proceed",
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(
-								&pbs.Model{
-									Meta:           &pbs.MetaData{Name: "iris"},
-									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
-								},
-								1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.Available}, 2: {State: store.Available},
-								}, false, store.ModelAvailable),
-							store.NewModelVersion(
-								&pbs.Model{
-									Meta:           &pbs.MetaData{Name: "iris"},
-									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
-								},
-								2, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.Available}, 2: {State: store.Loading},
-								}, false, store.ModelProgressing),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta:           &pbs.MetaData{Name: "iris"},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
+							},
+							1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_Available}, 2: {State: db.ModelReplicaState_Available},
+							}, db.ModelState_ModelAvailable),
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta:           &pbs.MetaData{Name: "iris"},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
+							},
+							2, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_Available}, 2: {State: db.ModelReplicaState_Loading},
+							}, db.ModelState_ModelProgressing),
 					},
 				},
 			},
@@ -791,30 +715,28 @@ func TestModelScalingProtos(t *testing.T) {
 		},
 		{
 			name: "model versions mismatch - should not proceed",
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{
-					"iris": {
-						Name: "iris",
-						Versions: []*store.ModelVersion{
-							store.NewModelVersion(
-								&pbs.Model{
-									Meta:           &pbs.MetaData{Name: "iris"},
-									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
-								},
-								1, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.Available}, 2: {State: store.Available},
-								}, false, store.ModelAvailable),
-							store.NewModelVersion(
-								&pbs.Model{
-									Meta:           &pbs.MetaData{Name: "iris"},
-									DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
-								},
-								2, "server1",
-								map[int]store.ReplicaStatus{
-									1: {State: store.Available}, 2: {State: store.Available},
-								}, false, store.ModelState(store.Available)),
-						},
+			models: []*db.Model{
+				{
+					Name: "iris",
+					Versions: []*db.ModelVersion{
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta:           &pbs.MetaData{Name: "iris"},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
+							},
+							1, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_Available}, 2: {State: db.ModelReplicaState_Available},
+							}, db.ModelState_ModelAvailable),
+						util.NewTestModelVersion(
+							&pbs.Model{
+								Meta:           &pbs.MetaData{Name: "iris"},
+								DeploymentSpec: &pbs.DeploymentSpec{Replicas: 2, MinReplicas: 1},
+							},
+							2, "server1",
+							map[int32]*db.ReplicaStatus{
+								1: {State: db.ModelReplicaState_Available}, 2: {State: db.ModelReplicaState_Available},
+							}, db.ModelState_ModelAvailable),
 					},
 				},
 			},
@@ -825,10 +747,7 @@ func TestModelScalingProtos(t *testing.T) {
 			isError:             true,
 		},
 		{
-			name: "model does not exist in scheduler state",
-			store: &mockStore{
-				models: map[string]*store.ModelSnapshot{},
-			},
+			name:                "model does not exist in scheduler state",
 			trigger:             pb.ModelScalingTriggerMessage_SCALE_UP,
 			triggerModelName:    "iris",
 			triggerModelVersion: 1,
@@ -839,14 +758,24 @@ func TestModelScalingProtos(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			model, _ := test.store.GetModel(test.triggerModelName)
+
+			// Create storage instances
+			modelStorage := store.NewInMemoryStorage[*db.Model]()
+
+			// Populate storage with test data
+			for _, model := range test.models {
+				err := modelStorage.Insert(context.TODO(), model)
+				g.Expect(err).To(BeNil())
+			}
+
+			model, _ := modelStorage.Get(context.TODO(), test.triggerModelName)
 			if model != nil { // in the cases where the model is not in the scheduler state yet
-				lastestModel := model.GetLatest()
-				state := lastestModel.ModelState()
-				state.Timestamp = test.lastUpdate
-				lastestModel.SetModelState(state)
+				lastestModel := model.Latest()
+				state := lastestModel.State
+				state.Timestamp = timestamppb.New(test.lastUpdate)
+				lastestModel.State = state
 			} else {
-				model = &store.ModelSnapshot{
+				model = &db.Model{
 					Name: test.triggerModelName,
 				}
 			}
@@ -1016,39 +945,57 @@ func TestSubscribe(t *testing.T) {
 		agents                        []ag
 		expectedAgentsCount           int
 		expectedAgentsCountAfterClose int
+		setupMock                     func(s *mock.MockScheduler)
 	}
 	tests := []test{
 		{
 			name: "simple",
 			agents: []ag{
-				{1, true}, {2, true},
+				{1, true},
+				{2, true},
 			},
 			expectedAgentsCount:           2,
 			expectedAgentsCountAfterClose: 0,
+			setupMock: func(s *mock.MockScheduler) {
+				s.EXPECT().ScheduleFailedModels().Return([]string{}, nil).MinTimes(2)
+			},
 		},
 		{
 			name: "simple - no close",
 			agents: []ag{
-				{1, true}, {2, false},
+				{1, true},
+				{2, false},
 			},
 			expectedAgentsCount:           2,
 			expectedAgentsCountAfterClose: 1,
+			setupMock: func(s *mock.MockScheduler) {
+				s.EXPECT().ScheduleFailedModels().Return([]string{}, nil).MinTimes(2)
+			},
 		},
 		{
 			name: "duplicates",
 			agents: []ag{
-				{1, true}, {1, false},
+				{1, true},
+				{1, false},
 			},
 			expectedAgentsCount:           1,
 			expectedAgentsCountAfterClose: 1,
+			setupMock: func(s *mock.MockScheduler) {
+				s.EXPECT().ScheduleFailedModels().Return([]string{}, nil).MinTimes(1)
+			},
 		},
 		{
 			name: "duplicates with all close",
 			agents: []ag{
-				{1, true}, {1, true}, {1, true},
+				{1, true},
+				{1, true},
+				{1, true},
 			},
 			expectedAgentsCount:           1,
 			expectedAgentsCountAfterClose: 0,
+			setupMock: func(s *mock.MockScheduler) {
+				s.EXPECT().ScheduleFailedModels().Return([]string{}, nil).MinTimes(3)
+			},
 		},
 	}
 
@@ -1069,10 +1016,20 @@ func TestSubscribe(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockScheduler := mock.NewMockScheduler(ctrl)
+			test.setupMock(mockScheduler)
+
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			server := NewAgentServer(logger, &mockStore{}, mockScheduler{}, eventHub, false, tls.TLSOptions{})
+
+			// Create storage instances
+			modelStorage := store.NewInMemoryStorage[*db.Model]()
+			serverStorage := store.NewInMemoryStorage[*db.Server]()
+			ms := store.NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
+
+			server := NewAgentServer(logger, ms, mockScheduler, eventHub, false, tls.TLSOptions{})
 			port, err := testing_utils.GetFreePortForTest()
 			if err != nil {
 				t.Fatal(err)

@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+package seldon.mlops.scheduler.db;
+
+option go_package = "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db";
+
+import "google/protobuf/timestamp.proto";
+import "mlops/scheduler/scheduler.proto";
+
+//
+// PIPELINES AND EXPERIMENTS
+//
+
+message PipelineSnapshot {
+  string name = 1;
+  uint32 lastVersion = 2;
+  repeated PipelineWithState versions = 3;
+  bool deleted = 4;
+}
+
+message ExperimentSnapshot {
+  Experiment experiment = 1;
+  // to mark the experiment as deleted, this is currently required as we persist all
+  // experiments in the local scheduler state (badgerdb) so that events can be replayed
+  // on restart, which would guard against lost events in communication.
+  bool deleted = 2;
+}
+
+//
+// MODELS AND SERVERS
+//
+
+// ModelState represents the state of a model
+enum ModelState {
+  ModelStateUnknown = 0;
+  ModelProgressing = 1;
+  ModelAvailable = 2;
+  ModelFailed = 3;
+  ModelTerminating = 4;
+  ModelTerminated = 5;
+  ModelTerminateFailed = 6;
+  ScheduleFailed = 7;
+  ModelScaledDown = 8;
+  ModelCreate = 9;
+  ModelTerminate = 10;
+}
+
+// ModelReplicaState represents the state of a model replica
+enum ModelReplicaState {
+  ModelReplicaStateUnknown = 0;
+  LoadRequested = 1;
+  Loading = 2;
+  Loaded = 3;
+  LoadFailed = 4;
+  UnloadRequested = 5;
+  Unloading = 6;
+  Unloaded = 7;
+  UnloadFailed = 8;
+  Available = 9;
+  LoadedUnavailable = 10;
+  UnloadEnvoyRequested = 11;
+  Draining = 12;
+}
+
+// ReplicaStatus represents the status of a replica
+message ReplicaStatus {
+  ModelReplicaState state = 1;
+  string reason = 2;
+  google.protobuf.Timestamp timestamp = 3;
+}
+
+// ModelStatus represents the overall status of a model
+message ModelStatus {
+  ModelState state = 1;
+  ModelState model_gw_state = 2;
+  string reason = 3;
+  string model_gw_reason = 4;
+  uint32 available_replicas = 5;
+  uint32 unavailable_replicas = 6;
+  uint32 draining_replicas = 7;
+  google.protobuf.Timestamp timestamp = 8;
+}
+
+// ModelVersion represents a version of a model
+message ModelVersion {
+  seldon.mlops.scheduler.Model model_defn = 1;
+  uint32 version = 2;
+  string server = 3;
+  map<int32, ReplicaStatus> replicas = 4;
+  ModelStatus state = 5;
+}
+
+// ModelVersionID uniquely identifies a model version
+message ModelVersionID {
+  string name = 1;
+  uint32 version = 2;
+}
+
+// Model represents a model with its versions
+message Model {
+  string name = 1;
+  repeated ModelVersion versions = 2;
+  bool deleted = 3;
+}
+
+// Server represents a server with its configuration and replicas
+message Server {
+  string name = 1;
+  map<int32, ServerReplica> replicas = 2;
+  bool shared = 3;
+  int64 expected_replicas = 4;
+  int64 min_replicas = 5;
+  int64 max_replicas = 6;
+  seldon.mlops.scheduler.KubernetesMeta kubernetes_meta = 7;
+}
+
+// ServerReplica represents a single replica of a server
+message ServerReplica {
+  string inference_svc = 1;
+  int32 inference_http_port = 2;
+  int32 inference_grpc_port = 3;
+  string server_name = 4;
+  int32 replica_idx = 5;
+  repeated string capabilities = 6;
+  uint64 memory = 7;
+  uint64 available_memory = 8;
+  repeated ModelVersionID loaded_models = 9;
+  repeated ModelVersionID loading_models = 10;
+  uint32 over_commit_percentage = 11;
+  uint64 reserved_memory = 12;
+  map<string, bool> unique_loaded_models = 13;
+  bool is_draining = 14;
+}

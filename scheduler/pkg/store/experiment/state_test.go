@@ -14,11 +14,13 @@ import (
 
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
+	"go.uber.org/mock/gomock"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/mock"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 )
 
@@ -597,11 +599,12 @@ func TestSetCandidateAndMirrorModelReadiness(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	type test struct {
-		name                    string
-		experiment              *Experiment
-		modelStates             map[string]store.ModelState
+		name       string
+		experiment *Experiment
+
 		expectedCandidatesReady bool
 		expectedMirrorReady     bool
+		setupMock               func(m *mock.MockModelServerAPI)
 	}
 
 	tests := []test{
@@ -615,7 +618,13 @@ func TestSetCandidateAndMirrorModelReadiness(t *testing.T) {
 					},
 				},
 			},
-			modelStates:             map[string]store.ModelState{"model1": store.ModelAvailable},
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
+			},
 			expectedCandidatesReady: true,
 			expectedMirrorReady:     true,
 		},
@@ -629,7 +638,13 @@ func TestSetCandidateAndMirrorModelReadiness(t *testing.T) {
 					},
 				},
 			},
-			modelStates:             map[string]store.ModelState{"model1": store.ModelFailed},
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelFailed},
+					},
+				}}, nil).MinTimes(1)
+			},
 			expectedCandidatesReady: false,
 			expectedMirrorReady:     true,
 		},
@@ -646,7 +661,18 @@ func TestSetCandidateAndMirrorModelReadiness(t *testing.T) {
 					},
 				},
 			},
-			modelStates:             map[string]store.ModelState{"model1": store.ModelAvailable},
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
+				m.EXPECT().GetModel("model2").Return(&db.Model{Name: "model2", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{},
+					},
+				}}, nil).MinTimes(1)
+			},
 			expectedCandidatesReady: false,
 			expectedMirrorReady:     true,
 		},
@@ -663,7 +689,18 @@ func TestSetCandidateAndMirrorModelReadiness(t *testing.T) {
 					},
 				},
 			},
-			modelStates:             map[string]store.ModelState{"model1": store.ModelAvailable, "model2": store.ModelAvailable},
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
+				m.EXPECT().GetModel("model2").Return(&db.Model{Name: "model2", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
+			},
 			expectedCandidatesReady: true,
 			expectedMirrorReady:     true,
 		},
@@ -680,18 +717,33 @@ func TestSetCandidateAndMirrorModelReadiness(t *testing.T) {
 					Name: "model2",
 				},
 			},
-			modelStates:             map[string]store.ModelState{"model1": store.ModelAvailable, "model2": store.ModelAvailable},
 			expectedCandidatesReady: true,
 			expectedMirrorReady:     true,
+			setupMock: func(m *mock.MockModelServerAPI) {
+				m.EXPECT().GetModel("model1").Return(&db.Model{Name: "model1", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
+				m.EXPECT().GetModel("model2").Return(&db.Model{Name: "model2", Versions: []*db.ModelVersion{
+					{
+						State: &db.ModelStatus{State: db.ModelState_ModelAvailable},
+					},
+				}}, nil).MinTimes(1)
+			},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockServerMock := mock.NewMockModelServerAPI(ctrl)
+			test.setupMock(mockServerMock)
+
 			logger := logrus.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			server := NewExperimentServer(logger, eventHub, fakeModelStore{status: test.modelStates}, nil)
+			server := NewExperimentServer(logger, eventHub, mockServerMock, nil)
 			err = server.StartExperiment(test.experiment)
 			g.Expect(err).To(BeNil())
 

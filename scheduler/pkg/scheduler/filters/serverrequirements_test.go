@@ -15,15 +15,17 @@ import (
 	. "github.com/onsi/gomega"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
 
 func TestServerRequirementFilter(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	makeModel := func(requirements []string) *store.ModelVersion {
-		return store.NewModelVersion(
+	makeModel := func(requirements []string) *db.ModelVersion {
+		return util.NewTestModelVersion(
 			&pb.Model{
 				ModelSpec: &pb.ModelSpec{
 					Requirements: requirements,
@@ -34,34 +36,31 @@ func TestServerRequirementFilter(t *testing.T) {
 			},
 			1,
 			"server",
-			map[int]store.ReplicaStatus{
-				3: {State: store.Loading},
+			map[int32]*db.ReplicaStatus{
+				3: {State: db.ModelReplicaState_Loading},
 			},
-			false,
-			store.ModelProgressing,
+			db.ModelState_ModelProgressing,
 		)
 	}
 
-	makeServerReplica := func(server *store.Server, capabilities []string) *store.ServerReplica {
-		return store.NewServerReplica("svc", 8080, 5001, 1, store.NewServer("server", true), capabilities, 100, 100, 0, nil, 100)
+	makeServerReplica := func(server *db.Server, capabilities []string) *db.ServerReplica {
+		return util.NewTestServerReplica("svc", 8080, 5001, 1, store.NewServer("server", true), capabilities, 100, 100, 0, nil, 100)
 	}
 
-	makeServer := func(replicas int, capabilities []string, startIdx int) *store.ServerSnapshot {
+	makeServer := func(replicas int, capabilities []string, startIdx int) *db.Server {
 		server := store.NewServer("server", true)
-		snapshot := server.CreateSnapshot(false, false)
-
 		for i := 0; i < replicas; i++ {
 			replica := makeServerReplica(server, capabilities)
-			snapshot.Replicas[i+startIdx] = replica
+			server.Replicas[int32(i+startIdx)] = replica
 		}
 
-		return snapshot
+		return server
 	}
 
 	type test struct {
 		name     string
-		model    *store.ModelVersion
-		server   *store.ServerSnapshot
+		model    *db.ModelVersion
+		server   *db.Server
 		expected bool
 	}
 

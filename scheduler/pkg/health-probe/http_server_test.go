@@ -31,7 +31,7 @@ func TestHTTPServer_Start(t *testing.T) {
 		pathLiveness  = "/live"
 		pathStartup   = "/startup"
 
-		port = 8080
+		port = 8085
 	)
 
 	tests := []struct {

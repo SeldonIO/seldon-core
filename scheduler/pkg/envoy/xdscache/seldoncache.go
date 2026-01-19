@@ -23,10 +23,10 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/server/stream/v3"
 	"github.com/sirupsen/logrus"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	seldontls "github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/pipeline"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/util"
 )
@@ -473,7 +473,7 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 	routeName, modelName, httpClusterName, grpcClusterName string,
 	modelVersion uint32,
 	assignment []int,
-	server *store.ServerSnapshot,
+	server *db.Server,
 ) {
 	xds.mu.Lock()
 	defer xds.mu.Unlock()
@@ -503,7 +503,7 @@ func (xds *SeldonXDSCache) AddClustersForRoute(
 	}
 
 	for _, replicaIdx := range assignment {
-		replica, ok := server.Replicas[replicaIdx]
+		replica, ok := server.Replicas[int32(replicaIdx)]
 		if !ok {
 			logger.Warnf("Invalid replica index %d for server %s", replicaIdx, server.Name)
 		} else {

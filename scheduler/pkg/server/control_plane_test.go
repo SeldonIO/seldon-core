@@ -21,6 +21,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -47,7 +48,7 @@ func TestStartServerStream(t *testing.T) {
 			name: "success - ok",
 			ctx:  context.Background(),
 			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerStore(log.New(), store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), nil),
 				logger:     log.New(),
 				timeout:    10 * time.Millisecond,
 			},
@@ -56,7 +57,7 @@ func TestStartServerStream(t *testing.T) {
 			name: "failure - stream ctx cancelled",
 			ctx:  cancellCtx,
 			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerStore(log.New(), store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), nil),
 				logger:     log.New(),
 				timeout:    10 * time.Millisecond,
 			},
@@ -66,7 +67,7 @@ func TestStartServerStream(t *testing.T) {
 			name: "failure - timeout",
 			ctx:  context.Background(),
 			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerStore(log.New(), store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), nil),
 				logger:     log.New(),
 				timeout:    1 * time.Millisecond,
 			},

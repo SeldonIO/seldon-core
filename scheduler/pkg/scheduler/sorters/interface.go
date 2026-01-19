@@ -9,18 +9,20 @@ the Change License after the Change Date as each is defined in accordance with t
 
 package sorters
 
-import "github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+import (
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
+)
 
 type CandidateServer struct {
-	Model          *store.ModelVersion
-	Server         *store.ServerSnapshot
-	ChosenReplicas []*store.ServerReplica
+	Model          *db.ModelVersion
+	Server         *db.Server
+	ChosenReplicas []*db.ServerReplica
 }
 
 type CandidateReplica struct {
-	Model   *store.ModelVersion
-	Server  *store.ServerSnapshot
-	Replica *store.ServerReplica
+	Model   *db.ModelVersion
+	Server  *db.Server
+	Replica *db.ServerReplica
 }
 
 type ServerSorter interface {

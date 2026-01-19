@@ -22,9 +22,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 
 	pba "github.com/seldonio/seldon-core/apis/go/v2/mlops/agent"
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/coordinator"
@@ -58,7 +60,9 @@ func TestLoadModel(t *testing.T) {
 		eventHub, err := coordinator.NewEventHub(logger)
 		g.Expect(err).To(BeNil())
 
-		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+		modelStorage := store.NewInMemoryStorage[*db.Model]()
+		serverStorage := store.NewInMemoryStorage[*db.Server]()
+		schedulerStore := store.NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
 		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
 		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
 		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10 * time.Millisecond))
@@ -327,8 +331,8 @@ func TestLoadModel(t *testing.T) {
 						return
 					}
 					model, _ := s.modelStore.GetModel(event.ModelName)
-					latest := model.GetLatest()
-					if latest.ModelState().State == store.ScheduleFailed {
+					latest := model.Latest()
+					if latest.State.State == db.ModelState_ScheduleFailed {
 						scheduledFailed.Store(true)
 					} else {
 						scheduledFailed.Store(false)
@@ -364,7 +368,10 @@ func TestUnloadModel(t *testing.T) {
 		log.SetLevel(log.DebugLevel)
 		eventHub, err := coordinator.NewEventHub(logger)
 		g.Expect(err).To(BeNil())
-		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+
+		modelStorage := store.NewInMemoryStorage[*db.Model]()
+		serverStorage := store.NewInMemoryStorage[*db.Server]()
+		schedulerStore := store.NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
 		experimentServer := experiment.NewExperimentServer(logger, eventHub, nil, nil)
 		pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
 		mockAgent := &mockAgentHandler{}
@@ -389,7 +396,7 @@ func TestUnloadModel(t *testing.T) {
 		req        []*pba.AgentSubscribeRequest
 		model      *pb.Model
 		code       codes.Code
-		modelState store.ModelState
+		modelState db.ModelState
 	}
 	modelName := "model1"
 	smallMemory := uint64(100)
@@ -404,7 +411,7 @@ func TestUnloadModel(t *testing.T) {
 			},
 			model:      &pb.Model{Meta: &pb.MetaData{Name: "model1"}, ModelSpec: &pb.ModelSpec{Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 1}},
 			code:       codes.OK,
-			modelState: store.ModelTerminated,
+			modelState: db.ModelState_ModelTerminated,
 		},
 		{
 			name: "TwoReplicas",
@@ -420,7 +427,7 @@ func TestUnloadModel(t *testing.T) {
 			},
 			model:      &pb.Model{Meta: &pb.MetaData{Name: "model1"}, ModelSpec: &pb.ModelSpec{Uri: "gs://model", Requirements: []string{"sklearn"}, MemoryBytes: &smallMemory}, DeploymentSpec: &pb.DeploymentSpec{Replicas: 2}},
 			code:       codes.OK,
-			modelState: store.ModelTerminated,
+			modelState: db.ModelState_ModelTerminated,
 		},
 		{
 			name: "NotExist",
@@ -466,7 +473,7 @@ func TestUnloadModel(t *testing.T) {
 				g.Expect(r).ToNot(BeNil())
 				ms, err := s.modelStore.GetModel(modelName)
 				g.Expect(err).To(BeNil())
-				g.Expect(ms.GetLatest().ModelState().State).To(Equal(test.modelState))
+				g.Expect(ms.Latest().State.State).To(Equal(test.modelState))
 
 			}
 		})
@@ -710,8 +717,10 @@ func TestServerNotify(t *testing.T) {
 		log.SetLevel(log.DebugLevel)
 		eventHub, err := coordinator.NewEventHub(logger)
 		g.Expect(err).To(BeNil())
-		schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
-		sync := synchroniser.NewSimpleSynchroniser(time.Duration(10 * time.Millisecond))
+		modelStorage := store.NewInMemoryStorage[*db.Model]()
+		serverStorage := store.NewInMemoryStorage[*db.Server]()
+		schedulerStore := store.NewModelServerStore(logger, modelStorage, serverStorage, eventHub)
+		sync := synchroniser.NewSimpleSynchroniser(10 * time.Millisecond)
 		scheduler := scheduler2.NewSimpleScheduler(logger,
 			schedulerStore,
 			scheduler2.DefaultSchedulerConfig(schedulerStore),
@@ -729,7 +738,7 @@ func TestServerNotify(t *testing.T) {
 	type test struct {
 		name                 string
 		req                  *pb.ServerNotifyRequest
-		expectedServerStates []*store.ServerSnapshot
+		expectedServerStates []*db.Server
 		signalTriggered      bool
 	}
 	tests := []test{
@@ -752,20 +761,20 @@ func TestServerNotify(t *testing.T) {
 				},
 				IsFirstSync: true,
 			},
-			expectedServerStates: []*store.ServerSnapshot{
+			expectedServerStates: []*db.Server{
 				{
 					Name:             "server1",
 					ExpectedReplicas: 2,
 					MinReplicas:      1,
 					MaxReplicas:      3,
 					Shared:           true,
-					Replicas:         map[int]*store.ServerReplica{},
+					Replicas:         map[int32]*db.ServerReplica{},
 				},
 				{
 					Name:             "server2",
 					ExpectedReplicas: 3,
 					Shared:           true,
-					Replicas:         map[int]*store.ServerReplica{},
+					Replicas:         map[int32]*db.ServerReplica{},
 				},
 			},
 			signalTriggered: true,
@@ -792,12 +801,12 @@ func TestServerNotify(t *testing.T) {
 				},
 				IsFirstSync: false,
 			},
-			expectedServerStates: []*store.ServerSnapshot{
+			expectedServerStates: []*db.Server{
 				{
 					Name:             "server1",
 					ExpectedReplicas: 2,
 					Shared:           true,
-					Replicas:         map[int]*store.ServerReplica{},
+					Replicas:         map[int32]*db.ServerReplica{},
 				},
 			},
 			signalTriggered: false,
@@ -811,7 +820,7 @@ func TestServerNotify(t *testing.T) {
 
 			time.Sleep(50 * time.Millisecond) // allow events to be processed
 
-			actualServers, err := s.modelStore.GetServers(true, false)
+			actualServers, err := s.modelStore.GetServers()
 			g.Expect(err).To(BeNil())
 			sort.Slice(actualServers, func(i, j int) bool {
 				return actualServers[i].Name < actualServers[j].Name
@@ -819,7 +828,11 @@ func TestServerNotify(t *testing.T) {
 			sort.Slice(test.expectedServerStates, func(i, j int) bool {
 				return test.expectedServerStates[i].Name < test.expectedServerStates[j].Name
 			})
-			g.Expect(actualServers).To(Equal(test.expectedServerStates))
+
+			g.Expect(len(actualServers)).To(Equal(len(test.expectedServerStates)))
+			for i, server := range actualServers {
+				g.Expect(proto.Equal(server, test.expectedServerStates[i])).To(BeTrue())
+			}
 
 			g.Expect(sync.IsTriggered()).To(Equal(test.signalTriggered))
 		})

@@ -12,7 +12,7 @@ package filters
 import (
 	"fmt"
 
-	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 )
 
 type ServerReplicaFilter struct{}
@@ -21,10 +21,10 @@ func (r ServerReplicaFilter) Name() string {
 	return "ServerReplicaFilter"
 }
 
-func (r ServerReplicaFilter) Filter(model *store.ModelVersion, server *store.ServerSnapshot) bool {
+func (r ServerReplicaFilter) Filter(model *db.ModelVersion, server *db.Server) bool {
 	return len(server.Replicas) > 0
 }
 
-func (r ServerReplicaFilter) Description(model *store.ModelVersion, server *store.ServerSnapshot) string {
+func (r ServerReplicaFilter) Description(model *db.ModelVersion, server *db.Server) string {
 	return fmt.Sprintf("%d server replicas (waiting for server replicas to connect)", len(server.Replicas))
 }

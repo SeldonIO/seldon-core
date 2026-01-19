@@ -18,6 +18,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
 )
 
@@ -42,21 +44,20 @@ func sendWithTimeout(f func() error, d time.Duration) (bool, error) {
 	}
 }
 
-func shouldScaleUp(server *store.ServerSnapshot) (bool, uint32) {
+func shouldScaleUp(server *db.Server, stats *store.ServerStats) (bool, uint32) {
 	if server.ExpectedReplicas < 0 || server.MaxReplicas < 1 {
 		return false, 0
 	}
-	if server.Stats != nil {
-		maxNumReplicaHostedModels := server.Stats.MaxNumReplicaHostedModels
+	if stats != nil {
+		maxNumReplicaHostedModels := stats.MaxNumReplicaHostedModels
 		return maxNumReplicaHostedModels > uint32(server.ExpectedReplicas), min(maxNumReplicaHostedModels, uint32(server.MaxReplicas))
 	}
 	return false, 0
 }
 
-func shouldScaleDown(server *store.ServerSnapshot, perc float32) (bool, uint32) {
+func shouldScaleDown(server *db.Server, stats *store.ServerStats, perc float32) (bool, uint32) {
 
-	if server.Stats != nil {
-		stats := server.Stats
+	if stats != nil {
 		currentReplicas := uint32(server.ExpectedReplicas)
 		minReplicas := uint32(server.MinReplicas)
 		if minReplicas == 0 {

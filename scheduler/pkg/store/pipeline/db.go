@@ -16,7 +16,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store/utils"
 )
@@ -111,7 +111,7 @@ func (pdb *PipelineDBManager) restore(createPipelineCb func(pipeline *Pipeline))
 				continue
 			}
 			err := item.Value(func(v []byte) error {
-				snapshot := scheduler.PipelineSnapshot{}
+				snapshot := db.PipelineSnapshot{}
 				err := proto.Unmarshal(v, &snapshot)
 				if err != nil {
 					return err
@@ -146,7 +146,7 @@ func (pdb *PipelineDBManager) get(name string) (*Pipeline, error) {
 			return err
 		}
 		return item.Value(func(v []byte) error {
-			snapshot := scheduler.PipelineSnapshot{}
+			snapshot := db.PipelineSnapshot{}
 			err = proto.Unmarshal(v, &snapshot)
 			if err != nil {
 				return err

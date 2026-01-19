@@ -29,6 +29,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/seldonio/seldon-core/apis/go/v2/mlops/health"
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
 	kafka_config "github.com/seldonio/seldon-core/components/kafka/v2/pkg/config"
 	"github.com/seldonio/seldon-core/components/tls/v2/pkg/tls"
 
@@ -298,7 +299,7 @@ func main() {
 	}
 
 	// Create stores
-	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+	ss := store.NewModelServerStore(logger, store.NewInMemoryStorage[*db.Model](), store.NewInMemoryStorage[*db.Server](), eventHub)
 	ps := pipeline.NewPipelineStore(logger, eventHub, ss)
 	es := experiment.NewExperimentServer(logger, eventHub, ss, ps)
 	cleaner := cleaner.NewVersionCleaner(ss, logger)

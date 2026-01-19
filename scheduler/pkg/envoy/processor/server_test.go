@@ -27,6 +27,8 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 
+	"github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler/db"
+
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/envoy/xdscache"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/internal/testing_utils"
 	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
@@ -43,7 +45,10 @@ func TestFetch(t *testing.T) {
 
 	logger := log.New()
 
-	memoryStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), nil)
+	modelStorage := store.NewInMemoryStorage[*db.Model]()
+	serverStorage := store.NewInMemoryStorage[*db.Server]()
+	memoryStore := store.NewModelServerStore(logger, modelStorage, serverStorage, nil)
+
 	pipelineHandler := pipeline.NewPipelineStore(logger, nil, memoryStore)
 
 	xdsCache, err := xdscache.NewSeldonXDSCache(log.New(), &xdscache.PipelineGatewayDetails{}, nil)
@@ -88,7 +93,7 @@ func testInitialFetch(g *WithT, inc *IncrementalProcessor, c client.ADSClient) f
 
 		ops := []func(inc *IncrementalProcessor, g *WithT){
 			createTestServer("server", 1),
-			createTestModel("model", "server", 1, []int{0}, 1, []store.ModelReplicaState{store.Available}),
+			createTestModel("model", "server", 1, []int{0}, 1, []db.ModelReplicaState{db.ModelReplicaState_Available}),
 		}
 		go func() {
 			for _, op := range ops {
@@ -119,7 +124,7 @@ func testUpdateModelVersion(g *WithT, inc *IncrementalProcessor, c client.ADSCli
 
 	return func(t *testing.T) {
 		ops := []func(inc *IncrementalProcessor, g *WithT){
-			createTestModel("model", "server", 1, []int{0}, 2, []store.ModelReplicaState{store.Available}),
+			createTestModel("model", "server", 1, []int{0}, 2, []db.ModelReplicaState{db.ModelReplicaState_Available}),
 		}
 		go func() {
 			for _, op := range ops {

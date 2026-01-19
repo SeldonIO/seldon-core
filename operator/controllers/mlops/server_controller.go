@@ -203,7 +203,7 @@ func (r *ServerReconciler) updateStatus(ctx context.Context, server *mlopsv1alph
 	} else {
 		if err := r.Status().Update(ctx, server); err != nil {
 			r.Recorder.Eventf(server, v1.EventTypeWarning, "UpdateFailed",
-				"Failed to update status for Model %q: %v", server.Name, err)
+				"Failed to update status for Server %q: %v", server.Name, err)
 			return err
 		} else {
 			prevWasReady := serverReady(existingServer.Status)
