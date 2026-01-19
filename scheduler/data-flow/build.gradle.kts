@@ -7,7 +7,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
     kotlin("jvm") version "2.1.0" // the kotlin version
     kotlin("plugin.serialization") version "2.1.0" // kotlinx serialization plugin
-    id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
+    id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
     java
     application
 }
