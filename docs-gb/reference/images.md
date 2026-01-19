@@ -42,7 +42,7 @@
 ## Other images 
 
 {% hint style="warning" %}
-The following images play examplary roles only and are not production ready.
+The following images are examples only and are not production ready.
 {% endhint %}
 
 ### Language wrappers (examples only)

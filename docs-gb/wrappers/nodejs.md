@@ -1,7 +1,7 @@
 # Packaging a NodeJS model for Seldon Core using s2i
 
 {% hint style="warning" %}
-This wrapper plays examplary role only and is not production ready.
+This wrapper is an example only and is not production ready.
 {% endhint %}
 
 In this guide, we illustrate the steps needed to wrap your own JS model running on a node engine in a docker image ready for deployment with Seldon Core using [source-to-image app s2i](https://github.com/openshift/source-to-image).
