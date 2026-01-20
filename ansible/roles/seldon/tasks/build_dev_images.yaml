@@ -68,3 +68,19 @@
   loop: "{{ custom_image_config_u | selectattr('dev_img_set', 'equalto', true) |subelements('components') }}"
   loop_control:
     label: "{{ item.1 }}"
+  async: 3600
+  poll: 0
+  register: docker_builds
+
+- name: Wait for all builds to complete (building docker images concurrently, max 10 min per image)
+  async_status:
+    jid: "{{ item.ansible_job_id }}"
+  register: build_results
+  until: build_results.finished or build_results.failed | default(false)
+  retries: 60
+  delay: 10
+  failed_when: build_results.failed | default(false)
+  loop: "{{ docker_builds.results }}"
+  when: item.ansible_job_id is defined
+  loop_control:
+    label: "{{ item.item.1 | default('skipped') }}"
