@@ -298,7 +298,7 @@ func main() {
 	}
 
 	// Create stores
-	ss := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+	ss := store.NewModelServerService(logger, store.NewLocalSchedulerStore(), eventHub)
 	ps := pipeline.NewPipelineStore(logger, eventHub, ss)
 	es := experiment.NewExperimentServer(logger, eventHub, ss, ps)
 	cleaner := cleaner.NewVersionCleaner(ss, logger)

@@ -332,7 +332,7 @@ func TestModelsStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerService(log.New(), store.NewLocalSchedulerStore(), nil),
 				logger:     log.New(),
 				timeout:    10 * time.Millisecond,
 			},
@@ -361,7 +361,7 @@ func TestModelsStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerService(log.New(), store.NewLocalSchedulerStore(), nil),
 				logger:     log.New(),
 				timeout:    1 * time.Millisecond,
 			},
@@ -975,7 +975,7 @@ func TestServersStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerService(log.New(), store.NewLocalSchedulerStore(), nil),
 				logger:     log.New(),
 				timeout:    10 * time.Millisecond,
 			},
@@ -1011,7 +1011,7 @@ func TestServersStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerService(log.New(), store.NewLocalSchedulerStore(), nil),
 				logger:     log.New(),
 				timeout:    10 * time.Millisecond,
 			},
@@ -1048,7 +1048,7 @@ func TestServersStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerService(log.New(), store.NewLocalSchedulerStore(), nil),
 				logger:     log.New(),
 				timeout:    10 * time.Millisecond,
 			},
@@ -1063,7 +1063,7 @@ func TestServersStatusStream(t *testing.T) {
 				},
 			},
 			server: &SchedulerServer{
-				modelStore: store.NewMemoryStore(log.New(), store.NewLocalSchedulerStore(), nil),
+				modelStore: store.NewModelServerService(log.New(), store.NewLocalSchedulerStore(), nil),
 				logger:     log.New(),
 				timeout:    1 * time.Millisecond,
 			},

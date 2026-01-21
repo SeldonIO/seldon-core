@@ -22,18 +22,33 @@ import (
 	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
 )
 
+type Cache interface {
+	GetModel(key string) *Model
+	GetModelKeys() []string
+	PutModel(key string, model *Model)
+	GetServer(key string) *Server
+	PutServer(key string, server *Server)
+}
+
 type LocalSchedulerStore struct {
-	servers                map[string]*Server
-	models                 map[string]*Model
-	failedToScheduleModels map[string]bool
+	servers map[string]*Server
+	models  map[string]*Model
 }
 
 func NewLocalSchedulerStore() *LocalSchedulerStore {
 	m := LocalSchedulerStore{}
 	m.servers = make(map[string]*Server)
 	m.models = make(map[string]*Model)
-	m.failedToScheduleModels = make(map[string]bool)
 	return &m
+}
+
+func (lss *LocalSchedulerStore) GetModel(key string) *Model {
+	model, _ := lss.models[key]
+	return model
+}
+
+func (lss *LocalSchedulerStore) PutModel(key string, model *Model) {
+	lss.models[key] = model
 }
 
 type Model struct {

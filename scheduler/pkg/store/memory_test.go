@@ -219,7 +219,7 @@ func TestUpdateModel(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			ms := NewMemoryStore(logger, test.store, eventHub)
+			ms := NewModelServerService(logger, test.store, eventHub)
 			err = ms.UpdateModel(test.loadModelReq)
 			if test.err != nil {
 				g.Expect(err.Error()).To(BeIdenticalTo(test.err.Error()))
@@ -281,7 +281,7 @@ func TestGetModel(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			ms := NewMemoryStore(logger, test.store, eventHub)
+			ms := NewModelServerService(logger, test.store, eventHub)
 			model, err := ms.GetModel(test.key)
 			if test.err == nil {
 				g.Expect(err).To(BeNil())
@@ -457,7 +457,7 @@ func TestGetServer(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			ms := NewMemoryStore(logger, test.store, eventHub)
+			ms := NewModelServerService(logger, test.store, eventHub)
 			server, err := ms.GetServer(test.key, false, true)
 			if !test.isErr {
 				g.Expect(err).To(BeNil())
@@ -524,7 +524,7 @@ func TestRemoveModel(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			ms := NewMemoryStore(logger, test.store, eventHub)
+			ms := NewModelServerService(logger, test.store, eventHub)
 			err = ms.RemoveModel(&pb.UnloadModelRequest{Model: &pb.ModelReference{Name: test.key}})
 			if !test.err {
 				g.Expect(err).To(BeNil())
@@ -959,7 +959,7 @@ func TestUpdateLoadedModels(t *testing.T) {
 			if test.isModelDeleted {
 				test.store.models[test.modelKey].SetDeleted()
 			}
-			ms := NewMemoryStore(logger, test.store, eventHub)
+			ms := NewModelServerService(logger, test.store, eventHub)
 			msg, err := ms.updateLoadedModelsImpl(test.modelKey, test.version, test.serverKey, test.replicas)
 			if !test.err {
 				g.Expect(err).To(BeNil())
@@ -1308,7 +1308,7 @@ func TestUpdateModelState(t *testing.T) {
 				},
 			)
 
-			ms := NewMemoryStore(logger, test.store, eventHub)
+			ms := NewModelServerService(logger, test.store, eventHub)
 			err = ms.UpdateModelState(test.modelKey, test.version, test.serverKey, test.replicaIdx, &test.availableMemory, test.expectedState, test.desiredState, "", test.modelRuntimeInfo)
 			if !test.err {
 				g.Expect(err).To(BeNil())
@@ -1617,7 +1617,7 @@ func TestUpdateModelStatus(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			ms := NewMemoryStore(logger, &LocalSchedulerStore{}, eventHub)
+			ms := NewModelServerService(logger, &LocalSchedulerStore{}, eventHub)
 			ms.updateModelStatus(true, test.deleted, test.modelVersion, test.prevAvailableModelVersion)
 			g.Expect(test.modelVersion.state.State).To(Equal(test.expectedState))
 			g.Expect(test.modelVersion.state.Reason).To(Equal(test.expectedReason))
@@ -1774,7 +1774,7 @@ func TestAddModelVersionIfNotExists(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			ms := NewMemoryStore(logger, test.store, eventHub)
+			ms := NewModelServerService(logger, test.store, eventHub)
 			ms.addModelVersionIfNotExists(test.modelVersion)
 			modelName := test.modelVersion.GetModel().GetMeta().GetName()
 			g.Expect(test.store.models[modelName].GetVersions()).To(Equal(test.expected))
@@ -1901,7 +1901,7 @@ func TestAddServerReplica(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			ms := NewMemoryStore(logger, test.store, eventHub)
+			ms := NewModelServerService(logger, test.store, eventHub)
 
 			// register a callback to check if the event is triggered
 			serverEvents := int64(0)
@@ -1969,7 +1969,7 @@ func TestRemoveServerReplica(t *testing.T) {
 			serverName:     "server1",
 			replicaIdx:     0,
 			serverExists:   true,
-			modelsReturned: 0, // no models really defined in store
+			modelsReturned: 0, // no models really defined in cache
 		},
 		{
 			name: "ReplicaRemovedAndDeleted",
@@ -2029,7 +2029,7 @@ func TestRemoveServerReplica(t *testing.T) {
 			modelsReturned: 1,
 		},
 		{
-			name: "ReplicaRemovedAndServerDeleted but no model version in store",
+			name: "ReplicaRemovedAndServerDeleted but no model version in cache",
 			store: &LocalSchedulerStore{
 				servers: map[string]*Server{
 					"server1": {
@@ -2128,7 +2128,7 @@ func TestRemoveServerReplica(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			ms := NewMemoryStore(logger, test.store, eventHub)
+			ms := NewModelServerService(logger, test.store, eventHub)
 			models, err := ms.RemoveServerReplica(test.serverName, test.replicaIdx)
 			g.Expect(err).To(BeNil())
 			g.Expect(test.modelsReturned).To(Equal(len(models)))
@@ -2257,7 +2257,7 @@ func TestDrainServerReplica(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			ms := NewMemoryStore(logger, test.store, eventHub)
+			ms := NewModelServerService(logger, test.store, eventHub)
 			models, err := ms.DrainServerReplica(test.serverName, test.replicaIdx)
 			g.Expect(err).To(BeNil())
 			g.Expect(test.modelsReturned).To(Equal(models))

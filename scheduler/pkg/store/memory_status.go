@@ -111,11 +111,11 @@ func updateModelState(isLatest bool, modelVersion *ModelVersion, prevModelVersio
 	}
 }
 
-func (m *MemoryStore) FailedScheduling(modelID string, version uint32, reason string, reset bool) error {
+func (m *ModelServerService) FailedScheduling(modelID string, version uint32, reason string, reset bool) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	model, ok := m.store.models[modelID]
+	model, ok := m.cache.models[modelID]
 	if !ok {
 		return fmt.Errorf("model %s not found", modelID)
 	}
@@ -156,7 +156,7 @@ func (m *MemoryStore) FailedScheduling(modelID string, version uint32, reason st
 	return fmt.Errorf("model %s found, version %d not found", modelID, version)
 }
 
-func (m *MemoryStore) updateModelStatus(isLatest bool, deleted bool, modelVersion *ModelVersion, prevModelVersion *ModelVersion) {
+func (m *ModelServerService) updateModelStatus(isLatest bool, deleted bool, modelVersion *ModelVersion, prevModelVersion *ModelVersion) {
 	logger := m.logger.WithField("func", "updateModelStatus")
 	stats := calcModelVersionStatistics(modelVersion, deleted)
 	logger.Debugf("Stats %+v modelVersion %+v prev model %+v", stats, modelVersion, prevModelVersion)
@@ -164,7 +164,7 @@ func (m *MemoryStore) updateModelStatus(isLatest bool, deleted bool, modelVersio
 	updateModelState(isLatest, modelVersion, prevModelVersion, stats, deleted)
 }
 
-func (m *MemoryStore) setModelGwStatusToTerminate(isLatest bool, modelVersion *ModelVersion) {
+func (m *ModelServerService) setModelGwStatusToTerminate(isLatest bool, modelVersion *ModelVersion) {
 	if !isLatest {
 		modelVersion.state.ModelGwState = ModelTerminated
 		modelVersion.state.ModelGwReason = "Not latest version"
@@ -174,12 +174,12 @@ func (m *MemoryStore) setModelGwStatusToTerminate(isLatest bool, modelVersion *M
 	}
 }
 
-func (m *MemoryStore) UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error) {
+func (m *ModelServerService) UnloadModelGwVersionModels(modelKey string, version uint32) (bool, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	fmt.Println("UnloadModelGwVersionModels called for ", modelKey, " version ", version)
 
-	model, ok := m.store.models[modelKey]
+	model, ok := m.cache.models[modelKey]
 	if !ok {
 		return false, fmt.Errorf("failed to find model %s", modelKey)
 	}

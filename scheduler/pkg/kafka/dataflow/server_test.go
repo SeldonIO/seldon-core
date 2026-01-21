@@ -1674,7 +1674,7 @@ func createTestScheduler(t *testing.T, serverName string) (*ChainerServer, *coor
 
 	eventHub, _ := coordinator.NewEventHub(logger)
 
-	schedulerStore := store.NewMemoryStore(logger, store.NewLocalSchedulerStore(), eventHub)
+	schedulerStore := store.NewModelServerService(logger, store.NewLocalSchedulerStore(), eventHub)
 	pipelineServer := pipeline.NewPipelineStore(logger, eventHub, schedulerStore)
 
 	data :=

@@ -228,7 +228,7 @@ func TestUpdateStatus(t *testing.T) {
 			logger := log.New()
 			eventHub, err := coordinator.NewEventHub(logger)
 			g.Expect(err).To(BeNil())
-			ms := NewMemoryStore(logger, test.store, eventHub)
+			ms := NewModelServerService(logger, test.store, eventHub)
 			model, modelVersion, _, err := ms.getModelServer(test.modelName, test.version, test.serverName)
 			var prevModelVersion *ModelVersion
 			if test.prevVersion != nil {
