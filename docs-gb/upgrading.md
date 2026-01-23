@@ -72,7 +72,7 @@ Following table provides a summary of Seldon Core / Kubernetes version compatibi
 
 It is always recommended to first upgrade Seldon Core to the latest supported version on your Kubernetes cluster and then upgrade the Kubernetes cluster.
 
-For example, if you using Seldon Core 1.15 on Kubernetes 1.24, it is recommended to **first upgrade Seldon Core to version 1.16** before upgrading your cluster to Kubernetes 1.25 and further.
+For example, if you're using Seldon Core 1.15 on Kubernetes 1.24, it is recommended to **first upgrade Seldon Core to version 1.16** before upgrading your cluster to Kubernetes 1.25 and further.
 
 ## Upgrading to 1.15
 
@@ -149,7 +149,7 @@ In this release we change status of [Seldon Core Analytics](../charts/seldon-cor
 
 ### Seldon Inference Payload Logging Changes
 
-The seldon executor logs the prediction request and respose payload to a configured URL post during the inference at each stage of a inference graph. These request/response pairs are now matched correctly to reflect the component's input/output at each node level as compared to pairing based on the tree structure of the inference graph previously. See [relevant issue](https://github.com/SeldonIO/seldon-core/issues/3873) for more details.
+The seldon executor logs the prediction request and response payload to a configured URL post during the inference at each stage of a inference graph. These request/response pairs are now matched correctly to reflect the component's input/output at each node level as compared to pairing based on the tree structure of the inference graph previously. See [relevant issue](https://github.com/SeldonIO/seldon-core/issues/3873) for more details.
 
 ### Alibi Detect Server Event Update
 
@@ -193,7 +193,7 @@ It is also possible to update these values on a per SeldonDeployment basis with 
 
 ### Seldon Core Wrapper
 
- * With introduction of multi-processing in gRPC module the `SO_REUSEPORT` socket option is required. On certain Python distributions you may see `AttributeError: module 'socket' has no attribute 'SO_REUSEPORT'` error which would render gRPC endpoint non-operational. For Anaconda Python distributions we confirmed that upgrading to Python 3.7.10 or 3.8.10 removes the problem.
+ * With introduction of multiprocessing in gRPC module the `SO_REUSEPORT` socket option is required. On certain Python distributions you may see `AttributeError: module 'socket' has no attribute 'SO_REUSEPORT'` error which would render gRPC endpoint non-operational. For Anaconda Python distributions we confirmed that upgrading to Python 3.7.10 or 3.8.10 removes the problem.
 
 ### Server Updates
 
@@ -265,7 +265,7 @@ You can use and extend the [backwards compatibility notebook](../examples/backwa
 
 If you have a Kubernetes cluster with Seldon Core installed, and you want to upgrade the Kubernetes cluster, you have to carry out a set of manual steps due to the more strict validation that this version of Kubernetes introduced.
 
-To be more specific, we had to provide two versions of the CRD as part of the seldon core install helm chart. Similarly the CRD for Seldon Core in Kubernetes post-1.18 is actually differnt - namely, you can actually see that in version 1.3.0 we introduced new CRD changes in the helm chart via an IF statement to use a different CRD depending on the k8s version. Due to this, the path to upgrade from pre-1.18 to post-1.18 requires the following manual steps to be carried out:
+To be more specific, we had to provide two versions of the CRD as part of the seldon core installation helm chart. Similarly the CRD for Seldon Core in Kubernetes post-1.18 is actually differnt - namely, you can actually see that in version 1.3.0 we introduced new CRD changes in the helm chart via an IF statement to use a different CRD depending on the k8s version. Due to this, the path to upgrade from pre-1.18 to post-1.18 requires the following manual steps to be carried out:
 
 1. Start with kubernetes cluster pre 1.18 with seldon core pre-1.3.0
 2. Upgrade Kubernetes cluster to post 1.18 (seldon core CRD is now "invalid" but still installed as still in etcd)

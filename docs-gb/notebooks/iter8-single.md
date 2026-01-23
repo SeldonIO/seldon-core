@@ -47,7 +47,7 @@ We will run a progressive rollout allowing Iter8 to control the traffic to the t
         traffic: 100    
         graph:
           name: classifier
-          modelUri: gs://seldon-models/v1.19.0-dev/sklearn/iris
+          modelUri: gs://seldon-models/v1.20.0-dev/sklearn/iris
           implementation: SKLEARN_SERVER
       - name: candidate
         traffic: 0

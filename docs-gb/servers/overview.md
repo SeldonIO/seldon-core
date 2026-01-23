@@ -23,7 +23,7 @@ spec:
       graph:
         name: classifier
         implementation: SKLEARN_SERVER
-        modelUri: gs://seldon-models/v1.19.0-dev/sklearn/iris
+        modelUri: gs://seldon-models/v1.20.0-dev/sklearn/iris
 ```
 
 By default only public models published to Google Cloud Storage will be accessible. See below notes on how to configure credentials for AWS S3, Minio and other storage solutions.
@@ -156,7 +156,7 @@ spec:
     graph:
       name: classifier
       implementation: SKLEARN_SERVER
-      modelUri: gs://seldon-models/v1.19.0-dev/sklearn/iris
+      modelUri: gs://seldon-models/v1.20.0-dev/sklearn/iris
 ```
 
 The image name and other details will be added when this is deployed automatically.

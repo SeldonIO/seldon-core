@@ -45,7 +45,7 @@ We will run a batch job that will set up a Seldon Deployment with 1 replicas and
     --set seldonDeployment.replicas="1" \
     --set seldonDeployment.serverWorkers="5" \
     --set seldonDeployment.serverThreads=1 \
-    --set seldonDeployment.modelUri="gs://seldon-models/v1.19.0-dev/sklearn/iris" \
+    --set seldonDeployment.modelUri="gs://seldon-models/v1.20.0-dev/sklearn/iris" \
     --set seldonDeployment.server="SKLEARN_SERVER" \
     --set seldonDeployment.apiType="rest|grpc" \
     --set seldonDeployment.requests.cpu="2000Mi" \
