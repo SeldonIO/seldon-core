@@ -77,7 +77,7 @@ The full SeldonDeployment spec is shown below.
     [37m        [39;49;00m[94mminReplicas[39;49;00m:[37m [39;49;00m1[37m[39;49;00m
     [37m      [39;49;00m[94mspec[39;49;00m:[37m[39;49;00m
     [37m        [39;49;00m[94mcontainers[39;49;00m:[37m[39;49;00m
-    [37m        [39;49;00m-[37m [39;49;00m[94mimage[39;49;00m:[37m [39;49;00mseldonio/mock_classifier:1.19.0-dev[37m[39;49;00m
+    [37m        [39;49;00m-[37m [39;49;00m[94mimage[39;49;00m:[37m [39;49;00mseldonio/mock_classifier:1.19.0[37m[39;49;00m
     [37m          [39;49;00m[94mimagePullPolicy[39;49;00m:[37m [39;49;00mIfNotPresent[37m[39;49;00m
     [37m          [39;49;00m[94mname[39;49;00m:[37m [39;49;00mclassifier[37m[39;49;00m
     [37m          [39;49;00m[94mresources[39;49;00m:[37m[39;49;00m
@@ -271,7 +271,7 @@ The full SeldonDeployment spec is shown below.
     [37m        [39;49;00m[94mminReplicas[39;49;00m:[37m [39;49;00m1[37m[39;49;00m
     [37m      [39;49;00m[94mspec[39;49;00m:[37m[39;49;00m
     [37m        [39;49;00m[94mcontainers[39;49;00m:[37m[39;49;00m
-    [37m        [39;49;00m-[37m [39;49;00m[94mimage[39;49;00m:[37m [39;49;00mseldonio/mock_classifier:1.19.0-dev[37m[39;49;00m
+    [37m        [39;49;00m-[37m [39;49;00m[94mimage[39;49;00m:[37m [39;49;00mseldonio/mock_classifier:1.19.0[37m[39;49;00m
     [37m          [39;49;00m[94mimagePullPolicy[39;49;00m:[37m [39;49;00mIfNotPresent[37m[39;49;00m
     [37m          [39;49;00m[94mname[39;49;00m:[37m [39;49;00mclassifier[37m[39;49;00m
     [37m          [39;49;00m[94mresources[39;49;00m:[37m[39;49;00m

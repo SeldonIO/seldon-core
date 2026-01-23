@@ -58,7 +58,7 @@ VERSION
 
 
 
-    '1.19.0-dev'
+    '1.19.0'
 
 
 
@@ -128,7 +128,7 @@ def predict():
 predict()
 ```
 
-    ['  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current', '                                 Dload  Upload   Total   Spent    Left  Speed', '', '  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0', '100   268  100   204  100    64  14369   4507 --:--:-- --:--:-- --:--:-- 19142', '{"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"hello","requestPath":{"classifier":"seldonio/sklearnserver:1.19.0-dev"}}}']
+    ['  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current', '                                 Dload  Upload   Total   Spent    Left  Speed', '', '  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0', '100   268  100   204  100    64  14369   4507 --:--:-- --:--:-- --:--:-- 19142', '{"data":{"names":["t:0","t:1","t:2"],"ndarray":[[0.0006985194531162841,0.003668039039435755,0.9956334415074478]]},"meta":{"puid":"hello","requestPath":{"classifier":"seldonio/sklearnserver:1.19.0"}}}']
 
 
 ### Metrics Server
@@ -244,7 +244,7 @@ def send_feedback():
 send_feedback()
 ```
 
-    ['  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current', '                                 Dload  Upload   Total   Spent    Left  Speed', '', '  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0', '100   252  100   108  100   144  18960  25280 --:--:-- --:--:-- --:--:-- 50400', '{"data":{"tensor":{"shape":[0]}},"meta":{"requestPath":{"classifier":"seldonio/sklearnserver:1.19.0-dev"}}}']
+    ['  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current', '                                 Dload  Upload   Total   Spent    Left  Speed', '', '  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0', '100   252  100   108  100   144  18960  25280 --:--:-- --:--:-- --:--:-- 50400', '{"data":{"tensor":{"shape":[0]}},"meta":{"requestPath":{"classifier":"seldonio/sklearnserver:1.19.0"}}}']
 
 
 

@@ -113,7 +113,7 @@ VERSION
 
 
 
-    '1.19.0-dev'
+    '1.19.0'
 
 
 
@@ -130,7 +130,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: seldonio/mock_classifier:1.19.0-dev
+        - image: seldonio/mock_classifier:1.19.0
           imagePullPolicy: IfNotPresent
           name: classifier
           resources:

@@ -34,7 +34,7 @@ Seldon Core uses [Init Containers](https://kubernetes.io/docs/concepts/workloads
 
 ```yaml
 storageInitializer:
-  image: seldonio/rclone-storage-initializer:1.19.0-dev
+  image: seldonio/rclone-storage-initializer:1.19.0
 ```
 
 in our default [helm values](../charts/seldon-core-operator.html#values). See the [Dockerfile](../../components/rclone-storage-initializer/Dockerfile/) for a detailed reference. You can overwrite this value to specify another default `initContainer`. See details on requirements bellow
@@ -73,7 +73,7 @@ spec:
 
         initContainers:
         - name: classifier-model-initializer
-          image: seldonio/rclone-storage-initializer:1.19.0-dev
+          image: seldonio/rclone-storage-initializer:1.19.0
           imagePullPolicy: IfNotPresent
           args:
             - "s3://sklearn/iris"
@@ -125,7 +125,7 @@ spec:
       name: classifier
       implementation: SKLEARN_SERVER
       modelUri: s3://sklearn/iris
-      storageInitializerImage: seldonio/rclone-storage-initializer:1.19.0-dev  # Specify custom image here
+      storageInitializerImage: seldonio/rclone-storage-initializer:1.19.0  # Specify custom image here
       envSecretRefName: seldon-init-container-secret                          # Specify custom secret here
 ```
 

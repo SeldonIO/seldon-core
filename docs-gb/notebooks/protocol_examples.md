@@ -60,7 +60,7 @@ VERSION
 
 
 
-    '1.19.0-dev'
+    '1.19.0'
 
 
 
@@ -129,7 +129,7 @@ make_prediction()
 
 
     {'data': {'names': ['proba'], 'ndarray': [[0.43782349911420193]]},
-     'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0-dev'}}}
+     'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0'}}}
 
 
 
@@ -151,7 +151,7 @@ make_grpc_prediction()
 
 
 
-    {'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0-dev'}},
+    {'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0'}},
      'data': {'names': ['proba'], 'ndarray': [[0.43782349911420193]]}}
 
 
@@ -231,8 +231,8 @@ make_prediction()
 
 
     {'data': {'names': ['proba'], 'ndarray': [[0.07735472603574542]]},
-     'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0-dev',
-       'classifier2': 'seldonio/mock_classifier:1.19.0-dev'}}}
+     'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0',
+       'classifier2': 'seldonio/mock_classifier:1.19.0'}}}
 
 
 
@@ -253,8 +253,8 @@ make_grpc_prediction()
 
 
 
-    {'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0-dev',
-       'classifier2': 'seldonio/mock_classifier:1.19.0-dev'}},
+    {'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0',
+       'classifier2': 'seldonio/mock_classifier:1.19.0'}},
      'data': {'names': ['proba'], 'ndarray': [[0.07735472603574542]]}}
 
 

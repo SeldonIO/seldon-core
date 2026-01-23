@@ -36,7 +36,7 @@ VERSION
 
 
 
-    '1.19.0-dev'
+    '1.19.0'
 
 
 
@@ -143,7 +143,7 @@ make_prediction()
     }
     
     Response:
-    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.07418328803460136]}}, 'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0-dev'}}}
+    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.07418328803460136]}}, 'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0'}}}
 
 
 
@@ -240,7 +240,7 @@ make_prediction()
     }
     
     Response:
-    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.0517458889162658]}}, 'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0-dev'}}}
+    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.0517458889162658]}}, 'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0'}}}
 
 
 
@@ -292,7 +292,7 @@ make_prediction()
     }
     
     Response:
-    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.11371803202813073]}}, 'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0-dev'}}}
+    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.11371803202813073]}}, 'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0'}}}
 
 
 

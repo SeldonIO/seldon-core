@@ -38,7 +38,7 @@ VERSION
 
 
 
-    '1.19.0-dev'
+    '1.19.0'
 
 
 
@@ -142,7 +142,7 @@ print(r)
     }
     
     Response:
-    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.051830424660114026]}}, 'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0-dev'}}}
+    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.051830424660114026]}}, 'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0'}}}
 
 
 ## Launch Shadow

@@ -174,7 +174,7 @@ spec:
     componentSpecs:
     - spec:
         containers:
-        - image: seldonio/echo-model:1.19.0-dev
+        - image: seldonio/echo-model:1.19.0
           name: classifier
 ```
 

@@ -506,7 +506,7 @@ helm upgrade seldon-core seldon-core-operator \
     --repo https://storage.googleapis.com/seldon-charts \
     --version 1.9.1 \
     --namespace seldon-system \
-    --set storageInitializer.image="seldonio/rclone-storage-initializer:1.19.0-dev" \
+    --set storageInitializer.image="seldonio/rclone-storage-initializer:1.19.0" \
     --reuse-values
 ```
 

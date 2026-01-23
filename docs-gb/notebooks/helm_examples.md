@@ -23,7 +23,7 @@ VERSION
 
 
 
-    '1.19.0-dev'
+    '1.19.0'
 
 
 
@@ -75,7 +75,7 @@ VERSION
     [37m              [39;49;00m[94m"containers"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
     [37m                [39;49;00m{[37m[39;49;00m
     [37m                  [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"model"[39;49;00m,[37m[39;49;00m
-    [37m                  [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mock_classifier:1.19.0-dev"[39;49;00m,[37m[39;49;00m
+    [37m                  [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mock_classifier:1.19.0"[39;49;00m,[37m[39;49;00m
     [37m                  [39;49;00m[94m"env"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
     [37m                      [39;49;00m{[37m[39;49;00m
     [37m                        [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"LOG_LEVEL"[39;49;00m,[37m[39;49;00m
@@ -149,7 +149,7 @@ predict()
     }
     
     Response:
-    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.09963978586361734]}}, 'meta': {'requestPath': {'model': 'seldonio/mock_classifier:1.19.0-dev'}}}
+    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.09963978586361734]}}, 'meta': {'requestPath': {'model': 'seldonio/mock_classifier:1.19.0'}}}
 
 Response:
 {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.05335370865277927]}}, 'meta': {}}
@@ -178,7 +178,7 @@ predict()
     Request:
     {'meta': {}, 'data': {'tensor': {'shape': [1, 1], 'values': [0.555819139294561]}}}
     Response:
-    {'meta': {'requestPath': {'model': 'seldonio/mock_classifier:1.19.0-dev'}}, 'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.08620740652415673]}}}
+    {'meta': {'requestPath': {'model': 'seldonio/mock_classifier:1.19.0'}}, 'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.08620740652415673]}}}
 
 
 
@@ -232,7 +232,7 @@ release "mymodel" uninstalled
     [37m		    [39;49;00m[94m"spec"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
     [37m			[39;49;00m[94m"containers"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
     [37m			    [39;49;00m{[37m[39;49;00m
-    [37m                                [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mock_classifier:1.19.0-dev"[39;49;00m,[37m[39;49;00m
+    [37m                                [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mock_classifier:1.19.0"[39;49;00m,[37m[39;49;00m
     [37m				[39;49;00m[94m"imagePullPolicy"[39;49;00m:[37m [39;49;00m[33m"IfNotPresent"[39;49;00m,[37m[39;49;00m
     [37m				[39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"classifier-1"[39;49;00m,[37m[39;49;00m
     [37m				[39;49;00m[94m"resources"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
@@ -252,7 +252,7 @@ release "mymodel" uninstalled
     [37m			[39;49;00m[94m"spec"[39;49;00m:{[37m[39;49;00m
     [37m			    [39;49;00m[94m"containers"[39;49;00m:[[37m[39;49;00m
     [37m				[39;49;00m{[37m[39;49;00m
-    [37m                                [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mock_classifier:1.19.0-dev"[39;49;00m,[37m[39;49;00m
+    [37m                                [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mock_classifier:1.19.0"[39;49;00m,[37m[39;49;00m
     [37m				[39;49;00m[94m"imagePullPolicy"[39;49;00m:[37m [39;49;00m[33m"IfNotPresent"[39;49;00m,[37m[39;49;00m
     [37m				[39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"classifier-2"[39;49;00m,[37m[39;49;00m
     [37m				[39;49;00m[94m"resources"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
@@ -346,7 +346,7 @@ predict()
     }
     
     Response:
-    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.0656377202541611]}}, 'meta': {'requestPath': {'classifier-2': 'seldonio/mock_classifier:1.19.0-dev'}}}
+    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.0656377202541611]}}, 'meta': {'requestPath': {'classifier-2': 'seldonio/mock_classifier:1.19.0'}}}
 
 Response:
 {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.11299965170860979]}}, 'meta': {}}
@@ -375,7 +375,7 @@ predict()
     Request:
     {'meta': {}, 'data': {'tensor': {'shape': [1, 1], 'values': [0.163692647815478]}}}
     Response:
-    {'meta': {'requestPath': {'classifier-2': 'seldonio/mock_classifier:1.19.0-dev'}}, 'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.05991890833984506]}}}
+    {'meta': {'requestPath': {'classifier-2': 'seldonio/mock_classifier:1.19.0'}}, 'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.05991890833984506]}}}
 
 
 
@@ -427,7 +427,7 @@ release "myabtest" uninstalled
     [37m		    [39;49;00m[94m"spec"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
     [37m			[39;49;00m[94m"containers"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
     [37m			    [39;49;00m{[37m[39;49;00m
-    [37m                                [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mock_classifier:1.19.0-dev"[39;49;00m,[37m				[39;49;00m
+    [37m                                [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mock_classifier:1.19.0"[39;49;00m,[37m				[39;49;00m
     [37m				[39;49;00m[94m"imagePullPolicy"[39;49;00m:[37m [39;49;00m[33m"IfNotPresent"[39;49;00m,[37m[39;49;00m
     [37m				[39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"classifier-1"[39;49;00m,[37m[39;49;00m
     [37m				[39;49;00m[94m"resources"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
@@ -442,7 +442,7 @@ release "myabtest" uninstalled
     [37m			[39;49;00m[94m"spec"[39;49;00m:{[37m[39;49;00m
     [37m			    [39;49;00m[94m"containers"[39;49;00m:[[37m[39;49;00m
     [37m				[39;49;00m{[37m[39;49;00m
-    [37m                                [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mock_classifier:1.19.0-dev"[39;49;00m,[37m								    [39;49;00m
+    [37m                                [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mock_classifier:1.19.0"[39;49;00m,[37m								    [39;49;00m
     [37m				[39;49;00m[94m"imagePullPolicy"[39;49;00m:[37m [39;49;00m[33m"IfNotPresent"[39;49;00m,[37m[39;49;00m
     [37m				[39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"classifier-2"[39;49;00m,[37m[39;49;00m
     [37m				[39;49;00m[94m"resources"[39;49;00m:[37m [39;49;00m{[37m[39;49;00m
@@ -458,7 +458,7 @@ release "myabtest" uninstalled
     [37m	        [39;49;00m{[37m[39;49;00m
     [37m		    [39;49;00m[94m"spec"[39;49;00m:{[37m[39;49;00m
     [37m			[39;49;00m[94m"containers"[39;49;00m:[37m [39;49;00m[{[37m[39;49;00m
-    [37m                            [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mab_epsilon_greedy:1.19.0-dev"[39;49;00m,[37m								    			    [39;49;00m
+    [37m                            [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mab_epsilon_greedy:1.19.0"[39;49;00m,[37m								    			    [39;49;00m
     [37m			    [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"eg-router"[39;49;00m[37m[39;49;00m
     [37m			[39;49;00m}],[37m[39;49;00m
     [37m			[39;49;00m[94m"terminationGracePeriodSeconds"[39;49;00m:[37m [39;49;00m[34m20[39;49;00m[37m[39;49;00m
@@ -518,7 +518,7 @@ release "myabtest" uninstalled
     },[37m[39;49;00m
     ][37m[39;49;00m
     },[37m[39;49;00m
-    [37m		[39;49;00m[94m"labels"[39;49;00m:[37m [39;49;00m{[94m"fluentd"[39;49;00m:[33m"true"[39;49;00m,[94m"version"[39;49;00m:[33m"1.19.0-dev"[39;49;00m}[37m[39;49;00m
+    [37m		[39;49;00m[94m"labels"[39;49;00m:[37m [39;49;00m{[94m"fluentd"[39;49;00m:[33m"true"[39;49;00m,[94m"version"[39;49;00m:[33m"1.19.0"[39;49;00m}[37m[39;49;00m
     [37m	    [39;49;00m}[37m[39;49;00m
     [37m	[39;49;00m][37m[39;49;00m
     [37m    [39;49;00m}[37m[39;49;00m
@@ -577,7 +577,7 @@ predict()
     }
     
     Response:
-    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.058212613572549546]}}, 'meta': {'requestPath': {'classifier-1': 'seldonio/mock_classifier:1.19.0-dev'}}}
+    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.058212613572549546]}}, 'meta': {'requestPath': {'classifier-1': 'seldonio/mock_classifier:1.19.0'}}}
 
 Response:
 {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.05643175042558145]}}, 'meta': {}}
@@ -606,7 +606,7 @@ predict()
     Request:
     {'meta': {}, 'data': {'tensor': {'shape': [1, 1], 'values': [0.1279822023238696]}}}
     Response:
-    {'meta': {'requestPath': {'classifier-1': 'seldonio/mock_classifier:1.19.0-dev'}}, 'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.05793871786684459]}}}
+    {'meta': {'requestPath': {'classifier-1': 'seldonio/mock_classifier:1.19.0'}}, 'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.05793871786684459]}}}
 
 
 

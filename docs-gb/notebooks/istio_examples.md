@@ -69,7 +69,7 @@ VERSION
 
 
 
-    '1.19.0-dev'
+    '1.19.0'
 
 
 
@@ -132,7 +132,7 @@ def writetemplate(line, cell):
     [37m              [39;49;00m[94m"containers"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
     [37m                [39;49;00m{[37m[39;49;00m
     [37m                  [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"model"[39;49;00m,[37m[39;49;00m
-    [37m                  [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mock_classifier:1.19.0-dev"[39;49;00m,[37m[39;49;00m
+    [37m                  [39;49;00m[94m"image"[39;49;00m:[37m [39;49;00m[33m"seldonio/mock_classifier:1.19.0"[39;49;00m,[37m[39;49;00m
     [37m                  [39;49;00m[94m"env"[39;49;00m:[37m [39;49;00m[[37m[39;49;00m
     [37m                      [39;49;00m{[37m[39;49;00m
     [37m                        [39;49;00m[94m"name"[39;49;00m:[37m [39;49;00m[33m"LOG_LEVEL"[39;49;00m,[37m[39;49;00m
@@ -213,7 +213,7 @@ predict()
     }
     
     Response:
-    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.06819806874238313]}}, 'meta': {'requestPath': {'model': 'seldonio/mock_classifier:1.19.0-dev'}}}
+    {'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.06819806874238313]}}, 'meta': {'requestPath': {'model': 'seldonio/mock_classifier:1.19.0'}}}
 
 
 
@@ -239,7 +239,7 @@ predict()
     Request:
     {'meta': {}, 'data': {'tensor': {'shape': [1, 1], 'values': [0.2596814235407022]}}}
     Response:
-    {'meta': {'requestPath': {'model': 'seldonio/mock_classifier:1.19.0-dev'}}, 'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.0655597808283028]}}}
+    {'meta': {'requestPath': {'model': 'seldonio/mock_classifier:1.19.0'}}, 'data': {'names': ['proba'], 'tensor': {'shape': [1, 1], 'values': [0.0655597808283028]}}}
 
 
 
@@ -339,7 +339,7 @@ predict()
 
 
     {'data': {'names': ['proba'], 'ndarray': [[0.43782349911420193]]},
-     'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0-dev'}}}
+     'meta': {'requestPath': {'classifier': 'seldonio/mock_classifier:1.19.0'}}}
 
 
 

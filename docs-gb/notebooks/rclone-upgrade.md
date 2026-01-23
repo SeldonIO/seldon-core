@@ -159,7 +159,7 @@ metadata:
 spec:
   containers:
   - name: rclone
-    image: seldonio/rclone-storage-initializer:1.19.0-dev
+    image: seldonio/rclone-storage-initializer:1.19.0
     command: [ "/bin/sh", "-c", "--", "sleep 3600"]
     envFrom:
     - secretRef:
@@ -212,7 +212,7 @@ spec:
       implementation: SKLEARN_SERVER
       modelUri: s3://sklearn/iris
       envSecretRefName: seldon-rclone-secret
-      storageInitializerImage: seldonio/rclone-storage-initializer:1.19.0-dev
+      storageInitializerImage: seldonio/rclone-storage-initializer:1.19.0
 ```
 
 
