@@ -35,7 +35,7 @@ Regeneration and cleanup of license metadata.
 - Keda dependency upgraded to 2.17.3 and forward-compatible with 2.18.3(latest).
 
 ### Documentation
-Documentation was migrated to GitBook. Can be found [here](https://docs.seldon.ai/seldon-core-1).
+Documentation was migrated to GitBook. It can be found [here](https://docs.seldon.ai/seldon-core-1).
 
 ### Deprecations and Cleanup
 - GPU-related files formally deprecated.
