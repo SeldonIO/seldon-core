@@ -4,7 +4,7 @@
 This wrapper is an example only and is not production-ready.
 {% endhint %}
 
-In this guide we cover how you can wrap your CPP models using the Seldon CPP wrapper.
+In this guide we illustrate how you can wrap your CPP models using a CPP wrapper.
 
 For a quick start you can try out the following two examples:
 
