@@ -9,7 +9,7 @@ Make sure you also [read the CHANGELOG](../CHANGELOG.md) to see the detailed fea
 ## Upgrading to 1.19
 
 **Python 3.12 Adoption**
-All core Python components—including prepackaged servers, Alibi Detect/Explain servers, wrappers, notebooks, and E2E tests—now target Python 3.12.
+All core Python components — including prepackaged servers, Alibi Detect/Explain servers, wrappers, notebooks, and E2E tests — now target Python 3.12.
 
 What this means:
 - Wheels or dependencies not yet compatible with Python 3.12 may fail at runtime.
