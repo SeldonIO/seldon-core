@@ -1,6 +1,6 @@
 # Seldon Core Release 1.19.0 (Draft Release)
 
-A summary of the main contributions to the [Seldon Core release 1.19.0](https://github.com/SeldonIO/seldon-core/releases/tag/v1.19.0-rc.1).
+A summary of the main contributions to the [Seldon Core release 1.19.0](https://github.com/SeldonIO/seldon-core/releases/tag/v1.19.0).
 
 ### Overview
 This release focuses on platform maintenance, security hardening, and ecosystem modernization. The main themes are extensive CVE remediation, a broad upgrade to Python 3.12 across images and tooling, dependency and base image refreshes, CI and workflow improvements, alongside documentation cleanup and migration work. No major new end-user features are introduced, but the release materially improves security posture, test coverage, and long-term maintainability.
