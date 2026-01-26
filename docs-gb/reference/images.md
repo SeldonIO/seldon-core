@@ -17,12 +17,6 @@
 | [SKLearn Server](../servers/sklearn.md) | [seldonio/sklearnserver](https://hub.docker.com/r/seldonio/sklearnserver/tags/) | 1.19.0 |
 | [XGBoost Server](../servers/xgboost.md) | [seldonio/xgboostserver](https://hub.docker.com/r/seldonio/xgboostserver/tags/) | 1.19.0 |
 
-## Language wrappers
-
-| Description | Image URL | Version |
-|-------------|-----------|----------------|
-| [Seldon Python 3 (3.12) Wrapper for S2I](../wrappers/python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) | 1.19.0 |
-| [Seldon Python 3.12 Wrapper for S2I](../wrappers/python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python312](https://hub.docker.com/r/seldonio/seldon-core-s2i-python312/tags/) | 1.19.0 |
 
 ## Server proxies
 
@@ -42,13 +36,15 @@
 ## Other images 
 
 {% hint style="warning" %}
-The following images are examples only and are not production-ready.
+The following images are examples only.
 {% endhint %}
 
 ### Language wrappers (examples only)
 
 | Description | Image URL  |
 |-------------|-----------|
+| [Seldon Python 3 (3.12) Wrapper for S2I](../wrappers/python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python3](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3/tags/) |
+| [Seldon Python 3.12 Wrapper for S2I](../wrappers/python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python312](https://hub.docker.com/r/seldonio/seldon-core-s2i-python312/tags/) |
 | [Seldon Python ONNX Wrapper for S2I](../wrappers/python/python_wrapping_s2i.md) | [seldonio/seldon-core-s2i-python3-ngraph-onnx](https://hub.docker.com/r/seldonio/seldon-core-s2i-python3-ngraph-onnx/tags/) |
 | [Seldon Java Build Wrapper for S2I](../wrappers/java.md) | [seldonio/seldon-core-s2i-java-build](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-build/tags/) |
 | [Seldon Java Runtime Wrapper for S2I](../wrappers/java.md) | [seldonio/seldon-core-s2i-java-runtime](https://hub.docker.com/r/seldonio/seldon-core-s2i-java-runtime/tags/) |

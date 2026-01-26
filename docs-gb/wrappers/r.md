@@ -1,7 +1,7 @@
 # Packaging an R model for Seldon Core using s2i
 
 {% hint style="warning" %}
-This wrapper is an example only and is not production-ready.
+This wrapper is an example only.
 {% endhint %}
 
 In this guide, we illustrate the steps needed to wrap your own R model in a docker image for Seldon Core using [source-to-image app s2i](https://github.com/openshift/source-to-image). 
