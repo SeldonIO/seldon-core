@@ -1,7 +1,7 @@
 # Go Language Wrapper
 
 {% hint style="warning" %}
-This wrapper is an example only and is not production ready.
+This wrapper is an example only.
 {% endhint %}
 
 This is an initial example Go project to illustrate how Go microservices can be built and deployed for management by Seldon Core.

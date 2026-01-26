@@ -1,7 +1,7 @@
 # Packaging a C++ Framework/Model for Seldon Core
 
 {% hint style="warning" %}
-This wrapper is an example only and is not production-ready.
+This wrapper is an example only.
 {% endhint %}
 
 In this guide we illustrate how you can wrap your CPP models using a CPP wrapper.
