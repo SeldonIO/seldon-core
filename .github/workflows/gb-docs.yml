@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run Lychee link checker on docs-gb
-        uses: lycheeverse/lychee-action@v1.10.0
+        uses: lycheeverse/lychee-action@v2.0.2
         with:
           args: --verbose --no-progress docs-gb/**/*.md
 
@@ -43,6 +43,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run Lychee link checker on docs-gb
-        uses: lycheeverse/lychee-action@v1.10.0
+        uses: lycheeverse/lychee-action@v2.0.2
         with:
           args: --verbose --no-progress docs-gb/**/*.md
