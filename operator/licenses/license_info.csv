@@ -57,7 +57,7 @@ docker/compose,https://github.com/docker/compose/blob/main/LICENSE,Apache Licens
 docker/distribution,https://github.com/distribution/distribution/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/distribution/distribution/main/LICENSE
 docker/docker,https://github.com/moby/moby/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/moby/moby/master/LICENSE
 docker/docker-credential-helpers,https://github.com/docker/docker-credential-helpers/blob/master/LICENSE,MIT License,https://raw.githubusercontent.com/docker/docker-credential-helpers/master/LICENSE
-docker/go,https://github.com/docker/go/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/docker/go/master/LICENSE
+docker/go,https://github.com/docker-archive-public/docker.go/blob/master/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/docker-archive-public/docker.go/master/LICENSE
 docker/go-connections,https://github.com/docker/go-connections/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/docker/go-connections/main/LICENSE
 docker/go-metrics,https://github.com/docker/go-metrics/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/docker/go-metrics/master/LICENSE
 docker/go-units,https://github.com/docker/go-units/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/docker/go-units/master/LICENSE
@@ -114,11 +114,11 @@ googleapis/gax-go,https://github.com/googleapis/gax-go/blob/main/LICENSE,BSD 3-C
 googleapis/gnostic,https://github.com/google/gnostic/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/google/gnostic/main/LICENSE
 gorilla/mux,https://github.com/gorilla/mux/blob/main/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/gorilla/mux/main/LICENSE
 gorilla/websocket,https://github.com/gorilla/websocket/blob/main/LICENSE,BSD 2-Clause "Simplified" License,https://raw.githubusercontent.com/gorilla/websocket/main/LICENSE
+gotidy/ptr,https://github.com/gotidy/ptr/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/gotidy/ptr/master/LICENSE
 gregjones/httpcache,https://github.com/gregjones/httpcache/blob/master/LICENSE.txt,MIT License,https://raw.githubusercontent.com/gregjones/httpcache/master/LICENSE.txt
 grpc-ecosystem/go-grpc-middleware,https://github.com/grpc-ecosystem/go-grpc-middleware/blob/main/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/grpc-ecosystem/go-grpc-middleware/main/LICENSE
 grpc-ecosystem/go-grpc-prometheus,https://github.com/grpc-ecosystem/go-grpc-prometheus/blob/master/LICENSE,Apache License 2.0,https://raw.githubusercontent.com/grpc-ecosystem/go-grpc-prometheus/master/LICENSE
 grpc-ecosystem/grpc-gateway,https://github.com/grpc-ecosystem/grpc-gateway/blob/main/LICENSE,BSD 3-Clause "New" or "Revised" License,https://raw.githubusercontent.com/grpc-ecosystem/grpc-gateway/main/LICENSE
-hamba/avro,https://github.com/hamba/avro/blob/main/LICENCE,MIT License,https://raw.githubusercontent.com/hamba/avro/main/LICENCE
 hashicorp/errwrap,https://github.com/hashicorp/errwrap/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/errwrap/master/LICENSE
 hashicorp/go-cleanhttp,https://github.com/hashicorp/go-cleanhttp/blob/master/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/go-cleanhttp/master/LICENSE
 hashicorp/go-multierror,https://github.com/hashicorp/go-multierror/blob/main/LICENSE,Mozilla Public License 2.0,https://raw.githubusercontent.com/hashicorp/go-multierror/main/LICENSE
