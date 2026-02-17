@@ -178,7 +178,7 @@ spec:
       name: Ready
       type: string
     - description: Number of desired replicas
-      jsonPath: .spec.replicas
+      jsonPath: .status.replicas
       name: Desired Replicas
       type: integer
     - description: Number of replicas available to receive inference requests
