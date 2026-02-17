@@ -1,0 +1,431 @@
+/*
+Copyright (c) 2024 Seldon Technologies Ltd.
+
+Use of this software is governed BY
+(1) the license included in the LICENSE file or
+(2) if the license included in the LICENSE file is the Business Source License 1.1,
+the Change License after the Change Date as each is defined in accordance with the LICENSE file.
+*/
+
+package state_machine
+
+import (
+	"fmt"
+	"sort"
+
+	pb "github.com/seldonio/seldon-core/apis/go/v2/mlops/scheduler"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/events"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/events/Input"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine/model"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine/server"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/fsm/state_machine/server/sorters"
+	"github.com/seldonio/seldon-core/scheduler/v2/pkg/store"
+	"google.golang.org/protobuf/proto"
+)
+
+// Model represents the state machine for Model
+type Model interface {
+	ApplyLoadModel(current ClusterState, event Input.LoadModel) (ClusterState, []events.Output, error)
+	ApplyUnloadModel(current ClusterState, request *pb.UnloadModelRequest) (ClusterState, error)
+	ApplyModelStateLoadRequested(current ClusterState) (ClusterState, error)
+}
+
+// ApplyLoadModel applies business logic for loading a model
+// Pure function: same inputs → same outputs
+func (msm *ModelStateMachine) ApplyLoadModel(
+	current ClusterState,
+	event Input.LoadModel,
+) (ClusterState, error) {
+	modelName := event.GetModel().GetMeta().GetName()
+
+	if modelName == "" {
+		return current, fmt.Errorf("model name is empty")
+	}
+
+	// calculate the future model state
+	futureModelState := msm.getModelSnapLoadModel(current, event.Model)
+
+	// calculate server state
+	futureServerStateDelta, futureModelStateDelta := msm.getServerSnapLoadModel(current, futureModelState)
+
+	// calculate the future pipelines states
+	// todo: if the model existed but its definition changed we need to update the status of a pipeline
+	// todo: properly check the pipeline logic for this
+
+	// calculate the future experiment states
+	//todo: this might follow in line with the changes of pipelines
+
+	// todo: think more about this but I think this is better than cloning a very big struct
+	futureCluster := ClusterState{
+		Models: map[string]*model.Snapshot{
+			modelName: futureModelState,
+		},
+		Servers: map[string]*server.Snapshot{
+			futureServerState.Name: futureServerState,
+		},
+	}
+
+	return futureCluster, nil
+}
+
+func (msm *ModelStateMachine) ApplyUnloadModel(current ClusterState, request *pb.UnloadModelRequest) (ClusterState, error) {
+	//todo:
+
+	// similarly to the load request this should mark all the models or the latest one as unloaded?
+
+	// this will also change the status of pipelines and experiments that use the model
+
+	panic("implement me")
+	return ClusterState{}, nil
+}
+
+func (msm *ModelStateMachine) ApplyModelStateLoadRequested(current ClusterState) (ClusterState, error) {
+	//todo:
+
+	// this will be a state transition of the model this event can also affect the status of pipelines and experiments
+	// that use the model
+	panic("implement me")
+	return ClusterState{}, nil
+}
+
+// ========================================
+// Model Snapshot Generation
+// ========================================
+
+// getModelSnapLoadModel creates or updates a model snapshot based on the request
+// Handles:
+// - New models: creates fresh snapshot
+// - Deleted models: adds new version if all replicas are inactive
+// - Existing models: updates with new definition
+// - checks if deployment spec differs on model and creates a new model version
+func (msm *ModelStateMachine) getModelSnapLoadModel(currentState ClusterState, requestedModel *pb.Model) *model.Snapshot {
+	modelName := requestedModel.GetMeta().GetName()
+
+	// Check if model exists
+	currentModelSnap, exists := currentState.Models[modelName]
+	if !exists {
+		// Brand new model - create initial snapshot
+		return model.CreateSnapshotFromModel(requestedModel)
+	}
+
+	// Model exists - check if it was previously deleted
+	if currentModelSnap.GetDeleted() {
+		return handleDeletedModelRecreation(currentModelSnap, requestedModel)
+	}
+
+	// Case 3: Existing active model - check what changed
+	currentLatestModelVer := currentModelSnap.GetLatestModelVersionStatus()
+	if currentLatestModelVer == nil {
+		// Shouldn't happen, but handle gracefully
+		return model.CreateSnapshotFromModel(requestedModel)
+	}
+
+	//todo: I think I need to check model status
+
+	// Compare current latest model ver definition with requested model
+	currentModel := currentLatestModelVer.ModelDefn
+	equality := store.ModelEqualityCheck(currentModel, requestedModel)
+
+	// Case 3a: No changes - return clone of current state
+	if equality.Equal {
+		return currentModelSnap
+	}
+
+	// Clone for modifications
+	outputSnap := model.NewSnapshot(proto.Clone(currentModelSnap.ModelSnapshot).(*pb.ModelSnapshot))
+	latestInOutput := outputSnap.GetLatestModelVersionStatus()
+	if latestInOutput == nil {
+		// Safety check - shouldn't happen since we checked above
+		return model.CreateSnapshotFromModel(requestedModel)
+	}
+
+	// Case 3b: DeploymentSpec changed - requires new version (rolling update)
+	// This triggers replica changes, so we need a new version to track separately
+	if equality.DeploymentSpecDiffers {
+		return currentModelSnap.NewVersion(requestedModel)
+	}
+
+	// Case 3c: ModelSpec changed - update in place
+	// This is configuration changes that don't require new replicas
+	if equality.ModelSpecDiffers {
+		outputSnap.GetLatestModelVersionStatus().ModelDefn = requestedModel
+		// Note: Keep existing replicas, just update config
+	}
+
+	// Case 3d: Only metadata changed - update in place
+	if equality.MetaDiffers {
+		outputSnap.GetLatestModelVersionStatus().KubernetesMeta = requestedModel.GetMeta().GetKubernetesMeta()
+		outputSnap.GetLatestModelVersionStatus().ModelDefn = requestedModel
+	}
+
+	return outputSnap
+}
+
+// getServerSnapLoadModel calculates the server snapshot for a load model request
+// todo: this function might need to be aware of config from the state machine and it might have to be converted to method
+func (msm *ModelStateMachine) getServerSnapLoadModel(currentState ClusterState, futureModelSnap *model.Snapshot) (*server.Snapshot, *model.Snapshot) {
+	modelName := futureModelSnap.GetLatestModelVersionStatus().ModelDefn.Meta.Name
+
+	// Check if model exists
+	currentModelSnap, exists := currentState.Models[modelName]
+	if exists {
+		//todo: path for checking redeployment
+
+		// Brand new model - create initial snapshot
+		return nil, nil
+	}
+
+	// Model exists - check if it was previously deleted
+	if currentModelSnap.GetDeleted() {
+		// todo
+		return nil, nil
+	}
+
+	// Case 3: Existing active model - check what changed
+	currentLatestModelVer := futureModelSnap.GetLatestModelVersionStatus()
+	if currentLatestModelVer == nil {
+		// Shouldn't happen, but handle gracefully
+		return nil, nil
+	}
+
+	// things we need to do
+
+	var filteredServers []*server.Snapshot
+
+	// todo: abstract into function once we know full scope of use
+	for _, ser := range currentState.Servers {
+		ok := true
+
+		for _, serverFilter := range msm.config.serverFilters {
+			if !serverFilter.Filter(currentLatestModelVer, ser) {
+				msm.logger.WithField("filter", serverFilter.Name()).
+					WithField("server", ser.Name).
+					WithField("reason", serverFilter.Description(currentLatestModelVer, ser)).
+					Debug("Rejecting server for model")
+
+				ok = false
+				break
+			}
+		}
+
+		if ok {
+			msm.logger.WithField("server", ser.Name).Debug("Accepting server for model")
+			filteredServers = append(filteredServers, ser)
+		}
+	}
+
+	if len(filteredServers) == 0 {
+		// todo: this is our first failure that we should report
+
+		return nil, nil
+	}
+
+	desiredReplicas := int(currentLatestModelVer.GetModelDefn().GetDeploymentSpec().GetReplicas())
+	desiredMinReplicas := int(currentLatestModelVer.GetModelDefn().GetDeploymentSpec().GetMinReplicas())
+
+	// for the moment the default one
+	if msm.config.ServerSortingStrategy == ServerSelectionModelsLoaded {
+		for _, sorter := range msm.config.serverSorts {
+			sort.SliceStable(filteredServers, func(i, j int) bool {
+				return sorter.IsLess(&sorters.CandidateServer{Model: currentLatestModelVer, Server: filteredServers[i]}, &sorters.CandidateServer{Model: currentLatestModelVer, Server: filteredServers[i]})
+			})
+		}
+	}
+
+	// todo: this part is different than in current scheduler
+	// check desired replicas scheduling and min replicas scheduling
+
+	type candidateServers struct {
+		ModelSnap     *model.Snapshot
+		ServerSnap    *server.Snapshot
+		ChosenReplica []*server.Replica
+	}
+
+	var candidateWithMinReplicas []candidateServers
+
+	for _, candidateServer := range filteredServers {
+
+		var enoughReplicas []*server.Replica
+		for _, replica := range candidateServer.Replicas {
+			ok := true
+
+			for _, replicaFilter := range msm.config.replicaFilters {
+				if !replicaFilter.Filter(currentLatestModelVer, replica) {
+					msm.logger.
+						WithField("filter", replicaFilter.Name()).
+						WithField("replica", replica.ReplicaIdx).
+						WithField("reason", replicaFilter.Description(currentLatestModelVer, replica)).
+						Debug("Rejecting server replica for model")
+
+					ok = false
+					break
+				}
+			}
+
+			if ok {
+				msm.logger.WithField("replica", replica.ReplicaIdx).Debug("Accepting server replica for model")
+				//todo: append replica as a potential replica
+				enoughReplicas = append(enoughReplicas, replica)
+			}
+		}
+
+		numServerReplicas := len(enoughReplicas)
+
+		// todo: do a check in which the appended replica server is complete to them use that server as
+		// proceed to the next server if it doesnt have desired replicas
+		// todo: might have to select the min replicas first to fail early and check later for desired replicas and if not possible fall back to the min replicas
+		if numServerReplicas >= desiredMinReplicas {
+			msm.logger.
+				WithField("server", candidateServer.Name).
+				WithField("available_replicas", numServerReplicas).
+				WithField("desired_replicas", desiredReplicas).
+				WithField("min_replicas", desiredMinReplicas).
+				Debug("Adding to min replicas")
+			candidateWithMinReplicas = append(candidateWithMinReplicas, candidateServers{ServerSnap: candidateServer, ChosenReplica: enoughReplicas})
+			continue
+		}
+	}
+
+	if len(candidateWithMinReplicas) == 0 {
+		//todo we have to fail here or indicate that there is no matching servers
+	}
+
+	// todo: try to schedule with desired replicas
+
+	var desiredCandidateServer []candidateServers
+	for _, candidateMin := range candidateWithMinReplicas {
+		if len(candidateMin.ChosenReplica) >= desiredReplicas {
+			desiredCandidateServer = append(desiredCandidateServer, candidateMin)
+		}
+	}
+
+	if len(desiredCandidateServer) == 0 {
+		// todo: schedule with min if allowed
+	}
+
+	// short replicas
+
+	// input is a list of candidate servers and replicas to schedule
+
+	if msm.config.ModelDeploymentStrategy == ModelDeploymentAllAtOnce {
+		// find the first server and deploy all replicas
+
+		assignedReplicaIDs := make(map[int]struct{})
+		for _, replica := range desiredCandidateServer[0].ChosenReplica {
+			if _, ok := currentState.Servers[desiredCandidateServer[0].ServerSnap.Name].Replicas[replica.ReplicaIdx]; !ok {
+				//todo: we might not need to anything here
+			}
+
+			assignedReplicaIDs[replica.ReplicaIdx] = struct{}{}
+		}
+
+		// todo: can we have an edge case in which the model is assign to a different different from the one to be assigned to?
+		// todo: I don't think so
+		//for modelVersion.HasServer() && modelVersion.Server() != serverKey {
+		//	logger.Debugf("Adding new version as server changed to %s from %s", modelVersion.Server(), serverKey)
+		//	m.addNextModelVersion(model, model.Latest().modelDefn)
+		//	modelVersion = model.Latest()
+		//}
+
+		for replicaIDx := range assignedReplicaIDs {
+			if existingState, ok := currentLatestModelVer.ModelReplicaState[int32(replicaIDx)]; !ok {
+				msm.logger.Debugf("Model %s version %s state %s on server %s replica %d does not exist yet and should be loaded",
+					modelName, currentLatestModelVer, existingState.State.String(), desiredCandidateServer[0].ServerSnap.Name, replicaIDx)
+
+			}
+			currentLatestModelVer.ModelReplicaState[int32(replicaIDx)].State = pb.ModelReplicaStatus_LoadRequested
+			replica, ok := desiredCandidateServer[0].ServerSnap.Replicas[replicaIDx]
+			if !ok {
+				//todo: what to do here
+			}
+
+			replica.ReservedMemory += currentLatestModelVer.GetRequiredMemory()
+		}
+
+	}
+
+	// we have many cases here:
+
+	/*
+		Rolling update
+		- one replica has our model deployed, we skip and check the next one to schedule if all are already schedule do nothing else then
+
+	*/
+
+	// check memory for this model deployment with min and desired replicas
+
+	// check config on overcomit and server autoscaling
+
+	// make a decision on weather to deploy with min or desired replicas
+
+	// might have to mark the deployment type of a model in its model struct in the case we would later want to do all at once deployment
+
+	/*
+		 - filter servers
+		    - if no filter return emtpy server snapshot (meaning that we could not schedule the model
+			- could even mark the model as failed deployment
+		- get model desired replicas and min replicas
+		- sort servers (i guess this is by availability of who has the highest)
+		- on a rolling update this will need a few trips (probably the loadagent request when the model is confirmed
+		  as loaded triggers the next replica to be loaded
+		- reserve memory for each replica but with status memory reserved and only load request for the subsequent deploys
+
+	*/
+
+	return desiredCandidateServer[0].ServerSnap, currentModelSnap
+}
+
+// handleDeletedModelRecreation handles recreating a model that was previously deleted
+func handleDeletedModelRecreation(
+	snapshot *model.Snapshot,
+	requestedModel *pb.Model,
+) *model.Snapshot {
+	// Only allow recreation if all versions are fully inactive
+
+	latestModelVersion := snapshot.GetLatestModelVersionStatus()
+	if latestModelVersion == nil {
+		return snapshot
+	}
+
+	if latestModelVersion.Active() {
+		// is being mark as deleted and still has pending  state to process do nothing and return snap
+		return snapshot
+	}
+
+	// All inactive - safe to add a new version
+	futureSnap := snapshot.NewVersion(requestedModel)
+	futureSnap.Deleted = false // Mark as no longer deleted
+
+	return futureSnap
+}
+
+func (msm *ModelStateMachine) generateLoadModelEvents(clusterState ClusterState, modelDelta *model.Snapshot, serverDelta *server.Snapshot) []events.Output {
+	// possible events to generate
+	/*
+		- Server Scale Up (when the future model has more desired replicas than available in the present cluster state)
+		- Load Model Version (when the future delta has extra added model replicas)
+		- Model Status Changed (when the model delta is present)
+		- Server Status Changed (when we reserve memory for a server)
+	*/
+
+	var events []events.Output
+
+	if modelDelta == nil || serverDelta == nil {
+		return nil
+	}
+
+	presentModel, ok := clusterState.Models[modelDelta.GetLatestModelVersionStatus().ModelDefn.Meta.Name]
+	if !ok {
+		return nil
+	}
+
+	// get current model replicas and generate events for the ones that are new
+	if presentModel.Deleted && modelDelta.Deleted {
+		// invalid
+	}
+
+	if presentModel.Deleted && !modelDelta.Deleted {
+		presentModel.GetLatestModelVersionStatus().ModelReplicaState
+	}
+
+}
