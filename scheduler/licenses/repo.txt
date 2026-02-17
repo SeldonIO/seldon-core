@@ -146,6 +146,8 @@ influxdata/tdigest
 invopop/jsonschema
 jarcoal/httpmock
 jessevdk/go-flags
+jhump/gopoet
+jhump/goprotoc
 jhump/protoreflect
 jonboulle/clockwork
 josharian/intern
@@ -157,6 +159,7 @@ kelseyhightower/envconfig
 kisielk/errcheck
 kisielk/gotool
 klauspost/compress
+knadh/koanf
 konsorten/go-windows-terminal-sequences
 kr/pretty
 kr/pty
