@@ -53,7 +53,7 @@ type PipelineVersion struct {
 	Steps           map[string]*PipelineStep
 	State           *PipelineState
 	Output          *PipelineOutput
-	DataflowSepec   *DataflowSpec
+	DataflowSpec    *DataflowSpec
 	KubernetesMeta  *KubernetesMeta
 	AllowCycles     bool
 	MaxStepRevisits uint32
