@@ -10,7 +10,7 @@ COPY . .
 RUN apt-get install make
 RUN make -C operator RELEASE_TAG="$RELEASE_TAG" build
 
-FROM registry.access.redhat.com/ubi9/ubi-micro:9.6
+FROM registry.access.redhat.com/ubi9/ubi-micro:9.7
 WORKDIR /
 COPY --from=builder /workspace/operator/bin/manager .
 USER 65532:65532
