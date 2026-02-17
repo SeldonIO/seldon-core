@@ -1,15 +1,19 @@
 <dependencies>
-  <dependency name='com.google.j2objc:j2objc-annotations:3.0.0'>
-    <file>j2objc-annotations-3.0.0.jar</file>
-    <license name='Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  <dependency name='org.jetbrains.kotlinx:kotlinx-serialization-json-io-jvm:1.7.3'>
+    <file>kotlinx-serialization-json-io-jvm-1.7.3.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.prometheus:simpleclient_httpserver:0.16.0'>
+    <file>simpleclient_httpserver-0.16.0.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
   <dependency name='commons-logging:commons-logging:1.2'>
     <file>commons-logging-1.2.jar</file>
     <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
-  <dependency name='io.prometheus:simpleclient_httpserver:0.16.0'>
-    <file>simpleclient_httpserver-0.16.0.jar</file>
-    <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  <dependency name='com.google.protobuf:protobuf-java-util:4.29.3'>
+    <file>protobuf-java-util-4.29.3.jar</file>
+    <license name='BSD-3-Clause' url='https://opensource.org/licenses/BSD-3-Clause' />
   </dependency>
   <dependency name='io.grpc:grpc-stub:1.73.0'>
     <file>grpc-stub-1.73.0.jar</file>
@@ -23,62 +27,71 @@
     <file>client-java-24.0.0.jar</file>
     <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
-  <dependency name='com.google.code.findbugs:jsr305:3.0.2'>
-    <file>jsr305-3.0.2.jar</file>
-    <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  <dependency name='io.netty:netty-resolver:4.1.114.Final'>
+    <file>netty-resolver-4.1.114.Final.jar</file>
+    <license name='Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0' />
   </dependency>
   <dependency name='org.bitbucket.b_c:jose4j:0.9.6'>
     <file>jose4j-0.9.6.jar</file>
     <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
+  <dependency name='io.netty:netty-codec-http:4.1.114.Final'>
+    <file>netty-codec-http-4.1.114.Final.jar</file>
+    <license name='Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0' />
+  </dependency>
   <dependency name='com.natpryce:konfig:1.6.10.0'>
     <file>konfig-1.6.10.0.jar</file>
     <license name='Apache 2.0' url='http://opensource.org/licenses/Apache-2.0' />
   </dependency>
-  <dependency name='io.opencensus:opencensus-api:0.31.1'>
-    <file>opencensus-api-0.31.1.jar</file>
-    <license name='The Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  <dependency name='io.netty:netty-handler:4.1.114.Final'>
+    <file>netty-handler-4.1.114.Final.jar</file>
+    <license name='Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0' />
   </dependency>
-  <dependency name='com.squareup.okio:okio-jvm:3.6.0'>
-    <file>okio-jvm-3.6.0.jar</file>
-    <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  <dependency name='com.squareup.wire:wire-runtime-jvm:5.3.0'>
+    <file>wire-runtime-jvm-5.3.0.jar</file>
+    <license name='Apache-2.0' url='https://www.apache.org/licenses/LICENSE-2.0' />
+  </dependency>
+  <dependency name='io.netty:netty-buffer:4.1.114.Final'>
+    <file>netty-buffer-4.1.114.Final.jar</file>
+    <license name='Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0' />
   </dependency>
   <dependency name='com.amazonaws:jmespath-java:1.12.783'>
     <file>jmespath-java-1.12.783.jar</file>
     <license name='Apache License, Version 2.0' url='https://aws.amazon.com/apache2.0' />
   </dependency>
-  <dependency name='io.grpc:grpc-api:1.73.0'>
-    <file>grpc-api-1.73.0.jar</file>
-    <license name='Apache 2.0' url='https://opensource.org/licenses/Apache-2.0' />
+  <dependency name='org.eclipse.jetty.alpn:alpn-api:1.1.3.v20160715'>
+    <file>alpn-api-1.1.3.v20160715.jar</file>
+    <license name='Apache Software License - Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0' />
+    <license name='Eclipse Public License - Version 1.0' url='http://www.eclipse.org/org/documents/epl-v10.php' />
+  </dependency>
+  <dependency name='io.ktor:ktor-server-netty-jvm:3.0.1'>
+    <file>ktor-server-netty-jvm-3.0.1.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
   <dependency name='jakarta.annotation:jakarta.annotation-api:3.0.0'>
     <file>jakarta.annotation-api-3.0.0.jar</file>
     <license name='EPL 2.0' url='https://www.eclipse.org/legal/epl-2.0' />
     <license name='GPL2 w/ CPE' url='https://www.gnu.org/software/classpath/license.html' />
   </dependency>
-  <dependency name='org.bouncycastle:bcprov-jdk18on:1.80'>
-    <file>bcprov-jdk18on-1.80.jar</file>
-    <license name='Bouncy Castle Licence' url='https://www.bouncycastle.org/licence.html' />
+  <dependency name='io.netty:netty-transport-native-kqueue:4.1.114.Final'>
+    <file>netty-transport-native-kqueue-4.1.114.Final.jar</file>
+    <license name='Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0' />
   </dependency>
   <dependency name='io.grpc:grpc-protobuf:1.73.0'>
     <file>grpc-protobuf-1.73.0.jar</file>
     <license name='Apache 2.0' url='https://opensource.org/licenses/Apache-2.0' />
   </dependency>
-  <dependency name='io.klogging:klogging-jvm:0.11.1'>
-    <file>klogging-jvm-0.11.1.jar</file>
-    <license name='The Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
-  </dependency>
   <dependency name='org.bouncycastle:bcpkix-jdk18on:1.80'>
     <file>bcpkix-jdk18on-1.80.jar</file>
     <license name='Bouncy Castle Licence' url='https://www.bouncycastle.org/licence.html' />
   </dependency>
-  <dependency name='io.grpc:grpc-context:1.70.0'>
-    <file>grpc-context-1.70.0.jar</file>
-    <license name='Apache 2.0' url='https://opensource.org/licenses/Apache-2.0' />
-  </dependency>
   <dependency name='com.google.guava:failureaccess:1.0.2'>
     <file>failureaccess-1.0.2.jar</file>
     <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.confluent:kafka-schema-serializer:8.0.0'>
+    <file>kafka-schema-serializer-8.0.0.jar</file>
+    <license name='Apache License 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.html' />
   </dependency>
   <dependency name='org.apache.commons:commons-collections4:4.5.0'>
     <file>commons-collections4-4.5.0.jar</file>
@@ -92,10 +105,6 @@
     <file>kotlinx-coroutines-core-jvm-1.10.2.jar</file>
     <license name='Apache-2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
-  <dependency name='commons-codec:commons-codec:1.18.0'>
-    <file>commons-codec-1.18.0.jar</file>
-    <license name='Apache-2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
-  </dependency>
   <dependency name='io.prometheus:simpleclient_tracer_common:0.16.0'>
     <file>simpleclient_tracer_common-0.16.0.jar</file>
     <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
@@ -104,60 +113,286 @@
     <file>simpleclient-0.16.0.jar</file>
     <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
-  <dependency name='org.apache.kafka:kafka-streams:7.7.0-ccs'>
-    <file>kafka-streams-7.7.0-ccs.jar</file>
-    <license name='The Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  <dependency name='com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.18.3'>
+    <file>jackson-datatype-jdk8-2.18.3.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
   <dependency name='io.grpc:grpc-kotlin-stub:1.4.3'>
     <file>grpc-kotlin-stub-1.4.3.jar</file>
     <license name='Apache 2.0' url='https://opensource.org/licenses/Apache-2.0' />
   </dependency>
+  <dependency name='com.google.api.grpc:proto-google-common-protos:2.53.0'>
+    <file>proto-google-common-protos-2.53.0.jar</file>
+    <license name='Apache-2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
   <dependency name='com.google.auto.value:auto-value-annotations:1.11.0'>
     <file>auto-value-annotations-1.11.0.jar</file>
     <license name='Apache 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
-  <dependency name='com.google.http-client:google-http-client:1.47.0'>
-    <file>google-http-client-1.47.0.jar</file>
-    <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  <dependency name='io.netty:netty-transport-classes-kqueue:4.1.114.Final'>
+    <file>netty-transport-classes-kqueue-4.1.114.Final.jar</file>
+    <license name='Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0' />
   </dependency>
   <dependency name='com.google.auth:google-auth-library-credentials:1.35.0'>
     <file>google-auth-library-credentials-1.35.0.jar</file>
     <license name='BSD New license' url='http://opensource.org/licenses/BSD-3-Clause' />
   </dependency>
+  <dependency name='io.ktor:ktor-serialization-kotlinx-jvm:3.0.1'>
+    <file>ktor-serialization-kotlinx-jvm-3.0.1.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
   <dependency name='org.jetbrains.kotlinx:kotlinx-datetime-jvm:0.7.0-0.6.x-compat'>
     <file>kotlinx-datetime-jvm-0.7.0-0.6.x-compat.jar</file>
     <license name='Apache-2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
-  <dependency name='org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.10'>
-    <file>kotlin-stdlib-jdk7-1.9.10.jar</file>
-    <license name='The Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  <dependency name='io.netty:netty-transport:4.1.114.Final'>
+    <file>netty-transport-4.1.114.Final.jar</file>
+    <license name='Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0' />
   </dependency>
-  <dependency name='io.opencensus:opencensus-contrib-http-util:0.31.1'>
-    <file>opencensus-contrib-http-util-0.31.1.jar</file>
-    <license name='The Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  <dependency name='io.confluent:common-utils:8.0.0'>
+    <file>common-utils-8.0.0.jar</file>
+    <license name='Apache License 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.html' />
   </dependency>
   <dependency name='commons-io:commons-io:2.19.0'>
     <file>commons-io-2.19.0.jar</file>
     <license name='Apache-2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
+  <dependency name='org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.21'>
+    <file>kotlin-stdlib-jdk7-1.8.21.jar</file>
+    <license name='The Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
   <dependency name='com.amazonaws:aws-java-sdk-sts:1.12.783'>
     <file>aws-java-sdk-sts-1.12.783.jar</file>
     <license name='Apache License, Version 2.0' url='https://aws.amazon.com/apache2.0' />
   </dependency>
-  <dependency name='com.google.protobuf:protobuf-java:4.27.2'>
-    <file>protobuf-java-4.27.2.jar</file>
+  <dependency name='com.fasterxml.jackson.core:jackson-core:2.18.3'>
+    <file>jackson-core-2.18.3.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='com.squareup.okio:okio-jvm:3.9.1'>
+    <file>okio-jvm-3.9.1.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.ktor:ktor-server-content-negotiation-jvm:3.0.1'>
+    <file>ktor-server-content-negotiation-jvm-3.0.1.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.netty:netty-transport-classes-epoll:4.1.114.Final'>
+    <file>netty-transport-classes-epoll-4.1.114.Final.jar</file>
+    <license name='Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0' />
+  </dependency>
+  <dependency name='com.squareup.wire:wire-schema-jvm:5.3.0'>
+    <file>wire-schema-jvm-5.3.0.jar</file>
+    <license name='Apache-2.0' url='https://www.apache.org/licenses/LICENSE-2.0' />
+  </dependency>
+  <dependency name='org.checkerframework:checker-qual:3.43.0'>
+    <file>checker-qual-3.43.0.jar</file>
+    <license name='The MIT License' url='http://opensource.org/licenses/MIT' />
+  </dependency>
+  <dependency name='com.google.protobuf:protobuf-java:4.29.3'>
+    <file>protobuf-java-4.29.3.jar</file>
     <license name='BSD-3-Clause' url='https://opensource.org/licenses/BSD-3-Clause' />
+  </dependency>
+  <dependency name='io.ktor:ktor-http-jvm:3.0.1'>
+    <file>ktor-http-jvm-3.0.1.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.swagger:swagger-annotations:1.6.16'>
+    <file>swagger-annotations-1.6.16.jar</file>
+    <license name='Apache License 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.html' />
+  </dependency>
+  <dependency name='io.ktor:ktor-serialization-jvm:3.0.1'>
+    <file>ktor-serialization-jvm-3.0.1.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='com.amazonaws:aws-java-sdk-core:1.12.783'>
+    <file>aws-java-sdk-core-1.12.783.jar</file>
+    <license name='Apache License, Version 2.0' url='https://aws.amazon.com/apache2.0' />
+  </dependency>
+  <dependency name='io.klogging:slf4j-klogging:0.11.1'>
+    <file>slf4j-klogging-0.11.1.jar</file>
+    <license name='The Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='org.codehaus.mojo:animal-sniffer-annotations:1.24'>
+    <file>animal-sniffer-annotations-1.24.jar</file>
+    <license name='MIT license' url='https://spdx.org/licenses/MIT.txt' />
+  </dependency>
+  <dependency name='org.apache.avro:avro:1.11.4'>
+    <file>avro-1.11.4.jar</file>
+    <license name='Apache-2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.prometheus:simpleclient_common:0.16.0'>
+    <file>simpleclient_common-0.16.0.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='com.google.http-client:google-http-client-gson:1.47.0'>
+    <file>google-http-client-gson-1.47.0.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.confluent:kafka-protobuf-provider:8.0.0'>
+    <file>kafka-protobuf-provider-8.0.0.jar</file>
+    <license name='Confluent Community License' url='http://www.confluent.io/confluent-community-license' />
+    <license name='Apache License 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.html' />
+  </dependency>
+  <dependency name='com.fasterxml.jackson.core:jackson-annotations:2.18.3'>
+    <file>jackson-annotations-2.18.3.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.confluent:kafka-streams-protobuf-serde:8.0.0'>
+    <file>kafka-streams-protobuf-serde-8.0.0.jar</file>
+    <license name='Apache License 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.html' />
+  </dependency>
+  <dependency name='com.google.guava:guava:33.4.0-android'>
+    <file>guava-33.4.0-jre.jar</file>
+    <license name='Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='org.jetbrains.kotlinx:kotlinx-io-core-jvm:0.5.4'>
+    <file>kotlinx-io-core-jvm-0.5.4.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.kubernetes:client-java-proto:24.0.0'>
+    <file>client-java-proto-24.0.0.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='org.jetbrains.kotlin:kotlin-reflect:2.0.21'>
+    <file>kotlin-reflect-2.0.21.jar</file>
+    <license name='The Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='org.bouncycastle:bcutil-jdk18on:1.80'>
+    <file>bcutil-jdk18on-1.80.jar</file>
+    <license name='Bouncy Castle Licence' url='https://www.bouncycastle.org/licence.html' />
+  </dependency>
+  <dependency name='com.fasterxml.jackson.core:jackson-databind:2.18.3'>
+    <file>jackson-databind-2.18.3.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.swagger.core.v3:swagger-annotations:2.2.29'>
+    <file>swagger-annotations-2.2.29.jar</file>
+    <license name='Apache License 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.html' />
+  </dependency>
+  <dependency name='io.netty:netty-codec-http2:4.1.114.Final'>
+    <file>netty-codec-http2-4.1.114.Final.jar</file>
+    <license name='Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0' />
+  </dependency>
+  <dependency name='com.squareup:kotlinpoet-jvm:2.0.0'>
+    <file>kotlinpoet-jvm-2.0.0.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='org.apache.commons:commons-compress:1.27.1'>
+    <file>commons-compress-1.27.1.jar</file>
+    <license name='Apache-2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.ktor:ktor-network-jvm:3.0.1'>
+    <file>ktor-network-jvm-3.0.1.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='org.yaml:snakeyaml:2.4'>
+    <file>snakeyaml-2.4.jar</file>
+    <license name='Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='com.google.j2objc:j2objc-annotations:3.0.0'>
+    <file>j2objc-annotations-3.0.0.jar</file>
+    <license name='Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.ktor:ktor-websockets-jvm:3.0.1'>
+    <file>ktor-websockets-jvm-3.0.1.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.ktor:ktor-io-jvm:3.0.1'>
+    <file>ktor-io-jvm-3.0.1.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='com.google.code.findbugs:jsr305:3.0.2'>
+    <file>jsr305-3.0.2.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.netty:netty-transport-native-epoll:4.1.114.Final'>
+    <file>netty-transport-native-epoll-4.1.114.Final.jar</file>
+    <license name='Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0' />
+  </dependency>
+  <dependency name='com.palantir.javapoet:javapoet:0.6.0'>
+    <file>javapoet-0.6.0.jar</file>
+    <license name='The Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0' />
+  </dependency>
+  <dependency name='org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.7.3'>
+    <file>kotlinx-serialization-core-jvm-1.7.3.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.opencensus:opencensus-api:0.31.1'>
+    <file>opencensus-api-0.31.1.jar</file>
+    <license name='The Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.grpc:grpc-api:1.73.0'>
+    <file>grpc-api-1.73.0.jar</file>
+    <license name='Apache 2.0' url='https://opensource.org/licenses/Apache-2.0' />
+  </dependency>
+  <dependency name='org.bouncycastle:bcprov-jdk18on:1.80'>
+    <file>bcprov-jdk18on-1.80.jar</file>
+    <license name='Bouncy Castle Licence' url='https://www.bouncycastle.org/licence.html' />
+  </dependency>
+  <dependency name='com.typesafe:config:1.4.3'>
+    <file>config-1.4.3.jar</file>
+    <license name='Apache-2.0' url='https://www.apache.org/licenses/LICENSE-2.0' />
+  </dependency>
+  <dependency name='io.klogging:klogging-jvm:0.11.1'>
+    <file>klogging-jvm-0.11.1.jar</file>
+    <license name='The Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.grpc:grpc-context:1.70.0'>
+    <file>grpc-context-1.70.0.jar</file>
+    <license name='Apache 2.0' url='https://opensource.org/licenses/Apache-2.0' />
+  </dependency>
+  <dependency name='io.netty:netty-codec:4.1.114.Final'>
+    <file>netty-codec-4.1.114.Final.jar</file>
+    <license name='Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0' />
+  </dependency>
+  <dependency name='io.confluent:kafka-protobuf-serializer:8.0.0'>
+    <file>kafka-protobuf-serializer-8.0.0.jar</file>
+    <license name='Confluent Community License' url='http://www.confluent.io/confluent-community-license' />
+    <license name='Apache License 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.html' />
+  </dependency>
+  <dependency name='commons-codec:commons-codec:1.18.0'>
+    <file>commons-codec-1.18.0.jar</file>
+    <license name='Apache-2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='org.jetbrains.kotlinx:kotlinx-io-bytestring-jvm:0.5.4'>
+    <file>kotlinx-io-bytestring-jvm-0.5.4.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='com.charleskorn.kaml:kaml-jvm:0.61.0'>
+    <file>kaml-jvm-0.61.0.jar</file>
+    <license name='The Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='com.google.http-client:google-http-client:1.47.0'>
+    <file>google-http-client-1.47.0.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='org.apache.kafka:kafka-clients:8.0.0-ccs'>
+    <file>kafka-clients-8.0.0-ccs.jar</file>
+    <license name='The Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.netty:netty-transport-native-unix-common:4.1.114.Final'>
+    <file>netty-transport-native-unix-common-4.1.114.Final.jar</file>
+    <license name='Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0' />
+  </dependency>
+  <dependency name='io.opencensus:opencensus-contrib-http-util:0.31.1'>
+    <file>opencensus-contrib-http-util-0.31.1.jar</file>
+    <license name='The Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
   <dependency name='com.squareup.okhttp3:logging-interceptor:4.12.0'>
     <file>logging-interceptor-4.12.0.jar</file>
     <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
+  <dependency name='io.confluent:kafka-schema-registry-client:8.0.0'>
+    <file>kafka-schema-registry-client-8.0.0.jar</file>
+    <license name='Apache License 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.html' />
+  </dependency>
   <dependency name='com.google.errorprone:error_prone_annotations:2.38.0'>
     <file>error_prone_annotations-2.38.0.jar</file>
     <license name='Apache 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
-  <dependency name='com.fasterxml.jackson.core:jackson-core:2.18.3'>
-    <file>jackson-core-2.18.3.jar</file>
+  <dependency name='io.ktor:ktor-events-jvm:3.0.1'>
+    <file>ktor-events-jvm-3.0.1.jar</file>
     <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
   <dependency name='com.michael-bull.kotlin-retry:kotlin-retry-jvm:2.0.1'>
@@ -168,58 +403,34 @@
     <file>httpcore-4.4.16.jar</file>
     <license name='Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
-  <dependency name='org.checkerframework:checker-qual:3.43.0'>
-    <file>checker-qual-3.43.0.jar</file>
-    <license name='The MIT License' url='http://opensource.org/licenses/MIT' />
+  <dependency name='org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.7.3'>
+    <file>kotlinx-serialization-json-jvm-1.7.3.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
-  <dependency name='io.swagger:swagger-annotations:1.6.16'>
-    <file>swagger-annotations-1.6.16.jar</file>
+  <dependency name='io.confluent:kafka-protobuf-types:8.0.0'>
+    <file>kafka-protobuf-types-8.0.0.jar</file>
+    <license name='Confluent Community License' url='http://www.confluent.io/confluent-community-license' />
     <license name='Apache License 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.html' />
   </dependency>
-  <dependency name='com.amazonaws:aws-java-sdk-core:1.12.783'>
-    <file>aws-java-sdk-core-1.12.783.jar</file>
-    <license name='Apache License, Version 2.0' url='https://aws.amazon.com/apache2.0' />
+  <dependency name='com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.18.3'>
+    <file>jackson-dataformat-csv-2.18.3.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
-  <dependency name='org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.10'>
-    <file>kotlin-stdlib-jdk8-1.9.10.jar</file>
+  <dependency name='io.ktor:ktor-http-cio-jvm:3.0.1'>
+    <file>ktor-http-cio-jvm-3.0.1.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.21'>
+    <file>kotlin-stdlib-jdk8-1.8.21.jar</file>
     <license name='The Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
-  </dependency>
-  <dependency name='io.klogging:slf4j-klogging:0.11.1'>
-    <file>slf4j-klogging-0.11.1.jar</file>
-    <license name='The Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
-  </dependency>
-  <dependency name='org.codehaus.mojo:animal-sniffer-annotations:1.24'>
-    <file>animal-sniffer-annotations-1.24.jar</file>
-    <license name='MIT license' url='https://spdx.org/licenses/MIT.txt' />
-  </dependency>
-  <dependency name='io.prometheus:simpleclient_common:0.16.0'>
-    <file>simpleclient_common-0.16.0.jar</file>
-    <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
   <dependency name='io.prometheus:simpleclient_tracer_otel:0.16.0'>
     <file>simpleclient_tracer_otel-0.16.0.jar</file>
     <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
-  <dependency name='com.google.protobuf:protobuf-kotlin:4.27.2'>
-    <file>protobuf-kotlin-4.27.2.jar</file>
-    <license name='BSD-3-Clause' url='https://opensource.org/licenses/BSD-3-Clause' />
-  </dependency>
   <dependency name='com.google.code.gson:gson:2.13.1'>
     <file>gson-2.13.1.jar</file>
     <license name='Apache-2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
-  </dependency>
-  <dependency name='com.google.http-client:google-http-client-gson:1.47.0'>
-    <file>google-http-client-gson-1.47.0.jar</file>
-    <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
-  </dependency>
-  <dependency name='org.rocksdb:rocksdbjni:7.9.2'>
-    <file>rocksdbjni-7.9.2.jar</file>
-    <license name='Apache License 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.html' />
-    <license name='GNU General Public License, version 2' url='http://www.gnu.org/licenses/gpl-2.0.html' />
-  </dependency>
-  <dependency name='com.fasterxml.jackson.core:jackson-annotations:2.18.3'>
-    <file>jackson-annotations-2.18.3.jar</file>
-    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
   <dependency name='com.squareup.okhttp3:okhttp:4.12.0'>
     <file>okhttp-4.12.0.jar</file>
@@ -229,17 +440,29 @@
     <file>client-java-api-24.0.0.jar</file>
     <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
-  <dependency name='com.google.guava:guava:33.4.0-android'>
-    <file>guava-33.4.0-jre.jar</file>
-    <license name='Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  <dependency name='org.apache.kafka:kafka-streams:8.0.0-ccs'>
+    <file>kafka-streams-8.0.0-ccs.jar</file>
+    <license name='The Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
   <dependency name='io.prometheus:simpleclient_tracer_otel_agent:0.16.0'>
     <file>simpleclient_tracer_otel_agent-0.16.0.jar</file>
     <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
+  <dependency name='com.google.protobuf:protobuf-kotlin:4.29.3'>
+    <file>protobuf-kotlin-4.29.3.jar</file>
+    <license name='BSD-3-Clause' url='https://opensource.org/licenses/BSD-3-Clause' />
+  </dependency>
+  <dependency name='io.ktor:ktor-serialization-kotlinx-json-jvm:3.0.1'>
+    <file>ktor-serialization-kotlinx-json-jvm-3.0.1.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
   <dependency name='io.gsonfire:gson-fire:1.9.0'>
     <file>gson-fire-1.9.0.jar</file>
     <license name='Apache-2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
+  </dependency>
+  <dependency name='io.ktor:ktor-utils-jvm:3.0.1'>
+    <file>ktor-utils-jvm-3.0.1.jar</file>
+    <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
   <dependency name='com.google.auth:google-auth-library-oauth2-http:1.35.0'>
     <file>google-auth-library-oauth2-http-1.35.0.jar</file>
@@ -249,41 +472,25 @@
     <file>listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar</file>
     <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
-  <dependency name='io.kubernetes:client-java-proto:24.0.0'>
-    <file>client-java-proto-24.0.0.jar</file>
-    <license name='The Apache Software License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
-  </dependency>
   <dependency name='org.jetbrains:annotations:23.0.0'>
     <file>annotations-23.0.0.jar</file>
     <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
-  <dependency name='org.bouncycastle:bcutil-jdk18on:1.80'>
-    <file>bcutil-jdk18on-1.80.jar</file>
-    <license name='Bouncy Castle Licence' url='https://www.bouncycastle.org/licence.html' />
+  <dependency name='io.netty:netty-common:4.1.114.Final'>
+    <file>netty-common-4.1.114.Final.jar</file>
+    <license name='Apache License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0' />
   </dependency>
   <dependency name='org.apache.httpcomponents:httpclient:4.5.14'>
     <file>httpclient-4.5.14.jar</file>
     <license name='Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
-  <dependency name='com.fasterxml.jackson.core:jackson-databind:2.18.3'>
-    <file>jackson-databind-2.18.3.jar</file>
+  <dependency name='io.ktor:ktor-server-core-jvm:3.0.1'>
+    <file>ktor-server-core-jvm-3.0.1.jar</file>
     <license name='The Apache Software License, Version 2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
   <dependency name='org.jetbrains.kotlin:kotlin-stdlib:2.2.0'>
     <file>kotlin-stdlib-2.2.0.jar</file>
     <license name='The Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
-  </dependency>
-  <dependency name='com.google.api.grpc:proto-google-common-protos:2.51.0'>
-    <file>proto-google-common-protos-2.51.0.jar</file>
-    <license name='Apache-2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
-  </dependency>
-  <dependency name='org.apache.kafka:kafka-clients:7.7.0-ccs'>
-    <file>kafka-clients-7.7.0-ccs.jar</file>
-    <license name='The Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
-  </dependency>
-  <dependency name='org.apache.commons:commons-compress:1.27.1'>
-    <file>commons-compress-1.27.1.jar</file>
-    <license name='Apache-2.0' url='https://www.apache.org/licenses/LICENSE-2.0.txt' />
   </dependency>
   <dependency name='org.slf4j:slf4j-api:2.0.17'>
     <file>slf4j-api-2.0.17.jar</file>
@@ -293,9 +500,10 @@
     <file>javax.annotation-api-1.3.2.jar</file>
     <license name='CDDL + GPLv2 with classpath exception' url='https://github.com/javaee/javax.annotation/blob/master/LICENSE' />
   </dependency>
-  <dependency name='org.yaml:snakeyaml:2.4'>
-    <file>snakeyaml-2.4.jar</file>
-    <license name='Apache License, Version 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.txt' />
+  <dependency name='org.rocksdb:rocksdbjni:9.7.3'>
+    <file>rocksdbjni-9.7.3.jar</file>
+    <license name='Apache License 2.0' url='http://www.apache.org/licenses/LICENSE-2.0.html' />
+    <license name='GNU General Public License, version 2' url='http://www.gnu.org/licenses/gpl-2.0.html' />
   </dependency>
   <dependency name='com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.18.3'>
     <file>jackson-dataformat-cbor-2.18.3.jar</file>
