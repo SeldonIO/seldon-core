@@ -482,11 +482,32 @@ func (s *SchedulerServer) sendPipelineEvents(event *coordinator.PipelineEventMsg
 		return
 	}
 
-	// if deletion process was triggered, we remove the pipeline from envoy
+	// When the old version is being terminated during a pipeline update, guard both the
+	// envoy route removal and the pipeline-gw delete message with an IsLatestVersion check.
+	// The pipeline-gw stores pipelines by name (not version), so sending a delete for the
+	// old version would call DeletePipeline(name), wiping the new version's Kafka consumer.
+	// See: https://github.com/SeldonIO/seldon-core/issues/7072
+	//
+	// Note: the envoy update (sendPipelineStreamsEventMsg) and the pipeline-gw messaging
+	// (sendPipelineEventsToStreamWithTimestamp) are separate subsystems. The envoy guard is
+	// applied here, before the switch, because sendPipelineStreamsEventMsg is not gated on
+	// pipeline-gw stream availability. The pipeline-gw delete guard is applied inside the
+	// switch case below, where the delete message is actually constructed and sent.
+	isLatestVersion := true
 	if pv.State.PipelineGwStatus == pipeline.PipelineTerminate {
-		s.sendPipelineStreamsEventMsg(
-			&coordinator.PipelineEventMsg{PipelineName: pv.Name}, []string{},
-		)
+		var err error
+		isLatestVersion, err = s.pipelineHandler.IsLatestVersion(pv.Name, pv.Version, pv.UID)
+		if err != nil {
+			logger.WithError(err).Warnf("Failed to check if pipeline %s version %d is latest, proceeding with full termination", pv.Name, pv.Version)
+			isLatestVersion = true
+		}
+		if isLatestVersion {
+			s.sendPipelineStreamsEventMsg(
+				&coordinator.PipelineEventMsg{PipelineName: pv.Name}, []string{},
+			)
+		} else {
+			logger.Debugf("Pipeline %s version %d is not the latest, skipping envoy route removal to avoid disrupting the newer active version", pv.Name, pv.Version)
+		}
 	}
 
 	if len(pipelineGwStreams) == 0 && pv.State.PipelineGwStatus != pipeline.PipelineTerminated {
@@ -531,6 +552,25 @@ func (s *SchedulerServer) sendPipelineEvents(event *coordinator.PipelineEventMsg
 		status = s.createPipelineCreationMessage(pv)
 		s.sendPipelineEventsToStreamWithTimestamp(event, status, pipelineGwStreams)
 	case pipeline.PipelineTerminate:
+		if !isLatestVersion {
+			// A newer version is already handling traffic. The pipeline-gw loads pipelines
+			// by name, so sending a delete would call DeletePipeline(name) which uses the
+			// same key as the new version — wiping its Kafka consumer. Skip the delete and
+			// mark the old version as terminated directly.
+			// See: https://github.com/SeldonIO/seldon-core/issues/7072
+			logger.Debugf("Pipeline %s version %d is not the latest, skipping pipeline-gw delete to preserve newer version's Kafka consumer", pv.Name, pv.Version)
+			if err := s.pipelineHandler.SetPipelineGwPipelineState(
+				pv.Name,
+				pv.Version,
+				pv.UID,
+				pipeline.PipelineTerminated,
+				"terminated as older version during pipeline update",
+				util.SourcePipelineStatusEvent,
+			); err != nil {
+				logger.WithError(err).Errorf("Failed to set pipeline gw state to terminated for %s", pv.String())
+			}
+			return
+		}
 		logger.Debug("Pipeline is being terminated, sending deletion message")
 		if err := s.pipelineHandler.SetPipelineGwPipelineState(
 			pv.Name,
