@@ -102,6 +102,7 @@ def predict(
         if hasattr(user_model, "predict_raw"):
             try:
                 response = user_model.predict_raw(request)
+                client_custom_metrics(user_model, seldon_metrics, PREDICT_METRIC_METHOD_TAG, [])
                 handle_raw_custom_metrics(
                     response, seldon_metrics, is_proto, PREDICT_METRIC_METHOD_TAG
                 )
