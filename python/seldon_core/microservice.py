@@ -9,7 +9,7 @@ import sys
 import time
 from distutils.util import strtobool
 from functools import partial
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Callable, Dict, List, Tuple
 
 from seldon_core import __version__
 from seldon_core import wrapper as seldon_microservice
@@ -354,7 +354,7 @@ def parse_args() -> Tuple[argparse.Namespace, List[str]]:
 
 
 def _make_rest_server_debug(
-    user_object: Any,
+    user_object: callable,
     seldon_metrics: SeldonMetrics,
     args: argparse.Namespace,
     jaeger_extra_tags: List[str],
@@ -369,10 +369,6 @@ def _make_rest_server_debug(
 
     def server():
         app = seldon_microservice.get_rest_microservice(user_object, seldon_metrics)
-        try:
-            user_object.load()
-        except (NotImplementedError, AttributeError):
-            pass
         if args.tracing:
             logger.info("Tracing branch is active")
             from flask_opentracing import FlaskTracing
@@ -393,7 +389,7 @@ def _make_rest_server_debug(
 
 
 def _make_rest_server_prod(
-    user_object: Any,
+    user_object: callable,
     seldon_metrics: SeldonMetrics,
     args: argparse.Namespace,
     jaeger_extra_tags: List[str],
@@ -456,7 +452,7 @@ def _wait_forever(server):
 
 
 def _run_grpc_server(
-    user_object: Any,
+    user_object: callable,
     seldon_metrics: SeldonMetrics,
     args: argparse.Namespace,
     annotations: Dict[str, str],
@@ -482,18 +478,13 @@ def _run_grpc_server(
         num_threads=args.grpc_threads,
     )
 
-    try:
-        user_object.load()
-    except (NotImplementedError, AttributeError):
-        pass
-
     server.add_insecure_port(bind_address)
     server.start()
     _wait_forever(server)
 
 
 def _make_grpc_server(
-    user_object: Any,
+    user_object: callable,
     seldon_metrics: SeldonMetrics,
     args: argparse.Namespace,
     annotations: Dict[str, str],
@@ -616,7 +607,12 @@ def main():
 
     if args.persistence:
         logger.error(f"Persistence: ignored, persistence is deprecated")
+    # Instantiate the class and load the model, using the Copy-On-Write(COW) of os.fork to save memory.
     user_object = user_class(**parameters)
+    try:
+        user_object.load()
+    except (NotImplementedError, AttributeError):
+        logger.info("Unable to successfully load the model.")
 
     http_port = args.http_port
 
