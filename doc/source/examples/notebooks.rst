@@ -40,6 +40,7 @@ Python Language Wrapper Examples
    Statsmodels Holt-Winter's time-series model <statsmodels>
    Runtime Metrics & Tags <runtime_metrics_tags>
    Triton GPT2 Example <triton_gpt2_example>
+   Deploying Custom Tensorflow Models (with MLServer) <cassava/README.md>
 
 Specialised Framework Examples
 ------------------------------
