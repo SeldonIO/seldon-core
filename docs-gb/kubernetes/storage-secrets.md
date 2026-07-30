@@ -137,6 +137,10 @@ The easiest way to change this is to update your SeldonRuntime.
 
 {% tabs %}
 {% tab title="S3 MinIO" %}
+{% hint style="info" %}
+The `s3` remote type works with any S3-compatible object store. Amazon S3 requires no `endpoint` parameter, while an S3-compatible provider such as Backblaze B2, Cloudflare R2, or MinIO is selected by setting `provider` and pointing `endpoint` at that provider's published S3 endpoint (for example, `endpoint: https://<s3-compatible-endpoint>`). The MinIO example below sets `endpoint` for an in-cluster deployment.
+{% endhint %}
+
 Assuming you have installed MinIO in the `minio-system` namespace, a corresponding secret could be:
 
 ```yaml
